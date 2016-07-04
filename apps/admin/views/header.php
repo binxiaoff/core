@@ -73,7 +73,6 @@
                     <li><a href="<?= $this->lurl ?>/settings" title="Paramètres">Paramètres</a></li>
                     <li><a href="<?= $this->lurl ?>/mails/emailhistory" title="Historique des Mails">Historique des Mails</a></li>
                     <li><a href="<?= $this->lurl ?>/users/logs" title="Historique des connexions">Logs connexions</a></li>
-                    <li><a href="<?= $this->lurl ?>/routages" title="Routage">Routage</a></li>
                     <li><a href="<?= $this->lurl ?>/partenaires" title="Campagnes">Campagnes</a></li>
                     <li><a href="<?= $this->lurl ?>/partenaires/types" title="Types de campagnes">Types de campagnes</a></li>
                     <li><a href="<?= $this->lurl ?>/partenaires/medias" title="Medias de campagnes">Medias de campagnes</a></li>
@@ -107,7 +106,6 @@
                     <li><a href="<?= $this->lurl ?>/preteurs" title="Arbo preteurs">Arbo prêteurs</a></li>
                     <li><a href="<?= $this->lurl ?>/preteurs/gestion" title="Gestion prêteurs">Gestion prêteurs</a></li>
                     <li><a href="<?= $this->lurl ?>/preteurs/search" title="Recherche prêteurs">Recherche prêteurs</a></li>
-                    <li><a href="<?= $this->lurl ?>/preteurs/liste_preteurs_non_inscrits" title="Liste des prêteurs non inscrits">Liste des prêteurs non inscrits</a></li>
                     <li><a href="<?= $this->lurl ?>/preteurs/activation" title="Activation prêteurs">Activation prêteurs</a></li>
                     <li><a href="<?= $this->lurl ?>/preteurs/offres_de_bienvenue" title="Gestion offre de bienvenue">Gestion offre de bienvenue</a></li>
                     <li><a href="<?= $this->lurl ?>/preteurs/control_fiscal_city" title="Matching ville fiscale">Matching ville fiscale</a></li>

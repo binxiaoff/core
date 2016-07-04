@@ -416,7 +416,7 @@ class collectController extends bootstrap
                 $varMail = array(
                     'surl'           => $this->surl,
                     'url'            => $this->lurl,
-                    'prenom'         => utf8_decode($this->clients->prenom),
+                    'prenom'         => $this->clients->prenom,
                     'email_p'        => $this->clients->email,
                     'mdp'            => '',
                     'motif_virement' => $this->clients->getLenderPattern($this->clients->id_client),

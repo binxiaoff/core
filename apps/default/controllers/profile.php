@@ -627,16 +627,15 @@ class profileController extends bootstrap
                     $oSettings = $this->loadData('settings');
                     $oSettings->get('Adresse notification modification preteur', 'type');
                     $destinataire = $oSettings->value;
-                    $lemois = utf8_decode($this->dates->tableauMois[$this->language][date('n')]);
 
                     $varsMail = array(
                         '$surl'         => $this->surl,
                         '$url'          => $this->lurl,
                         '$id_preteur'   => $this->clients->id_client,
-                        '$nom'          => utf8_decode($this->clients->nom),
-                        '$prenom'       => utf8_decode($this->clients->prenom),
+                        '$nom'          => $this->clients->nom,
+                        '$prenom'       => $this->clients->prenom,
                         '$montant'      => $this->solde . ' euros',
-                        '$date'         => date('d') . ' ' . $lemois . ' ' . date('Y'),
+                        '$date'         => date('d') . ' ' . $this->dates->tableauMois[$this->language][date('n')] . ' ' . date('Y'),
                         '$heure_minute' => date('H:i'),
                         '$email'        => $this->clients->email,
                         '$lien'         => $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account
@@ -1349,16 +1348,15 @@ class profileController extends bootstrap
                     $oSettings = $this->loadData('settings');
                     $oSettings->get('Adresse notification modification preteur', 'type');
                     $destinataire = $oSettings->value;
-                    $lemois = utf8_decode($this->dates->tableauMois[$this->language][date('n')]);
 
                     $varsMail = array(
                         '$surl'         => $this->surl,
                         '$url'          => $this->lurl,
                         '$id_preteur'   => $this->clients->id_client,
-                        '$nom'          => utf8_decode($this->clients->nom),
-                        '$prenom'       => utf8_decode($this->clients->prenom),
+                        '$nom'          => $this->clients->nom,
+                        '$prenom'       => $this->clients->prenom,
                         '$montant'      => $this->solde . ' euros',
-                        '$date'         => date('d') . ' ' . $lemois . ' ' . date('Y'),
+                        '$date'         => date('d') . ' ' . $this->dates->tableauMois[$this->language][date('n')] . ' ' . date('Y'),
                         '$heure_minute' => date('H:i'),
                         '$email'        => $this->clients->email,
                         '$lien'         => $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account
@@ -1629,7 +1627,9 @@ class profileController extends bootstrap
             /** @var greenpoint_attachment oGreenPointAttachment */
             $this->oGreenPointAttachment = $this->loadData('greenpoint_attachment');
         }
-        $mResult = $this->attachmentHelper->attachmentExists($this->attachment, $lenderAccountId, attachment::LENDER, $iAttachmentType);
+
+        $mResult = $this->attachmentHelper->attachmentExists($this->attachment, $lenderAccountId, attachment::LENDER, $attachmentType);
+
         if (is_numeric($mResult)) {
             $this->oGreenPointAttachment->get($mResult, 'id_attachment');
             $this->oGreenPointAttachment->revalidate   = 1;

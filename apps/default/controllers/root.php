@@ -44,6 +44,10 @@ class rootController extends bootstrap
                 }
             }
 
+            if ($this->tree->id_tree == 1) {
+                $this->loadJs('default/jquery.carouFredSel-6.2.1-packed');
+            }
+
             // Redirection inscription preteur
             if ($this->tree->id_tree == 127) {
                 if ($this->clients->checkAccess() && $this->clients->isLender()) {
@@ -316,6 +320,10 @@ class rootController extends bootstrap
                     $this->autoFireHead   = true;
                     $this->autoFireFooter = false;
                 }
+            }
+
+            if ($paramSlug === 'validation-virement') {
+                $this->page = 'alimentation';
             }
 
             // restriction pour capital
@@ -1332,7 +1340,7 @@ class rootController extends bootstrap
             $destinataire = $this->settings->value;
 
             $infos = '<ul>';
-            $infos .= '<li>Type demande : ' . $objet . '</li>';
+            $infos .= '<li>Type demande : ' . $objets[$this->demande_contact->demande] . '</li>';
             if ($this->demande_contact->demande == 5) {
                 $infos .= '<li>Preciser :' . $this->ficelle->speChar2HtmlEntities($this->demande_contact->preciser) . '</li>';
             }
@@ -1348,9 +1356,9 @@ class rootController extends bootstrap
                 '$surl'   => $this->surl,
                 '$url'    => $this->lurl,
                 '$email'  => $this->demande_contact->email,
-                '$nom'    => utf8_decode($this->demande_contact->nom),
-                '$prenom' => utf8_decode($this->demande_contact->prenom),
-                '$objet'  => ($objets[$this->demande_contact->demande]),
+                '$nom'    => $this->demande_contact->nom,
+                '$prenom' => $this->demande_contact->prenom,
+                '$objet'  => $objets[$this->demande_contact->demande],
                 '$infos'  => $infos
             );
 

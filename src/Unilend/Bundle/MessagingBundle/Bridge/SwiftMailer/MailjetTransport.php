@@ -66,8 +66,21 @@ class MailjetTransport implements \Swift_Transport
             'FromName'   => array_shift($aSenderName),
             'Subject'    => $oMessage->getSubject(),
             'Html-part'  => $oMessage->getBody(),
-            'Recipients' => [['Email' => array_shift($aRecipients)]]
+            'Recipients' => array_map(function($recipient) { return ['Email' => $recipient]; }, $aRecipients)
         ];
+
+        if (false === empty($oMessage->getChildren())) {
+            $body['Attachments'] = [];
+            foreach ($oMessage->getChildren() as $child) {
+                if (1 === preg_match('/^(?<content_type>.*); name=(?<file_name>.*)$/', $child->getHeaders()->get('Content-Type')->getFieldBody(), $matches)) {
+                    $body['Attachments'][] = [
+                        'Content-Type' => $matches['content_type'],
+                        'Filename'     => $matches['file_name'],
+                        'content'      => base64_encode($child->getBody())
+                    ];
+                }
+            }
+        }
 
         return $this->oMailJetClient->post(Resources::$Email, ['body' => $body]);
     }

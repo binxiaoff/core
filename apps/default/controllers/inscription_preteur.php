@@ -562,7 +562,6 @@ class inscription_preteurController extends bootstrap
                         $this->clients_history->status    = 2; // statut creation compte preteur
                         $this->clients_history->create();
 
-
                         //********************************************//
                         //*** ENVOI DU MAIL NOTIFICATION VERSEMENT ***//
                         //********************************************//
@@ -576,8 +575,8 @@ class inscription_preteurController extends bootstrap
                             '$surl'       => $this->surl,
                             '$url'        => $this->lurl,
                             '$id_preteur' => $this->clients->id_client,
-                            '$nom'        => utf8_decode($this->clients->nom),
-                            '$prenom'     => utf8_decode($this->clients->prenom),
+                            '$nom'        => $this->clients->nom,
+                            '$prenom'     => $this->clients->prenom,
                             '$montant'    => ($response['payment']['amount'] / 100)
                         );
 
@@ -766,8 +765,7 @@ class inscription_preteurController extends bootstrap
         $this->unLoadJs('default/jquery.c2selectbox');
         $this->unLoadJs('default/livevalidation_standalone.compressed');
         $this->unLoadJs('default/jquery.colorbox-min');
-        $this->unLoadJs('default/jquery-ui-1.10.3.custom.min');
-        $this->unLoadJs('default/jquery-ui-1.10.3.custom2');
+        $this->unLoadJs('default/jqueryui-1.10.3.min');
         $this->unLoadJs('default/ui.datepicker-fr');
         $this->unLoadJs('default/highcharts.src');
         $this->unLoadJs('default/main');

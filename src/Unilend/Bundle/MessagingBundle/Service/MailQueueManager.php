@@ -18,17 +18,21 @@ class MailQueueManager
     private $oEntityManager;
     /** @var TemplateMessageProvider */
     private $oTemplateMessage;
+    /** @var string */
+    private $sharedTemporaryPath;
 
     /**
      * MailQueueManager constructor.
      *
      * @param EntityManager           $oEntityManager
      * @param TemplateMessageProvider $oTemplateMessage
+     * @param string                  $sharedTemporaryPath
      */
-    public function __construct(EntityManager $oEntityManager, TemplateMessageProvider $oTemplateMessage)
+    public function __construct(EntityManager $oEntityManager, TemplateMessageProvider $oTemplateMessage, $sharedTemporaryPath)
     {
-        $this->oEntityManager   = $oEntityManager;
-        $this->oTemplateMessage = $oTemplateMessage;
+        $this->oEntityManager      = $oEntityManager;
+        $this->oTemplateMessage    = $oTemplateMessage;
+        $this->sharedTemporaryPath = $sharedTemporaryPath;
     }
 
     /**
@@ -40,17 +44,30 @@ class MailQueueManager
      */
     public function queue(TemplateMessage $oMessage)
     {
+        $attachments = [];
+        foreach ($oMessage->getChildren() as $index => $child) {
+            $attachments[$index] = [
+                'content-disposition' => $child->getHeaders()->get('Content-Disposition')->getFieldBody(),
+                'content-type'        => $child->getHeaders()->get('Content-Type')->getFieldBody(),
+                'tmp_file'            => uniqid() . '.attachment'
+            ];
+            file_put_contents($this->sharedTemporaryPath . $attachments[$index]['tmp_file'], $child->getBody());
+            chmod($this->sharedTemporaryPath . $attachments[$index]['tmp_file'], 0660);
+        }
+
+        /** @var \clients $client */
+        $client = $this->oEntityManager->getRepository('clients');
         /** @var \mail_queue $oMailQueue */
         $oMailQueue                       = $this->oEntityManager->getRepository('mail_queue');
         $oMailQueue->id_mail_template     = $oMessage->getTemplateId();
         $oMailQueue->serialized_variables = json_encode($oMessage->getVariables());
+        $oMailQueue->attachments          = json_encode($attachments);
         $recipients                       = TemplateMessage::recipientsString($oMessage->getTo());
-        /** @var \clients $client */
-        $client                           = $this->oEntityManager->getRepository('clients');
-        // try to find client id
+
         if (1 === count($oMessage->getTo()) && $client->get($recipients, 'email')) {
             $oMailQueue->id_client = $client->id_client;
         }
+
         $oMailQueue->recipient  = $recipients;
         $oMailQueue->status     = \mail_queue::STATUS_PENDING;
         $oMailQueue->to_send_at = $oMessage->getToSendAt();
@@ -77,6 +94,17 @@ class MailQueueManager
         /** @var TemplateMessage $oMessage */
         $oMessage = $this->oTemplateMessage->newMessage($oMailTemplate->type, json_decode($oEmail->serialized_variables, true), false);
         $oMessage->setTo(TemplateMessage::recipientsArray($oEmail->recipient));
+
+        foreach (json_decode($oEmail->attachments, true) as $attachment) {
+            $swiftAttachment = \Swift_Attachment::newInstance(file_get_contents($this->sharedTemporaryPath . $attachment['tmp_file']));
+            $swiftAttachment->setContentType($attachment['content-type']);
+            $swiftAttachment->setDisposition($attachment['content-disposition']);
+
+            $oMessage->attach($swiftAttachment);
+
+            unlink($this->sharedTemporaryPath . $attachment['tmp_file']);
+        }
+
         return $oMessage;
     }
 

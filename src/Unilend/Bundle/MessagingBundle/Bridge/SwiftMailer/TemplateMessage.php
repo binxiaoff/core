@@ -3,14 +3,18 @@
 namespace Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer;
 
 
+use Psr\Log\LoggerInterface;
+
 class TemplateMessage extends \Swift_Message
 {
     /** @var int */
     private $templateId;
-    /** @var  array */
+    /** @var array */
     private $variables;
-    /** @var  \DateTime */
+    /** @var \DateTime */
     private $toSendAt;
+    /** @var LoggerInterface */
+    private $logger;
 
     /**
      * TemplateMessage constructor.
@@ -53,6 +57,16 @@ class TemplateMessage extends \Swift_Message
     }
 
     /**
+     * @param LoggerInterface $logger
+     * @return $this
+     */
+    public function setLogger(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+        return $this;
+    }
+
+    /**
      * @param null|array $variables
      *
      * @return $this
@@ -80,9 +94,17 @@ class TemplateMessage extends \Swift_Message
             $addresses = self::recipientsArray($addresses);
         }
 
-        return parent::setTo($addresses, $name);
-    }
+        try {
+            parent::setTo($addresses, $name);
+        } catch (\Swift_RfcComplianceException $exception) {
+            if ($this->logger instanceof LoggerInterface) {
+                $trace = debug_backtrace();
+                $this->logger->alert($exception->getMessage(), array('address' => $addresses, 'template' => $this->templateId, 'file' => $trace[0]['file'], 'line' => $trace[0]['line']));
+            }
+        }
 
+        return $this;
+    }
 
     /**
      * @return null|string
@@ -142,20 +164,19 @@ class TemplateMessage extends \Swift_Message
     public static function recipientsArray($recipients)
     {
         if (is_string($recipients)) {
-            $recipientsFormatted = '';
-
-            $recipients = str_replace(';', ',', $recipients);
-            $recipients = explode(',', $recipients);
+            $recipientsFormatted = [];
+            $recipients          = str_replace(';', ',', $recipients);
+            $recipients          = explode(',', $recipients);
 
             foreach ($recipients as $recipient) {
                 if (1 === preg_match('#^(?<name>.*)(\s|)\<(?<email>.*)\>$#', $recipient, $matches)) {
-                    $recipientsFormatted[$matches['email']] = $matches['name'];
+                    $recipientsFormatted[trim($matches['email'])] = trim($matches['name']);
                 } else {
-                    $recipientsFormatted[] = $recipient;
+                    $recipientsFormatted[] = trim($recipient);
                 }
             }
         } else {
-            $recipientsFormatted = $recipients;
+            $recipientsFormatted = trim($recipients);
         }
 
         return $recipientsFormatted;

@@ -8,6 +8,8 @@ class operationsController extends bootstrap
     {
         parent::initialize();
 
+        $this->loadJs('default/ui.datepicker-fr');
+
         $this->catchAll = true;
         // On prend le header account
         $this->setHeader('header_account');
@@ -34,7 +36,6 @@ class operationsController extends bootstrap
         $this->projects_status         = $this->loadData('projects_status');
         $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
         $this->ifu                     = $this->loadData('ifu');
-        $this->loadData('transactions_types'); // @todo included for class constants
 
         $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
         $this->lng['preteur-operations-pdf']            = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
@@ -406,12 +407,12 @@ class operationsController extends bootstrap
         );
 
         $array_type_transactions_liste_deroulante = array(
-            1 => '1,2,3,4,5,7,8,16,17,19,20,23',
+            1 => '1,2,3,4,5,7,8,16,17,19,20,23,26',
             2 => '3,4,7,8',
             3 => '3,4,7',
             4 => '8',
             5 => '2',
-            6 => '5,23'
+            6 => '5,23,26'
         );
 
         if (isset($post_tri_type_transac)) {
@@ -513,12 +514,8 @@ class operationsController extends bootstrap
                 $t['libelle_operation'] = $t['libelle_operation'];
                 $t['libelle_projet']    = $t['libelle_projet'];
                 if ($t['montant_operation'] > 0) {
-                    $plus    = '+';
-                    $moins   = '&nbsp;';
                     $couleur = ' style="color:#40b34f;"';
                 } else {
-                    $plus    = '&nbsp;';
-                    $moins   = '-';
                     $couleur = ' style="color:red;"';
                 }
 
@@ -526,12 +523,12 @@ class operationsController extends bootstrap
 
                 $solde = $t['solde'];
                 // remb
-                if ($t['type_transaction'] == 5 || $t['type_transaction'] == 23) {
+                if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
                     $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
 
                     $retenuesfiscals = $this->echeanciers->prelevements_obligatoires + $this->echeanciers->retenues_source + $this->echeanciers->csg + $this->echeanciers->prelevements_sociaux + $this->echeanciers->contributions_additionnelles + $this->echeanciers->prelevements_solidarite + $this->echeanciers->crds;
 
-                    if ($t['type_transaction'] == 23) {
+                    if ($t['type_transaction'] != \transactions_types::TYPE_LENDER_REPAYMENT) {
                         $this->echeanciers->prelevements_obligatoires    = 0;
                         $this->echeanciers->retenues_source              = 0;
                         $this->echeanciers->interets                     = 0;
@@ -542,7 +539,7 @@ class operationsController extends bootstrap
                         $this->echeanciers->prelevements_solidarite      = 0;
                         $this->echeanciers->crds                         = 0;
                         $this->echeanciers->capital                      = $t['montant_operation'];
-                    } elseif ($t['type_transaction'] == 5 && $t['recouvrement'] == 1 && $this->echeanciers_recouvrements_prorata->get($t['id_transaction'], 'id_transaction')) {
+                    } elseif ($t['type_transaction'] == \transactions_types::TYPE_LENDER_REPAYMENT && $t['recouvrement'] == 1 && $this->echeanciers_recouvrements_prorata->get($t['id_transaction'], 'id_transaction')) {
                         $retenuesfiscals = $this->echeanciers_recouvrements_prorata->prelevements_obligatoires + $this->echeanciers_recouvrements_prorata->retenues_source + $this->echeanciers_recouvrements_prorata->csg + $this->echeanciers_recouvrements_prorata->prelevements_sociaux + $this->echeanciers_recouvrements_prorata->contributions_additionnelles + $this->echeanciers_recouvrements_prorata->prelevements_solidarite + $this->echeanciers_recouvrements_prorata->crds;
 
                         $this->echeanciers->prelevements_obligatoires    = $this->echeanciers_recouvrements_prorata->prelevements_obligatoires;

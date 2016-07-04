@@ -178,7 +178,6 @@ class ajaxController extends bootstrap
                 $mois_jour = $this->dates->formatDate($project['date_retrait'], 'F d');
                 $annee     = $this->dates->formatDate($project['date_retrait'], 'Y');
 
-                $iSumbids = $this->bids->counter('id_project = ' . $project['id_project']);
                 $avgRate  = $this->projects->getAverageInterestRate($project['id_project'], $this->projects_status->status);
 
                 $affichage .= "
@@ -229,16 +228,9 @@ class ajaxController extends bootstrap
                     " . ($project['period'] == 1000000 ? $this->lng['preteur-projets']['je-ne-sais-pas'] : $project['period'] . ' ' . $this->lng['preteur-projets']['mois']) . "
                     </a>
                 </td>";
-
                 $affichage .= "<td><a class='lien' href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'>";
-                if ($iSumbids > 0) {
-                    $affichage .= $this->ficelle->formatNumber($avgRate, 1) . "%";
-                } else {
-                    $affichage .= ($project['target_rate'] == '-' ? $project['target_rate'] : $this->ficelle->formatNumber($project['target_rate'], 1)) . "%";
-                }
+                $affichage .= $this->ficelle->formatNumber($avgRate, 1) . "%";
                 $affichage .= "</a></td>";
-
-
                 $affichage .= "<td><a class='lien' href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'><strong id='val" . $project['id_project'] . "'>" . $dateRest . "</strong></a></td>
                 <td>";
 
@@ -482,11 +474,9 @@ class ajaxController extends bootstrap
         $oProjectStatus = $this->loadData('projects_status');
         $oProjectStatus->getLastStatut($this->projects->id_project);
 
-        $this->aBids          = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
-        $this->CountEnchere   = $this->bids->counter('id_project = ' . $this->projects->id_project);
-        $this->avgAmount      = $this->bids->getAVGAmount($this->projects->id_project);
-        $this->avgRate        = $this->projects->getAverageInterestRate($this->projects->id_project, $oProjectStatus->status);
-        $this->status = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
+        $this->aBids   = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
+        $this->avgRate = $this->projects->getAverageInterestRate($this->projects->id_project, $oProjectStatus->status);
+        $this->status  = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
     }
 
     public function _loadGraph()
@@ -930,30 +920,23 @@ class ajaxController extends bootstrap
         $this->clients         = $this->loadData('clients');
         $this->demande_contact = $this->loadData('demande_contact');
 
-        if (isset($_POST['name']) && isset($_POST['prenom']) && isset($_POST['email'])) {
-            $form_ok = true;
+        if (isset($_POST['name'], $_POST['prenom'], $_POST['email'])) {
+            $this->lng['contact'] = $this->ln->selectFront('contact', $this->language, $this->App);
 
-            if (! isset($_POST['name']) || $_POST['name'] == '' || $_POST['name'] == $this->lng['contact']['nom']) {
-                $form_ok = false;
-            }
-
-            if (! isset($_POST['prenom']) || $_POST['prenom'] == '' || $_POST['prenom'] == $this->lng['contact']['prenom']) {
-                $form_ok = false;
-            }
-
-            if (! isset($_POST['email']) || $_POST['email'] == '' || $_POST['email'] == $this->lng['contact']['email']) {
-                $form_ok = false;
-            } elseif (! $this->ficelle->isEmail($_POST['email'])) {
-                $form_ok = false;
-            }
-
-            if (! isset($_POST['security']) || $_POST['security'] == '' || $_POST['security'] == $this->lng['contact']['captcha']) {
-                $form_ok = false;
-            } elseif ($_SESSION['securecode'] != strtolower($_POST['security'])) {
-                $form_ok = false;
-            }
-
-            if ($form_ok == true) {
+            if (
+                empty($_POST['name'])
+                || empty($_POST['prenom'])
+                || empty($_POST['email'])
+                || empty($_POST['security'])
+                || $_POST['name'] == $this->lng['contact']['nom']
+                || $_POST['prenom'] == $this->lng['contact']['prenom']
+                || $_POST['email'] == $this->lng['contact']['email']
+                || $_POST['security'] == $this->lng['contact']['captcha']
+                || false === $this->ficelle->isEmail($_POST['email'])
+                || $_SESSION['securecode'] != strtolower($_POST['security'])
+            ) {
+                echo 'nok';
+            } else {
                 $this->demande_contact->demande   = 2;
                 $this->demande_contact->nom       = $this->ficelle->majNom($_POST['name']);
                 $this->demande_contact->prenom    = $this->ficelle->majNom($_POST['prenom']);
@@ -989,16 +972,16 @@ class ajaxController extends bootstrap
 
                 $infos = '<ul>';
                 $infos .= '<li>Type demande : Demande preteur</li>';
-                $infos .= '<li>Nom : ' . utf8_decode($this->demande_contact->nom) . '</li>';
-                $infos .= '<li>Prenom : ' . utf8_decode($this->demande_contact->prenom) . '</li>';
-                $infos .= '<li>Email : ' . utf8_decode($this->demande_contact->email) . '</li>';
-                $infos .= '<li>telephone : ' . utf8_decode($this->demande_contact->telephone) . '</li>';
-                $infos .= '<li>Societe : ' . utf8_decode($this->demande_contact->societe) . '</li>';
-                $infos .= '<li>Message : ' . utf8_decode($this->demande_contact->message) . '</li>';
+                $infos .= '<li>Nom : ' . $this->demande_contact->nom . '</li>';
+                $infos .= '<li>Prenom : ' . $this->demande_contact->prenom . '</li>';
+                $infos .= '<li>Email : ' . $this->demande_contact->email . '</li>';
+                $infos .= '<li>telephone : ' . $this->demande_contact->telephone . '</li>';
+                $infos .= '<li>Societe : ' . $this->demande_contact->societe . '</li>';
+                $infos .= '<li>Message : ' . $this->demande_contact->message . '</li>';
                 $infos .= '</ul>';
 
                 $oSettings->get('Adresse preteur', 'type');
-                $destinataire = $this->settings->value;
+                $destinataire = $oSettings->value;
 
                 $varInternalMail = array(
                     '$infos'  => $infos
@@ -1010,9 +993,7 @@ class ajaxController extends bootstrap
                 $mailer = $this->get('mailer');
                 $mailer->send($message);
 
-                echo $captcha = '<iframe width="133" src="' . $this->surl . '/images/default/securitecode.php"></iframe>';
-            } else {
-                echo 'nok';
+                echo '<iframe width="133" src="' . $this->surl . '/images/default/securitecode.php"></iframe>';
             }
         } else {
             echo 'nok';
@@ -1124,9 +1105,9 @@ class ajaxController extends bootstrap
                     for ($i = 1; $i <= 12; $i++) {
                         $a                                            = $i;
                         $a                                            = ($i < 10 ? '0' . $a : $a);
-                        $this->sumRembParMois[$annee][$i]             = number_format(($tabSumRembParMois[$annee][$a] != '' ? $tabSumRembParMois[$annee][$a] : 0), 2, '.', ''); // capital remboursé / mois
-                        $this->sumIntbParMois[$annee][$i]             = number_format(($tabSumIntbParMois[$annee][$a] != '' ? $tabSumIntbParMois[$annee][$a] - $tabSumRevenuesfiscalesParMois[$annee][$a] : 0), 2, '.', ''); // interets net / mois
-                        $this->sumRevenuesfiscalesParMois[$annee][$i] = number_format(($tabSumRevenuesfiscalesParMois[$annee][$a] != '' ? $tabSumRevenuesfiscalesParMois[$annee][$a] : 0), 2, '.', ''); // prelevements fiscaux
+                        $this->sumRembParMois[$annee][$i]             = number_format((false === empty($tabSumRembParMois[$annee][$a]) ? $tabSumRembParMois[$annee][$a] : 0), 2, '.', ''); // capital remboursé / mois
+                        $this->sumIntbParMois[$annee][$i]             = number_format((false === empty($tabSumIntbParMois[$annee][$a]) ? $tabSumIntbParMois[$annee][$a] - $tabSumRevenuesfiscalesParMois[$annee][$a] : 0), 2, '.', ''); // interets net / mois
+                        $this->sumRevenuesfiscalesParMois[$annee][$i] = number_format((false === empty($tabSumRevenuesfiscalesParMois[$annee][$a]) ? $tabSumRevenuesfiscalesParMois[$annee][$a] : 0), 2, '.', ''); // prelevements fiscaux
 
                         // on organise l'affichage
                         if ($d == 3) {
@@ -1180,9 +1161,9 @@ class ajaxController extends bootstrap
                     for ($i = 1; $i <= 12; $i++) {
                         $a                                            = $i;
                         $a                                            = ($i < 10 ? '0' . $a : $a);
-                        $this->sumRembParMois[$annee][$i]             = number_format(($tabSumRembParMois[$annee][$a] != '' ? $tabSumRembParMois[$annee][$a] : 0), 2, '.', ''); // capital remboursé / mois
-                        $this->sumIntParMois[$annee][$i]              = number_format(($tabSumIntbParMois[$annee][$a] != '' ? $tabSumIntbParMois[$annee][$a] - $tabSumRevenuesfiscalesParMois[$annee][$a] : 0), 2, '.', ''); // interets net / mois
-                        $this->sumRevenuesfiscalesParMois[$annee][$i] = number_format(($tabSumRevenuesfiscalesParMois[$annee][$a] != '' ? $tabSumRevenuesfiscalesParMois[$annee][$a] : 0), 2, '.', ''); // prelevements fiscaux
+                        $this->sumRembParMois[$annee][$i]             = number_format((false === empty($tabSumRembParMois[$annee][$a]) ? $tabSumRembParMois[$annee][$a] : 0), 2, '.', ''); // capital remboursé / mois
+                        $this->sumIntParMois[$annee][$i]              = number_format((false === empty($tabSumIntbParMois[$annee][$a]) ? $tabSumIntbParMois[$annee][$a] - $tabSumRevenuesfiscalesParMois[$annee][$a] : 0), 2, '.', ''); // interets net / mois
+                        $this->sumRevenuesfiscalesParMois[$annee][$i] = number_format((false === empty($tabSumRevenuesfiscalesParMois[$annee][$a]) ? $tabSumRevenuesfiscalesParMois[$annee][$a] : 0), 2, '.', ''); // prelevements fiscaux
                     }
 
                     $this->sumRembPartrimestre[$annee][1] = ($this->sumRembParMois[$annee][1] + $this->sumRembParMois[$annee][2] + $this->sumRembParMois[$annee][3]);
@@ -1236,6 +1217,7 @@ class ajaxController extends bootstrap
                 // on organise
                 $i = 1;
                 $a = 0;
+                $arraynb = array();
                 for ($c = $this->debut; $c <= $this->fin; $c++) {
                     if ($a >= 3) {
                         $a = 0;
@@ -1243,7 +1225,7 @@ class ajaxController extends bootstrap
                     }
                     // on recup un tableau organisé
                     $this->tab[$c] = $i;
-                    $arraynb[$i] += 1;
+                    $arraynb[$i] = isset($arraynb[$i]) ? $arraynb[$i] + 1 : 1;
 
                     $a++;
                 }
