@@ -11,10 +11,6 @@
     </li>
     <li>
         <i class="ico-chart"></i>
-        <?php if ($this->CountEnchere > 0) { ?>
-            <span><?= $this->ficelle->formatNumber($this->avgRate, 1) . ' %' ?></span>
-        <?php } else { ?>
-            <span><?= $this->projects->target_rate . ($this->projects->target_rate == '-' ? '' : ' %') ?></span>
-        <?php } ?>
+        <span><?= $this->ficelle->formatNumber($this->avgRate, 1) . ' %' ?></span>
     </li>
 </ul>
