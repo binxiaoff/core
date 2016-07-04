@@ -11,13 +11,11 @@ class ProjectDisplayManager
 
     /** @var  EntityManager */
     private $entityManager;
-    /** @var LenderManager  */
-    private $lenderManager;
 
-    public function __construct(EntityManager $entityManager, LenderManager $lenderManager)
+
+    public function __construct(EntityManager $entityManager)
     {
         $this->entityManager = $entityManager;
-        $this->lenderManager = $lenderManager;
     }
 
 
@@ -52,7 +50,7 @@ class ProjectDisplayManager
         $lendersAccount->get($clientId, 'id_client_owner');
 
         $aCurrentUserInformation = [
-            'isInvoled' => $this->lenderManager->hasBidOnProject($lendersAccount, $projectId),
+            'isInvoled' => $bids->exist($projectId, 'id_lender_account = ' . $lendersAccount->id_lender_account. ' AND id_project '),
             'offers'    => [
                 'inprogress' => $bids->countBidsOnProjectByStatusForLender($lendersAccount->id_lender_account, $projectId, \bids::STATUS_BID_PENDING),
                 'rejected'   => $bids->countBidsOnProjectByStatusForLender($lendersAccount->id_lender_account, $projectId, \bids::STATUS_BID_REJECTED),
