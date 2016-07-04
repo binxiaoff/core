@@ -5,7 +5,15 @@ class rootController extends bootstrap
     public function initialize()
     {
         parent::initialize();
+
         $this->catchAll = true;
+        // @todo kept for temporary backward compatibility
+        $this->tabProjectDisplay = implode(', ', [\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::FUNDING_KO, \projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE]);
+        $this->tabOrdreProject   = [
+            '',
+            'lestatut ASC, IF(lestatut = 2, p.date_retrait_full ,"") DESC, IF(lestatut = 1, p.date_retrait_full ,"") ASC, projects_status.status DESC',
+            'p.date_publication DESC'
+        ];
     }
 
     public function _default()
