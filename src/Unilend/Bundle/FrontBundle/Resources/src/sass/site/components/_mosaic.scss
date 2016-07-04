@@ -1,0 +1,373 @@
+//
+// Unilend Mosaic
+//
+
+@mixin mosaic-item {
+  @include clearfix;
+  box-sizing: border-box;
+  width: 100%;
+  height: 200px;
+  padding: 0;
+  clear: none;
+  float: left;
+  overflow: hidden;
+  position: relative;
+
+  @include devices('sm') {
+    width: 50%;
+  }
+
+  @include devices('md') {
+    width: 25%;
+    height: 300px;
+  }
+
+  @include devices('lg') {
+    width: 25%;
+    height: 300px;
+  }
+
+  // Responsive: md, lg
+  @include devices('md', 'lg') {
+    &.mosaic-item-float-right {
+      float: right;
+
+      .mosaic.reverse & {
+        float: left;
+      }
+    }
+
+    &.mosaic-item-double-height {
+      height: 600px;
+    }
+
+    &.mosaic-item-double-width {
+      width: 50%;
+    }
+
+    &:hover {
+      .mosaic-item-info {
+        opacity: 1;
+      }
+    }
+
+    // Touch events: no hover
+    .has-touchevents & {
+      .mosaic-item-info {
+        @include background-image(-svg(linear-gradient(to top, fade-out($c-black, .5) 0%, fade-out($c-black, 1) 100%)));
+
+        width: 100%;
+        height: auto;
+
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: auto;
+        bottom: 0;
+
+        background-color: transparent;
+        background-repeat: repeat-x;
+        background-position: bottom left;
+        opacity: 1;
+        text-shadow: 0 0 10px fade-out($c-black, .1);
+
+        .mosaic-item-subtitle {
+          margin-bottom: 0;
+        }
+
+        .mosaic-item-details {
+          @include hide-accessible;
+        }
+      }
+    }
+  }
+}
+
+.mosaic {
+  @include clearfix;
+
+  &.reverse {
+    .mosaic-item {
+      float: right;
+    }
+  }
+}
+
+// Mosaic Item
+.mosaic-item {
+  @include mosaic-item;
+}
+
+// Header
+.mosaic-header {
+  // Structure
+  @include mosaic-item;
+  padding: 20px;
+
+  @include devices('md') {
+    padding: 30px;
+  }
+
+  @include devices('lg') {
+    padding: 40px;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    margin: 0;
+    padding: 0;
+
+    // Fix the font size
+    font-size: $fs-h3;
+    line-height: 1.3em;
+  }
+
+  .mosaic-item-title {
+    max-width: 200px;
+  }
+
+  // Colours
+  &.bg-p1,
+  &.bg-p2 {
+    color: $c-white;
+
+    h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4 {
+      color: $c-white;
+    }
+
+    a {
+      @include link-states(
+        $link: (
+          color: $c-white
+        ),
+        $hover: (
+          color: $c-white
+        ),
+        $active: (
+          color: $c-white
+        )
+      );
+    }
+  }
+}
+
+// Cell: basic cell to support vertical-align: middle
+.mosaic-cell {
+  @include mosaic-item;
+  display: table;
+
+  .mosaic-cell-inner {
+    display: table-cell;
+    text-align: center;
+    vertical-align: middle;
+  }
+}
+
+// Spacer: by default hidden, unless show-{breakpoint} is assigned
+.mosaic-spacer {
+  @include mosaic-item;
+  display: none;
+
+  @include devices('xs') {
+    &.show-xs {
+      display: block;
+    }
+  }
+
+  @include devices('sm') {
+    width: 50%;
+
+    &.show-sm {
+      display: block;
+    }
+  }
+
+  @include devices('md') {
+    width: 25%;
+    height: 300px;
+
+    &.show-md {
+      display: block;
+    }
+  }
+
+  @include devices('lg') {
+    width: 25%;
+    height: 300px;
+
+    &.show-lg {
+      display: block;
+    }
+  }
+}
+
+// Item Components
+.mosaic-item-image {
+  box-sizing: border-box;
+  width: 50%;
+  height: 100%;
+  float: left;
+  overflow: hidden;
+
+  background-color: $c-bg3;
+  background-position: top center;
+  background-repeat: no-repeat;
+  background-size: 200%;
+
+  > img {
+    @include constrain-size-by-width;
+    visibility: hidden;
+  }
+
+  @include devices('md', 'lg') {
+    width: 100%;
+    float: none;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+  }
+
+  .mosaic-item-double-height &,
+  .mosaic-item-double-width & {
+    background-size: cover;
+  }
+}
+
+.mosaic-item-info {
+  // Structure
+  box-sizing: border-box;
+  width: 50%;
+  padding: 0;
+  height: 100%;
+  float: left;
+  overflow: hidden;
+  position: relative;
+
+  // Align inner info to bottom of block
+  .mosaic-item-info-inner {
+    box-sizing: border-box;
+    width: 100%;
+    height: auto;
+    padding: 20px;
+
+    position: absolute;
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    @include devices('md') {
+      padding: 30px;
+    }
+
+    @include devices('lg') {
+      padding: 40px;
+    }
+  }
+
+  // Different colours for these devices
+  @include devices('xs', 'sm') {
+    h1, h2, h3, h4, h5, h6 {
+      color: $c-t1;
+    }
+
+    .mosaic-item-subtitle {
+      color: $c-t2;
+    }
+
+    a {
+      @include link-states(
+        $link: (
+          color: $c-t3
+        ),
+        $hover: (
+          color: $c-t3
+        ),
+        $active: (
+          color: $c-t3
+        )
+      );
+    }
+  }
+
+  @include devices('md', 'lg') {
+    // Structure
+    width: 100%;
+    float: none;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+
+    // Colours
+    background-color: fade-out($c-black, .6);
+    color: $c-white;
+    opacity: 0;
+    transition: opacity .2s;
+
+    h1, h2, h3, h4, h5, h6 {
+      color: $c-white;
+    }
+
+    a {
+      @include link-states(
+        $link: (
+          color: $c-white
+        ),
+        $hover: (
+          color: $c-white
+        ),
+        $active: (
+          color: $c-white
+        )
+      );
+    }
+  }
+
+  .mosaic-item-links {
+    .links-sociallist {
+      a {
+        width: 42px;
+        height: 42px;
+        font-size: 28px;
+        line-height: 42px;
+      }
+    }
+  }
+}
+
+.mosaic-item-links {
+  margin: 0 0 10px;
+}
+
+.mosaic-item-title {
+  margin: 0 0 10px;
+  font-size: $fs-h4;
+  line-height: 1em;
+}
+
+.mosaic-item-subtitle {
+  margin: 10px 0;
+  font-size: $fs-base * .8;
+  font-style: italic;
+  line-height: 1.2em;
+}
+
+.mosaic-item-details {
+  margin: 10px 0 0;
+  font-size: $fs-base * .9;
+  line-height: 1.3em;
+
+  p {
+    margin: 0;
+    font-size: $fs-base * .8;
+    line-height: 1.3em;
+  }
+
+  // Hide for xs/sm devices
+  @include devices('xs', 'sm') {
+    @include hide-accessible;
+  }
+}

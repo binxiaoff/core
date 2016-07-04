@@ -1,0 +1,202 @@
+//
+// Unilend MapView
+// Uses Leaflet/Mapbox
+//
+
+// Map Container
+.leaflet-container {
+  background-color: transparent;
+
+  a {
+    text-decoration: none;
+  }
+}
+
+// Map icons
+.leaflet-div-icon {
+  background-color: transparent;
+  border-width: 0;
+}
+
+// MapView marker popup
+.mapview-marker-popup {
+  font-family: $ff-base;
+  font-size: $fs-base;
+  text-align: center;
+}
+
+.mapview-marker-popup-title {
+  margin-bottom: 5px;
+  color: $c-t1;
+  font-size: $fs-base * .9;
+  font-weight: bold;
+  line-height: 1.3em;
+}
+
+.mapview-marker-popup-content {
+  color: $c-t3;
+  font-style: italic;
+  font-size: $fs-base * .8;
+  line-height: 1.3em;
+}
+
+// Mapview marker icons
+// Base marker
+@mixin mapview-marker {
+  box-sizing: border-box;
+  display: inline-block;
+  width: 30px;
+  height: 40px;
+  padding: 0;
+  margin: -40px 0 0 -15px;
+  background-color: transparent;
+  background-position: top center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  border-width: 0;
+  line-height: 30px;
+  font-family: $ff-icon;
+  text-align: center;
+  vertical-align: top;
+  transform-origin: bottom center;
+}
+
+// Marker with icon (SVG background)
+@mixin mapview-marker-icon($bg-color: $c-p1, $color: $c-white, $style: 'hollow') {
+  @include mapview-marker;
+
+  // Diff icon styles
+  // -- Full
+  @if $style == 'full' {
+    background-image: inline-svg-code('<svg version="1.1" width="30" height="40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 40" preserveAspectRatio="xMidYMid" xml:space="preserve"><g style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:1.41421;"><path d="M14.957,39.97c-0.88,-0.613 -14.957,-10.644 -14.957,-24.97l0,-0.097c0.053,-8.234 6.754,-14.903 15,-14.903c8.246,0 14.947,6.669 15,14.903l0,0.097c0,14.788 -15,25 -15,25l-0.043,-0.03Z" style="fill:#{$bg-color};"/></g></svg>');
+    color: $color;
+
+  // -- Hollow has hole
+  } @else if $style == 'hollow' {
+    background-image: inline-svg-code('<svg version="1.1" width="30" height="40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 40" preserveAspectRatio="xMidYMid" xml:space="preserve"><g style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:1.41421;"><path d="M14.957,39.97c-0.88,-0.613 -14.957,-10.644 -14.957,-24.97l0,-0.097c0.053,-8.234 6.754,-14.903 15,-14.903c8.246,0 14.947,6.669 15,14.903l0,0.097c0,14.788 -15,25 -15,25l-0.043,-0.03ZM15,4.279c5.85,0 10.599,4.75 10.599,10.599c0,5.85 -4.749,10.599 -10.599,10.599c-5.85,0 -10.599,-4.749 -10.599,-10.599c0,-5.849 4.749,-10.599 10.599,-10.599Z" style="fill:#{$bg-color};"/></g></svg>');
+    color: $bg-color;
+
+  // -- Circle
+  } @else if $style == 'circle' {
+    background-image: inline-svg-code('<svg version="1.1" width="30" height="40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 40" preserveAspectRatio="xMidYMid" xml:space="preserve"><g style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:1.41421;"><circle cx="15" cy="15" r="28" style="fill:#{$bg-color};"/></g></svg>');
+    color: $color;
+
+    // Adjust to put circle in middle
+    margin: -15px 0 0 -15px;
+  }
+}
+
+.mapview-marker-icon {
+  @include mapview-marker;
+}
+
+.mapview-marker-icon-all,
+.mapview-marker-icon-active {
+  @include mapview-marker-icon($bg-color: $c-p1, $color: $c-p1, $style: 'hollow');
+}
+
+.mapview-marker-icon-expired {
+  @include mapview-marker-icon($bg-color: $c-t3, $color: $c-t1, $style: 'hollow');
+}
+
+// Extra icons
+.mapview-marker-icon-accepted {
+  &:before {
+    content: $fa-check-u16;
+    font-size: 16px;
+    line-height: 26px;
+  }
+}
+
+.mapview-marker-icon-inprogress {
+  &:before {
+    content: $fa-clock-u;
+    font-size: 24px;
+  }
+}
+
+// Mapview marker group
+@mixin mapview-marker-group($bg-color: $c-p1, $color: $c-white) {
+  box-sizing: border-box;
+  display: block;
+  min-width: 30px;
+  height: 30px;
+  padding: 0;
+  margin: 0;
+  background-color: $bg-color;
+  border: solid 3px fade-out($bg-color, .5);
+  border-radius: 30px;
+  border-top-left-radius: 0;
+  color: $color;
+  font-family: $ff-base;
+  font-size: $fs-base;
+  line-height: 24px; // minus border
+  vertical-align: middle;
+}
+
+.mapview-marker-group {
+  @include mapview-marker;
+}
+
+// Put active/all group at bottom right of point
+.mapview-marker-group-all,
+.mapview-marker-group-active {
+  @include mapview-marker-group($bg-color: $c-p1, $color: $c-white);
+}
+
+// Put expired group at top right of point
+.mapview-marker-group-expired {
+  @include mapview-marker-group($bg-color: $c-t3, $color: $c-t1);
+  border-radius: 30px !important;
+  border-bottom-left-radius: 0 !important;
+  margin-top: -30px !important;
+}
+
+// Filters
+.mapview-filters {
+  box-sizing: border-box;
+  display: block;
+  padding: 8px 0 0;
+  margin: 10px;
+
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: $depth-tooltip - 5px;
+
+  background: fade-out($c-white, .1);
+  border-radius: 4px;
+  font-size: $fs-base * .9;
+}
+
+.mapview-filter {
+  display: block;
+  padding: 0 20px 8px 15px;
+  clear: both;
+  cursor: pointer;
+
+  &.mapview-group-active,
+  &.mapview-group-expired {
+    .label:before {
+      content: $fa-map-marker-u16;
+      display: inline-block;
+      margin-left: 5px;
+      margin-right: 5px;
+      font-size: $fs-base;
+      font-family: $ff-icon;
+      vertical-align: bottom;
+    }
+  }
+
+  &.mapview-group-active {
+    .label:before {
+      color: $c-p1;
+    }
+  }
+
+  &.mapview-group-expired {
+    .label:before {
+      color: $c-t3;
+    }
+  }
+}
