@@ -40,11 +40,8 @@ try {
     $response = $oKernel->handle($request);
     $response->send();
     $oKernel->terminate($request, $response);
-
 } catch (NotFoundHttpException $exception) {
     $oKernel->boot();
-    $errorLogfile = $oKernel->getLogDir() . '/error.' . date('Ymd') . '.log';
-    \Unilend\core\ErrorHandler::enable($errorLogfile);
     $oDispatcher = new \Unilend\core\Dispatcher($oKernel, 'default', $config);
 }
 
