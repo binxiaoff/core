@@ -338,7 +338,6 @@ class dossiersController extends bootstrap
                 die;
             }
 
-
             if (isset($_POST['rejection_reason'])) {
                 /** @var \projects_status_history $oProjectStatusHistory */
                 $oProjectStatusHistory = $this->loadData('projects_status_history');
@@ -371,7 +370,94 @@ class dossiersController extends bootstrap
                 }
             }
 
-            if (isset($_POST['send_form_dossier_resume'])) {
+            if (isset($_POST['pret_refuse']) && $_POST['pret_refuse'] == 1) {
+                if ($this->current_projects_status->status < \projects_status::PRET_REFUSE) {
+                    /** @var \loans $loans */
+                    $loans = $this->loadData('loans');
+                    /** @var \transactions $transactions */
+                    $transactions = $this->loadData('transactions');
+                    /** @var \lenders_accounts $lenders */
+                    $lenders = $this->loadData('lenders_accounts');
+                    /** @var \clients $clients */
+                    $clients = $this->loadData('clients');
+                    /** @var \wallets_lines $wallets_lines */
+                    $wallets_lines = $this->loadData('wallets_lines');
+                    /** @var \echeanciers $echeanciers */
+                    $echeanciers = $this->loadData('echeanciers');
+
+                    $this->settings->get('Facebook', 'type');
+                    $facebookLink = $this->settings->value;
+
+                    $this->settings->get('Twitter', 'type');
+                    $twitterLink = $this->settings->value;
+
+                    $lendersCount = $loans->getNbPreteurs($this->projects->id_project);
+
+                    $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::PRET_REFUSE, $this->projects);
+
+                    //on supp l'écheancier du projet pour ne pas avoir de doublon d'affichage sur le front (BT 18600)
+                    $echeanciers->delete($this->projects->id_project, 'id_project');
+
+                    foreach ($loans->select('id_project = ' . $this->projects->id_project) as $l) {
+                        if (false === $transactions->get($l['id_loan'], 'id_loan_remb')) {
+                            $lenders->get($l['id_lender'], 'id_lender_account');
+                            $clients->get($lenders->id_client_owner, 'id_client');
+
+                            $loans->get($l['id_loan'], 'id_loan');
+                            $loans->status = 1;
+                            $loans->update();
+
+                            // On redonne l'argent aux preteurs
+                            $transactions->id_client        = $clients->id_client;
+                            $transactions->montant          = $l['amount'];
+                            $transactions->id_langue        = 'fr';
+                            $transactions->id_loan_remb     = $l['id_loan'];
+                            $transactions->date_transaction = date('Y-m-d H:i:s');
+                            $transactions->status           = '1';
+                            $transactions->etat             = '1';
+                            $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
+                            $transactions->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
+                            $transactions->transaction      = 2;
+                            $transactions->create();
+
+                            $wallets_lines->id_lender                = $l['id_lender'];
+                            $wallets_lines->type_financial_operation = 20;
+                            $wallets_lines->id_transaction           = $transactions->id_transaction;
+                            $wallets_lines->status                   = 1;
+                            $wallets_lines->type                     = 2;
+                            $wallets_lines->amount                   = $l['amount'];
+                            $wallets_lines->create();
+
+                            $varMail = [
+                                'surl'              => $this->surl,
+                                'url'               => $this->furl,
+                                'prenom_p'          => $clients->prenom,
+                                'valeur_bid'        => $this->ficelle->formatNumber($l['amount'] / 100, 0),
+                                'nom_entreprise'    => $this->companies->name,
+                                'nb_preteurMoinsUn' => $lendersCount - 1,
+                                'motif_virement'    => $this->clients->getLenderPattern($clients->id_client),
+                                'lien_fb'           => $facebookLink,
+                                'lien_tw'           => $twitterLink
+                            ];
+
+                            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-pret-refuse', $varMail);
+                            $message->setTo($clients->email);
+                            $mailer = $this->get('mailer');
+                            $mailer->send($message);
+                        }
+                    }
+
+                    $_SESSION['freeow']['title']   = 'Refus de prêt';
+                    $_SESSION['freeow']['message'] = 'Le prêt a été refusé et les emails envoyés aux prêteurs';
+                } else {
+                    $_SESSION['freeow']['title']   = 'Refus de prêt';
+                    $_SESSION['freeow']['message'] = 'Le prêt a déjà été refusé';
+                }
+
+                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                die;
+            } elseif (isset($_POST['send_form_dossier_resume'])) {
                 // On check avant la validation que la date de publication & date de retrait sont OK sinon on bloque(KLE)
                 /* La date de publication doit être au minimum dans 5min et la date de retrait à plus de 5min (pas de contrainte) */
                 $dates_valide = false;
@@ -482,7 +568,7 @@ class dossiersController extends bootstrap
                         }
                     }
 
-                    if ($this->current_projects_status->status != $_POST['status']) {
+                    if ($_POST['status'] != $_POST['current_status'] && $this->current_projects_status->status != $_POST['status']) {
                         if ($_POST['status'] == \projects_status::PREP_FUNDING) {
                             $aProjects       = $this->projects->select('id_company = ' . $this->projects->id_company);
                             $aExistingStatus = array();
@@ -640,96 +726,7 @@ class dossiersController extends bootstrap
                     $this->clients->update();
                     $this->clients_adresses->update();
 
-                    if (isset($_POST['pret_refuse']) && $_POST['pret_refuse'] == 1) {
-                        $loans         = $this->loadData('loans');
-                        $transactions  = $this->loadData('transactions');
-                        $lenders       = $this->loadData('lenders_accounts');
-                        $clients       = $this->loadData('clients');
-                        $wallets_lines = $this->loadData('wallets_lines');
-                        $companies     = $this->loadData('companies');
-                        $projects      = $this->loadData('projects');
-                        $echeanciers   = $this->loadData('echeanciers');
-
-                        $this->settings->get('Facebook', 'type');
-                        $lien_fb = $this->settings->value;
-
-                        $this->settings->get('Twitter', 'type');
-                        $lien_tw = $this->settings->value;
-
-                        $nb_loans = $loans->getNbPreteurs($this->projects->id_project);
-
-                        $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::PRET_REFUSE, $this->projects);
-
-                        $lesloans = $loans->select('id_project = ' . $this->projects->id_project);
-                        $companies->get($this->projects->id_company, 'id_company');
-
-                        //on supp l'écheancier du projet pour ne pas avoir de doublon d'affichage sur le front (BT 18600)
-                        $echeanciers->delete($this->projects->id_project, 'id_project');
-
-                        foreach ($lesloans as $l) {
-                            // On regarde si on a pas deja un remb pour ce bid
-                            if ($transactions->get($l['id_loan'], 'id_loan_remb') == false) {
-                                // On recup lender
-                                $projects->get($l['id_project'], 'id_project');
-                                // On recup lender
-                                $lenders->get($l['id_lender'], 'id_lender_account');
-                                // on recup les infos du lender
-                                $clients->get($lenders->id_client_owner, 'id_client');
-
-                                // On change le satut des loans du projet refusé
-                                $loans->get($l['id_loan'], 'id_loan');
-                                $loans->status = 1;
-                                $loans->update();
-
-                                // On redonne l'argent aux preteurs
-                                // On enregistre la transaction
-                                $transactions->id_client        = $lenders->id_client_owner;
-                                $transactions->montant          = $l['amount'];
-                                $transactions->id_langue        = 'fr';
-                                $transactions->id_loan_remb     = $l['id_loan'];
-                                $transactions->date_transaction = date('Y-m-d H:i:s');
-                                $transactions->status           = '1';
-                                $transactions->etat             = '1';
-                                $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                                $transactions->type_transaction = 2;
-                                $transactions->transaction      = 2; // transaction virtuelle
-                                $transactions->id_transaction   = $transactions->create();
-
-                                // on enregistre la transaction dans son wallet
-                                $wallets_lines->id_lender                = $l['id_lender'];
-                                $wallets_lines->type_financial_operation = 20;
-                                $wallets_lines->id_transaction           = $transactions->id_transaction;
-                                $wallets_lines->status                   = 1;
-                                $wallets_lines->type                     = 2;
-                                $wallets_lines->amount                   = $l['amount'];
-                                $wallets_lines->id_wallet_line           = $wallets_lines->create();
-
-                                //**************************************//
-                                //*** ENVOI DU MAIL FUNDE EMPRUNTEUR ***//
-                                //**************************************//
-
-                                $varMail = array(
-                                    'surl'              => $this->surl,
-                                    'url'               => $this->furl,
-                                    'prenom_p'          => $clients->prenom,
-                                    'valeur_bid'        => $this->ficelle->formatNumber($l['amount'] / 100, 0),
-                                    'nom_entreprise'    => $companies->name,
-                                    'nb_preteurMoinsUn' => ($nb_loans - 1),
-                                    'motif_virement'    => $this->clients->getLenderPattern($this->clients->id_client),
-                                    'lien_fb'           => $lien_fb,
-                                    'lien_tw'           => $lien_tw
-                                );
-
-                                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-pret-refuse', $varMail);
-                                $message->setTo($clients->email);
-                                $mailer = $this->get('mailer');
-                                $mailer->send($message);
-                            }
-                        }
-                    }
-
-                    $_SESSION['freeow']['message'] .= 'Modifications enregistrées avec suucès';
+                    $_SESSION['freeow']['message'] .= 'Modifications enregistrées avec succès';
 
                     header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                     die;

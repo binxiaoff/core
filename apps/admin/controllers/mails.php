@@ -59,7 +59,7 @@ class mailsController extends bootstrap
 
         if (isset($this->params[0]) && $this->params[0] != '') {
             $this->oMailTemplate = $this->loadData('mail_templates');
-            $this->oMailTemplate->get($this->params[0], 'type');
+            $this->oMailTemplate->get($this->params[0] . '" AND status = "1', 'type');
 
             if (isset($_POST['form_mod_mail'])) {
                 $aPost = $this->handlePost();
