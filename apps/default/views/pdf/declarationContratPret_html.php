@@ -39,7 +39,7 @@
 								<td style="border: 1px solid #231f20;"><p><label>Nom et prénom ou raison sociale, profession :</label> <span class="editable"><?=strtoupper($this->ficelle->speCharNoAccent(utf8_decode($this->raisonSociale)))?></span></p></td>
 							</tr>
 							<tr>
-								<td style="border: 1px solid #231f20;"><label>Adresse complète :</label> <span class="editable"><?=strtoupper($this->ficelle->speCharNoAccent(utf8_decode($this->adresse)))?></span></td>
+								<td style="border: 1px solid #231f20;"><label>Adresse complète :</label> <span class="editable"><?=strtoupper($this->ficelle->speCharNoAccent($this->adresse))?></span></td>
 							</tr>
 
 						</table>
@@ -80,7 +80,11 @@
 											<td><?=strtoupper($this->cpPreteur.' '.$this->ficelle->speCharNoAccent(utf8_decode($this->villePreteur)))?></td>
 										</tr>
 										<tr>
-											<td>&nbsp;</td>
+											<?php if(empty($this->lenderCountry)) : ?>
+												<td>&nbsp;</td>
+											<?php else : ?>
+												<td><?= strtoupper($this->lenderCountry) ?></td>
+											<?php endif; ?>
 										</tr>
 									</table>
 									<table cellspacing="0" cellpadding="0" class="title">
