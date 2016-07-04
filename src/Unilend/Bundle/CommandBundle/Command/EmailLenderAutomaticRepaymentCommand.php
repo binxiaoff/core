@@ -151,8 +151,12 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                 $companies->get($projects->id_company);
 
                 $varMail = array(
-                    '$nom_projet' => $projects->title,
-                    '$id_projet'  => $projects->id_project
+                    'surl'           => $sUrl,
+                    'url'            => $sUrl,
+                    'nom_entreprise' => $companies->name,
+                    'nom_projet'     => $projects->title,
+                    'id_projet'      => $projects->id_project,
+                    'annee'          => date('Y')
                 );
 
                 /** @var TemplateMessage $messageBO */
