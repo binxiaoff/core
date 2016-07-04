@@ -148,7 +148,7 @@ permalink: route('emprunter')
                                             {% for period in loanPeriods %}
                                                 <label>
                                                     <input type="radio" id="esim-input-duration-{{ period }}" name="esim[duration]" value="{{ period }}">
-                                                    <span>{{ period }}</span>
+                                                    <div class="label">{{ period }}</div>
                                                 </label>
                                             {% endfor %}
                                         </div><!-- /.custom-input-duration -->
