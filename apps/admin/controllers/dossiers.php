@@ -556,9 +556,6 @@ class dossiersController extends bootstrap
                             if ($companies->date_creation == '0000-00-00') {
                                 $mess .= '<li>Date creation entreprise</li>';
                             }
-                            if ($companies->sector == 0) {
-                                $mess .= '<li>Secteur entreprise</li>';
-                            }
                             if ($clients->nom == '') {
                                 $mess .= '<li>Nom emprunteur</li>';
                             }
@@ -615,7 +612,6 @@ class dossiersController extends bootstrap
                     $this->companies->siren           = $_POST['siren'];
                     $this->companies->siret           = $_POST['siret'];
                     $this->companies->name            = $_POST['societe'];
-                    $this->companies->sector          = $_POST['sector'];
                     $this->companies->id_client_owner = $_POST['id_client'];
                     $this->companies->code_naf        = $_POST['code_naf'];
                     $this->companies->libelle_naf     = $_POST['libelle_naf'];

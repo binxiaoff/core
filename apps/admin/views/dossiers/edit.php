@@ -270,12 +270,7 @@
                     <tr>
                         <th><label for="sector">Secteur de la société :</label></th>
                         <td>
-                            <select name="sector" id="sector" class="select">
-                                <option value=""></option>
-                                <?php foreach ($this->lSecteurs as $k => $s) { ?>
-                                    <option <?= ($this->companies->sector == $k + 1 ? 'selected' : '') ?> value="<?= $k + 1 ?>"><?= $s ?></option>
-                                <?php } ?>
-                            </select>
+                            <?= $this->lSecteurs[$this->companies->sector] ?>
                         </td>
                     </tr>
                     <tr>
