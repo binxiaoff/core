@@ -163,7 +163,6 @@ class ajaxController extends bootstrap
                 $mois_jour = $this->dates->formatDate($project['date_retrait'], 'F d');
                 $annee     = $this->dates->formatDate($project['date_retrait'], 'Y');
 
-                $iSumbids = $this->bids->counter('id_project = ' . $project['id_project']);
                 $avgRate  = $this->projects->getAverageInterestRate($project['id_project'], $this->projects_status->status);
 
                 $affichage .= "
@@ -214,16 +213,9 @@ class ajaxController extends bootstrap
                     " . ($project['period'] == 1000000 ? $this->lng['preteur-projets']['je-ne-sais-pas'] : $project['period'] . ' ' . $this->lng['preteur-projets']['mois']) . "
                     </a>
                 </td>";
-
                 $affichage .= "<td><a class='lien' href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'>";
-                if ($iSumbids > 0) {
-                    $affichage .= $this->ficelle->formatNumber($avgRate, 1) . "%";
-                } else {
-                    $affichage .= ($project['target_rate'] == '-' ? $project['target_rate'] : $this->ficelle->formatNumber($project['target_rate'], 1)) . "%";
-                }
+                $affichage .= $this->ficelle->formatNumber($avgRate, 1) . "%";
                 $affichage .= "</a></td>";
-
-
                 $affichage .= "<td><a class='lien' href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'><strong id='val" . $project['id_project'] . "'>" . $dateRest . "</strong></a></td>
                 <td>";
 
@@ -467,11 +459,9 @@ class ajaxController extends bootstrap
         $oProjectStatus = $this->loadData('projects_status');
         $oProjectStatus->getLastStatut($this->projects->id_project);
 
-        $this->aBids          = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
-        $this->CountEnchere   = $this->bids->counter('id_project = ' . $this->projects->id_project);
-        $this->avgAmount      = $this->bids->getAVGAmount($this->projects->id_project);
-        $this->avgRate        = $this->projects->getAverageInterestRate($this->projects->id_project, $oProjectStatus->status);
-        $this->status = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
+        $this->aBids   = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
+        $this->avgRate = $this->projects->getAverageInterestRate($this->projects->id_project, $oProjectStatus->status);
+        $this->status  = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
     }
 
     public function _changeMdp()

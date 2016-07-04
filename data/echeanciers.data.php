@@ -559,10 +559,65 @@ class echeanciers extends echeanciers_crud
         $result = $this->bdd->query('SELECT MAX(date_echeance) FROM echeanciers WHERE id_project = ' . $projectId);
         return $this->bdd->result($result);
     }
+/**@todo A supprimer */
+    // retourne la sommes des remb du prochain mois d'un emprunteur
+    public function getNextRembEmprunteur($id_project)
+    {
+        $sql = 'SELECT DISTINCT(ordre) FROM `echeanciers` WHERE status_emprunteur = 0 AND id_project = ' . $id_project . ' ORDER BY ordre LIMIT 0,1';
 
-    /**
-     * @deprecated
-     */
+        $result = $this->bdd->query($sql);
+        $ordre  = (int) ($this->bdd->result($result, 0, 0));
+
+        $Remb = $this->getSumRembEmpruntByMonths($id_project, $ordre);
+
+        $montantRembEmprunteur = $this->getMontantRembEmprunteur($Remb[$ordre]['montant'], $Remb[$ordre]['commission'], $Remb[$ordre]['tva']);
+
+        $retourne['date_echeance_emprunteur'] = $Remb[$ordre]['date_echeance_emprunteur'];
+        $retourne['montant']                  = $montantRembEmprunteur;
+        return $retourne;
+    }
+
+    // retourne la sum des echeance d'une journée
+    // $date : yyyy-mm-dd
+    public function getEcheanceByDay($date, $val = 'montant', $statutEmprunteur = '0')
+    {
+        $sql = 'SELECT SUM(' . $val . ') FROM `echeanciers` WHERE status_emprunteur = ' . $statutEmprunteur . ' AND LEFT(date_echeance_emprunteur,10) = "' . $date . '" GROUP BY  LEFT(date_echeance_emprunteur,10)';
+
+        $result  = $this->bdd->query($sql);
+        $montant = ($this->bdd->result($result, 0, 0));
+        return $montant;
+    }
+
+    public function getEcheanceByDayAll($date, $statut = '0')
+    {
+        $sql = '
+            SELECT
+                SUM(montant) AS montant,
+                SUM(capital) AS capital,
+                SUM(interets) AS interets,
+                SUM(commission) AS commission,
+                SUM(tva) AS tva,
+                ROUND(SUM(prelevements_obligatoires), 2) AS prelevements_obligatoires,
+                ROUND(SUM(retenues_source), 2) AS retenues_source,
+                ROUND(SUM(csg), 2) AS csg,
+                ROUND(SUM(prelevements_sociaux), 2) AS prelevements_sociaux,
+                ROUND(SUM(contributions_additionnelles), 2) AS contributions_additionnelles,
+                ROUND(SUM(prelevements_solidarite), 2) AS prelevements_solidarite,
+                ROUND(SUM(crds), 2) AS crds
+            FROM echeanciers
+            WHERE status = ' . $statut . ' AND DATE(date_echeance_reel) = "' . $date . '"
+            GROUP BY DATE(date_echeance_reel)';
+
+        $result   = array();
+        $resultat = $this->bdd->query($sql);
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
+            $result[] = $record;
+        }
+        return isset($result[0])
+            ? $result[0]
+            : array_fill_keys(array('montant', 'capital', 'interets', 'commission', 'tva', 'prelevements_obligatoires', 'retenues_source', 'csg', 'prelevements_sociaux', 'contributions_additionnelles', 'prelevements_solidarite', 'crds'), 0);
+    }
+/***************************************/
     public function getEcheanceBetweenDates_exonere_mais_pas_dans_les_dates($date1, $date2)
     {
         $anneemois = explode('-', $date1);

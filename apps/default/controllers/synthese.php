@@ -49,7 +49,6 @@ class syntheseController extends bootstrap
         /** @var \tax $tax */
         $tax = $this->loadData('tax');
 
-        // Recuperation du bloc nos-partenaires
         $this->blocs->get('cgv', 'slug');
         $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
         foreach ($lElements as $b_elt) {
@@ -58,7 +57,6 @@ class syntheseController extends bootstrap
             $this->bloc_cgvComplement[$this->elements->slug] = $b_elt['complement'];
         }
 
-        // form qs
         if (isset($_POST['send_form_qs'])) {
             $form_ok = true;
             if (!isset($_POST['secret-question']) || $_POST['secret-question'] == '') {
@@ -71,7 +69,6 @@ class syntheseController extends bootstrap
                 $form_ok = false;
             }
 
-            // form ok
             if ($form_ok == true) {
                 $this->clients->secrete_question = $_POST['secret-question'];
                 $this->clients->secrete_reponse  = md5($_POST['secret-response']);
@@ -119,18 +116,22 @@ class syntheseController extends bootstrap
         $this->settings->get('Heure fin periode funding', 'type');
         $this->heureFinFunding = $this->settings->value;
 
-        // On recupere les projets favoris
         $lesFav = $this->favoris->projetsFavorisPreteur($this->clients->id_client);
 
-        // Liste des projets favoris
         if ($lesFav == false) {
             $this->lProjetsFav = 0;
         } else {
             $this->lProjetsFav = $this->projects->select('id_project IN (' . $lesFav . ')');
+            foreach ($this->lProjetsFav as $iKey => $aProject) {
+                $this->lProjetsFav[$iKey]['avgrate'] = $this->ficelle->formatNumber($this->projects->getAverageInterestRate($aProject['id_project']));
+            }
         }
 
-        $aProjectsInFunding            = $this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING, null, 'p.date_retrait ASC', 0, 30);
-        $this->lProjetEncours          = $aProjectsInFunding;
+        $this->lProjetEncours = $this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING, null, 'p.date_retrait ASC', 0, 30);
+        foreach ($this->lProjetEncours as $iKey => $aProject) {
+            $this->lProjetEncours[$iKey]['avgrate'] = $this->ficelle->formatNumber($this->projects->getAverageInterestRate($aProject['id_project'], $aProject['status']), 1);
+        }
+        
         $this->nbLoan                  = $this->loans->getProjectsCount($this->lenders_accounts->id_lender_account);
         $this->sumBidsEncours          = $this->bids->sumBidsEncours($this->lenders_accounts->id_lender_account);
         $this->sumPrets                = $this->loans->sumPrets($this->lenders_accounts->id_lender_account);
@@ -152,7 +153,6 @@ class syntheseController extends bootstrap
 
         $this->SumDepot = $this->wallets_lines->getSumDepot($this->lenders_accounts->id_lender_account, '10,30');
 
-        // Année de creation
         $anneeCreationCompte = date('Y', strtotime($this->clients->added));
 
         $this->arrayMois = array(
@@ -302,7 +302,7 @@ class syntheseController extends bootstrap
         $this->iDisplayTotalNumberOfBids     = $this->bids->counter('id_lender_account = ' . $this->lenders_accounts->id_lender_account);
         $aProjectsWithBids = array();
 
-        foreach ($aProjectsInFunding as $iKey => $aProject) {
+        foreach ($this->lProjetEncours as $iKey => $aProject) {
             if (0 < $this->bids->counter('id_project = ' . $aProject['id_project'] . ' AND id_lender_account = ' . $this->lenders_accounts->id_lender_account)) {
                 $this->aOngoingBidsByProject[$iKey]                 = $aProject;
                 $this->aOngoingBidsByProject[$iKey]['oEndFunding']  = \DateTime::createFromFormat('Y-m-d H:i:s', $aProject['date_retrait_full']);

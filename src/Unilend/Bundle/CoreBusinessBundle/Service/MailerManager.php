@@ -223,7 +223,7 @@ class MailerManager
                 'surl'          => $this->sSUrl,
                 'url'           => $this->sFUrl,
                 'prenom_e'      => $oBorrower->prenom,
-                'taux_moyen'    => $this->oFicelle->formatNumber($oProject->getAverageInterestRate()),
+                'taux_moyen'    => $this->oFicelle->formatNumber($oProject->getAverageInterestRate(), 1),
                 'temps_restant' => $remainingDuration,
                 'projet'        => $oProject->title,
                 'lien_fb'       => $this->getFacebookLink(),
@@ -253,7 +253,7 @@ class MailerManager
         $oBorrower->get($oCompany->id_client_owner, 'id_client');
 
         if ($oBorrower->status == 1) {
-            $fWeightedAvgRate = $this->oFicelle->formatNumber($oProject->getAverageInterestRate());
+            $fWeightedAvgRate = $this->oFicelle->formatNumber($oProject->getAverageInterestRate(), 1);
 
             $oBorrowerPaymentSchedule->get($oProject->id_project, 'ordre = 1 AND id_project');
             $fMonthlyPayment = $oBorrowerPaymentSchedule->montant + $oBorrowerPaymentSchedule->commission + $oBorrowerPaymentSchedule->tva;
@@ -323,7 +323,7 @@ class MailerManager
             '$id_projet'    => $project->id_project,
             '$title_projet' => $project->title,
             '$nbPeteurs'    => $loan->getNbPreteurs($project->id_project),
-            '$tx'           => $this->oFicelle->formatNumber($project->getAverageInterestRate()),
+            '$tx'           => $this->oFicelle->formatNumber($project->getAverageInterestRate(), 1),
             '$periode'      => $remainingDuration
         );
 
