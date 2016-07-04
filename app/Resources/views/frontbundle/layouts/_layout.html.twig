@@ -138,11 +138,11 @@
         </div><!-- /.debug -->
     {% endif %}
 {% endblock %}
-
-{% javascripts
-    'bundles/unilendfront/js/*' %}
 <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js"></script>
 <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js"></script>
+{% javascripts
+    'bundles/unilendfront/js/*' %}
+
 <script src="{{ asset_url }}"></script>
 {% endjavascripts %}
 
