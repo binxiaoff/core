@@ -5,7 +5,6 @@
 
 // Lib Dependencies
 var $ = require('jquery')
-var FormatAmounts = require('./FormatAmounts')
 
 
 var BorrowerEsimForm = {

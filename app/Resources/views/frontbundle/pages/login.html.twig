@@ -22,7 +22,7 @@ permalink: route('user/access')
 
                         <div class="col-connect col-lg-4 col-md-4">
                             <h2 class="h3 text-align-left">{% trans %} connect-subscribe-page_login-box-title {% endtrans %}</h2>
-                            <form action="{{ path('login-check') }}" method="post" class="form-connect" {# data-formvalidation data-formvalidation-notificationselem="#form-connect-notifications" #}>
+                            <form action="{{ path('login-check') }}" method="post" class="form-connect" data-formvalidation data-formvalidation-notificationselem="#form-connect-notifications">
                                 <div class="panel panel-connect">
                                     {% if error is not empty %}
                                     <div id="form-connect-notifications">
@@ -37,7 +37,8 @@ permalink: route('user/access')
                                                 <div class="btn-group">
                                                     <label for="connect-access-email"><span class="icon fa-envelope-o"></span></label>
                                                 </div>
-                                                <input type="text" id="connect-access-email" name="_username" value="" class="input-field" {# name="access[email]" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email" #}>
+                                                <input type="text" id="connect-access-email" data-login name="_username" value="" class="input-field" name="access[email]"
+                                                data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email">
                                                 {# <ul class="ui-formvalidation-messages"></ul> #}
                                             </div><!-- /.input-group -->
                                         </div><!-- /.form-field -->
@@ -48,7 +49,7 @@ permalink: route('user/access')
                                                 <div class="btn-group">
                           <label for="connect-access-password"><span class="icon fa-lock-u"></span></label>
                                                 </div>
-                                                <input type="password" id="connect-access-password" name="_password" value="" class="input-field" {# name="access[password]" data-formvalidation-input data-formvalidation-required="true" #}>
+                                                <input type="password" id="connect-access-password" data-login name="_password" value="" class="input-field" name="access[password]" data-formvalidation-input data-formvalidation-required="true">
                                                 {# <ul class="ui-formvalidation-messages"></ul> #}
                                             </div><!-- /.input-group -->
                                             {% if captchaInformation is defined and captchaInformation is not empty %}
@@ -80,7 +81,7 @@ permalink: route('user/access')
                                         </div><!-- /.form-field -->
                                     </div><!-- /.panel-inner -->
                                     <div class="btn-controls">
-                                        <button type="submit" class="btn-primary">{% trans %} connect-subscribe-page_login-box-connect-button {% endtrans %}</button>
+                                        <input type="submit" class="btn-primary" value="{% trans %} connect-subscribe-page_login-box-connect-button {% endtrans %}"/>
                                     </div>
                                 </div><!-- /.panel -->
                             </form><!-- /.form-connect -->
