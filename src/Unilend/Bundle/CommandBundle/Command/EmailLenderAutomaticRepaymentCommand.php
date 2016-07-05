@@ -71,7 +71,6 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                 if (1 == $clients->status) {
                     $projects->get($e['id_project'], 'id_project');
                     $companies->get($projects->id_company, 'id_company');
-                    $loans->get($e['id_loan'], 'id_loan');
 
                     if (false === isset($lastProjectRepayment[$projects->id_project])) {
                         $lastProjectRepayment[$projects->id_project] = (0 == $echeanciers->counter('id_project = ' . $projects->id_project . ' AND status = 0'));
