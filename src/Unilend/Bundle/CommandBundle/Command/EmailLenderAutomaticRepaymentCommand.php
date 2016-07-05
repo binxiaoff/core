@@ -59,8 +59,6 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
         $settings->get('Twitter', 'type');
         $sTwitter = $settings->value;
 
-        $lastRepaymentProject = [];
-
         foreach ($lEcheances as $e) {
             if (
                 $transactions->get($e['id_echeancier'], 'id_echeancier')
@@ -75,10 +73,6 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
 
                     $loans->get($e['id_loan']);
                     $lastRepaymentLender = (0 == $echeanciers->counter('id_project = ' . $projects->id_project . ' AND id_loan = ' . $loans->id_loan . ' AND status = 0 AND id_lender = ' . $e['id_lender']));
-
-                    if (false === isset($lastRepaymentProject[$projects->id_project])) {
-                        $lastRepaymentProject[$projects->id_project] = $lastRepaymentLender;
-                    }
 
                     $dernierStatut     = $projects_status_history->select('id_project = ' . $projects->id_project, 'id_project_status_history DESC', 0, 1);
                     $dateDernierStatut = $dernierStatut[0]['added'];
@@ -142,32 +136,6 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                 }
                 $echeanciers->status_email_remb = 1;
                 $echeanciers->update();
-            }
-        }
-
-        $settings->get('Adresse controle interne', 'type');
-        $mailBO = $settings->value;
-
-        foreach ($lastRepaymentProject as $idProject => $isLastRepayment) {
-            if ($isLastRepayment) {
-                $projects->get($idProject);
-                $companies->get($projects->id_company);
-
-                $varMail = array(
-                    'surl'           => $sUrl,
-                    'url'            => $sUrl,
-                    'nom_entreprise' => $companies->name,
-                    'nom_projet'     => $projects->title,
-                    'id_projet'      => $projects->id_project,
-                    'annee'          => date('Y')
-                );
-
-                /** @var TemplateMessage $messageBO */
-                $messageBO = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('preteur-dernier-remboursement-controle', $varMail);
-                $messageBO->setTo($mailBO);
-
-                $mailer = $this->getContainer()->get('mailer');
-                $mailer->send($messageBO);
             }
         }
     }
