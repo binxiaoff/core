@@ -17,7 +17,7 @@ class StaticPagesController extends Controller
      */
     public function statisticsShowAction()
     {
-        return $this->render('pages/statistics.html.twig', array());
+        return $this->render('pages/static_pages/statistics.html.twig', array());
     }
 
     /**

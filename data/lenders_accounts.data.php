@@ -376,17 +376,31 @@ class lenders_accounts extends lenders_accounts_crud
      */
     public function countLenders($bOnlyActive = false)
     {
-        $sClientStatus = $bOnlyActive ? ' AND csh.id_client_status = 6' : '';
+        $sClientStatus = $bOnlyActive ? ' INNER JOIN clients_status_history csh ON (csh.id_client = c.id_client  AND csh.id_client_status = 6)' : '';
 
         $sQuery = 'SELECT COUNT(DISTINCT(c.id_client))
                     FROM clients c
-                    INNER JOIN clients_status_history csh ON (csh.id_client = c.id_client '. $sClientStatus .')
+                    '. $sClientStatus .'
                     WHERE c.status = ' . \clients::STATUS_ONLINE;
         $statement = $this->bdd->executeQuery($sQuery);
 
         return $statement->fetchColumn(0);
     }
 
+    public function countLendersByClientType($aClientType, $bOnlyActive = false)
+    {
+        $sClientStatus = $bOnlyActive ? ' INNER JOIN clients_status_history csh ON (csh.id_client = c.id_client  AND csh.id_client_status = 6)' : '';
+        $aType         = array('clientTypes'  => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY, 'clientStatus' => \PDO::PARAM_INT);
+        $aBind         = array('clientTypes' => $aClientType, 'clientStatus' => \clients::STATUS_ONLINE);
+
+        $sQuery    = 'SELECT COUNT(DISTINCT(c.id_client))
+                    FROM clients c
+                    ' . $sClientStatus . '
+                    WHERE c.type IN (:clientTypes) AND c.status = :clientStatus';
+        $statement = $this->bdd->executeQuery($sQuery, $aBind, $aType);
+
+        return $statement->fetchColumn(0);
+    }
 
 
 

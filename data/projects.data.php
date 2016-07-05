@@ -930,4 +930,24 @@ class projects extends projects_crud
         return $oStatement->fetchColumn(0);
     }
 
+    public function getAverageNumberOfLendersForProject()
+    {
+        $sQuery = 'SELECT ROUND(AVG(t.lenderCount), 0) FROM (SELECT id_project, COUNT(DISTINCT id_lender) AS lenderCount FROM `loans` GROUP BY id_project) AS t ';
+        $oStatement = $this->bdd->executeQuery($sQuery);
+
+        return $oStatement->fetchColumn(0);
+    }
+
+    public function getAverageAmount()
+    {
+        $sQuery = 'SELECT ROUND(AVG(amount), 0)
+                    FROM `projects`
+                    INNER JOIN projects_status_history ON projects.id_project = projects_status_history.id_project
+                    INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
+                    WHERE projects_status.status = ' . \projects_status::FUNDE;
+        $oStatement = $this->bdd->executeQuery($sQuery);
+
+        return $oStatement->fetchColumn(0);
+    }
+
 }

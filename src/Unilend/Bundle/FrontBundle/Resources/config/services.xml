@@ -49,5 +49,11 @@
             <argument type="service" id="unilend.service.entity_manager" />
         </service>
 
+        <service id="unilend.frontbundle.service.maps_service" class="Unilend\Bundle\FrontBundle\Service\MapsService">
+        </service>
+
+        <service id="unilend.frontbundle.service.highcharts_service" class="Unilend\Bundle\FrontBundle\Service\HighChartsService">
+        </service>
+
     </services>
 </container>

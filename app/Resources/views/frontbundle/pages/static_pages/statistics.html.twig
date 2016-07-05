@@ -2,6 +2,7 @@
 {% extends 'layouts/_page-single.twig' %}
 
 {# Page data #}
+{% set bodyId = '' %}
 {% set page = {
 id: "apropos-statistiques",
 title: "Statistiques",
@@ -15,7 +16,7 @@ classNames: "page-single-apropos"
     preterStatisticsMap: {
       type: 'preterStatisticsMap',
       loadFirst: {
-        mapGeoJson: siteurljs('vendor/geojson/fr-all.geo.json')
+        mapGeoJson: ('vendor/geojson/fr-all.geo.json')
       },
       background: 'none',
       highcharts: {
@@ -144,7 +145,7 @@ classNames: "page-single-apropos"
     emprunterStatisticsMap: {
       type: 'emprunterStatisticsMap',
       loadFirst: {
-        mapGeoJson: siteurljs('vendor/geojson/fr-all.geo.json')
+        mapGeoJson: ('bundles/unilendfront/js/vendor/geojson/fr-all.geo.json')
       },
       background: 'none',
       highcharts: {
@@ -618,21 +619,28 @@ classNames: "page-single-apropos"
 
     <nav class="page-navigation">
         <div class="site-wrap">
-    <ul data-nav-dropdown-menu="mobile">{#
-      #}<li role="presentation"><a href="{{ route('apropos/quisommesnous') }}">Qui sommes-nous&nbsp;?</a></li>{#
-      #}<li role="presentation"><a href="{{ route('apropos/commentcamarche') }}">Comment ça marche&nbsp;?</a></li>{#
-      #}<li role="presentation"><a href="{{ route('apropos/chartdedeontologie') }}">Charte de déontologie</a></li>{#
-      #}<li role="presentation" class="active"><a href="{{ route('apropos/statistiques') }}">Statistiques</a></li>{#
+            <ul data-nav-dropdown-menu="mobile">{#
+      #}
+                <li role="presentation"><a href="{{ route('apropos/quisommesnous') }}">Qui sommes-nous&nbsp;?</a></li>{#
+      #}
+                <li role="presentation"><a href="{{ route('apropos/commentcamarche') }}">Comment ça marche&nbsp;?</a>
+                </li>{#
+      #}
+                <li role="presentation"><a href="{{ route('apropos/chartdedeontologie') }}">Charte de déontologie</a>
+                </li>{#
+      #}
+                <li role="presentation" class="active"><a href="{{ route('apropos/statistiques') }}">Statistiques</a>
+                </li>{#
     #}</ul>
         </div><!-- /.site-wrap -->
     </nav><!-- /.page-navigation -->
 
-    <section id="section-intro" class="page-section">
+   <section id="section-intro" class="page-section">
         <div class="site-wrap">
             <div class="row">
                 <div class="col-lg-6 col-md-6">
                     <header class="block-header">
-                        <h1 class="h4">Une séléction stricte pour plus d'efficacité</h1>
+                        <h1 class="h4">{% trans %} about-us-statistics_general-description-title {% endtrans %}</h1>
                     </header>
                 </div>
                 <div class="col-lg-6 col-md-6">
@@ -672,9 +680,9 @@ classNames: "page-single-apropos"
                     </div><!-- /.promos -->
                     <div class="stats-charts row">
                         <figure class="stats-chart stats-map">
-            <div class="chart" data-chartview='{{ placeholderData.charts.preterStatisticsMap|json_encode|escape('html_attr') }}'>
+                            <div class="chart" data-chartview='{{ placeholderData.charts.preterStatisticsMap|json_encode|escape('html_attr') }}'>
                                 {# @todo Chart #}
-              {# <img src="{{ siteurlmedia('apropos/statistiques/map-fr-repartition.png') }}" alt="" /> #}
+                                {# <img src="{{ siteurlmedia('apropos/statistiques/map-fr-repartition.png') }}" alt="" /> #}
                             </div>
                             <figcaption><p>Répartition des prêteurs par région</p></figcaption>
                         </figure>
@@ -754,13 +762,13 @@ classNames: "page-single-apropos"
                     <div class="stats-charts row">
                         <div class="col-lg-6 col-md-6">
                             <figure class="stats-chart stats-map">
-              <div class="chart" data-chartview='{{ placeholderData.charts.emprunterStatisticsMap|json_encode|escape('html_attr') }}'></div>
-              <figcaption><p>Répartition des emprunters par région</p></figcaption>
+                                <div class="chart" data-chartview='{{ placeholderData.charts.emprunterStatisticsMap|json_encode|escape('html_attr') }}'></div>
+                                <figcaption><p>Répartition des emprunters par région</p></figcaption>
                             </figure>
                         </div>
                         <div class="col-lg-6 col-md-6">
                             <figure class="stats-chart stats-treemap">
-              <div class="chart" data-chartview='{{ placeholderData.charts.emprunterStatisticsCategories|json_encode|escape('html_attr') }}'></div>
+                                <div class="chart" data-chartview='{{ placeholderData.charts.emprunterStatisticsCategories|json_encode|escape('html_attr') }}'></div>
                                 <figcaption><p>Répartition des emprunteurs par secteur d'activité</p></figcaption>
                             </figure>
                         </div>
@@ -842,18 +850,18 @@ classNames: "page-single-apropos"
                 <div class="row">
                     <h3 class="c-t1">Taux de rendement interne global Unilend</h3>
                     <div class="stats-chart stats-chart-unilend">
-          <div class="chart" data-chartview='{{ placeholderData.charts.overviewStatistics|json_encode|escape('html_attr') }}'></div>
+                        <div class="chart" data-chartview='{{ placeholderData.charts.overviewStatistics|json_encode|escape('html_attr') }}'></div>
                         <div class="stats-chart-unilend-key">
                             <div class="row">
-              {% for i, series in placeholderData.charts.overviewStatistics.highcharts.series %}
-                {% for j, dataItem in series.data if dataItem.showInLegend != false %}
-                  <div class="chart-key col-lg-4 col-md-4 col-sm-4 col-xs-2">
-                    <div class="icon" style="background-color: {{ dataItem.color|default(series.color) }}"></div>
-                    <div class="label">{{ dataItem.name|default(series.name) }}</div>
-                    <div class="value">{{ dataItem.y|default(series.value) }}€</div>
-                                </div>
-                {% endfor %}
-              {% endfor %}
+                                {% for i, series in placeholderData.charts.overviewStatistics.highcharts.series %}
+                                    {% for j, dataItem in series.data if dataItem.showInLegend is defined and dataItem.showInLegend != false %}
+                                        <div class="chart-key col-lg-4 col-md-4 col-sm-4 col-xs-2">
+                                            <div class="icon" style="background-color: {{ dataItem.color|default(series.color) }}"></div>
+                                            <div class="label">{{ dataItem.name|default(series.name) }}</div>
+                                            <div class="value">{{ dataItem.y|default(series.value) }}€</div>
+                                        </div>
+                                    {% endfor %}
+                                {% endfor %}
                             </div>
                         </div><!-- /.stats-chart-unilend-key -->
                     </div><!-- /.stats-chart-unilend -->

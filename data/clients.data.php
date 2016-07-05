@@ -1172,4 +1172,80 @@ class clients extends clients_crud
 
         return $this->bdd->executeQuery($sQuery);
     }
+
+
+    public function countClientsByRegion($sType = null)
+    {
+        $sJoin = '';
+
+        if ('borrower' == $sType) {
+            $sJoin = 'INNER JOIN companies ON clients.id_client = companies.id_client_owner
+                      INNER JOIN projects ON clients.id_client = projects.id_company';
+        }
+
+        if ('lender' == $sType) {
+            $sJoin = 'INNER JOIN lenders_accounts ON clients.id_client = lenders_accounts.id_client_owner';
+        }
+
+        $aBind = array('clientStatus' => self::STATUS_ONLINE, 'countryFrance' => \pays_v2::COUNTRY_FRANCE);
+        $aType = array('clientStatus' => \PDO::PARAM_INT, 'countryFrance' => \PDO::PARAM_INT);
+
+        $sQuery = 'SELECT CASE
+                        WHEN LEFT(clients_adresses.cp, 2) IN (75, 77, 78, 91, 92, 93, 94, 95) THEN "Ile-de-France"
+                        WHEN LEFT(clients_adresses.cp, 2) IN (01, 03, 07, 15, 26, 38, 42, 43, 63, 69, 73, 74) THEN "Auvergne-Rhone-Alpes"
+                        WHEN LEFT(clients_adresses.cp, 2) IN (02, 59, 60, 62, 80) THEN "Nord-Pas-de-Calais-Picardie"
+                        WHEN LEFT(clients_adresses.cp, 2) IN (16, 17, 19, 23, 24, 33, 40, 47, 64, 79, 86, 87) THEN "Poitou-Charentes-Limousin-Aquitaine"
+                        WHEN LEFT(clients_adresses.cp, 2) IN (09, 11, 12, 30, 31, 32, 34, 46, 48, 65, 66, 81, 82) THEN "Midi-Pyrénées-Languedoc-Roussillon"
+                        WHEN LEFT(clients_adresses.cp, 2) IN (08, 10, 51, 52, 54, 55, 57, 67, 68, 88) THEN "Champane-Ardenne-Lorraine-Alsace"
+                        WHEN LEFT(clients_adresses.cp, 2) IN (04, 05, 06, 13, 83, 84) THEN "Provence-Alpes-Côte-dAzur"
+                        WHEN LEFT(clients_adresses.cp, 2) IN (44, 49, 53, 72, 85) THEN "Pays-de-la-Loire"
+                        WHEN LEFT(clients_adresses.cp, 2) IN (14, 27, 50, 61, 76) THEN "Normandie"
+                        WHEN LEFT(clients_adresses.cp, 2) IN (22, 29, 35, 56) THEN "Bretagne"
+                        WHEN LEFT(clients_adresses.cp, 2) IN (21, 25, 39, 58, 70, 71, 89, 90) THEN "Bourgogne-Franche-Comté"
+                        WHEN LEFT(clients_adresses.cp, 2) IN (18, 28, 36, 37, 41, 45) THEN "Centre"
+                        WHEN LEFT(clients_adresses.cp, 2) IN (20) THEN "Corse"
+                    ELSE "not-in-France"
+                    END AS region,
+                    COUNT(*) AS count,
+                    ROUND((COUNT(*) / (SELECT COUNT(*) FROM clients
+                      INNER JOIN clients_adresses ON clients.id_client = clients_adresses.id_client '
+                      . $sJoin . '
+                    WHERE clients.status = :clientStatus AND clients_adresses.id_pays = :countryFrance )) * 100, 0) AS percentage
+                    FROM clients
+                      INNER JOIN clients_adresses ON clients.id_client = clients_adresses.id_client '
+                    . $sJoin . '
+                    WHERE clients.status = :clientStatus AND clients_adresses.id_pays = :countryFrance
+                    GROUP BY region';
+
+        $oStatement = $this->bdd->executeQuery($sQuery, $aBind, $aType);
+        $aRegionsCount  = array();
+        while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
+            $aRegionsCount[] = $aRow;
+        }
+
+        return $aRegionsCount;
+    }
+
+    public function getBorrowersByCategory()
+    {
+        $sQuery = 'SELECT
+                      count(DISTINCT projects.id_project), company_sector.sector
+                    FROM
+                      `companies`
+                      INNER JOIN projects ON companies.id_company = projects.id_company
+                      INNER JOIN projects_status_history ON projects.id_project = projects_status_history.id_project
+                      INNER JOIN projects_status ON (projects_status_history.id_project_status = projects_status.id_project_status AND projects_status.status = 80)
+                      INNER JOIN company_sector ON companies.sector = company_sector.id_company_sector
+
+                      GROUP BY companies.sector';
+
+        $oStatement = $this->bdd->executeQuery($sQuery);
+        $aCountByCategories = array();
+
+        while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
+            $aCountByCategories[$aRow['id_sector']] = $aRow['count'];
+        }
+
+        return $aCountByCategories;
+    }
 }

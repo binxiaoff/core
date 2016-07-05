@@ -112,7 +112,7 @@ class translations extends translations_crud
     public function selectNamesForSection($sSection)
     {
         $aBind = array('section' => $sSection);
-        $aType = array('section' => \PDO::PARAM_STR,);
+        $aType = array('section' => \PDO::PARAM_STR);
 
         $sQuery     = 'SELECT DISTINCT name FROM translations WHERE section = :section ORDER BY name ASC';
         $oStatement = $this->bdd->executeQuery($sQuery, $aBind, $aType);
