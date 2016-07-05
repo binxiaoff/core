@@ -16,6 +16,8 @@
     "errorFieldInputTypeSiret": "Not a valid SIREN number. Please ensure you have entered your number in correctly",
     "errorFieldSetValues": "Field value not accepted",
     "errorFieldSameValueAs": "Field doesn't match %s",
+    "errorFieldminValue": "Amounts below %d € are not allowed",
+    "errorFieldmaxValue": "Amounts above %d € are not allowed",
     "errorGroupHasErrors": "There are errors with the form below. Please ensure your information has been entered correctly before continuing."
   },
   "fr": {
@@ -35,6 +37,8 @@
     "errorFieldInputTypeSiret": "Votre numéro SIREN n'est pas valide. Assurez-vous que votre numéro soit correctement entré.",
     "errorFieldSetValues": "La valeur de ce champ n'est pas correcte.",
     "errorFieldSameValueAs": "Ce champ ne correspond pas %s.",
+    "errorFieldminValue": "Les montants inférieurs à %d € ne sont pas pris en compte",
+    "errorFieldmaxValue": "Les montants supérieurs à %d € ne sont pas pris en compte",
     "errorGroupHasErrors": "Il y a des erreurs dans le formulaire ci-dessous. Merci de vérifier que vous avez correctement saisi vos informations avant de continuer."
   }
 }

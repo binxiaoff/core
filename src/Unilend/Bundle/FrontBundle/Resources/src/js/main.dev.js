@@ -57,6 +57,7 @@ var NavDropdownMenu = require('NavDropdownMenu')
 var MapView = require('MapView')
 var ChartView = require('ChartView')
 var BorrowerEsimForm = require('./app/components/BorrowerEsimForm')
+var BorrowerEsimForm = require('./app/components/FormatAmounts')
 
 // @debug
 // CacheData.clearAll()
