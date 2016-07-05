@@ -34,9 +34,13 @@ var uglify = require('gulp-uglify')
 var watchify = require('watchify')
 var yargs = require('yargs').argv
 var logCapture = require('gulp-log-capture')
+var urlAdjuster = require('gulp-css-url-adjuster')
 
 // Custom i18n
 var Dictionary = require('./src/js/app/lib/Dictionary.js')
+
+
+var backgroundUrl = '/bundles/unilendfront/images/'
 
 // Unilend GLOBAL vars
 var Unilend = GLOBAL.Unilend = {
@@ -401,6 +405,15 @@ var cssTasks = lazypipe()
       // sourceMap: true
     }))
   })
+
+// "CSSREWRITE"
+    .pipe(function() {
+      return urlAdjuster({
+        replace: ['../media/', backgroundUrl],
+      })
+    })
+
+    // Minify CSS
   .pipe(function () {
     return _if(config.compressCss, rename({
       extname: '.min.css'
