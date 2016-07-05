@@ -138,7 +138,7 @@ Unilend.config = deepAssign({
     http_path: '/',
     css: goodPath('./src/css'),
     sass: goodPath('./src/sass'),
-    image: goodPath('./src/media'),
+    image: goodPath('src/media'),
     relative: true,
     debug: false
   }, getJSON(goodPath(configPath + '/compass.json')), getJSON(goodPath(configPath + env + '/compass.json'))),

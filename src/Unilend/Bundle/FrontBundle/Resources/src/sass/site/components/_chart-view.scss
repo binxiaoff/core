@@ -1,0 +1,120 @@
+//
+// Unilend ChartView
+//
+
+.chartview-svg-label {
+  // position: absolute;
+  // left: 0;
+  // right: 0;
+  // top: 0;
+  // bottom: 0;
+
+  img {
+    @include constrain-size-to-width;
+  }
+}
+
+// ChartView
+.ui-chartview {
+  position: relative;
+
+  &#{$js-chartview-loading} {
+    &:after {
+      @include button;
+      @include button-shape-round-md;
+
+      content: $fa-refresh;
+      margin: -($height-btn-md * .5) 0 0 -($height-btn-md * .5);
+
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      z-index: $depth-tooltip - 10;
+
+      color: $c-white;
+      background-color: fade-out($c-p1, .5);
+      border-color: $c-p1;
+      font-family: $ff-icon;
+      text-align: center;
+      vertical-align: middle;
+
+      animation: 1s linear 0s infinite chartviewloadingspinner;
+      animation-fill-mode: forwards;
+    }
+  }
+
+  &#{$js-chartview-error} {
+    &:after {
+      @include button;
+      @include button-shape-round-md;
+
+      content: $fa-warning-u;
+      margin: -($height-btn-md * .5) 0 0 -($height-btn-md * .5);
+
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      z-index: $depth-tooltip - 10;
+
+      color: $c-white;
+      background-color: fade-out($c-error, .5);
+      border-color: $c-error;
+      font-family: $ff-icon;
+      text-align: center;
+      vertical-align: middle;
+
+      animation: .5s ease-out 0s 1 chartviewerrorpulse;
+      animation-fill-mode: forwards;
+    }
+  }
+
+  // Some Highcharts styles fixes
+  .highcharts-tooltip {
+    z-index: 10 !important;
+  }
+
+  .highcharts-data-labels {
+    z-index: 0;
+  }
+}
+
+@include keyframes(chartviewloadingspinner) {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@include keyframes(chartviewerrorpulse) {
+  0% {
+    transform: scale(2);
+  }
+  95% {
+    transform: scale(.8);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+// Special styles for specific chart types (Highcharts styling is a bit naff)
+.ui-chartview.ui-chartview-type-preterProjectsOverview {
+  height: 300px !important;
+  min-height: 300px;
+  margin-bottom: 30px;
+
+  .highcharts-subtitle {
+    width: 60px !important;
+    left: 50% !important;
+    top: 50% !important;
+    white-space: normal !important;
+    margin-left: -120px !important;
+    margin-top: -120px !important;
+  }
+
+  .highcharts-tooltip {
+    z-index: $depth-tooltip !important;
+  }
+}

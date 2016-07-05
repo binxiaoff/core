@@ -388,7 +388,9 @@ FormValidation.prototype.validateInput = function (elem, options) {
           maxLength: 'data-formvalidation-maxlength',
           setValues: 'data-formvalidation-setvalues',
           inputType: 'data-formvalidation-type',
-          sameValueAs: 'data-formvalidation-samevalueas'
+          sameValueAs: 'data-formvalidation-samevalueas',
+          minValue: 'data-formvalidation-minvalue',
+          maxValue: 'data-formValidation-maxvalue'
         })
       ),
 
@@ -680,6 +682,8 @@ FormValidation.prototype.rules = {
     setValues: false, // list of possible set values to match to, e.g. ['on', 'off']
     inputType: false, // a keyword that matches the input to a an input type, e.g. 'text', 'number', 'email', 'date', 'url', etc.
     sameValueAs: false, // {String} selector, {HTMLElement}, {jQueryObject}
+    minValue: false, // the minimum value of the input
+    maxValue: false, // the maximum value of the input
     custom: false // {Function} function (inputValidation) { ..perform validation via inputValidation object.. }
   },
 
@@ -925,6 +929,34 @@ FormValidation.prototype.rules = {
           })
         }
       }
+    }
+  },
+
+  // Minimum value allowed
+  minValue: function (inputValidation, minValue) {
+    var self = this
+
+    if (typeof minValue === 'undefined') minValue = inputValidation.options.rules.minValue
+
+    if (minValue && inputValidation.value < minValue) {
+      inputValidation.errors.push({
+        type: 'minValue',
+        description: sprintf(__.__('Amounts below %d are not allowed', 'errorFieldminValue'), minValue)
+      })
+    }
+  },
+
+  // Maximum value allowed
+  maxValue: function (inputValidation, maxValue) {
+    var self = this
+
+    if (typeof maxValue === 'undefined') maxValue = inputValidation.options.rules.maxValue
+
+    if (maxValue && inputValidation.value > maxValue) {
+      inputValidation.errors.push({
+        type: 'maxValue',
+        description: sprintf(__.__('Amounts above %d are not allowed', 'errorFieldmaxValue'), maxValue)
+      })
     }
   },
 
