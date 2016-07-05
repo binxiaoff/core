@@ -152,7 +152,10 @@ class Loader
                 $dao = str_replace('--controleslugmulti--', $controleslugmulti, $dao);
             }
 
-            $dao = str_replace('--id--', $id[0], $dao);
+            if (isset($id[0])) {
+                $dao = str_replace('--id--', $id[0], $dao);
+            }
+            
             $dao = str_replace('--declaration--', $declaration, $dao);
             $dao = str_replace('--initialisation--', $initialisation, $dao);
             $dao = str_replace('--remplissage--', $remplissage, $dao);
@@ -164,7 +167,6 @@ class Loader
             $dao = str_replace('--classe--', $table . '_crud', $dao);
 
             touch($path . 'data/crud/' . $table . '.crud.php');
-            chmod($path . 'data/crud/' . $table . '.crud.php', 0766);
             $c = fopen($path . 'data/crud/' . $table . '.crud.php', 'r+');
 
             fputs($c, $dao);

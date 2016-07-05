@@ -374,7 +374,7 @@ class echeanciers extends echeanciers_crud
         }
 
         for ($i = $debut; $i <= $fin; $i++) {
-            $resultat[$i] = number_format(($res[$i] != '' ? $res[$i] : 0), 2, '.', '');
+            $resultat[$i] = number_format((false === empty($res[$i]) ? $res[$i] : 0), 2, '.', '');
         }
 
         return $resultat;
@@ -391,7 +391,7 @@ class echeanciers extends echeanciers_crud
         }
 
         for ($i = $debut; $i <= $fin; $i++) {
-            $resultat[$i] = number_format(($res[$i] != '' ? $res[$i] : 0), 2, '.', '');
+            $resultat[$i] = number_format((false === empty($res[$i]) ? $res[$i] : 0), 2, '.', '');
         }
 
         return $resultat;
@@ -422,7 +422,7 @@ class echeanciers extends echeanciers_crud
             $res[$record['date']] = $retenues;
         }
         for ($i = $debut; $i <= $fin; $i++) {
-            $resultat[$i] = number_format(($res[$i] != '' ? $res[$i] : 0), 2, '.', '');
+            $resultat[$i] = number_format((false === empty($res[$i]) ? $res[$i] : 0), 2, '.', '');
         }
 
         return $resultat;
@@ -590,13 +590,13 @@ class echeanciers extends echeanciers_crud
                 SUM(interets) AS interets,
                 SUM(commission) AS commission,
                 SUM(tva) AS tva,
-                SUM(prelevements_obligatoires) AS prelevements_obligatoires,
-                SUM(retenues_source) AS retenues_source,
-                SUM(csg) AS csg,
-                SUM(prelevements_sociaux) AS prelevements_sociaux,
-                SUM(contributions_additionnelles) AS contributions_additionnelles,
-                SUM(prelevements_solidarite) AS prelevements_solidarite,
-                SUM(crds) AS crds
+                ROUND(SUM(prelevements_obligatoires), 2) AS prelevements_obligatoires,
+                ROUND(SUM(retenues_source), 2) AS retenues_source,
+                ROUND(SUM(csg), 2) AS csg,
+                ROUND(SUM(prelevements_sociaux), 2) AS prelevements_sociaux,
+                ROUND(SUM(contributions_additionnelles), 2) AS contributions_additionnelles,
+                ROUND(SUM(prelevements_solidarite), 2) AS prelevements_solidarite,
+                ROUND(SUM(crds), 2) AS crds
             FROM echeanciers
             WHERE status = ' . $statut . ' AND DATE(date_echeance_reel) = "' . $date . '"
             GROUP BY DATE(date_echeance_reel)';
@@ -624,13 +624,13 @@ class echeanciers extends echeanciers_crud
                 SUM(interets) AS interets,
                 SUM(commission) AS commission,
                 SUM(tva) AS tva,
-                SUM(prelevements_obligatoires) AS prelevements_obligatoires,
-                SUM(retenues_source) AS retenues_source,
-                SUM(csg) AS csg,
-                SUM(prelevements_sociaux) AS prelevements_sociaux,
-                SUM(contributions_additionnelles) AS contributions_additionnelles,
-                SUM(prelevements_solidarite) AS prelevements_solidarite,
-                SUM(crds) AS crds
+                ROUND(SUM(prelevements_obligatoires), 2) AS prelevements_obligatoires,
+                ROUND(SUM(retenues_source), 2) AS retenues_source,
+                ROUND(SUM(csg), 2) AS csg,
+                ROUND(SUM(prelevements_sociaux), 2) AS prelevements_sociaux,
+                ROUND(SUM(contributions_additionnelles), 2) AS contributions_additionnelles,
+                ROUND(SUM(prelevements_solidarite), 2) AS prelevements_solidarite,
+                ROUND(SUM(crds), 2) AS crds
             FROM echeanciers e
             LEFT JOIN loans l ON l.id_loan = e.id_loan
             LEFT JOIN lenders_accounts la ON e.id_lender = la.id_lender_account
@@ -664,13 +664,13 @@ class echeanciers extends echeanciers_crud
                 SUM(interets) AS interets,
                 SUM(commission) AS commission,
                 SUM(tva) AS tva,
-                SUM(prelevements_obligatoires) AS prelevements_obligatoires,
-                SUM(retenues_source) AS retenues_source,
-                SUM(csg) AS csg,
-                SUM(prelevements_sociaux) AS prelevements_sociaux,
-                SUM(contributions_additionnelles) AS contributions_additionnelles,
-                SUM(prelevements_solidarite) AS prelevements_solidarite,
-                SUM(crds) AS crds
+                ROUND(SUM(prelevements_obligatoires), 2) AS prelevements_obligatoires,
+                ROUND(SUM(retenues_source), 2) AS retenues_source,
+                ROUND(SUM(csg), 2) AS csg,
+                ROUND(SUM(prelevements_sociaux), 2) AS prelevements_sociaux,
+                ROUND(SUM(contributions_additionnelles), 2) AS contributions_additionnelles,
+                ROUND(SUM(prelevements_solidarite), 2) AS prelevements_solidarite,
+                ROUND(SUM(crds), 2) AS crds
             FROM echeanciers e
             LEFT JOIN loans l ON l.id_loan = e.id_loan
             LEFT JOIN lenders_accounts la ON e.id_lender = la.id_lender_account
@@ -709,13 +709,13 @@ class echeanciers extends echeanciers_crud
                 SUM(interets) AS interets,
                 SUM(commission) AS commission,
                 SUM(tva) AS tva,
-                SUM(prelevements_obligatoires) AS prelevements_obligatoires,
-                SUM(retenues_source) AS retenues_source,
-                SUM(csg) AS csg,
-                SUM(prelevements_sociaux) AS prelevements_sociaux,
-                SUM(contributions_additionnelles) AS contributions_additionnelles,
-                SUM(prelevements_solidarite) AS prelevements_solidarite,
-                SUM(crds) AS crds
+                ROUND(SUM(prelevements_obligatoires), 2) AS prelevements_obligatoires,
+                ROUND(SUM(retenues_source), 2) AS retenues_source,
+                ROUND(SUM(csg), 2) AS csg,
+                ROUND(SUM(prelevements_sociaux), 2) AS prelevements_sociaux,
+                ROUND(SUM(contributions_additionnelles), 2) AS contributions_additionnelles,
+                ROUND(SUM(prelevements_solidarite), 2) AS prelevements_solidarite,
+                ROUND(SUM(crds), 2) AS crds
             FROM echeanciers e
             LEFT JOIN loans l ON l.id_loan = e.id_loan
             LEFT JOIN lenders_accounts la ON e.id_lender = la.id_lender_account

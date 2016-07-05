@@ -222,17 +222,8 @@ class espace_emprunteurController extends bootstrap
             $this->aClientsProjects[$iKey]['mandat']  = $oClientsMandat->select('id_project = ' . $aProject['id_project'], 'updated DESC');
 
             foreach ($this->aClientsProjects[$iKey]['mandat'] as $iMandatKey => $aMandat) {
-                switch ($aMandat['status']) {
-                    case \clients_mandats::STATUS_PENDING:
-                        $this->aClientsProjects[$iKey]['mandat'][$iMandatKey]['status-trad'] = 'mandat-en-cours';
-                        break;
-                    case \clients_mandats::STATUS_SIGNED:
-                    case \clients_mandats::STATUS_CANCELED:
-                    case \clients_mandats::STATUS_FAILED:
-                    case \clients_mandats::STATUS_ARCHIVED:
-                    default:
-                        $this->aClientsProjects[$iKey]['mandat'][$iMandatKey]['status-trad'] = 'void';
-                        break;
+                if (\clients_mandats::STATUS_PENDING == $aMandat['status']) {
+                    $this->aClientsProjects[$iKey]['mandat'][$iMandatKey]['status-trad'] = 'mandat-en-cours';
                 }
             }
         }

@@ -13,8 +13,8 @@ parameters:
     mailer_transport:               mail # mailjet for prod, mail for the rest of the environments
 
     url.universign:                 'https://equipeit@unilend.fr:universign4unilend@ws.universign.eu/sign/rpc/'
-    url.host_admin:                 'dev.admin.unilend.fr' # for Front to know the url BO
-    url.host_default:               'dev.www.unilend.fr' # for BO to know the url Front
+    url.host_admin:                 'admin.local.unilend.fr' # for Front to know the url BO
+    url.host_default:               'www.local.unilend.fr' # for BO to know the url Front
     # End of parameters managed also by Ansible
 
     dbal_wrapper_class:             Unilend\Bridge\Doctrine\DBAL\Connection
@@ -35,8 +35,10 @@ parameters:
     router.request_context.scheme:  https
 
     path.static:                    /data/sites/unilend/public/default/
-    path.user:                      /data/medias/nfs/var/
-    path.sftp:                      /data/medias/nfs/sftp/
+    path.shared:                    /data/medias/nfs/
+    path.shared_tmp:                %path.shared%tmp/
+    path.user:                      %path.shared%var/
+    path.sftp:                      %path.shared%sftp/
     path.payline:                   /data/sites/unilend/librairies/payline/
 
     cms:                            iZicom
