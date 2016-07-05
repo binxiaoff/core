@@ -5,11 +5,13 @@ use Cache\Adapter\Memcache\MemcacheCachePool;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
+use Symfony\Component\Asset\Packages;
 
 class FrontBundleExtension extends \Twig_Extension
 {
-    /** @var string */
-    private $sUrl;
+
+    /** @var string $url */
+    private $url;
     /** @var StatisticsManager */
     private $statisticsManager;
     /** @var TranslationManager */
@@ -19,10 +21,10 @@ class FrontBundleExtension extends \Twig_Extension
     /** @var MemcacheCachePool */
     private $cachePool;
 
-    public function __construct($routerRequestContextScheme, $routerRequestContextHost, StatisticsManager $statisticsManager, TranslationManager $translationManager, EntityManager $entityManager, MemcacheCachePool $cachePool)
+    public function __construct(Packages $assetsPackages, StatisticsManager $statisticsManager, TranslationManager $translationManager, EntityManager $entityManager, MemcacheCachePool $cachePool)
     {
-        $this->sUrl               = $routerRequestContextHost . '://' . $routerRequestContextScheme;
-        $this->statisticsManager  = $statisticsManager;
+        $this->url = $assetsPackages->getUrl('');
+        $this->statisticsManager = $statisticsManager;
         $this->translationManager = $translationManager;
         $this->entityManager      = $entityManager;
         $this->cachePool          = $cachePool;
@@ -77,7 +79,7 @@ class FrontBundleExtension extends \Twig_Extension
 
     public function svgImageFunction($sId, $sTitle, $iWidth, $iHeight, $sSizing = null)
     {
-        $sUrl        = $this->sUrl . '/bundles/unilendfront/images/svg/icons.svg';
+        $sUrl        = $this->url . '/bundles/unilendfront/images/svg/icons.svg';
         $sSvgHeaders = ' version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"';
 
         // Supported sizing sizes, using preserveAspectRatio
@@ -121,7 +123,7 @@ class FrontBundleExtension extends \Twig_Extension
 
     public function completeUrlMediaFunction($sPath)
     {
-        return $this->sUrl . '/bundles/unilendfront/images/' . $sPath;
+        return $this->url . '/bundles/unilendfront/images/' . $sPath;
     }
 
     public function getStatistics()
@@ -151,11 +153,11 @@ class FrontBundleExtension extends \Twig_Extension
 
     public function projectImagePathFilter($sImage)
     {
-        return $this->sUrl . '/images/dyn/projets/72/' . $sImage;
+        return $this->url . '/images/dyn/projets/72/' . $sImage;
     }
 
     public function addBaseUrl($sUrl)
     {
-        return $this->sUrl . $sUrl;
+        return $this->url . $sUrl;
     }
 }
