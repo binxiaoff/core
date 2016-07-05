@@ -1743,11 +1743,10 @@ class dossiersController extends bootstrap
                                                     $this->clients_gestion_mails_notif->immediatement = 1;
                                                     $this->clients_gestion_mails_notif->update();
 
-                                                    $lastProjectRepayment = (0 == $this->echeanciers->counter('id_project = ' . $this->projects->id_project . ' AND status = 0 AND id_lender = ' . $e['id_lender']));
+                                                    $this->loans->get($e['id_loan']);
+                                                    $lastProjectRepayment = (0 == $this->echeanciers->counter('id_project = ' . $this->projects->id_project . ' AND id_loan = ' . $this->loans->id_loan . ' AND status = 0 AND id_lender = ' . $e['id_lender']));
 
                                                     $this->companies->get($this->projects->id_company, 'id_company');
-
-                                                    $nbpret = $this->loans->counter('id_lender = ' . $e['id_lender'] . ' AND id_project = ' . $e['id_project']);
 
                                                     if ($rembNet >= 2) {
                                                         $euros = ' euros';
@@ -1774,7 +1773,6 @@ class dossiersController extends bootstrap
                                                         'mensualite_avantfisca' => ($e['montant'] / 100),
                                                         'nom_entreprise'        => $this->companies->name,
                                                         'date_bid_accepte'      => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
-                                                        'nbre_prets'            => $nbpret,
                                                         'solde_p'               => $solde,
                                                         'motif_virement'        => $this->clients->getLenderPattern($this->clients->id_client),
                                                         'lien_fb'               => $lien_fb,
@@ -1784,10 +1782,10 @@ class dossiersController extends bootstrap
                                                     );
 
                                                     if ($lastProjectRepayment) {
-                                                        /** @var TemplateMessage $message */
+                                                        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                                                         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-dernier-remboursement', $varMail);
                                                     } else {
-                                                        /** @var TemplateMessage $message */
+                                                        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                                                         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-remboursement', $varMail);
                                                     }
 

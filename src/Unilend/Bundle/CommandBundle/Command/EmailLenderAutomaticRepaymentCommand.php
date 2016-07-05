@@ -50,7 +50,6 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
-        $lastProjectRepayment = [];
         $lEcheances           = $echeanciers->selectEcheances_a_remb('status = 1 AND status_email_remb = 0 AND status_emprunteur = 1', '', 0, 300);
         $sUrl                 = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
 
@@ -59,6 +58,8 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
 
         $settings->get('Twitter', 'type');
         $sTwitter = $settings->value;
+
+        $lastRepaymentProject = [];
 
         foreach ($lEcheances as $e) {
             if (
@@ -72,8 +73,11 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                     $projects->get($e['id_project'], 'id_project');
                     $companies->get($projects->id_company, 'id_company');
 
-                    if (false === isset($lastProjectRepayment[$projects->id_project])) {
-                        $lastProjectRepayment[$projects->id_project] = (0 == $echeanciers->counter('id_project = ' . $projects->id_project . ' AND status = 0'));
+                    $loans->get($e['id_loan']);
+                    $lastRepaymentLender = (0 == $echeanciers->counter('id_project = ' . $projects->id_project . ' AND id_loan = ' . $loans->id_loan . ' AND status = 0 AND id_lender = ' . $e['id_lender']));
+
+                    if (false === isset($lastRepaymentProject[$projects->id_project])) {
+                        $lastRepaymentProject[$projects->id_project] = $lastRepaymentLender;
                     }
 
                     $dernierStatut     = $projects_status_history->select('id_project = ' . $projects->id_project, 'id_project_status_history DESC', 0, 1);
@@ -83,11 +87,10 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                     $month             = $dates->tableauMois['fr'][date('n', $timeAdd)];
                     $year              = date('Y', $timeAdd);
                     $rembNet           = $e['rembNet'];
-                    $nbpret            = $loans->counter('id_lender = ' . $e['id_lender'] . ' AND id_project = ' . $e['id_project']);
                     $euros             = ($rembNet >= 2) ? ' euros' : ' euro';
                     $rembNetEmail      = $ficelle->formatNumber($rembNet) . $euros;
                     $getsolde          = $transactions->getSolde($clients->id_client);
-                    $euros             = ($getsolde > 1) ? ' euros' : ' euro';
+                    $euros             = ($getsolde >= 2) ? ' euros' : ' euro';
                     $solde             = $ficelle->formatNumber($getsolde) . $euros;
 
                     $notifications->type       = \notifications::TYPE_REPAYMENT;
@@ -116,7 +119,6 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                             'mensualite_avantfisca' => bcdiv($e['montant'], 100),
                             'nom_entreprise'        => $companies->name,
                             'date_bid_accepte'      => $day . ' ' . $month . ' ' . $year,
-                            'nbre_prets'            => $nbpret,
                             'solde_p'               => $solde,
                             'motif_virement'        => $clients->getLenderPattern($clients->id_client),
                             'lien_fb'               => $sFB,
@@ -125,7 +127,7 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                             'date_pret'             => $dates->formatDateComplete($loans->added)
                         );
 
-                        if ($lastProjectRepayment[$projects->id_project]) {
+                        if ($lastRepaymentLender) {
                             /** @var TemplateMessage $message */
                             $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('preteur-dernier-remboursement', $varMail);
                         } else {
@@ -146,7 +148,7 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
         $settings->get('Adresse controle interne', 'type');
         $mailBO = $settings->value;
 
-        foreach ($lastProjectRepayment as $idProject => $isLastRepayment) {
+        foreach ($lastRepaymentProject as $idProject => $isLastRepayment) {
             if ($isLastRepayment) {
                 $projects->get($idProject);
                 $companies->get($projects->id_company);
