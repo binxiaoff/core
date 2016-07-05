@@ -746,14 +746,22 @@ class transfertsController extends bootstrap
             $clients = $this->loadData('clients');
             $clients->get($companies->id_client_owner, 'id_client');
 
+            /** @var \projects_status $projectStatus */
+            $projectStatus = $this->loadData('projects_status');
+            $projectStatus->getLastStatut($project->id_project);
+
             /** @var LoggerInterface $logger */
             $logger = $this->get('logger');
             $logger->info('Checking refund status (project ' . $project->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
 
+            /** @var \settings $paymentInspectionStopped */
             $paymentInspectionStopped = $this->loadData('settings');
             $paymentInspectionStopped->get('Controle statut remboursement', 'type');
 
-            if ($paymentInspectionStopped->value == 1) {
+            if ($projectStatus->status != \projects_status::FUNDE) {
+                $_SESSION['freeow']['title']   = 'Déblocage des fonds impossible';
+                $_SESSION['freeow']['message'] = 'Le projet n\'est pas fundé';
+            } elseif ($paymentInspectionStopped->value == 1) {
                 ini_set('memory_limit', '512M');
 
                 $proxy->status_remb = \projects_pouvoir::STATUS_VALIDATED;
@@ -930,7 +938,7 @@ class transfertsController extends bootstrap
 
                 $logger->info('Check refund status done (project ' . $project->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
             } else {
-                $_SESSION['freeow']['title']   = 'Erreur de remboursement';
+                $_SESSION['freeow']['title']   = 'Déblocage des fonds impossible';
                 $_SESSION['freeow']['message'] = 'Un remboursement est déjà en cours';
             }
 
