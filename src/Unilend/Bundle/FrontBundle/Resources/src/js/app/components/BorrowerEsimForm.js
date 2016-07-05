@@ -23,7 +23,7 @@ var BorrowerEsimForm = {
                 url: '/esim-step-1',
                 data: datas,
                 success: function(response) {
-                    $(".ui-esim-output-cost").prepend(FormatAmounts(response.amount, " ")+" ");
+                    $(".ui-esim-output-cost").prepend(response.amount+" ");
                     $(".ui-esim-output-duration").prepend(response.period+" ");
                     $(".ui-esim-monthly-output").html(response.estimatedMonthlyRepayment);
                     $(".ui-esim-interest-output").html(response.estimatedRate);
