@@ -551,8 +551,8 @@ gulp.task('scss', function () {
 
 // SVG Store
 gulp.task('svg', function () {
-  return gulp.src([getSrc('media/svg/**/*.svg'),
-             '!' + getSrc('media/svg/icons.svg')]) // Ignore destination file
+  return gulp.src([getSrc('images/svg/**/*.svg'),
+             '!' + getSrc('images/svg/icons.svg')]) // Ignore destination file
     .on('error', util.log)
     // Rename to include folder path in ID
     .pipe(rename(function (svgPath) {
@@ -586,8 +586,8 @@ gulp.task('svg', function () {
     .pipe(svgstore())
     // Rename file to icons.svg
     .pipe(rename('icons.svg'))
-    .pipe(gulp.dest(getSrc('media/svg')))
-    .pipe(gulp.dest(getDest('media/svg')))
+    .pipe(gulp.dest(getSrc('images/svg')))
+    .pipe(gulp.dest(getDest('images/svg')))
 
     // Update browsersync
     .pipe(_if(config.watchFiles, browsersync.stream()))
