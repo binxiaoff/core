@@ -1745,7 +1745,6 @@ class dossiersController extends bootstrap
                                                     $this->clients_gestion_mails_notif->update();
 
                                                     $this->companies->get($this->projects->id_company, 'id_company');
-                                                    $this->loans->get($e['id_loan'], 'id_loan');
 
                                                     $nbpret = $this->loans->counter('id_lender = ' . $e['id_lender'] . ' AND id_project = ' . $e['id_project']);
 
@@ -1757,6 +1756,11 @@ class dossiersController extends bootstrap
 
                                                     $rembNetEmail = $this->ficelle->formatNumber($rembNet) . $euros;
 
+                                                    if ($this->transactions->getSolde($this->clients->id_client) >= 2) {
+                                                        $euros = ' euros';
+                                                    } else {
+                                                        $euros = ' euro';
+                                                    }
                                                     $solde   = $this->ficelle->formatNumber($this->transactions->getSolde($this->clients->id_client)) . $euros;
                                                     $timeAdd = strtotime($dateDernierStatut);
                                                     $month   = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
