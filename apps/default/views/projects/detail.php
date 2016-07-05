@@ -124,35 +124,28 @@
                                 </li>
                                 <li>
                                     <span class="i-holder"><i class="icon-graph tooltip-anchor" data-placement="right" data-original-title="<?= $this->lng['preteur-projets']['info-taux-moyen'] ?>"></i></span>
-                                    <?php if ($this->CountEnchere > 0) : ?>
-                                        <span><?= $this->ficelle->formatNumber($this->avgRate, 1) ?>&nbsp;%</span>
-                                    <?php else : ?>
-                                        <span><?= $this->projects->target_rate . ($this->projects->target_rate == '-' ? '' : '&nbsp;%') ?></span>
-                                    <?php endif; ?>
+                                    <span><?= $this->ficelle->formatNumber($this->avgRate, 1) ?>&nbsp;%</span>
                                 </li>
                             </ul>
                         </div>
                     </div>
                     <nav class="tabs-nav">
                         <ul>
-                            <?php if ($this->projects_status->status == \projects_status::EN_FUNDING) :  ?>
+                            <?php if ($this->projects_status->status == \projects_status::EN_FUNDING) : ?>
                                 <li class="active"><a href="#"><?= $this->lng['preteur-projets']['carnet-dordres'] ?></a></li>
                                 <li><a href="#"><?= $this->lng['preteur-projets']['presentation'] ?></a></li>
                             <?php else : ?>
                                 <li class="active"><a href="#"><?= $this->lng['preteur-projets']['presentation'] ?></a></li>
                             <?php endif; ?>
                             <li><a href="#"><?= $this->lng['preteur-projets']['comptes'] ?></a></li>
-                            <?php if ($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) : ?>
-                                <?php if (isset($_SESSION['client']) && $this->bIsLender) : ?>
-                                    <li><a href="#"><?= $this->lng['preteur-projets']['suivi-projet'] ?></a></li>
-                                <?php endif;?>
+                            <?php if (($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) && isset($_SESSION['client']) && $this->bIsLender) : ?>
+                                <li><a href="#"><?= $this->lng['preteur-projets']['suivi-projet'] ?></a></li>
                             <?php endif; ?>
                         </ul>
                     </nav>
                     <div class="tabs">
                         <?php if ($this->projects_status->status == \projects_status::EN_FUNDING) : ?>
                         <div class="tab tc" id="bids">
-                            <?php if ($this->CountEnchere > 0) : ?>
                             <table class="table orders-table">
                                 <tr class="global-tab-nav">
                                     <th width="25%">
@@ -224,9 +217,6 @@
                             <div id="bottom-nav">
                               <a class="csv-extract" href="<?= $this->lurl ?>/projects/bidsExport/<?= $this->projects->slug ?>"><?= $this->lng['preteur-projets']['export_bids'] ?></a>
                             </div>
-                        <?php else : ?>
-                            <p><?= $this->lng['preteur-projets']['aucun-enchere'] ?></p>
-                        <?php endif; ?>
                         </div>
                         <div id="tri" style="display:none;">bid-number</div>
                         <div id="direction" style="display:none;">1</div>
