@@ -21,10 +21,15 @@ class FrontBundleExtension extends \Twig_Extension
     /** @var MemcacheCachePool */
     private $cachePool;
 
-    public function __construct(Packages $assetsPackages, StatisticsManager $statisticsManager, TranslationManager $translationManager, EntityManager $entityManager, MemcacheCachePool $cachePool)
-    {
-        $this->url = $assetsPackages->getUrl('');
-        $this->statisticsManager = $statisticsManager;
+    public function __construct(
+        Packages $assetsPackages,
+        StatisticsManager $statisticsManager,
+        TranslationManager $translationManager,
+        EntityManager $entityManager,
+        MemcacheCachePool $cachePool
+    ) {
+        $this->url                = $assetsPackages->getUrl('');
+        $this->statisticsManager  = $statisticsManager;
         $this->translationManager = $translationManager;
         $this->entityManager      = $entityManager;
         $this->cachePool          = $cachePool;
