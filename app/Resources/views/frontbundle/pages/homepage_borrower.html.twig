@@ -121,10 +121,10 @@ permalink: route('emprunter')
                                     <div class="form-field col-lg-6 col-md-6">
                                         <label for="esim-input-amount">{% trans %} home-borrower_simulator-amount-field-title {% endtrans %}
                                             <span class="c-t3">{% trans %} home-borrower_simulator-amount-field-addition {% endtrans %}</span></label>
-                                        <!-- TODO ANNA : replace "data-formvalidation-minvalue" and "data-formvalidation-maxvalue" with current min and max-->
                                         <input id="esim-input-amount" type="number" step="any" name="esim[amount]" value=""
                                                placeholder="{% trans %} home-borrower_simulator-amount-field-placeholder {% endtrans %}"
-                                               class="input-field" data-formvalidation-minvalue="10000" data-formvalidation-maxvalue="50000" data-formvalidation-input
+                                               class="input-field"
+                                               data-formvalidation-minvalue="{{ projectAmountMin }}" data-formvalidation-maxvalue="{{ projectAmountMax }}" data-formvalidation-input
                                                data-formvalidation-required="true">
                                     </div>
                                     <div class="form-field col-lg-6 col-md-6">

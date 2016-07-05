@@ -69,8 +69,8 @@ class ProjectRequestManager
 
         $project->id_company                           = $company->id_company;
         $project->amount                               = $aFormData['amount'];
-        $project->period                               = $aFormData['period'];
-        $project->id_borrowing_motive                  = $aFormData['borrowingMotive'];
+        $project->period                               = $aFormData['duration'];
+        $project->id_borrowing_motive                  = $aFormData['reason'];
         $project->ca_declara_client                    = 0;
         $project->resultat_exploitation_declara_client = 0;
         $project->fonds_propres_declara_client         = 0;

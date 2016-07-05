@@ -28,7 +28,6 @@ class ProjectRequestController extends Controller
         $project  = $entityManager->getRepository('projects');
         $project->get($request->getSession()->get('esim/project_id'));
         $request->getSession()->remove('esim/project_id');
-        var_dump($project);
 
         return new Response('waiting for template ... ');
     }

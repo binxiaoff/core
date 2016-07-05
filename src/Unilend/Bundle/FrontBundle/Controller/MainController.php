@@ -40,7 +40,6 @@ class MainController extends Controller
         /** @var TranslationManager $translationManager */
         $translationManager = $this->get('unilend.service.translation_manager');
 
-        $aRateRange                              = array(\bids::BID_RATE_MIN, \bids::BID_RATE_MAX);
         $aTemplateVariables['testimonialPeople'] = $testimonialService->getActiveBattenbergTestimonials();
         $aTemplateVariables['videoHeroes']       = [
             'Lenders'   => $testimonialService->getActiveVideoHeroes('preter'),
@@ -48,7 +47,11 @@ class MainController extends Controller
         ];
         $aTemplateVariables['showWelcomeOffer']  = $welcomeOfferManager->displayOfferOnHome();
         $aTemplateVariables['loanPeriods']       = $projectManager->getPossibleProjectPeriods();
+        $aTemplateVariables['projectAmountMax']  = $projectManager->getMaxProjectAmount();
+        $aTemplateVariables['projectAmountMin']  = $projectManager->getMinProjectAmount();
         $aTemplateVariables['borrowingMotives']  = $translationManager->getTranslatedBorrowingMotiveList();
+
+        $aRateRange                              = array(\bids::BID_RATE_MIN, \bids::BID_RATE_MAX);
 
         if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
             && $this->get('security.authorization_checker')->isGranted('ROLE_LENDER')
@@ -67,7 +70,6 @@ class MainController extends Controller
                 $aRateRange);
         }
 
-        //var_dump($aTemplateVariables['projects']);
 
         //TODO replace switch by cookie check
         switch($type) {
@@ -147,6 +149,7 @@ class MainController extends Controller
 
         $session   = $request->getSession();
         $session->set('esim/project_id', $iProjectID);
+
 
         return $this->redirectToRoute('project_request_step_1');
     }
