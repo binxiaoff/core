@@ -110,7 +110,7 @@ class StaticPagesController extends Controller
      */
     public function aboutUsShowAction()
     {
-
+        return $this->render('pages/static_pages/about_us.html.twig', array());
     }
 
     /**
