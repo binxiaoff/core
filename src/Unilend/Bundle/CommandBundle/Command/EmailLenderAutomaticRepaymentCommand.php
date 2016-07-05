@@ -85,9 +85,11 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                     $year              = date('Y', $timeAdd);
                     $rembNet           = $e['rembNet'];
                     $nbpret            = $loans->counter('id_lender = ' . $e['id_lender'] . ' AND id_project = ' . $e['id_project']);
-                    $rembNetEmail      = $ficelle->formatNumber($rembNet) . ($rembNet != 1 ? ' euros' : ' euro');
+                    $euros             = ($rembNet >= 2) ? ' euros' : ' euro';
+                    $rembNetEmail      = $ficelle->formatNumber($rembNet) . $euros;
                     $getsolde          = $transactions->getSolde($clients->id_client);
-                    $solde             = $ficelle->formatNumber($getsolde) . ($getsolde != 1 ? ' euros' : ' euro');
+                    $euros             = ($getsolde > 1) ? ' euros' : ' euro';
+                    $solde             = $ficelle->formatNumber($getsolde) . $euros;
 
                     $notifications->type       = \notifications::TYPE_REPAYMENT;
                     $notifications->id_lender  = $e['id_lender'];

@@ -1583,7 +1583,6 @@ class dossiersController extends bootstrap
                     $lien_tw = $this->settings->value;
 
                     $lEcheancesRembEmprunteur = $this->echeanciers_emprunteur->select('id_project = ' . $this->projects->id_project . ' AND status_emprunteur = 1', 'ordre ASC');
-                    $lastProjectRepayment     = (0 == $this->echeanciers_emprunteur->counter('id_project = ' . $this->projects->id_project . ' AND status_emprunteur = 0'));
                     $deja_passe               = false;
 
                     if ($lEcheancesRembEmprunteur != false) {
@@ -1743,6 +1742,8 @@ class dossiersController extends bootstrap
                                                     $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
                                                     $this->clients_gestion_mails_notif->immediatement = 1;
                                                     $this->clients_gestion_mails_notif->update();
+
+                                                    $lastProjectRepayment = (0 == $this->echeanciers->counter('id_project = ' . $this->projects->id_project . ' AND status = 0 AND id_lender = ' . $e['id_lender']));
 
                                                     $this->companies->get($this->projects->id_company, 'id_company');
 
@@ -1911,7 +1912,7 @@ class dossiersController extends bootstrap
                             }
                         }
 
-                        if ($lastProjectRepayment) {
+                        if (0 == $this->echeanciers->counter('id_project = ' . $this->projects->id_project . ' AND status = 0')) {
                             $this->settings->get('Adresse controle interne', 'type');
                             $mailBO = $this->settings->value;
 
@@ -1931,7 +1932,6 @@ class dossiersController extends bootstrap
                             $mailer = $this->get('mailer');
                             $mailer->send($messageBO);
                         }
-
                     }
 
                     $lesRembEmprun = $this->bank_unilend->select('type = 1 AND status = 0 AND id_project = ' . $this->projects->id_project, 'id_unilend ASC', 0, 1); // on ajoute la restriction pour BT 17882
