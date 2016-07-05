@@ -33,7 +33,7 @@ permalink: route('emprunter')
                     <h3>Didier a pu financier sa boulangerie en moins de 3 semaines</h3>
                 </div><!-- /.video-hero-cta -->
 
-                {{ render(controller('UnilendFrontBundle:StaticPages:renderSocialMedia')) }}
+                {% include 'partials/components/list-socialmedia.html.twig' %}
 
                 <div class="btn-toolbar">
                     <a href="#homeemp-section-process" class="btn-cta btn-color-alternate"><span class="icon fa-angle-right"></span> Emprunter auprès des particuliers</a>

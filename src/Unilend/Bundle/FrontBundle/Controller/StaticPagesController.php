@@ -1,15 +1,12 @@
 <?php
-
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Unilend\Bundle\FrontBundle\Service\StaticContentManager;
 
-
 class StaticPagesController extends Controller
 {
-
     /**
      * @Route("/statistics", name="statistics")
      *
@@ -41,7 +38,6 @@ class StaticPagesController extends Controller
 
         return $this->render('partials/components/list-socialmedia.html.twig', array('facebookUrl' => $facebookUrl, 'twitterUrl' => $twitterUrl));
     }
-
 
     /**
      * @Route("/questions-frequentes-emprunteur", name="borrower_faq")
@@ -133,7 +129,6 @@ class StaticPagesController extends Controller
 
     }
 
-
     /**
      * @Route("/la-presse-en-parle", name="press")
      *
@@ -145,11 +140,11 @@ class StaticPagesController extends Controller
     }
 
     /**
-     * @Route("/recrutement", name="recruitement")
+     * @Route("/recrutement", name="recruitment")
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function recruitementShowAction()
+    public function recruitmentShowAction()
     {
 
     }

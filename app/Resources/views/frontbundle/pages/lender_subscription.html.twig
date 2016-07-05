@@ -609,7 +609,7 @@ permalink: route('preter/new')
                 </div><!-- /.site-wrap -->
             </div><!-- /.page-content -->
 
-            {{ render(controller('UnilendFrontBundle:StaticPages:renderSocialMedia')) }}
+            {% include 'partials/components/list-socialmedia.html.twig' %}
         </div><!-- /.hero-wrap -->
 
     </article><!-- /.page -->

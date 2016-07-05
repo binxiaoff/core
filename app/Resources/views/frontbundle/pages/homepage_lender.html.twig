@@ -33,7 +33,7 @@ permalink: route('preter')
                     <h3>{% trans %} home-lender_testimonial-section-video-slogan {% endtrans %}</h3>
                 </div><!-- /.video-hero-cta -->
 
-                {{ render(controller('UnilendFrontBundle:StaticPages:renderSocialMedia')) }}
+                {% include 'partials/components/list-socialmedia.html.twig' %}
 
                 <div class="btn-toolbar">
                     <a href="#homepre-section-steps" class="btn-cta btn-color-primary">

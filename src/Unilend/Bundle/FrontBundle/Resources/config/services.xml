@@ -11,6 +11,8 @@
             <argument>%router.request_context.scheme%</argument>
             <argument type="service" id="unilend.service.statistics_manager" />
             <argument type="service" id="unilend.service.translation_manager" />
+            <argument type="service" id="unilend.service.entity_manager" />
+            <argument type="service" id="memcache.default" />
         </service>
 
         <service id="unilend.frontbundle.service.testimonial_manager" class="Unilend\Bundle\FrontBundle\Service\TestimonialManager">

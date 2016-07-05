@@ -119,7 +119,7 @@ permalink: route('user/access')
                     </div>
                 </div><!-- /.site-wrap -->
 
-                {{ render(controller('UnilendFrontBundle:StaticPages:renderSocialMedia')) }}
+                {% include 'partials/components/list-socialmedia.html.twig' %}
             </div><!-- /.hero-wrap -->
         </section><!-- /.page-content -->
 

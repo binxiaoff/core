@@ -1,25 +1,73 @@
 <?php
 namespace Unilend\Bundle\FrontBundle\Twig;
 
-
+use Cache\Adapter\Memcache\MemcacheCachePool;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
 class FrontBundleExtension extends \Twig_Extension
 {
-
+    /** @var string */
     private $sUrl;
-
     /** @var StatisticsManager */
     private $statisticsManager;
-    /** @var TranslationManager  */
+    /** @var TranslationManager */
     private $translationManager;
+    /** @var EntityManager */
+    private $entityManager;
+    /** @var MemcacheCachePool */
+    private $cachePool;
 
-    public function __construct($routerRequestContextScheme, $routerRequestContextHost, StatisticsManager $statisticsManager, TranslationManager $translationManager)
+    public function __construct($routerRequestContextScheme, $routerRequestContextHost, StatisticsManager $statisticsManager, TranslationManager $translationManager, EntityManager $entityManager, MemcacheCachePool $cachePool)
     {
-        $this->sUrl = $routerRequestContextHost . '://' . $routerRequestContextScheme;
-        $this->statisticsManager = $statisticsManager;
+        $this->sUrl               = $routerRequestContextHost . '://' . $routerRequestContextScheme;
+        $this->statisticsManager  = $statisticsManager;
         $this->translationManager = $translationManager;
+        $this->entityManager      = $entityManager;
+        $this->cachePool          = $cachePool;
+    }
+
+    public function getFunctions()
+    {
+        return array(
+            new \Twig_SimpleFunction('setting', array($this, 'settingFunction')),
+            new \Twig_SimpleFunction('route', array($this, 'routeFunction')),
+            new \Twig_SimpleFunction('svgimage', array($this, 'svgImageFunction')),
+            new \Twig_SimpleFunction('__', array($this, 'temporaryTranslateFunction')),
+            new \Twig_SimpleFunction('siteurlmedia', array($this, 'completeUrlMediaFunction')),
+            new \Twig_SimpleFunction('getStatistics', array($this, 'getStatistics')),
+            new \Twig_SimpleFunction('getCategories', array($this, 'getCategoriesForSvg'))
+        );
+    }
+
+    public function getFilters()
+    {
+        return array(
+            new \Twig_SimpleFilter('nbsp', array($this, 'nbspFilter')),
+            new \Twig_SimpleFilter('__num', array($this, 'numFilter')),
+            new \Twig_SimpleFilter('convertRisk', array($this, 'convertProjectRiskFilter')),
+            new \Twig_SimpleFilter('completeProjectImagePath', array($this, 'projectImagePathFilter')),
+            new \Twig_SimpleFilter('baseUrl', array())
+        );
+    }
+
+    public function settingFunction($name)
+    {
+        $cachedItem = $this->cachePool->getItem($name);
+
+        if (false === $cachedItem->isHit()) {
+            /** @var \settings $settings */
+            $settings = $this->entityManager->getRepository('settings');
+            $settings->get($name, 'type');
+            $value = $settings->value;
+
+            $cachedItem->set($value)->expiresAfter(3600);
+            $this->cachePool->save($cachedItem);
+            return $value;
+        } else {
+            return $cachedItem->get();
+        }
     }
 
     public function getName()
@@ -86,19 +134,6 @@ class FrontBundleExtension extends \Twig_Extension
         return $this->translationManager->getTranslatedCompanySectorList();
     }
 
-
-    public function getFunctions()
-    {
-        return array(
-            new \Twig_SimpleFunction('route', array($this, 'routeFunction')),
-            new \Twig_SimpleFunction('svgimage', array($this, 'svgImageFunction')),
-            new \Twig_SimpleFunction('__', array($this, 'temporaryTranslateFunction')),
-            new \Twig_SimpleFunction('siteurlmedia', array($this, 'completeUrlMediaFunction')),
-            new \Twig_SimpleFunction('getStatistics', array($this, 'getStatistics')),
-            new \Twig_SimpleFunction('getCategories', array($this, 'getCategoriesForSvg'))
-        );
-    }
-
     public function nbspFilter($sString)
     {
         return preg_replace('/[ ](?=[^>]*(?:<|$))/', '&nbsp', $sString);
@@ -123,18 +158,4 @@ class FrontBundleExtension extends \Twig_Extension
     {
         return $this->sUrl . $sUrl;
     }
-
-    public function getFilters()
-    {
-        return array(
-            new \Twig_SimpleFilter('nbsp', array($this, 'nbspFilter')),
-            new \Twig_SimpleFilter('__num', array($this, 'numFilter')),
-            new \Twig_SimpleFilter('convertRisk', array($this, 'convertProjectRiskFilter')),
-            new \Twig_SimpleFilter('completeProjectImagePath', array($this, 'projectImagePathFilter')),
-            new \Twig_SimpleFilter('baseUrl', array())
-        );
-    }
-
-
-
 }
