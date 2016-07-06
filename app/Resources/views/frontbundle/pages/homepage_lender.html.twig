@@ -1,6 +1,5 @@
 {# Homepage Preter #}
 {% extends 'layouts/_layout.html.twig' %}
-{% import 'partials/modules/_project-list.macros.twig' as projectList %}
 
 {# Page data #}
 {% set bodyId = '' %}
@@ -96,15 +95,7 @@ permalink: route('preter')
             <div class="site-wrap">
                 <h2 class="h2"> {% transchoice projects|length with { '%numberProjects%' : projects|length } %} project-list_title-ongoing-projects  {% endtranschoice %}</h2>
 
-                {{ projectList.render(
-                'homepre-project-list-module',
-                [],
-                projects,
-                {
-                    showFilters: false,
-                    showPagination: false,
-                    markInvolved: false
-                }) }}
+                {% include 'partials/components/project-list.html.twig' %}
 
                 <div class="btn-toolbar">
                     <a href="{{ route('projets') }}" class="btn-primary">{% trans %} home-lender_all-projects-button {% endtrans %}</a>
