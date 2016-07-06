@@ -1,11 +1,11 @@
 <script type="text/javascript">
     $(document).ready(function () {
         $(".tablesorter").tablesorter({headers: {6: {sorter: false}}});
-        <?php if($this->nb_lignes != '') : ?>
+        <?php if ($this->nb_lignes != '') : ?>
         $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?=$this->nb_lignes?>});
         <?php endif; ?>
     });
-    <?php if(isset($_SESSION['freeow'])) : ?>
+    <?php if (isset($_SESSION['freeow'])) : ?>
     $(document).ready(function () {
         var title, message, opts, container;
         title = "<?=$_SESSION['freeow']['title']?>";

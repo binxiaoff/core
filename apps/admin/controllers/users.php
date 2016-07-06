@@ -21,15 +21,15 @@ class usersController extends bootstrap
         $this->users->checkAccess('admin');
 
         if (isset($_POST['form_add_users'])) {
-            if ($this->users->select('email = "' . $_POST['email'] . '"')) {
+            if (isset($_POST['email']) && $this->ficelle->isEmail($_POST['email']) && $this->users->select('email = "' . $_POST['email'] . '"')) {
                 $_SESSION['freeow']['title']   = 'Ajout d\'un utilisateur';
                 $_SESSION['freeow']['message'] = 'Cet utilisateur existe d&eacute;ja !';
 
-                unset($_POST['form_add_users']);
                 header('Location: ' . $this->lurl . '/users');
                 die;
             }
 
+            $newPassword               = $this->ficelle->generatePassword(10);
             $this->users->firstname    = $_POST['firstname'];
             $this->users->name         = $_POST['name'];
             $this->users->phone        = $_POST['phone'];
@@ -37,10 +37,8 @@ class usersController extends bootstrap
             $this->users->email        = $_POST['email'];
             $this->users->status       = $_POST['status'];
             $this->users->id_user_type = $_POST['id_user_type'];
+            $this->users->password     = password_hash($newPassword, PASSWORD_DEFAULT);
             $this->users->id_user      = $this->users->create();
-
-            $sNewPassword = $this->ficelle->generatePassword(10);
-            $this->users->changePassword($sNewPassword, $this->users, true);
 
             /** @var \users_zones $users_zones */
             $users_zones = $this->loadData('users_zones');
@@ -54,7 +52,7 @@ class usersController extends bootstrap
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
             $mailerManager = $this->get('unilend.service.email_manager');
-            $mailerManager->sendNewPasswordEmail($this->users, $sNewPassword);
+            $mailerManager->sendNewPasswordEmail($this->users, $newPassword);
 
             $_SESSION['freeow']['title']   = 'Ajout d\'un utilisateur';
             $_SESSION['freeow']['message'] = 'L\'utilisateur a bien &eacute;t&eacute; ajout&eacute; !';
@@ -161,7 +159,6 @@ class usersController extends bootstrap
     public function _edit_password()
     {
         $_SESSION['request_url'] = $this->url;
-        $this->users->get($this->params[0], 'id_user');
 
         if ($this->users->id_user != $_SESSION['user']['id_user'] && false === $this->users->checkAccess('admin')) {
             header('Location: ' . $this->lurl);
@@ -179,21 +176,23 @@ class usersController extends bootstrap
                 $this->retour_pass = "Tous les champs sont obligatoires";
             } elseif ($this->users->password != md5($_POST['old_pass']) && $this->users->password != password_verify($_POST['old_pass'], $this->users->password)) {
                 $this->retour_pass = "L'ancien mot de passe ne correspond pas";
-            } elseif (false === $this->ficelle->verifyBOPasswordStrength($_POST['new_pass'])) {
-                $this->retour_pass = "Le mot de passe doit contenir au moins 10 caract&egrave;res, ainsi qu'au moins 1 chiffre et 1 caract&egrave;re sp&eacute;cial";
+            } elseif (false === $this->users->checkPasswordStrength($_POST['new_pass'])) {
+                $this->retour_pass = "Le mot de passe doit contenir au moins 10 caractères, ainsi qu'au moins 1 chiffre et 1 caractère spécial";
             } elseif ($_POST['new_pass'] != $_POST['new_pass2']) {
-                $this->retour_pass = "La confirmation du nouveau de passe doit &ecirc;tre la m&ecirc;me que votre nouveau mot de passe";
-            } elseif (true === $previousPasswords->passwordUsed($_POST['new_pass'], $this->users->id_user)) {
-                $this->retour_pass = "Ce mot de passe a d&eacute;ja &eacute;t&eacute; utilis&eacute; !";
+                $this->retour_pass = "La confirmation du nouveau de passe doit être la même que votre nouveau mot de passe";
+            } elseif (false === $previousPasswords->isValidPassword($_POST['new_pass'], $this->users->id_user)) {
+                $this->retour_pass = "Ce mot de passe a déja été utilisé";
             } else {
-                $this->users->changePassword($_POST['new_pass'], $this->users, false);
+                $this->users->password        = password_hash($_POST['new_pass'], PASSWORD_DEFAULT);
+                $this->users->password_edited = date("Y-m-d H:i:s");
+                $this->users->update();
+
+                $_SESSION['user']['password']        = $this->users->password;
+                $_SESSION['user']['password_edited'] = $this->users->password_edited;
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
                 $mailerManager = $this->get('unilend.service.email_manager');
                 $mailerManager->sendPasswordModificationEmail($this->users);
-
-                $_SESSION['user']['password']        = $this->users->password;
-                $_SESSION['user']['password_edited'] = $this->users->password_edited;
 
                 $this->loggin_connection_admin                 = $this->loadData('loggin_connection_admin');
                 $this->loggin_connection_admin->id_user        = $this->users->id_user;
@@ -232,8 +231,7 @@ class usersController extends bootstrap
 
     public function _generate_new_password()
     {
-        if ($this->users->checkAccess('admin') && $this->params[0]) {
-            $this->users->get($this->params[0], 'id_user');
+        if ($this->users->checkAccess('admin') && isset($this->params[0]) && $this->users->get($this->params[0], 'id_user')) {
             $sNewPassword = $this->ficelle->generatePassword(10);
             $this->users->changePassword($sNewPassword, $this->users, true);
 

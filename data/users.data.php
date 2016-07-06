@@ -271,5 +271,24 @@ class users extends users_crud
         $previousPasswords->archived  = date("Y-m-d H:i:s");
         $previousPasswords->create();
         $previousPasswords->deleteOldPasswords($user->id_user);
+
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
+        $mailerManager = $this->get('unilend.service.email_manager');
+        $mailerManager->sendNewPasswordEmail($sPassword, $this->users);
     }
+
+    /**
+     * Returns true if password contains at least 10 characters
+     * including digits, lower, upper case and special characters
+     * @param string $password
+     * @return bool
+     */
+    public function checkPasswordStrength($password)
+    {
+        if (1 === preg_match('/(?=.*[A-Z])(?=.*[$&+,:;=?@#|\'<>.^_*()%!-])(?=.*[a-z])(?=.*\d).{10,}/', $password)) {
+            return true;
+        }
+        return false;
+    }
+
 }

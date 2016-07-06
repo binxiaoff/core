@@ -392,18 +392,4 @@ class ficelle
         }
         return false;
     }
-
-    /**
-     * Returns true if password contains at least 10 characters
-     * including digits, lower, upper case and special characters
-     * @param $sPassword
-     * @return bool
-     */
-    public function verifyBOPasswordStrength($sPassword)
-    {
-        if (1 === preg_match('/(?=.*[A-Z])(?=.*[$&+,:;=?@#|\'<>.^_*()%!-])(?=.*[a-z])(?=.*\d).{10,}/', $sPassword)) {
-            return true;
-        }
-        return false;
-    }
 }

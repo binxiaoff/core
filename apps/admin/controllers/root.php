@@ -20,10 +20,6 @@ class rootController extends bootstrap
                 $sNewPassword = $this->ficelle->generatePassword(10);
                 $this->users->changePassword($sNewPassword, $this->users, true);
 
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
-                $mailerManager = $this->get('unilend.service.email_manager');
-                $mailerManager->sendNewPasswordEmail($sNewPassword, $this->users);
-
                 $this->loggin_connection_admin                 = $this->loadData('loggin_connection_admin');
                 $this->loggin_connection_admin->id_user        = $this->users->id_user;
                 $this->loggin_connection_admin->nom_user       = $this->users->firstname . " " . $this->users->name;
@@ -128,7 +124,7 @@ class rootController extends bootstrap
 
         $_SESSION['request_url'] = $this->url;
 
-        if ($this->users->get($this->params[0], 'id_user') && $this->users->id_user != $_SESSION['user']['id_user']) {
+        if ($this->users->id_user != $_SESSION['user']['id_user']) {
             header('Location:' . $this->lurl . '/users');
             die;
         }
@@ -148,12 +144,14 @@ class rootController extends bootstrap
                 $this->retour_pass = "Tous les champs sont obligatoires";
             } elseif ($this->users->password != md5($_POST['old_pass']) && $this->users->password != password_verify($_POST['old_pass'], $this->users->password)) {
                 $this->retour_pass = "L'ancien mot de passe ne correspond pas";
-            } elseif (false == $this->ficelle->verifyBOPasswordStrength($_POST['new_pass'])) {
-                $this->retour_pass = "Le mot de passe doit contenir au moins 10 caract&egrave;res, ainsi qu'au moins 1 chiffre et un caract&egrave;re sp&eacute;cial";
-            } elseif (true === $previousPasswords->passwordUsed($_POST['new_pass'], $this->users->id_user)) {
-                $this->retour_pass = "Ce mot de passe a d&eacute;ja &eacute;t&eacute; utilis&eacute; !";
+            } elseif (false === $this->users->checkPasswordStrength($_POST['new_pass'])) {
+                $this->retour_pass = "Le mot de passe doit contenir au moins 10 caractères, ainsi qu'au moins 1 chiffre et un caractère spécial";
+            } elseif (false === $previousPasswords->isValidPassword($_POST['new_pass'], $this->users->id_user)) {
+                $this->retour_pass = "Ce mot de passe a déja été utilisé";
             } elseif ($_POST['new_pass'] == $_POST['new_pass2']) {
-                $this->users->changePassword($_POST['new_pass'], $this->users, false);
+                $this->users->password        = password_hash($_POST['new_pass'], PASSWORD_DEFAULT);
+                $this->users->password_edited = date("Y-m-d H:i:s");
+                $this->users->update();
 
                 $_SESSION['user']['password']        = $this->users->password;
                 $_SESSION['user']['password_edited'] = $this->users->password_edited;

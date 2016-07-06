@@ -57,7 +57,7 @@
                 <?php endif; ?>
                 <tr>
                     <td>
-                        <a href="<?= $this->lurl ?>/users/generate_new_password/<?= $this->users->id_user ?>" class="btn_link">Modifier le mot de passe</a>
+                        <a href="<?= $this->lurl ?>/users/generate_new_password/<?= $this->users->id_user ?>" class="btn_link">Générer un nouveau mot de passe</a>
                     </td>
                     <th>
                         <input type="hidden" name="form_mod_users" id="form_mod_users"/>

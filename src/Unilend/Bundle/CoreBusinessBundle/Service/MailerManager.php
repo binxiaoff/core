@@ -1791,11 +1791,10 @@ class MailerManager
 
     /**
      * @param \users $user
-     * @param $sNewPassword
+     * @param string $newPassword
      */
-    public function sendNewPasswordEmail(\users $user, $sNewPassword)
+    public function sendNewPasswordEmail(\users $user, $newPassword)
     {
-        $sMail         = 'user-nouveau-mot-de-passe';
         $aReplacements = array(
             'surl'    => $this->sSUrl,
             'url'     => $this->sFUrl,
@@ -1803,11 +1802,11 @@ class MailerManager
             'lien_fb' => $this->getFacebookLink(),
             'lien_tw' => $this->getTwitterLink(),
             'annee'   => date('Y'),
-            'mdp'     => $sNewPassword
+            'mdp'     => $newPassword
         );
 
         /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage($sMail, $aReplacements);
+        $message = $this->messageProvider->newMessage('user-nouveau-mot-de-passe', $aReplacements);
         $message->setTo(trim($user->email));
         $this->mailer->send($message);
     }

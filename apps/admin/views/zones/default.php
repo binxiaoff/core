@@ -4,7 +4,7 @@
             headers:{
                 <?php
                 $i = 0;
-                foreach($this->lZones as $z) {
+                foreach ($this->lZones as $z) {
                 ?>
                     <?=$i+2?>:{sorter: false}<?=($i==count($this->lZones)?'':',')?>
                 <?
