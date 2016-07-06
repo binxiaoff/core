@@ -45,21 +45,21 @@
                 <h1><?= $this->content['lp-titre-landing-page'] ?></h1>
                 <ul class="cf">
                     <li>
-                        <img src="<?= $this->photos->display($this->content['lp-gauche-image'], '', 'picto_landing_page') ?>">
+                        <img src="<?= $this->photos->display($this->content['lp-gauche-image'], 'picto_landing_page') ?>">
                         <p>
                             <strong><?= $this->content['lp-gauche-chiffre'] ?></strong>
                             <span><?= $this->content['lp-gauche-texte'] ?></span>
                         </p>
                     </li>
                     <li>
-                        <img src="<?= $this->photos->display($this->content['lp-centre-image'], '', 'picto_landing_page') ?>">
+                        <img src="<?= $this->photos->display($this->content['lp-centre-image'], 'picto_landing_page') ?>">
                         <p>
                             <strong><?= $this->content['lp-centre-chiffre'] ?></strong>
                             <span><?= $this->content['lp-centre-texte'] ?></span>
                         </p>
                     </li>
                     <li>
-                        <img src="<?= $this->photos->display($this->content['lp-droite-image'], '', 'picto_landing_page') ?>">
+                        <img src="<?= $this->photos->display($this->content['lp-droite-image'], 'picto_landing_page') ?>">
                         <p>
                             <strong><?= $this->content['lp-droite-chiffre'] ?></strong>
                             <span><?= $this->content['lp-droite-texte'] ?></span>
@@ -133,13 +133,13 @@
         </section>
     <?php } ?>
     <section class="partners cf">
-        <span><img src="<?= $this->photos->display($this->content['lp-image-1'], '', 'partenaires_landing_page') ?>"></span>
-        <span><img src="<?= $this->photos->display($this->content['lp-image-2'], '', 'partenaires_landing_page') ?>"></span>
-        <span><img src="<?= $this->photos->display($this->content['lp-image-3'], '', 'partenaires_landing_page') ?>"></span>
-        <span class="mobile-hidden"><img src="<?= $this->photos->display($this->content['lp-image-4'], '', 'partenaires_landing_page') ?>"></span>
-        <span class="mobile-hidden"><img src="<?= $this->photos->display($this->content['lp-image-5'], '', 'partenaires_landing_page') ?>"></span>
-        <span class="tablet-hidden"><img src="<?= $this->photos->display($this->content['lp-image-6'], '', 'partenaires_landing_page') ?>"></span>
-        <span class="tablet-hidden"><img src="<?= $this->photos->display($this->content['lp-image-7'], '', 'partenaires_landing_page') ?>"></span>
+        <span><img src="<?= $this->photos->display($this->content['lp-image-1'], 'partenaires_landing_page') ?>"></span>
+        <span><img src="<?= $this->photos->display($this->content['lp-image-2'], 'partenaires_landing_page') ?>"></span>
+        <span><img src="<?= $this->photos->display($this->content['lp-image-3'], 'partenaires_landing_page') ?>"></span>
+        <span class="mobile-hidden"><img src="<?= $this->photos->display($this->content['lp-image-4'], 'partenaires_landing_page') ?>"></span>
+        <span class="mobile-hidden"><img src="<?= $this->photos->display($this->content['lp-image-5'], 'partenaires_landing_page') ?>"></span>
+        <span class="tablet-hidden"><img src="<?= $this->photos->display($this->content['lp-image-6'], 'partenaires_landing_page') ?>"></span>
+        <span class="tablet-hidden"><img src="<?= $this->photos->display($this->content['lp-image-7'], 'partenaires_landing_page') ?>"></span>
     </section>
 </div>
 </body>

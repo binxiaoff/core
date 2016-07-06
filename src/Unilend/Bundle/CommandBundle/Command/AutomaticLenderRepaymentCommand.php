@@ -229,6 +229,27 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                 $oRepaymentLog->etat             = bcmul($Total_etat, 100);
                 $oRepaymentLog->nb_pret_remb     = $nb_pret_remb;
                 $oRepaymentLog->update();
+
+                if (0 == $echeanciers->counter('id_project = ' . $r['id_project'] . ' AND status = 0')) {
+                    $settings->get('Adresse controle interne', 'type');
+                    $mailBO = $settings->value;
+
+                    $varMail = array(
+                        'surl'           => $sUrl,
+                        'url'            => $sUrl,
+                        'nom_entreprise' => $companies->name,
+                        'nom_projet'     => $projects->title,
+                        'id_projet'      => $projects->id_project,
+                        'annee'          => date('Y')
+                    );
+
+                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                    $messageBO = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('preteur-dernier-remboursement-controle', $varMail);
+                    $messageBO->setTo($mailBO);
+
+                    $mailer = $this->getContainer()->get('mailer');
+                    $mailer->send($messageBO);
+                }
             }
         }
     }

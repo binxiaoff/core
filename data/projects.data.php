@@ -608,7 +608,7 @@ class projects extends projects_crud
                 );
                 return round($this->bdd->result($rResult, 0, 0), 2);
             default:
-                trigger_error('Unknown project status. Could not calculate amounts', E_USER_WARNING);
+                trigger_error('Unknown project status : ' . $iProjectStatus . ' Could not calculate amounts', E_USER_WARNING);
                 break;
         }
 

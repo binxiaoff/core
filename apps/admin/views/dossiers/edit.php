@@ -501,6 +501,7 @@
                     <tr>
                         <th><label for="status">Statut :</label></th>
                         <td id="current_statut">
+                            <input type="hidden" name="current_status" value="<?= $this->current_projects_status->status ?>"/>
                             <?php
                                 $sDisplayPeriodHS    = 'none';
                                 $sDisplayMsgPeriodHs = 'none';

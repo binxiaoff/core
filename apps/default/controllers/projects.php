@@ -215,128 +215,18 @@ class projectsController extends bootstrap
                 if ($this->form_ok == true && isset($_SESSION['tokenBid']) && $_SESSION['tokenBid'] == $_POST['send_pret']) {
                     unset($_SESSION['tokenBid']);
 
-                    $this->transactions->id_client        = $this->clients->id_client;
-                    $this->transactions->montant          = '-' . ($montant_p * 100);
-                    $this->transactions->id_langue        = 'fr';
-                    $this->transactions->date_transaction = date('Y-m-d H:i:s');
-                    $this->transactions->status           = '1';
-                    $this->transactions->etat             = '1';
-                    $this->transactions->id_project       = $this->projects->id_project;
-                    $this->transactions->transaction      = '2';
-                    $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                    $this->transactions->type_transaction = '2';
-                    $this->transactions->create();
-
-                    $this->wallets_lines->id_lender                = $this->lenders_accounts->id_lender_account;
-                    $this->wallets_lines->type_financial_operation = 20; // enchere
-                    $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
-                    $this->wallets_lines->status                   = 1;
-                    $this->wallets_lines->type                     = 2; // transaction virtuelle
-                    $this->wallets_lines->amount                   = '-' . ($montant_p * 100);
-                    $this->wallets_lines->id_project               = $this->projects->id_project;
-                    $this->wallets_lines->create();
-
-                    $numBid = $this->bids->counter('id_project = ' . $this->projects->id_project);
-                    $numBid += 1;
-
-                    $this->bids->id_lender_account     = $this->lenders_accounts->id_lender_account;
-                    $this->bids->id_project            = $this->projects->id_project;
-                    $this->bids->id_lender_wallet_line = $this->wallets_lines->id_wallet_line;
-                    $this->bids->amount                = $montant_p * 100;
-                    $this->bids->rate                  = $tx_p;
-                    $this->bids->ordre                 = $numBid;
-                    $this->bids->create();
+                    /** @var \bids $bid */
+                    $bid = $this->loadData('bids');
+                    $bid->id_lender_account     = $this->lenders_accounts->id_lender_account;
+                    $bid->id_project            = $this->projects->id_project;
+                    $bid->amount                = $montant_p * 100;
+                    $bid->rate                  = $tx_p;
+                    
+                    $bidManager = $this->get('unilend.service.bid_manager');
+                    $bidManager->bid($bid);
 
                     $oCachePool = $this->get('memcache.default');
                     $oCachePool->deleteItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $this->projects->id_project);
-
-                    $offres_bienvenues_details = $this->loadData('offres_bienvenues_details');
-
-                    $lOffres = $offres_bienvenues_details->select('id_client = ' . $this->clients->id_client . ' AND status = 0');
-                    if ($lOffres != false) {
-                        $totaux_restant = $montant_p;
-                        $totaux_offres  = 0;
-                        foreach ($lOffres as $o) {
-
-                            // Tant que le total des offres est infèrieur
-                            if ($totaux_offres <= $montant_p) {
-                                $totaux_offres += ($o['montant'] / 100); // total des offres
-                                $totaux_restant -= $montant_p;        // total du bid
-
-                                $offres_bienvenues_details->get($o['id_offre_bienvenue_detail'], 'id_offre_bienvenue_detail');
-                                $offres_bienvenues_details->status = 1;
-                                $offres_bienvenues_details->id_bid = $this->bids->id_bid;
-                                $offres_bienvenues_details->update();
-
-                                // Apres addition de la derniere offre on se rend compte que le total depasse
-                                if ($totaux_offres > $montant_p) {
-                                    // On fait la diff et on créer un remb du trop plein d'offres
-                                    $montant_coupe_a_remb                          = $totaux_offres - $montant_p;
-                                    $offres_bienvenues_details->id_offre_bienvenue = 0;
-                                    $offres_bienvenues_details->id_client          = $this->lenders_accounts->id_client_owner;
-                                    $offres_bienvenues_details->id_bid             = 0;
-                                    $offres_bienvenues_details->id_bid_remb        = $this->bids->id_bid;
-                                    $offres_bienvenues_details->status             = 0;
-                                    $offres_bienvenues_details->type               = 1;
-                                    $offres_bienvenues_details->montant            = ($montant_coupe_a_remb * 100);
-                                    $offres_bienvenues_details->create();
-                                }
-                            } else {
-                                break;
-                            }
-                        }
-                    }
-
-                    $this->notifications->type       = \notifications::TYPE_BID_PLACED;
-                    $this->notifications->id_lender  = $this->lenders_accounts->id_lender_account;
-                    $this->notifications->id_project = $this->projects->id_project;
-                    $this->notifications->amount     = $montant_p * 100;
-                    $this->notifications->id_bid     = $this->bids->id_bid;
-                    $this->notifications->create();
-
-                    if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 2, 'immediatement') == true) {
-                        /** @var \settings $oSettings */
-                        $oSettings = $this->loadData('settings');
-                        $oSettings->get('Facebook', 'type');
-                        $lien_fb = $oSettings->value;
-                        $oSettings->get('Twitter', 'type');
-                        $lien_tw = $oSettings->value;
-
-                        $timeAdd     = strtotime($this->bids->added);
-                        $month       = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
-                        $pageProjets = $this->tree->getSlug(4, $this->language);
-                        $varMail     = array(
-                            'surl'           => $this->surl,
-                            'url'            => $this->lurl,
-                            'prenom_p'       => $this->clients->prenom,
-                            'nom_entreprise' => $this->companies->name,
-                            'valeur_bid'     => $this->ficelle->formatNumber($montant_p),
-                            'taux_bid'       => $this->ficelle->formatNumber($tx_p, 1),
-                            'date_bid'       => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
-                            'heure_bid'      => date('H:i:s', strtotime($this->bids->added)),
-                            'projet-p'       => $this->lurl . '/' . $pageProjets,
-                            'motif_virement' => $this->clients->getLenderPattern($this->clients->id_client),
-                            'lien_fb'        => $lien_fb,
-                            'lien_tw'        => $lien_tw
-                        );
-
-                        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-bid', $varMail);
-                        $message->setTo($this->clients->email);
-                        $mailer = $this->get('mailer');
-                        $mailer->send($message);
-
-                        $this->clients_gestion_mails_notif->immediatement = 1;
-                    } else {
-                        $this->clients_gestion_mails_notif->immediatement = 0;
-                    }
-
-                    $this->clients_gestion_mails_notif->id_client       = $this->clients->id_client;
-                    $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_BID_PLACED;
-                    $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
-                    $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                    $this->clients_gestion_mails_notif->id_transaction  = $this->transactions->id_transaction;
-                    $this->clients_gestion_mails_notif->create();
 
                     $_SESSION['messPretOK'] = $this->lng['preteur-projets']['mess-pret-conf'];
 
@@ -497,11 +387,9 @@ class projectsController extends bootstrap
                 $this->txLenderMax          = 10;
             }
 
-            $this->CountEnchere = $this->bids->counter('id_project = ' . $this->projects->id_project);
-            $this->avgAmount    = $this->bids->getAVGAmount($this->projects->id_project);
-            $this->avgRate      = $this->projects->getAverageInterestRate($this->projects->id_project, $this->projects_status->status);
-            $this->status       = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
-            $this->direction    = 1;
+            $this->avgRate   = $this->projects->getAverageInterestRate($this->projects->id_project, $this->projects_status->status);
+            $this->status    = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
+            $this->direction = 1;
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
             $projectManager       = $this->get('unilend.service.project_manager');

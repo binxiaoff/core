@@ -6,6 +6,9 @@ class syntheseController extends bootstrap
     {
         parent::initialize();
 
+        $this->loadJs('default/highcharts.src');
+        $this->loadJs('default/jquery.carouFredSel-6.2.1-packed');
+
         $this->catchAll = true;
 
         $this->setHeader('header_account');
@@ -45,7 +48,6 @@ class syntheseController extends bootstrap
         $this->clients_status_history  = $this->loadData('clients_status_history');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
 
-        // Recuperation du bloc nos-partenaires
         $this->blocs->get('cgv', 'slug');
         $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
         foreach ($lElements as $b_elt) {
@@ -54,7 +56,6 @@ class syntheseController extends bootstrap
             $this->bloc_cgvComplement[$this->elements->slug] = $b_elt['complement'];
         }
 
-        // form qs
         if (isset($_POST['send_form_qs'])) {
             $form_ok = true;
             if (!isset($_POST['secret-question']) || $_POST['secret-question'] == '') {
@@ -67,7 +68,6 @@ class syntheseController extends bootstrap
                 $form_ok = false;
             }
 
-            // form ok
             if ($form_ok == true) {
                 $this->clients->secrete_question = $_POST['secret-question'];
                 $this->clients->secrete_reponse  = md5($_POST['secret-response']);
@@ -115,40 +115,35 @@ class syntheseController extends bootstrap
         $this->settings->get('Heure fin periode funding', 'type');
         $this->heureFinFunding = $this->settings->value;
 
-        // On recupere les projets favoris
         $lesFav = $this->favoris->projetsFavorisPreteur($this->clients->id_client);
 
-        // Liste des projets favoris
         if ($lesFav == false) {
             $this->lProjetsFav = 0;
         } else {
             $this->lProjetsFav = $this->projects->select('id_project IN (' . $lesFav . ')');
+            foreach ($this->lProjetsFav as $iKey => $aProject) {
+                $this->lProjetsFav[$iKey]['avgrate'] = $this->ficelle->formatNumber($this->projects->getAverageInterestRate($aProject['id_project']));
+            }
         }
 
-        // Liste des projets en cours (projets a decouvrir)
-        $aProjectsInFunding   = $this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING, null, 'p.date_retrait ASC', 0, 30);
-        $this->lProjetEncours = $aProjectsInFunding;
+        $this->lProjetEncours = $this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING, null, 'p.date_retrait ASC', 0, 30);
+        foreach ($this->lProjetEncours as $iKey => $aProject) {
+            $this->lProjetEncours[$iKey]['avgrate'] = $this->ficelle->formatNumber($this->projects->getAverageInterestRate($aProject['id_project'], $aProject['status']), 1);
+        }
 
-        $this->nbLoan = $this->loans->getProjectsCount($this->lenders_accounts->id_lender_account);
-
-        // somme des bids en cours
+        $this->nbLoan         = $this->loans->getProjectsCount($this->lenders_accounts->id_lender_account);
         $this->sumBidsEncours = $this->bids->sumBidsEncours($this->lenders_accounts->id_lender_account);
-
-        // somme Prêté
-        $this->sumPrets = $this->loans->sumPrets($this->lenders_accounts->id_lender_account);
-
-        // somme remboursé
+        $this->sumPrets       = $this->loans->sumPrets($this->lenders_accounts->id_lender_account);
         $this->sumRembMontant = $this->echeanciers->getSumRemb($this->lenders_accounts->id_lender_account, 'capital');
+
         // somme retant du (capital) (a rajouter en prod)
         $ProblematicProjects    = $this->echeanciers->getProblematicProjects($this->lenders_accounts->id_lender_account);
         $this->nbProblems       = $ProblematicProjects['projects'];
         $this->sumProblems      = $ProblematicProjects['capital'];
         $this->sumRestanteARemb = $this->echeanciers->getSumARemb($this->lenders_accounts->id_lender_account, 'capital') - $this->sumProblems;
 
-        // somme retenues fiscales remboursés
         $this->sumRevenuesFiscalesRemb = $this->echeanciers->getSumRevenuesFiscalesRemb($this->lenders_accounts->id_lender_account . ' AND status_ra = 0');
 
-        // somme des interets
         $this->sumInterets = $this->echeanciers->getSumRemb($this->lenders_accounts->id_lender_account . ' AND status_ra = 0', 'interets');
         $this->sumInterets -= $this->sumRevenuesFiscalesRemb; // interets net
 
@@ -161,7 +156,6 @@ class syntheseController extends bootstrap
 
         $this->SumDepot = $this->wallets_lines->getSumDepot($this->lenders_accounts->id_lender_account, '10,30');
 
-        // Année de creation
         $anneeCreationCompte = date('Y', strtotime($this->clients->added));
 
         $this->arrayMois = array(
@@ -179,19 +173,14 @@ class syntheseController extends bootstrap
             '12' => 'DEC'
         );
 
-        // variables pour une boucle
         $c = 1;
         $d = 0;
 
-        // On parcourt toutes les années de la creation du compte a aujourd'hui
         for ($annee = $anneeCreationCompte; $annee <= date('Y'); $annee++) {
-            // Revenus mensuel
             $tabSumRembParMois[$annee]             = $this->echeanciers->getSumRembByMonthsCapital($this->lenders_accounts->id_lender_account, $annee); // captial remboursé / mois
             $tabSumIntbParMois[$annee]             = $this->echeanciers->getSumIntByMonths($this->lenders_accounts->id_lender_account . ' AND status_ra = 0 ', $annee); // intérets brut / mois
-            $tabSumRevenuesfiscalesParMois[$annee] = $this->echeanciers->getSumRevenuesFiscalesByMonths($this->lenders_accounts->id_lender_account . ' AND status_ra = 0 ',
-                $annee); // revenues fiscales / mois
+            $tabSumRevenuesfiscalesParMois[$annee] = $this->echeanciers->getSumRevenuesFiscalesByMonths($this->lenders_accounts->id_lender_account . ' AND status_ra = 0 ', $annee);
 
-            // on fait le tour sur l'année
             for ($i = 1; $i <= 12; $i++) {
                 $a                                            = $i;
                 $a                                            = ($i < 10 ? '0' . $a : $a);
@@ -319,7 +308,7 @@ class syntheseController extends bootstrap
         $this->iDisplayTotalNumberOfBids     = $this->bids->counter('id_lender_account = ' . $this->lenders_accounts->id_lender_account);
         $aProjectsWithBids = array();
 
-        foreach ($aProjectsInFunding as $iKey => $aProject) {
+        foreach ($this->lProjetEncours as $iKey => $aProject) {
             if (0 < $this->bids->counter('id_project = ' . $aProject['id_project'] . ' AND id_lender_account = ' . $this->lenders_accounts->id_lender_account)) {
                 $this->aOngoingBidsByProject[$iKey]                 = $aProject;
                 $this->aOngoingBidsByProject[$iKey]['oEndFunding']  = \DateTime::createFromFormat('Y-m-d H:i:s', $aProject['date_retrait_full']);
