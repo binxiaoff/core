@@ -66,10 +66,10 @@ class BidManager
         $oWalletsLine = $this->oEntityManager->getRepository('wallets_lines');
         /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
         $oWelcomeOfferDetails = $this->oEntityManager->getRepository('offres_bienvenues_details');
-        /** @var \projects_status $oProjectStatus */
-        $oProjectStatus = $this->oEntityManager->getRepository('projects_status');
-        /** @var \projects $oProject */
-        $oProject = $this->oEntityManager->getRepository('projects');
+        /** @var \projects_status $projectStatus */
+        $projectStatus = $this->oEntityManager->getRepository('projects_status');
+        /** @var \projects $project */
+        $project = $this->oEntityManager->getRepository('projects');
 
         $this->oEntityManager->getRepository('transactions_types'); //load for constant use
 
@@ -90,17 +90,18 @@ class BidManager
             return false;
         }
 
-        $oProjectStatus->getLastStatut($iProjectId);
-        if (false === in_array($oProjectStatus->status, array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING))) {
+        $projectStatus->getLastStatut($iProjectId);
+        if (false === in_array($projectStatus->status, array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING))) {
             return false;
         }
 
-        $oProject->get($iProjectId);
+        $project->get($iProjectId);
         $oCurrentDate = new \DateTime();
-        $oEndDate  = new \DateTime($oProject->date_retrait_full);
-        if ($oProject->date_fin != '0000-00-00 00:00:00') {
-            $oEndDate = new \DateTime($oProject->date_fin);
+        $oEndDate  = new \DateTime($project->date_retrait_full);
+        if ($project->date_fin != '0000-00-00 00:00:00') {
+            $oEndDate = new \DateTime($project->date_fin);
         }
+        
         if ($oCurrentDate > $oEndDate) {
             return false;
         }
