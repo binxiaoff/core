@@ -64,9 +64,8 @@
                     </form><!-- /.site-search -->
 
                     <div class="site-user">
-                        <a href="{{ path('login') }}" class="btn-site-login" tabindex="3"><span class="icon fa-lock"></span>
-                            <span class="label">{% trans %} header_site-user-register {% endtrans %}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-                                {% trans %} header_site-user-login {% endtrans %}</span></a>
+                        <a href="{{ path('login') }}" class="btn-site-login" tabindex="3">
+                            <span class="label">{% trans %} header_site-user-register {% endtrans %}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; {% trans %} header_site-user-login {% endtrans %}</span></a>
                     </div><!-- /.site-user -->
                 {% endblock %}
 
