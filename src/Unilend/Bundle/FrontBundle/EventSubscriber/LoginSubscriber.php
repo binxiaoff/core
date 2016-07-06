@@ -47,11 +47,7 @@ class LoginSubscriber implements EventSubscriberInterface
         if (false === $clientNotificationSettings->select('id_client = ' . $user->getClientId())){
             $this->notificationManager->generateDefaultNotificationSettings($clients);
         }
-
-
     }
-
-
 
     public function onAuthenticationFailure(AuthenticationFailureEvent $event)
     {
@@ -66,6 +62,4 @@ class LoginSubscriber implements EventSubscriberInterface
         $loginLog->retour      = $event->getAuthenticationException()->getMessageKey();
         $loginLog->create();
     }
-
-
 }
