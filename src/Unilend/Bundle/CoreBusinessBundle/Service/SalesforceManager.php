@@ -7,31 +7,6 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class SalesforceManager
 {
-    /**
-     * constant to specify path for extract
-     */
-    const PATH_EXTRACT = '/dataloader/extract/';
-
-    /**
-     * constant to specify path dataloader conf
-     */
-    const PATH_DATALOADER_CONF = '/dataloader/conf/';
-
-    /**
-     * constant to specify path for status log csv send by the dataloader
-     */
-    const PATH_SUCCESS_LOG = '/dataloader/status';
-
-    /**
-     * constant to specify dataloader version
-     */
-    const DATALOADER_VERSION = '26.0.0';
-
-    /**
-     * constant to specify the name of prospect's file for check if become client or not
-     */
-    const FILE_PROSPECTS_ONLY = 'tempProspect.csv';
-
     /** @var LoggerInterface */
     private $oLogger;
 
@@ -45,22 +20,26 @@ class SalesforceManager
     private $oEntityManager;
 
     /** @var string */
-    private $sRootDir;
+    private $sExtractionDir;
+
+    /** @var string */
+    private $configDir;
 
     /**
      * SalesForceManager constructor.
      * @param EntityManager $oEntityManager
-     * @param $sRootDir
+     * @param $sExtractionDir
+     * @param $configDir
      * @param LoggerInterface $oLogger
      */
-    public function __construct(EntityManager $oEntityManager, $sRootDir, LoggerInterface $oLogger)
+    public function __construct(EntityManager $oEntityManager, $sExtractionDir, $configDir, LoggerInterface $oLogger)
     {
         $this->oEntityManager = $oEntityManager;
-        $this->sRootDir = $sRootDir;
+        $this->sExtractionDir = $sExtractionDir;
+        $this->configDir = $configDir;
         $this->oLogger = $oLogger;
         $this->aSearchCharacter = array("\r\n", "\n", "\t", "'", ';', '"');
         $this->aReplaceCharacter = array('/', '/', '', '', '', '');
-        $this->deleteStatusLog();
     }
 
     public function extractCompanies()
@@ -130,10 +109,11 @@ class SalesforceManager
     public function extractProspects()
     {
         try {
+            /** @var Statement $oStatement */
             $oStatement = $this->oEntityManager->getRepository('prospects')->getProspectsSalesForce();
             if ($oStatement) {
                 $iTimeStartCsv = microtime(true);
-                $rCsvFile = fopen($this->sRootDir . self::PATH_EXTRACT . 'preteurs.csv', 'a');
+                $rCsvFile = fopen($this->sExtractionDir . '/' . 'preteurs.csv', 'a');
                 $sNom = $sPrenom = $sEmail = '';
                 while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
                     $aRow = array_map(array($this, 'cleanValue'), $aRow);
@@ -210,7 +190,7 @@ class SalesforceManager
         if (true === $this->createExtractDir()) {
             $iTimeStartCsv = microtime(true);
             $sNameFile .= (1 !== preg_match('/(\.csv)$/i', $sNameFile)) ? '.csv' : '';
-            $rCsvFile = fopen($this->sRootDir . self::PATH_EXTRACT . $sNameFile, 'w');
+            $rCsvFile = fopen($this->sExtractionDir . '/' . $sNameFile, 'w');
             $iCountLine = 0;
             while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
                 $aRow = array_map(array($this, 'cleanValue'), $aRow);
@@ -242,32 +222,16 @@ class SalesforceManager
 
     private function createExtractDir()
     {
-        if (false === is_dir($this->sRootDir . self::PATH_EXTRACT)) {
-            if (false === mkdir($this->sRootDir . self::PATH_EXTRACT, 0777, true)) {
+        if (false === is_dir($this->sExtractionDir)) {
+            if (false === mkdir($this->sExtractionDir, 0775, true)) {
                 $this->oLogger->error(
-                    'Error on creating directory ' . $this->sRootDir . self::PATH_EXTRACT,
+                    'Error on creating directory ' . $this->sExtractionDir,
                     array(__FILE__ . ' on line ' . __LINE__)
                 );
                 return false;
             }
         }
         return true;
-    }
-
-    /**
-     * @param string $sPath path of directory to unlink. If null, path of success log.
-     */
-    private function deleteStatusLog($sPath = null)
-    {
-        $sPath = (true === is_null($sPath)) ? $this->sRootDir . self::PATH_SUCCESS_LOG : $sPath;
-        if (true === is_dir($sPath)) {
-            $bUnlinkSuccessLog = $this->delTree($sPath);
-            $sTextLog = (true === $bUnlinkSuccessLog) ? 'success.' : 'error.';
-            $this->oLogger->info(
-                'Deleting ' . self::PATH_SUCCESS_LOG . ' with message ' . $sTextLog,
-                array(__FILE__ . ' at line ' . __LINE__)
-            );
-        }
     }
 
     private function cleanValue($sValue)

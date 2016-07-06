@@ -87,7 +87,8 @@
 
         <service id="unilend.service.salesforce" class="Unilend\Bundle\CoreBusinessBundle\Service\SalesforceManager">
             <argument type="service" id="unilend.service.entity_manager"/>
-            <argument>%kernel.root_dir%</argument>
+            <argument>%path.user%/dataloader</argument>
+            <argument>%kernel.root_dir%/dataloader/conf</argument>
             <argument type="service" id="logger"/>
         </service>
     </services>
