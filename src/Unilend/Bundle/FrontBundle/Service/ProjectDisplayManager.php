@@ -28,9 +28,10 @@ class ProjectDisplayManager
 
         $aProjects = $projects->selectProjectsByStatus(implode(',', $aProjectStatus), null, $sOrderBy, $aRateRange);
 
-        foreach ($projects->selectProjectsByStatus(implode(',', $aProjectStatus), null, $sOrderBy, $aRateRange) as $key => $project) {
+        foreach ($aProjects as $key => $project) {
             $aCompany                               = $company->select('id_company = ' . $project['id_company']);
             $aProjects[$key]['company']             = array_shift($aCompany);
+            $aProjects[$key]['category']            = $aProjects[$key]['company']['sector'];
 
             if (isset($iClientID)) {
                 $aProjects[$key]['currentUser'] = $this->getClientBidsForProject($iClientID, $project['id_project']);

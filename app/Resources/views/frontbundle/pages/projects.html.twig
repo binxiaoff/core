@@ -10,14 +10,15 @@ permalink: route('projets')
 
 {% block siteContent %}
     <article id="projets-index" class="page">
-
         <header class="page-header page-header-hero">
             <div class="hero-wrap">
                 <div class="site-wrap">
-                    <h2 class="page-title">{{ __('%s projects in progress, %s projects financed, %s active lenders.', 'pageProjetsIndexHeaderTitle')|format(placeholderData.totalProjectsInProgress|__num|nbsp, placeholderData.totalProjectsFinanced|__num|nbsp, placeholderData.totalLendersActive|__num|nbsp) }}</h2>
+                    <h2 class="page-title">
+                        {% trans with { '%numberProjects%' : 123456 , '%numberFinancedProjects%' : 58795 , '%numberActiveLenders%' : 77888 } %} projects-listing_page-title {% endtrans %}
+                    </h2>
                 </div><!-- /.site-wrap -->
 
-        {% include 'partials/components/list-socialmedia.twig' %}
+                {% include 'partials/components/list-socialmedia.html.twig' %}
             </div><!-- /.hero-wrap -->
         </header><!-- /.page-header -->
 
@@ -26,10 +27,10 @@ permalink: route('projets')
                 {% include 'partials/components/project-list.html.twig' %}
                 <div class="row page-section-footer">
                     <div class="btn-toolbar">
-                        <a href="{{ route('preter/new') }}" class="btn-primary">Pas encore prêteur&nbsp;? Créer un compte</a>
+                        <a href="{{ route('preter/new') }}" class="btn-primary">{% trans %} projects-listing_become-lender-button {% endtrans %}</a>
                     </div>
                     <p>
-                        <a href="{{ route('emprunter') }}" class="link c-p2">Vous êtes une entreprise et souhaitez emprunter&nbsp;?</a>
+                        <a href="{{ route('emprunter') }}" class="link c-p2">{% trans %} projects-listing_become-borrower-button {% endtrans %}</a>
                     </p>
                 </div><!-- /.page-section-footer -->
             </div><!-- /.site-wrap -->

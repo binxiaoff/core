@@ -26,21 +26,21 @@
 
     {#provisoire pending les filtres par david#}
     {% if filterItems is not defined  %}
-        {% set filterItems = {
+        {% set filterItems = [{
             column: 'category',
-            sortBy: 'categoryId',
+            sortBy: 'category',
             label: __('Category', 'projectListFilterCategory')
             },{
             column: 'info',
-            sortBy: 'cost',
+            sortBy: 'amount',
             label: __('Cost', 'projectListFilterCost')
             },{
             column: 'stats',
-            sortBy: 'interest',
+            sortBy: 'avg_rate',
             label: __('Interest', 'projectListFilterInterest')
             },{
             column: 'rating',
-            sortBy: 'rating',
+            sortBy: 'risk',
             label: __('Rating', 'projectListFilterRating')
             },{
             column: 'period',
@@ -49,8 +49,8 @@
             },{
             column: 'view',
             sortBy: false,
-            label: '&nbsp;'
-            } %}
+            label: ''
+            }] %}
     {% endif %}
 
     {% set sortAttrs = '' %}
@@ -71,15 +71,9 @@
         <div class="project-list-content tab-content">
             <div id="project-list-view" role="tabpanel" class="tab-pane active">
                 {% if settings.showFilters == true and filterItems is not empty %}
-                    {# Build data-sortable-{column} attributes #}
-                    {% for filterItem in filterItems %}
-                        {% if filterItem.sortBy != false %}
-                            {% set sortAttrs = sortAttrs ~ ' data-sortable-' ~ (filterItem.column|e('html_attr')) ~ '="' ~ (listItem[filterItem.sortBy]|e('html_attr') ~ '"') %}
-                        {% endif %}
-                    {% endfor %}
                     <div class="project-list-filters">
                         {% for filterItem in filterItems %}
-                            <div class="project-list-item-{{ sortAttrs }}">
+                            <div class="project-list-item-{{ filterItem.column|e('html_attr') }} project-list-filter"{% if filterItem.sortBy != false %} data-sortable-by="{{ filterItem.column|e('html_attr') }}"{% endif %}>
                                 {#TODO @David c quoi ce javascript ici ??#}
                                 <a href="javascript:;">
                                     <span class="label">{{ filterItem.label }}</span>
@@ -93,6 +87,13 @@
                 {% endif %}
                 <div class="project-list-items" data-sortable-content>
                     {% for project in projects %}
+                        {# Build data-sortable-{column} attributes #}
+                        {% for filterItem in filterItems %}
+                            {% if filterItem.sortBy != false %}
+
+                                {% set sortAttrs = sortAttrs ~ ' data-sortable-' ~ (filterItem.column|e('html_attr')) ~ '="' ~ (project[filterItem.sortBy]|e('html_attr') ~ '"') %}
+                            {% endif %}
+                        {% endfor %}
 
                         {# Set CSS class to show expired project #}
                         {% set classProjectExpired = '' %}
@@ -173,7 +174,7 @@
                             <div class="project-list-item-period">
                                 {% if project.daysLeft > 0 and project.daysLeft <= 2 %}
                                     <span class="ui-has-timecount" data-timecount-to="{{ project.date_retrait_full|escape('html_attr') }}">&hellip;</span>
-                                {% elseif project.daysLeft == 0 %}
+                                {% elseif project.daysLeft <= 0 %}
                                     {% trans %} project-list_project-finished {% endtrans %}
                                 {% else %}
                                     {% trans with {'%remainingDays%' : project.daysLeft } %} project-list_remaining-days {% endtrans %}
@@ -242,7 +243,7 @@
 
                                     {% set mapviewItem = {
                                     id: 'marker' ~ project.id,
-                                    categoryId: project.categoryId,
+                                    categoryId: project.company.sector,
                                     latLng: [project.lat, project.lng],
                                     title: project.title,
                                     description: '<div style="font-style: italic;">' ~ project.company.city ~ ', ' ~ project.company.zip ~ '</div><div class="rating rating-' ~ classRating ~ '"><span class="sr-only">Rated ' ~ project.rating ~ ' out of 5</span></span></div>',
