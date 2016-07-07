@@ -87,7 +87,7 @@ class tree extends tree_crud
     //**************************************** AJOUTS ******************************************//
     //******************************************************************************************//
     // Definition des types d'éléments
-    public $typesElements = array('Texte', 'Textearea', 'Texteditor', 'Lien Interne', 'Lien Externe', 'Image', 'Fichier', 'Fichier Protected', 'Date', 'Checkbox');
+    public $typesElements = array('Texte', 'Textearea', 'Texteditor', 'Lien Interne', 'Lien Externe', 'Image', 'Fichier', 'Fichier Protected', 'Date', 'Checkbox', 'SVG');
 
     // Affichage des elements de formulaire en fonction du type d'élément
     public function displayFormElement($id_tree, $element, $type = 'tree', $langue = 'fr')
@@ -317,6 +317,28 @@ class tree extends tree_crud
                         <th class="bas">
                             <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . '</label> :
                             <input type="checkbox" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" value="1"' . ($this->params['tree_elements']->value == 1 ? ' checked="checked"' : '') . ' />
+                        </th>
+                    </tr>';
+                    break;
+
+                case 'SVG':
+                    echo '
+                    <tr>
+                        <th>
+                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' : </label>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th class="bas">
+                            <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">
+                                <option value=""></option>
+                                <option value="contact"' . ($this->params['tree_elements']->value === 'contact' ? ' selected' : '') . '>Contact</option>
+                                <option value="fiscalite"' . ($this->params['tree_elements']->value === 'fiscalite' ? ' selected' : '') . '>Fiscalité</option>
+                                <option value="legal"' . ($this->params['tree_elements']->value === 'legal' ? ' selected' : '') . '>Légal</option>
+                                <option value="plandusite"' . ($this->params['tree_elements']->value === 'plandusite' ? ' selected' : '') . '>Plan du site</option>
+                                <option value="recrutement"' . ($this->params['tree_elements']->value === 'recrutement' ? ' selected' : '') . '>Recrutement</option>
+                                <option value="securite"' . ($this->params['tree_elements']->value === 'securite' ? ' selected' : '') . '>Sécurité</option>
+                            </select>
                         </th>
                     </tr>';
                     break;

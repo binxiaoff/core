@@ -1,14 +1,18 @@
 <?php
-
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Cache\Adapter\Memcache\MemcacheCachePool;
+use Psr\Http\Message\ResponseInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
@@ -16,9 +20,10 @@ use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 use Unilend\Bundle\FrontBundle\Service\TestimonialManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
-
 class MainController extends Controller
 {
+    const CMS_TEMPLATE_BIG_HEADER = 101;
+    const CMS_TEMPLATE_NAV        = 102;
 
     /**
      * @Route("/home/{type}", defaults={"type" = "acquisition"}, name="home")
@@ -34,7 +39,7 @@ class MainController extends Controller
         /** @var ProjectDisplayManager $projectDisplayManager */
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
         /** @var ProjectManager $projectManager */
-        $projectManager     = $this->get('unilend.service.project_manager');
+        $projectManager = $this->get('unilend.service.project_manager');
         /** @var WelcomeOfferManager $welcomeOfferManager */
         $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
         /** @var TranslationManager $translationManager */
@@ -51,7 +56,8 @@ class MainController extends Controller
         $aTemplateVariables['projectAmountMin']  = $projectManager->getMinProjectAmount();
         $aTemplateVariables['borrowingMotives']  = $translationManager->getTranslatedBorrowingMotiveList();
         $aTemplateVariables['showPagination']    = false;
-        $aRateRange                              = array(\bids::BID_RATE_MIN, \bids::BID_RATE_MAX);
+
+        $aRateRange = array(\bids::BID_RATE_MIN, \bids::BID_RATE_MAX);
 
         if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
             && $this->get('security.authorization_checker')->isGranted('ROLE_LENDER')
@@ -111,7 +117,8 @@ class MainController extends Controller
             $iProjectAmountMax = $projectManager->getMaxProjectAmount();
             $iProjectAmountMin = $projectManager->getMinProjectAmount();
 
-            if (in_array($period, $aProjectPeriods)
+            if (
+                in_array($period, $aProjectPeriods)
                 && $amount >= $iProjectAmountMin
                 && $amount <= $iProjectAmountMax
             ){
@@ -145,13 +152,93 @@ class MainController extends Controller
 
         /** @var ProjectRequestManager $projectRequestManager */
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
-        $iProjectID = $projectRequestManager->saveSimulatorRequest($aFormData);
 
-        $session   = $request->getSession();
-        $session->set('esim/project_id', $iProjectID);
-
+        $session = $request->getSession();
+        $session->set('esim/project_id', $projectRequestManager->saveSimulatorRequest($aFormData));
 
         return $this->redirectToRoute('project_request_step_1');
     }
 
+    /**
+     * @param Request $request
+     * @return ResponseInterface
+     */
+    public function cmsAction(Request $request)
+    {
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var \tree $tree */
+        $tree = $entityManager->getRepository('tree');
+
+        if (false === $tree->get(['slug' => substr($request->attributes->get('routeDocument')->getPath(), 1)])) {
+            throw new NotFoundHttpException('Page with slug ' . $request->attributes->get('routeDocument')->getPath() . ' could not be found');
+        }
+
+        /** @var MemcacheCachePool $cachePool */
+        $cachePool  = $this->get('memcache.default');
+        $cachedItem = $cachePool->getItem('Home_Tree_Childs_Elements_' . $tree->id_tree);
+
+        if (false === $cachedItem->isHit()) {
+            $content    = [];
+            $complement = [];
+
+            /** @var \tree_elements $treeElements */
+            $treeElements = $entityManager->getRepository('tree_elements');
+            /** @var \elements $elements */
+            $elements = $entityManager->getRepository('elements');
+
+            foreach ($treeElements->select('id_tree = ' . $tree->id_tree) as $elt) {
+                $elements->get($elt['id_element']);
+                $content[$elements->slug]    = $elt['value'];
+                $complement[$elements->slug] = $elt['complement'];
+            }
+
+            $finalElements = [
+                'content'    => $content,
+                'complement' => $complement
+            ];
+
+            $cachedItem->set($finalElements)->expiresAfter(3600);
+            $cachePool->save($cachedItem);
+        } else {
+            $finalElements = $cachedItem->get();
+        }
+
+        switch ($tree->id_template) {
+            case self::CMS_TEMPLATE_BIG_HEADER:
+                return $this->renderCmsBigHeader($tree, $finalElements['content'], $finalElements['complement']);
+            case self::CMS_TEMPLATE_NAV:
+                return $this->renderCmsNav($tree, $content, $complement);
+            default:
+                return new RedirectResponse('/');
+        }
+    }
+
+    /**
+     * @param \tree $tree
+     * @param array $content
+     * @param array $complement
+     * @return Response
+     */
+    private function renderCmsBigHeader(\tree $tree, array $content, array $complement)
+    {
+        $page                = new \stdClass();
+        $page->title         = $content['titre'];
+        $page->header_image  = $content['image-header'];
+        $page->left_content  = $content['bloc-gauche'];
+        $page->right_content = $content['bloc-droite'];
+
+        return $this->render('pages/template-big-header.html.twig', ['page' => $page]);
+    }
+
+    /**
+     * @param \tree $tree
+     * @param array $content
+     * @param array $complement
+     * @return Response
+     */
+    private function renderCmsNav(\tree $tree, array $content, array $complement)
+    {
+
+    }
 }

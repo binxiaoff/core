@@ -80,16 +80,6 @@ class StaticPagesController extends Controller
     }
 
     /**
-     * @Route("/guide-du-preteur", name="lender_guide")
-     *
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function lenderGuideShowAction()
-    {
-
-    }
-
-    /**
      * @Route("/fiscalite", name="lender_fiscality")
      *
      * @return \Symfony\Component\HttpFoundation\Response
