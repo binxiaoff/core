@@ -1,4 +1,3 @@
-{% import 'partials/modules/_pagination.macros.twig' as pagination %}
 
 {# Default Settings #}
     {% set settings = {
@@ -9,19 +8,6 @@
 
     markExpired: true,
     markInvolved: true
-    } %}
-
-    {# Default Pagination Settings #}
-    {# See 'partials/modules/_pagination.macros.twig' for more details #}
-    {% set paginationSettings = {
-    itemLabelSingle: __('', 'projectListPaginationItemLabelSingle'),
-    itemLabelPlural: __('', 'projectListPaginationItemLabelPlural'),
-    pageUrl: 'page/%index%',
-    totalItems: projects|length,
-    currentIndex: 1,
-    itemsPerPage: 20,
-    totalPages: 0,
-    includeWrap: true
     } %}
 
     {#provisoire pending les filtres par david#}
@@ -74,7 +60,6 @@
                     <div class="project-list-filters">
                         {% for filterItem in filterItems %}
                             <div class="project-list-item-{{ filterItem.column|e('html_attr') }} project-list-filter"{% if filterItem.sortBy != false %} data-sortable-by="{{ filterItem.column|e('html_attr') }}"{% endif %}>
-                                {#TODO @David c quoi ce javascript ici ??#}
                                 <a href="javascript:;">
                                     <span class="label">{{ filterItem.label }}</span>
                                     {% if filterItem.sortBy != false %}
@@ -90,7 +75,6 @@
                         {# Build data-sortable-{column} attributes #}
                         {% for filterItem in filterItems %}
                             {% if filterItem.sortBy != false %}
-
                                 {% set sortAttrs = sortAttrs ~ ' data-sortable-' ~ (filterItem.column|e('html_attr')) ~ '="' ~ (project[filterItem.sortBy]|e('html_attr') ~ '"') %}
                             {% endif %}
                         {% endfor %}
@@ -131,7 +115,7 @@
                                 {% endif %}
                             </div>
                             <div class="project-list-item-info">
-                                <h3 class="project-list-item-title"><a href="{{ project.slug }}">{{ project.title }}</a></h3>
+                                <h3 class="project-list-item-title"><a href="{{ path('project_show', {'projectSlug' : project.slug }) }}">{{ project.title }}</a></h3>
                                 <div class="project-list-item-meta">
                                     <h4 class="project-list-item-location">
                                         <span class="icon fa-map-marker"></span> {{ project.company.city }}, {{ project.company.zip }}
@@ -181,7 +165,7 @@
                                 {% endif %}
                             </div>
                             <div class="project-list-item-view">
-                                <a href="{{ project.slug }}">
+                                <a href="{{ path('project_show', {'projectSlug' : project.slug }) }}">
                                     <span class="icon fa-angle-right"></span><span class="sr-only">{% trans %} project-list_view-project-label {% endtrans %}</span>
                                 </a>
                             </div>
@@ -189,7 +173,7 @@
                     {% endfor %}
                 </div><!-- /.project-list-items -->
                 {% if settings.showPagination == true %}
-                    {{ pagination.render(paginationSettings) }}
+                    {% include 'partials/components/pagination.html.twig' %}
                 {% endif %}
             </div><!-- /#project-list-view.tab-pane -->
             <div id="project-list-map" role="tabpanel" class="tab-pane">
@@ -254,7 +238,7 @@
                                 {% endif %}
 
                                 <li class="project {{ classProjectExpired }} {{ classUserInvolved }}"{% if mapviewItem is defined %} data-mapview-markerid="{{ mapviewItem.id }}" data-mapview-item='{{ mapviewItem|json_encode|escape('html_attr') }}'{% endif %}>
-                                    <div class="project-name"><a href="{{ project.slug }}">{{ project.title }}</a></div>
+                                    <div class="project-name"><a href="{{ path('project_show', {'projectSlug' : project.slug }) }}">{{ project.title }}</a></div>
                                     <div class="project-location">{{ project.company.city }}, {{ project.company.zip }}</div>
                                     <div class="project-cost">{{ project.amount|__num|nbsp }}€</div>
                                     <div class="project-rating">
@@ -293,13 +277,13 @@
                                             </div><!-- /.project-useroffers -->
                                         {% endif %}
                                     </div>
-                                    <a href="{{ project.slug }}" class="project-hotspot">&nbsp;</a>
+                                    <a href="{{ path('project_show', {'projectSlug' : project.slug }) }}" class="project-hotspot">&nbsp;</a>
                                 </li>
                             {% endfor %}
 
                             {# Pagination #}
-                            {% if projects is not empty and settings.showPagination == true %}
-                                {{ pagination.render(paginationSettings) }}
+                            {% if settings.showPagination == true %}
+                                {% include 'partials/components/pagination.html.twig' %}
                             {% endif %}
                         </ul>
                     </div>

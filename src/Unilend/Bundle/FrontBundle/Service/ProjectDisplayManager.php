@@ -19,22 +19,22 @@ class ProjectDisplayManager
     }
 
 
-    public function getProjectsForDisplay(array $aProjectStatus, $sOrderBy, $aRateRange, $iClientID = null)
+    public function getProjectsForDisplay(array $projectStatus, $orderBy, $rateRange,  $start, $limit, $clientID = null)
     {
         /** @var \projects $projects */
         $projects  = $this->entityManager->getRepository('projects');
         /** @var \companies $company */
         $company = $this->entityManager->getRepository('companies');
 
-        $aProjects = $projects->selectProjectsByStatus(implode(',', $aProjectStatus), null, $sOrderBy, $aRateRange);
+        $aProjects = $projects->selectProjectsByStatus(implode(',', $projectStatus), null, $orderBy, $rateRange, $start, $limit, false);
 
         foreach ($aProjects as $key => $project) {
             $aCompany                               = $company->select('id_company = ' . $project['id_company']);
             $aProjects[$key]['company']             = array_shift($aCompany);
             $aProjects[$key]['category']            = $aProjects[$key]['company']['sector'];
 
-            if (isset($iClientID)) {
-                $aProjects[$key]['currentUser'] = $this->getClientBidsForProject($iClientID, $project['id_project']);
+            if (isset($clientID)) {
+                $aProjects[$key]['currentUser'] = $this->getClientBidsForProject($clientID, $project['id_project']);
             }
         }
 
