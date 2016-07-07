@@ -1,88 +1,90 @@
 {% if paginationSettings.totalPages > 1 %}
-    <nav class="pagination">
-        <div class="row">
-            <div class="col-pagination-info col-lg-4 col-md-4">
-                <div class="pagination-info">
-                    <span class="pagination-location">
-                        {% trans with { '%item%' : paginationSettings.currentIndexItems, '%items%' : paginationSettings.totalItems } %} projects-listing_pagination-info-location {% endtrans %}
-                    </span>
-                    {% if paginationSettings.currentIndex < paginationSettings.totalPages %}
-                        <a href="{{ path('project_list', {'page' : paginationSettings.currentIndex + 1 }) }}" class="link pagination-next">
-                            {% transchoice paginationSettings.itemsPerPage with {'%items%' : paginationSettings.itemsPerPage } %} projects-listing_pagination-info-next-label {% endtranschoice %}
-                        </a>
-                    {% endif %}
-                </div>
-            </div>
-            <div class="col-pagination-index col-lg-8 col-md-8">
-                <ul class="pagination-index">
-                    {% if paginationSettings.currentIndex > 1 %}
-                        <li role="presentation">
-                            <a href="{{ path('project_list', {'page' : paginationSettings.currentIndex - 1 }) }}">
-                                <span class="icon fa-angle-left"></span>
-                                <span class="sr-only">
-                                    {% trans with {'%items%' : paginationSettings.itemsPerPage } %} projects-listing_pagination-index-previous-label {% endtrans %}
-                                </span>
+    <div class="pagination-wrap">
+        <nav class="pagination">
+            <div class="row">
+                <div class="col-pagination-info col-lg-4 col-md-4">
+                    <div class="pagination-info">
+                        <span class="pagination-location">
+                            {% trans with { '%item%' : paginationSettings.currentIndexItems, '%items%' : paginationSettings.totalItems } %} projects-listing_pagination-info-location {% endtrans %}
+                        </span>
+                        {% if paginationSettings.currentIndex < paginationSettings.totalPages %}
+                            <a href="{{ path('project_list', {'page' : paginationSettings.currentIndex + 1 }) }}" class="link pagination-next">
+                                {% transchoice paginationSettings.itemsPerPage with {'%items%' : paginationSettings.itemsPerPage } %} projects-listing_pagination-info-next-label {% endtranschoice %}
                             </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-pagination-index col-lg-8 col-md-8">
+                    <ul class="pagination-index">
+                        {% if paginationSettings.currentIndex > 1 %}
+                            <li role="presentation">
+                                <a href="{{ path('project_list', {'page' : paginationSettings.currentIndex - 1 }) }}">
+                                    <span class="icon fa-angle-left"></span>
+                                    <span class="sr-only">
+                                        {% trans with {'%items%' : paginationSettings.itemsPerPage } %} projects-listing_pagination-index-previous-label {% endtrans %}
+                                    </span>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {# Track ellipses #}
+                        {% set elidedBeforeCurrent = false %}
+                        {% set elidedAfterCurrent = false %}
+
+                        {# Always render the first... #}
+                        <li role="presentation" class="{% if paginationSettings.currentIndex == 1 %}current{% endif %}">
+                            <a href="{{ path('project_list', { 'page' : 1 }) }}">1</a>
                         </li>
-                    {% endif %}
 
-                    {# Track ellipses #}
-                    {% set elidedBeforeCurrent = false %}
-                    {% set elidedAfterCurrent = false %}
-
-                    {# Always render the first... #}
-                    <li role="presentation" class="{% if paginationSettings.currentIndex == 1 %}current{% endif %}">
-                        <a href="{{ path('project_list', { 'page' : 1 }) }}">1</a>
-                    </li>
-
-                    {# Render inbetween numbers #}
-                    {% if paginationSettings.totalPages > 1 %}
-                        {% for i in 2..(paginationSettings.totalPages - 1) %}
-                            {# Current index #}
-                            {% set classCurrent = '' %}
-                            {% if paginationSettings.currentIndex == i %}
-                                {% set classCurrent = 'current' %}
-                            {% endif %}
-
-                            {# Output a number to be displayed #}
-                            {% if i in paginationSettings.indexPlan %}
-                                {% if i > 0 and i <= paginationSettings.totalPages %}
-                                    <li role="presentation" class="{{ classCurrent }}">
-                                        <a href="{{ path('project_list', {'page' : i}) }}">{{ i }}</a>
-                                    </li>
+                        {# Render inbetween numbers #}
+                        {% if paginationSettings.totalPages > 1 %}
+                            {% for i in 2..(paginationSettings.totalPages - 1) %}
+                                {# Current index #}
+                                {% set classCurrent = '' %}
+                                {% if paginationSettings.currentIndex == i %}
+                                    {% set classCurrent = 'current' %}
                                 {% endif %}
 
-                                {# Elide the numbers between the very first and the next to be displayed #}
-                            {% elseif i < paginationSettings.indexPlan[0] and elidedBeforeCurrent == false %}
-                                {% set elidedBeforeCurrent = true %}
-                                <li role="presentation" class="pagination-more">...</li>
+                                {# Output a number to be displayed #}
+                                {% if i in paginationSettings.indexPlan %}
+                                    {% if i > 0 and i <= paginationSettings.totalPages %}
+                                        <li role="presentation" class="{{ classCurrent }}">
+                                            <a href="{{ path('project_list', {'page' : i}) }}">{{ i }}</a>
+                                        </li>
+                                    {% endif %}
 
-                                {# Elide the numbers between the very last and the next to be displayed #}
-                            {% elseif i > paginationSettings.indexPlan[2] and elidedAfterCurrent == false %}
-                                {% set elidedAfterCurrent = true %}
-                                <li role="presentation" class="pagination-more">...</li>
-                            {% endif %}
-                        {% endfor %}
-                    {% endif %}
+                                    {# Elide the numbers between the very first and the next to be displayed #}
+                                {% elseif i < paginationSettings.indexPlan[0] and elidedBeforeCurrent == false %}
+                                    {% set elidedBeforeCurrent = true %}
+                                    <li role="presentation" class="pagination-more">...</li>
 
-                    {% if paginationSettings.totalPages > 1 %}
-                        <li role="presentation" class="{% if paginationSettings.currentIndex == paginationSettings.totalPages %}current{% endif %}">
-                            <a href="{{ path('project_list', {'page' : paginationSettings.totalPages }) }}">{{ paginationSettings.totalPages }}</a>
-                        </li>
-                    {% endif %}
+                                    {# Elide the numbers between the very last and the next to be displayed #}
+                                {% elseif i > paginationSettings.indexPlan[2] and elidedAfterCurrent == false %}
+                                    {% set elidedAfterCurrent = true %}
+                                    <li role="presentation" class="pagination-more">...</li>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
 
-                    {% if paginationSettings.currentIndex < paginationSettings.totalPages %}
-                        <li role="presentation">
-                            <a href="{{ path('project_list', {'page' : paginationSettings.currentIndex + 1 }) }}">
-                                <span class="sr-only">
-                                    {% transchoice paginationSettings.itemsPerPage with {'%items%' : paginationSettings.itemsPerPage } %} projects-listing_pagination-info-next-label {% endtranschoice %}
-                                </span>
-                                <span class="icon fa-angle-right"></span>
-                            </a>
-                        </li>
-                    {% endif %}
-                </ul>
+                        {% if paginationSettings.totalPages > 1 %}
+                            <li role="presentation" class="{% if paginationSettings.currentIndex == paginationSettings.totalPages %}current{% endif %}">
+                                <a href="{{ path('project_list', {'page' : paginationSettings.totalPages }) }}">{{ paginationSettings.totalPages }}</a>
+                            </li>
+                        {% endif %}
+
+                        {% if paginationSettings.currentIndex < paginationSettings.totalPages %}
+                            <li role="presentation">
+                                <a href="{{ path('project_list', {'page' : paginationSettings.currentIndex + 1 }) }}">
+                                    <span class="sr-only">
+                                        {% transchoice paginationSettings.itemsPerPage with {'%items%' : paginationSettings.itemsPerPage } %} projects-listing_pagination-info-next-label {% endtranschoice %}
+                                    </span>
+                                    <span class="icon fa-angle-right"></span>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
             </div>
-        </div>
-    </nav><!-- /.pagination -->
+        </nav>
+    </div><!-- /.pagination -->
 {% endif %}

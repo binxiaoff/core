@@ -98,6 +98,7 @@ class ProjectsController extends Controller
         }
 
         $aTemplateVariables['paginationSettings'] = $paginationSettings;
+        $aTemplateVariables['showPagination'] = true;
 
         return $this->render('pages/projects.html.twig', $aTemplateVariables);
     }
