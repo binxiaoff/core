@@ -4,7 +4,6 @@
     mapview: {},
 
     showFilters: true,
-    showPagination: true,
 
     markExpired: true,
     markInvolved: true
@@ -172,7 +171,7 @@
                         </article><!-- /.project-list-item -->
                     {% endfor %}
                 </div><!-- /.project-list-items -->
-                {% if settings.showPagination == true %}
+                {% if showPagination == true %}
                     {% include 'partials/components/pagination.html.twig' %}
                 {% endif %}
             </div><!-- /#project-list-view.tab-pane -->
@@ -282,7 +281,7 @@
                             {% endfor %}
 
                             {# Pagination #}
-                            {% if settings.showPagination == true %}
+                            {% if showPagination == true %}
                                 {% include 'partials/components/pagination.html.twig' %}
                             {% endif %}
                         </ul>

@@ -19,7 +19,7 @@ class ProjectDisplayManager
     }
 
 
-    public function getProjectsForDisplay(array $projectStatus, $orderBy, $rateRange,  $start, $limit, $clientID = null)
+    public function getProjectsForDisplay(array $projectStatus, $orderBy, $rateRange,  $start = null, $limit = null, $clientID = null)
     {
         /** @var \projects $projects */
         $projects  = $this->entityManager->getRepository('projects');
@@ -63,6 +63,14 @@ class ProjectDisplayManager
         ];
 
         return $aCurrentUserInformation;
+    }
+
+    public function getProjectInformationForDisplay($slug)
+    {
+        /** @var \projects $projects */
+        $projects = $this->entityManager->getRepository('projects');
+        /** @var array $project */
+        $project = $project->select();;
     }
 
 }

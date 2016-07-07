@@ -50,7 +50,7 @@ class MainController extends Controller
         $aTemplateVariables['projectAmountMax']  = $projectManager->getMaxProjectAmount();
         $aTemplateVariables['projectAmountMin']  = $projectManager->getMinProjectAmount();
         $aTemplateVariables['borrowingMotives']  = $translationManager->getTranslatedBorrowingMotiveList();
-
+        $aTemplateVariables['showPagination']    = false;
         $aRateRange                              = array(\bids::BID_RATE_MIN, \bids::BID_RATE_MAX);
 
         if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
