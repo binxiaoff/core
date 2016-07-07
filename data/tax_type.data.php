@@ -49,4 +49,43 @@ class tax_type extends tax_type_crud
     {
         return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM tax_type WHERE ' . $field . ' = "' . $id . '"')) > 0;
     }
+
+    /**
+     * @param string $country
+     * @param array $taxTypeId tax type to ignore
+     * @return array
+     */
+    public function getTaxRateByCountry($country = 'fr', array $taxTypeId = [])
+    {
+        $aTaxRate = [];
+        foreach ($this->getTaxDetailsByCountry($country, $taxTypeId) as $aRow) {
+            $aTaxRate[$aRow['id_tax_type']] = $aRow['rate'];
+        }
+        return $aTaxRate;
+    }
+
+    /**
+     * @param string $country
+     * @param array $taxTypeId
+     * @return array
+     * @throws Exception
+     */
+    public function getTaxDetailsByCountry($country = 'fr', array $taxTypeId = [])
+    {
+        $aBind = ['country' => $country];
+        $aType = ['country' => \PDO::PARAM_STR];
+        $sql   = '
+        SELECT 
+            id_tax_type,
+            rate
+        FROM tax_type tt 
+        WHERE tt.country = :country';
+
+        if (false === empty($taxTypeId)) {
+            $aBind['id_type'] = $taxTypeId;
+            $aType['id_type'] = \Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Connection::PARAM_INT_ARRAY;
+            $sql .= ' AND tt.id_tax_type NOT IN (:id_type)';
+        }
+        return $this->bdd->executeQuery($sql, $aBind, $aType)->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }
