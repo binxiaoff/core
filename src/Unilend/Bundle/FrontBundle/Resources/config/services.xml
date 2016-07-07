@@ -56,5 +56,9 @@
         <service id="unilend.frontbundle.service.highcharts_service" class="Unilend\Bundle\FrontBundle\Service\HighChartsService">
         </service>
 
+        <service id="unilend.frontbundle.provider.route_provider" class="Unilend\Bundle\FrontBundle\Service\RouteProvider">
+            <argument type="service" id="unilend.service.entity_manager" />
+            <argument type="service" id="memcache.default" />
+        </service>
     </services>
 </container>

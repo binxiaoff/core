@@ -1,11 +1,9 @@
 <?php
-
 namespace Unilend\Bundle\FrontBundle\Security;
 
-
-use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
 use Symfony\Component\Security\Core\Exception\AccountExpiredException;
 use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
@@ -22,21 +20,25 @@ use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
-
 class LoginAuthenticator extends AbstractFormLoginAuthenticator
 {
     /** @var UserPasswordEncoder  */
     private $securityPasswordEncoder;
-    /** @var Router  */
+    /** @var RouterInterface  */
     private $router;
     /** @var EntityManager */
     private $entityManager;
 
-    public function __construct(UserPasswordEncoder $securityPasswordEncoder, Router $router, EntityManager $entityManager)
+    public function __construct(UserPasswordEncoder $securityPasswordEncoder, RouterInterface $router, EntityManager $entityManager)
     {
         $this->securityPasswordEncoder = $securityPasswordEncoder;
         $this->router                  = $router;
         $this->entityManager           = $entityManager;
+    }
+
+    protected function getDefaultSuccessRedirectUrl()
+    {
+        return '/';
     }
 
     /**
@@ -186,5 +188,4 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
 
         return true;
     }
-
 }

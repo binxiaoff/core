@@ -19,11 +19,20 @@ framework:
         fallbacks: ["fr_FR"]
         paths:
             - "%kernel.root_dir%/../src/Unilend/Bundle/TranslationBundle/Resources/translations"
-        logging : true
-    session :
-        gc_maxlifetime : 3600
+        logging: true
+    session:
+        gc_maxlifetime: 3600
 
-# Twig Configuration
+cmf_routing:
+    chain:
+        routers_by_id:
+            router.default: 200
+            cmf_routing.dynamic_router: 100
+    dynamic:
+        enabled: true
+        default_controller: UnilendFrontBundle:Main:cms
+        route_provider_service_id: "unilend.frontbundle.provider.route_provider"
+
 twig:
     strict_variables: "%kernel.debug%"
     paths:
@@ -91,7 +100,7 @@ monolog:
             level: error
             path: "%kernel.logs_dir%/error.%kernel.environment%.log"
             max_files: 90
-            date_format: 'Ymd'
+            date_format: 'Y-m-d'
             file_permission: 0664
 #        slack_error:
 #            type: slack
@@ -118,7 +127,7 @@ monolog:
             level: info
             max_files: 90
             file_permission: 0664
-            date_format: 'Ymd'
+            date_format: 'Y-m-d'
         console_console:
             type: console
 
@@ -137,7 +146,7 @@ monolog:
             path: "%kernel.logs_dir%/site.%kernel.environment%.log"
             max_files: 90
             file_permission: 0664
-            date_format: 'Ymd'
+            date_format: 'Y-m-d'
 
 swiftmailer:
     transport: '%mailer_transport%'
