@@ -8,7 +8,7 @@
                     </span>
                     {% if paginationSettings.currentIndex < paginationSettings.totalPages %}
                         <a href="{{ path('project_list', {'page' : paginationSettings.currentIndex + 1 }) }}" class="link pagination-next">
-                            {% transchoice paginationSettings.itemsPerPage %} projects-listing_pagination-info-next-label {% endtranschoice %}
+                            {% transchoice paginationSettings.itemsPerPage with {'%items%' : paginationSettings.itemsPerPage } %} projects-listing_pagination-info-next-label {% endtranschoice %}
                         </a>
                     {% endif %}
                 </div>
@@ -17,7 +17,7 @@
                 <ul class="pagination-index">
                     {% if paginationSettings.currentIndex > 1 %}
                         <li role="presentation">
-                            <a href="{{ path('project_list', {'page' : paginationSettings.currentIndex + 1 }) }}">
+                            <a href="{{ path('project_list', {'page' : paginationSettings.currentIndex - 1 }) }}">
                                 <span class="icon fa-angle-left"></span>
                                 <span class="sr-only">
                                     {% trans with {'%items%' : paginationSettings.itemsPerPage } %} projects-listing_pagination-index-previous-label {% endtrans %}
@@ -73,9 +73,9 @@
 
                     {% if paginationSettings.currentIndex < paginationSettings.totalPages %}
                         <li role="presentation">
-                            <a href="{{ route(paginationSettings.pageUrl|replace({'%index%': paginationSettings.currentIndex + 1})) }}">
+                            <a href="{{ path('project_list', {'page' : paginationSettings.currentIndex + 1 }) }}">
                                 <span class="sr-only">
-                                    {% transchoice paginationSettings.itemsPerPage %} projects-listing_pagination-info-next-label {% endtranschoice %}
+                                    {% transchoice paginationSettings.itemsPerPage with {'%items%' : paginationSettings.itemsPerPage } %} projects-listing_pagination-info-next-label {% endtranschoice %}
                                 </span>
                                 <span class="icon fa-angle-right"></span>
                             </a>

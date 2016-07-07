@@ -32,6 +32,7 @@ class ProjectDisplayManager
             $aCompany                               = $company->select('id_company = ' . $project['id_company']);
             $aProjects[$key]['company']             = array_shift($aCompany);
             $aProjects[$key]['category']            = $aProjects[$key]['company']['sector'];
+            $aProjects[$key]['objectif_loan']       = strip_tags($project['objectif_loan']);
 
             if (isset($clientID)) {
                 $aProjects[$key]['currentUser'] = $this->getClientBidsForProject($clientID, $project['id_project']);
