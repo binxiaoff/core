@@ -1602,15 +1602,11 @@ class dossiersController extends bootstrap
 
                             $lEcheances = $this->echeanciers->select('id_project = ' . $RembEmpr['id_project'] . ' AND status_emprunteur = 1 AND ordre = ' . $RembEmpr['ordre'] . ' AND status = 0');
 
-
-                            if ($lEcheances == false) {
-
-                            } else {
+                            if ($lEcheances) {
                                 //BT 17882
                                 if (! $deja_passe) {
                                     $deja_passe = true;
                                     foreach ($lEcheances as $e) {
-
                                         // on fait la somme de tout
                                         $montant += ($e['montant'] / 100);
                                         $capital += ($e['capital'] / 100);
@@ -1795,6 +1791,14 @@ class dossiersController extends bootstrap
                                                 }
                                             }
                                         }
+                                    }
+                                    // if the repayment exists also in automatic repayment pending list, update its status to "automatic disabled".
+                                    /** @var \projects_remb $autoRepayment */
+                                    $projectRepayment = $this->loadData('projects_remb');
+                                    if($projectRepayment->get($RembEmpr['id_project'], 'ordre = ' . $RembEmpr['ordre'] . ' AND id_project')) {
+                                        $projectRepayment->status = \projects_remb::STATUS_AUTOMATIC_REFUND_DISABLED;
+                                        $projectRepayment->date_remb_preteurs_reel = date('Y-m-d H:i:s');
+                                        $projectRepayment->update();
                                     }
                                 }
                             }
