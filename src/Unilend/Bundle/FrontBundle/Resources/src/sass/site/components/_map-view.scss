@@ -68,17 +68,17 @@
   // Diff icon styles
   // -- Full
   @if $style == 'full' {
-    background-image: inline-svg-code('<svg version="1.1" width="30" height="40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 40" preserveAspectRatio="xMidYMid" xml:space="preserve"><g style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:1.41421;"><path d="M14.957,39.97c-0.88,-0.613 -14.957,-10.644 -14.957,-24.97l0,-0.097c0.053,-8.234 6.754,-14.903 15,-14.903c8.246,0 14.947,6.669 15,14.903l0,0.097c0,14.788 -15,25 -15,25l-0.043,-0.03Z" style="fill:#{$bg-color};"/></g></svg>');
+    background-image: url('data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20%3F%3E%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20version%3D%221.1%22%20width%3D%2220%22%20height%3D%2210%22%20viewBox%3D%220%200%2020%2010%22%3E%3Cpath%20fill%3D%22%23fadfe4%22%20d%3D%22M0%2010%20L%2010%200%20L%2020%2010%20L%200%2010%22%20%2F%3E%3C%2Fsvg%3E');
     color: $color;
 
   // -- Hollow has hole
   } @else if $style == 'hollow' {
-    background-image: inline-svg-code('<svg version="1.1" width="30" height="40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 40" preserveAspectRatio="xMidYMid" xml:space="preserve"><g style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:1.41421;"><path d="M14.957,39.97c-0.88,-0.613 -14.957,-10.644 -14.957,-24.97l0,-0.097c0.053,-8.234 6.754,-14.903 15,-14.903c8.246,0 14.947,6.669 15,14.903l0,0.097c0,14.788 -15,25 -15,25l-0.043,-0.03ZM15,4.279c5.85,0 10.599,4.75 10.599,10.599c0,5.85 -4.749,10.599 -10.599,10.599c-5.85,0 -10.599,-4.749 -10.599,-10.599c0,-5.849 4.749,-10.599 10.599,-10.599Z" style="fill:#{$bg-color};"/></g></svg>');
+    background-image: url('data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20%3F%3E%3Csvg%20version%3D%221.1%22%20width%3D%2230%22%20height%3D%2240%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2030%2040%22%20preserveAspectRatio%3D%22xMidYMid%22%20xml%3Aspace%3D%22preserve%22%3E%3Cg%20style%3D%22fill-rule%3Aevenodd%3Bclip-rule%3Aevenodd%3Bstroke-linejoin%3Around%3Bstroke-miterlimit%3A1.41421%3B%22%3E%3Cpath%20d%3D%22M14.957%2C39.97c-0.88%2C-0.613%20-14.957%2C-10.644%20-14.957%2C-24.97l0%2C-0.097c0.053%2C-8.234%206.754%2C-14.903%2015%2C-14.903c8.246%2C0%2014.947%2C6.669%2015%2C14.903l0%2C0.097c0%2C14.788%20-15%2C25%20-15%2C25l-0.043%2C-0.03ZM15%2C4.279c5.85%2C0%2010.599%2C4.75%2010.599%2C10.599c0%2C5.85%20-4.749%2C10.599%20-10.599%2C10.599c-5.85%2C0%20-10.599%2C-4.749%20-10.599%2C-10.599c0%2C-5.849%204.749%2C-10.599%2010.599%2C-10.599Z%22%20style%3D%22fill%3A%239f9d9f%3B%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E');
     color: $bg-color;
 
   // -- Circle
   } @else if $style == 'circle' {
-    background-image: inline-svg-code('<svg version="1.1" width="30" height="40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 40" preserveAspectRatio="xMidYMid" xml:space="preserve"><g style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:1.41421;"><circle cx="15" cy="15" r="28" style="fill:#{$bg-color};"/></g></svg>');
+    background-image: url('data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20%3F%3E%3Csvg%20version%3D%221.1%22%20width%3D%2230%22%20height%3D%2240%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2030%2040%22%20preserveAspectRatio%3D%22xMidYMid%22%20xml%3Aspace%3D%22preserve%22%3E%3Cg%20style%3D%22fill-rule%3Aevenodd%3Bclip-rule%3Aevenodd%3Bstroke-linejoin%3Around%3Bstroke-miterlimit%3A1.41421%3B%22%3E%3Cpath%20d%3D%22M14.957%2C39.97c-0.88%2C-0.613%20-14.957%2C-10.644%20-14.957%2C-24.97l0%2C-0.097c0.053%2C-8.234%206.754%2C-14.903%2015%2C-14.903c8.246%2C0%2014.947%2C6.669%2015%2C14.903l0%2C0.097c0%2C14.788%20-15%2C25%20-15%2C25l-0.043%2C-0.03ZM15%2C4.279c5.85%2C0%2010.599%2C4.75%2010.599%2C10.599c0%2C5.85%20-4.749%2C10.599%20-10.599%2C10.599c-5.85%2C0%20-10.599%2C-4.749%20-10.599%2C-10.599c0%2C-5.849%204.749%2C-10.599%2010.599%2C-10.599Z%22%20style%3D%22fill%3A%239f9d9f%3B%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E');
     color: $color;
 
     // Adjust to put circle in middle

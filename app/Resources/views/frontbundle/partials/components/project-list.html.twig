@@ -1,3 +1,8 @@
+{# Placeholder Long & Lat (temp until hooked into backend) #}
+{# TODO update database and use long and lat datas from it #}
+{% set lat = [48.017028, 46.323716, 48.80486, 48.790367, 45.65511799999999, 45.83361900000001, 44.837789, 48.57340529999999, 48.52854, 47.7482524] %}
+{% set long = [-0.604248, -0.4647770000000264, 2.3349550000000363, 2.455571999999961, 1.4582299999999577, 1.2611050000000432, -0.5791799999999512, 7.752111300000024, 7.711010999999985, -3.3702448999999888] %}
+
 
 {# Default Settings #}
     {% set settings = {
@@ -210,7 +215,8 @@
                                 {% endif %}
 
                                 {# Generate object for mapview to place marker on map #}
-                                {% if project.lat is defined and project.lng is defined %}
+                                {# TODO : SET IF COND ACCORDING TO LONG AND LAT DATABASE #}
+                                {% if true %}{#{% if project.lat is defined and project.lng is defined %}#}
                                     {# Set the group based on active, expired, or offers inprogress, rejected or accepted #}
                                     {# @note MapView JS component & CSS relies on two groups named 'active' and 'expired' (case insensitive) #}
                                     {% set mapviewGroup = (project.daysLeft <= 0 ? 'expired' : 'active') %}
@@ -218,18 +224,20 @@
                                     {# Set the offer status to show the icon in the marker #}
                                     {# @note MapView CSS relies on offerStatuses named 'inprogress', 'rejected' and 'accepted' #}
                                     {% set mapviewOfferStatus = '' %}
-                                    {% if project.currentUser.offers.total > 0 and project.currentUser.offers is not empty %}
+
+                                    {# TODO SET USERS OFFETS #}
+{#                                  {% if project.currentUser.offers.total > 0 and project.currentUser.offers is not empty %}
                                         {% for status, numOffers in project.currentUser.offers if project.currentUser.offers.total > 0 and status is not empty and status != 'rejected' %}
                                             {% set mapviewOfferStatus = status %}
                                         {% endfor %}
-                                    {% endif %}
+                                    {% endif %}#}
 
                                     {% set mapviewItem = {
-                                    id: 'marker' ~ project.id,
+                                    id: 'marker' ~ project.id_project,
                                     categoryId: project.company.sector,
-                                    latLng: [project.lat, project.lng],
+                                    latLng: [lat[i], long[i]],
                                     title: project.title,
-                                    description: '<div style="font-style: italic;">' ~ project.company.city ~ ', ' ~ project.company.zip ~ '</div><div class="rating rating-' ~ classRating ~ '"><span class="sr-only">Rated ' ~ project.rating ~ ' out of 5</span></span></div>',
+                                    description: '<div style="font-style: italic;">' ~ project.company.city ~ ', ' ~ project.company.zip ~ '</div><div class="rating rating-' ~ classRating ~ '"><span class="sr-only">Rated ' ~ project.risk ~ ' out of 5</span></span></div>',
                                     status: (project.daysLeft <= 0 ? 'expired' : 'active'),
                                     offerStatus: mapviewOfferStatus|default(''),
                                     groupName: mapviewGroup|default('all')
