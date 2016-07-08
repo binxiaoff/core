@@ -221,7 +221,7 @@ class projectsController extends bootstrap
                     $bid->id_project            = $this->projects->id_project;
                     $bid->amount                = $montant_p * 100;
                     $bid->rate                  = $tx_p;
-                    
+
                     $bidManager = $this->get('unilend.service.bid_manager');
                     $bidManager->bid($bid);
 

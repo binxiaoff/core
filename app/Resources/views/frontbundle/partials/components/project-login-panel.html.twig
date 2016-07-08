@@ -1,0 +1,36 @@
+<form action="{{ ('user/access') }}" method="post" class="project-single-form project-single-form-access" data-formvalidation>
+    <div class="form-notice">
+        <p>Veuillez vous connecter pour faire une offre sur ce projet</p>
+    </div><!-- /.form-notice -->
+    <div class="form-field">
+        <label for="form-access-email"><span class="sr-only">E-mail</span></label>
+        <div class="input-group set-left">
+            <div class="btn-group">
+                <span class="icon fa-envelope-o"></span>
+            </div>
+            <input id="form-access-email" type="email" name="access[email]" placeholder="E-mail" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+        </div><!-- /.input-group -->
+        <ul class="ui-formvalidation-messages"></ul>
+    </div><!-- /.form-field -->
+    <div class="form-field">
+        <label for="form-access-password"><span class="sr-only">Mot de passe</span></label>
+        <div class="input-group set-left">
+            <div class="btn-group">
+                <span class="icon fa-lock-u32"></span>
+            </div>
+            <input id="form-access-password" type="password" name="access[password]" placeholder="Mot de passe" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+        </div><!-- /.input-group -->
+        <ul class="ui-formvalidation-messages"></ul>
+        <div class="field-help">
+            <p>
+                <a href="{{ route('user/forgotpassword') }}" class="link">Mot de passe oublié?</a>
+            </p>
+        </div>
+    </div><!-- /.form-field -->
+    <div class="btn-toolbar">
+        <button type="submit" class="btn-primary btn-size-full">Connexion</button>
+        <p>
+            <a href="{{ route('user/preter/new') }}"><span class="icon fa-angle-right"></span> Pas encore inscrit&nbsp;?</a>
+        </p>
+    </div><!-- /.btn-toolbar -->
+</form><!-- /.project-single-form-access -->

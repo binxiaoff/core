@@ -320,4 +320,35 @@ class bids extends bids_crud
 
         return $oStatement->fetchColumn(0);
     }
+
+    public function countLendersOnProject($projectId)
+    {
+        $aBind = array('projectId' => $projectId);
+        $aType = array('section' => \PDO::PARAM_INT);
+
+        $sQuery     = 'SELECT count(DISTINCT id_lender_account) FROM `bids` WHERE id_project = :projectId';
+        $oStatement = $this->bdd->executeQuery($sQuery, $aBind, $aType);
+
+        return $oStatement->fetchColumn(0);
+    }
+
+    public function getNumberActiveBidsByRate($projectId)
+    {
+        $aBind = array('projectId' => $projectId, 'bidStatus' => self::STATUS_BID_PENDING);
+        $aType = array('projectId' => \PDO::PARAM_INT, 'bidStatus' => \PDO::PARAM_INT);
+
+        $sQuery = ' SELECT rate, count(*) as nb_bids
+                    FROM bids
+                    WHERE id_project = :projectId AND status = :bidStatus
+                    GROUP BY rate ORDER BY rate DESC';
+
+        $oStatement = $this->bdd->executeQuery($sQuery, $aBind, $aType);
+        $bids  = array();
+        while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
+            $bids[] = $aRow;
+        }
+
+        return $bids;
+    }
+
 }

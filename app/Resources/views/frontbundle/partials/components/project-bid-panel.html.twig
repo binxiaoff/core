@@ -1,0 +1,18 @@
+<form action="{{ ('project/invest') }}" method="post" class="project-single-form project-single-form-invest">
+    <div class="form-field">
+        <label><span class="sr-only">Montant en euros</span>
+            <input type="number" min="0" step="any" name="invest[amount]" value="" placeholder="Montant en euros" class="input-field"/>
+        </label>
+    </div><!-- /.form-field -->
+    <div class="form-field">
+        <label><span class="sr-only">Taux</span>
+            <input type="number" min="4" max="10" step="0.1" name="invest[interest]" value="" placeholder="Taux" class="input-field"/>
+        </label>
+    </div><!-- /.form-field -->
+    <div class="btn-toolbar">
+        <button class="btn-primary btn-size-full">Prêter</button>
+    </div><!-- /.btn-toolbar -->
+    <div class="field-help">
+        <p>Choisissez un taux compris entre 4 et 10%, avec une précision de 0,1%.</p>
+    </div>
+</form><!-- /.project-single-form-invest -->

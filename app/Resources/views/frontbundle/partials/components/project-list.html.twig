@@ -114,7 +114,7 @@
                                 {% endif %}
                             </div>
                             <div class="project-list-item-info">
-                                <h3 class="project-list-item-title"><a href="{{ path('project_show', {'projectSlug' : project.slug }) }}">{{ project.title }}</a></h3>
+                                <h3 class="project-list-item-title"><a href="{{ path('project_detail', {'projectSlug' : project.slug }) }}">{{ project.title }}</a></h3>
                                 <div class="project-list-item-meta">
                                     <h4 class="project-list-item-location">
                                         <span class="icon fa-map-marker"></span> {{ project.company.city }}, {{ project.company.zip }}
@@ -122,7 +122,7 @@
                                     <h5 class="project-list-item-cost">{{ project.amount }}€</h5>
                                 </div>
                                 <div class="project-list-item-description">
-                                    <p>{{ project.objectif_loan|raw|slice(0, 100) }}&hellip;</p>
+                                    <p>{{ project.objectif_loan|striptags|raw|slice(0, 100) }}&hellip;</p>
                                 </div>
                             </div>
                             <div class="project-list-item-stats">
@@ -164,7 +164,7 @@
                                 {% endif %}
                             </div>
                             <div class="project-list-item-view">
-                                <a href="{{ path('project_show', {'projectSlug' : project.slug }) }}">
+                                <a href="{{ path('project_detail', {'projectSlug' : project.slug }) }}">
                                     <span class="icon fa-angle-right"></span><span class="sr-only">{% trans %} project-list_view-project-label {% endtrans %}</span>
                                 </a>
                             </div>
@@ -237,7 +237,7 @@
                                 {% endif %}
 
                                 <li class="project {{ classProjectExpired }} {{ classUserInvolved }}"{% if mapviewItem is defined %} data-mapview-markerid="{{ mapviewItem.id }}" data-mapview-item='{{ mapviewItem|json_encode|escape('html_attr') }}'{% endif %}>
-                                    <div class="project-name"><a href="{{ path('project_show', {'projectSlug' : project.slug }) }}">{{ project.title }}</a></div>
+                                    <div class="project-name"><a href="{{ path('project_detail', {'projectSlug' : project.slug }) }}">{{ project.title }}</a></div>
                                     <div class="project-location">{{ project.company.city }}, {{ project.company.zip }}</div>
                                     <div class="project-cost">{{ project.amount|__num|nbsp }}€</div>
                                     <div class="project-rating">
@@ -276,7 +276,7 @@
                                             </div><!-- /.project-useroffers -->
                                         {% endif %}
                                     </div>
-                                    <a href="{{ path('project_show', {'projectSlug' : project.slug }) }}" class="project-hotspot">&nbsp;</a>
+                                    <a href="{{ path('project_detail', {'projectSlug' : project.slug }) }}" class="project-hotspot">&nbsp;</a>
                                 </li>
                             {% endfor %}
 
