@@ -146,7 +146,7 @@ class tree extends tree_crud
                         <th class="bas">
                             <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
                             <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" class="select">';
-                    foreach ($this->listChilds(0, '-', array(), $langue) as $tree) {
+                    foreach ($this->listChilds(0, array(), $langue) as $tree) {
                         echo '<option value="' . $tree['id_tree'] . '"' . ($this->params['tree_elements']->value == $tree['id_tree'] ? ' selected="selected"' : '') . '>' . $tree['title'] . '</option>';
                     }
                     echo '
@@ -411,7 +411,7 @@ class tree extends tree_crud
                         <th class="bas">
                             <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
                             <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" class="select">';
-                    foreach ($this->listChilds(0, '-', array(), $langue) as $tree) {
+                    foreach ($this->listChilds(0, array(), $langue) as $tree) {
                         echo '<option value="' . $tree['id_tree'] . '"' . ($this->params['blocs_elements']->value == $tree['id_tree'] ? ' selected="selected"' : '') . '>' . $tree['title'] . '</option>';
                     }
                     echo '
@@ -990,18 +990,14 @@ class tree extends tree_crud
     }
 
     // Construction de l'arbo pour un select
-    public function listChilds($id_parent, $indent, $tableau, $id_langue = 'fr')
+    public function listChilds($id_parent, $tableau, $id_langue = 'fr', $indent = '')
     {
-        if ($indent != '') {
-            $indent .= '---';
-        }
-
         $sql    = 'SELECT * FROM tree WHERE id_parent = ' . $id_parent . ' AND id_langue = "' . $id_langue . '" ORDER BY ordre ASC ';
         $result = $this->bdd->query($sql);
 
         while ($record = $this->bdd->fetch_assoc($result)) {
             $tableau[] = array('id_tree' => $record['id_tree'], 'title' => $indent . $record['menu_title'], 'id_parent' => $id_parent, 'slug' => $record['slug']);
-            $tableau   = $this->listChilds($record['id_tree'], $indent, $tableau, $id_langue);
+            $tableau   = $this->listChilds($record['id_tree'], $tableau, $id_langue, $indent . '&nbsp;&nbsp;&nbsp;');
         }
 
         return $tableau;

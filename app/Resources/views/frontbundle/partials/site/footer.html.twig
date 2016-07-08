@@ -4,74 +4,18 @@
     <div class="site-wrap">
         {% block siteFooterNav %}
             <div class="row site-footer-nav">
+                {% for menu in menus %}
                 <div class="col-lg-3 col-md-3 col-sm-4">
-                    <h4>{% trans %} footer_menu-item-lend {% endtrans %}</h4>
+                    <h4>{{ menu['title'] }}</h4>
                     <ul class="list-block">
+                        {% for child in menu['children'] %}
                         <li>
-                            <a href="{{ route('preter') }}">{% trans %} footer_lend-submenu-item-become-lender {% endtrans %}</a>
+                            <a href="{{ child['url'] }}" target="{{ child['target'] }}">{{ child['title'] }}</a>
                         </li>
-                        <li>
-                            <a href="{{ route('preter/faq') }}">{% trans %} footer_lend-submenu-item-lender-FAQ {% endtrans %}</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('preter/guide') }}">{% trans %} footer_lend-submenu-item-lender-guide {% endtrans %}</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('preter/fiscalite') }}">{% trans %} footer_lend-submenu-item-fiscal {% endtrans %}</a>
-                        </li>
+                        {% endfor %}
                     </ul>
                 </div>
-                <div class="col-lg-3 col-md-3 col-sm-4">
-                    <h4>{% trans %} footer_menu-item-borrow {% endtrans %}</h4>
-                    <ul class="list-block">
-                        <li>
-                            <a href="{{ route('projet/new') }}">{% trans %} footer_borrow-submenu-item-project-submission {% endtrans %}</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('emprunter/faq') }}">{% trans %} footer_borrow-submenu-item-borrower-FAQ {% endtrans %}</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('emprunter/guide') }}">{% trans %} footer_borrow-submenu-item-borrower-guide {% endtrans %}</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('emprunter/testimonials') }}">{% trans %} footer_borrow-submenu-item-testimonials {% endtrans %}</a>
-                        </li>
-                    </ul>
-                </div>
-                <div class="col-lg-3 col-md-3 col-sm-4">
-                    <h4>{% trans %} footer_menu-item-about {% endtrans %}</h4>
-                    <ul class="list-block">
-                        <li>
-                            <a href="{{ route('about/unilend') }}">{% trans %} footer_about-submenu-who-is {% endtrans %}</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('about/how-it-works') }}">{% trans %} footer_about-submenu-how-it-works {% endtrans %}</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('about/our-ethics') }}">{% trans %} footer_about-submenu-ethics {% endtrans %}</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('about/statistics') }}">{% trans %} footer_about-submenu-statistics {% endtrans %}</a>
-                        </li>
-                    </ul>
-                </div>
-                <div class="col-lg-3 col-md-3 col-sm-4">
-                    <h4>{% trans %}footer_menu-item-unilend{% endtrans %}</h4>
-                    <ul class="list-block">
-                        <li>
-                            <a href="{{ route('projets') }}">{% trans %} footer_unilend-submenu-tiem-projects {% endtrans %}</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('press') }}">{% trans %} footer_unilend-submenu-item-press {% endtrans %}</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('recrutement') }}">{% trans %} footer_unilend-submenu-item-recruitment {% endtrans %}</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('contact') }}">{% trans %} footer_unilend-submenu-item-contact {% endtrans %}</a>
-                        </li>
-                    </ul>
-                </div>
+                {% endfor %}
             </div>
         {% endblock %}
         <div class="row">
@@ -83,12 +27,11 @@
             <div class="col-sub-center col-lg-4 col-md-4">
                 {% block siteFooterSubCenter %}
                     <ul class="list-awards">
+                        {% for partner in partners %}
                         <li>
-                            <img src="{{ siteurlmedia('awards/award-bpifrance-150x70.png') }}" alt="BPI France 2014"/>{# svgimage('award-bpi', 'BPI France', 153, 70) #}
+                            <img src="{{ uploadedImagePath(partner['src']) }}" alt="{{ partner['alt'] }}"/>
                         </li>
-                        <li>
-                            <img src="{{ siteurlmedia('awards/award-fr-70x70.png') }}" alt="IFP France"/>{# svgimage('award-ifp', 'IFP France', 70, 70) #}
-                        </li>
+                        {% endfor %}
                     </ul>
                     <div class="site-tagline">{% trans %} footer_site-tagline {% endtrans %}</div>
                 {% endblock %}

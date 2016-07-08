@@ -44,7 +44,8 @@ class FrontBundleExtension extends \Twig_Extension
             new \Twig_SimpleFunction('__', array($this, 'temporaryTranslateFunction')),
             new \Twig_SimpleFunction('siteurlmedia', array($this, 'completeUrlMediaFunction')),
             new \Twig_SimpleFunction('getStatistics', array($this, 'getStatistics')),
-            new \Twig_SimpleFunction('getCategories', array($this, 'getCategoriesForSvg'))
+            new \Twig_SimpleFunction('getCategories', array($this, 'getCategoriesForSvg')),
+            new \Twig_SimpleFunction('uploadedImagePath', array($this, 'uploadedImagePathFunction'))
         );
     }
 
@@ -75,6 +76,11 @@ class FrontBundleExtension extends \Twig_Extension
         } else {
             return $cachedItem->get();
         }
+    }
+
+    public function uploadedImagePathFunction($image)
+    {
+        return $this->url . '/var/images/' . $image;
     }
 
     public function getName()

@@ -2,18 +2,14 @@
 
 class treeController extends bootstrap
 {
-    var $Command;
-
     public function initialize()
     {
         parent::initialize();
 
         $this->catchAll = true;
 
-        // Controle d'acces � la rubrique
         $this->users->checkAccess('edition');
 
-        // Activation du menu
         $this->menu_admin = 'edition';
     }
 
@@ -182,7 +178,7 @@ class treeController extends bootstrap
         }
 
         // Recuperation de l'arbo pour select
-        $this->lTree = $this->tree->listChilds(0, '-', [], $this->dLanguage);
+        $this->lTree = $this->tree->listChilds(0, [], $this->dLanguage);
 
         // Recuperation de la liste des templates
         $this->lTemplate = $this->templates->select('status > 0 AND type = 0', 'name ASC');
@@ -333,7 +329,7 @@ class treeController extends bootstrap
             }
 
             // Recuperation de l'arbo pour select
-            $this->lTree = $this->tree->listChilds(0, '-', [], $this->dLanguage);
+            $this->lTree = $this->tree->listChilds(0, [], $this->dLanguage);
 
             // Recuperation de la liste des templates
             $this->lTemplate = $this->templates->select('status > 0 AND type = 0', 'name ASC');
@@ -350,17 +346,13 @@ class treeController extends bootstrap
                 case 1:
                     header('Location:' . $this->lurl . '/preteur');
                     die;
-                    break;
                 case 2:
                     header('Location:' . $this->lurl . '/emprunteur');
                     die;
-                    break;
                 default:
                     header('Location:' . $this->lurl . '/tree');
                     die;
-                    break;
             }
-
         }
     }
 }
