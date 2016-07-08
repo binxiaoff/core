@@ -650,15 +650,15 @@ gulp.task('watchfiles', /*['browsersync'],*/ function () {
           '!' + getSrc('twig/pages/*.twig')], ['twig'])
 
     // -- These need to recompile all
-//    gulp.watch(getSrc('sass/**/*.scss'), ['scss'])
-//    gulp.watch([getSrc('media/svg/**/*.svg'),
-//          '!' + getSrc('media/svg/icons.svg')], ['svg'])
-//
-//    // Update dest files in browser
-//    // gulp.watch(getDest('css/*.css')).on('change', browsersync.stream)
-//    // gulp.watch(getDest('js/*.js')).on('change', browsersync.stream)
-//    // gulp.watch(getDest('**/*.html')).on('change', browsersync.stream)
-//    gulp.watch(getDest('media/svg/icons.svg')).on('change', browsersync.stream)
+    gulp.watch(getSrc('sass/**/*.scss'), ['scss'])
+    gulp.watch([getSrc('media/svg/**/*.svg'),
+          '!' + getSrc('media/svg/icons.svg')], ['svg'])
+
+    // Update dest files in browser
+    gulp.watch(getDest('css/*.css')).on('change', browsersync.stream)
+    gulp.watch(getDest('js/*.js')).on('change', browsersync.stream)
+    gulp.watch(getDest('**/*.html')).on('change', browsersync.stream)
+    gulp.watch(getDest('media/svg/icons.svg')).on('change', browsersync.stream)
   }
 })
 

@@ -22,7 +22,9 @@ var Templating = require('Templating')
 var L = require('mapbox.js') // global as these are now CDN ref'd in `src/twig/layouts/_layout.twig`
 
 // @todo Change to Unilend access token
-L.mapbox.accessToken = 'pk.eyJ1IjoibHZsOTkiLCJhIjoiY2lwZ3NrcngxMDAwdXZybnRudjNtYWRvZCJ9.Lt8s6Dgx03BC1xlRy--g4w'
+L.mapbox.accessToken = 'pk.eyJ1IjoiZGF2aWR0ZXNzaWVyIiwiYSI6ImNpcDgyejZ0ODAwMnR2Ym03M3NhbjdzZnQifQ.XV3Ej2xN3gPc0Y6jUdoEpA' // ULD TOKEN
+
+/*  pk.eyJ1IjoibHZsOTkiLCJhIjoiY2lwZ3NrcngxMDAwdXZybnRudjNtYWRvZCJ9.Lt8s6Dgx03BC1xlRy--g4w lvl99 ACCOUNT  */
 
 // Dictionary
 var Dictionary = require('Dictionary')
@@ -65,7 +67,10 @@ var MapView = function (elem, options) {
     target: elem,
 
     // Mapbox.js style/tilejson URL
-    style: 'mapbox://styles/lvl99/cipoafuf8002acwm6ocr0dmxh', // 'mapbox.streets', // 'https://api.mapbox.com/v3/mapbox.default.json',
+    style: 'mapbox://styles/mapbox/dark-v9', // 'mapbox.streets', // 'https://api.mapbox.com/v3/mapbox.default.json',
+
+    /* mapbox://styles/lvl99/cipoafuf8002acwm6ocr0dmxh */ // lvl99 STYLE
+
 
     // Show group filters: only shows for groups which have `showFilter == true`
     showFilters: true,

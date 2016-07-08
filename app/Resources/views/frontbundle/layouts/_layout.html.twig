@@ -67,7 +67,7 @@
     </div>
 
     {% block siteFooter %}
-        {% include 'partials/site/footer.html.twig' %}
+        {{ render_esi(controller('UnilendFrontBundle:Main:footer')) }}
     {% endblock %}
 </div>
 

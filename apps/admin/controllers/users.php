@@ -129,7 +129,7 @@ class usersController extends bootstrap
         $_SESSION['request_url'] = $this->url;
 
         $this->users->get($this->params[0], 'id_user');
-        $this->lTree = $this->tree->listChilds(0, '-', array(), $this->language);
+        $this->lTree = $this->tree->listChilds(0, array(), $this->language);
         $this->lUsersTypes = $this->users_types->select('', ' label ASC ');
     }
 
@@ -139,7 +139,7 @@ class usersController extends bootstrap
         $_SESSION['request_url'] = $this->url;
 
         $this->users->get($this->params[0], 'id_user');
-        $this->lTree = $this->tree->listChilds(0, '-', array(), $this->language);
+        $this->lTree = $this->tree->listChilds(0, array(), $this->language);
     }
 
 
@@ -149,7 +149,7 @@ class usersController extends bootstrap
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
 
-        $this->lTree = $this->tree->listChilds(0, '-', array(), $this->language);
+        $this->lTree = $this->tree->listChilds(0, array(), $this->language);
         $this->lUsersTypes = $this->users_types->select('', ' label ASC ');
     }
 

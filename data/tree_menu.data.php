@@ -28,33 +28,12 @@
 
 class tree_menu extends tree_menu_crud
 {
-
-    function tree_menu($bdd, $params = '')
+    public function tree_menu($bdd, $params = '')
     {
         parent::tree_menu($bdd, $params);
     }
 
-    function get($list_field_value)
-    {
-        return parent::get($list_field_value);
-    }
-
-    function update($list_field_value)
-    {
-        parent::update($list_field_value);
-    }
-
-    function delete($list_field_value)
-    {
-        parent::delete($list_field_value);
-    }
-
-    function create($list_field_value = array())
-    {
-        parent::create($list_field_value);
-    }
-
-    function select($where = '', $order = '', $start = '', $nb = '')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -66,13 +45,13 @@ class tree_menu extends tree_menu_crud
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
     }
 
-    function counter($where = '')
+    public function counter($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -81,19 +60,19 @@ class tree_menu extends tree_menu_crud
         $sql = 'SELECT count(*) FROM tree_menu ' . $where;
 
         $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
+        return (int) $this->bdd->result($result);
     }
 
-    function exist($list_field_value)
+    public function exist($list_field_value)
     {
         $list = '';
         foreach ($list_field_value as $champ => $valeur) {
             $list .= ' AND ' . $champ . ' = "' . $valeur . '" ';
         }
 
-        $sql    = 'SELECT * FROM tree_menu WHERE 1=1 ' . $list . ' ';
+        $sql    = 'SELECT * FROM tree_menu WHERE 1 = 1 ' . $list . ' ';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result) > 0);
+        return ($this->bdd->fetch_assoc($result) > 0);
     }
 
     //******************************************************************************************//
@@ -101,40 +80,40 @@ class tree_menu extends tree_menu_crud
     //******************************************************************************************//
 
     // Recuperation de l'id max pour la création d'une page (clé primaire multiple, pas d'auto incremente)
-    function getMaxId()
+    public function getMaxId()
     {
         $sql    = 'SELECT MAX(id) as id FROM tree_menu';
         $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
+        return (int) $this->bdd->result($result);
     }
 
     // Récupération de la derniere position des liens d'un menu
-    function getLastPosition($id_menu)
+    public function getLastPosition($id_menu)
     {
         $sql    = 'SELECT ordre FROM tree_menu WHERE id_menu = "' . $id_menu . '" ORDER BY ordre DESC LIMIT 1';
         $result = $this->bdd->query($sql);
 
-        return (int) ($this->bdd->result($result, 0, 0));
+        return (int) $this->bdd->result($result);
     }
 
     // Récupération de la position du lien
-    function getPosition($id)
+    public function getPosition($id)
     {
         $sql    = 'SELECT ordre FROM tree_menu WHERE id = "' . $id . '"';
         $result = $this->bdd->query($sql);
 
-        return (int) ($this->bdd->result($result, 0, 0));
+        return (int) $this->bdd->result($result);
     }
 
     // Monter un lien dans le menu
-    function moveUp($id, $id_menu)
+    public function moveUp($id, $id_menu)
     {
         $position = $this->getPosition($id);
 
         $sql    = 'SELECT id FROM tree_menu WHERE id_menu = "' . $id_menu . '" AND ordre < ' . $position . ' ORDER BY ordre DESC LIMIT 1';
         $result = $this->bdd->query($sql);
 
-        $sql = 'UPDATE tree_menu SET ordre = ordre + 1 WHERE id = "' . (int) $this->bdd->result($result, 0, 0) . '"';
+        $sql = 'UPDATE tree_menu SET ordre = ordre + 1 WHERE id = "' . $this->bdd->result($result) . '"';
         $this->bdd->query($sql);
 
         $sql = 'UPDATE tree_menu SET ordre = ordre - 1 WHERE id = "' . $id . '"';
@@ -143,14 +122,14 @@ class tree_menu extends tree_menu_crud
     }
 
     // Descendre un lien dans le menu
-    function moveDown($id, $id_menu)
+    public function moveDown($id, $id_menu)
     {
         $position = $this->getPosition($id);
 
         $sql    = 'SELECT id FROM tree_menu WHERE id_menu = "' . $id_menu . '" AND ordre > ' . $position . ' ORDER BY ordre ASC LIMIT 1';
         $result = $this->bdd->query($sql);
 
-        $sql = 'UPDATE tree_menu SET ordre = ordre - 1  WHERE id = "' . (int) $this->bdd->result($result, 0, 0) . '"';
+        $sql = 'UPDATE tree_menu SET ordre = ordre - 1  WHERE id = "' . $this->bdd->result($result) . '"';
         $this->bdd->query($sql);
 
         $sql = 'UPDATE tree_menu SET ordre = ordre + 1 WHERE id = "' . $id . '"';
@@ -159,13 +138,13 @@ class tree_menu extends tree_menu_crud
     }
 
     // Reordonner un menu
-    function reordre($id_menu)
+    public function reordre($id_menu)
     {
         $sql    = 'SELECT DISTINCT(id) FROM tree_menu WHERE id_menu = "' . $id_menu . '" ORDER BY ordre ASC';
         $result = $this->bdd->query($sql);
 
         $i = 0;
-        while ($record = $this->bdd->fetch_array($result)) {
+        while ($record = $this->bdd->fetch_assoc($result)) {
             $sql1 = 'UPDATE tree_menu SET ordre = ' . $i . ' WHERE id = ' . $record['id'];
             $this->bdd->query($sql1);
             $i++;

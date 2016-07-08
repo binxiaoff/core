@@ -22,6 +22,7 @@ framework:
         logging: true
     session:
         gc_maxlifetime: 3600
+    esi: { enabled: true }
 
 cmf_routing:
     chain:
