@@ -163,18 +163,8 @@ class bids extends bids_crud
 
     public function getProjectMaxRate(\projects $project)
     {
-        $amount        = 0;
-        $projectAmount = (int) ($project->amount * 100);
-        $validBids     = $this->select('id_project = ' . $project->id_project . ' AND status = ' . self::STATUS_BID_PENDING, 'rate ASC, ordre ASC');
-
-        foreach ($validBids as $bid) {
-            $amount += (int) $bid['amount'];
-            if ($amount >= $projectAmount) {
-                return round($bid['rate'], 1);
-            }
-        }
-
-        return self::BID_RATE_MAX;
+        $result = $this->bdd->query('SELECT MAX(rate) FROM bids WHERE id_project = ' . $project->id_project . ' AND status = 0');
+        return round($this->bdd->result($result), 1);
     }
 
     public function getLenders($iProjectId, $aStatus = array())
