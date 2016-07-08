@@ -579,6 +579,8 @@ class ProjectManager
                         'retenues_source'              => $montant_retenues_source,
                         'date_echeance'                => $dateEcheance,
                         'date_echeance_emprunteur'     => $dateEcheance_emprunteur,
+                        'added'                        => date('Y-m-d H:i:s'),
+                        'updated'                      => date('Y-m-d H:i:s'),
                     );
                 }
                 $oRepaymentSchedule->multiInsert($aRepaymentSchedule);
