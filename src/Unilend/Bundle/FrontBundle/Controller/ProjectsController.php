@@ -104,7 +104,7 @@ class ProjectsController extends Controller
     }
 
     /**
-     * @Route("/project/{projectSlug}", name="project_show")
+     * @Route("/projects/detail/{projectSlug}", name="project_show")
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */

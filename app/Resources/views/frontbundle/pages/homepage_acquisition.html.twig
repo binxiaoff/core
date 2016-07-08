@@ -11,7 +11,6 @@ permalink: route('/')
 
 {% block siteContent %}
     <article id="homeacq" class="page">
-
         <section id="homeacq-video-hero" class="cta-video-hero" aria-hidden="true" data-set-device-height="xs">
             <div class="video-hero-wrapper">
                 <div id="homeacq-video-hero-swiper" class="video-hero-slideshow swiper-container" data-swiper-autoplay="5000" data-swiper-speed="500">
@@ -138,7 +137,7 @@ permalink: route('/')
                 {{ promoBattenberg.render({
                     classCtaButton: 'btn-color-primary',
                     labelCtaButton: BattenberglabelCtaButton,
-                    urlCtaButton: path('projects'),
+                    urlCtaButton: path('project_list'),
                     people: testimonialPeople
                 }) }}
 
