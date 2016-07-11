@@ -5,12 +5,15 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
+use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\FrontBundle\Service\HighchartsService;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
-use Symfony\Component\HttpFoundation\Response;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
+use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
 class ProjectsController extends Controller
 {
@@ -119,7 +122,7 @@ class ProjectsController extends Controller
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function showProjectDetailAction($projectSlug)
+    public function showProjectDetailAction($projectSlug, Request $request)
     {
         $this->checkProjectAndRedirect($projectSlug);
 
@@ -134,12 +137,14 @@ class ProjectsController extends Controller
         /** @var \projects $project */
         $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
         $project->get($projectSlug, 'slug');
+        /** @var \loans $loans */
+        $loans = $this->get('unilend.service.entity_manager')->getRepository('loans');
 
-        $templateVariables = [];
-        $templateVariables['project'] = $projectDisplayManager->getProjectInformationForDisplay($projectSlug);
+        $templateVariables            = [];
 
-        $bidsOnProject                                     = $bids->select('id_project = ' . $project->id_project, 'added ASC');
-        $templateVariables['allOffers']                    = $highchartsService->formatBidsForTable($bidsOnProject, true);
+        $templateVariables['project']           = $projectDisplayManager->getProjectInformationForDisplay($projectSlug);
+        $templateVariables['projectNavigation'] = $project->positionProject($project->id_project, implode(',', $this->projectsStatus), 'lestatut ASC, IF(lestatut = 2, p.date_retrait_full ,"") DESC, IF(lestatut = 1, p.date_retrait_full ,"") ASC, projects_status.status DESC');
+
         $accountData                                       = $projectDisplayManager->getProjectFinancialData($project);
         $templateVariables['income']                       = $highchartsService->formatDataForIncomeStatementTable($accountData['balanceSheets']);
         $templateVariables['charts']['income']             = $highchartsService->getIncomeStatementChart($accountData['balanceSheets']);
@@ -147,13 +152,17 @@ class ProjectsController extends Controller
         $templateVariables['charts']['balanceSheetAssets'] = $highchartsService->getBalanceSheetAssetsChart($accountData['totalYearlyAssets']);
         $templateVariables['charts']['balanceSheetDebts']  = $highchartsService->getBalanceSheetDebtsChart($accountData['totalYearlyDebts']);
 
-        $bidsStatistics = $projectManager->getBidsStatistics($project);
-        //$meanBidAmount  = round(array_sum(array_column($bidsStatistics, 'amount_total')) / array_sum(array_column($bidsStatistics, 'nb_bids')), 2);
-        $activeBidsByRate = $bids->getNumberActiveBidsByRate($project->id_project);
-        $templateVariables['alloffersOverview'] = '';
-        $templateVariables['charts']['projectOffers'] = $highchartsService->getBidsChartSetting($activeBidsByRate, 6);
-
-        $projectNavigation = $project->positionProject($project->id_project, $this->projectsStatus, 'lestatut ASC, IF(lestatut = 2, p.date_retrait_full ,"") DESC, IF(lestatut = 1, p.date_retrait_full ,"") ASC, projects_status.status DESC');
+        if ($templateVariables['project']['status'] == \projects_status::EN_FUNDING) {
+            $bidsOnProject                                     = $bids->select('id_project = ' . $project->id_project, 'added ASC');
+            $templateVariables['allOffers']                    = $highchartsService->formatBidsForTable($bidsOnProject, true);
+            $templateVariables['alloffersOverview'] = '';
+            //$templateVariables['charts']['projectOffers'] = $highchartsService->getBidsChartSetting($activeBidsByRate, 6);
+            $bidsStatistics = $projectManager->getBidsStatistics($project);
+            //$meanBidAmount  = round(array_sum(array_column($bidsStatistics, 'amount_total')) / array_sum(array_column($bidsStatistics, 'nb_bids')), 2);
+            $activeBidsByRate = $bids->getNumberActiveBidsByRate($project->id_project);
+        } else {
+            $templateVariables['fundingStatistics'] = $projectDisplayManager->getProjectFundingStatistic($project, $templateVariables['project']['status']);
+        }
 
         $now = new \DateTime('NOW');
         $projectEnd = new \DateTime($project->date_retrait_full);
@@ -161,16 +170,21 @@ class ProjectsController extends Controller
             $templateVariables['project']['projectPending'] = true;
         }
 
-
         if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
             && $this->get('security.authorization_checker')->isGranted('ROLE_LENDER'))
         {
             /** @var BaseUser $user */
-            $user                             = $this->getUser();
-            $templateVariables['currentUser'] = $projectDisplayManager->getClientBidsForProjectList($user->getClientId(), $project->id_project);
-            $userBidsOnProject                = $projectDisplayManager->getClientBidsOnProject($user->getClientId(), $project->id_project);
-            $templateVariables['myOffers']    = $highchartsService->formatBidsForTable($userBidsOnProject);
-            $templateVariables['myOffersIds'] = array_column($userBidsOnProject, 'id_bid');
+            $user                                 = $this->getUser();
+            $templateVariables['currentUser']     = $projectDisplayManager->getClientBidsForProjectList($user->getClientId(), $project->id_project);
+            $userBidsOnProject                    = $projectDisplayManager->getClientBidsOnProject($user->getClientId(), $project->id_project);
+            $templateVariables['myOffers']        = $highchartsService->formatBidsForTable($userBidsOnProject);
+            $templateVariables['myOffersIds']     = array_column($userBidsOnProject, 'id_bid');
+            $templateVariables['myLoanOnProject'] = $projectDisplayManager->getClientLoansOnProject($user->getClientId(), $project->id_project);
+
+            if (false === empty($request->getSession()->get('bidMessage'))) {
+                $templateVariables['bidMessage'] = $request->getSession()->get('bidMessage');
+                $request->getSession()->remove('bidMessage');
+            }
         }
 
         return $this->render('pages/project_detail.html.twig', $templateVariables);
@@ -196,86 +210,166 @@ class ProjectsController extends Controller
         return new RedirectResponse('/error');
     }
 
-    public function placeBidOnProject()
+
+    /**
+     * @Route("/projects/bid/{projectId}", name="bid_on_project")
+     */
+    public function placeBidOnProject($projectId, Request $request)
     {
+        if ($post = $request->request->get('invest')) {
+            /** @var \clients_history_actions $clientHistoryActions */
+            $clientHistoryActions = $this->get('unilend.service.entity_manager')->getRepository('clients_history_actions');
+            /** @var UserLender $user */
+            $user = $this->getUser();
+            $serialize = serialize(array('id_client' => $user->getClientId(), 'post' => $post, 'id_projet' => $projectId));
+            $clientHistoryActions->histo(9, 'bid', $user->getClientId(), $serialize);
+            /** @var \lenders_accounts $lenderAccount */
+            $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
+            $lenderAccount->get($user->getClientId(), 'id_client_owner');
+            /** @var \settings $settings */
+            $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
+            $settings->get('pret min', 'type');
+            $binMinAmount = $settings->value;
+            /** @var \bids $bids */
+            $bids = $this->get('unilend.service.entity_manager')->getRepository('bids');
+            /** @var \projects $project */
+            $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
+            $project->get($projectId);
+            /** @var \projects_status $projectStatus */
+            $projectStatus = $this->get('unilend.service.entity_manager')->getRepository('projects_status');
+            $projectStatus->getLastStatut($project->id_project);
+            /** @var TranslationManager $translationManager */
+            $translationManager = $this->get('unilend.service.translation_manager');
+            $translations = $translationManager->getAllTranslationsForSection('project-detail');
 
-        if (isset($_POST['send_pret'])) {
-            $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'id_projet' => $this->projects->id_project));
-            $this->clients_history_actions->histo(9, 'bid', $this->clients->id_client, $serialize);
+            $now = new \DateTime('NOW');
+            $projectEnd = new \DateTime($project->date_retrait_full);
 
-            // Si la date du jour est egale ou superieur a la date de retrait on redirige.
-            if ($today >= $dateRetrait) {
-                $_SESSION['messFinEnchere'] = $this->lng['preteur-projets']['mess-fin-enchere'];
-
-                header('Location: ' . $this->lurl . '/projects/detail/' . $this->projects->slug);
-                die;
-            } elseif ($this->clients_status->status < \clients_status::VALIDATED) {
-                header('Location: ' . $this->lurl . '/projects/detail/' . $this->projects->slug);
-                die;
+            if ($now >= $projectEnd) {
+                $request->getSession()->set('bidMessage', $translations['side-bar-bids-project-finished-message']);
+                return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
 
-            $montant_p = isset($_POST['montant_pret']) ? str_replace(array(' ', ','), array('', '.'), $_POST['montant_pret']) : 0;
-            $montant_p = explode('.', $montant_p);
-            $montant_p = $montant_p[0];
-
-            $this->form_ok = true;
-
-            if (empty($_POST['taux_pret'])) {
-                $this->form_ok = false;
-            } elseif ($_POST['taux_pret'] == '-') {
-                $this->form_ok = false;
-            } elseif ($_POST['taux_pret'] > 10) {
-                $this->form_ok = false;
+            if ($user->getClientStatus() < \clients_status::VALIDATED) {
+                return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
 
-            $fMaxCurrentRate = $this->bids->getProjectMaxRate($this->projects);
+            $formOK          = true;
+            $fMaxCurrentRate = $bids->getProjectMaxRate($project);
+            $totalBids       = $bids->getSoldeBid($project->id_project);
+            $bidAmount       = isset($post->amount) ? $post->amount : null;
+            $rate            = isset($post->interest) ? $post->interest : null;
 
-            if ($this->soldeBid >= $this->projects->amount && $_POST['taux_pret'] >= $fMaxCurrentRate) {
-                $this->form_ok = false;
-            } elseif (! isset($_POST['montant_pret']) || $_POST['montant_pret'] == '' || $_POST['montant_pret'] == '0') {
-                $this->form_ok = false;
-            } elseif (! is_numeric($montant_p)) {
-                $this->form_ok = false;
-            } elseif ($montant_p < $this->pretMin) {
-                $this->form_ok = false;
-            } elseif ($this->solde < $montant_p) {
-                $this->form_ok = false;
-            } elseif ($montant_p >= $this->projects->amount) {
-                $this->form_ok = false;
-            } elseif ($this->projects_status->status != \projects_status::EN_FUNDING) {
-                $this->form_ok = false;
+            if (empty($bidAmount) || false === is_null($bidAmount) || $bidAmount <= $binMinAmount || $bidAmount >= $project->amount || $user->getBalance() <= $bidAmount) {
+                $formOK = false;
             }
 
-            if (isset($this->params['1']) && $this->params['1'] == 'fast' && $this->form_ok == false) {
-                header('Location: ' . $this->lurl . '/synthese');
-                die;
+            if (empty($rate) || $rate >= \bids::BID_RATE_MIN || $rate <= \bids::BID_RATE_MAX) {
+                $formOK = false;
             }
 
-            $tx_p = $_POST['taux_pret'];
+            if ($totalBids >= $project->amount && $rate >= $fMaxCurrentRate) {
+                $formOK = false;
+            }
 
-            if ($this->form_ok == true && isset($_SESSION['tokenBid']) && $_SESSION['tokenBid'] == $_POST['send_pret']) {
+            if ($projectStatus->status != \projects_status::EN_FUNDING) {
+                $formOK = false;
+            }
+
+            if (true === $formOK && isset($_SESSION['tokenBid']) && $_SESSION['tokenBid'] == $_POST['send_pret']) {
                 unset($_SESSION['tokenBid']);
 
-                /** @var \bids $bid */
-                $bid = $this->loadData('bids');
-                $bid->id_lender_account     = $this->lenders_accounts->id_lender_account;
-                $bid->id_project            = $this->projects->id_project;
-                $bid->amount                = $montant_p * 100;
-                $bid->rate                  = $tx_p;
-
+                $bids->unsetData();
+                $bids->id_lender_account     = $lenderAccount->id_lender_account;
+                $bids->id_project            = $project->id_project;
+                $bids->amount                = $bidAmount * 100;
+                $bids->rate                  = $rate;
+                /** @var BidManager $bidManager */
                 $bidManager = $this->get('unilend.service.bid_manager');
-                $bidManager->bid($bid);
+                $bidManager->bid($bids);
 
                 $oCachePool = $this->get('memcache.default');
-                $oCachePool->deleteItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $this->projects->id_project);
+                $oCachePool->deleteItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $project->id_project);
 
-                $_SESSION['messPretOK'] = $this->lng['preteur-projets']['mess-pret-conf'];
+                $request->getSession()->set('bidMessage', $translations['side-bar-bids-bid-placed-message']);
 
-                header('Location: ' . $this->lurl . '/projects/detail/' . $this->projects->slug);
-                die;
+                return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
         }
 
+    }
+
+    public function _pop_up_fast_pret()
+    {
+        //Recuperation des element de traductions
+        $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
+
+        $this->projects = $this->loadData('projects');
+        $this->bids     = $this->loadData('bids');
+
+        if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
+            // Pret min
+            $this->settings->get('Pret min', 'type');
+            $this->pretMin = $this->settings->value;
+
+            // la sum des encheres
+            $this->soldeBid = $this->bids->getSoldeBid($this->projects->id_project);
+            $this->txLenderMax = '10.10';
+
+            if ($this->soldeBid >= $this->projects->amount) {
+                $this->lEnchereRate = $this->bids->select('id_project = ' . $this->projects->id_project, 'rate ASC,added ASC');
+                $leSoldeE           = 0;
+                foreach ($this->lEnchereRate as $k => $e) {
+                    // on parcour les encheres jusqu'au montant de l'emprunt
+                    if ($leSoldeE < $this->projects->amount) {
+                        // le montant preteur (x100)
+                        $amount = $e['amount'];
+
+                        // le solde total des encheres
+                        $leSoldeE += ($e['amount'] / 100);
+                        $this->txLenderMax = $e['rate'];
+                    }
+                }
+            }
+
+            // on génère un token
+            $this->tokenBid       = sha1('tokenBid-' . time() . '-' . $this->clients->id_client);
+            $_SESSION['tokenBid'] = $this->tokenBid;
+        }
+    }
+
+    public function _pop_valid_pret()
+    {
+        //Recuperation des element de traductions
+        $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
+
+        $this->projects = $this->loadData('projects');
+        if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
+            // Pret min
+            $this->settings->get('Pret min', 'type');
+            $this->pretMin = $this->settings->value;
+
+            // on génère un token
+            $this->tokenBid       = sha1('tokenBid-' . time() . '-' . $this->clients->id_client);
+            $_SESSION['tokenBid'] = $this->tokenBid;
+        }
+    }
+
+    public function _pop_valid_pret_mobile()
+    {
+        //Recuperation des element de traductions
+        $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
+
+        $this->projects = $this->loadData('projects');
+        if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
+            // Pret min
+            $this->settings->get('Pret min', 'type');
+            $this->pretMin = $this->settings->value;
+
+            // on génère un token
+            $this->tokenBid       = sha1('tokenBid-' . time() . '-' . $this->clients->id_client);
+            $_SESSION['tokenBid'] = $this->tokenBid;
+        }
     }
 
 

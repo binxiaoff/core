@@ -25,10 +25,10 @@ class HighchartsService
         $i = 1;
         foreach ($bids as $key => $bid) {
             if ($replaceIdByOrder) {
-                $data[] = [$i, $bid['rate'], $bid['amount']/100, $bid['status']];
+                $data[] = [$i, $bid['rate'], $bid['amount'] / 100, $bid['status']];
                 $i += 1;
             } else {
-                $data[] = [$bid['id_bid'], $bid['rate'], $bid['amount']/100, $bid['status'], ''];
+                $data[] = [$bid['id_bid'], $bid['rate'], $bid['amount'] / 100, $bid['status'], ''];
             }
         }
 
@@ -59,44 +59,68 @@ class HighchartsService
         }
 
         $bidsChartSetting = [
-            'type' => 'projectOffers',
-            'background' => 'none',
-            'highcharts' => [
+            'type'        => 'projectOffers',
+            'background'  => 'none',
+            'highcharts'  => [
                 'chart' => [
-                    'type' => 'areaspline',
+                    'type'                => 'areaspline',
                     'plotBackgroundColor' => [
-                        'linearGradient' => [ 'x1' => 0, 'y1' => 0, 'x2' => 0, 'y2' =>1 ],
-                        'stops' => [
+                        'linearGradient' => ['x1' => 0, 'y1' => 0, 'x2' => 0, 'y2' => 1],
+                        'stops'          => [
                             [0, 'rgba(95, 196, 208, .2)'],
                             [1, 'rgba(95, 196, 208, 0)']
                         ]
                     ]
                 ]
             ],
-            'title' => [
+            'title'       => [
                 'margin' => 20,
-                'text' => "{% trans with {'%NumberPendingBids%' => NumberPendingBids } %} project-detail_all-bids-chart-title {% endtrans %}",
-                'align' => 'left',
-                'style' => [
+                'text'   => "{% trans with {'%NumberPendingBids%' => NumberPendingBids } %} project-detail_all-bids-chart-title {% endtrans %}",
+                'align'  => 'left',
+                'style'  => [
                     'fontSize' => '16px'
                 ]
             ],
-            'subtitle' => [
-                'margin' => 10,
+            'subtitle'    => [
+                'margin'  => 10,
                 'useHTML' => true,
-                'text' => '<span class="chart-key-icon" style="background: white; border: solid 3px #5FC5D1; width: 12px; height: 12px; line-height: 12px;"></span> {% trans %} project-detail_all-bids-chart-best-rate-legend {% endtrans %}',
-                'align' => 'right',
-                'style' => [
-                    'color' => '#5FC5D1',
+                'text'    => '<span class="chart-key-icon" style="background: white; border: solid 3px #5FC5D1; width: 12px; height: 12px; line-height: 12px;"></span> {% trans %} project-detail_all-bids-chart-best-rate-legend {% endtrans %}',
+                'align'   => 'right',
+                'style'   => [
+                    'color'    => '#5FC5D1',
                     'fontSize' => '14px'
                 ]
             ],
-            'xAxis' => [
-                'categories' => ['4%', '4,5%', '5%', '5,5%', '6%', '6,5%', '7%', '7,5%', '8%', '8,5%', '9%', '9,5%', '10%'],
-                'plotBands' => json_encode(['color' => '#999999', 'dashStyle' => 'ShortDot', 'value' => 8, 'width' => 1]),
-                'plotLines' => json_encode(['color' => '#999999', 'dashStyle' => 'ShortDot', 'value' => 8, 'width' => 1])
+            'xAxis'       => [
+                'categories' => [
+                    '4%',
+                    '4,5%',
+                    '5%',
+                    '5,5%',
+                    '6%',
+                    '6,5%',
+                    '7%',
+                    '7,5%',
+                    '8%',
+                    '8,5%',
+                    '9%',
+                    '9,5%',
+                    '10%'
+                ],
+                'plotBands'  => json_encode([
+                    'color'     => '#999999',
+                    'dashStyle' => 'ShortDot',
+                    'value'     => 8,
+                    'width'     => 1
+                ]),
+                'plotLines'  => json_encode([
+                    'color'     => '#999999',
+                    'dashStyle' => 'ShortDot',
+                    'value'     => 8,
+                    'width'     => 1
+                ])
             ],
-            'yAxis' => [
+            'yAxis'       => [
                 'title' => [
                     'text' => '{% trans %} project-detail_all-bids-chart-y-axis-legend {% endtrans %}'
                 ]
@@ -105,7 +129,7 @@ class HighchartsService
                 'areaspline' => [
                     'dataLabels' => [
                         'enabled' => false,
-                        'states' => [
+                        'states'  => [
                             'hover' => [
                                 'enabled' => true
                             ]
@@ -113,27 +137,27 @@ class HighchartsService
                     ]
                 ]
             ],
-            'series' => json_encode([
-                'name' => 'Offres en cours',
-                'color' => '#5FC5D1',
-                'fillOpacity' => 0.25,
+            'series'      => json_encode([
+                'name'         => 'Offres en cours',
+                'color'        => '#5FC5D1',
+                'fillOpacity'  => 0.25,
                 'showInLegend' => false,
-                'data' => [
+                'data'         => [
                     $dataBeforeLimit,
                     [
-                        'y' => 823,
+                        'y'      => 823,
                         'marker' => [
                             'fillColor' => 'white',
                             'lineColor' => '#5FC5D1',
-                            'lineWidth'=> 3,
-                            'enabled'=> true,
-                            'radius'=> 7
+                            'lineWidth' => 3,
+                            'enabled'   => true,
+                            'radius'    => 7
                         ]
                     ],
                     $dataAfterLimit
                 ]
             ]),
-            'exportUrl' => '{{ path() }}'
+            'exportUrl'   => '{{ path() }}'
         ];
 
         return $bidsChartSetting;
@@ -141,7 +165,7 @@ class HighchartsService
 
     public function getIncomeStatementChart($balanceSheets)
     {
-        $categories = [2013, 2014, 2015]; //TODO date des biilans
+        $categories = [2013, 2014, 2015];
         $data       = [
             ['name' => "Chiffre d'affaires", 'data' => [842020, 508340, 732245]],
             ['name' => "Résultats bruts d'exposition", 'data' => [42020, 18340, 2245]],
@@ -182,7 +206,7 @@ class HighchartsService
     {
         $schema = [
             ['name' => 'name', 'type' => 'string', 'label' => 'Name'],
-            ['name' => 'year-2015', 'type' => 'float', 'label' => '2015'], //TODO TRAD
+            ['name' => 'year-2015', 'type' => 'float', 'label' => '2015'],
             ['name' => 'diff-2015', 'type' => 'float', 'label' => 'false'],
             ['name' => 'year-2014', 'type' => 'float', 'label' => '2014'],
             ['name' => 'diff-2014', 'type' => 'float', 'label' => 'false'],
@@ -199,7 +223,7 @@ class HighchartsService
 
         $incomeTableData = [
             'schema'    => json_encode($schema),
-            'data'      => $data,
+            'data'      => json_encode($data),
             'exportUrl' => "route('project/12345/export/income')"
         ];
 
@@ -208,62 +232,43 @@ class HighchartsService
 
     public function getBalanceSheetAssetsChart($totalYearlyAssets)
     {
-        $balanceSheetAssets =  [
-            'type'=> 'projectOwnerBalanceActive',
-            'background'=> 'none',
-            'highcharts'=> [
-                'chart'=> [
-                    'type'=> 'spline',
+        $categories =  [2013, 2014, 2015];
+
+        $dataSeries = [
+            ['name' => 'Immobilisations corporelles','data' => [842020, 508340, 732245]],
+            ['name' => 'Immobilisations incorporelles','data' => [42050, 18380, 2215]],
+            ['name' => 'Immobilisations financières','data' => [32020, 12340, 1245]],
+            ['name' => 'Stocks','data' => [1020, 8340, 3745]],
+            ['name' => 'Créances','data' => [840020, 500340, 730245]],
+            ['name' => 'Disponibilités','data' => [41020, 18040, 2045]],
+            ['name' => 'Valeur mobilières de placement','data' => [30020, 12040, 1205]],
+            ['name' => 'Stocks','data' => [1220, 8200, 4745]]
+        ];
+
+        $balanceSheetAssets = [
+            'type'       => 'projectOwnerBalanceActive',
+            'background' => 'none',
+            'highcharts' => [
+                'chart'  => [
+                    'type'                => 'spline',
                     'plotBackgroundColor' => [
-                        'linearGradient'=> [ 'x1'=> 0, 'y1'=> 0, 'x2'=> 0, 'y2'=> 1 ],
-                        'stops'=> [
+                        'linearGradient' => ['x1' => 0, 'y1' => 0, 'x2' => 0, 'y2' => 1],
+                        'stops'          => [
                             [0, 'rgba(95, 196, 208, .1)'],
                             [1, 'rgba(95, 196, 208, 0)']
                         ]
                     ]
                 ],
-                'title'=> [
-                    'text'=> ''
+                'title'  => ['text' => ''],
+                'xAxis'  => ['categories' => $categories],
+                'yAxis'  => [
+                    'title' => ['text' => 'Montant (en €)'],
+                    'units' => '€'
                 ],
-                'xAxis'=> [
-                    'categories'=> [2013, 2014, 2015]
-                ],
-                'yAxis'=> [
-                    'title'=> [
-                        'text'=> 'Montant (en €)'
-                    ],
-                    'units'=> '€'
-                ],
-                'legend'=> [
-                    'symbolRadius'=> 10
-                ],
-                'series'=> [[
-                    'name'=> 'Immobilisations corporelles',
-                    'data'=> [842020, 508340, 732245]
-                ],[
-                    'name'=> 'Immobilisations incorporelles',
-                    'data'=> [42050, 18380, 2215]
-                ],[
-                    'name'=> 'Immobilisations financières',
-                    'data'=> [32020, 12340, 1245]
-                ],[
-                    'name'=> 'Stocks',
-                    'data'=> [1020, 8340, 3745]
-                ],[
-                    'name'=> 'Créances',
-                    'data'=> [840020, 500340, 730245]
-                ],[
-                    'name'=> 'Disponibilités',
-                    'data'=> [41020, 18040, 2045]
-                ],[
-                    'name'=> 'Valeur mobilières de placement',
-                    'data'=> [30020, 12040, 1205]
-                ],[
-                    'name'=> 'Stocks',
-                    'data'=> [1220, 8200, 4745]
-                ]]
+                'legend' => ['symbolRadius' => 10],
+                'series' => $dataSeries
             ],
-            'exportUrl'=> route('project/12345/export/balance/active')
+            'exportUrl'  => "route('project/12345/export/balance/active')"
         ];
 
         return $balanceSheetAssets;
@@ -271,56 +276,41 @@ class HighchartsService
 
     public function getBalanceSheetDebtsChart($totalYearlyDebts)
     {
-        $balanceSheetDebts =  [
-            'type'=> 'projectOwnerBalancePassive',
-            'background'=> 'none',
-            'highcharts'=> [
-                'chart'=> [
-                    'type'=> 'spline',
-                    'plotBackgroundColor'=> [
-                        'linearGradient'=> [ 'x1'=> 0, 'y1'=> 0, 'x2'=> 0, 'y2'=> 1 ],
-                        'stops'=> [
+        $categories = [2013, 2014, 2015];
+
+        $dataSeries = [
+            ['name' => 'Capitaux propres', 'data' => [642020, 208340, 132245]],
+            ['name' => 'Provisions pour risques & charges','data' => [32020, 19340, 3245]],
+            ['name' => 'Amortissement sur immobilisations','data' => [12020, 16340, 1335]],
+            ['name' => 'Dettes financières','data' => [2020, 6340, 8745]],
+            ['name' => 'Dettes fournissers','data' => [542020, 208340, 532245]],
+            ['name' => 'Autres dettes','data' => [22020, 16340, 1245]]
+        ];
+
+        $balanceSheetDebts = [
+            'type'       => 'projectOwnerBalancePassive',
+            'background' => 'none',
+            'highcharts' => [
+                'chart'  => [
+                    'type'                => 'spline',
+                    'plotBackgroundColor' => [
+                        'linearGradient'  => array('x1' => 0, 'y1' => 0, 'x2' => 0, 'y2' => 1),
+                        'stops'           => [
                             [0, 'rgba(95, 196, 208, .1)'],
                             [1, 'rgba(95, 196, 208, 0)']
                         ]
                     ]
                 ],
-                'title'=> [
-                    'text'=> ''
+                'title'  => ['text' => ''],
+                'xAxis'  => ['categories' => $categories],
+                'yAxis'  => [
+                    'title' => ['text' => 'Montant (en €)'],
+                    'units' => '€'
                 ],
-                'xAxis'=> [
-                    'categories'=> [2013, 2014, 2015]
-                ],
-                'yAxis'=> [
-                    'title'=> [
-                        'text'=> 'Montant (en €)'
-                    ],
-                    'units'=> '€'
-                ],
-                'legend'=> [
-                    'symbolRadius'=> 10
-                ],
-                'series'=> [[
-                    'name'=> 'Capitaux propres',
-                    'data'=> [642020, 208340, 132245]
-                ],[
-                    'name'=> 'Provisions pour risques & charges',
-                    'data'=> [32020, 19340, 3245]
-                ],[
-                    'name'=> 'Amortissement sur immobilisations',
-                    'data'=> [12020, 16340, 1335]
-                ],[
-                    'name'=> 'Dettes financières',
-                    'data'=> [2020, 6340, 8745]
-                ],[
-                    'name'=> 'Dettes fournissers',
-                    'data'=> [542020, 208340, 532245]
-                ],[
-                    'name'=> 'Autres dettes',
-                    'data'=> [22020, 16340, 1245]
-                ]]
+                'legend' => ['symbolRadius' => 10],
+                'series' => $dataSeries
             ],
-            'exportUrl'=> "route('project/12345/export/balance/passive')"
+            'exportUrl'  => "route('project/12345/export/balance/passive')"
         ];
 
         return $balanceSheetDebts;
@@ -328,66 +318,40 @@ class HighchartsService
 
     public function formatBalanceSheetDataForTable($totalYearlyAssets, $totalYearlyDebts)
     {
+        $schema = [
+            ['name'   => 'type','values' => ['title', '', 'total'],'label'  => false],
+            ['name'  => 'name','type'  => 'string','label' => 'Name'],
+            ['name'  => 'year-2015','type'  => 'float','label' => '2015'],
+            ['name'  => 'diff-2015','type'  => 'float','label' => false],
+            ['name'  => 'year-2014','type'  => 'float','label' => '2014'],
+            ['name'  => 'diff-2014','type'  => 'float','label' => false],
+            ['name'  => 'year-2013','type'  => 'float','label' => '2013']
+        ];
+
+        $dataSeries = [
+            ['title', 'Actif', '', '', ''],
+            ['', 'Immobilisations corporelles', 842020, 5.2, 508340, 4.3, 732245, ''],
+            ['', 'Immobilisations incorporelles', 42020, 6.2, 18340, 5.0, 2245, ''],
+            ['', 'Immobilisations financières', 32020, 8, 12340, -4.3, 1245, ''],
+            ['', 'Stocks', 1020, 9.2, 8340, -21.2, 3745, ''],
+            ['', 'Créances (clients & autres)', 842020, 3, 508340, -2.2, 732245, ''],
+            ['', 'Disponibilités', 42020, 9.2, 18340, 7.4, 2245, ''],
+            ['', 'Valeur mobilières de placement', 32020, -4.2, 12340, 6.8, 1245, ''],
+            ['total', 'Total actif', 4807975, 11, 4237129, 10, 4137892, ''],
+            ['title', 'Passif', '', '', '', '', '', ''],
+            ['', 'Capitaux propres', 842020, 5, 508340, 3.34, 732245, ''],
+            ['', 'Provisions pour risques & charges', 42020, 3, 18340, -9.2, 2245, ''],
+            ['', 'Amortissement sur immobilisations', 32020, -6, 12340, 9.9, 1245, ''],
+            ['', 'Dettes financières', 1020, 4, 8340, 6.6, 3745, ''],
+            ['', 'Dettes fournissers', 842020, -22, 508340, -15.67, 732245, ''],
+            ['', 'Autres dettes', 42020, 5, 18340, 2, 2245, ''],
+            ['total', 'Total passif', 4207975, 0, 4137129, 0.2, 4037892, '']
+        ];
+
         $balanceSheetData = [
-            'balance' => [
-                'schema'    => [
-                    [
-                        'name'   => 'type',
-                        'values' => ['title', '', 'total'],
-                        'label'  => false
-                    ],
-                    [
-                        'name'  => 'name',
-                        'type'  => 'string',
-                        'label' => 'Name'
-                    ],
-                    [
-                        'name'  => 'year-2015',
-                        'type'  => 'float',
-                        'label' => '2015'
-                    ],
-                    [
-                        'name'  => 'diff-2015',
-                        'type'  => 'float',
-                        'label' => false
-                    ],
-                    [
-                        'name'  => 'year-2014',
-                        'type'  => 'float',
-                        'label' => '2014'
-                    ],
-                    [
-                        'name'  => 'diff-2014',
-                        'type'  => 'float',
-                        'label' => false
-                    ],
-                    [
-                        'name'  => 'year-2013',
-                        'type'  => 'float',
-                        'label' => '2013'
-                    ]
-                ],
-                'data'      => [
-                    ['title', 'Actif', '', '', ''],
-                    ['', 'Immobilisations corporelles', 842020, 5.2, 508340, 4.3, 732245, ''],
-                    ['', 'Immobilisations incorporelles', 42020, 6.2, 18340, 5.0, 2245, ''],
-                    ['', 'Immobilisations financières', 32020, 8, 12340, -4.3, 1245, ''],
-                    ['', 'Stocks', 1020, 9.2, 8340, -21.2, 3745, ''],
-                    ['', 'Créances (clients & autres)', 842020, 3, 508340, -2.2, 732245, ''],
-                    ['', 'Disponibilités', 42020, 9.2, 18340, 7.4, 2245, ''],
-                    ['', 'Valeur mobilières de placement', 32020, -4.2, 12340, 6.8, 1245, ''],
-                    ['total', 'Total actif', 4807975, 11, 4237129, 10, 4137892, ''],
-                    ['title', 'Passif', '', '', '', '', '', ''],
-                    ['', 'Capitaux propres', 842020, 5, 508340, 3.34, 732245, ''],
-                    ['', 'Provisions pour risques & charges', 42020, 3, 18340, -9.2, 2245, ''],
-                    ['', 'Amortissement sur immobilisations', 32020, -6, 12340, 9.9, 1245, ''],
-                    ['', 'Dettes financières', 1020, 4, 8340, 6.6, 3745, ''],
-                    ['', 'Dettes fournissers', 842020, -22, 508340, -15.67, 732245, ''],
-                    ['', 'Autres dettes', 42020, 5, 18340, 2, 2245, ''],
-                    ['total', 'Total passif', 4207975, 0, 4137129, 0.2, 4037892, '']
-                ],
-                'exportUrl' => "route('project/12345/export/balance')"
-            ]
+            'schema'    => $schema,
+            'data'      => $dataSeries,
+            'exportUrl' => "route('project/12345/export/balance')"
         ];
 
         return $balanceSheetData;

@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\FrontBundle\Service;
 
 
+use Symfony\Component\Validator\Constraints\DateTime;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
@@ -31,6 +32,7 @@ class ProjectDisplayManager
             $aCompany                               = $company->select('id_company = ' . $project['id_company']);
             $aProjects[$key]['company']             = array_shift($aCompany);
             $aProjects[$key]['category']            = $aProjects[$key]['company']['sector'];
+            $aProjects[$key]['number_bids']         = '';//TODO count bids on project
 
             if (isset($clientID)) {
                 $aProjects[$key]['currentUser'] = $this->getClientBidsForProjectList($clientID, $project['id_project']);
@@ -94,6 +96,8 @@ class ProjectDisplayManager
         $project['avg_rate']             = $projects->getAverageInterestRate($project['id_project']);
         $project['totalLenders']         = (\projects_status::EN_FUNDING == $projectStatus->status) ? $bids->countLendersOnProject($project['id_project']) : $loans->getNbPreteurs($project['id_project']);
         $project['status'] = $projectStatus->status;
+        $roject['number_bids']         = '';//TODO count bids on project
+
 
 
 //        if ($alreadyFunded >= $project['amount']) {
@@ -133,7 +137,7 @@ class ProjectDisplayManager
         $lendersAccount = $this->entityManager->getRepository('lenders_accounts');
         $lendersAccount->get($clientId, 'id_client_owner');
 
-        return $bids->select('id_lender = "' . $lendersAccount->id_lender_account . '" AND id_project = "' . $projectId);
+        return $bids->select('id_lender_account = "' . $lendersAccount->id_lender_account . '" AND id_project = ' . $projectId);
     }
 
     public function getProjectFinancialData(\projects $project)
@@ -148,7 +152,7 @@ class ProjectDisplayManager
         $balanceSheets = [];
         $annualAccountsIds = [];
 
-        foreach ($companyBalanceSheet->select('id_company = "' . $company->id_company . '" AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $project->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3) as $aAnnualAccounts) {
+        foreach ($companyBalanceSheet->select('id_company = "' . $project->id_company . '" AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $project->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3) as $aAnnualAccounts) {
             $balanceSheets[]     = $aAnnualAccounts;
             $annualAccountsIds[] = $aAnnualAccounts['id_bilan'];
         }
@@ -213,6 +217,33 @@ class ProjectDisplayManager
         $this->sumRestanteARemb = $repaymentSchedule->getSumRestanteARembByProject($lendersAccount->id_lender_account, $project->id_project);
         $this->nbPeriod         = $repaymentSchedule->counterPeriodRestantes($lendersAccount->id_lender_account, $project->id_project);
 
+    }
+
+    public function getProjectFundingStatistic(\projects $project, $status)
+    {
+        /** @var \loans $loans */
+        $loans = $this->entityManager->getRepository('loans');
+
+        $startFundingPeriod = ($project->date_publication_full != '0000-00-00 00:00:00') ? new \DateTime($project->date_publication_full) : new \DateTime($project->date_publication . ' 00:00:00');
+        $endFundingPeriod   = ($project->date_retrait_full != '0000-00-00 00:00:00') ? new \DateTime($project->date_retrait_full) : new \DateTime($project->date_fin);
+
+        $fundingStatistics['fundingTime']  = $startFundingPeriod->diff($endFundingPeriod);
+        $fundingStatistics['NumberLender'] = $loans->getNbPreteurs($project->id_project);
+        $fundingStatistics['AvgRate']      = $project->getAverageInterestRate($project->id_project, $status);
+
+        return $fundingStatistics;
+    }
+
+    public function getClientLoansOnProject($clientId, $projectId)
+    {
+        /** @var \loans $loans */
+        $loans = $this->entityManager->getRepository('loans');
+
+        /** @var \lenders_accounts $lendersAccount */
+        $lendersAccount = $this->entityManager->getRepository('lenders_accounts');
+        $lendersAccount->get($clientId, 'id_client_owner');
+
+        return $loans->sum('id_lender = "' . $lendersAccount->id_lender_account . '" AND id_project = ' . $projectId, 'amount');
     }
 
 

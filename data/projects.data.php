@@ -207,7 +207,6 @@ class projects extends projects_crud
         }
         $sql = 'SELECT p.*,
               projects_status.status,
-              COUNT(b.id_bid) AS number_bids,
               DATEDIFF(p.date_retrait_full, NOW()) AS daysLeft,
               CASE WHEN projects_status.status = :iFunding
                 THEN "1"
@@ -344,15 +343,17 @@ class projects extends projects_crud
     public function positionProject($id_project, $status, $order)
     {
         $aProjects = $this->selectProjectsByStatus($status, ' AND p.display = 0 and p.status = 0', $order);
+        $previous = '';
+        $next = '';
 
         foreach ($aProjects as $k => $p) {
             if ($p['id_project'] == $id_project) {
-                $previous = isset($aProjects[$k - 1]) ? $aProjects[$k - 1]['slug'] : null;
-                $next     = isset($aProjects[$k + 1]) ? $aProjects[$k + 1]['slug'] : null;
+                $previous = isset($aProjects[$k - 1]) ? $aProjects[$k - 1] : null;
+                $next     = isset($aProjects[$k + 1]) ? $aProjects[$k + 1] : null;
                 break;
             }
         }
-        return array('previous' => $previous, 'next' => $next);
+        return array('previousProject' => $previous, 'nextProject' => $next);
     }
 
     // liste les projets favoris dont la date de retrait est dans j-2

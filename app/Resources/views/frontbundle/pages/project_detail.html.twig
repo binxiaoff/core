@@ -211,9 +211,9 @@ permalink: project.slug
                     </div><!-- /.project-single-header-inner -->
                 </div><!-- /.project-single-header-position -->
 
-                <a href="#" class="btn-nav-previous" title="Name of previous project" data-toggle="tooltip" data-placement="right"><span class="sr-only">{% trans %} project-detail_next-project-label {% endtrans %}</span></a>
+                <a href="{{ path('project_detail', {'projectSlug' : projectNavigation.previousProject.slug}) }}" class="btn-nav-previous" title="{{ projectNavigation.previousProject.title }}" data-toggle="tooltip" data-placement="right"><span class="sr-only">{% trans %} project-detail_next-project-label {% endtrans %}</span></a>
 
-                <a href="#" class="btn-nav-next" title="Name of next project" data-toggle="tooltip" data-placement="left"><span class="sr-only">{% trans %} project-detail_previous-project-label {% endtrans %}</span></a>
+                <a href="{{ path('project_detail', {'projectSlug' : projectNavigation.nextProject.slug}) }}" class="btn-nav-next" title="{{ projectNavigation.nextProject.title }}" data-toggle="tooltip" data-placement="left"><span class="sr-only">{% trans %} project-detail_previous-project-label {% endtrans %}</span></a>
             </div><!-- /.project-single-header -->
 
             {% include 'partials/components/list-socialmedia.html.twig' %}
@@ -257,10 +257,24 @@ permalink: project.slug
                         </div><!-- /.project-single-duration -->
                     </div>
 
-                    {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-                        {{ include('partials/components/project-bid-panel.html.twig') }}
-                    {% else %}
-                        {{ include('partials/components/project-login-panel.html.twig') }}
+                    {% if  project.status is constant('\\projects_status::EN_FUNDING') %}
+                        {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                            {{ include('partials/components/project-bid-panel.html.twig') }}
+                        {% else %}
+                            {{ include('partials/components/project-login-panel.html.twig') }}
+                        {% endif %}
+                    {% else  %}
+                        <p>{% trans with {
+                            '%NumberLender%' : fundingStatistics.NumberLender,
+                            '%AvgRate%' : fundingStatistics.AvgRate,
+                            '%fundingDays%' : fundingStatistics.fundingTime.days,
+                            '%fundingMinutes%' : fundingStatistics.fundingTime.i,
+                            '%fundingHours%' : fundingStatistics.fundingTime.h }
+                            %} project-detail_project-funded-message-with-statistics {% endtrans %}</p>
+                        {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                        {% if myLoanOnProject is not defined or myLoanOnProject is null %}{% set myLoanOnProject = 0 %}{% endif %}
+                    <p>{% trans with {'%amountUserLoan%' : myLoanOnProject }%} project-detail_project-funded-mesage-lender-participation {% endtrans %}</p>
+                        {%  endif %}
                     {% endif %}
 
                     <ul class="list-sharing">
@@ -320,7 +334,7 @@ permalink: project.slug
 
                         <nav class="project-single-nav">
                             <ul class="nav nav-anchors">
-                                {% if project.status = constant('//projects_status::EN_FUNDING') %}
+                                {% if project.status == constant('\\projects_status::EN_FUNDING') %}
                                 <li role="presentation"><a href="#offers">{% trans %} project-detail_presentation-title-offers {% endtrans %}</a></li>
                                 {% endif %}
                                 <li role="presentation"><a href="#presentation">{% trans %} project-detail_presentation-title-presentation {% endtrans %}</a></li>
@@ -328,85 +342,87 @@ permalink: project.slug
                             </ul>
                         </nav><!-- /.project-single-nav -->
                         <div id="offers" data-watchscroll-nav>
-                            {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-                            <section id="project-section-myoffers" class="page-section">
-                                <div class="tabs">
-                                    <div class="section-tabs-nav">
-                                        <header>
-                                            <h3 id="project-myoffers" class="h3">{% trans %} project-detail_client-offer-table-title {% endtrans %}</h3>
-                                        </header>
+                            {% if project.status == constant('\\projects_status::EN_FUNDING') %}
+                                {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                                <section id="project-section-myoffers" class="page-section">
+                                    <div class="tabs">
+                                        <div class="section-tabs-nav">
+                                            <header>
+                                                <h3 id="project-myoffers" class="h3">{% trans %} project-detail_client-offer-table-title {% endtrans %}</h3>
+                                            </header>
 
-                                        <ul class="nav nav-tabs">
-                                            <li id="project-myoffers-inprogress" role="presentation" class="active">
-                                                <a href="#myoffers-inprogress" role="tab" data-toggle="tab">{% trans %} project-detail_client-offer-table-pending {% endtrans %}</a>
-                                            </li>
-                                            <li id="project-myoffers-rejected" role="presentation">
-                                                <a href="#myoffers-rejected" role="tab" data-toggle="tab">{% trans %} project-detail_client-offer-table-refused {% endtrans %}</a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <div class="section-tabs-content tab-content">
-                                        <div id="myoffers-inprogress" role="tabpanel" class="tab-pane active" aria-labelledby="project-myoffers-inprogress project-myoffers">
-                                            <table class="table-myoffers">
-                                                <tbody>
-                                                {% for i, item in myoffers.data if item[3] == 1 or item[3] == 2 %}
-                                                    {# Mark that the current user was involved with the offer with the id #}
-                                                    {% set myoffersIds = myoffersIds|merge([item[0]]) %}
+                                            <ul class="nav nav-tabs">
+                                                <li id="project-myoffers-inprogress" role="presentation" class="active">
+                                                    <a href="#myoffers-inprogress" role="tab" data-toggle="tab">{% trans %} project-detail_client-offer-table-pending {% endtrans %}</a>
+                                                </li>
+                                                <li id="project-myoffers-rejected" role="presentation">
+                                                    <a href="#myoffers-rejected" role="tab" data-toggle="tab">{% trans %} project-detail_client-offer-table-refused {% endtrans %}</a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="section-tabs-content tab-content">
+                                            <div id="myoffers-inprogress" role="tabpanel" class="tab-pane active" aria-labelledby="project-myoffers-inprogress project-myoffers">
+                                                <table class="table-myoffers">
+                                                    <tbody>
+                                                    {% for i, item in myoffers.data if item[3] == 1 or item[3] == 2 %}
+                                                        {# Mark that the current user was involved with the offer with the id #}
+                                                        {% set myoffersIds = myoffersIds|merge([item[0]]) %}
 
-                                                    <tr>
-                                                        <td class="table-myoffers-item-id">{{ item[0] }}</td>
-                                                        <td class="table-myoffers-item-interest">{{ item[1]|__num(1) }}%</td>
-                                                        <td class="table-myoffers-item-amount">{{ item[2]|__num(2)|nbsp }}€</td>
-                                                        <td class="table-myoffers-item-view">
-                                                            <a href="{{ item[4] }}"><span class="icon fa-eye-u32"><span class="sr-only">View your offer</span></span></a>
-                                                        </td>
-                                                    </tr>
-                                                {% else %}
-                                                    <tr>
-                                                        <td class="table-empty" colspan="4">
-                                                            <p>{% trans %} project-detail_client-offer-table-no-offers {% endtrans %}</p>
-                                                            <a href="#" class="btn-primary">{% trans %} project-detail_client-offer-table-make-offer-button {% endtrans %}</a>
-                                                        </td>
-                                                    </tr>
-                                                {% endfor %}
-                                                </tbody>
-                                            </table><!-- /.table-myoffers -->
+                                                        <tr>
+                                                            <td class="table-myoffers-item-id">{{ item[0] }}</td>
+                                                            <td class="table-myoffers-item-interest">{{ item[1]|__num(1) }}%</td>
+                                                            <td class="table-myoffers-item-amount">{{ item[2]|__num(2)|nbsp }}€</td>
+                                                            <td class="table-myoffers-item-view">
+                                                                <a href="{{ item[4] }}"><span class="icon fa-eye-u32"><span class="sr-only">View your offer</span></span></a>
+                                                            </td>
+                                                        </tr>
+                                                    {% else %}
+                                                        <tr>
+                                                            <td class="table-empty" colspan="4">
+                                                                <p>{% trans %} project-detail_client-offer-table-no-offers {% endtrans %}</p>
+                                                                <a href="#" class="btn-primary">{% trans %} project-detail_client-offer-table-make-offer-button {% endtrans %}</a>
+                                                            </td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                    </tbody>
+                                                </table><!-- /.table-myoffers -->
 
-                                        </div><!-- /.tab-pane -->
+                                            </div><!-- /.tab-pane -->
 
-                                        {# My Offers - Rejected #}
-                                        <div id="myoffers-rejected" role="tabpanel" class="tab-pane" aria-labelledby="project-myoffers-rejected project-myoffers">
+                                            {# My Offers - Rejected #}
+                                            <div id="myoffers-rejected" role="tabpanel" class="tab-pane" aria-labelledby="project-myoffers-rejected project-myoffers">
 
-                                            <table class="table-myoffers">
-                                                <tbody>
-                                                {% for i, item in myoffers.data if item[3] == 3 %}
-                                                    {# Mark that the current user was involved with the offer with the id #}
-                                                    {% set myoffersIds = myoffersIds|merge([item[0]]) %}
+                                                <table class="table-myoffers">
+                                                    <tbody>
+                                                    {% for i, item in myoffers.data if item[3] == 3 %}
+                                                        {# Mark that the current user was involved with the offer with the id #}
+                                                        {% set myoffersIds = myoffersIds|merge([item[0]]) %}
 
-                                                    <tr>
-                                                        <td class="table-myoffers-item-id">{{ item[0] }}</td>
-                                                        <td class="table-myoffers-item-interest">{{ item[1]|__num(1) }}%</td>
-                                                        <td class="table-myoffers-item-amount">{{ item[2]|__num(2)|nbsp }}€</td>
-                                                        <td class="table-myoffers-item-view">
-                                                            <a href="{{ item[4] }}"><span class="icon fa-eye-u32"><span class="sr-only">View your offer</span></span></a>
-                                                        </td>
-                                                    </tr>
-                                                {% else %}
-                                                    <tr>
-                                                        <td class="table-empty" colspan="4">
-                                                            <p>{% trans %} project-detail_client-offer-table-no-offers {% endtrans %}</p>
-                                                        </td>
-                                                    </tr>
-                                                {% endfor %}
-                                                </tbody>
-                                            </table><!-- /.table-myoffers -->
+                                                        <tr>
+                                                            <td class="table-myoffers-item-id">{{ item[0] }}</td>
+                                                            <td class="table-myoffers-item-interest">{{ item[1]|__num(1) }}%</td>
+                                                            <td class="table-myoffers-item-amount">{{ item[2]|__num(2)|nbsp }}€</td>
+                                                            <td class="table-myoffers-item-view">
+                                                                <a href="{{ item[4] }}"><span class="icon fa-eye-u32"><span class="sr-only">View your offer</span></span></a>
+                                                            </td>
+                                                        </tr>
+                                                    {% else %}
+                                                        <tr>
+                                                            <td class="table-empty" colspan="4">
+                                                                <p>{% trans %} project-detail_client-offer-table-no-offers {% endtrans %}</p>
+                                                            </td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                    </tbody>
+                                                </table><!-- /.table-myoffers -->
 
-                                        </div><!-- /.tab-pane -->
-                                    </div><!-- /.section-tabs-content -->
-                                </div><!-- /tabs -->
-                            </section><!-- /.page-section -->
-                            {% endif %}
+                                            </div><!-- /.tab-pane -->
+                                        </div><!-- /.section-tabs-content -->
+                                    </div><!-- /tabs -->
+                                </section><!-- /.page-section -->
+                                {% endif %}
                             {{ include('partials/components/project-bids-list.html.twig') }}
+                            {% endif %}
                         </div>
                         <div id="presentation" data-watchscroll-nav>
                             <section id="project-section-who" class="page-section">
@@ -506,7 +522,6 @@ permalink: project.slug
                             </section><!-- /.page-section -->
 
                             {# Balance history #}
-                            {% set balance = placeholderData.tables.balance %}
                             <section id="project-section-balance" class="page-section">
                                 <div class="tabs">
                                     <div class="section-tabs-nav">
