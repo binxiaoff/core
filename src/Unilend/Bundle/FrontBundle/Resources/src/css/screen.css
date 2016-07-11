@@ -6771,6 +6771,8 @@ label.custom-input-switch.custom-input-switch-sm > input[type="checkbox"]:checke
 .reviews .reviewers > li svg,
 .reviews .reviewers > li .svg-icon {
   display: none;
+  height: 33px;
+  width: auto;
 }
 /* line 67, ../sass/site/components/_reviews.scss */
 .reviews .reviewers > li.active a {
