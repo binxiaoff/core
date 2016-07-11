@@ -52,23 +52,25 @@ permalink: route('user/access')
                                                 <input type="password" id="connect-access-password" data-login name="_password" value="" class="input-field" name="access[password]" data-formvalidation-input data-formvalidation-required="true">
 
                                             </div><!-- /.input-group -->
-                                            {% if captchaInformation is defined and captchaInformation is not empty %}
-                                                {% if true == captchaInformation.displayCaptcha %}
+                                        </div><!-- /.form-field -->
+                                        {% if captchaInformation is defined and captchaInformation is not empty %}
+                                            {% if true == captchaInformation.displayCaptcha %}
+                                                <div class="captcha-wrapper">
                                                     <iframe class="captcha_login" width="133" height="33"
                                                             src="{{ path('show_captcha') }}">
                                                     </iframe>
                                                     <div id="captcha" class="form-field">
-                                                        <label for="connect-access-catpcha">{% trans %} translation captcha explanation to do {% endtrans %}</label>
-                                                            <div class="input-group set-left">
-                                                                <div class="btn-group">
-                                                                    <label for="connect-access-captcha"></label>
-                                                                </div>
-                                                            <input type="text" id="connect-access-captcha" name="captcha" value="" class="input-field">
+                                                        <label for="connect-access-catpcha">{% trans %} enter security code (trans TODO) {% endtrans %}</label>
+                                                        <div class="input-group set-left">
+                                                            <div class="btn-group">
+                                                                <label for="connect-access-captcha"></label>
+                                                            </div>
+                                                            <input type="text" id="connect-access-captcha" autocomplete="off" name="captcha" value="" class="input-field">
                                                         </div>
                                                     </div>
-                                                {%  endif %}
-                                            {% endif %}
-                                        </div><!-- /.form-field -->
+                                                </div>
+                                            {%  endif %}
+                                        {% endif %}
                                         <div class="field-help">
                                             <p>
                                                 <a href="{{ route('user/forgotpassword') }}" class="link">{% trans %} connect-subscribe-page_login-box-password-forgotten-link {% endtrans %}</a>
