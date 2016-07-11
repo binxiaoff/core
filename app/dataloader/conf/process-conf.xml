@@ -19,7 +19,7 @@
                 <entry key="process.operation" value="upsert"/>
                 <entry key="process.mappingFile" value="/data/sites/unilend/app/dataloader/map/Mapping_Lenders.sdl"/>
                 <entry key="process.outputError" value="/data/log/unilend/dataloader/errorLenders.csv"/>
-                <entry key="dataAccess.name" value="/data/medias/nfs/var/dataloader/preteurs.csv" />
+                <entry key="dataAccess.name" value="/data/medias/nfs/protected/dataloader/preteurs.csv" />
                 <entry key="dataAccess.type" value="csvRead" />
                 <entry key="dataAccess.readUTF8" value="true" />
                 <entry key="process.initialLastRunDate" value="2015-09-17T00:00:00.000-0800"/>
@@ -46,7 +46,7 @@
                 <entry key="process.operation" value="upsert"/>
                 <entry key="process.mappingFile" value="/data/sites/unilend/app/dataloader/map/Mapping_Company.sdl"/>
                 <entry key="process.outputError" value="/data/log/unilend/dataloader/errorCompanies.csv"/>
-                <entry key="dataAccess.name" value="/data/medias/nfs/var/dataloader/companies.csv" />
+                <entry key="dataAccess.name" value="/data/medias/nfs/protected/dataloader/companies.csv" />
                 <entry key="dataAccess.type" value="csvRead" />
                 <entry key="dataAccess.readUTF8" value="true" />
                 <entry key="process.initialLastRunDate" value="2015-09-17T00:00:00.000-0800"/>
@@ -73,7 +73,7 @@
                 <entry key="process.operation" value="upsert"/>
                 <entry key="process.mappingFile" value="/data/sites/unilend/app/dataloader/map/Mapping_Borrowers.sdl"/>
                 <entry key="process.outputError" value="/data/log/unilend/dataloader/errorBorrowers.csv"/>
-                <entry key="dataAccess.name" value="/data/medias/nfs/var/dataloader/emprunteurs.csv" />
+                <entry key="dataAccess.name" value="/data/medias/nfs/protected/dataloader/emprunteurs.csv" />
                 <entry key="dataAccess.type" value="csvRead" />
                 <entry key="dataAccess.readUTF8" value="true" />
                 <entry key="process.initialLastRunDate" value="2015-09-17T00:00:00.000-0800"/>
@@ -100,7 +100,7 @@
                 <entry key="process.operation" value="upsert"/>
                 <entry key="process.mappingFile" value="/data/sites/unilend/app/dataloader/map/Mapping_Projects.sdl"/>
                 <entry key="process.outputError" value="/data/log/unilend/dataloader/errorProjects.csv"/>
-                <entry key="dataAccess.name" value="/data/medias/nfs/var/dataloader/projects.csv" />
+                <entry key="dataAccess.name" value="/data/medias/nfs/protected/dataloader/projects.csv" />
                 <entry key="dataAccess.type" value="csvRead" />
                 <entry key="dataAccess.readUTF8" value="true" />
                 <entry key="process.initialLastRunDate" value="2015-09-17T00:00:00.000-0800"/>
