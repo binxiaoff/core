@@ -5,7 +5,7 @@
 // time to do it yet! --Matt
 
 @mixin site-logo-mobile {
-  $image-path: 'logo/logo-and-type-unilend-132x25-purple.png';
+  $image-path: '../media/logo/logo-and-type-unilend-132x25-purple.png';
   $image: get-image-url($image-path);
   $width: 135px;
   $height: 25px;
@@ -19,14 +19,14 @@
   line-height: $height;
 
   @include retina {
-    $image-path: 'logo/logo-and-type-unilend-132x25-purple@2x.png';
+    $image-path: '../media/logo/logo-and-type-unilend-132x25-purple@2x.png';
     background-image: image-url($image-path);
     @include background-size(contain);
   }
 }
 
 @mixin site-logo-full {
-  $image-path: 'logo/logo-and-type-unilend-209x44-purple.png';
+  $image-path: '../media/logo/logo-and-type-unilend-209x44-purple.png';
   $image: get-image-url($image-path);
   $width: 209px;
   $height: 44px;
@@ -46,13 +46,13 @@
   vertical-align: top;
 
   @include retina {
-    $image-path: 'logo/logo-and-type-unilend-209x44-purple@2x.png';
+    $image-path: '../media/logo/logo-and-type-unilend-209x44-purple@2x.png';
     background-image: image-url($image-path);
     @include background-size(contain);
   }
 
   @include devices('lg') {
-    $image-path: 'logo/logo-and-type-unilend-245x52-purple.png';
+    $image-path: '../media/logo/logo-and-type-unilend-245x52-purple.png';
     $image: get-image-url($image-path);
     $width: 245px;
     $height: 52px;
@@ -63,7 +63,7 @@
     line-height: $height;
 
     @include retina {
-      $image-path: 'logo/logo-and-type-unilend-245x52-purple@2x.png';
+      $image-path: '../media/logo/logo-and-type-unilend-245x52-purple@2x.png';
       background-image: url($image-path);
       @include background-size(contain);
     }
@@ -71,7 +71,7 @@
 }
 
 @mixin site-logo-fixed {
-  $image-path: 'logo/logo-unilend-65x65-white.png';
+  $image-path: '../media/logo/logo-unilend-65x65-white.png';
   $image: get-image-url($image-path);
   $width: 65px;
   $height: 65px;
@@ -88,7 +88,7 @@
   vertical-align: top;
 
   @include retina {
-    $image-path: 'logo/logo-unilend-65x65-white@2x.png';
+    $image-path: '../media/logo/logo-unilend-65x65-white@2x.png';
     background-image: image-url($image-path);
     @include background-size(contain);
   }
@@ -277,7 +277,7 @@
     }
 
     .site-user-balance {
-      background-image: image-url('dashboard/icon-balance-41x34.png');
+      background-image: url('../media/dashboard/icon-balance-41x34.png');
       background-repeat: no-repeat;
     }
 

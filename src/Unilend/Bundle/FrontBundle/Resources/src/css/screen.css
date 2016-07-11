@@ -13192,7 +13192,7 @@ thead.table-sortable-columns {
   height: 44px;
   overflow: hidden;
   background-color: transparent;
-  background-image: url('../images/logo/logo-and-type-unilend-209x44-purple.png?1467625279');
+  background-image: url('../images/../media/logo/logo-and-type-unilend-209x44-purple.png');
   background-repeat: no-repeat;
   background-position: left top;
   line-height: 44px;
@@ -13203,14 +13203,14 @@ thead.table-sortable-columns {
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   /* line 98, ../sass/site/components/site/_header.scss */
   .site-logo {
-    background-image: url('../images/logo/logo-and-type-unilend-209x44-purple@2x.png?1467625279');
+    background-image: url('../images/../media/logo/logo-and-type-unilend-209x44-purple@2x.png');
     background-size: contain;
   }
 }
 @media screen and (min-width: 1600px) {
   /* line 98, ../sass/site/components/site/_header.scss */
   .site-logo {
-    background-image: url('../images/logo/logo-and-type-unilend-245x52-purple.png?1467625279');
+    background-image: url('../images/../media/logo/logo-and-type-unilend-245x52-purple.png');
     width: 245px;
     height: 52px;
     line-height: 52px;
@@ -13219,7 +13219,7 @@ thead.table-sortable-columns {
 @media screen and (min-width: 1600px) and (-webkit-min-device-pixel-ratio: 2), screen and (min-width: 1600px) and (min-resolution: 192dpi) {
   /* line 98, ../sass/site/components/site/_header.scss */
   .site-logo {
-    background-image: url("logo/logo-and-type-unilend-245x52-purple@2x.png");
+    background-image: url("../media/logo/logo-and-type-unilend-245x52-purple@2x.png");
     background-size: contain;
   }
 }
@@ -13325,7 +13325,7 @@ thead.table-sortable-columns {
 /* line 153, ../sass/site/components/site/_header.scss */
 .site-header .site-logo {
   background-color: transparent;
-  background-image: url('../images/logo/logo-and-type-unilend-132x25-purple.png?1467625279');
+  background-image: url('../images/../media/logo/logo-and-type-unilend-132x25-purple.png');
   background-repeat: no-repeat;
   background-position: left top;
   width: 135px;
@@ -13335,7 +13335,7 @@ thead.table-sortable-columns {
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   /* line 153, ../sass/site/components/site/_header.scss */
   .site-header .site-logo {
-    background-image: url('../images/logo/logo-and-type-unilend-132x25-purple@2x.png?1467625279');
+    background-image: url('../images/../media/logo/logo-and-type-unilend-132x25-purple@2x.png');
     background-size: contain;
   }
 }
@@ -13352,7 +13352,7 @@ thead.table-sortable-columns {
   width: 65px;
   height: 65px;
   background-color: transparent;
-  background-image: url('../images/logo/logo-unilend-65x65-white.png?1467625279');
+  background-image: url('../images/../media/logo/logo-unilend-65x65-white.png');
   background-repeat: no-repeat;
   background-position: left top;
   text-align: left;
@@ -13362,7 +13362,7 @@ thead.table-sortable-columns {
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   /* line 164, ../sass/site/components/site/_header.scss */
   .site-header.site-header-dashboard .site-logo {
-    background-image: url('../images/logo/logo-unilend-65x65-white@2x.png?1467625279');
+    background-image: url('../images/../media/logo/logo-unilend-65x65-white@2x.png');
     background-size: contain;
   }
 }
@@ -13522,7 +13522,7 @@ thead.table-sortable-columns {
 }
 /* line 279, ../sass/site/components/site/_header.scss */
 .site-header .site-user .site-user-balance {
-  background-image: url('../images/dashboard/icon-balance-41x34.png?1467625279');
+  background-image: url("../media/dashboard/icon-balance-41x34.png");
   background-repeat: no-repeat;
 }
 /* line 284, ../sass/site/components/site/_header.scss */
@@ -13716,7 +13716,7 @@ thead.table-sortable-columns {
     height: 44px;
     overflow: hidden;
     background-color: transparent;
-    background-image: url('../images/logo/logo-and-type-unilend-209x44-purple.png?1467625279');
+    background-image: url('../images/../media/logo/logo-and-type-unilend-209x44-purple.png');
     background-repeat: no-repeat;
     background-position: left top;
     line-height: 44px;
@@ -13728,14 +13728,14 @@ thead.table-sortable-columns {
 @media screen and (min-width: 1024px) and (max-width: 1299px) and (-webkit-min-device-pixel-ratio: 2), screen and (min-width: 1024px) and (max-width: 1299px) and (min-resolution: 192dpi) {
   /* line 467, ../sass/site/components/site/_header.scss */
   .site-header .site-logo, .site-header.site-header-dashboard .site-logo {
-    background-image: url('../images/logo/logo-and-type-unilend-209x44-purple@2x.png?1467625279');
+    background-image: url('../images/../media/logo/logo-and-type-unilend-209x44-purple@2x.png');
     background-size: contain;
   }
 }
 @media screen and (min-width: 1024px) and (max-width: 1299px) and (min-width: 1600px) {
   /* line 467, ../sass/site/components/site/_header.scss */
   .site-header .site-logo, .site-header.site-header-dashboard .site-logo {
-    background-image: url('../images/logo/logo-and-type-unilend-245x52-purple.png?1467625279');
+    background-image: url('../images/../media/logo/logo-and-type-unilend-245x52-purple.png');
     width: 245px;
     height: 52px;
     line-height: 52px;
@@ -13744,7 +13744,7 @@ thead.table-sortable-columns {
 @media screen and (min-width: 1024px) and (max-width: 1299px) and (min-width: 1600px) and (-webkit-min-device-pixel-ratio: 2), screen and (min-width: 1024px) and (max-width: 1299px) and (min-width: 1600px) and (min-resolution: 192dpi) {
   /* line 467, ../sass/site/components/site/_header.scss */
   .site-header .site-logo, .site-header.site-header-dashboard .site-logo {
-    background-image: url("logo/logo-and-type-unilend-245x52-purple@2x.png");
+    background-image: url("../media/logo/logo-and-type-unilend-245x52-purple@2x.png");
     background-size: contain;
   }
 }
@@ -14062,7 +14062,7 @@ thead.table-sortable-columns {
     width: 65px;
     height: 65px;
     background-color: transparent;
-    background-image: url('../images/logo/logo-unilend-65x65-white.png?1467625279');
+    background-image: url('../images/../media/logo/logo-unilend-65x65-white.png');
     background-repeat: no-repeat;
     background-position: left top;
     text-align: left;
@@ -14073,7 +14073,7 @@ thead.table-sortable-columns {
 @media screen and (min-width: 1024px) and (max-width: 1299px) and (-webkit-min-device-pixel-ratio: 2), screen and (min-width: 1024px) and (max-width: 1299px) and (min-resolution: 192dpi) {
   /* line 739, ../sass/site/components/site/_header.scss */
   .ui-site-header-fixed .site-header .site-logo, .ui-site-header-fixed .site-header.site-header-dashboard .site-logo {
-    background-image: url('../images/logo/logo-unilend-65x65-white@2x.png?1467625279');
+    background-image: url('../images/../media/logo/logo-unilend-65x65-white@2x.png');
     background-size: contain;
   }
 }
@@ -14216,7 +14216,7 @@ thead.table-sortable-columns {
     height: 44px;
     overflow: hidden;
     background-color: transparent;
-    background-image: url('../images/logo/logo-and-type-unilend-209x44-purple.png?1467625279');
+    background-image: url('../images/../media/logo/logo-and-type-unilend-209x44-purple.png');
     background-repeat: no-repeat;
     background-position: left top;
     line-height: 44px;
@@ -14228,14 +14228,14 @@ thead.table-sortable-columns {
 @media screen and (min-width: 1300px) and (max-width: 1599px) and (-webkit-min-device-pixel-ratio: 2), screen and (min-width: 1300px) and (max-width: 1599px) and (min-resolution: 192dpi) {
   /* line 467, ../sass/site/components/site/_header.scss */
   .site-header .site-logo, .site-header.site-header-dashboard .site-logo {
-    background-image: url('../images/logo/logo-and-type-unilend-209x44-purple@2x.png?1467625279');
+    background-image: url('../images/../media/logo/logo-and-type-unilend-209x44-purple@2x.png');
     background-size: contain;
   }
 }
 @media screen and (min-width: 1300px) and (max-width: 1599px) and (min-width: 1600px) {
   /* line 467, ../sass/site/components/site/_header.scss */
   .site-header .site-logo, .site-header.site-header-dashboard .site-logo {
-    background-image: url('../images/logo/logo-and-type-unilend-245x52-purple.png?1467625279');
+    background-image: url('../images/../media/logo/logo-and-type-unilend-245x52-purple.png');
     width: 245px;
     height: 52px;
     line-height: 52px;
@@ -14244,7 +14244,7 @@ thead.table-sortable-columns {
 @media screen and (min-width: 1300px) and (max-width: 1599px) and (min-width: 1600px) and (-webkit-min-device-pixel-ratio: 2), screen and (min-width: 1300px) and (max-width: 1599px) and (min-width: 1600px) and (min-resolution: 192dpi) {
   /* line 467, ../sass/site/components/site/_header.scss */
   .site-header .site-logo, .site-header.site-header-dashboard .site-logo {
-    background-image: url("logo/logo-and-type-unilend-245x52-purple@2x.png");
+    background-image: url("../media/logo/logo-and-type-unilend-245x52-purple@2x.png");
     background-size: contain;
   }
 }
@@ -14562,7 +14562,7 @@ thead.table-sortable-columns {
     width: 65px;
     height: 65px;
     background-color: transparent;
-    background-image: url('../images/logo/logo-unilend-65x65-white.png?1467625279');
+    background-image: url('../images/../media/logo/logo-unilend-65x65-white.png');
     background-repeat: no-repeat;
     background-position: left top;
     text-align: left;
@@ -14573,7 +14573,7 @@ thead.table-sortable-columns {
 @media screen and (min-width: 1300px) and (max-width: 1599px) and (-webkit-min-device-pixel-ratio: 2), screen and (min-width: 1300px) and (max-width: 1599px) and (min-resolution: 192dpi) {
   /* line 739, ../sass/site/components/site/_header.scss */
   .ui-site-header-fixed .site-header .site-logo, .ui-site-header-fixed .site-header.site-header-dashboard .site-logo {
-    background-image: url('../images/logo/logo-unilend-65x65-white@2x.png?1467625279');
+    background-image: url('../images/../media/logo/logo-unilend-65x65-white@2x.png');
     background-size: contain;
   }
 }
@@ -14762,7 +14762,7 @@ thead.table-sortable-columns {
     height: 44px;
     overflow: hidden;
     background-color: transparent;
-    background-image: url('../images/logo/logo-and-type-unilend-209x44-purple.png?1467625279');
+    background-image: url('../images/../media/logo/logo-and-type-unilend-209x44-purple.png');
     background-repeat: no-repeat;
     background-position: left top;
     line-height: 44px;
@@ -14774,14 +14774,14 @@ thead.table-sortable-columns {
 @media screen and (min-width: 1600px) and (-webkit-min-device-pixel-ratio: 2), screen and (min-width: 1600px) and (min-resolution: 192dpi) {
   /* line 467, ../sass/site/components/site/_header.scss */
   .site-header .site-logo, .site-header.site-header-dashboard .site-logo {
-    background-image: url('../images/logo/logo-and-type-unilend-209x44-purple@2x.png?1467625279');
+    background-image: url('../images/../media/logo/logo-and-type-unilend-209x44-purple@2x.png');
     background-size: contain;
   }
 }
 @media screen and (min-width: 1600px) and (min-width: 1600px) {
   /* line 467, ../sass/site/components/site/_header.scss */
   .site-header .site-logo, .site-header.site-header-dashboard .site-logo {
-    background-image: url('../images/logo/logo-and-type-unilend-245x52-purple.png?1467625279');
+    background-image: url('../images/../media/logo/logo-and-type-unilend-245x52-purple.png');
     width: 245px;
     height: 52px;
     line-height: 52px;
@@ -14790,7 +14790,7 @@ thead.table-sortable-columns {
 @media screen and (min-width: 1600px) and (min-width: 1600px) and (-webkit-min-device-pixel-ratio: 2), screen and (min-width: 1600px) and (min-width: 1600px) and (min-resolution: 192dpi) {
   /* line 467, ../sass/site/components/site/_header.scss */
   .site-header .site-logo, .site-header.site-header-dashboard .site-logo {
-    background-image: url("logo/logo-and-type-unilend-245x52-purple@2x.png");
+    background-image: url("../media/logo/logo-and-type-unilend-245x52-purple@2x.png");
     background-size: contain;
   }
 }
@@ -15108,7 +15108,7 @@ thead.table-sortable-columns {
     width: 65px;
     height: 65px;
     background-color: transparent;
-    background-image: url('../images/logo/logo-unilend-65x65-white.png?1467625279');
+    background-image: url('../images/../media/logo/logo-unilend-65x65-white.png');
     background-repeat: no-repeat;
     background-position: left top;
     text-align: left;
@@ -15119,7 +15119,7 @@ thead.table-sortable-columns {
 @media screen and (min-width: 1600px) and (-webkit-min-device-pixel-ratio: 2), screen and (min-width: 1600px) and (min-resolution: 192dpi) {
   /* line 739, ../sass/site/components/site/_header.scss */
   .ui-site-header-fixed .site-header .site-logo, .ui-site-header-fixed .site-header.site-header-dashboard .site-logo {
-    background-image: url('../images/logo/logo-unilend-65x65-white@2x.png?1467625279');
+    background-image: url('../images/../media/logo/logo-unilend-65x65-white@2x.png');
     background-size: contain;
   }
 }
@@ -21503,7 +21503,7 @@ thead.table-sortable-columns {
   margin-right: auto;
   padding-left: 0;
   padding-right: 0;
-  background-image: url('../images/headers/projets-index-header-1680x790.jpg?1467625279');
+  background-image: url("../media/headers/projets-index-header-1680x790.jpg");
   background-position: top center;
 }
 @media screen and (min-width: 600px) and (max-width: 1023px) {
