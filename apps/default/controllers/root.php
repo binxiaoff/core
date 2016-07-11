@@ -609,23 +609,6 @@ class rootController extends bootstrap
         $this->clients->handleLogout();
     }
 
-    public function _logAdminUser()
-    {
-        $this->autoFireHeader = false;
-        $this->autoFireDebug  = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireView   = false;
-
-        $this->users = $this->loadData('users');
-
-        if (false === empty($this->params[0]) && false === empty($this->params[1])) {
-            $this->users->handleLoginFront($this->params[0], $this->params[1]);
-        } else {
-            $this->users->handleLogoutFront();
-        }
-    }
-
     public function _search()
     {
         $this->lng['search'] = $this->ln->selectFront('search', $this->language, $this->App);
