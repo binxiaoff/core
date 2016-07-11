@@ -1607,7 +1607,7 @@ $url          = 'https://www.unilend.fr';
                     nom = inscription_nom;
                     prenom = inscription_prenom;
                     civilite = inscription_civilite;
-                    var password = CryptoJS.MD5(inscription_mdp);
+                    var password = inscription_mdp;
                     var question = inscription_question;
                     var reponse = inscription_reponse;
                     var adresse_fiscale = inscription_adresse_fiscale;
@@ -1635,8 +1635,6 @@ $url          = 'https://www.unilend.fr';
                         success: function (data) {
                             var parsedDate = jQuery.parseJSON(data);
 
-                            // console.log(parsedDate);
-
                             if (parsedDate.reponse == 'OK') {
                                 var url = parsedDate.URL;
 
@@ -1655,8 +1653,6 @@ $url          = 'https://www.unilend.fr';
 
                                 $.each(parsedDate.reponse, function (index, value) {
                                     var intituleErreur = value.erreur;
-
-                                    // console.log(intituleErreur);
 
                                     if (intituleErreur == "Mot de passe") {
                                         $('#inscription_mdp').addClass('error');
