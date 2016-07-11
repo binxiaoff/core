@@ -166,7 +166,7 @@ class TemplateMessage extends \Swift_Message
     {
         if (is_string($emails)) {
             $formattedEmails = [];
-            $emails          = str_replace(';', ',', $emails);
+            $emails          = str_replace(';', ',', trim($emails));
             $emails          = explode(',', $emails);
 
             foreach ($emails as $email) {
@@ -177,7 +177,7 @@ class TemplateMessage extends \Swift_Message
                 }
             }
         } else {
-            $formattedEmails = trim($emails);
+            $formattedEmails = $emails;
         }
 
         return $formattedEmails;
