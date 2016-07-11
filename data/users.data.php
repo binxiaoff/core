@@ -84,36 +84,6 @@ class users extends users_crud
     var $userMail = 'email';
     var $userPass = 'password';
 
-    public function handleLoginFront($email, $pass)
-    {
-        if ($email != '' && $pass != '') {
-            $user = $this->loginFront($email, $pass);
-
-            if ($user != false) {
-                $_SESSION['user'] = $user;
-            }
-        }
-    }
-
-    public function loginFront($email, $pass)
-    {
-        $email = $this->bdd->escape_string($email);
-
-        $sql = 'SELECT * FROM ' . $this->userTable . ' WHERE ' . $this->userMail . ' = "' . $email . '" AND ' . $this->userPass . ' = "' . $pass . '"';
-        $res = $this->bdd->query($sql);
-
-        if ($this->bdd->num_rows($res) == 1) {
-            return $this->bdd->fetch_array($res);
-        } else {
-            return false;
-        }
-    }
-
-    public function handleLogoutFront()
-    {
-        unset($_SESSION['user']);
-    }
-
     public function handleLogin($button, $email, $pass)
     {
         if (isset($_POST[$button])) {
