@@ -18,6 +18,7 @@
     "errorFieldSameValueAs": "Field doesn't match %s",
     "errorFieldminValue": "Amounts below %d € are not allowed",
     "errorFieldmaxValue": "Amounts above %d € are not allowed",
+    "errorFieldarbitraryStop": "You have to wait before next try",
     "errorGroupHasErrors": "There are errors with the form below. Please ensure your information has been entered correctly before continuing."
   },
   "fr": {
@@ -39,6 +40,7 @@
     "errorFieldSameValueAs": "Ce champ ne correspond pas %s.",
     "errorFieldminValue": "Les montants inférieurs à %d € ne sont pas pris en compte",
     "errorFieldmaxValue": "Les montants supérieurs à %d € ne sont pas pris en compte",
+    "errorFieldarbitraryStop": "Vous devez attendre avant de réessayer",
     "errorGroupHasErrors": "Il y a des erreurs dans le formulaire ci-dessous. Merci de vérifier que vous avez correctement saisi vos informations avant de continuer."
   }
 }

@@ -1,21 +1,20 @@
-/**
- * Created by davidtessier on 05/07/2016.
- */
-
 // Lib Dependencies
 var $ = require('jquery')
 
 
 var LoginTimer = function(){
     var self = this
-    var TryCount = 0;
-
-}
-
-LoginTimer.prototype.templates = {
-    previousTries : 0,
-    waitingPeriod : 5,
-    displayCaptcha : false
+    var LoginInput = $('input[data-formvalidation-input]')
+    LoginInput.closest("div.form-field").on('focus click', function(e){
+        var currentInput = $(e.target);
+        if($('span[data-login]').length && $('span[data-login]').html() != $('span[data-login]').attr('data-end-count')) {
+            currentInput.attr('disabled', 'true');
+        }
+        else {
+            currentInput.removeAttr('disabled');
+            $("#form-connect-notifications").hide(500);
+        }
+    });
 }
 
 
@@ -23,11 +22,7 @@ LoginTimer.prototype.templates = {
  * jQuery Plugin
  */
 $.fn.uiLoginTimer = function () {
-    return this.each(function (i, elem) {
-        if (!elem.hasOwnProperty('LoginTimer')) {
-            new LoginTimer()
-        }
-    })
+    new LoginTimer()
 }
 
 /*

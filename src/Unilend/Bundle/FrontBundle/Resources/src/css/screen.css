@@ -7700,7 +7700,16 @@ label.custom-input-switch.custom-input-switch-sm > input[type="checkbox"]:checke
   color: #DE2F4C;
 }
 
-/* line 10, ../sass/site/components/_form-validation.scss */
+/* line 7, ../sass/site/components/_form-validation.scss */
+.form-field .input-field:disabled {
+  border: 2px solid #DE2F4C !important;
+  background-color: #fadfe4 !important;
+}
+/* line 11, ../sass/site/components/_form-validation.scss */
+.form-field .input-field + label > span {
+  color: #DE2F4C !important;
+}
+/* line 17, ../sass/site/components/_form-validation.scss */
 .form-field.ui-formvalidation-success .input-group:after, .form-field.ui-formvalidation-error .input-group:after {
   display: block;
   width: 2em;
@@ -7717,20 +7726,20 @@ label.custom-input-switch.custom-input-switch-sm > input[type="checkbox"]:checke
       -ms-user-select: none;
           user-select: none;
 }
-/* line 28, ../sass/site/components/_form-validation.scss */
+/* line 35, ../sass/site/components/_form-validation.scss */
 .form-field.ui-formvalidation-success .input-group.set-right > .btn-group, .form-field.ui-formvalidation-error .input-group.set-right > .btn-group {
   padding-right: 2em;
 }
-/* line 35, ../sass/site/components/_form-validation.scss */
+/* line 42, ../sass/site/components/_form-validation.scss */
 .form-field.ui-formvalidation-success:hover:after, .form-field.ui-formvalidation-error:hover:after {
   width: 0;
 }
-/* line 43, ../sass/site/components/_form-validation.scss */
+/* line 50, ../sass/site/components/_form-validation.scss */
 .form-field.ui-formvalidation-success .input-group:after {
   content: "";
   color: #85C085;
 }
-/* line 49, ../sass/site/components/_form-validation.scss */
+/* line 56, ../sass/site/components/_form-validation.scss */
 .form-field.ui-formvalidation-success .ui-formvalidation-messages {
   display: none;
 }
@@ -7740,13 +7749,13 @@ label.custom-input-switch.custom-input-switch-sm > input[type="checkbox"]:checke
   border-color: #DE2F4C;
   color: #DE2F4C;
 }
-/* line 67, ../sass/site/components/_form-validation.scss */
+/* line 74, ../sass/site/components/_form-validation.scss */
 .form-field.ui-formvalidation-error .input-group:after {
   content: "";
   color: #DE2F4C;
 }
 
-/* line 74, ../sass/site/components/_form-validation.scss */
+/* line 81, ../sass/site/components/_form-validation.scss */
 .ui-formvalidation-messages {
   display: block;
   list-style-type: none;
@@ -7764,11 +7773,11 @@ label.custom-input-switch.custom-input-switch-sm > input[type="checkbox"]:checke
   list-style-type: none;
   margin: 0;
 }
-/* line 83, ../sass/site/components/_form-validation.scss */
+/* line 90, ../sass/site/components/_form-validation.scss */
 .ui-formvalidation-messages li {
   padding: 5px 10px;
 }
-/* line 87, ../sass/site/components/_form-validation.scss */
+/* line 94, ../sass/site/components/_form-validation.scss */
 .ui-formvalidation-messages:before {
   content: '';
   display: none;
@@ -7784,11 +7793,11 @@ label.custom-input-switch.custom-input-switch-sm > input[type="checkbox"]:checke
   background-position: center center;
   background-repeat: no-repeat;
 }
-/* line 105, ../sass/site/components/_form-validation.scss */
+/* line 112, ../sass/site/components/_form-validation.scss */
 .ui-formvalidation-error .ui-formvalidation-messages {
   background-color: #fadfe4;
 }
-/* line 109, ../sass/site/components/_form-validation.scss */
+/* line 116, ../sass/site/components/_form-validation.scss */
 .ui-formvalidation-error .ui-formvalidation-messages:before {
   display: block;
   background-image: inline-svg-code('<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="20" height="10" viewBox="0 0 20 10"><path fill="#fadfe4" d="M0 10 L 10 0 L 20 10 L 0 10" /></svg>');
