@@ -1,5 +1,4 @@
 <?php
-
 namespace Unilend\Bundle\CommandBundle\Command;
 
 
