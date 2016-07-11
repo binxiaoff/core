@@ -26,7 +26,7 @@
                 </tr>
                 <tr style="margin-top:10px; margin-bottom:10px;">
                 	<th><label for="email">Mot de passe :</label></th>
-                    <td><a href="<?=$this->lurl?>/users/edit_password" class="btn_link">Générer un nouveau mot de passe</a></td>
+                    <td><a href="<?=$this->lurl?>/users/edit_password/<?=$this->users->id_user?>" class="btn_link">Générer un nouveau mot de passe</a></td>
                 </tr>
                 <tr>
                     <td>&nbsp;</td>

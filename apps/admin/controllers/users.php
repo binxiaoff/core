@@ -159,6 +159,7 @@ class usersController extends bootstrap
     public function _edit_password()
     {
         $_SESSION['request_url'] = $this->url;
+        $this->users->get($this->params[0], 'id_user');
 
         if ($this->users->id_user != $_SESSION['user']['id_user'] && false === $this->users->checkAccess('admin')) {
             header('Location: ' . $this->lurl);

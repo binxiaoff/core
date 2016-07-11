@@ -124,7 +124,7 @@ class rootController extends bootstrap
 
         $_SESSION['request_url'] = $this->url;
 
-        if ($this->users->id_user != $_SESSION['user']['id_user']) {
+        if ($this->users->get($this->params[0], 'id_user') && $this->users->id_user != $_SESSION['user']['id_user']) {
             header('Location:' . $this->lurl . '/users');
             die;
         }
