@@ -2430,13 +2430,13 @@ class dossiersController extends bootstrap
         $twitterUrl = $oSettings->value;
 
         $oSettings->get('Part unilend', 'type');
-        $fCommission = $oSettings->value;
+        $commission = $oSettings->value;
 
         $oSettings->get('Commission remboursement', 'type');
-        $fOutstandingCapitalCommission = $oSettings->value;
+        $owedCapitalCommission = $oSettings->value;
 
         $oSettings->get('TVA', 'type');
-        $fVATRate = (float) $oSettings->value;
+        $vatRate = (float) $oSettings->value;
 
         $varMail = array(
             'surl'                => $this->surl,
@@ -2445,8 +2445,8 @@ class dossiersController extends bootstrap
             'lien_cgv_universign' => $sCgvLink,
             'lien_tw'             => $twitterUrl,
             'lien_fb'             => $facebookUrl,
-            'commission'          => bcmul($fCommission / (1 + $fVATRate), 100),
-            'commission_crd'      => bcmul($fOutstandingCapitalCommission, 100),
+            'commission'          => bcmul($commission / (1 + $vatRate), 100),
+            'commission_crd'      => bcmul($owedCapitalCommission, 100),
         );
 
         if (empty($oClients->email)) {
