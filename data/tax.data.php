@@ -42,11 +42,12 @@ class tax extends tax_crud
     }
 
     /**
-     * @param string $date yyyy-mm-dd date formated
+     * @param string $startDate yyyy-mm-dd H:i:s date formated
+     * @param string $endDate yyyy-mm-dd H:i:s date formated
      * @param array $taxType
      * @return array of tax sum by tax type
      */
-    public function getDailyTax($date, array $taxType = [])
+    public function getDailyTax($startDate, $endDate, array $taxType = [])
     {
         if (false === empty($taxType)) {
             $taxTypeWhere = ' AND id_tax_type IN (:tax_type) ';
@@ -55,12 +56,12 @@ class tax extends tax_crud
         }
         $sql = 'SELECT SUM(amount) as daily_amount, id_tax_type
                 FROM tax
-                WHERE DATE(added) = :date ' . $taxTypeWhere . '
+                WHERE added BETWEEN :start_date AND :end_date' . $taxTypeWhere . '
                 GROUP BY id_tax_type';
         $aResult = $this->bdd->executeQuery(
             $sql,
-            array('date' => $date, 'tax_type' => $taxType),
-            array('date' => \PDO::PARAM_STR, 'tax_type' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY),
+            array('start_date' => $startDate, 'end_date' => $endDate, 'tax_type' => $taxType),
+            array('start_date' => \PDO::PARAM_STR, 'end_date' => \PDO::PARAM_STR, 'tax_type' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY),
             new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::LONG_TIME, md5(__METHOD__)))->fetchAll(\PDO::FETCH_ASSOC);
         $aDailyTax = [];
         foreach ($aResult as $aRow) {

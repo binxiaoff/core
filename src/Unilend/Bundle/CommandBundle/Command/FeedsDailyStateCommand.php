@@ -56,7 +56,6 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             $unilendBank = $entityManager->getRepository('bank_unilend');
             /** @var \tax $tax */
             $tax = $entityManager->getRepository('tax');
-            $entityManager->getRepository('tax_type');
 
             $time = $input->getArgument('day');
 
@@ -77,42 +76,61 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             } else {
                 $mois = mktime(0, 0, 0, date('m', $time), 1, date('Y', $time));
             }
+          
+            $dateTime  = (new \DateTime())->setTimestamp($mois);
+            $aColumns  = $this->getColumns();
+            $monthDays = $this->getMonthDays($mois);
 
-            $nbJours       = date('t', $mois);
-            $leMois        = date('m', $mois);
-            $lannee        = date('Y', $mois);
-            $InfeA         = mktime(0, 0, 0, date('m', $time), date('d', $time), date('Y', $time));
-            $lanneeLemois  = date('Y-m', $mois);
-            $laDate        = date('d-m-Y', $time);
-            $lemoisLannee2 = date('m/Y', $mois);
+            $transactionType = [
+                \transactions_types::TYPE_LENDER_SUBSCRIPTION,
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+                \transactions_types::TYPE_BORROWER_REPAYMENT,
+                \transactions_types::TYPE_DIRECT_DEBIT,
+                \transactions_types::TYPE_LENDER_WITHDRAWAL,
+                \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT,
+                \transactions_types::TYPE_UNILEND_REPAYMENT,
+                \transactions_types::TYPE_UNILEND_BANK_TRANSFER,
+                \transactions_types::TYPE_FISCAL_BANK_TRANSFER,
+                \transactions_types::TYPE_REGULATION_COMMISSION,
+                \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION,
+                \transactions_types::TYPE_WELCOME_OFFER,
+                \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION,
+                \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER,
+                \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT,
+                \transactions_types::TYPE_REGULATION_BANK_TRANSFER,
+                \transactions_types::TYPE_RECOVERY_BANK_TRANSFER,
+                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
+            ];
 
-            $aColumns = $this->getColumns();
+            $dailyTransactions = $transaction->getDailyState($transactionType, $dateTime);
+            $dailyWelcomeOffer = $transaction->getDailyWelcomeOffer($dateTime);
 
-            $lrembPreteurs                = $unilendBank->sumMontantByDayMonths('type = 2 AND status = 1', $leMois, $lannee); // Les remboursements preteurs
-            $listEcheances                = $unilendBank->ListEcheancesByDayMonths('type = 2 AND status = 1', $leMois, $lannee); // On recup les echeances le jour où ils ont été remb aux preteurs
-            $alimCB                       = $transaction->sumByday('3', $leMois, $lannee); // alimentations CB
-            $alimVirement                 = $transaction->sumByday('4', $leMois, $lannee); // 2 : alimentations virements
-            $alimPrelevement              = $transaction->sumByday('7', $leMois, $lannee); // 7 : alimentations prelevements
-            $rembEmprunteur               = $transaction->sumByday('6, 22', $leMois, $lannee); // 6 : remb Emprunteur (prelevement) - 22 : remboursement anticipé
-            $rembEmprunteurRegularisation = $transaction->sumByday('24', $leMois, $lannee); // 24 : remb regularisation Emprunteur (prelevement)
-            $rejetrembEmprunteur          = $transaction->sumByday('15', $leMois, $lannee); // 15 : rejet remb emprunteur
-            $virementEmprunteur           = $transaction->sumByday('9', $leMois, $lannee); // 9 : virement emprunteur (octroi prêt : montant | commissions octoi pret : unilend_montant)
-            $virementUnilend              = $transaction->sumByday('11', $leMois, $lannee); // 11 : virement unilend (argent gagné envoyé sur le compte)
-            $virementEtat                 = $transaction->sumByday('12', $leMois, $lannee); // 12 virerment pour l'etat
-            $retraitPreteur               = $transaction->sumByday('8', $leMois, $lannee); // 8 : retrait preteur
-            $regulCom                     = $transaction->sumByday('13', $leMois, $lannee); // 13 regul commission
-            $offres_bienvenue             = $transaction->sumByday('16', $leMois, $lannee); // 16 unilend offre bienvenue
-            $offres_bienvenue_retrait     = $transaction->sumByday('17', $leMois, $lannee); // 17 unilend offre bienvenue retrait
-            $unilend_bienvenue            = $transaction->sumByday('18', $leMois, $lannee); // 18 unilend offre bienvenue
-            $virementRecouv               = $transaction->sumByday('27, 28', $leMois, $lannee);
-            $rembRecouvPreteurs           = $transaction->sumByday('26', $leMois, $lannee);
+            $lrembPreteurs                = $unilendBank->sumMontantByDayMonths('type = 2 AND status = 1', $dateTime->format('m'), $dateTime->format('Y')); // Les remboursements preteurs
+            $alimCB                       = $this->combineTransactionTypes(
+                    true === isset($dailyTransactions[\transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT]) ? $dailyTransactions[\transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT] : [],
+                    $dailyWelcomeOffer
+                ) + $monthDays;
+            $rembEmprunteur               = $this->combineTransactionTypes(
+                    true === isset($dailyTransactions[\transactions_types::TYPE_BORROWER_REPAYMENT]) ? $dailyTransactions[\transactions_types::TYPE_BORROWER_REPAYMENT] : [],
+                    true === isset($dailyTransactions[\transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT]) ? $dailyTransactions[\transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT] : []
+                ) + $monthDays;
+            $alimVirement                 = (true === isset($dailyTransactions[\transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT]) ? $dailyTransactions[\transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT] : []) + $monthDays;
+            $alimPrelevement              = (true === isset($dailyTransactions[\transactions_types::TYPE_DIRECT_DEBIT]) ? $dailyTransactions[\transactions_types::TYPE_DIRECT_DEBIT] : []) + $monthDays;
+            $rembEmprunteurRegularisation = (true === isset($dailyTransactions[\transactions_types::TYPE_REGULATION_BANK_TRANSFER]) ? $dailyTransactions[\transactions_types::TYPE_REGULATION_BANK_TRANSFER] : []) + $monthDays;
+            $rejetrembEmprunteur          = (true === isset($dailyTransactions[\transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION]) ? $dailyTransactions[\transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION] : []) + $monthDays;
+            $virementEmprunteur           = (true === isset($dailyTransactions[\transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT]) ? $dailyTransactions[\transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT] : []) + $monthDays;
+            $virementUnilend              = (true === isset($dailyTransactions[\transactions_types::TYPE_UNILEND_BANK_TRANSFER]) ? $dailyTransactions[\transactions_types::TYPE_UNILEND_BANK_TRANSFER] : []) + $monthDays;
+            $virementEtat                 = (true === isset($dailyTransactions[\transactions_types::TYPE_FISCAL_BANK_TRANSFER]) ? $dailyTransactions[\transactions_types::TYPE_FISCAL_BANK_TRANSFER] : []) + $monthDays;
+            $retraitPreteur               = (true === isset($dailyTransactions[\transactions_types::TYPE_LENDER_WITHDRAWAL]) ? $dailyTransactions[\transactions_types::TYPE_LENDER_WITHDRAWAL] : []) + $monthDays;
+            $regulCom                     = (true === isset($dailyTransactions[\transactions_types::TYPE_REGULATION_COMMISSION]) ? $dailyTransactions[\transactions_types::TYPE_REGULATION_COMMISSION] : []) + $monthDays;
+            $offres_bienvenue             = (true === isset($dailyTransactions[\transactions_types::TYPE_WELCOME_OFFER]) ? $dailyTransactions[\transactions_types::TYPE_WELCOME_OFFER] : []) + $monthDays;
+            $offres_bienvenue_retrait     = (true === isset($dailyTransactions[\transactions_types::TYPE_WELCOME_OFFER_CANCELLATION]) ? $dailyTransactions[\transactions_types::TYPE_WELCOME_OFFER_CANCELLATION] : []) + $monthDays;
+            $unilend_bienvenue            = (true === isset($dailyTransactions[\transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER]) ? $dailyTransactions[\transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER] : []) + $monthDays;
+            $virementRecouv               = (true === isset($dailyTransactions[\transactions_types::TYPE_RECOVERY_BANK_TRANSFER]) ? $dailyTransactions[\transactions_types::TYPE_RECOVERY_BANK_TRANSFER] : []) + $monthDays;
+            $rembRecouvPreteurs           = (true === isset($dailyTransactions[\transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT]) ? $dailyTransactions[\transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT] : []) + $monthDays;
+            $listPrel                     = [];
 
-            $listDates = [];
-            for ($i = 1; $i <= $nbJours; $i++) {
-                $listDates[$i] = $lanneeLemois . '-' . (strlen($i) < 2 ? '0' : '') . $i;
-            }
-
-            $listPrel = [];
             foreach ($directDebit->select('type_prelevement = 1 AND status > 0 AND type = 1') as $prelev) {
                 $addedXml     = strtotime($prelev['added_xml']);
                 $added        = strtotime($prelev['added']);
@@ -135,7 +153,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
                 }
             }
 
-            $oldDate           = mktime(0, 0, 0, $leMois - 1, 1, $lannee);
+            $oldDate           = mktime(0, 0, 0, $dateTime->format('m') - 1, 1, $dateTime->format('Y'));
             $oldDate           = date('Y-m', $oldDate);
             $etat_quotidienOld = $dailyState->getTotauxbyMonth($oldDate);
 
@@ -188,6 +206,8 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             $totalSommeMouvements                     = 0;
             $totalNewSoldeReel                        = 0;
             $totalEcartSoldes                         = 0;
+            $totalNewsoldeDeLaVeille                  = 0;
+            $totalSoldePromotion                      = 0;
             $totalSoldeSFFPME                         = $soldeSFFPME_old;
             $totalSoldeAdminFiscal                    = $soldeAdminFiscal_old;
 
@@ -208,7 +228,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
                 <th colspan="34" style="height:35px;font:italic 18px Arial, Helvetica, sans-serif; text-align:center;">UNILEND</th>
             </tr>
             <tr>
-                <th rowspan="2">' . $laDate . '</th>
+                <th rowspan="2">' . $dateTime->format('d-m-Y') . '</th>
                 <th colspan="3">Chargements compte pr&ecirc;teurs</th>
                 <th>Chargements offres</th>
                 <th>Echeances<br />Emprunteur</th>
@@ -242,24 +262,20 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
                 <td colspan="10">&nbsp;</td>
             </tr>';
 
-            /** @var LoggerInterface $logger */
-            $logger = $this->getContainer()->get('monolog.logger.console');
-            foreach ($listDates as $key => $date) {
-                if (strtotime($date . ' 00:00:00') < $InfeA) {
-                    $interetNetPreteur = bcdiv($transaction->sum('type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . ' AND DATE(date_transaction) = "' . $date . '"', 'montant'), 100, 2);
+            foreach (array_keys($monthDays) as $date) {
 
-                    $aDailyTax = $tax->getDailyTax($date);
+                if (strtotime($date . ' 00:00:00') < $time) {
+                    $interetNetPreteur = bcdiv($transaction->getInterestsAmount($date . ' 00:00:00', $date . ' 23:59:59'), 100, 2);
+                    $aDailyTax         = $tax->getDailyTax($date . ' 00:00:00', $date . ' 23:59:59');
+                    $iTotalTaxAmount   = 0;
 
-                    $iTotalTaxAmount = 0;
                     foreach ($aDailyTax as $iTaxTypeId => $iTaxAmount) {
                         $aDailyTax[$iTaxTypeId] = bcdiv($iTaxAmount, 100, 2);
                         $iTotalTaxAmount += $aDailyTax[$iTaxTypeId];
                     }
                     $dailyRepaidCapital = $lenderRepayment->getRepaidCapitalInDateRange(null, $date . ' 00:00:00', $date . ' 23:59:59');
-
-                    $latva      = isset($listEcheances[$date]) ? $borrowerRepayment->sum('tva', 'id_echeancier_emprunteur IN(' . $listEcheances[$date] . ')') / 100 : 0;
-                    $commission = isset($listEcheances[$date]) ? $borrowerRepayment->sum('commission', 'id_echeancier_emprunteur IN(' . $listEcheances[$date] . ')') / 100 + $latva : 0;
-                    $commission += $regulCom[$date]['montant'];
+                    $commission         = bcdiv($borrowerRepayment->getCostsAndVatAmount($date), 100, 2);
+                    $commission         = bcadd($commission, $regulCom[$date]['montant'], 2);
 
                     $soldePromotion += $unilend_bienvenue[$date]['montant'];
                     $soldePromotion -= $offres_bienvenue[$date]['montant'];
@@ -272,11 +288,15 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
 
                     $sommeMouvements = $entrees - $sorties;
                     $newsoldeDeLaVeille += $sommeMouvements;
-                    $soldeReel += $transaction->getSoldeReelDay($date);
-                    $soldeReelUnilend = $transaction->getSoldeReelUnilendDay($date);
-                    $soldeReelEtat    = $transaction->getSoldeReelEtatDay($date);
-                    $laComPlusLetat   = $commission + $soldeReelEtat;
-                    $soldeReel += $soldeReelUnilend - $laComPlusLetat;
+
+                    $soldeReel      = bcadd($soldeReel, $this->getRealSold($dailyTransactions, $date), 2);
+                    $soldeReel      = bcadd(
+                        $soldeReel,
+                        bcsub(
+                            $this->getUnilendRealSold($dailyTransactions, $date),
+                            bcadd($commission, $this->getStateRealSold($dailyTransactions, $date), 2),
+                            2),
+                        2);
                     $newSoldeReel   = $soldeReel; // on retire la commission des echeances du jour ainsi que la partie pour l'etat
                     $soldeTheorique = $newsoldeDeLaVeille;
                     $leSoldeReel    = $newSoldeReel;
@@ -347,7 +367,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
 
                     $tableau .= '
                 <tr>
-                    <td class="dates">' . (strlen($key) < 2 ? '0' : '') . $key . '/' . $lemoisLannee2 . '</td>
+                    <td class="dates">' . date('d/m/Y', strtotime($date)) . '</td>
                     <td class="right">' . $ficelle->formatNumber($alimCB[$date]['montant']) . '</td>
                     <td class="right">' . $ficelle->formatNumber($alimVirement[$date]['montant']) . '</td>
                     <td class="right">' . $ficelle->formatNumber($alimPrelevement[$date]['montant']) . '</td>
@@ -385,7 +405,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
                 } else {
                     $tableau .= '
                 <tr>
-                    <td class="dates">' . (strlen($key) < 2 ? '0' : '') . $key . '/' . $lemoisLannee2 . '</td>';
+                    <td class="dates">' . date('d/m/Y', strtotime($date)) . '</td>';
                     foreach ($aColumns as $value) {
                         $tableau .= '<td>&nbsp;</td>';
                     }
@@ -471,9 +491,9 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
                 33 => ['name' => 'totalOffrePromo', 'val' => $totalOffrePromo]
             ];
 
-            $dailyState->createEtat_quotidient($table, $leMois, $lannee);
+            $dailyState->createEtat_quotidient($table, $dateTime->format('m'), $dateTime->format('Y'));
 
-            $oldDate           = mktime(0, 0, 0, 12, date('d', $time), $lannee - 1);
+            $oldDate           = mktime(0, 0, 0, 12, date('d', $time), $dateTime->format('Y') - 1);
             $oldDate           = date('Y-m', $oldDate);
             $etat_quotidienOld = $dailyState->getTotauxbyMonth($oldDate);
 
@@ -502,7 +522,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
                 <th colspan="34" style="height:35px;font:italic 18px Arial, Helvetica, sans-serif; text-align:center;">UNILEND</th>
             </tr>
             <tr>
-                <th rowspan="2">' . $lannee . '</th>
+                <th rowspan="2">' . $dateTime->format('Y') . '</th>
                 <th colspan="3">Chargements compte pr&ecirc;teurs</th>
                 <th>Chargements offres</th>
                 <th>Echeances<br />Emprunteur</th>
@@ -547,7 +567,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
                     $numMois = $i;
                 }
 
-                $lemois = $dailyState->getTotauxbyMonth($lannee . '-' . $numMois);
+                $lemois = $dailyState->getTotauxbyMonth($dateTime->format('Y') . '-' . $numMois);
 
                 if (false === empty($lemois)) {
 
@@ -611,6 +631,8 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             $mailer = $this->getContainer()->get('mailer');
             $mailer->send($message);
         } catch (\Exception $exception) {
+            /** @var LoggerInterface $logger */
+            $logger = $this->getContainer()->get('monolog.logger.console');
             $logger->error('An error occured while generating daily state at line : ' . $exception->getLine() . '. Error message : ' . $exception->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__));
         }
     }
@@ -655,5 +677,113 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             'totalAdminFiscalVir'                      => 'Administration<br />Fiscale',
             'totaladdsommePrelev'                      => 'Fichier<br />pr&eacute;l&egrave;vements',
         ];
+    }
+
+    /**
+     * @param array $a
+     * @param array $b
+     * @return array
+     */
+    private function combineTransactionTypes(array $a, array $b)
+    {
+        foreach (array_intersect_key($a, $b) as $date => $row) {
+            $a[$date]['montant']         = bcadd($a[$date]['montant'], $b[$date]['montant']);
+            $a[$date]['montant_unilend'] = bcadd($a[$date]['montant_unilend'], $b[$date]['montant_unilend']);
+            $a[$date]['montant_etat']    = bcadd($a[$date]['montant_etat'], $b[$date]['montant_etat']);
+        }
+        return $a + $b;
+    }
+
+    /**
+     * @param int $time
+     * @return array
+     */
+    private function getMonthDays($time)
+    {
+        $monthDays = [];
+        $nbDays    = date('t', $time);
+        $date      = (new \DateTime())->setTimestamp($time);
+        $data      = [
+            'montant'         => 0,
+            'montant_unilend' => 0,
+            'montant_etat'    => 0
+        ];
+        $di        = new \DateInterval('P1D');
+        $i         = 1;
+
+        while ($i <= $nbDays) {
+            $monthDays[$date->format('Y-m-d')] = $data;
+            $date->add($di);
+            $i++;
+        }
+        return $monthDays;
+    }
+
+    /**
+     * @param array $transactions
+     * @param string $date
+     * @return string
+     */
+    private function getRealSold(array $transactions, $date)
+    {
+        $sold     = 0;
+        $realType = array(
+            \transactions_types::TYPE_LENDER_SUBSCRIPTION,
+            \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+            \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+            \transactions_types::TYPE_BORROWER_REPAYMENT,
+            \transactions_types::TYPE_DIRECT_DEBIT,
+            \transactions_types::TYPE_LENDER_WITHDRAWAL,
+            \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION,
+            \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER,
+            \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT,
+            \transactions_types::TYPE_REGULATION_BANK_TRANSFER,
+            \transactions_types::TYPE_RECOVERY_BANK_TRANSFER
+        );
+
+        foreach ($realType as $transactionType) {
+            if (isset($transactions[$transactionType][$date])) {
+                $sold =
+                    bcadd(
+                        $sold,
+                        $transactions[$transactionType][$date]['montant'],
+                        2
+                    );
+            }
+        }
+        return $sold;
+    }
+
+    /**
+     * @param array $transactions
+     * @param string $date
+     * @return string
+     */
+    private function getUnilendRealSold(array $transactions, $date)
+    {
+        $sold = 0;
+        if (isset($transactions[\transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT][$date])) {
+            $sold =
+                bcsub(
+                    $transactions[\transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT][$date]['montant'],
+                    $transactions[\transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT][$date]['montant_unilend'],
+                    2
+                );
+        }
+        return $sold;
+    }
+
+    /**
+     * @param array $transactions
+     * @param $date
+     * @return string
+     */
+    private function getStateRealSold(array $transactions, $date)
+    {
+        $sold = 0;
+        if (isset($transactions[\transactions_types::TYPE_UNILEND_REPAYMENT][$date])) {
+            $sold = $transactions[\transactions_types::TYPE_UNILEND_REPAYMENT][$date]['montant_etat'];
+        }
+        return $sold;
     }
 }

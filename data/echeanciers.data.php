@@ -326,7 +326,7 @@ class echeanciers extends echeanciers_crud
      * @param int $lenderId
      * @param int $startDate
      * @param int $endDate
-     * @return array
+     * @return string
      */
     public function getRepaidCapitalInDateRange($lenderId, $startDate, $endDate)
     {
@@ -337,7 +337,7 @@ class echeanciers extends echeanciers_crud
      * @param int $lenderId
      * @param int $startDate
      * @param int $endDate
-     * @return array
+     * @return string
      */
     public function getRepaidInterestsInDateRange($lenderId, $startDate, $endDate)
     {
@@ -808,7 +808,7 @@ class echeanciers extends echeanciers_crud
      */
     public function getRepaymentForNonExemptedInDateRange(array $taxType, \DateTime $startDate, \DateTime $endDate, array $clientType)
     {
-        return $this->getRepaymentsBetweenDate($taxType, $startDate->format('Y-m-d'), $endDate->format('Y-m-d'), $clientType, 0);
+        return $this->getRepaymentsBetweenDate($taxType, $startDate, $endDate, $clientType, 0);
     }
 
     /**
@@ -820,7 +820,7 @@ class echeanciers extends echeanciers_crud
      */
     public function getRepaymentForExemptedInDateRange(array $taxType, \DateTime $startDate, \DateTime $endDate, array $clientType)
     {
-        return $this->getRepaymentsBetweenDate($taxType, $startDate->format('Y-m-d 00:00:00'), $endDate->format('Y-m-d 23:59:59'), $clientType, 1);
+        return $this->getRepaymentsBetweenDate($taxType, $startDate, $endDate, $clientType, 1);
     }
 
     /**
@@ -831,25 +831,25 @@ class echeanciers extends echeanciers_crud
      */
     public function getForeignersRepaymentsInDateRange(array $taxType, \DateTime $startDate, \DateTime $endDate)
     {
-        return $this->getRepaymentsBetweenDate($taxType, $startDate->format('Y-m-d 00:00:00'), $endDate->format('Y-m-d 23:59:59'), [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER], 2, true);
+        return $this->getRepaymentsBetweenDate($taxType, $startDate, $endDate, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER], 2, true);
     }
 
     /**
      * @param array $taxType
-     * @param string $startDate
-     * @param string $endDate
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
      * @param array $clientType
      * @param int $exempted
      * @param boolean $foreigner
      * @return array
      * @throws Exception
      */
-    private function getRepaymentsBetweenDate(array $taxType, $startDate, $endDate, array $clientType, $exempted, $foreigner = false)
+    private function getRepaymentsBetweenDate(array $taxType, \DateTime $startDate, \DateTime $endDate, array $clientType, $exempted, $foreigner = false)
     {
         $taxDynamicJoin  = $this->getDynamicTaxJoins($taxType);
         $aBind           = [
-            'start_date'  => $startDate,
-            'end_date'    => $endDate,
+            'start_date'  => $startDate->format('Y-m-d 00:00:00'),
+            'end_date'    => $endDate->format('Y-m-d 23:59:59'),
             'client_type' => $clientType
         ];
         $aType           = [
@@ -910,7 +910,7 @@ class echeanciers extends echeanciers_crud
 
         foreach ($taxType as $row){
             $taxName = 'tax_' . $row['id_tax_type'];
-            $taxColumns .= ' SUM(ROUND(' . $taxName . '.amount / 100, 2)) AS ' . $taxName . ', ';
+            $taxColumns .= ' ROUND(SUM(' . $taxName . '.amount) / 100, 2) AS ' . $taxName . ', ';
             $taxJoin    .= ' LEFT JOIN tax ' . $taxName . ' ON ' . $taxName . '.id_transaction = t.id_transaction AND ' . $taxName . '.id_tax_type = ' . $row['id_tax_type'];
         }
         return ['tax_join' => $taxJoin, 'tax_columns' => $taxColumns];

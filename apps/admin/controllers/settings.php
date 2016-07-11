@@ -43,24 +43,7 @@ class settingsController extends bootstrap
                 $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
                 $echeanciers_emprunteur->onMetAjourTVA($this->settings->value);
             }
-
-            if ($this->settings->id_setting == 62) {
-                $echeanciers = $this->loadData('echeanciers');
-                $preteur     = $this->loadData('clients');
-                $lender      = $this->loadData('lenders_accounts');
-
-                foreach ($echeanciers->select() as $e) {
-                    $lender->get($e['id_lender'], 'id_lender_account');
-                    $preteur->get($lender->id_client_owner, 'id_client');
-
-                    if ($preteur->type == 1) {
-                        $echeanciers->get($e['id_echeancier'], 'id_echeancier');
-                        $echeanciers->crds = round($e['interets'] / 100 * $this->settings->value, 2);
-                        $echeanciers->update();
-                    }
-                }
-            }
-
+            
             $_SESSION['freeow']['title']   = 'Modification d\'un param&egrave;tre';
             $_SESSION['freeow']['message'] = 'Le param&egrave;tre a bien &eacute;t&eacute; modifi&eacute; !';
 

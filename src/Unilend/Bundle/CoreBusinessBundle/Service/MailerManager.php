@@ -1698,12 +1698,14 @@ class MailerManager
                                     'interets')) . "&nbsp;&euro;</span> d'int&eacute;r&ecirc;ts soit un taux d'int&eacute;r&ecirc;t annualis&eacute; moyen de <span style='color: #b20066;'>" . $this->oFicelle->formatNumber($oLoan->getWeightedAverageInterestRateForLender($oLender->id_lender_account,
                                     $oProject->id_project), 1) . " %.</span><br/><br/> ";
                         } else {
+                            /** @var \tax $tax */
+                            $tax = $this->oEntityManager->getRepository('tax');
                             $oLenderRepayment->get($oTransaction->id_echeancier);
 
-                            $fRepaymentCapital              = $oLenderRepayment->capital / 100;
-                            $fRepaymentInterestsTaxIncluded = $oLenderRepayment->interets / 100;
-                            $fRepaymentTax                  = $oLenderRepayment->prelevements_obligatoires + $oLenderRepayment->retenues_source + $oLenderRepayment->csg + $oLenderRepayment->prelevements_sociaux + $oLenderRepayment->contributions_additionnelles + $oLenderRepayment->prelevements_solidarite + $oLenderRepayment->crds;
-                            $fRepaymentAmount               = $fRepaymentCapital + $fRepaymentInterestsTaxIncluded - $fRepaymentTax;
+                            $fRepaymentCapital              = bcdiv($oLenderRepayment->capital, 100, 2);
+                            $fRepaymentInterestsTaxIncluded = bcdiv($oLenderRepayment->interets, 100, 2);
+                            $fRepaymentTax                  = bcdiv($tax->getAmountByRepaymentId($oLenderRepayment->id_echeancier), 100, 2);
+                            $fRepaymentAmount               = bcsub(bcadd($fRepaymentCapital, $fRepaymentInterestsTaxIncluded, 2), $fRepaymentTax, 2);
                         }
 
                         $fTotalAmount += $fRepaymentAmount;

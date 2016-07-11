@@ -39,7 +39,7 @@ class transactions extends transactions_crud
     const STATUS_PENDING  = 0;
     const STATUS_VALID    = 1;
     const STATUS_CANCELED = 3;
-    
+
     public static $aPhysicalTransactions = [
         \transactions_types::TYPE_LENDER_SUBSCRIPTION,
         \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
@@ -165,182 +165,6 @@ class transactions extends transactions_crud
         return $solde;
     }
 
-    public function sumByday($type_transaction, $month, $year)
-    {
-        // On recup le nombre de jour dans le mois
-        $mois    = mktime(0, 0, 0, $month, 1, $year);
-        $nbJours = date("t", $mois);
-
-        $listDates = array();
-        for ($i = 1; $i <= $nbJours; $i++) {
-            $listDates[$i] = $year . '-' . $month . '-' . (strlen($i) < 2 ? '0' : '') . $i;
-        }
-
-        $result = array();
-
-        if ($type_transaction == \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT) {
-            $sql = '
-                SELECT
-                    SUM(ROUND(t.montant / 100, 2)) AS montant,
-                    SUM(ROUND(montant_unilend / 100, 2)) AS montant_unilend,
-                    SUM(ROUND(montant_etat / 100, 2)) AS montant_etat,
-                    DATE(t.date_transaction) AS jour
-                FROM transactions t,lenders_accounts l
-                WHERE t.id_client = l.id_client_owner
-                    AND MONTH(t.added) = ' . $month . '
-                    AND YEAR(t.added) = ' . $year . '
-                    AND t.etat = 1
-                    AND t.status = 1
-                    AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_SUBSCRIPTION . '
-                    AND l.type_transfert = 2
-                GROUP BY DATE(t.date_transaction)';
-
-            $resultat = $this->bdd->query($sql);
-
-            while ($record = $this->bdd->fetch_array($resultat)) {
-                $result[$record['jour']]['montant']         = $record['montant'];
-                $result[$record['jour']]['montant_unilend'] = $record['montant_unilend'];
-                $result[$record['jour']]['montant_etat']    = $record['montant_etat'];
-            }
-        }
-
-        $sql = '
-            SELECT
-                SUM(ROUND(montant / 100, 2)) AS montant,
-                SUM(ROUND(montant_unilend / 100, 2)) AS montant_unilend,
-                SUM(ROUND(montant_etat / 100, 2)) AS montant_etat,
-                DATE(date_transaction) AS jour
-            FROM transactions
-            WHERE MONTH(added) = ' . $month . '
-                AND YEAR(added) = ' . $year . '
-                AND etat = 1
-                AND status = 1
-                AND type_transaction IN(' . $type_transaction . ')
-            GROUP BY DATE(date_transaction)';
-
-        $resultat = $this->bdd->query($sql);
-
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            if (false === isset($result[$record['jour']])) {
-                $result[$record['jour']] = array(
-                    'montant'         => 0,
-                    'montant_unilend' => 0,
-                    'montant_etat'    => 0
-                );
-            }
-            $result[$record['jour']]['montant'] += $record['montant'];
-            $result[$record['jour']]['montant_unilend'] += $record['montant_unilend'];
-            $result[$record['jour']]['montant_etat'] = $record['montant_etat'];
-        }
-
-        foreach ($listDates as $d) {
-            $lresult[$d]['montant']         = empty($result[$d]['montant']) ? '0' : $result[$d]['montant'];
-            $lresult[$d]['montant_unilend'] = empty($result[$d]['montant_unilend']) ? '0' : $result[$d]['montant_unilend'];
-            $lresult[$d]['montant_etat']    = empty($result[$d]['montant_etat']) ? '0' : $result[$d]['montant_etat'];
-        }
-
-        return $lresult;
-    }
-
-    // solde d'une journée
-    public function getSoldeReelDay($date)
-    {
-        $aTypes = array(
-            \transactions_types::TYPE_LENDER_SUBSCRIPTION,
-            \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
-            \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
-            \transactions_types::TYPE_BORROWER_REPAYMENT,
-            \transactions_types::TYPE_DIRECT_DEBIT,
-            \transactions_types::TYPE_LENDER_WITHDRAWAL,
-            \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION,
-            \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER,
-            \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT,
-            \transactions_types::TYPE_REGULATION_BANK_TRANSFER,
-            \transactions_types::TYPE_RECOVERY_BANK_TRANSFER
-        );
-
-        $sql = '
-            SELECT SUM(montant) AS solde
-            FROM transactions
-            WHERE etat = 1
-                AND status = 1
-                AND transactions.type_transaction IN (' . implode(', ', $aTypes) . ')
-                AND DATE(date_transaction) = "' . $date . '"
-            GROUP BY DATE(date_transaction)';
-
-        $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result);
-        if ($solde == '') {
-            $solde = 0;
-        } else {
-            $solde = ($solde / 100);
-        }
-        return $solde;
-    }
-
-    public function getSoldeReelUnilendDay($date)
-    {
-        $sql = '
-            SELECT SUM(montant - montant_unilend) AS solde
-            FROM transactions
-            WHERE etat = 1
-                AND status = 1
-                AND type_transaction =  ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . '
-                AND DATE(date_transaction) = "' . $date . '"
-            GROUP BY DATE(date_transaction)';
-
-        $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result);
-        if ($solde == '') {
-            $solde = 0;
-        } else {
-            $solde = ($solde / 100);
-        }
-        return $solde;
-    }
-
-    public function getSoldeReelEtatDay($date)
-    {
-        $sql = '
-            SELECT SUM(montant_etat) AS solde
-            FROM transactions
-            WHERE etat = 1
-                AND status = 1
-                AND type_transaction = ' . \transactions_types::TYPE_UNILEND_REPAYMENT . '
-                AND DATE(date_transaction) = "' . $date . '"
-            GROUP BY DATE(date_transaction)';
-
-        $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result);
-        if ($solde == '') {
-            $solde = 0;
-        } else {
-            $solde = ($solde / 100);
-        }
-        return $solde;
-    }
-
-    // total soldes d'un mois
-    public function getSoldePreteur($id_client, $month, $year)
-    {
-        $sql = '
-            SELECT SUM(montant) AS solde
-            FROM transactions
-            WHERE etat = 1
-                AND status = 1
-                AND LEFT(added, 7) <= "' . $year . '-' . $month . '"
-                AND id_client = ' . $id_client;
-
-        $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result);
-        if ($solde == '') {
-            $solde = 0;
-        } else {
-            $solde = ($solde / 100);
-        }
-        return $solde;
-    }
-
     public function selectTransactionsOp($array_type_transactions, $sIndexationDateStart, $iClientId)
     {
         $sql = '
@@ -455,5 +279,95 @@ class transactions extends transactions_crud
             AND id_echeancier = ' . $iEcheanceId;
             return $this->sum($sWhere, 'montant');
         }
+    }
+
+    /**
+     * @param array $transactionTypes
+     * @param \DateTime $date
+     * @return array
+     * @throws Exception
+     */
+    public function getDailyState(array $transactionTypes, \DateTime $date)
+    {
+        $sql = '
+            SELECT
+                type_transaction,
+                ROUND(SUM(t.montant) / 100, 2) AS montant,
+                ROUND(SUM(t.montant_unilend) / 100, 2) AS montant_unilend,
+                ROUND(SUM(t.montant_etat) / 100, 2) AS montant_etat,
+                DATE(t.date_transaction) AS jour
+            FROM transactions t
+            WHERE LEFT(t.added, 7) = :transaction_date
+                AND t.etat = 1
+                AND t.status = 1
+                AND t.type_transaction IN(:transaction_type)
+            GROUP BY t.type_transaction, DATE(t.date_transaction)
+        ';
+        $data = $this->bdd->executeQuery($sql,
+            ['transaction_type' => $transactionTypes, 'transaction_date' => $date->format('Y-m')],
+            ['transaction_type' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY, 'transaction_date' => \PDO::PARAM_STR])->fetchAll(\PDO::FETCH_ASSOC);
+        $result = [];
+        foreach ($data as $row) {
+            $result[$row['type_transaction']][$row['jour']] = [
+                'montant'         => $row['montant'],
+                'montant_unilend' => $row['montant_unilend'],
+                'montant_etat'    => $row['montant_etat'],
+            ];
+        }
+        return $result;
+    }
+
+    /**
+     * @param DateTime $date
+     * @return array
+     * @throws Exception
+     */
+    public function getDailyWelcomeOffer(\DateTime $date)
+    {
+        $sql = '
+            SELECT
+                ROUND(SUM(t.montant) / 100, 2) AS montant,
+                ROUND(SUM(t.montant_unilend) / 100, 2) AS montant_unilend,
+                ROUND(SUM(t.montant_etat) / 100, 2) AS montant_etat,
+                DATE(t.date_transaction) AS jour
+            FROM transactions t
+            INNER JOIN lenders_accounts l ON t.id_client = l.id_client_owner
+            WHERE LEFT(t.added, 7) = :transaction_date
+                AND t.etat = 1
+                AND t.status = 1
+                AND t.type_transaction = :transaction_type
+                AND l.type_transfert = 2
+            GROUP BY DATE(t.date_transaction)
+        ';
+        $data = $this->bdd->executeQuery($sql,
+            ['transaction_type' => \transactions_types::TYPE_LENDER_SUBSCRIPTION, 'transaction_date' => $date->format('Y-m')],
+            ['transaction_type' => \PDO::PARAM_INT, 'transaction_date' => \PDO::PARAM_STR])->fetchAll(\PDO::FETCH_ASSOC);
+        $result = [];
+
+        foreach ($data as $row) {
+            $result[$row['jour']]['montant']         = $row['montant'];
+            $result[$row['jour']]['montant_unilend'] = $row['montant_unilend'];
+            $result[$row['jour']]['montant_etat']    = $row['montant_etat'];
+        }
+        return $result;
+    }
+
+    /**
+     * @param string $startDate yyyy-mm-dd H:i:s date formated
+     * @param string $endDate yyyy-mm-dd H:i:s date formated
+     * @return int
+     */
+    public function getInterestsAmount($startDate, $endDate)
+    {
+        $sql = '
+            SELECT SUM(t.montant) as interests
+            FROM transactions t
+            WHERE 
+              t.type_transaction = :transaction_type
+              AND t.date_transaction BETWEEN :start_date AND :end_date
+        ';
+        return $this->bdd->executeQuery($sql,
+            ['transaction_type' => \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS, 'start_date' => $startDate, 'end_date' => $endDate],
+            ['transaction_type' => \PDO::PARAM_INT, 'start_date' => \PDO::PARAM_STR, 'end_date' => \PDO::PARAM_STR])->fetchColumn(0);
     }
 }

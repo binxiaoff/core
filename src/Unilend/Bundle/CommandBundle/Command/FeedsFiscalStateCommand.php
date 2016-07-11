@@ -249,11 +249,13 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         $lastMonth = new \DateTime('last month');
 
         $etatRemb         = $bank_unilend->sumMontantEtat('status = 1 AND type = 2 AND LEFT(added, 7) = "' . $lastMonth->format('Y-m') . '"');
-        $regulCom         = $transactions->sumByday(\transactions_types::TYPE_REGULATION_COMMISSION, $lastMonth->format('m'), $lastMonth->format('Y'));
+        $regulCom         = $transactions->getDailyState([\transactions_types::TYPE_REGULATION_COMMISSION], $lastMonth);
         $sommeRegulDuMois = 0;
 
-        foreach ($regulCom as $r) {
-            $sommeRegulDuMois = bcadd($sommeRegulDuMois, $r['montant_unilend'] * 100);
+        if (true === isset($regulCom[\transactions_types::TYPE_REGULATION_COMMISSION])) {
+            foreach ($regulCom[\transactions_types::TYPE_REGULATION_COMMISSION] as $r) {
+                $sommeRegulDuMois = bcadd($sommeRegulDuMois, bcmul($r['montant_unilend'], 100));
+            }
         }
         $etatRemb = bcadd($etatRemb, $sommeRegulDuMois);
 
