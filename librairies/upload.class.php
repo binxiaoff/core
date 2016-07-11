@@ -43,7 +43,7 @@ class upload
 
     // Tableau des extensions que l'on autorise à être uploadé
     private $ext_valides = array(
-        'jpeg', 'JPEG', 'jpg', 'JPG', 'png', 'PNG', 'gif', 'GIF', 'pdf', 'PDF', 'doc', 'DOC', 'xls', 'XLS', 'ppt',
+        'jpeg', 'JPEG', 'jpg', 'JPG', 'png', 'PNG', 'gif', 'GIF', 'svg', 'SVG', 'pdf', 'PDF', 'doc', 'DOC', 'xls', 'XLS', 'ppt',
         'PPT', 'csv', 'CSV', 'swf', 'SWF', 'pptx', 'PPTX', 'docx', 'DOCX', 'xlsx', 'XLSX', 'TXT', 'txt', 'TIFF', 'tiff'
     );
 

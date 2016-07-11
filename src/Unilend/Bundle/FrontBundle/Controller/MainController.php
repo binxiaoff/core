@@ -3,6 +3,7 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -293,6 +294,52 @@ class MainController extends Controller
         }
 
         $response = $this->render('partials/site/footer.html.twig', ['menus' => $footerMenu, 'partners' => $partners]);
+        $response->setSharedMaxAge(900);
+
+        return $response;
+    }
+
+    /**
+     * @param Request $request
+     * @return Response
+     */
+    public function footerReviewsAction(Request $request)
+    {
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var \blocs $block */
+        $block = $entityManager->getRepository('blocs');
+        /** @var \blocs_elements $blockElement */
+        $blockElement = $entityManager->getRepository('blocs_elements');
+        /** @var \elements $elements */
+        $elements = $entityManager->getRepository('elements');
+
+        $reviews = [];
+        if ($block->get('carousel-revue-presse-footer', 'slug')) {
+            $elementsDescription = $elements->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'ordre ASC');
+            $elementsDescription = array_combine(array_column($elementsDescription, 'id_element'), $elementsDescription);
+
+            foreach ($blockElement->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'FIELD(id_element, ' . implode(', ', array_keys($elementsDescription)) . ') ASC') as $element) {
+                if (1 === preg_match('/ (?<reviewId>[0-9]+)$/', $elementsDescription[$element['id_element']]['name'], $matches)) {
+                    switch ($elementsDescription[$element['id_element']]['type_element']) {
+                        case 'Texte':
+                            $reviews[$matches['reviewId']]['quote'] = $element['value'];
+                            break;
+                        case 'Image':
+                            $reviews[$matches['reviewId']]['name']  = $element['complement'];
+                            $reviews[$matches['reviewId']]['image'] = $element['value'];
+                            break;
+                        default:
+                            /** @var LoggerInterface $logger */
+                            $logger = $this->get('monolog.logger');
+                            $logger->notice('Could not match review ID with pattern "' . $elementsDescription[$element['id_element']]['name'] . '"');
+                            break;
+                    }
+                }
+            }
+        }
+
+        $response = $this->render('partials/site/reviews.html.twig', ['reviews' => $reviews]);
         $response->setSharedMaxAge(900);
 
         return $response;

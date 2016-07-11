@@ -221,8 +221,7 @@ permalink: route('/')
             </div><!-- /.site-wrap -->
         </section><!-- /.page-section -->
 
-        {{ render(controller('UnilendFrontBundle:StaticPages:reviewFooterShow')) }}
+        {{ render_esi(controller('UnilendFrontBundle:Main:footerReviews')) }}
 
     </article><!-- /.page -->
-
 {% endblock %}

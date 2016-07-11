@@ -1,7 +1,6 @@
 // Lib Dependencies
 var $ = require('jquery')
 
-
 var LoginTimer = function(){
     var self = this
     var LoginInput = $('input[data-formvalidation-input]')
@@ -16,7 +15,6 @@ var LoginTimer = function(){
         }
     });
 }
-
 
 /*
  * jQuery Plugin
