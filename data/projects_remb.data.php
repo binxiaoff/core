@@ -28,6 +28,7 @@
 
 class projects_remb extends projects_remb_crud
 {
+    const STATUS_ERROR                     = -1;
     const STATUS_PENDING                   = 0;
     const STATUS_REFUNDED                  = 1;
     const STATUS_REJECTED                  = 2;
