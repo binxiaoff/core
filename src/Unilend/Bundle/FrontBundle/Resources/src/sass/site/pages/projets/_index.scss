@@ -9,7 +9,7 @@
     .hero-wrap {
       @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0, $padding-md: 0, $padding-lg: 0);
 
-      background-image: image-url('headers/projets-index-header-1680x790.jpg');
+      background-image: url('../media/headers/projets-index-header-1680x790.jpg');
       background-position: top center;
 
       @include devices('md', 'lg') {

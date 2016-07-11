@@ -4,6 +4,13 @@
 
 // Validation UI modifies on the whole form field, not just the input
 .form-field {
+  .input-field:disabled {
+    border:2px solid #DE2F4C!important;
+    background-color:#fadfe4!important;
+  }
+  .input-field+label >span {
+    color:#DE2F4C!important;
+  }
   &.ui-formvalidation-success,
   &.ui-formvalidation-error {
     .input-group {

@@ -29,13 +29,13 @@
     <!-- CSS Site -->
     {% block cssFiles %}
         {% stylesheets
-        'bundles/unilendfront/fonts/style.css'
-        'bundles/unilendfront/css/*.css'
-        'bundles/unilendfront/js/vendor/videojs/video-js.min.css'
-        'bundles/unilendfront/js/vendor/videojs/video-js.min.css'
-        'bundles/unilendfront/js/vendor/swiper/css/swiper.min.css'
-        'bundles/unilendfront/js/vendor/fancybox/css/jquery.fancybox.css'
-        'bundles/unilendfront/js/vendor/jquery-ui/themes/base/minified/jquery-ui.min.css' %}
+            'bundles/unilendfront/fonts/style.css'
+            'bundles/unilendfront/css/*.css'
+            'bundles/unilendfront/js/vendor/videojs/video-js.min.css'
+            'bundles/unilendfront/js/vendor/videojs/video-js.min.css'
+            'bundles/unilendfront/js/vendor/swiper/css/swiper.min.css'
+            'bundles/unilendfront/js/vendor/fancybox/css/jquery.fancybox.css'
+            'bundles/unilendfront/js/vendor/jquery-ui/themes/base/minified/jquery-ui.min.css' %}
         <link rel="stylesheet" href="{{ asset_url }}" />
         {% endstylesheets %}
     {% endblock %}
@@ -73,7 +73,7 @@
 
 {% block debug %}
     {{ app.environment }}
-    {% if true %} if {{ app.environment }} == 'dev'
+    {% if app.environment == 'dev' %}
         <div class="debug" aria-hidden="true">
             <div>
         <span class="show-mobile-inline">
@@ -144,9 +144,6 @@
 
 <script src="{{ asset_url }}"></script>
 {% endjavascripts %}
-
-    {# Scripts at bottom #}
-
 
 {% block extendFoot %}
 {% endblock %}

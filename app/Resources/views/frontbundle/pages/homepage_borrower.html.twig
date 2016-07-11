@@ -266,6 +266,6 @@ permalink: route('emprunter')
         </section><!-- /.promos -->
     </article><!-- /.page -->
 
-    {{ render(controller('UnilendFrontBundle:StaticPages:reviewFooterShow')) }}
+    {{ render_esi(controller('UnilendFrontBundle:Main:footerReviews')) }}
 
 {% endblock %}

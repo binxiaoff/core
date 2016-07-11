@@ -45,7 +45,7 @@ class FrontBundleExtension extends \Twig_Extension
             new \Twig_SimpleFunction('siteurlmedia', array($this, 'completeUrlMediaFunction')),
             new \Twig_SimpleFunction('getStatistics', array($this, 'getStatistics')),
             new \Twig_SimpleFunction('getCategories', array($this, 'getCategoriesForSvg')),
-            new \Twig_SimpleFunction('uploadedImagePath', array($this, 'uploadedImagePathFunction'))
+            new \Twig_SimpleFunction('uploadedImage', array($this, 'uploadedImageFunction'))
         );
     }
 
@@ -78,7 +78,7 @@ class FrontBundleExtension extends \Twig_Extension
         }
     }
 
-    public function uploadedImagePathFunction($image)
+    public function uploadedImageFunction($image)
     {
         return $this->url . '/var/images/' . $image;
     }

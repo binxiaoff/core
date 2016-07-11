@@ -1,0 +1,23 @@
+//
+// Captcha style
+//
+
+.captcha-wrapper {
+  border:1px solid #F8F6F7;
+  box-sizing:border-box;
+  padding:10px;
+  background-color:#F8F6F7;
+  label[for='connect-access-catpcha'] {
+    font-size:13px;
+    text-align:center;
+    color:#de2f4c;
+    font-style:italic;
+  }
+  .captcha_login {
+    display:block;
+    margin:10px auto 0 auto;
+  }
+  input{
+    background-color:#fff;
+  }
+}
