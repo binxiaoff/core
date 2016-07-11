@@ -1348,6 +1348,7 @@ class rootController extends bootstrap
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-demande-de-contact', $variablesInternalMail, false);
             $message->setTo($destinataire);
+            $message->setReplyTo(array($this->demande_contact->email => $this->demande_contact->prenom . ' ' . $this->demande_contact->nom));
             $mailer = $this->get('mailer');
             $mailer->send($message);
 

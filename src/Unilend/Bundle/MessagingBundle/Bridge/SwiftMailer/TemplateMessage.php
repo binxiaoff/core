@@ -58,6 +58,7 @@ class TemplateMessage extends \Swift_Message
 
     /**
      * @param LoggerInterface $logger
+     *
      * @return $this
      */
     public function setLogger(LoggerInterface $logger)
@@ -91,7 +92,7 @@ class TemplateMessage extends \Swift_Message
     public function setTo($addresses, $name = null)
     {
         if (is_string($addresses)) {
-            $addresses = self::recipientsArray($addresses);
+            $addresses = self::emailAddressToArray($addresses);
         }
 
         try {
@@ -131,54 +132,54 @@ class TemplateMessage extends \Swift_Message
     }
 
     /**
-     * @param array $recipients
+     * @param array $emails
      *
      * @return string
      */
-    public static function recipientsString(array $recipients)
+    public static function emailAddressToString(array $emails)
     {
-        if (is_array($recipients)) {
-            $recipientsFormatted = '';
-            foreach ($recipients as $email => $name) {
-                if ($recipientsFormatted) {
-                    $recipientsFormatted .= ', ';
+        if (is_array($emails)) {
+            $formattedEmails = '';
+            foreach ($emails as $email => $name) {
+                if ($formattedEmails) {
+                    $formattedEmails .= ', ';
                 }
                 if ($name) {
-                    $recipientsFormatted .= $name . ' <' . $email . '>';
+                    $formattedEmails .= $name . ' <' . $email . '>';
                 } else {
-                    $recipientsFormatted .= $email;
+                    $formattedEmails .= $email;
                 }
             }
         } else {
-            $recipientsFormatted = $recipients;
+            $formattedEmails = $emails;
         }
 
-        return $recipientsFormatted;
+        return $formattedEmails;
     }
 
     /**
-     * @param string $recipients
+     * @param string $emails
      *
      * @return array
      */
-    public static function recipientsArray($recipients)
+    public static function emailAddressToArray($emails)
     {
-        if (is_string($recipients)) {
-            $recipientsFormatted = [];
-            $recipients          = str_replace(';', ',', $recipients);
-            $recipients          = explode(',', $recipients);
+        if (is_string($emails)) {
+            $formattedEmails = [];
+            $emails          = str_replace(';', ',', trim($emails));
+            $emails          = explode(',', $emails);
 
-            foreach ($recipients as $recipient) {
-                if (1 === preg_match('#^(?<name>.*)(\s|)\<(?<email>.*)\>$#', $recipient, $matches)) {
-                    $recipientsFormatted[trim($matches['email'])] = trim($matches['name']);
+            foreach ($emails as $email) {
+                if (1 === preg_match('#^(?<name>.*)(\s|)\<(?<email>.*)\>$#', $email, $matches)) {
+                    $formattedEmails[trim($matches['email'])] = trim($matches['name']);
                 } else {
-                    $recipientsFormatted[] = trim($recipient);
+                    $formattedEmails[] = trim($email);
                 }
             }
         } else {
-            $recipientsFormatted = trim($recipients);
+            $formattedEmails = $emails;
         }
 
-        return $recipientsFormatted;
+        return $formattedEmails;
     }
 }
