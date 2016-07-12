@@ -7,6 +7,27 @@ namespace Unilend\Bundle\FrontBundle\Service;
 class HighchartsService
 {
 
+    public function getFinancialProjectDataCharts($accountData)
+    {
+        $charts = [
+            'income'             => $this->getIncomeStatementChart($accountData['balanceSheets']),
+            'balanceSheetAssets' => $this->getBalanceSheetAssetsChart($accountData['totalYearlyAssets']),
+            'balanceSheetDebts'  => $this->getBalanceSheetDebtsChart($accountData['totalYearlyDebts'])
+        ];
+
+        return $charts;
+    }
+
+    public function getFinancialProjectDataForTables($accountData)
+    {
+        $tables = [
+            'income'  => $this->formatIncomeStatementDataForTable($accountData['balanceSheets']),
+            'balance' => $this->formatBalanceSheetDataForTable($accountData['totalYearlyAssets'], $accountData['totalYearlyDebts'])
+        ];
+
+        return $tables;
+    }
+
     /**
      * @param array $bids
      */
@@ -33,7 +54,7 @@ class HighchartsService
         }
 
         $offers = [
-            'schema' => json_encode($schema),
+            'schema' => $schema,
             'data'   => $data
         ];
 
@@ -107,18 +128,18 @@ class HighchartsService
                     '9,5%',
                     '10%'
                 ],
-                'plotBands'  => json_encode([
+                'plotBands'  => [
                     'color'     => '#999999',
                     'dashStyle' => 'ShortDot',
                     'value'     => 8,
                     'width'     => 1
-                ]),
-                'plotLines'  => json_encode([
+                ],
+                'plotLines'  => [
                     'color'     => '#999999',
                     'dashStyle' => 'ShortDot',
                     'value'     => 8,
                     'width'     => 1
-                ])
+                ]
             ],
             'yAxis'       => [
                 'title' => [
@@ -137,7 +158,7 @@ class HighchartsService
                     ]
                 ]
             ],
-            'series'      => json_encode([
+            'series'      => [
                 'name'         => 'Offres en cours',
                 'color'        => '#5FC5D1',
                 'fillOpacity'  => 0.25,
@@ -156,8 +177,8 @@ class HighchartsService
                     ],
                     $dataAfterLimit
                 ]
-            ]),
-            'exportUrl'   => '{{ path() }}'
+            ],
+            'exportUrl'   => ''
         ];
 
         return $bidsChartSetting;
@@ -193,16 +214,16 @@ class HighchartsService
                     'title' => ['text' => 'Montant (en €)'],
                     'units' => '€'
                 ],
-                'series' => json_encode($data)
+                'series' => $data
             ],
-            'exportUrl'  => "route('project/12345/export/income')"
+            'exportUrl'  => ''
         ];
 
         return $incomeStatementChart;
     }
 
 
-    public function formatDataForIncomeStatementTable($balanceSheets)
+    public function formatIncomeStatementDataForTable($balanceSheets)
     {
         $schema = [
             ['name' => 'name', 'type' => 'string', 'label' => 'Name'],
@@ -224,7 +245,7 @@ class HighchartsService
         $incomeTableData = [
             'schema'    => json_encode($schema),
             'data'      => json_encode($data),
-            'exportUrl' => "route('project/12345/export/income')"
+            'exportUrl' => ''
         ];
 
         return $incomeTableData;
@@ -268,7 +289,7 @@ class HighchartsService
                 'legend' => ['symbolRadius' => 10],
                 'series' => $dataSeries
             ],
-            'exportUrl'  => "route('project/12345/export/balance/active')"
+            'exportUrl'  => ''
         ];
 
         return $balanceSheetAssets;
@@ -310,7 +331,7 @@ class HighchartsService
                 'legend' => ['symbolRadius' => 10],
                 'series' => $dataSeries
             ],
-            'exportUrl'  => "route('project/12345/export/balance/passive')"
+            'exportUrl'  => ''
         ];
 
         return $balanceSheetDebts;
@@ -351,7 +372,7 @@ class HighchartsService
         $balanceSheetData = [
             'schema'    => $schema,
             'data'      => $dataSeries,
-            'exportUrl' => "route('project/12345/export/balance')"
+            'exportUrl' => ''
         ];
 
         return $balanceSheetData;

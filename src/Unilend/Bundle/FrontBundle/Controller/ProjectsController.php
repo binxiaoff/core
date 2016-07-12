@@ -6,41 +6,18 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\FrontBundle\Service\HighchartsService;
+use Unilend\Bundle\FrontBundle\Service\LenderAccountDisplayManager;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
 class ProjectsController extends Controller
 {
-
-    /** @var  array */
-    private $projectsStatus;
-
-
-    public function __construct()
-    {
-        $this->projectsStatus = [
-            \projects_status::EN_FUNDING,
-            \projects_status::FUNDE,
-            \projects_status::FUNDING_KO,
-            \projects_status::REMBOURSEMENT,
-            \projects_status::REMBOURSE,
-            \projects_status::PROBLEME,
-            \projects_status::RECOUVREMENT,
-            \projects_status::DEFAUT,
-            \projects_status::REMBOURSEMENT_ANTICIPE,
-            \projects_status::PROBLEME_J_X,
-            \projects_status::PROCEDURE_SAUVEGARDE,
-            \projects_status::REDRESSEMENT_JUDICIAIRE,
-            \projects_status::LIQUIDATION_JUDICIAIRE
-        ];
-    }
-
 
     /**
      * @Route("/projets-a-financer/{page}", defaults={"page" = "1"}, name="project_list")
@@ -68,7 +45,6 @@ class ProjectsController extends Controller
             /** @var BaseUser $user */
             $user = $this->getUser();
             $aTemplateVariables['projects'] = $projectDisplayManager->getProjectsForDisplay(
-                $this->projectsStatus,
                 'p.date_retrait_full DESC',
                 $rateRange,
                 (int)$start,
@@ -76,14 +52,14 @@ class ProjectsController extends Controller
                 $user->getClientId());
         } else {
             $aTemplateVariables['projects'] = $projectDisplayManager->getProjectsForDisplay(
-                $this->projectsStatus,
                 'p.date_retrait_full DESC',
                 $rateRange,
                 (int)$start,
                 (int)$limit
                 );
         }
-        $totalNumberProjects = $projects->countSelectProjectsByStatus(implode(',', $this->projectsStatus) . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = ' . \projects::DISPLAY_PROJECT_ON);
+
+        $totalNumberProjects = $projectDisplayManager->getTotalNumberOfDisplayedProjects();
         $totalPages          = ceil($totalNumberProjects / $limit);
 
         $paginationSettings = [
@@ -113,7 +89,6 @@ class ProjectsController extends Controller
         $aTemplateVariables['paginationSettings'] = $paginationSettings;
         $aTemplateVariables['showPagination']     = true;
 
-
         return $this->render('pages/projects.html.twig', $aTemplateVariables);
     }
 
@@ -130,59 +105,38 @@ class ProjectsController extends Controller
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
         /** @var HighchartsService $highchartsService */
         $highchartsService = $this->get('unilend.frontbundle.service.highcharts_service');
-        /** @var ProjectManager $projectManager */
-        $projectManager = $this->get('unilend.service.project_manager');
-        /** @var \bids $bids */
-        $bids = $this->get('unilend.service.entity_manager')->getRepository('bids');
+
         /** @var \projects $project */
         $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
         $project->get($projectSlug, 'slug');
-        /** @var \loans $loans */
-        $loans = $this->get('unilend.service.entity_manager')->getRepository('loans');
 
         $templateVariables            = [];
 
-        $templateVariables['project']           = $projectDisplayManager->getProjectInformationForDisplay($projectSlug);
-        $templateVariables['projectNavigation'] = $project->positionProject($project->id_project, implode(',', $this->projectsStatus), 'lestatut ASC, IF(lestatut = 2, p.date_retrait_full ,"") DESC, IF(lestatut = 1, p.date_retrait_full ,"") ASC, projects_status.status DESC');
+        $templateVariables['project'] = $projectDisplayManager->getProjectInformationForDisplay($project);
 
-        $accountData                                       = $projectDisplayManager->getProjectFinancialData($project);
-        $templateVariables['income']                       = $highchartsService->formatDataForIncomeStatementTable($accountData['balanceSheets']);
-        $templateVariables['charts']['income']             = $highchartsService->getIncomeStatementChart($accountData['balanceSheets']);
-        $templateVariables['balance']                      = $highchartsService->formatBalanceSheetDataForTable($accountData['totalYearlyAssets'], $accountData['totalYearlyDebts']);
-        $templateVariables['charts']['balanceSheetAssets'] = $highchartsService->getBalanceSheetAssetsChart($accountData['totalYearlyAssets']);
-        $templateVariables['charts']['balanceSheetDebts']  = $highchartsService->getBalanceSheetDebtsChart($accountData['totalYearlyDebts']);
 
-        if ($templateVariables['project']['status'] == \projects_status::EN_FUNDING) {
-            $bidsOnProject                                     = $bids->select('id_project = ' . $project->id_project, 'added ASC');
-            $templateVariables['allOffers']                    = $highchartsService->formatBidsForTable($bidsOnProject, true);
-            $templateVariables['alloffersOverview'] = '';
-            //$templateVariables['charts']['projectOffers'] = $highchartsService->getBidsChartSetting($activeBidsByRate, 6);
-            $bidsStatistics = $projectManager->getBidsStatistics($project);
-            //$meanBidAmount  = round(array_sum(array_column($bidsStatistics, 'amount_total')) / array_sum(array_column($bidsStatistics, 'nb_bids')), 2);
-            $activeBidsByRate = $bids->getNumberActiveBidsByRate($project->id_project);
-        } else {
-            $templateVariables['fundingStatistics'] = $projectDisplayManager->getProjectFundingStatistic($project, $templateVariables['project']['status']);
-        }
-
-        $now = new \DateTime('NOW');
-        $projectEnd = new \DateTime($project->date_retrait_full);
-        if ($projectEnd  <= $now && $templateVariables['project']['status'] == \projects_status::EN_FUNDING) {
-            $templateVariables['project']['projectPending'] = true;
-        }
+        $accountData                  = $projectDisplayManager->getProjectFinancialData($project);
+        $templateVariables['charts']  = $highchartsService->getFinancialProjectDataCharts($accountData);
+        $templateVariables['tables']  = $highchartsService->getFinancialProjectDataForTables($accountData);
 
         if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
             && $this->get('security.authorization_checker')->isGranted('ROLE_LENDER'))
         {
             /** @var BaseUser $user */
-            $user                                 = $this->getUser();
-            $templateVariables['currentUser']     = $projectDisplayManager->getClientBidsForProjectList($user->getClientId(), $project->id_project);
-            $userBidsOnProject                    = $projectDisplayManager->getClientBidsOnProject($user->getClientId(), $project->id_project);
-            $templateVariables['myOffers']        = $highchartsService->formatBidsForTable($userBidsOnProject);
-            $templateVariables['myOffersIds']     = array_column($userBidsOnProject, 'id_bid');
-            $templateVariables['myLoanOnProject'] = $projectDisplayManager->getClientLoansOnProject($user->getClientId(), $project->id_project);
+            $user = $this->getUser();
+            /** @var \lenders_accounts $lenderAccount */
+            $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
+            $lenderAccount->get($user->getClientId(), 'id_client_owner');
+            /** @var LenderAccountDisplayManager $lenderAccountDisplayManager */
+            $lenderAccountDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
+            $templateVariables['lenderOnProject'] = $lenderAccountDisplayManager->getLenderActivityForProject($project->id_project, $lenderAccount);
+
+            if ($lenderAccountDisplayManager->isLenderInvolvedInProject($project, $lenderAccount)) {
+                $templateVariables['lenderOnProject']['bidsTable'] = $highchartsService->formatBidsForTable(['lenderOnProject']['offers']['all']);
+            }
 
             if (false === empty($request->getSession()->get('bidMessage'))) {
-                $templateVariables['bidMessage'] = $request->getSession()->get('bidMessage');
+                $templateVariables['lender']['bidMessage'] = $request->getSession()->get('bidMessage');
                 $request->getSession()->remove('bidMessage');
             }
         }
@@ -370,6 +324,22 @@ class ProjectsController extends Controller
             $this->tokenBid       = sha1('tokenBid-' . time() . '-' . $this->clients->id_client);
             $_SESSION['tokenBid'] = $this->tokenBid;
         }
+    }
+
+    /**
+     * @Route("/projects/export/income/{projectId}", name="export_income_statement")
+     */
+    public function exportIncomeStatement($projectId, Request $request)
+    {
+        return new Response('ca viendra .... ');
+    }
+
+    /**
+     * @Route("/projects/export/balance/{projectId}", name="export_balance_sheet")
+     */
+    public function exportBalanceSheet($projectId, Request $request)
+    {
+        return new Response('ca viendra .... ');
     }
 
 

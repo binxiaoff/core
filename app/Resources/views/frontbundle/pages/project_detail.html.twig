@@ -48,7 +48,7 @@ data: [
 [16, '9&ndash;9,5%', 3250.74, 520, 0, 0],
 [17, '9,5&ndash;10%', 3250.74, 850, 0, 0]
 ]
-},
+}
 
 
 
@@ -78,7 +78,7 @@ permalink: project.slug
                 {# Set the offer status to show the icon in the marker #}
                 {# @note MapView CSS relies on offerStatuses named 'inprogress', 'rejected' and 'accepted' #}
                 {% set mapviewOfferStatus = '' %}
-                {% if currentUser is defined and currentUser.TotalOffers > 0 and currentUser.Offers is not empty %}
+                {% if lenderOnProject is defined and lenderOnProject.bids.TotalOffers > 0 and lenderOnProject.bids.Offers is not empty %}
                     {% for statusOffer, numOffers in currentUserOffers if numOffers > 0 and statusOffer is not empty and statusOffer != 'rejected' %}
                         {% set mapviewOfferStatus = statusOffer %}
                     {% endfor %}
@@ -175,8 +175,8 @@ permalink: project.slug
                                 </div><!-- /.project-single-period -->
 
                                 <div class="project-single-offers">
-                                    {% if currentUser.offers is defined and currentUser.offers.total > 0 %}
-                                    {% for status, numOffers in currentUser.offers %}
+                                    {% if lenderOnProject.bids.offers is defined and lenderOnProject.bids.offers.total > 0 %}
+                                    {% for status, numOffers in lenderOnProject.bids.offers %}
                                         {% if status == 'inprogress' and numOffers > 0 %}
                                             <div class="project-list-item-useroffers-accepted">
                                                 {{ numOffers|__num|nbsp }} {% transchoice numOffers %} project-detail_accepted-bids-label {% endtranschoice %}
@@ -210,104 +210,35 @@ permalink: project.slug
                         </div>
                     </div><!-- /.project-single-header-inner -->
                 </div><!-- /.project-single-header-position -->
-
-                <a href="{{ path('project_detail', {'projectSlug' : projectNavigation.previousProject.slug}) }}" class="btn-nav-previous" title="{{ projectNavigation.previousProject.title }}" data-toggle="tooltip" data-placement="right"><span class="sr-only">{% trans %} project-detail_next-project-label {% endtrans %}</span></a>
-
-                <a href="{{ path('project_detail', {'projectSlug' : projectNavigation.nextProject.slug}) }}" class="btn-nav-next" title="{{ projectNavigation.nextProject.title }}" data-toggle="tooltip" data-placement="left"><span class="sr-only">{% trans %} project-detail_previous-project-label {% endtrans %}</span></a>
+                {% if project.navigation.previousProject is defined and project.navigation.previousProject is not empty %}
+                <a href="{{ path('project_detail', {'projectSlug' : project.navigation.previousProject.slug}) }}" class="btn-nav-previous" title="{{ project.navigation.previousProject.title }}" data-toggle="tooltip" data-placement="right"><span class="sr-only">{% trans %} project-detail_next-project-label {% endtrans %}</span></a>
+                {%  endif %}
+                {% if project.navigation.nextProject is defined %}
+                <a href="{{ path('project_detail', {'projectSlug' : project.navigation.nextProject.slug}) }}" class="btn-nav-next" title="{{ project.navigation.nextProject.title }}" data-toggle="tooltip" data-placement="left"><span class="sr-only">{% trans %} project-detail_previous-project-label {% endtrans %}</span></a>
+                {%  endif %}
             </div><!-- /.project-single-header -->
 
             {% include 'partials/components/list-socialmedia.html.twig' %}
         </header><!-- /.project-single-header-wrap -->
 
-        <aside class="project-single-info-wrap">
-            <div class="project-single-info-position">
-                <div class="project-single-info">
-                    <div class="project-single-cost">
-                        <div class="project-single-cost-total">
-                            <span class="sr-only">{% trans with { '%amount%' : project.amount|nbsp }%} project-detail_amount-sentence {% endtrans %} </span>
-                        </div>
-                        <div class="project-single-cost-progress" title="{% trans with {'%percentFunded%' : project.percentFunded } %} project-detail_project-funding-progress-bar-tooltip {% endtrans %}" data-toggle="tooltip">
-                            <div class="project-single-cost-progress-funded" style="width: {{ project.percentFunded }}%">
-                                <span class="sr-only">{% trans with { '%percentFunded%' : project.percentFunded } %} project-detail_pecentage-funded-text {% endtrans %}</span>
-                            </div>
-                        </div><!-- /.project-single-cost-progress -->
-                        <div class="project-single-cost-amount">
-                            {% if project.costFunded > project.amount %}
-                            <div class="project-single-cost-amount-funded">{% trans with { '%costFunded%': project.amount }%} project-detail_already-bid-amount {% endtrans %}</div>
-                            {% else %}
-                            <div class="project-single-cost-amount-funded">{% trans with { '%costFunded%': project.costFunded }%} project-detail_already-bid-amount {% endtrans %}</div>
-                            {% endif %}
-                            {% if  project.costRemaining > 0 %}
-                            <div class="project-single-cost-amount-remaining">{% trans with { '%costRemaining%' : project.costRemaining|nbsp } %} project-detail_remaining-amount {% endtrans %}</div>
-                            {% endif %}
-                        </div><!-- /.project-single-cost-amount -->
-                    </div><!-- /.project-single-cost -->
-
-                    <div class="row">
-                        <div class="project-single-interest">
-                            <span class="icon fa-linechart-u32"></span>
-                            <span class="c-p1"><strong>{{ project.avg_rate|__num(1) }}</strong>%</span>
-                            <div class="label">{% trans %} project-detail_average-rate-label {% endtrans %}</div>
-                        </div><!-- /.project-single-interest -->
-
-                        <div class="project-single-duration">
-                            <span class="icon fa-calendar-alt-u32"></span>
-                            <span class="c-p1"><strong>{{ project.period }}</strong> mois</span>
-                            <div class="label">{% trans %} project-detail_period-label {% endtrans %}</div>
-                        </div><!-- /.project-single-duration -->
-                    </div>
-
-                    {% if  project.status is constant('\\projects_status::EN_FUNDING') %}
-                        {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-                            {{ include('partials/components/project-bid-panel.html.twig') }}
-                        {% else %}
-                            {{ include('partials/components/project-login-panel.html.twig') }}
-                        {% endif %}
-                    {% else  %}
-                        <p>{% trans with {
-                            '%NumberLender%' : fundingStatistics.NumberLender,
-                            '%AvgRate%' : fundingStatistics.AvgRate,
-                            '%fundingDays%' : fundingStatistics.fundingTime.days,
-                            '%fundingMinutes%' : fundingStatistics.fundingTime.i,
-                            '%fundingHours%' : fundingStatistics.fundingTime.h }
-                            %} project-detail_project-funded-message-with-statistics {% endtrans %}</p>
-                        {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-                        {% if myLoanOnProject is not defined or myLoanOnProject is null %}{% set myLoanOnProject = 0 %}{% endif %}
-                    <p>{% trans with {'%amountUserLoan%' : myLoanOnProject }%} project-detail_project-funded-mesage-lender-participation {% endtrans %}</p>
-                        {%  endif %}
-                    {% endif %}
-
-                    <ul class="list-sharing">
-                        <li>
-                            <a class="btn-facebook" title="{% trans %} project-detail_share-on-facebook-label {% endtrans %}"
-                               href="http://www.facebook.com/sharer.php?u={{ absolute_url(project.slug) }}">
-                                <span class="sr-only">{% trans %} project-detail_share-on-facebook-label {% endtrans %}</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="btn-twitter" title="{% trans %} project-detail_share-on-twitter-label {% endtrans %}"
-                               href="http://twitter.com/share?url={{ absolute_url(project.slug) }}%3Fid%3D12345&text={{ project.title|url_encode }}">
-                                <span class="sr-only">{% trans %} project-detail_share-on-twitter-label {% endtrans %}</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="btn-email" title="{% trans %} project-detail_share-my-email-label {% endtrans %}"
-                               href="mailto:?subject={{ project.title|url_encode }}&body={{ absolute_url(project.slug) }}">
-                                <span class="sr-only">{% trans %} project-detail_share-my-email-label {% endtrans %}</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div><!-- /.project-single-info -->
-            </div><!-- /.project-single-info-position -->
-        </aside><!-- /.project-single-info-wrap -->
+        {% include 'partials/components/project_details_side_panel.html.twig' %}
 
         <div class="project-single-menu">
             <div class="project-single-menu-inner">
                 <nav class="project-single-nav">
                     <ul class="nav nav-anchors">
-                        <li role="presentation"><a href="#offers">{% trans %} project-detail_presentation-title-offers {% endtrans %}</a></li>
-                        <li role="presentation"><a href="#presentation">{% trans %} project-detail_presentation-title-presentation {% endtrans %}</a></li>
-                        <li role="presentation"><a href="#history">{% trans %} project-detail_presentation-title-financial-accounts {% endtrans %}</a></li>
+                        {% if project.status == constant('\\projects_status::EN_FUNDING') %}
+                            <li role="presentation"><a href="#offers">{% trans %} project-detail_presentation-title-offers {% endtrans %}</a></li>
+                        {% endif %}
+                            <li role="presentation"><a href="#presentation">{% trans %} project-detail_presentation-title-presentation {% endtrans %}</a></li>
+                        {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                            <li role="presentation"><a href="#history">{% trans %} project-detail_presentation-title-financial-accounts {% endtrans %}</a></li>
+                        {% endif %}
+                        {% if is_granted('IS_AUTHENTICATED_FULLY') and is_granted('ROLE_LENDER')
+                        and lenderOnProject.isInvolved == true
+                        and (project.status == constant('\\projects_status::FUNDE') or project.status >= constant('\\projects_status::REMBOURSEMENT')) %}
+                            <li role="presentation"><a href="#info">{% trans %} project-detail_presentation-title-repayment-info {% endtrans %}</a></li>
+                        {% endif %}
                     </ul>
                 </nav><!-- /.project-single-nav -->
 
@@ -335,10 +266,15 @@ permalink: project.slug
                         <nav class="project-single-nav">
                             <ul class="nav nav-anchors">
                                 {% if project.status == constant('\\projects_status::EN_FUNDING') %}
-                                <li role="presentation"><a href="#offers">{% trans %} project-detail_presentation-title-offers {% endtrans %}</a></li>
+                                    <li role="presentation"><a href="#offers">{% trans %} project-detail_presentation-title-offers {% endtrans %}</a></li>
                                 {% endif %}
                                 <li role="presentation"><a href="#presentation">{% trans %} project-detail_presentation-title-presentation {% endtrans %}</a></li>
-                                <li role="presentation"><a href="#history">{% trans %} project-detail_presentation-title-financial-accounts {% endtrans %}</a></li>
+                                {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                                    <li role="presentation"><a href="#history">{% trans %} project-detail_presentation-title-financial-accounts {% endtrans %}</a></li>
+                                {% endif %}
+                                {% if is_granted('IS_AUTHENTICATED_FULLY') and is_granted('ROLE_LENDER') and (project.status == constant('\\projects_status::FUNDE') or project.status >= constant('\\projects_status::REMBOURSEMENT')) %}
+                                    <li role="presentation"><a href="#info">{% trans %} project-detail_presentation-title-repayment-info {% endtrans %}</a></li>
+                                {% endif %}
                             </ul>
                         </nav><!-- /.project-single-nav -->
                         <div id="offers" data-watchscroll-nav>
@@ -364,10 +300,7 @@ permalink: project.slug
                                             <div id="myoffers-inprogress" role="tabpanel" class="tab-pane active" aria-labelledby="project-myoffers-inprogress project-myoffers">
                                                 <table class="table-myoffers">
                                                     <tbody>
-                                                    {% for i, item in myoffers.data if item[3] == 1 or item[3] == 2 %}
-                                                        {# Mark that the current user was involved with the offer with the id #}
-                                                        {% set myoffersIds = myoffersIds|merge([item[0]]) %}
-
+                                                    {% for i, item in lenderOnProject.bidsTable.data if item[3] == 1 or item[3] == 2 %}
                                                         <tr>
                                                             <td class="table-myoffers-item-id">{{ item[0] }}</td>
                                                             <td class="table-myoffers-item-interest">{{ item[1]|__num(1) }}%</td>
@@ -394,10 +327,7 @@ permalink: project.slug
 
                                                 <table class="table-myoffers">
                                                     <tbody>
-                                                    {% for i, item in myoffers.data if item[3] == 3 %}
-                                                        {# Mark that the current user was involved with the offer with the id #}
-                                                        {% set myoffersIds = myoffersIds|merge([item[0]]) %}
-
+                                                    {% for i, item in lenderOnProject.bidsTable.data if item[3] == 3 %}
                                                         <tr>
                                                             <td class="table-myoffers-item-id">{{ item[0] }}</td>
                                                             <td class="table-myoffers-item-interest">{{ item[1]|__num(1) }}%</td>
@@ -421,7 +351,7 @@ permalink: project.slug
                                     </div><!-- /tabs -->
                                 </section><!-- /.page-section -->
                                 {% endif %}
-                            {{ include('partials/components/project-bids-list.html.twig') }}
+                            {#{{ include('partials/components/project-bids-list.html.twig') }}#}
                             {% endif %}
                         </div>
                         <div id="presentation" data-watchscroll-nav>
@@ -480,7 +410,7 @@ permalink: project.slug
                                                     </thead>
 
                                                     <tbody>
-                                                    {% for i, item in income.data %}
+                                                    {% for i, item in tables.income.data %}
                                                         <tr class="table-item">
                                                             <td class="table-income-item-name">{{ item[0] }}</td>
                                                             <td class="table-income-item-year">
@@ -515,7 +445,7 @@ permalink: project.slug
                                 </div><!-- /tabs -->
 
                                 <div class="btn-toolbar">
-                                    <a href="{{ income.exportUrl }}" class="btn-default"><span class="icon fa-excel-u32"></span>
+                                    <a href="{{ path('export_income_statement', {'projectId' : project.id_project }) }}" class="btn-default"><span class="icon fa-excel-u32"></span>
                                         {% trans %} project-detail_project-presentation-accounts-export-csv-button {% endtrans %}</a>
                                 </div><!-- /.btn-toolbar -->
 
@@ -552,7 +482,7 @@ permalink: project.slug
                                                     </thead>
 
                                                     <tbody>
-                                                    {% for i, item in balance.data %}
+                                                    {% for i, item in tables.balance.data %}
                                                         {# Entry which displays a title #}
                                                         {% if item[0] == 'title' %}
                                                             <tr class="table-item-title">
@@ -640,7 +570,7 @@ permalink: project.slug
                                 </div><!-- /tabs -->
 
                                 <div class="btn-toolbar">
-                                    <a href="{{ balance.exportUrl }}" class="btn-default"><span class="icon fa-excel-u32"></span>
+                                    <a href="{{ path('export_balance_sheet', {'projectId' : project.id_project }) }}" class="btn-default"><span class="icon fa-excel-u32"></span>
                                         {% trans %} project-detail_project-presentation-accounts-export-csv-button {% endtrans %}</a>
                                 </div><!-- /.btn-toolbar -->
 
@@ -653,15 +583,49 @@ permalink: project.slug
 
                             <div class="message-alert">
                                 <p>{% trans %} project-detail_non-payment-warning {% endtrans %}</p>
-                                <a href="#todo" class="link">En savoir plus</a>
+                                <a href="{{ route('preter_guide') }}" class="link">{% trans %} project-detail_learn-more-link-under-warnings {% endtrans %}</a>
                             </div>
 
                             <div class="message-alert">
                                 <p>{% trans %} project-detail_fiscal-information {% endtrans %}</p>
-                                <a href="#todo" class="link">En savoir plus</a>
+                                <a href="{{ route('fiscalite') }}" class="link">{% trans %} project-detail_learn-more-link-under-warnings {% endtrans %}</a>
                             </div>
                         </section><!-- /.page-section -->
+                        {% if is_granted('IS_AUTHENTICATED_FULLY') and is_granted('ROLE_LENDER')
+                        and lenderOnProject.isInvolved == true
+                        and (project.status == constant('\\projects_status::FUNDE') or project.status >= constant('\\projects_status::REMBOURSEMENT')) %}
+                            <div id="info" data-watchscroll-nav>
+                                <section id="project-section-info" class="page-section">
+                                    <p>{% trans with {'%amountUserLoan%' : lenderOnProject.loans.myLoanOnProject} %} project-detail_project-presentation-repayment-info {% endtrans %}</p>
+                                    <p>
+                                        {% trans with {
+                                        '%amountAlreadyPaidBack%' : lenderOnProject.loans.amountAlreadyPaidBack,
+                                          '%remainingToBeRepaid%' : lenderOnProject.loans.remainingToBeRepaid,
+                                        '      %remainingMonths%' : lenderOnProject.loans.remainingMonths
+                                        } %}
+                                        project-detail_project-presentation-repayment-info-detail {% endtrans %}
+                                    </p>
 
+                                    {% if lenderOnProject.loans.amountAlreadyPaidBack > 0 %}
+                                        {% for history in project.statusHistory %}
+                                            {% if 'project-presentation-repayment-info-project-status-#{history.status}'|trans != 'project-presentation-repayment-info-project-status-#{history.status}' %}
+                                                <p>
+                                                {{ history.added|date(d/m/Y) }}
+                                                    {{ 'project-presentation-repayment-info-project-status-#{history.status}'|trans }}
+                                                    <br/>
+                                                    {% if history.site_content is not empty %}
+                                                        {{ history.content|nl2br }}
+                                                        {% if history.failure == 1 %}
+                                                            {% trans with {'%percentageRecovered%' : lenderOnProject.loans.percentageRecovered } %} project-detail_project-presentation-repayment-info-recovery {% endtrans %}
+                                                        {% endif %}
+                                                    {% endif %}
+                                                </p>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                </section><!-- /.page-section -->
+                            </div>
+                        {% endif %}
                         <div class="project-single-info-position-end"></div>
 
                     </div><!-- /.col -->
