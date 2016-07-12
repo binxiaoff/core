@@ -3,21 +3,35 @@
 //
 
 .captcha-wrapper {
-  border:1px solid #F8F6F7;
+  background-color:#fadfe4;
   box-sizing:border-box;
-  padding:10px;
-  background-color:#F8F6F7;
-  label[for='connect-access-catpcha'] {
-    font-size:13px;
-    text-align:center;
-    color:#de2f4c;
-    font-style:italic;
-  }
+  padding:10px 0;
+  margin-top:30px;
   .captcha_login {
     display:block;
     margin:10px auto 0 auto;
-  }
-  input{
     background-color:#fff;
+  }
+  #captcha.form-field {
+    margin-top:30px;
+    margin-bottom:0;
+    box-sizing:border-box;
+    padding:0 10px;
+    min-height:auto;
+    label[for='connect-access-catpcha'] {
+      font-size:14px;
+      color:#302a32;
+      line-height:1.3em;
+      margin-bottom:0px;
+      padding-bottom:10px;
+      padding-left:10px;
+      margin-top:10px;
+    }
+    input{
+      background-color:#fff;
+      border-radius:4px;
+      border-style:solid;
+      border-width:2px;
+    }
   }
 }

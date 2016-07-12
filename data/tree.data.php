@@ -1088,6 +1088,7 @@ class tree extends tree_crud
     {
         $id_grand_parent = $this->getParent($id_parent);
 
+        $final  = [];
         $sql    = 'SELECT id_tree FROM tree WHERE id_parent = ' . $id_parent;
         $result = $this->bdd->query($sql);
 
@@ -1097,11 +1098,9 @@ class tree extends tree_crud
             $this->deleteCascade($record['id_tree']);
         }
 
-        if (is_array($final)) {
-            foreach ($final as $f) {
-                if (! is_null($f)) {
-                    $this->delete(array('id_tree' => $f));
-                }
+        foreach ($final as $f) {
+            if (! is_null($f)) {
+                $this->delete(array('id_tree' => $f));
             }
         }
 
@@ -1360,21 +1359,20 @@ class tree extends tree_crud
     // Status à 0 en cascade pour les enfants d'une page que l'on passe à 0
     public function statusCascade($id_parent, $id_langue = 'fr')
     {
+        $final  = [];
         $sql    = 'SELECT id_tree FROM tree WHERE id_parent = ' . $id_parent . ' AND id_langue = "' . $id_langue . '"';
         $result = $this->bdd->query($sql);
 
-        while ($record = $this->bdd->fetch_array($result)) {
+        while ($record = $this->bdd->fetch_assoc($result)) {
             $final[] = $record['id_tree'];
             $this->statusCascade($record['id_tree'], $id_langue);
         }
 
-        if (is_array($final)) {
-            foreach ($final as $f) {
-                if (! is_null($f)) {
-                    $this->get(array('id_tree' => $f, 'id_langue' => $id_langue));
-                    $this->status = 0;
-                    $this->update(array('id_tree' => $f, 'id_langue' => $id_langue));
-                }
+        foreach ($final as $f) {
+            if (! is_null($f)) {
+                $this->get(array('id_tree' => $f, 'id_langue' => $id_langue));
+                $this->status = 0;
+                $this->update(array('id_tree' => $f, 'id_langue' => $id_langue));
             }
         }
     }
