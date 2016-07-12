@@ -39,6 +39,6 @@ parameters:
     path.shared_tmp:                %path.shared%tmp/
     path.user:                      %path.shared%var/
     path.sftp:                      %path.shared%sftp/
+    path.protected:                 %path.shared%protected/
     path.payline:                   /data/sites/unilend/librairies/payline/
-
     cms:                            iZicom

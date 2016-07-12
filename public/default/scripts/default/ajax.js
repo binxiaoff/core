@@ -137,68 +137,73 @@ function load_finances(year,id_lender)
     });
 }
 
-function transfert(id_client)
-{
-
-    if($("#mot-de-passe").val() != '' && $("#montant").val() != '')
-    {
+function transfert() {
+    if ($("#mot-de-passe").val() != '' && $("#montant").val() != '') {
         var val = {
             mdp: $("#mot-de-passe").val(),
-            montant: $("#montant").val(),
-            id_client: id_client
-        }
-        $.post(add_url + '/ajax/transfert', val).done(function(data) {
+            montant: $("#montant").val()
+        };
 
-            if(data != 'nok')
-            {
-                if(data == 'noMdp'){$("#mot-de-passe").addClass('LV_invalid_field'); $("#mot-de-passe").removeClass('LV_valid_field');}
-                else {$("#mot-de-passe").addClass('LV_valid_field');$("#mot-de-passe").removeClass('LV_invalid_field');}
+        $.post(add_url + '/ajax/transfert', val).done(function (data) {
+            if (data != 'nok') {
+                if (data == 'noMdp') {
+                    $("#mot-de-passe").addClass('LV_invalid_field');
+                    $("#mot-de-passe").removeClass('LV_valid_field');
+                }
+                else {
+                    $("#mot-de-passe").addClass('LV_valid_field');
+                    $("#mot-de-passe").removeClass('LV_invalid_field');
+                }
 
-                if(data == 'noMontant' || data == 'noMontant2' || data == 'noMontant3'){ $("#montant").addClass('LV_invalid_field'); $("#montant").removeClass('LV_valid_field');}
-                else {$("#montant").addClass('LV_valid_field');$("#montant").removeClass('LV_invalid_field');}
+                if (data == 'noMontant' || data == 'noMontant2' || data == 'noMontant3') {
+                    $("#montant").addClass('LV_invalid_field');
+                    $("#montant").removeClass('LV_valid_field');
+                }
+                else {
+                    $("#montant").addClass('LV_valid_field');
+                    $("#montant").removeClass('LV_invalid_field');
+                }
 
-                if(data == 'noMontant3') $(".error_montant_offre").show();
-                else $(".error_montant_offre").hide();
+                if (data == 'noMontant3') {
+                    $(".error_montant_offre").show();
+                } else {
+                    $(".error_montant_offre").hide();
+                }
 
-                /*noMdp
-                noMontant
-                noMontant2
-                ok*/
+                if (data == 'noBic' || data == 'noIban') {
+                    $(".noBicIban").slideDown();
+                }
 
-                if(data == 'noBic' || data == 'noIban'){ $(".noBicIban").slideDown();}
-
-                if(data == 'ok')
-                {
+                if (data == 'ok') {
                     $(".reponse").slideDown();
 
-                    var val = {
-                        id_client: id_client
-                    }
-                    $.post(add_url + '/ajax/solde', val).done(function(data) {
-
-                        if(data != 'nok')
-                        {
+                    $.post(add_url + '/ajax/solde').done(function (data) {
+                        if (data != 'nok') {
                             $("#solde").html(data);
                         }
                     });
-
-
                 }
-
             }
         });
-
-
-
     }
-    else
-    {
+    else {
+        if ($("#mot-de-passe").val() == '') {
+            $("#mot-de-passe").addClass('LV_invalid_field');
+            $("#mot-de-passe").removeClass('LV_valid_field');
+        }
+        else {
+            $("#mot-de-passe").addClass('LV_valid_field');
+            $("#mot-de-passe").removeClass('LV_invalid_field');
+        }
 
-        if($("#mot-de-passe").val() == ''){$("#mot-de-passe").addClass('LV_invalid_field');$("#mot-de-passe").removeClass('LV_valid_field');}
-        else {$("#mot-de-passe").addClass('LV_valid_field');$("#mot-de-passe").removeClass('LV_invalid_field');}
-
-        if($("#montant").val() == $("#montant").attr('title')){ $("#montant").addClass('LV_invalid_field'); $("#montant").removeClass('LV_valid_field');}
-        else {$("#montant").addClass('LV_valid_field');$("#montant").removeClass('LV_invalid_field');}
+        if ($("#montant").val() == $("#montant").attr('title')) {
+            $("#montant").addClass('LV_invalid_field');
+            $("#montant").removeClass('LV_valid_field');
+        }
+        else {
+            $("#montant").addClass('LV_valid_field');
+            $("#montant").removeClass('LV_invalid_field');
+        }
     }
 }
 
