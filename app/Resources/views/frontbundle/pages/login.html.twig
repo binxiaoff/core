@@ -22,12 +22,12 @@ permalink: route('user/access')
 
                         <div class="col-connect col-lg-4 col-md-4">
                             <h2 class="h3 text-align-left">{% trans %} connect-subscribe-page_login-box-title {% endtrans %}</h2>
-                            <form action="{{ path('login-check') }}" method="post" class="form-connect" data-formvalidation data-formvalidation-notificationselem="#form-connect-notifications">
+                            <form action="{{ path('login-check') }}" method="post" class="form-connect login-form" data-formvalidation data-formvalidation-notificationselem="#form-connect-notifications">
                                 <div class="panel panel-connect">
                                     {% if error is not empty %}
-                                    <div id="form-connect-notifications">
-                                        {{ "connect-subscribe-page_login-box-error-message-#{ error.message }" | trans }}
-                                    </div>
+                                        <div id="form-connect-notifications">
+                                            {{ "connect-subscribe-page_login-box-error-message-#{ error.message }" | trans }}
+                                        </div>
                                     {% endif %}
 
                                     <div class="panel-inner">
@@ -37,9 +37,7 @@ permalink: route('user/access')
                                                 <div class="btn-group">
                                                     <label for="connect-access-email"><span class="icon fa-envelope-o"></span></label>
                                                 </div>
-                                                <input type="text" id="connect-access-email" data-login name="_username" value="" class="input-field" name="access[email]"
-                                                data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email">
-
+                                                <input type="text" id="connect-access-email" data-login name="_username" value="" class="input-field" name="access[email]" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email">
                                             </div><!-- /.input-group -->
                                         </div><!-- /.form-field -->
 
@@ -47,7 +45,7 @@ permalink: route('user/access')
                                             <label for="connect-access-password">{% trans %} connect-subscribe-page_login-box-password-field-label {% endtrans %}</label>
                                             <div class="input-group set-left">
                                                 <div class="btn-group">
-                          <label for="connect-access-password"><span class="icon fa-lock-u"></span></label>
+                                                    <label for="connect-access-password"><span class="icon fa-lock-u"></span></label>
                                                 </div>
                                                 <input type="password" id="connect-access-password" data-login name="_password" value="" class="input-field" name="access[password]" data-formvalidation-input data-formvalidation-required="true">
 
@@ -55,18 +53,18 @@ permalink: route('user/access')
                                         </div><!-- /.form-field -->
                                         {% if captchaInformation is defined and captchaInformation is not empty %}
                                             {% if true == captchaInformation.displayCaptcha %}
-                                                <div class="captcha-wrapper">
+                                                <div data-captcha class="captcha-wrapper">
                                                     <iframe class="captcha_login" width="133" height="33"
                                                             src="{{ path('show_captcha') }}">
                                                     </iframe>
                                                     <div id="captcha" class="form-field">
-                                                        <label for="connect-access-catpcha">{% trans %} enter security code (trans TODO) {% endtrans %}</label>
                                                         <div class="input-group set-left">
                                                             <div class="btn-group">
-                                                                <label for="connect-access-captcha"></label>
+                                                                <label for="connect-access-password"><span class="icon fa-lock-u"></span></label>
                                                             </div>
-                                                            <input type="text" id="connect-access-captcha" autocomplete="off" name="captcha" value="" class="input-field">
+                                                            <input type="text" id="connect-access-captcha" autocomplete="off" required name="captcha" value="" class="input-field">
                                                         </div>
+                                                        <label for="connect-access-catpcha">{% trans %} enter security code (trans TODO) {% endtrans %}</label>
                                                     </div>
                                                 </div>
                                             {%  endif %}
@@ -76,15 +74,17 @@ permalink: route('user/access')
                                                 <a href="{{ route('user/forgotpassword') }}" class="link">{% trans %} connect-subscribe-page_login-box-password-forgotten-link {% endtrans %}</a>
                                             </p>
                                         </div>
-                                        {% if true == captchaInformation.displayWaitingPeriod %}
-                                            <div id="form-connect-notifications">
-                                                <span class="ui-has-textcount ui-textcount ui-textcount-counting" data-login data-textcount data-end-count="0" data-total-time="4000">4</span>
-                                                {% trans with { '%waitingPeriod%' : captchaInformation.waitingPeriod } %}                                                                   connect-subscribe-page_waiting-period-message
-                                                {% endtrans %}
-                                            </div>
+                                        {% if captchaInformation is defined and true == captchaInformation.displayWaitingPeriod %}
+                                            {% if false == captchaInformation.displayCaptcha %}
+                                                <div id="form-connect-notifications">
+                                                    <span class="ui-has-textcount ui-textcount ui-textcount-counting" data-login data-textcount data-end-count="0" data-total-time="4000">4</span>
+                                                    {% trans with { '%waitingPeriod%' : captchaInformation.waitingPeriod } %}                                                                   connect-subscribe-page_waiting-period-message
+                                                    {% endtrans %}
+                                                </div>
+                                            {% endif %}
                                         {% endif %}
                                     </div><!-- /.panel-inner -->
-                                    <div class="btn-controls">
+                                    <div class="btn-controls" data-captcha-related>
                                         <input type="submit" class="btn-primary" value="{% trans %} connect-subscribe-page_login-box-connect-button {% endtrans %}"/>
                                     </div>
                                 </div><!-- /.panel -->

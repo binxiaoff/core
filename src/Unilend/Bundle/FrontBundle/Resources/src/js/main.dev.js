@@ -58,6 +58,7 @@ var MapView = require('MapView')
 var ChartView = require('ChartView')
 var BorrowerEsimForm = require('./app/components/BorrowerEsimForm')
 var LoginTimer = require('./app/components/LoginTimer')
+var LoginTimer = require('./app/components/LoginCaptcha')
 
 // @debug
 // CacheData.clearAll()
