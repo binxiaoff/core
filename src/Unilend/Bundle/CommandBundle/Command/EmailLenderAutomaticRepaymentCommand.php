@@ -50,7 +50,7 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
-        $lEcheances = $echeanciers->selectEcheances_a_remb('status = 1 AND status_email_remb = 0 AND status_emprunteur = 1', '', 0, 300);
+        $lEcheances = $echeanciers->select('status = 1 AND status_email_remb = 0 AND status_emprunteur = 1', '', 0, 300);
 
         foreach ($lEcheances as $e) {
             if (

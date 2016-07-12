@@ -1,8 +1,7 @@
 <?php
 
 use Unilend\librairies\Altares;
-/** @todo use new logger interface */
-use Unilend\librairies\ULogger;
+use \Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
 
 class dossiersController extends bootstrap
 {
@@ -119,9 +118,11 @@ class dossiersController extends bootstrap
 
             $this->settings->get('Heure fin periode funding', 'type');
             $this->finFunding = $this->settings->value;
+            /** @var \tax_type $taxType */
+            $taxType = $this->loadData('tax_type');
 
-            $this->settings->get('TVA', 'type');
-            $this->fVATRate = $this->settings->value;
+            $taxRate        = $taxType->getTaxRateByCountry('fr');
+            $this->fVATRate = bcdiv($taxRate[\tax_type::TYPE_VAT], 100, 2);
 
             $debutFunding        = explode(':', $this->debutFunding);
             $this->HdebutFunding = $debutFunding[0];
@@ -1180,8 +1181,11 @@ class dossiersController extends bootstrap
         /** @var \company_balance $oCompanyBalance */
         $oCompanyBalance = $this->loadData('company_balance');
 
-        $this->settings->get('TVA', 'type');
-        $this->fVATRate = $this->settings->value;
+        /** @var \tax_type $taxType */
+        $taxType = $this->loadData('tax_type');
+
+        $taxRate        = $taxType->getTaxRateByCountry('fr');
+        $this->fVATRate = bcdiv($taxRate[\tax_type::TYPE_VAT], 100, 2);
 
         /** @var company_rating $oCompanyRating */
         $oCompanyRating = $this->loadData('company_rating');
@@ -1471,10 +1475,13 @@ class dossiersController extends bootstrap
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
         $this->settings                      = $this->loadData('settings');
 
-        $this->settings->get('TVA', 'type');
-        $this->tva = $this->settings->value;
+        /** @var \tax_type $taxType */
+        $taxType = $this->loadData('tax_type');
 
-        $oLogger = new ULogger('detail_remb', $this->logPath, 'dossiers');
+        $taxRate   = $taxType->getTaxRateByCountry('fr');
+        $this->tva = bcdiv($taxRate[\tax_type::TYPE_VAT], 100, 2);
+        /** @var \Psr\Log\LoggerInterface $oLogger */
+        $oLogger = $this->get('logger');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             $this->companies->get($this->projects->id_company, 'id_company');
@@ -1572,18 +1579,18 @@ class dossiersController extends bootstrap
 
                     $montant                  = 0;
                     $iTotalTaxAmount          = 0;
-                    $error                    = false;
                     $lEcheancesRembEmprunteur = $this->echeanciers_emprunteur->select('id_project = ' . $this->projects->id_project . ' AND status_emprunteur = 1', 'ordre ASC', 0, 1);
                     $RembEmpr                 = $lEcheancesRembEmprunteur[0];
                     $lEcheances               = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND status_emprunteur = 1 AND ordre = ' . $RembEmpr['ordre'] . ' AND status = 0');
 
-                    /** @var \Unilend\Service\TaxManager $taxManager */
-                    $taxManager = $this->get('TaxManager');
+                    /** @var TaxManager $taxManager */
+                    $taxManager = $this->get('unilend.service.tax_manager');
                     /** @var \lender_repayment $lenderRepayment */
                     $lenderRepayment = $this->loadData('lender_repayment');
 
-                    try {
-                        foreach ($lEcheances as $e) {
+                    foreach ($lEcheances as $e) {
+                        $repaymentDate = date('Y-m-d H:i:s');
+                        try {
                             if (false === $this->transactions->exist($e['id_echeancier'], 'id_echeancier')) {
                                 $montant += $e['montant'];
 
@@ -1594,8 +1601,6 @@ class dossiersController extends bootstrap
                                 $lenderRepayment->id_company = $this->projects->id_company;
                                 $lenderRepayment->amount     = $e['montant'];
                                 $lenderRepayment->create();
-
-                                $repaymentDate = date('Y-m-d H:i:s');
 
                                 $this->echeanciers->get($e['id_echeancier'], 'id_echeancier');
                                 $this->echeanciers->capital_rembourse   = $this->echeanciers->capital;
@@ -1610,25 +1615,19 @@ class dossiersController extends bootstrap
                                 $this->transactions->id_echeancier    = $e['id_echeancier'];
                                 $this->transactions->id_langue        = 'fr';
                                 $this->transactions->date_transaction = $repaymentDate;
-                                $this->transactions->status           = 1;
-                                $this->transactions->etat             = 1;
+                                $this->transactions->status           = \transactions::PAYMENT_STATUS_OK;
+                                $this->transactions->etat             = \transactions::STATUS_VALID;
                                 $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                                 $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL;
                                 $this->transactions->create();
 
-                                try {
-                                    $iTaxOnCapital = $taxManager->taxTransaction($this->transactions);
-                                } catch (\Exception $exception) {
-                                    $oLogger->addRecord(ULogger::ERROR, 'id_project=' . $this->projects->id_project . ' - An error occured when applying taxes on the transaction : ' .
-                                        $this->transactions->id_transaction . ' - Exception message: ' . $exception->getMessage() . ' - Exception code: ' . $exception->getCode(), array(__METHOD__));
-                                    throw $exception;
-                                }
+                                $iTaxOnCapital = $taxManager->taxTransaction($this->transactions);
 
                                 $this->wallets_lines->id_lender                = $e['id_lender'];
-                                $this->wallets_lines->type_financial_operation = 40;
+                                $this->wallets_lines->type_financial_operation = \wallets_lines::TYPE_REPAYMENT;
                                 $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
-                                $this->wallets_lines->status                   = 1; // non utilisé
-                                $this->wallets_lines->type                     = 2; // transaction virtuelle
+                                $this->wallets_lines->status                   = 1;
+                                $this->wallets_lines->type                     = \wallets_lines::VIRTUAL;
                                 $this->wallets_lines->amount                   = $this->transactions->montant;
                                 $this->wallets_lines->create();
                                 $this->wallets_lines->unsetData();
@@ -1639,30 +1638,24 @@ class dossiersController extends bootstrap
                                 $this->transactions->id_echeancier    = $e['id_echeancier'];
                                 $this->transactions->id_langue        = 'fr';
                                 $this->transactions->date_transaction = $repaymentDate;
-                                $this->transactions->status           = 1;
-                                $this->transactions->etat             = 1;
+                                $this->transactions->status           = \transactions::PAYMENT_STATUS_OK;
+                                $this->transactions->etat             = \transactions::STATUS_VALID;
                                 $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                                 $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS;
                                 $this->transactions->create();
 
-                                try {
-                                    $iTaxOnInterests = $taxManager->taxTransaction($this->transactions);
-                                } catch (\Exception $exception) {
-                                    $oLogger->addRecord(ULogger::ERROR, 'id_project=' . $this->projects->id_project . ' - An error occured when applying taxes on the transaction : ' .
-                                        $this->transactions->id_transaction . ' - Exception message: ' . $exception->getMessage() . ' - Exception code: ' . $exception->getCode(), array(__METHOD__));
-                                    throw $exception;
-                                }
-                                $iTotalTaxAmount += ($iTaxOnCapital + $iTaxOnInterests);
+                                $iTaxOnInterests = $taxManager->taxTransaction($this->transactions);
+                                $iTotalTaxAmount = bcadd($iTotalTaxAmount, bcadd($iTaxOnCapital, $iTaxOnInterests));
 
                                 $this->wallets_lines->id_lender                = $e['id_lender'];
-                                $this->wallets_lines->type_financial_operation = 40;
+                                $this->wallets_lines->type_financial_operation = \wallets_lines::TYPE_REPAYMENT;
                                 $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
-                                $this->wallets_lines->status                   = 1; // non utilisé
-                                $this->wallets_lines->type                     = 2; // transaction virtuelle
+                                $this->wallets_lines->status                   = 1;
+                                $this->wallets_lines->type                     = \wallets_lines::VIRTUAL;
                                 $this->wallets_lines->amount                   = $this->transactions->montant;
                                 $this->wallets_lines->create();
 
-                                $iTotalEAT                                     = $e['montant'] - $iTaxOnInterests - $iTaxOnCapital;
+                                $iTotalEAT                       = $e['montant'] - $iTaxOnInterests - $iTaxOnCapital;
                                 $this->notifications->type       = \notifications::TYPE_REPAYMENT;
                                 $this->notifications->id_lender  = $this->lenders_accounts->id_lender_account;
                                 $this->notifications->id_project = $this->projects->id_project;
@@ -1795,26 +1788,24 @@ class dossiersController extends bootstrap
                                     $mailer->send($message);
                                 }
                             }
+                        } catch (\Exception $exception) {
+                            $oLogger->error('id_project=' . $e['id_project'] . ', id_echeancier=' . $e['id_echeancier'] . ' - An error occurred when calculating the refund details - Exception message: ' . $exception->getMessage() . ' - Exception code: ' . $exception->getCode(),
+                                array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $e['id_project']));
                         }
-                    } catch (\Exception $exception) {
-                        $error = true;
-                        $oLogger->addRecord(ULogger::ERROR, 'id_project=' . $this->projects->id_project . ' - An error occured when calculating the refund details - Exception message: ' . $exception->getMessage() . ' - Exception code: ' . $exception->getCode(), array(__METHOD__));
                     }
 
-                    if (false === $error && 0 !== $montant) {
-                        // partie a retirer de bank unilend
+
+                    if (0 != $montant) {
                         $rembNetTotal = $montant - $iTotalTaxAmount;
 
-                        $this->transactions->montant                  = 0;
-                        $this->transactions->id_echeancier            = 0; // on reinitialise
-                        $this->transactions->id_client                = 0; // on reinitialise
+                        $this->transactions->unsetData();
                         $this->transactions->montant_unilend          = - $rembNetTotal;
                         $this->transactions->montant_etat             = $iTotalTaxAmount;
-                        $this->transactions->id_echeancier_emprunteur = $RembEmpr['id_echeancier_emprunteur']; // id de l'echeance emprunteur
+                        $this->transactions->id_echeancier_emprunteur = $RembEmpr['id_echeancier_emprunteur'];
                         $this->transactions->id_langue                = 'fr';
-                        $this->transactions->date_transaction         = $repaymentDate;
-                        $this->transactions->status                   = 1;
-                        $this->transactions->etat                     = 1;
+                        $this->transactions->date_transaction         = date('Y-m-d H:i:s');
+                        $this->transactions->status                   = \transactions::PAYMENT_STATUS_OK;
+                        $this->transactions->etat                     = \transactions::STATUS_VALID;
                         $this->transactions->ip_client                = $_SERVER['REMOTE_ADDR'];
                         $this->transactions->type_transaction         = \transactions_types::TYPE_UNILEND_REPAYMENT;
                         $this->transactions->create();
@@ -1884,7 +1875,7 @@ class dossiersController extends bootstrap
                             $oInvoice->id_project      = $projects->id_project;
                             $oInvoice->ordre           = $e['ordre'];
                             $oInvoice->type_commission = \factures::TYPE_COMMISSION_REMBOURSEMENT;
-                            $oInvoice->commission      = $fCommissionRate * 100;
+                            $oInvoice->commission      = bcmul($fCommissionRate, 100);
                             $oInvoice->montant_ht      = $oBorrowerRepaymentSchedule->commission;
                             $oInvoice->tva             = $oBorrowerRepaymentSchedule->tva;
                             $oInvoice->montant_ttc     = $oBorrowerRepaymentSchedule->commission + $oBorrowerRepaymentSchedule->tva;

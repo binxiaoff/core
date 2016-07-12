@@ -90,5 +90,8 @@
             <argument>%kernel.root_dir%</argument>
             <argument type="service" id="logger"/>
         </service>
+        <service id="unilend.service.tax_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\TaxManager">
+            <argument type="service" id="unilend.service.entity_manager"/>
+        </service>
     </services>
 </container>

@@ -546,7 +546,7 @@ class operationsController extends bootstrap
                         $aTax[$aType['id_tax_type']]['amount'] = 0;
                     }
 
-                    if ($t['type_transaction'] != \transactions_types::TYPE_LENDER_REPAYMENT) {
+                    if (false === in_array($t['type_transaction'], [\transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS, \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL])) {
                         $this->echeanciers->capital = $t['montant_operation'];
                     } else {
                         $aTax = $oTax->getTaxListByRepaymentId($t['id_echeancier']);

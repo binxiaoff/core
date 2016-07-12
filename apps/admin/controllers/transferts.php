@@ -783,8 +783,6 @@ class transfertsController extends bootstrap
                 $bank_unilend = $this->loadData('bank_unilend');
                 /** @var \loans $loans */
                 $loans = $this->loadData('loans');
-                /** @var \echeanciers $repaymentSchedule */
-                $repaymentSchedule = $this->loadData('echeanciers');
                 /** @var \echeanciers_emprunteur $paymentSchedule */
                 $paymentSchedule = $this->loadData('echeanciers_emprunteur');
                 /** @var \projects_status_history $projectsStatusHistory */
@@ -803,10 +801,8 @@ class transfertsController extends bootstrap
 
                 $this->settings->get('Part unilend', 'type');
                 $PourcentageUnilend = $this->settings->value;
-
-                $montant = $loans->sumPretsProjet($project->id_project);
-
-                $partUnilend = $montant * $PourcentageUnilend;
+                $montant            = $loans->sumPretsProjet($project->id_project);
+                $partUnilend        = $montant * $PourcentageUnilend;
 
                 $montant -= $partUnilend;
 
@@ -820,21 +816,10 @@ class transfertsController extends bootstrap
                     $transactions->id_langue        = 'fr';
                     $transactions->id_project       = $project->id_project;
                     $transactions->date_transaction = date('Y-m-d H:i:s');
-                    $transactions->status           = '1';
-                    $transactions->etat             = '1';
+                    $transactions->status           = \transactions::PAYMENT_STATUS_OK;
+                    $transactions->etat             = \transactions::STATUS_VALID;
                     $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                    $transactions->civilite_fac     = $clients->civilite;
-                    $transactions->nom_fac          = $clients->nom;
-                    $transactions->prenom_fac       = $clients->prenom;
-                    if ($clients->type == 2) {
-                        $transactions->societe_fac = $companies->name;
-                    }
-                    $transactions->adresse1_fac     = $clientsAddresses->adresse1;
-                    $transactions->cp_fac           = $clientsAddresses->cp;
-                    $transactions->ville_fac        = $clientsAddresses->ville;
-                    $transactions->id_pays_fac      = $clientsAddresses->id_pays;
                     $transactions->type_transaction = \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT;
-                    $transactions->transaction      = 1;
                     $transactions->id_transaction   = $transactions->create();
 
                     $bank_unilend->id_transaction = $transactions->id_transaction;
@@ -842,7 +827,9 @@ class transfertsController extends bootstrap
                     $bank_unilend->montant        = bcmul($partUnilend, 100);
                     $bank_unilend->create();
 
+                    /** @var \platform_account_unilend $oAccountUnilend */
                     $oAccountUnilend                 = $this->loadData('platform_account_unilend');
+                    
                     $oAccountUnilend->id_transaction = $transactions->id_transaction;
                     $oAccountUnilend->id_project     = $project->id_project;
                     $oAccountUnilend->amount         = bcmul($partUnilend, 100);
@@ -856,7 +843,8 @@ class transfertsController extends bootstrap
                     $virements->motif          = $oProjectManager->getBorrowerBankTransferLabel($project);
                     $virements->type           = 2;
                     $virements->create();
-
+                    
+                    /** @var \prelevements $prelevements */
                     $prelevements = $this->loadData('prelevements');
 
                     $echea = $paymentSchedule->select('id_project = ' . $project->id_project);
@@ -864,20 +852,17 @@ class transfertsController extends bootstrap
                     foreach ($echea as $key => $e) {
                         $dateEcheEmp = strtotime($e['date_echeance_emprunteur']);
                         $result      = mktime(0, 0, 0, date("m", $dateEcheEmp), date("d", $dateEcheEmp) - 15, date("Y", $dateEcheEmp));
-                        $dateExec    = date('Y-m-d', $result);
-
-                        $montant = $repaymentSchedule->getMontantRembEmprunteur($e['montant'], $e['commission'], $e['tva']);
 
                         $prelevements->id_client                          = $clients->id_client;
                         $prelevements->id_project                         = $project->id_project;
                         $prelevements->motif                              = $virements->motif;
-                        $prelevements->montant                            = $montant;
+                        $prelevements->montant                            = bcadd(bcadd($e['montant'], $e['commission'], 2), $e['tva'], 2);
                         $prelevements->bic                                = str_replace(' ', '', $aMandate['bic']);
                         $prelevements->iban                               = str_replace(' ', '', $aMandate['iban']);
                         $prelevements->type_prelevement                   = 1; // recurrent
                         $prelevements->type                               = 2; //emprunteur
                         $prelevements->num_prelevement                    = $e['ordre'];
-                        $prelevements->date_execution_demande_prelevement = $dateExec;
+                        $prelevements->date_execution_demande_prelevement = date('Y-m-d', $result);
                         $prelevements->date_echeance_emprunteur           = $e['date_echeance_emprunteur'];
                         $prelevements->create();
                     }
@@ -913,13 +898,20 @@ class transfertsController extends bootstrap
 
                     $transactions->get($project->id_project, 'type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . ' AND status = 1 AND etat = 1 AND id_project');
 
-                    $this->settings->get('TVA', 'type');
-                    $fVATRate = (float) $this->settings->value;
+                    /** @var \tax_type $taxType */
+                    $taxType = $this->loadData('tax_type');
 
+                    $taxRate            = $taxType->getTaxRateByCountry('fr');
                     $sDateFirstPayment  = $aRepaymentHistory[0]['added'];
                     $fCommission        = $transactions->montant_unilend;
-                    $fVATFreeCommission = $fCommission / ($fVATRate + 1);
-
+                    $fVATFreeCommission =
+                        bcdiv(
+                            $fCommission,
+                            bcadd(
+                                bcdiv($taxRate[\tax_type::TYPE_VAT], 100, 2),
+                                1,
+                                2),
+                            2);
                     $oInvoice->num_facture     = 'FR-E' . date('Ymd', strtotime($sDateFirstPayment)) . str_pad($oInvoiceCounter->compteurJournalier($project->id_project, $sDateFirstPayment), 5, '0', STR_PAD_LEFT);
                     $oInvoice->date            = $sDateFirstPayment;
                     $oInvoice->id_company      = $companies->id_company;

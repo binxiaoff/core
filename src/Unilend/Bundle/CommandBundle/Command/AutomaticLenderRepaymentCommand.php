@@ -2,11 +2,12 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
-
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
 use Unilend\core\Loader;
 
 class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
@@ -22,38 +23,34 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         /** @var EntityManager $entityManager */
-        $entityManager           = $this->getContainer()->get('unilend.service.entity_manager');
+        $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \projects $projects */
-        $projects                = $entityManager->getRepository('projects');
+        $projects = $entityManager->getRepository('projects');
         /** @var \echeanciers_emprunteur $echeanciers_emprunteur */
-        $echeanciers_emprunteur  = $entityManager->getRepository('echeanciers_emprunteur');
+        $echeanciers_emprunteur = $entityManager->getRepository('echeanciers_emprunteur');
         /** @var \echeanciers $echeanciers */
-        $echeanciers             = $entityManager->getRepository('echeanciers');
+        $echeanciers = $entityManager->getRepository('echeanciers');
         /** @var \companies $companies */
-        $companies               = $entityManager->getRepository('companies');
+        $companies = $entityManager->getRepository('companies');
         /** @var \transactions $transactions */
-        $transactions            = $entityManager->getRepository('transactions');
+        $transactions = $entityManager->getRepository('transactions');
         /** @var \lenders_accounts $lenders */
-        $lenders                 = $entityManager->getRepository('lenders_accounts');
+        $lenders = $entityManager->getRepository('lenders_accounts');
         /** @var \projects_status_history $projects_status_history */
         $projects_status_history = $entityManager->getRepository('projects_status_history');
         /** @var \wallets_lines $wallets_lines */
-        $wallets_lines           = $entityManager->getRepository('wallets_lines');
+        $wallets_lines = $entityManager->getRepository('wallets_lines');
         /** @var \bank_unilend $bank_unilend */
-        $bank_unilend            = $entityManager->getRepository('bank_unilend');
+        $bank_unilend = $entityManager->getRepository('bank_unilend');
         /** @var \platform_account_unilend $oAccountUnilend */
-        $oAccountUnilend         = $entityManager->getRepository('platform_account_unilend');
+        $oAccountUnilend = $entityManager->getRepository('platform_account_unilend');
         /** @var \projects_remb_log $oRepaymentLog */
-        $oRepaymentLog           = $entityManager->getRepository('projects_remb_log');
+        $oRepaymentLog = $entityManager->getRepository('projects_remb_log');
         /** @var \projects_remb $oProjectRepayment */
-        $oProjectRepayment       = $entityManager->getRepository('projects_remb');
-
-        //Load for constant Use only
-        $entityManager->getRepository('transactions_types');
+        $oProjectRepayment = $entityManager->getRepository('projects_remb');
 
         /** @var \dates $dates */
         $dates = Loader::loadLib('dates');
-
 
         foreach ($oProjectRepayment->getProjectsToRepay(new \DateTime(), 1) as $r) {
             $oRepaymentLog->id_project       = $r['id_project'];
@@ -71,53 +68,97 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
             $day               = date('d', $timeAdd);
             $month             = $dates->tableauMois['fr'][date('n', $timeAdd)];
             $year              = date('Y', $timeAdd);
-            $Total_rembNet     = 0;
-            $lEcheances        = $echeanciers->selectEcheances_a_remb('id_project = ' . $r['id_project'] . ' AND status_emprunteur = 1 AND ordre = ' . $r['ordre'] . ' AND status = 0');
-            $Total_etat        = 0;
+            $lEcheances        = $echeanciers->select('id_project = ' . $r['id_project'] . ' AND status_emprunteur = 1 AND ordre = ' . $r['ordre'] . ' AND status = 0');
             $nb_pret_remb      = 0;
+            $iTotalTaxAmount   = 0;
+            $montant           = 0;
 
             if ($lEcheances != false) {
+                /** @var TaxManager $taxManager */
+                $taxManager = $this->getContainer()->get('unilend.service.tax_manager');
+                /** @var \lender_repayment $lenderRepayment */
+                $lenderRepayment = $entityManager->getRepository('lender_repayment');
+                /** @var LoggerInterface $logger */
+                $logger = $this->getContainer()->get('monolog.logger.console');
+
                 foreach ($lEcheances as $e) {
-                    if ($transactions->get($e['id_echeancier'], 'id_echeancier') == false) {
-                        $rembNet = $e['rembNet'];
-                        $etat    = $e['etat'];
+                    $repaymentDate = date('Y-m-d H:i:s');
+                    try {
+                        if (false === $transactions->exist($e['id_echeancier'], 'id_echeancier')) {
+                            $montant += $e['montant'];
+                            $nb_pret_remb++;
 
-                        $Total_rembNet += $rembNet;
-                        $Total_etat += $etat;
-                        $nb_pret_remb = ($nb_pret_remb + 1);
+                            $lenders->get($e['id_lender'], 'id_lender_account');
+                            $projects->get($e['id_project'], 'id_project');
 
-                        $lenders->get($e['id_lender'], 'id_lender_account');
+                            $lenderRepayment->id_lender  = $e['id_lender'];
+                            $lenderRepayment->id_company = $projects->id_company;
+                            $lenderRepayment->amount     = $e['montant'];
+                            $lenderRepayment->create();
 
-                        $echeanciers->get($e['id_echeancier'], 'id_echeancier');
-                        $echeanciers->status             = 1;
-                        $echeanciers->date_echeance_reel = date('Y-m-d H:i:s');
-                        $echeanciers->update();
+                            $echeanciers->get($e['id_echeancier'], 'id_echeancier');
+                            $echeanciers->capital_rembourse   = $echeanciers->capital;
+                            $echeanciers->interets_rembourses = $echeanciers->interets;
+                            $echeanciers->status              = \echeanciers::STATUS_REPAID;
+                            $echeanciers->status_email_remb   = 1;
+                            $echeanciers->date_echeance_reel  = $repaymentDate;
+                            $echeanciers->update();
 
-                        $transactions->id_client        = $lenders->id_client_owner;
-                        $transactions->montant          = bcmul($rembNet, 100);
-                        $transactions->id_echeancier    = $e['id_echeancier'];
-                        $transactions->id_langue        = 'fr';
-                        $transactions->date_transaction = date('Y-m-d H:i:s');
-                        $transactions->status           = \transactions::PAYMENT_STATUS_OK;
-                        $transactions->etat             = \transactions::STATUS_VALID;
-                        $transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT;
-                        $transactions->transaction      = \transactions::VIRTUAL;
-                        $transactions->create();
+                            $transactions->id_client        = $lenders->id_client_owner;
+                            $transactions->montant          = $e['capital'];
+                            $transactions->id_echeancier    = $e['id_echeancier'];
+                            $transactions->id_langue        = 'fr';
+                            $transactions->date_transaction = $repaymentDate;
+                            $transactions->status           = \transactions::PAYMENT_STATUS_OK;
+                            $transactions->etat             = \transactions::STATUS_VALID;
+                            $transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL;
+                            $transactions->create();
 
-                        $wallets_lines->id_lender                = $e['id_lender'];
-                        $wallets_lines->type_financial_operation = \wallets_lines::TYPE_REPAYMENT;
-                        $wallets_lines->id_transaction           = $transactions->id_transaction;
-                        $wallets_lines->status                   = 1;
-                        $wallets_lines->type                     = \wallets_lines::VIRTUAL;
-                        $wallets_lines->amount                   = bcmul($rembNet, 100);
-                        $wallets_lines->create();
+                            $iTaxOnCapital = $taxManager->taxTransaction($transactions);
+
+                            $wallets_lines->id_lender                = $e['id_lender'];
+                            $wallets_lines->type_financial_operation = \wallets_lines::TYPE_REPAYMENT;
+                            $wallets_lines->id_transaction           = $transactions->id_transaction;
+                            $wallets_lines->status                   = 1;
+                            $wallets_lines->type                     = \wallets_lines::VIRTUAL;
+                            $wallets_lines->amount                   = $transactions->montant;
+                            $wallets_lines->create();
+                            $wallets_lines->unsetData();
+
+                            $transactions->unsetData();
+                            $transactions->id_client        = $lenders->id_client_owner;
+                            $transactions->montant          = $e['interets'];
+                            $transactions->id_echeancier    = $e['id_echeancier'];
+                            $transactions->id_langue        = 'fr';
+                            $transactions->date_transaction = $repaymentDate;
+                            $transactions->status           = \transactions::PAYMENT_STATUS_OK;
+                            $transactions->etat             = \transactions::STATUS_VALID;
+                            $transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS;
+                            $transactions->create();
+
+                            $iTaxOnInterests = $taxManager->taxTransaction($transactions);
+                            $iTotalTaxAmount = bcadd($iTotalTaxAmount, bcadd($iTaxOnCapital, $iTaxOnInterests));
+
+                            $wallets_lines->id_lender                = $e['id_lender'];
+                            $wallets_lines->type_financial_operation = \wallets_lines::TYPE_REPAYMENT;
+                            $wallets_lines->id_transaction           = $transactions->id_transaction;
+                            $wallets_lines->status                   = 1;
+                            $wallets_lines->type                     = \wallets_lines::VIRTUAL;
+                            $wallets_lines->amount                   = $transactions->montant;
+                            $wallets_lines->create();
+                        }
+                    } catch (\Exception $exception) {
+                        $logger->error('id_project=' . $e['id_project'] . ', id_echeancier=' . $e['id_echeancier'] . ' - An error occurred when calculating the refund details at line: ' . $exception->getLine() . ' - Exception message: ' . $exception->getMessage() . ' - Exception code: ' . $exception->getCode(),
+                            array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $e['id_project']));
                     }
                 }
             }
 
-            if ($Total_rembNet > 0) {
+            if (0 != $montant) {
                 /** @var \clients $emprunteur */
                 $emprunteur = $entityManager->getRepository('clients');
+
+                $rembNetTotal = $montant - $iTotalTaxAmount;
 
                 $projects->get($r['id_project'], 'id_project');
                 $companies->get($projects->id_company, 'id_company');
@@ -125,22 +166,20 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                 $echeanciers_emprunteur->get($r['id_project'], ' ordre = ' . $r['ordre'] . ' AND id_project');
 
                 $transactions->unsetData();
-
-                $transactions->montant_unilend          = -bcmul($Total_rembNet, 100);
-                $transactions->montant_etat             = bcmul($Total_etat, 100);
+                $transactions->montant_unilend          = - $rembNetTotal;
+                $transactions->montant_etat             = $iTotalTaxAmount;
                 $transactions->id_echeancier_emprunteur = $echeanciers_emprunteur->id_echeancier_emprunteur;
                 $transactions->id_langue                = 'fr';
                 $transactions->date_transaction         = date('Y-m-d H:i:s');
                 $transactions->status                   = \transactions::PAYMENT_STATUS_OK;
                 $transactions->etat                     = \transactions::STATUS_VALID;
                 $transactions->type_transaction         = \transactions_types::TYPE_UNILEND_REPAYMENT;
-                $transactions->transaction              = \transactions::VIRTUAL;
                 $transactions->create();
 
                 $bank_unilend->id_transaction         = $transactions->id_transaction;
                 $bank_unilend->id_project             = $r['id_project'];
-                $bank_unilend->montant                = -bcmul($Total_rembNet, 100);
-                $bank_unilend->etat                   = bcmul($Total_etat, 100);
+                $bank_unilend->montant                = - $rembNetTotal;
+                $bank_unilend->etat                   = $iTotalTaxAmount;
                 $bank_unilend->type                   = \bank_unilend::TYPE_REPAYMENT_LENDER;
                 $bank_unilend->id_echeance_emprunteur = $echeanciers_emprunteur->id_echeancier_emprunteur;
                 $bank_unilend->status                 = 1;
@@ -151,7 +190,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                 /** @var \settings $settings */
                 $settings = $entityManager->getRepository('settings');
                 $settings->get('Facebook', 'type');
-                $sFB      = $settings->value;
+                $sFB = $settings->value;
                 $settings->get('Twitter', 'type');
                 $sTwitter = $settings->value;
                 $sUrl     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
@@ -174,7 +213,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                     'annee'           => date('Y'),
                     'lien_fb'         => $sFB,
                     'lien_tw'         => $sTwitter,
-                    'montantRemb'     => $ficelle->formatNumber($Total_rembNet)
+                    'montantRemb'     => $ficelle->formatNumber($rembNetTotal)
                 );
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
@@ -184,13 +223,13 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                 $mailer->send($message);
 
                 /** @var \compteur_factures $oInvoiceCounter */
-                $oInvoiceCounter            = $entityManager->getRepository('compteur_factures');
+                $oInvoiceCounter = $entityManager->getRepository('compteur_factures');
                 /** @var \echeanciers $oLenderRepaymentSchedule */
-                $oLenderRepaymentSchedule   = $entityManager->getRepository('echeanciers');
+                $oLenderRepaymentSchedule = $entityManager->getRepository('echeanciers');
                 /** @var \echeanciers_emprunteur $oBorrowerRepaymentSchedule */
                 $oBorrowerRepaymentSchedule = $entityManager->getRepository('echeanciers_emprunteur');
                 /** @var \factures $oInvoice */
-                $oInvoice                   = $entityManager->getRepository('factures');
+                $oInvoice = $entityManager->getRepository('factures');
 
                 $settings->get('Commission remboursement', 'type');
                 $fCommissionRate = $settings->value;
@@ -225,8 +264,8 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                 $oProjectRepayment->update();
 
                 $oRepaymentLog->fin              = date('Y-m-d H:i:s');
-                $oRepaymentLog->montant_remb_net = bcmul($Total_rembNet, 100);
-                $oRepaymentLog->etat             = bcmul($Total_etat, 100);
+                $oRepaymentLog->montant_remb_net = $rembNetTotal;
+                $oRepaymentLog->etat             = $iTotalTaxAmount;
                 $oRepaymentLog->nb_pret_remb     = $nb_pret_remb;
                 $oRepaymentLog->update();
             }

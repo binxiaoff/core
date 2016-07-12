@@ -3,7 +3,6 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Psr\Log\LoggerInterface;
 use Unilend\core\Loader;
-use \Symfony\Bridge\Monolog\Logger;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class ProjectManager
@@ -487,8 +486,11 @@ class ProjectManager
         $oSettings->get('Commission remboursement', 'type');
         $fCommissionRate = $oSettings->value;
 
-        $oSettings->get('TVA', 'type');
-        $fVAT = $oSettings->value;
+        /** @var \tax_type $taxType */
+        $taxType = $this->loadData('tax_type');
+
+        $taxRate = $taxType->getTaxRateByCountry('fr');
+        $fVAT    = bcdiv($taxRate[\tax_type::TYPE_VAT], 100, 2);
 
         $fAmount           = $oProject->amount;
         $iMonthNb          = $oProject->period;

@@ -438,22 +438,22 @@ class echeanciers extends echeanciers_crud
             INNER JOIN loans l ON e.id_loan = l.id_loan
             WHERE l.status = :loan_status
               AND e.' . $date . ' BETWEEN :start_date AND :end_date
-              AND e.status IN (:repayment_status)';
+              AND e.status IN (:repayment_status) ';
 
         if (false === is_null($earlyRepayment)) {
             $bind['status_ra']     = $earlyRepayment;
             $bindType['status_ra'] = \PDO::PARAM_INT;
-            $query .= ' AND e.status_ra = :status_ra';
+            $query .= ' AND e.status_ra = :status_ra ';
         }
         if (false === is_null($loanId)) {
             $bind['id_loan']     = $loanId;
             $bindType['id_loan'] = \PDO::PARAM_INT;
-            $query .= ' AND l.id_loan = :id_loan';
+            $query .= ' AND l.id_loan = :id_loan ';
         }
         if (false === is_null($lenderId)) {
             $bind['id_lender']     = $lenderId;
             $bindType['id_lender'] = \PDO::PARAM_INT;
-            $query .= 'AND e.id_lender = :id_lender';
+            $query .= ' AND e.id_lender = :id_lender ';
         }
 
         return bcdiv($this->bdd->executeQuery($query, $bind, $bindType, new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::MEDIUM_TIME, md5(__METHOD__)))

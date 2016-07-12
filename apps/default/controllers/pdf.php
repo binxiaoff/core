@@ -611,8 +611,11 @@ class pdfController extends bootstrap
         $this->settings->get('Commission remboursement', 'type');
         $fCommissionRate = $this->settings->value;
 
-        $this->settings->get('TVA', 'type');
-        $fVat = $this->settings->value;
+        /** @var \tax_type $taxType */
+        $taxType = $this->loadData('tax_type');
+
+        $taxRate  = $taxType->getTaxRateByCountry('fr');
+        $fVat = bcdiv($taxRate[\tax_type::TYPE_VAT], 100, 2);
 
         $this->settings->get('Part unilend', 'type');
         $fProjectCommisionRate = $this->settings->value;
@@ -759,8 +762,11 @@ class pdfController extends bootstrap
             die;
         }
 
-        $this->settings->get('TVA', 'type');
-        $this->tva = $this->settings->value;
+        /** @var \tax_type $taxType */
+        $taxType = $this->loadData('tax_type');
+
+        $taxRate   = $taxType->getTaxRateByCountry('fr');
+        $this->tva = bcdiv($taxRate[\tax_type::TYPE_VAT], 100, 2);
 
         $aRepaymentDate           = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'id_project_status_history DESC', 0, 1);
         $this->dateRemb           = $aRepaymentDate[0]['added'];
@@ -820,8 +826,11 @@ class pdfController extends bootstrap
             die;
         }
 
-        $this->settings->get('TVA', 'type');
-        $this->tva = $this->settings->value;
+        /** @var \tax_type $taxType */
+        $taxType = $this->loadData('tax_type');
+
+        $taxRate   = $taxType->getTaxRateByCountry('fr');
+        $this->tva = bcdiv($taxRate[\tax_type::TYPE_VAT], 100, 2);
 
         $this->num_facture        = $aInvoices[0]['num_facture'];
         $this->ht                 = $aInvoices[0]['montant_ht'] / 100;
