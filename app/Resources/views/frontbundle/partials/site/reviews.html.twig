@@ -7,7 +7,7 @@
                 {% for review in reviews %}
                     {% if review.quote is not empty and review.image is not empty %}
                         <div class="swiper-slide{% if loop.index == 1 %} active{% endif %}">
-                            <div class="reviewer"><img src="{{ uploadedImage(review.image) }}" alt="{{ review.name }}" width="auto" height="33"/></div>
+                            <div class="reviewer"><img src="{{ uploadedImage(review.image) }}" alt="{{ review.name }}" height="33"/></div>
                             <div class="quote">
                                 <p>&quot;{{ review.quote }}&quot;</p>
                             </div>
@@ -19,7 +19,7 @@
                 {% for review in reviews %}
                     {% if review.quote is not empty and review.image is not empty %}
                         <li{% if loop.index == 1 %} class="active"{% endif %}>
-                            <a href="javascript:;"><img src="{{ uploadedImage(review.image) }}" alt="{{ review.name }}" width="auto" height="33"/></a>
+                            <a href="javascript:;"><img src="{{ uploadedImage(review.image) }}" alt="{{ review.name }}" height="33"/></a>
                         </li>
                     {% endif %}
                 {% endfor %}

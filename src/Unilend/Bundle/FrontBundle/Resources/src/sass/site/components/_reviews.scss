@@ -61,6 +61,8 @@
       svg,
       .svg-icon {
         display: none;
+        height: 33px;
+        width: auto;
       }
 
       &.active {
@@ -101,6 +103,8 @@
         .svg-icon {
           display: block;
           vertical-align: middle;
+          height: 33px;
+          width: auto;
         }
 
         &.active {

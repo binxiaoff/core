@@ -23,8 +23,10 @@ use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
 class MainController extends Controller
 {
-    const CMS_TEMPLATE_BIG_HEADER = 101;
-    const CMS_TEMPLATE_NAV        = 102;
+    const CMS_TEMPLATE_BIG_HEADER = 1;
+    const CMS_TEMPLATE_NAV        = 2;
+    const SLUG_PAGE_BECOME_LENDER = 'devenir-preteur';
+    const SLUG_ELEMENT_NAV_IMAGE  = 'image-header';
 
     /**
      * @Route("/home/{type}", defaults={"type" = "acquisition"}, name="home")
@@ -184,13 +186,10 @@ class MainController extends Controller
 
             /** @var \tree_elements $treeElements */
             $treeElements = $entityManager->getRepository('tree_elements');
-            /** @var \elements $elements */
-            $elements = $entityManager->getRepository('elements');
 
-            foreach ($treeElements->select('id_tree = ' . $tree->id_tree) as $elt) {
-                $elements->get($elt['id_element']);
-                $content[$elements->slug]    = $elt['value'];
-                $complement[$elements->slug] = $elt['complement'];
+            foreach ($treeElements->selectWithDefinition('id_tree = ' . $tree->id_tree, 'ordre ASC') as $element) {
+                $content[$element['slug']]    = $element['value'];
+                $complement[$element['slug']] = $element['complement'];
             }
 
             $finalElements = [
@@ -206,9 +205,9 @@ class MainController extends Controller
 
         switch ($tree->id_template) {
             case self::CMS_TEMPLATE_BIG_HEADER:
-                return $this->renderCmsBigHeader($tree, $finalElements['content'], $finalElements['complement']);
+                return $this->renderCmsBigHeader($tree, $finalElements['content']);
             case self::CMS_TEMPLATE_NAV:
-                return $this->renderCmsNav($tree, $content, $complement);
+                return $this->renderCmsNav($tree, $finalElements['content'], $entityManager);
             default:
                 return new RedirectResponse('/');
         }
@@ -217,29 +216,77 @@ class MainController extends Controller
     /**
      * @param \tree $tree
      * @param array $content
-     * @param array $complement
      * @return Response
      */
-    private function renderCmsBigHeader(\tree $tree, array $content, array $complement)
+    private function renderCmsBigHeader(\tree $tree, array $content)
     {
-        $page                = new \stdClass();
-        $page->title         = $content['titre'];
-        $page->header_image  = $content['image-header'];
-        $page->left_content  = $content['bloc-gauche'];
-        $page->right_content = $content['bloc-droite'];
+        $cms = [
+            'title'         => $content['titre'],
+            'header_image'  => $content['image-header'],
+            'left_content'  => $content['bloc-gauche'],
+            'right_content' => $content['bloc-droite']
+        ];
 
-        return $this->render('pages/template-big-header.html.twig', ['page' => $page]);
+        $page = [
+            'title' => $tree->meta_title
+        ];
+
+        return $this->render('pages/template-big-header.html.twig', ['cms' => $cms, 'page' => $page]);
     }
 
     /**
-     * @param \tree $tree
-     * @param array $content
-     * @param array $complement
+     * @param \tree         $currentPage
+     * @param array         $content
+     * @param EntityManager $entityManager
      * @return Response
      */
-    private function renderCmsNav(\tree $tree, array $content, array $complement)
+    private function renderCmsNav(\tree $currentPage, array $content, EntityManager $entityManager)
     {
+        /** @var \tree $pages */
+        $pages = $entityManager->getRepository('tree');
 
+        $selected   = false;
+        $navigation = [];
+        $nextPage   = [];
+        foreach ($pages->select('status = 1 AND prive = 0 AND id_parent = ' . $currentPage->id_parent, 'ordre ASC') as $page) {
+            // If previous page was current page, it means we are now processing "next" page
+            if ($selected) {
+                /** @var \tree_elements $treeElements */
+                $treeElements = $entityManager->getRepository('tree_elements');
+
+                foreach ($treeElements->selectWithDefinition('id_tree = ' . $page['id_tree'], 'ordre ASC') as $element) {
+                    if ($element['slug'] === self::SLUG_ELEMENT_NAV_IMAGE) {
+                        $nextPage = [
+                            'label'        => $page['menu_title'],
+                            'slug'         => $page['slug'],
+                            'header_image' => $element['value']
+                        ];
+                        break;
+                    }
+                }
+            }
+
+            $selected = $page['id_tree'] == $currentPage->id_tree;
+
+            $navigation[$page['id_tree']] = [
+                'label'       => $page['menu_title'],
+                'slug'        => $page['slug'],
+                'selected'    => $selected,
+                'highlighted' => $page['slug'] === self::SLUG_PAGE_BECOME_LENDER
+            ];
+        }
+
+        $cms = [
+            'header_image' => $content['image-header'],
+            'content'      => $content['contenu']
+        ];
+
+        $page = [
+            'title' => $currentPage->meta_title,
+            'next'  => $nextPage
+        ];
+
+        return $this->render('pages/template-nav.html.twig', ['navigation' => $navigation, 'cms' => $cms, 'page' => $page]);
     }
 
     /**
