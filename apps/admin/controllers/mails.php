@@ -41,16 +41,23 @@ class mailsController extends bootstrap
             $aPost = $this->handlePost();
             /** @var \Unilend\Bundle\MessagingBundle\Service\MailTemplateManager $oMailTemplateManager */
             $oMailTemplateManager = $this->get('unilend.service.mail_template');
-            $oMailTemplateManager->addTemplate($aPost['type'], $aPost['sender_name'],$aPost['sender_email'], $aPost['subject'], $aPost['content']);
+            /** @var \mail_templates $mailTemplate */
+            $mailTemplate = $this->loadData('mail_templates');
 
-            $_SESSION['freeow']['title']   = 'Ajout d\'un mail';
-            $_SESSION['freeow']['message'] = 'Le mail a bien &eacute;t&eacute; ajout&eacute; !';
+            if (0 < count($mailTemplate->select('type = "' . $aPost['type'] . '" and status = ' . \mail_templates::STATUS_ACTIVE))) {
+                $_SESSION['freeow']['title']   = 'Ajout d\'un mail';
+                $_SESSION['freeow']['message'] = 'Ajout impossible : ce mail existe d&eacute;j&agrave;';
+            } else {
+                $oMailTemplateManager->addTemplate($aPost['type'], $aPost['sender_name'], $aPost['sender_email'], $aPost['subject'], $aPost['content']);
+
+                $_SESSION['freeow']['title']   = 'Ajout d\'un mail';
+                $_SESSION['freeow']['message'] = 'Le mail a bien &eacute;t&eacute; ajout&eacute; !';
+            }
 
             header('Location:' . $this->lurl . '/mails');
             die;
         }
     }
-
 
     public function _edit()
     {
