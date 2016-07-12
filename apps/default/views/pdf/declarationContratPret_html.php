@@ -105,7 +105,11 @@
                                         <td><?= strtoupper($this->cpPreteur . ' ' . $this->ficelle->speCharNoAccent($this->villePreteur)) ?></td>
                                     </tr>
                                     <tr>
-                                        <td>&nbsp;</td>
+                                        <?php if (empty($this->lenderCountry)) : ?>
+                                            <td>&nbsp;</td>
+                                        <?php else : ?>
+                                            <td><?= strtoupper($this->lenderCountry) ?></td>
+                                        <?php endif; ?>
                                     </tr>
                                 </table>
                                 <table cellspacing="0" cellpadding="0" class="title">
