@@ -85,7 +85,7 @@
 
         <div class="promo-{{ person.type }} {{ classRow }}">
             <div class="{{ classColumnsImage }}">
-                <div class="promo-image promo-{{ classColor }}" style="background-image: url('{{ person.image }}')">
+                <div class="promo-image promo-{{ classColor }}" style="background-image: url('{{ siteurlmedia('promos/' ~ person.image) }}')">
                     &nbsp;
                     <a href="{{ person.urlCta }}" class="promo-image-cta">
                         <div><span class="link">devenir {{ person.type }}</span></div>

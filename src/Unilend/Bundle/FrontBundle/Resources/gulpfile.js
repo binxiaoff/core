@@ -40,7 +40,7 @@ var urlAdjuster = require('gulp-css-url-adjuster')
 var Dictionary = require('./src/js/app/lib/Dictionary.js')
 
 
-var backgroundUrl = '/bundles/unilendfront/images/'
+var mediaPath = '/bundles/unilendfront/images/'
 
 // Unilend GLOBAL vars
 var Unilend = GLOBAL.Unilend = {
@@ -142,44 +142,10 @@ Unilend.config = deepAssign({
     http_path: '/',
     css: goodPath('./src/css'),
     sass: goodPath('./src/sass'),
-    image: goodPath('src/images'),
+    image: goodPath('./src/images'),
     relative: true,
     debug: false
   }, getJSON(goodPath(configPath + '/compass.json')), getJSON(goodPath(configPath + env + '/compass.json'))),
-
-  // Twig defaults
-  twig: deepAssign({
-    // The base path where Twig files are located. Referenced by Twig's `import` and `extends` methods
-    base: goodPath('./src/twig'),
-
-    // Data used within Twig templates
-    data: {
-      env: env,
-      // The lang to build HTML files as
-      lang: yargs.htmlLang || 'fr',
-
-      // Site options
-      site: {
-        // Site base HTTP URL
-        base: '/',
-
-        // AJAX base HTTP URL
-        ajax: '/',
-
-        // Site assets HTTP URLs: where css, js, and media assets are located
-        // (no trailing slash)
-        assets: {
-          base: '/',
-          css: '/css/',
-          js: '/js/',
-          media: '/media/'
-        }
-      }
-
-      // There are a lot more variables to reference here and within twig.json
-      // See config/twig.example.json for all possible values
-    }
-  }, getJSON(goodPath(configPath + '/twig.json')), getJSON(goodPath(configPath + env + '/twig.json')))
 }, getJSON(goodPath(configPath + '/config.json')), getJSON(goodPath(configPath + env + '/config.json')))
 
 // Load in the additional config file
@@ -190,16 +156,16 @@ if (configFile) {
 // Load the dictionary data and set the default lang
 util.log(util.colors.yellow('@@@ Loading dictionary...'))
 Unilend.dictionaryData = getJSON(Unilend.config.dictionaryFile)
-if (Unilend.dictionaryData) {
-  Unilend.__ = new Dictionary(Unilend.dictionaryData, Unilend.config.twig.data.lang)
-  util.log(util.colors.yellow('@@@ Set dictionary to use lang ') + util.colors.cyan(Unilend.config.twig.data.lang))
-}
+//if (Unilend.dictionaryData) {
+//  Unilend.__ = new Dictionary(Unilend.dictionaryData, Unilend.config.twig.data.lang)
+//  util.log(util.colors.yellow('@@@ Set dictionary to use lang ') + util.colors.cyan(Unilend.config.twig.data.lang))
+//}
 
 // Load Twig extensions (after the Dictionary)
 //Unilend.config.twig.extend = require(goodPath('./src/twig/extensions/twig.extensions.js'))
 
 // Add Twig routes to the data to output in the templates for debugging
-Unilend.config.twig.data.routes = Unilend.config.twig.routes
+//Unilend.config.twig.data.routes = Unilend.config.twig.routes
 
 // Shorthand to reference config
 var config = Unilend.config
@@ -328,7 +294,7 @@ function setupBundles () {
  */
 gulp.task('default', ['build', 'watch'])
 gulp.task('watch', [/*'browsersync',*/ 'build', 'watchfiles'])
-gulp.task('build', ['clean', 'svg', /*'twig',*/ 'cssdependencies', 'scss', 'modernizr', 'jsdependencies', 'jsbundles', 'copy'])
+gulp.task('build', ['clean', 'svg', 'cssdependencies', 'scss', 'modernizr', 'jsdependencies', 'jsbundles', 'copy'])
 
 // Clean build directory
 gulp.task('clean', function () {
@@ -409,7 +375,7 @@ var cssTasks = lazypipe()
 // "CSSREWRITE"
     .pipe(function() {
       return urlAdjuster({
-        replace: ['../media/', backgroundUrl],
+        replace: ['../media/', mediaPath],
       })
     })
 
@@ -422,21 +388,6 @@ var cssTasks = lazypipe()
 
   // Move to dest CSS folder
   .pipe(gulp.dest, getDest('css'))
-
-  // Update browsersync
-  .pipe(function () {
-    return _if(config.watchFiles, browsersync.stream())
-  })
-
-/*
- * General Twig tasks
- */
-var twigTasks = lazypipe()
-  // Process Twig
-  .pipe(twig, config.twig)
-
-  // Move to dest HTML folder
-  .pipe(gulp.dest, getDest())
 
   // Update browsersync
   .pipe(function () {
@@ -514,21 +465,6 @@ gulp.task('modernizr', function () {
 
     // Put this in the src as it gets referenced by jsdependencies
     .pipe(gulp.dest(getSrc('js/app/modernizr')))
-})
-
-// Twig
-// -- Convert .twig layouts to .html files
-gulp.task('twig', function () {
-
-  // Run twig operations
-  return gulp.src([getSrc('twig/pages/**/*.twig'),
-             '!' + getSrc('twig/pages/**/_*.twig')]) // Ignore underscored files
-
-    // Twig
-    .pipe(twig(config.twig).on('error', util.log))
-
-    // Do generic HTML tasks
-    .pipe(htmlTasks())
 })
 
 // SCSS
@@ -636,19 +572,6 @@ gulp.task('svg', function () {
 gulp.task('watchfiles', /*['browsersync'],*/ function () {
   if (config.watchFiles) {
     // Compile src files
-    // -- Only compile the changed twig page files
-    gulp.watch(getSrc('twig/pages/**/*.twig')).on('change', function () {
-      var changed = Array.prototype.slice.call(arguments)
-      var files = []
-      for (var i=0; i < changed.length; i++) {
-        files.push(changed[i].path)
-      }
-      gulp.src(files).pipe(twigTasks())
-    })
-    // -- Compile all twig files when these files change
-    gulp.watch([getSrc('twig/**/*.twig'),
-          '!' + getSrc('twig/pages/*.twig')], ['twig'])
-
     // -- These need to recompile all
     gulp.watch(getSrc('sass/**/*.scss'), ['scss'])
     gulp.watch([getSrc('media/svg/**/*.svg'),

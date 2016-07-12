@@ -19,16 +19,17 @@
     {% block extendMeta %}
     <!-- @todo pages can overwrite this block to inject meta tags per page -->
     {% endblock %}
+
     {% block cssDependencies %}
-    {# Mapbox #}
-    <link href="https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.css" rel="stylesheet" />
-    <link href="https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.css" rel="stylesheet" />
-    <link href="https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.Default.css" rel="stylesheet" />
+        {# Mapbox #}
+        <link href="https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.css" rel="stylesheet" />
+        <link href="https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.css" rel="stylesheet" />
+        <link href="https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.Default.css" rel="stylesheet" />
     {% endblock %}
 
     <!-- CSS Site -->
     {% block cssFiles %}
-        {% stylesheets
+        {#{% stylesheets
             'bundles/unilendfront/fonts/style.css'
             'bundles/unilendfront/css/*.css'
             'bundles/unilendfront/js/vendor/videojs/video-js.min.css'
@@ -37,7 +38,16 @@
             'bundles/unilendfront/js/vendor/fancybox/css/jquery.fancybox.css'
             'bundles/unilendfront/js/vendor/jquery-ui/themes/base/minified/jquery-ui.min.css' %}
         <link rel="stylesheet" href="{{ asset_url }}" />
-        {% endstylesheets %}
+        {% endstylesheets %}#}
+        <link rel="stylesheet" href="/bundles/unilendfront/fonts/style.css" />
+        <link rel="stylesheet" href="/bundles/unilendfront/css/ie.css" />
+        <link rel="stylesheet" href="/bundles/unilendfront/css/print.css" />
+        <link rel="stylesheet" href="/bundles/unilendfront/css/screen.css" />
+        <link rel="stylesheet" href="/bundles/unilendfront/js/vendor/videojs/video-js.min.css" />
+        <link rel="stylesheet" href="/bundles/unilendfront/js/vendor/videojs/video-js.min.css" />
+        <link rel="stylesheet" href="/bundles/unilendfront/js/vendor/swiper/css/swiper.min.css" />
+        <link rel="stylesheet" href="/bundles/unilendfront/js/vendor/fancybox/css/jquery.fancybox.css" />
+        <link rel="stylesheet" href="/bundles/unilendfront/js/vendor/jquery-ui/themes/base/minified/jquery-ui.min.css" />
     {% endblock %}
 
     <!-- JS -->

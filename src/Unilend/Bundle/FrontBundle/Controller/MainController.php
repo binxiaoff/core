@@ -77,7 +77,6 @@ class MainController extends Controller
                 $aRateRange);
         }
 
-
         //TODO replace switch by cookie check
         switch($type) {
             case 'lender' :
