@@ -279,7 +279,7 @@ permalink: project.slug
                         </nav><!-- /.project-single-nav -->
                         <div id="offers" data-watchscroll-nav>
                             {% if project.status == constant('\\projects_status::EN_FUNDING') %}
-                                {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                                {% if is_granted('IS_AUTHENTICATED_FULLY') and lenderOnProject.isInvolved %}
                                 <section id="project-section-myoffers" class="page-section">
                                     <div class="tabs">
                                         <div class="section-tabs-nav">
@@ -445,7 +445,7 @@ permalink: project.slug
                                 </div><!-- /tabs -->
 
                                 <div class="btn-toolbar">
-                                    <a href="{{ path('export_income_statement', {'projectId' : project.id_project }) }}" class="btn-default"><span class="icon fa-excel-u32"></span>
+                                    <a href="{{ path('export_income_statement', {'projectId' : project.id_project }) }}" class="btn-default" target="_blank"><span class="icon fa-excel-u32"></span>
                                         {% trans %} project-detail_project-presentation-accounts-export-csv-button {% endtrans %}</a>
                                 </div><!-- /.btn-toolbar -->
 
@@ -570,7 +570,7 @@ permalink: project.slug
                                 </div><!-- /tabs -->
 
                                 <div class="btn-toolbar">
-                                    <a href="{{ path('export_balance_sheet', {'projectId' : project.id_project }) }}" class="btn-default"><span class="icon fa-excel-u32"></span>
+                                    <a href="{{ path('export_balance_sheet', {'projectId' : project.id_project }) }}" class="btn-default" target="_blank"><span class="icon fa-excel-u32"></span>
                                         {% trans %} project-detail_project-presentation-accounts-export-csv-button {% endtrans %}</a>
                                 </div><!-- /.btn-toolbar -->
 
