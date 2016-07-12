@@ -12,7 +12,6 @@
     <?= $this->callJs() ?>
 </head>
 <body class="loginBody">
-<iframe src="<?= $this->furl ?>/logAdminUser" frameborder="0" width="0" height="0"></iframe>
 <div id="contener">
     <script type="text/javascript">
         $(document).ready(function () {

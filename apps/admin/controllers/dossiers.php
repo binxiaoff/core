@@ -1582,10 +1582,8 @@ class dossiersController extends bootstrap
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
-                    // On parcourt les remb emprunteurs
                     $lEcheancesRembEmprunteur = $this->echeanciers_emprunteur->select('id_project = ' . $this->projects->id_project . ' AND status_emprunteur = 1', 'ordre ASC');
-                    // On ne passe qu'une fois par clic - BT 17882
-                    $deja_passe = false;
+                    $deja_passe               = false;
 
                     if ($lEcheancesRembEmprunteur != false) {
                         foreach ($lEcheancesRembEmprunteur as $RembEmpr) {
@@ -1604,14 +1602,11 @@ class dossiersController extends bootstrap
 
                             $lEcheances = $this->echeanciers->select('id_project = ' . $RembEmpr['id_project'] . ' AND status_emprunteur = 1 AND ordre = ' . $RembEmpr['ordre'] . ' AND status = 0');
 
-                            if ($lEcheances == false) {
-
-                            } else {
+                            if ($lEcheances) {
                                 //BT 17882
                                 if (! $deja_passe) {
                                     $deja_passe = true;
                                     foreach ($lEcheances as $e) {
-
                                         // on fait la somme de tout
                                         $montant += ($e['montant'] / 100);
                                         $capital += ($e['capital'] / 100);
@@ -1739,21 +1734,22 @@ class dossiersController extends bootstrap
 
                                             } else {
                                                 // envoi email remb ok maintenant ou non
-                                                if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 5, 'immediatement') == true) {
+                                                if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, \clients_gestion_type_notif::TYPE_REPAYMENT, 'immediatement') == true) {
                                                     $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
-                                                    $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
+                                                    $this->clients_gestion_mails_notif->immediatement = 1;
                                                     $this->clients_gestion_mails_notif->update();
+
+                                                    $this->loans->get($e['id_loan']);
+                                                    $lastProjectRepayment = (0 == $this->echeanciers->counter('id_project = ' . $this->projects->id_project . ' AND id_loan = ' . $this->loans->id_loan . ' AND status = 0 AND id_lender = ' . $e['id_lender']));
 
                                                     $this->companies->get($this->projects->id_company, 'id_company');
 
-                                                    $nbpret = $this->loans->counter('id_lender = ' . $e['id_lender'] . ' AND id_project = ' . $e['id_project']);
-
-                                                    // euro avec ou sans "s"
                                                     if ($rembNet >= 2) {
                                                         $euros = ' euros';
                                                     } else {
                                                         $euros = ' euro';
                                                     }
+
                                                     $rembNetEmail = $this->ficelle->formatNumber($rembNet) . $euros;
 
                                                     if ($this->transactions->getSolde($this->clients->id_client) >= 2) {
@@ -1773,21 +1769,36 @@ class dossiersController extends bootstrap
                                                         'mensualite_avantfisca' => ($e['montant'] / 100),
                                                         'nom_entreprise'        => $this->companies->name,
                                                         'date_bid_accepte'      => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
-                                                        'nbre_prets'            => $nbpret,
                                                         'solde_p'               => $solde,
                                                         'motif_virement'        => $this->clients->getLenderPattern($this->clients->id_client),
                                                         'lien_fb'               => $lien_fb,
-                                                        'lien_tw'               => $lien_tw
+                                                        'lien_tw'               => $lien_tw,
+                                                        'annee'                 => date('Y'),
+                                                        'date_pret'             => $this->dates->formatDateComplete($this->loans->added)
                                                     );
 
-                                                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                                                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-remboursement', $varMail);
+                                                    if ($lastProjectRepayment) {
+                                                        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                                                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-dernier-remboursement', $varMail);
+                                                    } else {
+                                                        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                                                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-remboursement', $varMail);
+                                                    }
+
                                                     $message->setTo($this->clients->email);
                                                     $mailer = $this->get('mailer');
                                                     $mailer->send($message);
                                                 }
                                             }
                                         }
+                                    }
+                                    // if the repayment exists also in automatic repayment pending list, update its status to "automatic disabled".
+                                    /** @var \projects_remb $autoRepayment */
+                                    $projectRepayment = $this->loadData('projects_remb');
+                                    if($projectRepayment->get($RembEmpr['id_project'], 'ordre = ' . $RembEmpr['ordre'] . ' AND id_project')) {
+                                        $projectRepayment->status = \projects_remb::STATUS_AUTOMATIC_REFUND_DISABLED;
+                                        $projectRepayment->date_remb_preteurs_reel = date('Y-m-d H:i:s');
+                                        $projectRepayment->update();
                                     }
                                 }
                             }
@@ -1901,6 +1912,27 @@ class dossiersController extends bootstrap
                                 $oAccountUnilend = $this->loadData('platform_account_unilend');
                                 $oAccountUnilend->addDueDateCommssion($RembEmpr['id_echeancier_emprunteur']);
                             }
+                        }
+
+                        if (0 == $this->echeanciers->counter('id_project = ' . $this->projects->id_project . ' AND status = 0')) {
+                            $this->settings->get('Adresse controle interne', 'type');
+                            $mailBO = $this->settings->value;
+
+                            $varMail = array(
+                                'surl'           => $this->surl,
+                                'url'            => $this->furl,
+                                'nom_entreprise' => $this->companies->name,
+                                'nom_projet'     => $this->projects->title,
+                                'id_projet'      => $this->projects->id_project,
+                                'annee'          => date('Y')
+                            );
+
+                            /** @var TemplateMessage $messageBO */
+                            $messageBO = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-dernier-remboursement-controle', $varMail);
+                            $messageBO->setTo($mailBO);
+
+                            $mailer = $this->get('mailer');
+                            $mailer->send($messageBO);
                         }
                     }
 

@@ -15,7 +15,7 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
         $this
             ->setName('projects:early_refund_email')
             ->setDescription('Check projects that are in FUNDING status')
-            ->addOption('limit-project', 0, InputOption::VALUE_REQUIRED, 'Number of projects to process');
+            ->addOption('limit-project', 'l', InputOption::VALUE_REQUIRED, 'Number of projects to process');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -68,7 +68,7 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
 
         $limit = $input->getOption('limit-project');
         $limit = $limit ? $limit : 1;
-        
+
         foreach ($earlyRepaymentEmail->select('statut = 0', 'added ASC', '', $limit) as $earlyRefundPendingEmail) {
             $sfpmeiFeedIncoming->get($earlyRefundPendingEmail['id_reception']);
             $project->get($sfpmeiFeedIncoming->id_project);

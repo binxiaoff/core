@@ -183,8 +183,7 @@ abstract class Controller implements ContainerAwareInterface
             }
         }
 
-        //Affiche une fentre de debug/error si l'option est activée dans le config.php
-        if ($this->getParameter('kernel.debug')) {
+        if ($this->autoFireDebug && $this->getParameter('kernel.debug')) {
             $this->fireDebug();
         }
     }
