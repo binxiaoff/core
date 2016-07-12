@@ -45,6 +45,7 @@ class ProjectsController extends Controller
             /** @var BaseUser $user */
             $user = $this->getUser();
             $aTemplateVariables['projects'] = $projectDisplayManager->getProjectsForDisplay(
+                null,
                 'p.date_retrait_full DESC',
                 $rateRange,
                 (int)$start,
@@ -52,6 +53,7 @@ class ProjectsController extends Controller
                 $user->getClientId());
         } else {
             $aTemplateVariables['projects'] = $projectDisplayManager->getProjectsForDisplay(
+                null,
                 'p.date_retrait_full DESC',
                 $rateRange,
                 (int)$start,
