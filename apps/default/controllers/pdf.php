@@ -691,14 +691,6 @@ class pdfController extends bootstrap
                 $this->villePreteur   = $this->preteur_adresse->ville;
             }
 
-            if ($this->preteur_adresse->id_pays > 1) {
-                /** @var \pays_v2 $country */
-                $country = $this->loadData('pays_v2');
-                $country->get($this->preteur_adresse->id_pays, 'id_pays');
-
-                $this->lenderCountry = $country->fr;
-            }
-
             $this->setDisplay('declarationContratPret_html');
         }
     }
