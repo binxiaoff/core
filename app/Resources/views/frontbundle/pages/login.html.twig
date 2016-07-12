@@ -76,7 +76,7 @@ permalink: route('user/access')
                                                 <a href="{{ route('user/forgotpassword') }}" class="link">{% trans %} connect-subscribe-page_login-box-password-forgotten-link {% endtrans %}</a>
                                             </p>
                                         </div>
-                                        {% if true == captchaInformation.displayWaitingPeriod %}
+                                        {% if captchaInformation is defined and true == captchaInformation.displayWaitingPeriod %}
                                             <div id="form-connect-notifications">
                                                 <span class="ui-has-textcount ui-textcount ui-textcount-counting" data-login data-textcount data-end-count="0" data-total-time="4000">4</span>
                                                 {% trans with { '%waitingPeriod%' : captchaInformation.waitingPeriod } %}                                                                   connect-subscribe-page_waiting-period-message
