@@ -212,8 +212,8 @@ EOF
         $translations                          = $oEntityManager->getRepository('textes');
         $aTranslations['email-nouveau-projet'] = $translations->selectFront('email-nouveau-projet', 'fr');
 
-        /** @var \autobid_periods $oAutobidPeriods */
-        $oAutobidPeriods = $oEntityManager->getRepository('autobid_periods');
+        /** @var \project_period $oAutobidPeriods */
+        $oAutobidPeriods = $oEntityManager->getRepository('project_period');
         $aPeriod         = $oAutobidPeriods->getPeriod($project->period);
 
         /** @var \autobid $oAutobid */

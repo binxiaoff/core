@@ -1444,7 +1444,7 @@ class preteursController extends bootstrap
         $oAutoBidSettingsManager   = $this->get('unilend.service.autobid_settings_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $oClientManager */
         $oClientManager            = $this->get('unilend.service.client_manager');
-        $oAutoBidPeriod            = $this->loadData('autobid_periods');
+        $oAutoBidPeriod            = $this->loadData('project_period');
 
         $this->bAutoBidOn          = $oAutoBidSettingsManager->isOn($this->lenders_accounts);
         $this->aSettingsDates      = $oAutoBidSettingsManager->getLastDateOnOff($this->clients->id_client);
@@ -1457,13 +1457,13 @@ class preteursController extends bootstrap
         $this->aAutoBidSettings = array();
         $aAutoBidSettings       = $oAutoBidSettingsManager->getSettings($this->lenders_accounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE), 'ap.min ASC, evaluation DESC');
         foreach ($aAutoBidSettings as $aSetting) {
-            $aPeriod = $oAutoBidPeriod->getDurations($aSetting['id_autobid_period']);
+            $aPeriod = $oAutoBidPeriod->getDurations($aSetting['id_period']);
             if ($aPeriod) {
                 $aSetting['AverageRateUnilend']                           = $this->projects->getAvgRate($aSetting['evaluation'], $aPeriod['min'], $aPeriod['max']);
                 $aSetting['period_min']                                   = $aPeriod['min'];
                 $aSetting['period_max']                                   = $aPeriod['max'];
                 $aSetting['note']                                         = constant('\projects::RISK_' . $aSetting['evaluation']);
-                $this->aAutoBidSettings[$aSetting['id_autobid_period']][] = $aSetting;
+                $this->aAutoBidSettings[$aSetting['id_period']][] = $aSetting;
             }
         }
     }

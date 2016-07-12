@@ -88,14 +88,11 @@ class autobid extends autobid_crud
 
     public function sumAmount($sEvaluation, $iDuration)
     {
-        //Loaded for class constants
-        Loader::loadData('autobid_periods');
-
         $sQuery  = 'SELECT SUM(`amount`)
                    FROM `autobid` a
-                   INNER JOIN autobid_periods ap ON ap.id_period = a.id_autobid_period
+                   INNER JOIN project_period ap ON ap.id_period = a.id_period
                    WHERE ' . $iDuration . ' BETWEEN ap.min AND ap.max
-                   AND ap.status = ' . \autobid_periods::STATUS_ACTIVE . '
+                   AND ap.status = ' . \project_period::STATUS_ACTIVE . '
                    AND a.status = ' . self::STATUS_ACTIVE . '
                    AND a.evaluation = "' . $sEvaluation . '"';
         $rResult = $this->bdd->query($sQuery);
@@ -106,14 +103,14 @@ class autobid extends autobid_crud
     {
         $sWhereLender     = null === $iLenderId ? '' : ' AND a.id_lender = ' . $iLenderId;
         $sWhereEvaluation = null === $sEvaluation ? '' : ' AND a.evaluation = "' . $sEvaluation . '"';
-        $sWherePeriod     = null === $iAutoBidPeriodId ? '' : ' AND a.id_autobid_period = ' . $iAutoBidPeriodId;
+        $sWherePeriod     = null === $iAutoBidPeriodId ? '' : ' AND a.id_period = ' . $iAutoBidPeriodId;
         $sOrderBy         = null === $sOrder ? '' : ' ORDER BY ' . $sOrder;
 
         $sQuery = 'SELECT a.*, la.id_client_owner AS id_client
                    FROM autobid a
-                   INNER JOIN autobid_periods ap ON ap.id_period = a.id_autobid_period
+                   INNER JOIN project_period ap ON ap.id_period = a.id_period
                    INNER JOIN lenders_accounts la ON la.id_lender_account = a.id_lender
-                   WHERE ap.status = ' . \autobid_periods::STATUS_ACTIVE . '
+                   WHERE ap.status = ' . \project_period::STATUS_ACTIVE . '
                    AND a.status in (' . implode($aStatus, ',') . ')' . $sWhereLender . $sWhereEvaluation . $sWherePeriod . $sOrderBy;
 
         if (is_numeric($iLimit)) {

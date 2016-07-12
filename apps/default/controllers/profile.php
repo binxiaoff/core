@@ -1742,7 +1742,7 @@ class profileController extends bootstrap
 
         $oClientStatus  = $this->loadData('clients_status');
         $oSettings      = $this->loadData('settings');
-        $oAutoBidPeriod = $this->loadData('autobid_periods');
+        $oAutoBidPeriod = $this->loadData('project_period');
         $oBid           = $this->loadData('bids');
         $oProject       = $this->loadData('projects');
 
@@ -1761,13 +1761,13 @@ class profileController extends bootstrap
         $this->aAutoBidSettings = array();
         $aAutoBidSettings       = $oAutoBidSettingsManager->getSettings($this->oLendersAccounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE), 'ap.min ASC, evaluation DESC');
         foreach ($aAutoBidSettings as $aSetting) {
-            $aPeriod = $oAutoBidPeriod->getDurations($aSetting['id_autobid_period']);
+            $aPeriod = $oAutoBidPeriod->getDurations($aSetting['id_period']);
             if ($aPeriod) {
                 $aSetting['AverageRateUnilend']                           = $this->projects->getAvgRate($aSetting['evaluation'], $aPeriod['min'], $aPeriod['max']);
                 $aSetting['period_min']                                   = $aPeriod['min'];
                 $aSetting['period_max']                                   = $aPeriod['max'];
                 $aSetting['note']                                         = constant('\projects::RISK_' . $aSetting['evaluation']);
-                $this->aAutoBidSettings[$aSetting['id_autobid_period']][] = $aSetting;
+                $this->aAutoBidSettings[$aSetting['id_period']][] = $aSetting;
             }
         }
 
@@ -1820,13 +1820,13 @@ class profileController extends bootstrap
 
         $oLendersAccounts = $this->loadData('lenders_accounts');
         $oSettings        = $this->loadData('settings');
-        $oAutoBidPeriod   = $this->loadData('autobid_periods');
+        $oAutoBidPeriod   = $this->loadData('project_period');
         $oProject         = $this->loadData('projects');
 
         $oSettings->get('pret min', 'type');
         $this->iMinimumBidAmount = (int)$oSettings->value;
 
-        foreach ($oAutoBidPeriod->select('status = ' . \autobid_periods::STATUS_ACTIVE) as $aPeriod) {
+        foreach ($oAutoBidPeriod->select('status = ' . \project_period::STATUS_ACTIVE) as $aPeriod) {
             $aAutoBidPeriods[] = $aPeriod['id_period'];
         }
         $aRiskValues           = $oProject->getAvailableRisks();

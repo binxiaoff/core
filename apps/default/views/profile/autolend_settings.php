@@ -123,7 +123,7 @@
                                             <label class="param-advanced-label"><?= $this->ficelle->formatNumber($aSetting['rate_min'], 1) ?>%</label>
                                             <input type="hidden" id="<?= $aSetting['id_autobid'] ?>-param-advanced-value" class="param-advanced-value" value="<?= $aSetting['rate_min'] ?>">
                                             <input type="hidden" name="param-advanced-unilend-rate" value="<?= $aSetting['AverageRateUnilend'] ? $this->ficelle->formatNumber($aSetting['AverageRateUnilend'], 1) : ''; ?>">
-                                            <input type="hidden" id="<?= $aSetting['id_autobid'] ?>-param-advanced-period" value="<?= $aSetting['id_autobid_period'] ?>">
+                                            <input type="hidden" id="<?= $aSetting['id_autobid'] ?>-param-advanced-period" value="<?= $aSetting['id_period'] ?>">
                                             <input type="hidden" id="<?= $aSetting['id_autobid'] ?>-param-advanced-evaluation" value="<?= $aSetting['evaluation'] ?>">
                                             <input type="hidden" value="<?= $aSetting['note'] ?>" name="param-advanced-note">
                                             <input type="hidden" value="<?= $aSetting['period_min'] ?>" name="param-advanced-period-min">

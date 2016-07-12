@@ -26,7 +26,7 @@
 //
 // **************************************************************************************************** //
 
-class autobid_periods extends autobid_periods_crud
+class project_period extends project_period_crud
 {
     const STATUS_INACTIVE = 0;
     const STATUS_ACTIVE   = 1;
@@ -39,7 +39,7 @@ class autobid_periods extends autobid_periods_crud
 
     public function __construct($bdd, $params = '')
     {
-        parent::autobid_periods($bdd, $params);
+        parent::project_period($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -52,7 +52,7 @@ class autobid_periods extends autobid_periods_crud
             $order = ' ORDER BY ' . $order;
         }
 
-        $sql = 'SELECT * FROM `autobid_periods`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+        $sql = 'SELECT * FROM `project_period`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
@@ -68,7 +68,7 @@ class autobid_periods extends autobid_periods_crud
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `autobid_periods` ' . $where;
+        $sql = 'SELECT count(*) FROM `project_period` ' . $where;
 
         $result = $this->bdd->query($sql);
         return (int)($this->bdd->result($result, 0, 0));
@@ -76,14 +76,14 @@ class autobid_periods extends autobid_periods_crud
 
     public function exist($id, $field = 'id_period')
     {
-        $sql    = 'SELECT * FROM `autobid_periods` WHERE ' . $field . '="' . $id . '"';
+        $sql    = 'SELECT * FROM `project_period` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
     public function getDurations($periodId)
     {
-        $sQuery = 'SELECT min, max FROM autobid_periods WHERE id_period = :periodId';
+        $sQuery = 'SELECT min, max FROM project_period WHERE id_period = :periodId';
         try {
             $aDuration = $this->bdd->executeQuery($sQuery, array('periodId' => $periodId), array('periodId' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
                 ->fetch(PDO::FETCH_ASSOC);
@@ -96,7 +96,7 @@ class autobid_periods extends autobid_periods_crud
 
     public function getPeriod($iDuration, $iStatus = self::STATUS_ACTIVE)
     {
-        $rQuery = $this->bdd->query('SELECT * FROM `autobid_periods` WHERE ' . $iDuration . ' BETWEEN `min` AND `max` AND `status` = ' . $iStatus);
+        $rQuery = $this->bdd->query('SELECT * FROM `project_period` WHERE ' . $iDuration . ' BETWEEN `min` AND `max` AND `status` = ' . $iStatus);
         return $this->bdd->fetch_assoc($rQuery);
     }
 }

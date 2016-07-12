@@ -134,7 +134,7 @@ class AutoBidSettingsManager
             return false;
         }
 
-        $aAutoBids = $oAutoBid->select('evaluation = "' . $sEvaluation . '" AND id_autobid_period = ' . $iAutoBidPeriodId . ' AND status != ' . \autobid::STATUS_ARCHIVED . ' AND id_lender = ' . $iLenderId);
+        $aAutoBids = $oAutoBid->select('evaluation = "' . $sEvaluation . '" AND id_period = ' . $iAutoBidPeriodId . ' AND status != ' . \autobid::STATUS_ARCHIVED . ' AND id_lender = ' . $iLenderId);
 
         if (empty($aAutoBids)) {
             $this->createSetting($iLenderId, $sEvaluation, $iAutoBidPeriodId, $fRate, $iAmount);
@@ -183,7 +183,7 @@ class AutoBidSettingsManager
         $oAutoBid->id_lender         = $iLenderId;
         $oAutoBid->status            = \autobid::STATUS_ACTIVE;
         $oAutoBid->evaluation        = $sEvaluation;
-        $oAutoBid->id_autobid_period = $iAutoBidPeriodId;
+        $oAutoBid->id_period = $iAutoBidPeriodId;
         $oAutoBid->rate_min          = $fRate;
         $oAutoBid->amount            = $iAmount;
         $oAutoBid->create();
@@ -247,11 +247,11 @@ class AutoBidSettingsManager
      */
     public function saveNoviceSetting($iLenderId, $fRate, $iAmount)
     {
-        /** @var \autobid_periods $oAutoBidPeriods */
-        $oAutoBidPeriods = $this->oEntityManager->getRepository('autobid_periods');
+        /** @var \project_period $oAutoBidPeriods */
+        $oAutoBidPeriods = $this->oEntityManager->getRepository('project_period');
         /** @var \projects $oProject */
         $oProject        = $this->oEntityManager->getRepository('projects');
-        $aAutoBidPeriods = $oAutoBidPeriods->select('status = ' . \autobid_periods::STATUS_ACTIVE);
+        $aAutoBidPeriods = $oAutoBidPeriods->select('status = ' . \project_period::STATUS_ACTIVE);
         $aRiskValues     = $oProject->getAvailableRisks();
 
         foreach ($aAutoBidPeriods as $aPeriod) {
@@ -284,7 +284,7 @@ class AutoBidSettingsManager
         $oAutoBid = $this->oEntityManager->getRepository('autobid');
         $oAutoBid->get(
             $iLenderId,
-            'status != ' . \autobid::STATUS_ARCHIVED . ' AND evaluation = "' . $sEvaluation . '" AND id_autobid_period = '
+            'status != ' . \autobid::STATUS_ARCHIVED . ' AND evaluation = "' . $sEvaluation . '" AND id_period = '
             . $iAutoBidPeriodId . ' AND id_lender'
         );
 
@@ -390,16 +390,16 @@ class AutoBidSettingsManager
     }
 
     /**
-     * Get autobid_period object by a duration
+     * Get project_period object by a duration
      *
      * @param $iDuration
      *
-     * @return bool|\autobid_periods
+     * @return bool|\project_period
      */
     public function getPeriod($iDuration)
     {
-        /** @var \autobid_periods $oAutoBidPeriods */
-        $oAutoBidPeriods = $this->oEntityManager->getRepository('autobid_periods');
+        /** @var \project_period $oAutoBidPeriods */
+        $oAutoBidPeriods = $this->oEntityManager->getRepository('project_period');
         return $oAutoBidPeriods->getPeriod($iDuration);
     }
 }
