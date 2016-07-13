@@ -62,13 +62,15 @@ class MailQueueManager
         $oMailQueue->id_mail_template     = $oMessage->getTemplateId();
         $oMailQueue->serialized_variables = json_encode($oMessage->getVariables());
         $oMailQueue->attachments          = json_encode($attachments);
-        $recipients                       = TemplateMessage::recipientsString($oMessage->getTo());
+        $recipients                       = TemplateMessage::emailAddressToString($oMessage->getTo());
+        $replyTo                          = is_array($oMessage->getReplyTo()) ? TemplateMessage::emailAddressToString($oMessage->getReplyTo()) : null;
 
         if (1 === count($oMessage->getTo()) && $client->get($recipients, 'email')) {
             $oMailQueue->id_client = $client->id_client;
         }
 
         $oMailQueue->recipient  = $recipients;
+        $oMailQueue->reply_to   = $replyTo;
         $oMailQueue->status     = \mail_queue::STATUS_PENDING;
         $oMailQueue->to_send_at = $oMessage->getToSendAt();
         $oMailQueue->create();
@@ -93,7 +95,10 @@ class MailQueueManager
         }
         /** @var TemplateMessage $oMessage */
         $oMessage = $this->oTemplateMessage->newMessage($oMailTemplate->type, json_decode($oEmail->serialized_variables, true), false);
-        $oMessage->setTo(TemplateMessage::recipientsArray($oEmail->recipient));
+        $oMessage->setTo(TemplateMessage::emailAddressToArray($oEmail->recipient));
+        if (false === empty($oEmail->reply_to)) {
+            $oMessage->setReplyTo(TemplateMessage::emailAddressToArray($oEmail->reply_to));
+        }
 
         foreach (json_decode($oEmail->attachments, true) as $attachment) {
             $swiftAttachment = \Swift_Attachment::newInstance(file_get_contents($this->sharedTemporaryPath . $attachment['tmp_file']));
@@ -135,13 +140,13 @@ class MailQueueManager
     }
 
     /**
-     * @param int|null $iClientId
-     * @param string|null $sFrom
-     * @param string|null $sTo
-     * @param string|null $sSubject
+     * @param int|null       $iClientId
+     * @param string|null    $sFrom
+     * @param string|null    $sTo
+     * @param string|null    $sSubject
      * @param \DateTime|null $oDateStart
      * @param \DateTime|null $oDateEnd
-     * @param int|null $iLimit
+     * @param int|null       $iLimit
      *
      * @return array
      */
@@ -160,7 +165,7 @@ class MailQueueManager
     public function existsInMailQueue($iTemplateID)
     {
         /** @var \mail_queue $oMailQueue */
-        $oMailQueue   = $this->oEntityManager->getRepository('mail_queue');
+        $oMailQueue = $this->oEntityManager->getRepository('mail_queue');
         return $oMailQueue->exist($iTemplateID, 'id_mail_template');
     }
 }

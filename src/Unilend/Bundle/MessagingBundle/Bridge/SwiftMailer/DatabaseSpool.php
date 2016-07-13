@@ -104,7 +104,7 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
                     $email->status             = \mail_queue::STATUS_ERROR;
                 }
             } elseif ($response) {
-                $sent = true;
+                $sent                      = true;
                 $email->serialized_reponse = 'email sent by the transport other than Mailjet.';
             }
 

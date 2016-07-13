@@ -123,13 +123,13 @@ class syntheseController extends bootstrap
         } else {
             $this->lProjetsFav = $this->projects->select('id_project IN (' . $lesFav . ')');
             foreach ($this->lProjetsFav as $iKey => $aProject) {
-                $this->lProjetsFav[$iKey]['avgrate'] = $this->ficelle->formatNumber($this->projects->getAverageInterestRate($aProject['id_project']));
+                $this->lProjetsFav[$iKey]['avgrate'] = $this->projects->getAverageInterestRate($aProject['id_project']);
             }
         }
 
         $this->lProjetEncours = $this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING, null, 'p.date_retrait ASC', 0, 30);
         foreach ($this->lProjetEncours as $iKey => $aProject) {
-            $this->lProjetEncours[$iKey]['avgrate'] = $this->ficelle->formatNumber($this->projects->getAverageInterestRate($aProject['id_project'], $aProject['status']), 1);
+            $this->lProjetEncours[$iKey]['avgrate'] = $this->projects->getAverageInterestRate($aProject['id_project'], $aProject['status']);
         }
         
         $this->nbLoan                  = $this->loans->getProjectsCount($this->lenders_accounts->id_lender_account);

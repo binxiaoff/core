@@ -15,7 +15,7 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
         $this
             ->setName('projects:early_refund_email')
             ->setDescription('Check projects that are in FUNDING status')
-            ->addOption('limit-project', 0, InputOption::VALUE_REQUIRED, 'Number of projects to process');
+            ->addOption('limit-project', 'l', InputOption::VALUE_REQUIRED, 'Number of projects to process');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)

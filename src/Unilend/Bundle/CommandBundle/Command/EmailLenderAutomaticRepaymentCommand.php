@@ -51,31 +51,39 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
         $ficelle = Loader::loadLib('ficelle');
 
         $lEcheances = $echeanciers->select('status = 1 AND status_email_remb = 0 AND status_emprunteur = 1', '', 0, 300);
+        $settings->get('Facebook', 'type');
+        $sFB      = $settings->value;
 
+        $settings->get('Twitter', 'type');
+        $sTwitter = $settings->value;
+        
         foreach ($lEcheances as $e) {
             if (
                 $transactions->get($e['id_echeancier'], 'id_echeancier')
                 && $lenders->get($e['id_lender'], 'id_lender_account')
                 && $clients->get($lenders->id_client_owner, 'id_client')
             ) {
+                $echeanciers->get($e['id_echeancier'], 'id_echeancier');
+
                 if (1 == $clients->status) {
-                    $dernierStatut     = $projects_status_history->select('id_project = ' . $e['id_project'], 'id_project_status_history DESC', 0, 1);
+                    $projects->get($e['id_project'], 'id_project');
+                    $companies->get($projects->id_company, 'id_company');
+
+                    $loans->get($e['id_loan']);
+                    $lastRepaymentLender = (0 == $echeanciers->counter('id_project = ' . $projects->id_project . ' AND id_loan = ' . $loans->id_loan . ' AND status = 0 AND id_lender = ' . $e['id_lender']));
+
+                    $dernierStatut     = $projects_status_history->select('id_project = ' . $projects->id_project, 'id_project_status_history DESC', 0, 1);
                     $dateDernierStatut = $dernierStatut[0]['added'];
                     $timeAdd           = strtotime($dateDernierStatut);
                     $day               = date('d', $timeAdd);
                     $month             = $dates->tableauMois['fr'][date('n', $timeAdd)];
                     $year              = date('Y', $timeAdd);
                     $rembNet           = $e['rembNet'];
-
-                    $projects->get($e['id_project'], 'id_project');
-                    $companies->get($projects->id_company, 'id_company');
-
-                    $nbpret       = $loans->counter('id_lender = ' . $e['id_lender'] . ' AND id_project = ' . $e['id_project']);
-                    $euros        = ($rembNet >= 2) ? ' euros' : ' euro';
-                    $rembNetEmail = $ficelle->formatNumber($rembNet) . $euros;
-                    $getsolde     = $transactions->getSolde($clients->id_client);
-                    $euros        = ($getsolde > 1) ? ' euros' : ' euro';
-                    $solde        = $ficelle->formatNumber($getsolde) . $euros;
+                    $euros             = ($rembNet >= 2) ? ' euros' : ' euro';
+                    $rembNetEmail      = $ficelle->formatNumber($rembNet) . $euros;
+                    $getsolde          = $transactions->getSolde($clients->id_client);
+                    $euros             = ($getsolde >= 2) ? ' euros' : ' euro';
+                    $solde             = $ficelle->formatNumber($getsolde) . $euros;
 
                     $notifications->type       = \notifications::TYPE_REPAYMENT;
                     $notifications->id_lender  = $e['id_lender'];
@@ -95,12 +103,6 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                         $clients_gestion_mails_notif->immediatement = 1;
                         $clients_gestion_mails_notif->update();
 
-                        $settings->get('Facebook', 'type');
-                        $sFB      = $settings->value;
-                        $settings->get('Twitter', 'type');
-                        $sTwitter = $settings->value;
-                        $sUrl     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
-
                         $varMail = array(
                             'surl'                  => $sUrl,
                             'url'                   => $sUrl,
@@ -109,21 +111,27 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                             'mensualite_avantfisca' => bcdiv($e['montant'], 100),
                             'nom_entreprise'        => $companies->name,
                             'date_bid_accepte'      => $day . ' ' . $month . ' ' . $year,
-                            'nbre_prets'            => $nbpret,
                             'solde_p'               => $solde,
                             'motif_virement'        => $clients->getLenderPattern($clients->id_client),
                             'lien_fb'               => $sFB,
-                            'lien_tw'               => $sTwitter
+                            'lien_tw'               => $sTwitter,
+                            'annee'                 => date('Y'),
+                            'date_pret'             => $dates->formatDateComplete($loans->added)
                         );
 
-                        /** @var TemplateMessage $message */
-                        $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('preteur-remboursement', $varMail);
+                        if ($lastRepaymentLender) {
+                            /** @var TemplateMessage $message */
+                            $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('preteur-dernier-remboursement', $varMail);
+                        } else {
+                            /** @var TemplateMessage $message */
+                            $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('preteur-remboursement', $varMail);
+                        }
+
                         $message->setTo($clients->email);
                         $mailer = $this->getContainer()->get('mailer');
                         $mailer->send($message);
                     }
                 }
-                $echeanciers->get($e['id_echeancier'], 'id_echeancier');
                 $echeanciers->status_email_remb = 1;
                 $echeanciers->update();
             }

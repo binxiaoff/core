@@ -394,7 +394,7 @@
             </div>
         <?php else: ?>
             <div class="page-break">
-                <h3 class="pink"><?= $this->bloc_pouvoir['echeancier-remboursements'] ?></h3>
+                <h3 class="pink">ECHEANCIER DES REMBOURSEMENTS</h3>
                 <div class="dates-table">
                     <table width="100%" cellspacing="0" cellpadding="0" class="table-2">
                         <tr>

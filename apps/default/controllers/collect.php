@@ -11,7 +11,7 @@ class collectController extends bootstrap
 
     public function _default()
     {
-        $this->hideDecoration();
+        header('Location: ' . $this->lurl);
         die;
     }
 
@@ -310,7 +310,7 @@ class collectController extends bootstrap
 
                 $this->clients->telephone        = $telephone;
                 $this->clients->email            = $email;
-                $this->clients->password         = $password;
+                $this->clients->password         = password_hash($password, PASSWORD_DEFAULT);
                 $this->clients->secrete_question = $question;
                 $this->clients->secrete_reponse  = md5($reponse);
                 $this->clients->type             = $forme_preteur;

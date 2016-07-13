@@ -97,6 +97,8 @@ class depot_de_dossierController extends bootstrap
             $this->clients->email = $_SESSION['forms']['depot-de-dossier']['email'] . '-' . time();
         }
 
+        $this->clients->status = \clients::STATUS_ONLINE;
+
         $this->clients->create();
 
         if (false === is_numeric($this->clients->id_client) || $this->clients->id_client < 1) {

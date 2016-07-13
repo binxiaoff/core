@@ -254,6 +254,7 @@ class ProjectManager
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
 
+        $this->addProjectStatus(\users::USER_ID_CRON, \projects_status::BID_TERMINATED, $oProject);
         $this->reBidAutoBidDeeply($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE, true);
         $this->addProjectStatus(\users::USER_ID_CRON, \projects_status::FUNDE, $oProject);
 
@@ -456,6 +457,8 @@ class ProjectManager
                         'interets'                 => bcmul($e['interest'], 100),
                         'date_echeance'            => $dateEcheance,
                         'date_echeance_emprunteur' => $dateEcheance_emprunteur,
+                        'added'                    => date('Y-m-d H:i:s'),
+                        'updated'                  => date('Y-m-d H:i:s')
                     );
                 }
                 $oRepaymentSchedule->multiInsert($aRepaymentSchedule);

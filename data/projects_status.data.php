@@ -45,6 +45,7 @@ class projects_status extends projects_status_crud
     const A_FUNDER                = 40;
     const AUTO_BID_PLACED         = 45;
     const EN_FUNDING              = 50;
+    const BID_TERMINATED          = 55;
     const FUNDE                   = 60;
     const FUNDING_KO              = 70;
     const PRET_REFUSE             = 75;

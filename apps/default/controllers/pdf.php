@@ -644,7 +644,7 @@ class pdfController extends bootstrap
         $this->setDisplay($sTemplate);
     }
 
-    public function _declarationContratPret_html($iIdLoan, $sPath)
+    public function _declarationContratPret_html($iIdLoan)
     {
         $this->oLoans          = $this->loadData('loans');
         $this->companiesEmp    = $this->loadData('companies');
@@ -686,7 +686,6 @@ class pdfController extends bootstrap
             }
 
             $this->setDisplay('declarationContratPret_html');
-            $this->WritePdf($sPath . 'Unilend_declarationContratPret_' . $iIdLoan, 'dec_pret');
         }
     }
 

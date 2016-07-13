@@ -56,15 +56,45 @@ function favori(id_project, id, id_client, page) {
     });
 }
 
-function transfert(id_client) {
+function load_transac(year,id_client)
+{
+    var val = {
+        year: year,
+        id_client: id_client
+    }
+    $.post(add_url + '/ajax/load_transac', val).done(function(data) {
+
+        if(data != 'nok')
+        {
+            $(".transac").html(data);
+        }
+    });
+}
+
+function load_finances(year,id_lender)
+{
+
+    var val = {
+        year: year,
+        id_lender: id_lender
+    }
+    $.post(add_url + '/ajax/load_finances', val).done(function(data) {
+
+        if(data != 'nok')
+        {
+            $(".finances").html(data);
+        }
+    });
+}
+
+function transfert() {
     if ($("#mot-de-passe").val() != '' && $("#montant").val() != '') {
         var val = {
             mdp: $("#mot-de-passe").val(),
-            montant: $("#montant").val(),
-            id_client: id_client
+            montant: $("#montant").val()
         };
-        $.post(add_url + '/ajax/transfert', val).done(function (data) {
 
+        $.post(add_url + '/ajax/transfert', val).done(function (data) {
             if (data != 'nok') {
                 if (data == 'noMdp') {
                     $("#mot-de-passe").addClass('LV_invalid_field');
@@ -84,8 +114,11 @@ function transfert(id_client) {
                     $("#montant").removeClass('LV_invalid_field');
                 }
 
-                if (data == 'noMontant3') $(".error_montant_offre").show();
-                else $(".error_montant_offre").hide();
+                if (data == 'noMontant3') {
+                    $(".error_montant_offre").show();
+                } else {
+                    $(".error_montant_offre").hide();
+                }
 
                 if (data == 'noBic' || data == 'noIban') {
                     $(".noBicIban").slideDown();
@@ -94,11 +127,7 @@ function transfert(id_client) {
                 if (data == 'ok') {
                     $(".reponse").slideDown();
 
-                    var val = {
-                        id_client: id_client
-                    };
-                    $.post(add_url + '/ajax/solde', val).done(function (data) {
-
+                    $.post(add_url + '/ajax/solde').done(function (data) {
                         if (data != 'nok') {
                             $("#solde").html(data);
                         }

@@ -54,7 +54,7 @@ class BidManager
         $this->oLogger = $oLogger;
     }
 
-    public function bid(\bids $oBid, $bSendNotification)
+    public function bid(\bids $oBid, $bSendNotification = true)
     {
         /** @var \settings $oSettings */
         $oSettings = $this->oEntityManager->getRepository('settings');
@@ -66,6 +66,10 @@ class BidManager
         $oWalletsLine = $this->oEntityManager->getRepository('wallets_lines');
         /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
         $oWelcomeOfferDetails = $this->oEntityManager->getRepository('offres_bienvenues_details');
+        /** @var \projects_status $projectStatus */
+        $projectStatus = $this->oEntityManager->getRepository('projects_status');
+        /** @var \projects $project */
+        $project = $this->oEntityManager->getRepository('projects');
 
         $this->oEntityManager->getRepository('transactions_types'); //load for constant use
 
@@ -83,6 +87,22 @@ class BidManager
         }
 
         if ($fRate > \bids::BID_RATE_MAX || $fRate < \bids::BID_RATE_MIN) {
+            return false;
+        }
+
+        $projectStatus->getLastStatut($iProjectId);
+        if (false === in_array($projectStatus->status, array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING))) {
+            return false;
+        }
+
+        $project->get($iProjectId);
+        $oCurrentDate = new \DateTime();
+        $oEndDate  = new \DateTime($project->date_retrait_full);
+        if ($project->date_fin != '0000-00-00 00:00:00') {
+            $oEndDate = new \DateTime($project->date_fin);
+        }
+        
+        if ($oCurrentDate > $oEndDate) {
             return false;
         }
 
@@ -108,6 +128,7 @@ class BidManager
         $oTransaction->etat             = \transactions::STATUS_VALID;
         $oTransaction->id_project       = $iProjectId;
         $oTransaction->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
+        $oTransaction->ip_client        = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
         $oTransaction->create();
 
         $oWalletsLine->id_lender                = $oBid->id_lender_account;

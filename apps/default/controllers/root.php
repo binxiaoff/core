@@ -380,9 +380,8 @@ class rootController extends bootstrap
                             $this->erreur_reponse_secrete = true;
                         }
 
-                        if ($form_ok == true) {
-                            $mdp                     = $_POST['pass'];
-                            $this->clients->password = md5($mdp);
+                        if ($form_ok) {
+                            $this->clients->password = password_hash($_POST['pass'], PASSWORD_DEFAULT);
                             $this->clients->update();
 
                             header('Location:' . $this->lurl . '/' . $this->params[0] . '/' . $this->params[1] . '/valide');
@@ -607,23 +606,6 @@ class rootController extends bootstrap
         $this->autoFireView = false;
 
         $this->clients->handleLogout();
-    }
-
-    public function _logAdminUser()
-    {
-        $this->autoFireHeader = false;
-        $this->autoFireDebug  = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireView   = false;
-
-        $this->users = $this->loadData('users');
-
-        if (false === empty($this->params[0]) && false === empty($this->params[1])) {
-            $this->users->handleLoginFront($this->params[0], $this->params[1]);
-        } else {
-            $this->users->handleLogoutFront();
-        }
     }
 
     public function _search()
@@ -1365,6 +1347,7 @@ class rootController extends bootstrap
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-demande-de-contact', $variablesInternalMail, false);
             $message->setTo($destinataire);
+            $message->setReplyTo(array($this->demande_contact->email => $this->demande_contact->prenom . ' ' . $this->demande_contact->nom));
             $mailer = $this->get('mailer');
             $mailer->send($message);
 

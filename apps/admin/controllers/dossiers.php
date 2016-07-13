@@ -1781,8 +1781,13 @@ class dossiersController extends bootstrap
                                         'lien_tw'               => $lien_tw
                                     );
 
-                                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-remboursement', $varMail);
+                                    if ($lastProjectRepayment) {
+                                        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-dernier-remboursement', $varMail);
+                                    } else {
+                                        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-remboursement', $varMail);
+                                    }
                                     $message->setTo($this->clients->email);
                                     $mailer = $this->get('mailer');
                                     $mailer->send($message);
@@ -1792,6 +1797,14 @@ class dossiersController extends bootstrap
                             $oLogger->error('id_project=' . $e['id_project'] . ', id_echeancier=' . $e['id_echeancier'] . ' - An error occurred when calculating the refund details - Exception message: ' . $exception->getMessage() . ' - Exception code: ' . $exception->getCode(),
                                 array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $e['id_project']));
                         }
+                    }
+                    // if the repayment exists also in automatic repayment pending list, update its status to "automatic disabled".
+                    /** @var \projects_remb $autoRepayment */
+                    $projectRepayment = $this->loadData('projects_remb');
+                    if($projectRepayment->get($RembEmpr['id_project'], 'ordre = ' . $RembEmpr['ordre'] . ' AND id_project')) {
+                        $projectRepayment->status = \projects_remb::STATUS_AUTOMATIC_REFUND_DISABLED;
+                        $projectRepayment->date_remb_preteurs_reel = date('Y-m-d H:i:s');
+                        $projectRepayment->update();
                     }
 
 
@@ -1893,6 +1906,27 @@ class dossiersController extends bootstrap
                         /** @var platform_account_unilend $oAccountUnilend */
                         $oAccountUnilend = $this->loadData('platform_account_unilend');
                         $oAccountUnilend->addDueDateCommssion($RembEmpr['id_echeancier_emprunteur']);
+                    }
+
+                    if (0 == $this->echeanciers->counter('id_project = ' . $this->projects->id_project . ' AND status = 0')) {
+                        $this->settings->get('Adresse controle interne', 'type');
+                        $mailBO = $this->settings->value;
+
+                        $varMail = array(
+                            'surl'           => $this->surl,
+                            'url'            => $this->furl,
+                            'nom_entreprise' => $this->companies->name,
+                            'nom_projet'     => $this->projects->title,
+                            'id_projet'      => $this->projects->id_project,
+                            'annee'          => date('Y')
+                        );
+
+                        /** @var TemplateMessage $messageBO */
+                        $messageBO = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-dernier-remboursement-controle', $varMail);
+                        $messageBO->setTo($mailBO);
+
+                        $mailer = $this->get('mailer');
+                        $mailer->send($messageBO);
                     }
 
                     $lesRembEmprun = $this->bank_unilend->select('type = 1 AND status = 0 AND id_project = ' . $this->projects->id_project, 'id_unilend ASC', 0, 1); // on ajoute la restriction pour BT 17882
