@@ -7,6 +7,7 @@ use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -390,4 +391,31 @@ class MainController extends Controller
 
         return $response;
     }
+
+    /**
+     * @Route("/accept-cookies", name="accept_cookies")
+     * @Method("POST")
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function acceptCookiesAction(Request $request)
+    {
+        if ($request->isXMLHttpRequest()) {
+            /** @var \accept_cookies $acceptCookies */
+            $acceptCookies = $this->get('unilend.service.entity_manager')->getRepository('accept_cookies');
+
+            $acceptCookies->ip        = $request->getClientIp();
+            $acceptCookies->id_client = $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') ? $this->getUser()->getClientId() : 0;
+            $acceptCookies->create();
+
+            $response = new JsonResponse(true);
+            $response->headers->setCookie(new Cookie("acceptCookies", $acceptCookies->id_accept_cookies, time() + (365 * 24 * 3600), '/'));
+
+            return $response;
+        }
+
+        return new Response('not an ajax request');
+    }
+
 }
