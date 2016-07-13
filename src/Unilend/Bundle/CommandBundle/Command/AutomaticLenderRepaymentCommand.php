@@ -2,7 +2,6 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Psr\Log\LoggerInterface;
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -283,7 +282,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                 $projectRepayment->update();
 
                 $repaymentLog->fin              = date('Y-m-d H:i:s');
-                $repaymentLog->montant_remb_net = $rembNetTotal
+                $repaymentLog->montant_remb_net = $rembNetTotal;
                 $repaymentLog->etat             = $iTotalTaxAmount;
                 $repaymentLog->nb_pret_remb     = $nb_pret_remb;
                 $repaymentLog->update();
