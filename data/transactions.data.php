@@ -43,7 +43,7 @@ class transactions extends transactions_crud
     public function __construct($bdd, $params = '')
     {
         parent::transactions($bdd, $params);
-        \Unilend\core\Loader::loadData('transaction_types');
+        \Unilend\core\Loader::loadData('transactions_types');
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
