@@ -72,7 +72,7 @@ class projects extends projects_crud
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -91,7 +91,7 @@ class projects extends projects_crud
     public function exist($id, $field = 'id_project')
     {
         $result = $this->bdd->query('SELECT * FROM projects WHERE ' . $field . ' = "' . $id . '"');
-        return ($this->bdd->fetch_array($result) > 0);
+        return ($this->bdd->fetch_assoc($result) > 0);
     }
 
     public function searchDossiers($date1 = '', $date2 = '', $montant = '', $duree = '', $status = '', $analyste = '', $siren = '', $id = '', $raison_sociale = '', $iAdvisorId = '', $iSalesPersonId = '', $start = '', $nb = '')
@@ -171,7 +171,7 @@ class projects extends projects_crud
         $result    = array();
         $result[0] = $iCountProjects;
 
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -367,7 +367,7 @@ class projects extends projects_crud
         if (0 < $this->bdd->num_rows($resultat)) {
             $lesfav   = '';
             $i        = 0;
-            while ($f = $this->bdd->fetch_array($resultat)) {
+            while ($f = $this->bdd->fetch_assoc($resultat)) {
                 $lesfav .= ($i > 0 ? ',' : '') . $f['id_project'];
                 $i++;
             }
@@ -376,7 +376,7 @@ class projects extends projects_crud
 
             $resultat = $this->bdd->query($sql);
 
-            while ($record = $this->bdd->fetch_array($resultat)) {
+            while ($record = $this->bdd->fetch_assoc($resultat)) {
                 $result[] = $record;
             }
         }
@@ -471,7 +471,7 @@ class projects extends projects_crud
 
         $result      = $this->bdd->query($sql);
         $attachments = array();
-        while ($record = $this->bdd->fetch_array($result)) {
+        while ($record = $this->bdd->fetch_assoc($result)) {
             $attachments[$record["id_type"]] = $record;
         }
         return $attachments;
@@ -805,7 +805,7 @@ class projects extends projects_crud
 
         $aProjects = array();
         $rResult   = $this->bdd->query($sQuery);
-        while ($aRecord = $this->bdd->fetch_array($rResult)) {
+        while ($aRecord = $this->bdd->fetch_assoc($rResult)) {
             $aProjects[] = $aRecord;
         }
         return $aProjects;

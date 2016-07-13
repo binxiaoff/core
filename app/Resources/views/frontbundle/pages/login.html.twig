@@ -22,7 +22,7 @@ permalink: route('user/access')
 
                         <div class="col-connect col-lg-4 col-md-4">
                             <h2 class="h3 text-align-left">{% trans %} connect-subscribe-page_login-box-title {% endtrans %}</h2>
-                            <form action="{{ path('login-check') }}" method="post" class="form-connect login-form" data-formvalidation data-formvalidation-notificationselem="#form-connect-notifications">
+                            <form action="{{ path('login-check') }}" method="post" class="form-connect login-form" data-formvalidation>
                                 <div class="panel panel-connect">
                                     {% if error is not empty %}
                                         <div id="form-connect-notifications">
@@ -77,8 +77,7 @@ permalink: route('user/access')
                                         {% if captchaInformation is defined and true == captchaInformation.displayWaitingPeriod %}
                                             {% if false == captchaInformation.displayCaptcha %}
                                                 <div id="form-connect-notifications">
-                                                    <span class="ui-has-textcount ui-textcount ui-textcount-counting" data-login data-textcount data-end-count="0" data-total-time="4000">4</span>
-                                                    {% trans with { '%waitingPeriod%' : captchaInformation.waitingPeriod } %}                                                                   connect-subscribe-page_waiting-period-message
+                                                    {% trans with { '%waitingPeriod%' : captchaInformation.waitingPeriod } %}                                             connect-subscribe-page_waiting-period-message
                                                     {% endtrans %}
                                                 </div>
                                             {% endif %}

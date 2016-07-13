@@ -1,0 +1,163 @@
+<aside class="project-single-info-wrap">
+    <div class="project-single-info-position">
+        <div class="project-single-info">
+            <div class="project-single-cost">
+                <div class="project-single-cost-total">
+                    {% trans with { '%amount%' : project.amount|__num(0)|nbsp, '%startTag%' : '<span class="sr-only">', '%endTag%' : '</span>' }%} project-detail_amount-sentence {% endtrans %}
+                </div>
+                <div class="project-single-cost-progress"
+                    title="{% trans with {'%percentFunded%' : project.percentFunded } %}
+                    project-detail_project-funding-progress-bar-tooltip {% endtrans %}" data-toggle="tooltip">
+                    <div class="project-single-cost-progress-funded" style="width: {{ project.percentFunded }}%">
+                        <span class="sr-only">{% trans with { '%percentFunded%' : project.percentFunded } %} project-detail_percentage-funded-text {% endtrans %}</span>
+                    </div>
+                </div><!-- /.project-single-cost-progress -->
+                {% if project.status == constant('\\projects_status::EN_FUNDING') %}
+                    <div class="project-single-cost-amount">
+                        <div class="project-single-cost-amount-funded">{% trans with { '%costFunded%': project.costFunded|__num(0) }%} project-detail_already-bid-amount {% endtrans %}</div>
+                        {% if  project.costRemaining == 0 %}
+                            <div class="project-single-cost-amount-remaining">
+                                {% trans with { '%costRemaining%' : project.costRemaining|__num(0)|nbsp } %} project-detail_remaining-amount {% endtrans %}
+                            </div>
+                        {% endif %}
+                    </div><!-- /.project-single-cost-amount -->
+                {% endif %}
+                </div><!-- /.project-single-cost -->
+
+                <div class="row">
+                    <div class="project-single-interest">
+                        <span class="icon fa-linechart-u32"></span>
+                        <span class="c-p1"><strong>{{ project.averageRate|__num(1) }}</strong>%</span>
+                        <div class="label">{% trans %} project-detail_average-rate-label {% endtrans %}</div>
+                    </div><!-- /.project-single-interest -->
+
+                    <div class="project-single-duration">
+                        <span class="icon fa-calendar-alt-u32"></span>
+                        <span class="c-p1"><strong>{{ project.period }}</strong> mois</span>
+                        <div class="label">{% trans %} project-detail_period-label {% endtrans %}</div>
+                    </div><!-- /.project-single-duration -->
+                </div>
+
+            {% if project.status in [constant('\\projects_status::REMBOURSE'), constant('\\projects_status::REMBOURSEMENT_ANTICIPE') ] %}
+                <p>{% trans with { '%dateLastRepayment%' : project.dateLastRepayment } %} project-detail_project-repaid-message {% endtrans %}</p>
+                <p>{% transchoice userInformation.myLoanOnProject with
+                    { '%amountUserLoan%' : userInformation.myLoanOnProject,  '%avgRateUserLoan%' : userInformation.avgRateUserLoan } %}
+                    project-detail_project-repaid-user-message
+                    {% endtranschoice %}
+                </p>
+            {% elseif project.status == constant('\\projects_status::FUNDE') or project.status >= constant('\\projects_status::REMBOURSEMENT') %}
+                <p>{% trans with {
+                    '%NumberLender%' : project.fundingStatistics.NumberLender,
+                    '%AvgRate%' : project.fundingStatistics.AvgRate,
+                    '%fundingDays%' : project.fundingStatistics.fundingTime.days,
+                    '%fundingMinutes%' : project.fundingStatistics.fundingTime.i,
+                    '%fundingHours%' : project.fundingStatistics.fundingTime.h }
+                    %} project-detail_project-funded-message-with-statistics {% endtrans %}</p>
+                {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                    {#{% if userInformation.myLoanOnProject is not defined or userInformation.myLoanOnProject is null %}{% set userInformation.myLoanOnProject = 0 %}{% endif %}#}
+                    {#<p>{% trans with {'%amountUserLoan%' : userInformation.myLoanOnProject }%} project-detail_project-funded-mesage-lender-participation {% endtrans %}</p>#}
+                {%  endif %}
+            {%  elseif project.status == constant('\\projects_status::FUNDING_KO') %}
+                <p>{% trans with { '%percentageFunded%' : project.percentFunded }%} project-detail_side-bar-funding-ko-message {% endtrans %}</p>
+            {%  elseif project.status == constant('\\projects_status::PRET_REFUSE') %}
+                <p class="h4">{% trans %} project-detail_side-bar-loan-rejected-title {% endtrans %}</p>
+                <p>{% trans %} project-detail_side-bar-loan-rejected-message {% endtrans %}</p>
+            {% elseif project.projectPending is defined and project.projectPending == true %}
+                <p>{% trans %} project-detail_side-bar-project-closing-pending {% endtrans %}</p>
+            {% elseif is_granted('IS_AUTHENTICATED_FULLY') %}
+                {% if app.user.getClientStatus() < constant('\\clients_status::VALIDATED') %}
+                    <p>{% trans %} project-detail_side-bar-completeness-message {% endtrans %}</p>
+                {% else %}
+                    <div>
+                        {% if bidMessage is defined %}
+                            {{ bidMessage }}
+                        {% endif %}
+                    </div>
+                    <form action="{{ path('bid_on_project', {'projectId' : project.id_project}) }}" method="post" class="project-single-form project-single-form-invest">
+                        <div class="form-field">
+                            <label>
+                                <span class="sr-only">{% trans %} project-detail_side-bar-bids-amount-label {% endtrans %}</span>
+                                <input type="number" min="{{ setting('pret min') }}" step="any" name="invest[amount]" value=""
+                                       placeholder="{% trans %} project-detail_side-bar-bids-amount-placeholder {% endtrans %}" class="input-field"/>
+                            </label>
+                        </div><!-- /.form-field -->
+                        <div class="form-field">
+                            <label>
+                                <span class="sr-only">{% trans %} project-detail_side-bar-bids-rate-label {% endtrans %}</span>
+                                <input type="number" min="{{ constant('\\bids::BID_RATE_MIN') }}" max="{{ constant('\\bids::BID_RATE_MAX') }}" step="0.1" name="invest[interest]" value=""
+                                       placeholder="{% trans %} project-detail_side-bar-bids-rate-placeholder {% endtrans %}" class="input-field"/>
+                            </label>
+                        </div><!-- /.form-field -->
+                        <div class="btn-toolbar">
+                            <button class="btn-primary btn-size-full">{% trans %} project-detail_side-bar-bids-submit-button {% endtrans %}</button>
+                        </div><!-- /.btn-toolbar -->
+                        <div class="field-help">
+                            <p>{% trans with { '%rateMin%' : constant('\\bids::BID_RATE_MIN'), '%rateMax%' : constant('\\bids::BID_RATE_MAX') }%} project-detail_side-bar-bids-help-text {% endtrans %}</p>
+                        </div>
+                    </form><!-- /.project-single-form-invest -->
+                {% endif %}
+            {% else %}
+                <form action="{{ path('login-check') }}" method="post" class="project-single-form project-single-form-access" data-formvalidation>
+                    <div class="form-notice">
+                        <p>{% trans %} project-detail_side-bar-login {% endtrans %}</p>
+                    </div><!-- /.form-notice -->
+                    <div class="form-field">
+                        <label for="form-access-email"><span class="sr-only">{% trans %} project-detail_side-bar-login-username {% endtrans %}</span></label>
+                        <div class="input-group set-left">
+                            <div class="btn-group">
+                                <span class="icon fa-envelope-o"></span>
+                            </div>
+                            <input id="form-access-email" type="email" data-login-name="_username" name="access[email]"
+                                   placeholder="{% trans %} project-detail_side-bar-login-username {% endtrans %}" value="" class="input-field"
+                                   data-formvalidation-input data-formvalidation-required="true"/>
+                        </div><!-- /.input-group -->
+                        <ul class="ui-formvalidation-messages"></ul>
+                    </div><!-- /.form-field -->
+                    <div class="form-field">
+                        <label for="form-access-password"><span class="sr-only">{% trans %} project-detail_side-bar-login-password {% endtrans %}</span></label>
+                        <div class="input-group set-left">
+                            <div class="btn-group">
+                                <span class="icon fa-lock-u32"></span>
+                            </div>
+                            <input id="form-access-password" type="password" data-login-name="_password" name="access[password]"
+                                   placeholder="{% trans %} project-detail_side-bar-login-password {% endtrans %}"
+                                   value="" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                        </div><!-- /.input-group -->
+                        <ul class="ui-formvalidation-messages"></ul>
+                        <div class="field-help">
+                            <p>
+                                <a href="{{ route('user/forgotpassword') }}" class="link">{% trans %} project-detail_side-bar-login-password-forgotten {% endtrans %}</a>
+                            </p>
+                        </div>
+                    </div><!-- /.form-field -->
+                    <div class="btn-toolbar">
+                        <button type="submit" class="btn-primary btn-size-full">{% trans %} project-detail_side-bar-login-submit-button {% endtrans %}</button>
+                        <p>
+                            <a href="{{ path('lender_subscription') }}"><span class="icon fa-angle-right"></span>{% trans %} project-detail_side-bar-login-subscription-link {% endtrans %}</a>
+                        </p>
+                    </div><!-- /.btn-toolbar -->
+                </form><!-- /.project-single-form-access -->
+            {% endif %}
+            <ul class="list-sharing">
+                <li>
+                    <a class="btn-facebook" title="{% trans %} project-detail_share-on-facebook-label {% endtrans %}"
+                       href="http://www.facebook.com/sharer.php?u={{ absolute_url(project.slug) }}">
+                        <span class="sr-only">{% trans %} project-detail_share-on-facebook-label {% endtrans %}</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="btn-twitter" title="{% trans %} project-detail_share-on-twitter-label {% endtrans %}"
+                       href="http://twitter.com/share?url={{ absolute_url(project.slug) }}%3Fid%3D12345&text={{ project.title|url_encode }}">
+                        <span class="sr-only">{% trans %} project-detail_share-on-twitter-label {% endtrans %}</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="btn-email" title="{% trans %} project-detail_share-my-email-label {% endtrans %}"
+                       href="mailto:?subject={{ project.title|url_encode }}&body={{ absolute_url(project.slug) }}">
+                        <span class="sr-only">{% trans %} project-detail_share-my-email-label {% endtrans %}</span>
+                    </a>
+                </li>
+            </ul>
+        </div><!-- /.project-single-info -->
+    </div><!-- /.project-single-info-position -->
+</aside><!-- /.project-single-info-wrap -->

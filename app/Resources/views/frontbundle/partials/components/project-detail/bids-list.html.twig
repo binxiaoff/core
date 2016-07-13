@@ -1,0 +1,165 @@
+<section id="project-single-alloffers" class="page-section">
+    <div class="tabs">
+        <div class="section-tabs-nav">
+            <header>
+                <h3 id="project-alloffers" class="h3">{% trans %} project-detail_all-bids-table-title {% endtrans %}</h3>
+            </header>
+
+            <ul class="nav nav-tabs">
+                <li id="project-alloffers-inprogress" role="presentation" class="active">
+                    <a href="#alloffers-list" role="tab" data-toggle="tab">{% trans %} project-detail_all-bids-table-complete-list-button {% endtrans %}</a>
+                </li>
+                <li id="project-alloffers-table" role="presentation">
+                    <a href="#alloffers-table" role="tab" data-toggle="tab">{% trans %} project-detail_all-bids-table-table-view-button {% endtrans %}</a></li>
+                <li id="project-alloffers-graph" role="presentation">
+                    <a href="#alloffers-graph" role="tab" data-toggle="tab">{% trans %} project-detail_all-bids-table-charts-view-button {% endtrans %}</a>
+                </li>
+            </ul>
+        </div>
+        <div class="section-tabs-content tab-content">
+            <div id="alloffers-list" role="tabpanel" class="tab-pane active" aria-labelledby="project-alloffers-all project-alloffers">
+                <div class="table-scroll">
+                    <table class="table table-alloffers" data-sortable>
+                        <thead class="table-sortable-columns">
+                            <tr>
+                                <th class="table-sortable-column table-alloffers-item-id" data-sortable-by="id">
+                                    <span class="label"><span class="sr-only">{% trans %} project-detail_all-bids-table-sort-by {% endtrans %}</span>{% trans %} project-detail_all-bids-table-sort-id {% endtrans %}</span>
+                                </th>
+                                <th class="table-sortable-column table-alloffers-item-interest" data-sortable-by="interest">
+                                    <span class="label"><span class="sr-only">{% trans %} project-detail_all-bids-table-sort-by {% endtrans %}</span>{% trans %} project-detail_all-bids-table-sort-rate {% endtrans %}</span>
+                                </th>
+                                <th class="table-sortable-column table-alloffers-item-amount" data-sortable-by="amount">
+                                    <span class="label"><span class="sr-only">{% trans %} project-detail_all-bids-table-sort-by {% endtrans %}</span>{% trans %} project-detail_all-bids-table-sort-amount {% endtrans %}</span>
+                                </th>
+                                <th class="table-sortable-column table-alloffers-item-status" data-sortable-by="status">
+                                    <span class="label"><span class="sr-only">{% trans %} project-detail_all-bids-table-sort-by {% endtrans %}</span>{% trans %} project-detail_all-bids-table-sort-statut {% endtrans %}</span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody data-sortable-content>
+                            {% for offer in allOffers.data %}
+                                {% if offer[3] > 0 and loop.index <= 10 %}
+                                    {# Mark if the current user is involved with the offer #}
+                                    {% set classCurrentUserInvolved = '' %}
+                                    {% if lenderOnProject.offers.offerIds is defined and offer[0] in lenderOnProject.offers.offerIds %}
+                                        {% set classCurrentUserInvolved = 'ui-current-user-involved' %}
+                                    {% endif %}
+
+                                    <tr data-sortable-id="{{ offer[0] }}" data-sortable-interest="{{ offer[1] }}" data-sortable-amount="{{ offer[2] }}" data-sortable-status="{{ offer[3] }}" class="{{ classCurrentUserInvolved }}">
+                                        <td class="table-alloffers-item-id">{{ offer[0] }}</td>
+                                        <td class="table-alloffers-item-interest">{{ offer[1]|__num(2) }}%</td>
+                                        <td class="table-alloffers-item-amount">{{ offer[2]|__num(2) }}€</td>
+                                        <td class="table-alloffers-item-status">
+                                            {# Pending #}
+                                            {% if offer[3] == constant('\\bids::STATUS_BID_PENDING') %}
+                                                <span class="icon fa-clock-u32"></span>
+                                                <span class="sr-only"> In progress</span>
+                                            {# Accepted #}
+                                            {% elseif offer[3] == constant('\\bids::STATUS_BID_ACCEPTED') %}
+                                                <span class="icon fa-check-u32"></span>
+                                                <span class="sr-only"> Accepted</span></td>
+                                            {# Rejected #}
+                                            {% elseif offer[3] == constant('\\bids::STATUS_BID_REJECTED') %}
+                                                <span class="icon fa-ban-u32"></span>
+                                                <span class="sr-only"> Rejected</span>
+                                            {# Accepted - Autolend #}
+                                            {% elseif offer[3] == constant('\\bids::STATUS_BID_ACCEPTED') %}
+                                                <span class="icon fa-autolend-u32"></span>
+                                                <span class="sr-only"> Autolend offer accepted</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td class="table-empty">
+                                            <p>No offers have been made yet</p>
+                                            <a href="#todo" class="btn-primary">Prétêr</a>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                        {% if allOffers.data|length > 10 %}
+                            <tfoot>
+                                <tr>
+                                    <td colspan="4" class="table-more">
+                                        <a href="#todo">Afficher plus
+                                            <span class="icon fa-angle-right"></span>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        {% endif %}
+                    </table><!-- /.table-alloffers -->
+                </div><!-- /.table-scroll -->
+            </div><!-- /.tab-pane -->
+
+            {% set alloffersOverview = placeholderData.alloffersOverview %}
+
+            <div id="alloffers-table" role="tabpanel" class="tab-pane" aria-labelledby="project-alloffers-table project-alloffers">
+                <div class="table-scroll">
+                    <table class="table table-alloffersoverview" data-sortable>
+                        <thead class="table-sortable-columns">
+                        <tr>
+                            <th class="table-sortable-column table-alloffersoverview-item-interest" data-sortable-by="id">
+                                <span class="label"><span class="sr-only">Sort by column </span>Taux</span>
+                            </th>
+                            <th class="table-sortable-column table-alloffersoverview-item-amount" data-sortable-by="amount">
+                                <span class="label"><span class="sr-only">Sort by column </span>Montant total</span>
+                            </th>
+                            <th class="table-sortable-column table-alloffersoverview-item-offers" data-sortable-by="offers">
+                                <span class="label"><span class="sr-only">Sort by column </span>Nb offres</span>
+                            </th>
+                            <th class="table-sortable-column table-alloffersoverview-item-accepted" data-sortable-by="accepted">
+                                <span class="label"><span class="sr-only">Sort by column </span>Offres en cours</span>
+                            </th>
+                        </tr>
+                        </thead>
+
+                        <tbody data-sortable-content>
+                        {% for i, item in alloffersOverview.data %}
+                            {# Example data entry #}
+                            {# [1, '4&ndash;4,5%', 850.15, 24, 0, 100] #}
+
+                            {% set classRow = '' %}
+                            {% set titleRow = '' %}
+                            {% if i >= 5 and i <= 8 %}
+                                {% set classRow = 'table-alloffersoverview-item-recommended' %}
+                            {% elseif i == 9 %}
+                                {% set classRow = 'table-alloffersoverview-item-best ui-has-tooltip' %}
+                                {% set titleRow = 'Meilleur taux de prêt accepté par Unilend' %}
+                            {% elseif i == 10 %}
+                                {% set classRow = 'table-alloffersoverview-item-max' %}
+                            {% endif %}
+
+                            {% set classCurrentUserInvolved = '' %}
+                            {% if lenderOnProject.offers.offerIds is defined and item[0] in lenderOnProject.offers.offerIds %}
+                                {% set classCurrentUserInvolved = 'ui-current-user-involved' %}
+                            {% endif %}
+                            <tr data-sortable-id="{{ item[0] }}" data-sortable-amount="{{ item[2] }}" data-sortable-offers="{{ item[3] }}" data-sortable-accepted="{{ item[5] }}" class="{{ classCurrentUserInvolved }} {{ classRow }}" title="{{ titleRow }}">
+                                <td class="table-alloffersoverview-item-interest">{{ item[1] }}</td>
+                                <td class="table-alloffersoverview-item-amount">{{ item[2]|nbsp }}</td>
+                                {# former {{ item[2]|__price(2)|nbsp }}#}
+                                <td class="table-alloffersoverview-item-offers">{{ item[3] }}</td>
+                                <td class="table-alloffersoverview-item-accepted">
+                                    {{ item[5] }}%
+                                    {# My offers #}
+                                    {% if item[4] > 0 %}
+                                        <span class="table-alloffersoverview-item-myoffers">
+                                        <span class="icon fa-check-u32"></span> {{ item[4] }} offres
+                                      </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table><!-- /.table-alloffersoverview -->
+                </div><!-- /.table-scroll -->
+            </div><!-- /.tab-pane -->
+
+            <div id="alloffers-graph" role="tabpanel" class="tab-pane">
+                <div class="chart" data-chartview='{{ charts.projectOffers|json_encode|escape('html_attr') }}'></div>
+            </div>
+        </div><!-- /.section-tabs-content -->
+    </div><!-- /tabs -->
+</section><!-- /.page-section -->

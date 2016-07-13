@@ -172,7 +172,7 @@ class loans extends loans_crud
     // retourne la moyenne des prets validés d'un preteur sur un projet
     public function getAvgLoansPreteur($id_project, $id_lender)
     {
-        $sql = 'SELECT IFNULL(SUM(rate * amount) / SUM(amount), 0) AS avg FROM loans WHERE id_project = ' . $id_project . ' AND id_lender = ' . $id_lender . ' AND status = 0';
+        $sql = 'SELECT IFNULL(ROUND(SUM(rate * amount) / SUM(amount), 2), 0) AS avg FROM loans WHERE id_project = ' . $id_project . ' AND id_lender = ' . $id_lender . ' AND status = 0';
 
         $result = $this->bdd->query($sql);
         return $this->bdd->result($result);
@@ -181,7 +181,7 @@ class loans extends loans_crud
     // retourne la moyenne des prets validés d'un preteur
     public function getAvgPrets($id_lender)
     {
-        $sql = 'SELECT IFNULL(SUM(rate * amount) / SUM(amount), 0) AS avg FROM loans WHERE id_lender = ' . $id_lender . ' AND status = 0';
+        $sql = 'SELECT IFNULL(ROUND(SUM(rate * amount) / SUM(amount), 2), 0) AS avg FROM loans WHERE id_lender = ' . $id_lender . ' AND status = 0';
 
         $result = $this->bdd->query($sql);
         return $this->bdd->result($result);
