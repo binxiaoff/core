@@ -28,16 +28,6 @@ class StaticPagesController extends Controller
     }
 
     /**
-     * @Route("/le-guide-de-lemprunteur", name="borrower_guide")
-     *
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function borrowerGuideShowAction()
-    {
-
-    }
-
-    /**
      * @Route("/temoignages", name="borrower_testimonials")
      *
      * @return \Symfony\Component\HttpFoundation\Response
@@ -57,15 +47,6 @@ class StaticPagesController extends Controller
 
     }
 
-    /**
-     * @Route("/fiscalite", name="lender_fiscality")
-     *
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function lenderFiscalityShowAction()
-    {
-
-    }
 
     /**
      * @Route("/qui-sommes-nous", name="about_us")
@@ -75,36 +56,6 @@ class StaticPagesController extends Controller
     public function aboutUsShowAction()
     {
         return $this->render('pages/static_pages/about_us.html.twig', array());
-    }
-
-    /**
-     * @Route("/comment-ca-marche", name="how_it_works")
-     *
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function howItWorksShowAction()
-    {
-
-    }
-
-    /**
-     * @Route("/charte-de-deontologie", name="ethics")
-     *
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function ethicsShowAction()
-    {
-
-    }
-
-    /**
-     * @Route("/la-presse-en-parle", name="press")
-     *
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function pressShowAction()
-    {
-
     }
 
     /**
