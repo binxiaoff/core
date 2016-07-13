@@ -94,4 +94,48 @@ class transactions_types extends transactions_types_crud
         $result = $this->bdd->query($sql);
         return ($this->bdd->fetch_array($result) > 0);
     }
+
+    /**
+     * @return array
+     */
+    public static function getPhysicalTransactionTypes()
+    {
+        return [
+            self::TYPE_LENDER_SUBSCRIPTION,
+            self::TYPE_LENDER_CREDIT_CARD_CREDIT,
+            self::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+            self::TYPE_BORROWER_REPAYMENT,
+            self::TYPE_DIRECT_DEBIT,
+            self::TYPE_LENDER_WITHDRAWAL,
+            self::TYPE_BORROWER_BANK_TRANSFER_CREDIT,
+            self::TYPE_UNILEND_BANK_TRANSFER,
+            self::TYPE_FISCAL_BANK_TRANSFER,
+            self::TYPE_LENDER_REGULATION,
+            self::TYPE_BORROWER_REPAYMENT_REJECTION,
+            self::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER,
+            self::TYPE_BORROWER_ANTICIPATED_REPAYMENT,
+            self::TYPE_REGULATION_BANK_TRANSFER,
+            self::TYPE_RECOVERY_BANK_TRANSFER
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function getVirtualTransactionTypes()
+    {
+        return [
+            self::TYPE_LENDER_LOAN,
+            self::TYPE_UNILEND_REPAYMENT,
+            self::TYPE_REGULATION_COMMISSION,
+            self::TYPE_WELCOME_OFFER,
+            self::TYPE_WELCOME_OFFER_CANCELLATION,
+            self::TYPE_SPONSORSHIP_SPONSORED_REWARD,
+            self::TYPE_SPONSORSHIP_SPONSOR_REWARD,
+            self::TYPE_LENDER_ANTICIPATED_REPAYMENT,
+            self::TYPE_LENDER_RECOVERY_REPAYMENT,
+            self::TYPE_LENDER_REPAYMENT_CAPITAL,
+            self::TYPE_LENDER_REPAYMENT_INTERESTS
+        ];
+    }
 }

@@ -40,40 +40,10 @@ class transactions extends transactions_crud
     const STATUS_VALID    = 1;
     const STATUS_CANCELED = 3;
 
-    public static $aPhysicalTransactions = [
-        \transactions_types::TYPE_LENDER_SUBSCRIPTION,
-        \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
-        \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
-        \transactions_types::TYPE_BORROWER_REPAYMENT,
-        \transactions_types::TYPE_DIRECT_DEBIT,
-        \transactions_types::TYPE_LENDER_WITHDRAWAL,
-        \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT,
-        \transactions_types::TYPE_UNILEND_BANK_TRANSFER,
-        \transactions_types::TYPE_FISCAL_BANK_TRANSFER,
-        \transactions_types::TYPE_LENDER_REGULATION,
-        \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION,
-        \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER,
-        \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT,
-        \transactions_types::TYPE_REGULATION_BANK_TRANSFER,
-        \transactions_types::TYPE_RECOVERY_BANK_TRANSFER
-    ];
-    public static $aVirtualTransactions  = [
-        \transactions_types::TYPE_LENDER_LOAN,
-        \transactions_types::TYPE_UNILEND_REPAYMENT,
-        \transactions_types::TYPE_REGULATION_COMMISSION,
-        \transactions_types::TYPE_WELCOME_OFFER,
-        \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION,
-        \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD,
-        \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD,
-        \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
-        \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT,
-        \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL,
-        \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS
-    ];
-
     public function __construct($bdd, $params = '')
     {
         parent::transactions($bdd, $params);
+        \Unilend\core\Loader::loadData('transaction_types');
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
