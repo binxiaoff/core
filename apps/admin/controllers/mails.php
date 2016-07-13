@@ -44,14 +44,17 @@ class mailsController extends bootstrap
             /** @var \mail_templates $mailTemplate */
             $mailTemplate = $this->loadData('mail_templates');
 
-            if (0 < count($mailTemplate->select('type = "' . $aPost['type'] . '" and status = ' . \mail_templates::STATUS_ACTIVE))) {
+            if (empty($aPost['type']) || empty($aPost['sender_name']) || empty($aPost['sender_email']) || empty($aPost['subject'])) {
+                $_SESSION['freeow']['title']   = 'Ajout d\'un mail';
+                $_SESSION['freeow']['message'] = 'Ajout impossible : tous les champs n\'ont &eacute;t&eacute; remplis';
+            } else if ($mailTemplate->exist($aPost['type'] . '" AND status = "' . \mail_templates::STATUS_ACTIVE, 'type')) {
                 $_SESSION['freeow']['title']   = 'Ajout d\'un mail';
                 $_SESSION['freeow']['message'] = 'Ajout impossible : ce mail existe d&eacute;j&agrave;';
             } else {
                 $oMailTemplateManager->addTemplate($aPost['type'], $aPost['sender_name'], $aPost['sender_email'], $aPost['subject'], $aPost['content']);
 
                 $_SESSION['freeow']['title']   = 'Ajout d\'un mail';
-                $_SESSION['freeow']['message'] = 'Le mail a bien &eacute;t&eacute; ajout&eacute; !';
+                $_SESSION['freeow']['message'] = 'Le mail a bien &eacute;t&eacute; ajout&eacute;';
             }
 
             header('Location:' . $this->lurl . '/mails');
@@ -70,9 +73,16 @@ class mailsController extends bootstrap
 
             if (isset($_POST['form_mod_mail'])) {
                 $aPost = $this->handlePost();
-                $oMailTemplateManager->modifyTemplate($aPost['id_mail_template'], $aPost['type'], $aPost['sender_name'], $aPost['sender_email'], $aPost['subject'], $aPost['content']);
-                $_SESSION['freeow']['title']   = 'Modification d\'un mail';
-                $_SESSION['freeow']['message'] = 'Le mail a bien &eacute;t&eacute; modifi&eacute; !';
+                if (empty($aPost['type']) || empty($aPost['sender_name']) || empty($aPost['sender_email']) || empty($aPost['subject'])) {
+                    $_SESSION['freeow']['title']   = 'Modification d\'un mail';
+                    $_SESSION['freeow']['message'] = 'Modification impossible : tous les champs n\'ont &eacute;t&eacute; remplis';
+                } else {
+                    $oMailTemplateManager->modifyTemplate($aPost['id_mail_template'], $aPost['type'], $aPost['sender_name'], $aPost['sender_email'], $aPost['subject'], $aPost['content']);
+
+                    $_SESSION['freeow']['title']   = 'Modification d\'un mail';
+                    $_SESSION['freeow']['message'] = 'Le mail a bien &eacute;t&eacute; modifi&eacute;';
+                }
+
                 header('Location:' . $this->url . '/mails');
                 die;
             }
@@ -137,11 +147,10 @@ class mailsController extends bootstrap
             $aPost[$field] = $value;
         }
 
-        $aPost['type']            = $this->bdd->generateSlug(trim($_POST['type']));
-        $aPost['subject']         = str_replace('"', '\'', $_POST['subject']);
-        $aPost['content']         = str_replace('"', '\'', $_POST['content']);
+        $aPost['type']    = $this->bdd->generateSlug(trim($_POST['type']));
+        $aPost['subject'] = str_replace('"', '\'', $_POST['subject']);
+        $aPost['content'] = str_replace('"', '\'', $_POST['content']);
 
         return $aPost;
     }
-
 }
