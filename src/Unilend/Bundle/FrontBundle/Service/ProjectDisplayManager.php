@@ -59,18 +59,18 @@ class ProjectDisplayManager
         $aProjects = $projects->selectProjectsByStatus(implode(',', $projectStatus), null, $orderBy, $rateRange, $start, $limit, false);
 
         foreach ($aProjects as $key => $project) {
-            $projects->get($project['id_project']);
-            $aCompany                               = $company->select('id_company = ' . $project['id_company']);
-            $aProjects[$key]['company']             = array_shift($aCompany);
-            $aProjects[$key]['category']            = $aProjects[$key]['company']['sector'];
-            $aProjects[$key]['number_bids']         = $bids->counter('id_project = ' . $projects->id_project);
+            $aCompany                       = $company->select('id_company = ' . $project['id_company']);
+            $aProjects[$key]['company']     = array_shift($aCompany);
+            $aProjects[$key]['category']    = $aProjects[$key]['company']['sector'];
+            $aProjects[$key]['number_bids'] = $bids->counter('id_project = ' . $project['id_project']);
 
             if (isset($clientID)) {
                 /** @var \lenders_accounts $lenderAccount */
                 $lenderAccount = $this->entityManager->getRepository('lenders_accounts');
                 $lenderAccount->get($clientId, 'id_client_owner');
-                $aProjects[$key]['currentUser']['offers']     = $this->lenderAccountDisplayManager->getBidInformationForProject($projects, $lenderAccount);
-                $aProjects[$key]['currentUser']['isInvolved'] = $this->lenderAccountDisplayManager->isLenderInvolvedInProject($projects, $lenderAccount);
+
+                $aProjects[$key]['currentUser']['offers']     = $this->lenderAccountDisplayManager->getBidInformationForProject($project['id_project'], $lenderAccount);
+                $aProjects[$key]['currentUser']['isInvolved'] = false === empty($aProjects[$key]['currentUser']['offers']['offerIds']);
             }
         }
 

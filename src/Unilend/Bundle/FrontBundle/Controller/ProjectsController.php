@@ -101,9 +101,9 @@ class ProjectsController extends Controller
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function showProjectDetailAction($projectSlug, Request $request)
+    public function projectDetailAction($projectSlug, Request $request)
     {
-        $this->checkProjectAndRedirect($projectSlug);
+        $project = $this->checkProjectAndRedirect($projectSlug);
 
         /** @var ProjectDisplayManager $projectDisplayManager */
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
@@ -111,10 +111,6 @@ class ProjectsController extends Controller
         $highchartsService = $this->get('unilend.frontbundle.service.highcharts_service');
         /** @var AuthorizationChecker $authorizationChecker */
         $authorizationChecker = $this->get('security.authorization_checker');
-
-        /** @var \projects $project */
-        $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
-        $project->get($projectSlug, 'slug');
 
         $template            = [];
         $template['project'] = $projectDisplayManager->getProjectInformationForDisplay($project);
@@ -132,13 +128,10 @@ class ProjectsController extends Controller
             /** @var \lenders_accounts $lenderAccount */
             $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
             $lenderAccount->get($user->getClientId(), 'id_client_owner');
+
             /** @var LenderAccountDisplayManager $lenderAccountDisplayManager */
             $lenderAccountDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
-            $template['lenderOnProject'] = $lenderAccountDisplayManager->getLenderActivityForProject($project->id_project, $lenderAccount);
-
-            if ($template['lenderOnProject']['isInvolved']) {
-                $template['lenderOnProject']['bidsTable'] = $highchartsService->formatBidsForTable($template['lenderOnProject']['offers']['all']);
-            }
+            $template['lenderOnProject'] = $lenderAccountDisplayManager->getLenderActivityForProject($lenderAccount, $project);
 
             if (false === empty($request->getSession()->get('bidMessage'))) {
                 $template['lender']['bidMessage'] = $request->getSession()->get('bidMessage');
@@ -148,7 +141,7 @@ class ProjectsController extends Controller
 
         $template['conditions'] = [
             'bids'    => $template['project']['status'] == \projects_status::EN_FUNDING,
-            'myBids'  => isset($template['lenderOnProject']['isInvolved']) && $template['lenderOnProject']['isInvolved'],
+            'myBids'  => isset($template['lenderOnProject']) && $template['lenderOnProject']['bids']['count'] > 0,
             'finance' => $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY'),
             'history' => $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY') && $authorizationChecker->isGranted('ROLE_LENDER') && ($template['project']['status'] == \projects_status::FUNDE || $template['project']['status'] >= \projects_status::REMBOURSEMENT)
         ];
@@ -156,6 +149,10 @@ class ProjectsController extends Controller
         return $this->render('pages/project_detail.html.twig', $template);
     }
 
+    /**
+     * @param string $projectSlug
+     * @return \projects
+     */
     private function checkProjectAndRedirect($projectSlug)
     {
         /** @var \projects $project */
@@ -177,7 +174,7 @@ class ProjectsController extends Controller
                 || $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') && 28002 == $project->id_project
             )
         ) {
-            return;
+            return $project;
         }
 
         throw $this->createNotFoundException();

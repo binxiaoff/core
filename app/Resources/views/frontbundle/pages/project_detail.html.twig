@@ -73,11 +73,11 @@
                 {# @note MapView CSS relies on offerStatuses named 'inprogress', 'rejected' and 'accepted' #}
                 {% set mapviewOfferStatus = '' %}
 
-                {% if lenderOnProject is defined and lenderOnProject.bids.TotalOffers > 0 and lenderOnProject.bids.Offers is not empty %}
-                    {% for statusOffer, numOffers in currentUserOffers if numOffers > 0 and statusOffer is not empty and statusOffer != 'rejected' %}
-                        {% set mapviewOfferStatus = statusOffer %}
-                    {% endfor %}
-                {% endif %}
+                {#{% if lenderOnProject is defined and lenderOnProject.bids.count > 0 %}#}
+                    {#{% for statusOffer, numOffers in currentUserOffers if numOffers > 0 and statusOffer is not empty and statusOffer != 'rejected' %}#}
+                        {#{% set mapviewOfferStatus = statusOffer %}#}
+                    {#{% endfor %}#}
+                {#{% endif %}#}
 
                 {# Output map HTML #}
                 <div class="project-single-map">
@@ -282,7 +282,7 @@
                                     {{ include('partials/components/project-detail/my-bids.html.twig') }}
                                 {% endif %}
 
-                                {{ include('partials/components/project-detail/bids-list.html.twig') }}
+                                {#{{ include('partials/components/project-detail/bids-list.html.twig') }}#}
                             </div>
                         {% endif %}
 
@@ -318,7 +318,7 @@
                         {% if conditions.history %}
                             <div id="history" data-watchscroll-nav>
                                 <section id="project-section-info" class="page-section">
-                                    <p>{% trans with {'%amountUserLoan%' : lenderOnProject.loans.myLoanOnProject} %} project-detail_project-presentation-repayment-info {% endtrans %}</p>
+                                    <p>{% trans with {'%amountUserLoan%' : lenderOnProject.loans.myLoanOnProject.solde} %} project-detail_project-presentation-repayment-info {% endtrans %}</p>
                                     <p>
                                         {% trans with {
                                             '%amountAlreadyPaidBack%' : lenderOnProject.loans.amountAlreadyPaidBack,

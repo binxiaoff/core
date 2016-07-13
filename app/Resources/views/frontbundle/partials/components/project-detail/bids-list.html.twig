@@ -52,7 +52,8 @@
                                         <td class="table-alloffers-item-status">
                                             {# Pending #}
                                             {% if offer[3] == constant('\\bids::STATUS_BID_PENDING') %}
-                                                <span class="icon fa-clock-u32"></span><span class="sr-only"> In progress</span>
+                                                <span class="icon fa-clock-u32"></span>
+                                                <span class="sr-only"> In progress</span>
                                             {# Accepted #}
                                             {% elseif offer[3] == constant('\\bids::STATUS_BID_ACCEPTED') %}
                                                 <span class="icon fa-check-u32"></span>

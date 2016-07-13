@@ -20,24 +20,22 @@
             <div id="myoffers-inprogress" role="tabpanel" class="tab-pane active" aria-labelledby="project-myoffers-inprogress project-myoffers">
                 <table class="table-myoffers">
                     <tbody>
-                    {% for lenderBid in lenderOnProject.bidsTable.data %}
-                        {% if lenderBid[3] == 1 or lenderBid[3] == 2 %}
-                            <tr>
-                                <td class="table-myoffers-item-id">{{ lenderBid[0] }}</td>
-                                <td class="table-myoffers-item-interest">{{ lenderBid[1]|__num(1) }}%</td>
-                                <td class="table-myoffers-item-amount">{{ lenderBid[2]|__num(0)|nbsp }}€</td>
-                                <td class="table-myoffers-item-view">
-                                    <a href="{{ lenderBid[4] }}"><span class="icon fa-eye-u32"><span class="sr-only">View your offer</span></span></a>
-                                </td>
-                            </tr>
-                        {% else %}
-                            <tr>
-                                <td class="table-empty" colspan="4">
-                                    <p>{% trans %} project-detail_client-offer-table-no-offers {% endtrans %}</p>
-                                    <a href="#" class="btn-primary">{% trans %} project-detail_client-offer-table-make-offer-button {% endtrans %}</a>
-                                </td>
-                            </tr>
-                        {% endif %}
+                    {% for lenderBid in lenderOnProject.bids['inprogress'] %}
+                        <tr>
+                            <td class="table-myoffers-item-id">{{ lenderBid['ordre'] }}</td>
+                            <td class="table-myoffers-item-interest">{{ lenderBid['rate']|__num(1) }}%</td>
+                            <td class="table-myoffers-item-amount">{{ (lenderBid['amount'] / 100)|__num(0)|nbsp }}€</td>
+                            <td class="table-myoffers-item-view">
+                                <a href="#todo"><span class="icon fa-eye-u32"><span class="sr-only">View your offer</span></span></a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td class="table-empty" colspan="4">
+                                <p>{% trans %} project-detail_client-offer-table-no-offers {% endtrans %}</p>
+                                <a href="#" class="btn-primary">{% trans %} project-detail_client-offer-table-make-offer-button {% endtrans %}</a>
+                            </td>
+                        </tr>
                     {% endfor %}
                     </tbody>
                 </table><!-- /.table-myoffers -->
@@ -47,13 +45,13 @@
             <div id="myoffers-rejected" role="tabpanel" class="tab-pane" aria-labelledby="project-myoffers-rejected project-myoffers">
                 <table class="table-myoffers">
                     <tbody>
-                    {% for i, item in lenderOnProject.bidsTable.data if item[3] == 3 %}
+                    {% for lenderBid in lenderOnProject.bids['rejected'] %}
                         <tr>
-                            <td class="table-myoffers-item-id">{{ item[0] }}</td>
-                            <td class="table-myoffers-item-interest">{{ item[1]|__num(1) }}%</td>
-                            <td class="table-myoffers-item-amount">{{ item[2]|__num(0)|nbsp }}€</td>
+                            <td class="table-myoffers-item-id">{{ lenderBid['ordre'] }}</td>
+                            <td class="table-myoffers-item-interest">{{ lenderBid['rate']|__num(1) }}%</td>
+                            <td class="table-myoffers-item-amount">{{ (lenderBid['amount'] / 100)|__num(0)|nbsp }}€</td>
                             <td class="table-myoffers-item-view">
-                                <a href="{{ item[4] }}"><span class="icon fa-eye-u32"><span class="sr-only">View your offer</span></span></a>
+                                <a href="#todo"><span class="icon fa-eye-u32"><span class="sr-only">View your offer</span></span></a>
                             </td>
                         </tr>
                     {% else %}

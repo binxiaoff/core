@@ -1,4 +1,4 @@
-<div id="balance-sheet" data-watchscroll-nav>
+<div id="finance" data-watchscroll-nav>
     {% if conditions.finance %}
         <section id="project-section-income" class="page-section">
             <div class="tabs">
@@ -23,12 +23,12 @@
                         <div class="table-scroll">
                             <table id="income-table-data" class="table table-finance table-income">
                                 <thead>
-                                <tr>
-                                    <th class="table-income-item-name">&nbsp;</th>
-                                    <th class="table-income-item-year">2015</th>
-                                    <th class="table-income-item-year">2014</th>
-                                    <th class="table-income-item-year">2013</th>
-                                </tr>
+                                    <tr>
+                                        <th class="table-income-item-name">&nbsp;</th>
+                                        <th class="table-income-item-year">2015</th>
+                                        <th class="table-income-item-year">2014</th>
+                                        <th class="table-income-item-year">2013</th>
+                                    </tr>
                                 </thead>
                                 <tbody>
                                 {% for i, item in tables.income.data %}
@@ -90,12 +90,12 @@
                         <div class="table-scroll">
                             <table id="balance-table-data" class="table table-finance table-balance">
                                 <thead>
-                                <tr>
-                                    <th class="table-balance-item-name">&nbsp;</th>
-                                    <th class="table-balance-item-year">2015</th>
-                                    <th class="table-balance-item-year">2014</th>
-                                    <th class="table-balance-item-year">2013</th>
-                                </tr>
+                                    <tr>
+                                        <th class="table-balance-item-name">&nbsp;</th>
+                                        <th class="table-balance-item-year">2015</th>
+                                        <th class="table-balance-item-year">2014</th>
+                                        <th class="table-balance-item-year">2013</th>
+                                    </tr>
                                 </thead>
                                 <tbody>
                                 {% for i, item in tables.balance.data %}

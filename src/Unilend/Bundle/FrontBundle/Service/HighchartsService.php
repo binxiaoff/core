@@ -20,47 +20,10 @@ class HighchartsService
 
     public function getFinancialProjectDataForTables($accountData)
     {
-        $tables = [
+        return [
             'income'  => $this->formatIncomeStatementDataForTable($accountData['balanceSheets']),
             'balance' => $this->formatBalanceSheetDataForTable($accountData['totalYearlyAssets'], $accountData['totalYearlyDebts'])
         ];
-
-        return $tables;
-    }
-
-    /**
-     * @param      $bids
-     * @param bool $replaceIdByOrder
-     * @return array
-     */
-    public function formatBidsForTable(array $bids, $replaceIdByOrder = false)
-    {
-        $schema = [
-            ['name' => 'id', 'type' => 'int', 'label' => 'No'],
-            ['name' => 'rate', 'type' => 'float', 'label' => 'Taux d\'intérêt'], //TODO TRAD
-            ['name' => 'amount', 'type' => 'int', 'label' => 'Montant'],
-            ['name' => 'status', 'type' => 'int', 'label' => 'Statut'],
-            ['name' => 'view', 'type' => 'string', 'label' => 'View']
-        ];
-
-        $data = [];
-
-        $i = 1;
-        foreach ($bids as $bid) {
-            if ($replaceIdByOrder) {
-                $data[] = [$i, $bid['rate'], $bid['amount'] / 100, $bid['status']];
-                $i += 1;
-            } else {
-                $data[] = [$bid['id_bid'], $bid['rate'], $bid['amount'] / 100, $bid['status'], ''];
-            }
-        }
-
-        $offers = [
-            'schema' => $schema,
-            'data'   => $data
-        ];
-
-        return $offers;
     }
 
     public function getBidsChartSetting($bidsByRate, $limitRate)
