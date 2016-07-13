@@ -6,14 +6,14 @@
 notifications: [{
 type: 'offer-rejected',
 title: 'Offre refusée',
-datetime: 'now'|date_modify('-5 minutes')|time_diff,
+datetime: 'now'|date_modify('-5 minutes'),
 content: 'Votre offre de prêt de 45€ au taux de 9,4% à Garage Toniol a été refusée.',
 image: svgimage('#notification-offer-rejected', 'Offre refusée', 100, 100, 'none'),
 status: 'unread'
 },{
 type: 'remboursement',
 title: 'Remboursement',
-datetime: 'now'|date_modify('-2 hours')|time_diff,
+datetime: 'now'|date_modify('-2 hours'),
 content: 'Vous avez reçu un remboursement de 12,35€ de Garage Toniol.',
 image: svgimage('#notification-remboursement', 'Remboursement', 100, 100, 'none'),
 status: 'unread'

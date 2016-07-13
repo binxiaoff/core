@@ -78,3 +78,6 @@
   <option value="{{ i }}"{% if i == defaultYear %} selected="selected"{% endif %}>{{ i }}</option>
   {% endfor %}
 {% endmacro %}
+{% for i, name in months %}
+  <option value="{{ i }}"{% if i == defaultMonthIndex %} selected="selected"{% endif %}>{{ name }}</option>
+{% endfor %}
