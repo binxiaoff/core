@@ -6,7 +6,7 @@ var LoginTimer = function() {
     var LoginInput = $('input[data-formvalidation-input]')
     LoginInput.closest("div.form-field").on('focus click', function(e){
         var currentInput = $(e.target);
-        if($('span[data-login]').html() !== '0') {
+        if($('#form-connect-notifications').length && $('span[data-login]').html() !== '0') {
             currentInput.attr('disabled', 'true');
             $('#form-connect-notifications').effect('shake');
         }

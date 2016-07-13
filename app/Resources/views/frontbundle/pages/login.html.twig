@@ -22,7 +22,7 @@ permalink: route('user/access')
 
                         <div class="col-connect col-lg-4 col-md-4">
                             <h2 class="h3 text-align-left">{% trans %} connect-subscribe-page_login-box-title {% endtrans %}</h2>
-                            <form action="{{ path('login-check') }}" method="post" class="form-connect login-form" data-formvalidation data-formvalidation-notificationselem="#form-connect-notifications">
+                            <form action="{{ path('login-check') }}" method="post" class="form-connect login-form" data-formvalidation>
                                 <div class="panel panel-connect">
                                     {% if error is not empty %}
                                         <div id="form-connect-notifications">
