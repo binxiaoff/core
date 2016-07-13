@@ -1,0 +1,195 @@
+<div id="balance-sheet" data-watchscroll-nav>
+    {% if conditions.finance %}
+        <section id="project-section-income" class="page-section">
+            <div class="tabs">
+                <div class="section-tabs-nav">
+                    <header>
+                        <h3 id="project-income" class="h3">{% trans %} project-detail_project-presentation-accounts-title {% endtrans %}</h3>
+                    </header>
+
+                    <ul class="nav nav-tabs">
+                        <li id="project-income-table" role="presentation" class="active">
+                            <a href="#income-table" role="tab" data-toggle="tab">{% trans %} project-detail_project-presentation-accounts-table-button {% endtrans %}</a>
+                        </li>
+                        <li id="project-income-graph" role="presentation">
+                            <a href="#income-graph" role="tab" data-toggle="tab">{% trans %} project-detail_project-presentation-accounts-charts-button {% endtrans %}</a>
+                        </li>
+                    </ul>
+                </div><!-- /.section-tabs-nav -->
+
+                <div class="section-tabs-content tab-content">
+                    <div id="income-table" role="tabpanel" class="tab-pane active" aria-labelledby="project-income-table project-income">
+
+                        <div class="table-scroll">
+                            <table id="income-table-data" class="table table-finance table-income">
+                                <thead>
+                                <tr>
+                                    <th class="table-income-item-name">&nbsp;</th>
+                                    <th class="table-income-item-year">2015</th>
+                                    <th class="table-income-item-year">2014</th>
+                                    <th class="table-income-item-year">2013</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for i, item in tables.income.data %}
+                                    <tr class="table-item">
+                                        <td class="table-income-item-name">{{ item[0] }}</td>
+                                        <td class="table-income-item-year">
+                                            <span class="amount">{{ item[1]|__num(0)|nbsp }}€</span>
+                                            <span class="diff">{{ item[2]|__num(2) }}%</span>
+                                        </td>
+                                        <td class="table-income-item-year">
+                                            <span class="amount">{{ item[3]|__num(0)|nbsp }}€</span>
+                                            <span class="diff">{{ item[4]|__num(2) }}%</span>
+                                        </td>
+                                        <td class="table-income-item-year">
+                                            {% if item[7] is defined %}
+                                                <span class="amount">{{ item[5]|__num(0)|nbsp }}€</span>
+                                                <span class="diff">{{ item[6]|__num(2) }}%</span>
+                                            {% else %}
+                                                {{ item[5]|__num(0)|nbsp }}€
+                                            {% endif %}
+                                        </td>
+                                    </tr><!-- /.table-item -->
+                                {% endfor %}
+                                </tbody>
+                            </table><!-- /.table-income -->
+                        </div><!-- /.table-scroll -->
+
+                    </div><!-- /.tab-pane -->
+
+                    <div id="income-graph" role="tabpanel" class="tab-pane">
+                        <div class="chart" data-chartview='{{ charts.income|json_encode|escape('html_attr') }}'></div>
+                    </div>
+                </div><!-- /.section-tabs-content -->
+            </div><!-- /tabs -->
+
+            <div class="btn-toolbar">
+                <a href="{{ path('export_income_statement', {'projectId' : project.id_project }) }}" class="btn-default" target="_blank"><span class="icon fa-excel-u32"></span>
+                    {% trans %} project-detail_project-presentation-accounts-export-csv-button {% endtrans %}</a>
+            </div><!-- /.btn-toolbar -->
+        </section><!-- /.page-section -->
+
+        <section id="project-section-balance" class="page-section">
+            <div class="tabs">
+                <div class="section-tabs-nav">
+                    <header>
+                        <h3 id="project-balance" class="h3">{% trans %} project-detail_project-presentation-accounts-balance {% endtrans %}</h3>
+                    </header>
+
+                    <ul class="nav nav-tabs">
+                        <li id="project-balance-table" role="presentation" class="active">
+                            <a href="#balance-table" role="tab" data-toggle="tab">{% trans %} project-detail_project-presentation-accounts-table-button {% endtrans %}</a></li>
+                        <li id="project-balance-graph" role="presentation">
+                            <a href="#balance-graph" role="tab" data-toggle="tab">{% trans %} project-detail_project-presentation-accounts-charts-button {% endtrans %}</a></li>
+                    </ul>
+                </div><!-- /.section-tabs-nav -->
+
+                <div class="section-tabs-content tab-content">
+                    <div id="balance-table" role="tabpanel" class="tab-pane active" aria-labelledby="project-balance-table project-balance">
+                        <div class="table-scroll">
+                            <table id="balance-table-data" class="table table-finance table-balance">
+                                <thead>
+                                <tr>
+                                    <th class="table-balance-item-name">&nbsp;</th>
+                                    <th class="table-balance-item-year">2015</th>
+                                    <th class="table-balance-item-year">2014</th>
+                                    <th class="table-balance-item-year">2013</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for i, item in tables.balance.data %}
+                                    {# Entry which displays a title #}
+                                    {% if item[0] == 'title' %}
+                                        <tr class="table-item-title">
+                                            <td colspan="4">{{ item[1] }}</td>
+                                        </tr><!-- /.table-item-title -->
+
+                                        {# Entry which shows a total amount #}
+                                    {% elseif item[0] == 'total' %}
+                                        <tr class="table-item-total">
+                                            <td class="table-income-item-name">{{ item[1] }}</td>
+                                            <td class="table-income-item-year">
+                                                <span class="amount">{{ item[2]|__num(0)|nbsp }}€</span>
+                                                <span class="diff">{{ item[3]|__num(2) }}%</span>
+                                            </td>
+                                            <td class="table-income-item-year">
+                                                <span class="amount">{{ item[4]|__num(0)|nbsp }}€</span>
+                                                <span class="diff">{{ item[5]|__num(2) }}%</span>
+                                            </td>
+                                            <td class="table-income-item-year">
+                                                {% if item[7] is not empty %}
+                                                    <span class="amount">{{ item[6]|__num(0)|nbsp }}€</span>
+                                                    <span class="diff">{{ item[7]|__num(2) }}%</span>
+                                                {% else %}
+                                                    {{ item[6]|__num(0)|nbsp }}€
+                                                {% endif %}
+                                            </td>
+                                        </tr><!-- /.table-item-total -->
+
+                                        {# Normal entry #}
+                                    {% else %}
+                                        <tr class="table-item">
+                                            <td class="table-income-item-name">{{ item[1] }}</td>
+                                            <td class="table-income-item-year">
+                                                <span class="amount">{{ item[2]|__num(0)|nbsp }}€</span>
+                                                <span class="diff">{{ item[3]|__num(2) }}%</span>
+                                            </td>
+                                            <td class="table-income-item-year">
+                                                <span class="amount">{{ item[4]|__num(0)|nbsp }}€</span>
+                                                <span class="diff">{{ item[5]|__num(2) }}%</span>
+                                            </td>
+                                            <td class="table-income-item-year">
+                                                {% if item[7] is not empty %}
+                                                    <span class="amount">{{ item[6]|__num(0)|nbsp }}€</span>
+                                                    <span class="diff">{{ item[7]|__num(2) }}%</span>
+                                                {% else %}
+                                                    {{ item[6]|__num(0)|nbsp }}€
+                                                {% endif %}
+                                            </td>
+                                        </tr><!-- /.table-item -->
+                                    {% endif %}
+                                {% endfor %}
+                                </tbody>
+                            </table><!-- /.table-balance -->
+                        </div><!-- /.table-scroll -->
+                    </div><!-- /.tab-pane -->
+
+                    <div id="balance-graph" role="tabpanel" class="tab-pane">
+                        <div class="tabs nested-tabs">
+                            <div class="tabs-nav">
+                                <ul class="nav nav-tabs-text">
+                                    <li role="presentation" class="active">
+                                        <a href="#balance-graph-active" role="tab" data-toggle="tab">
+                                            {% trans %} project-detail_project-presentation-accounts-balance-active {% endtrans %}
+                                        </a>
+                                    </li>
+                                    <li role="presentation">
+                                        <a href="#balance-graph-passive" role="tab" data-toggle="tab">
+                                            {% trans %} project-detail_project-presentation-accounts-balance-passive {% endtrans %}
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div><!-- /.tab-navigation -->
+                            <div class="tab-content">
+                                <div id="balance-graph-active" role="tabpanel" class="tab-pane active">
+                                    <div class="chart" data-chartview='{{ charts.balanceSheetAssets|json_encode|escape('html_attr') }}'></div>
+                                </div><!-- /.tab-pane -->
+                                <div id="balance-graph-passive" role="tabpanel" class="tab-pane">
+                                    <div class="chart" data-chartview='{{ charts.balanceSheetDebts|json_encode|escape('html_attr') }}'></div>
+                                </div><!-- /.tab-pane -->
+                            </div>
+                        </div><!-- /.nested-tabs -->
+                    </div><!-- /.tab-pane -->
+                </div><!-- /.section-tabs-content -->
+            </div><!-- /tabs -->
+
+            <div class="btn-toolbar">
+                <a href="{{ path('export_balance_sheet', {'projectId' : project.id_project }) }}" class="btn-default" target="_blank"><span class="icon fa-excel-u32"></span>
+                    {% trans %} project-detail_project-presentation-accounts-export-csv-button {% endtrans %}</a>
+            </div><!-- /.btn-toolbar -->
+        </section><!-- /.page-section -->
+    {% else %}
+        Les prêteurs inscrits ont accès au bilan et au compte de résultat sur les trois dernières années.
+    {% endif %}
+</div>

@@ -29,9 +29,11 @@ class HighchartsService
     }
 
     /**
-     * @param array $bids
+     * @param      $bids
+     * @param bool $replaceIdByOrder
+     * @return array
      */
-    public function formatBidsForTable($bids, $replaceIdByOrder = false)
+    public function formatBidsForTable(array $bids, $replaceIdByOrder = false)
     {
         $schema = [
             ['name' => 'id', 'type' => 'int', 'label' => 'No'],
@@ -44,7 +46,7 @@ class HighchartsService
         $data = [];
 
         $i = 1;
-        foreach ($bids as $key => $bid) {
+        foreach ($bids as $bid) {
             if ($replaceIdByOrder) {
                 $data[] = [$i, $bid['rate'], $bid['amount'] / 100, $bid['status']];
                 $i += 1;
@@ -59,11 +61,6 @@ class HighchartsService
         ];
 
         return $offers;
-    }
-
-    public function formatBidsForOverview($bids)
-    {
-
     }
 
     public function getBidsChartSetting($bidsByRate, $limitRate)

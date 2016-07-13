@@ -1,14 +1,11 @@
 <?php
-
 namespace Unilend\Bundle\FrontBundle\Service;
-
 
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class ProjectDisplayManager
 {
-
     /** @var  EntityManager */
     private $entityManager;
     /** @var  ProjectManager */
@@ -105,16 +102,26 @@ class ProjectDisplayManager
         $totalLenders  = (\projects_status::EN_FUNDING == $projectStatus->status) ? $bids->countLendersOnProject($project->id_project) : $loans->getNbPreteurs($project->id_project);
         $navigation    = $project->positionProject($project->id_project, implode(',', $this->projectsStatus), 'lestatut ASC, IF(lestatut = 2, p.date_retrait_full ,"") DESC, IF(lestatut = 1, p.date_retrait_full ,"") ASC, projects_status.status DESC');
 
-        $projectData['categoryId']    = $company['sector'];
-        $projectData['costFunded']    = $alreadyFunded;
-        $projectData['costRemaining'] = $project->amount - $alreadyFunded;
-        $projectData['percentFunded'] = $alreadyFunded / $project->amount * 100;
-        $projectData['company']       = $company;
-        $projectData['avg_rate']      = $project->getAverageInterestRate($project->id_project);
-        $projectData['totalLenders']  = $totalLenders;
-        $projectData['status']        = $projectStatus->status;
-        $projectData['number_bids']   = '';//TODO count bids on project
-        $projectData['navigation']    = $navigation;
+        if ($alreadyFunded >= $project->amount) {
+            $projectData['costFunded']    = $project->amount;
+            $projectData['costRemaining'] = 0;
+            $projectData['percentFunded'] = 100;
+        } else {
+            $projectData['costFunded']    = $alreadyFunded;
+            $projectData['costRemaining'] = $project->amount - $alreadyFunded;
+            $projectData['percentFunded'] = $alreadyFunded / $project->amount * 100;
+        }
+
+        $projectData['categoryId']   = $company['sector'];
+        $projectData['company']      = $company;
+        $projectData['averageRate']  = $project->getAverageInterestRate($project->id_project);
+        $projectData['totalLenders'] = $totalLenders;
+        $projectData['status']       = $projectStatus->status;
+        $projectData['navigation']   = $navigation;
+        // @todo
+        $projectData['latitude']     = 45;
+        $projectData['longitude']    = 0;
+        $projectData['daysLeft']     = 0;
 
         $now = new \DateTime('NOW');
         $projectEnd = new \DateTime($project->date_retrait_full);
@@ -133,7 +140,6 @@ class ProjectDisplayManager
         }
 
         if (\projects_status::EN_FUNDING == $projectStatus->status) {
-
             //TODO once decision taken for carnet d'ordre change names of variables in template make things more redable ...
             $bidsOnProject = $bids->select('id_project = ' . $project->id_project, 'added ASC');
             $projectData['alloffersOverview'] = '';
@@ -144,8 +150,6 @@ class ProjectDisplayManager
         } else {
             $projectData['fundingStatistics'] = $this->getProjectFundingStatistic($project, $projectStatus->status);
         }
-
-
 
         return $projectData;
     }
@@ -204,7 +208,6 @@ class ProjectDisplayManager
         ];
 
         return $accountData;
-
     }
 
     public function getProjectFundingStatistic(\projects $project, $status)
@@ -227,7 +230,5 @@ class ProjectDisplayManager
         /** @var \projects $projects */
         $projects  = $this->entityManager->getRepository('projects');
         return $projects->countSelectProjectsByStatus(implode(',', $this->projectsStatus) . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = ' . \projects::DISPLAY_PROJECT_ON);
-
     }
-
 }

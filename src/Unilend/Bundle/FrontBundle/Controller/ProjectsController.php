@@ -3,12 +3,14 @@
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 
+use SensioLabs\Security\SecurityChecker;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
@@ -20,7 +22,6 @@ use Unilend\core\Loader;
 
 class ProjectsController extends Controller
 {
-
     /**
      * @Route("/projets-a-financer/{page}", defaults={"page" = "1"}, name="project_list")
      *
@@ -30,15 +31,13 @@ class ProjectsController extends Controller
     {
         /** @var ProjectDisplayManager $projectDisplayManager */
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
-        /** @var \projects $projects */
-        $projects = $this->get('unilend.service.entity_manager')->getRepository('projects');
         /** @var \settings $settings */
         $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
         /** @var array $rateRange */
         $rateRange = [\bids::BID_RATE_MIN, \bids::BID_RATE_MAX];
 
         $settings->get('nombre-de-projets-par-page', 'type');
-        $limit = $settings->value;
+        $limit = (int) $settings->value;
         $start = ($page > 1) ? $limit * ($page - 1) : 0;
 
         if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
@@ -50,17 +49,18 @@ class ProjectsController extends Controller
                 null,
                 'p.date_retrait_full DESC',
                 $rateRange,
-                (int)$start,
-                (int)$limit,
-                $user->getClientId());
+                $start,
+                $limit,
+                $user->getClientId()
+            );
         } else {
             $aTemplateVariables['projects'] = $projectDisplayManager->getProjectsForDisplay(
                 null,
                 'p.date_retrait_full DESC',
                 $rateRange,
-                (int)$start,
-                (int)$limit
-                );
+                $start,
+                $limit
+            );
         }
 
         $totalNumberProjects = $projectDisplayManager->getTotalNumberOfDisplayedProjects();
@@ -109,20 +109,24 @@ class ProjectsController extends Controller
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
         /** @var HighchartsService $highchartsService */
         $highchartsService = $this->get('unilend.frontbundle.service.highcharts_service');
+        /** @var AuthorizationChecker $authorizationChecker */
+        $authorizationChecker = $this->get('security.authorization_checker');
 
         /** @var \projects $project */
         $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
         $project->get($projectSlug, 'slug');
 
-        $templateVariables            = [];
-        $templateVariables['project'] = $projectDisplayManager->getProjectInformationForDisplay($project);
-        $accountData                  = $projectDisplayManager->getProjectFinancialData($project);
-        $templateVariables['charts']  = $highchartsService->getFinancialProjectDataCharts($accountData);
-        $templateVariables['tables']  = $highchartsService->getFinancialProjectDataForTables($accountData);
+        $template            = [];
+        $template['project'] = $projectDisplayManager->getProjectInformationForDisplay($project);
 
-        if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
-            && $this->get('security.authorization_checker')->isGranted('ROLE_LENDER'))
-        {
+        $accountData        = $projectDisplayManager->getProjectFinancialData($project);
+        $template['charts'] = $highchartsService->getFinancialProjectDataCharts($accountData);
+        $template['tables'] = $highchartsService->getFinancialProjectDataForTables($accountData);
+
+        if (
+            $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY')
+            && $authorizationChecker->isGranted('ROLE_LENDER')
+        ) {
             /** @var BaseUser $user */
             $user = $this->getUser();
             /** @var \lenders_accounts $lenderAccount */
@@ -130,41 +134,54 @@ class ProjectsController extends Controller
             $lenderAccount->get($user->getClientId(), 'id_client_owner');
             /** @var LenderAccountDisplayManager $lenderAccountDisplayManager */
             $lenderAccountDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
-            $templateVariables['lenderOnProject'] = $lenderAccountDisplayManager->getLenderActivityForProject($project->id_project, $lenderAccount);
+            $template['lenderOnProject'] = $lenderAccountDisplayManager->getLenderActivityForProject($project->id_project, $lenderAccount);
 
-            if ($templateVariables['lenderOnProject']['isInvolved']) {
-                $templateVariables['lenderOnProject']['bidsTable'] = $highchartsService->formatBidsForTable($templateVariables['lenderOnProject']['offers']['all']);
+            if ($template['lenderOnProject']['isInvolved']) {
+                $template['lenderOnProject']['bidsTable'] = $highchartsService->formatBidsForTable($template['lenderOnProject']['offers']['all']);
             }
 
             if (false === empty($request->getSession()->get('bidMessage'))) {
-                $templateVariables['lender']['bidMessage'] = $request->getSession()->get('bidMessage');
+                $template['lender']['bidMessage'] = $request->getSession()->get('bidMessage');
                 $request->getSession()->remove('bidMessage');
             }
         }
 
-        return $this->render('pages/project_detail.html.twig', $templateVariables);
+        $template['conditions'] = [
+            'bids'    => $template['project']['status'] == \projects_status::EN_FUNDING,
+            'myBids'  => isset($template['lenderOnProject']['isInvolved']) && $template['lenderOnProject']['isInvolved'],
+            'finance' => $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY'),
+            'history' => $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY') && $authorizationChecker->isGranted('ROLE_LENDER') && ($template['project']['status'] == \projects_status::FUNDE || $template['project']['status'] >= \projects_status::REMBOURSEMENT)
+        ];
+
+        return $this->render('pages/project_detail.html.twig', $template);
     }
 
     private function checkProjectAndRedirect($projectSlug)
     {
         /** @var \projects $project */
         $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
-        $project->get($projectSlug, 'slug');
+
+        if (false === $project->get($projectSlug, 'slug')) {
+            throw $this->createNotFoundException();
+        }
 
         /** @var \projects_status $projectStatus */
         $projectStatus = $this->get('unilend.service.entity_manager')->getRepository('projects_status');
         $projectStatus->getLastStatut($project->id_project);
 
-        if ($project->status == 0
-            && ($project->display == \projects::DISPLAY_PROJECT_ON || $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') && 28002 == $project->id_project)) {
-            if ($projectStatus->status < \projects_status::A_FUNDER) {
-                return new RedirectResponse('/');
-            }
-            return true;
+        if (
+            0 == $project->status
+            && $projectStatus->status >= \projects_status::EN_FUNDING
+            && (
+                $project->display == \projects::DISPLAY_PROJECT_ON
+                || $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') && 28002 == $project->id_project
+            )
+        ) {
+            return;
         }
-        return new RedirectResponse('/error');
-    }
 
+        throw $this->createNotFoundException();
+    }
 
     /**
      * @Route("/projects/bid/{projectId}", name="bid_on_project")

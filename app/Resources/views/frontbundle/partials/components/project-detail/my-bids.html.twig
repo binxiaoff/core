@@ -1,0 +1,71 @@
+<section id="project-section-myoffers" class="page-section">
+    <div class="tabs">
+        <div class="section-tabs-nav">
+            <header>
+                <h3 id="project-myoffers" class="h3">{% trans %} project-detail_client-offer-table-title {% endtrans %}</h3>
+            </header>
+
+            <ul class="nav nav-tabs">
+                <li id="project-myoffers-inprogress" role="presentation" class="active">
+                    <a href="#myoffers-inprogress" role="tab" data-toggle="tab">{% trans %} project-detail_client-offer-table-pending {% endtrans %}</a>
+                </li>
+                <li id="project-myoffers-rejected" role="presentation">
+                    <a href="#myoffers-rejected" role="tab" data-toggle="tab">{% trans %} project-detail_client-offer-table-refused {% endtrans %}</a>
+                </li>
+            </ul>
+        </div>
+
+        {# Pending #}
+        <div class="section-tabs-content tab-content">
+            <div id="myoffers-inprogress" role="tabpanel" class="tab-pane active" aria-labelledby="project-myoffers-inprogress project-myoffers">
+                <table class="table-myoffers">
+                    <tbody>
+                    {% for lenderBid in lenderOnProject.bidsTable.data %}
+                        {% if lenderBid[3] == 1 or lenderBid[3] == 2 %}
+                            <tr>
+                                <td class="table-myoffers-item-id">{{ lenderBid[0] }}</td>
+                                <td class="table-myoffers-item-interest">{{ lenderBid[1]|__num(1) }}%</td>
+                                <td class="table-myoffers-item-amount">{{ lenderBid[2]|__num(0)|nbsp }}€</td>
+                                <td class="table-myoffers-item-view">
+                                    <a href="{{ lenderBid[4] }}"><span class="icon fa-eye-u32"><span class="sr-only">View your offer</span></span></a>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td class="table-empty" colspan="4">
+                                    <p>{% trans %} project-detail_client-offer-table-no-offers {% endtrans %}</p>
+                                    <a href="#" class="btn-primary">{% trans %} project-detail_client-offer-table-make-offer-button {% endtrans %}</a>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                    </tbody>
+                </table><!-- /.table-myoffers -->
+            </div><!-- /.tab-pane -->
+
+            {# Rejected #}
+            <div id="myoffers-rejected" role="tabpanel" class="tab-pane" aria-labelledby="project-myoffers-rejected project-myoffers">
+                <table class="table-myoffers">
+                    <tbody>
+                    {% for i, item in lenderOnProject.bidsTable.data if item[3] == 3 %}
+                        <tr>
+                            <td class="table-myoffers-item-id">{{ item[0] }}</td>
+                            <td class="table-myoffers-item-interest">{{ item[1]|__num(1) }}%</td>
+                            <td class="table-myoffers-item-amount">{{ item[2]|__num(0)|nbsp }}€</td>
+                            <td class="table-myoffers-item-view">
+                                <a href="{{ item[4] }}"><span class="icon fa-eye-u32"><span class="sr-only">View your offer</span></span></a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td class="table-empty" colspan="4">
+                                <p>{% trans %} project-detail_client-offer-table-no-offers {% endtrans %}</p>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table><!-- /.table-myoffers -->
+            </div><!-- /.tab-pane -->
+        </div><!-- /.section-tabs-content -->
+    </div><!-- /tabs -->
+</section><!-- /.page-section -->

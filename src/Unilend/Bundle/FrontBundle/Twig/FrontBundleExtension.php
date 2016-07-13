@@ -9,7 +9,6 @@ use Symfony\Component\Asset\Packages;
 
 class FrontBundleExtension extends \Twig_Extension
 {
-
     /** @var string $url */
     private $url;
     /** @var StatisticsManager */
@@ -149,12 +148,20 @@ class FrontBundleExtension extends \Twig_Extension
 
     public function nbspFilter($sString)
     {
-        return preg_replace('/[ ](?=[^>]*(?:<|$))/', '&nbsp', $sString);
+        return preg_replace('/[ ](?=[^>]*(?:<|$))/', '&nbsp;', $sString);
     }
 
-    public function numFilter($sString)
+    /**
+     * @param int|float $number
+     * @param int|null  $decimals
+     * @return string
+     */
+    public function numFilter($number, $decimals = null)
     {
-        return $sString;
+        if (is_null($decimals)) {
+            $decimals = 2;
+        }
+        return number_format((float) $number, $decimals, ',', ' ');
     }
 
     public function convertProjectRiskFilter($sProjectRating)

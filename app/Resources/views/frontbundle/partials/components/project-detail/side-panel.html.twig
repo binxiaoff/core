@@ -1,37 +1,33 @@
 <aside class="project-single-info-wrap">
     <div class="project-single-info-position">
         <div class="project-single-info">
-                <div class="project-single-cost">
-                    <div class="project-single-cost-total">
-                        <span class="sr-only">{% trans with { '%amount%' : project.amount|nbsp }%} project-detail_amount-sentence {% endtrans %} </span>
+            <div class="project-single-cost">
+                <div class="project-single-cost-total">
+                    {% trans with { '%amount%' : project.amount|__num(0)|nbsp, '%startTag%' : '<span class="sr-only">', '%endTag%' : '</span>' }%} project-detail_amount-sentence {% endtrans %}
+                </div>
+                <div class="project-single-cost-progress"
+                    title="{% trans with {'%percentFunded%' : project.percentFunded } %}
+                    project-detail_project-funding-progress-bar-tooltip {% endtrans %}" data-toggle="tooltip">
+                    <div class="project-single-cost-progress-funded" style="width: {{ project.percentFunded }}%">
+                        <span class="sr-only">{% trans with { '%percentFunded%' : project.percentFunded } %} project-detail_percentage-funded-text {% endtrans %}</span>
                     </div>
-                     <div class="project-single-cost-progress"
-                          title="{% trans with {'%percentFunded%' : project.percentFunded } %}
-                          project-detail_project-funding-progress-bar-tooltip {% endtrans %}" data-toggle="tooltip">
-                         <div class="project-single-cost-progress-funded" style="width: {{ project.percentFunded }}%">
-                                <span class="sr-only">{% trans with { '%percentFunded%' : project.percentFunded } %} project-detail_pecentage-funded-text {% endtrans %}</span>
+                </div><!-- /.project-single-cost-progress -->
+                {% if project.status == constant('\\projects_status::EN_FUNDING') %}
+                    <div class="project-single-cost-amount">
+                        <div class="project-single-cost-amount-funded">{% trans with { '%costFunded%': project.costFunded|__num(0) }%} project-detail_already-bid-amount {% endtrans %}</div>
+                        {% if  project.costRemaining == 0 %}
+                            <div class="project-single-cost-amount-remaining">
+                                {% trans with { '%costRemaining%' : project.costRemaining|__num(0)|nbsp } %} project-detail_remaining-amount {% endtrans %}
                             </div>
-                        </div><!-- /.project-single-cost-progress -->
-                    {% if project.status == constant('\\projects_status::EN_FUNDING') %}
-                        <div class="project-single-cost-amount">
-                            {% if project.costFunded > project.amount %}
-                                <div class="project-single-cost-amount-funded">{% trans with { '%costFunded%': project.amount }%} project-detail_already-bid-amount {% endtrans %}</div>
-                            {% else %}
-                                <div class="project-single-cost-amount-funded">{% trans with { '%costFunded%': project.costFunded }%} project-detail_already-bid-amount {% endtrans %}</div>
-                            {% endif %}
-                            {% if  project.costRemaining > 0 %}
-                                <div class="project-single-cost-amount-remaining">
-                                    {% trans with { '%costRemaining%' : project.costRemaining|nbsp } %} project-detail_remaining-amount {% endtrans %}
-                                </div>
-                            {% endif %}
-                        </div><!-- /.project-single-cost-amount -->
-                    {% endif %}
+                        {% endif %}
+                    </div><!-- /.project-single-cost-amount -->
+                {% endif %}
                 </div><!-- /.project-single-cost -->
 
                 <div class="row">
                     <div class="project-single-interest">
                         <span class="icon fa-linechart-u32"></span>
-                        <span class="c-p1"><strong>{{ project.avg_rate|__num(1) }}</strong>%</span>
+                        <span class="c-p1"><strong>{{ project.averageRate|__num(1) }}</strong>%</span>
                         <div class="label">{% trans %} project-detail_average-rate-label {% endtrans %}</div>
                     </div><!-- /.project-single-interest -->
 
