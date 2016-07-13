@@ -66,7 +66,7 @@
             {%  elseif project.status == constant('\\projects_status::PRET_REFUSE') %}
                 <p class="h4">{% trans %} project-detail_side-bar-loan-rejected-title {% endtrans %}</p>
                 <p>{% trans %} project-detail_side-bar-loan-rejected-message {% endtrans %}</p>
-            {% elseif project.projectPending == true %}
+            {% elseif project.projectPending is defined and project.projectPending == true %}
                 <p>{% trans %} project-detail_side-bar-project-closing-pending {% endtrans %}</p>
             {% elseif is_granted('IS_AUTHENTICATED_FULLY') %}
                 {% if app.user.getClientStatus() < constant('\\clients_status::VALIDATED') %}

@@ -21,18 +21,23 @@ class LenderAccountDisplayManager
         /** @var \projects $project */
         $project = $this->entityManager->getRepository('projects');
         $project->get($projectId);
+        /** @var \projects_status $projectStatus */
+        $projectStatus = $this->entityManager->getRepository('projects_status');
+        $projectStatus->getLastStatut($project->id_project);
 
         $lenderIsInvolved = $this->isLenderInvolvedInProject($project, $lenderAccount);
 
-        if ($lenderIsInvolved) {
+        if (false === $lenderIsInvolved) {
+            $lenderActivity['isInvolved'] = $lenderIsInvolved;
+        } else {
             $lenderActivity = [
                 'isInvolved' => $lenderIsInvolved,
-                'offers' => $this->getBidInformationForProject($project, $lenderAccount),
-                'loans' => $this->getLoanInformationForProject($project, $lenderAccount)
-
+                'offers'     => $this->getBidInformationForProject($project, $lenderAccount)
             ];
-        } else {
-            $lenderActivity = ['isInvolved' => $lenderIsInvolved];
+
+            if ($projectStatus->status >= \projects_status::FUNDE) {
+                $lenderActivity['loans'] = $this->getLoanInformationForProject($project, $lenderAccount);
+            }
         }
 
         return $lenderActivity;
@@ -71,8 +76,6 @@ class LenderAccountDisplayManager
         $loans = $this->entityManager->getRepository('loans');
         /** @var \echeanciers $repaymentSchedule */
         $repaymentSchedule = $this->entityManager->getRepository('echeanciers');
-        /** @var \projects_status_history $projectStatusHistory */
-        $projectStatusHistory = $this->entityManager->getRepository('projects_status_history');
 
         $loanInfo = [];
 
@@ -81,7 +84,7 @@ class LenderAccountDisplayManager
         $loanInfo['remainingMonths']       = $repaymentSchedule->counterPeriodRestantes($lenderAccount->id_lender_account, $project->id_project);
         $loanInfo['myLoanOnProject']       = $loans->getBidsValid($project->id_project, $lenderAccount->id_lender_account);
         $loanInfo['myAverageLoanRate']     = $loans->getAvgLoansPreteur($project->id_project, $lenderAccount->id_lender_account);
-        $loanInfo['percentageRecovered'] = $loanInfo['amountAlreadyPaidBack'] / $loanInfo['myLoanOnProject']['solde'] * 100;
+        $loanInfo['percentageRecovered']   = $loanInfo['amountAlreadyPaidBack'] / $loanInfo['myLoanOnProject']['solde'] * 100;
 
         return $loanInfo;
     }

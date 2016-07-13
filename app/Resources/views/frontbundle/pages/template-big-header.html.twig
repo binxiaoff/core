@@ -3,15 +3,15 @@
 {% set bodyId = '' %}
 
 {% block extendPageHeader %}
-    <div class="page-header-image">{{ svgimage('#header-' ~ page.header_image, '', 300, 300)|raw }}</div>
+    <div class="page-header-image">{{ svgimage('#header-' ~ cms.header_image, '', 300, 300)|raw }}</div>
 {% endblock %}
 
 {% block pageAsideBody %}
     <div class="page-aside-body h-card vcard ui-has-sticky">
-        {{ page.left_content|raw }}
+        {{ cms.left_content|raw }}
     </div><!-- /.page-aside-body -->
 {% endblock %}
 
 {% block pageContentBody %}
-    {{ page.right_content|raw }}
+    {{ cms.right_content|raw }}
 {% endblock %}

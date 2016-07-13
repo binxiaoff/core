@@ -28,52 +28,33 @@
 
 class tree_elements extends tree_elements_crud
 {
-
-    function tree_elements($bdd, $params = '')
+    public function tree_elements($bdd, $params = '')
     {
         parent::tree_elements($bdd, $params);
     }
 
-    function get($id, $field = 'id')
-    {
-        return parent::get($id, $field);
-    }
-
-    function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    function delete($id, $field = 'id')
-    {
-        parent::delete($id, $field);
-    }
-
-    function create($cs = '')
-    {
-        $id = parent::create($cs);
-        return $id;
-    }
-
-    function select($where = '', $order = '', $start = '', $nb = '')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
         }
+
         if ($order != '') {
             $order = ' ORDER BY ' . $order;
         }
-        $sql = 'SELECT * FROM `tree_elements`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
+        $result   = [];
+        $sql      = 'SELECT * FROM `tree_elements`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
         $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
+
         return $result;
     }
 
-    function counter($where = '')
+    public function counter($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -82,13 +63,34 @@ class tree_elements extends tree_elements_crud
         $sql = 'SELECT count(*) FROM `tree_elements` ' . $where;
 
         $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
+        return (int) $this->bdd->result($result);
     }
 
-    function exist($id, $field = 'id')
+    public function exist($id, $field = 'id')
     {
         $sql    = 'SELECT * FROM `tree_elements` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result) > 0);
+        return ($this->bdd->fetch_assoc($result) > 0);
+    }
+
+    public function selectWithDefinition($where, $order = '')
+    {
+        if ($order != '') {
+            $order = ' ORDER BY ' . $order;
+        }
+
+        $result   = [];
+        $resultat = $this->bdd->query('
+            SELECT t.*, e.id_template, e.name, e.slug, e.ordre, e.type_element
+            FROM tree_elements t
+            INNER JOIN elements e ON t.id_element = e.id_element
+            WHERE ' . $where . $order
+        );
+
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
+            $result[] = $record;
+        }
+
+        return $result;
     }
 }

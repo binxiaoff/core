@@ -7,6 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
@@ -15,6 +16,7 @@ use Unilend\Bundle\FrontBundle\Service\HighchartsService;
 use Unilend\Bundle\FrontBundle\Service\LenderAccountDisplayManager;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
+use Unilend\core\Loader;
 
 class ProjectsController extends Controller
 {
@@ -113,10 +115,7 @@ class ProjectsController extends Controller
         $project->get($projectSlug, 'slug');
 
         $templateVariables            = [];
-
         $templateVariables['project'] = $projectDisplayManager->getProjectInformationForDisplay($project);
-
-
         $accountData                  = $projectDisplayManager->getProjectFinancialData($project);
         $templateVariables['charts']  = $highchartsService->getFinancialProjectDataCharts($accountData);
         $templateVariables['tables']  = $highchartsService->getFinancialProjectDataForTables($accountData);
@@ -133,8 +132,8 @@ class ProjectsController extends Controller
             $lenderAccountDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
             $templateVariables['lenderOnProject'] = $lenderAccountDisplayManager->getLenderActivityForProject($project->id_project, $lenderAccount);
 
-            if ($lenderAccountDisplayManager->isLenderInvolvedInProject($project, $lenderAccount)) {
-                $templateVariables['lenderOnProject']['bidsTable'] = $highchartsService->formatBidsForTable(['lenderOnProject']['offers']['all']);
+            if ($templateVariables['lenderOnProject']['isInvolved']) {
+                $templateVariables['lenderOnProject']['bidsTable'] = $highchartsService->formatBidsForTable($templateVariables['lenderOnProject']['offers']['all']);
             }
 
             if (false === empty($request->getSession()->get('bidMessage'))) {
@@ -258,7 +257,7 @@ class ProjectsController extends Controller
     public function _pop_up_fast_pret()
     {
         //Recuperation des element de traductions
-        $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
+        $this->lng = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
 
         $this->projects = $this->loadData('projects');
         $this->bids     = $this->loadData('bids');
@@ -297,7 +296,7 @@ class ProjectsController extends Controller
     public function _pop_valid_pret()
     {
         //Recuperation des element de traductions
-        $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
+        $this->lng = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
 
         $this->projects = $this->loadData('projects');
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
@@ -314,7 +313,7 @@ class ProjectsController extends Controller
     public function _pop_valid_pret_mobile()
     {
         //Recuperation des element de traductions
-        $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
+        $this->lng = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
 
         $this->projects = $this->loadData('projects');
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
@@ -331,18 +330,288 @@ class ProjectsController extends Controller
     /**
      * @Route("/projects/export/income/{projectId}", name="export_income_statement")
      */
-    public function exportIncomeStatement($projectId, Request $request)
+    public function exportIncomeStatementAction($projectId)
     {
-        return new Response('ca viendra .... ');
+        /** @var \projects $project */
+        $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
+
+        if (false === $project->get($projectId, 'id_project')
+            || $project->status != 0
+            || $project->display != \projects::DISPLAY_PROJECT_ON
+            || false === $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
+            || false === $this->get('security.authorization_checker')->isGranted('ROLE_LENDER')
+        ) {
+            return new RedirectResponse('/');
+        }
+
+        /** @var \dates $dates */
+        $dates = Loader::loadLib('dates');
+        /** @var TranslationManager $translationManager */
+        $translationManager = $this->get('unilend.service.translation_manager');
+        $translations = $translationManager->getAllTranslationsForSection('preteur-projets'); //TODO replace by new translations once they are done
+
+        /** @var \companies $oCompany */
+        $oCompany = $this->get('unilend.service.entity_manager')->getRepository('companies');
+        $oCompany->get($project->id_company, 'id_company');
+
+        /** @var \companies_bilans $oAnnualAccounts */
+        $oAnnualAccounts    = $this->get('unilend.service.entity_manager')->getRepository('companies_bilans');
+        $aAnnualAccounts    = $oAnnualAccounts->select('id_company = "' . $oCompany->id_company . '" AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $project->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
+
+        /** @var \settings $oSetting */
+        $oSetting = $this->get('unilend.service.entity_manager')->getRepository('settings');
+        $oSetting->get('Entreprises fundés au passage du risque lot 1', 'type');
+        $aFundedCompanies     = explode(',', $oSetting->value);
+        $bPreviousRiskProject = in_array($oCompany->id_company, $aFundedCompanies);
+
+
+        $iRow         = 1;
+        /** @var \PHPExcel $oDocument */
+        $oDocument    = new \PHPExcel();
+        $oActiveSheet = $oDocument->setActiveSheetIndex(0);
+        $oActiveSheet->setCellValueByColumnAndRow(0, $iRow, 'Date de clôture');
+        $oActiveSheet->setCellValueByColumnAndRow(1, $iRow, $dates->formatDate($aAnnualAccounts[0]['cloture_exercice_fiscal'], 'd/m/Y'));
+        $oActiveSheet->setCellValueByColumnAndRow(2, $iRow, $dates->formatDate($aAnnualAccounts[1]['cloture_exercice_fiscal'], 'd/m/Y'));
+        $oActiveSheet->setCellValueByColumnAndRow(3, $iRow, $dates->formatDate($aAnnualAccounts[2]['cloture_exercice_fiscal'], 'd/m/Y'));
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, 'Durée de l\'exercice');
+        $oActiveSheet->setCellValueByColumnAndRow(1, $iRow, str_replace('[DURATION]', $aAnnualAccounts[0]['duree_exercice_fiscal'], $translations['annual-accounts-duration-months']));
+        $oActiveSheet->setCellValueByColumnAndRow(2, $iRow, str_replace('[DURATION]', $aAnnualAccounts[1]['duree_exercice_fiscal'], $translations['annual-accounts-duration-months']));
+        $oActiveSheet->setCellValueByColumnAndRow(3, $iRow, str_replace('[DURATION]', $aAnnualAccounts[2]['duree_exercice_fiscal'], $translations['annual-accounts-duration-months']));
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['compte-de-resultats']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['chiffe-daffaires']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['ca']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['resultat-brut-dexploitation']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_brute_exploitation']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['resultat-dexploitation']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_exploitation']);
+        }
+        if (false === $bPreviousRiskProject) {
+            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['resultat-financier']);
+            for ($i = 0; $i < 3; $i++) {
+                $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_financier']);
+            }
+            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['produit-exceptionnel']);
+            for ($i = 0; $i < 3; $i++) {
+                $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['produit_exceptionnel']);
+            }
+            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['charges-exceptionnelles']);
+            for ($i = 0; $i < 3; $i++) {
+                $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['charges_exceptionnelles']);
+            }
+            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['resultat-exceptionnel']);
+            for ($i = 0; $i < 3; $i++) {
+                $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_exceptionnel']);
+            }
+            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['resultat-net']);
+            for ($i = 0; $i < 3; $i++) {
+                $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_net']);
+            }
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['investissements']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['investissements']);
+        }
+
+        /** @var \PHPExcel_Writer_CSV $oWriter */
+        $oWriter = \PHPExcel_IOFactory::createWriter($oDocument, 'CSV');
+        $oWriter->setUseBOM(true);
+        $oWriter->setDelimiter(';');
+        ob_start();
+        $oWriter->save('php://output');
+        $response = new Response(ob_get_clean());
+        $response->headers->set('Content-Type', 'text/csv');
+        $response->headers->set('Content-Disposition', 'attachment;filename=compte_de_resultats_' . $project->slug . '.csv');
+        $response->headers->addCacheControlDirective('must-revalidate', true);
+
+        return $response;
     }
 
     /**
      * @Route("/projects/export/balance/{projectId}", name="export_balance_sheet")
      */
-    public function exportBalanceSheet($projectId, Request $request)
+    public function exportBalanceSheetAction($projectId, Request $request)
     {
-        return new Response('ca viendra .... ');
+        /** @var \projects $project */
+        $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
+
+        if (false === $project->get($projectId, 'id_project')
+            || $project->status != 0
+            || $project->display != \projects::DISPLAY_PROJECT_ON
+            || false === $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
+            || false === $this->get('security.authorization_checker')->isGranted('ROLE_LENDER')
+        ) {
+            return new RedirectResponse('/');
+        }
+
+        /** @var TranslationManager $translationManager */
+        $translationManager = $this->get('unilend.service.translation_manager');
+        $translations = $translationManager->getAllTranslationsForSection('preteur-projets'); //TODO replace by new translations once they are done
+
+        /** @var \companies $oCompany */
+        $oCompany = $this->get('unilend.service.entity_manager')->getRepository('companies');
+        $oCompany->get($project->id_company, 'id_company');
+
+        /** @var \companies_bilans $oAnnualAccounts */
+        $oAnnualAccounts    = $this->get('unilend.service.entity_manager')->getRepository('companies_bilans');
+        $aAnnualAccounts    = $oAnnualAccounts->select('id_company = "' . $oCompany->id_company . '" AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $project->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
+        $aAnnualAccountsIds = array_column($aAnnualAccounts, 'id_bilan');
+
+        /** @var \companies_actif_passif $oAssetsDebts */
+        $oAssetsDebts = $this->get('unilend.service.entity_manager')->getRepository('companies_actif_passif');
+        $aAssetsDebts = $oAssetsDebts->select('id_bilan IN (' . implode(', ', $aAnnualAccountsIds) . ')', 'FIELD(id_bilan, ' . implode(', ', $aAnnualAccountsIds) . ') ASC');
+
+        /** @var \settings $oSetting */
+        $oSetting = $this->get('unilend.service.entity_manager')->getRepository('settings');
+        $oSetting->get('Entreprises fundés au passage du risque lot 1', 'type');
+        $aFundedCompanies     = explode(',', $oSetting->value);
+        $bPreviousRiskProject = in_array($oCompany->id_company, $aFundedCompanies);
+
+        $iRow         = 1;
+        /** @var \PHPExcel $oDocument */
+        $oDocument    = new \PHPExcel();
+        $oActiveSheet = $oDocument->setActiveSheetIndex(0);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['bilan']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['actif']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['immobilisations-corporelles']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['immobilisations_corporelles']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['immobilisations-incorporelles']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['immobilisations_incorporelles']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['immobilisations-financieres']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['immobilisations_financieres']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['stocks']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['stocks']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['creances-clients']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['creances_clients']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['disponibilites']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['disponibilites']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['valeurs-mobilieres-de-placement']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['valeurs_mobilieres_de_placement']);
+        }
+        if (false === $bPreviousRiskProject && ($aAssetsDebts[0]['comptes_regularisation_actif'] != 0 || $aAssetsDebts[1]['comptes_regularisation_actif'] != 0 || $aAssetsDebts[2]['comptes_regularisation_actif'] != 0)) {
+            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['comptes-regularisation']);
+            for ($i = 0; $i < 3; $i++) {
+                $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['comptes_regularisation_actif']);
+            }
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['total-bilan-actifs']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['immobilisations_corporelles'] + $aAssetsDebts[$i]['immobilisations_incorporelles'] + $aAssetsDebts[$i]['immobilisations_financieres'] + $aAssetsDebts[$i]['stocks'] + $aAssetsDebts[$i]['creances_clients'] + $aAssetsDebts[$i]['disponibilites'] + $aAssetsDebts[$i]['valeurs_mobilieres_de_placement'] + $aAssetsDebts[$i]['comptes_regularisation_actif']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['passif']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['capitaux-propres']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['capitaux_propres']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['provisions-pour-risques-charges']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['provisions_pour_risques_et_charges']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['amortissement-sur-immo']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['amortissement_sur_immo']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['dettes-financieres']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['dettes_financieres']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['dettes-fournisseurs']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['dettes_fournisseurs']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['autres-dettes']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['autres_dettes']);
+        }
+        if (false === $bPreviousRiskProject && ($aAssetsDebts[0]['comptes_regularisation_passif'] != 0 || $aAssetsDebts[1]['comptes_regularisation_passif'] != 0 || $aAssetsDebts[2]['comptes_regularisation_passif'] != 0)) {
+            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['comptes-regularisation']);
+            for ($i = 0; $i < 3; $i++) {
+                $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['comptes_regularisation_passif']);
+            }
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['total-bilan-passifs']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['capitaux_propres'] + $aAssetsDebts[$i]['provisions_pour_risques_et_charges'] + $aAssetsDebts[$i]['amortissement_sur_immo'] + $aAssetsDebts[$i]['dettes_financieres'] + $aAssetsDebts[$i]['dettes_fournisseurs'] + $aAssetsDebts[$i]['autres_dettes'] + $aAssetsDebts[$i]['comptes_regularisation_passif']);
+        }
+
+        /** @var \PHPExcel_Writer_CSV $oWriter */
+        $oWriter = \PHPExcel_IOFactory::createWriter($oDocument, 'CSV');
+        $oWriter->setUseBOM(true);
+        $oWriter->setDelimiter(';');
+        ob_start();
+        $oWriter->save('php://output');
+        $response = new Response(ob_get_clean());
+        $response->headers->set('Content-Type', 'text/csv');
+        $response->headers->set('Content-Disposition', 'attachment;filename=bilan_' . $project->slug . '.csv');
+        $response->headers->addCacheControlDirective('must-revalidate', true);
+
+        return $response;
     }
 
+    /**
+     * @Route("/projects/export/bids/{projectId}", name="export_bids")
+     */
+    public function exportBidsAction($projectId)
+    {
+        /** @var \projects $project */
+        $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
+
+        if ($project->get($projectId, 'id_project')) {
+            /** @var \projects_status $projectsStatus */
+            $projectsStatus = $this->get('unilend.service.entity_manager')->getRepository('projects_status');
+            $projectsStatus->getLastStatut($project->id_project);
+
+            /** @var TranslationManager $translationManager */
+            $translationManager = $this->get('unilend.service.translation_manager');
+            $translations = $translationManager->getAllTranslationsForSection('preteur-projets'); //TODO replace by new translations once they are done
+
+            if ($projectsStatus->status == \projects_status::EN_FUNDING) {
+                ob_start();
+                echo "\xEF\xBB\xBF";
+                echo '"N°";"' . $translations['taux-dinteret'] . '";"' . $translations['montant'] . '";"' . $translations['statuts'] . '"' . PHP_EOL;
+
+                /** @var \bids $bids */
+                $this->get('unilend.service.entity_manager')->getRepository('bids');
+                $offset = 0;
+                $limit  = 1000;
+
+                $bidStatus = array(
+                    \bids::STATUS_BID_PENDING  => $translations['enchere-en-cours'],
+                    \bids::STATUS_BID_ACCEPTED => $translations['enchere-ok'],
+                    \bids::STATUS_BID_REJECTED => $translations['enchere-ko']
+                );
+
+                while ($bidsList = $bids->select('id_project = ' . $project->id_project, 'ordre ASC', $offset, $limit)) {
+                    foreach ($bidsList as $bid) {
+                        echo $bid['ordre'] . ';' . $bid['rate'] . ' %;' . bcdiv($bid['amount'], 100) . ' €;"' . $bidStatus[$bid['status']] . '"' . PHP_EOL;
+                    }
+                    $offset += $limit;
+                }
+            }
+        }
+        $response = new Response(ob_get_clean());
+        $response->headers->set('Content-Type', 'text/csv');
+        $response->headers->set('Content-Disposition', 'attachment;filename=' . $project->slug . '_bids.csv');
+        $response->headers->addCacheControlDirective('must-revalidate', true);
+
+        return $response;
+    }
 
 }

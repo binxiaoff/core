@@ -64,7 +64,7 @@
 
     @include retina {
       $image-path: 'logo/logo-and-type-unilend-245x52-purple@2x.png';
-      background-image: url($image-path);
+      background-image: image-url($image-path);
       @include background-size(contain);
     }
   }

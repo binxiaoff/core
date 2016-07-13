@@ -6820,8 +6820,10 @@ label.custom-input-switch.custom-input-switch-sm > input[type="checkbox"]:checke
 .reviews .reviewers > li svg,
 .reviews .reviewers > li .svg-icon {
   display: none;
+  height: 33px;
+  width: auto;
 }
-/* line 67, ../sass/site/components/_reviews.scss */
+/* line 69, ../sass/site/components/_reviews.scss */
 .reviews .reviewers > li.active a {
   background-image: inline-svg-code('<svg width="20" height="20" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" preserveAspectRatio="xMidYMid"><g stroke="#9f9d9f" stroke-width="2" fill="#9f9d9f"><circle cx="10" cy="10" r="4" /></g></svg>');
 }
@@ -6830,16 +6832,16 @@ label.custom-input-switch.custom-input-switch-sm > input[type="checkbox"]:checke
   .reviews {
     padding-top: 50px;
   }
-  /* line 77, ../sass/site/components/_reviews.scss */
+  /* line 79, ../sass/site/components/_reviews.scss */
   .reviews .reviewer {
     display: none;
   }
-  /* line 81, ../sass/site/components/_reviews.scss */
+  /* line 83, ../sass/site/components/_reviews.scss */
   .reviews .reviewers {
     margin-top: 30px;
     text-align: center;
   }
-  /* line 85, ../sass/site/components/_reviews.scss */
+  /* line 87, ../sass/site/components/_reviews.scss */
   .reviews .reviewers > li {
     -webkit-filter: grayscale(100%);
     filter: grayscale(100%);
@@ -6849,20 +6851,22 @@ label.custom-input-switch.custom-input-switch-sm > input[type="checkbox"]:checke
     opacity: .4;
     vertical-align: middle;
   }
-  /* line 93, ../sass/site/components/_reviews.scss */
+  /* line 95, ../sass/site/components/_reviews.scss */
   .reviews .reviewers > li a {
     width: auto;
     height: auto;
     background-image: none !important;
   }
-  /* line 99, ../sass/site/components/_reviews.scss */
+  /* line 101, ../sass/site/components/_reviews.scss */
   .reviews .reviewers > li img,
   .reviews .reviewers > li svg,
   .reviews .reviewers > li .svg-icon {
     display: block;
     vertical-align: middle;
+    height: 33px;
+    width: auto;
   }
-  /* line 106, ../sass/site/components/_reviews.scss */
+  /* line 110, ../sass/site/components/_reviews.scss */
   .reviews .reviewers > li.active {
     -webkit-filter: initial;
     filter: initial;
@@ -13277,7 +13281,7 @@ thead.table-sortable-columns {
 @media screen and (min-width: 1600px) and (-webkit-min-device-pixel-ratio: 2), screen and (min-width: 1600px) and (min-resolution: 192dpi) {
   /* line 98, ../sass/site/components/site/_header.scss */
   .site-logo {
-    background-image: url("../images/logo/logo-and-type-unilend-245x52-purple@2x.png");
+    background-image: url('../images/logo/logo-and-type-unilend-245x52-purple@2x.png?1467967830');
     background-size: contain;
   }
 }
@@ -13802,7 +13806,7 @@ thead.table-sortable-columns {
 @media screen and (min-width: 1024px) and (max-width: 1299px) and (min-width: 1600px) and (-webkit-min-device-pixel-ratio: 2), screen and (min-width: 1024px) and (max-width: 1299px) and (min-width: 1600px) and (min-resolution: 192dpi) {
   /* line 467, ../sass/site/components/site/_header.scss */
   .site-header .site-logo, .site-header.site-header-dashboard .site-logo {
-    background-image: url("../images/logo/logo-and-type-unilend-245x52-purple@2x.png");
+    background-image: url('../images/logo/logo-and-type-unilend-245x52-purple@2x.png?1467967830');
     background-size: contain;
   }
 }
@@ -14302,7 +14306,7 @@ thead.table-sortable-columns {
 @media screen and (min-width: 1300px) and (max-width: 1599px) and (min-width: 1600px) and (-webkit-min-device-pixel-ratio: 2), screen and (min-width: 1300px) and (max-width: 1599px) and (min-width: 1600px) and (min-resolution: 192dpi) {
   /* line 467, ../sass/site/components/site/_header.scss */
   .site-header .site-logo, .site-header.site-header-dashboard .site-logo {
-    background-image: url("../images/logo/logo-and-type-unilend-245x52-purple@2x.png");
+    background-image: url('../images/logo/logo-and-type-unilend-245x52-purple@2x.png?1467967830');
     background-size: contain;
   }
 }
@@ -14848,7 +14852,7 @@ thead.table-sortable-columns {
 @media screen and (min-width: 1600px) and (min-width: 1600px) and (-webkit-min-device-pixel-ratio: 2), screen and (min-width: 1600px) and (min-width: 1600px) and (min-resolution: 192dpi) {
   /* line 467, ../sass/site/components/site/_header.scss */
   .site-header .site-logo, .site-header.site-header-dashboard .site-logo {
-    background-image: url("../images/logo/logo-and-type-unilend-245x52-purple@2x.png");
+    background-image: url('../images/logo/logo-and-type-unilend-245x52-purple@2x.png?1467967830');
     background-size: contain;
   }
 }
@@ -21336,6 +21340,23 @@ thead.table-sortable-columns {
   border-left-color: #787679;
 }
 
+/* line 8, ../sass/site/pages/_single.scss */
+.page-single .page-header .hero-wrap {
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+/* line 14, ../sass/site/pages/_single.scss */
+.page-single .page-header .page-title {
+  position: absolute !important;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  clip: rect(1px 1px 1px 1px);
+  /* IE6, IE7 */
+  clip: rect(1px, 1px, 1px, 1px);
+}
+
 /* line 6, ../sass/site/pages/_sitemap.scss */
 #page-sitemap.page .page-content .list-links {
   margin-left: 1em;
@@ -22681,42 +22702,6 @@ thead.table-sortable-columns {
 /* line 379, ../sass/site/pages/preter/_devenir.scss */
 .ui-site-header-fixed .site-header .site-controls .site-header-message {
   margin-top: 24px;
-}
-
-/* line 8, ../sass/site/pages/preter/_single.scss */
-.page-single-preter .page-header .hero-wrap {
-  background-image: url('../images/headers/projets-index-header-1680x790.jpg?1467967830');
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-size: cover;
-}
-/* line 15, ../sass/site/pages/preter/_single.scss */
-.page-single-preter .page-header .page-title {
-  position: absolute !important;
-  height: 1px;
-  width: 1px;
-  overflow: hidden;
-  clip: rect(1px 1px 1px 1px);
-  /* IE6, IE7 */
-  clip: rect(1px, 1px, 1px, 1px);
-}
-
-/* line 8, ../sass/site/pages/apropos/_single.scss */
-.page-single-apropos .page-header .hero-wrap {
-  background-image: url('../images/headers/apropos-header-1682x400.jpg?1467967830');
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-size: cover;
-}
-/* line 15, ../sass/site/pages/apropos/_single.scss */
-.page-single-apropos .page-header .page-title {
-  position: absolute !important;
-  height: 1px;
-  width: 1px;
-  overflow: hidden;
-  clip: rect(1px 1px 1px 1px);
-  /* IE6, IE7 */
-  clip: rect(1px, 1px, 1px, 1px);
 }
 
 @media screen and (max-width: 599px) {
