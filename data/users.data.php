@@ -238,13 +238,9 @@ class users extends users_crud
 
         $previousPasswords->id_user  = $user->id_user;
         $previousPasswords->password = $user->password;
-        $previousPasswords->archived  = date("Y-m-d H:i:s");
+        $previousPasswords->archived = date("Y-m-d H:i:s");
         $previousPasswords->create();
         $previousPasswords->deleteOldPasswords($user->id_user);
-
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
-        $mailerManager = $this->get('unilend.service.email_manager');
-        $mailerManager->sendNewPasswordEmail($sPassword, $this->users);
     }
 
     /**

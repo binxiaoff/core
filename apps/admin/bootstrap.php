@@ -183,7 +183,7 @@ class bootstrap extends Controller
                 $_SESSION['freeow']['title']   = 'Modification de votre mot de passe';
                 $_SESSION['freeow']['message'] = 'Votre mot de passe doit &ecirc;tre mis &agrave; jour afin de conserver un niveau de s&eacute;curit&eacute; optimal!';
 
-                header('Location:' . $this->lurl . '/edit_password/' . $_SESSION['user']['id_user']);
+                header('Location:' . $this->lurl . '/edit_password/');
                 die;
             }
         }

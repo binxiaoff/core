@@ -56,13 +56,13 @@
                     </tr>
                 <?php endif; ?>
                 <tr>
-                    <td>
-                        <a href="<?= $this->lurl ?>/users/generate_new_password/<?= $this->users->id_user ?>" class="btn_link">Générer un nouveau mot de passe</a>
-                    </td>
                     <th>
+                        <a href="<?= $this->lurl ?>/users/generate_new_password/<?= $this->users->id_user ?>" style="white-space: nowrap;" class="btn_link">Générer un nouveau mot de passe</a>
+                    </th>
+                    <td>
                         <input type="hidden" name="form_mod_users" id="form_mod_users"/>
                         <input type="submit" value="Valider" title="Valider" name="send_users" id="send_users" class="btn"/>
-                    </th>
+                    </td>
                 </tr>
             </table>
         </fieldset>

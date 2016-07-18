@@ -20,6 +20,10 @@ class rootController extends bootstrap
                 $sNewPassword = $this->ficelle->generatePassword(10);
                 $this->users->changePassword($sNewPassword, $this->users, true);
 
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
+                $mailerManager = $this->get('unilend.service.email_manager');
+                $mailerManager->sendNewPasswordEmail($sNewPassword, $this->users);
+
                 $this->loggin_connection_admin                 = $this->loadData('loggin_connection_admin');
                 $this->loggin_connection_admin->id_user        = $this->users->id_user;
                 $this->loggin_connection_admin->nom_user       = $this->users->firstname . " " . $this->users->name;
@@ -124,20 +128,9 @@ class rootController extends bootstrap
 
         $_SESSION['request_url'] = $this->url;
 
-        if ($this->users->get($this->params[0], 'id_user') && $this->users->id_user != $_SESSION['user']['id_user']) {
-            header('Location:' . $this->lurl . '/users');
-            die;
-        }
-
-        if (isset($_POST['form_edit_pass_user'])) {
+        if (isset($_POST['form_edit_pass_user']) && isset($_SESSION['user']['id_user']) && $this->users->get($_SESSION['user']['id_user'])) {
             /** @var \previous_passwords $previousPasswords */
             $previousPasswords = $this->loadData('previous_passwords');
-
-            if ($_POST['id_user'] != $_SESSION['user']['id_user']) {
-                header('Location:' . $this->lurl . '/users');
-                die;
-            }
-            $this->users->get($_POST['id_user'], 'id_user');
 
             $this->retour_pass = '';
             if ($_POST['old_pass'] == '' || $_POST['new_pass'] == '' || $_POST['new_pass2'] == '') {
@@ -176,7 +169,6 @@ class rootController extends bootstrap
 
                 header('Location:' . $this->lurl);
                 die;
-
             } else {
                 $this->retour_pass = "La confirmation du nouveau de passe doit être la même que votre nouveau mot de passe";
             }
