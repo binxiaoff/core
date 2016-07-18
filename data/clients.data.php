@@ -127,6 +127,8 @@ class clients extends clients_crud
         unset($_SESSION['client']);
         unset($_SESSION['panier']);
         unset($_SESSION['partenaire']);
+        unset($_SESSION['id_preteur']);
+        unset($_SESSION['id_emprunteur']);
 
         if ($bRedirect) {
             header('Location: http://' . $_SERVER['HTTP_HOST'] . '/' . (isset($this->params['lng']) ? $this->params['lng'] : '') . $this->loginPage);
