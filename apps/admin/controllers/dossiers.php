@@ -2439,14 +2439,14 @@ class dossiersController extends bootstrap
         $vatRate = (float) $oSettings->value;
 
         $varMail = array(
-            'surl'                => $this->surl,
-            'url'                 => $this->furl,
-            'prenom_p'            => $oClients->prenom,
-            'lien_cgv_universign' => $sCgvLink,
-            'lien_tw'             => $twitterUrl,
-            'lien_fb'             => $facebookUrl,
-            'commission'          => bcmul($commission / (1 + $vatRate), 100),
-            'commission_crd'      => bcmul($owedCapitalCommission, 100),
+            'surl'                 => $this->surl,
+            'url'                  => $this->furl,
+            'prenom_p'             => $oClients->prenom,
+            'lien_cgv_universign'  => $sCgvLink,
+            'lien_tw'              => $twitterUrl,
+            'lien_fb'              => $facebookUrl,
+            'commission_deblocage' => bcmul($commission / (1 + $vatRate), 100),
+            'commission_crd'       => bcmul($owedCapitalCommission, 100),
         );
 
         if (empty($oClients->email)) {
