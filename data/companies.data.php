@@ -262,9 +262,7 @@ class companies extends companies_crud
     {
         parent::create($cs = '');
 
-        if ((is_numeric($this->name) && $this->name > 1900 && $this->name < date('Y'))
-            || (in_array($this->name, array('Monsieur', 'Madame')))
-        ) {
+        if (is_numeric($this->name) || 0 === strcasecmp($this->name, 'Monsieur') || 0 === strcasecmp($this->name, 'Madame')) {
             trigger_error('TMA-749 : ' . __CLASS__ . '.' . __FUNCTION__ . ' wrong company name - trace : ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)), E_USER_WARNING);
         }
     }
@@ -273,9 +271,7 @@ class companies extends companies_crud
     {
         parent::update($cs = '');
 
-        if ((is_numeric($this->name) && $this->name > 1900 && $this->name < date('Y'))
-            || (in_array($this->name, array('Monsieur', 'Madame')))
-        ) {
+        if (is_numeric($this->name) || 0 === strcasecmp($this->name, 'Monsieur') || 0 === strcasecmp($this->name, 'Madame')) {
             trigger_error('TMA-749 : ' . __CLASS__ . '.' . __FUNCTION__ . ' wrong company name - trace : ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)), E_USER_WARNING);
         }
     }
