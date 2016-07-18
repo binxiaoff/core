@@ -52,17 +52,22 @@ class previous_passwords extends previous_passwords_crud
         return true;
     }
 
-    public function deleteOldPasswords($sUserId)
+    public function deleteOldPasswords($userId)
     {
-        $this->bdd->query('
+        $bind = array('userId' => $userId);
+
+        $sql = '
             DELETE FROM previous_passwords
             WHERE id IN (
               SELECT id FROM (
                 SELECT id FROM previous_passwords
-                WHERE id_user = ' . $sUserId . '
+                WHERE id_user = :userId
                 ORDER BY archived DESC
                 LIMIT 1 OFFSET 12
               ) a
-            )');
+            )';
+
+        $types = array('userId' => \PDO::PARAM_INT);
+        $this->bdd->executeQuery($sql, $bind, $types);
     }
 }

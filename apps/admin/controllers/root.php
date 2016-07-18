@@ -153,6 +153,12 @@ class rootController extends bootstrap
                 $mailerManager = $this->get('unilend.service.email_manager');
                 $mailerManager->sendPasswordModificationEmail($this->users);
 
+                $previousPasswords->id_user  = $this->users->id_user;
+                $previousPasswords->password = $this->users->password;
+                $previousPasswords->archived = date("Y-m-d H:i:s");
+                $previousPasswords->create();
+                $previousPasswords->deleteOldPasswords($this->users->id_user);
+
                 $this->loggin_connection_admin                 = $this->loadData('loggin_connection_admin');
                 $this->loggin_connection_admin->id_user        = $this->users->id_user;
                 $this->loggin_connection_admin->nom_user       = $this->users->firstname . " " . $this->users->name;

@@ -1816,7 +1816,6 @@ class MailerManager
      */
     public function sendPasswordModificationEmail(\users $user)
     {
-        $sMail         = 'admin-nouveau-mot-de-passe';
         $aReplacements = array(
             'surl'    => $this->sSUrl,
             'url'     => $this->sFUrl,
@@ -1827,7 +1826,7 @@ class MailerManager
         );
 
         /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage($sMail, $aReplacements);
+        $message = $this->messageProvider->newMessage('admin-nouveau-mot-de-passe', $aReplacements);
         $message->setTo(trim($user->email));
 
         /** @var \settings $settings */
