@@ -384,18 +384,18 @@ class bootstrap extends Controller
                 $this->bShowChoiceBorrowerOrLender = false;
                 $this->bDisplayHeaderBorrower      = false;
             }
+        } else {
+            if (false === empty($_SESSION['id_preteur'])) {
+                $this->addDataLayer('ID_Preteur', $_SESSION['id_preteur']);
+            }
+            if (false === empty($_SESSION['id_emprunteur'])) {
+                $this->addDataLayer('ID_Emprunteur', $_SESSION['id_emprunteur']);
+            }
         }
+
         $this->setSessionMail();
 
         false === isset($_SESSION['email']) || $_SESSION['email'] == '' ? $this->addDataLayer('unique_id', '') : $this->addDataLayer('unique_id', md5($_SESSION['email']));
-
-        if (false === empty($_SESSION['id_preteur'])) {
-            $this->addDataLayer('ID_Preteur', $_SESSION['id_preteur']);
-        }
-
-        if (false === empty($_SESSION['id_emprunteur'])) {
-            $this->addDataLayer('ID_Emprunteur', $_SESSION['id_emprunteur']);
-        }
 
         // page projet tri
         // 1 : terminé bientôt
