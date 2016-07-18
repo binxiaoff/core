@@ -227,18 +227,23 @@ class users extends users_crud
         return '';
     }
 
-    public function changePassword($sPassword, \users $user, $bExpired)
+    /**
+     * @param string $password
+     * @param users $user
+     * @param $bExpired
+     */
+    public function changePassword($password, \users $user, $bExpired)
     {
         /** @var \previous_passwords $previousPasswords */
         $previousPasswords = Loader::loadData('previous_passwords');
 
-        $user->password        = password_hash($sPassword, PASSWORD_DEFAULT);
-        $user->password_edited = $bExpired ? date('Y') - 10 : date("Y-m-d H:i:s");
+        $user->password        = password_hash($password, PASSWORD_DEFAULT);
+        $user->password_edited = $bExpired ? '0000-00-00 00:00:00' : date('Y-m-d H:i:s');
         $user->update();
 
         $previousPasswords->id_user  = $user->id_user;
         $previousPasswords->password = $user->password;
-        $previousPasswords->archived = date("Y-m-d H:i:s");
+        $previousPasswords->archived = date('Y-m-d H:i:s');
         $previousPasswords->create();
         $previousPasswords->deleteOldPasswords($user->id_user);
     }
