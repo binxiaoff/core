@@ -101,6 +101,8 @@ class depot_de_dossierController extends bootstrap
 
         $this->clients->create();
 
+        $_SESSION['id_emprunteur'] = $this->clients->id_client;
+
         if (false === is_numeric($this->clients->id_client) || $this->clients->id_client < 1) {
             header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
             die;

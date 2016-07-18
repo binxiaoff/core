@@ -350,6 +350,14 @@ class bootstrap extends Controller
 
             $this->addDataLayer('uid', md5($this->clients->email));
 
+            if ($this->bIsLender) {
+                $this->addDataLayer('ID_Preteur', $this->clients->id_client);
+            }
+
+            if ($this->bIsBorrower) {
+                $this->addDataLayer('ID_Emprunteur', $this->clients->id_client);
+            }
+
             if ($this->bIsBorrowerAndLender) {
                 $this->getDataBorrower();
                 $this->getDataLender();
@@ -380,6 +388,14 @@ class bootstrap extends Controller
         $this->setSessionMail();
 
         false === isset($_SESSION['email']) || $_SESSION['email'] == '' ? $this->addDataLayer('unique_id', '') : $this->addDataLayer('unique_id', md5($_SESSION['email']));
+
+        if (false === empty($_SESSION['id_preteur'])) {
+            $this->addDataLayer('ID_Preteur', $_SESSION['id_preteur']);
+        }
+
+        if (false === empty($_SESSION['id_emprunteur'])) {
+            $this->addDataLayer('ID_Emprunteur', $_SESSION['id_emprunteur']);
+        }
 
         // page projet tri
         // 1 : terminé bientôt

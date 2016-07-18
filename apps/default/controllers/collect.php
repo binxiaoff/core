@@ -339,6 +339,8 @@ class collectController extends bootstrap
                     $this->clients->id_client = $this->clients->create();
                 }
 
+                $_SESSION['id_preteur'] = $this->clients->id_client;
+
                 if ($date_diff == true) {
                     $this->clients->update_added($date, $this->clients->id_client);
                 }

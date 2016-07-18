@@ -1119,6 +1119,8 @@ class inscription_preteurController extends bootstrap
                 $this->sendSubscriptionConfirmationEmail($this->clients);
             }
 
+            $_SESSION['id_preteur'] = $this->clients->id_client;
+
             if (isset($_POST['accept-cgu']) && false === empty($_POST['accept-cgu'])) {
                 if ($this->acceptations_legal_docs->get($this->lienConditionsGeneralesParticulier, 'id_client = "' . $this->clients->id_client . '" AND id_legal_doc')) {
                     $this->acceptations_legal_docs->id_legal_doc = $this->lienConditionsGeneralesParticulier;
@@ -1369,6 +1371,8 @@ class inscription_preteurController extends bootstrap
 
                 $this->sendSubscriptionConfirmationEmail($this->clients);
             }
+
+            $_SESSION['id_preteur'] = $this->clients->id_client;
 
             if (isset($_POST['accept-cgu']) && false === empty($_POST['accept-cgu-societe'])) {
                 if ($this->acceptations_legal_docs->get($this->lienConditionsGeneralesSociete, 'id_client = "' . $this->clients->id_client . '" AND id_legal_doc')) {

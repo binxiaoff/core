@@ -116,6 +116,8 @@ class users extends users_crud
         unset($_SESSION['token']);
         unset($_SESSION['user']);
         unset($_SESSION['request_url']);
+        unset($_SESSION['id_preteur']);
+        unset($_SESSION['id_emprunteur']);
 
         header('Location: ' . $this->params['lurl'] . '/login');
     }
