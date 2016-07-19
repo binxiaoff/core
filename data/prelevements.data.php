@@ -84,4 +84,31 @@ class prelevements extends prelevements_crud
         $result = $this->bdd->query('SELECT SUM(montant) FROM `prelevements` ' . $where);
         return (int) $this->bdd->result($result, 0, 0);
     }
+
+    /**
+     * @param int $daysInterval
+     * @return array
+     */
+    public function getUpcomingRepayments($daysInterval)
+    {
+        $nextWeekPayment = '
+            SELECT p.id_project, p.num_prelevement, p.date_echeance_emprunteur, p.montant
+            FROM prelevements p
+            INNER JOIN projects_last_status_history plsh ON plsh.id_project = p.id_project
+            INNER JOIN echeanciers_emprunteur ee ON ee.ordre = p.num_prelevement
+            INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
+            INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
+            WHERE ps.status = ' . \projects_status::REMBOURSEMENT . '
+              AND ee.status_emprunteur = 0
+              AND p.id_project = ee.id_project
+              AND p.type = ' . \prelevements::STATUS_VALID . '
+              AND DATE_ADD(CURDATE(), INTERVAL ' . $daysInterval . ' DAY) = DATE(p.date_echeance_emprunteur)';
+
+        $result          = $this->bdd->query($nextWeekPayment);
+        $nextWeekPayment = array();
+        while ($aRecord = $this->bdd->fetch_assoc($result)) {
+            $nextWeekPayment[] = $aRecord;
+        }
+        return $nextWeekPayment;
+    }
 }
