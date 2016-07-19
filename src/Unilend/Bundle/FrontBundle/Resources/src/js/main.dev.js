@@ -60,6 +60,7 @@ var BorrowerEsimForm = require('./app/components/BorrowerEsimForm')
 var LoginTimer = require('./app/components/LoginTimer')
 var LoginCaptcha = require('./app/components/LoginCaptcha')
 var SimpleTimer = require('./app/components/SimpleCountDown')
+var BidConfirmation = require('./app/components/BidConfirmation')
 
 // @debug
 // CacheData.clearAll()
