@@ -90,11 +90,11 @@ class DevMigrateCerfa2062Command extends ContainerAwareCommand
                 $fileName     = $this->borrowerCompany->siren . '-' . $this->lender->id_client_owner . '-' . $this->loan->id_loan . '.pdf';
 
                 if (false === is_dir($borrowerPath)) {
-                    mkdir($borrowerPath, 0664, true);
+                    mkdir($borrowerPath, 0755, true);
                 }
 
                 if (false === is_dir($lenderPath)) {
-                    mkdir($lenderPath, 0664, true);
+                    mkdir($lenderPath, 0755, true);
                 }
 
                 rename($path, $borrowerPath . $fileName);
