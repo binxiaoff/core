@@ -662,8 +662,7 @@ class profileController extends bootstrap
             if (! isset($_POST['passOld']) || $_POST['passOld'] == '' || $_POST['passOld'] == $this->lng['etape1']['ancien-mot-de-passe']) {
                 $this->form_ok                          = false;
                 $_SESSION['reponse_profile_secu_error'] = $this->lng['profile']['ancien-mot-de-passe-incorrect'];
-            } elseif (isset($_POST['passOld']) && md5($_POST['passOld']) != $this->clients->password) {
-                $this->form_ok = false;
+            } elseif (md5($_POST['passOld']) !== $this->clients->password && false === password_verify($_POST['passOld'], $this->clients->password)) {
                 $_SESSION['reponse_profile_secu_error'] = $this->lng['profile']['ancien-mot-de-passe-incorrect'];
                 header('Location: ' . $this->lurl . '/profile/particulier/2');
                 die;
@@ -672,23 +671,26 @@ class profileController extends bootstrap
             if (! isset($_POST['passNew']) || $_POST['passNew'] == '' || $_POST['passNew'] == $this->lng['etape1']['nouveau-mot-de-passe']) {
                 $this->form_ok                          = false;
                 $_SESSION['reponse_profile_secu_error'] = $this->lng['profile']['nouveau-mdp-incorrect'];
-            } elseif (isset($_POST['passNew']) && $this->ficelle->password_fo($_POST['passNew'], 6) == false) {
+            } elseif ($this->ficelle->password_fo($_POST['passNew'], 6) == false) {
                 $this->form_ok                          = false;
                 $_SESSION['reponse_profile_secu_error'] = $this->lng['profile']['nouveau-mdp-incorrect'];
             }
 
             if (! isset($_POST['passNew2']) || $_POST['passNew2'] == '' || $_POST['passNew2'] == $this->lng['etape1']['confirmation-nouveau-mot-de-passe']) {
-                $_SESSION['reponse_profile_secu_error'] = $this->lng['profile']['nouveau-mdp-incorrect'];
-                $this->form_ok                          = false;
-            }
-            if (isset($_POST['passNew']) && isset($_POST['passNew2']) && $_POST['passNew'] != $_POST['passNew2']) {
                 $this->form_ok                          = false;
                 $_SESSION['reponse_profile_secu_error'] = $this->lng['profile']['nouveau-mdp-incorrect'];
             }
-            if ($this->form_ok == true) {
-                $this->clients->password        = md5($_POST['passNew']);
-                $_SESSION['client']['password'] = $this->clients->password;
+
+            if (isset($_POST['passNew'], $_POST['passNew2']) && $_POST['passNew'] != $_POST['passNew2']) {
+                $this->form_ok                          = false;
+                $_SESSION['reponse_profile_secu_error'] = $this->lng['profile']['nouveau-mdp-incorrect'];
+            }
+
+            if ($this->form_ok) {
+                $this->clients->password = password_hash($_POST['passNew'], PASSWORD_DEFAULT);
                 $this->clients->update();
+
+                $_SESSION['client']['password'] = $this->clients->password;
 
                 $this->sendPasswordModificationEmail($this->clients);
 
@@ -703,7 +705,8 @@ class profileController extends bootstrap
                 'question'  => isset($_POST['secret-question']) ? $_POST['secret-question'] : '',
                 'response'  => isset($_POST['secret-response']) ? md5($_POST['secret-response']) : ''
             ));
-            $this->clients_history_actions->histo(20, 'change secret question', $this->clients->id_client, $serialize);
+
+            $this->clients_history_actions->histo(\clients_status::COMPLETENESS, 'change secret question', $this->clients->id_client, $serialize);
 
             if (
                 false === empty($_POST['secret-question'])
@@ -1383,35 +1386,39 @@ class profileController extends bootstrap
             $this->clients_history_actions->histo(7, 'change mdp', $this->clients->id_client, $serialize);
 
             $this->form_ok = true;
+
             if (! isset($_POST['passOld']) || $_POST['passOld'] == '' || $_POST['passOld'] == $this->lng['etape1']['ancien-mot-de-passe']) {
                 $this->form_ok                          = false;
                 $_SESSION['reponse_profile_secu_error'] = $this->lng['profile']['ancien-mot-de-passe-incorrect'];
-            } elseif (isset($_POST['passOld']) && md5($_POST['passOld']) != $this->clients->password) {
-                $this->form_ok = false;
+            } elseif (md5($_POST['passOld']) !== $this->clients->password && false === password_verify($_POST['passOld'], $this->clients->password)) {
                 $_SESSION['reponse_profile_secu_error'] = $this->lng['profile']['ancien-mot-de-passe-incorrect'];
                 header('Location: ' . $this->lurl . '/profile/particulier/2');
                 die;
             }
+
             if (! isset($_POST['passNew']) || $_POST['passNew'] == '' || $_POST['passNew'] == $this->lng['etape1']['nouveau-mot-de-passe']) {
                 $this->form_ok                          = false;
                 $_SESSION['reponse_profile_secu_error'] = $this->lng['profile']['nouveau-mdp-incorrect'];
-            } elseif (isset($_POST['passNew']) && $this->ficelle->password_fo($_POST['passNew'], 6) == false) {
-                $this->form_ok                          = false;
-                $_SESSION['reponse_profile_secu_error'] = $this->lng['profile']['nouveau-mdp-incorrect'];
-            }
-            if (! isset($_POST['passNew2']) || $_POST['passNew2'] == '' || $_POST['passNew2'] == $this->lng['etape1']['confirmation-nouveau-mot-de-passe']) {
-                $_SESSION['reponse_profile_secu_error'] = $this->lng['profile']['nouveau-mdp-incorrect'];
-                $this->form_ok                          = false;
-            }
-            if (isset($_POST['passNew']) && isset($_POST['passNew2']) && $_POST['passNew'] != $_POST['passNew2']) {
+            } elseif ($this->ficelle->password_fo($_POST['passNew'], 6) == false) {
                 $this->form_ok                          = false;
                 $_SESSION['reponse_profile_secu_error'] = $this->lng['profile']['nouveau-mdp-incorrect'];
             }
 
-            if ($this->form_ok == true) {
-                $this->clients->password        = md5($_POST['passNew']);
-                $_SESSION['client']['password'] = $this->clients->password;
+            if (! isset($_POST['passNew2']) || $_POST['passNew2'] == '' || $_POST['passNew2'] == $this->lng['etape1']['confirmation-nouveau-mot-de-passe']) {
+                $this->form_ok                          = false;
+                $_SESSION['reponse_profile_secu_error'] = $this->lng['profile']['nouveau-mdp-incorrect'];
+            }
+
+            if (isset($_POST['passNew'], $_POST['passNew2']) && $_POST['passNew'] != $_POST['passNew2']) {
+                $this->form_ok                          = false;
+                $_SESSION['reponse_profile_secu_error'] = $this->lng['profile']['nouveau-mdp-incorrect'];
+            }
+
+            if ($this->form_ok) {
+                $this->clients->password = password_hash($_POST['passNew'], PASSWORD_DEFAULT);
                 $this->clients->update();
+
+                $_SESSION['client']['password'] = $this->clients->password;
 
                 $this->sendPasswordModificationEmail($this->clients);
 

@@ -241,9 +241,9 @@ class bootstrap extends Controller
         $bErrorLogin               = false;
         $this->displayCaptchaError = null;
 
-        if (isset($_POST['login']) && isset($_POST['password'])) {
-            $this->login     = $_POST['login'];
-            $this->passsword = $_POST['password'];
+        if (isset($_POST['login'], $_POST['password'])) {
+            $this->login    = $_POST['login'];
+            $this->password = $_POST['password'];
 
             // SI on a le captcha d'actif, et qu'il est faux, on bloque avant tout pour ne pas laisser de piste sur le couple login/mdp
             if (isset($bCaptchaOk) && $bCaptchaOk === false) {
@@ -298,7 +298,10 @@ class bootstrap extends Controller
                     } else {
                         $this->error_login = $this->lng['header']['identifiant-ou-mot-de-passe-inccorect'];
                     }
-                } elseif ($aOfflineClient = $this->clients->select('email = "' . $this->login . '" AND password = "' . md5($this->passsword) . '" AND status = 0')) {
+                } elseif (
+                    ($aOfflineClient = $this->clients->select('email = "' . $this->login . '" AND status = 0'))
+                    && (md5($this->password) === $aOfflineClient[0]['password'] || password_verify($this->password, $aOfflineClient[0]['password']))
+                ) {
                     $this->error_login = $this->lng['header']['message-login-compte-ferme'];
                     $this->bAccountClosed = true;
                 } else {
