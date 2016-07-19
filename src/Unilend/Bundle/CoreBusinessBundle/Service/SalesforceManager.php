@@ -158,7 +158,7 @@ class SalesforceManager
                             '',
                             '0012400000K0Bxw'
                         );
-                        fputs($rCsvFile, '""' . implode('"", ""', $aCsvProspect) . '""' . "\n");
+                        fputs($rCsvFile, '"' . implode('","', $aCsvProspect) . '"' . "\r\n");
                     }
                     $sNom = $aRow['nom'];
                     $sPrenom = $aRow['prenom'];
@@ -200,10 +200,10 @@ class SalesforceManager
                         break;
                 }
                 if (0 === $iCountLine) {
-                    fputs($rCsvFile, '""' . implode('"", ""', array_keys($aRow)) . '""' . "\n");
+                    fputs($rCsvFile, '"' . implode('","', array_keys($aRow)) . '"' . "\r\n");
                 }
 
-                fputs($rCsvFile, '""' . implode('"", ""', $aRow) . '""' . "\n");
+                fputs($rCsvFile, '"' . implode('","', $aRow) . '"' . "\r\n");
                 $iCountLine++;
             }
             $oStatement->closeCursor();
