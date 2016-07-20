@@ -10,7 +10,7 @@
     <div class="site-header-inner">
         <div class="site-wrap">
             <h1 class="site-title">
-                <a href="{{ route('/') }}" class="site-logo" tabindex="2">{{ site.title|default('Unilend') }}</a></h1>
+                <a href="{{ route('/profile') }}" class="site-logo" tabindex="2">{{ site.title|default('Unilend') }}</a></h1>
 
             <div class="site-controls">
 
@@ -19,7 +19,7 @@
                         <a href="{{ route('user/preter/balance') }}" class="site-user-balance"><span class="label">{% trans %} header-connected_add-money-link {% endtrans %}</span></a><!-- /.site-user-balance -->
                         <div class="site-user-profile">
                             <div class="profile-avatar">
-                                <a href="{{ path('/profile') }}">
+                                <a href="{{ path('lender_profile') }}">
                                     {{ app.user.initials }}
                                     {#{% set avatarSex = 'm' %}
                                     {% if userProfile.identity.civilite == 'madame' %}
