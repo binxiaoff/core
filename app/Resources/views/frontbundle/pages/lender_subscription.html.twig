@@ -77,13 +77,13 @@ permalink: route('preter/new')
                                                             <li>
                                                                 <label>
                                                                     <input type="radio" name="identity[statut]" value="particular"
-                                                                    {% if formData.client.type in [constant('\clients::TYPE_PERSON'), constant('\clients::TYPE_PERSON_FOREIGNER')] %} checked {%  endif %} />
+                                                                    {% if formData is defined and formData.client.type in [constant('\clients::TYPE_PERSON'), constant('\clients::TYPE_PERSON_FOREIGNER')] %} checked {%  endif %} />
                                                                     {% trans %} lender-subscription_identity-client-type-person-label {% endtrans %}
                                                                 </label>
                                                             </li>
                                                             <li>
                                                                 <label><input type="radio" name="identity[statut]" value="societe"/>
-                                                                    {% if formData.client.type in [constant('\clients::TYPE_LEGAL_ENTITY'), constant('\clients::TYPE_LEGAL_ENTITY_FOREIGNER')] %} checked {%  endif %} />
+                                                                    {% if formData is defined and formData.client.type in [constant('\clients::TYPE_LEGAL_ENTITY'), constant('\clients::TYPE_LEGAL_ENTITY_FOREIGNER')] %} checked {%  endif %} />
                                                                     {% trans %} lender-subscription_identity-client-type-legal-entity-label {% endtrans %}
                                                                 </label>
                                                             </li>
@@ -187,9 +187,9 @@ permalink: route('preter/new')
                                                         <select id="form-preter-address-pays" name="identity[address][pays]" class="input-field"
                                                                 data-formvalidation-input data-formvalidation-required="true">
                                                             {% if defaultCountry is not defined %}{% set defaultCountry = constant('\pays_v2::COUNTRY_FRANCE') %}{% endif %}
-                                                            {% for country in countryList %}
-                                                                <option value="{{ country.id_pays }}" {% if defaultCountry == country.id_pays %} selected {% endif %}>
-                                                                    {{ country.fr }}</option>
+                                                            {% for i, country in getCountries() %}
+                                                                <option value="{{ i }}" {% if defaultCountry == i %} selected {% endif %}>
+                                                                    {{ country }}</option>
                                                             {% endfor %}
                                                         </select>
                                                     </div><!-- /.form-field -->
@@ -240,9 +240,9 @@ permalink: route('preter/new')
                                                             <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
                                                         <select id="form-preter-correspondence-pays" name="identity[correspondence][pays]" class="input-field"
                                                                 data-formvalidation-input data-formvalidation-required="false">
-                                                            {% for country in countryList %}
-                                                                <option value="{{ country.id_pays }}" {% if defaultCountry == country.id_pays %} selected {% endif %}>
-                                                                    {{ country.fr }}</option>
+                                                            {% for i, country in getCountries() %}
+                                                                <option value="{{ i }}" {% if defaultCountry == i %} selected {% endif %}>
+                                                                    {{ country }}</option>
                                                             {% endfor %}
                                                         </select>
                                                     </div><!-- /.form-field -->
@@ -272,10 +272,8 @@ permalink: route('preter/new')
                                                             <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
                                                         <select id="form-preter-nationalite" name="identity[nationalite]" class="input-field"
                                                                 data-formvalidation-input data-formvalidation-required="true">
-                                                            {% for nationality in nationalityList %}
-                                                                <option value="{{ nationality.id_nationalite }}"
-                                                                        {% if constant('nationalites_v2::NATIONALITY_FRENCH') == nationality.id_nationalite %} selected {% endif %}>
-                                                                    {{ nationality.fr_f }}</option>
+                                                            {% for i, nationality in getNationalities() %}
+                                                                <option value="{{ i }}"{% if constant('nationalites_v2::NATIONALITY_FRENCH') == i %} selected {% endif %}>{{ nationality }}</option>
                                                             {% endfor %}
                                                         </select>
                                                     </div><!-- /.form-field -->
@@ -286,9 +284,9 @@ permalink: route('preter/new')
                                                         <label for="form-preter-dob-pays">{% trans %} lender-subscription_civil-state-section-birth-country {% endtrans %}
                                                             <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
                                                         <select id="form-preter-dob-pays" name="identity[dob][pays]" class="input-field" data-formvalidation-input data-formvalidation-required="true">
-                                                            {% for country in countryList %}
-                                                                <option value="{{ country.id_pays }}" {% if defaultCountry == country.id_pays %} selected {% endif %}>
-                                                                    {{ country.fr }}</option>
+                                                            {% for i, country in getCountries()%}
+                                                                <option value="{{ i }}" {% if defaultCountry == i %} selected {% endif %}>
+                                                                    {{ country }}</option>
                                                             {% endfor %}
                                                         </select>
                                                     </div><!-- /.form-field -->
