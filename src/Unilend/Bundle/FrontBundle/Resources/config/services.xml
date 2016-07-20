@@ -23,6 +23,7 @@
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service.client_manager"/>
             <argument type="service" id="unilend.service.notification_manager"/>
+            <argument type="service" id="unilend.service.lender_manager"/>
         </service>
 
         <service id="unilend.frontbundle.security.login_authenticator" class="Unilend\Bundle\FrontBundle\Security\LoginAuthenticator">
