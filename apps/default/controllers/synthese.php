@@ -131,7 +131,7 @@ class syntheseController extends bootstrap
         foreach ($this->lProjetEncours as $iKey => $aProject) {
             $this->lProjetEncours[$iKey]['avgrate'] = $this->projects->getAverageInterestRate($aProject['id_project'], $aProject['status']);
         }
-        
+
         $this->nbLoan                  = $this->loans->getProjectsCount($this->lenders_accounts->id_lender_account);
         $this->sumBidsEncours          = $this->bids->sumBidsEncours($this->lenders_accounts->id_lender_account);
         $this->sumPrets                = $this->loans->sumPrets($this->lenders_accounts->id_lender_account);
@@ -331,5 +331,79 @@ class syntheseController extends bootstrap
             }
         }
         $this->bHasNoBidsOnProjectsInFunding = (0 === count($aProjectsWithBids)) ;
+
+        /** @var \lender_tax_exemption $lenderTaxExemption */
+        $lenderTaxExemption = $this->loadData('lender_tax_exemption');
+
+        $this->currentYear             = date('Y', time());
+        $this->lastYear                = $this->currentYear - 1;
+        $this->nextYear                = $this->currentYear + 1;
+        $this->lng['lender-dashboard'] = $this->ln->selectFront('lender-dashboard', $this->language, $this->App);
+        $taxExemptionDateRange         = $lenderTaxExemption->getTaxExemptionDateRange();
+        try {
+            $lenderInfo = $this->lenders_accounts->getLenderTypeAndFiscalResidence($this->lenders_accounts->id_lender_account);
+            if (false === empty($lenderInfo)) {
+                $this->eligible = 'fr' === $lenderInfo['fiscal_address'] && 'person' === $lenderInfo['client_type'];
+            } else {
+                return;
+            }
+        } catch (\Exception $exception) {
+            /** @var \Psr\Log\LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->info('Could not get lender info to check tax exemption eligibility. (id_lender=' . $this->lenders_accounts->id_lender_account . ') Error message: ' .
+                $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $this->lenders_accounts->id_lender_account]);
+            return;
+        }
+
+        if (false === $this->eligible) {
+            return;
+        }
+
+        if (date('Y-m-d H:i:s') < $taxExemptionDateRange['taxExemptionRequestStartDate']->format('Y-m-d 00:00:00')
+            && date('Y-m-d H:i:s') >= $taxExemptionDateRange['taxExemptionRequestLimitDate']->format('Y-m-d 23:59:59')
+        ) {
+            $this->afterDeadline = true;
+        }
+        $this->taxExemptionHistory = $this->getExemptionHistory($lenderTaxExemption, $this->lenders_accounts->id_lender_account);
+
+        if (false === empty($this->taxExemptionHistory)) {
+            $yearList = array_column($this->taxExemptionHistory, 'year');
+
+            if (true === in_array($this->nextYear, $yearList)) {
+                $this->nextTaxExemptionRequestDone = true;
+            } else {
+                $this->nextTaxExemptionRequestDone = false;
+            }
+
+            if (true === in_array($this->lastYear, $yearList)) {
+                $this->exemptedLastYear = true;
+            } else {
+                $this->exemptedLastYear = false;
+            }
+            $this->taxExemptionRequestLimitDate = strftime('%d %B %Y', $taxExemptionDateRange['taxExemptionRequestLimitDate']->getTimestamp());
+        } else {
+            $this->exemptedLastYear = false;
+        }
+
+    }
+
+    /**
+     * @param \lender_tax_exemption $lenderTaxExemption
+     * @param int $lenderId
+     * @param string|null $year
+     * @return array
+     */
+    private function getExemptionHistory(\lender_tax_exemption $lenderTaxExemption, $lenderId, $year = null)
+    {
+
+        try {
+            $result = $lenderTaxExemption->getLenderExemptionHistory($lenderId, $year);
+        } catch (Exception $exception) {
+            /** @var \Psr\Log\LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->error('Could not get lender exemption history (id_lender = ' . $lenderId . ') Exception message : ' . $exception->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lenderId));
+            $result = [];
+        }
+        return $result;
     }
 }

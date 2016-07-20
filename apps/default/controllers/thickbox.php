@@ -295,4 +295,53 @@ class thickboxController extends bootstrap
 
         $this->lng['espace-emprunteur'] = $this->ln->selectFront('espace-emprunteur', $this->language, $this->App);
     }
+
+    public function _signTaxExemption()
+    {
+        /** @var \clients client */
+        $this->client = $this->loadData('clients');
+        if (false === $this->client->checkAccess()) {
+            header('Location:' . $this->lurl);
+            die;
+        }
+        $this->client->get($_SESSION['client']['id_client']);
+
+        /** @var \tax_type $taxType */
+        $this->taxType = $this->loadData('tax_type');
+        /** @var \settings $settings */
+        $settings = $this->loadData('settings');
+        /** @var \clients_adresses clients_adresses */
+        $clientAadresse = $this->loadData('clients_adresses');
+        /** @var \pays_v2 taxCountry */
+        $taxCountry = $this->loadData('pays_v2');
+        /** @var \lender_tax_exemption $lenderTaxExemption */
+        $lenderTaxExemption = $this->loadData('lender_tax_exemption');
+
+        $clientAadresse->get($this->client->id_client, 'id_client');
+
+        $this->fiscalAddress['address'] = (false === empty($clientAadresse->adresse_fiscal)) ? $clientAadresse->adresse_fiscal : $clientAadresse->adresse1 . ' ' . $clientAadresse->adresse2 . ' ' . $clientAadresse->adresse3;
+        $this->fiscalAddress['zipCode'] = (false === empty($clientAadresse->cp_fiscal)) ? $clientAadresse->cp_fiscal : $clientAadresse->cp;
+        $this->fiscalAddress['city']    = (false === empty($clientAadresse->ville_fiscal)) ? $clientAadresse->ville_fiscal : $clientAadresse->ville;
+
+        if (false === empty($this->clientAadresse->id_pays_fiscal)) {
+            $taxCountry->get($clientAadresse->id_pays_fiscal, 'id_pays');
+        } else {
+            $taxCountry->get($clientAadresse->id_pays, 'id_pays');
+        }
+        $this->fiscalAddress['country'] = $taxCountry->fr;
+
+        $this->taxType->get(\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE);
+
+        $this->currentYear = date('Y', time());
+        $this->lastYear    = $this->currentYear - 1;
+        $this->nextYear    = $this->currentYear + 1;
+
+        $this->taxExemptionRequestLimitDate = strftime('%d %B %Y', $lenderTaxExemption->getTaxExemptionDateRange()['taxExemptionRequestLimitDate']->getTimestamp());
+        $settings->get('incomeTaxReferenceSingleAmount', 'type');
+        $this->incomeTaxReferenceSingleAmount = $settings->value;
+        $settings->get('incomeTaxReferenceCommonAmount', 'type');
+        $this->incomeTaxReferenceCommonAmount = $settings->value;
+
+        $this->lng['lender-dashboard'] = $this->ln->selectFront('lender-dashboard', $this->language, $this->App);
+    }
 }

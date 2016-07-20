@@ -1,4 +1,5 @@
 <?php
+use \Psr\Log\LoggerInterface;
 
 class profileController extends bootstrap
 {
@@ -1950,5 +1951,67 @@ class profileController extends bootstrap
         $message->setTo($oClient->email);
         $mailer = $this->get('mailer');
         $mailer->send($message);
+    }
+
+    public function _requestTaxExemption()
+    {
+        /** @var \clients $client */
+        $client = $this->loadData('clients');
+        if (false === $client->checkAccess()) {
+            header('Location:' . $this->lurl);
+            die;
+        }
+        $this->status = 'error';
+        /** @var LoggerInterface $logger */
+        $logger = $this->get('logger');
+        /** @var \lenders_accounts $lender */
+        $lender = $this->loadData('lenders_accounts');
+        $lender->get($_SESSION['client']['id_client'], 'id_client_owner');
+        /** @var \lender_tax_exemption $lenderTaxExemption */
+        $lenderTaxExemption = $this->loadData('lender_tax_exemption');
+        $year               = date('Y') + 1;
+        try {
+            $taxExemptionDateRange = $lenderTaxExemption->getTaxExemptionDateRange();
+
+            if (date('Y-m-d H:i:s') >= $taxExemptionDateRange['taxExemptionRequestStartDate']->format('Y-m-d 00:00:00')
+                && date('Y-m-d H:i:s') <= $taxExemptionDateRange['taxExemptionRequestLimitDate']->format('Y-m-d 23:59:59')
+                && true === empty($lenderTaxExemption->getLenderExemptionHistory($lender->id_lender_account, $year))
+            ) {
+
+                if (true === isset($_POST['agree']) && true === isset($_POST['attest'])
+                    && 'true' === $_POST['agree'] && 'true' === $_POST['agree']
+                ) {
+                    $lenderTaxExemption->id_lender   = $lender->id_lender_account;
+                    $lenderTaxExemption->iso_country = 'FR';
+                    $lenderTaxExemption->year        = $year;
+                    $lenderTaxExemption->create();
+
+                    if (false === empty($lenderTaxExemption->id_lender_tax_exemption)) {
+                        $this->status = 'success';
+                        $logger->info('The lender (id_lender=' . $lender->id_lender_account . ') requested to be exempted for the year: ' . $year,
+                            ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lender->id_lender_account]);
+                    } else {
+                        $logger->info('The tax exemption request was not processed for the lender: (id_lender=' . $lender->id_lender_account . ') for the year: ' . $year,
+                            ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lender->id_lender_account]);
+                    }
+                }
+            } else {
+                $logger->info('The tax exemption request was not processed for the lender: (id_lender=' . $lender->id_lender_account . ') for the year: ' . $year .
+                    '. Lender already exempted',
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lender->id_lender_account]);
+            }
+        } catch (Exception $exception) {
+            $logger->error('Could not register lender tax exemption request for the lender: (id_lender=' . $lender->id_lender_account . ') for the year: ' . $year .
+                ' Exception message : ' . $exception->getMessage(),
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lender->id_lender_account]);
+        }
+
+        $this->lng['lender-dashboard'] = $this->ln->selectFront('lender-dashboard', $this->language, $this->App);
+        $this->autoFireHeader          = false;
+        $this->autoFireFooter          = false;
+        $this->autoFireHead            = false;
+        $this->autoFireView            = false;
+
+        echo $this->fireView('requestTaxExemption');
     }
 }

@@ -368,4 +368,32 @@ class lenders_accounts extends lenders_accounts_crud
 
         return $this->bdd->executeQuery($sQuery);
     }
+
+    /**
+     * @param int $lenderId
+     * @return array
+     */
+    public function getLenderTypeAndFiscalResidence($lenderId)
+    {
+        $sql = '
+          SELECT
+              max(id_lenders_imposition_history) AS id_lenders_imposition_history,
+              CASE IFNULL(resident_etranger, 0)
+                WHEN 0
+                  THEN "fr"
+                  ELSE "ww"
+              END AS fiscal_address,
+              CASE c.type
+                WHEN ' . \clients::TYPE_LEGAL_ENTITY .
+                  ' THEN "legal_entity"
+                WHEN ' . \clients::TYPE_PERSON . ' OR ' . \clients::TYPE_PERSON_FOREIGNER .
+                  ' THEN "person"
+              END AS client_type
+          FROM lenders_imposition_history lih
+          INNER JOIN lenders_accounts la ON la.id_lender_account = lih.id_lender
+          INNER JOIN clients c ON c.id_client = la.id_client_owner
+          WHERE lih.id_lender = :id_lender';
+
+        return $this->bdd->executeQuery($sql, ['id_lender' => $lenderId], ['id_lender' => \PDO::PARAM_INT])->fetch(\PDO::FETCH_ASSOC);
+    }
 }

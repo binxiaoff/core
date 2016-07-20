@@ -65,11 +65,16 @@ class operationsController extends bootstrap
         $this->liste_docs     = $this->ifu->select('id_client =' . $this->clients->id_client . ' AND statut = 1', 'annee ASC');
         $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
-        if (false === empty($this->clients_adresses->id_pays_fiscal)) {
+        $this->fiscalAddress['address'] = (false === empty($this->clients_adresses->adresse_fiscal)) ? $this->clients_adresses->adresse_fiscal : $this->clients_adresses->adresse1 . ' ' . $this->clients_adresses->adresse2 . ' ' . $this->clients_adresses->adresse3;
+        $this->fiscalAddress['zipCode'] = (false === empty($this->clients_adresses->cp_fiscal)) ? $this->clients_adresses->cp_fiscal : $this->clients_adresses->cp;
+        $this->fiscalAddress['city']    = (false === empty($this->clients_adresses->ville_fiscal)) ? $this->clients_adresses->ville_fiscal : $this->clients_adresses->ville;
+
+        if (false === empty($this->clientAadresse->id_pays_fiscal)) {
             $this->taxCountry->get($this->clients_adresses->id_pays_fiscal, 'id_pays');
         } else {
             $this->taxCountry->get($this->clients_adresses->id_pays, 'id_pays');
         }
+        $this->fiscalAddress['country'] = $this->taxCountry->fr;
 
         unset($_SESSION['filtre_vos_operations']);
         unset($_SESSION['id_last_action']);
@@ -89,6 +94,59 @@ class operationsController extends bootstrap
         $this->aFilterStatuses = $this->projects_status->select('status >= ' . \projects_status::REMBOURSEMENT, 'status ASC');
         $this->aLoansYears     = array_count_values(array_column($this->lSumLoans, 'loan_year'));
         krsort($this->aLoansYears);
+
+        /** @var \lender_tax_exemption $lenderTaxExemption */
+        $lenderTaxExemption = $this->loadData('lender_tax_exemption');
+
+        $this->currentYear             = date('Y', time());
+        $this->lastYear                = $this->currentYear - 1;
+        $this->nextYear                = $this->currentYear + 1;
+        $this->lng['lender-dashboard'] = $this->ln->selectFront('lender-dashboard', $this->language, $this->App);
+        $taxExemptionDateRange         = $lenderTaxExemption->getTaxExemptionDateRange();
+        $this->taxExemptionHistory     = $this->getExemptionHistory($lenderTaxExemption, $this->lenders_accounts->id_lender_account);
+        try {
+            $lenderInfo = $this->lenders_accounts->getLenderTypeAndFiscalResidence($this->lenders_accounts->id_lender_account);
+            if (false === empty($lenderInfo)) {
+                $this->eligible = 'fr' === $lenderInfo['fiscal_address'] && 'person' === $lenderInfo['client_type'];
+            } else {
+                return;
+            }
+        } catch (\Exception $exception) {
+            /** @var \Psr\Log\LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->info('Could not get lender info to check tax exemption eligibility. (id_lender=' . $this->lenders_accounts->id_lender_account . ') Error message: ' .
+                $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $this->lenders_accounts->id_lender_account]);
+            return;
+        }
+
+        if (false === $this->eligible) {
+            return;
+        }
+
+        if (date('Y-m-d H:i:s') < $taxExemptionDateRange['taxExemptionRequestStartDate']->format('Y-m-d 00:00:00')
+            && date('Y-m-d H:i:s') >= $taxExemptionDateRange['taxExemptionRequestLimitDate']->format('Y-m-d 23:59:59')
+        ) {
+            $this->afterDeadline = true;
+        }
+
+        if (false === empty($this->taxExemptionHistory)) {
+            $yearList = array_column($this->taxExemptionHistory, 'year');
+
+            if (true === in_array($this->nextYear, $yearList)) {
+                $this->nextTaxExemptionRequestDone = true;
+            } else {
+                $this->nextTaxExemptionRequestDone = false;
+            }
+
+            if (true === in_array($this->lastYear, $yearList)) {
+                $this->exemptedLastYear = true;
+            } else {
+                $this->exemptedLastYear = false;
+            }
+            $this->taxExemptionRequestLimitDate = strftime('%d %B %Y', $taxExemptionDateRange['taxExemptionRequestLimitDate']->getTimestamp());
+        } else {
+            $this->exemptedLastYear = false;
+        }
     }
 
     public function _loans()
@@ -763,5 +821,25 @@ class operationsController extends bootstrap
                 $this->indexage_vos_operations->create();
             }
         }
+    }
+
+    /**
+     * @param \lender_tax_exemption $lenderTaxExemption
+     * @param int $lenderId
+     * @param string|null $year
+     * @return array
+     */
+    private function getExemptionHistory(\lender_tax_exemption $lenderTaxExemption, $lenderId, $year = null)
+    {
+
+        try {
+            $result = $lenderTaxExemption->getLenderExemptionHistory($lenderId, $year);
+        } catch (Exception $exception) {
+            /** @var \Psr\Log\LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->error('Could not get lender exemption history (id_lender = ' . $lenderId . ') Exception message : ' . $exception->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lenderId));
+            $result = [];
+        }
+        return $result;
     }
 }

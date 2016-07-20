@@ -12,19 +12,22 @@
         min-width: 50%;
     }
 </style>
+<?php if (false === empty($this->eligible) && true === empty($this->afterDeadline) && true === empty($this->nextTaxExemptionRequestDone)): ?>
+    <?= $this->fireView('../blocs/taxExemption') ?>
+<?php endif; ?>
 <div class="div-2-columns">
     <div class="div-left-pos">
         <p><?= $this->lng['etape1']['adresse-fiscale'] ?>
             <i class="icon-help tooltip-anchor" data-placement="right" title="<?= $this->lng['etape1']['info-adresse-fiscale'] ?>"></i>
         </p>
         <div class="row">
-            <input disabled readonly type="text" value="<?= $this->clients_adresses->adresse_fiscal ?>" class="field"/>
+            <input disabled readonly type="text" value="<?= $this->fiscalAddress['address'] ?>" class="field"/>
         </div>
         <div class="row row-triple-fields">
-            <input disabled readonly type="text" class="field field-small" value="<?= $this->clients_adresses->cp_fiscal ?>"/>
-            <input disabled readonly type="text" class="field field-small" value="<?= $this->clients_adresses->ville_fiscal ?>"/>
-            <?php if (false === empty($this->taxCountry->fr)): ?>
-                <input disabled readonly type="text" class="field field-small" value="<?= $this->taxCountry->fr ?>"/>
+            <input disabled readonly type="text" class="field field-small" value="<?= $this->fiscalAddress['zipCode'] ?>"/>
+            <input disabled readonly type="text" class="field field-small" value="<?= $this->fiscalAddress['city'] ?>"/>
+            <?php if (false === empty($this->fiscalAddress['country'])): ?>
+                <input disabled readonly type="text" class="field field-small" value="<?= $this->fiscalAddress['country'] ?>"/>
             <?php endif; ?>
         </div>
     </div>
@@ -86,5 +89,27 @@
     $texte = $this->lng['preteur-operations']['texte-vos-documents-isf'];
     eval("\$texte = \"$texte\";");
     echo nl2br($texte); ?>
-
+</div>
+<div class="tax-exemption-history">
+    <h2><?= $this->lng['lender-dashboard']['deduction-at-source-exemption'] ?></h2>
+    <?php if (false === empty($this->eligible) && false === empty($this->afterDeadline) && true === empty($this->nextTaxExemptionRequestDone)): ?>
+        <span>
+            <?= str_replace(
+                '%taxExemptionRequestLimitDate%',
+                $this->taxExemptionRequestLimitDate, $this->lng['lender-dashboard']['deduction-at-source-reminder-message']
+            ) ?>
+        </span>
+    <?php endif; ?>
+    <?php foreach ( $this->taxExemptionHistory as $row ): ?>
+        <span>
+            <?= $this->lng['lender-dashboard']['deduction-at-source-the'] . ' ' . strftime('%d %B %Y', \DateTime::createFromFormat('Y-m-d H:i:s', $row['added'])->getTimestamp()) . ', ' .
+            str_replace(
+                '%exemptionYear%',
+                $row['year'],
+                $this->lng['lender-dashboard']['deduction-at-source-history-message']
+            )
+            ?>
+        </span>
+        <br>
+    <?php endforeach; ?>
 </div>

@@ -67,4 +67,42 @@ class lender_tax_exemption extends lender_tax_exemption_crud
         $result = $this->bdd->query('SELECT * FROM `lender_tax_exemption` WHERE ' . $field . ' = "' . $id . '"');
         return ($this->bdd->fetch_assoc($result) > 0);
     }
+
+    /**
+     * @param int $lenderId
+     * @param string|null $year
+     * @return array
+     * @throws \Exception
+     */
+    public function getLenderExemptionHistory($lenderId, $year = null)
+    {
+        $bind = ['id_lender' => $lenderId];
+        $type = ['id_lender' => \PDO::PARAM_INT];
+        $sql  = '
+            SELECT
+              lte.*
+            FROM
+              lender_tax_exemption lte
+            WHERE lte.id_lender = :id_lender
+        ';
+        if (false === is_null($year)) {
+            $sql .= ' AND lte.year = :year';
+            $bind['year'] = $year;
+            $type['year'] = \PDO::PARAM_STR;
+        }
+        return $this->bdd->executeQuery($sql, $bind, $type)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @return array
+     */
+    public function getTaxExemptionDateRange()
+    {
+        $settings = \Unilend\core\Loader::loadData('settings');
+        $settings->get('taxExemptionRequestLimitDate', 'type');
+        $dateRange['taxExemptionRequestLimitDate'] = \DateTime::createFromFormat('Y-m-d', date('Y') . '-' . $settings->value);
+        $settings->get('taxExemptionRequestStartDate', 'type');
+        $dateRange['taxExemptionRequestStartDate'] = \DateTime::createFromFormat('Y-m-d', date('Y') . '-' . $settings->value);
+        return $dateRange;
+    }
 }

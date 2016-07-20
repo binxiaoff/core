@@ -833,7 +833,7 @@ class preteursController extends bootstrap
         } catch (Exception $exception) {
             /** @var \Psr\Log\LoggerInterface $logger */
             $logger = $this->get('logger');
-            $logger->error('Could not get lender imposition history (id_lender = ' . $lenderId . ') Exception message : ' . $exception->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lenderId));
+            $logger->error('Could not get lender taxation history (id_lender = ' . $lenderId . ') Exception message : ' . $exception->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lenderId));
             $aResult = ['error' => 'Impossible de charger l\'historique de changement d\'adresse fiscale'];
         }
 
