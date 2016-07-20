@@ -1301,11 +1301,13 @@ class ajaxController extends bootstrap
                         }
                     }
 
-                    try {
-                        $oProjectManager->setProjectRateRage($this->projects);
-                    } catch (\Exception $exception) {
-                        echo json_encode(array('liste' => '', 'btn_etape6' => '', 'content_risk' => '', 'error' => $exception->getMessage()));
-                        return;
+                    if (false === empty($this->projects->risk) && false === empty($this->projects->period)) {
+                        try {
+                            $oProjectManager->setProjectRateRage($this->projects);
+                        } catch (\Exception $exception) {
+                            echo json_encode(array('liste' => '', 'btn_etape6' => '', 'content_risk' => '', 'error' => $exception->getMessage()));
+                            return;
+                        }
                     }
 
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::PREP_FUNDING, $this->projects);

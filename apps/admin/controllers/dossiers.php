@@ -254,9 +254,18 @@ class dossiersController extends bootstrap
                 $this->updateProblematicStatus($_POST['problematic_status']);
             }
 
-            if ($this->projects_status->status == projects_status::PREP_FUNDING) {
+            if (false === empty($this->projects->risk) && false === empty($this->projects->period) && $this->projects_status->status >= projects_status::PREP_FUNDING) {
+
                 $fPredictAmountAutoBid = $this->get('unilend.service.autobid_settings_manager')->predictAmount($this->projects->risk, $this->projects->period);
                 $this->fPredictAutoBid = round(($fPredictAmountAutoBid / $this->projects->amount) * 100, 1);
+
+                if (false === empty($this->projects->id_rate)) {
+                    /** @var project_rate_settings $projectRateSettings */
+                    $projectRateSettings = $this->loadData('project_rate_settings');
+                    $projectRateSettings->get($this->projects->id_rate);
+                    $this->rate_min = $projectRateSettings->rate_min;
+                    $this->rate_max = $projectRateSettings->rate_max;
+                }
             }
 
             if (isset($_POST['last_annual_accounts'])) {
@@ -538,16 +547,19 @@ class dossiersController extends bootstrap
 
                     $this->projects->title           = $_POST['title'];
                     $this->projects->title_bo        = $_POST['title_bo'];
-                    $this->projects->period          = $_POST['duree'];
                     $this->projects->nature_project  = $_POST['nature_project'];
-                    $this->projects->amount          = str_replace(' ', '', str_replace(',', '.', $_POST['montant']));
                     $this->projects->target_rate     = '-';
                     $this->projects->id_analyste     = $_POST['analyste'];
                     $this->projects->id_commercial   = $_POST['commercial'];
                     $this->projects->display         = $_POST['display_project'];
                     $this->projects->id_project_need = $_POST['need'];
 
-                    if ($this->current_projects_status->status >= \projects_status::PREP_FUNDING) {
+                    if ($this->current_projects_status->status < \projects_status::A_FUNDER) {
+                        $this->projects->period = $_POST['duree'];
+                        $this->projects->amount          = str_replace(' ', '', str_replace(',', '.', $_POST['montant']));
+                    }
+
+                    if ($this->current_projects_status->status == \projects_status::PREP_FUNDING) {
                         $this->projects->risk = $_POST['risk'];
                     }
 
@@ -566,6 +578,14 @@ class dossiersController extends bootstrap
                             $this->projects->date_retrait      = $this->dates->formatDateFrToMysql($_POST['date_retrait']);
                             $this->projects->date_retrait_full = $this->projects->date_retrait . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute'] . ':0';
                         }
+
+                        if (false === empty($this->projects->risk) && false === empty($this->projects->period)) {
+                            try {
+                                $oProjectManager->setProjectRateRage($this->projects);
+                            } catch (\Exception $exception) {
+                                $_SESSION['freeow']['message'] .= $exception->getMessage();
+                            }
+                        }
                     }
 
                     if ($_POST['status'] != $_POST['current_status'] && $this->current_projects_status->status != $_POST['status']) {
@@ -579,14 +599,6 @@ class dossiersController extends bootstrap
                                 foreach ($aStatusHistory as $aStatus) {
                                     $aExistingStatus[] = $aStatus['status'];
                                 }
-                            }
-
-                            try {
-                                $oProjectManager->setProjectRateRage($this->projects);
-                            } catch (\Exception $exception) {
-                                $_SESSION['freeow']['message'] .= $exception->getMessage();
-                                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
-                                die;
                             }
 
                             $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::PREP_FUNDING, $this->projects);
