@@ -25,7 +25,8 @@ class StatisticsManager
     public function getAllStatistics()
     {
         $aStatistics = [
-            'numberProjects'                 => $this->getNumberOfProjects(),
+            'numberProjects'                 => $this->getNumberOfFinancedProjects(),
+            'numberProjectRequest'           => 1587952,
             'numberLenders'                  => $this->getNumberOfLenders(),
             //TODO replace in code with lendersByType
             'amountBorrowedInMillions'       => bcdiv($this->getAmountBorrowed(), 1000000),
@@ -58,7 +59,7 @@ class StatisticsManager
         return $iNumberLendersInCommunity;
     }
 
-    public function getNumberOfProjects()
+    public function getNumberOfFinancedProjects()
     {
         $iNumberProjects = '';
 

@@ -140,13 +140,9 @@ class ProjectDisplayManager
         }
 
         if (\projects_status::EN_FUNDING == $projectStatus->status) {
-            //TODO once decision taken for carnet d'ordre change names of variables in template make things more redable ...
-            $bidsOnProject = $bids->select('id_project = ' . $project->id_project, 'added ASC');
-            $projectData['alloffersOverview'] = '';
-            //$templateVariables['charts']['projectOffers'] = $highchartsService->getBidsChartSetting($activeBidsByRate, 6);
             $bidsStatistics = $this->projectManager->getBidsStatistics($project);
-            //$meanBidAmount  = round(array_sum(array_column($bidsStatistics, 'amount_total')) / array_sum(array_column($bidsStatistics, 'nb_bids')), 2);
-            $activeBidsByRate = $bids->getNumberActiveBidsByRate($project->id_project);
+            $projectData['bidsStatistics'] = $bidsStatistics;
+            $projectData['meanBidAmount']  = round(array_sum(array_column($bidsStatistics, 'amount_total')) / array_sum(array_column($bidsStatistics, 'nb_bids')), 2);
         } else {
             $projectData['fundingStatistics'] = $this->getProjectFundingStatistic($project, $projectStatus->status);
         }

@@ -24,29 +24,11 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
 
     <p><?= $this->lng['profile']['contenu-partie-1'] ?></p>
     <form action="<?= $this->lurl ?>/profile/particulier/3" method="post" name="form_particulier_perso" id="form_particulier_perso" enctype="multipart/form-data">
-        <div class="row" id="radio_sex">
-            <div class="form-choose fixed">
-                <span class="title"><?= $this->lng['etape1']['civilite'] ?></span>
-                <div class="radio-holder validationRadio1">
-                    <label for="female"><?= $this->lng['etape1']['madame'] ?></label>
-                    <input <?= ($this->clients->civilite == 'Mme' ? 'checked="checked"' : '') ?> type="radio" class="custom-input" name="sex" id="female" value="Mme" checked="checked">
-                </div><!-- /.radio-holder -->
 
-                <div class="radio-holder validationRadio2">
-                    <label for="male"><?= $this->lng['etape1']['monsieur'] ?></label>
-                    <input <?= ($this->clients->civilite == 'M.' ? 'checked="checked"' : '') ?> type="radio" class="custom-input" name="sex" id="male" value="M.">
-                </div><!-- /.radio-holder -->
-            </div><!-- /.form-choose -->
-        </div><!-- /.row -->
-        <div class="row">
-            <input type="text" name="nom-famille" id="nom-famille" title="<?= $this->lng['etape1']['nom-de-famille'] ?>" value="<?= ($this->clients->nom != '' ? $this->clients->nom : $this->lng['etape1']['nom-de-famille']) ?>" class="field field-large required" disabled="disabled" />
             <input type="text" name="nom-dusage" id="nom-dusage" title="<?= $this->lng['etape1']['nom-dusage'] ?>" value="<?= ($this->clients->nom_usage != '' ? $this->clients->nom_usage : $this->lng['etape1']['nom-dusage']) ?>" class="field field-large " data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
         </div><!-- /.row -->
 
-        <div class="row">
-            <input type="text" name="prenom" id="prenom" title="<?= $this->lng['etape1']['prenom'] ?>" value="<?= ($this->clients->prenom != '' ? $this->clients->prenom : $this->lng['etape1']['prenom']) ?>" class="field field-large required" disabled="disabled" />
-            <em class="change_identite"><?= $this->lng['profile']['les-informations-relatives-a-votre-identite-ont-ete-modifiees'] ?></em>
-        </div><!-- /.row -->
+
 
         <div class="row">
             <span class="pass-field-holder">
@@ -72,48 +54,6 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
                 <?php endforeach; ?>
             </select>
         </div><!-- /.row -->
-        <div class="row etranger" <?= ($this->etranger > 0 ? '' : 'style="display:none;"') ?>>
-            <div class="cb-holder">
-                <label style="margin-left:524px;" class="check_etranger" for="check_etranger"><?= $this->lng['etape1']['checkbox-etranger'] ?></label>
-                <input <?= ($this->etranger > 0 ? 'checked' : '') ?> type="checkbox" class="custom-input" name="check_etranger" id="check_etranger">
-            </div><!-- /.cb-holder -->
-            <p class="message_check_etranger"><?= $this->lng['etape1']['checkbox-etranger-message'] ?></p>
-        </div><!-- /.row -->
-        <div class="row small-select">
-            <span class="inline-text inline-text-alt"><?= $this->lng['etape1']['date-de-naissance'] ?> :</span>
-            <select name="jour_naissance" id="jour_naissance" class="custom-select required field-tiny">
-                <option><?= $this->lng['etape1']['jour'] ?></option>
-                <option><?= $this->lng['etape1']['jour'] ?></option>
-                <?php for ($i = 1; $i <= 31; $i++) : ?>
-                    <option <?= ($this->jour == $i ? 'selected' : '') ?> value="<?= $i ?>"><?= $i ?></option>
-                <?php endfor; ?>
-            </select>
-            <select name="mois_naissance" id="mois_naissance" class="custom-select required field-tiny">
-                <option><?= $this->lng['etape1']['mois'] ?></option>
-                <option><?= $this->lng['etape1']['mois'] ?></option>
-                <?php foreach ($this->dates->tableauMois['fr'] as $k => $mois) :
-                    if ($k > 0) : ?>
-                        <option <?= $this->mois == $k ? "selected" : "" ?> value="<?= $k ?>"><?= $mois ?></option>;
-                    <?php endif; ?>
-                <?php endforeach; ?>
-            </select>
-            <select name="annee_naissance" id="annee_naissance" class="custom-select required field-tiny">
-                <option><?= $this->lng['etape1']['annee'] ?></option>
-                <option><?= $this->lng['etape1']['annee'] ?></option>
-                <?php for ($i = date('Y') - 18; $i >= 1910; $i--) : ?>
-                    <option <?= $this->annee == $i ? "selected" : "" ?> value="<?= $i ?>"><?= $i ?></option>
-                <?php endfor; ?>
-            </select>
-            <div style="clear: both;"></div>
-            <em class="error_age"><?= $this->lng['etape1']['erreur-age'] ?></em>
-            <span class="check_age" style="display:none">true</span>
-        </div>
-        <div class="row row-triple-fields row-triple-fields-alt">
-            <span class="inline-text inline-text-alt inline-text-alt-small"><?= $this->lng['etape1']['commune-de-naissance'] ?>:</span>
-            <input type="text" name="naissance" id="naissance" class="field field-small required" data-autocomplete="birth_city"
-                   placeholder="<?=$this->lng['etape1']['commune-de-naissance']?>" value="<?=$this->clients->ville_naissance?>">
-            <input type="hidden" id="insee_birth" name="insee_birth" value="<?=$this->clients->insee_birth?>"/>
-            <span class="inline-text inline-text-alt inline-text-alt-small"><?=$this->lng['etape1']['pays-de-naissance']?> :</span>
 
             <select name="pays3" id="pays3" class="country custom-select <?=$required?> field-small">
                 <option value=""><?=$this->lng['etape1']['pays-de-naissance']?></option>

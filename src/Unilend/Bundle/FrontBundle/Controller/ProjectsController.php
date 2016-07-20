@@ -33,6 +33,9 @@ class ProjectsController extends Controller
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
         /** @var \settings $settings */
         $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
+        /** @var \projects $projects */
+        $projects = $this->get('unilend.service.entity_manager')->getRepository('projects');
+
         /** @var array $rateRange */
         $rateRange = [\bids::BID_RATE_MIN, \bids::BID_RATE_MAX];
 
@@ -62,6 +65,8 @@ class ProjectsController extends Controller
                 $limit
             );
         }
+
+        $aTemplateVariables['projectsInFunding'] = $projects->countSelectProjectsByStatus(\projects_status::EN_FUNDING);
 
         $totalNumberProjects = $projectDisplayManager->getTotalNumberOfDisplayedProjects();
         $totalPages          = ceil($totalNumberProjects / $limit);

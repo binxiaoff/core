@@ -288,67 +288,19 @@ class profileController extends bootstrap
             $this->form_ok = true;
             $this->reponse_email = '';
 
-            $this->clients_adresses->meme_adresse_fiscal = (empty($_POST['mon-addresse'])) ? 0 : 1;
-            $this->clients_adresses->adresse_fiscal      = $_POST['adresse_inscription'];
-            $this->clients_adresses->ville_fiscal        = $_POST['ville_inscription'];
-            $this->clients_adresses->cp_fiscal           = $_POST['postal'];
-            $this->clients_adresses->id_pays_fiscal      = $_POST['pays1'];
-            $this->clients_adresses->adresse1            = (empty($_POST['mon-addresse'])) ? $_POST['adress2'] : $_POST['adresse_inscription'];
-            $this->clients_adresses->ville               = (empty($_POST['mon-addresse'])) ? $_POST['ville2'] : $_POST['ville_inscription'];
-            $this->clients_adresses->cp                  = (empty($_POST['mon-addresse'])) ? $_POST['postal2'] : $_POST['postal'];
-            $this->clients_adresses->id_pays             = (empty($_POST['mon-addresse'])) ? $_POST['pays2'] : $_POST['pays1'];
 
-            $this->clients->civilite = $_POST['sex'];
             $this->clients->nom_usage = (isset($_POST['nom-dusage']) && $_POST['nom-dusage'] != $this->lng['etape1']['nom-dusage']) ? $this->ficelle->majNom($_POST['nom-dusage']) : '';
-
-            //Get the insee code for birth place: if in France, city insee code; if overseas, country insee code
-            $sCodeInsee = '';
-            if (\pays_v2::COUNTRY_FRANCE == $_POST['pays3']) { // if France
-                //Check birth city
-                if (!isset($_POST['insee_birth']) || '' === $_POST['insee_birth']) {
-                    /** @var villes $oVilles */
-                    $oVilles = $this->loadData('villes');
-                    //for France, the code insee is empty means that the city is not verified with table "villes", check again here.
-                    if (false === $oVilles->get($_POST['naissance'], 'ville')) {
-                        $this->form_ok = false;
-                    } else {
-                        $sCodeInsee = $oVilles->insee;
-                    }
-                    unset($oVilles);
-                } else {
-                    $sCodeInsee = $_POST['insee_birth'];
-                }
-            } else {
-                /** @var pays_v2 $oPays */
-                $oPays = $this->loadData('pays_v2');
-                /** @var insee_pays $oInseePays */
-                $oInseePays = $this->loadData('insee_pays');
-
-                if ($oPays->get($_POST['pays3']) && $oInseePays->getByCountryIso(trim($oPays->iso))) {
-                    $sCodeInsee = $oInseePays->COG;
-                } else {
-                    $this->form_ok = false;
-                }
-                unset($oPays, $oInseePays);
-            }
 
             $this->clients->email             = $_POST['email'];
             $this->clients->telephone         = str_replace(' ', '', $_POST['phone']);
-            $this->clients->id_pays_naissance = $_POST['pays3'];
-            $this->clients->ville_naissance   = $_POST['naissance'];
-            $this->clients->insee_birth       = $sCodeInsee;
-            $this->clients->id_nationalite    = $_POST['nationalite'];
-            $this->clients->naissance         = $_POST['annee_naissance'] . '-' . $_POST['mois_naissance'] . '-' . $_POST['jour_naissance'];
+
 
             if ($this->etranger > 0) {
                 if (isset($_POST['check_etranger']) && $_POST['check_etranger'] == false) {
                     $this->form_ok = false;
                 }
             }
-            if ($this->dates->ageplus18($this->clients->naissance) == false) {
-                $this->form_ok           = false;
-                $_SESSION['reponse_age'] = $this->lng['etape1']['erreur-age'];
-            }
+
             if (! isset($_POST['email']) || $_POST['email'] == $this->lng['etape1']['email']) {
                 $this->form_ok = false;
             } elseif (isset($_POST['email']) && $this->ficelle->isEmail($_POST['email']) == false) {
@@ -368,23 +320,8 @@ class profileController extends bootstrap
             if (! isset($_POST['ville_inscription']) || $_POST['ville_inscription'] == $this->lng['etape1']['ville']) {
                 $this->form_ok = false;
             }
-            if (! isset($_POST['postal']) || $_POST['postal'] == $this->lng['etape1']['code-postal']) {
-                $this->form_ok = false;
-            } else {
-                /** @var villes $oVilles */
-                $oVilles = $this->loadData('villes');
-                //Check cp
-                if (isset($_POST['pays1']) && \pays_v2::COUNTRY_FRANCE == $_POST['pays1']) {
-                    //for France, check post code here.
-                    if (false === $oVilles->exist($_POST['postal'], 'cp')) {
-                        $this->form_ok = false;
-                    }
-                }
-                unset($oVilles);
-            }
-            if (! isset($_POST['phone']) || $_POST['phone'] == $this->lng['etape1']['telephone']) {
-                $this->form_ok = false;
-            }
+
+
             if ($this->clients_adresses->meme_adresse_fiscal == 0) {
                 if (! isset($_POST['adress2']) || $_POST['adress2'] == $this->lng['etape1']['adresse']) {
                     $this->form_ok = false;
@@ -454,44 +391,7 @@ class profileController extends bootstrap
                 $bCniPassportTiersHebergeantIUpdated = false;
                 $bAutreUpdated                       = false;
 
-                if ($this->etranger == 1 || $this->etranger == 2) {
-                    if (isset($_FILES['document_fiscal']) && $_FILES['document_fiscal']['name'] != '') {
-                        $fichier_document_fiscal = $this->uploadAttachment($this->lenders_accounts->id_lender_account, \attachment_type::JUSTIFICATIF_FISCAL);
-                        if (is_numeric($fichier_document_fiscal)) {
-                            $bDocumentFiscalUpdated = true;
-                        }
-                    }
-                }
-                if (isset($_FILES['cni_passeport']) && $_FILES['cni_passeport']['name'] != '') {
-                    $fichier_cni_passeport = $this->uploadAttachment($this->lenders_accounts->id_lender_account, \attachment_type::CNI_PASSPORTE);
-                    if (is_numeric($fichier_cni_passeport)) {
-                        $bCniPasseportUpdated = true;
-                    }
-                }
-                if (isset($_FILES['cni_passeport_verso']) && $_FILES['cni_passeport_verso']['name'] != '') {
-                    $fichier_cni_passeport_verso = $this->uploadAttachment($this->lenders_accounts->id_lender_account, \attachment_type::CNI_PASSPORTE_VERSO);
-                    if (is_numeric($fichier_cni_passeport_verso)) {
-                        $bCniPasseporVersotUpdated = true;
-                    }
-                }
-                if (isset($_FILES['justificatif_domicile']) && $_FILES['justificatif_domicile']['name'] != '') {
-                    $fichier_justificatif_domicile = $this->uploadAttachment($this->lenders_accounts->id_lender_account, \attachment_type::JUSTIFICATIF_DOMICILE);
-                    if (is_numeric($fichier_justificatif_domicile)) {
-                        $bJustificatifDomicileUpdated = true;
-                    }
-                }
-                if (isset($_FILES['attestation_hebergement_tiers']) && $_FILES['attestation_hebergement_tiers']['name'] != '') {
-                    $fichier_attestation_hebergement_tiers = $this->uploadAttachment($this->lenders_accounts->id_lender_account, \attachment_type::ATTESTATION_HEBERGEMENT_TIERS);
-                    if (is_numeric($fichier_attestation_hebergement_tiers)) {
-                        $bAttestationHebergementTiersUpdated = true;
-                    }
-                }
-                if (isset($_FILES['cni_passport_tiers_hebergeant']) && $_FILES['cni_passport_tiers_hebergeant']['name'] != '') {
-                    $fichier_cni_passport_tiers_hebergeant = $this->uploadAttachment($this->lenders_accounts->id_lender_account, \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT);
-                    if (is_numeric($fichier_cni_passport_tiers_hebergeant)) {
-                        $bCniPassportTiersHebergeantIUpdated = true;
-                    }
-                }
+
                 if (isset($_FILES['autre1']) && $_FILES['autre1']['name'] != '') {
                     $fichier_autre = $this->uploadAttachment($this->lenders_accounts->id_lender_account, \attachment_type::AUTRE1);
                     if (is_numeric($fichier_autre)) {
@@ -509,146 +409,8 @@ class profileController extends bootstrap
                 $this->lenders_accounts->update();
                 $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
 
-                //********************************************//
-                //*** ENVOI DU MAIL NOTIFICATION notification-nouveaux-preteurs ***//
-                //********************************************//
 
-                $dateDepartControlPays = strtotime('2014-07-31 18:00:00');
-                if (
-                    $adresse_fiscal != $this->clients_adresses->adresse_fiscal ||
-                    $ville_fiscal != $this->clients_adresses->ville_fiscal ||
-                    $cp_fiscal != $this->clients_adresses->cp_fiscal ||
-                    ! in_array($this->clients_adresses->id_pays_fiscal, array(0, $id_pays_fiscal)) && strtotime($this->clients->added) >= $dateDepartControlPays ||
-                    $nom_usage != $this->clients->nom_usage ||
-                    $id_pays_naissance != $this->clients->id_pays_naissance && strtotime($this->clients->added) >= $dateDepartControlPays ||
-                    $id_nationalite != $this->clients->id_nationalite && strtotime($this->clients->added) >= $dateDepartControlPays ||
-                    $naissance != $this->clients->naissance ||
-                    $bCniPasseportUpdated === true ||
-                    $bJustificatifDomicileUpdated === true ||
-                    $bCniPasseporVersotUpdated === true ||
-                    $bAttestationHebergementTiersUpdated === true ||
-                    $bCniPassportTiersHebergeantIUpdated === true ||
-                    $bAutreUpdated === true ||
-                    $this->etranger > 0 && $bDocumentFiscalUpdated === true ||
-                    $origine_des_fonds_old != $this->lenders_accounts->origine_des_fonds ||
-                    $bic_old != $this->lenders_accounts->bic ||
-                    $iban_old != $this->lenders_accounts->iban ||
-                    $bRibUpdated === true
-                ) {
-                    $contenu = '<ul>';
-                    if ($adresse_fiscal != $this->clients_adresses->adresse_fiscal) {
-                        $contenu .= '<li>adresse fiscale</li>';
-                    }
-                    if ($ville_fiscal != $this->clients_adresses->ville_fiscal) {
-                        $contenu .= '<li>ville fiscale</li>';
-                    }
-                    if ($cp_fiscal != $this->clients_adresses->cp_fiscal) {
-                        $contenu .= '<li>cp fiscal</li>';
-                    }
-                    if (! in_array($this->clients_adresses->id_pays_fiscal, array(0, $id_pays_fiscal)) && strtotime($this->clients->added) >= $dateDepartControlPays) {
-                        $contenu .= '<li>pays fiscal</li>';
-                    }
-                    if ($adresse1 != $this->clients_adresses->adresse1) {
-                        $contenu .= '<li>adresse</li>';
-                    }
-                    if ($ville != $this->clients_adresses->ville) {
-                        $contenu .= '<li>ville</li>';
-                    }
-                    if ($cp != $this->clients_adresses->cp) {
-                        $contenu .= '<li>cp</li>';
-                    }
-                    if ($id_pays != $this->clients_adresses->id_pays && strtotime($this->clients->added) >= $dateDepartControlPays) {
-                        $contenu .= '<li>pays</li>';
-                    }
-                    if ($civilite != $this->clients->civilite) {
-                        $contenu .= '<li>civilite</li>';
-                    }
-                    if ($nom_usage != $this->clients->nom_usage) {
-                        $contenu .= '<li>nom_usage</li>';
-                    }
-                    if ($email != $this->clients->email) {
-                        $contenu .= '<li>email</li>';
-                    }
-                    if ($telephone != $this->clients->telephone) {
-                        $contenu .= '<li>telephone</li>';
-                    }
-                    if ($id_pays_naissance != $this->clients->id_pays_naissance && strtotime($this->clients->added) >= $dateDepartControlPays) {
-                        $contenu .= '<li>pays naissance</li>';
-                    }
-                    if ($ville_naissance != $this->clients->ville_naissance) {
-                        $contenu .= '<li>ville naissance</li>';
-                    }
-                    if ($id_nationalite != $this->clients->id_nationalite && strtotime($this->clients->added) >= $dateDepartControlPays) {
-                        $contenu .= '<li>nationalite</li>';
-                    }
-                    if ($naissance != $this->clients->naissance) {
-                        $contenu .= '<li>date naissance</li>';
-                    }
-                    if ($bCniPasseportUpdated) {
-                        $contenu .= '<li>fichier cni passeport</li>';
-                    }
-                    if ($bCniPasseporVersotUpdated) {
-                        $contenu .= '<li>fichier cni passeport verso</li>';
-                    }
-                    if ($bJustificatifDomicileUpdated) {
-                        $contenu .= '<li>fichier justificatif domicile</li>';
-                    }
-                    if ($bAttestationHebergementTiersUpdated) {
-                        $contenu .= '<li>fichier attestation hebergement tiers</li>';
-                    }
-                    if ($bCniPassportTiersHebergeantIUpdated) {
-                        $contenu .= '<li>fichier cni passeport du tiers hebergeant</li>';
-                    }
-                    if ($bAutreUpdated) {
-                        $contenu .= '<li>fichier autre</li>';
-                    }
-                    if ($bDocumentFiscalUpdated) {
-                        $contenu .= '<li>fichier document fiscal</li>';
-                    }
-                    if ($origine_des_fonds_old != $this->lenders_accounts->origine_des_fonds) {
-                        $contenu .= '<li>Origine des fonds</li>';
-                    }
-                    if ($bic_old != $this->lenders_accounts->bic) {
-                        $contenu .= '<li>BIC</li>';
-                    }
-                    if ($iban_old != $this->lenders_accounts->iban) {
-                        $contenu .= '<li>IBAN</li>';
-                    }
-                    if ($bRibUpdated) {
-                        $contenu .= '<li>Fichier RIB</li>';
-                    }
-                    $contenu .= '</ul>';
 
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $oClientManager */
-                    $oClientManager = $this->get('unilend.service.client_manager');
-                    $oClientManager->changeClientStatusTriggeredByClientAction($this->clients->id_client, $contenu);
-
-                    /** @var \settings $oSettings */
-                    $oSettings = $this->loadData('settings');
-                    $oSettings->get('Adresse notification modification preteur', 'type');
-                    $destinataire = $oSettings->value;
-
-                    $varsMail = array(
-                        '$surl'         => $this->surl,
-                        '$url'          => $this->lurl,
-                        '$id_preteur'   => $this->clients->id_client,
-                        '$nom'          => $this->clients->nom,
-                        '$prenom'       => $this->clients->prenom,
-                        '$montant'      => $this->solde . ' euros',
-                        '$date'         => date('d') . ' ' . $this->dates->tableauMois[$this->language][date('n')] . ' ' . date('Y'),
-                        '$heure_minute' => date('H:i'),
-                        '$email'        => $this->clients->email,
-                        '$lien'         => $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account
-                    );
-
-                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-modification-preteurs', $varsMail, false);
-                    $message->setTo($destinataire);
-                    $mailer = $this->get('mailer');
-                    $mailer->send($message);
-
-                    $this->sendAccountModificationEmail($this->clients);
-                }
                 $_SESSION['reponse_profile_perso'] = $this->lng['profile']['titre-1'] . ' ' . $this->lng['profile']['sauvegardees'];
                 header('Location: ' . $this->lurl . '/profile/particulier/#info_perso');
                 die;
