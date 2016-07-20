@@ -91,22 +91,22 @@
     echo nl2br($texte); ?>
 </div>
 <div class="tax-exemption-history">
-    <h2><?= $this->lng['lender-dashboard']['deduction-at-source-exemption'] ?></h2>
+    <h2><?= $this->lng['lender-dashboard']['tax-exemption'] ?></h2>
     <?php if (false === empty($this->eligible) && false === empty($this->afterDeadline) && true === empty($this->nextTaxExemptionRequestDone)): ?>
         <span>
             <?= str_replace(
                 '%taxExemptionRequestLimitDate%',
-                $this->taxExemptionRequestLimitDate, $this->lng['lender-dashboard']['deduction-at-source-reminder-message']
+                $this->taxExemptionRequestLimitDate, $this->lng['lender-dashboard']['tax-reminder-message']
             ) ?>
         </span>
     <?php endif; ?>
     <?php foreach ( $this->taxExemptionHistory as $row ): ?>
         <span>
-            <?= $this->lng['lender-dashboard']['deduction-at-source-the'] . ' ' . strftime('%d %B %Y', \DateTime::createFromFormat('Y-m-d H:i:s', $row['added'])->getTimestamp()) . ', ' .
+            <?= $this->lng['lender-dashboard']['tax-the'] . ' ' . strftime('%d %B %Y', \DateTime::createFromFormat('Y-m-d H:i:s', $row['added'])->getTimestamp()) . ', ' .
             str_replace(
                 '%exemptionYear%',
                 $row['year'],
-                $this->lng['lender-dashboard']['deduction-at-source-history-message']
+                $this->lng['lender-dashboard']['tax-history-message']
             )
             ?>
         </span>

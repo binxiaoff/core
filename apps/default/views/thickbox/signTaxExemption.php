@@ -23,13 +23,13 @@
 <div class="popup" style="background-color: #E3E4E5;width: 600px; overflow: hidden; height: 710px;">
     <a href="#" class="popup-close">close</a>
     <div class="popup-header">
-        <h5><?= $this->lng['lender-dashboard']['deduction-at-source-exemption-request'] ?></h5>
+        <h5><?= $this->lng['lender-dashboard']['tax-exemption-request'] ?></h5>
         <h5><?= $this->lng['lender-dashboard']['sworn-statement'] ?></h5>
         <strong><?=
             str_replace(
                 ['%nextYear%', '%taxExemptionRequestLimitDate%'],
                 [$this->nextYear, $this->taxExemptionRequestLimitDate],
-                $this->lng['lender-dashboard']['deduction-at-source-exemption-request-validity-notice']
+                $this->lng['lender-dashboard']['tax-exemption-request-validity-notice']
             ) ?>
         </strong>
     </div>
@@ -38,7 +38,7 @@
             str_replace(
                 ['%rateOfTaxDeductionAtSource%', '%currentYear%', '%lastYear%'],
                 [$this->taxType->rate, $this->currentYear, $this->lastYear],
-                $this->lng['lender-dashboard']['deduction-at-source-exemption-info']
+                $this->lng['lender-dashboard']['tax-exemption-info']
             ) ?>
         </p>
         <p><?=
@@ -81,14 +81,14 @@
                 </label>
                 <ol style="padding: 20px;">
                     <li><?= $this->lng['lender-dashboard']['tax-penalty-risk'] ?></li>
-                    <li><?= $this->lng['lender-dashboard']['deduction-at-source-exemption-limitation'] ?></li>
+                    <li><?= $this->lng['lender-dashboard']['tax-exemption-limitation'] ?></li>
                 </ol>
                 <div id="display-msg" style="display: none; text-align: center; width: 100%; box-sizing: border-box;">
 
                 </div>
                 <p style="text-align: center;">
-                    <button type="submit" class="btn" name="validate-btn" id="validate-btn" style="width: 150px; margin-right: 30px;"><?= $this->lng['lender-dashboard']['deduction-at-source-exemption-validate'] ?></button>
-                    <button type="submit" class="btn" name="cancel-btn" id="cancel-btn" style="width: 150px; margin-right: 30px;"><?= $this->lng['lender-dashboard']['deduction-at-source-exemption-cancel'] ?></button>
+                    <button type="submit" class="btn" name="validate-btn" id="validate-btn" style="width: 150px; margin-right: 30px;"><?= $this->lng['lender-dashboard']['tax-exemption-validate'] ?></button>
+                    <button type="submit" class="btn" name="cancel-btn" id="cancel-btn" style="width: 150px; margin-right: 30px;"><?= $this->lng['lender-dashboard']['tax-exemption-cancel'] ?></button>
                 </p>
             </form>
         </div>

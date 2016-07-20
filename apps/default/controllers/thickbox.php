@@ -330,7 +330,7 @@ class thickboxController extends bootstrap
         }
         $this->fiscalAddress['country'] = $taxCountry->fr;
 
-        $this->taxType->get(\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE);
+        $this->taxType->get(\tax_type::TYPE_INCOME_TAX);
 
         $this->currentYear = date('Y', time());
         $this->lastYear    = $this->currentYear - 1;
