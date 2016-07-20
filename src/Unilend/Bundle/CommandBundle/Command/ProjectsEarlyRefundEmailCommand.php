@@ -106,8 +106,7 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
                 $client->get($lender->id_client_owner, 'id_client');
 
                 if ($client->status == 1) {
-                    $lenderRemainingCapital = $lenderRepaymentSchedule->getSumRestanteARembByProject_capital(' AND id_lender =' . $projectLender['id_lender'] . ' AND id_loan = ' . $projectLender['id_loan'] . ' AND status_ra = 1 AND id_project = ' . $project->id_project);
-
+                    $lenderRemainingCapital   = $lenderRepaymentSchedule->getOwedCapital(['id_lender' => $projectLender['id_lender'], 'id_loan' => $projectLender['id_loan'], 'status_ra' => 1, 'id_project' => $project->id_project]);
                     $notification->type       = \notifications::TYPE_REPAYMENT;
                     $notification->id_lender  = $projectLender['id_lender'];
                     $notification->id_project = $project->id_project;
@@ -137,7 +136,7 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
                             'nom_entreprise'       => $company->name,
                             'taux_bid'             => $ficelle->formatNumber($loan->rate),
                             'nbecheancesrestantes' => $remainingRepaymentsCount,
-                            'interetsdejaverses'   => $ficelle->formatNumber(bcml($lenderRepaymentSchedule->getRepaidInterests(array('id_project' => $project->id_project, 'id_loan' => $projectLender['id_loan'], 'id_lender' => $projectLender['id_lender'])), 100, 2)),
+                            'interetsdejaverses'   => $ficelle->formatNumber(bcmul($lenderRepaymentSchedule->getRepaidInterests(array('id_project' => $project->id_project, 'id_loan' => $projectLender['id_loan'], 'id_lender' => $projectLender['id_lender'])), 100, 2)),
                             'crdpreteur'           => $ficelle->formatNumber($lenderRemainingCapital) . ($lenderRemainingCapital >= 2 ? ' euros' : ' euro'),
                             'Datera'               => date('d/m/Y'),
                             'solde_p'              => $ficelle->formatNumber($accountBalance) . ($accountBalance >= 2 ? ' euros' : ' euro'),

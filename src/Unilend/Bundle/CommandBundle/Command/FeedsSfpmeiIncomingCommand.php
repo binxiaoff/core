@@ -282,7 +282,7 @@ EOF
         $aRepaymentSchedules = $echeanciers_emprunteur->select('status_emprunteur = 0 AND id_project = ' . $iProjectId, 'ordre ASC');
 
         foreach ($aRepaymentSchedules as $aRepayment) {
-            $fMonthlyAmount = $echeanciers->getMontantRembEmprunteur(bcdiv($aRepayment['montant'], 100, 2), bcdiv($aRepayment['commission'], 100, 2), bcdiv($aRepayment['tva'], 100, 2));
+            $fMonthlyAmount = round(bcdiv($aRepayment['montant'], 100, 2) + bcdiv($aRepayment['commission'], 100, 2) + bcdiv($aRepayment['tva'], 100, 2), 2);
 
             if ($fMonthlyAmount <= $fAmount) {
                 $echeanciers->updateStatusEmprunteur($iProjectId, $aRepayment['ordre']);
@@ -326,7 +326,7 @@ EOF
         $transactions->id_langue        = 'fr';
         $transactions->date_transaction = date('Y-m-d H:i:s');
         $transactions->status           = \transactions::PAYMENT_STATUS_OK;
-        $transactions->etat             = \transactions::STATUS_VALID;     
+        $transactions->etat             = \transactions::STATUS_VALID;
         $transactions->type_transaction = \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER;
         $transactions->ip_client        = '';
         $transactions->create();
@@ -676,7 +676,7 @@ EOF
             $fNewAmount = bcdiv($receptions->montant, 100, 2);
 
             foreach ($oEcheanciersEmprunteur->select('status_emprunteur = 1 AND id_project = ' . $projects->id_project, 'ordre DESC') as $e) {
-                $fMonthlyAmount = $oEcheanciers->getMontantRembEmprunteur(bcdiv($e['montant'], 100, 2), bcdiv($e['commission'], 100, 2), bcdiv($e['tva'], 100, 2));
+                $fMonthlyAmount = round(bcdiv($e['montant'], 100, 2) + bcdiv($e['commission'], 100, 2) + bcdiv($e['tva'], 100, 2), 2);
 
                 if ($fMonthlyAmount <= $fNewAmount) {
                     $oEcheanciers->updateStatusEmprunteur($projects->id_project, $e['ordre'], 'annuler');
