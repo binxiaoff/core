@@ -54,6 +54,12 @@ class BidManager
         $this->oLogger = $oLogger;
     }
 
+    /**
+     * @param \bids $oBid
+     * @param bool  $bSendNotification
+     *
+     * @return bool
+     */
     public function bid(\bids $oBid, $bSendNotification = true)
     {
         /** @var \settings $oSettings */
@@ -82,11 +88,15 @@ class BidManager
         $fAmount     = $oBid->amount / 100;
         $fRate       = round(floatval($oBid->rate), 1);
 
+        $project->get($iProjectId);
+
         if ($iAmountMin > $fAmount) {
             return false;
         }
 
-        if ($fRate > \bids::BID_RATE_MAX || $fRate < \bids::BID_RATE_MIN) {
+        $rateRate = $this->getProjectRateRang($project);
+
+        if ($fRate > $rateRate['rate_max'] || $fRate < $rateRate['rate_min']) {
             return false;
         }
 
@@ -95,13 +105,12 @@ class BidManager
             return false;
         }
 
-        $project->get($iProjectId);
         $oCurrentDate = new \DateTime();
         $oEndDate  = new \DateTime($project->date_retrait_full);
         if ($project->date_fin != '0000-00-00 00:00:00') {
             $oEndDate = new \DateTime($project->date_fin);
         }
-        
+
         if ($oCurrentDate > $oEndDate) {
             return false;
         }
@@ -391,5 +400,23 @@ class BidManager
                 $oTransaction->id_transaction
             );
         }
+    }
+
+    /**
+     * @param \projects $project
+     *
+     * @return array
+     */
+    public function getProjectRateRang(\projects $project)
+    {
+        if ($project->id_rate) {
+            /** @var \project_rate_settings $projectRateSettings */
+            $projectRateSettings = $this->oEntityManager->getRepository('project_rate_settings');
+            if($projectRateSettings->get($project->id_rate)) {
+                return ['rate_min' => (float) $projectRateSettings->rate_min, 'rate_max' => (float) $projectRateSettings->rate_max];
+            }
+        }
+
+        return ['rate_min' => \bids::BID_RATE_MIN, 'rate_max' => \bids::BID_RATE_MAX];
     }
 }

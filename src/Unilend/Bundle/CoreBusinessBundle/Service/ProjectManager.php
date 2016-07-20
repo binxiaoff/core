@@ -200,6 +200,8 @@ class ProjectManager
         $oProjectPeriods = $this->oEntityManager->getRepository('project_period');
 
         if ($oProjectPeriods->getPeriod($oProject->period)) {
+            $rateRang = $this->oBidManager->getProjectRateRang($oProject);
+
             $iOffset = 0;
             $iLimit  = 100;
             while ($aAutoBidList = $this->oAutoBidSettingsManager->getSettings(null, $oProject->risk, $oProjectPeriods->id_period, array(\autobid::STATUS_ACTIVE), 'id_autobid', $iLimit, $iOffset)) {
@@ -207,7 +209,7 @@ class ProjectManager
 
                 foreach ($aAutoBidList as $aAutoBidSetting) {
                     if ($oAutoBid->get($aAutoBidSetting['id_autobid'])) {
-                        $this->oBidManager->bidByAutoBidSettings($oAutoBid, $oProject, \bids::BID_RATE_MAX, false);
+                        $this->bidByAutoBidSettings($oAutoBid, $oProject, $rateRang['rate_max'], false);
                     }
                 }
             }
@@ -801,7 +803,7 @@ class ProjectManager
         return $oBid->getBidsStatistics($oProject->id_project);
     }
 
-    public function setProjectRateRage(\projects $project)
+    public function setProjectRateRange(\projects $project)
     {
         if (empty($project->period)) {
             throw new \Exception('project period not set.');

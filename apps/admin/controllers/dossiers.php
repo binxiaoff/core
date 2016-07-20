@@ -260,11 +260,10 @@ class dossiersController extends bootstrap
                 $this->fPredictAutoBid = round(($fPredictAmountAutoBid / $this->projects->amount) * 100, 1);
 
                 if (false === empty($this->projects->id_rate)) {
-                    /** @var project_rate_settings $projectRateSettings */
-                    $projectRateSettings = $this->loadData('project_rate_settings');
-                    $projectRateSettings->get($this->projects->id_rate);
-                    $this->rate_min = $projectRateSettings->rate_min;
-                    $this->rate_max = $projectRateSettings->rate_max;
+                    $bidManager = $this->get('unilend.service.bid_manager');
+                    $rateRange = $bidManager->getProjectRateRang($this->projects);
+                    $this->rate_min = $rateRange['rate_min'];
+                    $this->rate_max = $rateRange['rate_max'];
                 }
             }
 
@@ -548,7 +547,6 @@ class dossiersController extends bootstrap
                     $this->projects->title           = $_POST['title'];
                     $this->projects->title_bo        = $_POST['title_bo'];
                     $this->projects->nature_project  = $_POST['nature_project'];
-                    $this->projects->target_rate     = '-';
                     $this->projects->id_analyste     = $_POST['analyste'];
                     $this->projects->id_commercial   = $_POST['commercial'];
                     $this->projects->display         = $_POST['display_project'];
@@ -581,7 +579,7 @@ class dossiersController extends bootstrap
 
                         if (false === empty($this->projects->risk) && false === empty($this->projects->period)) {
                             try {
-                                $oProjectManager->setProjectRateRage($this->projects);
+                                $oProjectManager->setProjectRateRange($this->projects);
                             } catch (\Exception $exception) {
                                 $_SESSION['freeow']['message'] .= $exception->getMessage();
                             }
