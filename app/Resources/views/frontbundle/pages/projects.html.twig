@@ -14,7 +14,7 @@ permalink: route('projets')
             <div class="hero-wrap">
                 <div class="site-wrap">
                     <h2 class="page-title">
-                        {% trans with { '%numberProjects%' : 123456 , '%numberFinancedProjects%' : 58795 , '%numberActiveLenders%' : 77888 } %} projects-listing_page-title {% endtrans %}
+                        {{ "projects-listing_page-title"|transchoice(projectsInFunding, { '%numberProjects%' : projectsInFunding , '%numberFinancedProjects%' : stats.numberProjects , '%numberActiveLenders%' : stats.numberLenders })|nbsp|raw }}
                     </h2>
                 </div><!-- /.site-wrap -->
 
