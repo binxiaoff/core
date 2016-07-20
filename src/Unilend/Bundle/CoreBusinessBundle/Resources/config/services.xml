@@ -85,6 +85,12 @@
             <argument type="service" id="database_connection"/>
         </service>
 
+        <service id="unilend.service.project_rate_settings_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectRateSettingsManager">
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="unilend.swiftmailer.message_provider"/>
+            <argument type="service" id="swiftmailer.mailer.default" />
+        </service>
+
         <service id="unilend.service.salesforce" class="Unilend\Bundle\CoreBusinessBundle\Service\SalesforceManager">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument>%path.protected%dataloader</argument>
