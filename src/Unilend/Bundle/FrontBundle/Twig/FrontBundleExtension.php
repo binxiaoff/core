@@ -6,6 +6,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 use Symfony\Component\Asset\Packages;
+use Unilend\core\Loader;
 
 class FrontBundleExtension extends \Twig_Extension
 {
@@ -44,7 +45,10 @@ class FrontBundleExtension extends \Twig_Extension
             new \Twig_SimpleFunction('siteurlmedia', array($this, 'completeUrlMediaFunction')),
             new \Twig_SimpleFunction('getStatistics', array($this, 'getStatistics')),
             new \Twig_SimpleFunction('getCategories', array($this, 'getCategoriesForSvg')),
-            new \Twig_SimpleFunction('uploadedImage', array($this, 'uploadedImageFunction'))
+            new \Twig_SimpleFunction('uploadedImage', array($this, 'uploadedImageFunction')),
+            new \Twig_SimpleFunction('getCountries', array($this, 'getCountries')),
+            new \Twig_SimpleFunction('getNationalities', array($this, 'getNationalities')),
+            new \Twig_SimpleFunction('getMonths', array($this, 'getMonths'))
         );
     }
 
@@ -55,7 +59,9 @@ class FrontBundleExtension extends \Twig_Extension
             new \Twig_SimpleFilter('__num', array($this, 'numFilter')),
             new \Twig_SimpleFilter('convertRisk', array($this, 'convertProjectRiskFilter')),
             new \Twig_SimpleFilter('completeProjectImagePath', array($this, 'projectImagePathFilter')),
-            new \Twig_SimpleFilter('baseUrl', array())
+            new \Twig_SimpleFilter('baseUrl', array($this, 'addBaseUrl')),
+            new \Twig_SimpleFilter('countryLabel', array($this, 'getCountry')),
+            new \Twig_SimpleFilter('nationalityLabel', array($this, 'getNationality'))
         );
     }
 
@@ -71,6 +77,7 @@ class FrontBundleExtension extends \Twig_Extension
 
             $cachedItem->set($value)->expiresAfter(3600);
             $this->cachePool->save($cachedItem);
+
             return $value;
         } else {
             return $cachedItem->get();
@@ -178,4 +185,110 @@ class FrontBundleExtension extends \Twig_Extension
     {
         return $this->url . $sUrl;
     }
+
+    public function getCountries()
+    {
+        /** @var \pays_v2 $countries */
+        $countries = $this->entityManager->getRepository('pays_v2');
+        /** @var array $countyList */
+        $countyList = [];
+
+        foreach ($countries->select('', 'ordre ASC') as $country) {
+            $countyList[$country['id_pays']] = $country['fr'];
+        }
+
+        return $countyList;
+
+        $cachedItem = $this->cachePool->getItem('countryList');
+
+
+        if (false === $cachedItem->isHit()) {
+            /** @var \pays_v2 $countries */
+            $countries = $this->entityManager->getRepository('pays_v2');
+            /** @var array $countyList */
+            $countyList = [];
+
+            foreach ($countries->select('', 'ordre ASC') as $country) {
+                $countyList[$country['id_pays']] = $country['fr'];
+            }
+
+            $cachedItem->set($countyList)->expiresAfter(3600);
+            $this->cachePool->save($cachedItem);
+
+            return $countyList;
+        } else {
+            return $cachedItem->get();
+        }
+    }
+
+    public function getNationalities()
+    {
+        /** @var \nationalites_v2 $nationalities */
+        $nationalities = $this->entityManager->getRepository('nationalites_v2');
+        /** @var array $nationalityList */
+        $nationalityList = [];
+
+        foreach ($nationalities->select('', 'ordre ASC') as $nationality) {
+            $nationalityList[$nationality['id_nationalite']] = $nationality['fr_f'];
+        }
+
+
+        return $nationalityList;
+
+
+        $cachedItem = $this->cachePool->getItem('nationalityList');
+
+        if (false === $cachedItem->isHit()) {
+
+            /** @var \nationalites_v2 $nationalities */
+            $nationalities = $this->entityManager->getRepository('nationalites_v2');
+            /** @var array $nationalityList */
+            $nationalityList = [];
+
+            foreach ($nationalities->select('', 'ordre ASC') as $nationality) {
+                $nationalityList[$nationality['id_nationalite']] = $nationality['fr_f'];
+            }
+
+            $cachedItem->set($nationalityList)->expiresAfter(3600);
+            $this->cachePool->save($cachedItem);
+
+            return $nationalityList;
+        } else {
+            return $cachedItem->get();
+        }
+    }
+
+    public function getCountry($countryId)
+    {
+        $countryList = $this->getCountries();
+        return $countryList[$countryId];
+    }
+
+    public function getNationality($nationalityId)
+    {
+        $nationalityList = $this->getNationalities();
+        return $nationalityList[$nationalityId];
+    }
+
+    public function getMonths()
+    {
+        $cachedItem = $this->cachePool->getItem('monthsList');
+
+        if (false === $cachedItem->isHit()) {
+            /** @var \dates $dates */
+            $dates = Loader::loadLib('dates');
+            $monthList =  $dates->tableauMois['fr'];
+
+            $cachedItem->set($monthList)->expiresAfter(3600);
+            $this->cachePool->save($cachedItem);
+
+            return $monthList;
+        } else {
+            return $cachedItem->get();
+        }
+
+    }
+
+
+
 }

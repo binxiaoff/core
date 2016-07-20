@@ -77,13 +77,17 @@ class lenders_accounts extends lenders_accounts_crud
      * @param int $iLendersAccountId unique identifier of the lender account
      * @return array of attachments
      */
-    public function getAttachments($iLendersAccountId)
+    public function getAttachments($iLendersAccountId, $attachmentTypes = array())
     {
 
         $sql = 'SELECT a.id, a.id_type, a.id_owner, a.type_owner, a.path, a.added, a.updated, a.archived
                 FROM attachment a
                 WHERE a.id_owner = ' . $iLendersAccountId . '
-                AND a.type_owner = "lenders_accounts";';
+                AND a.type_owner = "lenders_accounts"';
+
+        if (false === empty($attachmentTypes)) {
+            $sql .=  ' AND a.id_type IN ('. implode(',' , $attachmentTypes) . ')';
+        }
 
         $result       = $this->bdd->query($sql);
         $aAttachments = array();

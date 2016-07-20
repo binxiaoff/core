@@ -233,7 +233,7 @@ class attachment_helper
     }
 
     /**
-     * @param \attachment_type $oAttachment
+     * @param \attachment $oAttachment
      * @param int $ownerId
      * @param int $ownerType
      * @param int $attachmentType
