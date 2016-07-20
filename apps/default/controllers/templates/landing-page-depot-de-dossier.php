@@ -74,7 +74,7 @@ if ($bProcessForm) {
     if (
         empty($_SESSION['forms']['depot-de-dossier']['values']['siren'])
         || $_SESSION['forms']['depot-de-dossier']['values']['siren'] != (int) $_SESSION['forms']['depot-de-dossier']['values']['siren']
-        || strlen($_SESSION['forms']['depot-de-dossier']['values']['siren']) !== 9
+        || (strlen($_SESSION['forms']['depot-de-dossier']['values']['siren']) !== 9 && strlen($_SESSION['forms']['depot-de-dossier']['values']['siren']) !== 14)
     ) {
         $_SESSION['forms']['depot-de-dossier']['response']        = $this->lng['landing-page']['champs-obligatoires'];
         $_SESSION['forms']['depot-de-dossier']['errors']['siren'] = true;

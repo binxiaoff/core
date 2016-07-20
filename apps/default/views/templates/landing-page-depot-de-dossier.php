@@ -116,11 +116,11 @@
                 <div style="clear:both;"></div>
                 <div class="form-row">
                     <input type="text" name="siren" id="siren"
-                           placeholder="<?= $this->lng['landing-page']['siren'] ?>"
+                           placeholder="<?= $this->lng['landing-page']['siren-siret'] ?>"
                            value="<?= isset($this->aForm['values']['siren']) ? $this->aForm['values']['siren'] : '' ?>"
                            class="field required<?= isset($this->aForm['errors']['siren']) ? ' LV_invalid_field' : '' ?>"
-                           data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9, maximum: 9}">
-                    <em class="caractmax<?= isset($this->aForm['errors']['siren']) ? ' error' : '' ?>"><?= $this->lng['landing-page']['9-caracteres-numeriques'] ?></em>
+                           data-validators="Presence&amp;Numericality&amp;Length, [ 9, 14 ]">
+                    <em class="caractmax<?= isset($this->aForm['errors']['siren']) ? ' error' : '' ?>"><?= $this->lng['landing-page']['9-ou-14-caracteres-numeriques'] ?></em>
                 </div>
                 <?php if (false === $this->bShortTunnel) : ?>
                 <div class="form-row">
