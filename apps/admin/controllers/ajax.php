@@ -1301,6 +1301,13 @@ class ajaxController extends bootstrap
                         }
                     }
 
+                    try {
+                        $oProjectManager->setProjectRateRage($this->projects);
+                    } catch (\Exception $exception) {
+                        echo json_encode(array('liste' => '', 'btn_etape6' => '', 'content_risk' => '', 'error' => $exception->getMessage()));
+                        return;
+                    }
+
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::PREP_FUNDING, $this->projects);
                     if (false === in_array(\projects_status::PREP_FUNDING, $aExistingStatus)) {
                         $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein', $this->clients);

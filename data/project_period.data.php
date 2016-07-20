@@ -97,6 +97,11 @@ class project_period extends project_period_crud
     public function getPeriod($iDuration, $iStatus = self::STATUS_ACTIVE)
     {
         $rQuery = $this->bdd->query('SELECT * FROM `project_period` WHERE ' . $iDuration . ' BETWEEN `min` AND `max` AND `status` = ' . $iStatus);
-        return $this->bdd->fetch_assoc($rQuery);
+        $period = $this->bdd->fetch_assoc($rQuery);
+        if ($period) {
+            return $this->get($period['id_period']);
+        }
+
+        return false;
     }
 }

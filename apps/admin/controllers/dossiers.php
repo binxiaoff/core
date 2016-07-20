@@ -581,6 +581,14 @@ class dossiersController extends bootstrap
                                 }
                             }
 
+                            try {
+                                $oProjectManager->setProjectRateRage($this->projects);
+                            } catch (\Exception $exception) {
+                                $_SESSION['freeow']['message'] .= $exception->getMessage();
+                                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                                die;
+                            }
+
                             $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::PREP_FUNDING, $this->projects);
 
                             if (false === in_array(\projects_status::PREP_FUNDING, $aExistingStatus)) {

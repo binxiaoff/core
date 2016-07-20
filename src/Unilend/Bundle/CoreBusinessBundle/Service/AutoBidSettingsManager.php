@@ -388,18 +388,4 @@ class AutoBidSettingsManager
         $oClientHistoryActions = $this->oEntityManager->getRepository('clients_history_actions');
         return $oClientHistoryActions->counter('id_client = ' . $oLendersAccount->id_client_owner . ' AND nom_form = "autobid_on_off" ') > 0;
     }
-
-    /**
-     * Get project_period object by a duration
-     *
-     * @param $iDuration
-     *
-     * @return bool|\project_period
-     */
-    public function getPeriod($iDuration)
-    {
-        /** @var \project_period $oAutoBidPeriods */
-        $oAutoBidPeriods = $this->oEntityManager->getRepository('project_period');
-        return $oAutoBidPeriods->getPeriod($iDuration);
-    }
 }

@@ -3,7 +3,6 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Psr\Log\LoggerInterface;
 use Unilend\core\Loader;
-use \Symfony\Bridge\Monolog\Logger;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class ProjectManager
@@ -41,15 +40,19 @@ class ProjectManager
     /** @var EntityManager  */
     private $oEntityManager;
 
-    public function __construct(EntityManager $oEntityManager, BidManager $oBidManager, LoanManager $oLoanManager, NotificationManager $oNotificationManager, AutoBidSettingsManager $oAutoBidSettingsManager, MailerManager $oMailerManager, LenderManager $oLenderManager)
+    /** @var  ProjectRateSettingsManager */
+    private $projectRateSettingsManager;
+
+    public function __construct(EntityManager $oEntityManager, BidManager $oBidManager, LoanManager $oLoanManager, NotificationManager $oNotificationManager, AutoBidSettingsManager $oAutoBidSettingsManager, MailerManager $oMailerManager, LenderManager $oLenderManager, ProjectRateSettingsManager $projectRateSettingsManager)
     {
-        $this->oEntityManager          = $oEntityManager;
-        $this->oBidManager             = $oBidManager;
-        $this->oLoanManager            = $oLoanManager;
-        $this->oNotificationManager    = $oNotificationManager;
-        $this->oAutoBidSettingsManager = $oAutoBidSettingsManager;
-        $this->oMailerManager          = $oMailerManager;
-        $this->oLenderManager          = $oLenderManager;
+        $this->oEntityManager             = $oEntityManager;
+        $this->oBidManager                = $oBidManager;
+        $this->oLoanManager               = $oLoanManager;
+        $this->oNotificationManager       = $oNotificationManager;
+        $this->oAutoBidSettingsManager    = $oAutoBidSettingsManager;
+        $this->oMailerManager             = $oMailerManager;
+        $this->oLenderManager             = $oLenderManager;
+        $this->projectRateSettingsManager = $projectRateSettingsManager;
 
         $this->oFicelle    = Loader::loadLib('ficelle');
         $this->oDate       = Loader::loadLib('dates');
@@ -193,12 +196,13 @@ class ProjectManager
     {
         /** @var \autobid $oAutoBid */
         $oAutoBid = $this->oEntityManager->getRepository('autobid');
+        /** @var \project_period $oProjectPeriods */
+        $oProjectPeriods = $this->oEntityManager->getRepository('project_period');
 
-        $aPeriod = $this->oAutoBidSettingsManager->getPeriod($oProject->period);
-        if (false === empty($aPeriod)) {
+        if ($oProjectPeriods->getPeriod($oProject->period)) {
             $iOffset = 0;
             $iLimit  = 100;
-            while ($aAutoBidList = $this->oAutoBidSettingsManager->getSettings(null, $oProject->risk, $aPeriod['id_period'], array(\autobid::STATUS_ACTIVE), 'id_autobid', $iLimit, $iOffset)) {
+            while ($aAutoBidList = $this->oAutoBidSettingsManager->getSettings(null, $oProject->risk, $oProjectPeriods->id_period, array(\autobid::STATUS_ACTIVE), 'id_autobid', $iLimit, $iOffset)) {
                 $iOffset += $iLimit;
 
                 foreach ($aAutoBidList as $aAutoBidSetting) {
@@ -795,5 +799,37 @@ class ProjectManager
         /** @var \bids $oBid */
         $oBid = $this->oEntityManager->getRepository('bids');
         return $oBid->getBidsStatistics($oProject->id_project);
+    }
+
+    public function setProjectRateRage(\projects $project)
+    {
+        if (empty($project->period)) {
+            throw new \Exception('project period not set.');
+        }
+
+        if (empty($project->risk)) {
+            throw new \Exception('project risk not set.');
+        }
+
+        /** @var \project_period $projectPeriod */
+        $projectPeriod = $this->oEntityManager->getRepository('project_period');
+
+        if ($projectPeriod->getPeriod($project->period)) {
+            /** @var \project_rate_settings $projectRateSettings */
+            $projectRateSettings = $this->oEntityManager->getRepository('project_rate_settings');
+            $rateSettings = $projectRateSettings->getSettings($project->risk, $projectPeriod->id_period);
+
+            if (empty($rateSettings)) {
+                throw new \Exception('No settings found for the project.');
+            }
+            if (count($rateSettings) === 1) {
+                $project->id_rate = $rateSettings[0]['id_rate'];
+                $project->update();
+            } else {
+                throw new \Exception('More than one settings found for the project.');
+            }
+        } else {
+            throw new \Exception('Period not found for the project.');
+        }
     }
 }
