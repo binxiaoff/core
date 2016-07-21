@@ -61,6 +61,7 @@ var LoginTimer = require('./app/components/LoginTimer')
 var LoginCaptcha = require('./app/components/LoginCaptcha')
 var SimpleTimer = require('./app/components/SimpleCountDown')
 var BidConfirmation = require('./app/components/BidConfirmation')
+var CookieCheck = require('./app/components/Cookies')
 
 // @debug
 // CacheData.clearAll()

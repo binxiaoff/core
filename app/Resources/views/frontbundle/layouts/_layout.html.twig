@@ -76,6 +76,12 @@
         {% endblock %}
     </div>
 
+    {% if not app.request.cookies.has('acceptCookies') %}
+        {% block siteCookie %}
+            {% include 'partials/components/cookie-box.html.twig' %}
+        {% endblock %}
+    {% endif %}
+
     {% block siteFooter %}
         {{ render_esi(controller('UnilendFrontBundle:Main:footer')) }}
     {% endblock %}

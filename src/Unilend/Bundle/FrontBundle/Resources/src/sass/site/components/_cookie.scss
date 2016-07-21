@@ -1,0 +1,25 @@
+.cookie-box{
+  background-color:#eaeaea;
+  opacity:0.9;
+  position:fixed;
+  bottom:0;
+  width:100%;
+  box-sizing:border-box;
+  padding:10px 30px;
+  color:#727272;
+  font-size:14px;
+  z-index:9999;
+  .fleft {
+    width:80%;
+    p{
+      margin:0;
+    }
+  }
+  .fright {
+    width:20%;
+    text-align:right;
+    p{
+      margin:0;
+    }
+  }
+}

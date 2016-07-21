@@ -290,7 +290,7 @@
     } @else if str-index($direction, 'right') {
       left: 0;
     }
-    @include background-image(-svg(linear-gradient(#{$direction}, $bg-color 0%, fade-out($bg-color, 1) 100%)));
+    @include background-image(-svg(linear-gradient("#{$direction}", $bg-color 0%, fade-out($bg-color, 1) 100%)));
   }
 }
 
