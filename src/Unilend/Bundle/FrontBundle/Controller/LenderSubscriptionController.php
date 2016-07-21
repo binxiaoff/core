@@ -18,13 +18,7 @@ class LenderSubscriptionController extends Controller
      */
     public function lenderSubscriptionShow(Request $request)
     {
-        /** @var SubscriptionManager $subscriptionManager */
-        $subscriptionManager = $this->get('unilend.frontbundle.service.subscription_manager');
-
-        $aPageData = [
-            'countryList'     => $subscriptionManager->getCountryList(),
-            'nationalityList' => $subscriptionManager->getNationalityList()
-        ];
+        $aPageData = [];
 
         if (false === is_null($request->getSession()->get('forms/lender_subscription_step_1'))) {
             $aFormData             = $request->getSession()->get('forms/lender_subscription_step_1');
@@ -33,7 +27,6 @@ class LenderSubscriptionController extends Controller
         }
 
         return $this->render('pages/lender_subscription.html.twig', $aPageData);
-
     }
 
     /**
@@ -45,9 +38,6 @@ class LenderSubscriptionController extends Controller
         if ($request->isXMLHttpRequest()) {
 
             var_dump($aFormData = $request->request);
-            /** @var SubscriptionManager $subscriptionManager */
-            $subscriptionManager = $this->get('unilend.frontbundle.service.subscription_manager');
-            $subscriptionManager->handleSubscriptionStepOneData($aFormData);
 
             $aSessionFormData = $this->addStep1FormDataToSession($aFormData);
             $request->getSession()->set('forms/lender-subscription-step-1', $aSessionFormData);

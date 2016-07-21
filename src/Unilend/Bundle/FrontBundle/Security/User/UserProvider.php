@@ -8,6 +8,7 @@ use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
@@ -21,15 +22,18 @@ class UserProvider implements UserProviderInterface
     private $clientManager;
     /** @var  NotificationManager */
     private $notificationManager;
+    /** @var  LenderManager */
+    private $lenderManager;
 
     /**
      * @inheritDoc
      */
-    public function __construct($entityManager, $clientManager, $notificationManager)
+    public function __construct($entityManager, $clientManager, $notificationManager, $lenderManager)
     {
         $this->entityManager       = $entityManager;
         $this->clientManager       = $clientManager;
         $this->notificationManager = $notificationManager;
+        $this->lenderManager       = $lenderManager;
     }
 
     /**
@@ -40,10 +44,11 @@ class UserProvider implements UserProviderInterface
         /** @var \clients $client */
         $client = $this->entityManager->getRepository('clients');
         if ($client->get($username, 'email')) {
-            $balance                 = $this->clientManager->getClientBalance($client);
-            $initials                = $this->clientManager->getClientInitials($client);
-            $isActive                = $this->clientManager->isActive($client);
-            $roles                   = ['ROLE_USER'];
+            $balance   = $this->clientManager->getClientBalance($client);
+            $initials  = $this->clientManager->getClientInitials($client);
+            $isActive  = $this->clientManager->isActive($client);
+            $roles     = ['ROLE_USER'];
+            $userLevel = '';
 
             if ($this->clientManager->isLender($client)) {
                 $roles[]                 = 'ROLE_LENDER';
@@ -64,7 +69,8 @@ class UserProvider implements UserProviderInterface
                     $clientStatus,
                     $hasAcceptedCurrentTerms,
                     $notificationsUnread,
-                    $client->etape_inscription_preteur);
+                    $client->etape_inscription_preteur,
+                    $userLevel);
             }
 
             if ($this->clientManager->isBorrower($client)) {

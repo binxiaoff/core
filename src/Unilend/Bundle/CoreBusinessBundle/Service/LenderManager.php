@@ -55,4 +55,40 @@ class LenderManager
         }
     }
 
+    /**
+     * @param \lenders_accounts $lenderAccount
+     * @return int
+     */
+    public function getDiversificationLevel(\lenders_accounts $lenderAccount)
+    {
+        $numberOfCompanies    = $lenderAccount->countCompaniesLenderInvestedIn($lenderAccount->id_lender_account);
+        $diversificationLevel = 0;
+
+        if ($numberOfCompanies === 0) {
+            $diversificationLevel = 0;
+        }
+
+        if ($numberOfCompanies >= 1 && $numberOfCompanies <= 19) {
+            $diversificationLevel = 1;
+        }
+
+        if ($numberOfCompanies >= 20 && $numberOfCompanies <= 49) {
+            $diversificationLevel = 2;
+        }
+
+        if ($numberOfCompanies >= 50 && $numberOfCompanies <= 79) {
+            $diversificationLevel = 3;
+        }
+
+        if ($numberOfCompanies >= 80 && $numberOfCompanies <= 119) {
+            $diversificationLevel = 4;
+        }
+
+        if ($numberOfCompanies >= 120) {
+            $diversificationLevel = 5;
+        }
+
+        return $diversificationLevel;
+    }
+
 }

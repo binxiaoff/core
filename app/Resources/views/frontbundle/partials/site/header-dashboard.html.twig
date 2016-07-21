@@ -2,13 +2,15 @@
 {# @note This file is produced as a workaround since Twig.JS doesn't correctly support embed tags #}
 {#       See: partials/layouts/_dashboard.twig for more information #}
 {% import 'extensions/_general.macros.twig' as general %}
+{% set bodyClassNames = 'layout-dashboard ui-user-level-' ~ app.user.level %}
+
 <header class="site-header site-header-dashboard">
     <div class="site-band"></div>
 
     <div class="site-header-inner">
         <div class="site-wrap">
             <h1 class="site-title">
-                <a href="{{ route('/') }}" class="site-logo" tabindex="2">{{ site.title|default('Unilend') }}</a></h1>
+                <a href="{{ route('/profile') }}" class="site-logo" tabindex="2">{{ site.title|default('Unilend') }}</a></h1>
 
             <div class="site-controls">
 
@@ -17,7 +19,7 @@
                         <a href="{{ route('user/preter/balance') }}" class="site-user-balance"><span class="label">{% trans %} header-connected_add-money-link {% endtrans %}</span></a><!-- /.site-user-balance -->
                         <div class="site-user-profile">
                             <div class="profile-avatar">
-                                <a href="{{ route('user/preter/profile') }}">
+                                <a href="{{ path('lender_profile') }}">
                                     {{ app.user.initials }}
                                     {#{% set avatarSex = 'm' %}
                                     {% if userProfile.identity.civilite == 'madame' %}
@@ -36,8 +38,7 @@
                             </a><!-- /.profile-notifications -->
                             <div class="profile-name">{% trans with { '%firstName%' : app.user.firstName } %} header-connected_greeting {% endtrans %} </div>
                             <div class="profile-balance">
-                                <span class="label">Solde:</span>
-                                <span class="value">{{ userProfile.balance|default(0)|nbsp }}€</span>
+                                {% trans with { '%balance%' : app.user.balance|default(0)|nbsp }%} header-connected_balance {% endtrans %}
                                 {#{{ userProfile.balance|default(0)|__price(2)|nbsp }}#}
                             </div><!-- /.profile-balance -->
                             <a href="{{ path('logout') }}" class="profile-logout link"><span class="label">{% trans %} header-connected_logout {% endtrans %}</span></a>
