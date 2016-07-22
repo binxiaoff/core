@@ -1,0 +1,47 @@
+//
+// Unilend Table My Operations borrower
+//
+.ad-line{
+  color:#787679;
+  text-align:right;
+}
+.grey-label {
+  color:#9f9d9f;
+}
+
+.table-myoperations-borrower-item-operation {
+  width:20%;
+}
+
+.table-myoperations-borrower-item-projet {
+  width:20%;
+  text-align:right;
+}
+
+.table-myoperations-borrower-item-date {
+  width:20%;
+  text-align:right;
+}
+
+.table-myoperations-borrower-item-amount {
+  width:20%;
+  text-align:right;
+}
+
+td.table-myoperations-borrower-item-amount {
+  color:#2cbaa4;
+}
+
+.below-null {
+  color:#f8524e!important;
+}
+
+.table-myoperations-borrower-item-detail {
+  width:20%;
+  text-align:center;
+  .detail-borrower {
+    color:#2cbaa4;
+    font-size:30px;
+    line-height:45px;
+  }
+}

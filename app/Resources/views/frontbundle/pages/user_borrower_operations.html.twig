@@ -1,0 +1,444 @@
+{# User / Preter / Operations #}
+{% extends 'layouts/_dashboard-borrower.twig' %}
+{% import 'extensions/_general.macros.twig' as general %}
+
+{# Page data #}
+{% set bodyId = '' %}
+{% set page = {
+id: 'user-preter-operations',
+title: 'Prêteur / Operations',
+permalink: route('user/preter/operations'),
+classNames: 'user-preter-operations'
+} %}
+
+{# Placeholder data #}
+{% set placeholderData = {
+    "operations": [{
+        "id": 1,
+        "typeId": 3,
+        "typeName": "Affectation aux preteurs de la mensualité",
+        "projectID": 88533,
+        "projectName": "Iena Consulting",
+        "date": "28 March 2016",
+        "amount": -529.45,
+        "details": true,
+        "commission": "commission",
+        "TVA": "TVA",
+        "com": -45.12,
+        "tax": -5.95
+    }, {
+        "id": 2,
+        "typeId": 3,
+        "typeName": "Affectation aux preteurs de la mensualité",
+        "projectID": 45523,
+        "projectName": "G Finance",
+        "date": "21 March 2016",
+        "amount": 607.82,
+        "details": false
+    }, {
+        "id": 3,
+        "typeId": 4,
+        "typeName": "Commission mensuelle sur projet",
+        "projectID": 45896,
+        "projectName": "Maud Maquillage Permanent",
+        "date": "18 March 2016",
+        "amount": -94.40,
+        "details": false
+    }, {
+        "id": 4,
+        "typeId": 4,
+        "typeName": "Commission mensuelle sur projet",
+        "projectID": 78963,
+        "projectName": "Parcome",
+        "date": "18 March 2016",
+        "amount": -55.02,
+        "details": false
+    }, {
+        "id": 5,
+        "typeId": 4,
+        "typeName": "Commission mensuelle sur projet",
+        "projectID": 15478,
+        "projectName": "Novoprod",
+        "date": "18 March 2016",
+        "amount": -128.85,
+        "details": true,
+        "commission": "commission",
+        "TVA": "TVA",
+        "com": -45.12,
+        "tax": -5.95
+    }, {
+        "id": 6,
+        "typeId": 4,
+        "typeName": "Commission mensuelle sur projet",
+        "projectID": 87456,
+        "projectName": "Ed Distribution",
+        "date": "18 March 2016",
+        "amount": 404.52,
+        "details": false
+    }, {
+        "id": 7,
+        "typeId": 4,
+        "typeName": "Commission mensuelle sur projet",
+        "projectID": 88533,
+        "projectName": "Jolie Doll",
+        "date": "18 March 2016",
+        "amount": -12.85,
+        "details": false
+    }, {
+        "id": 8,
+        "typeId": 1,
+        "typeName": "Prélèvement mensualité",
+        "projectID": 88533,
+        "projectName": "Jolie Doll",
+        "date": "12 March 2016",
+        "amount": -14.85,
+        "details": true,
+        "commission": "commission",
+        "TVA": "TVA",
+        "com": -5.12,
+        "tax": -3.45
+    }, {
+        "id": 9,
+        "typeId": 4,
+        "typeName": "Commission mensuelle sur projet",
+        "projectID": 45523,
+        "projectName": "Urban Factory",
+        "date": "10 March 2016",
+        "amount": 18.45,
+        "details": false
+    }, {
+        "id": 10,
+        "typeId": 4,
+        "typeName": "Commission mensuelle sur projet",
+        "projectID": 88533,
+        "projectName": "Iena Consulting",
+        "date": "7 March 2016",
+        "amount": -702.31,
+        "details": false
+    }, {
+        "id": 11,
+        "typeId": 2,
+        "typeName": "Virement des fonds",
+        "projectID": 78963,
+        "projectName": "G Finance",
+        "date": "04 March 2016",
+        "amount": -74.45,
+        "details": false
+    }]
+} %}
+{% set filterOperations = placeholderData.filter.operations %}
+{% set operations = placeholderData.operations %}
+{% set stats = placeholderData.stats %}
+
+{% block dashboardContent %}
+
+    <section class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-nav">
+            <ul class="nav nav-dashboard-tabs">
+                <li role="presentation" class="active"><a href="#operations" role="tab" data-toggle="tab">Vos opérations</a></li>{#
+                #}<li role="presentation"><a href="#mydocuments" role="tab" data-toggle="tab">Documents</a></li>
+            </ul>
+        </div>
+        <div class="dashboard-tabs-content tab-content">
+            {# MY OPERATIONS #}
+            <article id="operations" role="tabpanel" class="dashboard-tab-pane tab-pane active">
+                <div class="panel panel-operations-operations">
+                    <header class="panel-header">
+                        <h3 class="panel-title">Toutes vos opérations</h3>
+                        <div class="panel-controls">
+                            <a href="#todo" class="btn-default"><span class="icon fa-print-u32"></span><span class="label"> Imprimer</span></a>
+                            <a href="#todo" class="btn-default"><span class="icon fa-excel-u32"></span><span class="label"> CSV Export</span></a>
+                        </div>
+                    </header><!-- /.panel-header -->
+                    <div class="panel-content">
+                        <form id="form-filters-operations" action="{{ route('user/preter/operations/operations/filter') }}" method="post" class="form-filters" data-ajax>
+                            <div id="filters" class="row row-multi-col-computer collapse in">
+                                <div class="row">
+                                    <div class="form-field">
+                                        <div class="field-label">
+                                            <label>Sélectionnez une période</label>
+                                        </div><!-- /.field-label -->
+                                        <div class="row input-fields">
+                                            <div class="col-lg-3 col-md-3 col-sm-4">
+                                                <label class="grey-label">Glissante</label>
+                                                <div class="row">
+                                                    <select name="filter-slide" class="input-field">
+                                                        <optgroup>
+                                                            <option value="1">1 Mois</option>
+                                                            <option value="3">3 Mois</option>
+                                                            <option value="6">6 Mois</option>
+                                                            <option value="12">12 Mois</option>
+                                                        </optgroup>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3 col-md-3 col-sm-4">
+                                                <label class="grey-label">Annuelle</label>
+                                                <div class="row">
+                                                    <select name="filter-year" class="input-field">
+                                                        <optgroup>
+                                                            <option value="2016">2016</option>
+                                                            <option value="2015">2015</option>
+                                                            <option value="2014">2014</option>
+                                                            <option value="2016">2013</option>
+                                                        </optgroup>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3 col-md-3 col-sm-4">
+                                                <label class="grey-label">Personnalisée</label>
+                                                <div class="row">
+                                                    <div class="input-group set-right">
+                                                        <input type="text" id="filter-start" name="filter[start]" value="{{ filterOperations.start }}" placeholder="Début" class="input-field ui-has-datepicker" />
+                                                        <div class="btn-group">
+                                                            <label for="filter-start">
+                                                                <span class="icon fa-calendar-u32 c-p1">
+                                                                    <span class="sr-only">Select start date</span>
+                                                                </span>
+                                                            </label>
+                                                        </div><!-- /.btn-group -->
+                                                    </div><!-- /.input-group -->
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3 col-md-3 col-sm-4">
+                                                <label>&nbsp;</label>
+                                                <div class="row">
+                                                    <div class="input-group set-right">
+                                                        <input type="text" id="filter-end" name="filter[end]" value="{{ filterOperations.end }}" placeholder="Fin" class="input-field ui-has-datepicker"/>
+                                                        <div class="btn-group">
+                                                            <label for="filter-end">
+                                                                <span class="icon fa-calendar-u32 c-p1">
+                                                                    <span class="sr-only">Select end date</span>
+                                                                </span>
+                                                            </label>
+                                                        </div><!-- /.btn-group -->
+                                                    </div><!-- /.input-group -->
+                                                </div>
+                                            </div>
+                                        </div><!-- /.input-fields -->
+                                    </div><!-- /.form-field -->
+                                </div>
+                                <div class="row" style="padding:0;">
+                                    <div class="form-field">
+                                        <div class="field-label">
+                                            <label>Sélectionnez un ou plusieurs filtres</label>
+                                        </div><!-- /.field-label -->
+                                    </div>
+                                    <div class="col-lg-3 col-md-3 col-sm-4">
+                                        <label class="grey-label">Filtrer par opération</label>
+                                        <div class="row">
+                                            <select name="filter-op" class="input-field">
+                                                <optgroup>
+                                                    <option value="1">Toutes les opérations</option>
+                                                    <option value="2">Commission mensuelle sur projet</option>
+                                                    <option value="3">Affectation aux preteurs de la mensualité</option>
+                                                    <option value="4">Prélèvement mensualité</option>
+                                                    <option value="5">Virement des fonds</option>
+                                                    <option value="6">Octroi du financement</option>
+                                                    <option value="7">Remboursement anticipé</option>
+                                                    <option value="8">Affectation aux préteurs du remboursement anticipé</option>
+                                                </optgroup>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-3 col-sm-4">
+                                        <label class="grey-label">Filtrer par projet</label>
+                                        <div class="row">
+                                            <select name="filter-project" class="input-field">
+                                                <optgroup>
+                                                    <option value="all">Tous les projets</option>
+                                                    <option value="project-1">@TODO - current projects - 1</option>
+                                                    <option value="project-2">@TODO - current projects - 2</option>
+                                                </optgroup>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form><!-- /.form-operations-filters -->
+                        <div class="table-scroll">
+                            <table class="table table-myoperations">
+                                <thead class="table-sortable-columns">
+                                <tr>
+                                    <th class="table-column table-myoperations-borrower-item-operation">
+                                        <span class="label">Opération</span>
+                                    </th>
+                                    <th class="table-column table-myoperations-borrower-item-projet">
+                                        <span class="label">Projet</span>
+                                    </th>
+                                    <th class="table-column table-myoperations-borrower-item-date">
+                                        <span class="label">Date de l'opération</span>
+                                    </th>
+                                    <th class="table-column table-myoperations-borrower-item-amount">
+                                        <span class="label">Montant</span>
+                                    </th>
+                                    <th class="table-column table-myoperations-borrower-item-detail">
+                                        <span class="label">Détail</span>
+                                    </th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for i, op in operations %}
+                                    <tr {{ general.attrsString({
+                                        'id': 'operation-' ~ op.id
+                                        }) }} class="table-myoperations-item">
+                                        <td class="table-myoperations-borrower-item-operation">
+                                            {{ op.typeName }}
+                                            {% if op.details == true %}
+                                                <dt class="ad-line">{{ op.commission }}</dt>
+                                                <dt class="ad-line">{{ op.TVA }}</dt>
+                                            {% endif %}
+                                        </td>
+                                        <td class="table-myoperations-borrower-item-projet">
+                                            {{ op.projectID }}
+                                            {% if op.details == true %}
+                                                <dt class="ad-line">&nbsp;</dt>
+                                                <dt class="ad-line">&nbsp;</dt>
+                                            {% endif %}
+                                        </td>
+                                        <td class="table-myoperations-borrower-item-date">
+                                            {{ op.date|date('d/m/y') }}
+                                            {% if op.details == true %}
+                                                <dt class="ad-line">&nbsp;</dt>
+                                                <dt class="ad-line">&nbsp;</dt>
+                                            {% endif %}
+                                        </td>
+                                        <td class="table-myoperations-borrower-item-amount {% if op.amount < 0 %}below-null{% endif %}">
+                                            {{ op.amount }}&nbsp;€
+                                            {% if op.details == true %}
+                                                <dt class="ad-line {% if op.com < 0 %}below-null{% endif %}">{{ op.com }}&nbsp;€</dt>
+                                                <dt class="ad-line {% if op.tax < 0 %}below-null{% endif %}">{{ op.tax }}&nbsp;€</dt>
+                                            {% endif %}
+                                        </td>
+                                        <td class="table-myoperations-borrower-item-detail">
+                                            <a href="#todo" class="detail-borrower"><span class="icon fa-excel-u32"></span></a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table><!-- /.table-myoperations -->
+                        </div><!-- /.table-scroll -->
+                    </div><!-- /.panel-content -->
+                </div><!-- /.panel -->
+            </article><!-- /#myoperations.tab-pane -->
+
+            <article id="mydocuments" role="tabpanel" class="dashboard-tab-pane tab-pane">
+                <div class="panel panel-operations-operations">
+                    <h3 class="panel-title">Documents contractuels</h3>
+                    <div class="panel-content">
+                        <div class="table-scroll">
+                            <table class="table table-mydocuments">
+                                <thead>
+                                <tr>
+                                    <th class="table-column table-mydocuments-borrower-item-filenumber">
+                                        <span class="label">Numéro du dossier</span>
+                                    </th>
+                                    <th class="table-column table-mydocuments-borrower-item-pouvoir">
+                                        <span class="label">Pouvoir</span>
+                                    </th>
+                                    <th class="table-column table-mydocuments-borrower-item-mandat">
+                                        <span class="label">Mandat</span>
+                                    </th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr class="table-mydocuments-item list-files">
+                                    <td>
+                                        27685
+                                    </td>
+                                    <td>
+                                        <div class="document-download">
+                                            <a href="#todo" target="_blank">
+                                                <img class="document-download" src="{{ siteurlmedia('dashboard/file-bond-28x38.png') }}" alt="Pouvoir"/>
+                                                Télécharger
+                                            </a>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="document-download">
+                                            <a href="#todo" target="_blank">
+                                                <img class="document-download" src="{{ siteurlmedia('dashboard/file-contract-28x38.png') }}" alt="Mandat"/>
+                                                Télécharger
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table><!-- /.table-myoperations -->
+                        </div><!-- /.table-scroll -->
+                    </div>
+                    <h3 class="panel-title">Factures</h3>
+                    <div class="panel-content">
+                        <div class="table-scroll">
+                            <table class="table table-mydocuments">
+                                <thead>
+                                <tr>
+                                    <th class="table-column table-mydocuments-borrower-item-billnumber">
+                                        <span class="label">N° de facture</span>
+                                    </th>
+                                    <th class="table-column table-mydocuments-borrower-item-billfilenumber">
+                                        <span class="label">N° du dossier</span>
+                                    </th>
+                                    <th class="table-column table-mydocuments-borrower-item-billdate">
+                                        <span class="label">Date de la facture</span>
+                                    </th>
+                                    <th class="table-column table-mydocuments-borrower-item-bill">
+                                        <span class="label">Facture</span>
+                                    </th>
+                                </tr>
+                                </thead>
+                                <tbody>
+
+                                {% set placeholderData = {
+                                    bills : [{
+                                        billnumber: 'FR-E200562154',
+                                        filenumber: '27658',
+                                        datetime: '12/06/2016'
+                                    },{
+                                        billnumber: 'FR-E200562458',
+                                        filenumber: '27698',
+                                        datetime: '12/07/2016'
+                                    },{
+                                        billnumber: 'FR-E200562169',
+                                        filenumber: '22358',
+                                        datetime: '17/07/2016'
+                                    },{
+                                        billnumber: 'FR-E200562999',
+                                        filenumber: '17648',
+                                        datetime: '21/07/2016'
+                                    }]
+                                } %}
+
+                                {% set bills = placeholderData.bills %}
+
+                                {% for i, item in bills %}
+                                    <tr class="table-mydocuments-item list-files">
+                                        <td class="table-mydocuments-borrower-item-billnumber">
+                                            {{ bills[i].billnumber }}
+                                        </td>
+                                        <td class="table-mydocuments-borrower-item-billfilenumber">
+                                            {{ bills[i].filenumber }}
+                                        </td>
+                                        <td class="table-mydocuments-borrower-item-billdate">
+                                            {{ bills[i].datetime }}
+                                        </td>
+                                        <td class="table-mydocuments-borrower-item-bill">
+                                            <div class="document-download">
+                                                <a href="#todo" target="_blank">
+                                                    <img class="document-download" src="{{ siteurlmedia('dashboard/file-pdf-60x80.png') }}" alt="PDF"/>
+                                                    Télécharger
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table><!-- /.table-myoperations -->
+                        </div><!-- /.table-scroll -->
+                    </div>
+                </div>
+            </article><!-- /#mydocuments.tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </section><!-- /.dashboard-tabs -->
+
+{% endblock %}

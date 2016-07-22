@@ -1,0 +1,124 @@
+{# User / Preter / Profile #}
+{% extends 'layouts/_dashboard-borrower.twig' %}
+{% import 'extensions/_general.macros.twig' as general %}
+{% import 'partials/common/_custom-input.macros.twig' as customInput %}
+
+{# Page data #}
+{% set bodyId = '' %}
+{% set page = {
+id: 'user-borrower-profile',
+title: 'Emprunteur / Profil',
+permalink: route('user/borrower/profile'),
+classNames: 'user-borrower-profile'
+} %}
+
+{# See config/twig.json for the data value of `userProfile` #}
+{# @todo Update the edited input output variables with what was saved (should be in an AJAX call) #}
+
+{% block dashboardContent %}
+
+    <div class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-nav">
+            <ul class="nav nav-dashboard-tabs" data-nav-dropdown-menu="mobile">{#
+              #}<li role="presentation" class="active"><a href="#profile-info" role="tab" data-toggle="tab">Informations</a></li>{#
+              #}<li role="presentation"><a href="#profile-infobank" role="tab" data-toggle="tab">Coordonnées bancaires</a></li>{#
+            #}</ul>
+        </div><!-- /.dashboard-nav-content -->
+        <div class="dashboard-tabs-content tab-content">
+            <div id="profile-info" role="tabpanel" class="dashboard-tab-pane tab-pane active">
+                <article id="panel-info" class="panel">
+                    <header class="panel-header">
+                        <h3>Identité</h3>
+                    </header>
+                    <section id="profile-info-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                        <section id="profile-info-view" role="tabpanel" class="profile-info-view collapse in">
+                            <dl class="list-2col">
+                                <dt>Statut</dt>
+                                <dd id="profile-info-statut-output">Professionnel</dd>
+                                <dt>Civilité</dt>
+                                <dd id="profile-info-civilite-output">Monsieur</dd>
+                                <dt>Nom</dt>
+                                <dd id="profile-info-nom-output">Raux</dd>
+                                <dt>Prénom</dt>
+                                <dd id="profile-info-prenom-output">David</dd>
+                                <dt>Date de naissance</dt>
+                                <dd id="profile-info-dob-output">21 Novembre 1983</dd>
+                                <dt>Pays de naissance</dt>
+                                <dd id="profile-info-dob-pays-output">France</dd>
+                                <dt>Commune de naissance</dt>
+                                <dd id="profile-info-dob-commune-output">Paris</dd>
+                                <dt>Nationalité</dt>
+                                <dd id="profile-info-dob-nationalite-output">Français</dd>
+                                <dt>Pièce d'identité</dt>
+                                <dd id="profile-info-fichier-identitie-output">
+                                      <span id="form-profile-info-file-identite-cni-1-output" class="file-justificatif file-identity-side-a" title="Carte d'identié fournie le 03/01/2016" data-toggle="tooltip">
+                                          <span class="sr-only">Carte d'identité fournie le 03/01/2016</span>
+                                      </span>
+                                      <span id="form-profile-info-file-identite-cni-2-output" class="file-justificatif file-identity-side-b" title="Carte d'identié fournie le 03/01/2016" data-toggle="tooltip">
+                                          <span class="sr-only">Carte d'identité fournie le 03/01/2016</span>
+                                      </span>
+                                </dd>
+                            </dl>
+                        </section>
+                    </section><!-- /.ui-toggle-group -->
+                </article><!-- /.panel -->
+
+                <article id="panel-address" class="panel">
+                    <header class="panel-header">
+                        <h3>Coordonnées de votre entreprise</h3>
+                        <div id="profile-address-is-correspondence" class="{% if userProfile.identity.address.is_correspondence != true %}hide{% endif %}">
+                            <span class="icon fa-check-u32"></span>
+                            Adresse de correspondance identique
+                        </div>
+                    </header>
+                    <section id="profile-address-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                        <section id="profile-address-view" role="tabpanel" class="profile-address-view collapse in">
+                            <dl class="list-2col">
+                                <dt>SIREN</dt>
+                                <dd>438902363</dd>
+                                <dt>Raison sociale</dt>
+                                <dd>Exemple nom d'entreprise</dd>
+                                <dt>Adresse</dt>
+                                <dd id="profile-address-street-output">156 avenue des Champs-Elysées</dd>
+                                <dt>Code postal</dt>
+                                <dd id="profile-address-code-output">75008</dd>
+                                <dt>Ville</dt>
+                                <dd id="profile-address-ville-output">Paris</dd>
+                                <dt>Pays</dt>
+                                <dd id="profile-address-pays-output">France</dd>
+                                <dt>Téléphone société</dt>
+                                <dd id="profile-address-mobile-output">+33123456789</dd>
+                                <dt>email facturation</dt>
+                                <dd>david.raux@unilend.fr</dd>
+                            </dl>
+                        </section><!-- /.profile-address-view -->
+                    </section><!-- /.ui-toggle-group -->
+                    <a href="{{ route('user/emprunteur/contact') }}" class="btn-primary borrower-profil-button-modification">Demander la modification de ces informations</a>
+                </article><!-- /.panel -->
+            </div><!-- /#profile-info.dashboard-tab-pane -->
+
+            <div id="profile-infobank" role="tabpanel" class="dashboard-tab-pane tab-pane">
+                <article id="panel-bank" class="panel">
+                    <header class="panel-header">
+                        <h3>Informations bancaires</h3>
+                    </header><!-- .panel-header -->
+                    <section id="profile-fiscalite-bank-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                        <section id="profile-fiscalite-bank-view" role="tabpanel" class="profile-bank-view collapse in">
+                            <div class="form-field">
+                                <label for="form-disabled">BIC</label>
+                                <input type="text" name="disabled" value="" placeholder="CMCIFR2A" class="input-field" disabled="disabled">
+                            </div>
+                            <div class="form-field">
+                                <label for="form-disabled">IBAN</label>
+                                <input type="text" name="disabled" value="" placeholder="FR76 1027 8090 6400 0200 0390 165" class="input-field" disabled="disabled">
+                            </div>
+                            <p>Vous pouvez modifier à tout moment vos coordonnées bancaires en nous faisant parvenir un nouveau RIB. Nous vous ferons alors parvenir un nouveau mandat de prélèvement à signer électroniquement. Le changement sera effectif 15 jours après la signature de votre nouveau mandat.Vous pouvez modifier à tout moment vos coordonnées bancaires en nous faisant parvenir un nouveau RIB.</p>
+                        </section>
+                    </section><!-- /.ui-toggle-group -->
+                    <a href="{{ route('user/emprunteur/contact') }}" class="btn-primary borrower-profil-button-modification">Demander la modification de ces informations</a>
+                </article><!-- /.panel -->
+            </div><!-- /#profile-fiscalite.dashboard-tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </div><!-- /.dashboard-tabs -->
+
+{% endblock %}
