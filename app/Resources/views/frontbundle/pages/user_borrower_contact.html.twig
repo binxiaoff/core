@@ -1,108 +1,104 @@
-{# Contact page #}
-{% extends 'layouts/_page-simple.twig' %}
-
-{% block siteHeader %}
-    {% include 'partials/site/borrower-header-dashboard.twig' %}
-{% endblock %}
+{# User / Preter / Profile #}
+{% extends 'layouts/_dashboard-borrower.twig' %}
+{% import 'extensions/_general.macros.twig' as general %}
+{% import 'partials/common/_custom-input.macros.twig' as customInput %}
 
 {# Page data #}
 {% set bodyId = '' %}
 {% set page = {
-    id: 'page-contact-emprunteur',
-    title: 'Contact emprunteur',
-    permalink: route('contact')
+id: 'user-borrower-profile',
+title: 'Emprunteur / Profil',
+permalink: route('user/borrower/profile'),
+classNames: 'user-borrower-profile'
 } %}
 
-{% block extendPageHeader %}
-    <div class="page-header-image">{{ svgimage('#header-contact', '', 300, 300) }}</div>
-{% endblock %}
+{# See config/twig.json for the data value of `userProfile` #}
+{# @todo Update the edited input output variables with what was saved (should be in an AJAX call) #}
 
-{% block pageAsideBody %}
-    <div class="sticky-wrapper ui-has-sticky">
-        <div class="page-aside-body h-card vcard">
-            <h4 class="p-name fn p-org org">Unilend</h4>
-            <address class="p-adr h-adr">
-                <span class="p-street-address">6 rue du Général Clergerie</span><br>
-                <span class="p-postal-code">75116</span> <span class="p-locality">Paris</span> &ndash; <span class="p-country-name">France</span>
-            </address>
-            <div><a href="mailto:contact@unilend.fr" title="Email" class="p-email">contact@unilend.fr</a></div>
-            <div>Tel. <a href="tel:+33182285120" title="Telephone" class="p-tel">01 82 28 51 20</a></div>
-            <div>Tel. <a href="tel:+33182836655" title="Telephone (emprunters)" class="p-tel">01 82 83 66 55</a> (emprunteurs)</div>
-        </div><!-- /.page-aside-body -->
-        <img src="{{ siteurlmedia('contact/officespace.jpg') }}" alt="">
-    </div>
-{% endblock %}
+{% block dashboardContent %}
 
-{% block pageContentBody %}
-    <section class="page-section">
-        <form action="{{ route('contact/email') }}" method="post">
-            <div class="row row-multi-col">
-                <div class="col-lg-6 col-md-6 col-sm-4">
-                    <div class="form-field">
-                        <label for="contact-message-lastname">SIREN</label>
-                        <input type="text" id="contact-message-siren" name="message[siren]" value="438902363 prérempli" class="input-field">
-                    </div><!-- /.form-field -->
-                </div>
-                <div class="col-lg-6 col-md-6 col-sm-4">
-                    <div class="form-field">
-                        <label for="contact-message-lastname">Raison sociale</label>
-                        <input type="text" id="contact-message-raisonsociale" name="message[raisonsociale]" value="Exemple nom prérempli" class="input-field">
-                    </div><!-- /.form-field -->
-                </div>
-            </div>
-            <div class="row row-multi-col">
-                <div class="col-lg-6 col-md-6 col-sm-4">
-                    <div class="form-field">
-                        <label for="contact-message-lastname">Nom</label>
-                        <input type="text" id="contact-message-lastname" name="message[lastname]" value="Raux" class="input-field">
-                    </div><!-- /.form-field -->
-                </div>
-                <div class="col-lg-6 col-md-6 col-sm-4">
-                    <div class="form-field">
-                        <label for="contact-message-firstname">Prénom</label>
-                        <input type="text" id="contact-message-firstname" name="message[firstname]" value="David" class="input-field">
-                    </div><!-- /.form-field -->
-                </div>
-            </div>
-            <div class="row row-multi-col">
-                <div class="col-lg-6 col-md-6 col-sm-4">
-                    <div class="form-field">
-                        <label for="contact-message-email">Email</label>
-                        <input type="text" id="contact-message-email" name="message[email]" value="david.raux@unilend.fr" class="input-field">
-                    </div><!-- /.form-field -->
-                </div>
-                <div class="col-lg-6 col-md-6 col-sm-4">
-                    <div class="form-field">
-                        <label for="contact-message-society">Société</label>
-                        <input type="text" id="contact-message-society" name="message[society]" value="Nom de la société" class="input-field">
-                    </div><!-- /.form-field -->
-                </div>
-            </div>
-            <div class="row row-multi-col">
-                <div class="col-lg-12 col-md-12 col-sm-8">
-                    <div class="form-field">
-                        <label for="contact-message-sujet">Sélectionnez un sujet</label>
-                        <select id="contact-message-sujet" name="message[sujet]" class="input-field">
-                            <option value="">Autres</option>
-                            <option>Changement de RIB</option>
-                            <option>Demande de remboursement anticipé</option>
-                            <option>Facture</option>
-                            <option>Nouveau projet</option>
-                        </select>
-                    </div><!-- /.form-field -->
-                </div>
-            </div>
-            <div class="row row-multi-col">
-                <div class="col-lg-12 col-md-12">
-                    <div class="form-field">
-                        <label for="contact-message-body">Message</label>
-                        <textarea id="contact-message-body" name="message[body]" value="" rows="8" class="input-field"></textarea>
-                    </div><!-- /.form-field -->
-                </div>
-            </div>
-            <div class="row">
-                <button class="btn-primary">Envoyer</button>
-            </div>
-        </form>
-    </section><!-- /.page-section -->
+    <div class="dashboard-tabs">
+        <div class="dashboard-tabs-content">
+            <div role="tabpanel" class="dashboard-tab-pane">
+                <article class="panel">
+                    <header class="panel-header">
+                        <h3>Nous contacter</h3>
+                    </header>
+                    <section>
+                        <section class="page-section">
+                            <form action="{{ route('contact/email') }}" method="post">
+                                <div class="row row-multi-col">
+                                    <div class="col-lg-6 col-md-6 col-sm-4">
+                                        <div class="form-field">
+                                            <label for="contact-message-lastname">SIREN</label>
+                                            <input type="text" id="contact-message-siren" name="message[siren]" value="438902363 prérempli" class="input-field">
+                                        </div><!-- /.form-field -->
+                                    </div>
+                                    <div class="col-lg-6 col-md-6 col-sm-4">
+                                        <div class="form-field">
+                                            <label for="contact-message-lastname">Raison sociale</label>
+                                            <input type="text" id="contact-message-raisonsociale" name="message[raisonsociale]" value="Exemple nom prérempli" class="input-field">
+                                        </div><!-- /.form-field -->
+                                    </div>
+                                </div>
+                                <div class="row row-multi-col">
+                                    <div class="col-lg-6 col-md-6 col-sm-4">
+                                        <div class="form-field">
+                                            <label for="contact-message-lastname">Nom</label>
+                                            <input type="text" id="contact-message-lastname" name="message[lastname]" value="Raux" class="input-field">
+                                        </div><!-- /.form-field -->
+                                    </div>
+                                    <div class="col-lg-6 col-md-6 col-sm-4">
+                                        <div class="form-field">
+                                            <label for="contact-message-firstname">Prénom</label>
+                                            <input type="text" id="contact-message-firstname" name="message[firstname]" value="David" class="input-field">
+                                        </div><!-- /.form-field -->
+                                    </div>
+                                </div>
+                                <div class="row row-multi-col">
+                                    <div class="col-lg-6 col-md-6 col-sm-4">
+                                        <div class="form-field">
+                                            <label for="contact-message-email">Email</label>
+                                            <input type="text" id="contact-message-email" name="message[email]" value="david.raux@unilend.fr" class="input-field">
+                                        </div><!-- /.form-field -->
+                                    </div>
+                                    <div class="col-lg-6 col-md-6 col-sm-4">
+                                        <div class="form-field">
+                                            <label for="contact-message-society">Société</label>
+                                            <input type="text" id="contact-message-society" name="message[society]" value="Nom de la société" class="input-field">
+                                        </div><!-- /.form-field -->
+                                    </div>
+                                </div>
+                                <div class="row row-multi-col">
+                                    <div class="col-lg-12 col-md-12 col-sm-8">
+                                        <div class="form-field">
+                                            <label for="contact-message-sujet">Sélectionnez un sujet</label>
+                                            <select id="contact-message-sujet" name="message[sujet]" class="input-field">
+                                                <option value="">Autres</option>
+                                                <option>Changement de RIB</option>
+                                                <option>Demande de remboursement anticipé</option>
+                                                <option>Facture</option>
+                                                <option>Nouveau projet</option>
+                                            </select>
+                                        </div><!-- /.form-field -->
+                                    </div>
+                                </div>
+                                <div class="row row-multi-col">
+                                    <div class="col-lg-12 col-md-12">
+                                        <div class="form-field">
+                                            <label for="contact-message-body">Message</label>
+                                            <textarea id="contact-message-body" name="message[body]" value="" rows="8" class="input-field"></textarea>
+                                        </div><!-- /.form-field -->
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <button class="btn-primary">Envoyer</button>
+                                </div>
+                            </form>
+                        </section><!-- /.page-section -->
+                </article><!-- /.panel -->
+            </div><!-- /#profile-info.dashboard-tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </div><!-- /.dashboard-tabs -->
+
 {% endblock %}
