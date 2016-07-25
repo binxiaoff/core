@@ -155,7 +155,7 @@
                         <div class="row">
                             <div class="col-lg-10 col-md-9">
                                 <div class="project-single-description">
-                                    {{ project.nature_project|nl2br }}
+                                    {{ project.nature_project | nl2br }}
                                 </div><!-- /.project-single-description -->
                             </div>
                         </div>
@@ -164,7 +164,7 @@
                             {% if project.photo_projet is not empty %}
                                 <div class="col-lg-5 col-md-4 hide-tablet-l hide-sm hide-xs">
                                     <div class="project-single-image">
-                                        <img src="{{ project.photo_projet|completeProjectImagePath }}" alt="">
+                                        <img src="{{ project.photo_projet | completeProjectImagePath }}" alt="{{ project.title | escape('html_attr') }}">
                                     </div><!-- /.project-single-image -->
                                 </div>
                             {% endif %}
@@ -172,7 +172,7 @@
                             <div class="col-lg-5 col-md-5 col-sm-6">
                                 <div class="project-single-period">
                                     <div class="project-single-period-countdown"><span class="icon fa-clock-u32"></span>
-                                        <span class="ui-has-timecount" data-timecount-to="{{ project.date_retrait_full|escape('html_attr') }}">
+                                        <span class="ui-has-timecount" data-timecount-to="{{ project.date_retrait_full | escape('html_attr') }}">
                                             {% transchoice project.date_retrait_full with {'%time%' : project.date_retrait_full }%} project-detail_timer-count-remaining {% endtranschoice %}
                                         </span>
                                     </div>

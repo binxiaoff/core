@@ -176,9 +176,9 @@ class FrontBundleExtension extends \Twig_Extension
         return constant('\projects::RISK_' . $sProjectRating);
     }
 
-    public function projectImagePathFilter($sImage)
+    public function projectImagePathFilter($image, $size = 'source')
     {
-        return $this->url . '/images/dyn/projets/72/' . $sImage;
+        return $this->url . '/images/dyn/projets/' . $size . '/' . $image;
     }
 
     public function addBaseUrl($sUrl)

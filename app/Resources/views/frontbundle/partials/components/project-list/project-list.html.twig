@@ -108,8 +108,8 @@
                             <div class="project-list-item-category">
                                 {{ svgimage('#category-' ~ project.company.sector, '', 160, 160) | raw }}
                                 {% if project.photo_projet is not empty %}
-                                    <div class="project-list-item-image" style="background-image:url('{{ project.photo_projet | completeProjectImagePath | escape('html_attr') }}')">
-                                        <img src="{{ project.photo_projet | completeProjectImagePath }}" alt="">
+                                    <div class="project-list-item-image" style="background-image:url('{{ project.photo_projet | completeProjectImagePath(72) | escape('html_attr') }}')">
+                                        <img src="{{ project.photo_projet | completeProjectImagePath(72) }}" alt="{{ project.title | escape('html_attr')}}">
                                     </div>
                                 {% endif %}
                             </div>
