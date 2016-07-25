@@ -619,7 +619,6 @@ class MailerManager
             '$id_projet'    => $oProject->id_project,
             '$title_projet' => $oProject->title,
             '$nbPeteurs'    => $iLendersNb,
-            '$tx'           => $oProject->target_rate,
             '$montant_pret' => $oProject->amount,
             '$montant'      => $iBidTotal,
             '$sujetMail'    => htmlentities($this->oMailTemplate->subject)

@@ -139,7 +139,7 @@ class dossiersController extends bootstrap
             $this->current_projects_status->getLastStatut($this->projects->id_project);
 
             $this->bHasAdvisor       = false;
-            $this->bReadonlyRiskNote = $this->current_projects_status->status >= \projects_status::EN_FUNDING;
+            $this->bReadonlyRiskNote = $this->current_projects_status->status >= \projects_status::PREP_FUNDING;
 
             if ($this->projects->id_prescripteur > 0 && $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur')) {
                 $this->clients_prescripteurs->get($this->prescripteurs->id_client, 'id_client');
@@ -261,7 +261,7 @@ class dossiersController extends bootstrap
 
                 if (false === empty($this->projects->id_rate)) {
                     $bidManager = $this->get('unilend.service.bid_manager');
-                    $rateRange = $bidManager->getProjectRateRang($this->projects);
+                    $rateRange = $bidManager->getProjectRateRange($this->projects);
                     $this->rate_min = $rateRange['rate_min'];
                     $this->rate_max = $rateRange['rate_max'];
                 }
@@ -552,13 +552,9 @@ class dossiersController extends bootstrap
                     $this->projects->display         = $_POST['display_project'];
                     $this->projects->id_project_need = $_POST['need'];
 
-                    if ($this->current_projects_status->status < \projects_status::A_FUNDER) {
+                    if ($this->current_projects_status->status < \projects_status::PREP_FUNDING) {
                         $this->projects->period = $_POST['duree'];
                         $this->projects->amount          = str_replace(' ', '', str_replace(',', '.', $_POST['montant']));
-                    }
-
-                    if ($this->current_projects_status->status == \projects_status::PREP_FUNDING) {
-                        $this->projects->risk = $_POST['risk'];
                     }
 
                     if ($this->current_projects_status->status <= \projects_status::A_FUNDER) {

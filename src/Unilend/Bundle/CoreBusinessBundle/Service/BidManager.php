@@ -94,7 +94,7 @@ class BidManager
             return false;
         }
 
-        $rateRate = $this->getProjectRateRang($project);
+        $rateRate = $this->getProjectRateRange($project);
 
         if ($fRate > $rateRate['rate_max'] || $fRate < $rateRate['rate_min']) {
             return false;
@@ -407,7 +407,7 @@ class BidManager
      *
      * @return array
      */
-    public function getProjectRateRang(\projects $project)
+    public function getProjectRateRange(\projects $project)
     {
         if ($project->id_rate) {
             /** @var \project_rate_settings $projectRateSettings */

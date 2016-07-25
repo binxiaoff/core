@@ -1301,15 +1301,6 @@ class ajaxController extends bootstrap
                         }
                     }
 
-                    if (false === empty($this->projects->risk) && false === empty($this->projects->period)) {
-                        try {
-                            $oProjectManager->setProjectRateRange($this->projects);
-                        } catch (\Exception $exception) {
-                            echo json_encode(array('liste' => '', 'btn_etape6' => '', 'content_risk' => '', 'error' => $exception->getMessage()));
-                            return;
-                        }
-                    }
-
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::PREP_FUNDING, $this->projects);
                     if (false === in_array(\projects_status::PREP_FUNDING, $aExistingStatus)) {
                         $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein', $this->clients);
@@ -1379,6 +1370,15 @@ class ajaxController extends bootstrap
                         <a href="' . $this->lurl . '/dossiers/ajax_rejection/6/' . $this->projects->id_project . '" class="btn btnValid_rejet_etape6 btn_link thickbox" style="background:#CC0000;border-color:#CC0000;">Rejeter</a>
                         <input type="button" onclick="valid_rejete_etape6(2,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape6" style="background:#CC0000;border-color:#CC0000;" value="Rejeter">
                     ';
+                }
+
+                if (false === empty($this->projects->risk) && false === empty($this->projects->period)) {
+                    try {
+                        $oProjectManager->setProjectRateRange($this->projects);
+                    } catch (\Exception $exception) {
+                        echo json_encode(array('liste' => '', 'btn_etape6' => '', 'content_risk' => '', 'error' => $exception->getMessage()));
+                        return;
+                    }
                 }
 
                 /** @var \projects_status $oProjectStatus */

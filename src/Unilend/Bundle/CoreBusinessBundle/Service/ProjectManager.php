@@ -200,7 +200,7 @@ class ProjectManager
         $oProjectPeriods = $this->oEntityManager->getRepository('project_period');
 
         if ($oProjectPeriods->getPeriod($oProject->period)) {
-            $rateRang = $this->oBidManager->getProjectRateRang($oProject);
+            $rateRange = $this->oBidManager->getProjectRateRange($oProject);
 
             $iOffset = 0;
             $iLimit  = 100;
@@ -209,7 +209,7 @@ class ProjectManager
 
                 foreach ($aAutoBidList as $aAutoBidSetting) {
                     if ($oAutoBid->get($aAutoBidSetting['id_autobid'])) {
-                        $this->bidByAutoBidSettings($oAutoBid, $oProject, $rateRang['rate_max'], false);
+                        $this->oBidManager->bidByAutoBidSettings($oAutoBid, $oProject, $rateRange['rate_max'], false);
                     }
                 }
             }
