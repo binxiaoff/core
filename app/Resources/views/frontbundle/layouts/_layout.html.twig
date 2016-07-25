@@ -78,7 +78,7 @@
 
     {% if not app.request.cookies.has('acceptCookies') %}
         {% block siteCookie %}
-            {% include 'partials/components/cookie-box.html.twig' %}
+            {% include 'partials/site/cookie-box.html.twig' %}
         {% endblock %}
     {% endif %}
 
