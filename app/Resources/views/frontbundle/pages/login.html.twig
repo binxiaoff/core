@@ -37,7 +37,7 @@ permalink: route('user/access')
                                                 <div class="btn-group">
                                                     <label for="connect-access-email"><span class="icon fa-envelope-o"></span></label>
                                                 </div>
-                                                <input type="text" id="connect-access-email" data-login name="_username" value="" class="input-field" name="access[email]" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email">
+                                                <input type="text" id="connect-access-email" data-login name="_username" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email">
                                             </div><!-- /.input-group -->
                                         </div><!-- /.form-field -->
 
@@ -47,8 +47,7 @@ permalink: route('user/access')
                                                 <div class="btn-group">
                                                     <label for="connect-access-password"><span class="icon fa-lock-u"></span></label>
                                                 </div>
-                                                <input type="password" id="connect-access-password" data-login name="_password" value="" class="input-field" name="access[password]" data-formvalidation-input data-formvalidation-required="true">
-
+                                                <input type="password" id="connect-access-password" data-login name="_password" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true">
                                             </div><!-- /.input-group -->
                                         </div><!-- /.form-field -->
                                         {% if captchaInformation is defined and captchaInformation is not empty %}

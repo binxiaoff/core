@@ -19,7 +19,6 @@
 
                 <div class="section-tabs-content tab-content">
                     <div id="income-table" role="tabpanel" class="tab-pane active" aria-labelledby="project-income-table project-income">
-
                         <div class="table-scroll">
                             <table id="income-table-data" class="table table-finance table-income">
                                 <thead>
@@ -185,11 +184,26 @@
             </div><!-- /tabs -->
 
             <div class="btn-toolbar">
-                <a href="{{ path('export_balance_sheet', {'projectId' : project.id_project }) }}" class="btn-default" target="_blank"><span class="icon fa-excel-u32"></span>
+                <a href="{{ path('export_balance_sheet', {'projectId' : project.id_project }) }}" class="btn-default" target="_blank">
+                    <span class="icon fa-excel-u32"></span>
                     {% trans %} project-detail_project-presentation-accounts-export-csv-button {% endtrans %}</a>
             </div><!-- /.btn-toolbar -->
         </section><!-- /.page-section -->
     {% else %}
-        Les prêteurs inscrits ont accès au bilan et au compte de résultat sur les trois dernières années.
+        <section id="project-section-income" class="page-section">
+            <div class="tabs">
+                <div class="section-tabs-nav">
+                    <header>
+                        <h3 id="project-income" class="h3">{% trans %} project-detail_project-presentation-accounts-title {% endtrans %}</h3>
+                    </header>
+                </div><!-- /.section-tabs-nav -->
+
+                <div class="section-tabs-content tab-content">
+                    <p>{% trans %} project-detail_finance-logged-out-description {% endtrans %}</p>
+                    <p><a class="btn-primary" href="javascript:document.getElementById('form-access-email').focus();">{% trans %} project-detail_finance-logged-out-connect-button {% endtrans %}</a></p>
+                    <p><a href="{{ path('lender_subscription') }}"><span class="icon fa-angle-right"></span>{% trans %} project-detail_finance-logged-out-subscription-link {% endtrans %}</a></p>
+                </div>
+            </div>
+        </section>
     {% endif %}
 </div>

@@ -108,7 +108,7 @@
                             <div class="btn-group">
                                 <span class="icon fa-envelope-o"></span>
                             </div>
-                            <input id="form-access-email" type="email" data-login-name="_username" name="access[email]"
+                            <input id="form-access-email" type="email" data-login-name="_username" name="_username"
                                    placeholder="{% trans %} project-detail_side-bar-login-username {% endtrans %}" value="" class="input-field"
                                    data-formvalidation-input data-formvalidation-required="true"/>
                         </div><!-- /.input-group -->
@@ -120,7 +120,7 @@
                             <div class="btn-group">
                                 <span class="icon fa-lock-u32"></span>
                             </div>
-                            <input id="form-access-password" type="password" data-login-name="_password" name="access[password]"
+                            <input id="form-access-password" type="password" data-login-name="_password" name="_password"
                                    placeholder="{% trans %} project-detail_side-bar-login-password {% endtrans %}"
                                    value="" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                         </div><!-- /.input-group -->
@@ -132,7 +132,8 @@
                         </div>
                     </div><!-- /.form-field -->
                     <div class="btn-toolbar">
-                        <button type="submit" class="btn-primary btn-size-full">{% trans %} project-detail_side-bar-login-submit-button {% endtrans %}</button>
+                        <input type="submit" class="btn-primary btn-size-full" value="{% trans %} project-detail_side-bar-login-submit-button {% endtrans %}">
+                        <input type="hidden" name="_target_path" value="{{ path(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')) }}">
                         <p>
                             <a href="{{ path('lender_subscription') }}"><span class="icon fa-angle-right"></span>{% trans %} project-detail_side-bar-login-subscription-link {% endtrans %}</a>
                         </p>

@@ -16,15 +16,16 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Guard\Authenticator\AbstractFormLoginAuthenticator;
+use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
 use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class LoginAuthenticator extends AbstractFormLoginAuthenticator
 {
-    /** @var UserPasswordEncoder  */
+    /** @var UserPasswordEncoder */
     private $securityPasswordEncoder;
-    /** @var RouterInterface  */
+    /** @var RouterInterface */
     private $router;
     /** @var EntityManager */
     private $entityManager;
@@ -54,23 +55,23 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      */
     public function getCredentials(Request $request)
     {
-        if ($request->getPathInfo() != '/login-check'){
+        if ($request->getPathInfo() != '/login-check') {
             return null;
         }
 
-        $username = $request->request->get('_username');
+        $username           = $request->request->get('_username');
         $password           = $request->request->get('_password');
         $captcha            = $request->request->get('captcha');
         $captchaInformation = $request->getSession()->get('captchaInformation');
 
         $request->getSession()->set(Security::LAST_USERNAME, $username);
 
-        return array(
+        return [
             'username'           => $username,
             'password'           => $password,
             'captcha'            => $captcha,
             'captchaInformation' => $captchaInformation
-        );
+        ];
     }
 
     /**
@@ -93,7 +94,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     {
         $plainPassword = $credentials['password'];
 
-        if (false === $this->securityPasswordEncoder->isPasswordValid($user, $plainPassword)){
+        if (false === $this->securityPasswordEncoder->isPasswordValid($user, $plainPassword)) {
             throw new CustomUserMessageAuthenticationException('wrong-password');
         }
 
@@ -108,16 +109,24 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      */
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
-        $user  = $token->getUser();
+        $user = $token->getUser();
         $request->getSession()->remove('captchaInformation');
 
-        if ($user instanceof UserLender){
+        if ($user instanceof BaseUser) {
+            // Restore Symfony default behavior
+            $targetPath = $request->get('_target_path');
+            if ($targetPath) {
+                return new RedirectResponse($targetPath);
+            }
+        }
+
+        if ($user instanceof UserLender) {
             if ($user->getSubscriptionStep() < 3) {
                 //TODO uncomment once route created
                 //return new RedirectResponse($this->router->generate('lender_subscription'));
             }
 
-            if (in_array($user->getClientStatus(), array(\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER))) {
+            if (in_array($user->getClientStatus(), [\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER])) {
                 //TODO uncomment once route created
                 //return new RedirectResponse($this->router->generate('lender_completeness'));
             }
@@ -134,7 +143,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
 
         }
 
-        if ($user instanceof UserBorrower){
+        if ($user instanceof UserBorrower) {
             return new RedirectResponse($this->router->generate('borrower_account'));
         }
 
@@ -148,12 +157,12 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     {
 
         if ($exception instanceof LockedException || $exception instanceof DisabledException || $exception instanceof AccountExpiredException) {
-            $customException =  new CustomUserMessageAuthenticationException('closed-account');
+            $customException = new CustomUserMessageAuthenticationException('closed-account');
             $request->getSession()->set(Security::AUTHENTICATION_ERROR, $customException);
         }
 
-        if ($exception instanceof CustomUserMessageAuthenticationException && in_array($exception->getMessage(), array('wrong-password', 'login-unknown'))) {
-            $oNowMinusTenMinutes           = new \datetime('NOW - 10 minutes');
+        if ($exception instanceof CustomUserMessageAuthenticationException && in_array($exception->getMessage(), ['wrong-password', 'login-unknown'])) {
+            $oNowMinusTenMinutes = new \datetime('NOW - 10 minutes');
 
             /** @var \login_log $loginLog */
             $loginLog        = $this->entityManager->getRepository('login_log');
