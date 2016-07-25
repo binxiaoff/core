@@ -3,12 +3,11 @@
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 
-use SensioLabs\Security\SecurityChecker;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
@@ -31,17 +30,14 @@ class ProjectsController extends Controller
     {
         /** @var ProjectDisplayManager $projectDisplayManager */
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
         /** @var \projects $projects */
         $projects = $this->get('unilend.service.entity_manager')->getRepository('projects');
 
+        $limit = $this->getPaginationStartAndLimit($page)['limit'];
+        $start = $this->getPaginationStartAndLimit($page)['start'];
+
         /** @var array $rateRange */
         $rateRange = [\bids::BID_RATE_MIN, \bids::BID_RATE_MAX];
-
-        $settings->get('nombre-de-projets-par-page', 'type');
-        $limit = (int) $settings->value;
-        $start = ($page > 1) ? $limit * ($page - 1) : 0;
 
         if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
             && $this->get('security.authorization_checker')->isGranted('ROLE_LENDER')
@@ -66,7 +62,34 @@ class ProjectsController extends Controller
             );
         }
 
-        $aTemplateVariables['projectsInFunding'] = $projects->countSelectProjectsByStatus(\projects_status::EN_FUNDING);
+        $aTemplateVariables['projectsInFunding']  = $projects->countSelectProjectsByStatus(\projects_status::EN_FUNDING);
+        $aTemplateVariables['paginationSettings'] = $this->pagination($page, $limit);
+        $aTemplateVariables['showPagination']     = true;
+
+        return $this->render('pages/projects.html.twig', $aTemplateVariables);
+    }
+
+    /**
+     * @Route("/projects-map", name="projects_map")
+     * @Method("POST")
+     */
+    public function getProjectListForMapView(Request $request)
+    {
+        if ($request->isXMLHttpRequest()) {
+            /** @var ProjectDisplayManager $projectDisplayManager */
+            $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
+
+            //TODO get projects details for mapView and return them
+
+        }
+
+        return new Response('not an ajax request');
+    }
+
+    private function pagination($page, $limit)
+    {
+        /** @var ProjectDisplayManager $projectDisplayManager */
+        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
 
         $totalNumberProjects = $projectDisplayManager->getTotalNumberOfDisplayedProjects();
         $totalPages          = ceil($totalNumberProjects / $limit);
@@ -95,10 +118,18 @@ class ProjectsController extends Controller
             }
         }
 
-        $aTemplateVariables['paginationSettings'] = $paginationSettings;
-        $aTemplateVariables['showPagination']     = true;
+        return $paginationSettings;
+    }
 
-        return $this->render('pages/projects.html.twig', $aTemplateVariables);
+    private function getPaginationStartAndLimit($page)
+    {
+        /** @var \settings $settings */
+        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
+        $settings->get('nombre-de-projets-par-page', 'type');
+        $limit = (int) $settings->value;
+        $start = ($page > 1) ? $limit * ($page - 1) : 0;
+
+        return ['start' => $start, 'limit' => $limit];
     }
 
     /**

@@ -95,7 +95,7 @@ permalink: route('preter')
             <div class="site-wrap">
                 <h2 class="h2"> {% transchoice projects|length with { '%numberProjects%' : projects|length } %} project-list_title-ongoing-projects  {% endtranschoice %}</h2>
 
-                {% include 'partials/components/project-list.html.twig' %}
+                {% include 'partials/components/project-list/project-list.html.twig' %}
 
                 <div class="btn-toolbar">
                     <a href="{{ route('projets') }}" class="btn-primary">{% trans %} home-lender_all-projects-button {% endtrans %}</a>

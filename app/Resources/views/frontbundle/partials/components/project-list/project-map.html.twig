@@ -1,0 +1,122 @@
+{# Placeholder Long & Lat (temp until hooked into backend) #}
+{# TODO update database and use long and lat datas from it #}
+{% set lat = [48.017028, 46.323716, 48.80486, 48.790367, 45.65511799999999, 45.83361900000001, 44.837789, 48.57340529999999, 48.52854, 47.7482524] %}
+{% set long = [-0.604248, -0.4647770000000264, 2.3349550000000363, 2.455571999999961, 1.4582299999999577, 1.2611050000000432, -0.5791799999999512, 7.752111300000024, 7.711010999999985, -3.3702448999999888] %}
+
+
+<div class="project-list-map">
+    <div id="project-list-map-view" class="project-list-map-view ui-has-mapview" data-mapview="{{ settings.mapview|json_encode|escape('html_attr') }}">
+    </div>
+    <div class="project-list-map-list">
+        <ul class="list-projects">
+
+            {% for i, project in projects %}
+                {# Set the rating class for the .rating element #}
+                {% set classRating = project.risk|convertRisk|split('.')|join('-') %}
+
+                {# Set CSS class to show expired project #}
+                {% set classProjectExpired = '' %}
+                {% if settings.markExpired == true and project.daysLeft <= 0 %}
+                    {% set classProjectExpired = 'ui-project-expired' %}
+                {% endif %}
+
+                {# Set CSS class to show current user is involved in the project #}
+                {% set classUserInvolved = '' %}
+                {% if settings.markInvolved == true and project.currentUser.isInvolved is defined and project.currentUser.isInvolved == true %}
+                    {% set classUserInvolved = 'ui-current-user-involved' %}
+                {% endif %}
+
+                {% if project.currentUserOffers is defined and project.currentUserOffers is not empty and project.currentUserTotalOffers > 0 %}
+                    {# Mark that Autolend was applied #}
+                    {% set attrHasAutolend = 'class="project-useroffers"' %}
+                    {% set autolendTooltip %}
+                        {% transchoice projects.currentUser.offers.autolend with { '%currentUserOffersAutolend%' : projects.currentUser.offers.autolend } %}
+                        project-list_autolend-tooltip {% endtranschoice %}
+                    {% endset %}
+                    {% set autolendTooltipHtml = autolendTooltip ~ " <span class='icon fa-autolend-u32 c-p1'></span>" %}
+                    {% set attrHasAutolend = 'class="project-useroffers ui-has-tooltip" data-toggle="tooltip" data-html="true" title="' ~ autolendTooltipHtml ~ '"' %}
+                {% endif %}
+
+                {# Generate object for mapview to place marker on map #}
+                {# TODO : SET IF COND ACCORDING TO LONG AND LAT DATABASE #}
+                {% if true %}{#{% if project.lat is defined and project.lng is defined %}#}
+                    {# Set the group based on active, expired, or offers inprogress, rejected or accepted #}
+                    {# @note MapView JS component & CSS relies on two groups named 'active' and 'expired' (case insensitive) #}
+                    {% set mapviewGroup = (project.daysLeft <= 0 ? 'expired' : 'active') %}
+
+                    {# Set the offer status to show the icon in the marker #}
+                    {# @note MapView CSS relies on offerStatuses named 'inprogress', 'rejected' and 'accepted' #}
+                    {% set mapviewOfferStatus = '' %}
+
+                    {# TODO SET USERS OFFETS #}
+                    {#                                  {% if project.currentUser.offers.total > 0 and project.currentUser.offers is not empty %}
+                                                            {% for status, numOffers in project.currentUser.offers if project.currentUser.offers.total > 0 and status is not empty and status != 'rejected' %}
+                                                                {% set mapviewOfferStatus = status %}
+                                                            {% endfor %}
+                                                        {% endif %}#}
+
+                    {% set mapviewItem = {
+                    id: 'marker' ~ project.id_project,
+                    categoryId: project.company.sector,
+                    latLng: [lat[i], long[i]],
+                    title: project.title,
+                    description: '<div style="font-style: italic;">' ~ project.company.city ~ ', ' ~ project.company.zip ~ '</div><div class="rating rating-' ~ classRating ~ '"><span class="sr-only">Rated ' ~ project.risk ~ ' out of 5</span></span></div>',
+                    status: (project.daysLeft <= 0 ? 'expired' : 'active'),
+                    offerStatus: mapviewOfferStatus|default(''),
+                    groupName: mapviewGroup|default('all')
+                    } %}
+                {% endif %}
+
+                <li class="project {{ classProjectExpired }} {{ classUserInvolved }}"{% if mapviewItem is defined %} data-mapview-markerid="{{ mapviewItem.id }}" data-mapview-item='{{ mapviewItem|json_encode|escape('html_attr') }}'{% endif %}>
+                    <div class="project-name">
+                        <a href="{{ path('project_detail', {'projectSlug' : project.slug }) }}">{{ project.title }}</a>
+                    </div>
+                    <div class="project-location">{{ project.company.city }}, {{ project.company.zip }}</div>
+                    <div class="project-cost">{{ project.amount|__num|nbsp }}€</div>
+                    <div class="project-rating">
+                        <span class="rating rating-{{ project.risk|convertRisk|split('.')|join('-') }}"><span class="sr-only"></span></span>
+                    </div>
+                    <div class="project-interest">{{ project.avg_rate|__num(1) }}%</div>
+                    <div class="project-period">
+                        {% if project.daysLeft > 0 and project.daysLeft <= 2 %}
+                            <span class="ui-has-timecount" data-timecount-to="{{ project.date_retrait_full|escape('html_attr') }}">&hellip;</span>
+                        {% elseif project.daysLeft <= 0 %}
+                            {% trans %} project-list_project-finished {% endtrans %}
+                        {% else %}
+                            {% trans with {'%remainingDays%' : project.daysLeft } %} project-list_remaining-days {% endtrans %}
+                        {% endif %}
+                    </div>
+                    <div class="project-offers">
+                        <strong>{{ project.number_bids }}</strong> {% transchoice project.number_bids %}project-list_offer-label{% endtranschoice %}
+                        {% if project.currentUserOffers is defined and project.currentUserOffers is not empty and project.currentUserTotalOffers > 0 %}
+                            <div {{ attrHasAutolend }}>
+                                {# Show stats for each type of offer #}
+                                {% for status, numOffers in project.currentUser.offers %}
+                                    {% if status == 'inprogress' and numOffers > 0 %}
+                                        <div class="project-list-item-useroffers-accepted">
+                                            {{ numOffers|__num|nbsp }} {% transchoice numOffers %} project-list_accepted-bids-label {% endtranschoice %}
+                                        </div>
+                                    {% elseif status == 'rejected' and numOffers > 0 %}
+                                        <div class="project-list-item-useroffers-rejected">
+                                            {{ numOffers|__num|nbsp }} {% transchoice numOffers %} project-list_rejected-bids-label {% endtranschoice %}
+                                        </div>
+                                    {% elseif status == 'accepted' and numOffers > 0 %}
+                                        <div class="project-list-item-useroffers-inprogress">
+                                            {{ numOffers|__num|nbsp }} {% transchoice numOffers %} project-list_pending-bids-label {% endtranschoice %}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div><!-- /.project-useroffers -->
+                        {% endif %}
+                    </div>
+                    <a href="{{ path('project_detail', {'projectSlug' : project.slug }) }}" class="project-hotspot">&nbsp;</a>
+                </li>
+            {% endfor %}
+
+            {# Pagination #}
+            {% if showPagination == true %}
+                {% include 'partials/components/pagination.html.twig' %}
+            {% endif %}
+        </ul>
+    </div>
+</div><!-- /.project-list-map -->
