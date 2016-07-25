@@ -60,13 +60,13 @@
                 <ul class="list-input-values">
                     {% if client.type in [constant('\\clients::TYPE_PERSON'), constant('\\clients::TYPE_PERSON_FOREIGNER')] %}
                         <li>
-                            <label><input type="radio" name="identity[statut]" value="person" checked="checked"/>
+                            <label><input type="radio" name="client_type" value="person" checked="checked"/>
                                 {% trans %} lender-profile_information-tab-identity-section-client-type-person-label {% endtrans %}
                             </label>
                         </li>
                     {% else %}
                         <li>
-                            <label><input type="radio" name="identity[statut]" value="legal_entity" checked="checked"/>
+                            <label><input type="radio" name="client_type" value="legal_entity" checked="checked"/>
                                 {% trans %} lender-profile_information-tab-identity-section-client-type-legal-entity-label {% endtrans %}
                             </label>
                         </li>
@@ -83,10 +83,10 @@
                 </div>
                 <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
                     <li>
-                        <label><input type="radio" name="identity[civilite]" value="Mme" {% if formData.identity.civilite == 'Mme' %}checked="checked"{% endif %}/> {% trans %} lender-profile_information-tab-identity-section-form-of-address-female-label {% endtrans %}</label>
+                        <label><input type="radio" name="form_of_address" value="Mme" {% if formData.identity.form_of_address == 'Mme' %}checked="checked"{% endif %}/> {% trans %} lender-profile_information-tab-identity-section-form-of-address-female-label {% endtrans %}</label>
                     </li>
                     <li>
-                        <label><input type="radio" name="identity[civilite]" value="M." {% if formData.identity.civilite == 'M.' %}checked="checked"{% endif %}/> {% trans %} lender-profile_information-tab-identity-section-form-of-address-male-label {% endtrans %}</label>
+                        <label><input type="radio" name="form_of_address" value="M." {% if formData.identity.form_of_address == 'M.' %}checked="checked"{% endif %}/> {% trans %} lender-profile_information-tab-identity-section-form-of-address-male-label {% endtrans %}</label>
                     </li>
                 </ul>
             </div><!-- /.form-field -->
@@ -100,7 +100,17 @@
             <div class="form-field col-lg-6 col-md-6">
                 <label for="form-profile-info-prenom">{% trans %} lender-profile_information-tab-identity-section-first-name-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
-                <input id="form-profile-info-prenom" type="text" name="identity[prenom]" value="{{ client.prenom }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                <input id="form-profile-info-prenom" type="text" name="first_name" value="{{ client.prenom }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+            </div><!-- /.form-field -->
+        </div><!-- /.row -->
+
+        <div class="row row-multi-col-computer">
+            <div class="form-field col-lg-6 col-md-6">
+                <label for="form-profile-info-prenom">{% trans %} lender-profile_information-tab-identity-section-used-name-label {% endtrans %}
+                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                <input id="form-profile-info-prenom" type="text" name="used_name" value="{{ client.nom_usage }}" class="input-field" data-formvalidation-input data-formvalidation-required="false"/>
+            </div><!-- /.form-field -->
+            <div class="form-field col-lg-6 col-md-6">
             </div><!-- /.form-field -->
         </div><!-- /.row -->
 
@@ -112,9 +122,9 @@
             <div class="form-field col-lg-6 col-md-6">
                 <label for="form-profile-info-nationalite">{% trans %} lender-profile_information-tab-identity-section-nationality-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
-                <select id="form-profile-info-nationalite" name="identity[nationalite]" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                <select id="form-profile-info-nationalite" name="nationality" class="input-field" data-formvalidation-input data-formvalidation-required="true">
                     {% for i, nationality in getNationalities() %}
-                        <option value="{{ i }}"{% if i == formData.identity.nationalite %} selected="selected"{% endif %}>{{ nationality }}</option>
+                        <option value="{{ i }}"{% if i == formData.identity.nationality %} selected="selected"{% endif %}>{{ nationality }}</option>
                     {% endfor %}
                 </select>
             </div><!-- /.form-field -->
@@ -141,10 +151,11 @@
                          data-fileattach data-fileattach-inputname="id_recto"
                          data-fileattach-maxfiles="1"
                          data-fileattach-emptyfilelabel="
-                                 {% if NameCniRecto is not empty %}{{ NameCniRecto }}
-                                 {% else %}{% trans %} lender-profile_information-tab-identity-section-ID-recto {% endtrans %}
-                                 {% endif %}"
-                         data-formvalidation-input data-formvalidation-required='input[type="file"][name="fichier[identite][cni_a][0]"]'>
+                                 {% if NameCniRecto is not empty %}
+                                    {{ NameCniRecto }}
+                                 {% else %}
+                                    {% trans %} lender-profile_information-tab-identity-section-ID-recto {% endtrans %}
+                                 {% endif %}">
                     </div><!-- /.ui-fileattach -->
                 </div>
 
@@ -153,11 +164,11 @@
                          data-fileattach data-fileattach-inputname="id_verso"
                          data-fileattach-maxfiles="1"
                          data-fileattach-emptyfilelabel="
-                                 {% if NameCniVerso is not empty %}{{ NameCniVerso }}
+                                 {% if NameCniVerso is not empty %}
+                                    {{ NameCniVerso }}
                                  {% else %}
-                                 {% trans %} lender-profile_information-tab-identity-section-ID-verso {% endtrans %}
-                                 {% endif %}"
-                         data-formvalidation-input data-formvalidation-required='input[type="file"][name="fichier[identite][cni_b][0]"]'>
+                                    {% trans %} lender-profile_information-tab-identity-section-ID-verso {% endtrans %}
+                                 {% endif %}">
                     </div><!-- /.ui-fileattach -->
                 </div>
 
@@ -169,6 +180,7 @@
 
         <div class="btn-controls">
             <button type="submit" class="btn-primary">{% trans %} lender-profile_information-tab-identity-save-modifications-button {% endtrans %}</button>
+            <input type="hidden" name="person_identity_form" />
             <button type="reset" role="button" data-toggle="collapse" data-target="#profile-info-view" data-parent="#profile-info-section" class="btn-default" aria-controls="#profile-info-view" aria-expanded="true">{% trans %} lender-profile_information-tab-identity-cancel-modifications-button {% endtrans %}</button>
         </div>
     </form><!-- /.form-profile-info-edit -->

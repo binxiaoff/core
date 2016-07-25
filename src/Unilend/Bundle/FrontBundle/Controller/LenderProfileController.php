@@ -66,25 +66,27 @@ class LenderProfileController extends Controller
         $request->getSession()->remove('fiscalAddressFormErrors');
 
         $identityFormData = [
-            'civilite' => isset($formData['identity']['civilite']) ? $formData['identity']['civilite'] : $client->civilite,
-            'nom_usage' => isset($formData['identity']['nom_usage']) ? $formData['identity']['nom_usage'] : $client->nom_usage,
-            'nationalite' => isset($formData['identity']['nationalite']) ? $formData['identity']['nationalite'] : $client->id_nationalite
+            'form_of_address' => isset($formData['identity']['form_of_address']) ? $formData['identity']['form_of_address'] : $client->civilite,
+            'used_name'       => isset($formData['identity']['used_name']) ? $formData['identity']['used_name'] : $client->nom_usage,
+            'nationality'     => isset($formData['identity']['nationality']) ? $formData['identity']['nationality'] : $client->id_nationalite
         ];
 
         $fiscalAddressFormData = [
-            'street'            => isset($formData['fiscal']['street']) ? $formData['fiscal']['street'] : $clientAddress->adresse_fiscal,
-            'code'              => isset($formData['fiscal']['code']) ? $formData['fiscal']['code'] : $clientAddress->cp_fiscal,
-            'ville'             => isset($formData['fiscal']['ville']) ? $formData['fiscal']['ville'] : $clientAddress->ville_fiscal,
-            'pays'              => isset($formData['fiscal']['pays']) ? $formData['fiscal']['pays'] : $clientAddress->id_pays_fiscal,
-            'mobile'            => isset($formData['fiscal']['mobile']) ? $formData['fiscal']['mobile'] : $client->mobile,
-            'is_correspondence' => isset($formData['fiscal']['is_correspondence']) ? $formData['fiscal']['is_correspondence'] : (bool) $clientAddress->meme_adresse_fiscal
+            'fiscal_address_street'  => isset($formData['fiscal']['fiscal_address_street']) ? $formData['fiscal']['fiscal_address_street'] : $clientAddress->adresse_fiscal,
+            'fiscal_address_zip'     => isset($formData['fiscal']['fiscal_address_zip']) ? $formData['fiscal']['fiscal_address_zip'] : $clientAddress->cp_fiscal,
+            'fiscal_address_city'    => isset($formData['fiscal']['fiscal_address_city']) ? $formData['fiscal']['fiscal_address_city'] : $clientAddress->ville_fiscal,
+            'fiscal_address_country' => isset($formData['fiscal']['fiscal_address_country']) ? $formData['fiscal']['fiscal_address_country'] : $clientAddress->id_pays_fiscal,
+            'client_mobile'          => isset($formData['fiscal']['client_mobile']) ? $formData['fiscal']['client_mobile'] : $client->mobile,
+            'same_postal_address'    => isset($formData['fiscal']['same_postal_address']) ? $formData['fiscal']['same_postal_address'] : (bool) $clientAddress->meme_adresse_fiscal,
+            'no_us_person'           => isset($formData['fiscal']['no_us_person']) ? $formData['fiscal']['no_us_person'] : true,
+            'housed_by_third_person' => isset($formData['fiscal']['housed_by_third_person']) ? $formData['fiscal']['housed_by_third_person'] : false
         ];
 
         $postalAddressFormData = [
-            'street' => isset($formData['postal']['street']) ? $formData['postal']['street'] : $clientAddress->adresse1,
-            'code'   => isset($formData['postal']['code']) ? $formData['postal']['code'] : $clientAddress->cp,
-            'ville'  => isset($formData['postal']['ville']) ? $formData['postal']['ville'] : $clientAddress->ville,
-            'pays'   => isset($formData['postal']['pays']) ? $formData['postal']['pays'] : $clientAddress->id_pays,
+            'postal_address_street'  => isset($formData['postal']['postal_address_street']) ? $formData['postal']['postal_address_street'] : $clientAddress->adresse1,
+            'postal_address_zip'     => isset($formData['postal']['postal_address_zip']) ? $formData['postal']['postal_address_zip'] : $clientAddress->cp,
+            'postal_address_city'    => isset($formData['postal']['postal_address_city']) ? $formData['postal']['postal_address_city'] : $clientAddress->ville,
+            'postal_address_country' => isset($formData['postal']['postal_address_country']) ? $formData['postal']['postal_address_country'] : $clientAddress->id_pays,
         ];
 
         /** @var \settings $settings */
@@ -129,10 +131,6 @@ class LenderProfileController extends Controller
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount  = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
         $lenderAccount->get($client->id_client, 'id_client_owner');
-
-        /** @var \clients_history_actions $clientHistoryActions */
-        $clientHistoryActions = $this->get('unilend.service.entity_manager')->getRepository('clients_history_actions');
-
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
         /** @var TranslationManager $translationManager */
@@ -141,72 +139,75 @@ class LenderProfileController extends Controller
         $lenderIdRecto = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [\attachment_type::CNI_PASSPORTE])[0];
         $lenderIdVerso = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [\attachment_type::CNI_PASSPORTE_VERSO])[0];
 
-        /** @var array $formData */
-        $formData  = $request->request->get('identity');
+        if ($request->request->get('person_identity_form')) {
+            /** @var array $formData */
+            $formData  = $request->request->all();
 
-        $serialize = serialize(array('id_client' => $client->id_client, 'post' => $formData, 'files' => $_FILES));
+            /** @var array $errorMessages */
+            $errorMessages = [];
+            /** @var string $contentForClientStatusHistory */
+            $contentForClientStatusHistory = '<ul>';
+
+            if ($client->nom_usage != $formData['used_name']) {
+                $client->nom_usage = $ficelle->majNom($_POST['used_name']);
+                $request->getSession()->set('identityFormSuccessMessage', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-update-success-message'));
+            }
+
+            if (isset($_FILES['id_recto']) && $_FILES['id_recto']['name'] != '' && $_FILES['id_recto']['name'] != $lenderIdRecto['path']) {
+                $attachmentIdRecto = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE, 'id_recto');
+                if (false === is_numeric($attachmentIdRecto)) {
+                    $errorMessages[] = $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-upload-files-error-message');
+                } else {
+                    $contentForClientStatusHistory .= '<li>'. $translationManager->selectTranslation('projet', 'document-type-' . \attachment_type::CNI_PASSPORTE) .'</li>';
+                }
+            }
+
+            if (isset($_FILES['id_verso']) && $_FILES['id_verso']['name'] != '' && $_FILES['id_verso']['name'] != $lenderIdVerso['path']) {
+                $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE_VERSO, 'id_verso');
+                if (false === is_numeric($attachmentIdVerso)) {
+                    $errorMessages[] = $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-upload-files-error-message');
+                } else {
+                    $contentForClientStatusHistory .= '<li>'. $translationManager->selectTranslation('projet', 'document-type-' . \attachment_type::CNI_PASSPORTE_VERSO) .'</li>';
+                }
+            }
+
+            if ($client->id_nationalite != $formData['nationality']) {
+                if (isset($attachmentIdRecto)) {
+                    $client->id_nationalite = $formData['nationality'];
+                    $contentForClientStatusHistory .= '<li>'. $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-nationality-label') .'</li>';
+                } else {
+                    $errorMessages[] = $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-change-ID-warning-message');
+                }
+            }
+
+            if ($client->civilite != $formData['form_of_address']) {
+                if (isset($attachmentIdRecto)){
+                    $client->civilite = $formData['form_of_address'];
+                    $contentForClientStatusHistory .= '<li>'. $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-form-of-address-label') .'</li>';
+                } else {
+                    $errorMessages[] = $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-change-ID-warning-message');
+                }
+            }
+
+            $contentForClientStatusHistory .= '</ul>';
+
+            if (false === empty($errorMessages)){
+                $request->getSession()->set('identityFormErrors', $errorMessages);
+                $request->getSession()->set('identityFormData', $formData);
+            } elseif (false !== strpos($contentForClientStatusHistory, '<li>')) {
+                /** @var ClientManager $clientManager */
+                $clientManager = $this->get('unilend.service.client_manager');
+                $clientManager->changeClientStatusTriggeredByClientAction($client->id_client, $contentForClientStatusHistory);
+                $this->sendAccountModificationEmail($client);
+                $request->getSession()->set('identityFormSuccessMessage', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-files-update-success-message'));
+                $client->update();
+            }
+        }
+
+        /** @var \clients_history_actions $clientHistoryActions */
+        $clientHistoryActions = $this->get('unilend.service.entity_manager')->getRepository('clients_history_actions');
+        $serialize = serialize(array('id_client' => $client->id_client, 'post' => $request->request->all(), 'files' => $_FILES));
         $clientHistoryActions->histo(4, 'info perso profile', $client->id_client, $serialize);
-
-        /** @var array $errorMessages */
-        $errorMessages = [];
-        /** @var string $contentForClientStatusHistory */
-        $contentForClientStatusHistory = '<ul>';
-
-        if ($client->nom_usage != $formData['nom_usage']) {
-            $client->nom_usage = $ficelle->majNom($_POST['nom-dusage']);
-            $request->getSession()->set('identityFormSuccessMessage', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-update-success-message'));
-        }
-
-        if (isset($_FILES['id_recto']) && $_FILES['id_recto']['name'] != '' && $_FILES['id_recto']['name'] != $lenderIdRecto['path']) {
-            $attachmentIdRecto = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE, 'id_recto');
-            if (false === is_numeric($attachmentIdRecto)) {
-                $errorMessages[] = $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-upload-files-error-message');
-            } else {
-                $contentForClientStatusHistory .= '<li>'. $translationManager->selectTranslation('projet', 'document-type-' . \attachment_type::CNI_PASSPORTE) .'</li>';
-            }
-        }
-
-        if (isset($_FILES['id_verso']) && $_FILES['id_verso']['name'] != '' && $_FILES['id_verso']['name'] != $lenderIdVerso['path']) {
-            $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE_VERSO, 'id_verso');
-            if (false === is_numeric($attachmentIdVerso)) {
-                $errorMessages[] = $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-upload-files-error-message');
-            } else {
-                $contentForClientStatusHistory .= '<li>'. $translationManager->selectTranslation('projet', 'document-type-' . \attachment_type::CNI_PASSPORTE_VERSO) .'</li>';
-            }
-        }
-
-        if ($client->id_nationalite != $formData['nationalite']) {
-            if (isset($attachmentIdRecto)) {
-                $client->id_nationalite = $formData['nationalite'];
-                $contentForClientStatusHistory .= '<li>'. $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-nationality-label') .'</li>';
-            } else {
-                $errorMessages[] = $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-change-ID-warning-message');
-            }
-        }
-
-        if ($client->civilite != $formData['civilite']) {
-            if (isset($attachmentIdRecto)){
-                $client->civilite = $formData['civilite'];
-                $contentForClientStatusHistory .= '<li>'. $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-form-of-address-label') .'</li>';
-            } else {
-                $errorMessages[] = $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-change-ID-warning-message');
-            }
-        }
-
-        $contentForClientStatusHistory .= '</ul>';
-
-        if (false === empty($errorMessages)){
-            $request->getSession()->set('identityFormErrors', $errorMessages);
-            $request->getSession()->set('identityFormData', $formData);
-        } elseif (false !== strpos($contentForClientStatusHistory, '<li>')) {
-            /** @var ClientManager $clientManager */
-            $clientManager = $this->get('unilend.service.client_manager');
-            $clientManager->changeClientStatusTriggeredByClientAction($client->id_client, $contentForClientStatusHistory);
-            $this->sendAccountModificationEmail($client);
-            $request->getSession()->set('identityFormSuccessMessage', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-files-update-success-message'));
-            $client->update();
-
-        }
 
         $this->redirectToRoute('lender_profile');
     }
@@ -238,62 +239,62 @@ class LenderProfileController extends Controller
         /** @var \clients_history_actions $clientHistoryActions */
         $clientHistoryActions = $this->get('unilend.service.entity_manager')->getRepository('clients_history_actions');
         /** @var array $formDataFiscalAddress */
-        $formDataFiscalAddress = isset($request->request->get('identity')['address']) ? $request->request->get('identity')['address'] : '';
+        $formDataFiscalAddress = [];
         /** @var array $formDataPostalAddress */
-        $formDataPostalAddress = isset($request->request->get('identity')['correspondence']) ? $request->request->get('identity')['correspondence'] : '';
-
-        $serialize = serialize(array('id_client' => $client->id_client, 'post' => ['fiscalAddress' => $formDataFiscalAddress, 'postalAddress' => $formDataPostalAddress], 'files' => $_FILES));
-        $clientHistoryActions->histo(4, 'info perso profile', $client->id_client, $serialize);
+        $formDataPostalAddress = [];
+        /** @var array $fiscalFormErrors */
+        $fiscalFormErrors = [];
+        /** @var array $postalFormErrors */
+        $postalFormErrors = [];
 
         /** @var string $contentForClientStatusHistory */
         $contentForClientStatusHistory = '<ul>';
 
-        $fiscalFormErrors = [];
-        $postalFormErrors = [];
+        if ($request->request->get('fiscal_address_form')) {
+            $formDataFiscalAddress = $request->request->all();
 
-        if (false === empty($formDataFiscalAddress)) {
-            if ($client->mobile != $formDataFiscalAddress['mobile']) {
-                $client->mobile = str_replace(' ', '', $formDataFiscalAddress['mobile']);
+            if ($client->mobile != $formDataFiscalAddress['client_mobile']) {
+                $client->mobile = str_replace(' ', '', $formDataFiscalAddress['client_mobile']);
                 $client->update();
             }
 
-            if ($clientAddress->adresse_fiscal != $formDataFiscalAddress['street']) {
-                $clientAddress->adresse_fiscal = $formDataFiscalAddress['street'];
+            if ($clientAddress->adresse_fiscal != $formDataFiscalAddress['fiscal_address_street']) {
+                $clientAddress->adresse_fiscal = $formDataFiscalAddress['fiscal_address_street'];
                 $contentForClientStatusHistory .= '<li>' . $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-address-label') . '</li>';
             }
 
-            if ($clientAddress->cp_fiscal != $formDataFiscalAddress['code']) {
-                if (\pays_v2::COUNTRY_FRANCE == $formDataFiscalAddress['pays']) {
+            if ($clientAddress->cp_fiscal != $formDataFiscalAddress['fiscal_address_zip']) {
+                if (\pays_v2::COUNTRY_FRANCE == $formDataFiscalAddress['fiscal_address_country']) {
                     /** @var \villes $cities */
                     $cities = $this->get('unilend.service.entity_manager')->getRepository('villes');
-                    if ($cities->exist($formDataFiscalAddress['pays'], 'cp')) {
-                        $clientAddress->cp_fiscal = $formDataFiscalAddress['code'];
+                    if ($cities->exist($formDataFiscalAddress['fiscal_address_zip'], 'cp')) {
+                        $clientAddress->cp_fiscal = $formDataFiscalAddress['fiscal_address_zip'];
                         $contentForClientStatusHistory .= '<li>' . $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-zip-label') . '</li>';
                         unset($cities);
                     } else {
                         $fiscalFormErrors[] = $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-unknown-zip-code-error-message');
                     }
                 } else {
-                    $clientAddress->cp_fiscal = $formDataFiscalAddress['code'];
+                    $clientAddress->cp_fiscal = $formDataFiscalAddress['fiscal_address_zip'];
                     $contentForClientStatusHistory .= '<li>' . $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-zip-label') . '</li>';
                 }
             }
 
-            if ($clientAddress->ville_fiscal != $formDataFiscalAddress['ville']) {
-                $clientAddress->ville_fiscal = $formDataFiscalAddress['ville'];
+            if ($clientAddress->ville_fiscal != $formDataFiscalAddress['fiscal_address_city']) {
+                $clientAddress->ville_fiscal = $formDataFiscalAddress['fiscal_address_city'];
                 $contentForClientStatusHistory .= '<li>' . $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-city-label') . '</li>';
             }
 
-            if ($clientAddress->id_pays_fiscal != $formDataFiscalAddress['pays']) {
-                $clientAddress->id_pays_fiscal = $formDataFiscalAddress['pays'];
+            if ($clientAddress->id_pays_fiscal != $formDataFiscalAddress['fiscal_address_country']) {
+                $clientAddress->id_pays_fiscal = $formDataFiscalAddress['fiscal_address_country'];
                 $contentForClientStatusHistory .= '<li>' . $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-country-label') . '</li>';
             }
 
-            if (isset($formDataFiscalAddress['is_correspondence']) && (bool)$clientAddress->meme_adresse_fiscal != $formDataFiscalAddress['is_correspondence']) {
-                if (false == $formDataFiscalAddress['is_correspondence'] && empty($formDataPostalAddress)) {
+            if (isset($formDataFiscalAddress['same_postal_address']) && (bool)$clientAddress->meme_adresse_fiscal != $formDataFiscalAddress['same_postal_address']) {
+                if (false == $formDataFiscalAddress['same_postal_address'] && empty($formDataPostalAddress)) {
                     $fiscalFormErrors[] = $translationManager->selectTranslation('lender-profile', 'information-tab-postal-address-missing-data');
                 } else {
-                    $clientAddress->meme_adresse_fiscal = ($formDataFiscalAddress['is_correspondence'] == true) ? 1 : 0 ;
+                    $clientAddress->meme_adresse_fiscal = ($formDataFiscalAddress['same_postal_address'] == true) ? 1 : 0 ;
                     $contentForClientStatusHistory .= '<li>' . $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-postal-checkbox') . '</li>';
                     $formDataPostalAddress = $formDataFiscalAddress;
                 }
@@ -305,7 +306,7 @@ class LenderProfileController extends Controller
                 }
             }
 
-            if (false === $formDataFiscalAddress['pays'] > \pays_v2::COUNTRY_FRANCE) {
+            if (false === $formDataFiscalAddress['fiscal_address_country'] > \pays_v2::COUNTRY_FRANCE) {
                 $previousTaxStatement = (isset($clientHousingAttachments[\attachment_type::JUSTIFICATIF_FISCAL]['path'])) ? $clientHousingAttachments[\attachment_type::JUSTIFICATIF_FISCAL]['path'] : '';
                 if (isset($_FILES['tax-domicile'])
                     && $_FILES['tax-domicile']['name'] != $previousTaxStatement
@@ -330,7 +331,7 @@ class LenderProfileController extends Controller
                 }
             }
 
-            if (isset($formDataFiscalAddress['third_person'])){
+            if (isset($formDataFiscalAddress['housed_by_third_person'])){
                 $previousHousedByThirdPerson = isset($clientHousingAttachments[\attachment_type::ATTESTATION_HEBERGEMENT_TIERS]['path']) ? $clientHousingAttachments[\attachment_type::ATTESTATION_HEBERGEMENT_TIERS]['path'] : '';
                 $previousThirdPersonID       = isset($clientHousingAttachments[\attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT]['path']) ? $clientHousingAttachments[\attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT]['path'] : '';
 
@@ -363,24 +364,25 @@ class LenderProfileController extends Controller
         /** @var bool $clientAddressModified */
         $clientAddressModified = false;
 
-        if (false === empty($formDataPostalAddress)) {
-            if ($clientAddress->adresse1 != $formDataPostalAddress['street']) {
-                $clientAddress->adresse1 = $formDataPostalAddress['street'];
+        if ($request->request->get('postal_address_form')) {
+            $formDataPostalAddress = $request->request->all();
+            if ($clientAddress->adresse1 != $formDataPostalAddress['postal_address_street']) {
+                $clientAddress->adresse1 = $formDataPostalAddress['postal_address_street'];
                 $clientAddressModified = true;
             }
 
-            if ($clientAddress->cp != $formDataPostalAddress['code']) {
-                $clientAddress->cp = $formDataPostalAddress['code'];
+            if ($clientAddress->cp != $formDataPostalAddress['postal_address_zip']) {
+                $clientAddress->cp = $formDataPostalAddress['postal_address_zip'];
                 $clientAddressModified = true;
             }
 
-            if ($clientAddress->ville != $formDataPostalAddress['ville']) {
-                $clientAddress->ville = $formDataPostalAddress['ville'];
+            if ($clientAddress->ville != $formDataPostalAddress['postal_address_city']) {
+                $clientAddress->ville = $formDataPostalAddress['postal_address_city'];
                 $clientAddressModified = true;
             }
 
-            if ($clientAddress->id_pays != $formDataPostalAddress['pays']) {
-                $clientAddress->id_pays = $formDataPostalAddress['pays'];
+            if ($clientAddress->id_pays != $formDataPostalAddress['postal_address_country']) {
+                $clientAddress->id_pays = $formDataPostalAddress['postal_address_country'];
                 $clientAddressModified = true;
             }
 
@@ -404,6 +406,9 @@ class LenderProfileController extends Controller
             $this->sendAccountModificationEmail($client);
             $request->getSession()->set('fiscalAddressFormSuccessMessage', $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-form-success-message'));
         }
+
+        $serialize = serialize(array('id_client' => $client->id_client, 'post' => ['fiscalAddress' => $formDataFiscalAddress, 'postalAddress' => $formDataPostalAddress], 'files' => $_FILES));
+        $clientHistoryActions->histo(4, 'info perso profile', $client->id_client, $serialize);
 
         return $this->redirectToRoute('lender_profile');
     }

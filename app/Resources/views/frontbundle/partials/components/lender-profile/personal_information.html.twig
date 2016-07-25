@@ -14,13 +14,15 @@
 <article id="panel-address" class="panel">
     <header class="panel-header">
         <h3>{% trans %} lender-profile_information-tab-fiscal-address-section-title {% endtrans %}</h3>
-        <div>
+        {% if formData.errors.fiscal is not empty %}
+        <div class="message-error">
             {% for error in formData.errors.fiscal %}
                 {{ error }}<br>
             {% else %}
                 {{ formData.successMessage.fiscal }}
             {% endfor %}
         </div>
+        {% endif %}
     </header>
     <section id="profile-address-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
         <section id="profile-address-view" role="tabpanel" class="profile-address-view collapse in">
@@ -65,7 +67,7 @@
                     <div class="form-field">
                         <label for="form-profile-address-street">{% trans %} lender-profile_information-tab-fiscal-address-section-address-label {% endtrans %}
                             <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
-                        <input id="form-profile-address-street" type="text" name="identity[address][street]" value="{{ formData.fiscal.street }}" class="input-field" placeholder="Addresse utilisée pour vos avis d'imposition" data-formvalidation-input data-formvalidation-required="true"/>
+                        <input id="form-profile-address-street" type="text" name="fiscal_address_street" value="{{ formData.fiscal.fiscal_address_street }}" class="input-field" placeholder="Addresse utilisée pour vos avis d'imposition {#TODO#}" data-formvalidation-input data-formvalidation-required="true"/>
                     </div><!-- /.form-field -->
                 </div>
 
@@ -73,12 +75,12 @@
                     <div class="form-field col-lg-6 col-md-6">
                         <label for="form-profile-address-code">{% trans %} lender-profile_information-tab-fiscal-address-section-zip-label {% endtrans %}
                             <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
-                        <input id="form-profile-code" type="text" name="identity[address][code]" value="{{ formData.fiscal.code  }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                        <input id="form-profile-code" type="text" name="fiscal_address_zip" value="{{ formData.fiscal.fiscal_address_zip  }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                     </div><!-- /.form-field -->
                     <div class="form-field col-lg-6 col-md-6">
                         <label for="form-profile-address-ville">{% trans %} lender-profile_information-tab-fiscal-address-section-city-label {% endtrans %}
                             <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
-                        <input id="form-profile-address-ville" type="text" name="identity[address][ville]" value="{{ formData.fiscal.ville  }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                        <input id="form-profile-address-ville" type="text" name="fiscal_address_city" value="{{ formData.fiscal.fiscal_address_city  }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                     </div><!-- /.form-field -->
                 </div>
 
@@ -86,9 +88,9 @@
                     <div class="form-field col-lg-6 col-md-6">
                         <label for="form-profile-address-pays">{% trans %} lender-profile_information-tab-fiscal-address-section-country-label {% endtrans %}
                             <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
-                        <select id="form-profile-address-pays" name="identity[address][pays]" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                        <select id="form-profile-address-pays" name="fiscal_address_country" class="input-field" data-formvalidation-input data-formvalidation-required="true">
                             {% for i, country in getCountries() %}
-                                <option value="{{ i }}"{% if i == formData.fiscal.pays  %} selected="selected"{% endif %}>{{ country }}</option>
+                                <option value="{{ i }}"{% if i == formData.fiscal.fiscal_address_country  %} selected="selected"{% endif %}>{{ country }}</option>
                             {% endfor %}
                         </select>
                     </div><!-- /.form-field -->
@@ -96,15 +98,15 @@
                         <label for="form-profile-address-mobile">{% trans %} lender-profile_information-tab-fiscal-address-section-phone-label {% endtrans %}
                             <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
                         <div class="input-group">
-                            <input id="form-profile-address-mobile" type="text" name="identity[address][mobile]" value="{{ formData.fiscal.mobile  }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="telephone"/>
+                            <input id="form-profile-address-mobile" type="text" name="client_mobile" value="{{ formData.fiscal.client_mobile  }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="telephone"/>
                         </div>
                     </div><!-- /.form-field -->
                 </div>
 
                 <div class="row">
                     <div class="form-field form-field-single-checkbox">
-                        <label><input id="form-profile-address-is-correspondence" type="checkbox" name="identity[address][is_correspondence]" value="true"
-                                      {% if formData.fiscal.is_correspondence %}checked="checked"{% endif %}>
+                        <label><input id="form-profile-address-is-correspondence" type="checkbox" name="same_postal_address" value="true"
+                                      {% if formData.fiscal.same_postal_address %}checked="checked"{% endif %}>
                             <span class="label">{% trans %} lender-profile_information-tab-fiscal-address-section-postal-checkbox {% endtrans %}</span></label>
                     </div><!-- /.form-field -->
                 </div>
@@ -121,7 +123,8 @@
 
                 <div class="row">
                     <div class="form-field form-field-single-checkbox">
-                        <label><input id="housed-by-third-person" type="checkbox" name="identity[address][third_person]" value="true" >
+                        <label>
+                            <input id="housed-by-third-person" type="checkbox" name="housed_by_third_person" value="true" {% if formData.fiscal.housed_by_third_person %}checked="checked"{% endif %}>
                             <span class="label">{% trans %} lender-profile_information-tab-fiscal-address-section-housed-by-third-person-checkbox {% endtrans %}</span></label>
                     </div><!-- /.form-field -->
                 </div>
@@ -151,7 +154,7 @@
                 <div class="row" id="us-person">
                 <div class="form-field form-field-single-checkbox">
                         <label>
-                            <input id="form-profile-no-us-person" type="checkbox" name="identity[address][no_us_person]" value="true"
+                            <input id="form-profile-no-us-person" type="checkbox" name="no_us_person" value="true"
                                       {% if isLivingAbroad == true %}checked="checked"{% endif %}>
                             <span class="label">{% trans %} lender-profile_information-tab-fiscal-address-us-person-checkbox-label {% endtrans %}</span></label>
                     </div><!-- /.form-field -->
@@ -181,6 +184,7 @@
                 <div id="profile-address-is-correspondence" class="{% if clientAddresses.meme_adresse_fiscal != 1 %}hide{% endif %}">
                     <span class="icon fa-check-u32"></span>{% trans %} lender-profile_information-tab-fiscal-address-section-postal-checkbox {% endtrans %}
                 </div>
+                <input type="hidden" name="fiscal_address_form" value="true" />
 
                 <div class="btn-controls">
                     <button class="btn-primary">{% trans %} lender-profile_information-tab-identity-save-modifications-button {% endtrans %}</button>
@@ -222,7 +226,7 @@
                     <div class="form-field">
                         <label for="form-profile-correspondence-street">{% trans %} lender-profile_information-tab-postal-address-section-address-label {% endtrans %}
                             <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
-                        <input id="form-profile-correspondence-street" type="text" name="identity[correspondence][street]" value="{{ formData.postal.street }}" class="input-field" placeholder="Addresse utilisée pour vos avis d'imposition" data-formvalidation-input data-formvalidation-required="true"/>
+                        <input id="form-profile-correspondence-street" type="text" name="postal_address_street" value="{{ formData.postal.postal_address_street }}" class="input-field" placeholder="Addresse utilisée pour vos avis d'imposition" data-formvalidation-input data-formvalidation-required="true"/>
                     </div><!-- /.form-field -->
                 </div>
 
@@ -230,26 +234,26 @@
                     <div class="form-field col-lg-6 col-md-6">
                         <label for="form-profile-correspondence-code">{% trans %} lender-profile_information-tab-postal-address-section-zip-label {% endtrans %}
                             <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
-                        <input id="form-profile-correspondence-code" type="text" name="identity[correspondence][code]" value="{{ formData.postal.code }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                        <input id="form-profile-correspondence-code" type="text" name="postal_address_zip" value="{{ formData.postal.postal_address_zip }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                     </div><!-- /.form-field -->
                     <div class="form-field col-lg-6 col-md-6">
                         <label for="form-profile-correspondence-ville">{% trans %} lender-profile_information-tab-postal-address-section-city-label {% endtrans %}
                             <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
-                        <input id="form-profile-correspondence-ville" type="text" name="identity[correspondence][ville]" value="{{ formData.postal.ville }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                        <input id="form-profile-correspondence-ville" type="text" name="postal_address_city" value="{{ formData.postal.postal_address_city }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                     </div><!-- /.form-field -->
                 </div>
 
                 <div class="row row-multi-col-computer">
                     <div class="form-field col-lg-6 col-md-6">
                         <label for="form-profile-correspondence-pays">{% trans %} lender-profile_information-tab-postal-address-section-country-label {% endtrans %} <span class="field-required">*<span class="sr-only"> Required</span></span></label>
-                        <select id="form-profile-correspondence-pays" name="identity[correspondence][pays]" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                        <select id="form-profile-correspondence-pays" name="postal_address_country" class="input-field" data-formvalidation-input data-formvalidation-required="true">
                             {% for i, country in getCountries() %}
-                                <option value="{{ i }}"{% if i == formData.postal.pays %} selected="selected"{% endif %}>{{ country }}</option>
+                                <option value="{{ i }}"{% if i == formData.postal.postal_address_country %} selected="selected"{% endif %}>{{ country }}</option>
                             {% endfor %}
                         </select>
                     </div><!-- /.form-field -->
                 </div>
-
+                <input type="hidden" name="postal_address_form" value="true" />
                 <div class="btn-controls">
                     <button class="btn-primary">{% trans %} lender-profile_information-tab-identity-save-modifications-button {% endtrans %}</button>
                     <button type="reset" role="button" data-toggle="collapse" data-target="#profile-correspondence-view" data-parent="#profile-correspondence-section" class="btn-default" aria-controls="#profile-correspondence-view" aria-expanded="true">{% trans %} lender-profile_information-tab-identity-cancel-modifications-button {% endtrans %}</button>
