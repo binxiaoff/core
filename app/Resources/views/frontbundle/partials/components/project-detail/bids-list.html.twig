@@ -19,19 +19,19 @@
             <div id="alloffers-table" role="tabpanel" class="tab-pane active" aria-labelledby="project-alloffers-table project-alloffers">
                 <div class="table-scroll">
                     <table class="table table-alloffersoverview" data-sortable>
-                        <thead class="table-sortable-columns">
+                        <thead>
                         <tr>
-                            <th class="table-sortable-column table-alloffersoverview-item-interest" data-sortable-by="id">
-                                <span class="label"><span class="sr-only">Sort by column </span>Taux</span>
+                            <th class="table-alloffersoverview-item-interest" data-sortable-by="rate">
+                                <span class="label">Taux</span>
                             </th>
-                            <th class="table-sortable-column table-alloffersoverview-item-amount" data-sortable-by="amount">
-                                <span class="label"><span class="sr-only">Sort by column </span>Montant total</span>
+                            <th class="table-alloffersoverview-item-amount" style="text-align:left" data-sortable-by="amount">
+                                <span class="label">Montant total</span>
                             </th>
-                            <th class="table-sortable-column table-alloffersoverview-item-offers" data-sortable-by="offers">
-                                <span class="label"><span class="sr-only">Sort by column </span>Nb offres</span>
+                            <th class="table-alloffersoverview-item-offers" style="text-align:left" data-sortable-by="offers">
+                                <span class="label">Nb offres</span>
                             </th>
-                            <th class="table-sortable-column table-alloffersoverview-item-accepted" data-sortable-by="accepted">
-                                <span class="label"><span class="sr-only">Sort by column </span>Offres en cours</span>
+                            <th class="table-alloffersoverview-item-accepted" data-sortable-by="accepted">
+                                <span class="label">Offres en cours</span>
                             </th>
                         </tr>
                         </thead>
@@ -39,56 +39,187 @@
 {# Placeholder data #}
 {% set placeholderData = {
 bids: [{
-    rate:4,
-    amount: 40,
-    current: true
+    rate:4.0,
+    amount:528,
+    number: 58,
+    accepted: 12
 },{
-    rate:4,
-    amount: 40,
-    current: true
+    rate:4.1,
+    amount:1584,
+    number: 98,
+    accepted: 4
 },{
-    rate:4,
-    amount: 40,
-    current: true
+    rate:4.2,
+    amount:9856,
+    number: 158,
+    accepted: 7
 },{
-    rate:4,
-    amount: 40,
-    current: true
+    rate:4.3,
+    amount:3215,
+    number: 212,
+    accepted: 8
+},{
+    rate:4.4,
+    amount:1584,
+    number: 452,
+    accepted: 12
+},{
+    rate:4.5,
+    amount:1250,
+    number: 75,
+    accepted: 0
+},{
+    rate:4.6,
+    amount:360,
+    number: 12,
+    accepted: 0
+},{
+    rate:4.7,
+    amount:752,
+    number: 154,
+    accepted: 0
+},{
+    rate:4.8,
+    amount:1400,
+    number: 456,
+    accepted: 0
+},{
+    rate:4.9,
+    amount:123,
+    number: 98,
+    accepted: 0
+},{
+    rate:5.0,
+    amount:158,
+    number: 404,
+    accepted: 0
+},{
+    rate:5.1,
+    amount:123,
+    number: 123,
+    accepted: 0
 }]
 } %}
 
 {% set bids = placeholderData.bids %}
 
-                        <tbody data-sortable-content>
+                        <tbody>
+                        <tr>
+                            <td colspan="4">Voir les offres rejetées</td>
+                        </tr>
                         {% for i, item in bids %}
-                            {% set classRow = '' %}
-                            {% set titleRow = '' %}
-                            {% if i >= 5 and i <= 8 %}
-                                {% set classRow = 'table-alloffersoverview-item-recommended' %}
-                            {% elseif i == 9 %}
-                                {% set classRow = 'table-alloffersoverview-item-best ui-has-tooltip' %}
-                                {% set titleRow = 'Meilleur taux de prêt accepté par Unilend' %}
-                            {% elseif i == 10 %}
-                                {% set classRow = 'table-alloffersoverview-item-max' %}
-                            {% endif %}
-
-                            {% set classCurrentUserInvolved = '' %}
-                            {% if lenderOnProject.offers.offerIds is defined and item[0] in lenderOnProject.offers.offerIds %}
-                                {% set classCurrentUserInvolved = 'ui-current-user-involved' %}
-                            {% endif %}
-                            <tr data-sortable-id="" data-sortable-amount="" data-sortable-offers="" data-sortable-accepted="" class="{{ classCurrentUserInvolved }} {{ classRow }}" title="{{ titleRow }}">
-                                <td class="table-alloffersoverview-item-interest">{{ item.rate }}</td>
-                                <td class="table-alloffersoverview-item-amount">{{ item.amount |nbsp }}</td>
-                                <td class="table-alloffersoverview-item-offers">{{ item.rate }}</td>
-                                <td class="table-alloffersoverview-item-accepted">
-                                    {% if item.rate > 0 %}
-                                        <span class="table-alloffersoverview-item-myoffers">
-                                        <span class="icon fa-check-u32"></span> {{ item.rate }} offres
-                                      </span>
+                            <tr id="row-{{ i }}" class="bids-row">
+                                <td>{{ item.rate|number_format(1) }}
+                                    <span class="icon fa-caret-r-u32"></span>
+                                    <span class="icon fa-caret-d-u32"></span>
+                                </td>
+                                <td>{{ item.amount }}</td>
+                                <td>{{ item.number }}</td>
+                                <td>
+                                    {% if item.accepted > 0 %}
+                                        <span class="c-p1">
+                                            <span class="icon fa-check-u32"></span>
+                                            <span>{{ item.accepted }} offres</span>
+                                        </span>
                                     {% endif %}
                                 </td>
                             </tr>
                         {% endfor %}
+
+                        {# Placeholder data #}
+                        {% set placeholderData = {
+                        detail: [{
+                        id:0,
+                        rate:4.1,
+                        amount: 250,
+                        status: 1,
+                        userisinvolved: 0
+                        },{
+                        id:1,
+                        rate:4.1,
+                        amount: 128,
+                        status: 1,
+                        userisinvolved: 0
+                        },{
+                        id:2,
+                        rate:4.1,
+                        amount: 450,
+                        status: 0,
+                        userisinvolved: 0
+                        },{
+                        id:3,
+                        rate:4.1,
+                        amount: 1015,
+                        status: 0,
+                        userisinvolved: 1
+                        },{
+                        id:4,
+                        rate:4.1,
+                        amount: 333,
+                        status: 1,
+                        userisinvolved: 0
+                        },{
+                        id:5,
+                        rate:4.1,
+                        amount: 700,
+                        status: 1,
+                        userisinvolved: 0
+                        },{
+                        id:6,
+                        rate:4.1,
+                        amount: 500,
+                        status: 1,
+                        userisinvolved: 0
+                        }]
+                        } %}
+
+
+                        {% set bidsDetail = placeholderData.detail %}
+                            <tr>
+                                <td colspan="4" style="padding:0">
+                                    <table class="table ui-sortable" data-sortable style="padding:0;border:none;">
+                                        <thead style="padding:0;border:none;">
+                                            <tr class="bids-detail-by-rate-header">
+                                                <th class="table-sortable-column center" data-sortable-by="detailid">
+                                                    <span class="label">N°</span>
+                                                </th>
+                                                <th class="center">
+                                                    <span class="label">Taux d'intérêt</span>
+                                                </th>
+                                                <th class="table-sortable-column center" data-sortable-by="detailamount">
+                                                    <span class="label">Montant</span>
+                                                </th>
+                                                <th class="table-sortable-column center" data-sortable-by="detailaccepted">
+                                                    <span class="label">Statut</span>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody data-sortable-content>
+                                            {% for i, item in bidsDetail %}
+                                            <tr class="bids-detail-by-rate {% if item.userisinvolved == 1 %} ui-current-user-involved {% endif %}"
+                                        data-sortable-detailid="{{ item.id }}" data-sortable-detailamount="{{ item.amount }}" data-sortable-detailaccepted="{{ item.status }}">
+                                                <td class="center">{{ item.id }}</td>
+                                                <td class="center">{{ item.rate }}</td>
+                                                <td class="center">{{ item.amount }}</td>
+                                                <td>
+                                                    {% if item.status == 1 %}
+                                                    <span class="c-success">
+                                                    <span class="icon fa-check-u32"></span>
+                                                    En cours
+                                                    </span>
+                                                    {% else %}
+                                                    <span class="c-error">
+                                                    <span class="icon fa-close-u32"></span>
+                                                    Non retenue
+                                                    </span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
                         </tbody>
                     </table><!-- /.table-alloffersoverview -->
                 </div><!-- /.table-scroll -->
