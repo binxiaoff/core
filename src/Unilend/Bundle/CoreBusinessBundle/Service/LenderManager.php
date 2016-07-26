@@ -55,4 +55,36 @@ class LenderManager
         }
     }
 
+    public function getBadAutoBidSettings(\lenders_accounts $lender)
+    {
+        /** @var \project_rate_settings $projectRateSettings */
+        $projectRateSettings = $this->oEntityManager->getRepository('project_rate_settings');
+        /** @var \autobid $autoBid */
+        $autoBid = $this->oEntityManager->getRepository('autobid');
+
+        $rateTable      = $projectRateSettings->getSettings();
+        $projectMaxRate = [];
+        foreach ($rateTable as $rate) {
+            $projectMaxRate[$rate['id_period']][$rate['evaluation']] = $rate['rate_max'];
+        }
+
+        $autoBidSettings = $autoBid->getSettings($lender->id_lender_account);
+        $badSettings = [];
+        foreach ($autoBidSettings as $setting) {
+            if (false === isset($projectMaxRate[$setting['id_period']][$setting['evaluation']])) {
+                continue;
+            }
+            if (bccomp($setting['rate_min'], $projectMaxRate[$setting['id_period']][$setting['evaluation']], 1) > 0) {
+                $badSettings[] = [
+                    'period_min'       => $setting['min'],
+                    'period_max'       => $setting['max'],
+                    'evaluation'       => $setting['evaluation'],
+                    'rate_min_autobid' => $setting['rate_min'],
+                    'rate_max_project' => $projectMaxRate[$setting['id_period']][$setting['evaluation']],
+                ];
+            }
+        }
+
+        return $badSettings;
+    }
 }

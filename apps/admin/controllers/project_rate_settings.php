@@ -19,7 +19,6 @@ class project_rate_settingsController extends bootstrap
         $rateTable           = $projectRateSettings->getSettings();
 
         if (false === empty($rateTable)) {
-
             foreach ($rateTable as $rate) {
                 $this->groupedRate[$rate['id_period']][$rate['evaluation']] = $rate;
             }
@@ -37,7 +36,7 @@ class project_rate_settingsController extends bootstrap
                 $projectRateSettingsManager->saveSetting($this->params[0], $this->params[1], $_POST['rate_min'], $_POST['rate_max']);
                 $response['result'] = 'OK';
 
-            } catch (Exception $exception){
+            } catch (Exception $exception) {
                 $response = ['result' => 'KO', 'message' => $exception->getMessage()];
             }
         } else {
@@ -45,5 +44,34 @@ class project_rate_settingsController extends bootstrap
         }
 
         echo json_encode($response);
+    }
+
+    public function _warn_lender_autoLend_settings()
+    {
+        $this->hideDecoration();
+        /** @var client_settings $clientSettings */
+        $clientSettings = $this->loadData('client_settings');
+        /** @var client_setting_type $clientSettingType */
+        $clientSettingType = $this->loadData('client_setting_type');
+        /** @var lenders_accounts $lender */
+        $lender = $this->loadData('lenders_accounts');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LenderManager $lenderManager */
+        $lenderManager = $this->get('unilend.service.lender_manager');
+
+        $clientSettingType->get('autobid_switch', 'label');
+        $offset = 0;
+        $limit  = 100;
+        while ($autoLendActiveClients = $clientSettings->select('id_type=' . $clientSettingType->id_type . ' AND value = ' . client_settings::AUTO_BID_ON, '', $offset, $limit)) {
+            $offset += $limit;
+            foreach ($autoLendActiveClients as $client) {
+                if (false === $lender->get($client['id_client'], 'id_client_owner')) {
+                    continue;
+                }
+                $badSettings = $lenderManager->getBadAutoBidSettings($lender);
+                if (false === empty($badSettings)) {
+                    //todo:send mail
+                }
+            }
+        }
     }
 }
