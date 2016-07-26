@@ -131,7 +131,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
                 //return new RedirectResponse($this->router->generate('lender_completeness'));
             }
 
-            if (false === $user->getHasAcceptedCurrentTerms()) {
+            if (false === $user->hasAcceptedCurrentTerms()) {
                 //TODO add  message about Terms
             }
 

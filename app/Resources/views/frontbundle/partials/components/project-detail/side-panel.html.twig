@@ -67,7 +67,7 @@
             {% elseif is_granted('IS_AUTHENTICATED_FULLY') %}
                 {% if app.user.getClientStatus() < constant('\\clients_status::VALIDATED') %}
                     <p>{% trans %} project-detail_side-bar-completeness-message {% endtrans %}</p>
-                {% else %}
+                {% elseif conditions.canBid %}
                     <div>
                         {% if bidMessage is defined %}
                             {{ bidMessage }}

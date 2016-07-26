@@ -77,7 +77,7 @@ class ProjectDisplayManager
         return $aProjects;
     }
 
-    public function getProjectInformationForDisplay(\projects $project, $clientId = null)
+    public function getProjectInformationForDisplay(\projects $project)
     {
         /** @var \companies $companies */
         $companies = $this->entityManager->getRepository('companies');

@@ -180,22 +180,22 @@
                                 </div><!-- /.project-single-period -->
 
                                 <div class="project-single-offers">
-                                    {% if lenderOnProject.bids.offers is defined and lenderOnProject.bids.offers.total > 0 %}
-                                    {% for status, numOffers in lenderOnProject.bids.offers %}
-                                        {% if status == 'inprogress' and numOffers > 0 %}
-                                            <div class="project-list-item-useroffers-accepted">
-                                                {{ numOffers|__num(0)|nbsp }} {% transchoice numOffers %} project-detail_accepted-bids-label {% endtranschoice %}
-                                            </div>
-                                        {% elseif status == 'rejected' and numOffers > 0 %}
-                                            <div class="project-list-item-useroffers-rejected">
-                                                {{ numOffers|__num(0)|nbsp }} {% transchoice numOffers %} project-detail_rejected-bids-label {% endtranschoice %}
-                                            </div>
-                                        {% elseif status == 'accepted' and numOffers > 0 %}
-                                            <div class="project-list-item-useroffers-inprogress">
-                                                {{ numOffers|__num(0)|nbsp }} {% transchoice numOffers %} project-detail_pending-bids-label {% endtranschoice %}
+                                    {% if lenderOnProject.bids is defined and lenderOnProject.bids.count > 0 %}
+                                        {% if lenderOnProject.bids.accepted is not empty %}
+                                            <div class="project-single-useroffers-accepted">
+                                                {{ lenderOnProject.bids.accepted | length | __num(0) | nbsp }} {% transchoice lenderOnProject.bids.accepted | length %} project-detail_accepted-bids-label {% endtranschoice %}
                                             </div>
                                         {% endif %}
-                                    {% endfor %}
+                                        {% if lenderOnProject.bids.inprogress is not empty %}
+                                            <div class="project-single-useroffers-inprogress">
+                                                {{ lenderOnProject.bids.inprogress | length | __num(0) | nbsp }} {% transchoice lenderOnProject.bids.inprogress | length %} project-detail_pending-bids-label {% endtranschoice %}
+                                            </div>
+                                        {% endif %}
+                                        {% if lenderOnProject.bids.rejected is not empty %}
+                                            <div class="project-single-useroffers-rejected">
+                                            {{ lenderOnProject.bids.rejected | length | __num(0) | nbsp }} {% transchoice lenderOnProject.bids.rejected | length %} project-detail_rejected-bids-label {% endtranschoice %}
+                                            </div>
+                                        {% endif %}
                                     {% endif %}
 
                                     <div class="project-single-offers-total">

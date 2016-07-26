@@ -180,7 +180,8 @@ class ProjectsController extends Controller
             'bids'    => $template['project']['status'] == \projects_status::EN_FUNDING,
             'myBids'  => isset($template['lenderOnProject']) && $template['lenderOnProject']['bids']['count'] > 0,
             'finance' => $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY'),
-            'history' => $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY') && $authorizationChecker->isGranted('ROLE_LENDER') && ($template['project']['status'] == \projects_status::FUNDE || $template['project']['status'] >= \projects_status::REMBOURSEMENT)
+            'history' => $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY') && $authorizationChecker->isGranted('ROLE_LENDER') && ($template['project']['status'] == \projects_status::FUNDE || $template['project']['status'] >= \projects_status::REMBOURSEMENT),
+            'canBid'  => isset($user) && $user instanceof UserLender && $user->hasAcceptedCurrentTerms()
         ];
 
         return $this->render('pages/project_detail.html.twig', $template);

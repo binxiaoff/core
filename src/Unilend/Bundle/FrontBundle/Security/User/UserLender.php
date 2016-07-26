@@ -1,26 +1,23 @@
 <?php
-
-
 namespace Unilend\Bundle\FrontBundle\Security\User;
-
 
 class UserLender extends BaseUser
 {
     /** @var float $balance */
     private $balance;
-    /** @var  string $initials */
+    /** @var string $initials */
     private $initials;
-    /** @var  string */
+    /** @var string */
     private $firstName;
-    /** @var  int */
+    /** @var int */
     private $clientStatus;
     /** @var bool $hasAcceptedCurrentTerms */
     private $hasAcceptedCurrentTerms;
-    /** @var  int $notificationsUnread */
+    /** @var int $notificationsUnread */
     private $notificationsUnread;
-    /** @var  int */
+    /** @var int */
     private $subscriptionStep;
-    /** @var  int  */
+    /** @var int */
     private $level;
 
     public function __construct($username, $password, $salt, array $roles, $isActive, $clientId, $balance, $initials, $firstName, $clientStatus, $hasAcceptedCurrentTerms, $notificationsUnread, $subscriptionStep, $level)
@@ -56,7 +53,7 @@ class UserLender extends BaseUser
         return $this->clientStatus;
     }
 
-    public function getHasAcceptedCurrentTerms()
+    public function hasAcceptedCurrentTerms()
     {
         return $this->hasAcceptedCurrentTerms;
     }
@@ -75,5 +72,4 @@ class UserLender extends BaseUser
     {
         return $this->level;
     }
-
 }
