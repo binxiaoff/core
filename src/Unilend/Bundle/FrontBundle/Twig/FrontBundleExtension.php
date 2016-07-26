@@ -61,7 +61,8 @@ class FrontBundleExtension extends \Twig_Extension
             new \Twig_SimpleFilter('completeProjectImagePath', array($this, 'projectImagePathFilter')),
             new \Twig_SimpleFilter('baseUrl', array($this, 'addBaseUrl')),
             new \Twig_SimpleFilter('countryLabel', array($this, 'getCountry')),
-            new \Twig_SimpleFilter('nationalityLabel', array($this, 'getNationality'))
+            new \Twig_SimpleFilter('nationalityLabel', array($this, 'getNationality')),
+            new \Twig_SimpleFilter('json_decode', array($this, 'jsonDecode'))
         );
     }
 
@@ -188,17 +189,6 @@ class FrontBundleExtension extends \Twig_Extension
 
     public function getCountries()
     {
-        /** @var \pays_v2 $countries */
-        $countries = $this->entityManager->getRepository('pays_v2');
-        /** @var array $countyList */
-        $countyList = [];
-
-        foreach ($countries->select('', 'ordre ASC') as $country) {
-            $countyList[$country['id_pays']] = $country['fr'];
-        }
-
-        return $countyList;
-
         $cachedItem = $this->cachePool->getItem('countryList');
 
 
@@ -223,19 +213,6 @@ class FrontBundleExtension extends \Twig_Extension
 
     public function getNationalities()
     {
-        /** @var \nationalites_v2 $nationalities */
-        $nationalities = $this->entityManager->getRepository('nationalites_v2');
-        /** @var array $nationalityList */
-        $nationalityList = [];
-
-        foreach ($nationalities->select('', 'ordre ASC') as $nationality) {
-            $nationalityList[$nationality['id_nationalite']] = $nationality['fr_f'];
-        }
-
-
-        return $nationalityList;
-
-
         $cachedItem = $this->cachePool->getItem('nationalityList');
 
         if (false === $cachedItem->isHit()) {
@@ -286,7 +263,6 @@ class FrontBundleExtension extends \Twig_Extension
         } else {
             return $cachedItem->get();
         }
-
     }
 
 
