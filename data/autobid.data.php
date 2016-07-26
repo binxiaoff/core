@@ -99,32 +99,47 @@ class autobid extends autobid_crud
         return $this->bdd->result($rResult, 0, 0);
     }
 
-    public function getSettings($iLenderId = null, $sEvaluation = null, $iAutoBidPeriodId = null, $aStatus = array(\autobid::STATUS_ACTIVE), $sOrder = null, $iLimit = null, $iOffset = null)
+    public function getSettings($lenderId = null, $evaluation = null, $periodId = null, $status = array(self::STATUS_ACTIVE), $order = ['pp.min' => 'ASC', 'a.evaluation' => 'DESC'], $limit = null, $offset = null)
     {
-        $sWhereLender     = null === $iLenderId ? '' : ' AND a.id_lender = ' . $iLenderId;
-        $sWhereEvaluation = null === $sEvaluation ? '' : ' AND a.evaluation = "' . $sEvaluation . '"';
-        $sWherePeriod     = null === $iAutoBidPeriodId ? '' : ' AND a.id_period = ' . $iAutoBidPeriodId;
-        $sOrderBy         = null === $sOrder ? '' : ' ORDER BY ' . $sOrder;
+        $queryBuilder = $this->bdd->createQueryBuilder();
 
-        $sQuery = 'SELECT a.*, la.id_client_owner AS id_client
-                   FROM autobid a
-                   INNER JOIN project_period ap ON ap.id_period = a.id_period
-                   INNER JOIN lenders_accounts la ON la.id_lender_account = a.id_lender
-                   WHERE ap.status = ' . \project_period::STATUS_ACTIVE . '
-                   AND a.status in (' . implode($aStatus, ',') . ')' . $sWhereLender . $sWhereEvaluation . $sWherePeriod . $sOrderBy;
+        $queryBuilder
+            ->select('a.*, pp.*, la.id_client_owner AS id_client')
+            ->from('autobid','a')
+            ->innerJoin('a', 'project_period', 'pp', 'pp.id_period = a.id_period and pp.status = :pp_status')
+            ->innerJoin('a', 'lenders_accounts', 'la', 'la.id_lender_account = a.id_lender')
+            ->setParameter('pp_status', project_period::STATUS_ACTIVE);
 
-        if (is_numeric($iLimit)) {
-            $sQuery .= ' LIMIT ' . $iLimit;
-            if (is_numeric($iOffset)) {
-                $sQuery .= ' OFFSET ' . $iOffset;
+        if ($lenderId !== null) {
+            $queryBuilder->andWhere('a.id_lender = :id_lender');
+            $queryBuilder->setParameter('id_lender', $lenderId);
+        }
+        if ($evaluation !== null) {
+            $queryBuilder->andWhere('a.evaluation = :evaluation');
+            $queryBuilder->setParameter('evaluation', $evaluation);
+        }
+        if ($periodId !== null) {
+            $queryBuilder->andWhere('a.id_period = :id_period');
+            $queryBuilder->setParameter('id_period', $periodId);
+        }
+        if (is_array($status) && false === empty($status)) {
+            $queryBuilder->andWhere('a.status in (:status)');
+            $queryBuilder->setParameter('status', $status, \Doctrine\DBAL\Connection::PARAM_STR_ARRAY);
+        }
+
+        if (is_array($order) && false === empty($order)) {
+            foreach ($order as $sort => $oder) {
+                $queryBuilder->addOrderBy($sort, $oder);
             }
         }
 
-        $aAutoBids = array();
-        $rResult   = $this->bdd->query($sQuery);
-        while ($aRecord = $this->bdd->fetch_assoc($rResult)) {
-            $aAutoBids[] = $aRecord;
+        if (is_numeric($limit)) {
+            $queryBuilder->setMaxResults($limit);
         }
-        return $aAutoBids;
+        if (is_numeric($offset)) {
+            $queryBuilder->setFirstResult($offset);
+        }
+        $statement = $queryBuilder->execute();
+        return $statement->fetchAll();
     }
 }

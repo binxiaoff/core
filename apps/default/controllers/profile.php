@@ -1727,8 +1727,6 @@ class profileController extends bootstrap
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
         $oAutoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
         $this->oLendersAccounts  = $this->loadData('lenders_accounts');
-        $this->loadData('autobid'); // load for constant
-        $this->loadData('client_settings'); // load for constant
 
         $this->oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
 
@@ -1742,9 +1740,10 @@ class profileController extends bootstrap
 
         $oClientStatus  = $this->loadData('clients_status');
         $oSettings      = $this->loadData('settings');
-        $oAutoBidPeriod = $this->loadData('project_period');
         $oBid           = $this->loadData('bids');
         $oProject       = $this->loadData('projects');
+        /** @var autobid $autobid */
+        $autobid        = $this->loadData('autobid');
 
         $this->lng['autobid'] = $this->ln->selectFront('autobid', $this->language, $this->App);
 
@@ -1759,16 +1758,11 @@ class profileController extends bootstrap
         $this->sAcceptationRate    = json_encode($oBid->getAcceptationPossibilityRounded());
 
         $this->aAutoBidSettings = array();
-        $aAutoBidSettings       = $oAutoBidSettingsManager->getSettings($this->oLendersAccounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE), 'ap.min ASC, evaluation DESC');
+        $aAutoBidSettings       = $autobid->getSettings($this->oLendersAccounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
         foreach ($aAutoBidSettings as $aSetting) {
-            $aPeriod = $oAutoBidPeriod->getDurations($aSetting['id_period']);
-            if ($aPeriod) {
-                $aSetting['AverageRateUnilend']                           = $this->projects->getAvgRate($aSetting['evaluation'], $aPeriod['min'], $aPeriod['max']);
-                $aSetting['period_min']                                   = $aPeriod['min'];
-                $aSetting['period_max']                                   = $aPeriod['max'];
-                $aSetting['note']                                         = constant('\projects::RISK_' . $aSetting['evaluation']);
-                $this->aAutoBidSettings[$aSetting['id_period']][] = $aSetting;
-            }
+            $aSetting['AverageRateUnilend']                           = $this->projects->getAvgRate($aSetting['evaluation'], $aSetting['min'], $aSetting['max']);
+            $aSetting['note']                                         = constant('\projects::RISK_' . $aSetting['evaluation']);
+            $this->aAutoBidSettings[$aSetting['id_period']][] = $aSetting;
         }
 
         $aSettingsSubmitted       = isset($_SESSION['forms']['autobid-param-submit']['values']) ? $_SESSION['forms']['autobid-param-submit']['values'] : array();

@@ -52,28 +52,7 @@
             <tr>
                 <th></th>
                 <?php foreach (array_keys(array_values($this->groupedRate)[0]) as $evaluation) : ?>
-                    <?php
-                    switch ($evaluation) {
-                        case 'A':
-                            $evaluationLabel = "5 étoils";
-                            break;
-                        case 'B':
-                            $evaluationLabel = "4,5 étoils";
-                            break;
-                        case 'C':
-                            $evaluationLabel = "4 étoils";
-                            break;
-                        case 'D':
-                            $evaluationLabel = "3,5 étoils";
-                            break;
-                        case 'E':
-                            $evaluationLabel = "3 étoils";
-                            break;
-                        default:
-                            $evaluationLabel = $evaluation;
-                    }
-                    ?>
-                    <th><?=$evaluationLabel?> (taux min - taux max)</th>
+                    <th><?=constant('\projects::RISK_' . $evaluation)?>* (taux min - taux max)</th>
                 <?php endforeach; ?>
             </tr>
             </thead>

@@ -1455,16 +1455,12 @@ class preteursController extends bootstrap
         $this->bIsBetaTester       = $oClientManager->isBetaTester($this->clients);
 
         $this->aAutoBidSettings = array();
-        $aAutoBidSettings       = $oAutoBidSettingsManager->getSettings($this->lenders_accounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE), 'ap.min ASC, evaluation DESC');
+        /** @var autobid $autobid */
+        $autobid = $this->loadData('autobid');
+        $aAutoBidSettings       = $autobid->getSettings($this->lenders_accounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
         foreach ($aAutoBidSettings as $aSetting) {
-            $aPeriod = $oAutoBidPeriod->getDurations($aSetting['id_period']);
-            if ($aPeriod) {
-                $aSetting['AverageRateUnilend']                           = $this->projects->getAvgRate($aSetting['evaluation'], $aPeriod['min'], $aPeriod['max']);
-                $aSetting['period_min']                                   = $aPeriod['min'];
-                $aSetting['period_max']                                   = $aPeriod['max'];
-                $aSetting['note']                                         = constant('\projects::RISK_' . $aSetting['evaluation']);
-                $this->aAutoBidSettings[$aSetting['id_period']][] = $aSetting;
-            }
+            $aSetting['AverageRateUnilend']                           = $this->projects->getAvgRate($aSetting['evaluation'], $aSetting['min'], $aSetting['max']);
+            $this->aAutoBidSettings[$aSetting['id_period']][$aSetting['evaluation']] = $aSetting;
         }
     }
 

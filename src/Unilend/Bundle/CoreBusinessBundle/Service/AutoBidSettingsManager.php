@@ -190,26 +190,6 @@ class AutoBidSettingsManager
     }
 
     /**
-     * Get all settings of which their period is active and fit the criteria
-     *
-     * @param int    $iLenderId
-     * @param string $sEvaluation
-     * @param int    $iAutoBidPeriodId
-     * @param array  $aStatus
-     * @param string $sOrder
-     * @param int    $iLimit
-     * @param int    $iOffset
-     *
-     * @return array
-     */
-    public function getSettings($iLenderId = null, $sEvaluation = null, $iAutoBidPeriodId = null, $aStatus = array(\autobid::STATUS_ACTIVE), $sOrder = null, $iLimit = null, $iOffset = null)
-    {
-        /** @var \autobid $oAutoBid */
-        $oAutoBid = $this->oEntityManager->getRepository('autobid');
-        return $oAutoBid->getSettings($iLenderId, $sEvaluation, $iAutoBidPeriodId, $aStatus, $sOrder, $iLimit, $iOffset);
-    }
-
-    /**
      * @param \lenders_accounts $oLendersAccount
      *
      * @return bool
@@ -224,7 +204,7 @@ class AutoBidSettingsManager
             if ($oAutobid->exist($oLendersAccount->id_lender_account . '" AND status = "' . \autobid::STATUS_INACTIVE, 'id_lender')) {
                 $bIsNovice = false;
             } else {
-                $aAutobids = $this->getSettings($oLendersAccount->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE), null);
+                $aAutobids = $oAutobid->getSettings($oLendersAccount->id_lender_account);
                 $fRate     = $aAutobids[0]['rate_min'];
                 $iAmount   = $aAutobids[0]['amount'];
 

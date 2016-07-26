@@ -204,7 +204,7 @@ class ProjectManager
 
             $iOffset = 0;
             $iLimit  = 100;
-            while ($aAutoBidList = $this->oAutoBidSettingsManager->getSettings(null, $oProject->risk, $oProjectPeriods->id_period, array(\autobid::STATUS_ACTIVE), 'id_autobid', $iLimit, $iOffset)) {
+            while ($aAutoBidList = $oAutoBid->getSettings(null, $oProject->risk, $oProjectPeriods->id_period, array(\autobid::STATUS_ACTIVE), ['id_autobid' => 'ASC'], $iLimit, $iOffset)) {
                 $iOffset += $iLimit;
 
                 foreach ($aAutoBidList as $aAutoBidSetting) {

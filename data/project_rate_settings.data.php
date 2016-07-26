@@ -69,7 +69,7 @@ class project_rate_settings extends project_rate_settings_crud
         return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `project_rate_settings` WHERE ' . $field . ' = "' . $id . '"')) > 0;
     }
 
-    public function getSettings($evaluation = null, $periodId = null, $status = array(self::STATUS_ACTIVE), $order = ['id_period' => 'ASC', 'evaluation' => 'ASC'], $limit = null, $offset = null)
+    public function getSettings($evaluation = null, $periodId = null, $status = array(self::STATUS_ACTIVE), $order = ['pp.min' => 'ASC', 'prs.evaluation' => 'DESC'], $limit = null, $offset = null)
     {
         $queryBuilder = $this->bdd->createQueryBuilder();
 
@@ -79,11 +79,11 @@ class project_rate_settings extends project_rate_settings_crud
             ->innerJoin('prs', 'project_period', 'pp', 'pp.id_period = prs.id_period and pp.status = :pp_status')
             ->setParameter('pp_status', project_period::STATUS_ACTIVE);
 
-        if ($evaluation) {
+        if ($evaluation !== null) {
             $queryBuilder->andWhere('prs.evaluation = :evaluation');
             $queryBuilder->setParameter('evaluation', $evaluation);
         }
-        if ($periodId) {
+        if ($periodId !== null) {
             $queryBuilder->andWhere('prs.id_period = :id_period');
             $queryBuilder->setParameter('id_period', $periodId);
         }
@@ -94,7 +94,7 @@ class project_rate_settings extends project_rate_settings_crud
 
         if (is_array($order) && false === empty($order)) {
             foreach ($order as $sort => $oder) {
-                $queryBuilder->addOrderBy('prs.' . $sort, $oder);
+                $queryBuilder->addOrderBy($sort, $oder);
             }
         }
 
