@@ -106,10 +106,12 @@ class ProjectDisplayManager
             $projectData['costFunded']    = $project->amount;
             $projectData['costRemaining'] = 0;
             $projectData['percentFunded'] = 100;
+            $projectData['maxValidRate']  = $bids->getProjectMaxRate($project);
         } else {
             $projectData['costFunded']    = $alreadyFunded;
             $projectData['costRemaining'] = $project->amount - $alreadyFunded;
             $projectData['percentFunded'] = $alreadyFunded / $project->amount * 100;
+            $projectData['maxValidRate']  = \bids::BID_RATE_MAX;
         }
 
         $projectData['categoryId']   = $company['sector'];

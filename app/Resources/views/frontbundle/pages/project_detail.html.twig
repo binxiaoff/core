@@ -238,7 +238,7 @@
                         <li role="presentation"><a href="#presentation">{% trans %} project-detail_presentation-title-presentation {% endtrans %}</a></li>
                         <li role="presentation"><a href="#finance">{% trans %} project-detail_presentation-title-financial-accounts {% endtrans %}</a></li>
                         {% if conditions.history %}
-                            <li role="presentation"><a href="#history">{% trans %} project-detail_presentation-title-repayment-info {% endtrans %}</a></li>
+                            <li role="presentation"><a href="#history">{% trans %} project-detail_project-history-title {% endtrans %}</a></li>
                         {% endif %}
                     </ul>
                 </nav><!-- /.project-single-nav -->
@@ -271,7 +271,7 @@
                                 <li role="presentation"><a href="#presentation">{% trans %} project-detail_presentation-title-presentation {% endtrans %}</a></li>
                                 <li role="presentation"><a href="#finance">{% trans %} project-detail_presentation-title-financial-accounts {% endtrans %}</a></li>
                                 {% if conditions.history %}
-                                    <li role="presentation"><a href="#history">{% trans %} project-detail_presentation-title-repayment-info {% endtrans %}</a></li>
+                                    <li role="presentation"><a href="#history">{% trans %} project-detail_project-history-title {% endtrans %}</a></li>
                                 {% endif %}
                             </ul>
                         </nav><!-- /.project-single-nav -->
@@ -318,11 +318,12 @@
                         {% if conditions.history %}
                             <div id="history" data-watchscroll-nav>
                                 <section id="project-section-info" class="page-section">
-                                    <p>{% trans with {'%amountUserLoan%' : lenderOnProject.loans.myLoanOnProject.solde} %} project-detail_project-presentation-repayment-info {% endtrans %}</p>
+                                    <h3 class="h3">{% trans %} project-detail_project-history-title {% endtrans %}</h3>
+                                    <p>{% trans with {'%amountUserLoan%' : lenderOnProject.loans.myLoanOnProject.solde | __num(0)} %} project-detail_project-presentation-repayment-info {% endtrans %}</p>
                                     <p>
                                         {% trans with {
-                                            '%amountAlreadyPaidBack%' : lenderOnProject.loans.amountAlreadyPaidBack,
-                                            '%remainingToBeRepaid%' : lenderOnProject.loans.remainingToBeRepaid,
+                                            '%amountAlreadyPaidBack%' : lenderOnProject.loans.amountAlreadyPaidBack | __num(2),
+                                            '%remainingToBeRepaid%' : lenderOnProject.loans.remainingToBeRepaid | __num(2),
                                             '%remainingMonths%' : lenderOnProject.loans.remainingMonths
                                         } %}
                                         project-detail_project-presentation-repayment-info-detail {% endtrans %}
@@ -330,15 +331,15 @@
 
                                     {% if lenderOnProject.loans.amountAlreadyPaidBack > 0 %}
                                         {% for history in project.statusHistory %}
-                                            {% if 'project-presentation-repayment-info-project-status-#{history.status}'|trans != 'project-presentation-repayment-info-project-status-#{history.status}' %}
+                                            {% if 'project-presentation-repayment-info-project-status-#{history.status}' | trans != 'project-presentation-repayment-info-project-status-#{history.status}' %}
                                                 <p>
                                                 {{ history.added|date(d/m/Y) }}
-                                                    {{ 'project-presentation-repayment-info-project-status-#{history.status}'|trans }}
+                                                    {{ 'project-presentation-repayment-info-project-status-#{history.status}' | trans }}
                                                     <br/>
                                                     {% if history.site_content is not empty %}
-                                                        {{ history.content|nl2br }}
+                                                        {{ history.content | nl2br }}
                                                         {% if history.failure == 1 %}
-                                                            {% trans with {'%percentageRecovered%' : lenderOnProject.loans.percentageRecovered } %} project-detail_project-presentation-repayment-info-recovery {% endtrans %}
+                                                            {% trans with {'%percentageRecovered%' : lenderOnProject.loans.percentageRecovered | __num(1) } %} project-detail_project-presentation-repayment-info-recovery {% endtrans %}
                                                         {% endif %}
                                                     {% endif %}
                                                 </p>

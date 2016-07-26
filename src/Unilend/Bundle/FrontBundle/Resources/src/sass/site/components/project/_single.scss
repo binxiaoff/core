@@ -551,6 +551,12 @@
     text-align: center;
   }
 
+  select {
+    @include input-size-lg($single-line: true);
+    background-color: $c-white;
+    border-color: $c-white;
+  }
+
   @include text-inputs {
     @include input-size-lg($single-line: true);
     background-color: $c-white;

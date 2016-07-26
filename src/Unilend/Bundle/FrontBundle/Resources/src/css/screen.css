@@ -18832,6 +18832,15 @@ td.table-myoperations-borrower-item-amount {
 .project-single-form .field-help {
   text-align: center;
 }
+/* line 554, ../sass/site/components/project/_single.scss */
+.project-single-form select {
+  height: 50px;
+  padding: 11px 20px;
+  font-size: 18px;
+  line-height: 24px;
+  background-color: #fff;
+  border-color: #fff;
+}
 /* line 322, ../sass/site/common/_mixins.scss */
 .project-single-form input[type="text"], .project-single-form input[type="search"], .project-single-form input[type="email"], .project-single-form input[type="password"], .project-single-form input[type="url"], .project-single-form input[type="color"], .project-single-form input[type="number"], .project-single-form input[type="range"], .project-single-form input[type="tel"], .project-single-form input[type="date"], .project-single-form input[type="datetime"], .project-single-form input[type="datetime-local"], .project-single-form input[type="week"], .project-single-form input[type="month"], .project-single-form input[type="year"], .project-single-form textarea {
   height: 50px;
@@ -18841,7 +18850,7 @@ td.table-myoperations-borrower-item-amount {
   background-color: #fff;
   border-color: #fff;
 }
-/* line 561, ../sass/site/components/project/_single.scss */
+/* line 567, ../sass/site/components/project/_single.scss */
 .project-single-form .input-group > .btn-group {
   padding-top: 5px;
   padding-bottom: 5px;
@@ -18854,31 +18863,31 @@ td.table-myoperations-borrower-item-amount {
 .project-single-form .input-group.set-right > input[type="text"], .project-single-form .input-group.set-right > input[type="search"], .project-single-form .input-group.set-right > input[type="email"], .project-single-form .input-group.set-right > input[type="password"], .project-single-form .input-group.set-right > input[type="url"], .project-single-form .input-group.set-right > input[type="color"], .project-single-form .input-group.set-right > input[type="number"], .project-single-form .input-group.set-right > input[type="range"], .project-single-form .input-group.set-right > input[type="tel"], .project-single-form .input-group.set-right > input[type="date"], .project-single-form .input-group.set-right > input[type="datetime"], .project-single-form .input-group.set-right > input[type="datetime-local"], .project-single-form .input-group.set-right > input[type="week"], .project-single-form .input-group.set-right > input[type="month"], .project-single-form .input-group.set-right > input[type="year"], .project-single-form .input-group.set-right > textarea {
   padding-right: 3em;
 }
-/* line 578, ../sass/site/components/project/_single.scss */
+/* line 584, ../sass/site/components/project/_single.scss */
 .project-single-form .input-group:after {
   padding-top: 5px;
   padding-bottom: 5px;
 }
-/* line 585, ../sass/site/components/project/_single.scss */
+/* line 591, ../sass/site/components/project/_single.scss */
 .project-single-form .btn-toolbar > :first-child {
   margin-left: 0;
 }
-/* line 589, ../sass/site/components/project/_single.scss */
+/* line 595, ../sass/site/components/project/_single.scss */
 .project-single-form .btn-toolbar > :last-child {
   margin-left: 0;
 }
 
-/* line 596, ../sass/site/components/project/_single.scss */
+/* line 602, ../sass/site/components/project/_single.scss */
 .project-single-content {
   padding-top: 40px;
 }
 
-/* line 601, ../sass/site/components/project/_single.scss */
+/* line 607, ../sass/site/components/project/_single.scss */
 .project-single-menu {
   display: none;
 }
 @media screen and (min-width: 1024px) and (max-width: 1599px), screen and (min-width: 1600px) {
-  /* line 605, ../sass/site/components/project/_single.scss */
+  /* line 611, ../sass/site/components/project/_single.scss */
   .ui-project-single-menu-fixed .project-single-menu {
     display: block;
     width: 100%;
@@ -18891,7 +18900,7 @@ td.table-myoperations-borrower-item-amount {
     background-color: #f8f6f8;
     border-bottom: solid 2px #eceaed;
   }
-  /* line 619, ../sass/site/components/project/_single.scss */
+  /* line 625, ../sass/site/components/project/_single.scss */
   .ui-project-single-menu-fixed .project-single-menu .project-single-menu-inner {
     box-sizing: border-box;
     max-width: 100%;
@@ -18903,7 +18912,7 @@ td.table-myoperations-borrower-item-amount {
   }
 }
 @media screen and (min-width: 1024px) and (max-width: 1599px) and (min-width: 600px) and (max-width: 1023px), screen and (min-width: 1600px) and (min-width: 600px) and (max-width: 1023px) {
-  /* line 619, ../sass/site/components/project/_single.scss */
+  /* line 625, ../sass/site/components/project/_single.scss */
   .ui-project-single-menu-fixed .project-single-menu .project-single-menu-inner {
     max-width: 100%;
     padding-left: 40px;
@@ -18911,7 +18920,7 @@ td.table-myoperations-borrower-item-amount {
   }
 }
 @media screen and (min-width: 1024px) and (max-width: 1599px) and (min-width: 1024px) and (max-width: 1599px), screen and (min-width: 1600px) and (min-width: 1024px) and (max-width: 1599px) {
-  /* line 619, ../sass/site/components/project/_single.scss */
+  /* line 625, ../sass/site/components/project/_single.scss */
   .ui-project-single-menu-fixed .project-single-menu .project-single-menu-inner {
     max-width: 1300px;
     padding-left: 50px;
@@ -18919,7 +18928,7 @@ td.table-myoperations-borrower-item-amount {
   }
 }
 @media screen and (min-width: 1024px) and (max-width: 1599px) and (min-width: 1600px), screen and (min-width: 1600px) and (min-width: 1600px) {
-  /* line 619, ../sass/site/components/project/_single.scss */
+  /* line 625, ../sass/site/components/project/_single.scss */
   .ui-project-single-menu-fixed .project-single-menu .project-single-menu-inner {
     max-width: 1400px;
     padding-left: 60px;
@@ -18927,14 +18936,14 @@ td.table-myoperations-borrower-item-amount {
   }
 }
 @media screen and (min-width: 1024px) and (max-width: 1599px), screen and (min-width: 1600px) {
-  /* line 624, ../sass/site/components/project/_single.scss */
+  /* line 630, ../sass/site/components/project/_single.scss */
   .ui-project-single-menu-fixed .project-single-menu .project-single-nav .nav-anchors > li > a {
     padding-top: 19px;
     padding-bottom: 22px;
     font-size: 18px;
     line-height: 21px;
   }
-  /* line 632, ../sass/site/components/project/_single.scss */
+  /* line 638, ../sass/site/components/project/_single.scss */
   .ui-project-single-menu-fixed .project-single-menu .project-single-menu-info {
     display: block;
     height: 100%;
@@ -18943,7 +18952,7 @@ td.table-myoperations-borrower-item-amount {
     top: 0;
     bottom: 0;
   }
-  /* line 641, ../sass/site/components/project/_single.scss */
+  /* line 647, ../sass/site/components/project/_single.scss */
   .ui-project-single-menu-fixed .project-single-menu .project-single-menu-col {
     float: left;
     padding-left: 20px;
@@ -18951,7 +18960,7 @@ td.table-myoperations-borrower-item-amount {
     font-size: 18px;
     line-height: 18px;
   }
-  /* line 649, ../sass/site/components/project/_single.scss */
+  /* line 655, ../sass/site/components/project/_single.scss */
   .ui-project-single-menu-fixed .project-single-menu .project-single-menu-title {
     background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJvYmplY3RCb3VuZGluZ0JveCIgeDE9IjEuMCIgeTE9IjAuNSIgeDI9IjAuMCIgeTI9IjAuNSI+PHN0b3Agb2Zmc2V0PSI5MCUiIHN0b3AtY29sb3I9IiNmOGY2ZjgiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNmOGY2ZjgiIHN0b3Atb3BhY2l0eT0iMC4wIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmFkKSIgLz48L3N2Zz4g');
     padding-top: 10.5px;
@@ -18959,7 +18968,7 @@ td.table-myoperations-borrower-item-amount {
     padding-left: 40px;
     text-align: right;
   }
-  /* line 658, ../sass/site/components/project/_single.scss */
+  /* line 664, ../sass/site/components/project/_single.scss */
   .ui-project-single-menu-fixed .project-single-menu .project-single-menu-title .title {
     height: 1.3em;
     max-width: 300px;
@@ -18967,27 +18976,27 @@ td.table-myoperations-borrower-item-amount {
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  /* line 666, ../sass/site/components/project/_single.scss */
+  /* line 672, ../sass/site/components/project/_single.scss */
   .ui-project-single-menu-fixed .project-single-menu .project-single-menu-title .rating {
     margin-top: 4px;
   }
-  /* line 671, ../sass/site/components/project/_single.scss */
+  /* line 677, ../sass/site/components/project/_single.scss */
   .ui-project-single-menu-fixed .project-single-menu .project-single-menu-period {
     padding-top: 21.5px;
     padding-bottom: 21.5px;
     min-width: 120px;
   }
-  /* line 677, ../sass/site/components/project/_single.scss */
+  /* line 683, ../sass/site/components/project/_single.scss */
   .ui-project-single-menu-fixed .project-single-menu .project-single-menu-period .icon {
     color: #b20066;
     font-size: 1.3em;
   }
-  /* line 683, ../sass/site/components/project/_single.scss */
+  /* line 689, ../sass/site/components/project/_single.scss */
   .ui-project-single-menu-fixed .project-single-menu .project-single-menu-top {
     padding-left: 0;
     padding-right: 0;
   }
-  /* line 688, ../sass/site/components/project/_single.scss */
+  /* line 694, ../sass/site/components/project/_single.scss */
   .ui-project-single-menu-fixed .project-single-menu .btn-nav-top {
     height: 65px;
     padding-top: 18.5px;
@@ -18999,54 +19008,54 @@ td.table-myoperations-borrower-item-amount {
     font-size: 32px;
     line-height: 24px;
   }
-  /* line 703, ../sass/site/components/project/_single.scss */
+  /* line 709, ../sass/site/components/project/_single.scss */
   .ui-project-single-menu-fixed.ui-site-search-open .project-single-menu {
     height: 0;
     overflow: hidden;
   }
 }
 
-/* line 712, ../sass/site/components/project/_single.scss */
+/* line 718, ../sass/site/components/project/_single.scss */
 .ui-project-expired.project-single .project-single-menu-period,
 .ui-project-expired.project-single .project-single-period-countdown {
   color: #787679;
   font-style: italic;
 }
-/* line 717, ../sass/site/components/project/_single.scss */
+/* line 723, ../sass/site/components/project/_single.scss */
 .ui-project-expired.project-single .project-single-menu-period .icon,
 .ui-project-expired.project-single .project-single-period-countdown .icon {
   display: none;
 }
 
-/* line 724, ../sass/site/components/project/_single.scss */
+/* line 730, ../sass/site/components/project/_single.scss */
 .project-single .table-scroll {
   margin-bottom: 30px;
 }
 
-/* line 729, ../sass/site/components/project/_single.scss */
+/* line 735, ../sass/site/components/project/_single.scss */
 .project-single .page-section .btn-toolbar {
   text-align: right;
 }
-/* line 732, ../sass/site/components/project/_single.scss */
+/* line 738, ../sass/site/components/project/_single.scss */
 .project-single .page-section .btn-toolbar > * {
   margin-left: 20px;
   margin-right: 0;
 }
 
-/* line 739, ../sass/site/components/project/_single.scss */
+/* line 745, ../sass/site/components/project/_single.scss */
 .project-single .chart {
   text-align: center;
   margin-bottom: 30px;
 }
 
-/* line 747, ../sass/site/components/project/_single.scss */
+/* line 753, ../sass/site/components/project/_single.scss */
 .project-single .nested-tabs.tabs .tabs-nav {
   margin-bottom: 20px;
   background: rgba(255, 255, 255, 0.5);
   text-align: center;
 }
 @media screen and (min-width: 1024px) and (max-width: 1599px), screen and (min-width: 1600px) {
-  /* line 747, ../sass/site/components/project/_single.scss */
+  /* line 753, ../sass/site/components/project/_single.scss */
   .project-single .nested-tabs.tabs .tabs-nav {
     margin: 10px;
     margin-top: -10px;
@@ -19060,22 +19069,22 @@ td.table-myoperations-borrower-item-amount {
     text-align: right;
   }
 }
-/* line 769, ../sass/site/components/project/_single.scss */
+/* line 775, ../sass/site/components/project/_single.scss */
 .project-single .nested-tabs.tabs .tabs-content .chart {
   padding-top: 60px !important;
 }
 
 @media screen and (min-width: 600px) and (max-width: 1023px) {
-  /* line 777, ../sass/site/components/project/_single.scss */
+  /* line 783, ../sass/site/components/project/_single.scss */
   .project-single-rating {
     text-align: center;
   }
-  /* line 780, ../sass/site/components/project/_single.scss */
+  /* line 786, ../sass/site/components/project/_single.scss */
   .project-single-rating .label {
     font-size: inherit;
     margin-bottom: 10px;
   }
-  /* line 785, ../sass/site/components/project/_single.scss */
+  /* line 791, ../sass/site/components/project/_single.scss */
   .project-single-rating .rating {
     width: 140px;
     height: 20px;
@@ -19127,17 +19136,17 @@ td.table-myoperations-borrower-item-amount {
   }
 }
 @media screen and (min-width: 1024px) and (max-width: 1599px), screen and (min-width: 1600px) {
-  /* line 793, ../sass/site/components/project/_single.scss */
+  /* line 799, ../sass/site/components/project/_single.scss */
   .project-single {
     padding-top: 0;
   }
 
-  /* line 798, ../sass/site/components/project/_single.scss */
+  /* line 804, ../sass/site/components/project/_single.scss */
   .project-single-header {
     text-align: center;
     vertical-align: middle;
   }
-  /* line 804, ../sass/site/components/project/_single.scss */
+  /* line 810, ../sass/site/components/project/_single.scss */
   .project-single-header .btn-nav-left,
   .project-single-header .btn-nav-back,
   .project-single-header .btn-nav-previous,
@@ -19154,20 +19163,20 @@ td.table-myoperations-borrower-item-amount {
     border-radius: 0;
     margin-top: -40px;
   }
-  /* line 814, ../sass/site/components/project/_single.scss */
+  /* line 820, ../sass/site/components/project/_single.scss */
   .project-single-header .btn-nav-left,
   .project-single-header .btn-nav-back,
   .project-single-header .btn-nav-previous {
     margin-left: -50px;
   }
-  /* line 820, ../sass/site/components/project/_single.scss */
+  /* line 826, ../sass/site/components/project/_single.scss */
   .project-single-header .btn-nav-right,
   .project-single-header .btn-nav-forward,
   .project-single-header .btn-nav-next {
     margin-right: -50px;
   }
 
-  /* line 827, ../sass/site/components/project/_single.scss */
+  /* line 833, ../sass/site/components/project/_single.scss */
   .project-single-header-position {
     box-sizing: border-box;
     width: 100%;
@@ -19177,7 +19186,7 @@ td.table-myoperations-borrower-item-amount {
     padding-right: 40px;
   }
 
-  /* line 836, ../sass/site/components/project/_single.scss */
+  /* line 842, ../sass/site/components/project/_single.scss */
   .project-single-header-inner {
     display: inline-block;
     width: 100%;
@@ -19192,7 +19201,7 @@ td.table-myoperations-borrower-item-amount {
     transform: translate(-50%, -50%);
   }
 
-  /* line 852, ../sass/site/components/project/_single.scss */
+  /* line 858, ../sass/site/components/project/_single.scss */
   .project-single-category {
     display: block;
     width: 160px;
@@ -19205,36 +19214,36 @@ td.table-myoperations-borrower-item-amount {
     line-height: 160px;
   }
 
-  /* line 867, ../sass/site/components/project/_single.scss */
+  /* line 873, ../sass/site/components/project/_single.scss */
   .project-single-title {
     margin-top: 0;
     margin-bottom: 20px;
     font-size: 42px;
   }
 
-  /* line 874, ../sass/site/components/project/_single.scss */
+  /* line 880, ../sass/site/components/project/_single.scss */
   .project-single-image {
     display: block;
     padding-right: 20px;
   }
 
-  /* line 880, ../sass/site/components/project/_single.scss */
+  /* line 886, ../sass/site/components/project/_single.scss */
   .project-single-meta {
     font-size: 16px;
     line-height: 1.3em;
   }
 
-  /* line 887, ../sass/site/components/project/_single.scss */
+  /* line 893, ../sass/site/components/project/_single.scss */
   .project-single-location .icon {
     display: inline-block;
   }
-  /* line 891, ../sass/site/components/project/_single.scss */
+  /* line 897, ../sass/site/components/project/_single.scss */
   .project-single-location .label {
     display: inline-block;
     margin-right: 10px;
   }
 
-  /* line 898, ../sass/site/components/project/_single.scss */
+  /* line 904, ../sass/site/components/project/_single.scss */
   .project-single-rating {
     width: auto;
     position: relative;
@@ -19242,12 +19251,12 @@ td.table-myoperations-borrower-item-amount {
     bottom: auto;
     text-align: center;
   }
-  /* line 905, ../sass/site/components/project/_single.scss */
+  /* line 911, ../sass/site/components/project/_single.scss */
   .project-single-rating .label {
     font-size: inherit;
     margin-bottom: 10px;
   }
-  /* line 910, ../sass/site/components/project/_single.scss */
+  /* line 916, ../sass/site/components/project/_single.scss */
   .project-single-rating .rating {
     width: 140px;
     height: 20px;
@@ -19298,32 +19307,32 @@ td.table-myoperations-borrower-item-amount {
     width: 140px;
   }
 
-  /* line 916, ../sass/site/components/project/_single.scss */
+  /* line 922, ../sass/site/components/project/_single.scss */
   .project-single-period {
     text-align: left;
   }
 
-  /* line 920, ../sass/site/components/project/_single.scss */
+  /* line 926, ../sass/site/components/project/_single.scss */
   .project-single-period-countdown {
     font-size: 21px;
   }
 
-  /* line 924, ../sass/site/components/project/_single.scss */
+  /* line 930, ../sass/site/components/project/_single.scss */
   .project-single-period-expires {
     display: block;
   }
 
-  /* line 933, ../sass/site/components/project/_single.scss */
+  /* line 939, ../sass/site/components/project/_single.scss */
   .project-single-offers-total {
     display: block;
   }
 
-  /* line 938, ../sass/site/components/project/_single.scss */
+  /* line 944, ../sass/site/components/project/_single.scss */
   .project-single-info-wrap {
     position: relative;
   }
 
-  /* line 944, ../sass/site/components/project/_single.scss */
+  /* line 950, ../sass/site/components/project/_single.scss */
   .project-single-info-position {
     margin-top: -450px;
     position: absolute;
@@ -19333,7 +19342,7 @@ td.table-myoperations-borrower-item-amount {
     transition: margin-top .5s;
   }
 
-  /* line 958, ../sass/site/components/project/_single.scss */
+  /* line 964, ../sass/site/components/project/_single.scss */
   .project-single-info {
     max-width: 340px;
     width: 340px;
@@ -19342,47 +19351,47 @@ td.table-myoperations-borrower-item-amount {
     margin-right: 0;
   }
 
-  /* line 967, ../sass/site/components/project/_single.scss */
+  /* line 973, ../sass/site/components/project/_single.scss */
   .project-single-interest,
   .project-single-duration {
     width: auto;
     float: none;
     text-align: left;
   }
-  /* line 973, ../sass/site/components/project/_single.scss */
+  /* line 979, ../sass/site/components/project/_single.scss */
   .project-single-interest .icon,
   .project-single-duration .icon {
     display: inline-block;
   }
 }
 @media screen and (min-width: 1024px) and (max-width: 1599px) {
-  /* line 985, ../sass/site/components/project/_single.scss */
+  /* line 991, ../sass/site/components/project/_single.scss */
   .project-single-info-position,
   .project-single-menu-info {
     margin-right: 50px;
   }
 }
 @media screen and (min-width: 1600px) {
-  /* line 992, ../sass/site/components/project/_single.scss */
+  /* line 998, ../sass/site/components/project/_single.scss */
   .project-single-meta,
   .project-single-location {
     font-size: 18px;
   }
 
-  /* line 997, ../sass/site/components/project/_single.scss */
+  /* line 1003, ../sass/site/components/project/_single.scss */
   .project-single-info-position,
   .project-single-menu-info {
     margin-right: 60px;
   }
 
-  /* line 1002, ../sass/site/components/project/_single.scss */
+  /* line 1008, ../sass/site/components/project/_single.scss */
   .project-single-info {
     max-width: 360px;
     width: 360px;
   }
 }
 @media screen and (min-width: 1024px) and (max-width: 1299px) {
-  /* line 1012, ../sass/site/components/project/_single.scss */
+  /* line 1018, ../sass/site/components/project/_single.scss */
   .project-single-header .btn-nav-left,
   .project-single-header .btn-nav-back,
   .project-single-header .btn-nav-previous,
@@ -19399,27 +19408,27 @@ td.table-myoperations-borrower-item-amount {
     border-radius: 0;
     margin-top: -25px;
   }
-  /* line 1022, ../sass/site/components/project/_single.scss */
+  /* line 1028, ../sass/site/components/project/_single.scss */
   .project-single-header .btn-nav-left,
   .project-single-header .btn-nav-back,
   .project-single-header .btn-nav-previous {
     margin-left: -50px;
   }
-  /* line 1028, ../sass/site/components/project/_single.scss */
+  /* line 1034, ../sass/site/components/project/_single.scss */
   .project-single-header .btn-nav-right,
   .project-single-header .btn-nav-forward,
   .project-single-header .btn-nav-next {
     margin-right: -50px;
   }
 
-  /* line 1035, ../sass/site/components/project/_single.scss */
+  /* line 1041, ../sass/site/components/project/_single.scss */
   .project-single-header-inner {
     max-width: 700px;
     padding-left: 120px;
     margin-left: 0;
   }
 
-  /* line 1041, ../sass/site/components/project/_single.scss */
+  /* line 1047, ../sass/site/components/project/_single.scss */
   .project-single-category {
     width: 120px;
     height: 120px;
@@ -19428,52 +19437,52 @@ td.table-myoperations-borrower-item-amount {
     top: 20px;
   }
 
-  /* line 1049, ../sass/site/components/project/_single.scss */
+  /* line 1055, ../sass/site/components/project/_single.scss */
   .project-single-description {
     max-width: 80%;
   }
 
-  /* line 1053, ../sass/site/components/project/_single.scss */
+  /* line 1059, ../sass/site/components/project/_single.scss */
   .project-single-info {
     max-width: 300px;
     width: 300px;
     padding: 20px;
   }
 
-  /* line 1059, ../sass/site/components/project/_single.scss */
+  /* line 1065, ../sass/site/components/project/_single.scss */
   .project-single-interest,
   .project-single-duration {
     float: left;
     width: 50%;
     text-align: center;
   }
-  /* line 1065, ../sass/site/components/project/_single.scss */
+  /* line 1071, ../sass/site/components/project/_single.scss */
   .project-single-interest .icon,
   .project-single-duration .icon {
     display: none;
   }
 }
-/* line 1074, ../sass/site/components/project/_single.scss */
+/* line 1080, ../sass/site/components/project/_single.scss */
 .ui-project-single-map-opening .project-single-map {
   margin-bottom: 0;
 }
-/* line 1078, ../sass/site/components/project/_single.scss */
+/* line 1084, ../sass/site/components/project/_single.scss */
 .ui-project-single-map-opening .project-single-map-embed {
   display: block;
   opacity: 0;
 }
 
-/* line 1086, ../sass/site/components/project/_single.scss */
+/* line 1092, ../sass/site/components/project/_single.scss */
 .ui-project-single-map-open .project-single-map {
   margin-bottom: 0;
 }
-/* line 1090, ../sass/site/components/project/_single.scss */
+/* line 1096, ../sass/site/components/project/_single.scss */
 .ui-project-single-map-open .project-single-map-embed {
   display: block;
   opacity: 1;
 }
 
-/* line 1098, ../sass/site/components/project/_single.scss */
+/* line 1104, ../sass/site/components/project/_single.scss */
 .ui-project-single-map-closing .project-single-map-embed {
   display: block;
   opacity: 0;

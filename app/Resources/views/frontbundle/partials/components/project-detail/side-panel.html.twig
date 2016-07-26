@@ -1,23 +1,23 @@
-<aside class="project-single-info-wrap">
+<aside class="project-single-info-wrap" xmlns="http://www.w3.org/1999/html">
     <div class="project-single-info-position">
         <div class="project-single-info">
             <div class="project-single-cost">
                 <div class="project-single-cost-total">
-                    {% trans with { '%amount%' : project.amount|__num(0)|nbsp, '%startTag%' : '<span class="sr-only">', '%endTag%' : '</span>' }%} project-detail_amount-sentence {% endtrans %}
+                    {% trans with {'%amount%' : project.amount | __num(0) | nbsp, '%startTag%' : '<span class="sr-only">', '%endTag%' : '</span>'} %} project-detail_amount-sentence {% endtrans %}
                 </div>
                 <div class="project-single-cost-progress"
-                    title="{% trans with {'%percentFunded%' : project.percentFunded } %}
+                    title="{% trans with {'%percentFunded%' : project.percentFunded} %}
                     project-detail_project-funding-progress-bar-tooltip {% endtrans %}" data-toggle="tooltip">
                     <div class="project-single-cost-progress-funded" style="width: {{ project.percentFunded }}%">
-                        <span class="sr-only">{% trans with { '%percentFunded%' : project.percentFunded } %} project-detail_percentage-funded-text {% endtrans %}</span>
+                        <span class="sr-only">{% trans with {'%percentFunded%' : project.percentFunded} %} project-detail_percentage-funded-text {% endtrans %}</span>
                     </div>
                 </div><!-- /.project-single-cost-progress -->
                 {% if project.status == constant('\\projects_status::EN_FUNDING') %}
                     <div class="project-single-cost-amount">
-                        <div class="project-single-cost-amount-funded">{% trans with { '%costFunded%': project.costFunded|__num(0) }%} project-detail_already-bid-amount {% endtrans %}</div>
+                        <div class="project-single-cost-amount-funded">{% transchoice project.costFunded with {'%costFunded%' : project.costFunded | __num(0)} %} project-detail_already-bid-amount {% endtranschoice %}</div>
                         {% if  project.costRemaining == 0 %}
                             <div class="project-single-cost-amount-remaining">
-                                {% trans with { '%costRemaining%' : project.costRemaining|__num(0)|nbsp } %} project-detail_remaining-amount {% endtrans %}
+                                {% transchoice project.costRemaining with {'%costRemaining%' : project.costRemaining | __num(0) | nbsp} %} project-detail_remaining-amount {% endtranschoice %}
                             </div>
                         {% endif %}
                     </div><!-- /.project-single-cost-amount -->
@@ -27,7 +27,7 @@
                 <div class="row">
                     <div class="project-single-interest">
                         <span class="icon fa-linechart-u32"></span>
-                        <span class="c-p1"><strong>{{ project.averageRate|__num(1) }}</strong>%</span>
+                        <span class="c-p1"><strong>{{ project.averageRate | __num(1) }}</strong>%</span>
                         <div class="label">{% trans %} project-detail_average-rate-label {% endtrans %}</div>
                     </div><!-- /.project-single-interest -->
 
@@ -39,20 +39,20 @@
                 </div>
 
             {% if project.status in [constant('\\projects_status::REMBOURSE'), constant('\\projects_status::REMBOURSEMENT_ANTICIPE') ] %}
-                <p>{% trans with { '%dateLastRepayment%' : project.dateLastRepayment } %} project-detail_project-repaid-message {% endtrans %}</p>
-                <p>{% transchoice userInformation.myLoanOnProject with
-                    { '%amountUserLoan%' : userInformation.myLoanOnProject,  '%avgRateUserLoan%' : userInformation.avgRateUserLoan } %}
-                    project-detail_project-repaid-user-message
-                    {% endtranschoice %}
+                <p>{% trans with {'%dateLastRepayment%' : project.dateLastRepayment} %} project-detail_project-repaid-message {% endtrans %}</p>
+                <p>{% transchoice userInformation.myLoanOnProject with {
+                        '%amountUserLoan%' : userInformation.myLoanOnProject,
+                        '%avgRateUserLoan%' : userInformation.avgRateUserLoan | __num(1)
+                    } %} project-detail_project-repaid-user-message {% endtranschoice %}
                 </p>
             {% elseif project.status == constant('\\projects_status::FUNDE') or project.status >= constant('\\projects_status::REMBOURSEMENT') %}
                 <p>{% trans with {
-                    '%NumberLender%' : project.fundingStatistics.NumberLender,
-                    '%AvgRate%' : project.fundingStatistics.AvgRate,
-                    '%fundingDays%' : project.fundingStatistics.fundingTime.days,
-                    '%fundingMinutes%' : project.fundingStatistics.fundingTime.i,
-                    '%fundingHours%' : project.fundingStatistics.fundingTime.h }
-                    %} project-detail_project-funded-message-with-statistics {% endtrans %}</p>
+                        '%NumberLender%' : project.fundingStatistics.NumberLender | __num(0),
+                        '%AvgRate%' : project.fundingStatistics.AvgRate | __num(1),
+                        '%fundingDays%' : project.fundingStatistics.fundingTime.days,
+                        '%fundingMinutes%' : project.fundingStatistics.fundingTime.i,
+                        '%fundingHours%' : project.fundingStatistics.fundingTime.h
+                    } %} project-detail_project-funded-message-with-statistics {% endtrans %}</p>
                 {% if is_granted('IS_AUTHENTICATED_FULLY') %}
                     {#{% if userInformation.myLoanOnProject is not defined or userInformation.myLoanOnProject is null %}{% set userInformation.myLoanOnProject = 0 %}{% endif %}#}
                     {#<p>{% trans with {'%amountUserLoan%' : userInformation.myLoanOnProject }%} project-detail_project-funded-mesage-lender-participation {% endtrans %}</p>#}
@@ -84,8 +84,12 @@
                         <div class="form-field">
                             <label>
                                 <span class="sr-only">{% trans %} project-detail_side-bar-bids-rate-label {% endtrans %}</span>
-                                <input data-popup-rate type="number" min="{{ constant('\\bids::BID_RATE_MIN') }}" max="{{ constant('\\bids::BID_RATE_MAX') }}" step="0.1" name="invest[interest]" value=""
-                                       placeholder="{% trans %} project-detail_side-bar-bids-rate-placeholder {% endtrans %}" class="input-field"/>
+                                <select data-popup-rate name="invest[interest]" class="input-field">
+                                    <option value="">{% trans %} project-detail_side-bar-bids-rate-placeholder {% endtrans %}</option>
+                                    {% for rate in range(project.maxValidRate, constant('\\bids::BID_RATE_MIN'), 0.1) %}
+                                        <option value="{{ rate }}">{{ rate | __num(1) }} %</option>
+                                    {% endfor %}
+                                </select>
                             </label>
                         </div><!-- /.form-field -->
                         <div class="btn-toolbar">
@@ -93,7 +97,12 @@
                             <button class="btn-primary btn-size-full hidden">{% trans %} project-detail_side-bar-bids-submit-button {% endtrans %}</button>
                         </div><!-- /.btn-toolbar -->
                         <div class="field-help">
-                            <p>{% trans with { '%rateMin%' : constant('\\bids::BID_RATE_MIN'), '%rateMax%' : constant('\\bids::BID_RATE_MAX') }%} project-detail_side-bar-bids-help-text {% endtrans %}</p>
+                            <p>
+                                {% trans with {
+                                    '%rateMin%' : constant('\\bids::BID_RATE_MIN') | __num(1),
+                                    '%rateMax%' : project.maxValidRate | __num(1)
+                                } | raw %} project-detail_side-bar-bids-help-text {% endtrans %}
+                            </p>
                         </div>
                     </form><!-- /.project-single-form-invest -->
                 {% endif %}
@@ -149,13 +158,13 @@
                 </li>
                 <li>
                     <a class="btn-twitter" title="{% trans %} project-detail_share-on-twitter-label {% endtrans %}"
-                       href="http://twitter.com/share?url={{ absolute_url(project.slug) }}%3Fid%3D12345&text={{ project.title|url_encode }}">
+                       href="http://twitter.com/share?url={{ absolute_url(project.slug) }}%3Fid%3D12345&text={{ project.title | url_encode }}">
                         <span class="sr-only">{% trans %} project-detail_share-on-twitter-label {% endtrans %}</span>
                     </a>
                 </li>
                 <li>
                     <a class="btn-email" title="{% trans %} project-detail_share-my-email-label {% endtrans %}"
-                       href="mailto:?subject={{ project.title|url_encode }}&body={{ absolute_url(project.slug) }}">
+                       href="mailto:?subject={{ project.title | url_encode }}&body={{ absolute_url(project.slug) }}">
                         <span class="sr-only">{% trans %} project-detail_share-my-email-label {% endtrans %}</span>
                     </a>
                 </li>
