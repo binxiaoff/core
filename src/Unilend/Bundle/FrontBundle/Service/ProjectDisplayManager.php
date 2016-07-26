@@ -154,56 +154,100 @@ class ProjectDisplayManager
     {
         /** @var \companies $company */
         $company = $this->entityManager->getRepository('companies');
-        /** @var \companies_actif_passif $companyAssets */
-        $companyAssets = $this->entityManager->getRepository('companies_actif_passif');
-        /** @var \companies_bilans $companyBalanceSheet */
-        $companyBalanceSheet = $this->entityManager->getRepository('companies_bilans');
-
-        $balanceSheets = [];
-        $annualAccountsIds = [];
-
-        foreach ($companyBalanceSheet->select('id_company = "' . $project->id_company . '" AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $project->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3) as $aAnnualAccounts) {
-            $balanceSheets[]     = $aAnnualAccounts;
-            $annualAccountsIds[] = $aAnnualAccounts['id_bilan'];
-        }
-
-        $totalYearlyAssets = array();
-        $totalYearlyDebts  = array();
-        $listAP            = $companyAssets->select('id_bilan IN (' . implode(', ', $annualAccountsIds) . ')', 'FIELD(id_bilan, ' . implode(', ', $annualAccountsIds) . ') ASC');
-
-        foreach ($listAP as $ap) {
-            $totalYearlyAssets[]  = $ap['immobilisations_corporelles']
-                + $ap['immobilisations_incorporelles']
-                + $ap['immobilisations_financieres']
-                + $ap['stocks']
-                + $ap['creances_clients']
-                + $ap['disponibilites']
-                + $ap['valeurs_mobilieres_de_placement']
-                + $ap['comptes_regularisation_actif'];
-            $totalYearlyDebts[] = $ap['capitaux_propres']
-                + $ap['provisions_pour_risques_et_charges']
-                + $ap['amortissement_sur_immo']
-                + $ap['dettes_financieres']
-                + $ap['dettes_fournisseurs']
-                + $ap['autres_dettes']
-                + $ap['comptes_regularisation_passif'];
-        }
-
+        /** @var \companies_actif_passif $assetsDebtsEntity */
+        $assetsDebtsEntity = $this->entityManager->getRepository('companies_actif_passif');
+        /** @var \companies_bilans $balanceSheetEntity */
+        $balanceSheetEntity = $this->entityManager->getRepository('companies_bilans');
         /** @var \settings $setting */
         $setting = $this->entityManager->getRepository('settings');
+
         $setting->get('Entreprises fundés au passage du risque lot 1', 'type');
-        $fundedCompanies = explode(',', $setting->value);
-        $previousRiskProject = in_array($company->id_company, $fundedCompanies);
+        $isBeforeRiskProject = in_array($company->id_company, explode(',', $setting->value));
 
-        $accountData = [
-            'balanceSheets'       => $balanceSheets,
-            'annualAccountsIds'   => $annualAccountsIds,
-            'totalYearlyAssets'   => $totalYearlyAssets,
-            'totalYearlyDebts'    => $totalYearlyDebts,
-            'previousRiskProject' => $previousRiskProject
-        ];
+        $finance                = [];
+        $previousBalanceSheetId = null;
+        $balanceSheets          = $balanceSheetEntity->select('id_company = "' . $project->id_company . '" AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $project->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
 
-        return $accountData;
+        foreach ($balanceSheets as $balanceSheet) {
+            $finance[$balanceSheet['id_bilan']] = [
+                'closingDate'   => $balanceSheet['cloture_exercice_fiscal'],
+                'monthDuration' => $balanceSheet['duree_exercice_fiscal'],
+                'balanceSheet'  => [],
+                'assets'        => [],
+                'debts'         => [],
+            ];
+
+            $finance[$balanceSheet['id_bilan']]['balanceSheet']['ca']                          = [$balanceSheet['ca']];
+            $finance[$balanceSheet['id_bilan']]['balanceSheet']['resultat-brute-exploitation'] = [$balanceSheet['resultat_brute_exploitation']];
+            $finance[$balanceSheet['id_bilan']]['balanceSheet']['resultat-exploitation']       = [$balanceSheet['resultat_exploitation']];
+
+            if (false === $isBeforeRiskProject) {
+                $finance[$balanceSheet['id_bilan']]['balanceSheet']['resultat-financier']      = [$balanceSheet['resultat_financier']];
+                $finance[$balanceSheet['id_bilan']]['balanceSheet']['produit-exceptionnel']    = [$balanceSheet['produit_exceptionnel']];
+                $finance[$balanceSheet['id_bilan']]['balanceSheet']['charges-exceptionnelles'] = [$balanceSheet['charges_exceptionnelles']];
+                $finance[$balanceSheet['id_bilan']]['balanceSheet']['resultat-exceptionnel']   = [$balanceSheet['resultat_exceptionnel']];
+                $finance[$balanceSheet['id_bilan']]['balanceSheet']['resultat-net']            = [$balanceSheet['resultat_net']];
+            }
+
+            $finance[$balanceSheet['id_bilan']]['balanceSheet']['investissements'] = [$balanceSheet['investissements']];
+
+            if (null !== $previousBalanceSheetId) {
+                foreach ($finance[$balanceSheet['id_bilan']]['balanceSheet'] as $name => $currentBalanceSheet) {
+                    $finance[$previousBalanceSheetId]['balanceSheet'][$name][1] = empty($finance[$balanceSheet['id_bilan']]['balanceSheet'][$name][0]) ? null : round(($finance[$previousBalanceSheetId]['balanceSheet'][$name][0] - $finance[$balanceSheet['id_bilan']]['balanceSheet'][$name][0]) / abs($finance[$balanceSheet['id_bilan']]['balanceSheet'][$name][0]) * 100, 1);
+                }
+            }
+
+            $previousBalanceSheetId = $balanceSheet['id_bilan'];
+        }
+
+        $previousBalanceSheetId = null;
+        $assetsDebts            = $assetsDebtsEntity->select('id_bilan IN (' . implode(', ', array_keys($finance)) . ')', 'FIELD(id_bilan, ' . implode(', ', array_keys($finance)) . ') ASC');
+
+        foreach ($assetsDebts as $balanceSheetAssetsDebts) {
+            $finance[$balanceSheetAssetsDebts['id_bilan']]['assets']['immobilisations-corporelles']     = [$balanceSheetAssetsDebts['immobilisations_corporelles']];
+            $finance[$balanceSheetAssetsDebts['id_bilan']]['assets']['immobilisations-incorporelles']   = [$balanceSheetAssetsDebts['immobilisations_incorporelles']];
+            $finance[$balanceSheetAssetsDebts['id_bilan']]['assets']['immobilisations-financieres']     = [$balanceSheetAssetsDebts['immobilisations_financieres']];
+            $finance[$balanceSheetAssetsDebts['id_bilan']]['assets']['stocks']                          = [$balanceSheetAssetsDebts['stocks']];
+            $finance[$balanceSheetAssetsDebts['id_bilan']]['assets']['creances-clients']                = [$balanceSheetAssetsDebts['creances_clients']];
+            $finance[$balanceSheetAssetsDebts['id_bilan']]['assets']['disponibilites']                  = [$balanceSheetAssetsDebts['disponibilites']];
+            $finance[$balanceSheetAssetsDebts['id_bilan']]['assets']['valeurs-mobilieres-de-placement'] = [$balanceSheetAssetsDebts['valeurs_mobilieres_de_placement']];
+            $finance[$balanceSheetAssetsDebts['id_bilan']]['assets']['comptes-regularisation-actif']    = [$balanceSheetAssetsDebts['comptes_regularisation_actif']];
+            $finance[$balanceSheetAssetsDebts['id_bilan']]['assets']['total']                           = [array_sum(array_column($finance[$balanceSheetAssetsDebts['id_bilan']]['assets'], 0))];
+
+            $finance[$balanceSheetAssetsDebts['id_bilan']]['debts']['capitaux-propres']                   = [$balanceSheetAssetsDebts['capitaux_propres']];
+            $finance[$balanceSheetAssetsDebts['id_bilan']]['debts']['provisions-pour-risques-et-charges'] = [$balanceSheetAssetsDebts['provisions_pour_risques_et_charges']];
+            $finance[$balanceSheetAssetsDebts['id_bilan']]['debts']['amortissement-sur-immo']             = [$balanceSheetAssetsDebts['amortissement_sur_immo']];
+            $finance[$balanceSheetAssetsDebts['id_bilan']]['debts']['dettes-financieres']                 = [$balanceSheetAssetsDebts['dettes_financieres']];
+            $finance[$balanceSheetAssetsDebts['id_bilan']]['debts']['dettes-fournisseurs']                = [$balanceSheetAssetsDebts['dettes_fournisseurs']];
+            $finance[$balanceSheetAssetsDebts['id_bilan']]['debts']['autres-dettes']                      = [$balanceSheetAssetsDebts['autres_dettes']];
+            $finance[$balanceSheetAssetsDebts['id_bilan']]['debts']['comptes-regularisation-passif']      = [$balanceSheetAssetsDebts['comptes_regularisation_passif']];
+            $finance[$balanceSheetAssetsDebts['id_bilan']]['debts']['total']                              = [array_sum(array_column($finance[$balanceSheetAssetsDebts['id_bilan']]['debts'], 0))];
+
+            if (null !== $previousBalanceSheetId) {
+                foreach ($finance[$balanceSheetAssetsDebts['id_bilan']]['assets'] as $name => $currentBalanceSheetAssets) {
+                    $finance[$previousBalanceSheetId]['assets'][$name][1] = empty($finance[$balanceSheetAssetsDebts['id_bilan']]['assets'][$name][0]) ? null : round(($finance[$previousBalanceSheetId]['assets'][$name][0] - $finance[$balanceSheetAssetsDebts['id_bilan']]['assets'][$name][0]) / abs($finance[$balanceSheetAssetsDebts['id_bilan']]['assets'][$name][0]) * 100, 1);
+                }
+                foreach ($finance[$balanceSheetAssetsDebts['id_bilan']]['debts'] as $name => $currentBalanceSheetDebts) {
+                    $finance[$previousBalanceSheetId]['debts'][$name][1] = empty($finance[$balanceSheetAssetsDebts['id_bilan']]['debts'][$name][0]) ? null : round(($finance[$previousBalanceSheetId]['debts'][$name][0] - $finance[$balanceSheetAssetsDebts['id_bilan']]['debts'][$name][0]) / abs($finance[$balanceSheetAssetsDebts['id_bilan']]['debts'][$name][0]) * 100, 1);
+                }
+            }
+
+            $previousBalanceSheetId = $balanceSheetAssetsDebts['id_bilan'];
+        }
+
+        if (array_column(array_column(array_column($finance, 'assets'), 'comptes-regularisation-actif'), 0) == [0, 0, 0]) {
+            foreach ($finance as $balanceSheetId => $balanceSheet) {
+                unset($finance[$balanceSheetId]['assets']['comptes-regularisation-actif']);
+            }
+        }
+
+        if (array_column(array_column(array_column($finance, 'debts'), 'comptes-regularisation-passif'), 0) == [0, 0, 0]) {
+            foreach ($finance as $balanceSheetId => $balanceSheet) {
+                unset($finance[$balanceSheetId]['debts']['comptes-regularisation-passif']);
+            }
+        }
+
+        return $finance;
     }
 
     public function getProjectFundingStatistic(\projects $project, $status)

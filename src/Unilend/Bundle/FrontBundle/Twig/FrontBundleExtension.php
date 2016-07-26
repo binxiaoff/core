@@ -264,7 +264,4 @@ class FrontBundleExtension extends \Twig_Extension
             return $cachedItem->get();
         }
     }
-
-
-
 }

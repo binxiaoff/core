@@ -143,17 +143,18 @@ class ProjectsController extends Controller
 
         /** @var ProjectDisplayManager $projectDisplayManager */
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
-        /** @var HighchartsService $highchartsService */
-        $highchartsService = $this->get('unilend.frontbundle.service.highcharts_service');
         /** @var AuthorizationChecker $authorizationChecker */
         $authorizationChecker = $this->get('security.authorization_checker');
 
         $template            = [];
         $template['project'] = $projectDisplayManager->getProjectInformationForDisplay($project);
-
-        $accountData        = $projectDisplayManager->getProjectFinancialData($project);
-        $template['charts'] = $highchartsService->getFinancialProjectDataCharts($accountData);
-        $template['tables'] = $highchartsService->getFinancialProjectDataForTables($accountData);
+        $template['finance'] = $projectDisplayManager->getProjectFinancialData($project);
+        $firstBalanceSheet = current($template['finance']);
+        $template['financeColumns'] = [
+            'balanceSheet' => array_keys($firstBalanceSheet['balanceSheet']),
+            'assets'       => array_keys($firstBalanceSheet['assets']),
+            'debts'        => array_keys($firstBalanceSheet['debts']),
+        ];
 
         if (
             $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY')

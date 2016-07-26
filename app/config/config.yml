@@ -44,7 +44,7 @@ assetic:
     debug:          '%kernel.debug%'
     use_controller: '%kernel.debug%'
     bundles: [UnilendFrontBundle]
-    write_to: '%kernel.root_dir%/../public'
+    write_to: '%kernel.root_dir%/../public/default'
     read_from : '%kernel.root_dir%/../public/default'
     filters:
         cssrewrite: ~
