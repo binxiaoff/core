@@ -834,4 +834,19 @@ class ProjectManager
             throw new \Exception('Period not found for the project.');
         }
     }
+
+    /**
+     * @param \projects $project
+     *
+     * @return bool
+     */
+    public function isRateMinReached(\projects $project)
+    {
+        $rateRange = $this->oBidManager->getProjectRateRange($project);
+        /** @var \bids $bid */
+        $bid = $this->oEntityManager->getRepository('bids');
+        $totalBidRateMin = $bid->getSoldeBid($project->id_project, $rateRange['rate_min'], array(\bids::STATUS_BID_PENDING, \bids::STATUS_BID_ACCEPTED));
+
+        return $totalBidRateMin >= $project->amount;
+    }
 }

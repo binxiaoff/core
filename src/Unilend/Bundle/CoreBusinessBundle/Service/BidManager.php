@@ -96,7 +96,7 @@ class BidManager
 
         $rateRate = $this->getProjectRateRange($project);
 
-        if ($fRate > $rateRate['rate_max'] || $fRate < $rateRate['rate_min']) {
+        if (bccomp($fRate, $rateRate['rate_max'], 1) > 0 || bccomp($fRate, $rateRate['rate_min'], 1) < 0) {
             return false;
         }
 
@@ -279,10 +279,12 @@ class BidManager
         $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         /** @var \clients $oClient */
         $oClient = $this->oEntityManager->getRepository('clients');
+        /** @var \projects $project */
+        $project = $this->oEntityManager->getRepository('projects');
 
-        if (false === empty($oBid->id_autobid) && false === empty($oBid->id_bid) && $oAutoBid->get($oBid->id_autobid)) {
+        if (false === empty($oBid->id_autobid) && false === empty($oBid->id_bid) && $oAutoBid->get($oBid->id_autobid) && $project->get($oBid->id_project)) {
             if (
-                bccomp($currentRate, \bids::BID_RATE_MIN, 1) > 0
+                bccomp($currentRate, $this->getProjectRateRange($project)['rate_min'], 1) > 0
                 && bccomp($currentRate, $oAutoBid->rate_min, 1) >= 0
                 && $oLenderAccount->get($oBid->id_lender_account)
                 && $oClient->get($oLenderAccount->id_client_owner)
