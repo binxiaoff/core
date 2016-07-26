@@ -89,10 +89,7 @@ class LenderProfileController extends Controller
             'postal_address_country' => isset($formData['postal']['postal_address_country']) ? $formData['postal']['postal_address_country'] : $clientAddress->id_pays,
         ];
 
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('Liste deroulante origine des fonds', 'type');
-        $templateVariables['originOfFunds'] = explode(';', $settings->value); //TODO use twig filter for that, as it is a setting
+
 
         $templateVariables['client']              = $client->select('id_client = ' . $client->id_client)[0];
         $templateVariables['lenderAccount']       = $lenderAccount->select('id_lender_account = ' . $lenderAccount->id_lender_account)[0];
@@ -115,6 +112,26 @@ class LenderProfileController extends Controller
             'errors'         => $formErrors,
             'successMessage' => $successMessage
         ];
+
+        if (in_array($client->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
+            /** @var \companies $company */
+            $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
+            /** @var \settings $settings */
+            $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
+            $templateVariables['company'] = $company->select('id_client_owner = ' . $client->id_client)[0];
+            $templateVariables['companyIdAttachments'] = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [
+                \attachment_type::CNI_PASSPORTE_DIRIGEANT,
+                \attachment_type::CNI_PASSPORTE_VERSO
+            ]);
+            $templateVariables['companyOtherAttachments'] = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [
+                \attachment_type::KBIS,
+                \attachment_type::DELEGATION_POUVOIR
+            ]);
+            $settings->get("Liste deroulante conseil externe de l'entreprise", 'type');
+            $templateVariables['externalCounselList'] = json_decode($settings->value);
+            //var_dump($templateVariables);die;
+        }
+
 
         return $this->render('pages/lender_profile/lender_info.html.twig', $templateVariables);
     }
