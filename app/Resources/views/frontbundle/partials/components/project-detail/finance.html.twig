@@ -85,7 +85,7 @@
             </div><!-- /tabs -->
 
             <div class="btn-toolbar">
-                <a href="{{ path('export_income_statement', {'projectId' : project.id_project }) }}" class="btn-default" target="_blank"><span class="icon fa-excel-u32"></span>
+                <a href="{{ path('export_income_statement', {'projectId' : project.projectId}) }}" class="btn-default" target="_blank"><span class="icon fa-excel-u32"></span>
                     {% trans %} project-detail_project-presentation-accounts-export-csv-button {% endtrans %}</a>
             </div><!-- /.btn-toolbar -->
         </section><!-- /.page-section -->
@@ -288,7 +288,7 @@
             </div><!-- /tabs -->
 
             <div class="btn-toolbar">
-                <a href="{{ path('export_balance_sheet', {'projectId' : project.id_project }) }}" class="btn-default" target="_blank">
+                <a href="{{ path('export_balance_sheet', {'projectId' : project.projectId}) }}" class="btn-default" target="_blank">
                     <span class="icon fa-excel-u32"></span>
                     {% trans %} project-detail_project-presentation-accounts-export-csv-button {% endtrans %}</a>
             </div><!-- /.btn-toolbar -->
@@ -303,11 +303,23 @@
                 </div><!-- /.section-tabs-nav -->
 
                 <div class="section-tabs-content tab-content">
-                    <p>{% trans %} project-detail_finance-logged-out-description {% endtrans %}</p>
-                    <p><a class="btn-primary" href="javascript:document.getElementById('form-access-email').focus();">{% trans %} project-detail_finance-logged-out-connect-button {% endtrans %}</a></p>
-                    <p><a href="{{ path('lender_subscription') }}"><span class="icon fa-angle-right"></span>{% trans %} project-detail_finance-logged-out-subscription-link {% endtrans %}</a></p>
-                </div>
-            </div>
-        </section>
+                    <p>{% trans %} project-detail_logged-out-description {% endtrans %}</p>
+                </div><!-- /.section-tabs-content -->
+            </div><!-- /tabs -->
+        </section><!-- /.page-section -->
+
+        <section id="project-section-balance" class="page-section">
+            <div class="tabs">
+                <div class="section-tabs-nav">
+                    <header>
+                        <h3 id="project-balance" class="h3">{% trans %} project-detail_project-presentation-accounts-balance {% endtrans %}</h3>
+                    </header>
+                </div><!-- /.section-tabs-nav -->
+
+                <div class="section-tabs-content tab-content">
+                    <p>{% trans %} project-detail_logged-out-description {% endtrans %}</p>
+                </div><!-- /.section-tabs-content -->
+            </div><!-- /tabs -->
+        </section><!-- /.page-section -->
     {% endif %}
 </div>

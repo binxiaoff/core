@@ -33,7 +33,7 @@
 
                     <div class="project-single-duration">
                         <span class="icon fa-calendar-alt-u32"></span>
-                        <span class="c-p1"><strong>{{ project.period }}</strong> mois</span>
+                        <span class="c-p1"><strong>{{ project.duration }}</strong> mois</span>
                         <div class="label">{% trans %} project-detail_period-label {% endtrans %}</div>
                     </div><!-- /.project-single-duration -->
                 </div>
@@ -73,7 +73,7 @@
                             {{ bidMessage }}
                         {% endif %}
                     </div>
-                    <form action="{{ path('bid_on_project', {'projectId' : project.id_project}) }}" data-bid-confirmation method="post" class="project-single-form project-single-form-invest">
+                    <form action="{{ path('bid_on_project', {'projectId' : project.projectId}) }}" data-bid-confirmation method="post" class="project-single-form project-single-form-invest">
                         <div class="form-field">
                             <label>
                                 <span class="sr-only">{% trans %} project-detail_side-bar-bids-amount-label {% endtrans %}</span>

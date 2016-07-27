@@ -12,7 +12,7 @@
 
             {% for i, project in projects %}
                 {# Set the rating class for the .rating element #}
-                {% set classRating = project.risk|convertRisk|split('.')|join('-') %}
+                {% set classRating = project.risk | convertRisk | split('.') | join('-') %}
 
                 {# Set CSS class to show expired project #}
                 {% set classProjectExpired = '' %}
@@ -39,7 +39,7 @@
 
                 {# Generate object for mapview to place marker on map #}
                 {# TODO : SET IF COND ACCORDING TO LONG AND LAT DATABASE #}
-                {% if true %}{#{% if project.lat is defined and project.lng is defined %}#}
+                {% if true %}{#{% if project.latitude is defined and project.longitude is defined %}#}
                     {# Set the group based on active, expired, or offers inprogress, rejected or accepted #}
                     {# @note MapView JS component & CSS relies on two groups named 'active' and 'expired' (case insensitive) #}
                     {% set mapviewGroup = (project.daysLeft <= 0 ? 'expired' : 'active') %}
@@ -56,8 +56,8 @@
                                                         {% endif %}#}
 
                     {% set mapviewItem = {
-                    id: 'marker' ~ project.id_project,
-                    categoryId: project.company.sector,
+                    id: 'marker' ~ project.projectId,
+                    categoryId: project.sectorId,
                     latLng: [lat[i], long[i]],
                     title: project.title,
                     description: '<div style="font-style: italic;">' ~ project.company.city ~ ', ' ~ project.company.zip ~ '</div><div class="rating rating-' ~ classRating ~ '"><span class="sr-only">Rated ' ~ project.risk ~ ' out of 5</span></span></div>',
@@ -72,14 +72,14 @@
                         <a href="{{ path('project_detail', {'projectSlug' : project.slug }) }}">{{ project.title }}</a>
                     </div>
                     <div class="project-location">{{ project.company.city }}, {{ project.company.zip }}</div>
-                    <div class="project-cost">{{ project.amount|__num|nbsp }}€</div>
+                    <div class="project-cost">{{ project.amount | __num(0) | nbsp }}&nbsp;€</div>
                     <div class="project-rating">
-                        <span class="rating rating-{{ project.risk|convertRisk|split('.')|join('-') }}"><span class="sr-only"></span></span>
+                        <span class="rating rating-{{ project.risk | convertRisk | split('.') | join('-') }}"><span class="sr-only"></span></span>
                     </div>
-                    <div class="project-interest">{{ project.avg_rate|__num(1) }}%</div>
+                    <div class="project-interest">{{ project.avg_rate | __num(1) }}&nbsp;%</div>
                     <div class="project-period">
                         {% if project.daysLeft > 0 and project.daysLeft <= 2 %}
-                            <span class="ui-has-timecount" data-timecount-to="{{ project.date_retrait_full|escape('html_attr') }}">&hellip;</span>
+                            <span class="ui-has-timecount" data-timecount-to="{{ project.endDate | escape('html_attr') }}">&hellip;</span>
                         {% elseif project.daysLeft <= 0 %}
                             {% trans %} project-list_project-finished {% endtrans %}
                         {% else %}
