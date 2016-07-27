@@ -28,6 +28,8 @@ class project_rate_settingsController extends bootstrap
     public function _save()
     {
         $this->hideDecoration();
+        $this->autoFireView = false;
+
         $response = ['result' => 'KO', 'message' => ''];
         if (isset($this->params[0], $this->params[1], $_POST['rate_min'], $_POST['rate_max'])) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRateSettingsManager $projectRateSettingsManager */
@@ -46,17 +48,23 @@ class project_rate_settingsController extends bootstrap
         echo json_encode($response);
     }
 
-    public function _warn_lender_autoLend_settings()
+    public function _warn_lender_autolend_settings()
     {
         $this->hideDecoration();
+        $this->autoFireView = false;
+
         /** @var client_settings $clientSettings */
         $clientSettings = $this->loadData('client_settings');
         /** @var client_setting_type $clientSettingType */
         $clientSettingType = $this->loadData('client_setting_type');
         /** @var lenders_accounts $lender */
         $lender = $this->loadData('lenders_accounts');
+        /** @var \project_rate_settings $projectRateSettings */
+        $projectRateSettings = $this->loadData('project_rate_settings');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LenderManager $lenderManager */
         $lenderManager = $this->get('unilend.service.lender_manager');
+
+        $projectRates        = $projectRateSettings->getSettings();
 
         $clientSettingType->get('autobid_switch', 'label');
         $offset = 0;
@@ -67,7 +75,7 @@ class project_rate_settingsController extends bootstrap
                 if (false === $lender->get($client['id_client'], 'id_client_owner')) {
                     continue;
                 }
-                $badSettings = $lenderManager->getBadAutoBidSettings($lender);
+                $badSettings = $lenderManager->getBadAutoBidSettings($lender, $projectRates);
                 if (false === empty($badSettings)) {
                     //todo:send mail
                 }
