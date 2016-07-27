@@ -52,23 +52,24 @@ class photos
      */
     public function resizeImageWH($format = '')
     {
-        $w_max   = $this->formats[$format]['w'];
-        $h_max   = $this->formats[$format]['h'];
+        $w_max        = $this->formats[$format]['w'];
+        $h_max        = $this->formats[$format]['h'];
+        $newImagePath = $this->uploadedFileName;
 
         // Si aucun préfixe n'est spécifié, on écrase l'image au lieu d'en créer une nouvelle
         if ($format != '') {
-            $this->uploadedFileName = $format . '_' . $this->uploadedFileName;
+            $newImagePath = $format . '_' . $this->uploadedFileName;
         }
 
-        $taille_image = getimagesize($this->upload_dir . $this->uploadedFileName);
+        $imageSize = getimagesize($this->upload_dir . $this->uploadedFileName);
 
-        if (false === $taille_image) {
+        if (false === $imageSize) {
             trigger_error('Unable to get image size: ' . $this->uploadedFileName, E_USER_WARNING);
             return;
         }
 
-        $w = $taille_image[0];
-        $h = $taille_image[1];
+        $w = $imageSize[0];
+        $h = $imageSize[1];
 
         if ($h > $w) {
             $w_tmp = ($h_max / $h) * $w;
@@ -144,7 +145,7 @@ class photos
                     $transparent = imagecolorallocatealpha($img_tmp, 255, 255, 255, 127);
                     imagefilledrectangle($img_tmp, 0, 0, $width, $height, $transparent);
                     imagecopyresampled($img_tmp, $img, 0, 0, 0, 0, $width, $height, $w, $h);
-                    imagegif($img_tmp, $this->upload_dir . $this->uploadedFileName);
+                    imagegif($img_tmp, $this->upload_dir . $newImagePath);
                     break;
                 case 'jpg':
                 case 'JPG':
@@ -152,7 +153,7 @@ class photos
                 case 'JPEG':
                     $img = imagecreatefromjpeg($this->upload_dir . $this->uploadedFileName);
                     imagecopyresampled($img_tmp, $img, 0, 0, 0, 0, $width, $height, $w, $h);
-                    imagejpeg($img_tmp, $this->upload_dir . $this->uploadedFileName, 100);
+                    imagejpeg($img_tmp, $this->upload_dir . $newImagePath, 100);
                     break;
                 case 'png':
                 case 'PNG':
@@ -162,14 +163,14 @@ class photos
                     $transparent = imagecolorallocatealpha($img_tmp, 255, 255, 255, 127);
                     imagefilledrectangle($img_tmp, 0, 0, $width, $height, $transparent);
                     imagecopyresampled($img_tmp, $img, 0, 0, 0, 0, $width, $height, $w, $h);
-                    imagepng($img_tmp, $this->upload_dir . $this->uploadedFileName, 0);
+                    imagepng($img_tmp, $this->upload_dir . $newImagePath, 0);
                     break;
                 default:
                     trigger_error('Invalid image extension: ' . $this->uploadedFileExtension, E_USER_ERROR);
                     return;
             }
 
-            chmod($this->upload_dir . $this->uploadedFileName, 0777);
+            chmod($this->upload_dir . $newImagePath, 0777);
             imagedestroy($img_tmp);
             imagedestroy($img);
         } else {

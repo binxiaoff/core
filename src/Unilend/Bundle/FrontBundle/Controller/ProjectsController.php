@@ -70,10 +70,10 @@ class ProjectsController extends Controller
     }
 
     /**
-     * @Route("/projects-map", name="projects_map")
+     * @Route("/projects/map", name="projects_map")
      * @Method("POST")
      */
-    public function getProjectListForMapView(Request $request)
+    public function projectsMapViewAction(Request $request)
     {
         if ($request->isXMLHttpRequest()) {
             /** @var ProjectDisplayManager $projectDisplayManager */
@@ -219,9 +219,9 @@ class ProjectsController extends Controller
     }
 
     /**
-     * @Route("/projects/bid/{projectId}", name="bid_on_project")
+     * @Route("/projects/bid/{projectSlug}", name="bid_on_project")
      */
-    public function placeBidOnProject($projectId, Request $request)
+    public function placeBidOnProject($projectSlug, Request $request)
     {
         if ($post = $request->request->get('invest')) {
             /** @var \clients_history_actions $clientHistoryActions */
@@ -303,7 +303,14 @@ class ProjectsController extends Controller
                 return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
         }
+    }
 
+    /**
+     * @Route("/projects/offers/{projectSlug}", name="offers_on_project")
+     */
+    public function offersListAction()
+    {
+        return $this->render('partials/components/project-detail/bids-list-detail.html.twig');
     }
 
     public function _pop_up_fast_pret()
