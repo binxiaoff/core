@@ -1,80 +1,31 @@
-{# Placeholder data #}
-{% set placeholderData = {
-detail: [{
-    id:0,
-    rate:4.1,
-    amount: 250,
-    status: 1,
-    userisinvolved: 0
-},{
-    id:1,
-    rate:4.1,
-    amount: 128,
-    status: 1,
-    userisinvolved: 0
-},{
-    id:2,
-    rate:4.1,
-    amount: 450,
-    status: 0,
-    userisinvolved: 0
-},{
-    id:3,
-    rate:4.1,
-    amount: 1015,
-    status: 0,
-    userisinvolved: 1
-},{
-    id:4,
-    rate:4.1,
-    amount: 333,
-    status: 1,
-    userisinvolved: 0
-},{
-    id:5,
-    rate:4.1,
-    amount: 700,
-    status: 1,
-    userisinvolved: 0
-},{
-    id:6,
-    rate:4.1,
-    amount: 500,
-    status: 1,
-    userisinvolved: 0
-}]
-} %}
-
-
-{% set bidsDetail = placeholderData.detail %}
 <tr>
     <td colspan="4" style="padding:0">
         <table class="table ui-sortable" data-sortable style="padding:0;border:none;">
             <thead style="padding:0;border:none;">
-            <tr class="bids-detail-by-rate-header">
-                <th class="table-sortable-column center" data-sortable-by="detailid">
-                    <span class="label">N°</span>
-                </th>
-                <th class="center">
-                    <span class="label">Taux d'intérêt</span>
-                </th>
-                <th class="table-sortable-column center" data-sortable-by="detailamount">
-                    <span class="label">Montant</span>
-                </th>
-                <th class="table-sortable-column center" data-sortable-by="detailaccepted">
-                    <span class="label">Statut</span>
-                </th>
-            </tr>
+                <tr class="bids-detail-by-rate-header">
+                    <th class="table-sortable-column center" data-sortable-by="detail-id">
+                        <span class="label">N°</span>
+                    </th>
+                    <th class="center">
+                        <span class="label">Taux d'intérêt</span>
+                    </th>
+                    <th class="table-sortable-column center" data-sortable-by="detail-amount">
+                        <span class="label">Montant</span>
+                    </th>
+                    <th class="table-sortable-column center" data-sortable-by="detail-status">
+                        <span class="label">Statut</span>
+                    </th>
+                </tr>
             </thead>
             <tbody data-sortable-content>
-            {% for i, item in bidsDetail %}
-                <tr class="bids-detail-by-rate {% if item.userisinvolved == 1 %} ui-current-user-involved {% endif %}"
-                    data-sortable-detailid="{{ item.id }}" data-sortable-detailamount="{{ item.amount }}" data-sortable-detailaccepted="{{ item.status }}">
-                    <td class="center">{{ item.id }}</td>
-                    <td class="center">{{ item.rate }}</td>
-                    <td class="center">{{ item.amount }}</td>
+            {% for bid in bids %}
+                <tr class="bids-detail-by-rate{% if bid.userInvolved == 1 %} ui-current-user-involved{% endif %}"
+                    data-sortable-detail-id="{{ bid.id }}" data-sortable-detail-amount="{{ bid.amount }}" data-sortable-detail-status="{{ bid.status }}">
+                    <td class="center">{{ bid.id }}</td>
+                    <td class="center">{{ bid.rate | __num(1) | nbsp | raw }}&nbsp;%</td>
+                    <td class="center">{{ bid.amount | __num(2) | nbsp | raw }}&nbsp;€</td>
                     <td>
-                        {% if item.status == 1 %}
+                        {% if bid.status == 1 %}
                             <span class="c-success">
                                 <span class="icon fa-check-u32"></span>
                                 En cours
@@ -82,7 +33,7 @@ detail: [{
                         {% else %}
                             <span class="c-error">
                                 <span class="icon fa-close-u32"></span>
-                            Non retenue
+                                Non retenue
                             </span>
                         {% endif %}
                     </td>

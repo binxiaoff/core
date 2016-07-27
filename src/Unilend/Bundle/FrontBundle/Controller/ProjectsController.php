@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 
+use Cache\Adapter\Memcache\MemcacheCachePool;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -11,6 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\FrontBundle\Service\HighchartsService;
@@ -219,9 +221,9 @@ class ProjectsController extends Controller
     }
 
     /**
-     * @Route("/projects/bid/{projectSlug}", name="bid_on_project")
+     * @Route("/projects/bid/{projectId}", requirements={"projectId" = "^\d+$"}, name="place_bid")
      */
-    public function placeBidOnProject($projectSlug, Request $request)
+    public function placeBidAction($projectId, Request $request)
     {
         if ($post = $request->request->get('invest')) {
             /** @var \clients_history_actions $clientHistoryActions */
@@ -306,11 +308,70 @@ class ProjectsController extends Controller
     }
 
     /**
-     * @Route("/projects/offers/{projectSlug}", name="offers_on_project")
+     * @Route("/projects/bids/{projectId}/{rate}", requirements={"projectId" = "^\d+$", "rate" = "^(?:\d+|\d*\.\d+)$"}, name="bids_on_project")
+     * @Method({"POST"})
      */
-    public function offersListAction()
+    public function bidsListAction($projectId, $rate, Request $request)
     {
-        return $this->render('partials/components/project-detail/bids-list-detail.html.twig');
+        if ($request->isXMLHttpRequest()) {
+            /** @var EntityManager $entityManager */
+            $entityManager = $this->get('unilend.service.entity_manager');
+            /** @var MemcacheCachePool $oCachePool */
+            $oCachePool  = $this->get('memcache.default');
+            $oCachedItem = $oCachePool->getItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $projectId . '_' . $rate);
+
+            $template = [];
+
+            if (true === $oCachedItem->isHit()) {
+                $template['bids'] = $oCachedItem->get();
+            } else {
+                /** @var \bids $bidEntity */
+                $bidEntity = $entityManager->getRepository('bids');
+
+                $bids = $bidEntity->select('id_project = ' . $projectId . ' AND rate LIKE ' . $rate, 'ordre ASC');
+                $template['bids'] = [];
+
+                foreach ($bids as $bid) {
+                    $template['bids'][] = [
+                        'id'           => (int) $bid['id_bid'],
+                        'rate'         => (float) $bid['rate'],
+                        'amount'       => $bid['id_bid'] / 100,
+                        'status'       => (int) $bid['status'],
+                        'lenderId'     => (int) $bid['id_lender_account'],
+                        'userInvolved' => false,
+                        'autobid'      => $bid['id_autobid'] > 0
+                    ];
+                }
+
+                $oCachedItem->set($template['bids'])->expiresAfter(300);
+                $oCachePool->save($oCachedItem);
+            }
+
+            /** @var BaseUser $user */
+            $user = $this->getUser();
+
+            $template['canSeeAutobid'] = false;
+
+            if ($user instanceof UserLender) {
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+                $autoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
+                /** @var \lenders_accounts $lenderAccount */
+                $lenderAccount = $entityManager->getRepository('lenders_accounts');
+                $lenderAccount->get($user->getClientId(), 'id_client_owner');
+
+                $template['canSeeAutobid'] = $autoBidSettingsManager->isQualified($lenderAccount);
+
+                array_walk($template['bids'], function(&$bid) use ($lenderAccount) {
+                    if ($bid['lenderId'] == $lenderAccount->id_lender_account) {
+                        $bid['userInvolved'] = true;
+                    }
+                });
+            }
+
+            return $this->render('partials/components/project-detail/bids-list-detail.html.twig', $template);
+        }
+
+        return new Response('not an ajax request');
     }
 
     public function _pop_up_fast_pret()

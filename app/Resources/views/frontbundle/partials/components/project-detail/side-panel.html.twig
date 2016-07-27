@@ -74,7 +74,7 @@
                         {% endif %}
                     </div>
                     {% if project.maxValidRate > constant('\\bids::BID_RATE_MIN') %}
-                        <form action="{{ path('bid_on_project', {'projectSlug' : project.slug}) }}" data-bid-confirmation method="post" class="project-single-form project-single-form-invest">
+                        <form action="{{ path('place_bid', {'projectId' : project.id_project}) }}" data-bid-confirmation method="post" class="project-single-form project-single-form-invest">
                             <div class="form-field">
                                 <label>
                                     <span class="sr-only">{% trans %} project-detail_side-bar-bids-amount-label {% endtrans %}</span>
