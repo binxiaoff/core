@@ -1744,6 +1744,8 @@ class profileController extends bootstrap
         $oProject       = $this->loadData('projects');
         /** @var autobid $autobid */
         $autobid        = $this->loadData('autobid');
+@        /** @var \project_rate_settings $projectRateSettings */
+        $projectRateSettings = $this->loadData('project_rate_settings');
 
         $this->lng['autobid'] = $this->ln->selectFront('autobid', $this->language, $this->App);
 
@@ -1757,11 +1759,21 @@ class profileController extends bootstrap
         $this->fAverageRateUnilend = round($oProject->getAvgRate(), 1);
         $this->sAcceptationRate    = json_encode($oBid->getAcceptationPossibilityRounded());
 
+        $projectRates   = $projectRateSettings->getSettings();
+        $projectMaxRate = [];
+        foreach ($projectRates as $rate) {
+            $projectMaxRate[$rate['id_period']][$rate['evaluation']] = $rate['rate_max'];
+        }
+
         $this->aAutoBidSettings = array();
         $aAutoBidSettings       = $autobid->getSettings($this->oLendersAccounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
         foreach ($aAutoBidSettings as $aSetting) {
-            $aSetting['AverageRateUnilend']                           = $this->projects->getAvgRate($aSetting['evaluation'], $aSetting['min'], $aSetting['max']);
-            $aSetting['note']                                         = constant('\projects::RISK_' . $aSetting['evaluation']);
+            $aSetting['AverageRateUnilend'] = $this->projects->getAvgRate($aSetting['evaluation'], $aSetting['min'], $aSetting['max']);
+            $aSetting['note']               = constant('\projects::RISK_' . $aSetting['evaluation']);
+            $aSetting['project_rate_max']   = \bids::BID_RATE_MAX;
+            if (isset($projectMaxRate[$aSetting['id_period']][$aSetting['evaluation']])) {
+                $aSetting['project_rate_max'] = $projectMaxRate[$aSetting['id_period']][$aSetting['evaluation']];
+            }
             $this->aAutoBidSettings[$aSetting['id_period']][] = $aSetting;
         }
 

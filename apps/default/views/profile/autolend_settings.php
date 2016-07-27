@@ -128,6 +128,7 @@
                                             <input type="hidden" value="<?= $aSetting['note'] ?>" name="param-advanced-note">
                                             <input type="hidden" value="<?= $aSetting['min'] ?>" name="param-advanced-period-min">
                                             <input type="hidden" value="<?= $aSetting['max'] ?>" name="param-advanced-period-max">
+                                            <input type="hidden" value="<?= $aSetting['project_rate_max'] ?>" id="<?= $aSetting['id_autobid'] ?>-param-advanced-project-max-rate" name="param-advanced-project-max-rate">
                                         </div>
                                     </div>
                                 </td>
@@ -163,6 +164,7 @@
                         <span id="param-advanced-global-progress-label"></span>
                         <canvas id="param-advanced-global-progress" width="109" height="109"></canvas>
                     </div>
+                    <div class="warning-message"><?=$this->lng['autobid']['warning-range-message'] ?></div>
                 </div>
             </div>
         </div>
@@ -253,6 +255,18 @@ $(window).load(function(){
             }
             widget.find('.global-rate').html(avg_rate+'%');
             widget.find('.indice-rate').html(avg_rate_indice);
+
+            var currentRate = cell.find($("input[id*='-param-advanced-value']")).val();
+            var switchToggle = cell.find($("input[id*='-param-advanced-switch']")).val();
+            var projectMaxRate = cell.find("input[id*='param-advanced-project-max-rate']").val();
+
+            if(switchToggle == 1) {
+                if(parseFloat(currentRate) > parseFloat(projectMaxRate)) {
+                    $("#table-infos_right").addClass("warning-range");
+                } else {
+                    $("#table-infos_right").removeClass("warning-range");
+                }
+            }
 
             widget.find('.btn-apply-avg-rate').off().click(function(e){
                 e.stopPropagation();

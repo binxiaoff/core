@@ -510,6 +510,25 @@ div.autobid-tabs h3 {
 #buttons-expert-settings button {
     width: 210px;
 }
+
+.warning-message {
+    display:none;
+}
+
+.warning-range .warning-message {
+    color:#ec1a29;
+    display:block;
+    font-size:14px;
+}
+
+.warning-range .param-advanced-tooltip {
+    background:#FFE8E9;
+}
+
+.table-infos.warning-range .param-advanced-tooltip:after{
+    border-right-color:#FFE8E9;
+}
+
 /* ===========================
     Autobid LightBox
 ============================ */
