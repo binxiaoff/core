@@ -1744,7 +1744,7 @@ class profileController extends bootstrap
         $oProject       = $this->loadData('projects');
         /** @var autobid $autobid */
         $autobid        = $this->loadData('autobid');
-@        /** @var \project_rate_settings $projectRateSettings */
+        /** @var \project_rate_settings $projectRateSettings */
         $projectRateSettings = $this->loadData('project_rate_settings');
 
         $this->lng['autobid'] = $this->ln->selectFront('autobid', $this->language, $this->App);
