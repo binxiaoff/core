@@ -107,4 +107,18 @@ class project_rate_settings extends project_rate_settings_crud
         $statement = $queryBuilder->execute();
         return $statement->fetchAll();
     }
+
+    public function getGlobalMinMaxRate()
+    {
+        $queryBuilder = $this->bdd->createQueryBuilder();
+
+        $queryBuilder
+            ->select('min(rate_min) as rate_min, max(rate_max) as rate_max')
+            ->from('project_rate_settings')
+            ->where('status = :status')
+            ->setParameter('status', self::STATUS_ACTIVE);
+
+        $statement = $queryBuilder->execute();
+        return $statement->fetch();
+    }
 }

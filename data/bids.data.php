@@ -33,9 +33,6 @@ class bids extends bids_crud
     const STATUS_BID_REJECTED                 = 2;
     const STATUS_AUTOBID_REJECTED_TEMPORARILY = 3;
 
-    const BID_RATE_MIN = 4.0;
-    const BID_RATE_MAX = 10.0;
-
     const CACHE_KEY_PROJECT_BIDS = 'bids-projet';
 
     public function __construct($bdd, $params = '')

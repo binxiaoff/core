@@ -130,7 +130,8 @@ class AutoBidSettingsManager
             return false;
         }
 
-        if ($fRate < \bids::BID_RATE_MIN || $fRate > \bids::BID_RATE_MAX) {
+
+        if ($this->isRateValid($fRate)) {
             return false;
         }
 
@@ -367,5 +368,39 @@ class AutoBidSettingsManager
         /** @var \clients_history_actions $oClientHistoryActions */
         $oClientHistoryActions = $this->oEntityManager->getRepository('clients_history_actions');
         return $oClientHistoryActions->counter('id_client = ' . $oLendersAccount->id_client_owner . ' AND nom_form = "autobid_on_off" ') > 0;
+    }
+
+    public function getRateRange($evaluation = null, $periodId = null)
+    {
+        /** @var \project_rate_settings $projectRateSettings */
+        $projectRateSettings = $this->oEntityManager->getRepository('project_rate_settings');
+
+        $projectRate = array_shift($projectRateSettings->getSettings($evaluation, $periodId));
+
+        if ($evaluation === null || $periodId === null || empty($projectRate)) {
+            $projectRate = $projectRateSettings->getGlobalMinMaxRate();
+        }
+
+        return $projectRate;
+    }
+
+    /**
+     * Check if a autobid settings rate is valid (don't use it for a bid on a particular project. in this case, use getProjectRateRange() of bid manager)
+     *
+     * @param      $fRate
+     * @param null $evaluation
+     * @param null $periodId
+     *
+     * @return bool
+     */
+    public function isRateValid($fRate, $evaluation = null, $periodId = null)
+    {
+        $projectRate = $this->getRateRange($evaluation, $periodId);
+
+        if (bccomp($fRate, $projectRate['rate_min'], 1) >= 0 && bccomp($fRate, $projectRate['rate_max'], 1) <= 0) {
+            return true;
+        }
+
+        return false;
     }
 }

@@ -57,7 +57,7 @@
                             <select name="autobid-param-simple-taux-min" id="autobid-param-simple-taux-min" class="custom-select field-small required" >
                                 <option value="0"><?= $this->lng['autobid']['settings-select-rate'] ?></option>
                                 <option value="0"><?= $this->lng['autobid']['settings-select-rate'] ?></option>
-                                <?php foreach (range(\bids::BID_RATE_MAX, \bids::BID_RATE_MIN, -$this->fAutoBidStep) as $fRate) : ?>
+                                <?php foreach (range($this->projectRatesGlobal['rate_max'], $this->projectRatesGlobal['rate_min'], -$this->fAutoBidStep) as $fRate) : ?>
                                     <option value="<?= $fRate ?>" <?= (round($fRate,1) == round($this->aSettingsSubmitted['simple-taux-min'],1)) ? 'selected' : '' ?> >
                                         <?= $this->ficelle->formatNumber($fRate, 1) ?>%
                                     </option>
@@ -129,6 +129,7 @@
                                             <input type="hidden" value="<?= $aSetting['min'] ?>" name="param-advanced-period-min">
                                             <input type="hidden" value="<?= $aSetting['max'] ?>" name="param-advanced-period-max">
                                             <input type="hidden" value="<?= $aSetting['project_rate_max'] ?>" id="<?= $aSetting['id_autobid'] ?>-param-advanced-project-max-rate" name="param-advanced-project-max-rate">
+                                            <input type="hidden" value="<?= $aSetting['project_rate_min'] ?>" id="<?= $aSetting['id_autobid'] ?>-param-advanced-project-min-rate" name="param-advanced-project-min-rate">
                                         </div>
                                     </div>
                                 </td>
@@ -322,12 +323,13 @@ $(window).load(function(){
             var AvgRateUnilend = parseFloat(cell.find('input[name=param-advanced-unilend-rate]').val().replace(",", "."));
             var currentVal = Number(parseFloat(inputRate.val()).toFixed(1));
             var newVal = Number(currentVal + parseFloat($(this).val())).toFixed(1);
-
-            if (newVal >= 10.0) {
-                newVal = '10.0';
+            var projectMinRate = cell.find("input[id*='param-advanced-project-min-rate']").val();
+            var projectMaxRate = cell.find("input[id*='param-advanced-project-max-rate']").val();
+            if (newVal >= parseFloat(projectMaxRate)) {
+                newVal = projectMaxRate;
             }
-            if (newVal <= 4.0) {
-                newVal = '4.0';
+            if (newVal <= parseFloat(projectMinRate)) {
+                newVal = projectMinRate;
             }
 
             inputRate.val(newVal);

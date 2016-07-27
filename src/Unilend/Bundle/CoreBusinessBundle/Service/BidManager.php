@@ -88,15 +88,17 @@ class BidManager
         $fAmount     = $oBid->amount / 100;
         $fRate       = round(floatval($oBid->rate), 1);
 
-        $project->get($iProjectId);
+        if (false === $project->get($iProjectId)) {
+            return false;
+        }
 
         if ($iAmountMin > $fAmount) {
             return false;
         }
 
-        $rateRate = $this->getProjectRateRange($project);
+        $projectRates = $this->getProjectRateRange($project);
 
-        if (bccomp($fRate, $rateRate['rate_max'], 1) > 0 || bccomp($fRate, $rateRate['rate_min'], 1) < 0) {
+        if (bccomp($fRate, $projectRates['rate_max'], 1) > 0 || bccomp($fRate, $projectRates['rate_min'], 1) < 0) {
             return false;
         }
 
@@ -411,14 +413,13 @@ class BidManager
      */
     public function getProjectRateRange(\projects $project)
     {
-        if ($project->id_rate) {
-            /** @var \project_rate_settings $projectRateSettings */
-            $projectRateSettings = $this->oEntityManager->getRepository('project_rate_settings');
-            if($projectRateSettings->get($project->id_rate)) {
-                return ['rate_min' => (float) $projectRateSettings->rate_min, 'rate_max' => (float) $projectRateSettings->rate_max];
-            }
+        /** @var \project_rate_settings $projectRateSettings */
+        $projectRateSettings = $this->oEntityManager->getRepository('project_rate_settings');
+
+        if (false === empty($project->id_rate) && $projectRateSettings->get($project->id_rate)) {
+            return ['rate_min' => (float) $projectRateSettings->rate_min, 'rate_max' => (float) $projectRateSettings->rate_max];
         }
 
-        return ['rate_min' => \bids::BID_RATE_MIN, 'rate_max' => \bids::BID_RATE_MAX];
+        return $projectRateSettings->getGlobalMinMaxRate();
     }
 }

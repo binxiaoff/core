@@ -62,9 +62,10 @@ class project_rate_settingsController extends bootstrap
         /** @var \project_rate_settings $projectRateSettings */
         $projectRateSettings = $this->loadData('project_rate_settings');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LenderManager $lenderManager */
-        $lenderManager = $this->get('unilend.service.lender_manager');
+        $lenderManager          = $this->get('unilend.service.lender_manager');
+        $autobidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
 
-        $projectRates        = $projectRateSettings->getSettings();
+        $projectRates = $projectRateSettings->getSettings();
 
         $clientSettingType->get('autobid_switch', 'label');
         $offset = 0;
@@ -72,9 +73,12 @@ class project_rate_settingsController extends bootstrap
         while ($autoLendActiveClients = $clientSettings->select('id_type=' . $clientSettingType->id_type . ' AND value = ' . client_settings::AUTO_BID_ON, '', $offset, $limit)) {
             $offset += $limit;
             foreach ($autoLendActiveClients as $client) {
-                if (false === $lender->get($client['id_client'], 'id_client_owner')) {
+                if (false === $lender->get($client['id_client'], 'id_client_owner')
+                    || false === $lenderManager->canBid($lender)
+                    || $autobidSettingsManager->isNovice($lender)) {
                     continue;
                 }
+
                 $badSettings = $lenderManager->getBadAutoBidSettings($lender, $projectRates);
                 if (false === empty($badSettings)) {
                     //todo:send mail
