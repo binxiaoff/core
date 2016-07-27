@@ -179,6 +179,47 @@
 }
 
 #alloffers-table {
+  .rejected-offers {
+    background-color:#f8f6f8;
+    height:50px;
+    td {
+      text-align:center;
+      cursor:pointer;
+      color:#9f9d9f;
+    }
+  }
+  .rejected-row {
+    display:none;
+    background-color:#FDF4FA;
+    color:#9f9d9f;
+  }
+  .bid-rate-cta {
+    display:inline-block;
+    width:35px;
+    line-height:20px;
+  }
+  .icon-cta {
+    line-height:20px;
+  }
+
+  .icon-rejected {
+    display:none;
+
+  }
+  .icon-accepted {
+    display:inline-block;
+  }
+
+  .all-rejected {
+    .icon-rejected {
+      display:inline-block;
+
+    }
+    .icon-accepted {
+      display:none;
+    }
+  }
+
   .bids-row {
     cursor:pointer;
   }
@@ -217,58 +258,8 @@
     color:#4fa8b0;
   }
   .bids-detail-by-rate.ui-current-user-involved {
-    background-color:#FDF4FA;
-    color:#b20066;
-  }
-  .bids-detail-by-rate-header {
-    background-color:#eceaed;
-  }
-  .center {
-    text-align:center;
-  }
-}
-
-#alloffers-table {
-  .bids-row {
-    cursor:pointer;
-  }
-  .bids-row.active-row {
-    background-color:#b20066;
+    background-color:#5fc3cf;
     color:#fff;
-    .c-p1 span{
-      color:#fff;
-    }
-  }
-  .bids-row.active-row:hover {
-    background-color:#b20066;
-  }
-  .bids-row:hover {
-    background-color: #fbf2f7;
-  }
-
-  .icon.fa-caret-r-u32 {
-    display:inline-block;
-  }
-  .icon.fa-caret-d-u32 {
-    display:none;
-  }
-
-  .active-row {
-    .icon.fa-caret-r-u32 {
-      display:none;
-    }
-    .icon.fa-caret-d-u32 {
-      display:inline-block;
-    }
-  }
-
-  .bids-detail-by-rate {
-    background-color:#daf6f9;
-    color:#4fa8b0;
-  }
-  .bids-detail-by-rate.ui-current-user-involved {
-    background-color:#FDF4FA;
-    color:#b20066;
   }
   .bids-detail-by-rate-header {
     background-color:#eceaed;
