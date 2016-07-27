@@ -5,130 +5,174 @@
 {# Page data #}
 {% set bodyId = '' %}
 {% set page = {
-id: 'user-preter-operations',
-title: 'Prêteur / Operations',
-permalink: route('user/preter/operations'),
-classNames: 'user-preter-operations'
+    id: 'user-emprunteur-operations',
+    title: 'Emprunteur / Operations',
+    permalink: route('user/emprunteur/operations'),
+    classNames: 'user-emprunteur-operations'
 } %}
 
 {# Placeholder data #}
 {% set placeholderData = {
     "operations": [{
-        "id": 1,
-        "typeId": 3,
-        "typeName": "Affectation aux preteurs de la mensualité",
-        "projectID": 88533,
-        "projectName": "Iena Consulting",
-        "date": "28 March 2016",
-        "amount": -529.45,
-        "details": true,
-        "commission": "commission",
-        "TVA": "TVA",
-        "com": -45.12,
-        "tax": -5.95
-    }, {
-        "id": 2,
-        "typeId": 3,
-        "typeName": "Affectation aux preteurs de la mensualité",
-        "projectID": 45523,
-        "projectName": "G Finance",
-        "date": "21 March 2016",
-        "amount": 607.82,
-        "details": false
-    }, {
-        "id": 3,
-        "typeId": 4,
-        "typeName": "Commission mensuelle sur projet",
-        "projectID": 45896,
-        "projectName": "Maud Maquillage Permanent",
-        "date": "18 March 2016",
-        "amount": -94.40,
-        "details": false
-    }, {
-        "id": 4,
-        "typeId": 4,
-        "typeName": "Commission mensuelle sur projet",
-        "projectID": 78963,
-        "projectName": "Parcome",
-        "date": "18 March 2016",
-        "amount": -55.02,
-        "details": false
-    }, {
-        "id": 5,
-        "typeId": 4,
-        "typeName": "Commission mensuelle sur projet",
-        "projectID": 15478,
-        "projectName": "Novoprod",
-        "date": "18 March 2016",
-        "amount": -128.85,
-        "details": true,
-        "commission": "commission",
-        "TVA": "TVA",
-        "com": -45.12,
-        "tax": -5.95
-    }, {
-        "id": 6,
-        "typeId": 4,
-        "typeName": "Commission mensuelle sur projet",
-        "projectID": 87456,
-        "projectName": "Ed Distribution",
-        "date": "18 March 2016",
-        "amount": 404.52,
-        "details": false
-    }, {
-        "id": 7,
-        "typeId": 4,
-        "typeName": "Commission mensuelle sur projet",
-        "projectID": 88533,
-        "projectName": "Jolie Doll",
-        "date": "18 March 2016",
-        "amount": -12.85,
-        "details": false
-    }, {
-        "id": 8,
-        "typeId": 1,
-        "typeName": "Prélèvement mensualité",
-        "projectID": 88533,
-        "projectName": "Jolie Doll",
-        "date": "12 March 2016",
-        "amount": -14.85,
-        "details": true,
-        "commission": "commission",
-        "TVA": "TVA",
-        "com": -5.12,
-        "tax": -3.45
-    }, {
-        "id": 9,
-        "typeId": 4,
-        "typeName": "Commission mensuelle sur projet",
-        "projectID": 45523,
-        "projectName": "Urban Factory",
-        "date": "10 March 2016",
-        "amount": 18.45,
-        "details": false
-    }, {
-        "id": 10,
-        "typeId": 4,
-        "typeName": "Commission mensuelle sur projet",
-        "projectID": 88533,
-        "projectName": "Iena Consulting",
-        "date": "7 March 2016",
-        "amount": -702.31,
-        "details": false
-    }, {
-        "id": 11,
-        "typeId": 2,
-        "typeName": "Virement des fonds",
-        "projectID": 78963,
-        "projectName": "G Finance",
-        "date": "04 March 2016",
-        "amount": -74.45,
-        "details": false
+    "id": 1,
+    "typeId": 3,
+    "typeName": "Affectation aux preteurs de la mensualité",
+    "contractId": 26781,
+    "projectId": 1,
+    "date": "08/06/2016",
+    "amount": -584,45,
+    "balance": 43.54,
+    "details": false,
+    "export": 0
+},{
+    "id": 2,
+    "typeId": 3,
+    "typeName": "Commission mensuelle sur projet",
+    "contractId": 26781,
+    "projectId": 2,
+    "date": "10/06/2016",
+    "amount": -15,37,
+    "balance": 23.54,
+    "details": {
+        "items": [{
+            "label": "Commission HT",
+            "value": -12.84
+        },{
+            "label": "TVA",
+            "value": -2.56
+        }]
+    },
+    "export": 0
+},{
+    "id": 3,
+    "typeId": 4,
+    "typeName": "Prélevement mensualité",
+    "contractId": 26781,
+    "projectId": 3,
+    "date": "11/06/2016",
+    "amount": 0.54,
+    "balance": 3.54,
+    "details": false,
+    "export": 0
+},{
+    "id": 4,
+    "typeId": 4,
+    "typeName": "Affectation aux preteurs de la mensualité",
+    "contractId": 26781,
+    "projectId": 4,
+    "date": "11/06/2016",
+    "amount": 0.58,
+    "balance": 2.80,
+    "details": false,
+    "export": 1
+},{
+    "id": 5,
+    "typeId": 4,
+    "typeName": "Commission mensuelle sur projet",
+    "contractId": 15478,
+    "projectId": 5,
+    "date": "10/05/2016",
+    "amount": -15.37,
+    "balance": 2.22,
+    "details": {
+    "items": [{
+        "label": "Commission HT",
+        "value": -12.81
+    },{
+        "label": "TVA",
+        "value": -2.56
     }]
+    },
+    "export": 0
+},{
+    "id": 6,
+    "typeId": 4,
+    "typeName": "Prélèvement mensualité",
+    "contractId": 87456,
+    "projectId": 6,
+    "date": "10/05/2016",
+    "amount": -15.37,
+    "balance": 1.66,
+    "details": {
+        "items": [{
+            "label": "Commission HT",
+            "value": -12.84
+        },{
+            "label": "TVA",
+            "value": -2.56
+        }]
+    },
+    "export": 0
+},{
+    "id": 7,
+    "typeId": 4,
+    "typeName": "Prélèvement mensualité",
+    "contractId": 26781,
+    "projectId": 7,
+    "date": "09/04/2016",
+    "amount": 0.32,
+    "balance": 1.22,
+    "details": false,
+    "export": 0
+},{
+    "id": 8,
+    "typeId": 1,
+    "typeName": "Affectation aux préteurs de la mensualité",
+    "contractId": 26781,
+    "projectId": 7,
+    "date": "09/05/2016",
+    "amount": -592,45,
+    "balance": 0.98,
+    "details": false,
+    "export": 1
+},{
+    "id": 9,
+    "typeId": 4,
+    "typeName": "Commission mensuelle sur projet",
+    "contractId": 26781,
+    "projectId": 7,
+    "date": "09/03/2016",
+    "amount": -15.37,
+    "balance": 20.98,
+    "details": {
+        "items": [{
+                "label": "Commission HT",
+                "value": -12.84
+            },{
+                "label": "TVA",
+                "value": -2.56
+        }]
+    },
+    "export": 0
+},{
+    "id": 10,
+    "typeId": 4,
+    "typeName": "Prélèvement mensualité",
+    "contractId": 26781,
+    "projectId": 7,
+    "date": "01/04/2016",
+    "amount": 607.82,
+    "balance": 20.45,
+    "details": false,
+    "export": 1
+},{
+    "id": 11,
+    "typeId": 2,
+    "typeName": "Affectation aux preteurs de la mensualité",
+    "contractId": 26781,
+    "projectId": 7,
+    "date": "09/03/2016",
+    "amount": -592.45,
+    "balance": 19.95,
+    "details": false,
+    "export": 1
+}]
 } %}
 {% set filterOperations = placeholderData.filter.operations %}
+{% set filterLoans = placeholderData.filter.loans %}
 {% set operations = placeholderData.operations %}
 {% set stats = placeholderData.stats %}
+{% set loans = placeholderData.loans %}
 
 {% block dashboardContent %}
 
@@ -263,56 +307,35 @@ classNames: 'user-preter-operations'
                                     <th class="table-column table-myoperations-borrower-item-operation">
                                         <span class="label">Opération</span>
                                     </th>
-                                    <th class="table-column table-myoperations-borrower-item-projet">
+                                    <th class="table-column cell-right table-myoperations-borrower-item-projet">
                                         <span class="label">Projet</span>
                                     </th>
-                                    <th class="table-column table-myoperations-borrower-item-date">
+                                    <th class="table-column cell-right table-myoperations-borrower-item-date">
                                         <span class="label">Date de l'opération</span>
                                     </th>
-                                    <th class="table-column table-myoperations-borrower-item-amount">
+                                    <th class="table-column cell-right table-myoperations-borrower-item-amount">
                                         <span class="label">Montant</span>
                                     </th>
-                                    <th class="table-column table-myoperations-borrower-item-detail">
+                                    <th class="table-column cell-right table-myoperations-borrower-item-detail">
                                         <span class="label">Détail</span>
                                     </th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 {% for i, op in operations %}
-                                    <tr {{ general.attrsString({
-                                        'id': 'operation-' ~ op.id
-                                        }) }} class="table-myoperations-item">
-                                        <td class="table-myoperations-borrower-item-operation">
-                                            {{ op.typeName }}
-                                            {% if op.details == true %}
-                                                <dt class="ad-line">{{ op.commission }}</dt>
-                                                <dt class="ad-line">{{ op.TVA }}</dt>
+                                    {% set classAmount = op.amount > 0 ? 'ui-amount-positive' : 'ui-amount-negative' %}
+                                    {% set classBalance = op.balance > 0 ? 'ui-balance-positive' : 'ui-balance-negative' %}
+
+                                    <tr {{ general.attrsString({ 'id': 'operation-' ~ op.id }) }}
+                                            {% if op.details is not empty %}
+                                                data-details='{{ op.details|json_encode|escape('html_attr') }}'
                                             {% endif %}
-                                        </td>
-                                        <td class="table-myoperations-borrower-item-projet">
-                                            {{ op.projectID }}
-                                            {% if op.details == true %}
-                                                <dt class="ad-line">&nbsp;</dt>
-                                                <dt class="ad-line">&nbsp;</dt>
-                                            {% endif %}
-                                        </td>
-                                        <td class="table-myoperations-borrower-item-date">
-                                            {{ op.date|date('d/m/y') }}
-                                            {% if op.details == true %}
-                                                <dt class="ad-line">&nbsp;</dt>
-                                                <dt class="ad-line">&nbsp;</dt>
-                                            {% endif %}
-                                        </td>
-                                        <td class="table-myoperations-borrower-item-amount {% if op.amount < 0 %}below-null{% endif %}">
-                                            {{ op.amount }}&nbsp;€
-                                            {% if op.details == true %}
-                                                <dt class="ad-line {% if op.com < 0 %}below-null{% endif %}">{{ op.com }}&nbsp;€</dt>
-                                                <dt class="ad-line {% if op.tax < 0 %}below-null{% endif %}">{{ op.tax }}&nbsp;€</dt>
-                                            {% endif %}
-                                        </td>
-                                        <td class="table-myoperations-borrower-item-detail">
-                                            <a href="#todo" class="detail-borrower"><span class="icon fa-excel-u32"></span></a>
-                                        </td>
+                                            class="table-myoperations-item {{ classAmount }} {{ classBalance }}">
+                                        <td class="table-myoperations-item-type">{{ op.typeName }}</td>
+                                        <td class="table-myoperations-item-contract cell-right">{{ op.contractId }}</td>
+                                        <td class="table-myoperations-item-date cell-right">{{ op.date|date('d/m/y') }}</td>
+                                        <td class="table-myoperations-item-amount cell-right">{{ op.amount|__price(2)|nbsp }}€</td>
+                                        <td class="table-myoperations-item-balance cell-right">{% if op.export == 1 %} <a href="#todo" class="export">exporter</a> {% endif %}</td>
                                     </tr>
                                 {% endfor %}
                                 </tbody>

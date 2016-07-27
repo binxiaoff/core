@@ -5,83 +5,220 @@
 {# Page data #}
 {% set bodyId = '' %}
 {% set page = {
-id: 'user-borrower-dashboard',
-title: 'Emprunteur / Dashboard',
-permalink: route('user/borrower/dashboard'),
-classNames: 'user-emprunteur-dashboard'
+    id: 'user-borrower-dashboard',
+    title: 'Emprunteur / Dashboard',
+    permalink: route('user/borrower/dashboard'),
+    classNames: 'user-emprunteur-dashboard'
 } %}
 
 {% block dashboardContent %}
 
-
-<div class="dashboard-tabs tabs">
-    <div class="dashboard-tabs-nav">
-        <ul class="nav nav-dashboard-tabs" data-nav-dropdown-menu="mobile">{#
+    <div class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-nav">
+            <ul class="nav nav-dashboard-tabs" data-nav-dropdown-menu="mobile">{#
       #}<li role="presentation" class="active"><a href="#profile-projects" role="tab" data-toggle="tab">Vos projets</a></li>{#
       #}<li role="presentation"><a href="#profile-newrequest" role="tab" data-toggle="tab">Nouvelle demande</a></li>{#
     #}</ul>
-    </div><!-- /.dashboard-nav-content -->
-    <div class="dashboard-tabs-content tab-content">
-        <div id="profile-projects" role="tabpanel" class="dashboard-tab-pane tab-pane active">
-            <article class="panel">
-                <section role="tablist" class="ui-toggle-group" aria-multiselectable="true">
-                    <section role="tabpanel" class="profile-info-view collapse in">
-                        <div class="message">
-                            <p>Vous avez 1 projet en cours</p>
-                            <ul class="list-projects borrower-projects-overview">
-                                <li class="project">
-                                    <div class="project-number"><span class="project-label">N° Dossier : </span>26781</div>
-                                    <div class="project-single-description c-t1"><span class="project-label c-t3">Nature :&nbsp;&nbsp;</span>Aménager de nouveaux locaux</div>
-                                    <div class="project-single-description c-t1"><span class="project-label c-t3">Montant et durée :&nbsp;&nbsp;</span>30 000 € / 60 Mois</div>
-                                    <div class="project-single-description c-t1"><span class="project-label c-t3">Date de clôture :&nbsp;&nbsp;</span>29/07/2016</div>
-                                    <div class="project-interest">8,2%</div>
-                                    <div class="project-period">7 jours restants</div>
-                                    <div class="project-offers"><span class="value">117</span> offres</div>
-                                    <a href="#todo" class="project-hotspot">&nbsp;</a>
-                                </li>
-                            </ul>
-                    </section>
-                </section><!-- /.ui-toggle-group -->
-            </article><!-- /.panel -->
-        </div><!-- /#profile-info.dashboard-tab-pane -->
-        <div id="profile-newrequest" role="tabpanel" class="dashboard-tab-pane tab-pane">
-            <article class="panel">
-                <section id="profile-fiscalite-bank-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
-                    <section id="profile-fiscalite-bank-view" role="tabpanel" class="profile-bank-view collapse in">
-                        <div class="dashboard-newrequest">
-                            <form action="get">
-                                <div class="form-field">
-                                    <label for="form-name">Montant souhaité</label>
-                                    <input type="number" id="form-amount" name="amount" value="" placeholder="min 20 000 €" class="input-field">
-                                </div>
-                                <div class="form-field">
-                                    <label for="form-select">Durée</label>
-                                    <select id="form-select" name="duration" class="input-field">
-                                        <optgroup label="Alphabet">
-                                            <option value="3">3 Mois</option>
-                                            <option value="6">6 Mois</option>
-                                            <option value="9">9 Mois</option>
-                                            <option value="12">12 Mois</option>
-                                            <option value="18">18 Mois</option>
-                                            <option value="24">24 Mois</option>
-                                            <option value="36">36 Mois</option>
-                                            <option value="48">48 Mois</option>
-                                            <option value="60">60 Mois</option>
-                                        </optgroup>
-                                    </select>
-                                </div>
-                                <div class="form-field">
-                                    <label for="form-message">Décrivez-nous votre projet</label>
-                                    <textarea id="form-message" class="input-field" rows="6">Message :</textarea>
-                                </div>
-                                <button class="btn-primary"><span class="icon fa-angle-right"></span> Valider</button>
-                            </form>
-                        </div><!-- /.dashboard-newrequest -->
-                    </section>
-                </section><!-- /.ui-toggle-group -->
-            </article><!-- /.panel -->
-        </div><!-- /#profile-fiscalite.dashboard-tab-pane -->
-    </div><!-- /.dashboard-tabs-content -->
-</div><!-- /.dashboard-tabs -->
+        </div><!-- /.dashboard-nav-content -->
+        <div class="dashboard-tabs-content tab-content">
+            <div id="profile-projects" role="tabpanel" class="dashboard-tab-pane tab-pane active">
+                <article class="panel">
+                    <section role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+
+                        <div class="table-scroll">
+                            <table class="table table-myoperations-prefunding">
+
+                                <thead>
+                                <tr>
+                                    <th class="table-borrower-file">
+                                        <span class="label">Dossier</span>
+                                    </th>
+                                    <th class="table-borrower-nature">
+                                        <span class="label">Nature</span>
+                                    </th>
+                                    <th class="table-borrower-amount">
+                                        <span class="label">Montant & Durée</span>
+                                    </th>
+                                    <th class="table-borrower-status">
+                                        <span class="label">Status</span>
+                                    </th>
+                                    <th class="table-borrower-autolend">
+                                        <span class="label">Autolend <span class="min">prédictif en %</span></span>
+                                    </th>
+                                    <th class="table-borrower-upload">
+                                        <span class="label"></span>
+                                    </th>
+                                </tr>
+                                </thead>
+
+                                <tbody>
+                                <tr class=" ">
+                                    <td>44444</td>
+                                    <td>Financer des besoins en financement</td>
+                                    <td>30&nbsp;000&nbsp;€<br>60&nbsp;mois</td>
+                                    <td>Pré-funding</td>
+                                    <td>66&nbsp;%</td>
+                                    <td class="center"><a href="#todo">Déposer des pièces</a></td>
+                                </tr>
+                                </tbody>
+
+                            </table>
+
+
+
+                            <table class="table table-myoperations-funding">
+
+                                <thead>
+                                <tr>
+                                    <th class="table-borrower-file">
+                                        <span class="label">Dossier</span>
+                                    </th>
+                                    <th class="table-borrower-nature">
+                                        <span class="label">Nature</span>
+                                    </th>
+                                    <th class="table-borrower-amount">
+                                        <span class="label">Montant & Durée</span>
+                                    </th>
+                                    <th class="table-borrower-ending-date">
+                                        <span class="label">Date de clôture</span>
+                                    </th>
+                                    <th class="table-borrower-funding-rate">
+                                        <span class="label">% funding atteint</span>
+                                    </th>
+                                    <th class="table-borrower-average-rate">
+                                        <span class="label">Taux moyen à date</span>
+                                    </th>
+                                    <th class="table-borrower-buttons">
+                                        <span class="label"></span>
+                                    </th>
+                                </tr>
+                                </thead>
+
+                                <tbody>
+                                <tr class=" ">
+                                    <td>44444</td>
+                                    <td>Financer des besoins en financement</td>
+                                    <td>30&nbsp;000&nbsp;€<br>60&nbsp;mois</td>
+                                    <td>15/02/2016</td>
+                                    <td>65&nbsp;%</td>
+                                    <td>7.5&nbsp;%</td>
+                                    <td>
+                                        <dt><a href="#todo" class="link">Arrêter</a></dt>
+                                        <dd><a href="#todo" class="link">Voir le projet</a></dd>
+                                    </td>
+                                </tr>
+                                </tbody>
+
+                            </table>
+
+
+
+                            <table class="table table-myoperations-postfunding">
+
+                                <thead>
+                                <tr>
+                                    <th class="table-borrower-file">
+                                        <span class="label">Dossier</span>
+                                    </th>
+                                    <th class="table-borrower-nature">
+                                        <span class="label">Nature</span>
+                                    </th>
+                                    <th class="table-borrower-amount">
+                                        <span class="label">Montant & Durée</span>
+                                    </th>
+                                    <th class="table-borrower-ending-date">
+                                        <span class="label">Date de clôture</span>
+                                    </th>
+                                    <th class="table-borrower-monthly">
+                                        <span class="label">Mensualités</span>
+                                    </th>
+                                    <th class="table-borrower-average-rate">
+                                        <span class="label">Taux moyen du projet</span>
+                                    </th>
+                                    <th class="table-borrower-crd">
+                                        <span class="label">CRD à date</span>
+                                    </th>
+                                    <th class="table-borrower-date">
+                                        <span class="label">Prochaine échéance</span>
+                                    </th>
+                                    <th class="table-borrower-button">
+                                        <span class="label"></span>
+                                    </th>
+                                </tr>
+                                </thead>
+
+                                <tbody>
+                                <tr class=" ">
+                                    <td>44444</td>
+                                    <td>Financer des besoins en financement</td>
+                                    <td>30&nbsp;000&nbsp;€<br>60&nbsp;mois</td>
+                                    <td>15/02/2016</td>
+                                    <td>702.31&nbsp;€</td>
+                                    <td>7.5&nbsp;%</td>
+                                    <td>27&nbsp;439,32&nbsp;€</td>
+                                    <td>07/07/2016</td>
+                                    <td><a href="#todo" class="link">Voir le projet</a></td>
+                                </tr>
+                                <tr class=" ">
+                                    <td>44444</td>
+                                    <td>Financer des besoins en financement</td>
+                                    <td>30&nbsp;000&nbsp;€<br>60&nbsp;mois</td>
+                                    <td>15/02/2016</td>
+                                    <td>702.31&nbsp;€</td>
+                                    <td>7.5&nbsp;%</td>
+                                    <td>27&nbsp;439,32&nbsp;€</td>
+                                    <td>07/07/2016</td>
+                                    <td><a href="#todo" class="link">Voir le projet</a></td>
+                                </tr>
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </section><!-- /.ui-toggle-group -->
+                </article><!-- /.panel -->
+            </div><!-- /#profile-info.dashboard-tab-pane -->
+
+            <div id="profile-newrequest" role="tabpanel" class="dashboard-tab-pane tab-pane">
+                <article class="panel">
+                    <section id="profile-fiscalite-bank-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                        <section id="profile-fiscalite-bank-view" role="tabpanel" class="profile-bank-view collapse in">
+                            <div class="dashboard-newrequest">
+                                <form action="get">
+                                    <div class="form-field">
+                                        <label for="form-name">Montant souhaité</label>
+                                        <input type="number" id="form-amount" name="amount" value="" placeholder="min 20 000 €" class="input-field">
+                                    </div>
+
+                                    <div class="form-field">
+                                        <label for="form-select">Durée</label>
+                                        <select id="form-select" name="duration" class="input-field">
+                                            <optgroup label="Alphabet">
+                                                <option value="3">3 Mois</option>
+                                                <option value="6">6 Mois</option>
+                                                <option value="9">9 Mois</option>
+                                                <option value="12">12 Mois</option>
+                                                <option value="18">18 Mois</option>
+                                                <option value="24">24 Mois</option>
+                                                <option value="36">36 Mois</option>
+                                                <option value="48">48 Mois</option>
+                                                <option value="60">60 Mois</option>
+                                            </optgroup>
+                                        </select>
+                                    </div>
+                                    <div class="form-field">
+                                        <label for="form-message">Décrivez-nous votre projet</label>
+                                        <textarea id="form-message" class="input-field" rows="6">Message :</textarea>
+                                    </div>
+                                    <button class="btn-primary"><span class="icon fa-angle-right"></span> Valider</button>
+                                </form>
+                            </div><!-- /.dashboard-newrequest -->
+                        </section>
+                    </section><!-- /.ui-toggle-group -->
+                </article><!-- /.panel -->
+            </div><!-- /#profile-fiscalite.dashboard-tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </div><!-- /.dashboard-tabs -->
 
 {% endblock %}

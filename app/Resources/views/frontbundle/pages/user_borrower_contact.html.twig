@@ -6,10 +6,10 @@
 {# Page data #}
 {% set bodyId = '' %}
 {% set page = {
-id: 'user-borrower-profile',
-title: 'Emprunteur / Profil',
-permalink: route('user/borrower/profile'),
-classNames: 'user-borrower-profile'
+    id: 'user-borrower-profile',
+    title: 'Emprunteur / Profil',
+    permalink: route('user/borrower/profile'),
+    classNames: 'user-borrower-profile'
 } %}
 
 {# See config/twig.json for the data value of `userProfile` #}
@@ -58,14 +58,14 @@ classNames: 'user-borrower-profile'
                                 <div class="row row-multi-col">
                                     <div class="col-lg-6 col-md-6 col-sm-4">
                                         <div class="form-field">
-                                            <label for="contact-message-email">Email</label>
-                                            <input type="text" id="contact-message-email" name="message[email]" value="david.raux@unilend.fr" class="input-field">
+                                            <label for="contact-message-mobile">Portable</label>
+                                            <input type="text" id="contact-message-mobile" name="mobile[society]" value="0102030405" class="input-field">
                                         </div><!-- /.form-field -->
                                     </div>
                                     <div class="col-lg-6 col-md-6 col-sm-4">
                                         <div class="form-field">
-                                            <label for="contact-message-society">Société</label>
-                                            <input type="text" id="contact-message-society" name="message[society]" value="Nom de la société" class="input-field">
+                                            <label for="contact-message-company">Email</label>
+                                            <input type="text" id="contact-message-email" name="message[email]" value="david.raux@unilend.fr" class="input-field">
                                         </div><!-- /.form-field -->
                                     </div>
                                 </div>
@@ -89,6 +89,16 @@ classNames: 'user-borrower-profile'
                                             <label for="contact-message-body">Message</label>
                                             <textarea id="contact-message-body" name="message[body]" value="" rows="8" class="input-field"></textarea>
                                         </div><!-- /.form-field -->
+                                    </div>
+                                </div>
+                                <div class="row row-multi-col">
+                                    <div class="col-lg-6 col-md-6">
+                                        <div class="form-field">
+                                            <input type="text" id="upload-form input" name="upload-file" value="Aucun fichier séléctionné" class="input-field">
+                                        </div><!-- /.form-field -->
+                                    </div>
+                                    <div class="col-lg-6 col-md-6">
+                                        <a href="#" class="btn-primary btn-shape-sm">Parcourir</a>
                                     </div>
                                 </div>
                                 <div class="row">
