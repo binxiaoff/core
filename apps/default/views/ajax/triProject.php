@@ -54,7 +54,14 @@
                     </script>
                     <?php
                 } else {
-                    $project['daterest'] = 'Terminé';
+                    if ($aProject['date_fin'] != '0000-00-00 00:00:00') {
+                        $endDateTime = new \DateTime($aProject['date_fin']);
+                    } else {
+                        $endDateTime = new \DateTime($aProject['date_retrait_full']);
+                    }
+                    $endDate = $endDateTime->format('d/m/Y');
+                    $endTime= $endDateTime->format('H:i');
+                    $project['daterest'] = str_replace(['[#date#]', '[#time#]'], [$endDate, $endTime], $this->lng['preteur-projets']['termine']);
                 }
                 ?>
 

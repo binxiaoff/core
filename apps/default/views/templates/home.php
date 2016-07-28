@@ -117,7 +117,14 @@
                             <td>
                                 <?php
                                 if ($this->projects_status->status >= \projects_status::FUNDE) {
-                                    $dateRest = $this->lng['home']['termine'];
+                                    if ($aProject['date_fin'] != '0000-00-00 00:00:00') {
+                                        $endDateTime = new \DateTime($aProject['date_fin']);
+                                    } else {
+                                        $endDateTime = new \DateTime($aProject['date_retrait_full']);
+                                    }
+                                    $endDate = $endDateTime->format('d/m/Y');
+                                    $endTime= $endDateTime->format('H:i');
+                                    $dateRest = str_replace(['[#date#]', '[#time#]'], [$endDate, $endTime], $this->lng['home']['termine']);
                                 } else {
                                     $tab_date_retrait = explode(' ', $aProject['date_retrait_full']);
                                     $tab_date_retrait = explode(':', $tab_date_retrait[1]);
