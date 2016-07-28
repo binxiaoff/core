@@ -195,8 +195,9 @@
   }
   .bid-rate-cta {
     display:inline-block;
-    width:35px;
+    width:60px;
     line-height:20px;
+    text-align:left;
   }
   .icon-cta {
     line-height:20px;
@@ -222,6 +223,10 @@
 
   .bids-row {
     cursor:pointer;
+    td:first-of-type {
+      padding:10px 55px 10px 30px;
+      text-align:right;
+    }
   }
   .bids-row.active-row {
     background-color:#b20066;

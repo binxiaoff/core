@@ -63,6 +63,7 @@ var SimpleTimer = require('./app/components/SimpleCountDown')
 var BidConfirmation = require('./app/components/BidConfirmation')
 var CookieCheck = require('./app/components/Cookies')
 var BidsDetail = require('./app/components/BidsDetail')
+var Spinner = require('./app/components/Spinner')
 
 // @debug
 // CacheData.clearAll()
