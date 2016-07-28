@@ -1,6 +1,6 @@
 <?php
 
-define('PRODUCTION', true);
+define('PRODUCTION', false);
 
 if (PRODUCTION) {
     define('MERCHANT_ID', '26099716932287'); // Merchant ID
