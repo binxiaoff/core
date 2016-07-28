@@ -46,6 +46,7 @@
         <li>Taux min/max de projet</li>
     </ul>
     <h1>Gestion des taux min/max de projet</h1>
+    <div class="btnDroite"><a class="btn_link thickbox cboxElement" href="/project_rate_settings/warn_confirmation_box">Notifier les prêteurs</a></div>
     <?php if(count($this->groupedRate) > 0) : ?>
         <table class="tablesorter">
             <thead>
