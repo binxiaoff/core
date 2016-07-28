@@ -90,11 +90,27 @@ class ProjectDisplayManager
         /** @var \projects_status_history $projectStatusHistory */
         $projectStatusHistory = $this->entityManager->getRepository('projects_status_history');
 
-        $projectData = $project->select('id_project = ' . $project->id_project);
-        $projectData = array_shift($projectData);
+        $projectData = [
+            'projectId'            => $project->id_project,
+            'hash'                 => $project->hash,
+            'slug'                 => $project->slug,
+            'amount'               => $project->amount,
+            'duration'             => $project->period,
+            'title'                => $project->title,
+            'picture'              => $project->photo_projet,
+            'introduction'         => $project->nature_project,
+            'projectDescription'   => $project->objectif_loan,
+            'companyDescription'   => $project->presentation_company,
+            'repaymentDescription' => $project->means_repayment,
+            'startDate'            => $project->date_publication_full,
+            'endDate'              => $project->date_retrait_full,
+            'fundedDate'           => $project->date_funded,
+            'projectNeed'          => $project->id_project_need,
+            'risk'                 => $project->risk
+        ];
+
         /** @var array $company */
-        $company = $companies->select('id_company = ' . $project->id_company);
-        $company = array_shift($company);
+        $company = $companies->select('id_company = ' . $project->id_company)[0];
 
         $projectStatus->getLastStatut($project->id_project);
 
@@ -114,7 +130,7 @@ class ProjectDisplayManager
             $projectData['maxValidRate']  = \bids::BID_RATE_MAX;
         }
 
-        $projectData['categoryId']   = $company['sector'];
+        $projectData['sectorId']     = $company['sector'];
         $projectData['company']      = $company;
         $projectData['averageRate']  = $project->getAverageInterestRate($project->id_project);
         $projectData['totalLenders'] = $totalLenders;

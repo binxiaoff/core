@@ -14,6 +14,7 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
+use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\FrontBundle\Service\HighchartsService;
 use Unilend\Bundle\FrontBundle\Service\LenderAccountDisplayManager;
@@ -148,9 +149,11 @@ class ProjectsController extends Controller
         /** @var AuthorizationChecker $authorizationChecker */
         $authorizationChecker = $this->get('security.authorization_checker');
 
-        $template            = [];
-        $template['project'] = $projectDisplayManager->getProjectInformationForDisplay($project);
-        $template['finance'] = $projectDisplayManager->getProjectFinancialData($project);
+        $template = [
+            'project' => $projectDisplayManager->getProjectInformationForDisplay($project),
+            'finance' => $projectDisplayManager->getProjectFinancialData($project)
+        ];
+
         $firstBalanceSheet = current($template['finance']);
         $template['financeColumns'] = [
             'balanceSheet' => array_keys($firstBalanceSheet['balanceSheet']),
@@ -158,12 +161,14 @@ class ProjectsController extends Controller
             'debts'        => array_keys($firstBalanceSheet['debts']),
         ];
 
+        /** @var BaseUser $user */
+        $user = $this->getUser();
+
         if (
             $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY')
             && $authorizationChecker->isGranted('ROLE_LENDER')
+            && $user instanceof UserLender
         ) {
-            /** @var BaseUser $user */
-            $user = $this->getUser();
             /** @var \lenders_accounts $lenderAccount */
             $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
             $lenderAccount->get($user->getClientId(), 'id_client_owner');
@@ -176,14 +181,21 @@ class ProjectsController extends Controller
                 $template['lender']['bidMessage'] = $request->getSession()->get('bidMessage');
                 $request->getSession()->remove('bidMessage');
             }
+        } else {
+            $template['project']['title'] = $this->get('translator')->trans('company-sector_sector-' . $template['project']['sectorId']);
         }
 
+        $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower);
+
         $template['conditions'] = [
-            'bids'    => $template['project']['status'] == \projects_status::EN_FUNDING,
-            'myBids'  => isset($template['lenderOnProject']) && $template['lenderOnProject']['bids']['count'] > 0,
-            'finance' => $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY'),
-            'history' => $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY') && $authorizationChecker->isGranted('ROLE_LENDER') && ($template['project']['status'] == \projects_status::FUNDE || $template['project']['status'] >= \projects_status::REMBOURSEMENT),
-            'canBid'  => isset($user) && $user instanceof UserLender && $user->hasAcceptedCurrentTerms()
+            'validatedUser'       => $isFullyConnectedUser,
+            'bids'                => $template['project']['status'] == \projects_status::EN_FUNDING,
+            'myBids'              => isset($template['lenderOnProject']) && $template['lenderOnProject']['bids']['count'] > 0,
+            'finance'             => $isFullyConnectedUser,
+            'history'             => $isFullyConnectedUser && ($template['project']['status'] == \projects_status::FUNDE || $template['project']['status'] >= \projects_status::REMBOURSEMENT),
+            'canBid'              => $isFullyConnectedUser && $user instanceof UserLender && $user->hasAcceptedCurrentTerms(),
+            'warningLending'      => true,
+            'warningTaxDeduction' => $template['project']['startDate'] >= '2016-01-01'
         ];
 
         return $this->render('pages/project_detail.html.twig', $template);

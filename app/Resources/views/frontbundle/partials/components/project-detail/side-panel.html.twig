@@ -33,7 +33,7 @@
 
                     <div class="project-single-duration">
                         <span class="icon fa-calendar-alt-u32"></span>
-                        <span class="c-p1"><strong>{{ project.period }}</strong> mois</span>
+                        <span class="c-p1"><strong>{{ project.duration }}</strong> mois</span>
                         <div class="label">{% trans %} project-detail_period-label {% endtrans %}</div>
                     </div><!-- /.project-single-duration -->
                 </div>
@@ -74,7 +74,7 @@
                         {% endif %}
                     </div>
                     {% if project.maxValidRate > constant('\\bids::BID_RATE_MIN') %}
-                        <form action="{{ path('place_bid', {'projectId' : project.id_project}) }}" data-bid-confirmation method="post" class="project-single-form project-single-form-invest">
+                        <form action="{{ path('place_bid', {'projectId' : project.projectId}) }}" data-bid-confirmation method="post" class="project-single-form project-single-form-invest">
                             <div class="form-field">
                                 <label>
                                     <span class="sr-only">{% trans %} project-detail_side-bar-bids-amount-label {% endtrans %}</span>
