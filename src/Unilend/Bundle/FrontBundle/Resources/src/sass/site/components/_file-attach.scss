@@ -163,6 +163,20 @@
       display: none;
     }
 
+    // Show the change button
+    .ui-fileattach-change-btn {
+      display: block;
+      vertical-align: middle;
+
+      @include devices('sm', 'md', 'lg') {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 3;
+      }
+    }
+
     // Show the remove button
     .ui-fileattach-remove-btn {
       display: block;
@@ -278,6 +292,7 @@
   }
 }
 
+.ui-fileattach-change-btn,
 .ui-fileattach-remove-btn {
   @include button;
   @include button-shape-xs;

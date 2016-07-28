@@ -2,6 +2,7 @@
   "en": {
     "attachFileLabel": "Attach",
     "removeFileLabel": "Remove",
+    "changeFileLabel": "Change",
     "emptyFileLabel": "",
     "errorIncorrectFileTypeError": "File type <strong>{{ fileType }}</strong> not accepted",
     "errorIncorrectFileTypeMessage": "Accepting only: <strong>{{ acceptedFileTypes }}</strong>",
@@ -11,6 +12,7 @@
   "fr": {
     "attachFileLabel": "Ajouter",
     "removeFileLabel": "Supprimer",
+    "changeFileLabel": "Changer",
     "emptyFileLabel": "",
     "errorIncorrectFileTypeError": "Fichier type <strong>{{ fileType }}</strong> n'acceptée pas",
     "errorIncorrectFileTypeMessage": "Accepter seulement: <strong>{{ acceptedFileTypes }}</strong>",
