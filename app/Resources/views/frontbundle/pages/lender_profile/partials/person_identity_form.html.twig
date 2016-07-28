@@ -1,56 +1,14 @@
-<section id="profile-info-view" role="tabpanel" class="profile-info-view collapse in">
-    <a href="#profile-info-edit" role="button" data-toggle="collapse" data-parent="#profile-info-section" class="btn-edit" aria-controls="#profile-info-edit" aria-expanded="false">
-        <span class="icon fa-pencil-u32"></span>
-        <span class="label">{% trans %} lender-profile_information-tab-identity-section-modify-button {% endtrans %}</span></a>
-    <dl class="list-2col">
-        <dt>{% trans %} lender-profile_information-tab-identity-section-client-type-label {% endtrans %}</dt>
-            <dd id="profile-info-statut-output">{% trans %} lender-profile_information-tab-identity-section-client-type-person-label {% endtrans %}</dd>
-        <dt>{% trans %} lender-profile_information-tab-identity-section-form-of-address-label {% endtrans %}</dt>
-        {% if client.civilite == 'M.' %}
-            <dd id="profile-info-civilite-output">{% trans %} lender-profile_information-tab-identity-section-form-of-address-male-label {% endtrans %}</dd>
-        {% else %}
-            <dd id="profile-info-civilite-output">{% trans %} lender-profile_information-tab-identity-section-form-of-address-female-label {% endtrans %}</dd>
-        {% endif %}
-
-        <dt>{% trans %} lender-profile_information-tab-identity-section-name-label {% endtrans %}</dt>
-        <dd id="profile-info-nom-output">{{ client.nom }}</dd>
-        <dt>{% trans %} lender-profile_information-tab-identity-section-used-name-label {% endtrans %}</dt>
-        <dd id="profile-info-prenom-output">{{ client.nom_usage }}</dd>
-        <dt>{% trans %} lender-profile_information-tab-identity-section-first-name-label {% endtrans %}</dt>
-        <dd id="profile-info-prenom-output">{{ client.prenom }}</dd>
-        <dt>{% trans %} lender-profile_information-tab-identity-section-birthdate-label {% endtrans %}</dt>
-        <dd id="profile-info-dob-output">{{ client.naissance|date('d/m/Y') }}</dd>
-        <dt>{% trans %} lender-profile_information-tab-identity-section-birthcountry-label {% endtrans %}</dt>
-        <dd id="profile-info-dob-pays-output">{{ client.id_pays_naissance|countryLabel }}</dd>
-        <dt>{% trans %} lender-profile_information-tab-identity-section-birthplace-label {% endtrans %}</dt>
-        <dd id="profile-info-dob-commune-output">{{ client.ville_naissance }}</dd>
-        <dt>{% trans %} lender-profile_information-tab-identity-section-nationality-label {% endtrans %}</dt>
-        <dd id="profile-info-dob-nationalite-output">{{ client.id_pays_naissance|nationalityLabel }}</dd>
-        <dt>{% trans %} lender-profile_information-tab-identity-section-ID-documents-label {% endtrans %}</dt>
-        <dd id="profile-info-fichier-identitie-output">
-            {% set NameCniRecto, NameCniVerso = '', '' %}
-            {% for attachment in identityAttachments %}
-                {% if attachment.id_type == constant('\\attachment_type::CNI_PASSPORTE') %}
-                    {% set NameCniRecto = attachment.path %}
-                    <span id="form-profile-info-file-identite-cni-1-output" class="file-justificatif file-identity-side-a" title="{{ "lender-attachement-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added|date('d/m-Y')) }}
-" data-toggle="tooltip">
-                                <span class="sr-only">{{ "lender-attachement-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added|date('d/m-Y'))}}</span>
-                            </span>
-                {%  else  %}
-                    {% set NameCniVerso = attachment.path %}
-                    <span id="form-profile-info-file-identite-cni-2-output" class="file-justificatif file-identity-side-b" title="{{ "lender-attachement-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added|date('d/m-Y')) }}" data-toggle="tooltip">
-                                <span class="sr-only">{{ "lender-attachement-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added|date('d/m-Y'))}}</span>
-                            </span>
-                {% endif %}
-            {% endfor %}
-        </dd>
-    </dl>
-</section>
-
-
 <section id="profile-info-edit" role="tabpanel" class="profile-info-edit collapse">
-    <form id="form-profile-info-edit" action="{{ path('profile_info_update') }}" method="post" enctype="multipart/form-data" class="form-profile form-profile-info-edit" data-formvalidation data-formvalidation-notificationselem="#form-profile-info-notifications">
-        <div id="form-profile-info-notifications"></div>
+    <form id="form-profile-info-edit" action="{{ path('profile_person_identity_update') }}" method="post" enctype="multipart/form-data" class="form-profile form-profile-info-edit" data-formvalidation data-formvalidation-notificationselem="#form-profile-info-notifications">
+        <div id="form-profile-info-notifications">
+            {% if app.session.flashBag.has('personIdentityErrors') %}
+                <div class="message-error">
+                    {% for error in app.session.flashBag.get('personIdentityErrors') %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
         <div class="row">
             <div class="form-field form-field-multi">
                 <div class="field-label">
@@ -58,19 +16,11 @@
                         <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
                 </div>
                 <ul class="list-input-values">
-                    {% if client.type in [constant('\\clients::TYPE_PERSON'), constant('\\clients::TYPE_PERSON_FOREIGNER')] %}
-                        <li>
-                            <label><input type="radio" name="client_type" value="person" checked="checked"/>
-                                {% trans %} lender-profile_information-tab-identity-section-client-type-person-label {% endtrans %}
-                            </label>
-                        </li>
-                    {% else %}
-                        <li>
-                            <label><input type="radio" name="client_type" value="legal_entity" checked="checked"/>
-                                {% trans %} lender-profile_information-tab-identity-section-client-type-legal-entity-label {% endtrans %}
-                            </label>
-                        </li>
-                    {% endif %}
+                    <li>
+                        <label><input type="radio" name="client_type" value="person" checked="checked"/>
+                            {% trans %} lender-profile_information-tab-identity-section-client-type-person-label {% endtrans %}
+                        </label>
+                    </li>
                 </ul>
             </div><!-- /.form-field -->
         </div><!-- /.row -->
@@ -83,10 +33,10 @@
                 </div>
                 <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
                     <li>
-                        <label><input type="radio" name="form_of_address" value="Mme" {% if formData.identity.form_of_address == 'Mme' %}checked="checked"{% endif %}/> {% trans %} lender-profile_information-tab-identity-section-form-of-address-female-label {% endtrans %}</label>
+                        <label><input type="radio" name="form_of_address" value="Mme" {% if formData.person.form_of_address == 'Mme' %}checked="checked"{% endif %}/> {% trans %} lender-profile_information-tab-identity-section-form-of-address-female-label {% endtrans %}</label>
                     </li>
                     <li>
-                        <label><input type="radio" name="form_of_address" value="M." {% if formData.identity.form_of_address == 'M.' %}checked="checked"{% endif %}/> {% trans %} lender-profile_information-tab-identity-section-form-of-address-male-label {% endtrans %}</label>
+                        <label><input type="radio" name="form_of_address" value="M." {% if formData.person.form_of_address == 'M.' %}checked="checked"{% endif %}/> {% trans %} lender-profile_information-tab-identity-section-form-of-address-male-label {% endtrans %}</label>
                     </li>
                 </ul>
             </div><!-- /.form-field -->
@@ -100,7 +50,7 @@
             <div class="form-field col-lg-6 col-md-6">
                 <label for="form-profile-info-prenom">{% trans %} lender-profile_information-tab-identity-section-first-name-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
-                <input id="form-profile-info-prenom" type="text" name="first_name" value="{{ client.prenom }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                <input id="form-profile-info-prenom" type="text" name="first_name" value="{{ formData.person.first_name }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
             </div><!-- /.form-field -->
         </div><!-- /.row -->
 
@@ -108,7 +58,7 @@
             <div class="form-field col-lg-6 col-md-6">
                 <label for="form-profile-info-prenom">{% trans %} lender-profile_information-tab-identity-section-used-name-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
-                <input id="form-profile-info-prenom" type="text" name="used_name" value="{{ client.nom_usage }}" class="input-field" data-formvalidation-input data-formvalidation-required="false"/>
+                <input id="form-profile-info-prenom" type="text" name="used_name" value="{{ formData.person.used_name }}" class="input-field" data-formvalidation-input data-formvalidation-required="false"/>
             </div><!-- /.form-field -->
             <div class="form-field col-lg-6 col-md-6">
             </div><!-- /.form-field -->
@@ -124,7 +74,7 @@
                     <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
                 <select id="form-profile-info-nationalite" name="nationality" class="input-field" data-formvalidation-input data-formvalidation-required="true">
                     {% for i, nationality in getNationalities() %}
-                        <option value="{{ i }}"{% if i == formData.identity.nationality %} selected="selected"{% endif %}>{{ nationality }}</option>
+                        <option value="{{ i }}"{% if i == formData.person.nationality %} selected="selected"{% endif %}>{{ nationality }}</option>
                     {% endfor %}
                 </select>
             </div><!-- /.form-field -->
@@ -140,6 +90,9 @@
                 <span id="form-profile-info-dob-commune">{{ client.ville_naissance }}</span>
             </div><!-- /.form-field -->
         </div><!-- /.row -->
+        <div class="message-alert" id="identity-change-alert-message">
+            {% trans %} lender-profile_information-tab-identity-section-change-ID-warning-message {% endtrans %}
+        </div>
 
         <div class="row">
             <div class="form-field">
@@ -151,8 +104,8 @@
                          data-fileattach data-fileattach-inputname="id_recto"
                          data-fileattach-maxfiles="1"
                          data-fileattach-emptyfilelabel="
-                                 {% if NameCniRecto is not empty %}
-                                    {{ NameCniRecto }}
+                                 {% if identityAttachments[constant('\\attachment_type::CNI_PASSPORTE')]['path'] is not empty %}
+                                    {{ identityAttachments[constant('\\attachment_type::CNI_PASSPORTE')]['path'] }}
                                  {% else %}
                                     {% trans %} lender-profile_information-tab-identity-section-ID-recto {% endtrans %}
                                  {% endif %}">
@@ -164,8 +117,8 @@
                          data-fileattach data-fileattach-inputname="id_verso"
                          data-fileattach-maxfiles="1"
                          data-fileattach-emptyfilelabel="
-                                 {% if NameCniVerso is not empty %}
-                                    {{ NameCniVerso }}
+                                 {% if identityAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')]['path'] is defined %}
+                                    {{ identityAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')]['path'] }}
                                  {% else %}
                                     {% trans %} lender-profile_information-tab-identity-section-ID-verso {% endtrans %}
                                  {% endif %}">
@@ -180,7 +133,7 @@
 
         <div class="btn-controls">
             <button type="submit" class="btn-primary">{% trans %} lender-profile_information-tab-identity-save-modifications-button {% endtrans %}</button>
-            <input type="hidden" name="person_identity_form" />
+            <input type="hidden" name="person_identity_form" value="true" />
             <button type="reset" role="button" data-toggle="collapse" data-target="#profile-info-view" data-parent="#profile-info-section" class="btn-default" aria-controls="#profile-info-view" aria-expanded="true">{% trans %} lender-profile_information-tab-identity-cancel-modifications-button {% endtrans %}</button>
         </div>
     </form><!-- /.form-profile-info-edit -->
