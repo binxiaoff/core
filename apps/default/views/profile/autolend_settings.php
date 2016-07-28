@@ -14,6 +14,7 @@
             <?= str_replace('[#MIN_AMOUNT#]', $this->iMinimumBidAmount, $this->lng['autobid']['error-message-simple-setting-amount-wrong']) ?>
         </p>
     </div>
+    <div class="row errors-autobid" id="errors-autobid-param-form-expert"></div>
 </div>
 
 <div class="autobid-block"> <!-- autobid-param-simple-->
@@ -371,7 +372,9 @@ $(window).load(function(){
         ctx.arc(55, 55, 44, -(quart), ((circ) * (percentage / 100)) - quart, false);
 
         ctx.stroke();
-        $('#param-advanced-global-progress-label').html(percentage +'%');
+        if (typeof percentage !== 'undefined') {
+            $('#param-advanced-global-progress-label').html(percentage +'%');
+        }
     }
 
     function disableSimpleRateSetting(){

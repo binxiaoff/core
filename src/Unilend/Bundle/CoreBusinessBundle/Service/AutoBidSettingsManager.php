@@ -131,7 +131,7 @@ class AutoBidSettingsManager
         }
 
 
-        if ($this->isRateValid($fRate)) {
+        if (false === $this->isRateValid($fRate)) {
             return false;
         }
 
@@ -375,13 +375,17 @@ class AutoBidSettingsManager
         /** @var \project_rate_settings $projectRateSettings */
         $projectRateSettings = $this->oEntityManager->getRepository('project_rate_settings');
 
-        $projectRate = array_shift($projectRateSettings->getSettings($evaluation, $periodId));
-
-        if ($evaluation === null || $periodId === null || empty($projectRate)) {
-            $projectRate = $projectRateSettings->getGlobalMinMaxRate();
+        if ($evaluation === null || $periodId === null) {
+            $projectMinMaxRate = $projectRateSettings->getGlobalMinMaxRate();
+        } else {
+            $projectRates = $projectRateSettings->getSettings($evaluation, $periodId);
+            $projectMinMaxRate = array_shift($projectRates);
+            if (empty($projectMinMaxRate)) {
+                $projectMinMaxRate = $projectRateSettings->getGlobalMinMaxRate();
+            }
         }
 
-        return $projectRate;
+        return $projectMinMaxRate;
     }
 
     /**
