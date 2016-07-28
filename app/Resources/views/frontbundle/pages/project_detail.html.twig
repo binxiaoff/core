@@ -308,7 +308,11 @@
 
                         <section id="project-section-help" class="page-section">
                             <h3 class="h3">{% trans %} project-detail_project-presentation-repayment-reason-title {% endtrans %}</h3>
-                            <p>{{ project.repaymentDescription | raw }}</p>
+                            {% if conditions.validatedUser %}
+                                <p>{{ project.repaymentDescription | raw }}</p>
+                            {% else %}
+                                <p>{% trans %} project-detail_logged-out-description {% endtrans %}</p>
+                            {% endif %}
 
                             {% if conditions.warningLending %}
                                 <div class="message-alert">

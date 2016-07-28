@@ -153,6 +153,17 @@ class ProjectsController extends Controller
             'project' => $projectDisplayManager->getProjectInformationForDisplay($project),
             'finance' => $projectDisplayManager->getProjectFinancialData($project)
         ];
+        $template['project']['bids']['graph'] = [
+            'summary' => array_reverse($template['project']['bids']['summary'], true)
+        ];
+
+        $index = 0;
+        foreach ($template['project']['bids']['graph']['summary'] as $rateSummary) {
+            if ($rateSummary['activeBidsCount'] > 0) {
+                $template['project']['bids']['graph']['maxNotNullIndex'] = $index;
+            }
+            ++$index;
+        }
 
         $firstBalanceSheet = current($template['finance']);
         $template['financeColumns'] = [
@@ -347,7 +358,7 @@ class ProjectsController extends Controller
                     $template['bids'][] = [
                         'id'           => (int) $bid['id_bid'],
                         'rate'         => (float) $bid['rate'],
-                        'amount'       => $bid['id_bid'] / 100,
+                        'amount'       => $bid['amount'] / 100,
                         'status'       => (int) $bid['status'],
                         'lenderId'     => (int) $bid['id_lender_account'],
                         'userInvolved' => false,

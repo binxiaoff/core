@@ -14,138 +14,112 @@
             </ul>
         </div>
         <div class="section-tabs-content tab-content">
-            {% set alloffersOverview = placeholderData.alloffersOverview %}
-
             <div id="alloffers-table" role="tabpanel" class="tab-pane active" aria-labelledby="project-alloffers-table project-alloffers">
                 <div class="table-scroll">
-                    <table class="table table-alloffersoverview" data-current-project="{{ project.id_project }}">
+                    <table class="table table-alloffersoverview" data-current-project="{{ project.projectId }}">
                         <thead>
-                        <tr>
-                            <th class="table-alloffersoverview-item-interest">
-                                <span class="label">Taux</span>
-                            </th>
-                            <th class="table-alloffersoverview-item-amount" style="text-align:left">
-                                <span class="label">Montant total</span>
-                            </th>
-                            <th class="table-alloffersoverview-item-offers" style="text-align:left">
-                                <span class="label">Nb offres</span>
-                            </th>
-                            <th class="table-alloffersoverview-item-accepted">
-                                <span class="label">% Offres en cours</span>
-                            </th>
-                        </tr>
-                        </thead>
-
-{# Placeholder data #}
-{% set placeholderData = {
-bids: [{
-    rate:5.0,
-    amount:158,
-    number: 404,
-    accepted: 0,
-    ratio:0
-},{
-    rate:4.9,
-    amount:123,
-    number: 98,
-    accepted: 0,
-    ratio:0
-},{
-    rate:4.8,
-    amount:1400,
-    number: 456,
-    accepted: 0,
-    ratio:0
-},{
-    rate:4.7,
-    amount:752,
-    number: 154,
-    accepted: 0,
-    ratio:80
-},{
-    rate:4.6,
-    amount:360,
-    number: 12,
-    accepted: 0,
-    ratio:85
-},{
-    rate:5.1,
-    amount:123,
-    number: 123,
-    accepted: 0,
-    ratio:100
-},{
-    rate:4.5,
-    amount:1250,
-    number: 75,
-    accepted: 0,
-    ratio:100
-},{
-    rate:4.4,
-    amount:1584,
-    number: 452,
-    accepted: 12,
-    ratio:100
-},{
-    rate:4.3,
-    amount:3215,
-    number: 212,
-    accepted: 8,
-    ratio:100
-},{
-    rate:4.2,
-    amount:9856,
-    number: 158,
-    accepted: 7,
-    ratio:100
-},{
-    rate:4.1,
-    amount:1584,
-    number: 98,
-    accepted: 4,
-    ratio:100
-},{
-    rate:4.0,
-    amount:528,
-    number: 58,
-    accepted: 12,
-    ratio: 100
-}]
-} %}
-
-{% set bids = placeholderData.bids %}
-
-                        <tbody>
-                        <tr class="rejected-offers">
-                            <td colspan="4">Voir les offres rejetées</td>
-                        </tr>
-                        {% for i, item in bids %}
-                            <tr id="row-{{ i }}" class="bids-row {% if item.ratio == 0 %} rejected-row {% endif %}" data-bid-rate="{{ item.rate|number_format(1) }}">
-                                <td>
-                                    <span class="bid-rate-cta">{{ item.rate|number_format(1) }}</span>
-                                    <span class="icon-cta icon fa-caret-r-u32"></span>
-                                    <span class="icon-cta icon fa-caret-d-u32"></span>
-                                </td>
-                                <td>{{ item.amount }}</td>
-                                <td>{{ item.number }}</td>
-                                <td>
-                                    <span class="c-p1 {% if item.ratio == 0 %} all-rejected {% endif %}">
-                                        <span class="icon icon-rejected fa-refused-u32"></span>
-                                        <span class="icon icon-accepted fa-check-u32"></span>
-                                        <span>{{ item.ratio }}&nbsp;%</span>
-                                    </span>
-                                </td>
+                            <tr>
+                                <th class="table-alloffersoverview-item-interest">
+                                    <span class="label">{% trans %} project-detail_all-bids-table-sort-rate {% endtrans %}</span>
+                                </th>
+                                <th class="table-alloffersoverview-item-amount" style="text-align:left">
+                                    <span class="label">{% trans %} project-detail_all-bids-table-sort-total-amount {% endtrans %}</span>
+                                </th>
+                                <th class="table-alloffersoverview-item-offers" style="text-align:left">
+                                    <span class="label">{% trans %} project-detail_all-bids-table-sort-bids-count {% endtrans %}</span>
+                                </th>
+                                <th class="table-alloffersoverview-item-accepted">
+                                    <span class="label">{% trans %} project-detail_all-bids-table-sort-active-bids-percentage {% endtrans %}</span>
+                                </th>
                             </tr>
-                        {% endfor %}
-
+                        </thead>
+                        <tbody>
+                            <tr class="rejected-offers">
+                                <td colspan="4">{% trans %} project-detail_all-bids-table-rejected-bids-show-action {% endtrans %}</td>
+                            </tr>
+                            {% for rateSummary in project.bids.summary %}
+                                {% if rateSummary.bidsCount > 0 %}
+                                    <tr class="bids-row {% if rateSummary.activePercentage == 0 %} rejected-row {% endif %}" data-bid-rate="{{ rateSummary.rate }}">
+                                        <td>
+                                            <span class="bid-rate-cta">{{ rateSummary.rate | __num(1) }}&nbsp;%</span>
+                                            <span class="icon-cta icon fa-caret-r-u32"></span>
+                                            <span class="icon-cta icon fa-caret-d-u32"></span>
+                                        </td>
+                                        <td>{{ rateSummary.totalAmount | __num(0) | nbsp | raw }}&nbsp;€</td>
+                                        <td>{{ rateSummary.bidsCount | __num(0) | nbsp | raw }}</td>
+                                        <td>
+                                            <span class="c-p1 {% if rateSummary.activePercentage == 0 %} all-rejected {% endif %}">
+                                                <span class="icon icon-rejected fa-refused-u32"></span>
+                                                <span class="icon icon-accepted fa-check-u32"></span>
+                                                <span>{{ rateSummary.activePercentage }}&nbsp;%</span>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
                         </tbody>
                     </table><!-- /.table-alloffersoverview -->
                 </div><!-- /.table-scroll -->
             </div><!-- /.tab-pane -->
 
+            {% set projectOffers %}{% spaceless %}
+                {
+                    "type": "projectOffers",
+                    "background": "none",
+                    "highcharts": {
+                        "chart": {
+                            "type": "areaspline",
+                            "plotBackgroundColor": {
+                                "linearGradient": {"x1": 0, "y1": 0, "x2": 0, "y2": 1},
+                                "stops": [[0, "rgba(95, 196, 208, .2)"], [1, "rgba(95, 196, 208, 0)"]]
+                            }
+                        },
+                        "title": {
+                            "margin": 20,
+                            "text": "{% transchoice project.bids.activeBidsCount with {'%activeBidsCount%' : project.bids.activeBidsCount} %} project-detail_all-bids-graph-title {% endtranschoice %}",
+                            "align": "left",
+                            "style": {"fontSize": "16px"}
+                        },
+                        "subtitle": {
+                            "margin": 10,
+                            "useHTML": true,
+                            "text": "<span class='chart-key-icon' style='background: white; border: solid 3px #5FC5D1; width: 12px; height: 12px; line-height: 12px;'></span> {% trans %} project-detail_all-bids-graph-subtitle-legend {% endtrans %}",
+                            "align": "right",
+                            "style": {"color": "#5FC5D1", "fontSize": "14px"}
+                        },
+                        "xAxis": {
+                            "categories": [{% for rate, rateSummary in project.bids.graph.summary %}"{{ rate }}%"{% if not loop.last %},{% endif %}{% endfor %}],
+                            "plotBands": [{
+                                "from": 8,
+                                "to": 12.5,
+                                "borderWidth": 0,
+                                "color": "rgba(255, 255, 255, .5)",
+                                "zIndex": 1
+                            }],
+                            "plotLines": [{"color": "#999999", "dashStyle": "ShortDot", "value": {{ project.bids.graph.maxNotNullIndex + 1 }}, "width": 1}]
+                        },
+                        "yAxis": {"title": {"text": "{% trans %} project-detail_all-bids-graph-y-axis-legend {% endtrans %}"}},
+                        "plotOptions": {
+                            "areaspline": {
+                                "dataLabels": {
+                                    "enabled": false,
+                                    "states": {"hover": {"enabled": true}}
+                                }
+                            }
+                        },
+                        "series": [{
+                            "name": "{% trans %} project-detail_all-bids-graph-series-description {% endtrans %}",
+                            "color": "#5FC5D1",
+                            "fillOpacity": 0.25,
+                            "showInLegend": false,
+                            "data": [{% for rate, rateSummary in project.bids.graph.summary %}{{ rateSummary.activeBidsCount }}{% if not loop.last %},{% endif %}{% endfor %}]
+                        }]
+                    }
+                }
+            {% endspaceless %}{% endset %}
+
             <div id="alloffers-graph" role="tabpanel" class="tab-pane">
-                TODO charts
-                {#<div class="chart" data-chartview='{{ charts.projectOffers|json_encode|escape('html_attr') }}'></div>#}
+                <div class="chart" data-chartview='{{ projectOffers | raw | escape('html_attr') }}'></div>
             </div>
         </div><!-- /.section-tabs-content -->
     </div><!-- /tabs -->
