@@ -62,6 +62,7 @@ var LoginCaptcha = require('./app/components/LoginCaptcha')
 var SimpleTimer = require('./app/components/SimpleCountDown')
 var BidConfirmation = require('./app/components/BidConfirmation')
 var CookieCheck = require('./app/components/Cookies')
+var LenderWallet = require('./app/components/LenderWallet')
 
 // @debug
 // CacheData.clearAll()
@@ -2017,25 +2018,6 @@ $(document).ready(function ($) {
       }
     }
 
-    return false
-  })
-
-  // Technically these operations should be fired from a successful AJAX result
-  function successBalanceDeposit() {
-    $('#balance-deposit-2').collapse('show')
-    Utility.scrollTo('#user-preter-balance')
-  }
-
-  function successBalanceWithdraw() {
-    $('#balance-withdraw-2').collapse('show')
-    Utility.scrollTo('#user-preter-balance')
-  }
-
-  // Temp implementation for front-end staging demo
-  // @todo refactor to production-ready
-  $doc.on('submit', '#form-balance-withdraw', function (event) {
-    event.preventDefault()
-    successBalanceWithdraw()
     return false
   })
 

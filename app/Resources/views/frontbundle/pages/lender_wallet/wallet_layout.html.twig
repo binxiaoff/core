@@ -1,0 +1,37 @@
+{# User / Preter / Apport - Retrait #}
+{% extends 'layouts/_dashboard.html.twig' %}
+{% import 'extensions/_general.macros.twig' as general %}
+{% import 'partials/modules/_custom-input.macros.twig' as customInput %}
+
+{# Page data #}
+{% set bodyId = '' %}
+{% set page = {
+id: 'user-preter-balance',
+title: 'Prêteur / Apport - Retrait',
+permalink: route('user/preter/balance'),
+classNames: 'user-preter-balance'
+} %}
+
+{% block dashboardContent %}
+
+    <div class="dashboard-tabs tabs">
+
+        <div class="dashboard-tabs-nav">
+            <ul class="nav nav-dashboard-tabs">
+                <li role="presentation" class="active">
+                    <a href="#balance-deposit" role="tab" data-toggle="tab">{% trans %} lender-wallet_deposit {% endtrans %}</a>
+                </li>
+                <li role="presentation">
+                    <a href="#balance-withdraw" role="tab" data-toggle="tab">{% trans %} lender-wallet_withdrawal {% endtrans %}</a>
+                </li>
+            </ul>
+        </div><!-- /.dashboard-tabs-nav -->
+
+        <div class="dashboard-tabs-content tab-content">
+            {% include ':frontbundle/pages/lender_wallet:deposit_layout.html.twig' %}
+            {% include ':frontbundle/pages/lender_wallet:withdraw_layout.html.twig' %}
+        </div><!-- /.dashboard-tabs-content -->
+
+    </div><!-- /.dashboard-tabs -->
+
+{% endblock %}

@@ -72,4 +72,13 @@ class UserLender extends BaseUser
     {
         return $this->level;
     }
+
+    /**
+     * @param double $balance
+     */
+    public function setBalance($balance)
+    {
+        $this->balance = $balance;
+    }
+
 }

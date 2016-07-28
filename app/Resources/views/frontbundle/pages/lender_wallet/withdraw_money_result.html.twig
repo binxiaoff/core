@@ -1,0 +1,7 @@
+{% if code == 200 %}
+    <p>{% trans %} lender-wallet_withdrawal-success-message {% endtrans %}</p>
+    <p><a href='{{ route('user/preter/dashboard') }}' class='btn-primary'>{% trans %} lender-wallet_lender-dashboard {% endtrans %}</a></p>
+{% else %}
+    <p>{% trans %} lender-wallet_withdrawal-error-message {% endtrans %}</p>
+    <p><a href='{{ route('user/preter/dashboard') }}' class='btn-primary'>{% trans %} lender-wallet_lender-dashboard {% endtrans %}</a></p>
+{% endif %}
