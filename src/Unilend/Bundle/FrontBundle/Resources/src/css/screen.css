@@ -8550,7 +8550,7 @@ label.custom-input-switch.custom-input-switch-sm > input[type="checkbox"]:checke
 .list-files .file-type-pdf {
   min-height: 80px;
   padding-left: 80px;
-  background-image: url('../images/dashboard/file-pdf-60x80.png?1468850473');
+  background-image: url('../images/dashboard/file-pdf-60x80.png?1469632930');
   background-position: left top;
   background-repeat: no-repeat;
 }
@@ -10562,11 +10562,11 @@ label.custom-input-switch.custom-input-switch-sm > input[type="checkbox"]:checke
 }
 /* line 278, ../sass/site/components/_blocks.scss */
 .block-quote.block-quote-lamp {
-  background-image: url('../images/backgrounds/bg-lamp-crop.png?1468850473');
+  background-image: url('../images/backgrounds/bg-lamp-crop.png?1469632930');
 }
 /* line 282, ../sass/site/components/_blocks.scss */
 .block-quote.block-quote-diamond {
-  background-image: url('../images/backgrounds/bg-diamond-crop.png?1468850473');
+  background-image: url('../images/backgrounds/bg-diamond-crop.png?1469632930');
 }
 
 /* line 288, ../sass/site/components/_blocks.scss */
@@ -11399,212 +11399,214 @@ thead.table-sortable-columns {
 #user-borrower-dashboard .table {
   margin: 20px 0;
 }
-/* line 6, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 5, ../sass/site/components/tables/_myoperations-borrower.scss */
+#user-borrower-dashboard .table th {
+  font-size: 11px;
+  text-transform: uppercase;
+  padding-left: 2px;
+  padding-right: 2px;
+  text-align: center;
+}
+/* line 13, ../sass/site/components/tables/_myoperations-borrower.scss */
 #user-borrower-dashboard .table td {
   font-size: 15px;
 }
-/* line 9, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 16, ../sass/site/components/tables/_myoperations-borrower.scss */
 #user-borrower-dashboard .table .center {
   text-align: center;
 }
 
-/* line 14, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 21, ../sass/site/components/tables/_myoperations-borrower.scss */
 #user-emprunteur-operations #form-filters-operations {
   margin-bottom: 70px;
 }
 
-/* line 18, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 25, ../sass/site/components/tables/_myoperations-borrower.scss */
 #user-emprunteur-operations .cell-right {
   text-align: right;
 }
 
-/* line 22, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 29, ../sass/site/components/tables/_myoperations-borrower.scss */
 #user-emprunteur-operations .export {
   color: #2cbaa4;
 }
 
-/* line 26, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 33, ../sass/site/components/tables/_myoperations-borrower.scss */
 .grey-label {
   color: #9f9d9f;
 }
 
-/* line 30, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 37, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-borrower-item-operation {
   width: 50%;
 }
 
-/* line 34, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 41, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-borrower-item-projet {
   width: 10%;
   text-align: right;
 }
 
-/* line 39, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 46, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-borrower-item-date {
   width: 20%;
   text-align: right;
 }
 
-/* line 44, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 51, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-borrower-item-amount {
   width: 10%;
   text-align: right;
 }
 
-/* line 49, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 56, ../sass/site/components/tables/_myoperations-borrower.scss */
 td.table-myoperations-borrower-item-amount {
   color: #2cbaa4;
 }
 
-/* line 53, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 60, ../sass/site/components/tables/_myoperations-borrower.scss */
 .below-null {
   color: #f8524e !important;
 }
 
-/* line 57, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 64, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-borrower-item-detail {
   width: 10%;
   text-align: center;
 }
 
-/* line 64, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 71, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-prefunding {
   table-layout: fixed;
 }
-/* line 66, ../sass/site/components/tables/_myoperations-borrower.scss */
-.table-myoperations-prefunding th {
-  text-align: left;
-  font-size: 12px;
-  text-transform: none;
-}
-/* line 71, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 73, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-prefunding td {
   font-size: 11px;
 }
-/* line 74, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 76, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-prefunding .table-borrower-file {
   width: 10%;
 }
-/* line 78, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 80, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-prefunding .table-borrower-nature {
   width: 30%;
 }
-/* line 82, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 84, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-prefunding .table-borrower-amount {
   width: 10%;
 }
-/* line 86, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 88, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-prefunding .table-borrower-status {
   width: 16%;
 }
-/* line 90, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 92, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-prefunding .table-borrower-autolend {
   width: 15%;
 }
-/* line 94, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 96, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-prefunding .table-borrower-upload {
   width: 11%;
 }
-/* line 98, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 100, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-prefunding .min {
   text-transform: none;
   font-size: 9px;
 }
 
-/* line 109, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 111, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-funding {
   table-layout: fixed;
 }
-/* line 111, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 113, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-funding th {
   text-align: left;
-  font-size: 12px;
+  /*font-size:12px;*/
   text-transform: none;
 }
-/* line 116, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 118, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-funding td {
   font-size: 11px;
 }
-/* line 119, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 121, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-funding .table-borrower-file {
   width: 10%;
 }
-/* line 123, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 125, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-funding .table-borrower-nature {
   width: 20%;
 }
-/* line 127, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 129, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-funding .table-borrower-amount {
   width: 12%;
 }
-/* line 131, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 133, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-funding .table-borrower-ending-date {
   width: 12%;
 }
-/* line 135, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 137, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-funding .table-borrower-funding-rate {
   width: 12%;
 }
-/* line 139, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 141, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-funding .table-borrower-average-rate {
   width: 10%;
 }
-/* line 143, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 145, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-funding .table-borrower-stop {
   width: 10%;
 }
-/* line 147, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 149, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-funding .table-borrower-link-to {
   width: 10%;
 }
 
-/* line 154, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 156, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-postfunding {
   table-layout: fixed;
 }
-/* line 156, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 158, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-postfunding th {
   text-align: left;
   font-size: 12px;
   text-transform: none;
 }
-/* line 161, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 164, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-postfunding td {
   font-size: 11px;
 }
-/* line 164, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 167, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-postfunding .table-borrower-file {
   width: 10%;
 }
-/* line 168, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 171, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-postfunding .table-borrower-nature {
   width: 15%;
 }
-/* line 172, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 175, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-postfunding .table-borrower-amount {
   width: 10%;
 }
-/* line 176, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 179, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-postfunding .table-borrower-ending-date {
   width: 10%;
 }
-/* line 180, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 183, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-postfunding .table-borrower-monthly {
   width: 10%;
 }
-/* line 184, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 187, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-postfunding .table-borrower-average-rate {
   width: 10%;
 }
-/* line 188, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 191, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-postfunding .table-borrower-crd {
   width: 10%;
 }
-/* line 192, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 195, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-postfunding .table-borrower-date {
   width: 10%;
 }
-/* line 196, ../sass/site/components/tables/_myoperations-borrower.scss */
+/* line 199, ../sass/site/components/tables/_myoperations-borrower.scss */
 .table-myoperations-postfunding .table-borrower-button {
   width: 10%;
 }
@@ -11704,12 +11706,12 @@ td.table-myoperations-borrower-item-amount {
 
 /* line 110, ../sass/site/components/tables/_myloans.scss */
 .loan-doc-contract {
-  background-image: url('../images/dashboard/file-contract-28x38.png?1468850473');
+  background-image: url('../images/dashboard/file-contract-28x38.png?1469632930');
 }
 
 /* line 114, ../sass/site/components/tables/_myloans.scss */
 .loan-doc-bond {
-  background-image: url('../images/dashboard/file-bond-28x38.png?1468850473');
+  background-image: url('../images/dashboard/file-bond-28x38.png?1469632930');
 }
 
 /* line 284, ../sass/site/components/dashboard/_panel.scss */
@@ -13533,7 +13535,7 @@ td.table-myoperations-borrower-item-amount {
   height: 44px;
   overflow: hidden;
   background-color: transparent;
-  background-image: url('../images/logo/logo-and-type-unilend-209x44-purple.png?1468850473');
+  background-image: url('../images/logo/logo-and-type-unilend-209x44-purple.png?1469632930');
   background-repeat: no-repeat;
   background-position: left top;
   line-height: 44px;
@@ -13544,14 +13546,14 @@ td.table-myoperations-borrower-item-amount {
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   /* line 98, ../sass/site/components/site/_header.scss */
   .site-logo {
-    background-image: url('../images/logo/logo-and-type-unilend-209x44-purple@2x.png?1468850473');
+    background-image: url('../images/logo/logo-and-type-unilend-209x44-purple@2x.png?1469632930');
     background-size: contain;
   }
 }
 @media screen and (min-width: 1600px) {
   /* line 98, ../sass/site/components/site/_header.scss */
   .site-logo {
-    background-image: url('../images/logo/logo-and-type-unilend-245x52-purple.png?1468850473');
+    background-image: url('../images/logo/logo-and-type-unilend-245x52-purple.png?1469632930');
     width: 245px;
     height: 52px;
     line-height: 52px;
@@ -13560,7 +13562,7 @@ td.table-myoperations-borrower-item-amount {
 @media screen and (min-width: 1600px) and (-webkit-min-device-pixel-ratio: 2), screen and (min-width: 1600px) and (min-resolution: 192dpi) {
   /* line 98, ../sass/site/components/site/_header.scss */
   .site-logo {
-    background-image: url('../images/logo/logo-and-type-unilend-245x52-purple@2x.png?1468850473');
+    background-image: url('../images/logo/logo-and-type-unilend-245x52-purple@2x.png?1469632930');
     background-size: contain;
   }
 }
@@ -13666,7 +13668,7 @@ td.table-myoperations-borrower-item-amount {
 /* line 153, ../sass/site/components/site/_header.scss */
 .site-header .site-logo {
   background-color: transparent;
-  background-image: url('../images/logo/logo-and-type-unilend-132x25-purple.png?1468850473');
+  background-image: url('../images/logo/logo-and-type-unilend-132x25-purple.png?1469632930');
   background-repeat: no-repeat;
   background-position: left top;
   width: 135px;
@@ -13676,7 +13678,7 @@ td.table-myoperations-borrower-item-amount {
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   /* line 153, ../sass/site/components/site/_header.scss */
   .site-header .site-logo {
-    background-image: url('../images/logo/logo-and-type-unilend-132x25-purple@2x.png?1468850473');
+    background-image: url('../images/logo/logo-and-type-unilend-132x25-purple@2x.png?1469632930');
     background-size: contain;
   }
 }
@@ -13693,7 +13695,7 @@ td.table-myoperations-borrower-item-amount {
   width: 65px;
   height: 65px;
   background-color: transparent;
-  background-image: url('../images/logo/logo-unilend-65x65-white.png?1468850473');
+  background-image: url('../images/logo/logo-unilend-65x65-white.png?1469632930');
   background-repeat: no-repeat;
   background-position: left top;
   text-align: left;
@@ -13703,7 +13705,7 @@ td.table-myoperations-borrower-item-amount {
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   /* line 164, ../sass/site/components/site/_header.scss */
   .site-header.site-header-dashboard .site-logo {
-    background-image: url('../images/logo/logo-unilend-65x65-white@2x.png?1468850473');
+    background-image: url('../images/logo/logo-unilend-65x65-white@2x.png?1469632930');
     background-size: contain;
   }
 }
@@ -14057,7 +14059,7 @@ td.table-myoperations-borrower-item-amount {
     height: 44px;
     overflow: hidden;
     background-color: transparent;
-    background-image: url('../images/logo/logo-and-type-unilend-209x44-purple.png?1468850473');
+    background-image: url('../images/logo/logo-and-type-unilend-209x44-purple.png?1469632930');
     background-repeat: no-repeat;
     background-position: left top;
     line-height: 44px;
@@ -14069,14 +14071,14 @@ td.table-myoperations-borrower-item-amount {
 @media screen and (min-width: 1024px) and (max-width: 1299px) and (-webkit-min-device-pixel-ratio: 2), screen and (min-width: 1024px) and (max-width: 1299px) and (min-resolution: 192dpi) {
   /* line 467, ../sass/site/components/site/_header.scss */
   .site-header .site-logo, .site-header.site-header-dashboard .site-logo {
-    background-image: url('../images/logo/logo-and-type-unilend-209x44-purple@2x.png?1468850473');
+    background-image: url('../images/logo/logo-and-type-unilend-209x44-purple@2x.png?1469632930');
     background-size: contain;
   }
 }
 @media screen and (min-width: 1024px) and (max-width: 1299px) and (min-width: 1600px) {
   /* line 467, ../sass/site/components/site/_header.scss */
   .site-header .site-logo, .site-header.site-header-dashboard .site-logo {
-    background-image: url('../images/logo/logo-and-type-unilend-245x52-purple.png?1468850473');
+    background-image: url('../images/logo/logo-and-type-unilend-245x52-purple.png?1469632930');
     width: 245px;
     height: 52px;
     line-height: 52px;
@@ -14085,7 +14087,7 @@ td.table-myoperations-borrower-item-amount {
 @media screen and (min-width: 1024px) and (max-width: 1299px) and (min-width: 1600px) and (-webkit-min-device-pixel-ratio: 2), screen and (min-width: 1024px) and (max-width: 1299px) and (min-width: 1600px) and (min-resolution: 192dpi) {
   /* line 467, ../sass/site/components/site/_header.scss */
   .site-header .site-logo, .site-header.site-header-dashboard .site-logo {
-    background-image: url('../images/logo/logo-and-type-unilend-245x52-purple@2x.png?1468850473');
+    background-image: url('../images/logo/logo-and-type-unilend-245x52-purple@2x.png?1469632930');
     background-size: contain;
   }
 }
@@ -14403,7 +14405,7 @@ td.table-myoperations-borrower-item-amount {
     width: 65px;
     height: 65px;
     background-color: transparent;
-    background-image: url('../images/logo/logo-unilend-65x65-white.png?1468850473');
+    background-image: url('../images/logo/logo-unilend-65x65-white.png?1469632930');
     background-repeat: no-repeat;
     background-position: left top;
     text-align: left;
@@ -14414,7 +14416,7 @@ td.table-myoperations-borrower-item-amount {
 @media screen and (min-width: 1024px) and (max-width: 1299px) and (-webkit-min-device-pixel-ratio: 2), screen and (min-width: 1024px) and (max-width: 1299px) and (min-resolution: 192dpi) {
   /* line 739, ../sass/site/components/site/_header.scss */
   .ui-site-header-fixed .site-header .site-logo, .ui-site-header-fixed .site-header.site-header-dashboard .site-logo {
-    background-image: url('../images/logo/logo-unilend-65x65-white@2x.png?1468850473');
+    background-image: url('../images/logo/logo-unilend-65x65-white@2x.png?1469632930');
     background-size: contain;
   }
 }
@@ -14557,7 +14559,7 @@ td.table-myoperations-borrower-item-amount {
     height: 44px;
     overflow: hidden;
     background-color: transparent;
-    background-image: url('../images/logo/logo-and-type-unilend-209x44-purple.png?1468850473');
+    background-image: url('../images/logo/logo-and-type-unilend-209x44-purple.png?1469632930');
     background-repeat: no-repeat;
     background-position: left top;
     line-height: 44px;
@@ -14569,14 +14571,14 @@ td.table-myoperations-borrower-item-amount {
 @media screen and (min-width: 1300px) and (max-width: 1599px) and (-webkit-min-device-pixel-ratio: 2), screen and (min-width: 1300px) and (max-width: 1599px) and (min-resolution: 192dpi) {
   /* line 467, ../sass/site/components/site/_header.scss */
   .site-header .site-logo, .site-header.site-header-dashboard .site-logo {
-    background-image: url('../images/logo/logo-and-type-unilend-209x44-purple@2x.png?1468850473');
+    background-image: url('../images/logo/logo-and-type-unilend-209x44-purple@2x.png?1469632930');
     background-size: contain;
   }
 }
 @media screen and (min-width: 1300px) and (max-width: 1599px) and (min-width: 1600px) {
   /* line 467, ../sass/site/components/site/_header.scss */
   .site-header .site-logo, .site-header.site-header-dashboard .site-logo {
-    background-image: url('../images/logo/logo-and-type-unilend-245x52-purple.png?1468850473');
+    background-image: url('../images/logo/logo-and-type-unilend-245x52-purple.png?1469632930');
     width: 245px;
     height: 52px;
     line-height: 52px;
@@ -14585,7 +14587,7 @@ td.table-myoperations-borrower-item-amount {
 @media screen and (min-width: 1300px) and (max-width: 1599px) and (min-width: 1600px) and (-webkit-min-device-pixel-ratio: 2), screen and (min-width: 1300px) and (max-width: 1599px) and (min-width: 1600px) and (min-resolution: 192dpi) {
   /* line 467, ../sass/site/components/site/_header.scss */
   .site-header .site-logo, .site-header.site-header-dashboard .site-logo {
-    background-image: url('../images/logo/logo-and-type-unilend-245x52-purple@2x.png?1468850473');
+    background-image: url('../images/logo/logo-and-type-unilend-245x52-purple@2x.png?1469632930');
     background-size: contain;
   }
 }
@@ -14903,7 +14905,7 @@ td.table-myoperations-borrower-item-amount {
     width: 65px;
     height: 65px;
     background-color: transparent;
-    background-image: url('../images/logo/logo-unilend-65x65-white.png?1468850473');
+    background-image: url('../images/logo/logo-unilend-65x65-white.png?1469632930');
     background-repeat: no-repeat;
     background-position: left top;
     text-align: left;
@@ -14914,7 +14916,7 @@ td.table-myoperations-borrower-item-amount {
 @media screen and (min-width: 1300px) and (max-width: 1599px) and (-webkit-min-device-pixel-ratio: 2), screen and (min-width: 1300px) and (max-width: 1599px) and (min-resolution: 192dpi) {
   /* line 739, ../sass/site/components/site/_header.scss */
   .ui-site-header-fixed .site-header .site-logo, .ui-site-header-fixed .site-header.site-header-dashboard .site-logo {
-    background-image: url('../images/logo/logo-unilend-65x65-white@2x.png?1468850473');
+    background-image: url('../images/logo/logo-unilend-65x65-white@2x.png?1469632930');
     background-size: contain;
   }
 }
@@ -15103,7 +15105,7 @@ td.table-myoperations-borrower-item-amount {
     height: 44px;
     overflow: hidden;
     background-color: transparent;
-    background-image: url('../images/logo/logo-and-type-unilend-209x44-purple.png?1468850473');
+    background-image: url('../images/logo/logo-and-type-unilend-209x44-purple.png?1469632930');
     background-repeat: no-repeat;
     background-position: left top;
     line-height: 44px;
@@ -15115,14 +15117,14 @@ td.table-myoperations-borrower-item-amount {
 @media screen and (min-width: 1600px) and (-webkit-min-device-pixel-ratio: 2), screen and (min-width: 1600px) and (min-resolution: 192dpi) {
   /* line 467, ../sass/site/components/site/_header.scss */
   .site-header .site-logo, .site-header.site-header-dashboard .site-logo {
-    background-image: url('../images/logo/logo-and-type-unilend-209x44-purple@2x.png?1468850473');
+    background-image: url('../images/logo/logo-and-type-unilend-209x44-purple@2x.png?1469632930');
     background-size: contain;
   }
 }
 @media screen and (min-width: 1600px) and (min-width: 1600px) {
   /* line 467, ../sass/site/components/site/_header.scss */
   .site-header .site-logo, .site-header.site-header-dashboard .site-logo {
-    background-image: url('../images/logo/logo-and-type-unilend-245x52-purple.png?1468850473');
+    background-image: url('../images/logo/logo-and-type-unilend-245x52-purple.png?1469632930');
     width: 245px;
     height: 52px;
     line-height: 52px;
@@ -15131,7 +15133,7 @@ td.table-myoperations-borrower-item-amount {
 @media screen and (min-width: 1600px) and (min-width: 1600px) and (-webkit-min-device-pixel-ratio: 2), screen and (min-width: 1600px) and (min-width: 1600px) and (min-resolution: 192dpi) {
   /* line 467, ../sass/site/components/site/_header.scss */
   .site-header .site-logo, .site-header.site-header-dashboard .site-logo {
-    background-image: url('../images/logo/logo-and-type-unilend-245x52-purple@2x.png?1468850473');
+    background-image: url('../images/logo/logo-and-type-unilend-245x52-purple@2x.png?1469632930');
     background-size: contain;
   }
 }
@@ -15449,7 +15451,7 @@ td.table-myoperations-borrower-item-amount {
     width: 65px;
     height: 65px;
     background-color: transparent;
-    background-image: url('../images/logo/logo-unilend-65x65-white.png?1468850473');
+    background-image: url('../images/logo/logo-unilend-65x65-white.png?1469632930');
     background-repeat: no-repeat;
     background-position: left top;
     text-align: left;
@@ -15460,7 +15462,7 @@ td.table-myoperations-borrower-item-amount {
 @media screen and (min-width: 1600px) and (-webkit-min-device-pixel-ratio: 2), screen and (min-width: 1600px) and (min-resolution: 192dpi) {
   /* line 739, ../sass/site/components/site/_header.scss */
   .ui-site-header-fixed .site-header .site-logo, .ui-site-header-fixed .site-header.site-header-dashboard .site-logo {
-    background-image: url('../images/logo/logo-unilend-65x65-white@2x.png?1468850473');
+    background-image: url('../images/logo/logo-unilend-65x65-white@2x.png?1469632930');
     background-size: contain;
   }
 }
@@ -17379,7 +17381,7 @@ td.table-myoperations-borrower-item-amount {
 /* line 217, ../sass/site/components/page/_single.scss */
 .page-single .page-footer .page-navigate-next-page {
   background-color: #787679;
-  background-image: url('../images/generic/page-footer.png?1468850473');
+  background-image: url('../images/generic/page-footer.png?1469632930');
   background-position: center center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -17488,14 +17490,14 @@ td.table-myoperations-borrower-item-amount {
     padding: 0;
     margin: 0;
     overflow: hidden;
-    background-image: url('../images/logo/logo-unilend-65x65-white.png?1468850473');
+    background-image: url('../images/logo/logo-unilend-65x65-white.png?1469632930');
     background-position: center center;
   }
 }
 @media screen and (max-width: 599px) and (-webkit-min-device-pixel-ratio: 2), screen and (min-width: 600px) and (max-width: 1023px) and (-webkit-min-device-pixel-ratio: 2), screen and (max-width: 599px) and (min-resolution: 192dpi), screen and (min-width: 600px) and (max-width: 1023px) and (min-resolution: 192dpi) {
   /* line 191, ../sass/site/components/page/_dashboard.scss */
   .layout-dashboard .site-header .site-logo {
-    background-image: url('../images/logo/logo-unilend-65x65-white@2x.png?1468850473');
+    background-image: url('../images/logo/logo-unilend-65x65-white@2x.png?1469632930');
   }
 }
 
@@ -18244,7 +18246,7 @@ td.table-myoperations-borrower-item-amount {
   margin-bottom: -700px;
   position: relative;
   background-color: #eceaed;
-  background-image: url('../images/maps/map-generic-1600x1000.jpg?1468850473');
+  background-image: url('../images/maps/map-generic-1600x1000.jpg?1469632930');
   background-repeat: no-repeat;
   background-position: center center;
   background-size: cover;
@@ -21547,7 +21549,7 @@ td.table-myoperations-borrower-item-amount {
   margin: 0;
   position: relative;
   overflow: hidden;
-  background-image: url('../images/maps/map-generic-1600x1000.jpg?1468850473');
+  background-image: url('../images/maps/map-generic-1600x1000.jpg?1469632930');
   background-repeat: no-repeat;
   background-position: center center;
   background-size: cover;
@@ -21741,7 +21743,7 @@ td.table-myoperations-borrower-item-amount {
 }
 /* line 26, ../sass/site/pages/home/_acq.scss */
 #homeacq.page #homeacq-video-hero.cta-video-hero .swiper-slide:nth-of-type(1) {
-  background-image: url('../images/promos/homeacq-video-hero-1682x700-1.jpg?1468850473');
+  background-image: url('../images/promos/homeacq-video-hero-1682x700-1.jpg?1469632930');
 }
 @media screen and (max-width: 599px) {
   /* line 26, ../sass/site/pages/home/_acq.scss */
@@ -21751,7 +21753,7 @@ td.table-myoperations-borrower-item-amount {
 }
 /* line 34, ../sass/site/pages/home/_acq.scss */
 #homeacq.page #homeacq-video-hero.cta-video-hero .swiper-slide:nth-of-type(2) {
-  background-image: url('../images/promos/homeacq-video-hero-1682x700-2.jpg?1468850473');
+  background-image: url('../images/promos/homeacq-video-hero-1682x700-2.jpg?1469632930');
 }
 @media screen and (max-width: 599px) {
   /* line 34, ../sass/site/pages/home/_acq.scss */
@@ -21761,7 +21763,7 @@ td.table-myoperations-borrower-item-amount {
 }
 /* line 42, ../sass/site/pages/home/_acq.scss */
 #homeacq.page #homeacq-video-hero.cta-video-hero .swiper-slide:nth-of-type(3) {
-  background-image: url('../images/promos/homeacq-video-hero-1682x700-3.jpg?1468850473');
+  background-image: url('../images/promos/homeacq-video-hero-1682x700-3.jpg?1469632930');
 }
 @media screen and (max-width: 599px) {
   /* line 42, ../sass/site/pages/home/_acq.scss */
@@ -21794,7 +21796,7 @@ td.table-myoperations-borrower-item-amount {
 
 /* line 9, ../sass/site/pages/home/_emp.scss */
 #homeemp.page #homeemp-video-hero.cta-video-hero .video-hero-wrapper .video-hero {
-  background-image: url('../images/promos/homeemp-video-hero-1690x1070.jpg?1468850473');
+  background-image: url('../images/promos/homeemp-video-hero-1690x1070.jpg?1469632930');
   background-position: center top;
 }
 @media screen and (max-width: 599px) {
@@ -21818,7 +21820,7 @@ td.table-myoperations-borrower-item-amount {
 
 /* line 9, ../sass/site/pages/home/_pre.scss */
 #homepre.page #homepre-video-hero.cta-video-hero .video-hero-wrapper .video-hero {
-  background-image: url('../images/promos/homepre-video-hero-1690x1070.jpg?1468850473');
+  background-image: url('../images/promos/homepre-video-hero-1690x1070.jpg?1469632930');
 }
 @media screen and (max-width: 599px) {
   /* line 9, ../sass/site/pages/home/_pre.scss */
@@ -22135,7 +22137,7 @@ td.table-myoperations-borrower-item-amount {
   padding-bottom: 50px;
   margin-bottom: 50px;
   background-color: #f8f6f8;
-  background-image: url('../images/backgrounds/bg-guy.jpg?1468850473');
+  background-image: url('../images/backgrounds/bg-guy.jpg?1469632930');
   background-position: top center;
   background-repeat: no-repeat;
   background-size: contain;
@@ -22594,7 +22596,7 @@ td.table-myoperations-borrower-item-amount {
   padding-bottom: 50px;
   margin-bottom: 50px;
   background-color: #f8f6f8;
-  background-image: url('../images/backgrounds/bg-guy.jpg?1468850473');
+  background-image: url('../images/backgrounds/bg-guy.jpg?1469632930');
   background-position: top center;
   background-repeat: no-repeat;
   background-size: contain;
@@ -23159,11 +23161,11 @@ td.table-myoperations-borrower-item-amount {
 }
 /* line 112, ../sass/site/pages/apropos/_statistiques.scss */
 #apropos-statistiques.page .bg-icon-linechart {
-  background-image: url('../images/apropos/statistiques/bg-icon-linechart.svg?1468850473');
+  background-image: url('../images/apropos/statistiques/bg-icon-linechart.svg?1469632930');
 }
 /* line 116, ../sass/site/pages/apropos/_statistiques.scss */
 #apropos-statistiques.page .bg-icon-money {
-  background-image: url('../images/apropos/statistiques/bg-icon-money.svg?1468850473');
+  background-image: url('../images/apropos/statistiques/bg-icon-money.svg?1469632930');
 }
 /* line 121, ../sass/site/pages/apropos/_statistiques.scss */
 #apropos-statistiques.page .block-promos-unilend .promo-image {
@@ -23495,7 +23497,7 @@ td.table-myoperations-borrower-item-amount {
   padding-top: 50px;
   padding-bottom: 50px;
   background-color: #f8f6f8;
-  background-image: url('../images/user/bg-connexioninscription.jpg?1468850474');
+  background-image: url('../images/user/bg-connexioninscription.jpg?1469632931');
   background-position: center center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -24510,22 +24512,22 @@ td.table-myoperations-borrower-item-amount {
 
 /* line 324, ../sass/site/pages/user/preter/_profile.scss */
 .file-identity-side-a:before {
-  background-image: url('../images/dashboard/identity-side-a.png?1468850473');
+  background-image: url('../images/dashboard/identity-side-a.png?1469632930');
 }
 
 /* line 328, ../sass/site/pages/user/preter/_profile.scss */
 .file-identity-side-b:before {
-  background-image: url('../images/dashboard/identity-side-b.png?1468850473');
+  background-image: url('../images/dashboard/identity-side-b.png?1469632930');
 }
 
 /* line 332, ../sass/site/pages/user/preter/_profile.scss */
 .file-domicile:before {
-  background-image: url('../images/dashboard/domicile.png?1468850473');
+  background-image: url('../images/dashboard/domicile.png?1469632930');
 }
 
 /* line 336, ../sass/site/pages/user/preter/_profile.scss */
 .file-rib:before {
-  background-image: url('../images/dashboard/rib.png?1468850473');
+  background-image: url('../images/dashboard/rib.png?1469632930');
 }
 
 @media screen and (min-width: 600px) and (max-width: 1023px), screen and (min-width: 1024px) and (max-width: 1599px), screen and (min-width: 1600px) {

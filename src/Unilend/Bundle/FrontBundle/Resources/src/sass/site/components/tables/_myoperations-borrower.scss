@@ -2,6 +2,13 @@
 // Unilend Table My Operations borrower
 //
 #user-borrower-dashboard .table {
+  th {
+    font-size:11px;
+    text-transform:uppercase;
+    padding-left:2px;
+    padding-right:2px;
+    text-align:center;
+  }
   margin:20px 0;
   td {
     font-size:15px;
@@ -63,11 +70,6 @@ td.table-myoperations-borrower-item-amount {
 
 .table-myoperations-prefunding {
   table-layout: fixed;
-  th {
-    text-align:left;
-    font-size:12px;
-    text-transform:none;
-  }
   td {
     font-size:11px;
   }
@@ -110,7 +112,7 @@ td.table-myoperations-borrower-item-amount {
   table-layout: fixed;
   th {
     text-align:left;
-    font-size:12px;
+    /*font-size:12px;*/
     text-transform:none;
   }
   td {
@@ -156,6 +158,7 @@ td.table-myoperations-borrower-item-amount {
   th {
     text-align:left;
     font-size:12px;
+
     text-transform:none;
   }
   td {
@@ -197,3 +200,6 @@ td.table-myoperations-borrower-item-amount {
     width:10%;
   }
 }
+// POST FUNDING
+
+// END POSTFUNDING

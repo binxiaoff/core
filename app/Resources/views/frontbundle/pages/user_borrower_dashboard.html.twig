@@ -5,11 +5,12 @@
 {# Page data #}
 {% set bodyId = '' %}
 {% set page = {
-    id: 'user-borrower-dashboard',
-    title: 'Emprunteur / Dashboard',
-    permalink: route('user/borrower/dashboard'),
-    classNames: 'user-emprunteur-dashboard'
+id: 'user-borrower-dashboard',
+title: 'Emprunteur / Dashboard',
+permalink: route('user/borrower/dashboard'),
+classNames: 'user-emprunteur-dashboard'
 } %}
+
 
 {% block dashboardContent %}
 
@@ -43,7 +44,7 @@
                                         <span class="label">Status</span>
                                     </th>
                                     <th class="table-borrower-autolend">
-                                        <span class="label">Autolend <span class="min">prédictif en %</span></span>
+                                        <span class="label">Autolend prédictif en %</span>
                                     </th>
                                     <th class="table-borrower-upload">
                                         <span class="label"></span>
@@ -58,7 +59,9 @@
                                     <td>30&nbsp;000&nbsp;€<br>60&nbsp;mois</td>
                                     <td>Pré-funding</td>
                                     <td>66&nbsp;%</td>
-                                    <td class="center"><a href="#todo">Déposer des pièces</a></td>
+                                    <td class="center">
+                                        <a href="#todo" class="ui-has-tooltip" data-original-title="Ajouter des pièces"><span class="icon fa-file-u16"></span></a>
+                                    </td>
                                 </tr>
                                 </tbody>
 
@@ -91,11 +94,14 @@
                                     <th class="table-borrower-buttons">
                                         <span class="label"></span>
                                     </th>
+                                    <th class="table-borrower-buttons">
+                                        <span class="label"></span>
+                                    </th>
                                 </tr>
                                 </thead>
 
                                 <tbody>
-                                <tr class=" ">
+                                <tr>
                                     <td>44444</td>
                                     <td>Financer des besoins en financement</td>
                                     <td>30&nbsp;000&nbsp;€<br>60&nbsp;mois</td>
@@ -103,8 +109,10 @@
                                     <td>65&nbsp;%</td>
                                     <td>7.5&nbsp;%</td>
                                     <td>
-                                        <dt><a href="#todo" class="link">Arrêter</a></dt>
-                                        <dd><a href="#todo" class="link">Voir le projet</a></dd>
+                                        <dt><a href="#todo" class="ui-has-tooltip" data-original-title="Arrêter le projet"><span class="icon fa-close-u32"></span></a>
+                                        </dt>
+                                    <td><a href="#todo" class="ui-has-tooltip" data-original-title="Voir le projet"><span class="icon fa-eye-u16"></span></a>
+                                    </td>
                                     </td>
                                 </tr>
                                 </tbody>
@@ -157,7 +165,7 @@
                                     <td>7.5&nbsp;%</td>
                                     <td>27&nbsp;439,32&nbsp;€</td>
                                     <td>07/07/2016</td>
-                                    <td><a href="#todo" class="link">Voir le projet</a></td>
+                                    <td><a href="#todo" class="ui-has-tooltip" data-original-title="Voir le projet"><span class="icon fa-eye-u16"></span></a></td>
                                 </tr>
                                 <tr class=" ">
                                     <td>44444</td>
@@ -168,7 +176,7 @@
                                     <td>7.5&nbsp;%</td>
                                     <td>27&nbsp;439,32&nbsp;€</td>
                                     <td>07/07/2016</td>
-                                    <td><a href="#todo" class="link">Voir le projet</a></td>
+                                    <td><a href="#todo" class="ui-has-tooltip" data-original-title="Voir le projet"><span class="icon fa-eye-u16"></span></a></td>
                                 </tr>
                                 </tbody>
 
