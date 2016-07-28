@@ -1444,22 +1444,21 @@ class preteursController extends bootstrap
         $oAutoBidSettingsManager   = $this->get('unilend.service.autobid_settings_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $oClientManager */
         $oClientManager            = $this->get('unilend.service.client_manager');
-        $oAutoBidPeriod            = $this->loadData('project_period');
 
         $this->bAutoBidOn          = $oAutoBidSettingsManager->isOn($this->lenders_accounts);
         $this->aSettingsDates      = $oAutoBidSettingsManager->getLastDateOnOff($this->clients->id_client);
         if (0 < count($this->aSettingsDates)) {
-            $this->sValidationDate     = $oAutoBidSettingsManager->getValidationDate($this->lenders_accounts)->format('d/m/Y');
+            $this->sValidationDate = $oAutoBidSettingsManager->getValidationDate($this->lenders_accounts)->format('d/m/Y');
         }
         $this->fAverageRateUnilend = round($this->projects->getAvgRate(), 1);
         $this->bIsBetaTester       = $oClientManager->isBetaTester($this->clients);
 
         $this->aAutoBidSettings = array();
         /** @var autobid $autobid */
-        $autobid = $this->loadData('autobid');
-        $aAutoBidSettings       = $autobid->getSettings($this->lenders_accounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
+        $autobid          = $this->loadData('autobid');
+        $aAutoBidSettings = $autobid->getSettings($this->lenders_accounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
         foreach ($aAutoBidSettings as $aSetting) {
-            $aSetting['AverageRateUnilend']                           = $this->projects->getAvgRate($aSetting['evaluation'], $aSetting['min'], $aSetting['max']);
+            $aSetting['AverageRateUnilend']                                          = $this->projects->getAvgRate($aSetting['evaluation'], $aSetting['min'], $aSetting['max']);
             $this->aAutoBidSettings[$aSetting['id_period']][$aSetting['evaluation']] = $aSetting;
         }
     }
