@@ -9038,21 +9038,163 @@ label.custom-input-switch.custom-input-switch-sm > input[type="checkbox"]:checke
   left: 0;
   height: 100%;
   width: 100%;
-  background-color: rgba(255, 255, 255, 0.8);
-  background-image: url('../images/spinner/uldspinner.gif?1469775567');
-  background-position: 50% 50%;
+  background-color: rgba(255, 255, 255, 0.5);
   background-repeat: no-repeat;
 }
 
-/* line 15, ../sass/site/components/_modal-spinner.scss */
+/* line 13, ../sass/site/components/_modal-spinner.scss */
 body.loading {
   overflow: hidden;
 }
-/* line 17, ../sass/site/components/_modal-spinner.scss */
+/* line 15, ../sass/site/components/_modal-spinner.scss */
 body.loading .modal-spinner {
   display: block;
 }
 
+/* line 21, ../sass/site/components/_modal-spinner.scss */
+#floatingCirclesG {
+  position: relative;
+  width: 77px;
+  height: 77px;
+  margin: 0;
+  top: 50%;
+  left: 50%;
+  transform: scale(0.6) translateX(-50%) translateY(-50%);
+  -o-transform: scale(0.6) translateX(-50%) translateY(-50%);
+  -ms-transform: scale(0.6) translateX(-50%) translateY(-50%);
+  -webkit-transform: scale(0.6) translateX(-50%) translateY(-50%);
+  -moz-transform: scale(0.6) translateX(-50%) translateY(-50%);
+}
+
+/* line 35, ../sass/site/components/_modal-spinner.scss */
+.f_circleG {
+  position: absolute;
+  background-color: rgba(178, 0, 101, 0.2);
+  height: 14px;
+  width: 14px;
+  border-radius: 7px;
+  -o-border-radius: 7px;
+  -ms-border-radius: 7px;
+  -webkit-border-radius: 7px;
+  -moz-border-radius: 7px;
+  animation-name: f_fadeG;
+  -o-animation-name: f_fadeG;
+  -ms-animation-name: f_fadeG;
+  -webkit-animation-name: f_fadeG;
+  -moz-animation-name: f_fadeG;
+  animation-duration: 0.622s;
+  -o-animation-duration: 0.622s;
+  -ms-animation-duration: 0.622s;
+  -webkit-animation-duration: 0.622s;
+  -moz-animation-duration: 0.622s;
+  animation-iteration-count: infinite;
+  -o-animation-iteration-count: infinite;
+  -ms-animation-iteration-count: infinite;
+  -webkit-animation-iteration-count: infinite;
+  -moz-animation-iteration-count: infinite;
+  animation-direction: normal;
+  -o-animation-direction: normal;
+  -ms-animation-direction: normal;
+  -webkit-animation-direction: normal;
+  -moz-animation-direction: normal;
+}
+
+/* line 67, ../sass/site/components/_modal-spinner.scss */
+#frotateG_01 {
+  left: 0;
+  top: 31px;
+  animation-delay: 0.2295s;
+  -o-animation-delay: 0.2295s;
+  -ms-animation-delay: 0.2295s;
+  -webkit-animation-delay: 0.2295s;
+  -moz-animation-delay: 0.2295s;
+}
+
+/* line 77, ../sass/site/components/_modal-spinner.scss */
+#frotateG_02 {
+  left: 9px;
+  top: 9px;
+  animation-delay: 0.316s;
+  -o-animation-delay: 0.316s;
+  -ms-animation-delay: 0.316s;
+  -webkit-animation-delay: 0.316s;
+  -moz-animation-delay: 0.316s;
+}
+
+/* line 87, ../sass/site/components/_modal-spinner.scss */
+#frotateG_03 {
+  left: 31px;
+  top: 0;
+  animation-delay: 0.3925s;
+  -o-animation-delay: 0.3925s;
+  -ms-animation-delay: 0.3925s;
+  -webkit-animation-delay: 0.3925s;
+  -moz-animation-delay: 0.3925s;
+}
+
+/* line 97, ../sass/site/components/_modal-spinner.scss */
+#frotateG_04 {
+  right: 9px;
+  top: 9px;
+  animation-delay: 0.469s;
+  -o-animation-delay: 0.469s;
+  -ms-animation-delay: 0.469s;
+  -webkit-animation-delay: 0.469s;
+  -moz-animation-delay: 0.469s;
+}
+
+/* line 107, ../sass/site/components/_modal-spinner.scss */
+#frotateG_05 {
+  right: 0;
+  top: 31px;
+  animation-delay: 0.5455s;
+  -o-animation-delay: 0.5455s;
+  -ms-animation-delay: 0.5455s;
+  -webkit-animation-delay: 0.5455s;
+  -moz-animation-delay: 0.5455s;
+}
+
+/* line 117, ../sass/site/components/_modal-spinner.scss */
+#frotateG_06 {
+  right: 9px;
+  bottom: 9px;
+  animation-delay: 0.622s;
+  -o-animation-delay: 0.622s;
+  -ms-animation-delay: 0.622s;
+  -webkit-animation-delay: 0.622s;
+  -moz-animation-delay: 0.622s;
+}
+
+/* line 127, ../sass/site/components/_modal-spinner.scss */
+#frotateG_07 {
+  left: 31px;
+  bottom: 0;
+  animation-delay: 0.6985s;
+  -o-animation-delay: 0.6985s;
+  -ms-animation-delay: 0.6985s;
+  -webkit-animation-delay: 0.6985s;
+  -moz-animation-delay: 0.6985s;
+}
+
+/* line 137, ../sass/site/components/_modal-spinner.scss */
+#frotateG_08 {
+  left: 9px;
+  bottom: 9px;
+  animation-delay: 0.775s;
+  -o-animation-delay: 0.775s;
+  -ms-animation-delay: 0.775s;
+  -webkit-animation-delay: 0.775s;
+  -moz-animation-delay: 0.775s;
+}
+
+@keyframes f_fadeG {
+  0% {
+    background-color: #b20065;
+  }
+  100% {
+    background-color: white;
+  }
+}
 /* line 24, ../sass/site/common/_mixins.scss */
 .mosaic:before, .mosaic:after {
   content: ' ';
@@ -11222,109 +11364,137 @@ thead.table-sortable-columns {
   }
 }
 
-/* line 182, ../sass/site/components/tables/_offers.scss */
+/* line 181, ../sass/site/components/tables/_offers.scss */
+#alloffers-table {
+  position: relative;
+}
+/* line 183, ../sass/site/components/tables/_offers.scss */
 #alloffers-table .rejected-offers {
   background-color: #f8f6f8;
   height: 50px;
 }
-/* line 185, ../sass/site/components/tables/_offers.scss */
+/* line 186, ../sass/site/components/tables/_offers.scss */
 #alloffers-table .rejected-offers td {
   text-align: center;
   cursor: pointer;
   color: #9f9d9f;
 }
-/* line 191, ../sass/site/components/tables/_offers.scss */
+/* line 192, ../sass/site/components/tables/_offers.scss */
 #alloffers-table .rejected-row {
   display: none;
   background-color: #FDF4FA;
   color: #9f9d9f;
 }
-/* line 196, ../sass/site/components/tables/_offers.scss */
+/* line 197, ../sass/site/components/tables/_offers.scss */
+#alloffers-table .c-success {
+  transition-duration: 1s;
+}
+/* line 200, ../sass/site/components/tables/_offers.scss */
 #alloffers-table .bid-rate-cta {
   display: inline-block;
   width: 60px;
   line-height: 20px;
   text-align: left;
 }
-/* line 202, ../sass/site/components/tables/_offers.scss */
+/* line 206, ../sass/site/components/tables/_offers.scss */
 #alloffers-table .icon-cta {
   line-height: 20px;
 }
-/* line 206, ../sass/site/components/tables/_offers.scss */
+/* line 210, ../sass/site/components/tables/_offers.scss */
 #alloffers-table .icon-rejected {
   display: none;
 }
-/* line 210, ../sass/site/components/tables/_offers.scss */
+/* line 214, ../sass/site/components/tables/_offers.scss */
 #alloffers-table .icon-accepted {
   display: inline-block;
 }
-/* line 215, ../sass/site/components/tables/_offers.scss */
+/* line 219, ../sass/site/components/tables/_offers.scss */
 #alloffers-table .all-rejected .icon-rejected {
   display: inline-block;
 }
-/* line 219, ../sass/site/components/tables/_offers.scss */
+/* line 223, ../sass/site/components/tables/_offers.scss */
 #alloffers-table .all-rejected .icon-accepted {
   display: none;
 }
-/* line 224, ../sass/site/components/tables/_offers.scss */
+/* line 228, ../sass/site/components/tables/_offers.scss */
 #alloffers-table .bids-row {
   cursor: pointer;
 }
-/* line 226, ../sass/site/components/tables/_offers.scss */
+/* line 230, ../sass/site/components/tables/_offers.scss */
 #alloffers-table .bids-row td:first-of-type {
   padding: 10px 55px 10px 30px;
   text-align: right;
 }
-/* line 231, ../sass/site/components/tables/_offers.scss */
+/* line 235, ../sass/site/components/tables/_offers.scss */
 #alloffers-table .bids-row.active-row {
   background-color: #b20066;
   color: #fff;
 }
-/* line 234, ../sass/site/components/tables/_offers.scss */
+/* line 238, ../sass/site/components/tables/_offers.scss */
 #alloffers-table .bids-row.active-row .c-p1 span {
   color: #fff;
 }
-/* line 238, ../sass/site/components/tables/_offers.scss */
+/* line 242, ../sass/site/components/tables/_offers.scss */
 #alloffers-table .bids-row.active-row:hover {
   background-color: #b20066;
 }
-/* line 241, ../sass/site/components/tables/_offers.scss */
+/* line 245, ../sass/site/components/tables/_offers.scss */
 #alloffers-table .bids-row:hover {
   background-color: #fbf2f7;
 }
-/* line 245, ../sass/site/components/tables/_offers.scss */
+/* line 249, ../sass/site/components/tables/_offers.scss */
 #alloffers-table .icon.fa-caret-r-u32 {
   display: inline-block;
 }
-/* line 248, ../sass/site/components/tables/_offers.scss */
+/* line 252, ../sass/site/components/tables/_offers.scss */
 #alloffers-table .icon.fa-caret-d-u32 {
   display: none;
 }
-/* line 253, ../sass/site/components/tables/_offers.scss */
+/* line 257, ../sass/site/components/tables/_offers.scss */
 #alloffers-table .active-row .icon.fa-caret-r-u32 {
   display: none;
 }
-/* line 256, ../sass/site/components/tables/_offers.scss */
+/* line 260, ../sass/site/components/tables/_offers.scss */
 #alloffers-table .active-row .icon.fa-caret-d-u32 {
   display: inline-block;
 }
-/* line 261, ../sass/site/components/tables/_offers.scss */
+/* line 264, ../sass/site/components/tables/_offers.scss */
+#alloffers-table .bid-cell {
+  padding: 10px 60px 20px 30px;
+}
+/* line 266, ../sass/site/components/tables/_offers.scss */
+#alloffers-table .bid-cell .icon {
+  color: #d9aa34;
+  float: right;
+}
+/* line 271, ../sass/site/components/tables/_offers.scss */
 #alloffers-table .bids-detail-by-rate {
   background-color: #daf6f9;
   color: #4fa8b0;
+  transition-duration: 1s;
 }
-/* line 265, ../sass/site/components/tables/_offers.scss */
+/* line 276, ../sass/site/components/tables/_offers.scss */
 #alloffers-table .bids-detail-by-rate.ui-current-user-involved {
   background-color: #5fc3cf;
   color: #fff;
 }
-/* line 269, ../sass/site/components/tables/_offers.scss */
+/* line 279, ../sass/site/components/tables/_offers.scss */
+#alloffers-table .bids-detail-by-rate.ui-current-user-involved .c-success {
+  color: #fff;
+}
+/* line 283, ../sass/site/components/tables/_offers.scss */
 #alloffers-table .bids-detail-by-rate-header {
   background-color: #eceaed;
 }
-/* line 272, ../sass/site/components/tables/_offers.scss */
+/* line 286, ../sass/site/components/tables/_offers.scss */
 #alloffers-table .center {
   text-align: center;
+}
+
+/* line 290, ../sass/site/components/tables/_offers.scss */
+#alloffers-table .bids-detail-by-rate.ui-current-user-involved.bids-detail-by-rate.is-focused {
+  background-color: #daf6f9;
+  color: #b20066;
 }
 
 /* line 10, ../sass/site/components/tables/_finance.scss */
@@ -19157,39 +19327,41 @@ td.table-myoperations-borrower-item-amount {
 }
 
 /* line 729, ../sass/site/components/project/_single.scss */
-.project-single-content .page-section {
+.project-single-content .page-section.separate {
   border-bottom: 2px solid #eceaed;
+  padding-bottom: 70px;
+  margin-bottom: 20px;
 }
 
-/* line 735, ../sass/site/components/project/_single.scss */
+/* line 737, ../sass/site/components/project/_single.scss */
 .project-single .table-scroll {
   margin-bottom: 30px;
 }
 
-/* line 740, ../sass/site/components/project/_single.scss */
+/* line 742, ../sass/site/components/project/_single.scss */
 .project-single .page-section .btn-toolbar {
   text-align: right;
 }
-/* line 743, ../sass/site/components/project/_single.scss */
+/* line 745, ../sass/site/components/project/_single.scss */
 .project-single .page-section .btn-toolbar > * {
   margin-left: 20px;
   margin-right: 0;
 }
 
-/* line 750, ../sass/site/components/project/_single.scss */
+/* line 752, ../sass/site/components/project/_single.scss */
 .project-single .chart {
   text-align: center;
   margin-bottom: 30px;
 }
 
-/* line 758, ../sass/site/components/project/_single.scss */
+/* line 760, ../sass/site/components/project/_single.scss */
 .project-single .nested-tabs.tabs .tabs-nav {
   margin-bottom: 20px;
   background: rgba(255, 255, 255, 0.5);
   text-align: center;
 }
 @media screen and (min-width: 1024px) and (max-width: 1599px), screen and (min-width: 1600px) {
-  /* line 758, ../sass/site/components/project/_single.scss */
+  /* line 760, ../sass/site/components/project/_single.scss */
   .project-single .nested-tabs.tabs .tabs-nav {
     margin: 10px;
     margin-top: -10px;
@@ -19203,22 +19375,22 @@ td.table-myoperations-borrower-item-amount {
     text-align: right;
   }
 }
-/* line 780, ../sass/site/components/project/_single.scss */
+/* line 782, ../sass/site/components/project/_single.scss */
 .project-single .nested-tabs.tabs .tabs-content .chart {
   padding-top: 60px !important;
 }
 
 @media screen and (min-width: 600px) and (max-width: 1023px) {
-  /* line 788, ../sass/site/components/project/_single.scss */
+  /* line 790, ../sass/site/components/project/_single.scss */
   .project-single-rating {
     text-align: center;
   }
-  /* line 791, ../sass/site/components/project/_single.scss */
+  /* line 793, ../sass/site/components/project/_single.scss */
   .project-single-rating .label {
     font-size: inherit;
     margin-bottom: 10px;
   }
-  /* line 796, ../sass/site/components/project/_single.scss */
+  /* line 798, ../sass/site/components/project/_single.scss */
   .project-single-rating .rating {
     width: 140px;
     height: 20px;
@@ -19270,17 +19442,17 @@ td.table-myoperations-borrower-item-amount {
   }
 }
 @media screen and (min-width: 1024px) and (max-width: 1599px), screen and (min-width: 1600px) {
-  /* line 804, ../sass/site/components/project/_single.scss */
+  /* line 806, ../sass/site/components/project/_single.scss */
   .project-single {
     padding-top: 0;
   }
 
-  /* line 809, ../sass/site/components/project/_single.scss */
+  /* line 811, ../sass/site/components/project/_single.scss */
   .project-single-header {
     text-align: center;
     vertical-align: middle;
   }
-  /* line 815, ../sass/site/components/project/_single.scss */
+  /* line 817, ../sass/site/components/project/_single.scss */
   .project-single-header .btn-nav-left,
   .project-single-header .btn-nav-back,
   .project-single-header .btn-nav-previous,
@@ -19297,20 +19469,20 @@ td.table-myoperations-borrower-item-amount {
     border-radius: 0;
     margin-top: -40px;
   }
-  /* line 825, ../sass/site/components/project/_single.scss */
+  /* line 827, ../sass/site/components/project/_single.scss */
   .project-single-header .btn-nav-left,
   .project-single-header .btn-nav-back,
   .project-single-header .btn-nav-previous {
     margin-left: -50px;
   }
-  /* line 831, ../sass/site/components/project/_single.scss */
+  /* line 833, ../sass/site/components/project/_single.scss */
   .project-single-header .btn-nav-right,
   .project-single-header .btn-nav-forward,
   .project-single-header .btn-nav-next {
     margin-right: -50px;
   }
 
-  /* line 838, ../sass/site/components/project/_single.scss */
+  /* line 840, ../sass/site/components/project/_single.scss */
   .project-single-header-position {
     box-sizing: border-box;
     width: 100%;
@@ -19320,7 +19492,7 @@ td.table-myoperations-borrower-item-amount {
     padding-right: 40px;
   }
 
-  /* line 847, ../sass/site/components/project/_single.scss */
+  /* line 849, ../sass/site/components/project/_single.scss */
   .project-single-header-inner {
     display: inline-block;
     width: 100%;
@@ -19335,7 +19507,7 @@ td.table-myoperations-borrower-item-amount {
     transform: translate(-50%, -50%);
   }
 
-  /* line 863, ../sass/site/components/project/_single.scss */
+  /* line 865, ../sass/site/components/project/_single.scss */
   .project-single-category {
     display: block;
     width: 160px;
@@ -19348,36 +19520,36 @@ td.table-myoperations-borrower-item-amount {
     line-height: 160px;
   }
 
-  /* line 878, ../sass/site/components/project/_single.scss */
+  /* line 880, ../sass/site/components/project/_single.scss */
   .project-single-title {
     margin-top: 0;
     margin-bottom: 20px;
     font-size: 42px;
   }
 
-  /* line 885, ../sass/site/components/project/_single.scss */
+  /* line 887, ../sass/site/components/project/_single.scss */
   .project-single-image {
     display: block;
     padding-right: 20px;
   }
 
-  /* line 891, ../sass/site/components/project/_single.scss */
+  /* line 893, ../sass/site/components/project/_single.scss */
   .project-single-meta {
     font-size: 16px;
     line-height: 1.3em;
   }
 
-  /* line 898, ../sass/site/components/project/_single.scss */
+  /* line 900, ../sass/site/components/project/_single.scss */
   .project-single-location .icon {
     display: inline-block;
   }
-  /* line 902, ../sass/site/components/project/_single.scss */
+  /* line 904, ../sass/site/components/project/_single.scss */
   .project-single-location .label {
     display: inline-block;
     margin-right: 10px;
   }
 
-  /* line 909, ../sass/site/components/project/_single.scss */
+  /* line 911, ../sass/site/components/project/_single.scss */
   .project-single-rating {
     width: auto;
     position: relative;
@@ -19385,12 +19557,12 @@ td.table-myoperations-borrower-item-amount {
     bottom: auto;
     text-align: center;
   }
-  /* line 916, ../sass/site/components/project/_single.scss */
+  /* line 918, ../sass/site/components/project/_single.scss */
   .project-single-rating .label {
     font-size: inherit;
     margin-bottom: 10px;
   }
-  /* line 921, ../sass/site/components/project/_single.scss */
+  /* line 923, ../sass/site/components/project/_single.scss */
   .project-single-rating .rating {
     width: 140px;
     height: 20px;
@@ -19441,32 +19613,32 @@ td.table-myoperations-borrower-item-amount {
     width: 140px;
   }
 
-  /* line 927, ../sass/site/components/project/_single.scss */
+  /* line 929, ../sass/site/components/project/_single.scss */
   .project-single-period {
     text-align: left;
   }
 
-  /* line 931, ../sass/site/components/project/_single.scss */
+  /* line 933, ../sass/site/components/project/_single.scss */
   .project-single-period-countdown {
     font-size: 21px;
   }
 
-  /* line 935, ../sass/site/components/project/_single.scss */
+  /* line 937, ../sass/site/components/project/_single.scss */
   .project-single-period-expires {
     display: block;
   }
 
-  /* line 944, ../sass/site/components/project/_single.scss */
+  /* line 946, ../sass/site/components/project/_single.scss */
   .project-single-offers-total {
     display: block;
   }
 
-  /* line 949, ../sass/site/components/project/_single.scss */
+  /* line 951, ../sass/site/components/project/_single.scss */
   .project-single-info-wrap {
     position: relative;
   }
 
-  /* line 955, ../sass/site/components/project/_single.scss */
+  /* line 957, ../sass/site/components/project/_single.scss */
   .project-single-info-position {
     margin-top: -450px;
     position: absolute;
@@ -19476,7 +19648,7 @@ td.table-myoperations-borrower-item-amount {
     transition: margin-top .5s;
   }
 
-  /* line 969, ../sass/site/components/project/_single.scss */
+  /* line 971, ../sass/site/components/project/_single.scss */
   .project-single-info {
     max-width: 340px;
     width: 340px;
@@ -19485,47 +19657,47 @@ td.table-myoperations-borrower-item-amount {
     margin-right: 0;
   }
 
-  /* line 978, ../sass/site/components/project/_single.scss */
+  /* line 980, ../sass/site/components/project/_single.scss */
   .project-single-interest,
   .project-single-duration {
     width: auto;
     float: none;
     text-align: left;
   }
-  /* line 984, ../sass/site/components/project/_single.scss */
+  /* line 986, ../sass/site/components/project/_single.scss */
   .project-single-interest .icon,
   .project-single-duration .icon {
     display: inline-block;
   }
 }
 @media screen and (min-width: 1024px) and (max-width: 1599px) {
-  /* line 996, ../sass/site/components/project/_single.scss */
+  /* line 998, ../sass/site/components/project/_single.scss */
   .project-single-info-position,
   .project-single-menu-info {
     margin-right: 50px;
   }
 }
 @media screen and (min-width: 1600px) {
-  /* line 1003, ../sass/site/components/project/_single.scss */
+  /* line 1005, ../sass/site/components/project/_single.scss */
   .project-single-meta,
   .project-single-location {
     font-size: 18px;
   }
 
-  /* line 1008, ../sass/site/components/project/_single.scss */
+  /* line 1010, ../sass/site/components/project/_single.scss */
   .project-single-info-position,
   .project-single-menu-info {
     margin-right: 60px;
   }
 
-  /* line 1013, ../sass/site/components/project/_single.scss */
+  /* line 1015, ../sass/site/components/project/_single.scss */
   .project-single-info {
     max-width: 360px;
     width: 360px;
   }
 }
 @media screen and (min-width: 1024px) and (max-width: 1299px) {
-  /* line 1023, ../sass/site/components/project/_single.scss */
+  /* line 1025, ../sass/site/components/project/_single.scss */
   .project-single-header .btn-nav-left,
   .project-single-header .btn-nav-back,
   .project-single-header .btn-nav-previous,
@@ -19542,27 +19714,27 @@ td.table-myoperations-borrower-item-amount {
     border-radius: 0;
     margin-top: -25px;
   }
-  /* line 1033, ../sass/site/components/project/_single.scss */
+  /* line 1035, ../sass/site/components/project/_single.scss */
   .project-single-header .btn-nav-left,
   .project-single-header .btn-nav-back,
   .project-single-header .btn-nav-previous {
     margin-left: -50px;
   }
-  /* line 1039, ../sass/site/components/project/_single.scss */
+  /* line 1041, ../sass/site/components/project/_single.scss */
   .project-single-header .btn-nav-right,
   .project-single-header .btn-nav-forward,
   .project-single-header .btn-nav-next {
     margin-right: -50px;
   }
 
-  /* line 1046, ../sass/site/components/project/_single.scss */
+  /* line 1048, ../sass/site/components/project/_single.scss */
   .project-single-header-inner {
     max-width: 700px;
     padding-left: 120px;
     margin-left: 0;
   }
 
-  /* line 1052, ../sass/site/components/project/_single.scss */
+  /* line 1054, ../sass/site/components/project/_single.scss */
   .project-single-category {
     width: 120px;
     height: 120px;
@@ -19571,52 +19743,52 @@ td.table-myoperations-borrower-item-amount {
     top: 20px;
   }
 
-  /* line 1060, ../sass/site/components/project/_single.scss */
+  /* line 1062, ../sass/site/components/project/_single.scss */
   .project-single-description {
     max-width: 80%;
   }
 
-  /* line 1064, ../sass/site/components/project/_single.scss */
+  /* line 1066, ../sass/site/components/project/_single.scss */
   .project-single-info {
     max-width: 300px;
     width: 300px;
     padding: 20px;
   }
 
-  /* line 1070, ../sass/site/components/project/_single.scss */
+  /* line 1072, ../sass/site/components/project/_single.scss */
   .project-single-interest,
   .project-single-duration {
     float: left;
     width: 50%;
     text-align: center;
   }
-  /* line 1076, ../sass/site/components/project/_single.scss */
+  /* line 1078, ../sass/site/components/project/_single.scss */
   .project-single-interest .icon,
   .project-single-duration .icon {
     display: none;
   }
 }
-/* line 1085, ../sass/site/components/project/_single.scss */
+/* line 1087, ../sass/site/components/project/_single.scss */
 .ui-project-single-map-opening .project-single-map {
   margin-bottom: 0;
 }
-/* line 1089, ../sass/site/components/project/_single.scss */
+/* line 1091, ../sass/site/components/project/_single.scss */
 .ui-project-single-map-opening .project-single-map-embed {
   display: block;
   opacity: 0;
 }
 
-/* line 1097, ../sass/site/components/project/_single.scss */
+/* line 1099, ../sass/site/components/project/_single.scss */
 .ui-project-single-map-open .project-single-map {
   margin-bottom: 0;
 }
-/* line 1101, ../sass/site/components/project/_single.scss */
+/* line 1103, ../sass/site/components/project/_single.scss */
 .ui-project-single-map-open .project-single-map-embed {
   display: block;
   opacity: 1;
 }
 
-/* line 1109, ../sass/site/components/project/_single.scss */
+/* line 1111, ../sass/site/components/project/_single.scss */
 .ui-project-single-map-closing .project-single-map-embed {
   display: block;
   opacity: 0;

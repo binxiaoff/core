@@ -179,6 +179,7 @@
 }
 
 #alloffers-table {
+  position:relative;
   .rejected-offers {
     background-color:#f8f6f8;
     height:50px;
@@ -192,6 +193,9 @@
     display:none;
     background-color:#FDF4FA;
     color:#9f9d9f;
+  }
+  .c-success{
+    transition-duration:1s;
   }
   .bid-rate-cta {
     display:inline-block;
@@ -257,14 +261,24 @@
       display:inline-block;
     }
   }
-
+  .bid-cell{
+    padding:10px 60px 20px 30px;
+    .icon {
+      color:#d9aa34;
+      float:right;
+    }
+  }
   .bids-detail-by-rate {
     background-color:#daf6f9;
     color:#4fa8b0;
+    transition-duration:1s;
   }
   .bids-detail-by-rate.ui-current-user-involved {
     background-color:#5fc3cf;
     color:#fff;
+    .c-success{
+      color:#fff;
+    }
   }
   .bids-detail-by-rate-header {
     background-color:#eceaed;
@@ -272,4 +286,8 @@
   .center {
     text-align:center;
   }
+}
+#alloffers-table .bids-detail-by-rate.ui-current-user-involved.bids-detail-by-rate.is-focused{
+  background-color:#daf6f9;
+  color:#b20066;
 }
