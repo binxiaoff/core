@@ -4,6 +4,36 @@
 <article id="panel-info" class="panel">
     <header class="panel-header">
         <h3>{% trans %} lender-profile_information-tab-identity-section-title {% endtrans %}</h3>
+        <div id="form-profile-info-notifications">
+            {% if app.session.flashBag.has('personIdentityErrors') %}
+                <div class="message-error">
+                    {% for error in app.session.flashBag.get('personIdentityErrors') %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% if app.session.flashBag.has('personIdentitySuccess')%}
+                <div class="message-success">
+                    {% for message in app.session.flashBag.get('personIdentitySuccess') %}
+                        <span>{{ message }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% if app.session.flashBag.has('legalEntityIdentityErrors') %}
+                <div class="message-error">
+                    {% for errorMessage in app.session.flashBag.get('legalEntityIdentityErrors') %}
+                        <p>{{ errorMessage }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% if app.session.flashBag.has('legalEntityidentitySuccess')%}
+                <div class="message-success">
+                    {% for message in app.session.flashBag.get('legalEntityidentitySuccess') %}
+                        <span>{{ message }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
     </header>
     <section id="profile-info-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
         {% if client.type in [constant('\\clients::TYPE_PERSON'), constant('\\clients::TYPE_PERSON_FOREIGNER')] %}
@@ -19,6 +49,36 @@
 <article id="panel-address" class="panel">
     <header class="panel-header">
         <h3>{% trans %} lender-profile_information-tab-fiscal-address-section-title {% endtrans %}</h3>
+        <div id="form-profile-address-notifications">
+            {% if app.session.flashBag.has('personFiscalAddressErrors') %}
+                <div class="message-error">
+                    {% for errorMessage in app.session.flashBag.get('personFiscalAddressErrors') %}
+                        <p>{{ errorMessage }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% if app.session.flashBag.has('personFiscalAddressSuccess')%}
+                <div class="message-success">
+                    {% for message in app.session.flashBag.get('personFiscalAddressSuccess') %}
+                        <span>{{ message }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% if app.session.flashBag.has('legalEntityFiscalAddressErrors') %}
+                <div class="message-error">
+                    {% for errorMessage in app.session.flashBag.get('legalEntityFiscalAddressErrors') %}
+                        <p>{{ errorMessage }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% if app.session.flashBag.has('legalEntityFiscalAddressSuccess')%}
+                <div class="message-success">
+                    {% for message in app.session.flashBag.get('legalEntityFiscalAddressSuccess') %}
+                        <span>{{ message }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
     </header>
     <section id="profile-address-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
         {% if client.type in [constant('\\clients::TYPE_PERSON'), constant('\\clients::TYPE_PERSON_FOREIGNER')] %}
@@ -33,6 +93,15 @@
 <article id="panel-correspondence" class="panel collapse{% if clientAddresses.meme_adresse_fiscal != 1 %} in{% endif %}">
     <header class="panel-header">
         <h3>{% trans %} lender-profile_information-tab-postal-address-section-title {% endtrans %}</h3>
+        <div id="form-profile-correspondence-notifications">
+            {% if app.session.flashBag.has('postalAddressSuccess')%}
+                <div class="message-success">
+                    {% for message in app.session.flashBag.get('postalAddressSuccess') %}
+                        <span>{{ message }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
     </header>
     <section id="profile-correspondence-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
         {{ include('pages/lender_profile/partials/postal_address.html.twig') }}

@@ -1,21 +1,5 @@
 <section id="profile-info-edit" role="tabpanel" class="profile-info-edit collapse">
     <form id="form-profile-info-edit" action="{{ path('profile_person_identity_update') }}" method="post" enctype="multipart/form-data" class="form-profile form-profile-info-edit" data-formvalidation data-formvalidation-notificationselem="#form-profile-info-notifications">
-        <div id="form-profile-info-notifications">
-            {% if app.session.flashBag.has('personIdentityErrors') %}
-                <div class="message-error">
-                    {% for error in app.session.flashBag.get('personIdentityErrors') %}
-                        <span>{{ error }}</span>
-                    {% endfor %}
-                </div>
-            {% endif %}
-            {% if app.session.flashBag.has('personIdentitySuccess')%}
-                <div class="message-success">
-                    {% for message in app.session.flashBag.get('personIdentitySuccess') %}
-                        <span>{{ message }}</span>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        </div>
         <div class="row">
             <div class="form-field form-field-multi">
                 <div class="field-label">

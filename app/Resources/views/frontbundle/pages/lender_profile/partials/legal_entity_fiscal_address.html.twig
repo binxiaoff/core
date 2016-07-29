@@ -15,22 +15,6 @@
 
 <section id="profile-address-edit" role="tabpanel" class="profile-address-edit collapse">
     <form id="form-profile-address-edit" action="{{ path('profile_legal_entity_fiscal_address_update') }}" method="post" enctype="multipart/form-data" class="form-profile form-profile-address-edit" data-formvalidation data-formvalidation-notificationselem="#form-profile-address-notifications">
-        <div id="form-profile-address-notifications">
-            {% if app.session.flashBag.has('legalEntityFiscalAddressErrors') %}
-                <div class="message-error">
-                    {% for errorMessage in app.session.flashBag.get('legalEntityFiscalAddressErrors') %}
-                        <p>{{ errorMessage }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
-            {% if app.session.flashBag.has('legalEntityFiscalAddressSuccess')%}
-                <div class="message-success">
-                    {% for message in app.session.flashBag.get('legalEntityFiscalAddressSuccess') %}
-                        <span>{{ message }}</span>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        </div>
         <div class="row">
             <div class="form-field">
                 <label for="form-profile-address-street">{% trans %} lender-profile_information-tab-fiscal-address-section-address-label {% endtrans %}
