@@ -149,13 +149,19 @@ class ProjectsController extends Controller
         /** @var AuthorizationChecker $authorizationChecker */
         $authorizationChecker = $this->get('security.authorization_checker');
 
+        /** @var BaseUser $user */
+        $user = $this->getUser();
+
         $template = [
-            'project' => $projectDisplayManager->getProjectInformationForDisplay($project),
-            'finance' => $projectDisplayManager->getProjectFinancialData($project)
+            'project'  => $projectDisplayManager->getProjectInformationForDisplay($project),
+            'finance'  => $projectDisplayManager->getProjectFinancialData($project),
+            'bidToken' => sha1('tokenBid-' . time() . '-' . uniqid())
         ];
         $template['project']['bids']['graph'] = [
             'summary' => array_reverse($template['project']['bids']['summary'], true)
         ];
+
+        $request->getSession()->set('bidToken', $template['bidToken']);
 
         $index = 0;
         foreach ($template['project']['bids']['graph']['summary'] as $rateSummary) {
@@ -172,9 +178,6 @@ class ProjectsController extends Controller
             'debts'        => array_keys($firstBalanceSheet['debts']),
         ];
 
-        /** @var BaseUser $user */
-        $user = $this->getUser();
-
         if (
             $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY')
             && $authorizationChecker->isGranted('ROLE_LENDER')
@@ -188,9 +191,9 @@ class ProjectsController extends Controller
             $lenderAccountDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
             $template['lenderOnProject'] = $lenderAccountDisplayManager->getLenderActivityForProject($lenderAccount, $project);
 
-            if (false === empty($request->getSession()->get('bidMessage'))) {
-                $template['lender']['bidMessage'] = $request->getSession()->get('bidMessage');
-                $request->getSession()->remove('bidMessage');
+            if (false === empty($request->getSession()->get('bidResult'))) {
+                $template['lender']['bidResult'] = $request->getSession()->get('bidResult');
+                $request->getSession()->remove('bidResult');
             }
         } else {
             $template['project']['title'] = $this->get('translator')->trans('company-sector_sector-' . $template['project']['sectorId']);
@@ -249,7 +252,10 @@ class ProjectsController extends Controller
      */
     public function placeBidAction($projectId, Request $request)
     {
-        if ($post = $request->request->get('invest')) {
+        if (
+            ($post = $request->request->get('invest'))
+            && isset($post['amount'], $post['interest'], $post['bidToken'])
+        ) {
             /** @var EntityManager $entityManager */
             $entityManager = $this->get('unilend.service.entity_manager');
 
@@ -272,7 +278,7 @@ class ProjectsController extends Controller
                 || false === ($user instanceof UserLender)
                 || $user->getClientStatus() < \clients_status::VALIDATED
             ) {
-                $request->getSession()->set('bidMessage', $translations['side-bar-bids-user-logged-out']);
+                $request->getSession()->set('bidResult', ['error' => true, 'message' => $translations['side-bar-bids-user-logged-out']]);
                 return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
 
@@ -287,7 +293,7 @@ class ProjectsController extends Controller
             /** @var \settings $settings */
             $settings = $entityManager->getRepository('settings');
             $settings->get('pret min', 'type');
-            $binMinAmount = $settings->value;
+            $bidMinAmount = $settings->value;
 
             /** @var \bids $bids */
             $bids = $entityManager->getRepository('bids');
@@ -300,52 +306,62 @@ class ProjectsController extends Controller
             $projectEnd = new \DateTime($project->date_retrait_full);
 
             if ($now >= $projectEnd) {
-                $request->getSession()->set('bidMessage', $translations['side-bar-bids-project-finished-message']);
+                $request->getSession()->set('bidResult', ['error' => true, 'message' => $translations['side-bar-bids-project-finished-message']]);
                 return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
 
-            $formOK          = true;
-            $fMaxCurrentRate = $bids->getProjectMaxRate($project);
-            $totalBids       = $bids->getSoldeBid($project->id_project);
-            $bidAmount       = isset($post->amount) ? $post->amount : null;
-            $rate            = isset($post->interest) ? $post->interest : null;
+            $maxCurrentRate = $bids->getProjectMaxRate($project);
+            $totalBids      = $bids->getSoldeBid($project->id_project);
+            $bidAmount      = $post['amount'];
+            $rate           = $post['interest'];
 
-            if (empty($bidAmount) || false === is_null($bidAmount) || $bidAmount <= $binMinAmount || $bidAmount >= $project->amount || $user->getBalance() <= $bidAmount) {
-                $formOK = false;
+            if ($bidAmount != (int) $bidAmount || $bidAmount < $bidMinAmount || $bidAmount >= $project->amount) {
+                $request->getSession()->set('bidResult', ['error' => true, 'message' => $translations['side-bar-bids-invalid-amount']]);
+                return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
 
-            if (empty($rate) || $rate >= \bids::BID_RATE_MIN || $rate <= \bids::BID_RATE_MAX) {
-                $formOK = false;
+            if ($user->getBalance() < $bidAmount) {
+                $request->getSession()->set('bidResult', ['error' => true, 'message' => $translations['side-bar-bids-low-balance']]);
+                return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
 
-            if ($totalBids >= $project->amount && $rate >= $fMaxCurrentRate) {
-                $formOK = false;
+            if (empty($rate) || $rate < \bids::BID_RATE_MIN || $rate > \bids::BID_RATE_MAX || $totalBids >= $project->amount && $rate >= $maxCurrentRate) {
+                $request->getSession()->set('bidResult', ['error' => true, 'message' => $translations['side-bar-bids-invalid-rate']]);
+                return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
 
             if ($projectStatus->status != \projects_status::EN_FUNDING) {
-                $formOK = false;
-            }
-
-            if (true === $formOK && isset($_SESSION['tokenBid']) && $_SESSION['tokenBid'] == $_POST['send_pret']) {
-                unset($_SESSION['tokenBid']);
-
-                $bids->unsetData();
-                $bids->id_lender_account     = $lenderAccount->id_lender_account;
-                $bids->id_project            = $project->id_project;
-                $bids->amount                = $bidAmount * 100;
-                $bids->rate                  = $rate;
-                /** @var BidManager $bidManager */
-                $bidManager = $this->get('unilend.service.bid_manager');
-                $bidManager->bid($bids);
-
-                $oCachePool = $this->get('memcache.default');
-                $oCachePool->deleteItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $project->id_project);
-
-                $request->getSession()->set('bidMessage', $translations['side-bar-bids-bid-placed-message']);
-
+                $request->getSession()->set('bidResult', ['error' => true, 'message' => $translations['side-bar-bids-invalid-project-status']]);
                 return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
+
+            if ($request->getSession()->get('bidToken') !== $post['bidToken']) {
+                $request->getSession()->set('bidResult', ['error' => true, 'message' => $translations['side-bar-bids-invalid-security-token']]);
+                return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
+            }
+
+            $request->getSession()->remove('bidToken');
+
+            $bids->unsetData();
+            $bids->id_lender_account = $lenderAccount->id_lender_account;
+            $bids->id_project        = $project->id_project;
+            $bids->amount            = $bidAmount * 100;
+            $bids->rate              = $rate;
+
+            /** @var BidManager $bidManager */
+            $bidManager = $this->get('unilend.service.bid_manager');
+            $bidManager->bid($bids);
+
+            /** @var MemcacheCachePool $oCachePool */
+            $oCachePool = $this->get('memcache.default');
+            $oCachePool->deleteItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $project->id_project);
+
+            $request->getSession()->set('bidResult', ['success' => true, 'message' => $translations['side-bar-bids-bid-placed-message']]);
+
+            return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
         }
+
+        return $this->redirectToRoute('home');
     }
 
     /**

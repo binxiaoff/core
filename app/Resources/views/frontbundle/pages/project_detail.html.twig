@@ -1,61 +1,11 @@
 {% extends 'layouts/_layout.html.twig' %}
 
-{% set placeholderData = {
-    alloffersOverview: {
-        schema: [{
-            name: 'id',
-            type: 'int',
-            label: false
-        },{
-            name: 'interest',
-            type: 'string',
-            label: 'Taux'
-        },{
-            name: 'amount',
-            type: 'float',
-            label: 'Montant total'
-        },{
-            name: 'offers',
-            type: 'int',
-            label: 'NB offres'
-        },{
-            name: 'myoffers',
-            type: 'int',
-            label: 'Offres en cours'
-        },{
-            name: 'accepted',
-            type: 'int',
-            label: false
-        }],
-        data: [
-            [1, '4&ndash;4,5%', 850.15, 24, 0, 100],
-            [2, '4.5&ndash;5%', 923.74, 32, 1, 100],
-            [3, '5&ndash;5,5%', 1250.4, 64, 0, 97],
-            [4, '5,5&ndash;6%', 1511.12, 102, 0, 65],
-            [5, '6&ndash;6,5%', 2912.89, 159, 5, 49],
-            [6, '6,6%', 3250.74, 54, 0, 28],
-            [7, '6,7%', 3250.74, 64, 0, 24],
-            [8, '6,8%', 3250.74, 71, 0, 19],
-            [9, '6,9%', 3250.74, 82, 0, 15],
-            [10, '7%', 3250.74, 97, 0, 9],
-            [11, '7,1%', 3250.74, 101, 0, 2],
-            [12, '7,2&ndash;7,5%', 3250.74, 101, 0, 0],
-            [13, '7,5&ndash;8%', 3250.74, 224, 0, 0],
-            [14, '8&ndash;8,5%', 3250.74, 314, 0, 0],
-            [15, '8,5&ndash;9%', 3250.74, 396, 0, 0],
-            [16, '9&ndash;9,5%', 3250.74, 520, 0, 0],
-            [17, '9,5&ndash;10%', 3250.74, 850, 0, 0]
-        ]
-    }
-} %}
-
 {% set bodyId = '' %}
 {% set page= {
     title: project.title,
     permalink: project.slug
 } %}
 
-{# View data #}
 {# Set the rating class for the .rating element #}
 {% set classRating = project.risk | convertRisk | split('.') | join('-') %}
 
