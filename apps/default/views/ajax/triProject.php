@@ -59,8 +59,8 @@
                     } else {
                         $endDateTime = new \DateTime($aProject['date_retrait_full']);
                     }
-                    $endDate = $endDateTime->format('d/m/Y');
-                    $endTime= $endDateTime->format('H:i');
+                    $endDate             = $endDateTime->format('d/m/Y');
+                    $endTime             = $endDateTime->format('H:i');
                     $project['daterest'] = str_replace(['[#date#]', '[#time#]'], [$endDate, $endTime], $this->lng['preteur-projets']['termine']);
                 }
                 ?>

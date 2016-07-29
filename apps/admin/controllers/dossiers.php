@@ -260,6 +260,7 @@ class dossiersController extends bootstrap
                 $this->fPredictAutoBid = round(($fPredictAmountAutoBid / $this->projects->amount) * 100, 1);
 
                 if (false === empty($this->projects->id_rate)) {
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BidManager $bidManager */
                     $bidManager     = $this->get('unilend.service.bid_manager');
                     $rateRange      = $bidManager->getProjectRateRange($this->projects);
                     $this->rate_min = $rateRange['rate_min'];
@@ -552,7 +553,7 @@ class dossiersController extends bootstrap
                     $this->projects->display         = $_POST['display_project'];
                     $this->projects->id_project_need = $_POST['need'];
 
-                    if ($this->current_projects_status->status < \projects_status::PREP_FUNDING) {
+                    if (false === $this->bReadonlyRiskNote) {
                         $this->projects->period = $_POST['duree'];
                         $this->projects->amount = str_replace(' ', '', str_replace(',', '.', $_POST['montant']));
                     }

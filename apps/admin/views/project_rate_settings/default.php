@@ -1,51 +1,22 @@
 <script type="text/javascript">
+    <?php if(isset($_SESSION['freeow'])) : ?>
     $(document).ready(function(){
-        $(".tablesorter").tablesorter({
-            headers:{
-        <?php
-        $i = 0;
-        foreach($this->lZones as $z)
-        {
-        ?>
-        <?=$i+2?>:{sorter: false}<?=($i==count($this->lZones)?'':',')?>
-        <?
-        $i++;
-        }
-        ?>
-    }
-    });
-        <?php
-        if($this->nb_lignes != '')
-        {
-        ?>
-        $(".tablesorter").tablesorterPager({container: $("#pager"),positionFixed: false,size: <?=$this->nb_lignes?>});
-        <?php
-        }
-        ?>
-    });
-    <?php
-    if(isset($_SESSION['freeow']))
-    {
-    ?>
-    $(document).ready(function(){
-        var title, message, opts, container;
+        var title, message, opts;
         title = "<?=$_SESSION['freeow']['title']?>";
         message = "<?=$_SESSION['freeow']['message']?>";
         opts = {};
         opts.classes = ['smokey'];
         $('#freeow-tr').freeow(title, message, opts);
     });
-    <?php
-    }
-    ?>
+    <?php endif ?>
 </script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <ul class="breadcrumbs">
         <li><a href="<?=$this->lurl?>/settings" title="Configuration">Configuration</a> -</li>
-        <li>Taux min/max de projet</li>
+        <li>Grille de taux</li>
     </ul>
-    <h1>Gestion des taux min/max de projet</h1>
+    <h1>Gestion de la grille de taux</h1>
     <div class="btnDroite"><a class="btn_link thickbox cboxElement" href="/project_rate_settings/warn_confirmation_box">Notifier les prêteurs</a></div>
     <?php if(count($this->groupedRate) > 0) : ?>
         <table class="tablesorter">
@@ -84,27 +55,6 @@
             <?php endforeach; ?>
             </tbody>
         </table>
-        <?
-        if($this->nb_lignes != '')
-        {
-            ?>
-            <table>
-                <tr>
-                    <td id="pager">
-                        <img src="<?=$this->surl?>/images/admin/first.png" alt="Première" class="first"/>
-                        <img src="<?=$this->surl?>/images/admin/prev.png" alt="Précédente" class="prev"/>
-                        <input type="text" class="pagedisplay" />
-                        <img src="<?=$this->surl?>/images/admin/next.png" alt="Suivante" class="next"/>
-                        <img src="<?=$this->surl?>/images/admin/last.png" alt="Dernière" class="last"/>
-                        <select class="pagesize">
-                            <option value="<?=$this->nb_lignes?>" selected="selected"><?=$this->nb_lignes?></option>
-                        </select>
-                    </td>
-                </tr>
-            </table>
-            <?
-        }
-        ?>
     <?php else: ?>
         <p>Il n'y a aucun utilisateur pour le moment.</p>
     <?php endif; ?>

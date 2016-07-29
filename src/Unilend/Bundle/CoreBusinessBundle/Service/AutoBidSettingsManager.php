@@ -181,12 +181,12 @@ class AutoBidSettingsManager
         /** @var \autobid $oAutoBid */
         $oAutoBid = $this->oEntityManager->getRepository('autobid');
 
-        $oAutoBid->id_lender         = $iLenderId;
-        $oAutoBid->status            = \autobid::STATUS_ACTIVE;
-        $oAutoBid->evaluation        = $sEvaluation;
-        $oAutoBid->id_period = $iAutoBidPeriodId;
-        $oAutoBid->rate_min          = $fRate;
-        $oAutoBid->amount            = $iAmount;
+        $oAutoBid->id_lender  = $iLenderId;
+        $oAutoBid->status     = \autobid::STATUS_ACTIVE;
+        $oAutoBid->evaluation = $sEvaluation;
+        $oAutoBid->id_period  = $iAutoBidPeriodId;
+        $oAutoBid->rate_min   = $fRate;
+        $oAutoBid->amount     = $iAmount;
         $oAutoBid->create();
     }
 

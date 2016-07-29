@@ -76,7 +76,7 @@
                     <li><a href="<?= $this->lurl ?>/partenaires" title="Campagnes">Campagnes</a></li>
                     <li><a href="<?= $this->lurl ?>/partenaires/types" title="Types de campagnes">Types de campagnes</a></li>
                     <li><a href="<?= $this->lurl ?>/partenaires/medias" title="Medias de campagnes">Medias de campagnes</a></li>
-                    <li><a href="<?= $this->lurl ?>/project_rate_settings" title="Taux max / min de projet">Taux max / min de projet</a></li>
+                    <li><a href="<?= $this->lurl ?>/project_rate_settings" title="Grille de taux">Grille de taux</a></li>
                 </ul>
             </li>
         <?php endif; ?>

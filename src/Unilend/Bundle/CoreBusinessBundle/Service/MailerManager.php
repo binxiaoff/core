@@ -55,7 +55,7 @@ class MailerManager
         $frontHost,
         $adminHost
     ) {
-        $this->container  = $container;
+        $this->container       = $container;
         $this->oEntityManager  = $oEntityManager;
         $this->messageProvider = $messageProvider;
         $this->mailer          = $mailer;

@@ -78,6 +78,7 @@ class ProjectRateSettingsManager
             }
         }
         if ($rateMin != $rateMinOld || $rateMax != $rateMaxOld) {
+            /** @var \settings $settings */
             $settings = $this->entityManager->getRepository('settings');
             $settings->get('Adresse project rate setting', 'type');
             $recipient = $settings->value;
