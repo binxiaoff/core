@@ -123,4 +123,11 @@
             </div>
         </div><!-- /.section-tabs-content -->
     </div><!-- /tabs -->
+
+    <div class="btn-toolbar">
+        <a href="{{ path('export_bids', {'projectId' : project.projectId}) }}" class="btn-default" target="_blank">
+            <span class="icon fa-excel-u32"></span>
+            {% trans %} project-detail_project-presentation-accounts-export-csv-button {% endtrans %}
+        </a>
+    </div><!-- /.btn-toolbar -->
 </section><!-- /.page-section -->

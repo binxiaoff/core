@@ -245,44 +245,62 @@ class ProjectsController extends Controller
 
     /**
      * @Route("/projects/bid/{projectId}", requirements={"projectId" = "^\d+$"}, name="place_bid")
+     * @Method({"POST"})
      */
     public function placeBidAction($projectId, Request $request)
     {
         if ($post = $request->request->get('invest')) {
-            /** @var \clients_history_actions $clientHistoryActions */
-            $clientHistoryActions = $this->get('unilend.service.entity_manager')->getRepository('clients_history_actions');
-            /** @var UserLender $user */
-            $user = $this->getUser();
-            $serialize = serialize(array('id_client' => $user->getClientId(), 'post' => $post, 'id_projet' => $projectId));
-            $clientHistoryActions->histo(9, 'bid', $user->getClientId(), $serialize);
-            /** @var \lenders_accounts $lenderAccount */
-            $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
-            $lenderAccount->get($user->getClientId(), 'id_client_owner');
-            /** @var \settings $settings */
-            $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-            $settings->get('pret min', 'type');
-            $binMinAmount = $settings->value;
-            /** @var \bids $bids */
-            $bids = $this->get('unilend.service.entity_manager')->getRepository('bids');
-            /** @var \projects $project */
-            $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
-            $project->get($projectId);
-            /** @var \projects_status $projectStatus */
-            $projectStatus = $this->get('unilend.service.entity_manager')->getRepository('projects_status');
-            $projectStatus->getLastStatut($project->id_project);
+            /** @var EntityManager $entityManager */
+            $entityManager = $this->get('unilend.service.entity_manager');
+
             /** @var TranslationManager $translationManager */
             $translationManager = $this->get('unilend.service.translation_manager');
-            $translations = $translationManager->getAllTranslationsForSection('project-detail');
+            $translations       = $translationManager->getAllTranslationsForSection('project-detail');
 
-            $now = new \DateTime('NOW');
+            /** @var \projects $project */
+            $project = $entityManager->getRepository('projects');
+
+            if (false === $project->get($projectId)) {
+                return $this->redirectToRoute('home');
+            }
+
+            /** @var UserLender $user */
+            $user = $this->getUser();
+
+            if (
+                $user === null
+                || false === ($user instanceof UserLender)
+                || $user->getClientStatus() < \clients_status::VALIDATED
+            ) {
+                $request->getSession()->set('bidMessage', $translations['side-bar-bids-user-logged-out']);
+                return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
+            }
+
+            /** @var \clients_history_actions $clientHistoryActions */
+            $clientHistoryActions = $entityManager->getRepository('clients_history_actions');
+            $clientHistoryActions->histo(9, 'bid', $user->getClientId(), serialize(array('id_client' => $user->getClientId(), 'post' => $post, 'id_projet' => $projectId)));
+
+            /** @var \lenders_accounts $lenderAccount */
+            $lenderAccount = $entityManager->getRepository('lenders_accounts');
+            $lenderAccount->get($user->getClientId(), 'id_client_owner');
+
+            /** @var \settings $settings */
+            $settings = $entityManager->getRepository('settings');
+            $settings->get('pret min', 'type');
+            $binMinAmount = $settings->value;
+
+            /** @var \bids $bids */
+            $bids = $entityManager->getRepository('bids');
+
+            /** @var \projects_status $projectStatus */
+            $projectStatus = $entityManager->getRepository('projects_status');
+            $projectStatus->getLastStatut($project->id_project);
+
+            $now        = new \DateTime('NOW');
             $projectEnd = new \DateTime($project->date_retrait_full);
 
             if ($now >= $projectEnd) {
                 $request->getSession()->set('bidMessage', $translations['side-bar-bids-project-finished-message']);
-                return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
-            }
-
-            if ($user->getClientStatus() < \clients_status::VALIDATED) {
                 return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
 
@@ -397,81 +415,8 @@ class ProjectsController extends Controller
         return new Response('not an ajax request');
     }
 
-    public function _pop_up_fast_pret()
-    {
-        //Recuperation des element de traductions
-        $this->lng = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
-
-        $this->projects = $this->loadData('projects');
-        $this->bids     = $this->loadData('bids');
-
-        if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
-            // Pret min
-            $this->settings->get('Pret min', 'type');
-            $this->pretMin = $this->settings->value;
-
-            // la sum des encheres
-            $this->soldeBid = $this->bids->getSoldeBid($this->projects->id_project);
-            $this->txLenderMax = '10.10';
-
-            if ($this->soldeBid >= $this->projects->amount) {
-                $this->lEnchereRate = $this->bids->select('id_project = ' . $this->projects->id_project, 'rate ASC,added ASC');
-                $leSoldeE           = 0;
-                foreach ($this->lEnchereRate as $k => $e) {
-                    // on parcour les encheres jusqu'au montant de l'emprunt
-                    if ($leSoldeE < $this->projects->amount) {
-                        // le montant preteur (x100)
-                        $amount = $e['amount'];
-
-                        // le solde total des encheres
-                        $leSoldeE += ($e['amount'] / 100);
-                        $this->txLenderMax = $e['rate'];
-                    }
-                }
-            }
-
-            // on génère un token
-            $this->tokenBid       = sha1('tokenBid-' . time() . '-' . $this->clients->id_client);
-            $_SESSION['tokenBid'] = $this->tokenBid;
-        }
-    }
-
-    public function _pop_valid_pret()
-    {
-        //Recuperation des element de traductions
-        $this->lng = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
-
-        $this->projects = $this->loadData('projects');
-        if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
-            // Pret min
-            $this->settings->get('Pret min', 'type');
-            $this->pretMin = $this->settings->value;
-
-            // on génère un token
-            $this->tokenBid       = sha1('tokenBid-' . time() . '-' . $this->clients->id_client);
-            $_SESSION['tokenBid'] = $this->tokenBid;
-        }
-    }
-
-    public function _pop_valid_pret_mobile()
-    {
-        //Recuperation des element de traductions
-        $this->lng = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
-
-        $this->projects = $this->loadData('projects');
-        if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
-            // Pret min
-            $this->settings->get('Pret min', 'type');
-            $this->pretMin = $this->settings->value;
-
-            // on génère un token
-            $this->tokenBid       = sha1('tokenBid-' . time() . '-' . $this->clients->id_client);
-            $_SESSION['tokenBid'] = $this->tokenBid;
-        }
-    }
-
     /**
-     * @Route("/projects/export/income/{projectId}", name="export_income_statement")
+     * @Route("/projects/export/income/{projectId}", requirements={"projectId" = "^\d+$"}, name="export_income_statement")
      */
     public function exportIncomeStatementAction($projectId)
     {
@@ -568,14 +513,14 @@ class ProjectsController extends Controller
         $oWriter->save('php://output');
         $response = new Response(ob_get_clean());
         $response->headers->set('Content-Type', 'text/csv');
-        $response->headers->set('Content-Disposition', 'attachment;filename=compte_de_resultats_' . $project->slug . '.csv');
+        $response->headers->set('Content-Disposition', 'attachment;filename=resultats_' . $project->slug . '.csv');
         $response->headers->addCacheControlDirective('must-revalidate', true);
 
         return $response;
     }
 
     /**
-     * @Route("/projects/export/balance/{projectId}", name="export_balance_sheet")
+     * @Route("/projects/export/balance/{projectId}", requirements={"projectId" = "^\d+$"}, name="export_balance_sheet")
      */
     public function exportBalanceSheetAction($projectId, Request $request)
     {
@@ -709,16 +654,18 @@ class ProjectsController extends Controller
     }
 
     /**
-     * @Route("/projects/export/bids/{projectId}", name="export_bids")
+     * @Route("/projects/export/bids/{projectId}", requirements={"projectId" = "^\d+$"}, name="export_bids")
      */
     public function exportBidsAction($projectId)
     {
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \projects $project */
-        $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
+        $project = $entityManager->getRepository('projects');
 
         if ($project->get($projectId, 'id_project')) {
             /** @var \projects_status $projectsStatus */
-            $projectsStatus = $this->get('unilend.service.entity_manager')->getRepository('projects_status');
+            $projectsStatus = $entityManager->getRepository('projects_status');
             $projectsStatus->getLastStatut($project->id_project);
 
             /** @var TranslationManager $translationManager */
@@ -731,19 +678,19 @@ class ProjectsController extends Controller
                 echo '"N°";"' . $translations['taux-dinteret'] . '";"' . $translations['montant'] . '";"' . $translations['statuts'] . '"' . PHP_EOL;
 
                 /** @var \bids $bids */
-                $this->get('unilend.service.entity_manager')->getRepository('bids');
-                $offset = 0;
-                $limit  = 1000;
+                $bids = $entityManager->getRepository('bids');
 
-                $bidStatus = array(
+                $offset    = 0;
+                $limit     = 1000;
+                $bidStatus = [
                     \bids::STATUS_BID_PENDING  => $translations['enchere-en-cours'],
                     \bids::STATUS_BID_ACCEPTED => $translations['enchere-ok'],
                     \bids::STATUS_BID_REJECTED => $translations['enchere-ko']
-                );
+                ];
 
                 while ($bidsList = $bids->select('id_project = ' . $project->id_project, 'ordre ASC', $offset, $limit)) {
                     foreach ($bidsList as $bid) {
-                        echo $bid['ordre'] . ';' . $bid['rate'] . ' %;' . bcdiv($bid['amount'], 100) . ' €;"' . $bidStatus[$bid['status']] . '"' . PHP_EOL;
+                        echo $bid['ordre'] . ';' . $bid['rate'] . ' %;' . bcdiv($bid['amount'], 100, 2) . ' €;"' . $bidStatus[$bid['status']] . '"' . PHP_EOL;
                     }
                     $offset += $limit;
                 }
@@ -756,5 +703,4 @@ class ProjectsController extends Controller
 
         return $response;
     }
-
 }
