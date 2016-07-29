@@ -416,7 +416,7 @@ class LenderProfileController extends Controller
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount  = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
         $lenderAccount->get($client->id_client, 'id_client_owner');
-        /** @var \clients_adresses $clien
+        /** @var \clients_adresses $clientAddress */
         $clientAddress = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
         $clientAddress->get($client->id_client, 'id_client');
 
