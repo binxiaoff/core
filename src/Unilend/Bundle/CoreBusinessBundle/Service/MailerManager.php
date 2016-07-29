@@ -630,7 +630,8 @@ class MailerManager
             '$nbPeteurs'    => $iLendersNb,
             '$montant_pret' => $oProject->amount,
             '$montant'      => $iBidTotal,
-            '$sujetMail'    => htmlentities($this->oMailTemplate->subject)
+            '$sujetMail'    => htmlentities($this->oMailTemplate->subject),
+            '$taux_moyen'   => $this->oFicelle->formatNumber($oProject->getAverageInterestRate(), 1)
         );
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage($this->oMailTemplate->type, $varMail, false);
