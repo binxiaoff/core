@@ -139,7 +139,7 @@ class dossiersController extends bootstrap
             $this->current_projects_status->getLastStatut($this->projects->id_project);
 
             $this->bHasAdvisor       = false;
-            $this->bReadonlyRiskNote = $this->current_projects_status->status >= \projects_status::EN_FUNDING;
+            $this->bReadonlyRiskNote = $this->current_projects_status->status >= \projects_status::PREP_FUNDING;
 
             if ($this->projects->id_prescripteur > 0 && $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur')) {
                 $this->clients_prescripteurs->get($this->prescripteurs->id_client, 'id_client');
@@ -254,9 +254,18 @@ class dossiersController extends bootstrap
                 $this->updateProblematicStatus($_POST['problematic_status']);
             }
 
-            if ($this->projects_status->status == projects_status::PREP_FUNDING) {
+            if (false === empty($this->projects->risk) && false === empty($this->projects->period) && $this->projects_status->status >= projects_status::PREP_FUNDING) {
+
                 $fPredictAmountAutoBid = $this->get('unilend.service.autobid_settings_manager')->predictAmount($this->projects->risk, $this->projects->period);
                 $this->fPredictAutoBid = round(($fPredictAmountAutoBid / $this->projects->amount) * 100, 1);
+
+                if (false === empty($this->projects->id_rate)) {
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BidManager $bidManager */
+                    $bidManager     = $this->get('unilend.service.bid_manager');
+                    $rateRange      = $bidManager->getProjectRateRange($this->projects);
+                    $this->rate_min = $rateRange['rate_min'];
+                    $this->rate_max = $rateRange['rate_max'];
+                }
             }
 
             if (isset($_POST['last_annual_accounts'])) {
@@ -538,17 +547,15 @@ class dossiersController extends bootstrap
 
                     $this->projects->title           = $_POST['title'];
                     $this->projects->title_bo        = $_POST['title_bo'];
-                    $this->projects->period          = $_POST['duree'];
                     $this->projects->nature_project  = $_POST['nature_project'];
-                    $this->projects->amount          = str_replace(' ', '', str_replace(',', '.', $_POST['montant']));
-                    $this->projects->target_rate     = '-';
                     $this->projects->id_analyste     = $_POST['analyste'];
                     $this->projects->id_commercial   = $_POST['commercial'];
                     $this->projects->display         = $_POST['display_project'];
                     $this->projects->id_project_need = $_POST['need'];
 
-                    if ($this->current_projects_status->status >= \projects_status::PREP_FUNDING) {
-                        $this->projects->risk = $_POST['risk'];
+                    if (false === $this->bReadonlyRiskNote) {
+                        $this->projects->period = $_POST['duree'];
+                        $this->projects->amount = str_replace(' ', '', str_replace(',', '.', $_POST['montant']));
                     }
 
                     if ($this->current_projects_status->status <= \projects_status::A_FUNDER) {
@@ -565,6 +572,14 @@ class dossiersController extends bootstrap
                         if (isset($_POST['date_retrait']) && ! empty($_POST['date_retrait'])) {
                             $this->projects->date_retrait      = $this->dates->formatDateFrToMysql($_POST['date_retrait']);
                             $this->projects->date_retrait_full = $this->projects->date_retrait . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute'] . ':0';
+                        }
+
+                        if (false === empty($this->projects->risk) && false === empty($this->projects->period)) {
+                            try {
+                                $oProjectManager->setProjectRateRange($this->projects);
+                            } catch (\Exception $exception) {
+                                $_SESSION['freeow']['message'] .= $exception->getMessage();
+                            }
                         }
                     }
 

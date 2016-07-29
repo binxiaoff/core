@@ -55,7 +55,7 @@ class ProjectsFundingCommand extends ContainerAwareCommand
                     $projectManager->markAsFunded($project);
                 }
 
-                if ($endDate > $currentDate) {
+                if ($endDate > $currentDate && false === $projectManager->isRateMinReached($project)) {
                     $projectManager->checkBids($project, true);
                     $projectManager->autoBid($project);
                 } else {

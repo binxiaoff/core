@@ -14,6 +14,7 @@
             <?= str_replace('[#MIN_AMOUNT#]', $this->iMinimumBidAmount, $this->lng['autobid']['error-message-simple-setting-amount-wrong']) ?>
         </p>
     </div>
+    <div class="row errors-autobid" id="errors-autobid-param-form-expert"></div>
 </div>
 
 <div class="autobid-block"> <!-- autobid-param-simple-->
@@ -57,7 +58,7 @@
                             <select name="autobid-param-simple-taux-min" id="autobid-param-simple-taux-min" class="custom-select field-small required" >
                                 <option value="0"><?= $this->lng['autobid']['settings-select-rate'] ?></option>
                                 <option value="0"><?= $this->lng['autobid']['settings-select-rate'] ?></option>
-                                <?php foreach (range(\bids::BID_RATE_MAX, \bids::BID_RATE_MIN, -$this->fAutoBidStep) as $fRate) : ?>
+                                <?php foreach (range($this->projectRatesGlobal['rate_max'], $this->projectRatesGlobal['rate_min'], -$this->fAutoBidStep) as $fRate) : ?>
                                     <option value="<?= $fRate ?>" <?= (round($fRate,1) == round($this->aSettingsSubmitted['simple-taux-min'],1)) ? 'selected' : '' ?> >
                                         <?= $this->ficelle->formatNumber($fRate, 1) ?>%
                                     </option>
@@ -123,11 +124,13 @@
                                             <label class="param-advanced-label"><?= $this->ficelle->formatNumber($aSetting['rate_min'], 1) ?>%</label>
                                             <input type="hidden" id="<?= $aSetting['id_autobid'] ?>-param-advanced-value" class="param-advanced-value" value="<?= $aSetting['rate_min'] ?>">
                                             <input type="hidden" name="param-advanced-unilend-rate" value="<?= $aSetting['AverageRateUnilend'] ? $this->ficelle->formatNumber($aSetting['AverageRateUnilend'], 1) : ''; ?>">
-                                            <input type="hidden" id="<?= $aSetting['id_autobid'] ?>-param-advanced-period" value="<?= $aSetting['id_autobid_period'] ?>">
+                                            <input type="hidden" id="<?= $aSetting['id_autobid'] ?>-param-advanced-period" value="<?= $aSetting['id_period'] ?>">
                                             <input type="hidden" id="<?= $aSetting['id_autobid'] ?>-param-advanced-evaluation" value="<?= $aSetting['evaluation'] ?>">
                                             <input type="hidden" value="<?= $aSetting['note'] ?>" name="param-advanced-note">
-                                            <input type="hidden" value="<?= $aSetting['period_min'] ?>" name="param-advanced-period-min">
-                                            <input type="hidden" value="<?= $aSetting['period_max'] ?>" name="param-advanced-period-max">
+                                            <input type="hidden" value="<?= $aSetting['min'] ?>" name="param-advanced-period-min">
+                                            <input type="hidden" value="<?= $aSetting['max'] ?>" name="param-advanced-period-max">
+                                            <input type="hidden" value="<?= $aSetting['project_rate_max'] ?>" id="<?= $aSetting['id_autobid'] ?>-param-advanced-project-max-rate" name="param-advanced-project-max-rate">
+                                            <input type="hidden" value="<?= $aSetting['project_rate_min'] ?>" id="<?= $aSetting['id_autobid'] ?>-param-advanced-project-min-rate" name="param-advanced-project-min-rate">
                                         </div>
                                     </div>
                                 </td>
@@ -163,6 +166,7 @@
                         <span id="param-advanced-global-progress-label"></span>
                         <canvas id="param-advanced-global-progress" width="109" height="109"></canvas>
                     </div>
+                    <div class="warning-message"><?=$this->lng['autobid']['warning-range-message'] ?></div>
                 </div>
             </div>
         </div>
@@ -254,6 +258,18 @@ $(window).load(function(){
             widget.find('.global-rate').html(avg_rate+'%');
             widget.find('.indice-rate').html(avg_rate_indice);
 
+            var currentRate = cell.find($("input[id*='-param-advanced-value']")).val();
+            var switchToggle = cell.find($("input[id*='-param-advanced-switch']")).val();
+            var projectMaxRate = cell.find("input[id*='param-advanced-project-max-rate']").val();
+
+            if(switchToggle == 1) {
+                if(parseFloat(currentRate) > parseFloat(projectMaxRate)) {
+                    $("#table-infos_right").addClass("warning-range");
+                } else {
+                    $("#table-infos_right").removeClass("warning-range");
+                }
+            }
+
             widget.find('.btn-apply-avg-rate').off().click(function(e){
                 e.stopPropagation();
                 cell.find('.param-advanced-label').html(avg_rate+'%');
@@ -308,12 +324,13 @@ $(window).load(function(){
             var AvgRateUnilend = parseFloat(cell.find('input[name=param-advanced-unilend-rate]').val().replace(",", "."));
             var currentVal = Number(parseFloat(inputRate.val()).toFixed(1));
             var newVal = Number(currentVal + parseFloat($(this).val())).toFixed(1);
-
-            if (newVal >= 10.0) {
-                newVal = '10.0';
+            var projectMinRate = cell.find("input[id*='param-advanced-project-min-rate']").val();
+            var projectMaxRate = cell.find("input[id*='param-advanced-project-max-rate']").val();
+            if (newVal >= parseFloat(projectMaxRate)) {
+                newVal = projectMaxRate;
             }
-            if (newVal <= 4.0) {
-                newVal = '4.0';
+            if (newVal <= parseFloat(projectMinRate)) {
+                newVal = projectMinRate;
             }
 
             inputRate.val(newVal);
@@ -355,7 +372,9 @@ $(window).load(function(){
         ctx.arc(55, 55, 44, -(quart), ((circ) * (percentage / 100)) - quart, false);
 
         ctx.stroke();
-        $('#param-advanced-global-progress-label').html(percentage +'%');
+        if (typeof percentage !== 'undefined') {
+            $('#param-advanced-global-progress-label').html(percentage +'%');
+        }
     }
 
     function disableSimpleRateSetting(){

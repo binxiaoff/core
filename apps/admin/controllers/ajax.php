@@ -1372,6 +1372,15 @@ class ajaxController extends bootstrap
                     ';
                 }
 
+                if (false === empty($this->projects->risk) && false === empty($this->projects->period)) {
+                    try {
+                        $oProjectManager->setProjectRateRange($this->projects);
+                    } catch (\Exception $exception) {
+                        echo json_encode(array('liste' => '', 'btn_etape6' => '', 'content_risk' => '', 'error' => $exception->getMessage()));
+                        return;
+                    }
+                }
+
                 /** @var \projects_status $oProjectStatus */
                 $oProjectStatus = $this->loadData('projects_status');
                 $oProjectStatus->getLastStatut($this->projects->id_project);
