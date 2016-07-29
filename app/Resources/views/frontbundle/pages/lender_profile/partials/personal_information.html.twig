@@ -4,22 +4,6 @@
 <article id="panel-info" class="panel">
     <header class="panel-header">
         <h3>{% trans %} lender-profile_information-tab-identity-section-title {% endtrans %}</h3>
-        <div id="form-profile-info-notifications">
-            {% if app.session.flashBag.has('personIdentitySuccess')%}
-                <div class="message-success">
-                    {% for message in app.session.flashBag.get('personIdentitySuccess') %}
-                        <span>{{ message }}</span>
-                    {% endfor %}
-                </div>
-            {% endif %}
-            {% if app.session.flashBag.has('identityLegalEntitySuccess')%}
-                <div class="message-success">
-                    {% for message in app.session.flashBag.get('identityLegalEntitySuccess') %}
-                        <span>{{ message }}</span>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        </div>
     </header>
     <section id="profile-info-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
         {% if client.type in [constant('\\clients::TYPE_PERSON'), constant('\\clients::TYPE_PERSON_FOREIGNER')] %}
@@ -35,22 +19,6 @@
 <article id="panel-address" class="panel">
     <header class="panel-header">
         <h3>{% trans %} lender-profile_information-tab-fiscal-address-section-title {% endtrans %}</h3>
-        <div id="form-profile-info-notifications">
-            {% if app.session.flashBag.has('personFiscalAddressSuccess')%}
-                <div class="message-success">
-                    {% for message in app.session.flashBag.get('personFiscalAddressSuccess') %}
-                        <span>{{ message }}</span>
-                    {% endfor %}
-                </div>
-            {% endif %}
-            {% if app.session.flashBag.has('LegalEntityFiscalAddressSuccess')%}
-                <div class="message-success">
-                    {% for message in app.session.flashBag.get('LegalEntityFiscalAddressSuccess') %}
-                        <span>{{ message }}</span>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        </div>
     </header>
     <section id="profile-address-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
         {% if client.type in [constant('\\clients::TYPE_PERSON'), constant('\\clients::TYPE_PERSON_FOREIGNER')] %}
@@ -65,15 +33,6 @@
 <article id="panel-correspondence" class="panel collapse{% if clientAddresses.meme_adresse_fiscal != 1 %} in{% endif %}">
     <header class="panel-header">
         <h3>{% trans %} lender-profile_information-tab-postal-address-section-title {% endtrans %}</h3>
-        <div id="form-profile-info-notifications">
-            {% if app.session.flashBag.has('postalAddressSuccess')%}
-                <div class="message-success">
-                    {% for message in app.session.flashBag.get('postalAddressSuccess') %}
-                        <span>{{ message }}</span>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        </div>
     </header>
     <section id="profile-correspondence-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
         {{ include('pages/lender_profile/partials/postal_address.html.twig') }}

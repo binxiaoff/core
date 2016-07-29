@@ -15,7 +15,15 @@
 
 <section id="profile-correspondence-edit" role="tabpanel" class="profile-correspondence-edit collapse">
     <form id="form-profile-correspondence-edit" action="{{ path('profile_postal_address_update') }}" method="post" class="form-profile form-profile-correspondence-edit" data-formvalidation data-formvalidation-notificationselem="#form-profile-correspondence-notifications">
-        <div id="form-profile-correspondence-notifications"></div>
+        <div id="form-profile-correspondence-notifications">
+            {% if app.session.flashBag.has('postalAddressSuccess')%}
+                <div class="message-success">
+                    {% for message in app.session.flashBag.get('postalAddressSuccess') %}
+                        <span>{{ message }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
         <div class="row">
             <div class="form-field">
                 <label for="form-profile-correspondence-street">{% trans %} lender-profile_information-tab-postal-address-section-address-label {% endtrans %}

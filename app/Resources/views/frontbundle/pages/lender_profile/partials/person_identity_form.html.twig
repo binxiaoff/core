@@ -8,6 +8,13 @@
                     {% endfor %}
                 </div>
             {% endif %}
+            {% if app.session.flashBag.has('personIdentitySuccess')%}
+                <div class="message-success">
+                    {% for message in app.session.flashBag.get('personIdentitySuccess') %}
+                        <span>{{ message }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
         <div class="row">
             <div class="form-field form-field-multi">

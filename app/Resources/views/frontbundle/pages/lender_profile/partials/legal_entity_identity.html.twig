@@ -13,10 +13,10 @@
         <dd id="profile-info-company-name-output">{{ company.capital }}</dd>
         <dt>{% trans %} lender-profile_information-tab-identity-section-company-siren-label {% endtrans %}</dt>
         <dd id="profile-info-company-form-output">{{ company.siren }}</dd>
-        <dt>{% trans %} lender-profile_information-tab-identity-section-company-siren-label {% endtrans %}</dt>
+        <dt>{% trans %} lender-profile_information-tab-identity-section-company-phone-label {% endtrans %}</dt>
         <dd id="profile-info-company-phone-output">{{ company.phone }}</dd>
     </dl>
-    <h5>Identité du representant</h5>
+    <h5>{% trans %} lender-profile_information-tab-identity-section-company-representative-title {% endtrans %}</h5>
     <dl class="list-2col">
     <dt>{% trans %} lender-profile_information-tab-identity-section-form-of-address-label {% endtrans %}</dt>
         {% if client.civilite == 'M.' %}
@@ -25,12 +25,12 @@
             <dd id="profile-info-civilite-output">{% trans %} lender-profile_information-tab-identity-section-form-of-address-female-label {% endtrans %}</dd>
         {% endif %}
         <dt>{% trans %} lender-profile_information-tab-identity-section-company-client-status-label {% endtrans %}</dt>
-        <dd>{{ "lender-profile_information-tab-identity-section-company-client-status-#{ company.status_client }" | trans }}
+        <dd><span>{{ "lender-profile_information-tab-identity-section-company-client-status-#{ company.status_client }" | trans }} </span>
             {% if company.status_client == 3 %}
                 {% if company.status_conseil_externe_entreprise == 3 %}
-                    {{ company.preciser_conseil_externe_entreprise }}
+                    <span>{{ company.preciser_conseil_externe_entreprise }} </span>
                 {% else %}
-                    {{ externalCounselList[company.status_conseil_externe_entreprise] }}
+                    <span>{{ externalCounselList[company.status_conseil_externe_entreprise] }} </span>
                 {% endif %}
             {% endif %}
         </dd>
@@ -38,12 +38,11 @@
         <dd id="profile-info-nom-output">{{ client.nom }}</dd>
         <dt>{% trans %} lender-profile_information-tab-identity-section-first-name-label {% endtrans %}</dt>
         <dd id="profile-info-prenom-output">{{ client.prenom }}</dd>
-
         <dt>{% trans %} lender-profile_information-tab-identity-section-company-client-function-label {% endtrans %}</dt>
         <dd id="profile-info-dob-output">{{ client.fonction }}</dd>
     </dl>
     {% if company.status_client > 1 %}
-    <h5>Identité du dirigant</h5>
+    <h5>{% trans %} lender-profile_information-tab-identity-section-company-director-title {% endtrans %}</h5>
     <dl class="list-2col">
         <dt>{% trans %} lender-profile_information-tab-identity-section-form-of-address-label {% endtrans %}</dt>
         {% if company.civilite_dirigeant == 'M.' %}
@@ -57,9 +56,9 @@
         <dd id="profile-info-prenom-output">{{ company.prenom_dirigeant }}</dd>
         <dt>{% trans %} lender-profile_information-tab-identity-section-company-client-function-label {% endtrans %}</dt>
         <dd id="profile-info-dob-output">{{ company.fonction_dirigeant }}</dd>
-        <dt>{% trans %} Téléphone {% endtrans %}</dt>
+        <dt>{% trans %} lender-profile_information-tab-identity-section-company-director-phone {% endtrans %}</dt>
         <dd id="profile-info-dob-output">{{ company.phone_dirigeant }}</dd>
-        <dt>{% trans %} Email {% endtrans %}</dt>
+        <dt>{% trans %} lender-profile_information-tab-identity-section-company-director-email {% endtrans %}</dt>
         <dd id="profile-info-dob-output">{{ company.email_dirigeant }}</dd>
     </dl>
     {% endif %}
@@ -69,23 +68,26 @@
         {% for attachment in companyIdAttachments %}
             {% if attachment.id_type == constant('\\attachment_type::CNI_PASSPORTE_DIRIGEANT') %}
                 <span id="form-profile-info-file-identite-cni-1-output" class="file-justificatif file-identity-side-a"
-                      title="{{ "lender-attachement-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added|date('d/m-Y')) }}" data-toggle="tooltip">
-                    <span class="sr-only">{{ "lender-attachement-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added|date('d/m-Y'))}}</span>
+                      title="{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added, {'%date%' : attachment.added|date('d/m/Y')}) }}"
+                      data-toggle="tooltip">
+                    <span class="sr-only">{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added, {'%date%' : attachment.added|date('d/m/Y')}) }}</span>
                 </span>
                 {% elseif attachment.id_type == constant('\\attachment_type::CNI_PASSPORTE_VERSO') %}
                     <span id="form-profile-info-file-identite-cni-2-output" class="file-justificatif file-identity-side-b"
-                          title="{{ "lender-attachement-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added|date('d/m-Y')) }}" data-toggle="tooltip">
-                        <span class="sr-only">{{ "lender-attachement-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added|date('d/m-Y'))}}</span>
+                          title="{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added, {'%date%' : attachment.added|date('d/m/Y')}) }}"
+                          data-toggle="tooltip">
+                        <span class="sr-only">{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added, {'%date%' : attachment.added|date('d/m/Y')}) }}</span>
                     </span>
             {% endif %}
         {% endfor %}
         </dd>
-        <dt>{% trans %} Autres justificatifs {% endtrans %}</dt>
+        <dt>{% trans %} lender-profile_information-tab-identity-section-company-other-attachments-label {% endtrans %}</dt>
         <dd id="profile-info-fichier-domicile-output">
             {% for attachment in companyOtherAttachments  %}
                 <span id="form-profile-address-file-domicile-1-output" class="file-justificatif file-domicile"
-                      title="{{ "lender-attachement-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added|date('d/m/Y')) }}" data-toggle="tooltip">
-                    <span class="sr-only">{{ "lender-attachement-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added|date('d/m/Y')) }}</span>
+                      title="{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added, {'%date%' : attachment.added|date('d/m/Y')}) }}"
+                data-toggle="tooltip">
+                    <span class="sr-only">{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added, {'%date%' : attachment.added|date('d/m/Y')}) }}</span>
                 </span>
             {% endfor %}
         </dd>
