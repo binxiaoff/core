@@ -78,7 +78,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                 $taxManager = $this->getContainer()->get('unilend.service.tax_manager');
                 /** @var \lender_repayment $lenderRepayment */
                 $lenderRepayment = $entityManager->getRepository('lender_repayment');
-                
+
                 foreach ($lEcheances as $e) {
                     $repaymentDate = date('Y-m-d H:i:s');
                     try {
