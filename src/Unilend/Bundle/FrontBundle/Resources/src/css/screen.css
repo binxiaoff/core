@@ -9038,7 +9038,10 @@ label.custom-input-switch.custom-input-switch-sm > input[type="checkbox"]:checke
   left: 0;
   height: 100%;
   width: 100%;
-  background: rgba(255, 255, 255, 0.8) url("http://i.stack.imgur.com/FhHRx.gif") 50% 50% no-repeat;
+  background-color: rgba(255, 255, 255, 0.8);
+  background-image: url('../images/spinner/uldspinner.gif?1469775567');
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
 }
 
 /* line 15, ../sass/site/components/_modal-spinner.scss */
