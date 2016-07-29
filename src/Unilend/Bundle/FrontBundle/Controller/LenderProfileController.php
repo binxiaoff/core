@@ -416,7 +416,7 @@ class LenderProfileController extends Controller
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount  = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
         $lenderAccount->get($client->id_client, 'id_client_owner');
-        /** @var \clients_adresses $clientAddress */
+        /** @var \clients_adresses $clien
         $clientAddress = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
         $clientAddress->get($client->id_client, 'id_client');
 
@@ -469,9 +469,12 @@ class LenderProfileController extends Controller
                 if (false == $post['same_postal_address'] && empty($form['postal'])) {
                     $this->addFlash('personFiscalAddressErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-postal-address-missing-data'));
                 } else {
-                    $clientAddress->meme_adresse_fiscal = ($post['same_postal_address'] == true) ? 1 : 0 ;
+                    $clientAddress->meme_adresse_fiscal = ($post['same_postal_address'] == true) ? 1 : 0;
                     $historyContent .= '<li>' . $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-postal-checkbox') . '</li>';
-                    $this->savePostalFromFiscalAddress($clientAddress);
+                    $clientAddress->adresse1 = $clientAddress->adresse_fiscal;
+                    $clientAddress->cp       = $clientAddress->cp_fiscal;
+                    $clientAddress->ville    = $clientAddress->ville_fiscal;
+                    $clientAddress->id_pays  = $clientAddress->id_pays_fiscal;
                 }
             }
 
@@ -553,9 +556,6 @@ class LenderProfileController extends Controller
         /** @var \companies $company */
         $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
         $company->get($client->id_client, 'id_client_owner');
-        /** @var \clients_adresses $clientAddress */
-        $clientAddress = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
-        $clientAddress->get($client->id_client, 'id_client');
 
         /** @var TranslationManager $translationManager */
         $translationManager = $this->get('unilend.service.translation_manager');
@@ -598,11 +598,11 @@ class LenderProfileController extends Controller
                 $historyContent .= '<li>' . $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-country-label') . '</li>';
             }
 
-            if (isset($post['same_postal_address']) && (bool)$clientAddress->meme_adresse_fiscal != $post['same_postal_address']) {
+            if (isset($post['same_postal_address']) && (bool)$company->status_adresse_correspondance != $post['same_postal_address']) {
                 if (false == $post['same_postal_address'] && empty($form['postal'])) {
                     $this->addFlash('legalEntityFiscalAddressErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-postal-address-missing-data'));
                 } else {
-                    $clientAddress->meme_adresse_fiscal = ($post['same_postal_address'] == true) ? 1 : 0 ;
+                    $company->status_adresse_correspondance->meme_adresse_fiscal = ($post['same_postal_address'] == true) ? 1 : 0 ;
                     $historyContent .= '<li>' . $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-postal-checkbox') . '</li>';
                 }
             }
@@ -760,14 +760,6 @@ class LenderProfileController extends Controller
         $message->setTo($client->email);
         $mailer = $this->get('mailer');
         $mailer->send($message);
-    }
-
-    private function savePostalFromFiscalAddress(\clients_adresses &$clientAddresses)
-    {
-        $clientAddresses->adresse1 = $clientAddresses->adresse_fiscal;
-        $clientAddresses->cp       = $clientAddresses->cp_fiscal;
-        $clientAddresses->ville    = $clientAddresses->ville_fiscal;
-        $clientAddresses->id_pays  = $clientAddresses->id_pays_fiscal;
     }
 
     private function getSessionFormData(Request $request)
