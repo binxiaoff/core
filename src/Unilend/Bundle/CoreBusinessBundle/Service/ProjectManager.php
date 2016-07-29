@@ -745,6 +745,7 @@ class ProjectManager
         /** @var \bids $oBid */
         $oBid      = $this->oEntityManager->getRepository('bids');
         $iBidTotal = $oBid->getSoldeBid($oProject->id_project);
+
         if ($iBidTotal >= $oProject->amount) {
             return true;
         }
@@ -757,6 +758,7 @@ class ProjectManager
         if ($oProject->status_solde == 0) {
             $oFunded    = new \DateTime();
             $oPublished = new \DateTime($oProject->date_publication_full);
+
             if ($oFunded < $oPublished) {
                 $oFunded = $oPublished;
             }
@@ -784,17 +786,15 @@ class ProjectManager
     }
 
     /**
-     * @param \projects $oProject
-     *
+     * @param \projects $project
      * @return array
      */
-    public function getBidsStatistics(\projects $oProject)
+    public function getBidsSummary(\projects $project)
     {
-        /** @var \bids $oBid */
-        $oBid = $this->oEntityManager->getRepository('bids');
-        return $oBid->getBidsStatistics($oProject->id_project);
+        /** @var \bids $bid */
+        $bid = $this->oEntityManager->getRepository('bids');
+        return $bid->getBidsSummary($project->id_project);
     }
-
 
     public function getPossibleProjectPeriods()
     {
@@ -809,7 +809,7 @@ class ProjectManager
         /** @var \settings $settings */
         $settings = $this->oEntityManager->getRepository('settings');
         $settings->get('Somme à emprunter max', 'type');
-        return (int)$settings->value;
+        return (int) $settings->value;
     }
 
     public function getMinProjectAmount()
@@ -817,7 +817,6 @@ class ProjectManager
         /** @var \settings $settings */
         $settings = $this->oEntityManager->getRepository('settings');
         $settings->get('Somme à emprunter min', 'type');
-        return (int)$settings->value;
+        return (int) $settings->value;
     }
-
 }

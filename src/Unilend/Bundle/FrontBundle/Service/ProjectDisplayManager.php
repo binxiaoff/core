@@ -160,9 +160,25 @@ class ProjectDisplayManager
         }
 
         if (\projects_status::EN_FUNDING == $projectStatus->status) {
-            $bidsStatistics = $this->projectManager->getBidsStatistics($project);
-            $projectData['bidsStatistics'] = $bidsStatistics;
-            $projectData['meanBidAmount']  = round(array_sum(array_column($bidsStatistics, 'amount_total')) / array_sum(array_column($bidsStatistics, 'nb_bids')), 2);
+            $rateSummary = [];
+            $bidsSummary = $this->projectManager->getBidsSummary($project);
+
+            foreach (range(\bids::BID_RATE_MAX, \bids::BID_RATE_MIN, 0.1) as $rate) {
+                $rate = (string) $rate; // Fix an issue with float array keys
+                $rateSummary[$rate] = [
+                    'rate'             => $rate,
+                    'activeBidsCount'  => isset($bidsSummary[$rate]) ? (int) $bidsSummary[$rate]['activeBidsCount'] : 0,
+                    'bidsCount'        => isset($bidsSummary[$rate]) ? (int) $bidsSummary[$rate]['bidsCount'] : 0,
+                    'totalAmount'      => isset($bidsSummary[$rate]) ? (float) $bidsSummary[$rate]['totalAmount'] : 0,
+                    'activePercentage' => isset($bidsSummary[$rate]) ? (float) $bidsSummary[$rate]['activePercentage'] : 100,
+                ];
+            }
+
+            $projectData['bids'] = [
+                'summary'         => $rateSummary,
+                'averageAmount'   => round(array_sum(array_column($bidsSummary, 'totalAmount')) / array_sum(array_column($bidsSummary, 'bidsCount')), 2),
+                'activeBidsCount' => array_sum(array_column($bidsSummary, 'activeBidsCount'))
+            ];
         } else {
             $projectData['fundingStatistics'] = $this->getProjectFundingStatistic($project, $projectStatus->status);
         }

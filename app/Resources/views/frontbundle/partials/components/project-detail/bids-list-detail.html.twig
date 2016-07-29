@@ -1,0 +1,47 @@
+<tr class="detail-table-content">
+    <td colspan="4" style="padding:0">
+        <table class="table ui-sortable" data-sortable style="padding:0;border:none;">
+            <thead style="padding:0;border:none;">
+                <tr class="bids-detail-by-rate-header">
+                    <th class="table-sortable-column center" data-sortable-by="detail-id">
+                        <span class="label">{% trans %} project-detail_all-bids-table-detail-sort-id {% endtrans %}</span>
+                    </th>
+                    <th class="center">
+                        <span class="label">{% trans %} project-detail_all-bids-table-detail-sort-rate {% endtrans %}</span>
+                    </th>
+                    <th class="table-sortable-column center" data-sortable-by="detail-amount">
+                        <span class="label">{% trans %} project-detail_all-bids-table-detail-sort-amount {% endtrans %}</span>
+                    </th>
+                    <th class="table-sortable-column center" data-sortable-by="detail-status">
+                        <span class="label">{% trans %} project-detail_all-bids-table-detail-sort-status {% endtrans %}</span>
+                    </th>
+                </tr>
+            </thead>
+            <tbody data-sortable-content>
+            {% for bid in bids %}
+                <tr class="bids-detail-by-rate{% if bid.userInvolved %} ui-current-user-involved{% endif %}"
+                    data-sortable-detail-id="{{ bid.id }}"
+                    data-sortable-detail-amount="{{ bid.amount }}"
+                    data-sortable-detail-status="{{ bid.status }}">
+                    <td class="center">{{ bid.id }}</td>
+                    <td class="center">{{ bid.rate | __num(1) }}&nbsp;%</td>
+                    <td class="center">{{ bid.amount | __num(0) | nbsp | raw }}&nbsp;€</td>
+                    <td>
+                        {% if bid.status == 0 %}
+                            <span class="c-success">
+                                <span class="icon fa-check-u32"></span>
+                                {% trans %} project-detail_all-bids-table-detail-status-valid {% endtrans %}
+                            </span>
+                        {% else %}
+                            <span class="c-error">
+                                <span class="icon fa-close-u32"></span>
+                                {% trans %} project-detail_all-bids-table-detail-status-rejected {% endtrans %}
+                            </span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </td>
+</tr>

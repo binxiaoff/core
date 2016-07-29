@@ -85,8 +85,10 @@
             </div><!-- /tabs -->
 
             <div class="btn-toolbar">
-                <a href="{{ path('export_income_statement', {'projectId' : project.projectId}) }}" class="btn-default" target="_blank"><span class="icon fa-excel-u32"></span>
-                    {% trans %} project-detail_project-presentation-accounts-export-csv-button {% endtrans %}</a>
+                <a href="{{ path('export_income_statement', {'projectId' : project.projectId}) }}" class="btn-default" target="_blank">
+                    <span class="icon fa-excel-u32"></span>
+                    {% trans %} project-detail_project-presentation-accounts-export-csv-button {% endtrans %}
+                </a>
             </div><!-- /.btn-toolbar -->
         </section><!-- /.page-section -->
 
@@ -290,7 +292,8 @@
             <div class="btn-toolbar">
                 <a href="{{ path('export_balance_sheet', {'projectId' : project.projectId}) }}" class="btn-default" target="_blank">
                     <span class="icon fa-excel-u32"></span>
-                    {% trans %} project-detail_project-presentation-accounts-export-csv-button {% endtrans %}</a>
+                    {% trans %} project-detail_project-presentation-accounts-export-csv-button {% endtrans %}
+                </a>
             </div><!-- /.btn-toolbar -->
         </section><!-- /.page-section -->
     {% else %}
