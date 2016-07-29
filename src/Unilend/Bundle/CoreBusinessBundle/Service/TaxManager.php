@@ -24,7 +24,7 @@ class TaxManager
      * @return int the total tax amount applied on the transaction
      */
     public function taxTransaction(\transactions $transaction)
-    {var_dump('hello');die;
+    {
         switch ($transaction->type_transaction) {
             case \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS:
                 return $this->taxLenderRepaymentInterests($transaction);
