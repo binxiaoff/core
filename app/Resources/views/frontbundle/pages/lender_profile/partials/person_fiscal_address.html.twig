@@ -113,10 +113,21 @@
             <div class="form-field">
                 <label>{% trans %} lender-profile_information-tab-fiscal-address-location-certificate {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
-                <div class="custom-input-file" id="form-profile-info-file-domicile"
-                     data-fileattach data-fileattach-inputname="housing-certificate"
-                     data-fileattach-maxfiles="1" >
-                </div><!-- /.ui-fileattach -->
+                    {{ customInput.file({
+                        id: 'form-profile-info-file-domicile',
+                        isRequired: true
+                    }, {
+                        files: [{
+                            name: residenceAttachments[constant('\\attachment_type::JUSTIFICATIF_DOMICILE')]['path'],
+                            type: "file",
+                            url: residenceAttachments[constant('\\attachment_type::JUSTIFICATIF_DOMICILE')]['path'],
+                            size: 0
+                        }],
+                        inputname : 'housing-certificate',
+                        maxfiles: 1,
+                        fileremove: 'false',
+                        filechange: 'true'
+                    }) }}
             </div>
         </div>
 

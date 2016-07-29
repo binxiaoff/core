@@ -1,3 +1,6 @@
+{% import 'extensions/_general.macros.twig' as general %}
+{% import 'partials/modules/_custom-input.macros.twig' as customInput %}
+
 <article id="panel-info" class="panel">
     <header class="panel-header">
         <h3>{% trans %} lender-profile_information-tab-identity-section-title {% endtrans %}</h3>
@@ -53,7 +56,7 @@
         {% if client.type in [constant('\\clients::TYPE_PERSON'), constant('\\clients::TYPE_PERSON_FOREIGNER')] %}
             {{ include('pages/lender_profile/partials/person_fiscal_address.html.twig') }}
         {% else  %}
-            {{ include('pages/lender_profile/partials/legal_entity_fiscal_address_.html.twig') }}
+            {{ include('pages/lender_profile/partials/legal_entity_fiscal_address.html.twig') }}
         {% endif %}
     </section><!-- /.ui-toggle-group -->
 </article><!-- /.panel -->

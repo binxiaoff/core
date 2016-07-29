@@ -8,6 +8,7 @@
 {# @note This input should never ever need form validation! #}
 {% macro switch(options) %}
     {% import _self as customInput %}
+    {% import 'extensions/_general.macros.twig' as general %}
 
     {# Default settings #}
     {% set settings = {
@@ -41,6 +42,7 @@
 {# @param {Object} options #}
 {% macro file(options, fileattachOptions) %}
   {% import _self as customInput %}
+    {% import 'extensions/_general.macros.twig' as general %}
 
   {# Default settings #}
   {% set settings = {
@@ -89,8 +91,8 @@ fileattachSettings:
     }, 'data-formvalidation-') %}
   {% endif %}
 
-  <div class="custom-input-file {% if classNames is not empty %}{{ classNames }}{% endif %}" id="{{ settings.id|escape('html_attr') }}"
+  <div class="custom-input-file {% if settings.classNames is not empty %}{{ settings.classNames }}{% endif %}" id="{{ settings.id|escape('html_attr') }}"
     data-fileattach {% if fileattachSettings is not empty %}{{ general.attrsString(fileattachSettings, 'data-fileattach-') }}{% endif %}
     {{ formValidationAttrs }}
-    {% if attrs is not empty %}{{ general.attrsString(settings.attrs) }}{% endif %}></div><!-- /.ui-fileattach -->
+    {% if settings.attrs is not empty %}{{ general.attrsString(settings.attrs) }}{% endif %}></div><!-- /.ui-fileattach -->
 {% endmacro %}

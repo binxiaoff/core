@@ -32,11 +32,11 @@
       {% else %}
         {# Test if value is array/object and output as JSON encoded string #}
         {% if value is iterable %}
-          {% set attrsHtml = attrsHtml ~ ' ' ~ attrPrefix ~ name ~ "='" ~ value|json_encode|escape('html_attr') ~ "'" %}
+          {% set attrsHtml = attrsHtml ~ ' ' ~ attrPrefix ~ name ~ "=" ~ value|json_encode %}
 
         {# Output normal value #}
         {% else %}
-          {% set attrsHtml = attrsHtml ~ ' ' ~ attrPrefix ~ name ~ '="' ~ value|escape('html_attr') ~ '"' %}
+          {% set attrsHtml = attrsHtml ~ ' ' ~ attrPrefix ~ name ~ '=' ~ value %}
         {% endif %}
       {% endif %}
     {% endfor %}
