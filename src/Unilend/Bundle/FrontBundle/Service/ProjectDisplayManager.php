@@ -139,10 +139,12 @@ class ProjectDisplayManager
         // @todo
         $projectData['latitude']     = 45;
         $projectData['longitude']    = 0;
-        $projectData['daysLeft']     = 0;
 
-        $now = new \DateTime('NOW');
+        $now        = new \DateTime('NOW');
         $projectEnd = new \DateTime($project->date_retrait_full);
+
+        $projectData['daysLeft'] = $now->diff($projectEnd)->days;
+
         if ($projectEnd  <= $now && $projectStatus->status == \projects_status::EN_FUNDING) {
             $projectData['projectPending'] = true;
         }
