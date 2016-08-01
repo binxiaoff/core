@@ -335,14 +335,21 @@
                         <td><?= $this->fPredictAutoBid ?> % </td>
                     </tr>
                     <?php endif; ?>
+                    <?php if (isset($this->rate_min, $this->rate_max)): ?>
+                        <tr>
+                            <th><label for="project_rate"> Taux min / max :</label></th>
+                            <td><?= $this->rate_min ?> % - <?= $this->rate_max ?> %</td>
+                        </tr>
+
+                    <?php endif; ?>
                     <tr>
                         <th><label for="montant">Montant du prêt* :</label></th>
-                        <td><input style="background-color:#AAACAC;" type="text" name="montant" id="montant" class="input_moy" value="<?= $this->ficelle->formatNumber($this->projects->amount, 0) ?>"/> €</td>
+                        <td><input style="background-color:#AAACAC;" type="text" name="montant" id="montant" class="input_moy" <?php if ($this->bReadonlyRiskNote) : ?>disabled<?php endif; ?> value="<?= $this->ficelle->formatNumber($this->projects->amount, 0) ?>"/> €</td>
                     </tr>
                     <tr>
                         <th><label for="duree">Durée du prêt* :</label></th>
                         <td>
-                            <select name="duree" id="duree" class="select" style="width:160px;background-color:#AAACAC;">
+                            <select name="duree" id="duree" class="select" <?php if ($this->bReadonlyRiskNote) : ?>disabled<?php endif; ?> style="width:160px;background-color:#AAACAC;">
                                 <option<?= (in_array($this->projects->period, array(0, 1000000)) ? ' selected' : '') ?> value="0">Je ne sais pas</option>
                                 <?php foreach ($this->dureePossible as $duree) : ?>
                                     <option<?= ($this->projects->period == $duree ? ' selected' : '') ?> value="<?= $duree ?>"><?= $duree ?> mois</option>
@@ -379,17 +386,34 @@
                     <tr class="content_risk" <?= ($this->current_projects_status->status >= \projects_status::PREP_FUNDING ? '' : 'style="display:none"') ?>>
                         <th><label for="risk">Niveau de risque* :</label></th>
                         <td>
-                            <select name="risk" id="risk" class="select" style="width:160px;background-color:#AAACAC;">
-                                <option value="">Choisir</option>
-                                <option <?= ($this->projects->risk == 'A' ? 'selected' : '') ?> value="A">5 étoiles</option>
-                                <option <?= ($this->projects->risk == 'B' ? 'selected' : '') ?> value="B">4,5 étoiles</option>
-                                <option <?= ($this->projects->risk == 'C' ? 'selected' : '') ?> value="C">4 étoiles</option>
-                                <option <?= ($this->projects->risk == 'D' ? 'selected' : '') ?> value="D">3,5 étoiles</option>
-                                <option <?= ($this->projects->risk == 'E' ? 'selected' : '') ?> value="E">3 étoiles</option>
-                                <option <?= ($this->projects->risk == 'F' ? 'selected' : '') ?> value="F">2,5 étoiles</option>
-                                <option <?= ($this->projects->risk == 'G' ? 'selected' : '') ?> value="G">2 étoiles</option>
-                                <option <?= ($this->projects->risk == 'H' ? 'selected' : '') ?> value="H">1,5 étoiles</option>
-                            </select>
+                            <?php
+                                switch ($this->projects->risk) {
+                                    case 'A' :
+                                        echo '5 étoiles';
+                                        break;
+                                    case 'B' :
+                                        echo '4,5 étoiles';
+                                        break;
+                                    case 'C' :
+                                        echo '4 étoiles';
+                                        break;
+                                    case 'D' :
+                                        echo '3,5 étoiles';
+                                        break;
+                                    case 'E' :
+                                        echo '3 étoiles';
+                                        break;
+                                    case 'F' :
+                                        echo '2,5 étoiles';
+                                        break;
+                                    case 'G' :
+                                        echo '2 étoiles';
+                                        break;
+                                    case 'H' :
+                                        echo '1,5 étoiles';
+                                        break;
+                                }
+                            ?>
                         </td>
                     </tr>
                 </table>

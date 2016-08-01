@@ -25,20 +25,14 @@
 //  Coupable : CM
 //
 // **************************************************************************************************** //
-
-use Unilend\core\Loader;
-
-class autobid extends autobid_crud
+class project_rate_settings extends project_rate_settings_crud
 {
-    const STATUS_INACTIVE = 0;
     const STATUS_ACTIVE   = 1;
     const STATUS_ARCHIVED = 2;
 
-    const THRESHOLD_AUTO_BID_BALANCE_LOW = 3;
-
     public function __construct($bdd, $params = '')
     {
-        parent::autobid($bdd, $params);
+        parent::project_rate_settings($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -51,11 +45,11 @@ class autobid extends autobid_crud
             $order = ' ORDER BY ' . $order;
         }
 
-        $sql = 'SELECT * FROM `autobid`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+        $sql = 'SELECT * FROM `project_rate_settings`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
-        $resultat = $this->bdd->query($sql);
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        $resultat = $this->bdd->query($sql);
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -67,63 +61,34 @@ class autobid extends autobid_crud
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `autobid` ' . $where;
-
-        $result = $this->bdd->query($sql);
-        return (int)($this->bdd->result($result, 0, 0));
+        return (int) $this->bdd->result($this->bdd->query('SELECT COUNT(*) FROM `project_rate_settings` ' . $where), 0, 0);
     }
 
-    public function exist($id, $field = 'id_autobid')
+    public function exist($id, $field = 'id_rate')
     {
-        $sql    = 'SELECT * FROM `autobid` WHERE ' . $field . '="' . $id . '"';
-        $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `project_rate_settings` WHERE ' . $field . ' = "' . $id . '"')) > 0;
     }
 
-    public function getValidationDate($iLenderId)
-    {
-        $rResult = $this->bdd->query('SELECT MAX(`updated`) FROM `autobid` WHERE id_lender = ' . $iLenderId . ' AND status != ' . self::STATUS_ARCHIVED);
-        return $this->bdd->result($rResult, 0, 0);
-    }
-
-    public function sumAmount($sEvaluation, $iDuration)
-    {
-        $sQuery  = 'SELECT SUM(`amount`)
-                   FROM `autobid` a
-                   INNER JOIN project_period ap ON ap.id_period = a.id_period
-                   WHERE ' . $iDuration . ' BETWEEN ap.min AND ap.max
-                   AND ap.status = ' . \project_period::STATUS_ACTIVE . '
-                   AND a.status = ' . self::STATUS_ACTIVE . '
-                   AND a.evaluation = "' . $sEvaluation . '"';
-        $rResult = $this->bdd->query($sQuery);
-        return $this->bdd->result($rResult, 0, 0);
-    }
-
-    public function getSettings($lenderId = null, $evaluation = null, $periodId = null, $status = array(self::STATUS_ACTIVE), $order = ['pp.min' => 'ASC', 'a.evaluation' => 'DESC'], $limit = null, $offset = null)
+    public function getSettings($evaluation = null, $periodId = null, $status = array(self::STATUS_ACTIVE), $order = ['pp.min' => 'ASC', 'prs.evaluation' => 'DESC'], $limit = null, $offset = null)
     {
         $queryBuilder = $this->bdd->createQueryBuilder();
 
         $queryBuilder
-            ->select('a.*, pp.*, la.id_client_owner AS id_client')
-            ->from('autobid','a')
-            ->innerJoin('a', 'project_period', 'pp', 'pp.id_period = a.id_period and pp.status = :pp_status')
-            ->innerJoin('a', 'lenders_accounts', 'la', 'la.id_lender_account = a.id_lender')
+            ->select('*')
+            ->from('project_rate_settings','prs')
+            ->innerJoin('prs', 'project_period', 'pp', 'pp.id_period = prs.id_period and pp.status = :pp_status')
             ->setParameter('pp_status', project_period::STATUS_ACTIVE);
 
-        if ($lenderId !== null) {
-            $queryBuilder->andWhere('a.id_lender = :id_lender');
-            $queryBuilder->setParameter('id_lender', $lenderId);
-        }
         if ($evaluation !== null) {
-            $queryBuilder->andWhere('a.evaluation = :evaluation');
+            $queryBuilder->andWhere('prs.evaluation = :evaluation');
             $queryBuilder->setParameter('evaluation', $evaluation);
         }
         if ($periodId !== null) {
-            $queryBuilder->andWhere('a.id_period = :id_period');
+            $queryBuilder->andWhere('prs.id_period = :id_period');
             $queryBuilder->setParameter('id_period', $periodId);
         }
         if (is_array($status) && false === empty($status)) {
-            $queryBuilder->andWhere('a.status in (:status)');
+            $queryBuilder->andWhere('prs.status in (:status)');
             $queryBuilder->setParameter('status', $status, \Doctrine\DBAL\Connection::PARAM_STR_ARRAY);
         }
 
@@ -141,5 +106,19 @@ class autobid extends autobid_crud
         }
         $statement = $queryBuilder->execute();
         return $statement->fetchAll();
+    }
+
+    public function getGlobalMinMaxRate()
+    {
+        $queryBuilder = $this->bdd->createQueryBuilder();
+
+        $queryBuilder
+            ->select('min(rate_min) as rate_min, max(rate_max) as rate_max')
+            ->from('project_rate_settings')
+            ->where('status = :status')
+            ->setParameter('status', self::STATUS_ACTIVE);
+
+        $statement = $queryBuilder->execute();
+        return $statement->fetch();
     }
 }

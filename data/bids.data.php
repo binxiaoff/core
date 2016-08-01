@@ -33,9 +33,6 @@ class bids extends bids_crud
     const STATUS_BID_REJECTED                 = 2;
     const STATUS_AUTOBID_REJECTED_TEMPORARILY = 3;
 
-    const BID_RATE_MIN = 4.0;
-    const BID_RATE_MAX = 10.0;
-
     const CACHE_KEY_PROJECT_BIDS = 'bids-projet';
 
     public function __construct($bdd, $params = '')
@@ -80,17 +77,34 @@ class bids extends bids_crud
         return ($this->bdd->fetch_array($result) > 0);
     }
 
-    public function getSoldeBid($id_project)
+    public function getSoldeBid($idProject, $rate = null, $status = [])
     {
-        $sql = 'SELECT SUM(amount) as solde FROM bids WHERE id_project = ' . $id_project;
+        $queryBuilder = $this->bdd->createQueryBuilder();
+        $queryBuilder
+            ->select('SUM(amount)')
+            ->from('bids')
+            ->where('id_project=:id_project')
+            ->setParameter('id_project', $idProject);
 
-        $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result, 0, 0);
-        if ($solde == '') {
+        if (false === empty($rate)) {
+            $queryBuilder->andWhere('ROUND(rate, 1) = ROUND(:rate, 1)');
+            $queryBuilder->setParameter('rate', $rate);
+        }
+
+        if (is_array($status) && false === empty($status)) {
+            $queryBuilder->andWhere('status in (:status)');
+            $queryBuilder->setParameter('status', $status, \Doctrine\DBAL\Connection::PARAM_STR_ARRAY);
+        }
+
+        $statement = $queryBuilder->execute();
+        $solde = $statement->fetchColumn(0);
+
+        if (null === $solde) {
             $solde = 0;
         } else {
             $solde = ($solde / 100);
         }
+
         return $solde;
     }
 

@@ -26,17 +26,20 @@
 //
 // **************************************************************************************************** //
 
-class projects_remb extends projects_remb_crud
+class project_period extends project_period_crud
 {
-    const STATUS_ERROR                     = -1;
-    const STATUS_PENDING                   = 0;
-    const STATUS_REFUNDED                  = 1;
-    const STATUS_REJECTED                  = 2;
-    const STATUS_AUTOMATIC_REFUND_DISABLED = 4;
+    const STATUS_INACTIVE = 0;
+    const STATUS_ACTIVE   = 1;
+
+    const PERIOD_3_12    = 1;
+    const PERIOD_18_24   = 2;
+    const PERIOD_36      = 3;
+    const PERIOD_48_60   = 4;
+    const PERIOD_60_PLUS = 5;
 
     public function __construct($bdd, $params = '')
     {
-        parent::projects_remb($bdd, $params);
+        parent::project_period($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -44,13 +47,15 @@ class projects_remb extends projects_remb_crud
         if ($where != '') {
             $where = ' WHERE ' . $where;
         }
+
         if ($order != '') {
             $order = ' ORDER BY ' . $order;
         }
-        $sql = 'SELECT * FROM `projects_remb`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
-        $result   = array();
+        $sql = 'SELECT * FROM `project_period`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+
         $resultat = $this->bdd->query($sql);
+        $result   = array();
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
@@ -63,38 +68,40 @@ class projects_remb extends projects_remb_crud
             $where = ' WHERE ' . $where;
         }
 
-        $result = $this->bdd->query('SELECT COUNT(*) FROM `projects_remb` ' . $where);
-        return (int) $this->bdd->result($result, 0, 0);
+        $sql = 'SELECT count(*) FROM `project_period` ' . $where;
+
+        $result = $this->bdd->query($sql);
+        return (int)($this->bdd->result($result, 0, 0));
     }
 
-    public function exist($id, $field = 'id_project_remb')
+    public function exist($id, $field = 'id_period')
     {
-        $result = $this->bdd->query('SELECT * FROM `projects_remb` WHERE ' . $field . ' = "' . $id . '"');
-        return ($this->bdd->fetch_array($result) > 0);
+        $sql    = 'SELECT * FROM `project_period` WHERE ' . $field . '="' . $id . '"';
+        $result = $this->bdd->query($sql);
+        return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
-    public function getProjectsToRepay(\DateTime $oRepaymentDate = null, $iLimit = null)
+    public function getDurations($periodId)
     {
-        if (null === $oRepaymentDate) {
-            $oRepaymentDate = new \DateTime();
-        }
-        $sQuery = '
-            SELECT r.*
-            FROM projects_remb r
-            INNER JOIN projects p ON r.id_project = p.id_project
-            WHERE p.remb_auto = 0
-                AND r.status = ' . \projects_remb::STATUS_PENDING . '
-                AND DATE(r.date_remb_preteurs) <= "' . $oRepaymentDate->format('Y-m-d') . '"';
+        $sQuery = 'SELECT min, max FROM project_period WHERE id_period = :periodId';
+        try {
+            $aDuration = $this->bdd->executeQuery($sQuery, array('periodId' => $periodId), array('periodId' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
+                ->fetch(PDO::FETCH_ASSOC);
 
-        if (null !== $iLimit) {
-            $sQuery .= 'LIMIT ' . $iLimit;
+        } catch (\Doctrine\DBAL\DBALException $exception) {
+            $aDuration = array();
+        }
+        return $aDuration;
+    }
+
+    public function getPeriod($iDuration, $iStatus = self::STATUS_ACTIVE)
+    {
+        $rQuery = $this->bdd->query('SELECT * FROM `project_period` WHERE ' . $iDuration . ' BETWEEN `min` AND `max` AND `status` = ' . $iStatus);
+        $period = $this->bdd->fetch_assoc($rQuery);
+        if ($period) {
+            return $this->get($period['id_period']);
         }
 
-        $aResult  = array();
-        $arResult = $this->bdd->query($sQuery);
-        while ($aRecord = $this->bdd->fetch_assoc($arResult)) {
-            $aResult[] = $aRecord;
-        }
-        return $aResult;
+        return false;
     }
 }

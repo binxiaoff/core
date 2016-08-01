@@ -54,6 +54,12 @@ class BidManager
         $this->oLogger = $oLogger;
     }
 
+    /**
+     * @param \bids $oBid
+     * @param bool  $bSendNotification
+     *
+     * @return bool
+     */
     public function bid(\bids $oBid, $bSendNotification = true)
     {
         /** @var \settings $oSettings */
@@ -82,11 +88,17 @@ class BidManager
         $fAmount     = $oBid->amount / 100;
         $fRate       = round(floatval($oBid->rate), 1);
 
+        if (false === $project->get($iProjectId)) {
+            return false;
+        }
+
         if ($iAmountMin > $fAmount) {
             return false;
         }
 
-        if ($fRate > \bids::BID_RATE_MAX || $fRate < \bids::BID_RATE_MIN) {
+        $projectRates = $this->getProjectRateRange($project);
+
+        if (bccomp($fRate, $projectRates['rate_max'], 1) > 0 || bccomp($fRate, $projectRates['rate_min'], 1) < 0) {
             return false;
         }
 
@@ -95,13 +107,12 @@ class BidManager
             return false;
         }
 
-        $project->get($iProjectId);
         $oCurrentDate = new \DateTime();
         $oEndDate  = new \DateTime($project->date_retrait_full);
         if ($project->date_fin != '0000-00-00 00:00:00') {
             $oEndDate = new \DateTime($project->date_fin);
         }
-        
+
         if ($oCurrentDate > $oEndDate) {
             return false;
         }
@@ -270,10 +281,12 @@ class BidManager
         $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         /** @var \clients $oClient */
         $oClient = $this->oEntityManager->getRepository('clients');
+        /** @var \projects $project */
+        $project = $this->oEntityManager->getRepository('projects');
 
-        if (false === empty($oBid->id_autobid) && false === empty($oBid->id_bid) && $oAutoBid->get($oBid->id_autobid)) {
+        if (false === empty($oBid->id_autobid) && false === empty($oBid->id_bid) && $oAutoBid->get($oBid->id_autobid) && $project->get($oBid->id_project)) {
             if (
-                bccomp($currentRate, \bids::BID_RATE_MIN, 1) > 0
+                bccomp($currentRate, $this->getProjectRateRange($project)['rate_min'], 1) > 0
                 && bccomp($currentRate, $oAutoBid->rate_min, 1) >= 0
                 && $oLenderAccount->get($oBid->id_lender_account)
                 && $oClient->get($oLenderAccount->id_client_owner)
@@ -391,5 +404,22 @@ class BidManager
                 $oTransaction->id_transaction
             );
         }
+    }
+
+    /**
+     * @param \projects $project
+     *
+     * @return array
+     */
+    public function getProjectRateRange(\projects $project)
+    {
+        /** @var \project_rate_settings $projectRateSettings */
+        $projectRateSettings = $this->oEntityManager->getRepository('project_rate_settings');
+
+        if (false === empty($project->id_rate) && $projectRateSettings->get($project->id_rate)) {
+            return ['rate_min' => (float) $projectRateSettings->rate_min, 'rate_max' => (float) $projectRateSettings->rate_max];
+        }
+
+        return $projectRateSettings->getGlobalMinMaxRate();
     }
 }

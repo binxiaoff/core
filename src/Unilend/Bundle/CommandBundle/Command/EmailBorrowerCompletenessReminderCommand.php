@@ -30,10 +30,16 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
 
         /** @var EntityManager $entityManager */
         $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
+        /** @var LoggerInterface $logger */
+        $logger = $this->getContainer()->get('monolog.logger.console');
+
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
+
         /** @var \prescripteurs $prescripteur */
-        $prescripteur                = $entityManager->getRepository('prescripteurs');
+        $prescripteur = $entityManager->getRepository('prescripteurs');
         /** @var \projects_status_history $projectStatusHistory */
-        $projectStatusHistory      = $entityManager->getRepository('projects_status_history');
+        $projectStatusHistory = $entityManager->getRepository('projects_status_history');
         /** @var \projects_last_status_history $projectLastStatusHistory */
         $projectLastStatusHistory = $entityManager->getRepository('projects_last_status_history');
         /** @var \settings $settings */
@@ -44,10 +50,6 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
         $client = $entityManager->getRepository('clients');
         /** @var \companies $company */
         $company = $entityManager->getRepository('companies');
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
-        /** @var LoggerInterface $logger */
-        $logger = $this->getContainer()->get('monolog.logger.console');
 
         $settings->get('Intervales relances emprunteurs', 'type');
         $aReminderIntervals = json_decode($settings->value, true);
@@ -62,10 +64,12 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
         $sBorrowerPhoneNumber = $settings->value;
 
         $settings->get('Facebook', 'type');
-        $sFB      = $settings->value;
+        $sFB = $settings->value;
+
         $settings->get('Twitter', 'type');
         $sTwitter = $settings->value;
-        $sUrl     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
+
+        $sUrl = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
 
         $aReplacements = array(
             'adresse_emprunteur'   => $sBorrowerEmail,

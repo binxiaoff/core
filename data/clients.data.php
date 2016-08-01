@@ -105,24 +105,37 @@ class clients extends clients_crud
         if (isset($_POST[$button])) {
             $client = $this->login($_POST[$email], $_POST[$pass]);
 
-            if ($client != false) {
+            if ($client !== false) {
                 $_SESSION['auth']   = true;
                 $_SESSION['token']  = md5(md5(time() . $this->securityKey));
                 $_SESSION['client'] = $client;
 
-                $this->saveLogin(new \DateTime('NOW'), $_POST[$email], md5($_POST[$pass]));
+                if (md5($_POST[$pass]) === $client['password'] || password_needs_rehash($client['password'], PASSWORD_DEFAULT)) {
+                    $client['password'] = password_hash($_POST[$pass], PASSWORD_DEFAULT);
+                    $_SESSION['client']['password'] = $client['password'];
+                }
+
+                $this->saveLogin(new \DateTime('NOW'), $client['email'], $client['password']);
                 return true;
             }
             return false;
         }
     }
 
-    public function saveLogin(\DateTime $dateLogin, $eMail, $password)
+    /**
+     * @param DateTime $dateLogin
+     * @param string   $email
+     * @param string   $hashedPassword
+     */
+    public function saveLogin(\DateTime $dateLogin, $email, $hashedPassword)
     {
-        $aBind = array('lastLogin' => $dateLogin->format('Y-m-d H:i:s'), 'email' => $eMail, 'password' => $password);
+        $aBind = array('lastLogin' => $dateLogin->format('Y-m-d H:i:s'), 'email' => $email, 'password' => $hashedPassword);
         $aType = array('lastLogin' => \PDO::PARAM_STR, 'email' => \PDO::PARAM_STR, 'password' => \PDO::PARAM_STR);
 
-        $sQuery =  'UPDATE clients SET lastlogin = :lastLogin WHERE email = :email AND password = :password';
+        $sQuery =  '
+            UPDATE clients
+            SET lastlogin = :lastLogin, password = :password
+            WHERE email = :email AND status = 1';
         $this->bdd->executeUpdate($sQuery, $aBind, $aType);
     }
 
@@ -139,23 +152,34 @@ class clients extends clients_crud
         }
     }
 
+    /**
+     * @param string $email
+     * @param string $pass
+     * @return bool|array
+     */
     public function login($email, $pass)
     {
         $email = $this->bdd->escape_string($email);
-        $sql   = 'SELECT * FROM ' . $this->userTable . ' WHERE ' . $this->userMail . ' = "' . $email . '" AND ' . $this->userPass . ' = "' . md5($pass) . '" AND status = 1';
+        $sql   = 'SELECT * FROM ' . $this->userTable . ' WHERE ' . $this->userMail . ' = "' . $email . '" AND status = 1';
         $res   = $this->bdd->query($sql);
 
-        if ($this->bdd->num_rows($res) == 1) {
-            return $this->bdd->fetch_array($res);
-        } else {
-            return false;
+        if ($res->rowCount() === 1) {
+            $client = $res->fetch(\PDO::FETCH_ASSOC);
+
+            if (md5($pass) === $client['password'] || password_verify($pass, $client['password'])) {
+                return $client;
+            }
         }
+        return false;
     }
 
     public function changePassword($email, $pass)
     {
-        $sql = 'UPDATE ' . $this->userTable . ' SET ' . $this->userPass . ' = "' . md5($pass) . '" WHERE ' . $this->userMail . ' = "' . $email . '"';
-        $this->bdd->query($sql);
+        $this->bdd->query('
+            UPDATE ' . $this->userTable . '
+            SET ' . $this->userPass . ' = "' . password_hash($pass, PASSWORD_DEFAULT) . '"
+            WHERE ' . $this->userMail . ' = "' . $email . '"'
+        );
     }
 
     public function existEmail($email)
