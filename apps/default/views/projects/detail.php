@@ -23,7 +23,7 @@
     }
 
     if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->page_attente) :
-        $this->dateRest = $this->lng['preteur-projets']['termine'];
+        $this->dateRest = $this->lng['preteur-projets']['termine_short'];
     else :
         $this->heureFinFunding = $tab_heure_sans_minute[0] . ':' . $tab_heure_sans_minute[1]; ?>
     <script type="text/javascript">
