@@ -104,8 +104,8 @@ class prelevements extends prelevements_crud
               AND p.type = ' . \prelevements::STATUS_VALID . '
               AND DATE_ADD(CURDATE(), INTERVAL ' . $daysInterval . ' DAY) = DATE(p.date_echeance_emprunteur)';
 
-        $result          = $this->bdd->query($nextWeekPayment);
-        $nextWeekPayment = array();
+        $result          = $this->bdd->executeQuery($nextWeekPayment);
+        $nextWeekPayment = [];
         while ($aRecord = $this->bdd->fetch_assoc($result)) {
             $nextWeekPayment[] = $aRecord;
         }
