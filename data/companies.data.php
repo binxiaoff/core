@@ -37,16 +37,26 @@ class companies extends companies_crud
         parent::companies($bdd, $params);
     }
 
-    public function update($cs = '')
-    {
-        $this->setSectorAccordingToNaf();
-        parent::update($cs);
-    }
-
     public function create($cs = '')
     {
         $this->setSectorAccordingToNaf();
+
+        if (is_numeric($this->name) || 0 === strcasecmp($this->name, 'Monsieur') || 0 === strcasecmp($this->name, 'Madame')) {
+            trigger_error('TMA-749 : ' . __CLASS__ . '.' . __FUNCTION__ . ' wrong company name - trace : ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)), E_USER_WARNING);
+        }
+
         return parent::create($cs);
+    }
+
+    public function update($cs = '')
+    {
+        $this->setSectorAccordingToNaf();
+
+        if (is_numeric($this->name) || 0 === strcasecmp($this->name, 'Monsieur') || 0 === strcasecmp($this->name, 'Madame')) {
+            trigger_error('TMA-749 : ' . __CLASS__ . '.' . __FUNCTION__ . ' wrong company name - trace : ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)), E_USER_WARNING);
+        }
+
+        parent::update($cs);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -331,24 +341,6 @@ class companies extends companies_crud
 
         if (in_array(substr($this->code_naf, 0, 2), array('05', '06', '07', '08', '09', '12', '37', '38', '39', '64', '72', '84', '85', '87', '88', '92', '93', '94', '98', '99'))) {
             $this->sector = 15;
-        }
-    }
-
-    public function create($cs = '')
-    {
-        parent::create($cs = '');
-
-        if (is_numeric($this->name) || 0 === strcasecmp($this->name, 'Monsieur') || 0 === strcasecmp($this->name, 'Madame')) {
-            trigger_error('TMA-749 : ' . __CLASS__ . '.' . __FUNCTION__ . ' wrong company name - trace : ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)), E_USER_WARNING);
-        }
-    }
-
-    public function update($cs = '')
-    {
-        parent::update($cs = '');
-
-        if (is_numeric($this->name) || 0 === strcasecmp($this->name, 'Monsieur') || 0 === strcasecmp($this->name, 'Madame')) {
-            trigger_error('TMA-749 : ' . __CLASS__ . '.' . __FUNCTION__ . ' wrong company name - trace : ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)), E_USER_WARNING);
         }
     }
 }
