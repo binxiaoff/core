@@ -286,7 +286,7 @@ class BidManager
 
         if (false === empty($oBid->id_autobid) && false === empty($oBid->id_bid) && $oAutoBid->get($oBid->id_autobid) && $project->get($oBid->id_project)) {
             if (
-                bccomp($currentRate, $this->getProjectRateRange($project)['rate_min'], 1) > 0
+                bccomp($currentRate, $this->getProjectRateRange($project)['rate_min'], 1) >= 0
                 && bccomp($currentRate, $oAutoBid->rate_min, 1) >= 0
                 && $oLenderAccount->get($oBid->id_lender_account)
                 && $oClient->get($oLenderAccount->id_client_owner)
