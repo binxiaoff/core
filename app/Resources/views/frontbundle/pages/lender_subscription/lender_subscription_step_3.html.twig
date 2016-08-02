@@ -6,7 +6,7 @@
 {% set bodyId = '' %}
 {% set page = {
 title: 'Devenir Prêteur',
-permalink: route('preter/new')
+permalink: path('lender_subscription_step_3')
 } %}
 
 {% block siteContent %}
@@ -22,7 +22,7 @@ permalink: route('preter/new')
             <div class="page-content">
                 <div class="site-wrap">
                     <div class="tabs ui-tabs-progress">
-                        {% include 'pages/lender_subscription/partials/progress-bar.html.twig' %}
+                        {% include 'pages/lender_subscription/partials/progress_bar.html.twig' %}
 
                         <div class="form-preter-content tab-content">
                             <form action="{{ route('user/preter/balance') }}" method="post" class="form-preter-deposit">

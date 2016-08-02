@@ -5,13 +5,13 @@
                   class="form-preter-create" data-cacheform xmlns="http://www.w3.org/1999/html">
             <fieldset class="panel">
             <div class="message-info">
-                <p>{% trans %} lender-subscription_mandatory-documents-information {% endtrans %}</p>
+                <p>{% trans %} lender-subscription_person-mandatory-documents-information {% endtrans %}</p>
             </div><!-- /.message-alert -->
             <div id="form-preter-1-notifications" class="ui-formvalidation-notifications">
-                {% if app.session.flashBag.has('personStep1Errors') %}
+                {% if app.session.flashBag.has('step1Errors') %}
                     <div class="message-error">
-                        {% for error in app.session.flashBag.get('personStep1Errors') %}
-                            <p>{{ error|raw }}</p>
+                        {% for error in app.session.flashBag.peek('step1Errors') %}
+                            <p>{{ error }}</p>
                         {% endfor %}
                     </div>
                 {% endif %}
@@ -83,40 +83,10 @@
                 <div class="form-field col-lg-6 col-md-6">
                 </div><!-- /.form-field -->
             </div>
+            </fieldset>
 
-            <div class="row row-multi-col-computer">
-                <div class="form-field col-lg-6 col-md-6">
-                    <label for="form-lender-person-email">{% trans %} lender-subscription_identity-form-email-label {% endtrans %}
-                        <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
-                    <input id="form-lender-person-email" type="email" name="client_email" value="{{ formData.client_email }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
-                </div><!-- /.form-field -->
-                <div class="form-field col-lg-6 col-md-6">
-                    <label for="form-lender-person-email-conf">{% trans %} lender-subscription_identity-form-email-confirmation-label {% endtrans %}
-                        <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
-                    <div class="input-group">
-                        <input id="form-lender-person-email-conf" type="email" name="client_email_confirmation" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-samevalueas="#form-lender-person-email"/>
-                    </div>
-                </div><!-- /.form-field -->
-            </div>
+            {{ include('pages/lender_subscription/partials/security.html.twig') }}
 
-            <div class="row row-multi-col-computer">
-                <div class="form-field col-lg-6 col-md-6">
-                    <label for="form-lender-person-pwd">{% trans %} lender-subscription_identity-form-password-label {% endtrans %}
-                        <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
-                    <input id="form-lender-person-pwd" type="password" name="client_password" value="" class="input-field" data-passwordcheck data-formvalidation-input data-formvalidation-required="true" data-formvalidation-minlength="8"/>
-                </div><!-- /.form-field -->
-                <div class="form-field col-lg-6 col-md-6">
-                    <label for="form-lender-person-pwd-conf">{% trans %} lender-subscription_identity-form-password-confirmation-label {% endtrans %}
-                        <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
-                    <div class="input-group">
-                        <input id="form-lender-person-pwd-conf" type="password" name="client_password_confirmation" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-samevalueas="#form-lender-person-pwd"/>
-                    </div>
-                </div><!-- /.form-field -->
-            </div>
-
-            {{ include('pages/lender_subscription/partials/secret_question.html.twig') }}
-
-        </fieldset>
             <fieldset class="panel">
             <h3 class="h3">{% trans %} lender-subscription_address-form-title {% endtrans %}</h3>
 
@@ -260,35 +230,7 @@
         </div><!-- /.btn-controls.tab-footer -->
             </form><!-- /.form-preter-create -->
         </div>
-        <div class="col-promos col-lg-4 col-md-4">
-        <div class="promo">
-            <div class="promo-image">
-                {{ svgimage('#promo-francemap', '', 190, 190, 'none') | raw }}
-            </div>
-            <h3 class="promo-highlight">
-                <span class="ui-text-count" data-start-count="0" data-end-count="100" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">100</span><sup>%</sup>
-            </h3>
-            <p>{% trans %} lender-subscription_step-1-statistics-1-text {% endtrans %}</p>
-        </div><!-- /.promo -->
-
-        <div class="promo">
-            <div class="promo-image">
-                {{ svgimage('#promo-linechart2', '', 190, 190, 'none') | raw }}
-            </div>
-            <h3 class="promo-highlight">
-                <span class="ui-text-count" data-start-count="0" data-end-count="8.84" data-total-time="3000" data-limit-decimal="2" data-tween-count="easeOutCirc">8,84</span><sup>%</sup>
-            </h3>
-            <p>{% trans %} lender-subscription_step-1-statistics-2-text {% endtrans %}</p>
-        </div><!-- /.promo -->
-
-        <div class="promo">
-            <div class="promo-image">
-                {{ svgimage('#promo-clock', '', 190, 190, 'none') | raw }}
-            </div>
-            <h3 class="promo-highlight">5</h3>
-            <p>{% trans %} lender-subscription_step-1-statistics-3-text {% endtrans %}</p>
-        </div><!-- /.promo -->
-    </div>
+        {{ include('pages/lender_subscription/partials/step_1_sidebar.html.twig') }}
     </div>
 </div><!-- /.tab-pane -->
 

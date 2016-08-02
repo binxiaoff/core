@@ -6,7 +6,7 @@
 {% set bodyId = '' %}
 {% set page = {
 title: 'Devenir Prêteur',
-permalink: route('preter/new')
+permalink: path('lender_subscription_step_1')
 } %}
 
 {% block siteContent %}
@@ -23,20 +23,17 @@ permalink: route('preter/new')
                 <div class="site-wrap">
                     <div class="tabs ui-tabs-progress">
                         {% include 'pages/lender_subscription/partials/progress_bar.html.twig' %}
-
                         <div class="form-preter-content tab-content" id="form-lender-person">
                             {% include 'pages/lender_subscription/partials/person_step_1_form.html.twig' %}
                         </div><!-- /.form-preter-content -->
-                        <div class="form-preter-content tab-content" id="form-lender-legal_entity" style="display: none;">
-                            {#{% include 'pages/lender_subscription/partials/legal_entity_step_1_form.html.twig' %}#}
+                        <div class="form-preter-content tab-content" id="form-lender-legal_entity">
+                            {% include 'pages/lender_subscription/partials/legal_entity_step_1_form.html.twig' %}
                         </div><!-- /.form-preter-content -->
                     </div><!-- /.tabs -->
                 </div><!-- /.site-wrap -->
             </div><!-- /.page-content -->
-
             {% include 'partials/components/list-socialmedia.html.twig' %}
         </div><!-- /.hero-wrap -->
-
     </article><!-- /.page -->
 {% endblock %}
 
