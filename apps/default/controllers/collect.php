@@ -297,9 +297,9 @@ class collectController extends bootstrap
                 $this->clients->id_langue = 'fr';
 
                 $this->clients->civilite  = $civilite;
-                $this->clients->nom       = $nom;
-                $this->clients->nom_usage = $nom_usage;
-                $this->clients->prenom    = $prenom;
+                $this->clients->nom       = $this->ficelle->majNom($nom);
+                $this->clients->nom_usage = $this->ficelle->majNom($nom_usage);
+                $this->clients->prenom    = $this->ficelle->majNom($prenom);
                 $this->clients->slug      = $this->bdd->generateSlug($prenom . '-' . $nom);
 
                 $this->clients->naissance         = $date_naissance;
