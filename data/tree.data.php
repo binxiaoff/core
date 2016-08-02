@@ -322,6 +322,8 @@ class tree extends tree_crud
                     break;
 
                 case 'SVG':
+                    $icons = ['misc-computermapmarker', 'misc-mapcompass', 'header-contact', 'header-fiscalite', 'header-legal', 'header-plandusite', 'header-recrutement', 'header-securite', 'avatar-f-level-1', 'avatar-f-level-2', 'avatar-f-level-3', 'avatar-f-level-4', 'avatar-f-level-5', 'avatar-h-level-1', 'avatar-h-level-2', 'avatar-h-level-3', 'avatar-h-level-4', 'avatar-h-level-5', 'category-1', 'category-10', 'category-11', 'category-12', 'category-13', 'category-14', 'category-15', 'category-2', 'category-3', 'category-4', 'category-5', 'category-6', 'category-7', 'category-8', 'category-9', 'notification-enterprise', 'notification-offer', 'notification-project', 'notification-remboursement', 'promo-balance', 'promo-barchart', 'promo-calendarweek', 'promo-clock', 'promo-francemap', 'promo-handshake', 'promo-info', 'promo-linechart', 'promo-linechart2', 'promo-money', 'promo-pagestack', 'promo-people', 'promo-piggybank', 'promo-profile', 'promo-projects', 'promo-protection', 'promo-saving', 'promo-transparancy', 'promo-verified', 'category-sm-agriculture', 'category-sm-autre', 'category-sm-commerce', 'category-sm-communication', 'category-sm-construction', 'category-sm-consultation', 'category-sm-health', 'category-sm-hotellerie', 'category-sm-industrie', 'category-sm-it', 'category-sm-media', 'category-sm-medical', 'category-sm-restauration', 'category-sm-textile', 'category-sm-transport', 'notification-circle-accepted', 'notification-circle-inprogress', 'notification-circle-justice', 'notification-circle-lowsell', 'notification-circle-notauto', 'notification-circle-palace', 'notification-circle-paused', 'notification-circle-plus', 'notification-circle-recovery', 'notification-circle-rejected', 'notification-account-borne', 'notification-account-cb', 'notification-account-lowbalance', 'notification-account-notauto', 'notification-account-withdraw', 'notification-offer-accepted', 'notification-offer-rejected', 'notification-enterprise-accepted', 'notification-enterprise-inprogress', 'notification-enterprise-justice', 'notification-enterprise-palace', 'notification-enterprise-paused', 'notification-enterprise-recovery', 'notification-enterprise-rejected'];
+                    sort($icons);
                     echo '
                     <tr>
                         <th>
@@ -331,14 +333,13 @@ class tree extends tree_crud
                     <tr>
                         <th class="bas">
                             <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">
-                                <option value=""></option>
-                                <option value="contact"' . ($this->params['tree_elements']->value === 'contact' ? ' selected' : '') . '>Contact</option>
-                                <option value="fiscalite"' . ($this->params['tree_elements']->value === 'fiscalite' ? ' selected' : '') . '>Fiscalité</option>
-                                <option value="legal"' . ($this->params['tree_elements']->value === 'legal' ? ' selected' : '') . '>Légal</option>
-                                <option value="plandusite"' . ($this->params['tree_elements']->value === 'plandusite' ? ' selected' : '') . '>Plan du site</option>
-                                <option value="recrutement"' . ($this->params['tree_elements']->value === 'recrutement' ? ' selected' : '') . '>Recrutement</option>
-                                <option value="securite"' . ($this->params['tree_elements']->value === 'securite' ? ' selected' : '') . '>Sécurité</option>
+                                <option value=""></option>';
+                                foreach ($icons as $icon) {
+                                    echo '<option value="' . $icon . '"' . ($this->params['tree_elements']->value === $icon ? ' selected' : '') . '>' . $icon . '</option>';
+                                }
+                    echo '
                             </select>
+                            <a href="https://unilend.atlassian.net/wiki/display/PROJ/UI+nouveau+site" target="_blank">Voir la liste</a>
                         </th>
                     </tr>';
                     break;
