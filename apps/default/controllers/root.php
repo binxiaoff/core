@@ -308,37 +308,10 @@ class rootController extends bootstrap
                 // on signal que c'est une page du fo
                 $this->page              = 'projets_fo';
                 $_SESSION['page_projet'] = $this->page;
-
-                // restriction pour capital
-                if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr'
-                    || $this->lurl == 'http://partenaire.unilend.challenges.fr'
-                    || $this->lurl == 'http://financementparticipatifpme.lefigaro.fr'
-                    || $this->lurl == 'http://financementparticipatifpme.lefigaro.fr'
-                ) {
-                    $this->autoFireHeader = true;
-                    $this->autoFireDebug  = false;
-                    $this->autoFireHead   = true;
-                    $this->autoFireFooter = false;
-                }
             }
 
             if ($paramSlug === 'validation-virement') {
                 $this->page = 'alimentation';
-            }
-
-            // restriction pour capital
-            if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr' && $this->tree->id_template != 14) {
-                header('Location: http://prets-entreprises-unilend.capital.fr/capital/');
-                die;
-            } elseif ($this->lurl == 'http://partenaire.unilend.challenges.fr' && $this->tree->id_template != 14) {
-                header('Location: http://partenaire.unilend.challenges.fr/challenges/');
-                die;
-            } elseif ($this->lurl == 'http://financementparticipatifpme.lefigaro.fr' && $this->tree->id_template != 14) {
-                header('Location: http://financementparticipatifpme.lefigaro.fr/figaro/');
-                die;
-            } elseif ($this->lurl == 'http://financementparticipatifpme.lefigaro.fr' && $this->tree->id_template != 14) {
-                header('Location: http://financementparticipatifpme.lefigaro.fr/figaro/');
-                die;
             }
             //////////////////////////
             // FIN TEMPLATE PROJETS //
