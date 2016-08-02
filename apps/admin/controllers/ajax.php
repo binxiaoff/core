@@ -1112,7 +1112,7 @@ class ajaxController extends bootstrap
                             </tr>
 
                             <tr class="lanote">
-                                <th colspan="8" style="text-align:center;" >Note : <span class="moyenneNote_comite">' . $this->projects_notes->note_comite . '/ 10 (soit ' . $start . '</span></th>
+                                <th colspan="8" style="text-align:center;" >Note : <span class="moyenneNote_comite">' . $this->projects_notes->note_comite . ' / 10 (soit ' . $start . ')</span></th>
                             </tr>
 
                             <tr>
