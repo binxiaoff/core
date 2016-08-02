@@ -61,11 +61,11 @@ class LenderProfileController extends Controller
                 'company_client_status'          => isset($form['legalEntity']['company_client_status']) ? $form['legalEntity']['company_client_status'] : $company->status_client,
                 'company_external_counsel'       => isset($form['legalEntity']['company_external_counsel']) ? $form['legalEntity']['company_external_counsel'] : $company->status_conseil_externe_entreprise,
                 'company_external_counsel_other' => isset($form['legalEntity']['company_external_counsel_other']) ? $form['legalEntity']['company_external_counsel_other'] : $company->preciser_conseil_externe_entreprise,
-                'director_form_of_address'       => isset($form['legalEntity']['director_form_of_address']) ? $form['legalEntity']['director_form_of_address'] : $company->civilite_dirigeant,
-                'director_name'                  => isset($form['legalEntity']['director_name']) ? $form['legalEntity']['director_name'] : $company->nom_dirigeant,
-                'director_first_name'            => isset($form['legalEntity']['director_first_name']) ? $form['legalEntity']['director_first_name'] : $company->prenom_dirigeant,
-                'director_phone'                 => isset($form['legalEntity']['director_phone']) ? $form['legalEntity']['director_phone'] : $company->phone_dirigeant,
-                'director_email'                 => isset($form['legalEntity']['director_email']) ? $form['legalEntity']['director_email'] : $company->email_dirigeant,
+                'company_director_form_of_address'       => isset($form['legalEntity']['company_director_form_of_address']) ? $form['legalEntity']['company_director_form_of_address'] : $company->civilite_dirigeant,
+                'company_director_name'                  => isset($form['legalEntity']['company_director_name']) ? $form['legalEntity']['company_director_name'] : $company->nom_dirigeant,
+                'company_director_first_name'            => isset($form['legalEntity']['company_director_first_name']) ? $form['legalEntity']['company_director_first_name'] : $company->prenom_dirigeant,
+                'company_director_phone'                 => isset($form['legalEntity']['company_director_phone']) ? $form['legalEntity']['company_director_phone'] : $company->phone_dirigeant,
+                'company_director_email'                 => isset($form['legalEntity']['company_director_email']) ? $form['legalEntity']['company_director_email'] : $company->email_dirigeant,
                 'client_form_of_address'         => isset($form['legalEntity']['client_form_of_address']) ? $form['legalEntity']['client_form_of_address'] : $client->civilite,
                 'client_name'                    => isset($form['legalEntity']['client_name']) ? $form['legalEntity']['client_name'] : $client->nom_usage,
                 'client_first_name'              => isset($form['legalEntity']['client_first_name']) ? $form['legalEntity']['client_first_name'] : $client->prenom,
@@ -272,45 +272,45 @@ class LenderProfileController extends Controller
                     $historyContent .= '<li>'. $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-client-status-label') .'</li>';
                 }
 
-                if (empty($form['director_form_of_address'])) {
+                if (empty($form['company_director_form_of_address'])) {
                     $this->addFlash('legalEntityIdentityErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-director-form-of-address-missing'));
                 } else {
-                    $company->civilite_dirigeant = $form['director_form_of_address'];
+                    $company->civilite_dirigeant = $form['company_director_form_of_address'];
                     $historyContent .= '<li>'. $directorSection . ': ' . $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-form-of-address-label') . '</li>';
                 }
 
-                if (empty($form['director_name'])) {
+                if (empty($form['company_director_name'])) {
                     $this->addFlash('legalEntityIdentityErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-director-name-missing'));
                 } else {
-                    $company->nom_dirigeant = $ficelle->majNom($form['director_name']);
+                    $company->nom_dirigeant = $ficelle->majNom($form['company_director_name']);
                     $historyContent .= '<li>'. $directorSection . ': ' . $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-name-label') .'</li>';
                 }
 
-                if (empty($form['director_first_name'])) {
+                if (empty($form['company_director_first_name'])) {
                     $this->addFlash('legalEntityIdentityErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-director-first-name-missing'));
                 } else {
-                    $company->prenom_dirigeant = $ficelle->majNom($form['director_first_name']);
+                    $company->prenom_dirigeant = $ficelle->majNom($form['company_director_first_name']);
                     $historyContent .= '<li>'. $directorSection . ': ' . $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-first-name-label') . '</li>';
                 }
 
-                if (empty($form['director_position'])) {
+                if (empty($form['company_director_position'])) {
                     $this->addFlash('legalEntityIdentityErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-director-position-missing'));
                 } else {
-                    $company->fonction_dirigeant = $form['director_position'];
+                    $company->fonction_dirigeant = $form['company_director_position'];
                     $historyContent .= '<li>'. $directorSection . ': ' . $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-first-name-label') . '</li>';
                 }
 
-                if (empty($form['director_phone']) || false === is_numeric($form['director_phone']) || strlen($form['director_phone']) < 9 || strlen($form['director_phone']) > 14) {
+                if (empty($form['company_director_phone']) || false === is_numeric($form['company_director_phone']) || strlen($form['company_director_phone']) < 9 || strlen($form['company_director_phone']) > 14) {
                     $this->addFlash('legalEntityIdentityErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-director-phone-missing'));
                 } else {
-                    $company->phone_dirigeant = $form['director_phone'];
+                    $company->phone_dirigeant = $form['company_director_phone'];
                     $historyContent .= '<li>'. $directorSection . ': ' . $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-director-phone') .'</li>';
                 }
 
-                if (empty($form['director_email']) || false === filter_var($form['director_email'], FILTER_VALIDATE_EMAIL)) {
+                if (empty($form['company_director_email']) || false === filter_var($form['company_director_email'], FILTER_VALIDATE_EMAIL)) {
                     $this->addFlash('legalEntityIdentityErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-director-email-missing'));
                 } else {
-                    $company->email_dirigeant = $form['director_email'];
+                    $company->email_dirigeant = $form['company_director_email'];
                     $historyContent .= '<li>'. $directorSection . ': ' . $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-director-email') . '</li>';
                 }
             } else {

@@ -147,10 +147,10 @@
                     </div>
                     <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
                         <li>
-                            <label><input type="radio" name="director_form_of_address" value="Mme" {% if formData.legalEntity.director_form_of_address == 'Mme' %}checked="checked"{% endif %}/> {% trans %} lender-profile_information-tab-identity-section-form-of-address-female-label {% endtrans %}</label>
+                            <label><input type="radio" name="company_director_form_of_address" value="Mme" {% if formData.legalEntity.company_director_form_of_address == 'Mme' %}checked="checked"{% endif %}/> {% trans %} lender-profile_information-tab-identity-section-form-of-address-female-label {% endtrans %}</label>
                         </li>
                         <li>
-                            <label><input type="radio" name="director_form_of_address" value="M." {% if formData.legalEntity.director_form_of_address == 'M.' %}checked="checked"{% endif %}/> {% trans %} lender-profile_information-tab-identity-section-form-of-address-male-label {% endtrans %}</label>
+                            <label><input type="radio" name="company_director_form_of_address" value="M." {% if formData.legalEntity.company_director_form_of_address == 'M.' %}checked="checked"{% endif %}/> {% trans %} lender-profile_information-tab-identity-section-form-of-address-male-label {% endtrans %}</label>
                         </li>
                     </ul>
                 </div><!-- /.form-field -->
@@ -160,12 +160,12 @@
                 <div class="form-field col-lg-6 col-md-6">
                     <label for="form-profile-info-company-client-name">{% trans %} lender-profile_information-tab-identity-section-name-label {% endtrans %}
                         <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
-                    <input id="form-profile-info-company-client-name" type="text" name="director_name" value="{{ formData.legalEntity.director_name }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                    <input id="form-profile-info-company-client-name" type="text" name="company_director_name" value="{{ formData.legalEntity.company_director_name }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                 </div><!-- /.form-field -->
                 <div class="form-field col-lg-6 col-md-6">
                     <label for="form-profile-info-company-client-first-name">{% trans %} lender-profile_information-tab-identity-section-first-name-label {% endtrans %}
                         <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
-                    <input id="form-profile-info-company-client-name" type="text" name="director_first_name" value="{{ formData.legalEntity.director_first_name }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                    <input id="form-profile-info-company-client-name" type="text" name="company_director_first_name" value="{{ formData.legalEntity.company_director_first_name }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                 </div><!-- /.form-field -->
             </div><!-- /.row -->
 
@@ -173,7 +173,7 @@
                 <div class="form-field col-lg-6 col-md-6">
                     <label for="form-profile-info-company-client-name">{% trans %} lender-profile_information-tab-identity-section-company-client-function-label {% endtrans %}
                         <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
-                    <input id="form-profile-info-company-client-name" type="text" name="director_name" value="{{ formData.legalEntity.director_name }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                    <input id="form-profile-info-company-client-name" type="text" name="company_director_name" value="{{ formData.legalEntity.company_director_name }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                 </div><!-- /.form-field -->
                 <div class="form-field col-lg-6 col-md-6">
                 </div><!-- /.form-field -->
@@ -183,12 +183,12 @@
                 <div class="form-field col-lg-6 col-md-6">
                     <label for="form-profile-info-company-client-name">{% trans %} lender-profile_information-tab-identity-section-company-director-phone {% endtrans %}
                         <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
-                    <input id="form-profile-info-company-client-name" type="text" name="director_phone" value="{{ formData.legalEntity.director_phone }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                    <input id="form-profile-info-company-client-name" type="text" name="company_director_phone" value="{{ formData.legalEntity.company_director_phone }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                 </div><!-- /.form-field -->
                 <div class="form-field col-lg-6 col-md-6">
                     <label for="form-profile-info-company-client-first-name">{% trans %} lender-profile_information-tab-identity-section-company-director-email {% endtrans %}
                         <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
-                    <input id="form-profile-info-company-client-name" type="text" name="director_email" value="{{ formData.legalEntity.director_email }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                    <input id="form-profile-info-company-client-name" type="text" name="company_director_email" value="{{ formData.legalEntity.company_director_email }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                 </div><!-- /.form-field -->
             </div><!-- /.row -->
         {% endif %}
