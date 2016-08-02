@@ -250,11 +250,20 @@
             });
 
             $.post(add_url + "/profile/autoBidExpertForm", Settings).done(function (data) {
-                if (data == 'settings_saved') {
+                var response = $.parseJSON(data);
+                var errorContainer = $('#errors-autobid-param-form-expert');
+                errorContainer.empty();
+                $('html,body').animate({scrollTop: $('div.autobid-tabs').offset().top},'slow');
+                if (response.result == 'OK') {
                     expertConsultation();
                     autoBidSwitchOn();
                     $('#switch-notice-nth-active').hide();
                     $('#switch-notice-lender-inactive').hide();
+                } else {
+                    var i;
+                    for (i = 0; i < response.message.length; ++i) {
+                        errorContainer.append('<p>' + response.message[i] + '</p>');
+                    }
                 }
             })
         }
@@ -307,6 +316,8 @@
             $('#cancel_modification_settings_novice').show();
 
             $('.unit').removeClass('.unit');
+
+            $('html,body').animate({scrollTop: $('div.autobid-tabs').offset().top},'slow');
         }
 
         function expertConsultation() {
@@ -368,6 +379,8 @@
             $('.apply-global-medium-rate').show();
             $('#validate_settings_expert').show();
             $('#cancel_modification_settings_expert').show();
+
+            $('html,body').animate({scrollTop: $('div#expert-settings').offset().top},'slow');
         }
 
         function autoBidSwitchOn() {

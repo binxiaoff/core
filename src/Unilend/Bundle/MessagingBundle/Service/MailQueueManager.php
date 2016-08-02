@@ -95,9 +95,9 @@ class MailQueueManager
         }
         /** @var TemplateMessage $oMessage */
         $oMessage = $this->oTemplateMessage->newMessage($oMailTemplate->type, json_decode($oEmail->serialized_variables, true), false);
-        $oMessage->setTo(TemplateMessage::emailAddressToArray($oEmail->recipient));
+        $oMessage->setTo($oEmail->recipient);
         if (false === empty($oEmail->reply_to)) {
-            $oMessage->setReplyTo(TemplateMessage::emailAddressToArray($oEmail->reply_to));
+            $oMessage->setReplyTo($oEmail->reply_to);
         }
 
         foreach (json_decode($oEmail->attachments, true) as $attachment) {

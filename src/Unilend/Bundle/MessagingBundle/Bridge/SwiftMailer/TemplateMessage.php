@@ -91,10 +91,7 @@ class TemplateMessage extends \Swift_Message
 
     public function setTo($addresses, $name = null)
     {
-        if (is_string($addresses)) {
-            $addresses = self::emailAddressToArray($addresses);
-        }
-
+        $addresses = self::normalizeEmail($addresses);
         try {
             parent::setTo($addresses, $name);
         } catch (\Swift_RfcComplianceException $exception) {
@@ -105,6 +102,13 @@ class TemplateMessage extends \Swift_Message
         }
 
         return $this;
+    }
+
+    public function setReplyTo($addresses, $name = null)
+    {
+        $addresses = self::normalizeEmail($addresses);
+        
+        return parent::setReplyTo($addresses, $name);
     }
 
     /**
@@ -162,7 +166,7 @@ class TemplateMessage extends \Swift_Message
      *
      * @return array
      */
-    public static function emailAddressToArray($emails)
+    private static function emailAddressToArray($emails)
     {
         if (is_string($emails)) {
             $formattedEmails = [];
@@ -170,6 +174,9 @@ class TemplateMessage extends \Swift_Message
             $emails          = explode(',', $emails);
 
             foreach ($emails as $email) {
+                if (empty($email)) {
+                    continue;
+                }
                 if (1 === preg_match('#^(?<name>.*)(\s|)\<(?<email>.*)\>$#', $email, $matches)) {
                     $formattedEmails[trim($matches['email'])] = trim($matches['name']);
                 } else {
@@ -181,5 +188,40 @@ class TemplateMessage extends \Swift_Message
         }
 
         return $formattedEmails;
+    }
+
+    /**
+     * Normalize the emails in order to pass them to Swiftmailer
+     *
+     * @param string|array $emails
+     *
+     * @return array
+     */
+    private static function normalizeEmail($emails)
+    {
+        $normalizedEmails = [];
+
+        $emails = self::emailAddressToArray($emails);
+
+        foreach ($emails as $key => $value) {
+            if (is_string($key)) {
+                //key is email addr
+                $key = self::removeTimeStampSuffix($key);
+            } else {
+                $value = self::removeTimeStampSuffix($value);
+            }
+            $normalizedEmails[$key] = $value;
+        }
+
+        return $normalizedEmails;
+    }
+
+    private static function removeTimeStampSuffix($email)
+    {
+        if (1 === preg_match('#^(?<email>[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,6})-[0-9]+$#i', $email, $matches)) {
+            $email = $matches['email'];
+        }
+
+        return $email;
     }
 }
