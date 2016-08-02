@@ -162,7 +162,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                     <InstdAmt Ccy="EUR">' . bcdiv($pendingBankTransfer['montant'], 100, 2) . '</InstdAmt>
                 </Amt>' . $frenchBic . '
                 <Cdtr>
-                     <Nm>' . preg_replace("^[\"'\\\\<>&]^", '', $recipientName) . '</Nm>
+                     <Nm>' . str_replace(array('"', '\'', '\\', '>', '<', '&'), '', $recipientName) . '</Nm>
                      <PstlAdr>
                          <Ctry>FR</Ctry>
                      </PstlAdr>
