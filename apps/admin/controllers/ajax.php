@@ -1040,6 +1040,28 @@ class ajaxController extends bootstrap
                 }
 
                 if ($this->current_projects_status->status != \projects_status::REJET_ANALYSTE) {
+                    $start = '';
+                    if ($this->projects_notes->note_comite >= 0) {
+                        $start = '2 étoiles';
+                    }
+                    if ($this->projects_notes->note_comite >= 2) {
+                        $start = '2,5 étoiles';
+                    }
+                    if ($this->projects_notes->note_comite >= 4) {
+                        $start = '3 étoiles';
+                    }
+                    if ($this->projects_notes->note_comite >= 5.5) {
+                        $start = '3,5 étoiles';
+                    }
+                    if ($this->projects_notes->note_comite >= 6.5) {
+                        $start = '4 étoiles';
+                    }
+                    if ($this->projects_notes->note_comite >= 7.5) {
+                        $start = '4,5 étoiles';
+                    }
+                    if ($this->projects_notes->note_comite >= 8.5) {
+                        $start = '5 étoiles';
+                    }
                     $etape_7 = '
                     <div class="tab_title" id="title_etape7">Etape 7</div>
                     <div class="tab_content" id="etape7">
@@ -1090,7 +1112,7 @@ class ajaxController extends bootstrap
                             </tr>
 
                             <tr class="lanote">
-                                <th colspan="8" style="text-align:center;" >Note : <span class="moyenneNote_comite">' . $this->projects_notes->note_comite . '/ 10</span></th>
+                                <th colspan="8" style="text-align:center;" >Note : <span class="moyenneNote_comite">' . $this->projects_notes->note_comite . '/ 10 (soit ' . $start . '</span></th>
                             </tr>
 
                             <tr>
@@ -1148,7 +1170,29 @@ class ajaxController extends bootstrap
 
                             $("#marche_opere_comite").html(marche_opere);
                             $("#performance_fianciere_comite").html(performance_fianciere);
-                            $(".moyenneNote_comite").html(moyenne + " / 10");
+                            var start = "";
+                            if (moyenne >= 0) {
+                                start = "2 étoiles";
+                            }
+                            if (moyenne >= 2) {
+                                start = "2,5 étoiles";
+                            }
+                            if (moyenne >= 4) {
+                                start = "3 étoiles";
+                            }
+                            if (moyenne >= 5.5) {
+                                start = "3,5 étoiles";
+                            }
+                            if (moyenne >= 6.5) {
+                                start = "4 étoiles";
+                            }
+                            if (moyenne >= 7.5) {
+                                start = "4,5 étoiles";
+                            }
+                            if (moyenne >= 8.5) {
+                                start = "5 étoiles";
+                            }
+                            $(".moyenneNote_comite").html(moyenne + " / 10" + " (soit " + start + ")");
                         });
                     </script>
                     ';
