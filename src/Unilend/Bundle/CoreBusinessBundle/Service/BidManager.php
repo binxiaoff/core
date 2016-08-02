@@ -89,21 +89,39 @@ class BidManager
         $fRate       = round(floatval($oBid->rate), 1);
 
         if (false === $project->get($iProjectId)) {
+            if($this->oLogger instanceof LoggerInterface) {
+                $this->oLogger->warning('unable to get the project: ' . $iProjectId, ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]);
+            }
             return false;
         }
 
         if ($iAmountMin > $fAmount) {
+            if($this->oLogger instanceof LoggerInterface) {
+                $this->oLogger->warning('Amount is less than the min amount for a bid', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]);
+            }
             return false;
         }
 
         $projectRates = $this->getProjectRateRange($project);
 
         if (bccomp($fRate, $projectRates['rate_max'], 1) > 0 || bccomp($fRate, $projectRates['rate_min'], 1) < 0) {
+            if($this->oLogger instanceof LoggerInterface) {
+                $this->oLogger->warning(
+                    'Amount is less than the min amount for a bid',
+                    ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]
+                );
+            }
             return false;
         }
 
         $projectStatus->getLastStatut($iProjectId);
         if (false === in_array($projectStatus->status, array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING))) {
+            if($this->oLogger instanceof LoggerInterface) {
+                $this->oLogger->warning(
+                    'Project status is not valid for bidding',
+                    ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate, 'project_status' => $projectStatus->status]
+                );
+            }
             return false;
         }
 
@@ -114,20 +132,34 @@ class BidManager
         }
 
         if ($oCurrentDate > $oEndDate) {
+            if($this->oLogger instanceof LoggerInterface) {
+                $this->oLogger->warning(
+                    'Project end date is passed for bidding',
+                    ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate, 'project_ended' => $oEndDate->format('c'), 'now' => $oCurrentDate->format('c')]);
+            }
             return false;
         }
 
         if (false === $oLenderAccount->get($iLenderId)) {
+            if($this->oLogger instanceof LoggerInterface) {
+                $this->oLogger->warning('Cannot get lender', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]);
+            }
+            return false;
+        }
+
+        if (false === $this->oLenderManager->canBid($oLenderAccount)) {
+            if($this->oLogger instanceof LoggerInterface) {
+                $this->oLogger->warning('lender cannot bid', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]);
+            }
             return false;
         }
 
         $iClientId = $oLenderAccount->id_client_owner;
-        if (false === $this->oLenderManager->canBid($oLenderAccount)) {
-            return false;
-        }
-
         $iBalance = $oTransaction->getSolde($iClientId);
         if ($iBalance < $fAmount) {
+            if($this->oLogger instanceof LoggerInterface) {
+                $this->oLogger->warning('lender\s balance not enough for a bid', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate, 'balance' => $iBalance]);
+            }
             return false;
         }
 
