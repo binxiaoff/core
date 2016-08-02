@@ -918,7 +918,7 @@ class dossiersController extends bootstrap
             }
         }
 
-        if (false === empty($_POST['send_email_borrower'])) {
+        if (1 == $_POST['send_email_borrower']) {
             $this->sendProblemStatusEmailBorrower($iStatus);
         }
 
