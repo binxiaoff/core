@@ -113,5 +113,10 @@
             <argument type="service" id="unilend.service.entity_manager" />
             <argument type="service" id="unilend.service.project_manager" />
         </service>
+
+        <service id="unilend.service.location_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LocationManager">
+            <argument type="service" id="unilend.service.entity_manager" />
+            <argument>%mapbox.token%</argument>
+        </service>
     </services>
 </container>

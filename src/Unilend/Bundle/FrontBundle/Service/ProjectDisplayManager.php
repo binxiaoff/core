@@ -130,15 +130,14 @@ class ProjectDisplayManager
             $projectData['maxValidRate']  = \bids::BID_RATE_MAX;
         }
 
-        $projectData['sectorId']     = $company['sector'];
         $projectData['company']      = $company;
+        $projectData['sectorId']     = $company['sector'];
+        $projectData['latitude']     = $company['latitude'];
+        $projectData['longitude']    = $company['longitude'];
         $projectData['averageRate']  = $project->getAverageInterestRate($project->id_project);
         $projectData['totalLenders'] = $totalLenders;
         $projectData['status']       = $projectStatus->status;
         $projectData['navigation']   = $navigation;
-        // @todo
-        $projectData['latitude']     = 45;
-        $projectData['longitude']    = 0;
 
         $now        = new \DateTime('NOW');
         $projectEnd = new \DateTime($project->date_retrait_full);

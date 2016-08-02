@@ -157,18 +157,19 @@ class ProjectsController extends Controller
             'finance'  => $projectDisplayManager->getProjectFinancialData($project),
             'bidToken' => sha1('tokenBid-' . time() . '-' . uniqid())
         ];
-        $template['project']['bids']['graph'] = [
-            'summary' => array_reverse($template['project']['bids']['summary'], true)
-        ];
 
-        $request->getSession()->set('bidToken', $template['bidToken']);
+        if (isset($template['project']['bids'])) {
+            $template['project']['bids']['graph'] = [
+                'summary' => array_reverse($template['project']['bids']['summary'], true)
+            ];
 
-        $index = 0;
-        foreach ($template['project']['bids']['graph']['summary'] as $rateSummary) {
-            if ($rateSummary['activeBidsCount'] > 0) {
-                $template['project']['bids']['graph']['maxNotNullIndex'] = $index;
+            $index = 0;
+            foreach ($template['project']['bids']['graph']['summary'] as $rateSummary) {
+                if ($rateSummary['activeBidsCount'] > 0) {
+                    $template['project']['bids']['graph']['maxNotNullIndex'] = $index;
+                }
+                ++$index;
             }
-            ++$index;
         }
 
         $firstBalanceSheet = current($template['finance']);
@@ -183,6 +184,8 @@ class ProjectsController extends Controller
             && $authorizationChecker->isGranted('ROLE_LENDER')
             && $user instanceof UserLender
         ) {
+            $request->getSession()->set('bidToken', $template['bidToken']);
+
             /** @var \lenders_accounts $lenderAccount */
             $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
             $lenderAccount->get($user->getClientId(), 'id_client_owner');
