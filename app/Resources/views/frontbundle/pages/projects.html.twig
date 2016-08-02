@@ -27,7 +27,7 @@ permalink: route('projets')
                 {% include 'partials/components/project-list/project-list.html.twig' %}
                 <div class="row page-section-footer">
                     <div class="btn-toolbar">
-                        <a href="{{ route('preter/new') }}" class="btn-primary">{% trans %} projects-listing_become-lender-button {% endtrans %}</a>
+                        <a href="{{ path('lender_subscription_step_1') }}" class="btn-primary">{% trans %} projects-listing_become-lender-button {% endtrans %}</a>
                     </div>
                     <p>
                         <a href="{{ route('emprunter') }}" class="link c-p2">{% trans %} projects-listing_become-borrower-button {% endtrans %}</a>
