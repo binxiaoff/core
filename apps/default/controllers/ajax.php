@@ -357,7 +357,7 @@ class ajaxController extends bootstrap
                 } else {
                     $endDateTime = new \DateTime($this->lProjetsFunding[$iKey]['date_retrait_full']);
                 }
-                $endDate                                  = strftime('%e %B', $endDateTime->getTimestamp());
+                $endDate                                  = strftime('%d %B', $endDateTime->getTimestamp());
                 $endTime                                  = $endDateTime->format('H\h');
                 $this->lProjetsFunding[$iKey]['daterest'] = str_replace(['[#date#]', '[#time#]'], [$endDate, $endTime], $this->lng['preteur-projets']['termine']);
             }

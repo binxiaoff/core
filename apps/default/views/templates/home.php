@@ -122,7 +122,7 @@
                                     } else {
                                         $endDateTime = new \DateTime($aProject['date_retrait_full']);
                                     }
-                                    $endDate  = strftime('%e %B', $endDateTime->getTimestamp());
+                                    $endDate  = strftime('%d %B', $endDateTime->getTimestamp());
                                     $endTime  = $endDateTime->format('H\h');
                                     $dateRest = str_replace(['[#date#]', '[#time#]'], [$endDate, $endTime], $this->lng['home']['termine']);
                                 } else {
@@ -193,7 +193,7 @@
                             } else {
                                 $endDateTime = new \DateTime($aProject['date_retrait_full']);
                             }
-                            $endDate  = strftime('%e %B', $endDateTime->getTimestamp());
+                            $endDate  = strftime('%d %B', $endDateTime->getTimestamp());
                             $endTime  = $endDateTime->format('H\h');
                             $dateRest = str_replace(['[#date#]', '[#time#]'], [$endDate, $endTime], $this->lng['home']['termine']);
                         } else {
