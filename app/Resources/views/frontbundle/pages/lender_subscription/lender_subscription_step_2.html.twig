@@ -1,0 +1,213 @@
+{# Projects Index #}
+{% extends 'layouts/_layout.html.twig' %}
+{% import 'extensions/_general.macros.twig' as general %}
+
+{# Page data #}
+{% set bodyId = '' %}
+{% set page = {
+title: 'Devenir Prêteur',
+permalink: route('preter/new')
+} %}
+
+{% block siteContent %}
+    <article id="devenir-preteur" class="page">
+        <div class="hero-wrap">
+
+            <header class="page-header">
+                <div class="site-wrap">
+                    <h1 id="preter-create-title" class="h1">{% trans %} lender-subscription_page-title {% endtrans %}</h1>
+                </div><!-- /.site-wrap -->
+            </header><!-- /.page-header -->
+
+            <div class="page-content">
+                <div class="site-wrap">
+                    <div class="tabs ui-tabs-progress">
+                        {% include 'pages/lender_subscription/partials/progress-bar.html.twig' %}
+
+                        <div class="form-preter-content tab-content">
+                            <form id="form-lender-step-2" method="{{ path('lender_subscription') }}" action="post" class="form-preter-create" data-cacheform>
+                                {# Justificatif #}
+                                <div id="form-preter-2" role="tabpanel" class="tab-pane" aria-labelledby="preter-create-2 preter-create-title">
+                                    <div class="row">
+                                        <div class="col-form col-lg-8 col-md-8" data-formvalidation data-formvalidation-notificationselem="#form-preter-2-notifications">
+                                            <fieldset class="panel">
+                                                <div id="form-preter-2-notifications" class="ui-formvalidation-notifications"></div>
+
+                                                <h3 class="h3">{% trans %} lender-subscription_step-2-title {% endtrans %}</h3>
+
+                                                <div class="row">
+                                                    <div class="form-field form-field-iban">
+                                                        <div id="form-preter-iban-add" data-toggle-group="iban" class="ui-toggle iban-add">
+                                                            <div class="message-info">
+                                                                <p>{% trans %} lender-subscription_step-2-bank-information-explanation {% endtrans %}</p>
+                                                            </div><!-- /.message-info -->
+
+                                                            <label for="form-preter-iban" class="form-field-label">IBAN
+                                                                <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+
+                                                            <div class="input-group">
+                                                                <div class="custom-input-iban">
+                                                                    <input id="form-preter-iban" type="text" name="iban" value="" class="iban-input input-field"
+                                                                           data-formvalidation-input data-formvalidation-type="iban"/>
+                                                                </div>
+                                                            </div><!-- /.input-group -->
+
+                                                            <ul class="ui-formvalidation-messages"></ul>
+
+                                                            <p>
+                                                                <a href="#form-preter-iban-info" class="btn-primary">Ajouter</a>
+                                                            </p>
+                                                        </div><!-- /.iban-add -->
+                                                        <div id="form-preter-iban-info" data-toggle-group="iban" class="ui-toggle iban-info" style="display: none">
+                                                            <div class="iban-info-details">
+                                                                <div class="row">
+                                                                    <div class="col-lg-6 col-md-6">
+                                                                        <label>IBAN</label>
+                                                                        <p>FR20 2524 1200 0127 3242 5P01 025</p>
+                                                                    </div>
+                                                                    <div class="col-lg-6 col-md-6">
+                                                                        <label>BIC</label>
+                                                                        <p>PSSTFRPPPAR</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="row">
+                                                                    <div class="col-lg-6 col-md-6">
+                                                                        <label>Titulaire du compte</label>
+                                                                        <p>David Raux<br/>
+                                                                            27 avenue des Champs-Elysées<br/>
+                                                                            75008 Paris France</p>
+                                                                    </div>
+                                                                    <div class="col-lg-6 col-md-6">
+                                                                        <label>Nom de la banque</label>
+                                                                        <p>La Banque Postale</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <p>
+                                                                <a href="#form-preter-iban-add" class="btn-primary">Modifier</a>
+                                                            </p>
+                                                        </div><!-- /.iban-info -->
+                                                    </div><!-- /.form-field -->
+                                                </div>
+                                            </fieldset>
+
+                                            <fieldset class="panel">
+                                                <h3 class="h3">Justificatifs</h3>
+
+                                                <div class="message-info">
+                                                    <p>Fichiers acceptés : PDF, JPG, PNG, DOC, DOCX. Poids maximum par fichier : 8Mo</p>
+                                                </div><!-- /.message-info -->
+
+                                                <div class="row">
+                                                    <div class="form-field">
+                                                        <label>Pièce d'identité
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+
+                                                        <div class="form-field">
+                                                            <div class="custom-input-file" id="form-preter-file-identite-cni-1" data-fileattach data-fileattach-inputname="fichier[identite][cni_a]" data-fileattach-maxfiles="1" data-fileattach-emptyfilelabel="CNI recto / page 2 du passeport" data-formvalidation-input data-formvalidation-required='input[type="file"][name="fichier[identite][cni_a][0]"]'></div><!-- /.ui-fileattach -->
+                                                        </div>
+                                                        <div class="form-field">
+                                                            <div class="custom-input-file" id="form-preter-file-identite-cni-2" data-fileattach data-fileattach-inputname="fichier[identite][cni_b]" data-fileattach-maxfiles="1" data-fileattach-emptyfilelabel="CNI verso / page 3 du passeport" data-formvalidation-input data-formvalidation-required='input[type="file"][name="fichier[identite][cni_b][0]"]'></div><!-- /.ui-fileattach -->
+                                                        </div>
+
+                                                        <div class="field-help">
+                                                            <p>Copie recto-verso de la CNI ou double page 2 et 3 du passeport</p>
+                                                        </div>
+
+                                                        <div class="form-field">
+                                                            <div class="custom-input-file" id="form-preter-file-identite-extra" data-fileattach data-fileattach-inputname="fichier[identite][extra]" data-fileattach-maxfiles="5"></div><!-- /.ui-fileattach -->
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="form-field">
+                                                        <label>Justificatif de domicile
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+
+                                                        <div class="field-help">
+                                                            <p>Facture eau, électricité, gaz, internet/téléphone
+                                                                <strong>fixe</strong>, quittance assurance logement, quittance loyer, taxe habitation, pages 1 et 4 avis d'imposition (ou non imposition)
+                                                            </p>
+                                                        </div>
+
+                                                        <div class="custom-input-file" id="form-preter-file-domicile" data-fileattach data-fileattach-inputname="fichier[domicile]" data-fileattach-maxfiles="2" data-formvalidation-input data-formvalidation-required='input[type="file"][name="fichier[domicile][0]"]'></div><!-- /.ui-fileattach -->
+
+                                                        <ul class="ui-formvalidation-messages"></ul>
+                                                        <p>
+                                                            <a href="#todo" class="link">Le justificatif n'est pas à votre nom?</a>
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="form-field">
+                                                        <label for="form-preter-fichier-identité">Relévé d'identité bancaire (RIB)
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+
+                                                        <div class="custom-input-file" id="form-preter-file-file-rib" data-fileattach data-fileattach-inputname="fichier[rib]" data-fileattach-maxfiles="1" data-fileattach-emptyfilelabel="No file attached" data-formvalidation-input data-formvalidation-required='input[type="file"][name="fichier[rib][0]"]'></div><!-- /.ui-fileattach -->
+
+                                                        <ul class="ui-formvalidation-messages"></ul>
+
+                                                        <div class="field-help">
+                                                            <p>Correspondant au compte bancaire renseigné ci-dessus</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </fieldset>
+
+                                            <div class="row reverse btn-controls tab-footer">
+                                                <div class="col-submit col-lg-7 col-md-7">
+                                                    <a href="#form-preter-3" data-toggle="tab" class="btn-primary">Valider la création de mon compte <span class="icon fa-angle-right"></span></a>
+                                                </div>
+                                                <div class="col-back col-lg-5 col-md-5">
+                                                    <a href="#form-preter-1" data-toggle="tab" class="btn-default"><span class="icon fa-angle-left"></span> Modifier étape 1</a>
+                                                </div>
+                                            </div><!-- /.btn-controls.tab-footer -->
+                                        </div>
+
+                                        <div class="col-promos col-lg-4 col-md-4">
+                                            <div class="promo">
+                                                <div class="promo-image">
+                                                    {{ svgimage('#promo-saving', '', 190, 190, 'none') | raw }}
+                                                </div>
+                                                <h3 class="promo-highlight">
+                                                    <span class="ui-text-count" data-start-count="0" data-end-count="100" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">100</span><sup>%</sup>
+                                                </h3>
+                                                <p>100% des intérêts sont reversés aux prêteurs</p>
+                                            </div><!-- /.promo -->
+
+                                            <div class="promo">
+                                                <div class="promo-image">
+                                                    {{ svgimage('#promo-linechart2', '', 190, 190, 'none') | raw }}
+                                                </div>
+                                                <h3 class="promo-highlight">
+                                                    <span class="ui-text-count" data-start-count="0" data-end-count="5.30" data-total-time="3000" data-tween-count="easeOutQuint">5,30</span><sup>%</sup>
+                                                </h3>
+                                                <p>Taux de rendement de la plateforme</p>
+                                            </div><!-- /.promo -->
+
+                                            <div class="promo">
+                                                <div class="promo-image">
+                                                    {{ svgimage('#promo-pagestack', '', 190, 190, 'none') | raw }}
+                                                </div>
+                                                <h3 class="promo-highlight">20</h3>
+                                                <p>Prêt dès 20&nbsp;€ par projet</p>
+                                            </div><!-- /.promo -->
+                                        </div>
+                                    </div><!-- /.row -->
+                                </div><!-- /.tab-pane -->
+                            </form><!-- /.form-preter-create -->
+                        </div><!-- /.form-preter-content -->
+                    </div><!-- /.tabs -->
+                </div><!-- /.site-wrap -->
+            </div><!-- /.page-content -->
+
+            {% include 'partials/components/list-socialmedia.html.twig' %}
+        </div><!-- /.hero-wrap -->
+
+    </article><!-- /.page -->
+{% endblock %}
+
+
