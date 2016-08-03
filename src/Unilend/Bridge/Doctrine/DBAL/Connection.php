@@ -160,7 +160,8 @@ class Connection extends BaseConnection
             }
         }
 
-        $this->update($table, ['slug' => $slug], [$idName => $idValue]);
+        $sql = 'UPDATE ' . $table . ' SET slug = "' . $slug . '" WHERE ' . $idName .' = '. $idValue;
+        $this->query($sql);
     }
 
     public function controlSlugMulti($table, $slug, $id_value, $list_field_value, $id_langue)

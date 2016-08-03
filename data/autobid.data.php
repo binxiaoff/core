@@ -104,7 +104,7 @@ class autobid extends autobid_crud
         $queryBuilder = $this->bdd->createQueryBuilder();
 
         $queryBuilder
-            ->select('a.*, pp.*, la.id_client_owner AS id_client')
+            ->select('a.*, pp.id_period as id_period, pp.min as min, pp.max as max, pp.status as period_status, la.id_client_owner AS id_client')
             ->from('autobid','a')
             ->innerJoin('a', 'project_period', 'pp', 'pp.id_period = a.id_period and pp.status = :pp_status')
             ->innerJoin('a', 'lenders_accounts', 'la', 'la.id_lender_account = a.id_lender')

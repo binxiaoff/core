@@ -11,7 +11,7 @@
             <textarea id="receiver" name="receiver" class="textarea_lng" style="height: 100px;width: 420px;"><?= isset($this->sPreviousReceiver) ? $this->sPreviousReceiver : '' ?></textarea><br/><br/>
         <?php endif; ?>
         <?php if ($this->bAskEmail): ?>
-            <em>Envoyer un d'information email aux prêteurs</em><br/><br/>
+            <em>Envoyer un email d'information aux prêteurs</em><br/><br/>
             <label><input type="radio" name="send_email" value="1"/> Oui</label>
             <label><input type="radio" name="send_email" value="0"/> Non</label><br/><br/>
             <div class="hidden-fields">
@@ -29,6 +29,13 @@
             <label for="site_content"><em>Message d'information aux prêteurs (site)</em></label><br/><br/>
             <textarea id="site_content" name="site_content" class="textarea_lng" style="height:100px; width:420px;"><?= isset($this->sInfoStatusChange) ? $this->sInfoStatusChange : '' ;?></textarea>
             <br/><br/>
+        <?php endif; ?>
+        <?php if ($this->bAskEmailBorrower): ?>
+            <em>Envoyer un email d'information aux emprunteurs</em><br/><br/>
+            <label><input type="radio" name="send_email_borrower" value="1"/> Oui</label>
+            <label><input type="radio" name="send_email_borrower" value="0"/> Non</label><br/><br/>
+        <?php else: ?>
+            <input type="hidden" name="send_email_borrower" value="1"/>
         <?php endif; ?>
         <div id="problematic_status_error">Vous devez saisir tous les champs<br/><br/></div>
         <div style="text-align:right">
@@ -80,6 +87,12 @@
 
         <?php if ($this->bAskEmail): ?>
             if (undefined == $('[name=send_email]:checked').val()) {
+                error = true;
+            }
+        <?php endif; ?>
+
+        <?php if ($this->bAskEmailBorrower): ?>
+            if (undefined == $('[name=send_email_borrower]:checked').val()) {
                 error = true;
             }
         <?php endif; ?>
