@@ -60,24 +60,22 @@
                                 <div class="project-list-item-offers">
                                     <strong>{{ project.bidsCount|__num(0)|nbsp|raw }}</strong> {% transchoice project.bidsCount %} project-list_offer-label {% endtranschoice %}
                                 </div><!-- /.project-list-item-offers -->
-                                {% if project.lender.bids is defined and project.lender.bids.count > 0 %}
-                                    <div{% if project.lender is defined and project.lender.bids.autobid.count > 0 %} class="project-list-item-useroffers ui-has-tooltip" data-toggle="tooltip" data-html="true" title="{% transchoice project.lender.bids.autobid.count with {'%currentUserOffersAutolend%' : project.lender.bids.autobid.count} %} project-list_autolend-tooltip {% endtranschoice %} <span class='icon fa-autolend-u32 c-p1'></span>"{% endif %}>
-                                        {% if project.lender.bids is defined and project.lender.bids.count > 0 %}
-                                            {% if project.lender.bids.accepted is not empty %}
-                                                <div class="project-single-useroffers-accepted">
-                                                    {{ project.lender.bids.accepted|length|__num(0)|nbsp }} {% transchoice project.lender.bids.accepted|length %} project-detail_accepted-bids-label {% endtranschoice %}
-                                                </div>
-                                            {% endif %}
-                                            {% if project.lender.bids.inprogress is not empty %}
-                                                <div class="project-single-useroffers-inprogress">
-                                                    {{ project.lender.bids.inprogress|length|__num(0)|nbsp }} {% transchoice project.lender.bids.inprogress|length %} project-detail_pending-bids-label {% endtranschoice %}
-                                                </div>
-                                            {% endif %}
-                                            {% if project.lender.bids.rejected is not empty %}
-                                                <div class="project-single-useroffers-rejected">
-                                                    {{ project.lender.bids.rejected|length|__num(0)|nbsp }} {% transchoice project.lender.bids.rejected|length %} project-detail_rejected-bids-label {% endtranschoice %}
-                                                </div>
-                                            {% endif %}
+                                {% if project.lender is defined and project.lender.bids.count > 0 %}
+                                    <div class="project-list-item-useroffers{% if project.lender.bids.autobid.count > 0 %} ui-has-tooltip{% endif %}"{% if project.lender.bids.autobid.count > 0 %} data-toggle="tooltip" data-html="true" title="{% transchoice project.lender.bids.autobid.count with {'%currentUserOffersAutolend%' : project.lender.bids.autobid.count} %} project-list_autolend-tooltip {% endtranschoice %} <span class='icon fa-autolend-u32 c-p1'></span>"{% endif %}>
+                                        {% if project.lender.bids.accepted is not empty %}
+                                            <div class="project-single-useroffers-accepted">
+                                                {{ project.lender.bids.accepted|length|__num(0)|nbsp }} {% transchoice project.lender.bids.accepted|length %} project-list_accepted-bids-label {% endtranschoice %}
+                                            </div>
+                                        {% endif %}
+                                        {% if project.lender.bids.inprogress is not empty %}
+                                            <div class="project-single-useroffers-inprogress">
+                                                {{ project.lender.bids.inprogress|length|__num(0)|nbsp }} {% transchoice project.lender.bids.inprogress|length %} project-list_pending-bids-label {% endtranschoice %}
+                                            </div>
+                                        {% endif %}
+                                        {% if project.lender.bids.rejected is not empty %}
+                                            <div class="project-single-useroffers-rejected">
+                                                {{ project.lender.bids.rejected|length|__num(0)|nbsp }} {% transchoice project.lender.bids.rejected|length %} project-list_rejected-bids-label {% endtranschoice %}
+                                            </div>
                                         {% endif %}
                                     </div><!-- /.project-list-item-useroffers -->
                                 {% endif %}
@@ -91,22 +89,23 @@
                                 {% elseif project.daysLeft <= 2 %}
                                     <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|escape('html_attr') }}"></span>
                                 {% else %}
-                                    {% trans with {'%remainingDays%' : project.daysLeft } %} project-list_remaining-days {% endtrans %}
+                                    {% trans with {'%remainingDays%' : project.daysLeft} %} project-list_remaining-days {% endtrans %}
                                 {% endif %}
                             </div>
                             <div class="project-list-item-view">
-                                <a href="{{ path('project_detail', {'projectSlug' : project.slug }) }}">
+                                <a href="{{ path('project_detail', {'projectSlug' : project.slug}) }}">
                                     <span class="icon fa-angle-right"></span><span class="sr-only">{% trans %} project-list_view-project-label {% endtrans %}</span>
                                 </a>
                             </div>
                         </article><!-- /.project-list-item -->
                     {% endfor %}
                 </div><!-- /.project-list-items -->
+
                 {% include 'partials/components/project-list/pagination.html.twig' %}
             </div><!-- /#project-list-view.tab-pane -->
+
             <div id="project-list-map" role="tabpanel" class="tab-pane">
-                {{ render_esi(controller('UnilendFrontBundle:Projects:projectsMap')) }}
-                {#{% include 'partials/components/project-list/project-map.html.twig' %}#}
+                {% include 'partials/components/project-list/project-map.html.twig' %}
             </div><!-- /#project-list-map.tab-pane -->
         </div><!-- /.project-list-content -->
     </div><!-- /.tabs -->
