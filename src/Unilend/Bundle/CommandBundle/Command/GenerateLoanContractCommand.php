@@ -103,11 +103,11 @@ EOF
                     $fileName     = $borrowerCompany->siren . '-' . $lender->id_client_owner . '-' . $loan->id_loan . '.pdf';
 
                     if (false === is_dir($borrowerPath)) {
-                        mkdir($borrowerPath, 0664, true);
+                        mkdir($borrowerPath, 0775, true);
                     }
 
                     if (false === is_dir($lenderPath)) {
-                        mkdir($lenderPath, 0664, true);
+                        mkdir($lenderPath, 0775, true);
                     }
 
                     $_SERVER['REQUEST_URI'] = '';
