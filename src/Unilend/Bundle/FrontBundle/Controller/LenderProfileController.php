@@ -6,7 +6,9 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
@@ -767,6 +769,10 @@ class LenderProfileController extends Controller
         $mailer->send($message);
     }
 
+    /**
+     * @param Request $request
+     * @return mixed
+     */
     private function getSessionFormData(Request $request)
     {
         $form['person']            = $request->getSession()->get('personIdentityData', '');
@@ -782,5 +788,20 @@ class LenderProfileController extends Controller
         $request->getSession()->remove('legalEntityIdentityData');
 
         return $form;
+    }
+
+    /**
+     * @Route("/profile/ajax/zip", name="lender_profile_ajax_zip")
+     * @Method("GET")
+     */
+    public function getZipAction(Request $request)
+    {
+        if ($request->isXMLHttpRequest()) {
+            /** @var LocationManager $locationManager */
+            $locationManager = $this->get('unilend.service.location_manager');
+            return new JsonResponse($locationManager->getCities( $request->query->get('zip')));
+        }
+
+        return new Response('not an ajax request');
     }
 }
