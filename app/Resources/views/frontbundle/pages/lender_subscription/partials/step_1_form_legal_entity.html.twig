@@ -261,7 +261,7 @@
                                 <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
                             <select id="form-lender-legal_entity-fiscal-address-country" name="fiscal_address_country" class="input-field"
                                     data-formvalidation-input data-formvalidation-required="true">
-                                {% for i, country in getCountries() %}
+                                {% for i, country in countries %}
                                     <option value="{{ i }}" {% if formData.fiscal_address_country == i %} selected {% endif %}>
                                         {{ country }}</option>
                                 {% endfor %}

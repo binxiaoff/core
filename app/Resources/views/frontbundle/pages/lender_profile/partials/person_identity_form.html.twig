@@ -64,7 +64,7 @@
                 <label for="form-profile-info-nationalite">{% trans %} lender-profile_information-tab-identity-section-nationality-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
                 <select id="form-profile-info-nationalite" name="nationality" class="input-field" data-formvalidation-input data-formvalidation-required="true">
-                    {% for i, nationality in getNationalities() %}
+                    {% for i, nationality in nationalities %}
                         <option value="{{ i }}"{% if i == formData.person.nationality %} selected="selected"{% endif %}>{{ nationality }}</option>
                     {% endfor %}
                 </select>

@@ -6,7 +6,10 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 use Unilend\core\Loader;
 
@@ -28,6 +31,11 @@ class LenderSubscriptionController extends Controller
 
         $settings->get("Liste deroulante conseil externe de l'entreprise", 'type');
         $template['externalCounselList'] = json_decode($settings->value, true);
+
+        /** @var LocationManager $locationManager */
+        $locationManager           = $this->get('unilend.service.location_manager');
+        $template['countries']     = $locationManager->getCountries();
+        $template['nationalities'] = $locationManager->getNationalities();
 
         $formData = $request->getSession()->get('subscriptionStep1FormData', '');
         $request->getSession()->remove('subscriptionStep1FormData');
@@ -94,7 +102,7 @@ class LenderSubscriptionController extends Controller
         $translationManager = $this->get('unilend.service.translation_manager');
 
         /** @var array $post */
-        $post = $request->request->all();//var_dump($post);die;
+        $post = $request->request->all();
 
         if (false === $dates->ageplus18($post['client_year_of_birth'] . '-' . $post['client_month_of_birth'] . '-' . $post['client_day_of_birth'])) {
             $this->addFlash('step1Errors', $translationManager->selectTranslation('lender-subscription', 'step-1-error-age'));
@@ -229,7 +237,6 @@ class LenderSubscriptionController extends Controller
             return $this->redirectToRoute('lender_subscription_step_2', ['clientHash' => $client->hash]);
         }
     }
-
 
     /**
      * @Route("inscription_preteur/legal-entity-submit-step-1", name="lender_subscription_legal_entity_submit_step_1")
@@ -621,5 +628,73 @@ class LenderSubscriptionController extends Controller
 
         return $attachmentHelper->upload($lenderAccountId, \attachment::LENDER, $attachmentType, $fieldName, $uploadLib);
     }
+
+    /**
+     * @Route("/inscription_preteur/ajax/birthplace", name="lender_subscription_ajax_birthplace")
+     * @Method("GET")
+     */
+    public function getBirthplaceAction(Request $request)
+    {
+        if ($request->isXMLHttpRequest()) {
+            /** @var LocationManager $locationManager */
+            $locationManager = $this->get('unilend.service.location_manager');
+            return new JsonResponse($locationManager->getCities( $request->query->get('birthPlace'), true));
+        }
+
+        return new Response('not an ajax request');
+    }
+
+    /**
+     * @Route("/inscription_preteur/ajax/zip", name="lender_subscription_ajax_zip")
+     * @Method("GET")
+     */
+    public function getZipAction(Request $request)
+    {
+        if ($request->isXMLHttpRequest()) {
+            /** @var LocationManager $locationManager */
+            $locationManager = $this->get('unilend.service.location_manager');
+            return new JsonResponse($locationManager->getCities( $request->query->get('zip')));
+        }
+
+        return new Response('not an ajax request');
+    }
+
+    /**
+     * @Route("/inscription_preteur/ajax/age", name="lender_subscription_ajax_age")
+     * @Method("POST")
+     */
+    public function checkAgeAction(Request $request)
+    {
+        if ($request->isXMLHttpRequest()) {
+            /** @var \dates $dates */
+            $dates = Loader::loadLib('dates');
+            if ($dates->ageplus18($request->request->get('day_of_birth') . '-' . $request->request->get('month_of_birth') . '-' . $request->request->get('year_of_birth'))) {
+                return new JsonResponse('ok');
+            } else {
+                return new JsonResponse('nok');
+            }
+        }
+        return new Response('not an ajax request');
+    }
+
+    /**
+     * @Route("/inscription_preteur/ajax/pwd", name="lender_subscription_ajax_pwd")
+     * @Method("POST")
+     */
+    public function checkPassWordComplexityAction(Request $request)
+    {
+        if ($request->isXMLHttpRequest()) {
+            /** @var \ficelle $ficelle */
+            $ficelle = Loader::loadLib('ficelle');
+
+            if ($ficelle->password_fo($request->request->get('client_password'), 6)) {
+                return new JsonResponse('ok');
+            } else {
+                return new JsonResponse('nok');
+            }
+        }
+        return new Response('not an ajax request');
+    }
+
 
 }

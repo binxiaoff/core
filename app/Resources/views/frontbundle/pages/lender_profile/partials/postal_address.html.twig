@@ -40,7 +40,7 @@
             <div class="form-field col-lg-6 col-md-6">
                 <label for="form-profile-correspondence-pays">{% trans %} lender-profile_information-tab-postal-address-section-country-label {% endtrans %} <span class="field-required">*<span class="sr-only"> Required</span></span></label>
                 <select id="form-profile-correspondence-pays" name="postal_address_country" class="input-field" data-formvalidation-input data-formvalidation-required="true">
-                    {% for i, country in getCountries() %}
+                    {% for i, country in countries %}
                         <option value="{{ i }}"{% if i == formData.postal.postal_address_country %} selected="selected"{% endif %}>{{ country }}</option>
                     {% endfor %}
                 </select>

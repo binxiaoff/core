@@ -68,7 +68,7 @@
                 <label for="form-profile-address-pays">{% trans %} lender-profile_information-tab-fiscal-address-section-country-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
                 <select id="form-profile-address-pays" name="fiscal_address_country" class="input-field" data-formvalidation-input data-formvalidation-required="true">
-                    {% for i, country in getCountries() %}
+                    {% for i, country in countries %}
                         <option value="{{ i }}"{% if i == formData.person.fiscal_address_country  %} selected="selected"{% endif %}>{{ country }}</option>
                     {% endfor %}
                 </select>

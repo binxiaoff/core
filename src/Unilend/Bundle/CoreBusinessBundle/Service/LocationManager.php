@@ -1,6 +1,7 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Cache\Adapter\Memcache\MemcacheCachePool;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 /**
@@ -16,10 +17,14 @@ class LocationManager
     /** @var string */
     private $mapboxToken;
 
-    public function __construct(EntityManager $entityManager, $mapboxToken)
+    /** @var MemcacheCachePool */
+    private $cachePool;
+
+    public function __construct(EntityManager $entityManager, $mapboxToken, MemcacheCachePool $cachePool)
     {
         $this->entityManager = $entityManager;
         $this->mapboxToken   = $mapboxToken;
+        $this->cachePool     = $cachePool;
     }
 
     /**
@@ -66,5 +71,86 @@ class LocationManager
         }
 
         return null;
+    }
+
+    /**
+     * @param string $city
+     * @param bool $lookUpBirthplace
+     * @return array
+     */
+    public function getCities($city, $lookUpBirthplace = false)
+    {
+        $cityList = [];
+        /** @var \villes $cities */
+        $cities = $this->entityManager->getRepository('villes');
+
+        if ($lookUpBirthplace) {
+            $results = $cities->lookupCities($city, array('ville', 'cp'), true);
+        } else {
+            $results = $cities->lookupCities($city);
+        }
+
+        if (false === empty($results)) {
+            foreach ($results as $item) {
+                if ($lookUpBirthplace) {
+                    // unique insee code
+                    $aCities[$item['insee'].'-'.$item['ville']] = array(
+                        'label' => $item['ville'] . ' (' . $item['num_departement'] . ')',
+                        'value' => $item['insee']
+                    );
+                } else {
+                    $aCities[] = array(
+                        'label' => $item['ville'] . ' (' . $item['cp'] . ')',
+                        'value' => $item['insee']
+                    );
+                }
+            }
+        }
+        return $cityList;
+    }
+
+    public function getCountries()
+    {
+        $cachedItem = $this->cachePool->getItem('countryList');
+
+        if (false === $cachedItem->isHit()) {
+            /** @var \pays_v2 $countries */
+            $countries = $this->entityManager->getRepository('pays_v2');
+            /** @var array $countyList */
+            $countyList = [];
+
+            foreach ($countries->select('', 'ordre ASC') as $country) {
+                $countyList[$country['id_pays']] = $country['fr'];
+            }
+
+            $cachedItem->set($countyList)->expiresAfter(3600);
+            $this->cachePool->save($cachedItem);
+            return $countyList;
+        } else {
+            return $cachedItem->get();
+        }
+    }
+
+    public function getNationalities()
+    {
+        $cachedItem = $this->cachePool->getItem('nationalityList');
+
+        if (false === $cachedItem->isHit()) {
+
+            /** @var \nationalites_v2 $nationalities */
+            $nationalities = $this->entityManager->getRepository('nationalites_v2');
+            /** @var array $nationalityList */
+            $nationalityList = [];
+
+            foreach ($nationalities->select('', 'ordre ASC') as $nationality) {
+                $nationalityList[$nationality['id_nationalite']] = $nationality['fr_f'];
+            }
+
+            $cachedItem->set($nationalityList)->expiresAfter(3600);
+            $this->cachePool->save($cachedItem);
+            return $nationalityList;
+        } else {
+            return $cachedItem->get();
+        }
     }
 }

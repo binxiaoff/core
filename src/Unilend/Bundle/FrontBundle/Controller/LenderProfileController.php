@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 use Unilend\core\Loader;
 
@@ -116,6 +117,10 @@ class LenderProfileController extends Controller
             'postal_address_city'    => isset($form['postal']['postal_address_city']) ? $form['postal']['postal_address_city'] : $clientAddress->ville,
             'postal_address_country' => isset($form['postal']['postal_address_country']) ? $form['postal']['postal_address_country'] : $clientAddress->id_pays,
         ];
+        /** @var LocationManager $locationManager */
+        $locationManager = $this->get('unilend.service.location_manager');
+        $templateData['countries'] = $locationManager->getCountries();
+        $templateData['nationalities'] = $locationManager->getNationalities();
 
         return $this->render('pages/lender_profile/lender_info.html.twig', $templateData);
     }

@@ -117,6 +117,7 @@
         <service id="unilend.service.location_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LocationManager">
             <argument type="service" id="unilend.service.entity_manager" />
             <argument>%mapbox.token%</argument>
+            <argument type="service" id="memcache.default"/>
         </service>
     </services>
 </container>

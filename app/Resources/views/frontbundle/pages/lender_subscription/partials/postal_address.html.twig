@@ -29,7 +29,7 @@
                 <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
             <select id="form-lender-postal-address-country" name="postal_address_country" class="input-field"
                     data-formvalidation-input data-formvalidation-required="false">
-                {% for i, country in getCountries() %}
+                {% for i, country in countries %}
                     <option value="{{ i }}" {% if formData.postal_address_country == i %} selected {% endif %}>
                         {{ country }}</option>
                 {% endfor %}
