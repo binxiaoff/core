@@ -85,11 +85,9 @@
                 </tr>
                 <tr>
                     <th scope="col" class="table-title"><?= $this->lng['autobid']['expert-settings-table-title-period'] ?></th>
-                    <th scope="col">3*</th>
-                    <th scope="col">3,5*</th>
-                    <th scope="col">4*</th>
-                    <th scope="col">4,5*</th>
-                    <th scope="col">5*</th>
+                    <?php foreach (array_keys(array_values($this->aAutoBidSettings)[0]) as $evaluation) : ?>
+                        <th><?=constant('\projects::RISK_' . $evaluation)?>*</th>
+                    <?php endforeach; ?>
                 </tr>
             <?php foreach ($this->aAutoBidSettings as $iPeriodId => $aPeriodSettings) : ?>
                 <tr>

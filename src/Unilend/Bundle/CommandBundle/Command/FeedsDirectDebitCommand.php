@@ -103,8 +103,8 @@ class FeedsDirectDebitCommand extends ContainerAwareCommand
                 'mandateDate'      => date('Y-m-d', strtotime($mandate->updated)),
                 'debitBic'         => $borrowerDirectDebit['bic'],
                 'debitIban'        => $borrowerDirectDebit['iban'],
-                'lastname'         => $client->nom,
-                'firstname'        => $client->prenom,
+                'lastname'         => str_replace(array('"', '\'', '\\', '>', '<', '&'), '', $client->nom),
+                'firstname'        => str_replace(array('"', '\'', '\\', '>', '<', '&'), '', $client->prenom),
                 'reference'        => $borrowerDirectDebit['motif']
             ));
 

@@ -257,4 +257,22 @@ class companies extends companies_crud
 
         return $this->bdd->executeQuery($sQuery);
     }
+
+    public function create($cs = '')
+    {
+        parent::create($cs = '');
+
+        if (is_numeric($this->name) || 0 === strcasecmp($this->name, 'Monsieur') || 0 === strcasecmp($this->name, 'Madame')) {
+            trigger_error('TMA-749 : ' . __CLASS__ . '.' . __FUNCTION__ . ' wrong company name - trace : ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)), E_USER_WARNING);
+        }
+    }
+
+    public function update($cs = '')
+    {
+        parent::update($cs = '');
+
+        if (is_numeric($this->name) || 0 === strcasecmp($this->name, 'Monsieur') || 0 === strcasecmp($this->name, 'Madame')) {
+            trigger_error('TMA-749 : ' . __CLASS__ . '.' . __FUNCTION__ . ' wrong company name - trace : ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)), E_USER_WARNING);
+        }
+    }
 }
