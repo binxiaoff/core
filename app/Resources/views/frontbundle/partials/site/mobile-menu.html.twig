@@ -22,7 +22,7 @@
             <li role="presentation"><a href="{{ route('/') }}" tabindex="-1">{% trans %} header_mobile-menu-home {% endtrans %}</a></li>
             <li role="presentation"><a href="{{ route('preter') }}" tabindex="-1">{% trans %} header_menu-item-lend {% endtrans %}</a></li>
             <li role="presentation"><a href="{{ route('emprunter') }}" tabindex="-1">{% trans %} header_menu-item-borrow {% endtrans %}</a></li>
-            <li role="presentation"><a href="{{ path('project_list') }}" tabindex="-1">{% trans %} header_menu-item-projects {% endtrans %}</a></li>
+            <li role="presentation"><a href="{{ path('projects_list') }}" tabindex="-1">{% trans %} header_menu-item-projects {% endtrans %}</a></li>
             <li role="presentation"><a href="{{ route('about') }}" tabindex="-1">{% trans %} header_menu-item-about {% endtrans %}</a></li>
         </ul>
         {% include 'partials/components/list-socialmedia.html.twig' %}

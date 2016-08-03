@@ -4,25 +4,12 @@
 {% set long = [-0.604248, -0.4647770000000264, 2.3349550000000363, 2.455571999999961, 1.4582299999999577, 1.2611050000000432, -0.5791799999999512, 7.752111300000024, 7.711010999999985, -3.3702448999999888] %}
 
 <div class="project-list-map">
-    <div id="project-list-map-view" class="project-list-map-view ui-has-mapview" data-mapview="{{ settings.mapview|json_encode|escape('html_attr') }}">
-    </div>
+    {#<div id="project-list-map-view" class="project-list-map-view ui-has-mapview" data-mapview="{{ settings.mapview|json_encode|escape('html_attr') }}"></div>#}
     <div class="project-list-map-list">
         <ul class="list-projects">
             {% for i, project in projects %}
                 {# Set the rating class for the .rating element #}
-                {% set classRating = project.risk | convertRisk | split('.') | join('-') %}
-
-                {# Set CSS class to show expired project #}
-                {% set classProjectExpired = '' %}
-                {% if settings.markExpired == true and project.daysLeft <= 0 %}
-                    {% set classProjectExpired = 'ui-project-expired' %}
-                {% endif %}
-
-                {# Set CSS class to show current user is involved in the project #}
-                {% set classUserInvolved = '' %}
-                {% if settings.markInvolved == true and project.lender.bids.count is defined and project.lender.bids.count == true %}
-                    {% set classUserInvolved = 'ui-current-user-involved' %}
-                {% endif %}
+                {% set classRating = project.risk|convertRisk|split('.')|join('-') %}
 
                 {% if project.lender.bids is defined and project.lender.bids is not empty and project.lender.bids.count > 0 %}
                     {# Mark that Autolend was applied #}
@@ -67,19 +54,19 @@
                     } %}
                 {% endif %}
 
-                <li class="project {{ classProjectExpired }} {{ classUserInvolved }}"{% if mapviewItem is defined %} data-mapview-markerid="{{ mapviewItem.id }}" data-mapview-item='{{ mapviewItem|json_encode|escape('html_attr') }}'{% endif %}>
+                <li class="project{% if project.finished %}ui-project-expired{% endif %}{% if project.lender.bids.count > 0 %} ui-current-user-involved{% endif %}"{% if mapviewItem is defined %} data-mapview-markerid="{{ mapviewItem.id }}" data-mapview-item='{{ mapviewItem|json_encode|escape('html_attr') }}'{% endif %}>
                     <div class="project-name">
                         <a href="{{ path('project_detail', {'projectSlug' : project.slug }) }}">{{ project.title }}</a>
                     </div>
                     <div class="project-location">{{ project.company.city }}, {{ project.company.zip }}</div>
-                    <div class="project-cost">{{ project.amount | __num(0) | nbsp }}&nbsp;€</div>
+                    <div class="project-cost">{{ project.amount|__num(0)|nbsp }}&nbsp;€</div>
                     <div class="project-rating">
-                        <span class="rating rating-{{ project.risk | convertRisk | split('.') | join('-') }}"><span class="sr-only"></span></span>
+                        <span class="rating rating-{{ project.risk|convertRisk|split('.')|join('-') }}"><span class="sr-only"></span></span>
                     </div>
-                    <div class="project-interest">{{ project.avg_rate | __num(1) }}&nbsp;%</div>
+                    <div class="project-interest">{{ project.avg_rate|__num(1) }}&nbsp;%</div>
                     <div class="project-period">
                         {% if project.daysLeft > 0 and project.daysLeft <= 2 %}
-                            <span class="ui-has-timecount" data-timecount-to="{{ project.endDate | escape('html_attr') }}">&hellip;</span>
+                            <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|escape('html_attr') }}">&hellip;</span>
                         {% elseif project.daysLeft <= 0 %}
                             {% trans %} project-list_project-finished {% endtrans %}
                         {% else %}

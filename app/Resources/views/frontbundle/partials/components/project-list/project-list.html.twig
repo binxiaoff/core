@@ -105,6 +105,7 @@
                 {% include 'partials/components/project-list/pagination.html.twig' %}
             </div><!-- /#project-list-view.tab-pane -->
             <div id="project-list-map" role="tabpanel" class="tab-pane">
+                {{ render_esi(controller('UnilendFrontBundle:Projects:projectsMap')) }}
                 {#{% include 'partials/components/project-list/project-map.html.twig' %}#}
             </div><!-- /#project-list-map.tab-pane -->
         </div><!-- /.project-list-content -->
