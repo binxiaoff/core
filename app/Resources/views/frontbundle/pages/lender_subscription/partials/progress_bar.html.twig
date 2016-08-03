@@ -2,23 +2,17 @@
     <div class="row">
         <div class="col-lg-8 col-md-8">
             <ul class="nav nav-progress">
-                <li id="preter-create-1" role="presentation" class="active">
-                    <a href="#form-preter-1" role="tab" data-toggle="tab">
-                        <span class="preter-create-progress-point">1.</span>
-                        <span class="label">{% trans %} lender-subscription_part-1-title {% endtrans %}</span>
-                    </a>
+                <li id="preter-create-1" role="presentation" class="{% if app.request.attributes.get('_route') == 'lender_subscription_step_1' %}active{% else %}complete{% endif %}" >
+                    <span class="preter-create-progress-point">1.</span>
+                    <span class="label">{% trans %} lender-subscription_part-1-title {% endtrans %}</span>
                 </li>
-                <li id="preter-create-2" role="presentation">
-                    <a href="#form-preter-2" role="tab" data-toggle="tab">
-                        <span class="preter-create-progress-point">2.</span>
-                        <span class="label">{% trans %} lender-subscription_part-2-title {% endtrans %}</span>
-                    </a>
+                <li id="preter-create-2" role="presentation" class="{% if app.request.attributes.get('_route') == 'lender_subscription_step_2' %}active{% elseif app.request.attributes.get('_route') == 'lender_subscription_step_1' %}''{% else %}complete{% endif %}">
+                    <span class="preter-create-progress-point">2.</span>
+                    <span class="label">{% trans %} lender-subscription_part-2-title {% endtrans %}</span>
                 </li>
-                <li id="preter-create-3" role="presentation">
-                    <a href="#form-preter-3" role="tab" data-toggle="tab">
-                        <span class="preter-create-progress-point">3.</span>
-                        <span class="label">{% trans %} lender-subscription_part-3-title {% endtrans %}</span>
-                    </a>
+                <li id="preter-create-3" role="presentation" class="{% if app.request.attributes.get('_route') == 'lender_subscription_step_3' %}active{% endif%}">
+                    <span class="preter-create-progress-point">3.</span>
+                    <span class="label">{% trans %} lender-subscription_part-3-title {% endtrans %}</span>
                 </li>
             </ul>
         </div>

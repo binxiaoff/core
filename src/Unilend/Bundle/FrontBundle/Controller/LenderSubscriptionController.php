@@ -17,7 +17,9 @@ class LenderSubscriptionController extends Controller
      */
     public function lenderSubscriptionStep1ShowAction(Request $request)
     {
-        $this->checkProgressAndRedirect();
+        /** @var \clients $client */
+        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        $this->checkProgressAndRedirect($client);
 
         /** @var \settings $settings */
         $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
@@ -81,7 +83,9 @@ class LenderSubscriptionController extends Controller
      */
     public function lenderSubscriptionPersonStep1SaveAction(Request $request)
     {
-        $this->checkProgressAndRedirect();
+        /** @var \clients $client */
+        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        $this->checkProgressAndRedirect($client);
         /** @var \dates $dates */
         $dates = Loader::loadLib('dates');
         /** @var \ficelle $ficelle */
@@ -177,8 +181,6 @@ class LenderSubscriptionController extends Controller
             $request->getSession()->set('subscriptionStep1FormData', $post);
             return $this->redirectToRoute('lender_subscription_step_1');
         } else {
-            /** @var \clients $client */
-            $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
             /** @var \lenders_accounts $lenderAccount */
             $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
             /** @var \clients_adresses $clientAddress */
@@ -222,9 +224,9 @@ class LenderSubscriptionController extends Controller
             $lenderAccount->status          = \lenders_accounts::LENDER_STATUS_ONLINE;
             $lenderAccount->create();
 
-            $this->saveClientActionHistory($client, 'person', $post);
+            $this->saveClientHistoryAction($client, 'person', $post);
             $this->sendSubscriptionConfirmationEmail($client);
-            return $this->redirectToRoute('lender_subscription_step_2', [$client->hash]);
+            return $this->redirectToRoute('lender_subscription_step_2', ['clientHash' => $client->hash]);
         }
     }
 
@@ -235,7 +237,9 @@ class LenderSubscriptionController extends Controller
      */
     public function lenderSubscriptionLegalEntityStep1SaveAction(Request $request)
     {
-        $this->checkProgressAndRedirect();
+        /** @var \clients $client */
+        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        $this->checkProgressAndRedirect($client);
 
         /** @var TranslationManager $translationManager */
         $translationManager = $this->get('unilend.service.translation_manager');
@@ -341,8 +345,6 @@ class LenderSubscriptionController extends Controller
             $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
             /** @var \clients_adresses $clientAddress */
             $clientAddress = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
-            /** @var \clients $client */
-            $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
             /** @var \lenders_accounts $lenderAccount */
             $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
             /** @var \ficelle $ficelle */
@@ -409,7 +411,7 @@ class LenderSubscriptionController extends Controller
             $lenderAccount->create();
 
             $this->saveTermsOfUse($client, 'legal_entity');
-            $this->saveClientActionHistory($client, 'legal_entity', $post);
+            $this->saveClientHistoryAction($client, 'legal_entity', $post);
             $this->sendSubscriptionConfirmationEmail($client);
             return $this->redirectToRoute('lender_subscription_step_2', ['clientHash' => $client->hash]);
         }
@@ -418,13 +420,34 @@ class LenderSubscriptionController extends Controller
     /**
      * @Route("inscription_preteur/etape2/{clientHash}", name="lender_subscription_step_2")
      */
-    public function lenderSubscriptionStep2ShowAction($clientHash, Request $request)
+    public function lenderSubscriptionStep2ShowAction($clientHash)
     {
-        $this->checkProgressAndRedirect();
-        $aPageData = [];
+        /** @var \clients $client */
+        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
 
-        return $this->render('pages/lender_subscription/lender_subscription_step_2.html.twig', $aPageData);
+        $client->get($clientHash, 'hash');
+        $lenderAccount->get($client->id_client, 'id_client_owner');
+
+        $this->checkProgressAndRedirect($client);
+        $template = [
+            'client'        => $client->select('id_client = ' . $client->id_client)[0],
+            'lenderAccount' => $lenderAccount->select('id_lender_account = ' . $lenderAccount->id_lender_account)
+        ];
+
+        return $this->render('pages/lender_subscription/lender_subscription_step_2.html.twig', $template);
     }
+
+    /**
+     * @Route("inscription_preteur/submit-step-2", name="lender_subscription_submit_step_2")
+     * @Method("POST")
+     */
+    public function lenderSubscriptionStep2SaveAction(Request $request)
+    {
+
+    }
+
 
     /**
      * @param \clients $client
@@ -456,11 +479,19 @@ class LenderSubscriptionController extends Controller
         $mailer->send($message);
     }
 
-    private function checkProgressAndRedirect()
+    private function checkProgressAndRedirect(\clients $client)
     {
-        if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') & $this->get('security.authorization_checker')->isGranted('ROLE_LENDER')){
-            return $this->redirectToRoute('lender_subscription_step_' . ($this->getUser()->getSubscriptionStep()+1));
+        if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') && $this->get('security.authorization_checker')->isGranted('ROLE_BORROWER')) {
+            return $this->redirectToRoute('project_list');
         }
+
+        if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') && $this->get('security.authorization_checker')->isGranted('ROLE_LENDER')
+            && $this->getUser()->getSubscriptionStep() >= 3
+        ) {
+            return $this->redirectToRoute('project_list');
+        }
+
+        return $this->redirectToRoute('lender_subscription_step_' . ($client->etape_inscription_preteur + 1), ['clientHash' => $client->hash]);
     }
 
     /**
@@ -544,7 +575,7 @@ class LenderSubscriptionController extends Controller
         $termsOfUse->create();
     }
 
-    private function saveClientActionHistory(\clients $client, $clientType, $post)
+    private function saveClientHistoryAction(\clients $client, $clientType, $post)
     {
         $post['client_password']              = md5($post['client_password']);
         $post['client_password_confirmation'] = md5($post['client_password_confirmation']);
@@ -556,6 +587,39 @@ class LenderSubscriptionController extends Controller
             'id_client' => $client->id_client,
             'post'      => $post
         ]));
+    }
+
+
+    /**
+     * @param integer $lenderAccountId
+     * @param integer $attachmentType
+     * @param string $fieldName
+     * @return bool
+     */
+    private function uploadAttachment($lenderAccountId, $attachmentType, $fieldName)
+    {
+        /** @var \upload $uploadLib */
+        $uploadLib = Loader::loadLib('upload');
+        /** @var \attachment $attachments */
+        $attachments = $this->get('unilend.service.entity_manager')->getRepository('attachment');
+        /** @var \attachment_type $attachmentTypes */
+        $attachmentTypes = $this->get('unilend.service.entity_manager')->getRepository('attachment_type');
+        /** @var \attachment_helper $attachmentHelper */
+        $attachmentHelper = Loader::loadLib('attachment_helper', [$attachments, $attachmentTypes, $this->get('kernel')->getRootDir() . '/../']);
+
+        /** @var \greenpoint_attachment $greenPointAttachment */
+        $greenPointAttachment = $this->get('unilend.service.entity_manager')->getRepository('greenpoint_attachment');
+        /** @var mixed $result */
+        $result = $attachmentHelper->attachmentExists($attachments, $lenderAccountId, \attachment::LENDER, $attachmentType);
+
+        if (is_numeric($result)) {
+            $greenPointAttachment->get($result, 'id_attachment');
+            $greenPointAttachment->revalidate   = 1;
+            $greenPointAttachment->final_status = 0;
+            $greenPointAttachment->update();
+        }
+
+        return $attachmentHelper->upload($lenderAccountId, \attachment::LENDER, $attachmentType, $fieldName, $uploadLib);
     }
 
 }
