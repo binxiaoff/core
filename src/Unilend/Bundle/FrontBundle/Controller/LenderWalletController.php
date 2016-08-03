@@ -109,7 +109,7 @@ class LenderWalletController extends Controller
             $code    = Response::HTTP_OK;
             $montant = str_replace(',', '.', $request->request->get('montant'));
 
-            if (md5($request->request->get('mdp')) != $client->password) {
+            if (md5($request->request->get('mdp')) !== $client->password && false === password_verify($request->request->get('mdp'), $client->password)) {
                 $logger->info('Wrong password id_client=' . $client->id_client, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
                 $code = Response::HTTP_UNAUTHORIZED;
             } else {

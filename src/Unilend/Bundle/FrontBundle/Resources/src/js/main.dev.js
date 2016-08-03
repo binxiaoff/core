@@ -123,6 +123,7 @@ $(document).ready(function ($) {
    * jQuery UI Date Picker
    */
   $('.ui-has-datepicker, [data-ui-datepicker]').datepicker({
+    firstDay: 1,
     format: 'dd/mm/yy'
   })
 
