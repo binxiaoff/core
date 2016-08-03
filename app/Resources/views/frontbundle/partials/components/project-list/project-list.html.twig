@@ -1,115 +1,45 @@
-
-{# Default Settings #}
-    {% set settings = {
-    mapview: {},
-
-    showFilters: true,
-
-    markExpired: true,
-    markInvolved: true
-    } %}
-
-    {#provisoire pending les filtres par david#}
-    {% if filterItems is not defined  %}
-        {% set filterItems = [{
-            column: 'category',
-            sortBy: 'category',
-            label: __('Category', 'projectListFilterCategory')
-            },{
-            column: 'info',
-            sortBy: 'amount',
-            label: __('Cost', 'projectListFilterCost')
-            },{
-            column: 'stats',
-            sortBy: 'avg_rate',
-            label: __('Interest', 'projectListFilterInterest')
-            },{
-            column: 'rating',
-            sortBy: 'risk',
-            label: __('Rating', 'projectListFilterRating')
-            },{
-            column: 'period',
-            sortBy: 'daysLeft',
-            label: __('Time Remaining', 'projectListFilterPeriod')
-            },{
-            column: 'view',
-            sortBy: false,
-            label: ''
-            }] %}
-    {% endif %}
-
-    {% set sortAttrs = '' %}
-    {% set attrHasAutolend = false %}
-
-<div id="{{ id|default('project-list')|e('html_attr') }}" class="project-list">
+<div id="projets-index-project-list-module" class="project-list">
     <div class="tabs">
         <div class="project-list-nav">
             <ul class="nav nav-tabs">
                 <li role="presentation" class="active">
-                    <a href="#project-list-view" role="tab" data-toggle="tab"><span class="icon fa-list"></span><span class="sr-only">{% trans %} project-list_view-list-label {% endtrans %}</span></a>
+                    <a href="#project-list-view" role="tab" data-toggle="tab"><span class="icon fa-list-u"></span><span class="sr-only">{% trans %} project-list_view-list-label {% endtrans %}</span></a>
                 </li>
                 <li role="presentation">
-                    <a href="#project-list-map" role="tab" data-toggle="tab"><span class="icon fa-map-marker"></span><span class="sr-only">{% trans %} project-list_view-map-label {% endtrans %}</span></a>
+                    <a href="#project-list-map" role="tab" data-toggle="tab"><span class="icon fa-map-marker-u"></span><span class="sr-only">{% trans %} project-list_view-map-label {% endtrans %}</span></a>
                 </li>
             </ul>
         </div><!-- /.project-list-nav -->
         <div class="project-list-content tab-content">
             <div id="project-list-view" role="tabpanel" class="tab-pane active">
-                {% if settings.showFilters == true and filterItems is not empty %}
-                    <div class="project-list-filters">
-                        {% for filterItem in filterItems %}
-                            <div class="project-list-item-{{ filterItem.column|e('html_attr') }} project-list-filter"{% if filterItem.sortBy != false %} data-sortable-by="{{ filterItem.column|e('html_attr') }}"{% endif %}>
-                                <a href="javascript:;">
-                                    <span class="label">{{ filterItem.label }}</span>
-                                    {% if filterItem.sortBy != false %}
-                                        <span class="project-list-filter-order"></span>
-                                    {% endif %}
-                                </a>
-                            </div><!-- /.project-list-filter -->
-                        {% endfor %}
-                    </div><!-- /.project-list-filters -->
-                {% endif %}
-                <div class="project-list-items" data-sortable-content>
+                <div class="project-list-filters">
+                    <div class="project-list-item-category project-list-filter">
+                        <a href="javascript:;"><span class="label">{% trans %} project-list_table-title-category {% endtrans %}</span> <span class="project-list-filter-order"></span></a>
+                    </div><!-- /.project-list-filter -->
+                    <div class="project-list-item-info project-list-filter">
+                        <a href="javascript:;"><span class="label">{% trans %} project-list_table-title-amount {% endtrans %}</span> <span class="project-list-filter-order"></span></a>
+                    </div><!-- /.project-list-filter -->
+                    <div class="project-list-item-stats project-list-filter">
+                        <a href="javascript:;"><span class="label">{% trans %} project-list_table-title-average-rate {% endtrans %}</span> <span class="project-list-filter-order"></span></a>
+                    </div><!-- /.project-list-filter -->
+                    <div class="project-list-item-rating project-list-filter">
+                        <a href="javascript:;"><span class="label">{% trans %} project-list_table-title-risk {% endtrans %}</span> <span class="project-list-filter-order"></span></a>
+                    </div><!-- /.project-list-filter -->
+                    <div class="project-list-item-period project-list-filter">
+                        <a href="javascript:;"><span class="label">{% trans %} project-list_table-title-remaining-time {% endtrans %}</span> <span class="project-list-filter-order"></span></a>
+                    </div><!-- /.project-list-filter -->
+                    <div class="project-list-item-view project-list-filter">
+                        <a href="javascript:;"><span class="label">&nbsp;</span></a>
+                    </div><!-- /.project-list-filter -->
+                </div><!-- /.project-list-filters -->
+                <div class="project-list-items">
                     {% for project in projects %}
-                        {# Build data-sortable-{column} attributes #}
-                        {% for filterItem in filterItems %}
-                            {% if filterItem.sortBy != false %}
-                                {% set sortAttrs = sortAttrs ~ ' data-sortable-' ~ (filterItem.column|e('html_attr')) ~ '="' ~ (project[filterItem.sortBy]|e('html_attr') ~ '"') %}
-                            {% endif %}
-                        {% endfor %}
-
-                        {# Set CSS class to show expired project #}
-                        {% set classProjectExpired = '' %}
-                        {% if settings.markExpired == true and project.daysLeft <= 0 %}
-                            {% set classProjectExpired = 'ui-project-expired' %}
-                        {% endif %}
-
-                        {# Set CSS class to show current user is involved in the project #}
-                        {% set classUserInvolved = '' %}
-                        {% if settings.markInvolved == true and project.currentUser.isInvolved is defined and project.currentUser.isInvolved == true %}
-                            {% set classUserInvolved = 'ui-current-user-involved' %}
-                        {% endif %}
-
-                        {# Set the rating class for the .rating element #}
-                        {% set classRating = project.risk|convertRisk|split('.')|join('-') %}
-
-                        {# Mark that Autolend was applied #}
-                        {% if project.currentUser.offers is defined and project.currentUser.offers.total > 0 %}
-                            {% set attrHasAutolend = 'class="project-%list-item-useroffers"' %}
-                            {% set autolendTooltip %}
-                                {% transchoice project.currentUser.offers.autolend with { '%currentUserOffersAutolend%' : project.currentUser.offers.autolend } %}
-                                project-list_autolend-tooltip {% endtranschoice %}
-                            {% endset %}
-                            {% set autolendTooltipHtml = autolendTooltip ~ " <span class='icon fa-autolend-u32 c-p1'></span>" %}
-                            {% set attrHasAutolend = 'class="project-list-item-useroffers ui-has-tooltip" data-toggle="tooltip" data-html="true" title="' ~ autolendTooltipHtml ~ '"' %}
-                        {% endif %}
-
-                        <article class="project-list-item {{ classProjectExpired }} {{ classUserInvolved }}"{{ sortAttrs }}>
+                        <article class="project-list-item{% if project.finished %} ui-project-expired{% endif %}{% if project.lender is defined and project.lender.bids.count > 0 %} ui-current-user-involved{% endif %}">
                             <div class="project-list-item-category">
-                                {{ svgimage('#category-' ~ project.company.sector, '', 160, 160) | raw }}
-                                {% if project.photo_projet is not empty %}
-                                    <div class="project-list-item-image" style="background-image:url('{{ project.photo_projet | completeProjectImagePath(72) | escape('html_attr') }}')">
-                                        <img src="{{ project.photo_projet | completeProjectImagePath(72) }}" alt="{{ project.title | escape('html_attr')}}">
+                                {{ svgimage('#category-' ~ project.company.sectorId, '', 160, 160)|raw }}
+                                {% if project.picture is not empty %}
+                                    <div class="project-list-item-image" style="background-image:url('{{ project.picture|completeProjectImagePath|escape('html_attr') }}')">
+                                        <img src="{{ project.picture|completeProjectImagePath }}" alt="{{ project.title|escape('html_attr')}}">
                                     </div>
                                 {% endif %}
                             </div>
@@ -119,46 +49,47 @@
                                     <h4 class="project-list-item-location">
                                         <span class="icon fa-map-marker"></span> {{ project.company.city }}, {{ project.company.zip }}
                                     </h4>
-                                    <h5 class="project-list-item-cost">{{ project.amount }}€</h5>
+                                    <h5 class="project-list-item-cost">{{ project.amount|__num(0)|nbsp|raw }}&nbsp;€</h5>
                                 </div>
                                 <div class="project-list-item-description">
-                                    <p>{{ project.objectif_loan|striptags|raw|slice(0, 100) }}&hellip;</p>
+                                    <p>{{ project.introduction|striptags|raw|truncate(100) }}</p>
                                 </div>
                             </div>
                             <div class="project-list-item-stats">
-                                <div class="project-list-item-interest">{{ project.avg_rate }} %</div>
+                                <div class="project-list-item-interest">{{ project.averageRate|__num(1) }}&nbsp;%</div>
                                 <div class="project-list-item-offers">
-                                    <strong>{{ project.number_bids }}</strong> {% transchoice project.number_bids %}project-list_offer-label{% endtranschoice %}
+                                    <strong>{{ project.bidsCount|__num(0)|nbsp|raw }}</strong> {% transchoice project.bidsCount %} project-list_offer-label {% endtranschoice %}
                                 </div><!-- /.project-list-item-offers -->
-                                {% if project.currentUser.offers is defined and project.currentUser.offers.total > 0 %}
-                                    <div {{ attrHasAutolend }}>
-                                        {% for status, numOffers in project.currentUser.offers %}
-                                            {% if status == 'inprogress' and numOffers > 0 %}
-                                                <div class="project-list-item-useroffers-accepted">
-                                                    {{ numOffers|__num|nbsp }} {% transchoice numOffers %} project-list_accepted-bids-label {% endtranschoice %}
-                                                </div>
-                                            {% elseif status == 'rejected' and numOffers > 0 %}
-                                                <div class="project-list-item-useroffers-rejected">
-                                                    {{ numOffers|__num|nbsp }} {% transchoice numOffers %} project-list_rejected-bids-label {% endtranschoice %}
-                                                </div>
-                                            {% elseif status == 'accepted' and numOffers > 0 %}
-                                                <div class="project-list-item-useroffers-inprogress">
-                                                    {{ numOffers|__num|nbsp }} {% transchoice numOffers %} project-list_pending-bids-label {% endtranschoice %}
+                                {% if project.lender.bids is defined and project.lender.bids.count > 0 %}
+                                    <div{% if project.lender is defined and project.lender.bids.autobid.count > 0 %} class="project-list-item-useroffers ui-has-tooltip" data-toggle="tooltip" data-html="true" title="{% transchoice project.lender.bids.autobid.count with {'%currentUserOffersAutolend%' : project.lender.bids.autobid.count} %} project-list_autolend-tooltip {% endtranschoice %} <span class='icon fa-autolend-u32 c-p1'></span>"{% endif %}>
+                                        {% if project.lender.bids is defined and project.lender.bids.count > 0 %}
+                                            {% if project.lender.bids.accepted is not empty %}
+                                                <div class="project-single-useroffers-accepted">
+                                                    {{ project.lender.bids.accepted|length|__num(0)|nbsp }} {% transchoice project.lender.bids.accepted|length %} project-detail_accepted-bids-label {% endtranschoice %}
                                                 </div>
                                             {% endif %}
-                                        {% endfor %}
+                                            {% if project.lender.bids.inprogress is not empty %}
+                                                <div class="project-single-useroffers-inprogress">
+                                                    {{ project.lender.bids.inprogress|length|__num(0)|nbsp }} {% transchoice project.lender.bids.inprogress|length %} project-detail_pending-bids-label {% endtranschoice %}
+                                                </div>
+                                            {% endif %}
+                                            {% if project.lender.bids.rejected is not empty %}
+                                                <div class="project-single-useroffers-rejected">
+                                                    {{ project.lender.bids.rejected|length|__num(0)|nbsp }} {% transchoice project.lender.bids.rejected|length %} project-detail_rejected-bids-label {% endtranschoice %}
+                                                </div>
+                                            {% endif %}
+                                        {% endif %}
                                     </div><!-- /.project-list-item-useroffers -->
                                 {% endif %}
                             </div><!-- /.project-list-item-stats -->
                             <div class="project-list-item-rating">
-                                <span class="rating rating-{{ classRating }}"><span class="sr-only"></span></span>
-                                {#__('Rated %d out of 5', 'projectListItemRatingLabel')|convertRisk|format(project.risk)#}
+                                <span class="rating rating-{{ project.risk|convertRisk|split('.')|join('-') }}"><span class="sr-only"></span></span>
                             </div>
                             <div class="project-list-item-period">
-                                {% if project.daysLeft > 0 and project.daysLeft <= 2 %}
-                                    <span class="ui-has-timecount" data-timecount-to="{{ project.date_retrait_full|escape('html_attr') }}">&hellip;</span>
-                                {% elseif project.daysLeft <= 0 %}
+                                {% if project.finished %}
                                     {% trans %} project-list_project-finished {% endtrans %}
+                                {% elseif project.daysLeft <= 2 %}
+                                    <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|escape('html_attr') }}"></span>
                                 {% else %}
                                     {% trans with {'%remainingDays%' : project.daysLeft } %} project-list_remaining-days {% endtrans %}
                                 {% endif %}
@@ -171,9 +102,7 @@
                         </article><!-- /.project-list-item -->
                     {% endfor %}
                 </div><!-- /.project-list-items -->
-                {% if showPagination == true %}
-                    {% include 'partials/components/project-list/pagination.html.twig' %}
-                {% endif %}
+                {% include 'partials/components/project-list/pagination.html.twig' %}
             </div><!-- /#project-list-view.tab-pane -->
             <div id="project-list-map" role="tabpanel" class="tab-pane">
                 {#{% include 'partials/components/project-list/project-map.html.twig' %}#}

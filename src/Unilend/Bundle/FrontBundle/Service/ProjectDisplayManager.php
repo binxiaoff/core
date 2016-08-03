@@ -13,110 +13,143 @@ class ProjectDisplayManager
     /** @var  LenderAccountDisplayManager */
     private $lenderAccountDisplayManager;
     /** @var  array */
-    private $projectsStatus;
+    private static $projectsStatus = [
+        \projects_status::EN_FUNDING,
+        \projects_status::FUNDE,
+        \projects_status::FUNDING_KO,
+        \projects_status::REMBOURSEMENT,
+        \projects_status::REMBOURSE,
+        \projects_status::PROBLEME,
+        \projects_status::RECOUVREMENT,
+        \projects_status::DEFAUT,
+        \projects_status::REMBOURSEMENT_ANTICIPE,
+        \projects_status::PROBLEME_J_X,
+        \projects_status::PROCEDURE_SAUVEGARDE,
+        \projects_status::REDRESSEMENT_JUDICIAIRE,
+        \projects_status::LIQUIDATION_JUDICIAIRE
+    ];
 
-
+    /**
+     * @param EntityManager               $entityManager
+     * @param ProjectManager              $projectManager
+     * @param LenderAccountDisplayManager $lenderAccountDisplayManager
+     */
     public function __construct(EntityManager $entityManager, ProjectManager $projectManager, LenderAccountDisplayManager $lenderAccountDisplayManager)
     {
-        $this->entityManager  = $entityManager;
-        $this->projectManager = $projectManager;
+        $this->entityManager               = $entityManager;
+        $this->projectManager              = $projectManager;
         $this->lenderAccountDisplayManager = $lenderAccountDisplayManager;
-        $this->projectsStatus = [
-            \projects_status::EN_FUNDING,
-            \projects_status::FUNDE,
-            \projects_status::FUNDING_KO,
-            \projects_status::REMBOURSEMENT,
-            \projects_status::REMBOURSE,
-            \projects_status::PROBLEME,
-            \projects_status::RECOUVREMENT,
-            \projects_status::DEFAUT,
-            \projects_status::REMBOURSEMENT_ANTICIPE,
-            \projects_status::PROBLEME_J_X,
-            \projects_status::PROCEDURE_SAUVEGARDE,
-            \projects_status::REDRESSEMENT_JUDICIAIRE,
-            \projects_status::LIQUIDATION_JUDICIAIRE
-        ];
     }
 
-    public function getProjectsStatus()
+    /**
+     * @param array                  $projectStatus
+     * @param string|null            $orderBy
+     * @param int|null               $start
+     * @param int|null               $limit
+     * @param \lenders_accounts|null $lenderAccount
+     * @return array
+     */
+    public function getProjectsList(array $projectStatus = [], $orderBy = null, $start = null, $limit = null, \lenders_accounts $lenderAccount = null)
     {
-        return $this->projectsStatus;
-    }
-
-    public function getProjectsForDisplay($projectStatus = array(), $orderBy = null, $rateRange = array(),  $start = null, $limit = null, $clientId = null)
-    {
-        /** @var \projects $projects */
-        $projects  = $this->entityManager->getRepository('projects');
-        /** @var \companies $company */
-        $company = $this->entityManager->getRepository('companies');
+        /** @var \projects $projectsEntity */
+        $projectsEntity = $this->entityManager->getRepository('projects');
         /** @var \bids $bids */
         $bids = $this->entityManager->getRepository('bids');
 
         if (empty($projectStatus)) {
-            $projectStatus = $this->projectsStatus;
+            $projectStatus = self::$projectsStatus;
         }
 
-        $aProjects = $projects->selectProjectsByStatus(implode(',', $projectStatus), null, $orderBy, $rateRange, $start, $limit, false);
+        $projectsData = [];
+        $projects     = $projectsEntity->selectProjectsByStatus($projectStatus, '', $orderBy, $start, $limit);
 
-        foreach ($aProjects as $key => $project) {
-            $aCompany                       = $company->select('id_company = ' . $project['id_company']);
-            $aProjects[$key]['company']     = array_shift($aCompany);
-            $aProjects[$key]['category']    = $aProjects[$key]['company']['sector'];
-            $aProjects[$key]['number_bids'] = $bids->counter('id_project = ' . $project['id_project']);
+        foreach ($projects as $project) {
+            $projectsData[$project['id_project']] = $this->getBaseData($project);
+            $projectsData[$project['id_project']]['bidsCount'] = $bids->counter('id_project = ' . $project['id_project']);
 
-            if (isset($clientID)) {
-                /** @var \lenders_accounts $lenderAccount */
-                $lenderAccount = $this->entityManager->getRepository('lenders_accounts');
-                $lenderAccount->get($clientId, 'id_client_owner');
-
-                $aProjects[$key]['currentUser']['offers']     = $this->lenderAccountDisplayManager->getBidInformationForProject($project['id_project'], $lenderAccount);
-                $aProjects[$key]['currentUser']['isInvolved'] = false === empty($aProjects[$key]['currentUser']['offers']['offerIds']);
+            if (false === empty($lenderAccount->id_lender_account)) {
+                $projectsData[$project['id_project']]['lender']['bids'] = $this->lenderAccountDisplayManager->getBidsForProject($project['id_project'], $lenderAccount);
             }
         }
 
-        return $aProjects;
+        return $projectsData;
     }
 
-    public function getProjectInformationForDisplay(\projects $project)
+    /**
+     * @param array $project
+     * @return array
+     */
+    public function getBaseData(array $project)
     {
-        /** @var \companies $companies */
-        $companies = $this->entityManager->getRepository('companies');
         /** @var \bids $bids */
         $bids = $this->entityManager->getRepository('bids');
-        /** @var \projects_status $projectStatus */
-        $projectStatus = $this->entityManager->getRepository('projects_status');
         /** @var \loans $loans */
         $loans = $this->entityManager->getRepository('loans');
+        /** @var \projects $projects */
+        $projects = $this->entityManager->getRepository('projects');
+
+        /** @var \companies $company */
+        $company = $this->entityManager->getRepository('companies');
+        $company->get($project['id_company']);
+
+        /** @var \projects_status $projectStatus */
+        $projectStatus = $this->entityManager->getRepository('projects_status');
+        $projectStatus->getLastStatut($project['id_project']);
+
+        $now = new \DateTime('NOW');
+        $end = new \DateTime($project['date_retrait_full']);
+
+        $projectData = [
+            'projectId'            => $project['id_project'],
+            'hash'                 => $project['hash'],
+            'slug'                 => $project['slug'],
+            'amount'               => $project['amount'],
+            'duration'             => $project['period'],
+            'title'                => $project['title'],
+            'picture'              => $project['photo_projet'],
+            'introduction'         => $project['nature_project'],
+            'projectDescription'   => $project['objectif_loan'],
+            'companyDescription'   => $project['presentation_company'],
+            'repaymentDescription' => $project['means_repayment'],
+            'startDate'            => $project['date_publication_full'],
+            'endDate'              => $project['date_retrait_full'],
+            'fundedDate'           => $project['date_funded'],
+            'projectNeed'          => $project['id_project_need'],
+            'risk'                 => $project['risk'],
+            'company'              => [
+                'city'      => $company->city,
+                'zip'       => $company->zip,
+                'sectorId'  => $company->sector,
+                'latitude'  => $company->latitude,
+                'longitude' => $company->longitude
+            ],
+            'status'               => $projectStatus->status,
+            'finished'             => ($projectStatus->status > \projects_status::EN_FUNDING || $end < $now),
+            'averageRate'          => $projects->getAverageInterestRate($project['id_project']),
+            'totalLenders'         => (\projects_status::EN_FUNDING == $projectStatus->status) ? $bids->countLendersOnProject($project['id_project']) : $loans->getNbPreteurs($project['id_project'])
+        ];
+
+        $daysLeft = $now->diff($end);
+        $daysLeft = $daysLeft->invert == 0 ? $daysLeft->days : 0;
+
+        $projectData['daysLeft'] = $daysLeft;
+
+        return $projectData;
+    }
+
+    /**
+     * @param \projects $project
+     * @return array
+     */
+    public function getProjectData(\projects $project)
+    {
+        /** @var \bids $bids */
+        $bids = $this->entityManager->getRepository('bids');
         /** @var \projects_status_history $projectStatusHistory */
         $projectStatusHistory = $this->entityManager->getRepository('projects_status_history');
 
-        $projectData = [
-            'projectId'            => $project->id_project,
-            'hash'                 => $project->hash,
-            'slug'                 => $project->slug,
-            'amount'               => $project->amount,
-            'duration'             => $project->period,
-            'title'                => $project->title,
-            'picture'              => $project->photo_projet,
-            'introduction'         => $project->nature_project,
-            'projectDescription'   => $project->objectif_loan,
-            'companyDescription'   => $project->presentation_company,
-            'repaymentDescription' => $project->means_repayment,
-            'startDate'            => $project->date_publication_full,
-            'endDate'              => $project->date_retrait_full,
-            'fundedDate'           => $project->date_funded,
-            'projectNeed'          => $project->id_project_need,
-            'risk'                 => $project->risk
-        ];
-
-        /** @var array $company */
-        $company = $companies->select('id_company = ' . $project->id_company)[0];
-
-        $projectStatus->getLastStatut($project->id_project);
-
+        $projectData   = $this->getBaseData((array) $project);
         $alreadyFunded = $bids->getSoldeBid($project->id_project);
-        $totalLenders  = (\projects_status::EN_FUNDING == $projectStatus->status) ? $bids->countLendersOnProject($project->id_project) : $loans->getNbPreteurs($project->id_project);
-        $navigation    = $project->positionProject($project->id_project, implode(',', $this->projectsStatus), 'lestatut ASC, IF(lestatut = 2, p.date_retrait_full ,"") DESC, IF(lestatut = 1, p.date_retrait_full ,"") ASC, projects_status.status DESC');
 
         if ($alreadyFunded >= $project->amount) {
             $projectData['costFunded']    = $project->amount;
@@ -130,35 +163,26 @@ class ProjectDisplayManager
             $projectData['maxValidRate']  = \bids::BID_RATE_MAX;
         }
 
-        $projectData['company']      = $company;
-        $projectData['sectorId']     = $company['sector'];
-        $projectData['latitude']     = $company['latitude'];
-        $projectData['longitude']    = $company['longitude'];
-        $projectData['averageRate']  = $project->getAverageInterestRate($project->id_project);
-        $projectData['totalLenders'] = $totalLenders;
-        $projectData['status']       = $projectStatus->status;
-        $projectData['navigation']   = $navigation;
-
         $now        = new \DateTime('NOW');
         $projectEnd = new \DateTime($project->date_retrait_full);
 
-        $projectData['daysLeft'] = $now->diff($projectEnd)->days;
+        $projectData['navigation'] = $project->positionProject($project->id_project, implode(',', self::$projectsStatus), 'lestatut ASC, IF(lestatut = 2, p.date_retrait_full ,"") DESC, IF(lestatut = 1, p.date_retrait_full ,"") ASC, projects_status.status DESC');
 
-        if ($projectEnd  <= $now && $projectStatus->status == \projects_status::EN_FUNDING) {
+        if ($projectEnd  <= $now && $projectData['status'] == \projects_status::EN_FUNDING) {
             $projectData['projectPending'] = true;
         }
 
-        if ($projectStatus->status >= \projects_status::REMBOURSEMENT) {
+        if ($projectData['status'] >= \projects_status::REMBOURSEMENT) {
             $projectData['statusHistory']   = $projectStatusHistory->getHistoryDetails($project->id_project);
         }
 
-        if (in_array($projectStatus->status, [\projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE])) {
+        if (in_array($projectData['status'], [\projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE])) {
             $lastStatusHistory            = $projectStatusHistory->select('id_project = ' . $project->id_project, 'id_project_status_history DESC', 0, 1);
             $lastStatusHistory            = array_shift($lastStatusHistory);
             $projectData['dateLastRepayment'] = date('d/m/Y', strtotime($lastStatusHistory['added']));
         }
 
-        if (\projects_status::EN_FUNDING == $projectStatus->status) {
+        if (\projects_status::EN_FUNDING == $projectData['status']) {
             $rateSummary = [];
             $bidsSummary = $this->projectManager->getBidsSummary($project);
 
@@ -179,7 +203,7 @@ class ProjectDisplayManager
                 'activeBidsCount' => array_sum(array_column($bidsSummary, 'activeBidsCount'))
             ];
         } else {
-            $projectData['fundingStatistics'] = $this->getProjectFundingStatistic($project, $projectStatus->status);
+            $projectData['fundingStatistics'] = $this->getProjectFundingStatistic($project, $projectData['status']);
         }
 
         return $projectData;
@@ -304,6 +328,6 @@ class ProjectDisplayManager
     {
         /** @var \projects $projects */
         $projects  = $this->entityManager->getRepository('projects');
-        return $projects->countSelectProjectsByStatus(implode(',', $this->projectsStatus) . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = ' . \projects::DISPLAY_PROJECT_ON);
+        return $projects->countSelectProjectsByStatus(implode(',', self::$projectsStatus) . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = ' . \projects::DISPLAY_PROJECT_ON);
     }
 }

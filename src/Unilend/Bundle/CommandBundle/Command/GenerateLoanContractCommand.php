@@ -57,7 +57,7 @@ EOF
             \projects_status::REDRESSEMENT_JUDICIAIRE,
             \projects_status::LIQUIDATION_JUDICIAIRE
         );
-        $projects = $project->selectProjectsByStatus(implode(', ', $status), '', '', array(), '', '', false);
+        $projects = $project->selectProjectsByStatus(implode(', ', $status), '', '', '', '', false);
 
         if (count($projects) > 0) {
             $limit = $input->getOption('limit-loans');

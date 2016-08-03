@@ -3,13 +3,11 @@
 {% set lat = [48.017028, 46.323716, 48.80486, 48.790367, 45.65511799999999, 45.83361900000001, 44.837789, 48.57340529999999, 48.52854, 47.7482524] %}
 {% set long = [-0.604248, -0.4647770000000264, 2.3349550000000363, 2.455571999999961, 1.4582299999999577, 1.2611050000000432, -0.5791799999999512, 7.752111300000024, 7.711010999999985, -3.3702448999999888] %}
 
-
 <div class="project-list-map">
     <div id="project-list-map-view" class="project-list-map-view ui-has-mapview" data-mapview="{{ settings.mapview|json_encode|escape('html_attr') }}">
     </div>
     <div class="project-list-map-list">
         <ul class="list-projects">
-
             {% for i, project in projects %}
                 {# Set the rating class for the .rating element #}
                 {% set classRating = project.risk | convertRisk | split('.') | join('-') %}
@@ -22,11 +20,11 @@
 
                 {# Set CSS class to show current user is involved in the project #}
                 {% set classUserInvolved = '' %}
-                {% if settings.markInvolved == true and project.currentUser.isInvolved is defined and project.currentUser.isInvolved == true %}
+                {% if settings.markInvolved == true and project.lender.bids.count is defined and project.lender.bids.count == true %}
                     {% set classUserInvolved = 'ui-current-user-involved' %}
                 {% endif %}
 
-                {% if project.currentUserOffers is defined and project.currentUserOffers is not empty and project.currentUserTotalOffers > 0 %}
+                {% if project.lender.bids is defined and project.lender.bids is not empty and project.lender.bids.count > 0 %}
                     {# Mark that Autolend was applied #}
                     {% set attrHasAutolend = 'class="project-useroffers"' %}
                     {% set autolendTooltip %}
@@ -49,15 +47,17 @@
                     {% set mapviewOfferStatus = '' %}
 
                     {# TODO SET USERS OFFETS #}
-                    {#                                  {% if project.currentUser.offers.total > 0 and project.currentUser.offers is not empty %}
-                                                            {% for status, numOffers in project.currentUser.offers if project.currentUser.offers.total > 0 and status is not empty and status != 'rejected' %}
-                                                                {% set mapviewOfferStatus = status %}
+                    {#                                  {% if project.lender.bids.count > 0 %}
+                                                            {% for status, numOffers in project.lender.bids %}
+                                                                {% if project.lender.bids.count > 0 and status is not empty and status != 'rejected' %}
+                                                                    {% set mapviewOfferStatus = status %}
+                                                                {% endif %}
                                                             {% endfor %}
                                                         {% endif %}#}
 
                     {% set mapviewItem = {
                     id: 'marker' ~ project.projectId,
-                    categoryId: project.sectorId,
+                    categoryId: project.company.sectorId,
                     latLng: [lat[i], long[i]],
                     title: project.title,
                     description: '<div style="font-style: italic;">' ~ project.company.city ~ ', ' ~ project.company.zip ~ '</div><div class="rating rating-' ~ classRating ~ '"><span class="sr-only">Rated ' ~ project.risk ~ ' out of 5</span></span></div>',
@@ -88,10 +88,10 @@
                     </div>
                     <div class="project-offers">
                         <strong>{{ project.number_bids }}</strong> {% transchoice project.number_bids %}project-list_offer-label{% endtranschoice %}
-                        {% if project.currentUserOffers is defined and project.currentUserOffers is not empty and project.currentUserTotalOffers > 0 %}
+                        {% if project.lender.bids is defined and project.lender.bids is not empty and project.lender.bids.count > 0 %}
                             <div {{ attrHasAutolend }}>
                                 {# Show stats for each type of offer #}
-                                {% for status, numOffers in project.currentUser.offers %}
+                                {% for status, numOffers in project.lender.bids %}
                                     {% if status == 'inprogress' and numOffers > 0 %}
                                         <div class="project-list-item-useroffers-accepted">
                                             {{ numOffers|__num|nbsp }} {% transchoice numOffers %} project-list_accepted-bids-label {% endtranschoice %}

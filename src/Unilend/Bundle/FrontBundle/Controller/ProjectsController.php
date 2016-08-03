@@ -1,7 +1,5 @@
 <?php
-
 namespace Unilend\Bundle\FrontBundle\Controller;
-
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
@@ -11,6 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
+use Symfony\Component\Translation\Translator;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
@@ -27,49 +26,77 @@ class ProjectsController extends Controller
     /**
      * @Route("/projets-a-financer/{page}", defaults={"page" = "1"}, name="project_list")
      *
+     * @param int $page
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function projectListAction($page)
     {
+        /** @var Translator $translator */
+        $translator = $this->get('translator');
         /** @var ProjectDisplayManager $projectDisplayManager */
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
-        /** @var \projects $projects */
-        $projects = $this->get('unilend.service.entity_manager')->getRepository('projects');
+        /** @var AuthorizationChecker $authorizationChecker */
+        $authorizationChecker = $this->get('security.authorization_checker');
 
-        $limit = $this->getPaginationStartAndLimit($page)['limit'];
-        $start = $this->getPaginationStartAndLimit($page)['start'];
+        /** @var BaseUser $user */
+        $user = $this->getUser();
 
-        /** @var array $rateRange */
-        $rateRange = [\bids::BID_RATE_MIN, \bids::BID_RATE_MAX];
+        $template   = [];
+        $pagination = $this->getPaginationStartAndLimit($page);
+        $limit      = $pagination['limit'];
+        $start      = $pagination['start'];
 
-        if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
-            && $this->get('security.authorization_checker')->isGranted('ROLE_LENDER')
+        if (
+            $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY')
+            && $authorizationChecker->isGranted('ROLE_LENDER')
+            && $user instanceof UserLender
         ) {
-            /** @var BaseUser $user */
-            $user = $this->getUser();
-            $aTemplateVariables['projects'] = $projectDisplayManager->getProjectsForDisplay(
-                null,
+            /** @var \lenders_accounts $lenderAccount */
+            $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
+            $lenderAccount->get('id_client_owner', $user->getClientId());
+
+            $template['projects'] = $projectDisplayManager->getProjectsList(
+                [],
                 'p.date_retrait_full DESC',
-                $rateRange,
                 $start,
                 $limit,
-                $user->getClientId()
+                $lenderAccount
             );
+
+            /** @var \lenders_accounts $lenderAccount */
+            $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
+            $lenderAccount->get($user->getClientId(), 'id_client_owner');
+
+            /** @var LenderAccountDisplayManager $lenderAccountDisplayManager */
+            $lenderAccountDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
+
+            array_walk($template['projects'], function(&$project) use ($lenderAccountDisplayManager, $lenderAccount) {
+                $project['lender'] = $lenderAccountDisplayManager->getActivityForProject($lenderAccount, $project['projectId']);
+            });
         } else {
-            $aTemplateVariables['projects'] = $projectDisplayManager->getProjectsForDisplay(
-                null,
+            $template['projects'] = $projectDisplayManager->getProjectsList(
+                [],
                 'p.date_retrait_full DESC',
-                $rateRange,
                 $start,
                 $limit
             );
         }
 
-        $aTemplateVariables['projectsInFunding']  = $projects->countSelectProjectsByStatus(\projects_status::EN_FUNDING);
-        $aTemplateVariables['paginationSettings'] = $this->pagination($page, $limit);
-        $aTemplateVariables['showPagination']     = true;
+        $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower);
 
-        return $this->render('pages/projects.html.twig', $aTemplateVariables);
+        if (false === $isFullyConnectedUser) {
+            array_walk($template['projects'], function(&$project) use ($translator) {
+                $project['title'] = $translator->trans('company-sector_sector-' . $project['company']['sectorId']);
+            });
+        }
+
+        /** @var \projects $projects */
+        $projects = $this->get('unilend.service.entity_manager')->getRepository('projects');
+
+        $template['projectsInFunding']  = $projects->countSelectProjectsByStatus(\projects_status::EN_FUNDING);
+        $template['pagination'] = $this->pagination($page, $limit);
+
+        return $this->render('pages/projects.html.twig', $template);
     }
 
     /**
@@ -153,7 +180,7 @@ class ProjectsController extends Controller
         $user = $this->getUser();
 
         $template = [
-            'project'  => $projectDisplayManager->getProjectInformationForDisplay($project),
+            'project'  => $projectDisplayManager->getProjectData($project),
             'finance'  => $projectDisplayManager->getProjectFinancialData($project),
             'bidToken' => sha1('tokenBid-' . time() . '-' . uniqid())
         ];
@@ -192,22 +219,24 @@ class ProjectsController extends Controller
 
             /** @var LenderAccountDisplayManager $lenderAccountDisplayManager */
             $lenderAccountDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
-            $template['lenderOnProject'] = $lenderAccountDisplayManager->getLenderActivityForProject($lenderAccount, $project);
+            $template['project']['lender'] = $lenderAccountDisplayManager->getActivityForProject($lenderAccount, $project->id_project);
 
             if (false === empty($request->getSession()->get('bidResult'))) {
                 $template['lender']['bidResult'] = $request->getSession()->get('bidResult');
                 $request->getSession()->remove('bidResult');
             }
-        } else {
-            $template['project']['title'] = $this->get('translator')->trans('company-sector_sector-' . $template['project']['sectorId']);
         }
 
         $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower);
 
+        if (false === $isFullyConnectedUser) {
+            $template['project']['title'] = $this->get('translator')->trans('company-sector_sector-' . $template['project']['company']['sectorId']);
+        }
+
         $template['conditions'] = [
             'validatedUser'       => $isFullyConnectedUser,
             'bids'                => $template['project']['status'] == \projects_status::EN_FUNDING,
-            'myBids'              => isset($template['lenderOnProject']) && $template['lenderOnProject']['bids']['count'] > 0,
+            'myBids'              => isset($template['lender']) && $template['lender']['bids']['count'] > 0,
             'finance'             => $isFullyConnectedUser,
             'history'             => $isFullyConnectedUser && ($template['project']['status'] == \projects_status::FUNDE || $template['project']['status'] >= \projects_status::REMBOURSEMENT),
             'canBid'              => $isFullyConnectedUser && $user instanceof UserLender && $user->hasAcceptedCurrentTerms(),
@@ -393,7 +422,7 @@ class ProjectsController extends Controller
 
                 foreach ($bids as $bid) {
                     $template['bids'][] = [
-                        'id'           => (int) $bid['id_bid'],
+                        'id'           => (int) $bid['ordre'],
                         'rate'         => (float) $bid['rate'],
                         'amount'       => $bid['amount'] / 100,
                         'status'       => (int) $bid['status'],

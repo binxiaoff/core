@@ -181,15 +181,18 @@ class projects extends projects_crud
      * @param string $status
      * @param string $where
      * @param string $order
-     * @param array $aRateRange
      * @param string $start
      * @param string $nb
      * @param bool $bUseCache
      * @return array
      */
-    public function selectProjectsByStatus($status, $where = '', $order = '', $aRateRange = array(), $start = '', $nb = '', $bUseCache = true)
+    public function selectProjectsByStatus($status, $where = '', $order = '', $start = '', $nb = '', $bUseCache = true)
     {
-        $aBind = array('iFunding' => \projects_status::EN_FUNDING, 'status' => explode(',', $status));
+        if (false === is_array($status)) {
+            $status = explode(',', $status);
+        }
+
+        $aBind = array('iFunding' => \projects_status::EN_FUNDING, 'status' => $status);
 
         if ($bUseCache) {
             $QCProfile = new \Doctrine\DBAL\Cache\QueryCacheProfile(60, md5(__METHOD__));
@@ -205,39 +208,20 @@ class projects extends projects_crud
         if ($order == '') {
             $order = ' lestatut ASC, p.date_retrait DESC ';
         }
-        $sql = 'SELECT p.*,
-              projects_status.status,
-              DATEDIFF(p.date_retrait_full, NOW()) AS daysLeft,
-              CASE WHEN projects_status.status = :iFunding
-                THEN "1"
-                ELSE "2"
-              END AS lestatut ';
-
-        if (2 === count($aRateRange)) {
-            $sql .= ', ROUND(SUM(b.amount * b.rate) / SUM(b.amount), 1) AS avg_rate';
-        }
-        $sql .= " FROM projects p
+        $sql = '
+            SELECT p.*,
+                projects_status.status,
+                DATEDIFF(p.date_retrait_full, NOW()) AS daysLeft,
+                CASE WHEN projects_status.status = :iFunding
+                    THEN "1"
+                    ELSE "2"
+                END AS lestatut
+            FROM projects p
             INNER JOIN projects_last_status_history USING (id_project)
             INNER JOIN projects_status_history USING (id_project_status_history)
-            INNER JOIN projects_status USING (id_project_status) ";
-
-        if (2 === count($aRateRange)) {
-            $sql .= "LEFT JOIN bids b ON b.id_project = p.id_project AND b.status IN (0 ,1) ";
-        }
-        $sql .= 'WHERE ' . $sWhereClause;
-
-        if (2 === count($aRateRange)) {
-            $aBind['minRateRange'] = $aRateRange[0];
-            $aBind['maxRateRange'] = $aRateRange[1];
-            $sql .= ' GROUP BY p.id_project';
-            $sql .= ' HAVING avg_rate >= :minRateRange AND';
-            if ($aRateRange[1] == 10) {
-                $sql .= ' avg_rate <= :maxRateRange';
-            } else {
-                $sql .= ' avg_rate < :maxRateRange';
-            }
-        }
-        $sql .= ' ORDER BY ' . $order;
+            INNER JOIN projects_status USING (id_project_status)
+            WHERE ' . $sWhereClause . '
+            ORDER BY ' . $order;
 
         if (is_numeric($nb)) {
             $aBind['number'] = $nb;
@@ -445,7 +429,7 @@ class projects extends projects_crud
 
     public function getProjectsStatusAndCount($sListStatus, $sTabOrderProject, $iStart, $iLimit)
     {
-        $aProjects   = $this->selectProjectsByStatus($sListStatus, ' AND p.status = 0 AND p.display = 0', $sTabOrderProject, array(), $iStart, $iLimit);
+        $aProjects   = $this->selectProjectsByStatus($sListStatus, ' AND p.status = 0 AND p.display = 0', $sTabOrderProject, $iStart, $iLimit);
         $anbProjects = $this->countSelectProjectsByStatus($sListStatus . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = 0', true);
         $aElements   = array(
             'lProjectsFunding' => $aProjects,

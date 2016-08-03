@@ -156,7 +156,7 @@ class ajaxController extends bootstrap
         }
 
         $sPositionStart = filter_var($_GET['positionStart'], FILTER_SANITIZE_NUMBER_INT) + 10;
-        $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, $where . ' AND p.status = 0 AND p.display = 0', $ordre, $aRateRange, $sPositionStart, 10);
+        $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, $where . ' AND p.status = 0 AND p.display = 0', $ordre, $sPositionStart, 10);
         $affichage             = '';
 
         if (empty($this->lProjetsFunding)) {
@@ -333,7 +333,7 @@ class ajaxController extends bootstrap
                 $this->where = $key;
             }
 
-            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($sStatusProject, ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], $aRateRange, 0, 10);
+            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($sStatusProject, ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], 0, 10);
             $this->nbProjects      = $this->projects->countSelectProjectsByStatus($sStatusProject . ' AND p.status = 0 AND p.display = 0');
         } else {
             $this->ordreProject = 1;
@@ -342,7 +342,7 @@ class ajaxController extends bootstrap
             $_SESSION['ordreProject'] = $this->ordreProject;
 
             $this->where           = '';
-            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, ' AND p.status = 0', $this->tabOrdreProject[$this->ordreProject], array(), 0, 10);
+            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, ' AND p.status = 0', $this->tabOrdreProject[$this->ordreProject], 0, 10);
             $this->nbProjects      = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ' AND p.status = 0');
         }
         foreach ($this->lProjetsFunding as $iKey => $aProject) {

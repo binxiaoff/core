@@ -7,60 +7,42 @@
 } %}
 
 {# Set the rating class for the .rating element #}
-{% set classRating = project.risk | convertRisk | split('.') | join('-') %}
+{% set classRating = project.risk|convertRisk|split('.')|join('-') %}
 
 {% block siteContent %}
-    <article id="project-single" class="page project-single project-category-{{ project.sectorId }}">
+    <article id="project-single" class="page project-single project-category-{{ project.company.sectorId }}{% if project.finished %} ui-project-expired{% endif %}">
         <header class="project-single-header-wrap">
-            {# Generate object for mapview to place marker on map #}
-            {% if project.latitude is defined and project.longitude is defined %}
-                {# Set the group based on active, expired, or offers inprogress, rejected or accepted #}
-                {# @note MapView JS component & CSS relies on two groups named 'active' and 'expired' (case insensitive) #}
-                {#{% set mapviewGroup = (listItem.daysLeft == 0 ? 'expired' : 'active') %}#}
-                {% set mapviewGroup = 'active' %}
-
-                {# Set the offer status to show the icon in the marker #}
-                {# @note MapView CSS relies on offerStatuses named 'inprogress', 'rejected' and 'accepted' #}
-                {% set mapviewOfferStatus = '' %}
-
-                {#{% if lenderOnProject is defined and lenderOnProject.bids.count > 0 %}#}
-                    {#{% for statusOffer, numOffers in currentUserOffers if numOffers > 0 and statusOffer is not empty and statusOffer != 'rejected' %}#}
-                        {#{% set mapviewOfferStatus = statusOffer %}#}
-                    {#{% endfor %}#}
-                {#{% endif %}#}
-
-                {# Output map HTML #}
-                <div class="project-single-map">
-                    {# The MapView element #}
+            <div class="project-single-map">
+                {% if project.company.latitude is defined and project.company.longitude is defined %}
                     {% set mapview = {
                         target: '#project-map',
                         showFilters: false,
                         mapbox: {
-                            center: [project.latitude, project.longitude],
+                            center: [project.company.latitude, project.company.longitude],
                             zoom: 13
                         },
                         groups: ['all'],
                         markers: [{
                             id: 'marker' ~ project.projectId,
-                            categoryId: project.sectorId,
-                            latLng: [project.latitude, project.longitude],
+                            categoryId: project.company.sectorId,
+                            latLng: [project.company.latitude, project.company.longitude],
                             title: project.title,
                             description: '<div style="font-style: italic;">' ~ project.company.city ~ ', ' ~ project.company.zip ~ '</div><div class="rating rating-' ~ classRating ~ '"><span class="sr-only">Rated ' ~ project.risk ~ ' out of 5</span></span></div>',
                             status: (project.daysLeft == 0 ? 'expired' : 'active'),
-                            offerStatus: mapviewOfferStatus|default(''),
+                            offerStatus: '',
                             groupName: 'all'
                         }]
                     } %}
 
                     {# @note This MapView will only be initialised when it's first viewed, to reduce calls to Mapbox and lower API usage (see showProjectSingleMap function in main.dev.js) #}
                     <div id="project-map" class="project-single-map-embed">
-                        <a href="javascript:;" class="btn-close ui-project-single-map-toggle"><span class="label sr-only">Close Map</span></a>
+                        <a href="javascript:;" class="btn-close ui-project-single-map-toggle"><span class="label sr-only">{% trans %} project-detail_map-close-button {% endtrans %}</span></a>
                     </div>
                     <script type="text/javascript">
-                        var projectMapViewSettings = '{{ mapview | json_encode | escape('js') }}'
+                        var projectMapViewSettings = '{{ mapview|json_encode|escape('js') }}'
                     </script>
-                </div><!-- /.project-single-map -->
-            {% endif %}
+                {% endif %}
+            </div><!-- /.project-single-map -->
 
             <div class="project-single-header">
                 <div class="project-single-header-position">
@@ -68,7 +50,7 @@
                         <div class="project-single-category">
                             <div class="svg-icon-wrap" style="max-width: 160px">
                                 <canvas class="svg-icon-aspect" width="160" height="160"></canvas>
-                                {{ svgimage('#category-' ~ project.sectorId, '', 160, 160) | raw }}
+                                {{ svgimage('#category-' ~ project.company.sectorId, '', 160, 160)|raw }}
                             </div>
                         </div><!-- /.project-single-category -->
 
@@ -95,7 +77,7 @@
                                     <div class="label">{% trans %} project-detail_unilend-rating-label {% endtrans %}</div>
                                     <span class="rating rating-{{ classRating }}">
                                         <span class="sr-only">
-                                            {% trans with {'%risk%' : project.risk | convertRisk} %} project-detail_unilend-rating-wording-label {% endtrans %}
+                                            {% trans with {'%risk%' : project.risk|convertRisk} %} project-detail_unilend-rating-wording-label {% endtrans %}
                                         </span>
                                     </span>
                                 </div><!-- /.project-single-rating -->
@@ -105,7 +87,7 @@
                         <div class="row">
                             <div class="col-lg-10 col-md-9">
                                 <div class="project-single-description">
-                                    {{ project.introduction | nl2br }}
+                                    {{ project.introduction|nl2br }}
                                 </div><!-- /.project-single-description -->
                             </div>
                         </div>
@@ -114,40 +96,48 @@
                             {% if project.picture is not empty %}
                                 <div class="col-lg-5 col-md-4 hide-tablet-l hide-sm hide-xs">
                                     <div class="project-single-image">
-                                        <img src="{{ project.picture | completeProjectImagePath }}" alt="{{ project.title | escape('html_attr') }}">
+                                        <img src="{{ project.picture|completeProjectImagePath }}" alt="{{ project.title|escape('html_attr') }}">
                                     </div><!-- /.project-single-image -->
                                 </div>
                             {% endif %}
 
                             <div class="col-lg-5 col-md-5 col-sm-6">
                                 <div class="project-single-period">
-                                    <div class="project-single-period-countdown"><span class="icon fa-clock-u32"></span>
-                                        <span class="ui-has-timecount" data-timecount-to="{{ project.endDate | escape('html_attr') }}"></span>
+                                    <div class="project-single-period-countdown">
+                                        {% if project.finished %}
+                                            {% trans %} project-detail_project-status-finished {% endtrans %}
+                                        {% else %}
+                                            <span class="icon fa-clock-u32"></span>
+                                            <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|escape('html_attr') }}"></span>
+                                        {% endif %}
                                     </div>
-                                    <div class="project-single-period-expires">{% trans %} project-detail_project-end-label {% endtrans %} {{ project.endDate | date('l j F Y à H:i') }}</div>
+                                    <div class="project-single-period-expires">{% trans with {
+                                            '%date%' : project.endDate|localizeddate('full', 'none', app.request.locale),
+                                            '%time%' : project.endDate|localizeddate('none', 'short', app.request.locale)
+                                        } %} project-detail_project-end-label {% endtrans %}
                                 </div><!-- /.project-single-period -->
 
                                 <div class="project-single-offers">
-                                    {% if lenderOnProject.bids is defined and lenderOnProject.bids.count > 0 %}
-                                        {% if lenderOnProject.bids.accepted is not empty %}
+                                    {% if project.lender.bids is defined and project.lender.bids.count > 0 %}
+                                        {% if project.lender.bids.accepted is not empty %}
                                             <div class="project-single-useroffers-accepted">
-                                                {{ lenderOnProject.bids.accepted | length | __num(0) | nbsp }} {% transchoice lenderOnProject.bids.accepted | length %} project-detail_accepted-bids-label {% endtranschoice %}
+                                                {{ project.lender.bids.accepted|length|__num(0)|nbsp }} {% transchoice project.lender.bids.accepted|length %} project-detail_accepted-bids-label {% endtranschoice %}
                                             </div>
                                         {% endif %}
-                                        {% if lenderOnProject.bids.inprogress is not empty %}
+                                        {% if project.lender.bids.inprogress is not empty %}
                                             <div class="project-single-useroffers-inprogress">
-                                                {{ lenderOnProject.bids.inprogress | length | __num(0) | nbsp }} {% transchoice lenderOnProject.bids.inprogress | length %} project-detail_pending-bids-label {% endtranschoice %}
+                                                {{ project.lender.bids.inprogress|length|__num(0)|nbsp }} {% transchoice project.lender.bids.inprogress|length %} project-detail_pending-bids-label {% endtranschoice %}
                                             </div>
                                         {% endif %}
-                                        {% if lenderOnProject.bids.rejected is not empty %}
+                                        {% if project.lender.bids.rejected is not empty %}
                                             <div class="project-single-useroffers-rejected">
-                                            {{ lenderOnProject.bids.rejected | length | __num(0) | nbsp }} {% transchoice lenderOnProject.bids.rejected | length %} project-detail_rejected-bids-label {% endtranschoice %}
+                                            {{ project.lender.bids.rejected|length|__num(0)|nbsp }} {% transchoice project.lender.bids.rejected|length %} project-detail_rejected-bids-label {% endtranschoice %}
                                             </div>
                                         {% endif %}
                                     {% endif %}
 
                                     <div class="project-single-offers-total">
-                                        {% trans with {'%totalLenders%' : '<strong>' ~ project.totalLenders | __num(0) | nbsp ~ '</strong>'} %} project-detail_offres-total-label {% endtrans %}
+                                        {% trans with {'%totalLenders%' : '<strong>' ~ project.totalLenders|__num(0)|nbsp ~ '</strong>'} %} project-detail_offres-total-label {% endtrans %}
                                     </div>
                                 </div><!-- /.project-single-offers -->
 
@@ -156,7 +146,7 @@
                                     <div class="project-single-rating">
                                         <div class="label">{% trans %} project-detail_unilend-rating-label {% endtrans %}</div>
                                         <span class="rating rating-{{ classRating }}"><span class="sr-only">
-                                                {% trans with {'%risk%' : project.risk | convertRisk} %} project-detail_unilend-rating-wording-label {% endtrans %}</span></span>
+                                                {% trans with {'%risk%' : project.risk|convertRisk} %} project-detail_unilend-rating-wording-label {% endtrans %}</span></span>
                                     </div><!-- /.project-single-rating -->
                                 </div><!-- /.show-xs -->
                             </div>
@@ -194,11 +184,11 @@
                 <div class="project-single-menu-info">
                     <div class="project-single-menu-col project-single-menu-title">
                         <div class="title">{{ project.title }}</div>
-                        <span class="rating rating-{{ classRating }}"><span class="sr-only">{% trans with {'%risk%' : project.risk | convertRisk }%} project-detail_unilend-rating-wording-label {% endtrans %}</span></span>
+                        <span class="rating rating-{{ classRating }}"><span class="sr-only">{% trans with {'%risk%' : project.risk|convertRisk }%} project-detail_unilend-rating-wording-label {% endtrans %}</span></span>
                     </div><!-- /.project-single-menu-title -->
                     <div class="project-single-menu-col project-single-menu-period">
                         <span class="icon fa-clock-u32"></span>
-                        <span class="ui-has-timecount" data-timecount-to="{{ project.endDate | escape('html_attr') }}">&hellip;</span>
+                        <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|escape('html_attr') }}">&hellip;</span>
                     </div><!-- /.project-single-menu-period -->
                     <div class="project-single-menu-col project-single-menu-top">
                         <a href="#top" class="btn-nav-top"><span class="sr-only">Back to top</span></a>
@@ -238,7 +228,7 @@
                             <section id="project-section-who" class="page-section">
                                 <h3 class="h3">{% trans %} project-detail_project-presentation-about-us-title {% endtrans %}</h3>
                                 {% if conditions.validatedUser %}
-                                    <p>{{ project.companyDescription | raw }}</p>
+                                    <p>{{ project.companyDescription|raw }}</p>
                                 {% else %}
                                     <p>{% trans %} project-detail_logged-out-description {% endtrans %}</p>
                                 {% endif %}
@@ -247,7 +237,7 @@
                             <section id="project-section-what" class="page-section separate">
                                 <h3 class="h3">{% trans %} project-detail_project-presentation-our-project {% endtrans %}</h3>
                                 {% if conditions.validatedUser %}
-                                    <p>{{ project.projectDescription | raw }}</p>
+                                    <p>{{ project.projectDescription|raw }}</p>
                                 {% else %}
                                     <p>{% trans %} project-detail_logged-out-description {% endtrans %}</p>
                                 {% endif %}
@@ -259,7 +249,7 @@
                         <section id="project-section-help" class="page-section">
                             <h3 class="h3">{% trans %} project-detail_project-presentation-repayment-reason-title {% endtrans %}</h3>
                             {% if conditions.validatedUser %}
-                                <p>{{ project.repaymentDescription | raw }}</p>
+                                <p>{{ project.repaymentDescription|raw }}</p>
                             {% else %}
                                 <p>{% trans %} project-detail_logged-out-description {% endtrans %}</p>
                             {% endif %}
@@ -283,27 +273,26 @@
                             <div id="history" data-watchscroll-nav>
                                 <section id="project-section-info" class="page-section">
                                     <h3 class="h3">{% trans %} project-detail_project-history-title {% endtrans %}</h3>
-                                    <p>{% trans with {'%amountUserLoan%' : lenderOnProject.loans.myLoanOnProject.solde | __num(0)} %} project-detail_project-presentation-repayment-info {% endtrans %}</p>
+                                    <p>{% trans with {'%amountUserLoan%' : project.lender.loans.myLoanOnProject.solde|__num(0)} %} project-detail_project-presentation-repayment-info {% endtrans %}</p>
                                     <p>
                                         {% trans with {
-                                            '%amountAlreadyPaidBack%' : lenderOnProject.loans.amountAlreadyPaidBack | __num(2),
-                                            '%remainingToBeRepaid%' : lenderOnProject.loans.remainingToBeRepaid | __num(2),
-                                            '%remainingMonths%' : lenderOnProject.loans.remainingMonths
-                                        } %}
-                                        project-detail_project-presentation-repayment-info-detail {% endtrans %}
+                                            '%amountAlreadyPaidBack%' : project.lender.loans.amountAlreadyPaidBack|__num(2),
+                                            '%remainingToBeRepaid%' : project.lender.loans.remainingToBeRepaid|__num(2),
+                                            '%remainingMonths%' : project.lender.loans.remainingMonths
+                                        } %} project-detail_project-presentation-repayment-info-detail {% endtrans %}
                                     </p>
 
-                                    {% if lenderOnProject.loans.amountAlreadyPaidBack > 0 %}
+                                    {% if project.lender.loans.amountAlreadyPaidBack > 0 %}
                                         {% for history in project.statusHistory %}
-                                            {% if 'project-presentation-repayment-info-project-status-#{history.status}' | trans != 'project-presentation-repayment-info-project-status-#{history.status}' %}
+                                            {% if 'project-presentation-repayment-info-project-status-#{history.status}'|trans != 'project-presentation-repayment-info-project-status-#{history.status}' %}
                                                 <p>
                                                 {{ history.added|date(d/m/Y) }}
-                                                    {{ 'project-presentation-repayment-info-project-status-#{history.status}' | trans }}
+                                                    {{ 'project-presentation-repayment-info-project-status-#{history.status}'|trans }}
                                                     <br/>
                                                     {% if history.site_content is not empty %}
-                                                        {{ history.content | nl2br }}
+                                                        {{ history.content|nl2br }}
                                                         {% if history.failure == 1 %}
-                                                            {% trans with {'%percentageRecovered%' : lenderOnProject.loans.percentageRecovered | __num(1) } %} project-detail_project-presentation-repayment-info-recovery {% endtrans %}
+                                                            {% trans with {'%percentageRecovered%' : project.lender.loans.percentageRecovered|__num(1) } %} project-detail_project-presentation-repayment-info-recovery {% endtrans %}
                                                         {% endif %}
                                                     {% endif %}
                                                 </p>
