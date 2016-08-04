@@ -428,7 +428,7 @@ class emprunteursController extends bootstrap
 
             /** @var \projects $project */
             $project         = $this->loadData('projects');
-            $this->aProjects = $project->selectProjectsByStatus(implode(',', \projects_status::$runningRepayment), ' AND id_company = ' . $company->id_company);
+            $this->aProjects = $project->selectProjectsByStatus([\projects_status::$runningRepayment], ' AND id_company = ' . $company->id_company);
         }
     }
 

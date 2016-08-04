@@ -43,13 +43,13 @@ class ProjectDisplayManager
 
     /**
      * @param array                  $projectStatus
-     * @param string|null            $orderBy
+     * @param array                  $sort
      * @param int|null               $start
      * @param int|null               $limit
      * @param \lenders_accounts|null $lenderAccount
      * @return array
      */
-    public function getProjectsList(array $projectStatus = [], $orderBy = null, $start = null, $limit = null, \lenders_accounts $lenderAccount = null)
+    public function getProjectsList(array $projectStatus = [], array $sort = [], $start = null, $limit = null, \lenders_accounts $lenderAccount = null)
     {
         /** @var \projects $projectsEntity */
         $projectsEntity = $this->entityManager->getRepository('projects');
@@ -61,7 +61,7 @@ class ProjectDisplayManager
         }
 
         $projectsData = [];
-        $projects     = $projectsEntity->selectProjectsByStatus($projectStatus, '', $orderBy, $start, $limit);
+        $projects     = $projectsEntity->selectProjectsByStatus($projectStatus, ' AND p.status = 0 AND p.display = ' . \projects::DISPLAY_PROJECT_ON, $sort, $start, $limit);
 
         foreach ($projects as $project) {
             $projectsData[$project['id_project']] = $this->getBaseData($project);
@@ -166,7 +166,7 @@ class ProjectDisplayManager
         $now        = new \DateTime('NOW');
         $projectEnd = new \DateTime($project->date_retrait_full);
 
-        $projectData['navigation'] = $project->positionProject($project->id_project, implode(',', self::$projectsStatus), 'lestatut ASC, IF(lestatut = 2, p.date_retrait_full ,"") DESC, IF(lestatut = 1, p.date_retrait_full ,"") ASC, projects_status.status DESC');
+        $projectData['navigation'] = $project->positionProject($project->id_project, self::$projectsStatus, [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC]);
 
         if ($projectEnd  <= $now && $projectData['status'] == \projects_status::EN_FUNDING) {
             $projectData['projectPending'] = true;
@@ -328,6 +328,6 @@ class ProjectDisplayManager
     {
         /** @var \projects $projects */
         $projects  = $this->entityManager->getRepository('projects');
-        return $projects->countSelectProjectsByStatus(implode(',', self::$projectsStatus) . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = ' . \projects::DISPLAY_PROJECT_ON);
+        return $projects->countSelectProjectsByStatus(implode(',', self::$projectsStatus), ' AND p.status = 0 AND p.display = ' . \projects::DISPLAY_PROJECT_ON);
     }
 }

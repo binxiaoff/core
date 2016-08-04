@@ -23,6 +23,14 @@ class bootstrap extends Controller
     {
         parent::initialize();
 
+        // @todo kept for temporary backward compatibility
+        $this->tabProjectDisplay = [\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::FUNDING_KO, \projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE];
+        $this->tabOrdreProject   = [
+            [],
+            [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC],
+            [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_ASC]
+        ];
+
         if ($this->current_function != 'login') {
             $_SESSION['redirection_url'] = $_SERVER['REQUEST_URI'];
         }

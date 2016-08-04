@@ -1407,7 +1407,7 @@ class transfertsController extends bootstrap
             die;
         }
 
-        $aProjects = $project->selectProjectsByStatus(\projects_status::FUNDE, '', '', '', '', false);
+        $aProjects = $project->selectProjectsByStatus([\projects_status::FUNDE], '', [], '', '', false);
 
         $this->aProjects = array();
         foreach ($aProjects as $iProject => $aProject) {

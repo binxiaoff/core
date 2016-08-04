@@ -1436,7 +1436,7 @@ class dossiersController extends bootstrap
         $this->companies = $this->loadData('companies');
         $this->bids      = $this->loadData('bids');
 
-        $this->lProjects = $this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING);
+        $this->lProjects = $this->projects->selectProjectsByStatus([\projects_status::EN_FUNDING]);
     }
 
     public function _remboursements()

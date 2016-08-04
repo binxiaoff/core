@@ -74,7 +74,7 @@ class MainController extends Controller
 
             $aTemplateVariables['projects'] = $projectDisplayManager->getProjectsList(
                 [\projects_status::EN_FUNDING],
-                'p.date_retrait_full ASC',
+                [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC],
                 null,
                 null,
                 $lenderAccount
@@ -82,7 +82,7 @@ class MainController extends Controller
         } else {
             $aTemplateVariables['projects'] = $projectDisplayManager->getProjectsList(
                 [\projects_status::EN_FUNDING],
-                'p.date_retrait_full ASC'
+                [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC]
             );
         }
 
