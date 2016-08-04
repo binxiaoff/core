@@ -176,11 +176,20 @@ class MainController extends Controller
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var \redirections $redirection */
+        $redirection = $entityManager->getRepository('redirections');
+
+        $slug = substr($request->attributes->get('routeDocument')->getPath(), 1);
+
+        if ($redirection->get(['from_slug' => $slug, 'status' => 1])) {
+            return new RedirectResponse($redirection->to_slug, $redirection->type);
+        }
+
         /** @var \tree $tree */
         $tree = $entityManager->getRepository('tree');
 
-        if (false === $tree->get(['slug' => substr($request->attributes->get('routeDocument')->getPath(), 1)])) {
-            throw new NotFoundHttpException('Page with slug ' . $request->attributes->get('routeDocument')->getPath() . ' could not be found');
+        if (false === $tree->get(['slug' => $slug])) {
+            throw new NotFoundHttpException('Page with slug ' . $slug . ' could not be found');
         }
 
         /** @var MemcacheCachePool $cachePool */
