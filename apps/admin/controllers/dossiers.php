@@ -567,7 +567,8 @@ class dossiersController extends bootstrap
 
                     if ($this->current_projects_status->status <= \projects_status::A_FUNDER) {
                         $sector = $translationManager->selectTranslation('company-sector', 'sector-' . $this->companies->sector);
-                        $this->projects->slug = $this->ficelle->generateSlug($sector . '-' . $this->companies->city . '-' . substr(md5($this->projects->title . '-' . $this->projects->id_project), 0, 7));
+                        $this->settings->get('Prefixe URL pages projet', 'type');
+                        $this->projects->slug = $this->ficelle->generateSlug($this->settings->value . '-' . $sector . '-' . $this->companies->city . '-' . substr(md5($this->projects->title . $this->projects->id_project), 0, 7));
                     }
 
                     $this->projects->update();

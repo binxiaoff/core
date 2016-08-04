@@ -40,11 +40,14 @@
 
             {% if project.status in [constant('\\projects_status::REMBOURSE'), constant('\\projects_status::REMBOURSEMENT_ANTICIPE') ] %}
                 <p>{% trans with {'%dateLastRepayment%' : project.dateLastRepayment} %} project-detail_project-repaid-message {% endtrans %}</p>
-                <p>{% transchoice userInformation.myLoanOnProject with {
-                        '%amountUserLoan%' : userInformation.myLoanOnProject,
-                        '%avgRateUserLoan%' : userInformation.avgRateUserLoan|__num(1)
-                    } %} project-detail_project-repaid-user-message {% endtranschoice %}
-                </p>
+                {% if project.lender is defined %}
+                    <p>
+                        {% transchoice project.lender.loans.myLoanOnProject.nbValid with {
+                            '%amountUserLoan%' : project.lender.loans.myLoanOnProject.solde,
+                            '%avgRateUserLoan%' : project.lender.loans.myAverageLoanRate|__num(2)
+                        } %} project-detail_project-repaid-user-message {% endtranschoice %}
+                    </p>
+                {% endif %}
             {% elseif project.status == constant('\\projects_status::FUNDE') or project.status >= constant('\\projects_status::REMBOURSEMENT') %}
                 <p>
                     {% trans with {

@@ -152,6 +152,10 @@ class ProjectsController extends Controller
     {
         $project = $this->checkProjectAndRedirect($projectSlug);
 
+        if ($project instanceof RedirectResponse) {
+            return $project;
+        }
+
         /** @var ProjectDisplayManager $projectDisplayManager */
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
         /** @var AuthorizationChecker $authorizationChecker */
@@ -230,19 +234,28 @@ class ProjectsController extends Controller
 
     /**
      * @param string $projectSlug
-     * @return \projects
+     * @return \projects|RedirectResponse
      */
     private function checkProjectAndRedirect($projectSlug)
     {
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \projects $project */
-        $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
+        $project = $entityManager->getRepository('projects');
 
         if (false === $project->get($projectSlug, 'slug')) {
+            /** @var \redirections $redirection */
+            $redirection = $entityManager->getRepository('redirections');
+
+            if ($redirection->get(['from_slug' => $projectSlug, 'status' => 1])) {
+                return new RedirectResponse($redirection->to_slug, $redirection->type);
+            }
+
             throw $this->createNotFoundException();
         }
 
         /** @var \projects_status $projectStatus */
-        $projectStatus = $this->get('unilend.service.entity_manager')->getRepository('projects_status');
+        $projectStatus = $entityManager->getRepository('projects_status');
         $projectStatus->getLastStatut($project->id_project);
 
         if (
