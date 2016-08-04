@@ -101,7 +101,9 @@
                     {% endfor %}
                 </div><!-- /.project-list-items -->
 
-                {% include 'partials/components/project-list/pagination.html.twig' %}
+                {% if showPagination %}
+                    {% include 'partials/components/project-list/pagination.html.twig' %}
+                {% endif %}
             </div><!-- /#project-list-view.tab-pane -->
 
             <div id="project-list-map" role="tabpanel" class="tab-pane">
