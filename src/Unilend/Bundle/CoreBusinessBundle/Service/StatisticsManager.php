@@ -24,13 +24,159 @@ class StatisticsManager
 
     public function getAllStatistics()
     {
-        $aStatistics = [
+        return [
+            'numberProjects'                 => 260,
+            'numberProjectRequest'           => 1587952,
+            'numberLenders'                  => 32930,
+            'amountBorrowedInMillions'       => 19,
+            'amountBorrowed'                 => 19516150,
+            'irrUnilend'                     => 4.73,
+            'avgFundingTime'                 => [
+                'days'     => 11,
+                'hours'    => 22,
+                'minutes'  => 40,
+                'unixtime' => 2864000,
+            ],
+            'percentageSuccessFullyFunded'   => 96,
+            'numberActiveLenders'            => 10271,
+            'lendersByType'                  => [
+                'person'      => [
+                    'count'      => 31393,
+                    'percentage' => 95
+                ],
+                'legalEntity' => [
+                    'count'      => 624,
+                    'percentage' => 2
+                ],
+                'active'      => 10271,
+                'community'   => 32930
+            ],
+            'lenderCountByRegion'            => [
+                0  => [
+                    'region'     => 'Auvergne-Rhone-Alpes',
+                    'count'      => 2857,
+                    'percentage' => 10
+                ],
+                1  => [
+                    'region'     => 'Bourgogne-Franche-Comté',
+                    'count'      => 2709,
+                    'percentage' => 10
+                ],
+                2  => [
+                    'region'     => 'Bretagne',
+                    'count'      => 1896,
+                    'percentage' => 7
+                ],
+                3  => [
+                    'region'     => 'Centre',
+                    'count'      => 2522,
+                    'percentage' => 9
+                ],
+                4  => [
+                    'region'     => 'Champane-Ardenne-Lorraine-Alsace',
+                    'count'      => 3195,
+                    'percentage' => 11
+                ],
+                5  => [
+                    'region'     => 'Corse',
+                    'count'      => 471,
+                    'percentage' => 2
+                ],
+                6  => [
+                    'region'     => 'Ile-de-France',
+                    'count'      => 430,
+                    'percentage' => 2
+                ],
+                7  => [
+                    'region'     => 'Midi-Pyrénées-Languedoc-Roussillon',
+                    'count'      => 4632,
+                    'percentage' => 17
+                ],
+                8  => [
+                    'region'     => 'Nord-Pas-de-Calais-Picardie',
+                    'count'      => 1043,
+                    'percentage' => 4
+                ],
+                9  => [
+                    'region'     => 'Normandie',
+                    'count'      => 1709,
+                    'percentage' => 6
+                ],
+                10 => [
+                    'region'     => 'not-in-France',
+                    'count'      => 197,
+                    'percentage' => 1
+                ],
+                11 => [
+                    'region'     => 'Pays-de-la-Loire',
+                    'count'      => 1200,
+                    'percentage' => 4
+                ],
+                12 => [
+                    'region'     => 'Poitou-Charentes-Limousin-Aquitaine',
+                    'count'      => 4456,
+                    'percentage' => 16
+                ],
+                13 => [
+                    'region'     => 'Provence-Alpes-Côte-dAzur',
+                    'count'      => 718,
+                    'percentage' => 3
+                ]
+            ],
+            'averageNumberLendersPerProject' => 449,
+            'borrowerCountByRegion'          => [
+                0 => [
+                    'region'     => 'Auvergne-Rhone-Alpes',
+                    'count'      => 3,
+                    'percentage' => 23
+                ],
+                1 => [
+                    'region'     => 'Bourgogne-Franche-Comté',
+                    'count'      => 3,
+                    'percentage' => 23
+                ],
+                2 => [
+                    'region'     => 'Centre',
+                    'count'      => 1,
+                    'percentage' => 8
+                ],
+                3 => [
+                    'region'     => 'Ile-de-France',
+                    'count'      => 1,
+                    'percentage' => 8
+                ],
+                4 => [
+                    'region'     => 'Midi-Pyrénées-Languedoc-Roussillon',
+                    'count'      => 2,
+                    'percentage' => 15
+                ],
+                5 => [
+                    'region'     => 'not-in-France',
+                    'count'      => 1,
+                    'percentage' => 8
+                ],
+                6 => [
+                    'region'     => 'Poitou-Charentes-Limousin-Aquitaine',
+                    'count'      => 1,
+                    'percentage' => 8
+                ],
+                7 => [
+                    'region'     => 'Provence-Alpes-Côte-dAzur',
+                    'count'      => 1,
+                    'percentage' => 8
+                ]
+            ]
+        ];
+
+        // @todo hidden because of performance issue
+        $borrowedAmount = $this->getAmountBorrowed();
+        $aStatistics    = [
             'numberProjects'                 => $this->getNumberOfFinancedProjects(),
             'numberProjectRequest'           => 1587952,
             'numberLenders'                  => $this->getNumberOfLenders(),
             //TODO replace in code with lendersByType
-            'amountBorrowedInMillions'       => bcdiv($this->getAmountBorrowed(), 1000000),
-            'amountBorrowed'                 => $this->getAmountBorrowed(),
+            'amountBorrowedInMillions'       => bcdiv($borrowedAmount, 1000000),
+            'amountBorrowed'                 => $borrowedAmount,
             'irrUnilend'                     => $this->getUnilendIRR(),
             'avgFundingTime'                 => $this->getAverageFundingTime(),
             'percentageSuccessFullyFunded'   => $this->getPercentageSuccessfullyFinancedProjects(),
