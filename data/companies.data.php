@@ -37,16 +37,26 @@ class companies extends companies_crud
         parent::companies($bdd, $params);
     }
 
-    public function update($cs = '')
-    {
-        $this->setSectorAccordingToNaf();
-        parent::update($cs);
-    }
-
     public function create($cs = '')
     {
         $this->setSectorAccordingToNaf();
+
+        if (is_numeric($this->name) || 0 === strcasecmp($this->name, 'Monsieur') || 0 === strcasecmp($this->name, 'Madame')) {
+            trigger_error('TMA-749 : ' . __CLASS__ . '.' . __FUNCTION__ . ' wrong company name - trace : ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)), E_USER_WARNING);
+        }
+
         return parent::create($cs);
+    }
+
+    public function update($cs = '')
+    {
+        $this->setSectorAccordingToNaf();
+
+        if (is_numeric($this->name) || 0 === strcasecmp($this->name, 'Monsieur') || 0 === strcasecmp($this->name, 'Madame')) {
+            trigger_error('TMA-749 : ' . __CLASS__ . '.' . __FUNCTION__ . ' wrong company name - trace : ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)), E_USER_WARNING);
+        }
+
+        parent::update($cs);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -61,7 +71,7 @@ class companies extends companies_crud
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -80,7 +90,7 @@ class companies extends companies_crud
     public function exist($id, $field = 'id_company')
     {
         $result = $this->bdd->query('SELECT * FROM `companies` WHERE ' . $field . ' = "' . $id . '"');
-        return ($this->bdd->fetch_array($result) > 0);
+        return ($this->bdd->fetch_assoc($result) > 0);
     }
 
     /**

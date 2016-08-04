@@ -61,23 +61,29 @@ class MainController extends Controller
         $aTemplateVariables['borrowingMotives']  = $translationManager->getTranslatedBorrowingMotiveList();
         $aTemplateVariables['showPagination']    = false;
 
-        $aRateRange = array(\bids::BID_RATE_MIN, \bids::BID_RATE_MAX);
-
-        if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
+        if (
+            $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
             && $this->get('security.authorization_checker')->isGranted('ROLE_LENDER')
         ) {
             /** @var BaseUser $user */
             $user = $this->getUser();
-            $aTemplateVariables['projects'] = $projectDisplayManager->getProjectsForDisplay(
-                array(\projects_status::EN_FUNDING),
+
+            /** @var \lenders_accounts $lenderAccount */
+            $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
+            $lenderAccount->get($user->getClientId(), 'id_client_owner');
+
+            $aTemplateVariables['projects'] = $projectDisplayManager->getProjectsList(
+                [\projects_status::EN_FUNDING],
                 'p.date_retrait_full ASC',
-                $aRateRange,
-                $user->getClientId());
+                null,
+                null,
+                $lenderAccount
+            );
         } else {
-            $aTemplateVariables['projects'] = $projectDisplayManager->getProjectsForDisplay(
-                array(\projects_status::EN_FUNDING),
-                'p.date_retrait_full ASC',
-                $aRateRange);
+            $aTemplateVariables['projects'] = $projectDisplayManager->getProjectsList(
+                [\projects_status::EN_FUNDING],
+                'p.date_retrait_full ASC'
+            );
         }
 
         //TODO replace switch by cookie check

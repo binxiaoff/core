@@ -156,7 +156,7 @@ class ajaxController extends bootstrap
         }
 
         $sPositionStart = filter_var($_GET['positionStart'], FILTER_SANITIZE_NUMBER_INT) + 10;
-        $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, $where . ' AND p.status = 0 AND p.display = 0', $ordre, $aRateRange, $sPositionStart, 10);
+        $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, $where . ' AND p.status = 0 AND p.display = 0', $ordre, $sPositionStart, 10);
         $affichage             = '';
 
         if (empty($this->lProjetsFunding)) {
@@ -333,7 +333,7 @@ class ajaxController extends bootstrap
                 $this->where = $key;
             }
 
-            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($sStatusProject, ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], $aRateRange, 0, 10);
+            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($sStatusProject, ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], 0, 10);
             $this->nbProjects      = $this->projects->countSelectProjectsByStatus($sStatusProject . ' AND p.status = 0 AND p.display = 0');
         } else {
             $this->ordreProject = 1;
@@ -342,7 +342,7 @@ class ajaxController extends bootstrap
             $_SESSION['ordreProject'] = $this->ordreProject;
 
             $this->where           = '';
-            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, ' AND p.status = 0', $this->tabOrdreProject[$this->ordreProject], array(), 0, 10);
+            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, ' AND p.status = 0', $this->tabOrdreProject[$this->ordreProject], 0, 10);
             $this->nbProjects      = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ' AND p.status = 0');
         }
         foreach ($this->lProjetsFunding as $iKey => $aProject) {
@@ -352,7 +352,14 @@ class ajaxController extends bootstrap
             if ($inter['mois'] > 0) {
                 $this->lProjetsFunding[$iKey]['daterest'] = $inter['mois'] . ' ' . $this->lng['preteur-projets']['mois'];
             } else {
-                $this->lProjetsFunding[$iKey]['daterest'] = "Terminé";
+                if ($this->lProjetsFunding[$iKey]['date_fin'] != '0000-00-00 00:00:00') {
+                    $endDateTime = new \DateTime($this->lProjetsFunding[$iKey]['date_fin']);
+                } else {
+                    $endDateTime = new \DateTime($this->lProjetsFunding[$iKey]['date_retrait_full']);
+                }
+                $endDate                                  = strftime('%d %B', $endDateTime->getTimestamp());
+                $endTime                                  = $endDateTime->format('H\h');
+                $this->lProjetsFunding[$iKey]['daterest'] = str_replace(['[#date#]', '[#time#]'], [$endDate, $endTime], $this->lng['preteur-projets']['termine']);
             }
 
             $this->lProjetsFunding[$iKey]['taux'] = $this->ficelle->formatNumber($this->projects->getAverageInterestRate($aProject['id_project'], $aProject['status']), 1);
@@ -368,23 +375,19 @@ class ajaxController extends bootstrap
         $this->favoris           = $this->loadData('favoris');
 
         if (isset($_POST['id_project']) && isset($_POST['id_client']) && $this->clients->get($_POST['id_client'], 'id_client') && $this->projects->get($_POST['id_project'], 'id_project')) {
-            // si deja dans favori
             if ($this->favoris->get($this->clients->id_client, 'id_project = ' . $this->projects->id_project . ' AND id_client')) {
-                // on supprime
                 $this->favoris->delete($this->clients->id_client, 'id_project = ' . $this->projects->id_project . ' AND id_client');
-                echo 'delete';
-            } // Sinon on ajoute aux favoris
-            else {
+                $val = 'delete';
+            } else {
                 $this->favoris->id_client  = $this->clients->id_client;
                 $this->favoris->id_project = $this->projects->id_project;
                 $this->favoris->create();
-                echo 'create';
+                $val = 'create';
             }
 
-            // Histo client //
-            $serialize = serialize(array('id_client' => $_POST['id_client'], 'post' => $_POST, 'action' => $val));
-            $this->clients_history_actions->histo(8, 'favoris', $_POST['id_client'], $serialize);
-            ////////////////
+            echo $val;
+
+            $this->clients_history_actions->histo(8, 'favoris', $_POST['id_client'], serialize(array('id_client' => $_POST['id_client'], 'post' => $_POST, 'action' => $val)));
         } else {
             echo 'nok';
         }
@@ -510,57 +513,6 @@ class ajaxController extends bootstrap
         }
     }
 
-    public function _changeMdp()
-    {
-        $this->autoFireView = false;
-
-        $this->clients = $this->loadData('clients');
-
-        if (isset($_POST['newMdp']) && isset($_POST['oldMdp']) && isset($_POST['id']) && $this->clients->get($_POST['id'], 'id_client')) {
-            $serialize = serialize(array('id_client' => $_POST['id'], 'newmdp' => md5($_POST['newMdp']), 'question' => $_POST['question'], 'reponse' => md5($_POST['reponse'])));
-            $this->clients_history_actions->histo(7, 'change mdp', $_POST['id'], $serialize);
-
-            if (md5($_POST['oldMdp']) != $this->clients->password) {
-                echo 'nok';
-            } else {
-                $this->clients->password        = md5($_POST['newMdp']);
-                $_SESSION['client']['password'] = $this->clients->password;
-                // question / reponse
-                if (isset($_POST['question']) && isset($_POST['reponse']) && $_POST['question'] != '' && $_POST['reponse'] != '') {
-                    $this->clients->secrete_question = $_POST['question'];
-                    $this->clients->secrete_reponse  = md5($_POST['reponse']);
-                }
-                $this->clients->update();
-
-                /** @var \settings $oSettings */
-                $oSettings = $this->loadData('settings');
-                $oSettings->get('Facebook', 'type');
-                $lien_fb = $oSettings->value;
-
-                $oSettings->get('Twitter', 'type');
-                $lien_tw = $oSettings->value;
-
-                $varMail = array(
-                    'surl'     => $this->surl,
-                    'url'      => $this->lurl,
-                    'login'    => $this->clients->email,
-                    'prenom_p' => $this->clients->prenom,
-                    'mdp'      => '',
-                    'lien_fb'  => $lien_fb,
-                    'lien_tw'  => $lien_tw
-                );
-
-                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('generation-mot-de-passe', $varMail);
-                $message->setTo($this->clients->email);
-                $mailer = $this->get('mailer');
-                $mailer->send($message);
-
-                echo 'ok';
-            }
-        }
-    }
-
     public function _mdp_lost()
     {
         $this->autoFireView = false;
@@ -657,32 +609,28 @@ class ajaxController extends bootstrap
         $this->offres_bienvenues_details     = $this->loadData('offres_bienvenues_details');
         $this->parrains_filleuls_mouvements  = $this->loadData('parrains_filleuls_mouvements');
         $this->notifications                 = $this->loadData('notifications');
-        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications'); // add gestion alertes
-        $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif'); // add gestion alertes
+        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
+        $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
 
-        // On verfie la presence de l'id_client, mdp et montant
-        if (isset($_POST['id_client']) && $this->clients->get($_POST['id_client'], 'id_client') && isset($_POST['mdp']) && isset($_POST['montant'])) {
-            $serialize = serialize(array('id_client' => $_POST['id_client'], 'montant' => $_POST['montant'], 'mdp' => md5($_POST['mdp'])));
-            $this->clients_history_actions->histo(3, 'retrait argent', $_POST['id_client'], $serialize);
-
+        if (isset($_POST['mdp'], $_POST['montant']) && $this->clients->checkAccess()) {
+            $this->clients->get($_SESSION['client']['id_client'], 'id_client');
+            $this->clients_history_actions->histo(3, 'retrait argent', $this->clients->id_client, serialize(array('id_client' => $this->clients->id_client, 'montant' => $_POST['montant'], 'mdp' => md5($_POST['mdp']))));
             $this->clients_status->getLastStatut($this->clients->id_client);
 
-            if ($this->clients_status->status < 60) {
+            if ($this->clients_status->status < \clients_status::VALIDATED) {
                 echo 'nok';
                 die;
             }
 
-            $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
-
             $verif   = 'ok';
             $montant = str_replace(',', '.', $_POST['montant']);
 
-            // on verifie le mdp
-            if (md5($_POST['mdp']) != $this->clients->password) {
+            if (md5($_POST['mdp']) !== $this->clients->password && false === password_verify($_POST['mdp'], $this->clients->password)) {
                 $verif = 'noMdp';
             } else {
-                // on verifie si le montant est bien un chiffre
-                if (! is_numeric($montant)) {
+                $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
+
+                if (false === is_numeric($montant)) {
                     $verif = 'noMontant';
                 } elseif ($this->lenders_accounts->bic == '') {
                     $verif = 'noBic';
@@ -846,12 +794,10 @@ class ajaxController extends bootstrap
     public function _solde()
     {
         $this->autoFireView = false;
-
         $this->transactions = $this->loadData('transactions');
 
-        if (isset($_POST['id_client']) && $this->clients->id_client == $_POST['id_client']) {
-            $solde = $this->transactions->getSolde($this->clients->id_client);
-            echo $solde = $this->ficelle->formatNumber($solde);
+        if ($this->clients->checkAccess()) {
+            echo $this->ficelle->formatNumber($this->transactions->getSolde($_SESSION['client']['id_client']));
         } else {
             echo 'nok';
         }
@@ -998,18 +944,6 @@ class ajaxController extends bootstrap
             } else {
                 echo 'nok';
             }
-        } else {
-            echo 'nok';
-        }
-    }
-
-    // on verifie que c'est bien son mdp
-    public function _controleYourMdp()
-    {
-        $this->autoFireView = false;
-
-        if (isset($_POST['mdp']) && md5($_POST['mdp']) == $this->clients->password) {
-            echo 'ok';
         } else {
             echo 'nok';
         }

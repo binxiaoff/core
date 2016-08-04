@@ -117,7 +117,14 @@
                             <td>
                                 <?php
                                 if ($this->projects_status->status >= \projects_status::FUNDE) {
-                                    $dateRest = $this->lng['home']['termine'];
+                                    if ($aProject['date_fin'] != '0000-00-00 00:00:00') {
+                                        $endDateTime = new \DateTime($aProject['date_fin']);
+                                    } else {
+                                        $endDateTime = new \DateTime($aProject['date_retrait_full']);
+                                    }
+                                    $endDate  = strftime('%d %B', $endDateTime->getTimestamp());
+                                    $endTime  = $endDateTime->format('H\h');
+                                    $dateRest = str_replace(['[#date#]', '[#time#]'], [$endDate, $endTime], $this->lng['home']['termine']);
                                 } else {
                                     $tab_date_retrait = explode(' ', $aProject['date_retrait_full']);
                                     $tab_date_retrait = explode(':', $tab_date_retrait[1]);
@@ -145,7 +152,7 @@
                             <td style="white-space:nowrap;"><?= $this->ficelle->formatNumber($aProject['amount'], 0) ?>&euro;</td>
                             <td style="white-space:nowrap;"><?= $aProject['period'] ?> mois</td>
                             <td><?= $this->ficelle->formatNumber($avgRate, 1) ?>&nbsp;%</td>
-                            <td><strong id="val<?= $aProject['id_project'] ?>"><?= $dateRest ?></strong></td>
+                            <td><strong id="val<?= $aProject['id_project'] ?>" <?php if ($this->projects_status->status >= \projects_status::FUNDE) :?> class="project_ended"<?php endif; ?>><?= $dateRest ?></strong></td>
                             <td>
                                 <?php
                                 if ($this->projects_status->status >= \projects_status::FUNDE) {
@@ -181,7 +188,14 @@
                     <div class="project-mobile-image">
                         <?php
                         if ($this->projects_status->status >= \projects_status::FUNDE) {
-                            $dateRest = $this->lng['home']['termine'];
+                            if ($aProject['date_fin'] != '0000-00-00 00:00:00') {
+                                $endDateTime = new \DateTime($aProject['date_fin']);
+                            } else {
+                                $endDateTime = new \DateTime($aProject['date_retrait_full']);
+                            }
+                            $endDate  = strftime('%d %B', $endDateTime->getTimestamp());
+                            $endTime  = $endDateTime->format('H\h');
+                            $dateRest = str_replace(['[#date#]', '[#time#]'], [$endDate, $endTime], $this->lng['home']['termine']);
                         } else {
                             $heure_retrait = date('H:i', strtotime($aProject['date_retrait_full']));
                             ?>
@@ -224,7 +238,7 @@
                         <h4><?= $this->companies->city . ($this->companies->zip != '' ? ', ' : '') . $this->companies->zip ?></h4>
                         <h5>
                             <i class="ico-clock"></i>
-                            <strong id="min_val<?= $aProject['id_project'] ?>"><?= $dateRest ?></strong>
+                            <strong id="min_val<?= $aProject['id_project'] ?>"<?php if ($this->projects_status->status >= \projects_status::FUNDE) :?> class="project_ended"<?php endif; ?>><?= $dateRest ?></strong>
                         </h5>
                         <p>
                             <?php if ($this->projects_status->status >= \projects_status::FUNDE) : ?>

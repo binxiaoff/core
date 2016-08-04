@@ -58,6 +58,7 @@ class TemplateMessage extends \Swift_Message
 
     /**
      * @param LoggerInterface $logger
+     *
      * @return $this
      */
     public function setLogger(LoggerInterface $logger)
@@ -90,10 +91,7 @@ class TemplateMessage extends \Swift_Message
 
     public function setTo($addresses, $name = null)
     {
-        if (is_string($addresses)) {
-            $addresses = self::recipientsArray($addresses);
-        }
-
+        $addresses = self::normalizeEmail($addresses);
         try {
             parent::setTo($addresses, $name);
         } catch (\Swift_RfcComplianceException $exception) {
@@ -104,6 +102,13 @@ class TemplateMessage extends \Swift_Message
         }
 
         return $this;
+    }
+
+    public function setReplyTo($addresses, $name = null)
+    {
+        $addresses = self::normalizeEmail($addresses);
+        
+        return parent::setReplyTo($addresses, $name);
     }
 
     /**
@@ -131,54 +136,92 @@ class TemplateMessage extends \Swift_Message
     }
 
     /**
-     * @param array $recipients
+     * @param array $emails
      *
      * @return string
      */
-    public static function recipientsString(array $recipients)
+    public static function emailAddressToString(array $emails)
     {
-        if (is_array($recipients)) {
-            $recipientsFormatted = '';
-            foreach ($recipients as $email => $name) {
-                if ($recipientsFormatted) {
-                    $recipientsFormatted .= ', ';
+        if (is_array($emails)) {
+            $formattedEmails = '';
+            foreach ($emails as $email => $name) {
+                if ($formattedEmails) {
+                    $formattedEmails .= ', ';
                 }
                 if ($name) {
-                    $recipientsFormatted .= $name . ' <' . $email . '>';
+                    $formattedEmails .= $name . ' <' . $email . '>';
                 } else {
-                    $recipientsFormatted .= $email;
+                    $formattedEmails .= $email;
                 }
             }
         } else {
-            $recipientsFormatted = $recipients;
+            $formattedEmails = $emails;
         }
 
-        return $recipientsFormatted;
+        return $formattedEmails;
     }
 
     /**
-     * @param string $recipients
+     * @param string $emails
      *
      * @return array
      */
-    public static function recipientsArray($recipients)
+    private static function emailAddressToArray($emails)
     {
-        if (is_string($recipients)) {
-            $recipientsFormatted = [];
-            $recipients          = str_replace(';', ',', $recipients);
-            $recipients          = explode(',', $recipients);
+        if (is_string($emails)) {
+            $formattedEmails = [];
+            $emails          = str_replace(';', ',', trim($emails));
+            $emails          = explode(',', $emails);
 
-            foreach ($recipients as $recipient) {
-                if (1 === preg_match('#^(?<name>.*)(\s|)\<(?<email>.*)\>$#', $recipient, $matches)) {
-                    $recipientsFormatted[trim($matches['email'])] = trim($matches['name']);
+            foreach ($emails as $email) {
+                if (empty($email)) {
+                    continue;
+                }
+                if (1 === preg_match('#^(?<name>.*)(\s|)\<(?<email>.*)\>$#', $email, $matches)) {
+                    $formattedEmails[trim($matches['email'])] = trim($matches['name']);
                 } else {
-                    $recipientsFormatted[] = trim($recipient);
+                    $formattedEmails[] = trim($email);
                 }
             }
         } else {
-            $recipientsFormatted = trim($recipients);
+            $formattedEmails = $emails;
         }
 
-        return $recipientsFormatted;
+        return $formattedEmails;
+    }
+
+    /**
+     * Normalize the emails in order to pass them to Swiftmailer
+     *
+     * @param string|array $emails
+     *
+     * @return array
+     */
+    private static function normalizeEmail($emails)
+    {
+        $normalizedEmails = [];
+
+        $emails = self::emailAddressToArray($emails);
+
+        foreach ($emails as $key => $value) {
+            if (is_string($key)) {
+                //key is email addr
+                $key = self::removeTimeStampSuffix($key);
+            } else {
+                $value = self::removeTimeStampSuffix($value);
+            }
+            $normalizedEmails[$key] = $value;
+        }
+
+        return $normalizedEmails;
+    }
+
+    private static function removeTimeStampSuffix($email)
+    {
+        if (1 === preg_match('#^(?<email>[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,6})-[0-9]+$#i', $email, $matches)) {
+            $email = $matches['email'];
+        }
+
+        return $email;
     }
 }

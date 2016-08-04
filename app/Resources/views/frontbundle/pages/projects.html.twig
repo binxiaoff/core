@@ -1,11 +1,10 @@
-{# Projects Index #}
 {% extends 'layouts/_layout.html.twig' %}
 
 {# Page data #}
 {% set bodyId = '' %}
 {% set page = {
-title: 'Projets',
-permalink: route('projets')
+    title: 'Projets',
+    permalink: route('projets')
 } %}
 
 {% block siteContent %}
@@ -14,7 +13,7 @@ permalink: route('projets')
             <div class="hero-wrap">
                 <div class="site-wrap">
                     <h2 class="page-title">
-                        {{ "projects-listing_page-title"|transchoice(projectsInFunding, { '%numberProjects%' : projectsInFunding , '%numberFinancedProjects%' : stats.numberProjects , '%numberActiveLenders%' : stats.numberActiveLenders })|nbsp|raw }}
+                        {{ 'projects-listing_page-title'|transchoice(projectsInFunding, {'%numberProjects%' : projectsInFunding|__num(0) , '%numberFinancedProjects%' : stats.numberProjects|__num(0) , '%numberActiveLenders%' : stats.numberActiveLenders|__num(0)})|nbsp|raw }}
                     </h2>
                 </div><!-- /.site-wrap -->
 
@@ -26,9 +25,11 @@ permalink: route('projets')
             <div class="site-wrap">
                 {% include 'partials/components/project-list/project-list.html.twig' %}
                 <div class="row page-section-footer">
-                    <div class="btn-toolbar">
-                        <a href="{{ route('preter/new') }}" class="btn-primary">{% trans %} projects-listing_become-lender-button {% endtrans %}</a>
-                    </div>
+                    {% if not is_granted('IS_AUTHENTICATED_FULLY') %}
+                        <div class="btn-toolbar">
+                            <a href="{{ path('lender_subscription_step_1') }}" class="btn-primary">{% trans %} projects-listing_become-lender-button {% endtrans %}</a>
+                        </div>
+                    {% endif %}
                     <p>
                         <a href="{{ route('emprunter') }}" class="link c-p2">{% trans %} projects-listing_become-borrower-button {% endtrans %}</a>
                     </p>

@@ -177,3 +177,117 @@
     text-align: left;
   }
 }
+
+#alloffers-table {
+  position:relative;
+  .rejected-offers {
+    background-color:#f8f6f8;
+    height:50px;
+    td {
+      text-align:center;
+      cursor:pointer;
+      color:#9f9d9f;
+    }
+  }
+  .rejected-row {
+    display:none;
+    background-color:#FDF4FA;
+    color:#9f9d9f;
+  }
+  .c-success{
+    transition-duration:1s;
+  }
+  .bid-rate-cta {
+    display:inline-block;
+    width:60px;
+    line-height:20px;
+    text-align:left;
+  }
+  .icon-cta {
+    line-height:20px;
+  }
+
+  .icon-rejected {
+    display:none;
+
+  }
+  .icon-accepted {
+    display:inline-block;
+  }
+
+  .all-rejected {
+    .icon-rejected {
+      display:inline-block;
+
+    }
+    .icon-accepted {
+      display:none;
+    }
+  }
+
+  .bids-row {
+    cursor:pointer;
+    td:first-of-type {
+      padding:10px 55px 10px 30px;
+      text-align:right;
+    }
+  }
+  .bids-row.active-row {
+    background-color:#b20066;
+    color:#fff;
+    .c-p1 span{
+      color:#fff;
+    }
+  }
+  .bids-row.active-row:hover {
+    background-color:#b20066;
+  }
+  .bids-row:hover {
+    background-color: #fbf2f7;
+  }
+
+  .icon.fa-caret-r-u32 {
+    display:inline-block;
+  }
+  .icon.fa-caret-d-u32 {
+    display:none;
+  }
+
+  .active-row {
+    .icon.fa-caret-r-u32 {
+      display:none;
+    }
+    .icon.fa-caret-d-u32 {
+      display:inline-block;
+    }
+  }
+  .bid-cell{
+    padding:10px 60px 20px 30px;
+    .icon {
+      color:#d9aa34;
+      float:right;
+    }
+  }
+  .bids-detail-by-rate {
+    background-color:#daf6f9;
+    color:#4fa8b0;
+    transition-duration:1s;
+  }
+  .bids-detail-by-rate.ui-current-user-involved {
+    background-color:#5fc3cf;
+    color:#fff;
+    .c-success{
+      color:#fff;
+    }
+  }
+  .bids-detail-by-rate-header {
+    background-color:#eceaed;
+  }
+  .center {
+    text-align:center;
+  }
+}
+#alloffers-table .bids-detail-by-rate.ui-current-user-involved.bids-detail-by-rate.is-focused{
+  background-color:#daf6f9;
+  color:#b20066;
+}

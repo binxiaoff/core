@@ -1,0 +1,67 @@
+<fieldset class="panel">
+    <div id="form-preter-2-notifications" class="ui-formvalidation-notifications"></div>
+    <h3 class="h3">{% trans %} lender-subscription_step-2-title {% endtrans %}</h3>
+
+    <div class="row">
+        <div class="form-field form-field-iban">
+            <div id="form-preter-iban-add" data-toggle-group="iban" class="ui-toggle iban-add">
+                <div class="message-info">
+                    <p>{% trans %} lender-subscription_step-2-bank-information-explanation {% endtrans %}</p>
+                </div><!-- /.message-info -->
+
+                <label for="form-lender-step-2-bic" class="form-field-label">{% trans %} lender-subscription_step-2-bic-field-label {% endtrans %}
+                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                <div class="input-group">
+                    <div class="custom-input-iban">
+                        <input id="form-lender-step-2-bic" type="text" name="iban" value="" class="bic-input input-field"
+                               data-formvalidation-input data-formvalidation-type="bic"/>
+                    </div>
+                </div><!-- /.input-group -->
+
+                <label for="form-lender-step-2-iban" class="form-field-label">{% trans %} lender-subscription_step-2-iban-field-label {% endtrans %}
+                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                <div class="input-group">
+                    <div class="custom-input-iban">
+                        <input id="form-lender-step-2-iban" type="text" name="iban" value="" class="iban-input input-field"
+                               data-formvalidation-input data-formvalidation-type="iban"/>
+                    </div>
+                </div><!-- /.input-group -->
+
+                <ul class="ui-formvalidation-messages"></ul>
+
+                <p>
+                    <a href="#form-preter-iban-info" class="btn-primary">Ajouter</a>
+                </p>
+            </div><!-- /.iban-add -->
+            <div id="form-preter-iban-info" data-toggle-group="iban" class="ui-toggle iban-info" style="display: none">
+                <div class="iban-info-details">
+                    <div class="row">
+                        <div class="col-lg-6 col-md-6">
+                            <label>IBAN</label>
+                            <p>FR20 2524 1200 0127 3242 5P01 025</p>
+                        </div>
+                        <div class="col-lg-6 col-md-6">
+                            <label>BIC</label>
+                            <p>PSSTFRPPPAR</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-6 col-md-6">
+                            <label>Titulaire du compte</label>
+                            <p>David Raux<br/>
+                                27 avenue des Champs-Elysées<br/>
+                                75008 Paris France</p>
+                        </div>
+                        <div class="col-lg-6 col-md-6">
+                            <label>Nom de la banque</label>
+                            <p>La Banque Postale</p>
+                        </div>
+                    </div>
+                </div>
+                <p>
+                    <a href="#form-preter-iban-add" class="btn-primary">Modifier</a>
+                </p>
+            </div><!-- /.iban-info -->
+        </div><!-- /.form-field -->
+    </div>
+</fieldset>

@@ -1,0 +1,46 @@
+{# Projects Index #}
+{% extends 'layouts/_layout.html.twig' %}
+{% import 'extensions/_general.macros.twig' as general %}
+
+{# Page data #}
+{% set bodyId = '' %}
+{% set page = {
+title: 'Devenir Prêteur',
+permalink: path('lender_subscription_step_1')
+} %}
+
+{% block siteContent %}
+    <article id="devenir-preteur" class="page">
+        <div class="hero-wrap">
+
+            <header class="page-header">
+                <div class="site-wrap">
+                    <h1 id="preter-create-title" class="h1">{% trans %} lender-subscription_page-title {% endtrans %}</h1>
+                </div><!-- /.site-wrap -->
+            </header><!-- /.page-header -->
+
+            <div class="page-content">
+                <div class="site-wrap">
+                    <div class="tabs ui-tabs-progress">
+                        {% include 'pages/lender_subscription/partials/progress_bar.html.twig' %}
+                        <div class="form-preter-content tab-content" id="form-lender-person">
+                            {% include 'pages/lender_subscription/partials/step_1_form_person.html.twig' %}
+                        </div><!-- /.form-preter-content -->
+                        <div class="form-preter-content tab-content" id="form-lender-legal_entity">
+                            {% include 'pages/lender_subscription/partials/step_1_form_legal_entity.html.twig' %}
+                        </div><!-- /.form-preter-content -->
+                    </div><!-- /.tabs -->
+                </div><!-- /.site-wrap -->
+            </div><!-- /.page-content -->
+            {% include 'partials/components/list-socialmedia.html.twig' %}
+        </div><!-- /.hero-wrap -->
+    </article><!-- /.page -->
+{% endblock %}
+
+
+
+
+
+
+
+

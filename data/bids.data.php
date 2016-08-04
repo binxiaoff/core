@@ -33,10 +33,10 @@ class bids extends bids_crud
     const STATUS_BID_REJECTED                 = 2;
     const STATUS_AUTOBID_REJECTED_TEMPORARILY = 3;
 
+    const CACHE_KEY_PROJECT_BIDS = 'bids-projet';
+
     const BID_RATE_MIN = 4.0;
     const BID_RATE_MAX = 10.0;
-
-    const CACHE_KEY_PROJECT_BIDS = 'bids-projet';
 
     public function __construct($bdd, $params = '')
     {
@@ -80,17 +80,34 @@ class bids extends bids_crud
         return ($this->bdd->fetch_array($result) > 0);
     }
 
-    public function getSoldeBid($id_project)
+    public function getSoldeBid($idProject, $rate = null, $status = [])
     {
-        $sql = 'SELECT SUM(amount) as solde FROM bids WHERE id_project = ' . $id_project;
+        $queryBuilder = $this->bdd->createQueryBuilder();
+        $queryBuilder
+            ->select('SUM(amount)')
+            ->from('bids')
+            ->where('id_project=:id_project')
+            ->setParameter('id_project', $idProject);
 
-        $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result, 0, 0);
-        if ($solde == '') {
+        if (false === empty($rate)) {
+            $queryBuilder->andWhere('ROUND(rate, 1) = ROUND(:rate, 1)');
+            $queryBuilder->setParameter('rate', $rate);
+        }
+
+        if (is_array($status) && false === empty($status)) {
+            $queryBuilder->andWhere('status in (:status)');
+            $queryBuilder->setParameter('status', $status, \Doctrine\DBAL\Connection::PARAM_STR_ARRAY);
+        }
+
+        $statement = $queryBuilder->execute();
+        $solde = $statement->fetchColumn(0);
+
+        if (null === $solde) {
             $solde = 0;
         } else {
             $solde = ($solde / 100);
         }
+
         return $solde;
     }
 
@@ -268,17 +285,25 @@ class bids extends bids_crud
         $this->bdd->query($sShuffle);
     }
 
-    public function getBidsStatistics($iProjectId)
+    public function getBidsSummary($iProjectId)
     {
         $aBidsByRate = array();
+
         if ($iProjectId) {
-            $sQuery = ' SELECT rate, SUM(amount / 100) as amount_total, SUM(IF(status = 2, 0, amount / 100))  as amount_active, count(*) as nb_bids
-                    FROM bids
-                    WHERE id_project = ' . $iProjectId . '
-                    GROUP BY rate ORDER BY rate DESC';
+            $sQuery = '
+                SELECT 
+                    rate, 
+                    COUNT(*) AS bidsCount,
+                    SUM(IF(status = 0, 1, 0)) AS activeBidsCount,
+                    SUM(ROUND(amount / 100, 2)) AS totalAmount, 
+                    IF(SUM(amount) > 0, ROUND(SUM(IF(status = 2, 0, ROUND(amount / 100, 2))) / SUM(ROUND(amount / 100, 2)) * 100, 1), 100) AS activePercentage
+                FROM bids
+                WHERE id_project = ' . $iProjectId . '
+                GROUP BY rate 
+                ORDER BY rate DESC';
             $rQuery = $this->bdd->query($sQuery);
             while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
-                $aBidsByRate[] = $aRow;
+                $aBidsByRate[$aRow['rate']] = $aRow;
             }
         }
 

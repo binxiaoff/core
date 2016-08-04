@@ -1,27 +1,27 @@
-{% if paginationSettings.totalPages > 1 %}
+{% if pagination.totalPages > 1 %}
     <div class="pagination-wrap">
         <nav class="pagination">
             <div class="row">
                 <div class="col-pagination-info col-lg-4 col-md-4">
                     <div class="pagination-info">
                         <span class="pagination-location">
-                            {% trans with { '%item%' : paginationSettings.currentIndexItems, '%items%' : paginationSettings.totalItems } %} projects-listing_pagination-info-location {% endtrans %}
+                            {% trans with { '%item%' : pagination.currentIndexItems, '%items%' : pagination.totalItems } %} projects-listing_pagination-info-location {% endtrans %}
                         </span>
-                        {% if paginationSettings.currentIndex < paginationSettings.totalPages %}
-                            <a href="{{ path('project_list', {'page' : paginationSettings.currentIndex + 1 }) }}" class="link pagination-next">
-                                {% transchoice paginationSettings.itemsPerPage with {'%items%' : paginationSettings.itemsPerPage } %} projects-listing_pagination-info-next-label {% endtranschoice %}
+                        {% if pagination.currentIndex < pagination.totalPages %}
+                            <a href="{{ path('projects_list', {'page' : pagination.currentIndex + 1 }) }}" class="link pagination-next">
+                                {% transchoice pagination.itemsPerPage with {'%items%' : pagination.itemsPerPage } %} projects-listing_pagination-info-next-label {% endtranschoice %}
                             </a>
                         {% endif %}
                     </div>
                 </div>
                 <div class="col-pagination-index col-lg-8 col-md-8">
                     <ul class="pagination-index">
-                        {% if paginationSettings.currentIndex > 1 %}
+                        {% if pagination.currentIndex > 1 %}
                             <li role="presentation">
-                                <a href="{{ path('project_list', {'page' : paginationSettings.currentIndex - 1 }) }}">
+                                <a href="{{ path('projects_list', {'page' : pagination.currentIndex - 1 }) }}">
                                     <span class="icon fa-angle-left"></span>
                                     <span class="sr-only">
-                                        {% trans with {'%items%' : paginationSettings.itemsPerPage } %} projects-listing_pagination-index-previous-label {% endtrans %}
+                                        {% trans with {'%items%' : pagination.itemsPerPage } %} projects-listing_pagination-index-previous-label {% endtrans %}
                                     </span>
                                 </a>
                             </li>
@@ -32,51 +32,51 @@
                         {% set elidedAfterCurrent = false %}
 
                         {# Always render the first... #}
-                        <li role="presentation" class="{% if paginationSettings.currentIndex == 1 %}current{% endif %}">
-                            <a href="{{ path('project_list', { 'page' : 1 }) }}">1</a>
+                        <li role="presentation" class="{% if pagination.currentIndex == 1 %}current{% endif %}">
+                            <a href="{{ path('projects_list', { 'page' : 1 }) }}">1</a>
                         </li>
 
                         {# Render inbetween numbers #}
-                        {% if paginationSettings.totalPages > 1 %}
-                            {% for i in 2..(paginationSettings.totalPages - 1) %}
+                        {% if pagination.totalPages > 1 %}
+                            {% for i in 2..(pagination.totalPages - 1) %}
                                 {# Current index #}
                                 {% set classCurrent = '' %}
-                                {% if paginationSettings.currentIndex == i %}
+                                {% if pagination.currentIndex == i %}
                                     {% set classCurrent = 'current' %}
                                 {% endif %}
 
                                 {# Output a number to be displayed #}
-                                {% if i in paginationSettings.indexPlan %}
-                                    {% if i > 0 and i <= paginationSettings.totalPages %}
+                                {% if i in pagination.indexPlan %}
+                                    {% if i > 0 and i <= pagination.totalPages %}
                                         <li role="presentation" class="{{ classCurrent }}">
-                                            <a href="{{ path('project_list', {'page' : i}) }}">{{ i }}</a>
+                                            <a href="{{ path('projects_list', {'page' : i}) }}">{{ i }}</a>
                                         </li>
                                     {% endif %}
 
                                     {# Elide the numbers between the very first and the next to be displayed #}
-                                {% elseif i < paginationSettings.indexPlan[0] and elidedBeforeCurrent == false %}
+                                {% elseif i < pagination.indexPlan[0] and elidedBeforeCurrent == false %}
                                     {% set elidedBeforeCurrent = true %}
                                     <li role="presentation" class="pagination-more">...</li>
 
                                     {# Elide the numbers between the very last and the next to be displayed #}
-                                {% elseif i > paginationSettings.indexPlan[2] and elidedAfterCurrent == false %}
+                                {% elseif i > pagination.indexPlan[2] and elidedAfterCurrent == false %}
                                     {% set elidedAfterCurrent = true %}
                                     <li role="presentation" class="pagination-more">...</li>
                                 {% endif %}
                             {% endfor %}
                         {% endif %}
 
-                        {% if paginationSettings.totalPages > 1 %}
-                            <li role="presentation" class="{% if paginationSettings.currentIndex == paginationSettings.totalPages %}current{% endif %}">
-                                <a href="{{ path('project_list', {'page' : paginationSettings.totalPages }) }}">{{ paginationSettings.totalPages }}</a>
+                        {% if pagination.totalPages > 1 %}
+                            <li role="presentation" class="{% if pagination.currentIndex == pagination.totalPages %}current{% endif %}">
+                                <a href="{{ path('projects_list', {'page' : pagination.totalPages }) }}">{{ pagination.totalPages }}</a>
                             </li>
                         {% endif %}
 
-                        {% if paginationSettings.currentIndex < paginationSettings.totalPages %}
+                        {% if pagination.currentIndex < pagination.totalPages %}
                             <li role="presentation">
-                                <a href="{{ path('project_list', {'page' : paginationSettings.currentIndex + 1 }) }}">
+                                <a href="{{ path('projects_list', {'page' : pagination.currentIndex + 1 }) }}">
                                     <span class="sr-only">
-                                        {% transchoice paginationSettings.itemsPerPage with {'%items%' : paginationSettings.itemsPerPage } %} projects-listing_pagination-info-next-label {% endtranschoice %}
+                                        {% transchoice pagination.itemsPerPage with {'%items%' : pagination.itemsPerPage } %} projects-listing_pagination-info-next-label {% endtranschoice %}
                                     </span>
                                     <span class="icon fa-angle-right"></span>
                                 </a>

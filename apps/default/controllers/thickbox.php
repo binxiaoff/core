@@ -127,9 +127,14 @@ class thickboxController extends bootstrap
             $this->settings->get('Pret min', 'type');
             $this->pretMin = $this->settings->value;
 
+            /** @var Unilend\Bundle\CoreBusinessBundle\Service\bidManager $bidManager */
+            $bidManager = $this->get('unilend.service.bid_manager');
+
+            $this->rateRange = $bidManager->getProjectRateRange($this->projects);
+
             // la sum des encheres
             $this->soldeBid = $this->bids->getSoldeBid($this->projects->id_project);
-            $this->txLenderMax = '10.10';
+            $this->txLenderMax = $this->rateRange['rate_max'];
 
             if ($this->soldeBid >= $this->projects->amount) {
                 $this->lEnchereRate = $this->bids->select('id_project = ' . $this->projects->id_project, 'rate ASC,added ASC');
@@ -258,13 +263,18 @@ class thickboxController extends bootstrap
         $this->projects = $this->loadData('projects');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
+            /** @var Unilend\Bundle\CoreBusinessBundle\Service\bidManager $bidManager */
+            $bidManager = $this->get('unilend.service.bid_manager');
+
+            $this->rateRange = $bidManager->getProjectRateRange($this->projects);
+
             $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
 
             $this->settings->get('Pret min', 'type');
             $this->pretMin = $this->settings->value;
 
             $this->soldeBid    = $this->bids->getSoldeBid($this->projects->id_project);
-            $this->txLenderMax = $this->soldeBid >= $this->projects->amount ? $this->bids->getProjectMaxRate($this->projects) : 10;
+            $this->txLenderMax = $this->soldeBid >= $this->projects->amount ? $this->bids->getProjectMaxRate($this->projects) : $this->rateRange['rate_max'];
         }
     }
 

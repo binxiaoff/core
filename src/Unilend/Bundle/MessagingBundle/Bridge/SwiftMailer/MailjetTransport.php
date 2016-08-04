@@ -61,6 +61,7 @@ class MailjetTransport implements \Swift_Transport
         $aSenderEmail = array_keys($oMessage->getFrom());
         $aSenderName  = array_values($oMessage->getFrom());
         $aRecipients  = array_keys($oMessage->getTo());
+        $replyTo      = $oMessage->getReplyTo();
         $body = [
             'FromEmail'  => array_shift($aSenderEmail),
             'FromName'   => array_shift($aSenderName),
@@ -68,6 +69,9 @@ class MailjetTransport implements \Swift_Transport
             'Html-part'  => $oMessage->getBody(),
             'Recipients' => array_map(function($recipient) { return ['Email' => $recipient]; }, $aRecipients)
         ];
+        if (is_array($replyTo)) {
+            $body['Headers']['Reply-To'] = TemplateMessage::emailAddressToString($replyTo);
+        }
 
         if (false === empty($oMessage->getChildren())) {
             $body['Attachments'] = [];

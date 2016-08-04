@@ -80,7 +80,7 @@ permalink: route('preter')
                 <div class="row">
                     <div class="btn-toolbar">
                         <a href="{{ route('preter/help') }}" class="btn-default ui-open-site-search">{% trans %} home-lender_question-button {% endtrans %}</a>
-                        <a href="{{ route('preter/new') }}" class="btn-primary">{% trans %} home-lender_create-account-button {% endtrans %}</a>
+                        <a href="{{ path('lender_subscription_step_1') }}" class="btn-primary">{% trans %} home-lender_create-account-button {% endtrans %}</a>
                     </div><!-- /.btn-toolbar -->
                     {% if showWelcomeOffer == true %}
                         <div class="stamp" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">

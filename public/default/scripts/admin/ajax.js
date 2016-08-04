@@ -681,7 +681,10 @@ function valid_rejete_etape7(status, id_project) {
                         liste      = obj.liste,
                         btn_etape6 = obj.btn_etape6,
                         risk        = obj.content_risk;
-
+                    if (typeof obj.error != 'undefined') {
+                        alert(obj.error);
+                        return;
+                    }
                     $('#valid_etape7').slideDown();
 
                     setTimeout(function () {

@@ -307,23 +307,36 @@
                 <h2>Contact</h2>
                 <table class="form" style="width: 495px;">
                     <tr>
-                        <th><label for="adresse">Adress correspondant :</label></th>
+                        <th><label for="adresse">Adresse correspondance :</label></th>
                         <td>
                             <input type="text" name="adresse" id="adresse" class="input_large" value="<?= $this->adresse ?>"/>
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="city">Ville correspondant :</label></th>
+                        <th><label for="city">Ville correspondance :</label></th>
                         <td><input type="text" name="city" id="city" class="input_large" value="<?= $this->city ?>"/></td>
                     </tr>
                     <tr>
-                        <th><label for="zip">Code postal correspondant :</label></th>
+                        <th><label for="zip">Code postal correspondance :</label></th>
                         <td><input type="text" name="zip" id="zip" class="input_court" value="<?= $this->zip ?>"/></td>
                     </tr>
                     <tr>
-                        <th><label for="phone">Téléphone correspondant :</label></th>
+                        <th><label for="phone">Téléphone correspondance :</label></th>
                         <td><input type="text" name="phone" id="phone" class="input_moy" value="<?= $this->phone ?>"/></td>
                     </tr>
+                    <tr>
+                        <th><label for="latitude">Latitude :</label></th>
+                        <td><input type="text" name="latitude" id="latitude" class="input_court" value="<?php if (false === empty($this->latitude)) : ?><?= $this->latitude ?><?php endif; ?>"/> N</td>
+                    </tr>
+                    <tr>
+                        <th><label for="longitude">Longitude :</label></th>
+                        <td><input type="text" name="longitude" id="longitude" class="input_court" value="<?php if (false === empty($this->longitude)) : ?><?= $this->longitude ?><?php endif; ?>"/> E</td>
+                    </tr>
+                    <?php if (false === empty($this->latitude) && false === empty($this->longitude)) : ?>
+                        <tr>
+                            <td colspan="2"><a class="btn_link" target="_blank" href="http://maps.google.com/?q=<?= $this->latitude ?>,<?= $this->longitude ?>">Voir sur la carte</a></td>
+                        </tr>
+                    <?php endif; ?>
                 </table>
             </div>
             <div class="droite">
@@ -331,18 +344,25 @@
                 <table class="form" style="width: 575px;">
                     <?php if (isset($this->fPredictAutoBid) && false === empty($this->fPredictAutoBid)) : ?>
                     <tr>
-                        <th><label for="autobid_statistic"> AutoLend funding statistic  :</label></th>
+                        <th><label for="autobid_statistic"> AutoLend funding statistic :</label></th>
                         <td><?= $this->fPredictAutoBid ?> % </td>
                     </tr>
                     <?php endif; ?>
+                    <?php if (isset($this->rate_min, $this->rate_max)): ?>
+                        <tr>
+                            <th><label for="project_rate"> Taux min / max :</label></th>
+                            <td><?= $this->rate_min ?> % - <?= $this->rate_max ?> %</td>
+                        </tr>
+
+                    <?php endif; ?>
                     <tr>
                         <th><label for="montant">Montant du prêt* :</label></th>
-                        <td><input style="background-color:#AAACAC;" type="text" name="montant" id="montant" class="input_moy" value="<?= $this->ficelle->formatNumber($this->projects->amount, 0) ?>"/> €</td>
+                        <td><input style="background-color:#AAACAC;" type="text" name="montant" id="montant" class="input_moy" <?php if ($this->bReadonlyRiskNote) : ?>disabled<?php endif; ?> value="<?= $this->ficelle->formatNumber($this->projects->amount, 0) ?>"/> €</td>
                     </tr>
                     <tr>
                         <th><label for="duree">Durée du prêt* :</label></th>
                         <td>
-                            <select name="duree" id="duree" class="select" style="width:160px;background-color:#AAACAC;">
+                            <select name="duree" id="duree" class="select" <?php if ($this->bReadonlyRiskNote) : ?>disabled<?php endif; ?> style="width:160px;background-color:#AAACAC;">
                                 <option<?= (in_array($this->projects->period, array(0, 1000000)) ? ' selected' : '') ?> value="0">Je ne sais pas</option>
                                 <?php foreach ($this->dureePossible as $duree) : ?>
                                     <option<?= ($this->projects->period == $duree ? ' selected' : '') ?> value="<?= $duree ?>"><?= $duree ?> mois</option>
@@ -379,65 +399,86 @@
                     <tr class="content_risk" <?= ($this->current_projects_status->status >= \projects_status::PREP_FUNDING ? '' : 'style="display:none"') ?>>
                         <th><label for="risk">Niveau de risque* :</label></th>
                         <td>
-                            <select name="risk" id="risk" class="select" style="width:160px;background-color:#AAACAC;">
-                                <option value="">Choisir</option>
-                                <option <?= ($this->projects->risk == 'A' ? 'selected' : '') ?> value="A">5 étoiles</option>
-                                <option <?= ($this->projects->risk == 'B' ? 'selected' : '') ?> value="B">4,5 étoiles</option>
-                                <option <?= ($this->projects->risk == 'C' ? 'selected' : '') ?> value="C">4 étoiles</option>
-                                <option <?= ($this->projects->risk == 'D' ? 'selected' : '') ?> value="D">3,5 étoiles</option>
-                                <option <?= ($this->projects->risk == 'E' ? 'selected' : '') ?> value="E">3 étoiles</option>
-                                <option <?= ($this->projects->risk == 'F' ? 'selected' : '') ?> value="F">2,5 étoiles</option>
-                                <option <?= ($this->projects->risk == 'G' ? 'selected' : '') ?> value="G">2 étoiles</option>
-                                <option <?= ($this->projects->risk == 'H' ? 'selected' : '') ?> value="H">1,5 étoiles</option>
-                            </select>
+                            <?php
+                                switch ($this->projects->risk) {
+                                    case 'A' :
+                                        echo '5 étoiles';
+                                        break;
+                                    case 'B' :
+                                        echo '4,5 étoiles';
+                                        break;
+                                    case 'C' :
+                                        echo '4 étoiles';
+                                        break;
+                                    case 'D' :
+                                        echo '3,5 étoiles';
+                                        break;
+                                    case 'E' :
+                                        echo '3 étoiles';
+                                        break;
+                                    case 'F' :
+                                        echo '2,5 étoiles';
+                                        break;
+                                    case 'G' :
+                                        echo '2 étoiles';
+                                        break;
+                                    case 'H' :
+                                        echo '1,5 étoiles';
+                                        break;
+                                }
+                            ?>
                         </td>
                     </tr>
                 </table>
                 <br><br>
-                <h2>Remboursement anticipé / Information</h2>
-                <table class="form" style="width: 538px; border: 1px solid #B10366;">
-                    <tr>
-                        <th>Statut</th>
-                        <td><strong><?= $this->phrase_resultat ?></strong></td>
-                    </tr>
-                    <?php if ($this->virement_recu): ?>
+
+                <?php if ($this->current_projects_status->status == \projects_status::REMBOURSEMENT) : ?>
+                    <h2>Remboursement anticipé / Information</h2>
+                    <table class="form" style="width: 538px; border: 1px solid #B10366;">
                         <tr>
-                            <th>Virement reçu le</th>
-                            <td><strong><?= $this->dates->formatDateMysqltoFr_HourOut($this->receptions->added) ?></strong></td>
+                            <th>Statut</th>
+                            <td><strong><?= $this->phrase_resultat ?></strong></td>
                         </tr>
+                        <?php if ($this->virement_recu): ?>
+                            <tr>
+                                <th>Virement reçu le</th>
+                                <td><strong><?= $this->dates->formatDateMysqltoFr_HourOut($this->receptions->added) ?></strong></td>
+                            </tr>
+                            <tr>
+                                <th>Identification virement</th>
+                                <td><strong><?= $this->receptions->id_reception ?></strong></td>
+                            </tr>
+                            <tr>
+                                <th>Montant virement</th>
+                                <td><strong><?= $this->ficelle->formatNumber($this->receptions->montant / 100) ?>&nbsp;€</strong></td>
+                            </tr>
+                            <tr>
+                                <th>Motif du virement</th>
+                                <td><strong><?= $this->receptions->motif ?></strong></td>
+                            </tr>
+                        <?php else: ?>
+                            <tr>
+                                <th>Virement à émettre avant le</th>
+                                <td><strong><?= (isset($this->date_next_echeance_4jouvres_avant)) ? $this->date_next_echeance_4jouvres_avant : '' ?></strong></td>
+                            </tr>
+                        <?php endif; ?>
                         <tr>
-                            <th>Identification virement</th>
-                            <td><strong><?= $this->receptions->id_reception ?></strong></td>
+                            <th>Montant CRD (*)</th>
+                            <td><strong><?= $this->ficelle->formatNumber($this->montant_restant_du_preteur) ?>&nbsp;€</strong></td>
                         </tr>
-                        <tr>
-                            <th>Montant virement</th>
-                            <td><strong><?= $this->ficelle->formatNumber($this->receptions->montant / 100) ?>&nbsp;€</strong></td>
-                        </tr>
-                        <tr>
-                            <th>Motif du virement</th>
-                            <td><strong><?= $this->receptions->motif ?></strong></td>
-                        </tr>
-                    <?php else: ?>
-                        <tr>
-                            <th>Virement à émettre avant le</th>
-                            <td><strong><?= (isset($this->date_next_echeance_4jouvres_avant)) ? $this->date_next_echeance_4jouvres_avant : '' ?></strong></td>
-                        </tr>
-                    <?php endif; ?>
-                    <tr>
-                        <th>Montant CRD (*)</th>
-                        <td><strong><?= $this->ficelle->formatNumber($this->montant_restant_du_preteur) ?>&nbsp;€</strong></td>
-                    </tr>
-                    <?php if (false == $this->virement_recu): ?>
-                        <tr>
-                            <th>Motif à indiquer sur le virement</th>
-                            <td><strong>RA-<?= $this->projects->id_project ?></strong></td>
-                        </tr>
-                    <?php endif; ?>
-                </table>
-                <?php if (! $this->virement_recu && ! $this->remb_anticipe_effectue && isset($this->date_next_echeance)) { ?>
-                    * : Le montant correspond aux CRD des échéances restantes après celle du <?= $this->date_next_echeance ?> qui sera prélevé normalement
-                <?php } ?>
-                <br><br><br><br>
+                        <?php if (false == $this->virement_recu): ?>
+                            <tr>
+                                <th>Motif à indiquer sur le virement</th>
+                                <td><strong>RA-<?= $this->projects->id_project ?></strong></td>
+                            </tr>
+                        <?php endif; ?>
+                    </table>
+                    <?php if (! $this->virement_recu && ! $this->remb_anticipe_effectue && isset($this->date_next_echeance)) { ?>
+                        * : Le montant correspond aux CRD des échéances restantes après celle du <?= $this->date_next_echeance ?> qui sera prélevé normalement
+                    <?php } ?>
+                    <br><br><br><br>
+                <?php endif; ?>
+
                 <h2>Actions</h2>
                 <table class="form" style="width: 538px;">
                     <tr>

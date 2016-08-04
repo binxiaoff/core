@@ -38,7 +38,7 @@ twig:
     strict_variables: "%kernel.debug%"
     paths:
         - "%kernel.root_dir%/Resources/views/frontbundle/"
-    exception_controller:  UnilendFrontBundle:Compatibility:dispatch
+#    exception_controller:  UnilendFrontBundle:Compatibility:dispatch
 
 assetic:
     debug:          '%kernel.debug%'
@@ -156,3 +156,13 @@ unilend_translation:
     parameters:
         cache:
             path: "%kernel.cache_dir%/translations"
+
+services:
+    twig.extension.text:
+        class: Twig_Extensions_Extension_Text
+        tags:
+            - { name: twig.extension }
+    twig.extension.intl:
+        class: Twig_Extensions_Extension_Intl
+        tags:
+            - { name: twig.extension }

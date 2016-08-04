@@ -1458,7 +1458,6 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                     var hash = CryptoJS.MD5(key);
                     var time = $.now();
                     var token = $.base64.btoa(hash + '-' + time);
-                    var passwordMd5 = CryptoJS.MD5(inscription_mdp);
                     $.ajax({
                         type: "POST",
                         url: "<?= $url_site ?>/collect/inscription",
@@ -1472,7 +1471,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                         + '&nom=' + inscription_nom
                         + '&prenom=' + inscription_prenom
                         + '&civilite=' + inscription_civilite
-                        + '&password=' + passwordMd5
+                        + '&password=' + inscription_mdp
                         + '&question=' + inscription_question
                         + '&reponse=' + inscription_reponse
                         + '&adresse_fiscale=' + inscription_adresse_fiscale

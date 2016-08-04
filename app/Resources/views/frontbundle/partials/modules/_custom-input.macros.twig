@@ -8,6 +8,7 @@
 {# @note This input should never ever need form validation! #}
 {% macro switch(options) %}
     {% import _self as customInput %}
+    {% import 'extensions/_general.macros.twig' as general %}
 
     {# Default settings #}
     {% set settings = {
@@ -34,4 +35,64 @@
 {# @param {Object} options #}
 {% macro iban(options) %}
 
+{% endmacro %}
+
+{# Custom file input (managed by JS component 'FileAttach') #}
+{# macro fileinput(options) #}
+{# @param {Object} options #}
+{% macro file(options, fileattachOptions) %}
+  {% import _self as customInput %}
+    {% import 'extensions/_general.macros.twig' as general %}
+
+  {# Default settings #}
+  {% set settings = {
+    id: '',
+    classNames: '',
+    isRequired: true,
+    attrs: null
+  } %}
+
+  {# Default fileattach settings #}
+  {# @note See `/src/js/app/components/FileAttach.js` for more options #}
+  {% set fileattachSettings = {
+    inputname: "inputname",
+    maxfiles: 1
+  } %}
+
+  {# Merge user-set options with default settings #}
+  {% if options is not empty %}
+    {% set settings = settings|merge(options) %}
+  {% endif %}
+  {% if fileattachOptions is not empty %}
+    {% set fileattachSettings = fileattachSettings|merge(fileattachOptions) %}
+  {% endif %}
+
+  {# Errors #}
+  {% if fileattachSettings.inputname == "inputname" %}
+    <pre><code>Custom Input Macro Error
+-------------------------
+macro file():
+  fileattachSettings.name cannot be left as default value "inputname"
+
+settings:
+{{ dump(settings) }}
+
+fileattachSettings:
+{{ dump(fileattachSettings) }}
+</code></pre>
+  {% endif %}
+
+  {# Input field is required #}
+  {% set formValidationAttrs = '' %}
+  {% if settings.isRequired == true %}
+    {% set formValidationAttrs = general.attrsString({
+      "input": null,
+      "required": 'input[type="file"][name="' ~ fileattachSettings.inputname ~ '"]',
+    }, 'data-formvalidation-') %}
+  {% endif %}
+
+  <div class="custom-input-file {% if settings.classNames is not empty %}{{ settings.classNames }}{% endif %}" id="{{ settings.id|escape('html_attr') }}"
+    data-fileattach {% if fileattachSettings is not empty %}{{ general.attrsString(fileattachSettings, 'data-fileattach-') }}{% endif %}
+    {{ formValidationAttrs }}
+    {% if settings.attrs is not empty %}{{ general.attrsString(settings.attrs) }}{% endif %}></div><!-- /.ui-fileattach -->
 {% endmacro %}

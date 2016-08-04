@@ -8,6 +8,7 @@
 
 // Dependencies
 var $ = require('jquery')
+var sprintf = require('sprintf-js').sprintf
 var Utility = require('Utility')
 var ElementAttrsObject = require('ElementAttrsObject')
 var Templating = require('Templating')
@@ -65,11 +66,14 @@ var FileAttach = function (elem, options) {
   self.settings = $.extend({
     // Properties
     files: [],
-    maxFiles: 0,
+    maxFiles: 0, // 0 = multi (no limit), 1 = single, 2+ = multi
     maxSize: (1024 * 1024 * 8), // 8 MB
     fileTypes: 'pdf jpg jpeg png doc docx',
     inputName: 'fileattach',
     emptyFileLabel: __.__('', 'emptyFileLabel'),
+    fileChange: true,
+    fileRemove: true,
+    multiFileNotation: '_%d', // `_%d` => `_0`. If you want multi file notation like an array, use `[%d]`
 
     // Events
     onadd: function () {},
@@ -82,7 +86,10 @@ var FileAttach = function (elem, options) {
     maxSize: 'data-fileattach-maxsize',
     fileTypes: 'data-fileattach-filetypes',
     inputName: 'data-fileattach-inputname',
-    emptyFileLabel: 'data-fileattach-emptyfilelabel'
+    emptyFileLabel: 'data-fileattach-emptyfilelabel',
+    fileChange: 'data-fileattach-filechange',
+    fileRemove: 'data-fileattach-fileremove',
+    multiFileNotation: 'data-fileattach-multifilenotation'
   }),
   // -- Options (via JS method call)
   options)
@@ -140,10 +147,11 @@ FileAttach.prototype.add = function (inhibitPrompt) {
   var $file = $(Templating.replace(self.templates.fileItem, [{
     fileName: self.templates.emptyFile,
     inputName: self.settings.inputName,
-    fileId: (self.settings.maxFiles !== 1 ? '[' + fileId + ']' : '')
+    fileId: (self.settings.maxFiles !== 1 ? sprintf(self.settings.multiFileNotation, fileId) : '')
   }, {
     attachFile: self.templates.attachFile,
-    removeFile: self.templates.removeFile,
+    removeFile: self.settings.fileRemove ? self.templates.removeFile : '{{ changeFile }}',
+    changeFile: self.settings.fileChange ? self.templates.changeFile : '',
     emptyFileLabel: self.settings.emptyFileLabel
   }, __]))
   $file.appendTo(self.$elem)
@@ -238,10 +246,21 @@ FileAttach.prototype.attach = function (fileElem) {
   }
 
   // Attach the file
-  $file.parents('.ui-fileattach-item').removeClass('ui-fileattach-errored').attr({
-    title: fileInfo.name,
-    'data-fileattach-item-type': fileInfo.type
-  }).find('.ui-fileattach-filename').text(fileInfo.name)
+  $file
+    // Ensure it is visible so it can be submitted with form
+    .show()
+
+    // Change some values on the fileattach-item itself
+    .parents('.ui-fileattach-item')
+      // Remove any state tracking classes
+      .removeClass('ui-fileattach-errored ui-fileattach-alreadyattached')
+      // Update the title and the attached file type
+      .attr({
+        title: fileInfo.name,
+        'data-fileattach-item-type': fileInfo.type
+      })
+      // Update the filename with the file's name
+      .find('.ui-fileattach-filename').text(fileInfo.name)
 
   // @debug
   // console.log('attach fn')
@@ -253,7 +272,9 @@ FileAttach.prototype.attach = function (fileElem) {
 // Populate the element using an array of fileInfo objects
 // This will overwrite any other elements within the element
 // @method populate
-// @params {Array} fileInfos An {Array} containing {Object}s which specify each file's `name`, `type`, `url` and `size`
+// @params {Array} fileInfos An {Array} containing {Object}s which specify each file's `name`,
+//                           `type`, `url` and `size` (plus some extra options like `noRemove` and
+//                           `noChange` to set item-specific functionality)
 // @returns {Void}
 FileAttach.prototype.populate = function (fileInfos, appendFiles) {
   var self = this
@@ -274,10 +295,16 @@ FileAttach.prototype.populate = function (fileInfos, appendFiles) {
           fileSize: fileInfo.size || '',
           fileUrl: fileInfo.url || '',
           inputName: self.settings.inputName,
-          fileId: '[' + i + ']'
+          // If FileAttach supports multiple files, add a "_i"
+          fileId: (self.settings.maxFiles > 1 ? sprintf(self.settings.multiFileNotation, i) : ''),
+          // Enable/disable change/removing file content per file item
+          removeFile: (fileInfo.noRemove ? '{{ changeFile }}' : '{{ removeFile }}'),
+          changeFile: (fileInfo.noChange ? '' : '{{ changeFile }}')
         }, {
+          // Enable/disable change/removing file content
           attachFile: self.templates.attachFile,
-          removeFile: self.templates.removeFile,
+          removeFile: (self.settings.fileRemove ? self.templates.removeFile : '{{ changeFile }}'),
+          changeFile: (self.settings.fileChange ? self.templates.changeFile : ''),
           emptyFileLabel: self.settings.emptyFileLabel
         }, __]))
         $files = $files.add($file)
@@ -359,10 +386,13 @@ FileAttach.prototype.templates = {
   fileItem: '<label class="ui-fileattach-item"><span class="ui-fileattach-filename">{{ fileName }}</span><input type="file" name="{{ inputName }}{{ fileId }}" value=""/>{{ attachFile }}{{ removeFile }}</label>',
 
   // A file item which has already been attached (i.e. located on the server)
-  attachedFileItem: '<label class="ui-fileattach-item" data-fileattach-item-type="{{ fileType }}"><span class="ui-fileattach-filename">{{ fileName }}</span><input type="file" name="{{ inputName }}{{ fileId }}" value="{{ fileUrl }}"/>{{ attachFile }}{{ removeFile }}</label>',
+  attachedFileItem: '<label class="ui-fileattach-item ui-fileattach-alreadyattached" data-fileattach-item-type="{{ fileType }}"><span class="ui-fileattach-filename">{{ fileName }}</span><input type="file" name="{{ inputName }}{{ fileId }}" value="{{ fileUrl }}" style="display:none" />{{ attachFile }}{{ removeFile }}</label>',
 
   // Attach File Button
   attachFile: '<span class="ui-fileattach-add-btn"><span class="label">{{ attachFileLabel }}</span></span>',
+
+  // Change File Button
+  changeFile: '<span class="ui-fileattach-change-btn"><span class="label">{{ changeFileLabel }}</span></span>',
 
   // Remove File Button
   removeFile: '<a href="javascript:;" class="ui-fileattach-remove-btn"><span class="label">{{ removeFileLabel }}</span></a>',
@@ -410,7 +440,7 @@ $(document)
     $(event.target).find('[data-fileattach]').not('.ui-fileattach').uiFileAttach()
   })
 
-  // -- Click add button
+  // -- Click add/change button (do the same thing, look different for UX)
   .on(Utility.clickEvent, '.ui-fileattach-add-btn', function (event) {
     event.preventDefault()
     $(this).parents('.ui-fileattach').uiFileAttach('add')
@@ -433,7 +463,10 @@ $(document)
 
   // -- When the file input has changed
   .on('change', '.ui-fileattach input[type="file"]', function (event) {
-    if ($(this).val()) $(this).parents('.ui-fileattach').uiFileAttach('attach', this)
+    // Attach the new file specified by the input file element
+    if ($(this).val()) {
+      $(this).parents('.ui-fileattach').uiFileAttach('attach', this)
+    }
   })
 
 module.exports = FileAttach

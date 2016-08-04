@@ -41,7 +41,7 @@ class ProjectsFundingCommand extends ContainerAwareCommand
         $entityManager->getRepository('projects_status');
 
         $hasProjectFinished = false;
-        $projects           = $project->selectProjectsByStatus(\projects_status::EN_FUNDING, '', '', array(), '', '', false);
+        $projects           = $project->selectProjectsByStatus(\projects_status::EN_FUNDING, '', '', '', '', false);
 
         foreach ($projects as $projectTable) {
             if ($project->get($projectTable['id_project'])) {
@@ -55,7 +55,7 @@ class ProjectsFundingCommand extends ContainerAwareCommand
                     $projectManager->markAsFunded($project);
                 }
 
-                if ($endDate > $currentDate) {
+                if ($endDate > $currentDate && false === $projectManager->isRateMinReached($project)) {
                     $projectManager->checkBids($project, true);
                     $projectManager->autoBid($project);
                 } else {

@@ -62,6 +62,8 @@ var LoginCaptcha = require('./app/components/LoginCaptcha')
 var SimpleTimer = require('./app/components/SimpleCountDown')
 var BidConfirmation = require('./app/components/BidConfirmation')
 var CookieCheck = require('./app/components/Cookies')
+var BidsDetail = require('./app/components/BidsDetail')
+var Spinner = require('./app/components/Spinner')
 
 // @debug
 // CacheData.clearAll()
@@ -121,6 +123,7 @@ $(document).ready(function ($) {
    * jQuery UI Date Picker
    */
   $('.ui-has-datepicker, [data-ui-datepicker]').datepicker({
+    firstDay: 1,
     format: 'dd/mm/yy'
   })
 

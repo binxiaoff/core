@@ -1,0 +1,202 @@
+{% set loansChartData = {
+    charts: {
+        lenderOperations: {
+            type: 'preterOperations',
+            background: 'none',
+            highcharts: {
+                chart: {
+                    type: 'pie',
+                    width: 300,
+                    height: 300,
+                    marginTop: 0,
+                    marginBottom: 0,
+                    marginLeft: 0,
+                    marginRight: 10,
+                    spacingTop: 0,
+                    spacingBottom: 0,
+                    spacingLeft: 0,
+                    spacingRight: 0
+                },
+                title: {
+                    text: ''
+                },
+                legend: {
+                    enabled: false,
+                    layout: 'vertical',
+                    symbolRadius: 10,
+                    align: 'right',
+                    verticalAlign: 'middle'
+                },
+                tooltip: {
+                    pointFormat: ' '
+                },
+                plotOptions: {
+                    pie: {
+                        innerSize: '50%',
+                        showInLegend: true,
+                        dataLabels: {
+                            enabled: false
+                        }
+                    }
+                },
+                series: [{
+                    data: seriesData
+                }],
+            }
+        }
+    }
+    }
+%}
+<article id="loans" role="tabpanel" class="dashboard-tab-pane tab-pane">
+    <div class="panel panel-operations-loans">
+        <header class="panel-header">
+            <h3 class="panel-title">{% transchoice stats.loans.all with { '%count%' : lenderLoans|length } %} lender-operations_loans-made {% endtranschoice %}</h3>
+            <div class="panel-controls">
+                <a href="#todo" class="btn-default"><span class="icon fa-print-u32"></span><span class="label"> {% trans %} lender-operations_print {% endtrans %} </span></a>
+                <a href="#todo" class="btn-default"><span class="icon fa-excel-u32"></span><span class="label"> {% trans %} lender-operations_csv_export {% endtrans %} </span></a>
+            </div><!-- /.panel-controls -->
+        </header><!-- /.panel-header -->
+        <div class="panel-content">
+            <div class="panel-before-table">
+                <div class="chart" data-chartview='{{ loansChartData.charts.lenderOperations|json_encode|escape('html_attr') }}'></div>
+                {# Responsive issues, so I am rendering the legend in the page itself, rather than in the chart above #}
+                <div class="chart-legend">
+                    {% for i, series in loansChartData.charts.lenderOperations.highcharts.series %}
+                        {% for j, dataItem in series.data if dataItem.showInLegend is defined %}
+                            <div class="chart-key">
+                                <div class="icon" style="background-color: {{ dataItem.color }}"></div>
+                                <div class="label">{{ dataItem.name }}</div>
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+
+                <form id="form-filters-loans" action="{{ route('user/preter/operations/loans/filter') }}" method="post" class="form-filters" data-ajax>
+                    <div class="row row-multi-col">
+                        <div class="form-field col-lg-6 col-md-6 col-sm-4 col-xs-2">
+                            <select id="filter-status" name="filter[status]" class="input-field">
+                                <option value="0">{% trans %} lender-operations_by-status {% endtrans %}</option>
+                                {% for statusDetail in loansStatusFilter %}
+                                    <option value="{{ statusDetail.status }}">{{ "lender-operations_project-status-filter-#{ statusDetail.status }" | trans }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-field col-lg-6 col-md-6 col-sm-4 col-xs-2">
+                            <select id="filter-next" name="filter[date]" class="input-field">
+                                <option value="0"> {% trans %} lender-operations_by-date {% endtrans %} </option>
+                                {% for year, nbLoan in loansYears %}
+                                    <option value="{{ year }}"> {{ year }} </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </form><!-- /.form-filters -->
+            </div><!-- /.panel-before-table -->
+
+            <div class="table-scroll">
+                <table class="table table-myloans" data-sortable>
+                    <thead>
+                    <tr>
+                        <th class="table-sortable-column table-myloans-item-project" data-sortable-by="project">
+                            <span class="label"><span class="sr-only">Sort by column </span> {% transchoice 1 %} lender-operations_project {% endtranschoice %} </span>
+                        </th>
+                        <th class="table-sortable-column table-myloans-item-rating" data-sortable-by="rating">
+                            <span class="label"><span class="sr-only">Sort by column </span>{% trans %} lender-operations_project-risk {% endtrans %}</span>
+                        </th>
+                        <th class="table-sortable-column table-myloans-item-amount" data-sortable-by="amount">
+                            <span class="label"><span class="sr-only">Sort by column </span>{% trans %} lender-operations_amount {% endtrans %}</span>
+                        </th>
+                        <th class="table-sortable-column table-myloans-item-interest" data-sortable-by="interest">
+                            <span class="label"><span class="sr-only">Sort by column </span>{% trans %} lender-operations_loan-rate {% endtrans %}</span>
+                        </th>
+                        <th class="table-sortable-column table-myloans-item-monthly" data-sortable-by="monthly">
+                            <span class="label"><span class="sr-only">Sort by column </span> {% trans %} lender-operations_monthly-installment-amount {% endtrans %} </span>
+                        </th>
+                        <th class="table-sortable-column table-myloans-item-next" data-sortable-by="next">
+                            <span class="label"><span class="sr-only">Sort by column </span>{% trans %} lender-operations_next-monthly-installment-date {% endtrans %}</span>
+                        </th>
+                        <th class="table-sortable-column table-myloans-item-duration" data-sortable-by="duration">
+                            <span class="label"><span class="sr-only">Sort by column </span>{% trans %} lender-operations_remaining-monthly-installments {% endtrans %}</span>
+                        </th>
+                        <th class="table-myloans-item-documents">
+                            <span class="label"><span class="sr-only">Sort by column </span>{% trans %} lender-operations_ducuments {% endtrans %}</span>
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody data-sortable-content>
+                    {% for i, loan in lenderLoans %}
+                        {% set classLoanStatus = 'ui-loan-status-' ~ loan.status_color %}
+                        <tr {{ general.attrsString({
+                            'data-sortable-status': loan.project_status,
+                            'data-sortable-project': loan.name,
+                            'data-sortable-rating': loan.risk,
+                            'data-sortable-amount': loan.amount,
+                            'data-sortable-interest': loan.rate,
+                            'data-sortable-monthly': loan.mensuel,
+                            'data-sortable-next': loan.next_echeance|date('U'),
+                            'data-sortable-duration': loan.project_duration
+                        }) }} class="table-myloans-item {{ classLoanStatus }}">
+                            <td class="table-myloans-item-project">
+                                {#@todo add link to project detail#}
+                                <div class="text-crop"><a href="{{route('project_details/' ~ loan.slug)}}" target="_blank">{{ loan.name }}</a></div>
+                            </td>
+                            <td class="table-myloans-item-rating">
+                                <span class="rating rating-{{ loan.risk|convertRisk|split('.')|join('-') }}"><span class="sr-only">Rated {{ loan.risk }} out of 5</span></span>
+                            </td>
+                            <td class="table-myloans-item-amount">
+                                {{ loan.amount|__num(1) }}€
+                            </td>
+                            <td class="table-myloans-item-interest">
+                                {{ loan.rate|__num(1)|nbsp }}<sup>%</sup>
+                            </td>
+                            <td class="table-myloans-item-monthly">
+                                {{ loan.mensuel|__num(2) }}€
+                            </td>
+                            <td class="table-myloans-item-next">
+                                {{ loan.next_echeance|date('d/m/y') }}
+                            </td>
+                            <td class="table-myloans-item-duration">
+                                <span class="ui-has-tooltip" title="{{'lender-operations_from'|trans|capitalize }} {{ loan.debut|date('d/m/Y') }} {{ 'lender-operations_to'|trans }} {{ loan.fin|date('d/m/Y') }}" data-toggle="tooltip">{% trans with { '%count%' : loan.project_duration} %} lender-operations_month {% endtrans %}</span>
+                            </td>
+                            <td class="table-myloans-item-documents">
+                                {% if loan.documents is defined %}
+                                    {% for j, doc in loan.documents %}
+                                        <a href="{{ doc.url }}" class="loan-doc loan-doc-{{ doc.docType }}"
+                                           title="{{ doc.docTypeName }}"
+                                           data-toggle="tooltip">
+                                        </a>
+                                    {% endfor %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% if loan.nb_loan > 1 %}
+                            {% for loanDetails in loan.loan_details %}
+                                <tr>
+                                    <td colspan="2">
+                                    </td>
+                                    <td class="table-myloans-item-amount">
+                                        {{ loanDetails.amount/100|__num(2) }}€
+                                    </td>
+                                    <td class="table-myloans-item-interest">
+                                        {{ loanDetails.rate|__num(1)|nbsp }}<sup>%</sup>
+                                    </td>
+                                    <td colspan="3">
+                                    </td>
+                                    <td class="table-myloans-item-documents">
+                                        {% for k, doc in loanDetails.documents %}
+                                            <a href="{{ doc.url }}" class="loan-doc loan-doc-{{ doc.docType }}"
+                                               title="{{ doc.docTypeName }}"
+                                               data-toggle="tooltip">
+                                            </a>
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                    </tbody>
+                </table><!-- /.table-myloans -->
+            </div><!-- /.table-scroll -->
+        </div><!-- /.panel-content -->
+    </div><!-- /.panel -->
+</article><!-- /#myloans.tab-pane -->

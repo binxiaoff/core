@@ -3,7 +3,6 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Psr\Log\LoggerInterface;
 use Unilend\core\Loader;
-use \Symfony\Bridge\Monolog\Logger;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class ProjectManager
@@ -41,15 +40,19 @@ class ProjectManager
     /** @var EntityManager  */
     private $oEntityManager;
 
-    public function __construct(EntityManager $oEntityManager, BidManager $oBidManager, LoanManager $oLoanManager, NotificationManager $oNotificationManager, AutoBidSettingsManager $oAutoBidSettingsManager, MailerManager $oMailerManager, LenderManager $oLenderManager)
+    /** @var  ProjectRateSettingsManager */
+    private $projectRateSettingsManager;
+
+    public function __construct(EntityManager $oEntityManager, BidManager $oBidManager, LoanManager $oLoanManager, NotificationManager $oNotificationManager, AutoBidSettingsManager $oAutoBidSettingsManager, MailerManager $oMailerManager, LenderManager $oLenderManager, ProjectRateSettingsManager $projectRateSettingsManager)
     {
-        $this->oEntityManager          = $oEntityManager;
-        $this->oBidManager             = $oBidManager;
-        $this->oLoanManager            = $oLoanManager;
-        $this->oNotificationManager    = $oNotificationManager;
-        $this->oAutoBidSettingsManager = $oAutoBidSettingsManager;
-        $this->oMailerManager          = $oMailerManager;
-        $this->oLenderManager          = $oLenderManager;
+        $this->oEntityManager             = $oEntityManager;
+        $this->oBidManager                = $oBidManager;
+        $this->oLoanManager               = $oLoanManager;
+        $this->oNotificationManager       = $oNotificationManager;
+        $this->oAutoBidSettingsManager    = $oAutoBidSettingsManager;
+        $this->oMailerManager             = $oMailerManager;
+        $this->oLenderManager             = $oLenderManager;
+        $this->projectRateSettingsManager = $projectRateSettingsManager;
 
         $this->oFicelle    = Loader::loadLib('ficelle');
         $this->oDate       = Loader::loadLib('dates');
@@ -193,17 +196,20 @@ class ProjectManager
     {
         /** @var \autobid $oAutoBid */
         $oAutoBid = $this->oEntityManager->getRepository('autobid');
+        /** @var \project_period $oProjectPeriods */
+        $oProjectPeriods = $this->oEntityManager->getRepository('project_period');
 
-        $aPeriod = $this->oAutoBidSettingsManager->getPeriod($oProject->period);
-        if (false === empty($aPeriod)) {
+        if ($oProjectPeriods->getPeriod($oProject->period)) {
+            $rateRange = $this->oBidManager->getProjectRateRange($oProject);
+
             $iOffset = 0;
             $iLimit  = 100;
-            while ($aAutoBidList = $this->oAutoBidSettingsManager->getSettings(null, $oProject->risk, $aPeriod['id_period'], array(\autobid::STATUS_ACTIVE), 'id_autobid', $iLimit, $iOffset)) {
+            while ($aAutoBidList = $oAutoBid->getSettings(null, $oProject->risk, $oProjectPeriods->id_period, array(\autobid::STATUS_ACTIVE), ['id_autobid' => 'ASC'], $iLimit, $iOffset)) {
                 $iOffset += $iLimit;
 
                 foreach ($aAutoBidList as $aAutoBidSetting) {
                     if ($oAutoBid->get($aAutoBidSetting['id_autobid'])) {
-                        $this->oBidManager->bidByAutoBidSettings($oAutoBid, $oProject, \bids::BID_RATE_MAX, false);
+                        $this->oBidManager->bidByAutoBidSettings($oAutoBid, $oProject, $rateRange['rate_max'], false);
                     }
                 }
             }
@@ -579,6 +585,8 @@ class ProjectManager
                         'retenues_source'              => $montant_retenues_source,
                         'date_echeance'                => $dateEcheance,
                         'date_echeance_emprunteur'     => $dateEcheance_emprunteur,
+                        'added'                        => date('Y-m-d H:i:s'),
+                        'updated'                      => date('Y-m-d H:i:s'),
                     );
                 }
                 $oRepaymentSchedule->multiInsert($aRepaymentSchedule);
@@ -745,6 +753,7 @@ class ProjectManager
         /** @var \bids $oBid */
         $oBid      = $this->oEntityManager->getRepository('bids');
         $iBidTotal = $oBid->getSoldeBid($oProject->id_project);
+
         if ($iBidTotal >= $oProject->amount) {
             return true;
         }
@@ -757,6 +766,7 @@ class ProjectManager
         if ($oProject->status_solde == 0) {
             $oFunded    = new \DateTime();
             $oPublished = new \DateTime($oProject->date_publication_full);
+
             if ($oFunded < $oPublished) {
                 $oFunded = $oPublished;
             }
@@ -784,17 +794,15 @@ class ProjectManager
     }
 
     /**
-     * @param \projects $oProject
-     *
+     * @param \projects $project
      * @return array
      */
-    public function getBidsStatistics(\projects $oProject)
+    public function getBidsSummary(\projects $project)
     {
-        /** @var \bids $oBid */
-        $oBid = $this->oEntityManager->getRepository('bids');
-        return $oBid->getBidsStatistics($oProject->id_project);
+        /** @var \bids $bid */
+        $bid = $this->oEntityManager->getRepository('bids');
+        return $bid->getBidsSummary($project->id_project);
     }
-
 
     public function getPossibleProjectPeriods()
     {
@@ -809,7 +817,7 @@ class ProjectManager
         /** @var \settings $settings */
         $settings = $this->oEntityManager->getRepository('settings');
         $settings->get('Somme à emprunter max', 'type');
-        return (int)$settings->value;
+        return (int) $settings->value;
     }
 
     public function getMinProjectAmount()
@@ -817,7 +825,53 @@ class ProjectManager
         /** @var \settings $settings */
         $settings = $this->oEntityManager->getRepository('settings');
         $settings->get('Somme à emprunter min', 'type');
-        return (int)$settings->value;
+        return (int) $settings->value;
     }
 
+    public function setProjectRateRange(\projects $project)
+    {
+        if (empty($project->period)) {
+            throw new \Exception('project period not set.');
+        }
+
+        if (empty($project->risk)) {
+            throw new \Exception('project risk not set.');
+        }
+
+        /** @var \project_period $projectPeriod */
+        $projectPeriod = $this->oEntityManager->getRepository('project_period');
+
+        if ($projectPeriod->getPeriod($project->period)) {
+            /** @var \project_rate_settings $projectRateSettings */
+            $projectRateSettings = $this->oEntityManager->getRepository('project_rate_settings');
+            $rateSettings = $projectRateSettings->getSettings($project->risk, $projectPeriod->id_period);
+
+            if (empty($rateSettings)) {
+                throw new \Exception('No settings found for the project.');
+            }
+            if (count($rateSettings) === 1) {
+                $project->id_rate = $rateSettings[0]['id_rate'];
+                $project->update();
+            } else {
+                throw new \Exception('More than one settings found for the project.');
+            }
+        } else {
+            throw new \Exception('Period not found for the project.');
+        }
+    }
+
+    /**
+     * @param \projects $project
+     *
+     * @return bool
+     */
+    public function isRateMinReached(\projects $project)
+    {
+        $rateRange = $this->oBidManager->getProjectRateRange($project);
+        /** @var \bids $bid */
+        $bid = $this->oEntityManager->getRepository('bids');
+        $totalBidRateMin = $bid->getSoldeBid($project->id_project, $rateRange['rate_min'], array(\bids::STATUS_BID_PENDING, \bids::STATUS_BID_ACCEPTED));
+
+        return $totalBidRateMin >= $project->amount;
+    }
 }

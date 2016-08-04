@@ -11,7 +11,7 @@ class collectController extends bootstrap
 
     public function _default()
     {
-        $this->hideDecoration();
+        header('Location: ' . $this->lurl);
         die;
     }
 
@@ -297,9 +297,9 @@ class collectController extends bootstrap
                 $this->clients->id_langue = 'fr';
 
                 $this->clients->civilite  = $civilite;
-                $this->clients->nom       = $nom;
-                $this->clients->nom_usage = $nom_usage;
-                $this->clients->prenom    = $prenom;
+                $this->clients->nom       = $this->ficelle->majNom($nom);
+                $this->clients->nom_usage = $this->ficelle->majNom($nom_usage);
+                $this->clients->prenom    = $this->ficelle->majNom($prenom);
                 $this->clients->slug      = $this->bdd->generateSlug($prenom . '-' . $nom);
 
                 $this->clients->naissance         = $date_naissance;
@@ -310,7 +310,7 @@ class collectController extends bootstrap
 
                 $this->clients->telephone        = $telephone;
                 $this->clients->email            = $email;
-                $this->clients->password         = $password;
+                $this->clients->password         = password_hash($password, PASSWORD_DEFAULT);
                 $this->clients->secrete_question = $question;
                 $this->clients->secrete_reponse  = md5($reponse);
                 $this->clients->type             = $forme_preteur;

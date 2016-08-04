@@ -1,0 +1,272 @@
+<section id="profile-info-edit-legal-entity" role="tabpanel" class="profile-info-edit collapse">
+    <form id="form-profile-info-edit-legal-entity" action="{{ path('profile_legal_entity_identity_update') }}" method="post" enctype="multipart/form-data" class="form-profile form-profile-info-edit" data-formvalidation data-formvalidation-notificationselem="#form-profile-info-notifications">
+        <div class="row">
+            <div class="form-field form-field-multi">
+                <div class="field-label">
+                    <label>{% trans %} lender-profile_information-tab-identity-section-client-type-label {% endtrans %}
+                        <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                </div>
+                <ul class="list-input-values">
+                    <li>
+                        <label><input type="radio" name="client_type" value="legal_entity" checked="checked"/>
+                            {% trans %} lender-profile_information-tab-identity-section-client-type-legal-entity-label {% endtrans %}
+                        </label>
+                    </li>
+                </ul>
+            </div><!-- /.form-field -->
+        </div><!-- /.row -->
+
+        <div class="row row-multi-col-computer">
+            <div class="form-field col-lg-6 col-md-6">
+                <label for="form-profile-info-company-name">{% trans %} lender-profile_information-tab-identity-section-company-name-label {% endtrans %}</label>
+                <input id="form-profile-info-company-name" type="text" name="company_name" value="{{ formData.legalEntity.company_name }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+            </div><!-- /.form-field -->
+            <div class="form-field col-lg-6 col-md-6">
+                <label for="form-profile-info-company-legal-form">{% trans %} lender-profile_information-tab-identity-section-company-legal-form-label {% endtrans %}
+                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                <input id="form-profile-info-company-legal-form" type="text" name="company_legal_form" value="{{ formData.legalEntity.company_legal_form }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+            </div><!-- /.form-field -->
+        </div><!-- /.row -->
+
+        <div class="row row-multi-col-computer">
+            <div class="form-field col-lg-6 col-md-6">
+                <label for="form-profile-info-company-social-capital">{% trans %} lender-profile_information-tab-identity-section-company-social-capital-label {% endtrans %}</label>
+                <input id="form-profile-info-company-social-capital" type="text" name="company_social_capital" value="{{ formData.legalEntity.company_social_capital }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+            </div><!-- /.form-field -->
+            <div class="form-field col-lg-6 col-md-6">
+                <label for="form-profile-info-company-siren">{% trans %} lender-profile_information-tab-identity-section-company-siren-label {% endtrans %}
+                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                <span id="form-profile-info-company-siren" >{{ company.siren }}</span>
+            </div><!-- /.form-field -->
+        </div><!-- /.row -->
+
+        <div class="row row-multi-col-computer">
+            <div class="form-field col-lg-6 col-md-6">
+                <label for="form-profile-info-company-phone">{% trans %} lender-profile_information-tab-identity-section-company-phone-label {% endtrans %}</label>
+                <input id="form-profile-info-company-phone" type="text" name="company_phone" value="{{ formData.legalEntity.company_phone }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+            </div><!-- /.form-field -->
+            <div class="form-field col-lg-6 col-md-6">
+            </div><!-- /.form-field -->
+        </div><!-- /.row -->
+
+        <h5>{% trans %} lender-profile_information-tab-identity-section-company-representative-title {% endtrans %}</h5>
+
+        <div class="row">
+            <div class="form-field form-field-multi">
+                <div class="field-label">
+                    <label>{% trans %} lender-profile_information-tab-identity-section-form-of-address-label {% endtrans %}
+                        <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                </div>
+                <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
+                    <li>
+                        <label><input type="radio" name="client_form_of_address" value="Mme" {% if formData.legalEntity.client_form_of_address == 'Mme' %}checked="checked"{% endif %}/> {% trans %} lender-profile_information-tab-identity-section-form-of-address-female-label {% endtrans %}</label>
+                    </li>
+                    <li>
+                        <label><input type="radio" name="client_form_of_address" value="M." {% if formData.legalEntity.client_form_of_address == 'M.' %}checked="checked"{% endif %}/> {% trans %} lender-profile_information-tab-identity-section-form-of-address-male-label {% endtrans %}</label>
+                    </li>
+                </ul>
+            </div><!-- /.form-field -->
+        </div><!-- /.row -->
+
+        <div class="row">
+            <div class="form-field form-field-multi">
+                <div class="field-label">
+                    <label>{% trans %} lender-profile_information-tab-identity-section-company-client-status-label {% endtrans %}
+                        <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                </div>
+                <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
+                    <li>
+                        <label><input type="radio" name="company_client_status" value="1" {% if formData.legalEntity.company_client_status == constant('\\companies::CLIENT_STATUS_MANAGER') %}checked="checked"{% endif %}/>
+                            {% trans %} lender-profile_lender-profile_information-tab-identity-section-company-client-status-1 {% endtrans %}</label>
+                    </li>
+                    <li>
+                        <label><input type="radio" name="company_client_status" value="2" {% if formData.legalEntity.company_client_status == constant('\\companies::CLIENT_STATUS_DELEGATION_OF_POWER') %}checked="checked"{% endif %}/>
+                            {% trans %} lender-profile_lender-profile_information-tab-identity-section-company-client-status-2 {% endtrans %}</label>
+                    </li>
+                    <li>
+                        <label><input type="radio" name="company_client_status" value="3" {% if formData.legalEntity.company_client_status == constant('\\companies::CLIENT_STATUS_EXTERNAL_CONSULTANT') %}checked="checked"{% endif %}/>
+                            {% trans %} lender-profile_lender-profile_information-tab-identity-section-company-client-status-3 {% endtrans %}</label>
+                    </li>
+                </ul>
+            </div><!-- /.form-field -->
+        </div><!-- /.row -->
+
+        {#TODO show if input client_status_value other than 1 is checked #}
+        {% if formData.legalEntity.company_external_counsel is not empty %}
+        <div class="row row-multi-col-computer">
+            <div class="form-field col-lg-6 col-md-6">
+                <label for="form-profile-info-company-client-status">{% trans %} lender-profile_information-tab-identity-section-company-external-counsel-label {% endtrans %}
+                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                <select id="form-profile-info-company-client-status" name="company_external_counsel" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                    {% for i, status in externalCounselList %}
+                        <option value="{{ i }}"{% if i == formData.legalEntity.company_external_counsel %} selected="selected"{% endif %}>{{ status }}</option>
+                    {% endfor %}
+                </select>
+            </div><!-- /.form-field -->
+            {#TODO only visible and mandatory when previous select is value 3#}
+            <div class="form-field col-lg-6 col-md-6">
+                {% if formData.legalEntity.company_external_counsel == 3 %}
+                <label for="form-profile-info-company-client-status-other">{% trans %} lender-profile_information-tab-identity-section-company-other-external-counsel-label {% endtrans %}
+                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                    <input id="form-profile-info-company-client-status-other" type="text" name="company_client_status_other" value="{{ formData.legalEntity.company_external_counsel_other }}" class="input-field" data-formvalidation-input {% if formData.legalEntity.company_external_counsel == 3 %}data-formvalidation-required="true"{% endif %}"/>
+                {% endif %}
+            </div><!-- /.form-field -->
+        </div><!-- /.row -->
+        {%  endif %}
+
+        <div class="row row-multi-col-computer">
+            <div class="form-field col-lg-6 col-md-6">
+                <label for="form-profile-info-company-client-name">{% trans %} lender-profile_information-tab-identity-section-name-label {% endtrans %}
+                <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                <input id="form-profile-info-company-client-name" type="text" name="client_name" value="{{ formData.legalEntity.client_name }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+            </div><!-- /.form-field -->
+            <div class="form-field col-lg-6 col-md-6">
+                <label for="form-profile-info-company-client-first-name">{% trans %} lender-profile_information-tab-identity-section-first-name-label {% endtrans %}
+                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                <input id="form-profile-info-company-client-name" type="text" name="client_first_name" value="{{ formData.legalEntity.client_first_name }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+            </div><!-- /.form-field -->
+        </div><!-- /.row -->
+
+        <div class="row row-multi-col-computer">
+            <div class="form-field col-lg-6 col-md-6">
+                <label for="form-profile-info-company-client-function">{% trans %} lender-profile_information-tab-identity-section-company-client-position-label {% endtrans %}</label>
+                <input id="form-profile-info-company-client-function" type="text" name="client_position" value="{{ formData.legalEntity.client_position }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+            </div><!-- /.form-field -->
+            <div class="form-field col-lg-6 col-md-6">
+            </div><!-- /.form-field -->
+        </div><!-- /.row -->
+
+        {#TODO show if input client_status_value other than 1 is checked #}
+        {% if formData.legalEntity.company_client_status > 1 %}
+            <h5>{% trans %} lender-profile_information-tab-identity-section-company-director-title {% endtrans %}</h5>
+            <div class="row">
+                <div class="form-field form-field-multi">
+                    <div class="field-label">
+                        <label>{% trans %} lender-profile_information-tab-identity-section-form-of-address-label {% endtrans %}
+                            <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                    </div>
+                    <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
+                        <li>
+                            <label><input type="radio" name="company_director_form_of_address" value="Mme" {% if formData.legalEntity.company_director_form_of_address == 'Mme' %}checked="checked"{% endif %}/> {% trans %} lender-profile_information-tab-identity-section-form-of-address-female-label {% endtrans %}</label>
+                        </li>
+                        <li>
+                            <label><input type="radio" name="company_director_form_of_address" value="M." {% if formData.legalEntity.company_director_form_of_address == 'M.' %}checked="checked"{% endif %}/> {% trans %} lender-profile_information-tab-identity-section-form-of-address-male-label {% endtrans %}</label>
+                        </li>
+                    </ul>
+                </div><!-- /.form-field -->
+            </div><!-- /.row -->
+
+            <div class="row row-multi-col-computer">
+                <div class="form-field col-lg-6 col-md-6">
+                    <label for="form-profile-info-company-client-name">{% trans %} lender-profile_information-tab-identity-section-name-label {% endtrans %}
+                        <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                    <input id="form-profile-info-company-client-name" type="text" name="company_director_name" value="{{ formData.legalEntity.company_director_name }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                </div><!-- /.form-field -->
+                <div class="form-field col-lg-6 col-md-6">
+                    <label for="form-profile-info-company-client-first-name">{% trans %} lender-profile_information-tab-identity-section-first-name-label {% endtrans %}
+                        <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                    <input id="form-profile-info-company-client-name" type="text" name="company_director_first_name" value="{{ formData.legalEntity.company_director_first_name }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                </div><!-- /.form-field -->
+            </div><!-- /.row -->
+
+            <div class="row row-multi-col-computer">
+                <div class="form-field col-lg-6 col-md-6">
+                    <label for="form-profile-info-company-client-name">{% trans %} lender-profile_information-tab-identity-section-company-client-function-label {% endtrans %}
+                        <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                    <input id="form-profile-info-company-client-name" type="text" name="company_director_name" value="{{ formData.legalEntity.company_director_name }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                </div><!-- /.form-field -->
+                <div class="form-field col-lg-6 col-md-6">
+                </div><!-- /.form-field -->
+            </div><!-- /.row -->
+
+            <div class="row row-multi-col-computer">
+                <div class="form-field col-lg-6 col-md-6">
+                    <label for="form-profile-info-company-client-name">{% trans %} lender-profile_information-tab-identity-section-company-director-phone {% endtrans %}
+                        <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                    <input id="form-profile-info-company-client-name" type="text" name="company_director_phone" value="{{ formData.legalEntity.company_director_phone }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                </div><!-- /.form-field -->
+                <div class="form-field col-lg-6 col-md-6">
+                    <label for="form-profile-info-company-client-first-name">{% trans %} lender-profile_information-tab-identity-section-company-director-email {% endtrans %}
+                        <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                    <input id="form-profile-info-company-client-name" type="text" name="company_director_email" value="{{ formData.legalEntity.company_director_email }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                </div><!-- /.form-field -->
+            </div><!-- /.row -->
+        {% endif %}
+
+        <div class="row">
+            <div class="form-field">
+                <label>{% trans %} lender-profile_information-tab-identity-section-ID-documents-label {% endtrans %}
+                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                <div class="form-field file-identity-side-a">
+                    <div class="custom-input-file" id="form-profile-info-file-identite-cni-1"
+                         data-fileattach data-fileattach-inputname="id_recto"
+                         data-fileattach-maxfiles="1"
+                         data-fileattach-emptyfilelabel="
+                         {% if companyIdAttachments[constant('\\attachment_type::CNI_PASSPORTE_DIRIGEANT')] is not empty %}
+                            {{ companyIdAttachments[constant('\\attachment_type::CNI_PASSPORTE_DIRIGEANT')]['path'] }}
+                         {% else %}
+                            {% trans %} lender-profile_information-tab-identity-section-ID-recto {% endtrans %}
+                         {% endif %}">
+                    </div><!-- /.ui-fileattach -->
+                </div>
+
+                <div class="form-field file-identity-side-b">
+                    <div class="custom-input-file" id="form-profile-info-file-identite-cni-2"
+                         data-fileattach data-fileattach-inputname="id_verso"
+                         data-fileattach-maxfiles="1"
+                         data-fileattach-emptyfilelabel="
+                             {% if companyIdAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')] is defined and
+                                    companyIdAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')] is not empty %}
+                                {{ companyIdAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')]['path'] }}
+                             {% else %}
+                                {% trans %} lender-profile_information-tab-identity-section-ID-verso {% endtrans %}
+                             {% endif %}">
+                    </div><!-- /.ui-fileattach -->
+                </div>
+
+                <div class="field-help">
+                    <p>{% trans %} lender-profile_information-tab-identity-section-ID-document-notice {% endtrans %}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-field">
+                <label>{% trans %} lender-profile_information-tab-identity-section-company-other-attachments-label {% endtrans %}
+                 <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+            <div class="form-field file-domicile">
+                <div class="custom-input-file" id="form-profile-info-file-company-registration"
+                     data-fileattach data-fileattach-inputname="company-registration"
+                     data-fileattach-maxfiles="1"
+                     data-fileattach-emptyfilelabel="
+                                 {% if companyOtherAttachments[constant('\\attachment_type::KBIS')] is not empty %}
+                                    {{ companyOtherAttachments[constant('\\attachment_type::KBIS')]['path'] }}
+                                 {% else %}
+                                    {% trans %} lender-profile_information-tab-identity-section-company-registration {% endtrans %}
+                                 {% endif %}">
+                </div><!-- /.ui-fileattach -->
+            </div>
+            {% if formData.legalEntity.company_client_status > 1 or true %}
+                <div class="form-field file-domicile">
+                    <div class="custom-input-file" id="form-profile-info-file-delegation-authority"
+                         data-fileattach data-fileattach-inputname="delegation_of_authority"
+                         data-fileattach-maxfiles="1"
+                         data-fileattach-emptyfilelabel="
+                                 {% if companyOtherAttachments[constant('\\attachment_type::DELEGATION_POUVOIR')] is defined and
+                                        companyOtherAttachments[constant('\\attachment_type::DELEGATION_POUVOIR')] is not empty %}
+                                    {{ companyOtherAttachments[constant('\\attachment_type::DELEGATION_POUVOIR')]['path'] }}
+                                 {% else %}
+                                    {% trans %} lender-profile_information-tab-identity-section-delegation-of-authority {% endtrans %}
+                                 {% endif %}">
+                    </div><!-- /.ui-fileattach -->
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        <input type="hidden" name="legal_entity_info_form" value="true" />
+        <div class="btn-controls">
+            <button class="btn-primary">{% trans %} lender-profile_information-tab-identity-save-modifications-button {% endtrans %}</button>
+            <button type="reset" role="button" data-toggle="collapse" data-target="#profile-correspondence-view" data-parent="#profile-correspondence-section" class="btn-default" aria-controls="#profile-correspondence-view" aria-expanded="true">{% trans %} lender-profile_information-tab-identity-cancel-modifications-button {% endtrans %}</button>
+        </div><!-- /.btn-controls -->
+    </form><!-- /.form-profile-info-edit -->
+</section><!-- /.profile-info-edit -->

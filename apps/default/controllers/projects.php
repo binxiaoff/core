@@ -154,6 +154,11 @@ class projectsController extends bootstrap
 
             $this->soldeBid = $this->bids->getSoldeBid($this->projects->id_project);
 
+            /** @var Unilend\Bundle\CoreBusinessBundle\Service\bidManager $bidManager */
+            $bidManager = $this->get('unilend.service.bid_manager');
+
+            $this->rateRange = $bidManager->getProjectRateRange($this->projects);
+
             ////////////////////////
             // Formulaire de pret //
             ////////////////////////
@@ -222,7 +227,6 @@ class projectsController extends bootstrap
                     $bid->amount                = $montant_p * 100;
                     $bid->rate                  = $tx_p;
 
-                    $bidManager = $this->get('unilend.service.bid_manager');
                     $bidManager->bid($bid);
 
                     $oCachePool = $this->get('memcache.default');
@@ -384,7 +388,7 @@ class projectsController extends bootstrap
                 $this->resteApayer          = $this->projects->amount - $this->soldeBid;
                 $this->pourcentage          = (1 - $this->resteApayer / $this->projects->amount) * 100;
                 $this->decimalesPourcentage = 1;
-                $this->txLenderMax          = 10;
+                $this->txLenderMax          = $this->rateRange['rate_max'];
             }
 
             $this->avgRate   = $this->projects->getAverageInterestRate($this->projects->id_project, $this->projects_status->status);

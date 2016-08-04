@@ -11,16 +11,37 @@
 {% if route == url %}{% if hideAttr != true %}class="active"{% else %}active{% endif %}{% endif %}
 {% endmacro %}
 
-{# Generate a string from an object containing key-value pairs representing html attributes #}
+{# Generate a string from an object containing name-value pairs representing html attributes #}
 {# @macro attrsString #}
-{# @param {Object} attrs An object containing key-value pairs to represent the attributes for the element #}
-{% macro attrsString(attrs) %}
+{# @param {Object} attrs An object containing name-value pairs to represent the attributes for the element: e.g.
+                         `{ "attr-name": null, "attr-2-name": "value", ...}` would output as:
+                         `attr-name attr-2-name="value"`
+#}
+{# @param {String} attrPrefix A prefix to append to each attribute name #}
+{% macro attrsString(attrs, attrPrefix) %}
   {# Generate attributes string #}
   {% set attrsHtml = '' %}
+  {% set attrPrefix = attrPrefix|default('') %}
   {% if attrs is not empty %}
-    {% for key, value in attrs %}
-      {% set attrsHtml = attrsHtml ~ ' ' ~ key ~ '="' ~ value|escape('html_attr') ~ '"' %}
+    {% for name, value in attrs %}
+      {# Null value, so append only the key as the attribute with no value stated #}
+      {% if value == null %}
+        {% set attrsHtml = attrsHtml ~ ' ' ~ attrPrefix ~ name %}
+
+      {# Value not null, so append normal name="value" #}
+      {% else %}
+        {# Test if value is array/object and output as JSON encoded string #}
+        {% if value is iterable %}
+          {% set attrsHtml = attrsHtml ~ ' ' ~ attrPrefix ~ name ~ "=" ~ value|json_encode %}
+
+        {# Output normal value #}
+        {% else %}
+          {% set attrsHtml = attrsHtml ~ ' ' ~ attrPrefix ~ name ~ '=' ~ value %}
+        {% endif %}
+      {% endif %}
     {% endfor %}
+
+    {# Output the attrs' string #}
     {% if attrsHtml is not empty %}{{ attrsHtml }}{% endif %}
   {% endif %}
 {% endmacro %}
