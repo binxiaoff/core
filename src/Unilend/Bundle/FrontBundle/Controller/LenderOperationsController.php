@@ -36,7 +36,7 @@ class LenderOperationsController extends Controller
         $translationManager = $this->get('unilend.service.translation_manager');
 
         $lender->get($this->getUser()->getClientId(), 'id_client_owner');
-        $this->indexOperations($lenderOperationsIndex, $lender);
+        $this->lenderOperationIndexing($lenderOperationsIndex, $lender);
 
         $lenderOperations       = $lenderOperationsIndex->select('id_client= ' . $this->getUser()->getClientId() . ' AND DATE(date_operation) >= "' . date('Y-m-d', strtotime('-1 month')) . '" AND DATE(date_operation) <= "' . date('Y-m-d') . '"', 'date_operation DESC, id_projet DESC');
         $projectsFundedByLender = $lenderOperationsIndex->get_liste_libelle_projet('id_client = ' . $this->getUser()->getClientId() . ' AND DATE(date_operation) >= "' . date('Y-m-d', strtotime('-1 month')) . '" AND DATE(date_operation) <= "' . date('Y-m-d') . '"');
@@ -262,12 +262,11 @@ class LenderOperationsController extends Controller
     }
 
     /**
-     * @param Request $request
      * @return Response
-     * @Route("/operations/exportCsv", name="export_operations_csv")
+     * @Route("/operations/exportOperationsCsv", name="export_operations_csv")
      * @Security("has_role('ROLE_LENDER')")
      */
-    public function exportOperationsCsv(Request $request)
+    public function exportOperationsCsv()
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
@@ -613,15 +612,120 @@ class LenderOperationsController extends Controller
             'Content-type'        => 'application/force-download; charset=utf-8',
             'Expires'             => 0,
             'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
-            'content-disposition' => "attachment;filename=" . 'operations_' . date('Y-m-d') . ".xls"
+            'content-disposition' => "attachment;filename=" . 'operations_' . date('Y-m-d_H:i:s') . ".xls"
         ]);
+    }
+
+    /**
+     * @param Request $request
+     * @return Response
+     * @Route("/operations/exportLoansCsv", name="export_loans_csv")
+     * @Security("has_role('ROLE_LENDER')")
+     */
+    public function exportLoansCsv(Request $request)
+    {
+        /** @var \lenders_accounts $lender */
+        $lender = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
+        $lender->get($this->getUser()->getClientId(), 'id_client_owner');
+        /** @var \echeanciers $repaymentSchedule */
+        $repaymentSchedule = $this->get('unilend.service.entity_manager')->getRepository('echeanciers');
+        $loans = $this->commonLoans($request, $lender);
+
+        \PHPExcel_Settings::setCacheStorageMethod(
+            \PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
+            array('memoryCacheSize' => '2048MB', 'cacheTime' => 1200)
+        );
+
+        $oDocument    = new \PHPExcel();
+        $oActiveSheet = $oDocument->setActiveSheetIndex(0);
+
+        $oActiveSheet->setCellValue('A1', 'Projet');
+        $oActiveSheet->setCellValue('B1', 'Numéro de projet');
+        $oActiveSheet->setCellValue('C1', 'Montant');
+        $oActiveSheet->setCellValue('D1', 'Statut');
+        $oActiveSheet->setCellValue('E1', 'Taux d\'intérêts');
+        $oActiveSheet->setCellValue('F1', 'Premier remboursement');
+        $oActiveSheet->setCellValue('G1', 'Prochain remboursement prévu');
+        $oActiveSheet->setCellValue('H1', 'Date dernier remboursement');
+        $oActiveSheet->setCellValue('I1', 'Capital perçu');
+        $oActiveSheet->setCellValue('J1', 'Intérêts perçus');
+        $oActiveSheet->setCellValue('K1', 'Capital restant dû');
+        $oActiveSheet->setCellValue('L1', 'Note');
+
+        foreach ($loans['lenderLoans'] as $iRowIndex => $aProjectLoans) {
+            $oActiveSheet->setCellValue('A' . ($iRowIndex + 2), $aProjectLoans['title']);
+            $oActiveSheet->setCellValue('B' . ($iRowIndex + 2), $aProjectLoans['id_project']);
+            $oActiveSheet->setCellValue('C' . ($iRowIndex + 2), $aProjectLoans['amount']);
+            $oActiveSheet->setCellValue('D' . ($iRowIndex + 2), $this->get('unilend.service.translation_manager')->selectTranslation('lender-operations','project-status-filter-' . $aProjectLoans['project_status']));
+            $oActiveSheet->setCellValue('E' . ($iRowIndex + 2), round($aProjectLoans['rate'], 1));
+            $oActiveSheet->setCellValue('F' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['debut'])));
+            $oActiveSheet->setCellValue('G' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['next_echeance'])));
+            $oActiveSheet->setCellValue('H' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['fin'])));
+            $oActiveSheet->setCellValue('I' . ($iRowIndex + 2), (string) round($repaymentSchedule->sum('id_lender = ' . $lender->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 1', 'capital'), 2));
+            $oActiveSheet->setCellValue('J' . ($iRowIndex + 2), round($repaymentSchedule->sum('id_lender = ' . $lender->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 1', 'interets'), 2));
+            $oActiveSheet->setCellValue('K' . ($iRowIndex + 2), round($repaymentSchedule->sum('id_lender = ' . $lender->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 0', 'capital'), 2));
+
+            $sRisk = isset($aProjectLoans['risk']) ? $aProjectLoans['risk'] : '';
+            $sNote = $this->getProjectNote($sRisk);
+            $oActiveSheet->setCellValue('L' . ($iRowIndex + 2), $sNote);
+        }
+
+        /** @var \PHPExcel_Writer_Excel5 $oWriter */
+        $oWriter = \PHPExcel_IOFactory::createWriter($oDocument, 'Excel5');
+        ob_start();
+        $oWriter->save('php://output');
+        $content = ob_get_clean();
+
+        return new Response($content, Response::HTTP_OK, [
+            'Content-type'        => 'application/force-download; charset=utf-8',
+            'Expires'             => 0,
+            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
+            'content-disposition' => "attachment;filename=" . 'prets_' . date('Y-m-d_H:i:s') . ".xls"
+        ]);
+    }
+
+    /**
+     * @param string $sRisk a letter that gives the risk value [A-H]
+     * @return string
+     */
+    private function getProjectNote($sRisk)
+    {
+        switch ($sRisk) {
+            case 'A':
+                $sNote = '5';
+                break;
+            case 'B':
+                $sNote = '4,5';
+                break;
+            case 'C':
+                $sNote = '4';
+                break;
+            case 'D':
+                $sNote = '3,5';
+                break;
+            case 'E':
+                $sNote = '3';
+                break;
+            case 'F':
+                $sNote = '2,5';
+                break;
+            case 'G':
+                $sNote = '2';
+                break;
+            case 'H':
+                $sNote = '1,5';
+                break;
+            default:
+                $sNote = '';
+        }
+        return $sNote;
     }
 
     /**
      * @param \indexage_vos_operations $lenderOperationsIndex
      * @param \lenders_accounts $lender
      */
-    private function indexOperations(\indexage_vos_operations $lenderOperationsIndex, \lenders_accounts $lender)
+    private function lenderOperationIndexing(\indexage_vos_operations $lenderOperationsIndex, \lenders_accounts $lender)
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');

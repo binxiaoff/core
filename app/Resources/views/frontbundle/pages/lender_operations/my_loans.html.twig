@@ -54,7 +54,7 @@
         <h3 class="panel-title">{% transchoice lenderLoans|length with { '%count%' : lenderLoans|length } %} lender-operations_loans-made {% endtranschoice %}</h3>
         <div class="panel-controls">
             <a href="#todo" class="btn-default"><span class="icon fa-print-u32"></span><span class="label"> {% trans %} lender-operations_print {% endtrans %} </span></a>
-            <a href="#todo" class="btn-default"><span class="icon fa-excel-u32"></span><span class="label"> {% trans %} lender-operations_csv-export {% endtrans %} </span></a>
+            <a href="{{ path('export_loans_csv') }}" class="btn-default"><span class="icon fa-excel-u32"></span><span class="label"> {% trans %} lender-operations_csv-export {% endtrans %} </span></a>
         </div><!-- /.panel-controls -->
     </header><!-- /.panel-header -->
     <div class="panel-content">
