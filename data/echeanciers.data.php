@@ -690,6 +690,18 @@ class echeanciers extends echeanciers_crud
                 LIMIT 1
               ), "FR"
           )   AS iso_pays,
+          /*if the lender is FR resident and it is a physical person then it is not taxed at source : taxed_at_source = 0*/
+          CASE
+              IFNULL((SELECT resident_etranger
+                 FROM lenders_imposition_history lih
+                 WHERE lih.id_lender = la.id_lender_account AND lih.added <= e.date_echeance_reel
+                 ORDER BY added DESC
+                 LIMIT 1
+              ), 0) = 0 AND 1 = c.type
+              WHEN TRUE
+                THEN 0
+              ELSE 1
+          END AS taxed_at_source,
           CASE
               WHEN lte.year IS NULL THEN
                   0
@@ -734,7 +746,7 @@ class echeanciers extends echeanciers_crud
         WHERE DATE(e.date_echeance_reel) = :date
               AND e.status IN (' . \echeanciers::STATUS_REPAID . ', ' . \echeanciers::STATUS_PARTIALLY_REPAID . ')
               AND e.status_ra = 0
-        ORDER BY e.date_echeance ASC;
+        ORDER BY e.date_echeance ASC
         ';
 
         return $this->bdd->executeQuery($sql, ['date' => $date->format('Y-m-d')], ['date' => \PDO::PARAM_STR])->fetchAll(\PDO::FETCH_ASSOC);
