@@ -1,6 +1,6 @@
 {# User / Preter / Operations #}
-{% extends 'layouts/_dashboard-borrower.twig' %}
-{% import 'extensions/_general.macros.twig' as general %}
+{% extends '::frontbundle/borrower_account/_borrower_account_base.html.twig' %}
+{% import '::frontbundle/extensions/_general.macros.twig' as general %}
 
 {# Page data #}
 {% set bodyId = '' %}
@@ -20,7 +20,7 @@ classNames: 'user-emprunteur-operations'
 "contractId": 26781,
 "projectId": 1,
 "date": "08/06/2016",
-"amount": -584,45,
+"amount": -584.45,
 "balance": 43.54,
 "details": false,
 "export": 0
@@ -31,7 +31,7 @@ classNames: 'user-emprunteur-operations'
 "contractId": 26781,
 "projectId": 2,
 "date": "10/06/2016",
-"amount": -15,37,
+"amount": -15.37,
 "balance": 23.54,
 "details": {
 "items": [{
@@ -121,7 +121,7 @@ classNames: 'user-emprunteur-operations'
 "contractId": 26781,
 "projectId": 7,
 "date": "09/05/2016",
-"amount": -592,45,
+"amount": -592.45,
 "balance": 0.98,
 "details": false,
 "export": 1
@@ -168,19 +168,17 @@ classNames: 'user-emprunteur-operations'
 "export": 1
 }]
 } %}
-{% set filterOperations = placeholderData.filter.operations %}
-{% set filterLoans = placeholderData.filter.loans %}
+{% set filterOperations = {'start': '2016-01-01', 'end': '2016-07-01'} %}
+{% set filterLoans = {'start': '2016-01-01', 'end': '2016-07-01'} %}
 {% set operations = placeholderData.operations %}
-{% set stats = placeholderData.stats %}
-{% set loans = placeholderData.loans %}
 
 {% block dashboardContent %}
 
     <section class="dashboard-tabs tabs">
         <div class="dashboard-tabs-nav">
             <ul class="nav nav-dashboard-tabs">
-                <li role="presentation" class="active"><a href="#operations" role="tab" data-toggle="tab">Vos opérations</a></li>{#
-        #}<li role="presentation"><a href="#mydocuments" role="tab" data-toggle="tab">Documents</a></li>
+                <li role="presentation" class="active"><a href="#operations" role="tab" data-toggle="tab">Vos opérations</a></li>
+                <li role="presentation"><a href="#mydocuments" role="tab" data-toggle="tab">Documents</a></li>
             </ul>
         </div>
         <div class="dashboard-tabs-content tab-content">
@@ -328,7 +326,7 @@ classNames: 'user-emprunteur-operations'
                                         <td class="table-myoperations-item-type">{{ op.typeName }}</td>
                                         <td class="table-myoperations-item-contract cell-right">{{ op.contractId }}</td>
                                         <td class="table-myoperations-item-date cell-right">{{ op.date|date('d/m/y') }}</td>
-                                        <td class="table-myoperations-item-amount cell-right">{{ op.amount|__price(2)|nbsp }}€</td>
+                                        <td class="table-myoperations-item-amount cell-right">{{ op.amount|nbsp }}€</td>
                                         <td class="table-myoperations-item-balance cell-right">{% if op.export == 1 %} <a href="#todo" class="export">exporter</a> {% endif %}</td>
                                     </tr>
                                 {% endfor %}

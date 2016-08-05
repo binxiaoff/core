@@ -1,0 +1,212 @@
+{% extends '::frontbundle/borrower_account/_borrower_account_base.html.twig' %}
+
+{# Page data #}
+{% set bodyId = '' %}
+{% set page = {
+id: 'user-borrower-dashboard',
+title: 'Emprunteur / Dashboard',
+permalink: route('user/borrower/dashboard'),
+classNames: 'user-emprunteur-dashboard'
+} %}
+
+
+{% block dashboardContent %}
+
+    <div class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-nav">
+            <ul class="nav nav-dashboard-tabs" data-nav-dropdown-menu="mobile">
+                <li role="presentation" class="active"><a href="#profile-projects" role="tab" data-toggle="tab">{{ 'borrower-projects_your-projects'|trans|capitalize }}</a></li>
+                <li role="presentation"><a href="#profile-newrequest" role="tab" data-toggle="tab">{{ 'borrower-demand_new_demand'|trans|capitalize }}</a></li>
+            </ul>
+        </div><!-- /.dashboard-nav-content -->
+        <div class="dashboard-tabs-content tab-content">
+            <div id="profile-projects" role="tabpanel" class="dashboard-tab-pane tab-pane active">
+                <article class="panel">
+                    <section role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+
+                        <div class="table-scroll">
+                            {% if pre_funding_projects is not empty %}
+                            <table class="table table-myoperations-prefunding">
+
+                                <thead>
+                                <tr>
+                                    <th class="table-borrower-file">
+                                        <span class="label">{% trans %} borrower-projects_project-id {% endtrans %}</span>
+                                    </th>
+                                    <th class="table-borrower-nature">
+                                        <span class="label">{% trans %} borrower-projects_object {% endtrans %}</span>
+                                    </th>
+                                    <th class="table-borrower-amount">
+                                        <span class="label">{% trans %} borrower-projects_amount-and-duration {% endtrans %}</span>
+                                    </th>
+                                    <th class="table-borrower-status">
+                                        <span class="label">{% trans %} borrower-projects_status {% endtrans %}</span>
+                                    </th>
+                                    <th class="table-borrower-autolend">
+                                        <span class="label">{% trans %} borrower-projects_autolend-predict-by-precentage {% endtrans %}</span>
+                                    </th>
+                                    <th class="table-borrower-upload">
+                                        <span class="label"></span>
+                                    </th>
+                                </tr>
+                                </thead>
+
+                                <tbody>
+                                {% for project in pre_funding_projects %}
+                                    <tr>
+                                        <td>{{ project.id_project }}</td>
+                                        <td>{{ project.nature_project }}</td>
+                                        <td>{{ project.amount|localizednumber }}&nbsp;€<br>{{ project.period }}&nbsp;{% trans %} borrower-projects_month {% endtrans %}</td>
+                                        <td>{{ ('borrower-projects_' ~ project.project_status_label)|trans|capitalize }}</td>
+                                        <td>{{ project.predict_autobid|localizednumber }}&nbsp;%</td>
+                                        <td class="center">
+                                            <a href="#todo" class="ui-has-tooltip" data-original-title="Ajouter des pièces"><span class="icon fa-file-u16"></span></a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+
+                            </table>
+                            {% endif %}
+
+                            {% if funding_projects is not empty %}
+                            <table class="table table-myoperations-funding">
+
+                                <thead>
+                                <tr>
+                                    <th class="table-borrower-file">
+                                        <span class="label">{% trans %} borrower-projects_project-id {% endtrans %}</span>
+                                    </th>
+                                    <th class="table-borrower-nature">
+                                        <span class="label">{% trans %} borrower-projects_object {% endtrans %}</span>
+                                    </th>
+                                    <th class="table-borrower-amount">
+                                        <span class="label">{% trans %} borrower-projects_amount-and-duration {% endtrans %}</span>
+                                    </th>
+                                    <th class="table-borrower-ending-date">
+                                        <span class="label">{% trans %} borrower-projects_end-date {% endtrans %}</span>
+                                    </th>
+                                    <th class="table-borrower-funding-rate">
+                                        <span class="label">{% trans %} borrower-projects_funding-reached-by-precentage {% endtrans %}</span>
+                                    </th>
+                                    <th class="table-borrower-average-rate">
+                                        <span class="label">{% trans %} borrower-projects_current-average-rate {% endtrans %}</span>
+                                    </th>
+                                    <th class="table-borrower-buttons">
+                                        <span class="label"></span>
+                                    </th>
+                                    <th class="table-borrower-buttons">
+                                        <span class="label"></span>
+                                    </th>
+                                </tr>
+                                </thead>
+
+                                <tbody>
+                                {% for project in funding_projects %}
+                                    <tr>
+                                        <td>{{ project.id_project }}</td>
+                                        <td>{{ project.nature_project }}</td>
+                                        <td>{{ project.amount|localizednumber }}&nbsp;€<br>{{ project.period }}&nbsp;{% trans %} borrower-projects_month {% endtrans %}</td>
+                                        <td>{{ project.ended|localizeddate('short', 'none')}}</td>
+                                        <td>{{ project.funding_progress|localizednumber }}&nbsp;%</td>
+                                        <td>{{ project.average_ir|localizednumber }}&nbsp;%</td>
+                                        <td><a href="#todo" class="ui-has-tooltip" data-original-title="Arrêter le projet"><span class="icon fa-close-u32"></span></a></td>
+                                        <td><a href="{{ path('project_detail', {'projectSlug' : project.slug }) }}" class="ui-has-tooltip" data-original-title="{{ 'borrower-projects_see-the-project'|trans|capitalize }}"><span class="icon fa-eye-u16"></span></a></td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+
+                            </table>
+                            {% endif %}
+
+                            {% if post_funding_projects is not empty %}
+                            <table class="table table-myoperations-postfunding">
+
+                                <thead>
+                                <tr>
+                                    <th class="table-borrower-file">
+                                        <span class="label">{% trans %} borrower-projects_project-id {% endtrans %}</span>
+                                    </th>
+                                    <th class="table-borrower-nature">
+                                        <span class="label">{% trans %} borrower-projects_object {% endtrans %}</span>
+                                    </th>
+                                    <th class="table-borrower-amount">
+                                        <span class="label">{% trans %} borrower-projects_amount-and-duration {% endtrans %}</span>
+                                    </th>
+                                    <th class="table-borrower-ending-date">
+                                        <span class="label">{% trans %} borrower-projects_end-date {% endtrans %}</span>
+                                    </th>
+                                    <th class="table-borrower-monthly">
+                                        <span class="label">{% trans %} borrower-projects_monthly-payment {% endtrans %}</span>
+                                    </th>
+                                    <th class="table-borrower-average-rate">
+                                        <span class="label">{% trans %} borrower-projects_average-rate-of-project {% endtrans %}</span>
+                                    </th>
+                                    <th class="table-borrower-crd">
+                                        <span class="label">{% trans %} borrower-projects_current-outstanding-capital {% endtrans %}</span>
+                                    </th>
+                                    <th class="table-borrower-date">
+                                        <span class="label">{% trans %} borrower-projects_next-maturity {% endtrans %}</span>
+                                    </th>
+                                    <th class="table-borrower-button">
+                                        <span class="label"></span>
+                                    </th>
+                                </tr>
+                                </thead>
+
+                                <tbody>
+                                {% for project in post_funding_projects %}
+                                    <tr>
+                                        <td>{{ project.id_project }}</td>
+                                        <td>{{ project.nature_project }}</td>
+                                        <td>{{ project.amount|localizednumber }}&nbsp;€<br>{{ project.period }}&nbsp;{% trans %} borrower-projects_month {% endtrans %}</td>
+                                        <td>{{ project.ended|localizeddate('short', 'none')}}</td>
+                                        <td>{{ project.monthly_payment|localizedcurrency('EUR') }}</td>
+                                        <td>{{ project.average_ir|localizednumber }}&nbsp;%</td>
+                                        <td>{{ project.outstanding_capital|localizedcurrency('EUR') }}</td>
+                                        <td>{{ project.next_maturity_date|localizeddate('short', 'none') }}</td>
+                                        <td><a href="{{ path('project_detail', {'projectSlug' : project.slug }) }}" class="ui-has-tooltip" data-original-title="{{ 'borrower-projects_see-the-project'|trans|capitalize }}"><span class="icon fa-eye-u16"></span></a></td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                                {% endif %}
+                            </table>
+
+                        </div>
+
+                    </section><!-- /.ui-toggle-group -->
+                </article><!-- /.panel -->
+            </div><!-- /#profile-info.dashboard-tab-pane -->
+
+            <div id="profile-newrequest" role="tabpanel" class="dashboard-tab-pane tab-pane">
+                <article class="panel">
+                    <section id="profile-fiscalite-bank-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                        <section id="profile-fiscalite-bank-view" role="tabpanel" class="profile-bank-view collapse in">
+                            <div class="dashboard-newrequest">
+                                <form action="get">
+                                    <div class="form-field">
+                                        <label for="form-name">{% trans %} borrower-demand_wanted-amount {% endtrans %}</label>
+                                        <input type="number" id="form-amount" name="amount" value="" placeholder="min 20 000 €" class="input-field">
+                                    </div>
+
+                                    <div class="form-field">
+                                        <label for="form-select">{% trans %} borrower-demand_duration {% endtrans %}</label>
+                                        <select id="form-select" name="duration" class="input-field">
+                                            <option value="3">3 {{ 'borrower-demand_month'|trans|capitalize }}</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-field">
+                                        <label for="form-message">{% trans %} borrower-demand_describ-your-project {% endtrans %}</label>
+                                        <textarea id="form-message" class="input-field" rows="6" placeholder="{{ 'borrower-demand_message'|trans|capitalize }}"></textarea>
+                                    </div>
+                                    <button class="btn-primary"><span class="icon fa-angle-right"></span> {{ 'borrower-demand_valid'|trans|capitalize }}</button>
+                                </form>
+                            </div><!-- /.dashboard-newrequest -->
+                        </section>
+                    </section><!-- /.ui-toggle-group -->
+                </article><!-- /.panel -->
+            </div><!-- /#profile-fiscalite.dashboard-tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </div><!-- /.dashboard-tabs -->
+
+{% endblock %}

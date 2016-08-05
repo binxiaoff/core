@@ -3,14 +3,38 @@
 
 namespace Unilend\Bundle\FrontBundle\Security\User;
 
-use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
-
 class UserBorrower extends BaseUser
 {
+    private $firstName;
+    private $lastName;
+    private $siren;
 
-    public function __construct($username, $password, $salt, array $roles, $isActive, $clientId)
+    public function __construct($username, $password, $salt, array $roles, $isActive, $clientId, $firstName, $lastName, $siren)
     {
         parent::__construct($username, $password, $salt, $roles, $isActive, $clientId);
+
+        $this->firstName = $firstName;
+        $this->lastName  = $lastName;
+        $this->siren     = $siren;
     }
 
+    public function getInitials()
+    {
+        return substr($this->firstName, 0, 1) . substr($this->lastName, 0, 1);
+    }
+
+    public function getFirstName()
+    {
+        return $this->firstName;
+    }
+
+    public function getLastName()
+    {
+        return $this->lastName;
+    }
+
+    public function getSiren()
+    {
+        return $this->siren;
+    }
 }

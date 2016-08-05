@@ -1,0 +1,38 @@
+{% extends '::frontbundle/layouts/_layout.html.twig' %}
+
+{% block siteHeader %}
+    {% include '::frontbundle/borrower_account/_borrower_header_dashboard.html.twig' %}
+{% endblock %}
+
+
+{% block siteContent %}
+
+    <article{% if page.id is not empty %} id="{{ page.id }}"{% endif %} class="dashboard{% if page.classNames is not empty %} {{ page.classNames }}{% endif %}">
+        <div class="dashboard-inner">
+            <div class="site-wrap">
+                <div class="col-menu">
+                    <nav class="dashboard-nav">
+                        {% block dashboardNav %}
+                            <ul>
+                                <li role="presentation" class="dashboard-nav-dashboard"><a href="{{ path('borrower_account_projects') }}"><span class="icon fa-project-u"></span><span class="label">{{ 'borrower-account-nav_your-projects'|trans|capitalize }}</span></a></li>
+
+                                <li role="presentation" class="dashboard-nav-operations {% if '/user_preter_operations.html' == page.permalink %}active{% endif %}"><a href="{{ path('borrower_account_operations') }}"><span class="icon fa-operations-u"></span><span class="label">{{ 'borrower-account-nav_your-operations'|trans|capitalize }}</span></a></li>
+
+                                <li role="presentation" class="dashboard-nav-profile {% if ' ' == page.permalink %}active{% endif %}"><a href="{{ path('borrower_account_profile') }}"><span class="icon fa-profile-u"></span><span class="label">{{ 'borrower-account-nav_profile'|trans|capitalize }}</span></a></li>
+
+                                <li role="presentation" class="dashboard-nav-contact {% if ' ' == page.permalink %}active{% endif %}"><a href="{{ path('borrower_account_contact') }}"><span class="icon fa-pen-u"></span><span class="label">{{ 'borrower-account-nav_contact'|trans|capitalize }}</span></a></li>
+
+                                <li role="presentation" class="dashboard-nav-faq {% if ' ' == page.permalink %}active{% endif %}"><a href="{{ path('borrower_account_faq') }}"><span class="icon fa-question-circle-o"></span><span class="label">{{ 'borrower-account-nav_faq'|trans|capitalize }}</span></a></li>
+
+                            </ul>
+                        {% endblock %}
+                    </nav>
+                </div><!-- /.col-menu -->
+                <div class="col-content dashboard-content">
+                    {% block dashboardContent %} {% endblock %}
+                </div><!-- /.col-content -->
+            </div><!-- /.site-wrap -->
+        </div><!-- /.dashboard-inner -->
+    </article><!-- /.dashboard -->
+
+{% endblock %}
