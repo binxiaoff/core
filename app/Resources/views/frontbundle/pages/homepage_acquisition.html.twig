@@ -133,14 +133,15 @@ permalink: route('/')
             <div class="site-wrap">
                 <h1 class="h2">{% trans %} site-general_testimonial-section-title {% endtrans %}</h1>
 
-                {% set BattenberglabelCtaButton %}{% transchoice projects|length with { '%numberProjects%' : projects|length } %} project-list_title-ongoing-projects  {% endtranschoice %}{% endset %}
+                {% set BattenberglabelCtaButton %}
+                    {% transchoice projects|length with {'%numberProjects%' : projects|length} %} project-list_title-ongoing-projects  {% endtranschoice %}
+                {% endset %}
                 {{ promoBattenberg.render({
                     classCtaButton: 'btn-color-primary',
                     labelCtaButton: BattenberglabelCtaButton,
                     urlCtaButton: path('projects_list'),
                     people: testimonialPeople
                 }) }}
-
             </div><!-- /.site-wrap -->
         </section><!-- /.page-section -->
 

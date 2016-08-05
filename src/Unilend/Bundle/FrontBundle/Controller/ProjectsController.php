@@ -93,6 +93,7 @@ class ProjectsController extends Controller
         $template['projectsInFunding'] = $projects->countSelectProjectsByStatus(\projects_status::EN_FUNDING, ' AND p.status = 0 AND p.display = ' . \projects::DISPLAY_PROJECT_ON);
         $template['pagination']        = $this->pagination($page, $limit);
         $template['showPagination']    = true;
+        $template['showSortable']      = true;
 
         return $this->render('pages/projects.html.twig', $template);
     }
