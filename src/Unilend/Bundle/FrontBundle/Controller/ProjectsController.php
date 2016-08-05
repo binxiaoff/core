@@ -177,6 +177,7 @@ class ProjectsController extends Controller
             ];
 
             $index = 0;
+            $template['project']['bids']['graph']['maxNotNullIndex'] = 0;
             foreach ($template['project']['bids']['graph']['summary'] as $rateSummary) {
                 if ($rateSummary['activeBidsCount'] > 0) {
                     $template['project']['bids']['graph']['maxNotNullIndex'] = $index;
@@ -221,7 +222,7 @@ class ProjectsController extends Controller
 
         $template['conditions'] = [
             'validatedUser'       => $isFullyConnectedUser,
-            'bids'                => $template['project']['status'] == \projects_status::EN_FUNDING,
+            'bids'                => isset($template['project']['bids']) && $template['project']['status'] == \projects_status::EN_FUNDING,
             'myBids'              => isset($template['lender']) && $template['lender']['bids']['count'] > 0,
             'finance'             => $isFullyConnectedUser,
             'history'             => $isFullyConnectedUser && ($template['project']['status'] == \projects_status::FUNDE || $template['project']['status'] >= \projects_status::REMBOURSEMENT),
