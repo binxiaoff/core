@@ -1,5 +1,5 @@
 <script>
-    var nbPages = <?= ceil($this->iCountProjects / $this->nb_lignes) ?>;
+    var nbPages = <?= isset($this->nb_lignes) && $this->nb_lignes > 0 ? ceil($this->iCountProjects / $this->nb_lignes) : 0 ?>;
     $(function () {
         $('[data-toggle="tooltip"]').tooltip();
 
