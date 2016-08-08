@@ -1,6 +1,7 @@
 <?php
 
 use Unilend\librairies\Altares;
+use Psr\Log\LoggerInterface;
 
 class dossiersController extends bootstrap
 {
@@ -314,12 +315,19 @@ class dossiersController extends bootstrap
                     $oResult  = $oAltares->getEligibility($this->companies->siren);
 
                     if ($oResult->exception == '' && isset($oResult->myInfo) && is_object($oResult->myInfo)) {
+                        /** @var LoggerInterface $logger */
+                        $logger = $this->get('logger');
+
                         if (false === empty($oResult->myInfo->codeRetour)) {
                             $this->projects->retour_altares = $oResult->myInfo->codeRetour;
                             $this->projects->update();
                         }
 
                         $oAltares->setCompanyData($this->companies, $oResult->myInfo);
+
+                        if (is_numeric($this->companies->name) || 0 === strcasecmp($this->companies->name, 'Monsieur') || 0 === strcasecmp($this->companies->name, 'Madame')) {
+                            $logger->error('TMA-749 : wrong company name - altares return : ' . serialize($oResult), array('class' => __CLASS__, 'function' => __FUNCTION__));
+                        }
 
                         $oCompanyCreationDate = new \DateTime($this->companies->date_creation);
                         $oInterval            = $oCompanyCreationDate->diff(new \DateTime());
@@ -1399,9 +1407,17 @@ class dossiersController extends bootstrap
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
             if (isset($this->params[1]) && $this->params[1] === 'altares') {
+                /** @var LoggerInterface $logger */
+                $logger = $this->get('logger');
+
                 $oAltares = new Altares();
                 $oResult  = $oAltares->getEligibility($this->companies->siren);
                 $oAltares->setCompanyData($this->companies, $oResult->myInfo);
+
+                if (is_numeric($this->companies->name) || 0 === strcasecmp($this->companies->name, 'Monsieur') || 0 === strcasecmp($this->companies->name, 'Madame')) {
+                    $logger->error('TMA-749 : wrong company name - altares return : ' . serialize($oResult), array('class' => __CLASS__, 'function' => __FUNCTION__));
+                }
+
                 $oAltares->setProjectData($this->projects, $oResult->myInfo);
                 $oAltares->setCompanyBalance($this->companies);
 

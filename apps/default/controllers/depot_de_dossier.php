@@ -148,6 +148,10 @@ class depot_de_dossierController extends bootstrap
 
         $oAltares->setCompanyData($this->companies, $oResult->myInfo);
 
+        if (is_numeric($this->companies->name) || 0 === strcasecmp($this->companies->name, 'Monsieur') || 0 === strcasecmp($this->companies->name, 'Madame')) {
+            $oLogger->error('TMA-749 : wrong company name - altares return : ' . serialize($oResult), array('class' => __CLASS__, 'function' => __FUNCTION__));
+        }
+
         switch ($oResult->myInfo->eligibility) {
             case 'Oui':
                 $oAltares->setProjectData($this->projects, $oResult->myInfo);
