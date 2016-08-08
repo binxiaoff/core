@@ -377,16 +377,9 @@ class bootstrap extends Controller
                 $this->bDisplayHeaderBorrower      = false;
             }
         }
-
         $this->setSessionMail();
 
         false === isset($_SESSION['email']) || $_SESSION['email'] == '' ? $this->addDataLayer('unique_id', '') : $this->addDataLayer('unique_id', md5($_SESSION['email']));
-
-        if (false === empty($_SESSION['client']['id_client'])) {
-            $this->addDataLayer('ID_Preteur', $_SESSION['client']['id_client']);
-        } else if (false === empty($_SESSION['LP_id_unique'])) {
-            $this->addDataLayer('ID_Preteur', $_SESSION['LP_id_unique']);
-        }
 
         // page projet tri
         // 1 : terminé bientôt
