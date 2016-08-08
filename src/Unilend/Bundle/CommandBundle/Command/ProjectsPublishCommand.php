@@ -208,7 +208,7 @@ EOF
             'annee'           => date('Y')
         );
 
-        /** @var \textes $translations */
+        /** @var \translations $translations */
         $translations                          = $oEntityManager->getRepository('textes');
         $aTranslations['email-nouveau-projet'] = $translations->selectFront('email-nouveau-projet', 'fr');
 

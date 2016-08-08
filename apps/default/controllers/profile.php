@@ -1445,8 +1445,8 @@ class profileController extends bootstrap
         $oClientHistoryActions  = $this->loadData('clients_history_actions');
         /** @var \clients_status $oClientStatus */
         $oClientStatus          = $this->loadData('clients_status');
-        /** @var \textes $oTextes */
-        $oTextes                = new \textes($this->bdd);
+        /** @var \translations $oTextes */
+        $oTextes                = new \translations($this->bdd);
         $aTranslations          = $oTextes->selectFront('projet', $this->language);
 
         $oLenderAccount         = $this->loadData('lenders_accounts');
