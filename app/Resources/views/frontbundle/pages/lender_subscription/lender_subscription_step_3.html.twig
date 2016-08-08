@@ -6,7 +6,7 @@
 {% set bodyId = '' %}
 {% set page = {
 title: 'Devenir Prêteur',
-permalink: path('lender_subscription_step_3')
+permalink: path('lender_subscription_step_3', {'clientHash' : client.hash })
 } %}
 
 {% block siteContent %}
