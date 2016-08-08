@@ -232,7 +232,7 @@ class LenderSubscriptionController extends Controller
             $lenderAccount->status          = \lenders_accounts::LENDER_STATUS_ONLINE;
             $lenderAccount->create();
 
-            $this->saveClientHistoryAction($client, 1, 'person', $post);
+            $this->saveClientHistoryAction($client, $post);
             $this->sendSubscriptionConfirmationEmail($client);
             return $this->redirectToRoute('lender_subscription_step_2', ['clientHash' => $client->hash]);
         }
@@ -418,7 +418,7 @@ class LenderSubscriptionController extends Controller
             $lenderAccount->create();
 
             $this->saveTermsOfUse($client, 'legal_entity');
-            $this->saveClientHistoryAction($client, 1, 'legal_entity', $post);
+            $this->saveClientHistoryAction($client, $post);
             $this->sendSubscriptionConfirmationEmail($client);
             return $this->redirectToRoute('lender_subscription_step_2', ['clientHash' => $client->hash]);
         }
@@ -564,6 +564,12 @@ class LenderSubscriptionController extends Controller
             'iban' => isset($formData['iban']) ? $formData['iban'] : ''
         ];
 
+        if (in_array($client->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+            /** @var \companies $company */
+            $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
+            $template['company'] = $company->select('id_client_owner = ' . $client->id_client)[0];
+        }
+
         return $this->render('pages/lender_subscription/lender_subscription_step_2.html.twig', $template);
     }
 
@@ -611,6 +617,11 @@ class LenderSubscriptionController extends Controller
 
         if (in_array($client->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) {
             $this->validateAttachmentsPerson($post, $lenderAccount, $clientAddress, $translationManager);
+        } else {
+            /** @var \companies $company */
+            $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
+            $company->get($client->id_client, 'id_client_owner');
+            $this->validateAttachmentsLegalEntity($lenderAccount, $company, $translationManager);
         }
 
         if ($this->get('session')->getFlashBag()->has('step2Errors')) {
@@ -628,7 +639,7 @@ class LenderSubscriptionController extends Controller
             /** @var \clients_status_history $clientStatusHistory */
             $clientStatusHistory = $this->get('unilend.service.entity_manager')->getRepository('clients_status_history');
             $clientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED, $client->id_client);
-            $this->saveClientHistoryAction($client, 2, 'person', $post);
+            $this->saveClientHistoryAction($client, $post);
 
             return $this->redirectToRoute('lender_subscription_step_3', ['clientHash' => $client->hash]);
         }
@@ -691,6 +702,47 @@ class LenderSubscriptionController extends Controller
         }
     }
 
+    private function validateAttachmentsLegalEntity(\lenders_accounts $lenderAccount, \companies $company, TranslationManager $translationManager)
+    {
+        $uploadErrorMessage = $translationManager->selectTranslation('lender-subscription', 'step-2-upload-files-error-message');
+
+        if (isset($_FILES['id_recto']) && $_FILES['id_recto']['name'] != '') {
+            $attachmentIdRecto = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE_DIRIGEANT, 'id_recto');
+            if (false === is_numeric($attachmentIdRecto)) {
+                $this->addFlash('step2Errors', $uploadErrorMessage);
+            }
+        } else {
+            $this->addFlash('step2Errors', $translationManager->selectTranslation('lender-subscription', 'step-2-legal-entity-missing-director-id'));
+        }
+
+        if (isset($_FILES['id_verso']) && $_FILES['id_verso']['name'] != '') {
+            $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE_VERSO, 'id_verso');
+            if (false === is_numeric($attachmentIdVerso)) {
+                $this->addFlash('step2Errors', $uploadErrorMessage);
+            }
+        }
+
+        if (isset($_FILES['company-registration']) && $_FILES['company-registration']['name'] != '') {
+            $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::KBIS, 'company-registration');
+            if (false === is_numeric($attachmentIdVerso)) {
+                $this->addFlash('step2Errors', $uploadErrorMessage);
+            }
+        } else {
+            $this->addFlash('step2Errors', $translationManager->selectTranslation('lender-subscription', 'step-2-legal-entity-missing-company-registration'));
+        }
+
+        if ($company->status_client > \companies::CLIENT_STATUS_MANAGER) {
+            if (isset($_FILES['delegation-of-authority']) && $_FILES['delegation-of-authority']['name'] != '') {
+                $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::DELEGATION_POUVOIR, 'delegation-of-authority');
+                if (false === is_numeric($attachmentIdVerso)) {
+                    $this->addFlash('step2Errors', $uploadErrorMessage);
+                }
+            } else {
+                $this->addFlash('step2Errors', $translationManager->selectTranslation('lender-subscription', 'step-2-legal-entity-missing-delegation-of-authority'));
+            }
+        }
+    }
+
     /**
      * @Route("inscription_preteur/etape3/{clientHash}", name="lender_subscription_step_3")
      */
@@ -702,7 +754,6 @@ class LenderSubscriptionController extends Controller
 
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
-        $client->get($clientHash, 'hash');
         $lenderAccount->get($client->id_client, 'id_client_owner');
 
         $template = [
@@ -746,27 +797,30 @@ class LenderSubscriptionController extends Controller
      * @param string $clientType
      * @param array $post
      */
-    private function saveClientHistoryAction(\clients $client, $step, $clientType, $post)
+    private function saveClientHistoryAction(\clients $client, $post)
     {
         $formId = '';
+        $clientType = in_array($client->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])? 'particulier' : 'entreprise';
 
-        if ($step == 1 ){
-            $post['client_password']              = md5($post['client_password']);
-            $post['client_password_confirmation'] = md5($post['client_password_confirmation']);
-            $post['client_secret_response']       = md5($post['client_secret_answer']);
-            $formId = 14;
-        }
-
-        if ($step == 2 ){
-            $formId = 17 ;
+        switch($client->etape_inscription_preteur){
+            case 1:
+                $post['client_password']              = md5($post['client_password']);
+                $post['client_password_confirmation'] = md5($post['client_password_confirmation']);
+                $post['client_secret_response']       = md5($post['client_secret_answer']);
+                $formId = 14;
+                break;
+            case 2:
+                $formId = in_array($client->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER]) ? 17 : 19;
+            break;
         }
 
         /** @var \clients_history_actions $clientHistoryActions */
         $clientHistoryActions = $this->get('unilend.service.entity_manager')->getRepository('clients_history_actions');
-        $clientHistoryActions->histo($formId, 'inscription etape ' . $step . $clientType, $client->id_client, serialize([
-            'id_client' => $client->id_client,
-            'post'      => $post
-        ]));
+        $clientHistoryActions->histo(
+            $formId,
+            'inscription etape ' . $client->etape_inscription_preteur . ' ' . $clientType,
+            $client->id_client, serialize(['id_client' => $client->id_client, 'post' => $post])
+        );
     }
 
 

@@ -384,8 +384,8 @@ class LenderProfileController extends Controller
             }
 
             if ($form['company_client_status'] > \companies::CLIENT_STATUS_MANAGER) {
-                if (isset($_FILES['delegation_of_authority']) && $_FILES['delegation_of_authority']['name'] != '') {
-                    $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::DELEGATION_POUVOIR, 'delegation_of_authority');
+                if (isset($_FILES['delegation-of-authority']) && $_FILES['delegation-of-authority']['name'] != '') {
+                    $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::DELEGATION_POUVOIR, 'delegation-of-authority');
                     if (false === is_numeric($attachmentIdVerso)) {
                         $this->addFlash('legalEntityIdentityErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-upload-files-error-message'));
                     } else {
