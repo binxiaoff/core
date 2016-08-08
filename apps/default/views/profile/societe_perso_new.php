@@ -5,7 +5,6 @@ $dateDepartControlPays = strtotime('2014-07-31 18:00:00');
 // on ajoute une petite restriction de date pour rendre certains champs obligatoires
 if (strtotime($this->companies->added) >= $dateDepartControlPays) {
     $required = 'required';
-    echo "REQ: " . $required;
 }
 ?>
 
