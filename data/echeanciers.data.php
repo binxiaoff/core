@@ -1070,4 +1070,21 @@ class echeanciers extends echeanciers_crud
 
         return $result;
     }
+
+    /**
+     * @param int $clientId
+     * @param int $annee
+     * @param array $projects_en_remboursement
+     * @return string
+     */
+    public function getLenderOwedCapital($clientId, $annee, array $projects_en_remboursement)
+    {
+        $sql = "SELECT sum(capital)
+                FROM `echeanciers`
+                INNER JOIN `lenders_accounts` ON lenders_accounts.id_lender_account = echeanciers.id_lender
+                WHERE (date_echeance_reel >= '$annee-01-01 00:00:00' OR echeanciers.status = 0)
+                 AND id_project IN(" . implode(',', $projects_en_remboursement) . ")
+                 AND lenders_accounts.id_client_owner = " . $clientId;
+        return bcdiv($this->bdd->executeQuery($sql)->fetchColumn(0), 100, 2);
+    }
 }

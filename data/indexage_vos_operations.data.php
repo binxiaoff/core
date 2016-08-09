@@ -120,4 +120,25 @@ class indexage_vos_operations extends indexage_vos_operations_crud
         }
         return $result;
     }
+
+    /**
+     * @param $clientId
+     * @param $annee
+     * @return string
+     */
+    function getFiscalBalanceToDeclare($clientId, $annee)
+    {
+        $sql = "SELECT solde 
+                FROM indexage_vos_operations 
+                WHERE id_client = " . $clientId . " AND date_operation < '$annee-01-01 00:00:00' ORDER BY date_operation DESC LIMIT 0,1";
+
+        $balance = $this->bdd->executeQuery($sql)->fetchColumn(0);
+
+        $sql = "SELECT sum(amount)
+                FROM bids
+                INNER JOIN `lenders_accounts` ON lenders_accounts.id_lender_account = bids.id_lender_account
+                WHERE lenders_accounts.id_client_owner = " . $clientId . " AND bids.added < '$annee-01-01 00:00:00' AND bids.updated >= '$annee-01-01 00:00:00'";
+        $bidSum = $this->bdd->executeQuery($sql)->fetchColumn(0);
+        return bcdiv(bcadd($balance, $bidSum, 2), 100, 2);
+    }
 }

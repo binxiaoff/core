@@ -32,7 +32,8 @@ class LenderProfileController extends Controller
         $lenderAccount  = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
         /** @var \clients_adresses $clientAddress */
         $clientAddress = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
-        $client->get($this->getUser()->getClientId());
+        /** @var \settings $settings */
+        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');$client->get($this->getUser()->getClientId());
         $lenderAccount->get($client->id_client, 'id_client_owner');
         $clientAddress->get($client->id_client, 'id_client');
 
@@ -41,8 +42,7 @@ class LenderProfileController extends Controller
         if (in_array($client->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
             /** @var \companies $company */
             $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
-            /** @var \settings $settings */
-            $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
+
             $company->get($client->id_client, 'id_client_owner');
             $templateData['company'] = $company->select('id_client_owner = ' . $client->id_client)[0];
             $templateData['companyIdAttachments'] = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [
@@ -123,6 +123,13 @@ class LenderProfileController extends Controller
         $locationManager = $this->get('unilend.service.location_manager');
         $templateData['countries'] = $locationManager->getCountries();
         $templateData['nationalities'] = $locationManager->getNationalities();
+
+        /** @var \ifu $ifu */
+        $ifu                                                         = $this->get('unilend.service.entity_manager')->getRepository('ifu');
+        $templateData['lenderAccount']['fiscal_info']['documents']   = $ifu->select('id_client =' . $client->id_client . ' AND statut = 1', 'annee ASC');
+        $templateData['lenderAccount']['fiscal_info']['amounts']     = $this->getFiscalBalanceAndOwedCapital();
+        $templateData['lenderAccount']['fiscal_info']['rib']         = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [\attachment_type::RIB])[\attachment_type::RIB];
+        $templateData['lenderAccount']['fiscal_info']['fundsOrigin'] = $this->getFundsOrigin($client->type);
 
         return $this->render('pages/lender_profile/lender_info.html.twig', $templateData);
     }
@@ -803,5 +810,149 @@ class LenderProfileController extends Controller
         }
 
         return new Response('not an ajax request');
+    }
+
+    /**
+     * @param Request $request
+     * @return Response
+     * @Route("/profile/ifu", name="get_ifu")
+     * @Security("has_role('ROLE_LENDER')")
+     */
+    public function downloadIFU(Request $request)
+    {
+        /** @var \ifu $ifu */
+        $ifu = $this->get('unilend.service.entity_manager')->getRepository('ifu');
+        /** @var \clients $client */
+        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+
+        $client->get($this->getUser()->getClientId());
+        if ($client->hash == $request->query->get('hash')) {
+
+            if ($ifu->get($this->getUser()->getClientId(), 'annee = ' . $request->query->get('year') . ' AND statut = 1 AND id_client') &&
+                file_exists($this->get('kernel')->getRootDir() . '/../' . $ifu->chemin)
+            ) {
+                return new Response(
+                    @file_get_contents($this->get('kernel')->getRootDir() . '/../' . $ifu->chemin),
+                    Response::HTTP_OK,
+                    [
+                        'Content-Description' => 'File Transfer',
+                        'Content-type'        => 'application/force-download;',
+                        'content-disposition' => 'attachment; filename="' . basename($ifu->chemin) . '";'
+                    ]
+                );
+            } else {
+                $errorTitle = $this->get('unilend.service.translation_manager')->selectTranslation('lender-error-page', 'file-not-found');
+                $status = Response::HTTP_NOT_FOUND;
+            }
+        } else {
+            $errorTitle = $this->get('unilend.service.translation_manager')->selectTranslation('lender-error-page', 'access-denied');
+            $status = Response::HTTP_FORBIDDEN;
+        }
+        return $this->render('pages/static_pages/error.html.twig', ['errorTitle' => $errorTitle])->setStatusCode($status);
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     * @Route("/profile/update_bank_details", name="update_bank_details")
+     */
+    public function updateBankDetails(Request $request)
+    {
+        /** @var TranslationManager $translation */
+        $translation = $this->get('unilend.service.translation_manager');
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
+        /** @var |clients $client */
+        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
+
+        $lenderAccount->get($this->getUser()->getClientId(), 'id_client_owner');
+        $client->get($this->getUser()->getClientId());
+
+        $newIban = str_replace(' ', '', $request->request->get('iban', $lenderAccount->iban));
+
+        if (false == empty($newIban) && true === $ficelle->isIBAN($newIban && false === strlen($newIban) < 27)) {
+            $lenderAccount->iban = $newIban;
+        } else {
+            $this->addFlash('bankInfoUpdateError', $translation->selectTranslation('lender-profile', 'fiscal-tab-wrong-iban'));
+        }
+
+        $newSwift = str_replace(' ', '', $request->request->get('bic', $lenderAccount->bic));
+
+        if (false == empty($newSwift) && true === $ficelle->swift_validate($newSwift)) {
+            $lenderAccount->bic = $newSwift;
+        } else {
+            $this->addFlash('bankInfoUpdateError', $translation->selectTranslation('lender-profile', 'fiscal-tab-wrong-swift'));
+        }
+
+        $newFundsOrigin = $request->request->get('funds_origin', $lenderAccount->origine_des_fonds);
+
+        if (false === empty($newFundsOrigin)) {
+            $lenderAccount->origine_des_fonds = $newFundsOrigin;
+        } else {
+            $this->addFlash('bankInfoUpdateError', $translation->selectTranslation('lender-profile', 'fiscal-tab-wrong-funds-origin'));
+        }
+
+        if (false === empty($_FILES['iban-certificate']['name'])) {
+
+            if (false === $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::RIB, 'iban-certificate')) {
+                $this->addFlash('bankInfoUpdateError', $translation->selectTranslation('lender-profile', 'fiscal-tab-rib-file-error'));
+            }
+        }
+
+        if (false === $this->get('session')->getFlashBag()->has('bankInfoUpdateError')){
+            $lenderAccount->update();
+            $this->addFlash('bankInfoUpdateSuccess', $translation->selectTranslation('lender-profile', 'fiscal-tab-bank-info-update-ok'));
+        } else {
+            $this->addFlash('bankInfoUpdateError', $translation->selectTranslation('lender-profile', 'fiscal-tab-bank-info-update-ko'));
+        }
+
+        return $this->redirectToRoute('lender_profile');
+    }
+
+    /**
+     * @return array
+     */
+    private function getFiscalBalanceAndOwedCapital()
+    {
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
+
+        /** @var \indexage_vos_operations $indexageVosOperations */
+        $indexageVosOperations = $this->get('unilend.service.entity_manager')->getRepository('indexage_vos_operations');
+        /** @var \projects_status_history $projectsStatusHistory */
+        $projectsStatusHistory = $this->get('unilend.service.entity_manager')->getRepository('projects_status_history');
+        /** @var \echeanciers $echeancier */
+        $echeancier = $this->get('unilend.service.entity_manager')->getRepository('echeanciers');
+
+        $projects_en_remboursement = $projectsStatusHistory->select('id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ') AND added < "' . date('Y') . '-01-01 00:00:00"');
+
+        return [
+            'balance'     => $ficelle->formatNumber($indexageVosOperations->getFiscalBalanceToDeclare($this->getUser()->getClientId(), date('Y'))),
+            'owedCapital' => $ficelle->formatNumber($echeancier->getLenderOwedCapital($this->getUser()->getClientId(), date('Y'), array_column($projects_en_remboursement, 'id_project')))
+        ];
+    }
+
+    /**
+     * @param int $clientType
+     * @return array
+     */
+    private function getFundsOrigin($clientType)
+    {
+        /** @var \settings $settings */
+        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
+
+        switch ($clientType) {
+            case \clients::TYPE_PERSON:
+            case \clients::TYPE_PERSON_FOREIGNER:
+                $settings->get("Liste deroulante origine des fonds", 'type');
+                break;
+            default:
+                $settings->get("Liste deroulante origine des fonds", 'type');
+                break;
+        }
+        $fundsOriginList = explode(';', $settings->value);
+        return array_combine(range(1, count($fundsOriginList)), array_values($fundsOriginList));
     }
 }

@@ -66,6 +66,7 @@ var BidsDetail = require('./app/components/BidsDetail')
 var Spinner = require('./app/components/Spinner')
 var LenderWallet = require('./app/components/LenderWallet')
 var LenderOperations = require('./app/components/LenderOperations')
+var LenderProfile = require('./app/components/LenderProfile')
 
 // @debug
 // CacheData.clearAll()
@@ -1600,6 +1601,7 @@ $(document).ready(function ($) {
 
     // Show the content (what a person can expect to see from ajax)
     $projectEsim.find('.emprunter-sim-mini-content').show()
+    $projectEsim.find('.emprunter-sim-mini-header > p').hide()
 
     // @todo Do whatever AJAX you need to get and show the esimEstimate
     //       monthly value using the setEsimValues1b function, e.g.
@@ -1639,6 +1641,7 @@ $(document).ready(function ($) {
 
     // Show the content & footer (displays a message about step 2)
     $projectEsim.find('.emprunter-sim-mini-content, footer').show()
+    $projectEsim.find('.emprunter-sim-mini-header > p').hide()
   }
 
   function setEsimStep2a () {
@@ -2035,14 +2038,6 @@ $(document).ready(function ($) {
     $('#balance-withdraw-2').collapse('show')
     Utility.scrollTo('#user-preter-balance')
   }
-
-  // Temp implementation for front-end staging demo
-  // @todo refactor to production-ready
-  $doc.on('submit', '#form-balance-withdraw', function (event) {
-    event.preventDefault()
-    successBalanceWithdraw()
-    return false
-  })
 
   /*
    * User Preter Profile
