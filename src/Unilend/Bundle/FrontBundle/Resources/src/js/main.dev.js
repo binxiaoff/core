@@ -2037,14 +2037,6 @@ $(document).ready(function ($) {
     Utility.scrollTo('#user-preter-balance')
   }
 
-  // Temp implementation for front-end staging demo
-  // @todo refactor to production-ready
-  $doc.on('submit', '#form-balance-withdraw', function (event) {
-    event.preventDefault()
-    successBalanceWithdraw()
-    return false
-  })
-
   /*
    * User Preter Profile
    */
