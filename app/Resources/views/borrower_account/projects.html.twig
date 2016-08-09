@@ -58,7 +58,7 @@ classNames: 'user-emprunteur-dashboard'
                                         <td>{{ project.nature_project }}</td>
                                         <td>{{ project.amount|localizednumber }}&nbsp;€<br>{{ project.period }}&nbsp;{% trans %} borrower-projects_month {% endtrans %}</td>
                                         <td>{{ ('borrower-projects_' ~ project.project_status_label)|trans|capitalize }}</td>
-                                        <td>{{ project.predict_autobid|localizednumber }}&nbsp;%</td>
+                                        <td>{% if project.predict_autobid > 0 %} {{ project.predict_autobid|localizednumber }}&nbsp;% {% endif %}</td>
                                         <td class="center">
                                             <a href="#todo" class="ui-has-tooltip" data-original-title="Ajouter des pièces"><span class="icon fa-file-u16"></span></a>
                                         </td>

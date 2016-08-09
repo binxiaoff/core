@@ -19,24 +19,21 @@ class BorrowerAccountController extends Controller
      * @Route("/espace-emprunteur/projets", name="borrower_account_projects")
      * @Template("borrower_account/projects.html.twig")
      *
-     * @return Response
+     * @return array
      */
     public function projectsAction(Request $request)
     {
-        $projectsPreFunding  = $this->getProjectsPreFunding();
-        $projectsFunding     = $this->getProjectsFunding();
-        $projectsPostFunding = $this->getProjectsPostFunding();
-
         $projectForm = $this->createForm(SimpleProjectType::class);
         $projectForm->handleRequest($request);
+
         if ($projectForm->isSubmitted() && $projectForm->isValid()) {
-            $formData = $projectForm->getData();
+            $formData       = $projectForm->getData();
             $projectManager = $this->get('unilend.service.project_manager');
-            $fMinAmount = $projectManager->getMinProjectAmount();
-            $fMaxAmount = $projectManager->getMaxProjectAmount();
+            $fMinAmount     = $projectManager->getMinProjectAmount();
+            $fMaxAmount     = $projectManager->getMaxProjectAmount();
 
             $translator = $this->get('unilend.service.translation_manager');
-            $error = false;
+            $error      = false;
             if (empty($formData['amount']) || $fMinAmount > $formData['amount'] || $fMaxAmount < $formData['amount']) {
                 $error = true;
                 $this->addFlash('error', $translator->selectTranslation('borrower-demand', 'amount_error'));
@@ -70,28 +67,11 @@ class BorrowerAccountController extends Controller
                 return $this->redirect($this->generateUrl($request->get('_route')) . '#profile-newrequest');
             }
         }
-        if (isset($_POST['confirm_cloture_anticipation'])) {
-            $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
 
-            if (is_numeric($this->params[0])) {
-                $project->get($this->params[0], 'id_project');
-            } else {
-                $project->get($this->params[0], 'hash');
-            }
+        $projectsPreFunding  = $this->getProjectsPreFunding();
+        $projectsFunding     = $this->getProjectsFunding();
+        $projectsPostFunding = $this->getProjectsPostFunding();
 
-            if ($project->id_company === $this->companies->id_company) {
-                $oNewClosureDate = new \DateTime();
-                $oNewClosureDate->modify("+5 minutes");
-
-                $project->date_retrait_full = $oNewClosureDate->format('Y-m-d H:i:s');
-                $project->date_retrait      = $oNewClosureDate->format('Y-m-d');
-                $project->update();
-
-                $_SESSION['cloture_anticipe'] = true;
-
-                return $this->redirect($this->generateUrl($request->get('_route')));
-            }
-        }
         return ['pre_funding_projects' => $projectsPreFunding, 'funding_projects' => $projectsFunding, 'post_funding_projects' => $projectsPostFunding, 'project_form' => $projectForm->createView()];
     }
 
@@ -101,7 +81,46 @@ class BorrowerAccountController extends Controller
      */
     public function operationsAction()
     {
+        $projectsPostFunding = $this->getProjectsPostFunding();
 
+        $oDateTimeStart             = new \datetime('NOW - 1 month');
+        $oDateTimeEnd               = new \datetime('NOW');
+        $defaultFilterDate['start'] = $oDateTimeStart->format('d/m/Y');
+        $defaultFilterDate['end']   = $oDateTimeEnd->format('d/m/Y');
+
+
+        /** @var \projects_pouvoir $projectsPouvoir */
+        $projectsPouvoir = $this->get('unilend.service.entity_manager')->getRepository('projects_pouvoir');
+        /** @var \clients_mandats $clientsMandat */
+        $clientsMandat = $this->get('unilend.service.entity_manager')->getRepository('clients_mandats');
+
+        foreach ($projectsPostFunding as $iKey => $aProject) {
+            $projectsPostFunding[$iKey]['pouvoir'] = $projectsPouvoir->select('id_project = ' . $aProject['id_project']);
+            $projectsPostFunding[$iKey]['mandat']  = $clientsMandat->select('id_project = ' . $aProject['id_project'], 'updated DESC');
+
+            foreach ($projectsPostFunding[$iKey]['mandat'] as $mandatKey => $mandat) {
+                if (\clients_mandats::STATUS_PENDING == $mandat['status']) {
+                    $projectsPostFunding[$iKey]['mandat'][$mandatKey]['status-trad'] = 'mandat-en-cours';
+                }
+            }
+        }
+        /** @var \factures $oInvoices */
+        $oInvoices       = $this->get('unilend.service.entity_manager')->getRepository('factures');
+        $company         = $this->getCompany();
+        $client          = $this->getClient();
+        $clientsInvoices = $oInvoices->select('id_company = ' . $company->id_company, 'date DESC');
+        foreach ($clientsInvoices as $iKey => $aInvoice) {
+            switch ($aInvoice['type_commission']) {
+                case \factures::TYPE_COMMISSION_FINANCEMENT :
+                    $clientsInvoices[$iKey]['url'] = '/pdf/facture_EF/' . $client->hash . '/' . $aInvoice['id_project'] . '/' . $aInvoice['ordre'];
+                    break;
+                case \factures::TYPE_COMMISSION_REMBOURSEMENT:
+                    $clientsInvoices[$iKey]['url'] = '/pdf/facture_ER/' . $client->hash . '/' . $aInvoice['id_project'] . '/' . $aInvoice['ordre'];
+                    break;
+            }
+        }
+
+        return ['invoices' => $clientsInvoices, 'default_filter_date' => $defaultFilterDate, 'post_funding_projects' => $projectsPostFunding];
     }
 
     /**
@@ -129,6 +148,35 @@ class BorrowerAccountController extends Controller
     public function faqAction()
     {
 
+    }
+
+    /**
+     * @Route("/espace-emprunteur/operation/csv", name="borrower_operation_export_csv")
+     */
+    public function operationExportCsvAction($project, $start, $end, $transaction)
+    {
+        $client = $this->getClient();
+        $aBorrowerOperations = $client->getDataForBorrowerOperations(
+            $project,
+            $start,
+            $end,
+            $transaction
+        );
+
+        $sFilename      = 'operations';
+        $aColumnHeaders = array('Opération', 'Référence de projet', 'Date de l\'opération', 'Montant de l\'opération', 'Dont TVA');
+
+        foreach ($aBorrowerOperations as $aOperation) {
+            $aData[] = array(
+                $this->lng['espace-emprunteur']['operations-type-' . $aOperation['type']],
+                $aOperation['id_project'],
+                $this->dates->formatDateMysqltoShortFR($aOperation['date']),
+                number_format($aOperation['montant'], 2, ',', ''),
+                (empty($aOperation['tva']) === false) ? number_format($aOperation['tva'], 2, ',', '') : '0'
+            );
+        }
+
+        $this->exportCSV($aColumnHeaders, $aData, $sFilename);
     }
 
     private function getProjectsPreFunding()
@@ -219,7 +267,7 @@ class BorrowerAccountController extends Controller
             $projectsPostFunding[$key]['monthly_payment']     = ($aNextRepayment['montant'] + $aNextRepayment['commission'] + $aNextRepayment['tva']) / 100;
             $projectsPostFunding[$key]['next_maturity_date']  = \DateTime::createFromFormat('Y-m-d H:i:s', $aNextRepayment['date_echeance_emprunteur']);
             $projects->get($project['id_project']);
-            $projectsPostFunding[$key]['ended']               = $this->get('unilend.service.project_manager')->getProjectEndDate($projects);
+            $projectsPostFunding[$key]['ended'] = $this->get('unilend.service.project_manager')->getProjectEndDate($projects);
         }
 
         usort($projectsPostFunding, function ($aFirstArray, $aSecondArray) {
@@ -246,7 +294,7 @@ class BorrowerAccountController extends Controller
         /** @var UserBorrower $user */
         $user     = $this->getUser();
         $clientId = $user->getClientId();
-        /** @var \companies $companies */
+        /** @var \companies $company */
         $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
         $company->get($clientId, 'id_client_owner');
 
