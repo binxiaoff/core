@@ -12,7 +12,7 @@
                 </div><!-- /.dashboard-balance -->
 
                 <div class="balance-payment-details balance-payment-transfer" style="display: none;">
-                    <a href="#todo" class="btn-print"><span class="icon fa-print-u32"></span><span class="sr-only"> Print</span></a>
+                    {#<a href="#todo" class="btn-print"><span class="icon fa-print-u32"></span><span class="sr-only"> Print</span></a>#}
                     <h4>{% trans %} lender-wallet_bank-transfer-details {% endtrans %}</h4>
                     <ul class="list-block">
                         <li class="ui-has-btn-copy">
@@ -22,20 +22,20 @@
                         </li>
                         <li class="ui-has-btn-copy">
                             <div class="label">{% trans %} lender-wallet_bank-iban {% endtrans %}</div>
-                            <div id="balance-transfer-iban" class="value">{{ unilendAccount.iban }}</div>
+                            <div id="balance-transfer-iban" class="value">{{ setting('Virement - IBAN') }}</div>
                             <a href="javascript:;" data-clipboard-target="#balance-transfer-iban" class="btn-copy btn-default btn-shape-xxs">{% trans %} lender-wallet_copy {% endtrans %}</a>
                         </li>
                         <li>
                             <div class="label">{% trans %} lender-wallet_bank-bic {% endtrans %}</div>
-                            <div class="value">{{ unilendAccount.bic }}</div>
+                            <div class="value">{{ setting('Virement - BIC') }}</div>
                         </li>
                         <li>
                             <div class="label">{% trans %} lender-wallet_bank-account-owner {% endtrans %}</div>
-                            <div class="value">{{ unilendAccount.owner }}</div>
+                            <div class="value">{{ setting('Virement - titulaire du compte') }}</div>
                         </li>
                         <li>
                             <div class="label">{% trans %} lender-wallet_bank-account-domiciliation {% endtrans %}</div>
-                            <div class="value">{{ unilendAccount.domiciliation }}</div>
+                            <div class="value">{{ setting('Virement - domiciliation') }}</div>
                         </li>
                     </ul>
                 </div><!-- /.balance-payment-details.balance-payment-transfer -->
@@ -68,7 +68,8 @@
                                 <div class="btn-group">
                                     <span class="icon fa-euro"></span>
                                 </div>
-                                <input id="form-balance-deposit-amount" type="number" min="{{ minDepositAmount }}" max="{{ maxDepositAmount }}" step="any" name="amount" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-render="true"/>
+                                <input id="form-balance-deposit-amount" type="number" min="{{ minDepositAmount }}" max="{{ maxDepositAmount }}" step="any" name="amount"
+                                       value="{% if formData.amount is defined %}{{ formData.amount }}{% endif %}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-render="true"/>
                             </div>
                         </div><!-- /.form-field -->
                         <div class="btn-controls">

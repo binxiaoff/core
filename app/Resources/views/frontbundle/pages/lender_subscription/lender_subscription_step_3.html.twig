@@ -22,71 +22,69 @@ permalink: path('lender_subscription_step_3', {'clientHash' : client.hash })
             <div class="page-content">
                 <div class="site-wrap">
                     <div class="tabs ui-tabs-progress">
-                        {% include 'pages/lender_subscription/partials/progress_bar.html.twig' %}
-
                         <div class="form-preter-content tab-content">
-                            <form action="{{ route('user/preter/balance') }}" method="post" class="form-preter-deposit">
-                                {# Conformation #}
-                                <div id="form-preter-3" role="tabpanel" class="tab-pane" aria-labelledby="preter-create-3 preter-create-title">
+                            <form action="{{ path('lender_subscription_step_3_add_money', {'clientHash' : client.hash }) }}" method="post" class="form-preter-deposit">
+                                <div id="form-preter-3" role="tabpanel" class="tab-pane active" aria-labelledby="preter-create-3 preter-create-title">
                                     <div class="row">
                                         <div class="col-form col-lg-8 col-md-8">
                                             <fieldset class="panel" data-formvalidation data-formvalidation-notificationselem="#form-preter-deposit-notifications">
-                                                <h3 class="h3">Félicitations&nbsp;!</h3>
-                                                <p>Votre compte est désormais en cours de validation.</p>
-                                                <p>Dés que vos justificatifs auront été vérifiés, vous recevrez un email d'ouverture de compte. Cette opération peut prendre quelques jours. Vous rejoindrez alors la communautè Unilend et pourrez commerncer à prêter aux différents projets en cours en vous connectant à votre espace personnel.</p>
-                                                <p>À bientôt sur Unilend.<br><br>&nbsp;</p>
+                                                <h3 class="h3">{% trans %} lender-subscription_step-3-account-validation-title {% endtrans %}</h3>
+                                                {% trans %} lender-subscription_step-3-validation-explanation {% endtrans %}
 
-                                                <h3 class="h3">Gagnez du temps, alimentez dès maintenant votre compte</h3>
+                                                <h3 class="h3">{% trans %} lender-subscription_step-3-money-transfer-title {% endtrans %}</h3>
                                                 <div id="form-preter-deposit-notifications"></div>
                                                 <div class="row row-multi-col-computer">
                                                     <div class="form-field col-lg-7 col-md-7">
-                                                        <label for="form-preter-amount-add">Montant à ajouter</label>
+                                                        <label for="form-preter-amount">{% trans %} lender-subscription_step-3-money-transfer-amount-field-label {% endtrans %}</label>
                                                         <div class="input-group set-right">
-                                                            <input type="number" name="amount_add" value="" placeholder="Entrez un montant entre 20 et 10 000€" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                                                            <input type="number" name="amount" value=""
+                                                                   placeholder="{% trans with {'%amountMin%' : minDepositAmount, '%amountMax%' : maxDepositAmount } %} lender-subscription_step-3-money-transfer-amount-field-placeholder {% endtrans %}"
+                                                                   class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                                                            <input type="hidden" name="clientId" value="{{ client.id_client }}">
                                                             <div class="btn-group">
                                                                 <span>€</span>
                                                             </div>
                                                         </div><!-- /.input-group -->
                                                     </div><!-- /.form-field -->
                                                     <div class="form-field col-lg-5 col-md-5">
-                                                        <label class="field-help">Cartes acceptées</label>
-                                                        <img src="{{ siteurlmedia('cards/cb.png') }}" alt="Carte Bancaire"/>
-                                                        <img src="{{ siteurlmedia('cards/visa.png') }}" alt="Visa"/>
-                                                        <img src="{{ siteurlmedia('cards/mastercard.png') }}" alt="Mastercard"/>
+                                                        <label class="field-help">{% trans %} lender-subscription_step-3-money-transfer-accepted-cards {% endtrans %}</label>
+                                                        <img src="{{ siteurlmedia('cards/cb.png') }}" alt="{{'lender-subscription_step-3-card-image-placeholder'|trans }}"/>
+                                                        <img src="{{ siteurlmedia('cards/visa.png') }}" alt="{{'lender-subscription_step-3-visa-image-placeholder'|trans  }} "/>
+                                                        <img src="{{ siteurlmedia('cards/mastercard.png') }}" alt="{{'lender-subscription_step-3-mastercard-image-placeholder'|trans  }}"/>
                                                     </div>
                                                 </div>
                                                 <p>
                                                     <button class="btn-primary">
-                                                        <span class="icon fa-lock"></span> Acceder au paiement sécurisé
+                                                        <span class="icon fa-lock"></span> {% trans %} lender-subscription_step-3-money-transfer-sumbit-button {% endtrans %}
                                                     </button>
                                                 </p>
                                             </fieldset>
 
                                             <fieldset class="panel">
                                                 <div class="unilend-iban-info">
-                                                    <a href="#todo" class="btn-print"><span class="icon fa-print-u32"></span><span class="sr-only">Print</span></a>
+                                                    {#<a href="#todo" class="btn-print"><span class="icon fa-print-u32"></span><span class="sr-only">Print</span></a>#}
                                                     <dl class="list-2col">
-                                                        <dt>Libellé virement</dt>
-                                                        <dd>059815FL</dd>
-                                                        <dt>BIC</dt>
-                                                        <dd>BNPAFRPPPBQ</dd>
-                                                        <dt>IBAN</dt>
-                                                        <dd>FR76 3000 4021 1800 0406 3100 792</dd>
-                                                        <dt>Titulaire</dt>
-                                                        <dd>Unilend Opérations</dd>
-                                                        <dt>Domiciliation</dt>
-                                                        <dd>SFPMEI — 29 rue du Louvre — 75002 Paris</dd>
+                                                        <dt>{% trans %} lender-subscription_step-3-money-transfer-bank-account-details {% endtrans %}</dt>
+                                                        <dd>{{ lenderBankMotif }}</dd>
+                                                        <dt>{% trans %} lender-subscription_step-3-money-transfer-bank-account-BIC-label {% endtrans %}</dt>
+                                                        <dd>{{ setting('Virement - BIC') }}</dd>
+                                                        <dt>{% trans %} lender-subscription_step-3-money-transfer-bank-account-IBAN-label {% endtrans %}</dt>
+                                                        <dd>{{ setting('Virement - IBAN') }}</dd>
+                                                        <dt>{% trans %} lender-subscription_step-3-money-transfer-bank-account-owner-label {% endtrans %}</dt>
+                                                        <dd>{{ setting('Virement - titulaire du compte') }}</dd>
+                                                        <dt>{% trans %} lender-subscription_step-3-money-transfer-bank-account-domiciliation-label {% endtrans %}</dt>
+                                                        <dd>{{ setting('Virement - domiciliation') }}</dd>
                                                     </dl>
                                                 </div><!-- /.unilend-iban-info -->
-                                                <p>Vous préferez alimenter votre compte plus tard ? Pas de problémes, rendez-vous simplement dans la rubrique "ajoutez de l'argent" de votre espace client ou effectuez directement un virement depuis votre compte bancaire vers le compte Unilend suivant.</p>
+                                                <p>{% trans %} lender-subscription_step-3-money-transfer-help-message {% endtrans %}</p>
                                             </fieldset>
 
                                             <div class="row btn-controls tab-footer">
                                                 <div class="col-lg-1 col-md-1">&nbsp;</div>
                                                 <div class="col-lg-11 col-md-11">
                                                     {# <a href="{{ route('search') }}" class="btn-default ui-open-site-search">Une question&nbsp;?</a> #}
-                                                    <a href="{{ route('projets') }}" class="btn-default">Voir les projets en cours</a>
-                                                    <a href="{{ route('user/preter/dashboard') }}" class="btn-primary">Accéder à mon espace</a>
+                                                    <a href="{{ path('projects_list') }}" class="btn-default">{% trans %} lender-subscription_step-3-button-to-project-list-label {% endtrans %}</a>
+                                                    <a href="{{ route('user/preter/dashboard') }}" class="btn-primary">{% trans %} lender-subscription_step-3-button-to-lender-dashboard-label {% endtrans %}</a>
                                                 </div>
                                             </div><!-- /.btn-controls.tab-footer -->
                                         </div>

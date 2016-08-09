@@ -757,10 +757,42 @@ class LenderSubscriptionController extends Controller
         $lenderAccount->get($client->id_client, 'id_client_owner');
 
         $template = [
-            'client'        => $client->select('id_client = ' . $client->id_client)[0],
-            'lenderAccount' => $lenderAccount->select('id_lender_account = ' . $lenderAccount->id_lender_account)[0]
+            'client'           => $client->select('id_client = ' . $client->id_client)[0],
+            'lenderAccount'    => $lenderAccount->select('id_lender_account = ' . $lenderAccount->id_lender_account)[0],
+            'maxDepositAmount' => LenderWalletController::MAX_DEPOSIT_AMOUNT,
+            'minDepositAmount' => LenderWalletController::MIN_DEPOSIT_AMOUNT,
+            'lenderBankMotif'  => $client->getLenderPattern($client->id_client)
         ];
+
         return $this->render('pages/lender_subscription/lender_subscription_step_3.html.twig', $template);
+    }
+
+    /**
+     * @Route("inscription_preteur/add-money/{clientHash}", name="lender_subscription_step_3_add_money")
+     * @Method("POST")
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     */
+    public function lenderSubscriptionStep3MoneyTransferAction($clientHash, Request $request)
+    {
+        /** @var \clients $client */
+        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        $this->checkProgressAndRedirect($client, $clientHash);
+
+        $post = $request->request->all();
+        $this->get('session')->set('subscriptionStep3WalletData', $post);
+
+        if (isset($post['amount'])){
+            /** @var \ficelle $ficelle */
+            $ficelle = Loader::loadLib('ficelle');
+            $amount = $ficelle->cleanFormatedNumber($post['amount']);
+
+            if ($amount >= LenderWalletController::MIN_DEPOSIT_AMOUNT && $amount <= LenderWalletController::MAX_DEPOSIT_AMOUNT) {
+                $this->get('session')->set('subscriptionStep3WalletData', $post);
+                return $this->redirectToRoute('wallet');
+            }
+        }
+
+        return $this->redirectToRoute('lender_subscription_step_3', ['clientHash' => $client->hash]);
     }
 
 
@@ -793,9 +825,7 @@ class LenderSubscriptionController extends Controller
 
     /**
      * @param \clients $client
-     * @param int $step
-     * @param string $clientType
-     * @param array $post
+     * @param $post
      */
     private function saveClientHistoryAction(\clients $client, $post)
     {
