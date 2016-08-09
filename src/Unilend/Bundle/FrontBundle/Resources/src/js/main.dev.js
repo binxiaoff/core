@@ -1601,6 +1601,7 @@ $(document).ready(function ($) {
 
     // Show the content (what a person can expect to see from ajax)
     $projectEsim.find('.emprunter-sim-mini-content').show()
+    $projectEsim.find('.emprunter-sim-mini-header > p').hide()
 
     // @todo Do whatever AJAX you need to get and show the esimEstimate
     //       monthly value using the setEsimValues1b function, e.g.
@@ -1640,6 +1641,7 @@ $(document).ready(function ($) {
 
     // Show the content & footer (displays a message about step 2)
     $projectEsim.find('.emprunter-sim-mini-content, footer').show()
+    $projectEsim.find('.emprunter-sim-mini-header > p').hide()
   }
 
   function setEsimStep2a () {
