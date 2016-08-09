@@ -5,15 +5,21 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Unilend\Bundle\FrontBundle\Form\SimpleProjectType;
 use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
 
 class BorrowerAccountController extends Controller
 {
 
     /**
+     * @param Request $request
+     *
      * @Route("/espace-emprunteur/projets", name="borrower_account_projects")
      * @Template("borrower_account/projects.html.twig")
+     *
+     * @return Response
      */
     public function projectsAction(Request $request)
     {
@@ -21,76 +27,72 @@ class BorrowerAccountController extends Controller
         $projectsFunding     = $this->getProjectsFunding();
         $projectsPostFunding = $this->getProjectsPostFunding();
 
-        if ($request->isMethod('POST')) {
-            if (isset($_POST['confirm_cloture_anticipation'])) {
+        $projectForm = $this->createForm(SimpleProjectType::class);
+        $projectForm->handleRequest($request);
+        if ($projectForm->isSubmitted() && $projectForm->isValid()) {
+            $formData = $projectForm->getData();
+            $projectManager = $this->get('unilend.service.project_manager');
+            $fMinAmount = $projectManager->getMinProjectAmount();
+            $fMaxAmount = $projectManager->getMaxProjectAmount();
+
+            $translator = $this->get('unilend.service.translation_manager');
+            $error = false;
+            if (empty($formData['amount']) || $fMinAmount > $formData['amount'] || $fMaxAmount < $formData['amount']) {
+                $error = true;
+                $this->addFlash('error', $translator->selectTranslation('borrower-demand', 'amount_error'));
+            }
+            if (empty($formData['duration'])) {
+                $error = true;
+                $this->addFlash('error', $translator->selectTranslation('borrower-demand', 'duration_error'));
+            }
+            if (empty($formData['message'])) {
+                $error = true;
+                $this->addFlash('error', $translator->selectTranslation('borrower-demand', 'message_error'));
+            }
+            if (false === $error) {
+                $company = $this->getCompany();
+
                 $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
 
-                if (is_numeric($this->params[0])) {
-                    $project->get($this->params[0], 'id_project');
-                } else {
-                    $project->get($this->params[0], 'hash');
-                }
+                $project->id_company                           = $company->id_company;
+                $project->amount                               = str_replace(array(',', ' '), array('.', ''), $formData['amount']);
+                $project->ca_declara_client                    = 0;
+                $project->resultat_exploitation_declara_client = 0;
+                $project->fonds_propres_declara_client         = 0;
+                $project->comments                             = $formData['message'];
+                $project->period                               = $formData['duration'];
+                $project->create();
 
-                if ($project->id_company === $this->companies->id_company) {
-                    $oNewClosureDate = new \DateTime();
-                    $oNewClosureDate->modify("+5 minutes");
+                $projectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::A_TRAITER, $project);
 
-                    $project->date_retrait_full = $oNewClosureDate->format('Y-m-d H:i:s');
-                    $project->date_retrait      = $oNewClosureDate->format('Y-m-d');
-                    $project->update();
+                $this->addFlash('success', $translator->selectTranslation('borrower-demand', 'success'));
 
-                    $_SESSION['cloture_anticipe'] = true;
-
-                    return $this->redirect($this->generateUrl($request->get('_route')));
-                }
-            }
-
-            if (isset($_POST['valider_demande_projet'])) {
-                unset($_SESSION['forms']['nouvelle-demande']);
-
-                $this->settings->get('Somme à emprunter max', 'type');
-                $fMaxAmount = $this->settings->value;
-
-                $this->settings->get('Somme à emprunter min', 'type');
-                $fMinAmount = $this->settings->value;
-
-                if (empty($_POST['montant']) || $fMinAmount > $_POST['montant'] || $fMaxAmount < $_POST['montant']) {
-                    $_SESSION['forms']['nouvelle-demande']['errors']['montant'] = true;
-                }
-                if (empty($_POST['duree'])) {
-                    $_SESSION['forms']['nouvelle-demande']['errors']['duree'] = true;
-                }
-                if (empty($_POST['commentaires'])) {
-                    $_SESSION['forms']['nouvelle-demande']['errors']['commentaires'] = true;
-                }
-                if (empty($_SESSION['forms']['nouvelle-demande']['errors'])) {
-                    $oClients = $this->loadData('clients');
-                    $oClients->get($_SESSION['client']['id_client']);
-
-                    $oCompanies = $this->loadData('companies');
-                    $oCompanies->get($oClients->id_client, 'id_client_owner');
-
-                    $oProject = $this->loadData('projects');
-
-                    $oProject->id_company                           = $oCompanies->id_company;
-                    $oProject->amount                               = str_replace(array(',', ' '), array('.', ''), $_POST['montant']);
-                    $oProject->ca_declara_client                    = 0;
-                    $oProject->resultat_exploitation_declara_client = 0;
-                    $oProject->fonds_propres_declara_client         = 0;
-                    $oProject->comments                             = $_POST['commentaires'];
-                    $oProject->period                               = $_POST['duree'];
-                    $oProject->create();
-
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
-                    $oProjectManager = $this->get('unilend.service.project_manager');
-                    $oProjectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::A_TRAITER, $oProject);
-
-                    return $this->redirect($this->generateUrl($request->get('_route')));
-                }
+                return $this->redirect($this->generateUrl($request->get('_route')) . '#profile-newrequest');
             }
         }
+        if (isset($_POST['confirm_cloture_anticipation'])) {
+            $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
 
-        return ['pre_funding_projects' => $projectsPreFunding, 'funding_projects' => $projectsFunding, 'post_funding_projects' => $projectsPostFunding];
+            if (is_numeric($this->params[0])) {
+                $project->get($this->params[0], 'id_project');
+            } else {
+                $project->get($this->params[0], 'hash');
+            }
+
+            if ($project->id_company === $this->companies->id_company) {
+                $oNewClosureDate = new \DateTime();
+                $oNewClosureDate->modify("+5 minutes");
+
+                $project->date_retrait_full = $oNewClosureDate->format('Y-m-d H:i:s');
+                $project->date_retrait      = $oNewClosureDate->format('Y-m-d');
+                $project->update();
+
+                $_SESSION['cloture_anticipe'] = true;
+
+                return $this->redirect($this->generateUrl($request->get('_route')));
+            }
+        }
+        return ['pre_funding_projects' => $projectsPreFunding, 'funding_projects' => $projectsFunding, 'post_funding_projects' => $projectsPostFunding, 'project_form' => $projectForm->createView()];
     }
 
     /**

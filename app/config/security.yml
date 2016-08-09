@@ -21,3 +21,6 @@ security:
             logout:
                 path: logout
                 target: home
+
+    access_control:
+            - { path: ^/espace-emprunteur, roles: ROLE_BORROWER }

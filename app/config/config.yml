@@ -23,6 +23,7 @@ framework:
     session:
         gc_maxlifetime: 3600
     esi: { enabled: true }
+    form: ~
 
 cmf_routing:
     chain:
@@ -39,7 +40,8 @@ twig:
     paths:
         - "%kernel.root_dir%/Resources/views/frontbundle/"
 #    exception_controller:  UnilendFrontBundle:Compatibility:dispatch
-
+    form_themes:
+        - 'frontbundle/layouts/form_layout.html.twig'
 assetic:
     debug:          '%kernel.debug%'
     use_controller: '%kernel.debug%'

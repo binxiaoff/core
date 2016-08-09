@@ -144,7 +144,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         }
 
         if ($user instanceof UserBorrower) {
-            return new RedirectResponse($this->router->generate('borrower_account'));
+            return new RedirectResponse($this->router->generate('borrower_account_projects'));
         }
 
         return null;

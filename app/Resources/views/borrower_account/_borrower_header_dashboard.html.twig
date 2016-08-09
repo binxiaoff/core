@@ -20,7 +20,7 @@
                                 <span class="label">{% trans %} borrower-header_siren {% endtrans %}</span>
                                 <span class="value">{{ app.user.siren }}</span>
                             </div><!-- /.profile-balance -->
-                            <a href="{{ route('home') }}" class="profile-logout link"><span class="label">{{ 'borrower-header_logout'|trans|capitalize }}</span></a>
+                            <a href="{{ path('logout') }}" class="profile-logout link"><span class="label">{{ 'borrower-header_logout'|trans|capitalize }}</span></a>
                         </div><!-- /.site-user-profile -->
                     </div><!-- /.site-user -->
                 {% endblock %}
