@@ -47,6 +47,12 @@ EOF
         $oLenderManager->addLendersToLendersAccountsStatQueue($aLendersWithLatePayments);
 
         $iAmountOfLenderAccounts = $input->getArgument('quantity');
+
+        if (empty($iAmountOfLenderAccounts) || false === is_numeric($iAmountOfLenderAccounts)) {
+            $iAmountOfLenderAccounts = 100;
+            $logger->error('Argument with amount of lender accounts for which IRR should be calculated is missing', ['class' => __CLASS__, 'function' => __FUNCTION__]);
+        }
+
         $fTimeStart              = microtime(true);
         $aIRRsCalculated         = 0;
 
@@ -59,12 +65,12 @@ EOF
             } catch (\Exception $eIRRException) {
                 $logger->error(
                     'Could not calculate IRR (lender ' . $aLender['id_lender_account'] . ') - Message: '  . $eIRRException->getMessage(),
-                    array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $aLender['id_lender_account'])
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $aLender['id_lender_account']]
                 );
             }
         }
 
-        $logger->info('IRR calculation time for ' . $aIRRsCalculated . ' lenders: ' . round((microtime(true) - $fTimeStart) / 60, 2) . ' minutes', array('class' => __CLASS__, 'function' => __FUNCTION__));
+        $logger->info('IRR calculation time for ' . $aIRRsCalculated . ' lenders: ' . round((microtime(true) - $fTimeStart) / 60, 2) . ' minutes', ['class' => __CLASS__, 'function' => __FUNCTION__]);
 
         $this->emptyProjectLastStatusMaterialized();
     }
