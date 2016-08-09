@@ -20,8 +20,23 @@ jQuery.expr[':'].Contains = function(a, i, m) {
 
 // AutoComplete Language
 var Dictionary = require('Dictionary')
-var AUTOCOMPLETE_LANG = require('../../../lang/AutoComplete.lang.json')
-var __ = new Dictionary(AUTOCOMPLETE_LANG)
+var AUTOCOMPLETE_LANG_LEGACY = require('../../../lang/AutoComplete.lang.json')
+var __
+
+// -- Support new translation dictionary language format, e.g. `example-section-name_example-translation-key-name`
+if (window.AUTOCOMPLETE_LANG) {
+  __ = new Dictionary(window.AUTOCOMPLETE_LANG)
+  // @debug
+  // console.log('AutoComplete: using window.AUTOCOMPLETE_LANG for Dictionary')
+
+// -- Support new legacy dictionary language format for fallbacks, e.g. `exampleTranslationKeyName`
+} else {
+  __ = new Dictionary(AUTOCOMPLETE_LANG_LEGACY, {
+    legacyMode: true
+  })
+  // @debug
+  console.log('FormValidation: using AUTOCOMPLETE_LANG_LEGACY for Dictionary. Please ensure window.AUTOCOMPLETE_LANG is correctly set.')
+}
 
 /*
  * AutoComplete

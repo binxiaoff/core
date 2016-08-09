@@ -13,8 +13,23 @@ var ElementAttrsObject = require('ElementAttrsObject')
 var Templating = require('Templating')
 
 var Dictionary = require('Dictionary')
-var AUTOLEND_LANG = require('../../../lang/AutolendTable.lang.json')
-var __ = new Dictionary(AUTOLEND_LANG)
+var AUTOLENDTABLE_LANG_LEGACY = require('../../../lang/AutolendTable.lang.json')
+var __
+
+// -- Support new translation dictionary language format, e.g. `example-section-name_example-translation-key-name`
+if (window.AUTOLENDTABLE_LANG) {
+  __ = new Dictionary(window.AUTOLENDTABLE_LANG)
+  // @debug
+  // console.log('AutolendTable: using window.AUTOLENDTABLE_LANG for Dictionary')
+
+// -- Support new legacy dictionary language format for fallbacks, e.g. `exampleTranslationKeyName`
+} else {
+  __ = new Dictionary(AUTOLENDTABLE_LANG_LEGACY, {
+    legacyMode: true
+  })
+  // @debug
+  console.log('AutolendTable: using AUTOLENDTABLE_LANG_LEGACY for Dictionary. Please ensure window.AUTOLENDTABLE_LANG is correctly set.')
+}
 
 // @class AutolendTable
 var AutolendTable = function (elem, options) {

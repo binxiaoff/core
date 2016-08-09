@@ -11,8 +11,23 @@ var Templating = require('Templating')
 
 // Dictionary
 var Dictionary = require('Dictionary')
-var SORTABLE_LANG = require('../../../lang/Sortable.lang.json')
-var __ = new Dictionary(SORTABLE_LANG, 'fr')
+var SORTABLE_LANG_LEGACY = require('../../../lang/Sortable.lang.json')
+var __
+
+// -- Support new translation dictionary language format, e.g. `example-section-name_example-translation-key-name`
+if (window.SORTABLE_LANG) {
+  __ = new Dictionary(window.SORTABLE_LANG)
+  // @debug
+  // console.log('Sortable: using window.SORTABLE_LANG for Dictionary')
+
+// -- Support new legacy dictionary language format for fallbacks, e.g. `exampleTranslationKeyName`
+} else {
+  __ = new Dictionary(SORTABLE_LANG_LEGACY, {
+    legacyMode: true
+  })
+  // @debug
+  console.log('Sortable: using SORTABLE_LANG_LEGACY for Dictionary. Please ensure window.SORTABLE_LANG is correctly set.')
+}
 
 /*
  * Sortable class

@@ -21,18 +21,6 @@ var L = require('mapbox.js')
 
 L.mapbox.accessToken = 'pk.eyJ1IjoidW5pbGVuZCIsImEiOiJjaXJiczA4ejQwMDVvaWZsdzdmMmpnOGRtIn0._IBtG2TUy17m7S6jwVBrcg'
 
-// Dictionary
-var Dictionary = require('Dictionary')
-var MAPVIEW_LANG = {
-  "fr": {
-
-  },
-  "en": {
-
-  }
-}
-var __ = new Dictionary(MAPVIEW_LANG)
-
 // Private variables
 var groupColors = {
   'all': '#b20066', // @scss-color $c-purple

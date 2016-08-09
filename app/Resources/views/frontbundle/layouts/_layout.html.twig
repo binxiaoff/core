@@ -55,7 +55,8 @@
       {#var site = JSON.parse('{{ site|json_encode|escape('js') }}')#}
     </script>
 
-    {% block extendHead %}{% endblock %}
+    {% block extendHead %}
+    {% endblock %}
 </head>
   <body id="{{ bodyId }}" class="{% if app.user is defined %}ui-user-level-{{ userProfile.level|default(1) }}{% endif %}{% if bodyClassNames is defined %} {{ bodyClassNames }}{% endif %}">
 
@@ -153,6 +154,16 @@
         </div><!-- /.debug -->
     {% endif %}
 {% endblock %}
+<script type="text/javascript">
+    // Translations for JS modules
+    var AUTOCOMPLETE_LANG = JSON.parse('{{ dictionary('auto-complete')|json_encode|escape('js')|raw }}');
+    var FORMVALIDATION_LANG = JSON.parse('{{ dictionary('form-validation')|json_encode|escape('js')|raw }}');
+    var PASSWORDCHECK_LANG = JSON.parse('{{ dictionary('password-check')|json_encode|escape('js')|raw }}');
+    var SORTABLE_LANG = JSON.parse('{{ dictionary('sortable')|json_encode|escape('js')|raw }}');
+    var AUTOLENDTABLE_LANG = JSON.parse('{{ dictionary('autolend-table')|json_encode|escape('js')|raw }}');
+    var FILEATTACH_LANG = JSON.parse('{{ dictionary('file-attach')|json_encode|escape('js')|raw }}');
+</script>
+
 <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js"></script>
 <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js"></script>
 {% javascripts

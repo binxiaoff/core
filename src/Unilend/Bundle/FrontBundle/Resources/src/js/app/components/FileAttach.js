@@ -15,8 +15,23 @@ var Templating = require('Templating')
 
 // Dictionary
 var Dictionary = require('Dictionary')
-var FILEATTACH_LANG = require('../../../lang/FileAttach.lang.json')
-var __ = new Dictionary(FILEATTACH_LANG)
+var FILEATTACH_LANG_LEGACY = require('../../../lang/FileAttach.lang.json')
+var __
+
+// -- Support new translation dictionary language format, e.g. `example-section-name_example-translation-key-name`
+if (window.FILEATTACH_LANG) {
+  __ = new Dictionary(window.FILEATTACH_LANG)
+  // @debug
+  // console.log('FileAttach: using window.FILEATTACH_LANG for Dictionary')
+
+// -- Support new legacy dictionary language format for fallbacks, e.g. `exampleTranslationKeyName`
+} else {
+  __ = new Dictionary(FILEATTACH_LANG_LEGACY, {
+    legacyMode: true
+  })
+  // @debug
+  console.log('FileAttach: using FILEATTACH_LANG_LEGACY for Dictionary. Please ensure window.FILEATTACH_LANG is correctly set.')
+}
 
 // Private functions
 function getFileSizeUnits (fileSizeInBytes) {

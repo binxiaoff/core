@@ -16,19 +16,6 @@ var Highcharts = require('highcharts/highstock.src')
 require('highcharts/modules/map')(Highcharts)
 require('highcharts/modules/treemap')(Highcharts)
 
-// Dictionary
-var Dictionary = require('Dictionary')
-// I create this JSON object within the JS file first, then once have finished v0.1 move this to a separate file at `src/lang/ChartView.lang.json`
-var CHARTVIEW_LANG = {
-  "fr": {
-    // "langEntryKey": "Langue Entry's Value"
-  },
-  "en": {
-    // "langEntryKey": "Language Entry's Value"
-  }
-}
-var __ = new Dictionary(CHARTVIEW_LANG)
-
 // Highcharts visuals
 // -- Colors (taken from `src/sass/site/common/_colors.scss`)
 var COLORS = {

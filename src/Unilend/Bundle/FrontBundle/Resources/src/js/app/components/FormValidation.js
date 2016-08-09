@@ -12,8 +12,23 @@ var Templating = require('Templating')
 
 // Dictionary
 var Dictionary = require('Dictionary')
-var FORMVALIDATION_LANG = require('../../../lang/FormValidation.lang.json')
-var __ = new Dictionary(FORMVALIDATION_LANG)
+var FORMVALIDATION_LANG_LEGACY = require('../../../lang/FormValidation.lang.json')
+var __
+
+// -- Support new translation dictionary language format, e.g. `example-section-name_example-translation-key-name`
+if (window.FORMVALIDATION_LANG) {
+  __ = new Dictionary(window.FORMVALIDATION_LANG)
+  // @debug
+  // console.log('FormValidation: using window.FORMVALIDATION_LANG for Dictionary')
+
+// -- Support new legacy dictionary language format for fallbacks, e.g. `exampleTranslationKeyName`
+} else {
+  __ = new Dictionary(FORMVALIDATION_LANG_LEGACY, {
+    legacyMode: true
+  })
+  // @debug
+  console.log('FormValidation: using FORMVALIDATION_LANG_LEGACY for Dictionary. Please ensure window.FORMVALIDATION_LANG is correctly set.')
+}
 
 /*
  * Private Values and Operations
