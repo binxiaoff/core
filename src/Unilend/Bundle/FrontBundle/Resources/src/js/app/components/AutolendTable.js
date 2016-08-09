@@ -624,7 +624,7 @@ $(document)
   })
 
   // Show the dialog
-  .on(Utility.clickEvent, 'form button[type="submit"]', function (event) {
+  .on(Utility.clickEvent, 'form#form-user-autolend button[type="submit"]', function (event) {
     var $elem = $(this)
 
     // Show dialog
