@@ -672,11 +672,11 @@ function valid_rejete_etape7(status, id_project) {
             alert('Vous devez renseigner le motif de rejet');
         }
         else if (status == 1) {
-            if ($.isNumeric(period) == false || period <= 0) {
+            if ($.isNumeric($('#period').val()) == false || $('#period').val() <= 0) {
                 form_ok = false;
                 alert('Vous devez renseigner la durée du prêt');
             }
-            else if ($.isNumeric(amount) == false || amount <= 0) {
+            else if ($.isNumeric($('#amount').val()) == false || $('#amount').val() <= 0) {
                 form_ok = false;
                 alert('Vous devez renseigner le montant du prêt');
             }
