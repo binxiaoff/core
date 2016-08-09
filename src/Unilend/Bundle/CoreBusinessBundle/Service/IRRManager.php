@@ -35,24 +35,19 @@ class IRRManager
 
     public function updateIRRUnilend()
     {
-        /** @var \unilend_stats $oUnilendStats */
-        $oUnilendStats = $this->oEntityManager->getRepository('unilend_stats');
+        /** @var \unilend_stats $unilendStats */
+        $unilendStats = $this->oEntityManager->getRepository('unilend_stats');
+        /** @var float $irrUnilend */
+        $irrUnilend = $this->calculateIRRUnilend();
 
-        $aLastUnilendIRR = $this->getLastUnilendIRR();
-        $oLastIRRDate    = new \DateTime($aLastUnilendIRR['added']);
-        $oNow            = new \DateTime('NOW');
-        $oDateDifference = $oNow->diff($oLastIRRDate);
-
-        $fIRRUnilend = $this->calculateIRRUnilend();
-
-        if ($oDateDifference->d == 0) {
-            $oUnilendStats->get($aLastUnilendIRR['id_unilend_stat'], 'id_unilend_stat');
-            $oUnilendStats->value = $fIRRUnilend;
-            $oUnilendStats->update();
+        if ($unilendStats->exist(date('Y-m-d'), 'DATE(added)')) {
+            $unilendStats->get(date('Y-m-d'), 'DATE(added)');
+            $unilendStats->value = $irrUnilend;
+            $unilendStats->update();
         } else {
-            $oUnilendStats->value = $fIRRUnilend;
-            $oUnilendStats->type_stat = 'IRR';
-            $oUnilendStats->create();
+            $unilendStats->value = $irrUnilend;
+            $unilendStats->type_stat = 'IRR';
+            $unilendStats->create();
         }
     }
 
