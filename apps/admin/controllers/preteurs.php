@@ -265,6 +265,7 @@ class preteursController extends bootstrap
         $this->lNatio                  = $this->nationalites->select();
         $this->lPays                   = $this->pays->select('', 'ordre ASC');
         $this->settings                = $this->loadData('settings');
+        $this->completude_wording = [];
 
         $lElements = $this->blocs_elements->select('id_bloc = 9 AND id_langue = "' . $this->language . '"');
         foreach ($lElements as $b_elt) {
@@ -274,7 +275,7 @@ class preteursController extends bootstrap
         $this->nbWordingCompletude = count($this->completude_wording);
 
         $this->settings->get("Liste deroulante conseil externe de l'entreprise", 'type');
-        $this->conseil_externe = $this->ficelle->explodeStr2array($this->settings->value);
+        $this->conseil_externe = json_decode($this->settings->value, true);
 
         $this->lenders_accounts = $this->loadData('lenders_accounts');
         $this->lenders_accounts->get($this->params[0], 'id_lender_account');

@@ -5,7 +5,7 @@
                 <div class="col-pagination-info col-lg-4 col-md-4">
                     <div class="pagination-info">
                         <span class="pagination-location">
-                            {% trans with { '%item%' : pagination.currentIndexItems, '%items%' : pagination.totalItems } %} projects-listing_pagination-info-location {% endtrans %}
+                            {% trans with {'%item%' : pagination.currentIndexItems, '%items%' : pagination.totalItems} %} projects-listing_pagination-info-location {% endtrans %}
                         </span>
                         {% if pagination.currentIndex < pagination.totalPages %}
                             <a href="{{ path('projects_list', {'page' : pagination.currentIndex + 1 }) }}" class="link pagination-next">

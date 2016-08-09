@@ -21,8 +21,7 @@
             <div class="form-field">
                 <div class="custom-input-file" id="form-preter-file-identite-cni-2" data-fileattach-maxfiles="1"
                      data-fileattach data-fileattach-inputname="id_verso"
-                     data-fileattach-emptyfilelabel="{% trans %} lender-subscription_step-2-person-id-attachment-verso-placeholder {% endtrans %}"
-                     data-formvalidation-input data-formvalidation-required='input[type="file"][name="fichier[identite][cni_b][0]"]'></div><!-- /.ui-fileattach -->
+                     data-fileattach-emptyfilelabel="{% trans %} lender-subscription_step-2-person-id-attachment-verso-placeholder {% endtrans %}"></div><!-- /.ui-fileattach -->
             </div>
         </div>
     </div>
@@ -36,26 +35,65 @@
                 <p>{% trans %} lender-subscription_step-2-person-housing-certificate-section-info {% endtrans %}</p>
             </div>
 
-            <div class="custom-input-file" id="form-preter-file-domicile" data-fileattach data-fileattach-inputname="fichier[domicile]" data-fileattach-maxfiles="1" data-formvalidation-input data-formvalidation-required='input[type="file"][name="fichier[domicile][0]"]'></div><!-- /.ui-fileattach -->
+            <div class="custom-input-file" id="form-preter-file-domicile" data-fileattach-maxfiles="1"
+                 data-fileattach data-fileattach-inputname="housing-certificate"
+                 data-formvalidation-input data-formvalidation-required='input[type="file"][name="fichier[domicile][0]"]'></div><!-- /.ui-fileattach -->
 
             <ul class="ui-formvalidation-messages"></ul>
             <p>
-                <a href="#todo" class="link">Le justificatif n'est pas à votre nom?</a>
+                <a href="#todo" class="link">{% trans %} lender-subscription_step-2-housed-by-third-person {% endtrans %}</a>
+                {#TODO when click collapse the next section#}
             </p>
+            {#TODO: only show if housed by third person is checked #}
+
+            <div class="row" id="upload-housed-by-third-person-declaration">
+                <div class="form-field ">
+                    <label>{% trans %} lender-subscription_step-2-housed-by-third-person-declaration {% endtrans %}
+                        <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                    <div class="custom-input-file" id="form-lender-subscription-info-file-housed-by-third-person-declaration"
+                         data-fileattach data-fileattach-inputname="housed-by-third-person-declaration"
+                         data-fileattach-maxfiles="1" >
+                    </div><!-- /.ui-fileattach -->
+                </div>
+            </div>
+            <div class="row" id="upload-id-third-person-housing">
+                <div class="form-field">
+                    <label>{% trans %} lender-subscription_step-2-id-third-person-housing {% endtrans %}
+                        <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                    <div class="custom-input-file" id="form-lender-subscription-info-file-id-third-person-housing"
+                         data-fileattach data-fileattach-inputname="id-third-person-housing"
+                         data-fileattach-maxfiles="1">
+                    </div><!-- /.ui-fileattach -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" {% if not isLivingAbroad %} style="display: none;" {% endif %} id="tax-certificate">
+        <div class="form-field">
+            <label>{% trans %} lender-profile_information-tab-fiscal-address-tax-certificate-label {% endtrans %}
+                <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+            <div class="custom-input-file"
+                 id="form-lender-subscription-info-file-tax-certificate"
+                 data-fileattach data-fileattach-inputname="tax-certificate"
+                 data-fileattach-maxfiles="1">
+            </div><!-- /.ui-fileattach -->
         </div>
     </div>
 
     <div class="row">
         <div class="form-field">
-            <label for="form-preter-fichier-identité">Relévé d'identité bancaire (RIB)
+            <label for="form-preter-fichier-identité">{% trans %} lender-subscription_step-2-rib {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
 
-            <div class="custom-input-file" id="form-preter-file-file-rib" data-fileattach data-fileattach-inputname="fichier[rib]" data-fileattach-maxfiles="1" data-fileattach-emptyfilelabel="No file attached" data-formvalidation-input data-formvalidation-required='input[type="file"][name="fichier[rib][0]"]'></div><!-- /.ui-fileattach -->
+            <div class="custom-input-file" id="form-preter-file-file-rib" data-fileattach-maxfiles="1"
+                 data-fileattach data-fileattach-inputname="rib"
+                 data-formvalidation-input data-formvalidation-required='input[type="file"][name="fichier[rib][0]"]'></div><!-- /.ui-fileattach -->
 
             <ul class="ui-formvalidation-messages"></ul>
 
             <div class="field-help">
-                <p>Correspondant au compte bancaire renseigné ci-dessus</p>
+                <p>{% trans %} lender-subscription_step-2-rib-info {% endtrans %}</p>
             </div>
         </div>
     </div>

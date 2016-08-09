@@ -27,9 +27,18 @@ class RouteProvider implements RouteProviderInterface
      */
     public function getRouteCollectionForRequest(Request $request)
     {
-        /** @var \tree $trees */
-        $trees           = $this->entityManager->getRepository('tree');
+        return $this->getRouteCollection();
+    }
+
+    /**
+     * @return RouteCollection
+     */
+    private function getRouteCollection()
+    {
         $routeCollection = new RouteCollection();
+
+        /** @var \tree $trees */
+        $trees = $this->entityManager->getRepository('tree');
 
         foreach ($trees->select('status = 1 AND prive = 0') as $tree) {
             $routeCollection->add($tree['slug'], new Route($tree['slug']));
@@ -59,7 +68,7 @@ class RouteProvider implements RouteProviderInterface
     public function getRoutesByNames($names)
     {
         if (is_null($names)) {
-            return $this->getRouteCollectionForRequest();
+            return $this->getRouteCollection();
         }
 
         /** @var \tree $trees */

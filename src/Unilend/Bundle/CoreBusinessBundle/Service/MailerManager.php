@@ -1027,7 +1027,7 @@ class MailerManager
         $oMailNotification = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
         /** @var \clients_gestion_notifications $oCustomerNotificationSettings */
         $oCustomerNotificationSettings = $this->oEntityManager->getRepository('clients_gestion_notifications');
-        /** @var \textes $translations */
+        /** @var \translations $translations */
         $translations                    = $this->oEntityManager->getRepository('textes');
         $aTranslations['email-synthese'] = $translations->selectFront('email-synthese', 'fr');
 
@@ -1173,7 +1173,7 @@ class MailerManager
         $oMailNotification = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
         /** @var \clients_gestion_notifications $oCustomerNotificationSettings */
         $oCustomerNotificationSettings = $this->oEntityManager->getRepository('clients_gestion_notifications');
-        /** @var \textes $translations */
+        /** @var \translations $translations */
         $translations                    = $this->oEntityManager->getRepository('textes');
         $aTranslations['email-synthese'] = $translations->selectFront('email-synthese', 'fr');
 
@@ -1311,7 +1311,7 @@ class MailerManager
         $oMailNotification = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
         /** @var \clients_gestion_notifications $oCustomerNotificationSettings */
         $oCustomerNotificationSettings = $this->oEntityManager->getRepository('clients_gestion_notifications');
-        /** @var \textes $translations */
+        /** @var \translations $translations */
         $translations                    = $this->oEntityManager->getRepository('textes');
         $aTranslations['email-synthese'] = $translations->selectFront('email-synthese', 'fr');
 
@@ -1452,7 +1452,7 @@ class MailerManager
         /** @var \clients_gestion_notifications $oCustomerNotificationSettings */
         $oCustomerNotificationSettings = $this->oEntityManager->getRepository('clients_gestion_notifications');
 
-        /** @var \textes $translations */
+        /** @var \translations $translations */
         $translations                    = $this->oEntityManager->getRepository('textes');
         $aTranslations['email-synthese'] = $translations->selectFront('email-synthese', 'fr');
 
@@ -1628,7 +1628,7 @@ class MailerManager
         /** @var \clients_gestion_notifications $oCustomerNotificationSettings */
         $oCustomerNotificationSettings = $this->oEntityManager->getRepository('clients_gestion_notifications');
 
-        /** @var \textes $translations */
+        /** @var \translations $translations */
         $translations                    = $this->oEntityManager->getRepository('textes');
         $aTranslations['email-synthese'] = $translations->selectFront('email-synthese', 'fr');
 

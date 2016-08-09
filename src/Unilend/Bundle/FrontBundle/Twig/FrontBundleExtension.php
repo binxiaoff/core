@@ -2,6 +2,7 @@
 namespace Unilend\Bundle\FrontBundle\Twig;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
+use Symfony\Component\HttpKernel\Kernel;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
@@ -11,6 +12,8 @@ use Unilend\core\Loader;
 
 class FrontBundleExtension extends \Twig_Extension
 {
+    /** @var Kernel */
+    private $kernel;
     /** @var string $url */
     private $url;
     /** @var StatisticsManager */
@@ -21,10 +24,11 @@ class FrontBundleExtension extends \Twig_Extension
     private $entityManager;
     /** @var MemcacheCachePool */
     private $cachePool;
-    /** @var  LocationManager */
+    /** @var LocationManager */
     private $locationManager;
 
     public function __construct(
+        Kernel $kernel,
         Packages $assetsPackages,
         StatisticsManager $statisticsManager,
         TranslationManager $translationManager,
@@ -32,6 +36,7 @@ class FrontBundleExtension extends \Twig_Extension
         MemcacheCachePool $cachePool,
         LocationManager $locationManager
     ) {
+        $this->kernel             = $kernel;
         $this->url                = $assetsPackages->getUrl('');
         $this->statisticsManager  = $statisticsManager;
         $this->translationManager = $translationManager;
@@ -51,7 +56,9 @@ class FrontBundleExtension extends \Twig_Extension
             new \Twig_SimpleFunction('getStatistics', array($this, 'getStatistics')),
             new \Twig_SimpleFunction('getCategories', array($this, 'getCategoriesForSvg')),
             new \Twig_SimpleFunction('uploadedImage', array($this, 'uploadedImageFunction')),
-            new \Twig_SimpleFunction('getMonths', array($this, 'getMonths'))
+            new \Twig_SimpleFunction('getMonths', array($this, 'getMonths')),
+            new \Twig_SimpleFunction('photo', array($this, 'photo')),
+            new \Twig_SimpleFunction('dictionary', array($this, 'dictionary'))
         );
     }
 
@@ -218,5 +225,25 @@ class FrontBundleExtension extends \Twig_Extension
         } else {
             return $cachedItem->get();
         }
+    }
+
+    /**
+     * @param string $image
+     * @param string $format
+     * @return string
+     */
+    public function photo($image, $format = '')
+    {
+        $photos = new \photos([$this->kernel->getRootDir() . '/../public/default/var/', $this->url]);
+        return $photos->display($image, $format);
+    }
+
+    /**
+     * @param string $section
+     * @return array
+     */
+    public function dictionary($section)
+    {
+        return $this->translationManager->getAllTranslationsForSection($section);
     }
 }

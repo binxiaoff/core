@@ -64,6 +64,9 @@ var BidConfirmation = require('./app/components/BidConfirmation')
 var CookieCheck = require('./app/components/Cookies')
 var BidsDetail = require('./app/components/BidsDetail')
 var Spinner = require('./app/components/Spinner')
+var LenderWallet = require('./app/components/LenderWallet')
+var LenderOperations = require('./app/components/LenderOperations')
+var LenderProfile = require('./app/components/LenderProfile')
 
 // @debug
 // CacheData.clearAll()

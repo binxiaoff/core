@@ -562,11 +562,13 @@ class dossiersController extends bootstrap
 
                     if (false === $this->bReadonlyRiskNote) {
                         $this->projects->period = $_POST['duree'];
-                        $this->projects->amount = str_replace(' ', '', str_replace(',', '.', $_POST['montant']));
+                        $this->projects->amount = str_replace([' ', ','], ['', '.'], $_POST['montant']);
                     }
 
                     if ($this->current_projects_status->status <= \projects_status::A_FUNDER) {
-                        $this->projects->slug = $this->ficelle->generateSlug($this->projects->title . '-' . $this->projects->id_project);
+                        $sector = $translationManager->selectTranslation('company-sector', 'sector-' . $this->companies->sector);
+                        $this->settings->get('Prefixe URL pages projet', 'type');
+                        $this->projects->slug = $this->ficelle->generateSlug($this->settings->value . '-' . $sector . '-' . $this->companies->city . '-' . substr(md5($this->projects->title . $this->projects->id_project), 0, 7));
                     }
 
                     $this->projects->update();
@@ -1436,7 +1438,7 @@ class dossiersController extends bootstrap
         $this->companies = $this->loadData('companies');
         $this->bids      = $this->loadData('bids');
 
-        $this->lProjects = $this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING);
+        $this->lProjects = $this->projects->selectProjectsByStatus([\projects_status::EN_FUNDING]);
     }
 
     public function _remboursements()

@@ -4,12 +4,11 @@
 {# Page data #}
 {% set bodyId = '' %}
 {% set page = {
-title: 'Prêter',
-permalink: route('preter')
+    title: 'Prêter',
+    permalink: route('preter')
 } %}
 
 {% block siteContent %}
-
     <article id="homepre" class="page">
 
         <section id="homepre-video-hero" class="cta-video-hero" aria-hidden="true" data-set-device-height="xs">
@@ -93,7 +92,7 @@ permalink: route('preter')
 
         <section id="homepre-project-list" class="page-section bg-bg3">
             <div class="site-wrap">
-                <h2 class="h2"> {% transchoice projects|length with { '%numberProjects%' : projects|length } %} project-list_title-ongoing-projects  {% endtranschoice %}</h2>
+                <h2 class="h2"> {% transchoice projects|length with {'%numberProjects%' : projects|length} %} project-list_title-ongoing-projects  {% endtranschoice %}</h2>
 
                 {% include 'partials/components/project-list/project-list.html.twig' %}
 

@@ -291,7 +291,7 @@ class projectsController extends bootstrap
                 }
             }
 
-            $this->nbProjects = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = ' . \projects::DISPLAY_PROJECT_ON);
+            $this->nbProjects = $this->projects->countSelectProjectsByStatus(implode(',', $this->tabProjectDisplay) . ',' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = ' . \projects::DISPLAY_PROJECT_ON);
             $this->mois_jour  = $this->dates->formatDate($this->projects->date_retrait, 'F d');
             $this->annee      = $this->dates->formatDate($this->projects->date_retrait, 'Y');
 

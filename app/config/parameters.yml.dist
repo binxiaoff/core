@@ -14,6 +14,9 @@ parameters:
 
     mapbox.token:                   pk.eyJ1IjoidW5pbGVuZCIsImEiOiJjaXJiczA4ejQwMDVvaWZsdzdmMmpnOGRtIn0._IBtG2TUy17m7S6jwVBrcg
 
+    desk_user:                      equipeit@unilend.fr
+    desk_password:                  password
+
     url.universign:                 'https://equipeit@unilend.fr:universign4unilend@ws.universign.eu/sign/rpc/'
     url.host_admin:                 'admin.local.unilend.fr' # for Front to know the url BO
     url.host_default:               'www.local.unilend.fr' # for BO to know the url Front

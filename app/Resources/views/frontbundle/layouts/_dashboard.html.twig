@@ -24,16 +24,16 @@
                                     <a href="{{ route('user/preter/dashboard') }}"><span class="icon fa-dashboard-u"></span><span class="label">Tableau de bord</span></a>
                                 </li>
                                 <li role="presentation" class="dashboard-nav-balance {{ general.isRouteActiveClass(route('user/preter/balance'), page.permalink, true) }}">
-                                    <a href="{{ route('user/preter/balance') }}"><span class="icon fa-money-u32"></span><span class="label">Apport – Retrait</span></a>
+                                    <a href="{{ path('wallet') }}"><span class="icon fa-money-u32"></span><span class="label">{% trans %} lender-dashboard-navigation_wallet-link {% endtrans %}</span></a>
                                 </li>
                                 <li role="presentation" class="dashboard-nav-projects {{ general.isRouteActiveClass(route('user/preter/projects'), page.permalink, true) }}">
                                     <a href="{{ route('user/preter/projects') }}"><span class="icon fa-project-u"></span><span class="label">Projets</span></a>
                                 </li>
                                 <li role="presentation" class="dashboard-nav-operations {{ general.isRouteActiveClass(route('user/preter/operations'), page.permalink, true) }}">
-                                    <a href="{{ route('user/preter/operations') }}"><span class="icon fa-operations-u"></span><span class="label">Opérations</span></a>
+                                    <a href="{{ path('lender_operations') }}"><span class="icon fa-operations-u"></span><span class="label">{% trans %} lender-dashboard-navigation_operations-link {% endtrans %}</span></a>
                                 </li>
                                 <li role="presentation" class="dashboard-nav-profile {{ general.isRouteActiveClass(route('user/preter/profile'), page.permalink, true) }}">
-                                    <a href="{{ route('user/preter/profile') }}"><span class="icon fa-profile-u"></span><span class="label">Profil</span></a>
+                                    <a href="{{ path('lender_profile') }}"><span class="icon fa-profile-u"></span><span class="label">{% trans %} lender-dashboard-navigation_profile-link {% endtrans %}</span></a>
                                 </li>
                                 <li role="presentation" class="dashboard-nav-autolend {{ general.isRouteActiveClass(route('user/preter/autolend'), page.permalink, true) }}">
                                     <a href="{{ route('user/preter/autolend') }}"><span class="icon fa-autolend-u"></span><span class="label">Autolend</span></a>

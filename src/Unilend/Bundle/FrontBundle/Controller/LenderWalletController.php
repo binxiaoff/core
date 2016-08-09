@@ -15,9 +15,10 @@ use Unilend\core\Loader;
 class LenderWalletController extends Controller
 {
     /** @var int  */
-    private $maxDepositAmount = 1000;
+    const MAX_DEPOSIT_AMOUNT = 1000;
     /** @var int  */
-    private $minDepositAmount = 20;
+    const MIN_DEPOSIT_AMOUNT = 20;
+
     /**
      * @param Request $request
      * @Route("/alimentation", name="wallet")
@@ -36,20 +37,25 @@ class LenderWalletController extends Controller
         $clientData = $client->select('id_client = ' . $this->getUser()->getClientId())[0];
         $lenderData = $lender->select('id_client_owner = ' . $clientData['id_client'])[0];
 
-        return $this->render(':frontbundle/pages/lender_wallet:wallet_layout.html.twig',
-            [
-                'balance'         => $this->getUser()->getBalance(),
-                'maxDepositAmount'=> $this->maxDepositAmount,
-                'minDepositAmount'=> $this->minDepositAmount,
-                'client'          => $clientData,
-                'lender'          => $lenderData,
-                'lenderBankMotif' => $client->getLenderPattern($clientData['id_client']),
-                'unilendAccount'  => $this->getUnilendAccountData($entityManager),
-                'depositResult'   => $request->query->get('depositResult', false),
-                'depositAmount'   => $request->query->get('depositAmount', 0),
-                'depositCode'     => $request->query->get('depositCode', 0),
-            ]
-        );
+        $template = [
+            'balance'         => $this->getUser()->getBalance(),
+            'maxDepositAmount'=> self::MAX_DEPOSIT_AMOUNT,
+            'minDepositAmount'=> self::MIN_DEPOSIT_AMOUNT,
+            'client'          => $clientData,
+            'lender'          => $lenderData,
+            'lenderBankMotif' => $client->getLenderPattern($clientData['id_client']),
+            'depositResult'   => $request->query->get('depositResult', false),
+            'depositAmount'   => $request->query->get('depositAmount', 0),
+            'depositCode'     => $request->query->get('depositCode', 0),
+        ];
+
+        $lenderSubscriptionStep3Form  = $this->get('session')->get('subscriptionStep3WalletData');
+        $this->get('session')->remove('subscriptionStep3WalletData');
+        if ($client->get($lenderSubscriptionStep3Form['clientId'], 'id_client') && $client->id_client == $this->getUser()->getClientId()) {
+            $template['formData'] = $lenderSubscriptionStep3Form;
+        }
+
+        return $this->render(':frontbundle/pages/lender_wallet:wallet_layout.html.twig', $template);
     }
 
     /**
@@ -307,7 +313,7 @@ class LenderWalletController extends Controller
 
         $client->get($this->getUser()->getClientId());
 
-        if (is_numeric($amount) && $amount >= $this->minDepositAmount && $amount <= $this->maxDepositAmount) {
+        if (is_numeric($amount) && $amount >= self::MIN_DEPOSIT_AMOUNT && $amount <= self::MAX_DEPOSIT_AMOUNT) {
             $amount = (number_format($amount, 2, '.', '') * 100);
 
             /** @var \clients_history_actions $clientActionHistory */
@@ -549,29 +555,6 @@ class LenderWalletController extends Controller
                 return $this->redirectToRoute('wallet', ['depositResult' => true]);
             }
         }
-    }
-
-    /**
-     * @param EntityManager $entityManager
-     * @return array
-     */
-    private function getUnilendAccountData(EntityManager $entityManager)
-    {
-        /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
-
-        $settings->get('Virement - IBAN', 'type');
-        $unilendAccount['iban'] = $settings->value;
-
-        $settings->get('Virement - BIC', 'type');
-        $unilendAccount['bic'] = $settings->value;
-
-        $settings->get('Virement - domiciliation', 'type');
-        $unilendAccount['domiciliation'] = $settings->value;
-
-        $settings->get('Virement - titulaire du compte', 'type');
-        $unilendAccount['owner'] = $settings->value;
-        return $unilendAccount;
     }
 
     /**

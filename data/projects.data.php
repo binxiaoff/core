@@ -45,6 +45,15 @@ class projects extends projects_crud
     const RISK_G = 2;
     const RISK_H = 1.5;
 
+    const SORT_FIELD_SECTOR = 'sector';
+    const SORT_FIELD_AMOUNT = 'amount';
+    const SORT_FIELD_RATE   = 'rate';
+    const SORT_FIELD_RISK   = 'risk';
+    const SORT_FIELD_END    = 'end';
+
+    const SORT_DIRECTION_ASC  = 'ASC';
+    const SORT_DIRECTION_DESC = 'DESC';
+
     public function __construct($bdd, $params = '')
     {
         parent::projects($bdd, $params);
@@ -178,71 +187,111 @@ class projects extends projects_crud
     }
 
     /**
-     * @param string $status
+     * @param array  $status
      * @param string $where
-     * @param string $order
+     * @param array  $sort
      * @param string $start
      * @param string $nb
-     * @param bool $bUseCache
+     * @param bool   $useCache
      * @return array
      */
-    public function selectProjectsByStatus($status, $where = '', $order = '', $start = '', $nb = '', $bUseCache = true)
+    public function selectProjectsByStatus(array $status, $where = '', array $sort = [], $start = '', $nb = '', $useCache = true)
     {
-        if (false === is_array($status)) {
-            $status = explode(',', $status);
-        }
+        $binds = array('fundingStatus' => \projects_status::EN_FUNDING, 'status' => $status);
 
-        $aBind = array('iFunding' => \projects_status::EN_FUNDING, 'status' => $status);
-
-        if ($bUseCache) {
+        if ($useCache) {
             $QCProfile = new \Doctrine\DBAL\Cache\QueryCacheProfile(60, md5(__METHOD__));
         } else {
             $QCProfile = null;
         }
-        $sWhereClause = 'projects_status.status IN (:status)';
 
-        if ('' !== trim($where)) {
-            $sWhereClause .= ' ' . $where . ' ';
-        }
-
-        if ($order == '') {
-            $order = ' lestatut ASC, p.date_retrait DESC ';
-        }
-        $sql = '
+        $select = '
             SELECT p.*,
                 projects_status.status,
                 DATEDIFF(p.date_retrait_full, NOW()) AS daysLeft,
-                CASE WHEN projects_status.status = :iFunding
+                CASE WHEN projects_status.status = :fundingStatus
                     THEN "1"
                     ELSE "2"
-                END AS lestatut
+                END AS lestatut';
+
+        $tables = '
             FROM projects p
             INNER JOIN projects_last_status_history USING (id_project)
             INNER JOIN projects_status_history USING (id_project_status_history)
-            INNER JOIN projects_status USING (id_project_status)
-            WHERE ' . $sWhereClause . '
+            INNER JOIN projects_status USING (id_project_status)';
+
+        $sortField     = self::SORT_FIELD_END;
+        $sortDirection = self::SORT_DIRECTION_DESC;
+
+        if (false === empty($sort)) {
+            $field     = key($sort);
+            $direction = current($sort);
+
+            if (
+                in_array($field, [\projects::SORT_FIELD_SECTOR, \projects::SORT_FIELD_AMOUNT, \projects::SORT_FIELD_RATE, \projects::SORT_FIELD_RISK, \projects::SORT_FIELD_END])
+                && in_array($direction, [self::SORT_DIRECTION_ASC, self::SORT_DIRECTION_DESC])
+            ) {
+                $sortField     = $field;
+                $sortDirection = $direction;
+            }
+        }
+
+        switch ($sortField) {
+            case self::SORT_FIELD_SECTOR:
+                $order = 'c.sector ' . $sortDirection . ', p.date_retrait_full DESC, projects_status.status ASC';
+                $tables .= '
+                    INNER JOIN companies c ON p.id_company = c.id_company';
+                break;
+            case self::SORT_FIELD_AMOUNT:
+                $order = 'p.amount ' . $sortDirection . ', p.date_retrait_full DESC, projects_status.status ASC';
+                break;
+            case self::SORT_FIELD_RATE:
+                $select .= ',
+                    CASE
+                        WHEN projects_status.status IN (' . implode(', ', [\projects_status::FUNDE, \projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::PROBLEME, \projects_status::PROBLEME_J_X, \projects_status::RECOUVREMENT, \projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT]) . ') THEN (SELECT SUM(amount * rate) / SUM(amount) AS avg_rate FROM loans WHERE id_project = p.id_project)
+                        WHEN projects_status.status IN (' . implode(', ', [\projects_status::PRET_REFUSE, \projects_status::EN_FUNDING, \projects_status::AUTO_BID_PLACED, \projects_status::A_FUNDER]) . ') THEN (SELECT SUM(amount * rate) / SUM(amount) AS avg_rate FROM bids WHERE id_project = p.id_project AND status IN (0, 1))
+                        WHEN projects_status.status IN (' . implode(', ', [\projects_status::FUNDING_KO]) . ') THEN (SELECT SUM(amount * rate) / SUM(amount) AS avg_rate FROM bids WHERE id_project = p.id_project)
+                    END AS avg_rate';
+                $order = 'avg_rate ' . $sortDirection . ', p.date_retrait_full DESC, projects_status.status ASC';
+                break;
+            case self::SORT_FIELD_RISK:
+                $sortDirection = $sortDirection === self::SORT_DIRECTION_DESC ? self::SORT_DIRECTION_ASC : self::SORT_DIRECTION_DESC;
+                $order         = 'p.risk ' . $sortDirection . ', p.date_retrait_full DESC, projects_status.status ASC';
+                break;
+            case self::SORT_FIELD_END:
+            default:
+                if ($sortDirection === self::SORT_DIRECTION_ASC) {
+                    $order = 'lestatut DESC, IF(lestatut = 2, p.date_retrait_full, "") ASC, IF(lestatut = 1, p.date_retrait_full, "") DESC, projects_status.status ASC';
+                } else {
+                    $order = 'lestatut ASC, IF(lestatut = 2, p.date_retrait_full, "") DESC, IF(lestatut = 1, p.date_retrait_full, "") ASC, projects_status.status DESC';
+                }
+                break;
+        }
+
+        $sql = $select . $tables . '
+            WHERE projects_status.status IN (:status) ' . $where . '
             ORDER BY ' . $order;
 
         if (is_numeric($nb)) {
-            $aBind['number'] = $nb;
+            $binds['number'] = $nb;
             $sql .= ' LIMIT :number ';
 
             if (is_numeric($start)) {
-                $aBind['start'] = $start;
+                $binds['start'] = $start;
                 $sql .= ' OFFSET :start';
             }
         }
 
         try {
             $aTypes = array(
-                'status'       => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
-                'iFunding'     => \PDO::PARAM_INT,
-                'minRateRange' => \PDO::PARAM_INT,
-                'maxRateRange' => \PDO::PARAM_INT,
-                'number'       => \PDO::PARAM_INT,
-                'start'        => \PDO::PARAM_INT
+                'status'        => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+                'fundingStatus' => \PDO::PARAM_INT,
+                'minRateRange'  => \PDO::PARAM_INT,
+                'maxRateRange'  => \PDO::PARAM_INT,
+                'number'        => \PDO::PARAM_INT,
+                'start'         => \PDO::PARAM_INT
             );
-            $result = $this->bdd->executeQuery($sql, $aBind, $aTypes, $QCProfile)->fetchAll(\PDO::FETCH_ASSOC);
+            $result = $this->bdd->executeQuery($sql, $binds, $aTypes, $QCProfile)->fetchAll(\PDO::FETCH_ASSOC);
         } catch (\Doctrine\DBAL\DBALException $ex) {
             $result = array();
         }
@@ -324,14 +373,14 @@ class projects extends projects_crud
         return $result;
     }
 
-    public function positionProject($id_project, $status, $order)
+    public function positionProject($projectId, array $status, $order)
     {
         $aProjects = $this->selectProjectsByStatus($status, ' AND p.display = 0 and p.status = 0', $order);
         $previous = '';
         $next = '';
 
         foreach ($aProjects as $k => $p) {
-            if ($p['id_project'] == $id_project) {
+            if ($p['id_project'] == $projectId) {
                 $previous = isset($aProjects[$k - 1]) ? $aProjects[$k - 1] : null;
                 $next     = isset($aProjects[$k + 1]) ? $aProjects[$k + 1] : null;
                 break;
@@ -427,10 +476,10 @@ class projects extends projects_crud
         return $record;
     }
 
-    public function getProjectsStatusAndCount($sListStatus, $sTabOrderProject, $iStart, $iLimit)
+    public function getProjectsStatusAndCount(array $sListStatus, array $tabOrderProject, $iStart, $iLimit)
     {
-        $aProjects   = $this->selectProjectsByStatus($sListStatus, ' AND p.status = 0 AND p.display = 0', $sTabOrderProject, $iStart, $iLimit);
-        $anbProjects = $this->countSelectProjectsByStatus($sListStatus . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = 0', true);
+        $aProjects   = $this->selectProjectsByStatus($sListStatus, ' AND p.status = 0 AND p.display = 0', $tabOrderProject, $iStart, $iLimit);
+        $anbProjects = $this->countSelectProjectsByStatus(implode(',', $sListStatus) . ',' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = 0', true);
         $aElements   = array(
             'lProjectsFunding' => $aProjects,
             'nbProjects'       => $anbProjects

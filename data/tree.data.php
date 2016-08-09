@@ -1447,9 +1447,9 @@ class tree extends tree_crud
         return $this->sitemap;
     }
 
-    public function search($search, $langue = 'fr')
+    public function search($search, $includeProjects = false, $langue = 'fr')
     {
-        $result = array();
+        $result = [];
         $search = $this->bdd->escape_string($search);
         $sql    = '
             SELECT t.slug AS slug,
@@ -1469,50 +1469,58 @@ class tree extends tree_crud
 
         $resultat = $this->bdd->query($sql);
 
-        while ($record = $this->bdd->fetch_assoc($resultat)) {
-            $replace  = strip_tags($record['value']);
-            $mystring = strtolower($replace);
-            $findme   = strtolower($search);
-            $pos      = strpos($mystring, $findme);
+        if ($this->bdd->num_rows($resultat)) {
+            $result['cms'] = [];
 
-            if ($pos !== false) {
-                if ($record['id_template'] == 7) {
-                    $this->get(array('id_tree' => $record['id_parent'], 'id_langue' => $langue));
+            while ($record = $this->bdd->fetch_assoc($resultat)) {
+                $replace  = strip_tags($record['value']);
+                $mystring = strtolower($replace);
+                $findme   = strtolower($search);
+                $pos      = strpos($mystring, $findme);
 
-                    $result[$this->slug] = array(
-                        'slug'  => $this->slug,
-                        'title' => $this->title
-                    );
-                } else {
-                    $result[$record['slug']] = array(
-                        'slug'  => $record['slug'],
-                        'title' => $record['title']
-                    );
+                if ($pos !== false) {
+                    $result['cms'][] = [
+                        'title' => $record['title'],
+                        'slug'  => $record['slug']
+                    ];
                 }
+            }
+
+            usort($result['cms'], function($firstElement, $secondElement) {
+                return strcmp($firstElement['title'], $secondElement['title']);
+            });
+        }
+
+        if ($includeProjects) {
+            $sql = '
+                SELECT p.slug AS slug,
+                  p.title AS title,
+                  (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.id_project_status_history DESC LIMIT 1) AS status
+                FROM projects p
+                WHERE p.status = 0
+                  AND p.display = 0
+                  AND p.title LIKE "%' . $search . '%"
+                HAVING status >= ' . \projects_status::EN_FUNDING . '
+                ORDER BY p.title ASC';
+
+            $resultatProjects = $this->bdd->query($sql);
+
+            if ($this->bdd->num_rows($resultatProjects)) {
+                $result['projects'] = [];
+
+                while ($recordProjects = $this->bdd->fetch_assoc($resultatProjects)) {
+                    $result['projects'][] = [
+                        'title' => $recordProjects['title'],
+                        'slug'  => 'projects/detail/' . $recordProjects['slug']
+                    ];
+                }
+
+                usort($result['projects'], function($firstElement, $secondElement) {
+                    return strcmp($firstElement['title'], $secondElement['title']);
+                });
             }
         }
 
-        $sql = '
-            SELECT p.slug AS slug,
-              p.title AS title,
-              (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.id_project_status_history DESC LIMIT 1) AS status
-            FROM projects p
-            WHERE p.status = 0
-              AND p.display = 0
-              AND p.title LIKE "%' . $search . '%"
-            HAVING status >= ' . \projects_status::EN_FUNDING . '
-            ORDER BY p.title ASC';
-
-        $resultatProjects = $this->bdd->query($sql);
-
-        while ($recordProjects = $this->bdd->fetch_assoc($resultatProjects)) {
-            $result[$recordProjects['slug']] = array(
-                'slug'  => 'projects/detail/' . $recordProjects['slug'],
-                'title' => $recordProjects['title']
-            );
-        }
-
-        ksort($result);
         return $result;
     }
 

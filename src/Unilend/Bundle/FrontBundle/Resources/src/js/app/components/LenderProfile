@@ -1,0 +1,25 @@
+
+saveChanges = function () {
+    event.preventDefault();
+    var form = $(this),
+        formData = new FormData($(this)[0]);
+
+    $.ajax({
+        method: form.attr('method'),
+        url: form.attr('action'),
+        data: formData,
+        cache: false,
+        contentType: false,
+        processData: false,
+        success: function (data) {
+            console.log('success');
+            // $('article#' + data.target).html(data.template);
+            form.after('sucess')
+        },
+        error: function (jqXHR, responseText) {
+            form.after('responseText');
+            // $('#lender-operations-loans').find(':input').unbind().on('change', reloadTabContent);
+        }
+    })
+};
+// $('#save-bank-details').submit(saveChanges)

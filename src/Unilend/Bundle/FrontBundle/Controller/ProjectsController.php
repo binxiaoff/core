@@ -24,12 +24,15 @@ use Unilend\core\Loader;
 class ProjectsController extends Controller
 {
     /**
-     * @Route("/projets-a-financer/{page}", defaults={"page" = "1"}, name="projects_list")
+     * @Route("/projets-a-financer/{page}/{sortType}/{sortDirection}", defaults={"page" = "1", "sortType" = "end", "sortDirection" = "desc"}, name="projects_list")
      *
-     * @param int $page
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @param int    $page
+     * @param string $sortType
+     * @param string $sortDirection
+     * @return Response
      */
-    public function projectsListAction($page)
+    public function projectsListAction($page, $sortType, $sortDirection)
+
     {
         /** @var Translator $translator */
         $translator = $this->get('translator');
@@ -41,10 +44,19 @@ class ProjectsController extends Controller
         /** @var BaseUser $user */
         $user = $this->getUser();
 
-        $template   = [];
-        $pagination = $this->getPaginationStartAndLimit($page);
-        $limit      = $pagination['limit'];
-        $start      = $pagination['start'];
+        $template      = [];
+        $pagination    = $this->getPaginationStartAndLimit($page);
+        $limit         = $pagination['limit'];
+        $start         = $pagination['start'];
+        $sort          = [];
+        $sortDirection = strtoupper($sortDirection);
+
+        if (
+            in_array($sortType, [\projects::SORT_FIELD_SECTOR, \projects::SORT_FIELD_AMOUNT, \projects::SORT_FIELD_RATE, \projects::SORT_FIELD_RISK, \projects::SORT_FIELD_END])
+            && in_array($sortDirection, [\projects::SORT_DIRECTION_ASC, \projects::SORT_DIRECTION_DESC])
+        ) {
+            $sort = [$sortType => $sortDirection];
+        }
 
         if (
             $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY')
@@ -53,33 +65,18 @@ class ProjectsController extends Controller
         ) {
             /** @var \lenders_accounts $lenderAccount */
             $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
-            $lenderAccount->get('id_client_owner', $user->getClientId());
-
-            $template['projects'] = $projectDisplayManager->getProjectsList(
-                [],
-                'p.date_retrait_full DESC',
-                $start,
-                $limit,
-                $lenderAccount
-            );
-
-            /** @var \lenders_accounts $lenderAccount */
-            $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
             $lenderAccount->get($user->getClientId(), 'id_client_owner');
 
             /** @var LenderAccountDisplayManager $lenderAccountDisplayManager */
             $lenderAccountDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
 
+            $template['projects'] = $projectDisplayManager->getProjectsList([], $sort, $start, $limit, $lenderAccount);
+
             array_walk($template['projects'], function(&$project) use ($lenderAccountDisplayManager, $lenderAccount) {
                 $project['lender'] = $lenderAccountDisplayManager->getActivityForProject($lenderAccount, $project['projectId']);
             });
         } else {
-            $template['projects'] = $projectDisplayManager->getProjectsList(
-                [],
-                'p.date_retrait_full DESC',
-                $start,
-                $limit
-            );
+            $template['projects'] = $projectDisplayManager->getProjectsList([], $sort, $start, $limit);
         }
 
         $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower);
@@ -93,8 +90,10 @@ class ProjectsController extends Controller
         /** @var \projects $projects */
         $projects = $this->get('unilend.service.entity_manager')->getRepository('projects');
 
-        $template['projectsInFunding']  = $projects->countSelectProjectsByStatus(\projects_status::EN_FUNDING);
-        $template['pagination'] = $this->pagination($page, $limit);
+        $template['projectsInFunding'] = $projects->countSelectProjectsByStatus(\projects_status::EN_FUNDING, ' AND p.status = 0 AND p.display = ' . \projects::DISPLAY_PROJECT_ON);
+        $template['pagination']        = $this->pagination($page, $limit);
+        $template['showPagination']    = true;
+        $template['showSortable']      = true;
 
         return $this->render('pages/projects.html.twig', $template);
     }
@@ -112,7 +111,7 @@ class ProjectsController extends Controller
             'totalItems'        => $totalNumberProjects,
             'totalPages'        => $totalPages,
             'currentIndex'      => $page,
-            'currentIndexItems' => $page * $limit,
+            'currentIndexItems' => min($page * $limit, $totalNumberProjects),
             'remainingItems'    => ceil($totalNumberProjects - ($totalNumberProjects / $limit)),
             'pageUrl'           => 'projects'
         ];
@@ -154,6 +153,10 @@ class ProjectsController extends Controller
     {
         $project = $this->checkProjectAndRedirect($projectSlug);
 
+        if ($project instanceof RedirectResponse) {
+            return $project;
+        }
+
         /** @var ProjectDisplayManager $projectDisplayManager */
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
         /** @var AuthorizationChecker $authorizationChecker */
@@ -174,6 +177,7 @@ class ProjectsController extends Controller
             ];
 
             $index = 0;
+            $template['project']['bids']['graph']['maxNotNullIndex'] = 0;
             foreach ($template['project']['bids']['graph']['summary'] as $rateSummary) {
                 if ($rateSummary['activeBidsCount'] > 0) {
                     $template['project']['bids']['graph']['maxNotNullIndex'] = $index;
@@ -218,7 +222,7 @@ class ProjectsController extends Controller
 
         $template['conditions'] = [
             'validatedUser'       => $isFullyConnectedUser,
-            'bids'                => $template['project']['status'] == \projects_status::EN_FUNDING,
+            'bids'                => isset($template['project']['bids']) && $template['project']['status'] == \projects_status::EN_FUNDING,
             'myBids'              => isset($template['lender']) && $template['lender']['bids']['count'] > 0,
             'finance'             => $isFullyConnectedUser,
             'history'             => $isFullyConnectedUser && ($template['project']['status'] == \projects_status::FUNDE || $template['project']['status'] >= \projects_status::REMBOURSEMENT),
@@ -232,19 +236,28 @@ class ProjectsController extends Controller
 
     /**
      * @param string $projectSlug
-     * @return \projects
+     * @return \projects|RedirectResponse
      */
     private function checkProjectAndRedirect($projectSlug)
     {
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \projects $project */
-        $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
+        $project = $entityManager->getRepository('projects');
 
         if (false === $project->get($projectSlug, 'slug')) {
+            /** @var \redirections $redirection */
+            $redirection = $entityManager->getRepository('redirections');
+
+            if ($redirection->get(['from_slug' => $projectSlug, 'status' => 1])) {
+                return new RedirectResponse($redirection->to_slug, $redirection->type);
+            }
+
             throw $this->createNotFoundException();
         }
 
         /** @var \projects_status $projectStatus */
-        $projectStatus = $this->get('unilend.service.entity_manager')->getRepository('projects_status');
+        $projectStatus = $entityManager->getRepository('projects_status');
         $projectStatus->getLastStatut($project->id_project);
 
         if (

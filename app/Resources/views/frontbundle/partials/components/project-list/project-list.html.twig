@@ -14,22 +14,57 @@
             <div id="project-list-view" role="tabpanel" class="tab-pane active">
                 <div class="project-list-filters">
                     <div class="project-list-item-category project-list-filter">
-                        <a href="javascript:;"><span class="label">{% trans %} project-list_table-title-category {% endtrans %}</span> <span class="project-list-filter-order"></span></a>
+                        {% if showSortable %}
+                            <a href="javascript:;">
+                                <span class="label">{% trans %} project-list_table-title-category {% endtrans %}</span>
+                                <span class="project-list-filter-order"></span>
+                            </a>
+                        {% else %}
+                            <span class="label">{% trans %} project-list_table-title-category {% endtrans %}</span>
+                        {% endif %}
                     </div><!-- /.project-list-filter -->
                     <div class="project-list-item-info project-list-filter">
-                        <a href="javascript:;"><span class="label">{% trans %} project-list_table-title-amount {% endtrans %}</span> <span class="project-list-filter-order"></span></a>
+                        {% if showSortable %}
+                            <a href="javascript:;">
+                                <span class="label">{% trans %} project-list_table-title-amount {% endtrans %}</span>
+                                <span class="project-list-filter-order"></span>
+                            </a>
+                        {% else %}
+                            <span class="label">{% trans %} project-list_table-title-amount {% endtrans %}</span>
+                        {% endif %}
                     </div><!-- /.project-list-filter -->
                     <div class="project-list-item-stats project-list-filter">
-                        <a href="javascript:;"><span class="label">{% trans %} project-list_table-title-average-rate {% endtrans %}</span> <span class="project-list-filter-order"></span></a>
+                        {% if showSortable %}
+                            <a href="javascript:;">
+                                <span class="label">{% trans %} project-list_table-title-average-rate {% endtrans %}</span>
+                                <span class="project-list-filter-order"></span>
+                            </a>
+                        {% else %}
+                            <span class="label">{% trans %} project-list_table-title-average-rate {% endtrans %}
+                        {% endif %}
                     </div><!-- /.project-list-filter -->
                     <div class="project-list-item-rating project-list-filter">
-                        <a href="javascript:;"><span class="label">{% trans %} project-list_table-title-risk {% endtrans %}</span> <span class="project-list-filter-order"></span></a>
+                        {% if showSortable %}
+                            <a href="javascript:;">
+                                <span class="label">{% trans %} project-list_table-title-risk {% endtrans %}</span>
+                                <span class="project-list-filter-order"></span>
+                            </a>
+                        {% else %}
+                            <span class="label">{% trans %} project-list_table-title-risk {% endtrans %}</span>
+                        {% endif %}
                     </div><!-- /.project-list-filter -->
                     <div class="project-list-item-period project-list-filter">
-                        <a href="javascript:;"><span class="label">{% trans %} project-list_table-title-remaining-time {% endtrans %}</span> <span class="project-list-filter-order"></span></a>
+                        {% if showSortable %}
+                            <a href="javascript:;">
+                                <span class="label">{% trans %} project-list_table-title-remaining-time {% endtrans %}</span>
+                                <span class="project-list-filter-order"></span>
+                            </a>
+                        {% else %}
+                            <span class="label">{% trans %} project-list_table-title-remaining-time {% endtrans %}</span>
+                        {% endif %}
                     </div><!-- /.project-list-filter -->
                     <div class="project-list-item-view project-list-filter">
-                        <a href="javascript:;"><span class="label">&nbsp;</span></a>
+                        <span class="label">&nbsp;</span>
                     </div><!-- /.project-list-filter -->
                 </div><!-- /.project-list-filters -->
                 <div class="project-list-items">
@@ -101,7 +136,9 @@
                     {% endfor %}
                 </div><!-- /.project-list-items -->
 
-                {% include 'partials/components/project-list/pagination.html.twig' %}
+                {% if showPagination %}
+                    {% include 'partials/components/project-list/pagination.html.twig' %}
+                {% endif %}
             </div><!-- /#project-list-view.tab-pane -->
 
             <div id="project-list-map" role="tabpanel" class="tab-pane">

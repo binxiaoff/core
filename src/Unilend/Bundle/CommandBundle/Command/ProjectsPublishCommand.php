@@ -37,7 +37,7 @@ EOF
         /** @var bool $bHasProjectPublished */
         $bHasProjectPublished = false;
 
-        $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::AUTO_BID_PLACED, "AND p.date_publication_full <= NOW()", '', '', '', false);
+        $aProjectToFund = $oProject->selectProjectsByStatus([\projects_status::AUTO_BID_PLACED], "AND p.date_publication_full <= NOW()", [], '', '', false);
         $oLogger->info('Number of projects to publish: ' . count($aProjectToFund), array('class' => __CLASS__, 'function' => __FUNCTION__));
 
         foreach ($aProjectToFund as $aProject) {
@@ -208,7 +208,7 @@ EOF
             'annee'           => date('Y')
         );
 
-        /** @var \textes $translations */
+        /** @var \translations $translations */
         $translations                          = $oEntityManager->getRepository('textes');
         $aTranslations['email-nouveau-projet'] = $translations->selectFront('email-nouveau-projet', 'fr');
 

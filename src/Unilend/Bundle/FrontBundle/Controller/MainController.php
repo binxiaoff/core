@@ -13,11 +13,15 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
+use Symfony\Component\Translation\Translator;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
+use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
+use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 use Unilend\Bundle\FrontBundle\Service\TestimonialManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
@@ -36,7 +40,7 @@ class MainController extends Controller
      */
     public function homeAction($type)
     {
-        $aTemplateVariables = array();
+        $template = array();
 
         /** @var TestimonialManager $testimonialService */
         $testimonialService = $this->get('unilend.frontbundle.service.testimonial_manager');
@@ -48,42 +52,55 @@ class MainController extends Controller
         $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
         /** @var TranslationManager $translationManager */
         $translationManager = $this->get('unilend.service.translation_manager');
+        /** @var AuthorizationChecker $authorizationChecker */
+        $authorizationChecker = $this->get('security.authorization_checker');
 
-        $aTemplateVariables['testimonialPeople'] = $testimonialService->getActiveBattenbergTestimonials();
-        $aTemplateVariables['videoHeroes']       = [
+        $template['testimonialPeople'] = $testimonialService->getActiveBattenbergTestimonials();
+        $template['videoHeroes']       = [
             'Lenders'   => $testimonialService->getActiveVideoHeroes('preter'),
             'Borrowers' => $testimonialService->getActiveVideoHeroes('emprunter')
         ];
-        $aTemplateVariables['showWelcomeOffer']  = $welcomeOfferManager->displayOfferOnHome();
-        $aTemplateVariables['loanPeriods']       = $projectManager->getPossibleProjectPeriods();
-        $aTemplateVariables['projectAmountMax']  = $projectManager->getMaxProjectAmount();
-        $aTemplateVariables['projectAmountMin']  = $projectManager->getMinProjectAmount();
-        $aTemplateVariables['borrowingMotives']  = $translationManager->getTranslatedBorrowingMotiveList();
-        $aTemplateVariables['showPagination']    = false;
+        $template['showWelcomeOffer']  = $welcomeOfferManager->displayOfferOnHome();
+        $template['loanPeriods']       = $projectManager->getPossibleProjectPeriods();
+        $template['projectAmountMax']  = $projectManager->getMaxProjectAmount();
+        $template['projectAmountMin']  = $projectManager->getMinProjectAmount();
+        $template['borrowingMotives']  = $translationManager->getTranslatedBorrowingMotiveList();
+        $template['showPagination']    = false;
+        $template['showSortable']      = false;
+
+        /** @var BaseUser $user */
+        $user = $this->getUser();
 
         if (
-            $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
-            && $this->get('security.authorization_checker')->isGranted('ROLE_LENDER')
+            $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY')
+            && $authorizationChecker->isGranted('ROLE_LENDER')
         ) {
-            /** @var BaseUser $user */
-            $user = $this->getUser();
-
             /** @var \lenders_accounts $lenderAccount */
             $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
             $lenderAccount->get($user->getClientId(), 'id_client_owner');
 
-            $aTemplateVariables['projects'] = $projectDisplayManager->getProjectsList(
+            $template['projects'] = $projectDisplayManager->getProjectsList(
                 [\projects_status::EN_FUNDING],
-                'p.date_retrait_full ASC',
+                [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC],
                 null,
                 null,
                 $lenderAccount
             );
         } else {
-            $aTemplateVariables['projects'] = $projectDisplayManager->getProjectsList(
+            $template['projects'] = $projectDisplayManager->getProjectsList(
                 [\projects_status::EN_FUNDING],
-                'p.date_retrait_full ASC'
+                [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC]
             );
+        }
+
+        $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower);
+
+        if (false === $isFullyConnectedUser) {
+            /** @var Translator $translator */
+            $translator = $this->get('translator');
+            array_walk($template['projects'], function(&$project) use ($translator) {
+                $project['title'] = $translator->trans('company-sector_sector-' . $project['company']['sectorId']);
+            });
         }
 
         //TODO replace switch by cookie check
@@ -100,7 +117,7 @@ class MainController extends Controller
                 break;
         };
 
-        return $this->render($sTemplateToRender, $aTemplateVariables);
+        return $this->render($sTemplateToRender, $template);
     }
 
     /**
@@ -176,11 +193,20 @@ class MainController extends Controller
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var \redirections $redirection */
+        $redirection = $entityManager->getRepository('redirections');
+
+        $slug = substr($request->attributes->get('routeDocument')->getPath(), 1);
+
+        if ($redirection->get(['from_slug' => $slug, 'status' => 1])) {
+            return new RedirectResponse($redirection->to_slug, $redirection->type);
+        }
+
         /** @var \tree $tree */
         $tree = $entityManager->getRepository('tree');
 
-        if (false === $tree->get(['slug' => substr($request->attributes->get('routeDocument')->getPath(), 1)])) {
-            throw new NotFoundHttpException('Page with slug ' . $request->attributes->get('routeDocument')->getPath() . ' could not be found');
+        if (false === $tree->get(['slug' => $slug])) {
+            throw new NotFoundHttpException('Page with slug ' . $slug . ' could not be found');
         }
 
         /** @var MemcacheCachePool $cachePool */

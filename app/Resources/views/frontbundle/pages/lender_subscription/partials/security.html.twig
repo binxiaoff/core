@@ -1,12 +1,12 @@
 <fieldset class="panel">
     <div class="row row-multi-col-computer">
         <div class="form-field col-lg-6 col-md-6">
-            <label for="form-lender-email">{% trans %} lender-subscription_identity-form-email-label {% endtrans %}
+            <label for="form-lender-email">{% trans %} lender-subscription_security-form-email-label {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
             <input id="form-lender-email" type="email" name="client_email" value="{{ formData.client_email }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
         </div><!-- /.form-field -->
         <div class="form-field col-lg-6 col-md-6">
-            <label for="form-lender-email-conf">{% trans %} lender-subscription_identity-form-email-confirmation-label {% endtrans %}
+            <label for="form-lender-email-conf">{% trans %} lender-subscription_security-form-email-confirmation-label {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
             <div class="input-group">
                 <input id="form-lender-person-email-conf" type="email" name="client_email_confirmation" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-samevalueas="#form-lender-person-email"/>
@@ -16,31 +16,30 @@
 
     <div class="row row-multi-col-computer">
         <div class="form-field col-lg-6 col-md-6">
-            <label for="form-lender-pwd">{% trans %} lender-subscription_identity-form-password-label {% endtrans %}
+            <label for="form-lender-pwd">{% trans %} lender-subscription_security-form-password-label {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
-            <input id="form-lender-pwd" type="password" name="client_password" value="" class="input-field" data-passwordcheck data-formvalidation-input data-formvalidation-required="true" data-formvalidation-minlength="8"/>
+            <input id="form-lender-pwd" type="password" name="client_password" value="" class="input-field" data-passwordcheck data-formvalidation-input data-formvalidation-required="true" data-formvalidation-minlength="6"/>
         </div><!-- /.form-field -->
         <div class="form-field col-lg-6 col-md-6">
-            <label for="form-lender-pwd-conf">{% trans %} lender-subscription_identity-form-password-confirmation-label {% endtrans %}
+            <label for="form-lender-pwd-conf">{% trans %} lender-subscription_security-form-password-confirmation-label {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
             <div class="input-group">
-                <input id="form-lender-pwd-conf" type="password" name="client_password_confirmation" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" />
-                {#data-formvalidation-samevalueas="#form-lender-pwd"#}
+                <input id="form-lender-pwd-conf" type="password" name="client_password_confirmation" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-samevalueas="#form-lender-pwd"/>
             </div>
         </div><!-- /.form-field -->
     </div>
 <div class="row">
     <div class="form-field">
-        <label for="form-lender-security-question">Spécifiez une question secrète
+        <label for="form-lender-security-question">{% trans %} lender-subscription_security-form-secret-question-label {% endtrans %}
             <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
         <input id="form-lender-security-question" type="text" name="client_secret_question" class="input-field" data-formvalidation-input data-formvalidation-required="true">
-        <div class="field-help">Cette question vous sera posée dans le cas où vous auriez oublié votre mot de passe.</div>
+        <div class="field-help">{% trans %} lender-subscription_security-form-secret-question-info {% endtrans %}</div>
     </div><!-- /.form-field -->
 </div>
 
 <div class="row">
     <div class="form-field">
-        <label for="form-lender-security-question-a">Saisissez la réponse à cette question secrète
+        <label for="form-lender-security-question-a">{% trans %} lender-subscription_security-form-secret-answer-label {% endtrans %}
             <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
         <input type="text" id="form-lender-secret-answer" name="client_secret_answer" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" />
     </div><!-- /.form-field -->
