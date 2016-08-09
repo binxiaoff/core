@@ -148,6 +148,11 @@
                     <input type="button" onclick="valid_rejete_etape7(3, <?= $this->projects->id_project ?>)" class="btn" value="Sauvegarder">
                 <?php endif; ?>
                 <?php if ($this->current_projects_status->status == \projects_status::COMITE): ?>
+                    <input id="note_comite" type="hidden" value="<?= $this->projects_notes->note_comite ?>" />
+                    <input id="min_rate" type="hidden" value="<?= isset($this->rate_min) ? $this->rate_min : '' ?>" />
+                    <input id="max_rate" type="hidden" value="<?= isset($this->rate_max) ? $this->rate_max : '' ?>" />
+                    <input id="amount" type="hidden" value="<?= $this->projects->amount ?>" />
+                    <input id="period" type="hidden" value="<?= $this->projects->period ?>" />
                     <input type="button" onclick="valid_rejete_etape7(1, <?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape7" style="background:#009933;border-color:#009933;" value="Valider">
                     <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/7/<?= $this->projects->id_project ?>" class="btn btnValid_rejet_etape7 btn_link thickbox" style="background:#CC0000;border-color:#CC0000;">Rejeter</a>
                     <input type="button" onclick="valid_rejete_etape7(4, <?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape7" value="Plus d'informations">

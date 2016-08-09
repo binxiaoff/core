@@ -622,12 +622,26 @@ function valid_rejete_etape6(status, id_project) {
 }
 
 function valid_rejete_etape7(status, id_project) {
-    if (status == 1) var message = 'valider';
+    var validation_message = '',
+        rate_message       = '';
+    if (status == 1) {
+        if ($('#min_rate').val() != '' && $('#max_rate').val() != '') {
+            var min_rate     = parseFloat($('#min_rate').val().replace(',', '.')),
+                max_rate     = parseFloat($('#max_rate').val().replace(',', '.')),
+                rate_message = '\nTaux (min / max) indicatif : ' + min_rate + ' % / ' + max_rate + ' %';
+        }
+        var message            = 'valider',
+            note_comite        = parseFloat($('#note_comite').val().replace(',', '.')),
+            amount             = parseFloat($('#amount').val().replace(',', '.')),
+            period             = parseFloat($('#period').val().replace(',', '.')),
+            validation_message = 'Note comité : ' + note_comite + ' / 10 \nMontant du projet : ' + amount + ' euros \nDurée du projet : ' + period + ' mois' + rate_message + '\n';
+
+    }
     else if (status == 2) var message = 'rejeter';
     else if (status == 3) var message = 'sauvegarder';
     else if (status == 4) var message = 'vouloir plus d\'informations sur';
 
-    if (confirm('Etes vous sur de ' + message + ' le dossier ?') == true) {
+    if (confirm(validation_message + 'Etes vous sur de ' + message + ' le dossier ?') == true) {
         var structure                       = parseFloat($('#structure_comite').val().replace(',', '.')),
             rentabilite                     = parseFloat($('#rentabilite_comite').val().replace(',', '.')),
             tresorerie                      = parseFloat($('#tresorerie_comite').val().replace(',', '.')),
@@ -637,6 +651,7 @@ function valid_rejete_etape7(status, id_project) {
             marche_opere                    = parseFloat($('#marche_opere_comite').html().replace(',', '.')),
             dirigeance                      = parseFloat($('#dirigeance_comite').val().replace(',', '.')),
             indicateur_risque_dynamique     = parseFloat($('#indicateur_risque_dynamique_comite').val().replace(',', '.')),
+            note_comite                     = parseFloat($('#note_comite').val().replace(',', '.')),
             avis_comite                     = ckedAvis_comite.getData(),
             rejection_reason                = $('#rejection_reason option:selected').val(),
             form_ok = true;
@@ -658,6 +673,20 @@ function valid_rejete_etape7(status, id_project) {
         else if (status == 2 && rejection_reason == '') {
             form_ok = false;
             alert('Vous devez renseigner le motif de rejet');
+        }
+        else if (status == 1) {
+            if ($.isNumeric(period) == false || period <= 0) {
+                form_ok = false;
+                alert('Vous devez renseigner la durée du prêt');
+            }
+            else if ($.isNumeric(amount) == false || amount <= 0) {
+                form_ok = false;
+                alert('Vous devez renseigner le montant du prêt');
+            }
+            else if ($.isNumeric(note_comite) == false || note_comite <= 0) {
+                form_ok = false;
+                alert('Vous devez renseigner note pour ce projet');
+            }
         }
 
         if (form_ok == true) {
@@ -704,15 +733,7 @@ function valid_rejete_etape7(status, id_project) {
                         $('.listBtn_etape6').html(btn_etape6);
                     }
                     else if (status == 1) {
-                        $('.content_risk').html(risk);
-                        $('.content_risk').show();
-                        $('.change_statut').show();
-                        $('.content_date_publicaion').show();
-                        $('.content_date_retrait').show();
-
-                        var recharge = '<script type="text/javascript">$("#status").change(function() { if($("#status").val() == 40){ $(".change_statut").hide();}else{$(".change_statut").show();}});</script>';
-
-                        $('.recharge').html(recharge);
+                        location.reload();
                     }
                     else if (status == 2) {
                         parent.$.colorbox.close();
