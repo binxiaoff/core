@@ -632,9 +632,7 @@ function valid_rejete_etape7(status, id_project) {
         }
         var message            = 'valider',
             note_comite        = parseFloat($('#note_comite').val().replace(',', '.')),
-            amount             = parseFloat($('#amount').val().replace(',', '.')),
-            period             = parseFloat($('#period').val().replace(',', '.')),
-            validation_message = 'Note comité : ' + note_comite + ' / 10 \nMontant du projet : ' + amount + ' euros \nDurée du projet : ' + period + ' mois' + rate_message + '\n';
+            validation_message = 'Note comité : ' + note_comite + ' / 10 \nMontant du projet : ' + $('#amount').val() + ' euros \nDurée du projet : ' + $('#period').val() + ' mois' + rate_message + '\n';
 
     }
     else if (status == 2) var message = 'rejeter';
@@ -651,7 +649,6 @@ function valid_rejete_etape7(status, id_project) {
             marche_opere                    = parseFloat($('#marche_opere_comite').html().replace(',', '.')),
             dirigeance                      = parseFloat($('#dirigeance_comite').val().replace(',', '.')),
             indicateur_risque_dynamique     = parseFloat($('#indicateur_risque_dynamique_comite').val().replace(',', '.')),
-            note_comite                     = parseFloat($('#note_comite').val().replace(',', '.')),
             avis_comite                     = ckedAvis_comite.getData(),
             rejection_reason                = $('#rejection_reason option:selected').val(),
             form_ok = true;
