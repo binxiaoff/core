@@ -44,7 +44,7 @@
 
         <section id="homepre-section-steps" class="page-section">
             <div class="site-wrap">
-                <h1 class="h2">{% trans %} home-lender_lending-seps-title {% endtrans %}</h1>
+                <h1 class="h2">{% trans %} home-lender_lending-steps-title {% endtrans %}</h1>
                 <div class="row">
                     <div class="col-lg-4 col-md-4">
                         <div class="promo">
@@ -113,11 +113,10 @@
                                 {{ svgimage('#promo-saving', '', 190, 190, 'none') | raw }}
                             </div>
                             <h3 class="promo-highlight">
-                                <span class="ui-text-count" data-start-count="0" data-end-count="100" data-total-time="3000" data-round-float="ceil" data-tween-count="easeOutQuint">
-                                </span>
-                                <sup>{% trans %} home-lender_unilend-fact-1-title {% endtrans %}</sup>
+                                <span class="ui-text-count" data-start-count="0" data-end-count="100" data-total-time="3000" data-round-float="ceil" data-tween-count="easeOutQuint"></span>
+                                <sup>%</sup>
                             </h3>
-                            <p>{% trans %} home-lender_unilend-fact-1-text {% endtrans %}</p>
+                            <p>{% trans %} home-lender_unilend-stats-saving-text {% endtrans %}</p>
                         </div><!-- /.promo -->
                     </div>
 
@@ -127,11 +126,10 @@
                                 {{ svgimage('#promo-linechart', '', 190, 190, 'none') | raw }}
                             </div>
                             <h3 class="promo-highlight">
-                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ stats.irrUnilend }}" data-total-time="3000" data-tween-count="easeOutQuint">
-                                </span>
-                                <sup>{% trans %} home-lender_unilend-fact-2-title {% endtrans %}</sup>
+                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ getStatistic('unilendIRR')|round(1, 'floor')|localizednumber }}" data-total-time="3000" data-tween-count="easeOutQuint"></span>
+                                <sup>%</sup>
                             </h3>
-                            <p>{% trans %} home-lender_unilend-fact-2-text {% endtrans %}</p>
+                            <p>{% trans %} home-lender_unilend-stats-linechart-text {% endtrans %}</p>
                         </div>
                     </div><!-- /.promo -->
 
@@ -141,11 +139,10 @@
                                 {{ svgimage('#promo-piggybank', '', 190, 190, 'none') | raw }}
                             </div>
                             <h3 class="promo-highlight">
-                               <span class="ui-text-count" data-start-count="0" data-end-count="20" data-total-time="3000" data-round-float="ceil" data-tween-count="easeOutQuint">
-                                </span>
-                                <sup>{% trans %} home-lender_unilend-fact-3-title {% endtrans %}</sup>
+                               <span class="ui-text-count" data-start-count="0" data-end-count="20" data-total-time="3000" data-round-float="ceil" data-tween-count="easeOutQuint"></span>
+                                <sup>€</sup>
                             </h3>
-                            <p>{% trans %} home-lender_unilend-fact-3-text {% endtrans %}</p>
+                            <p>{% trans %} home-lender_unilend-stats-piggybank-text {% endtrans %}</p>
                         </div><!-- /.promo -->
                     </div>
                 </div>
