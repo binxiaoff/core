@@ -215,7 +215,7 @@ permalink: route('emprunter')
 
         <section id="homeemp-section-whyborrow" class="page-section">
             <div class="site-wrap">
-                <h2 class="h2">{% trans %} home-borrower_why-borrow-facts-title {% endtrans %}</h2>
+                <h2 class="h2">{% trans %} home-borrower_why-borrow-stats-title {% endtrans %}</h2>
                 <div class="row">
                     <div class="col-lg-4 col-md-4">
                         <div class="promo">
@@ -223,11 +223,12 @@ permalink: route('emprunter')
                                     {{ svgimage('#promo-piggybank', '', 190, 190, 'none')  | raw }}
                                     <img src="{{ siteurlmedia('promos/promo-piggybank-190x190.png') }}" alt="">
                             </div>
+                            {% set piggybankValue = getStatistic('percentageSuccessfullyFinancedProjects')|round|localizednumber %}
                             <h3 class="promo-highlight">
-                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ stats.percentageSuccessFullyFunded }}" data-total-time="3000" data-round-float="ceil"
+                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ piggybankValue }}" data-total-time="3000" data-round-float="ceil"
                                       data-tween-count="easeOutCirc">&nbsp;</span><sup>%</sup>
                             </h3>
-                            <p>{% trans with {'%financedProjects%' : stats.percentageSuccessFullyFunded } %} home-borrower_why-borrow-fact-1-text {% endtrans %}</p>
+                            <p>{% trans with {'%financedProjects%' : piggybankValue } %} home-borrower_why-borrow-stats-piggybank-text {% endtrans %}</p>
                         </div><!-- /.promo -->
                     </div>
                     <div class="col-lg-4 col-md-4">
@@ -236,11 +237,12 @@ permalink: route('emprunter')
                                     {{ svgimage('#promo-calendarweek', '', 190, 190, 'none')  | raw }}
                                     <img src="{{ siteurlmedia('promos/promo-calendar-190x190.png') }}" alt="">
                             </div>
+                            {% set calendarweekValue = getStatistic('averageFundingTime') %}
                             <h3 class="promo-highlight">
-                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ stats.avgFundingTime.days }}" data-total-time="3000" data-round-float="ceil"
+                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ calendarweekValue.days }}" data-total-time="3000" data-round-float="ceil"
                                       data-tween-count="easeOutCirc">&nbsp;</span><sup>&nbsp;</sup>
                             </h3>
-                            <p>{% trans with { '%avgFundingTime%' : stats.avgFundingTime.days } %} home-borrower_why-borrow-fact-2-text {% endtrans %}</p>
+                            <p>{% trans with { '%avgFundingTime%' : calendarweekValue.days } %} home-borrower_why-borrow-stats-calendarweek-text {% endtrans %}</p>
                         </div>
                     </div><!-- /.promo -->
                     <div class="col-lg-4 col-md-4">
@@ -250,7 +252,7 @@ permalink: route('emprunter')
                                     <img src="{{ siteurlmedia('promos/promo-certificate-190x190.png') }}" alt="">
                             </div>
                             <h3 class="promo-highlight"><span>0</span><sup>&nbsp;</sup></h3>
-                            <p>{% trans %} home-borrower_why-borrow-fact-3-text {% endtrans %}</p>
+                            <p>{% trans %} home-borrower_why-borrow-stats-verified-text {% endtrans %}</p>
                         </div><!-- /.promo -->
                     </div>
                 </div>

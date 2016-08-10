@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Cache\Adapter\Memcache\MemcacheCachePool;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Service\MapsService;
 
@@ -9,17 +10,19 @@ class StatisticsManager
 {
     /** @var  EntityManager */
     private $entityManager;
-
     /** @var  IRRManager */
     private $IRRManager;
     /** @var  mapsService */
     private $mapsService;
+    /** @var MemcacheCachePool */
+    private $cachePool;
 
-    public function __construct(EntityManager $entityManager, IRRManager $IRRManager, MapsService $mapsService)
+    public function __construct(EntityManager $entityManager, IRRManager $IRRManager, MapsService $mapsService, MemcacheCachePool $cachePool)
     {
         $this->entityManager = $entityManager;
         $this->IRRManager    = $IRRManager;
         $this->mapsService   = $mapsService;
+        $this->cachePool     = $cachePool;
     }
 
     public function getAllStatistics()
@@ -192,76 +195,158 @@ class StatisticsManager
         return $aStatistics;
     }
 
-    public function getNumberOfLenders()
+    /**
+     * @param string $name
+     */
+    public function getStatistic($name)
     {
-        $iNumberLenders = '';
-
-        //TODO check if value is in cache
-        //cache duration 24h
-
-        /** @var \lenders_accounts $lenders */
-        $lenders                   = $this->entityManager->getRepository('lenders_accounts');
-        $iNumberLendersInCommunity = $lenders->countLenders();
-        return $iNumberLendersInCommunity;
+        $function  = 'get' . ucfirst($name);
+        return call_user_func([$this, $function]);
     }
 
-    public function getNumberOfFinancedProjects()
+    public function getNumberOfLendersInCommunity()
     {
-        $iNumberProjects = '';
+        $cachedItem = $this->cachePool->getItem('numberOfLendersInCommunity');
 
-        //TODO check if value is in cache
-        //cache duration 24h
-        /** @var \projects $projects */
-        $projects          = $this->entityManager->getRepository('projects');
-        $iNumberOfProjects = $projects->countSelectProjectsByStatus(implode(',', \projects_status::$afterRepayment));
+        if (false === $cachedItem->isHit()) {
+            /** @var \lenders_accounts $lenders */
+            $lenders = $this->entityManager->getRepository('lenders_accounts');
+            /** @var int $numberOfLendersInCommunity */
+            $numberOfLendersInCommunity = $lenders->countLenders();
+            $cachedItem->set($numberOfLendersInCommunity)->expiresAfter(86400);
+            $this->cachePool->save($cachedItem);
 
-        return $iNumberOfProjects;
-    }
-
-    public function getAmountBorrowed()
-    {
-        $iAmountBorrowed = '';
-
-        //TODO check if value is in cache
-        //ideally no cache at all
-
-
-        /** @var \transactions $transactions */
-        $transactions    = $this->entityManager->getRepository('transactions');
-        $iBorrowedAmount = bcdiv($transactions->sum('type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, 'montant_unilend-montant'), 100);
-        return $iBorrowedAmount;
+            return $numberOfLendersInCommunity;
+        } else {
+            return $cachedItem->get();
+        }
     }
 
     public function getNumberOfActiveLenders()
     {
-        /** @var \lenders_accounts $lenders */
-        $lenders                = $this->entityManager->getRepository('lenders_accounts');
-        $iNumberOfActiveLenders = $lenders->countLenders(true);
+        $cachedItem = $this->cachePool->getItem('numberOfActiveLenders');
 
-        return $iNumberOfActiveLenders;
+        if (false === $cachedItem->isHit()) {
+            /** @var \lenders_accounts $lenders */
+            $lenders = $this->entityManager->getRepository('lenders_accounts');
+            /** @var int $numberOfActiveLenders */
+            $numberOfActiveLenders = $lenders->countLenders(true);
+            $cachedItem->set($numberOfActiveLenders)->expiresAfter(86400);
+            $this->cachePool->save($cachedItem);
+
+            return $numberOfActiveLenders;
+        } else {
+            return $cachedItem->get();
+        }
+    }
+
+    public function getNumberOfFinancedProjects()
+    {
+        $cachedItem = $this->cachePool->getItem('numberOfFinancedProjects');
+
+        if (false === $cachedItem->isHit()) {
+            /** @var \projects $projects */
+            $projects = $this->entityManager->getRepository('projects');
+            /** @var int $numberOfProjects */
+            $numberOfProjects = $projects->countSelectProjectsByStatus(implode(',', \projects_status::$afterRepayment));
+            $cachedItem->set($numberOfProjects)->expiresAfter(3600);
+            $this->cachePool->save($cachedItem);
+
+            return $numberOfProjects;
+        } else {
+            return $cachedItem->get();
+        }
+    }
+
+    public function getAmountBorrowed()
+    {
+        $cachedItem = $this->cachePool->getItem('amountBorrowed');
+
+        if (false === $cachedItem->isHit()) {
+            /** @var \transactions $transactions */
+            $transactions    = $this->entityManager->getRepository('transactions');
+            /** @var int $amountBorrowed */
+            $amountBorrowed = bcdiv($transactions->sum('type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, 'montant_unilend-montant'), 100);
+            $cachedItem->set($amountBorrowed)->expiresAfter(3600);
+            $this->cachePool->save($cachedItem);
+
+            return $amountBorrowed;
+        } else {
+            return $cachedItem->get();
+        }
     }
 
     public function getUnilendIRR()
     {
-        $aLastUnilendIRR = $this->IRRManager->getLastUnilendIRR();
-        return $aLastUnilendIRR['value'];
+        $cachedItem = $this->cachePool->getItem('unilendIRR');
+
+        if (false === $cachedItem->isHit()) {
+            /** @var array $lastUnilendIRR */
+            $lastUnilendIRR = $this->IRRManager->getLastUnilendIRR();
+            $cachedItem->set($lastUnilendIRR['value'])->expiresAfter(86400);
+            $this->cachePool->save($cachedItem);
+
+            return $lastUnilendIRR['value'];
+        } else {
+            return $cachedItem->get();
+        }
     }
 
     public function getPercentageSuccessfullyFinancedProjects()
     {
-        /** @var \projects_status_history $projectStatusHistory */
-        $projectStatusHistory = $this->entityManager->getRepository('projects_status_history');
-        $aCountByStatus = $projectStatusHistory->countProjectsHavingHadStatus(array(\projects_status::EN_FUNDING, \projects_status::FUNDE));
+        $cachedItem = $this->cachePool->getItem('percentageSuccessfullyFinancedProjects');
 
-        $sPercentageSuccessfullyFunded = bcmul(bcdiv($aCountByStatus[\projects_status::FUNDE], $aCountByStatus[\projects_status::EN_FUNDING], 4), 100);
-        return $sPercentageSuccessfullyFunded;
+        if (false === $cachedItem->isHit()) {
+            /** @var \projects_status_history $projectStatusHistory */
+            $projectStatusHistory = $this->entityManager->getRepository('projects_status_history');
+            /** @var array $countByStatus */
+            $countByStatus = $projectStatusHistory->countProjectsHavingHadStatus([\projects_status::EN_FUNDING, \projects_status::FUNDE]);
+            /** @var string $percentageSuccessfullyFunded */
+            $percentageSuccessfullyFunded = bcmul(bcdiv($countByStatus[\projects_status::FUNDE], $countByStatus[\projects_status::EN_FUNDING], 4), 100);
+            $cachedItem->set($percentageSuccessfullyFunded)->expiresAfter(3600);
+            $this->cachePool->save($cachedItem);
+
+            return $percentageSuccessfullyFunded;
+        } else {
+            return $cachedItem->get();
+        }
     }
 
     public function getAverageFundingTime()
     {
-        /** @var \projects $projects */
-        $projects = $this->entityManager->getRepository('projects');
-        return $projects->getAverageFundingTime();
+        $cachedItem = $this->cachePool->getItem('averageFundingTime');
+
+        if (false === $cachedItem->isHit()) {
+            /** @var \projects $projects */
+            $projects = $this->entityManager->getRepository('projects');
+            /** @var array $averageFundingTime */
+            $averageFundingTime = $projects->getAverageFundingTime();
+
+            $cachedItem->set($averageFundingTime)->expiresAfter(3600);
+            $this->cachePool->save($cachedItem);
+
+            return $averageFundingTime;
+        } else {
+            return $cachedItem->get();
+        }
+    }
+
+    public function getAverageInterestRateForLenders()
+    {
+        $cachedItem = $this->cachePool->getItem('averageInterestRateForLenders');
+
+        if (false === $cachedItem->isHit()) {
+            /** @var \projects $projects */
+            $projects = $this->entityManager->getRepository('projects');
+            /** @var int $averageRate */
+            $averageRate = $projects->getGlobalAverageRateOfFundedProjects(PHP_INT_MAX);
+            $cachedItem->set($averageRate)->expiresAfter(3600);
+            $this->cachePool->save($cachedItem);
+
+            return $averageRate;
+        } else {
+            return $cachedItem->get();
+        }
     }
 
     public function getPercentageSelectedProjects()

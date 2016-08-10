@@ -88,17 +88,19 @@ permalink: route('/')
 
         <section id="homeacq-section-statistics" class="page-section">
             <div class="site-wrap">
-                <h1 class="h2">{% trans %} site-general_unilend-facts-title {% endtrans %}</h1>
+                <h1 class="h2">{% trans %} site-general_unilend-stats-title {% endtrans %}</h1>
                 <div class="row">
                     <div class="col-lg-4 col-md-4">
                         <div class="promo">
                             <div class="promo-image">
                                 {{ svgimage('#promo-projects', '', 190, 190, 'none') | raw }}
                             </div>
+                            {% set valueProjects = ('site-general_unilend-stats-projects-value'|trans != 'site-general_unilend-stats-projects-value') ? getStatistic('numberOfFinancedProjects') : 'site-general_unilend-stats-projects-value'|trans %}
                             <h3 class="promo-highlight">
-                                <span class="ui-text-count" data-start-count="0" data-end-count="223" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">{{ stats.numberProjects }}</span>
+                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ valueProjects }}" data-total-time="3000" data-round-float="round"
+                                      data-tween-count="easeOutCirc"></span>
                             </h3>
-                            <p>{% trans %} site-general_unilend-facts-projects-description {% endtrans %}</p>
+                            <p>{% trans %} site-general_unilend-stats-projects-description {% endtrans %}</p>
                         </div><!-- /.promo -->
                     </div>
 
@@ -107,10 +109,12 @@ permalink: route('/')
                             <div class="promo-image">
                                 {{ svgimage('#promo-money', '', 190, 190, 'none') | raw }}
                             </div>
+                            {% set valueMoney = ('site-general_unilend-stats-money-value'|trans != 'site-general_unilend-stats-money-value') ? (getStatistic('amountBorrowed')/1000000)|round : 'site-general_unilend-stats-money-value'|trans %}
                             <h3 class="promo-highlight">
-                                <span class="ui-text-count" data-start-count="0" data-end-count="16" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">{{ stats.amountBorrowedInMillions }}</span>
-                                M€</h3>
-                            <p>{% trans %} site-general_unilend-facts-millions-descriptiopn {% endtrans %}</p>
+                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ valueMoney }}" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">{{ valueMoney }}</span>
+                                {% trans %} site-general_unilend-stats-money-value {% endtrans %}
+                            </h3>
+                            <p>{% trans %} site-general_unilend-stats-money-description {% endtrans %}</p>
                         </div><!-- /.promo -->
                     </div>
 
@@ -119,10 +123,12 @@ permalink: route('/')
                             <div class="promo-image">
                                 {{ svgimage('#promo-people', '', 190, 190, 'none') | raw }}
                             </div>
+                            {% set valuePeople = ('site-general_unilend-stats-people-value'|trans != 'site-general_unilend-stats-people-value') ? getStatistic('numberOfLendersInCommunity')|localizednumber : 'site-general_unilend-stats-people-value'|trans %}
                             <h3 class="promo-highlight">
-                                <span class="ui-text-count" data-start-count="0" data-end-count="23582" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">{{  stats.numberLenders }}</span>
+                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ valuePeople }}" data-total-time="3000" data-round-float="round"
+                                      data-tween-count="easeOutCirc">{{ valuePeople }}</span>
                             </h3>
-                            <p>{% trans %} site-general_unilend-facts-lenders-description {% endtrans %}</p>
+                            <p>{% trans %} site-general_unilend-stats-people-description {% endtrans %}</p>
                         </div><!-- /.promo -->
                     </div>
                 </div><!-- /.row -->
@@ -152,7 +158,7 @@ permalink: route('/')
                     <div class="row">
                         <div class="col-lg-5 push-lg-1 col-md-5 push-md-1">
                             <div class="card card-preter">
-                                <h4>{% trans with {'%number_lenders%' : stats.numberLenders } %} site-general_unilend-advantages-join-us-title {% endtrans %}</strong></h4>
+                                <h4>{% trans with {'%numberLenders%' : getStatistic('numberOfLendersInCommunity')|localizednumber } %} site-general_unilend-advantages-join-us-title {% endtrans %}</strong></h4>
                                 <div class="card-text">
                                     <ul class="list-checked">
                                         {% trans  %} site-general_unilend-advantages-join-us-description {% endtrans %}

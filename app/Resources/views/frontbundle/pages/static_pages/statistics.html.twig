@@ -1,458 +1,447 @@
-{# A Propos - Statistiques #}
-{% extends 'layouts/_page-single.twig' %}
-
-{# Page data #}
-{% set bodyId = '' %}
-{% set page = {
-id: "apropos-statistiques",
-title: "Statistiques",
-permalink: route('apropos/statistiques'),
-classNames: "page-single-apropos"
-} %}
 
 {# Placeholder Data #}
 {% set placeholderData = {
-  charts: {
-    preterStatisticsMap: {
-      type: 'preterStatisticsMap',
-      loadFirst: {
-        mapGeoJson: ('vendor/geojson/fr-all.geo.json')
-      },
-      background: 'none',
-      highcharts: {
-        chart: {
-          type: 'map'
-        },
-        title: {
-          text: ''
-        },
-        mapNavigation: {
-          enabled: false
-        },
-        legend: {
-          enabled: false
-        },
-        tooltip: {
-          enabled: true,
-          headerFormat: '',
-          pointFormat: '{point.name}: {point.value}%'
-        },
-        colorAxis: {
-          minColor: 'rgba(180,0,102,.1)',
-          maxColor: 'rgba(180,0,102,.8)'
-        },
-        series: [{
-          data: [{
-            "hc-key": "fr-t",
-            "value": 0
-          },{
-            "hc-key": "fr-h",
-            "value": 1
-          },{
-            "hc-key": "fr-e",
-            "value": 2
-          },{
-            "hc-key": "fr-r",
-            "value": 3
-          },{
-            "hc-key": "fr-u",
-            "value": 4
-          },{
-            "hc-key": "fr-n",
-            "value": 5
-          },{
-            "hc-key": "fr-p",
-            "value": 6
-          },{
-            "hc-key": "fr-o",
-            "value": 7
-          },{
-            "hc-key": "fr-v",
-            "value": 8
-          },{
-            "hc-key": "fr-s",
-            "value": 9
-          },{
-            "hc-key": "fr-g",
-            "value": 10
-          },{
-            "hc-key": "fr-k",
-            "value": 11
-          },{
-            "hc-key": "fr-a",
-            "value": 12
-          },{
-            "hc-key": "fr-c",
-            "value": 13
-          },{
-            "hc-key": "fr-f",
-            "value": 14
-          },{
-            "hc-key": "fr-l",
-            "value": 15
-          },{
-            "hc-key": "fr-d",
-            "value": 16
-          },{
-            "hc-key": "fr-b",
-            "value": 17
-          },{
-            "hc-key": "fr-i",
-            "value": 18
-          },{
-            "hc-key": "fr-q",
-            "value": 19
-          },{
-            "hc-key": "fr-j",
-            "value": 20
-          },{
-            "hc-key": "fr-m",
-            "value": 21
-          },{
-            "hc-key": "fr-re",
-            "value": 22
-          },{
-            "hc-key": "fr-yt",
-            "value": 23
-          },{
-            "hc-key": "fr-gf",
-            "value": 24
-          },{
-            "hc-key": "fr-mq",
-            "value": 25
-          },{
-            "hc-key": "fr-gp",
-            "value": 26
-          }],
-          joinBy: 'hc-key',
-          color: 'rgba(180,0,102,.2)',
-          borderColor: '#ffffff',
-          borderWidth: 2,
-          showInLegend: false,
-          dataLabels: {
-            enabled: false
-          },
-          states: {
-            hover: {
-              color: '#B40066'
-            }
-          },
-          showInLegend: false
-        }]
-      }
-    },
+charts: {
+preterStatisticsMap: {
+type: 'preterStatisticsMap',
+loadFirst: {
+mapGeoJson: ('vendor/geojson/fr-all.geo.json')
+},
+background: 'none',
+highcharts: {
+chart: {
+type: 'map'
+},
+title: {
+text: ''
+},
+mapNavigation: {
+enabled: false
+},
+legend: {
+enabled: false
+},
+tooltip: {
+enabled: true,
+headerFormat: '',
+pointFormat: '{point.name}: {point.value}%'
+},
+colorAxis: {
+minColor: 'rgba(180,0,102,.1)',
+maxColor: 'rgba(180,0,102,.8)'
+},
+series: [{
+data: [{
+"hc-key": "fr-t",
+"value": 0
+},{
+"hc-key": "fr-h",
+"value": 1
+},{
+"hc-key": "fr-e",
+"value": 2
+},{
+"hc-key": "fr-r",
+"value": 3
+},{
+"hc-key": "fr-u",
+"value": 4
+},{
+"hc-key": "fr-n",
+"value": 5
+},{
+"hc-key": "fr-p",
+"value": 6
+},{
+"hc-key": "fr-o",
+"value": 7
+},{
+"hc-key": "fr-v",
+"value": 8
+},{
+"hc-key": "fr-s",
+"value": 9
+},{
+"hc-key": "fr-g",
+"value": 10
+},{
+"hc-key": "fr-k",
+"value": 11
+},{
+"hc-key": "fr-a",
+"value": 12
+},{
+"hc-key": "fr-c",
+"value": 13
+},{
+"hc-key": "fr-f",
+"value": 14
+},{
+"hc-key": "fr-l",
+"value": 15
+},{
+"hc-key": "fr-d",
+"value": 16
+},{
+"hc-key": "fr-b",
+"value": 17
+},{
+"hc-key": "fr-i",
+"value": 18
+},{
+"hc-key": "fr-q",
+"value": 19
+},{
+"hc-key": "fr-j",
+"value": 20
+},{
+"hc-key": "fr-m",
+"value": 21
+},{
+"hc-key": "fr-re",
+"value": 22
+},{
+"hc-key": "fr-yt",
+"value": 23
+},{
+"hc-key": "fr-gf",
+"value": 24
+},{
+"hc-key": "fr-mq",
+"value": 25
+},{
+"hc-key": "fr-gp",
+"value": 26
+}],
+joinBy: 'hc-key',
+color: 'rgba(180,0,102,.2)',
+borderColor: '#ffffff',
+borderWidth: 2,
+showInLegend: false,
+dataLabels: {
+enabled: false
+},
+states: {
+hover: {
+color: '#B40066'
+}
+},
+showInLegend: false
+}]
+}
+},
 
-    emprunterStatisticsMap: {
-      type: 'emprunterStatisticsMap',
-      loadFirst: {
-        mapGeoJson: ('bundles/unilendfront/js/vendor/geojson/fr-all.geo.json')
-      },
-      background: 'none',
-      highcharts: {
-        chart: {
-          type: 'map'
-        },
-        title: {
-          text: ''
-        },
-        mapNavigation: {
-          enabled: false
-        },
-        legend: {
-          enabled: false
-        },
-        tooltip: {
-          enabled: true,
-          headerFormat: '',
-          pointFormat: '{point.name}: {point.value}%'
-        },
-        colorAxis: {
-          minColor: 'rgba(180,0,102,.1)',
-          maxColor: 'rgba(180,0,102,.8)'
-        },
-        series: [{
-          data: [{
-            "hc-key": "fr-t",
-            "value": 0
-          },{
-            "hc-key": "fr-h",
-            "value": 1
-          },{
-            "hc-key": "fr-e",
-            "value": 2
-          },{
-            "hc-key": "fr-r",
-            "value": 3
-          },{
-            "hc-key": "fr-u",
-            "value": 4
-          },{
-            "hc-key": "fr-n",
-            "value": 5
-          },{
-            "hc-key": "fr-p",
-            "value": 6
-          },{
-            "hc-key": "fr-o",
-            "value": 7
-          },{
-            "hc-key": "fr-v",
-            "value": 8
-          },{
-            "hc-key": "fr-s",
-            "value": 9
-          },{
-            "hc-key": "fr-g",
-            "value": 10
-          },{
-            "hc-key": "fr-k",
-            "value": 11
-          },{
-            "hc-key": "fr-a",
-            "value": 12
-          },{
-            "hc-key": "fr-c",
-            "value": 13
-          },{
-            "hc-key": "fr-f",
-            "value": 14
-          },{
-            "hc-key": "fr-l",
-            "value": 15
-          },{
-            "hc-key": "fr-d",
-            "value": 16
-          },{
-            "hc-key": "fr-b",
-            "value": 17
-          },{
-            "hc-key": "fr-i",
-            "value": 18
-          },{
-            "hc-key": "fr-q",
-            "value": 19
-          },{
-            "hc-key": "fr-j",
-            "value": 20
-          },{
-            "hc-key": "fr-m",
-            "value": 21
-          },{
-            "hc-key": "fr-re",
-            "value": 22
-          },{
-            "hc-key": "fr-yt",
-            "value": 23
-          },{
-            "hc-key": "fr-gf",
-            "value": 24
-          },{
-            "hc-key": "fr-mq",
-            "value": 25
-          },{
-            "hc-key": "fr-gp",
-            "value": 26
-          }],
-          joinBy: 'hc-key',
-          color: '#B40066',
-          borderColor: '#ffffff',
-          borderWidth: 2,
-          showInLegend: false,
-          dataLabels: {
-            enabled: false
-          },
-          states: {
-            hover: {
-              color: '#B40066'
-            }
-          },
-          showInLegend: false
-        }]
-      }
-    },
+emprunterStatisticsMap: {
+type: 'emprunterStatisticsMap',
+loadFirst: {
+mapGeoJson: ('bundles/unilendfront/js/vendor/geojson/fr-all.geo.json')
+},
+background: 'none',
+highcharts: {
+chart: {
+type: 'map'
+},
+title: {
+text: ''
+},
+mapNavigation: {
+enabled: false
+},
+legend: {
+enabled: false
+},
+tooltip: {
+enabled: true,
+headerFormat: '',
+pointFormat: '{point.name}: {point.value}%'
+},
+colorAxis: {
+minColor: 'rgba(180,0,102,.1)',
+maxColor: 'rgba(180,0,102,.8)'
+},
+series: [{
+data: [{
+"hc-key": "fr-t",
+"value": 0
+},{
+"hc-key": "fr-h",
+"value": 1
+},{
+"hc-key": "fr-e",
+"value": 2
+},{
+"hc-key": "fr-r",
+"value": 3
+},{
+"hc-key": "fr-u",
+"value": 4
+},{
+"hc-key": "fr-n",
+"value": 5
+},{
+"hc-key": "fr-p",
+"value": 6
+},{
+"hc-key": "fr-o",
+"value": 7
+},{
+"hc-key": "fr-v",
+"value": 8
+},{
+"hc-key": "fr-s",
+"value": 9
+},{
+"hc-key": "fr-g",
+"value": 10
+},{
+"hc-key": "fr-k",
+"value": 11
+},{
+"hc-key": "fr-a",
+"value": 12
+},{
+"hc-key": "fr-c",
+"value": 13
+},{
+"hc-key": "fr-f",
+"value": 14
+},{
+"hc-key": "fr-l",
+"value": 15
+},{
+"hc-key": "fr-d",
+"value": 16
+},{
+"hc-key": "fr-b",
+"value": 17
+},{
+"hc-key": "fr-i",
+"value": 18
+},{
+"hc-key": "fr-q",
+"value": 19
+},{
+"hc-key": "fr-j",
+"value": 20
+},{
+"hc-key": "fr-m",
+"value": 21
+},{
+"hc-key": "fr-re",
+"value": 22
+},{
+"hc-key": "fr-yt",
+"value": 23
+},{
+"hc-key": "fr-gf",
+"value": 24
+},{
+"hc-key": "fr-mq",
+"value": 25
+},{
+"hc-key": "fr-gp",
+"value": 26
+}],
+joinBy: 'hc-key',
+color: '#B40066',
+borderColor: '#ffffff',
+borderWidth: 2,
+showInLegend: false,
+dataLabels: {
+enabled: false
+},
+states: {
+hover: {
+color: '#B40066'
+}
+},
+showInLegend: false
+}]
+}
+},
 
-    emprunterStatisticsCategories: {
-      type: 'preterProjectsCategories',
-      background: 'none',
-      highcharts: {
-        chart: {
-          type: 'treemap',
-          spacing: [0, 0, 0, 0]
-        },
-        title: {
-          text: ''
-        },
-        plotOptions: {
-          treemap: {
-            borderColor: '#B40066',
-            borderWidth: 2,
-            dataLabels: {
-              useHTML: true,
-              zIndex: -1
-            }
-          }
-        },
-        tooltip: {
-          enabled: false,
-          useHTML: true
-        },
-        series: [{
-          type: 'treemap',
-          layoutAlgorithm: 'squarified',
-          data: [{
-            name: 'Agriculture',
-            value: 10,
-            svgIconId: '#category-sm-agriculture'
-          },{
-            name: 'Medical',
-            value: 2,
-            svgIconId: '#category-sm-medical'
-          },{
-            name: 'Other',
-            value: 15,
-            svgIconId: '#category-sm-autre'
-          },{
-            name: 'Consultation',
-            value: 3,
-            svgIconId: '#category-sm-consultation'
-          },{
-            name: 'Restauration',
-            value: 15,
-            svgIconId: '#category-sm-restauration'
-          },{
-            name: 'Media',
-            value: 4,
-            svgIconId: '#category-sm-media'
-          },{
-            name: 'Construction',
-            value: 33,
-            svgIconId: '#category-sm-construction'
-          },{
-            name: 'Communication',
-            value: 16,
-            svgIconId: '#category-sm-communication'
-          },{
-            name: 'Hotellerie',
-            value: 7,
-            svgIconId: '#category-sm-hotellerie'
-          },{
-            name: 'Health',
-            value: 3,
-            svgIconId: '#category-sm-health'
-          },{
-            name: 'Industrie',
-            value: 5,
-            svgIconId: '#category-sm-industrie'
-          },{
-            name: 'Informations Technologies',
-            value: 23,
-            svgIconId: '#category-sm-it'
-          },{
-            name: 'Transport',
-            value: 12,
-            svgIconId: '#category-sm-transport'
-          },{
-            name: 'Fashion & textile',
-            value: 12,
-            svgIconId: '#category-sm-textile'
-          }]
-        }]
-      }
-    },
+emprunterStatisticsCategories: {
+type: 'preterProjectsCategories',
+background: 'none',
+highcharts: {
+chart: {
+type: 'treemap',
+spacing: [0, 0, 0, 0]
+},
+title: {
+text: ''
+},
+plotOptions: {
+treemap: {
+borderColor: '#B40066',
+borderWidth: 2,
+dataLabels: {
+useHTML: true,
+zIndex: -1
+}
+}
+},
+tooltip: {
+enabled: false,
+useHTML: true
+},
+series: [{
+type: 'treemap',
+layoutAlgorithm: 'squarified',
+data: [{
+name: 'Agriculture',
+value: 10,
+svgIconId: '#category-sm-agriculture'
+},{
+name: 'Medical',
+value: 2,
+svgIconId: '#category-sm-medical'
+},{
+name: 'Other',
+value: 15,
+svgIconId: '#category-sm-autre'
+},{
+name: 'Consultation',
+value: 3,
+svgIconId: '#category-sm-consultation'
+},{
+name: 'Restauration',
+value: 15,
+svgIconId: '#category-sm-restauration'
+},{
+name: 'Media',
+value: 4,
+svgIconId: '#category-sm-media'
+},{
+name: 'Construction',
+value: 33,
+svgIconId: '#category-sm-construction'
+},{
+name: 'Communication',
+value: 16,
+svgIconId: '#category-sm-communication'
+},{
+name: 'Hotellerie',
+value: 7,
+svgIconId: '#category-sm-hotellerie'
+},{
+name: 'Health',
+value: 3,
+svgIconId: '#category-sm-health'
+},{
+name: 'Industrie',
+value: 5,
+svgIconId: '#category-sm-industrie'
+},{
+name: 'Informations Technologies',
+value: 23,
+svgIconId: '#category-sm-it'
+},{
+name: 'Transport',
+value: 12,
+svgIconId: '#category-sm-transport'
+},{
+name: 'Fashion & textile',
+value: 12,
+svgIconId: '#category-sm-textile'
+}]
+}]
+}
+},
 
-    overviewStatistics: {
-      type: 'preterProjectsOverview',
-      background: 'none',
-      highcharts: {
-        chart: {
-          type: 'pie',
-          height: 300,
-          plotBackgroundColor: null,
-          plotBorderWidth: null,
-          plotShadow: null,
-          spacingTop: 0,
-          spacingBottom: 0
-        },
-        title: {
-          text: ''
-        },
-        subtitle: {
-          text: 'TRI positif au-delà de ce seuil',
-          color: '#999999',
-          floating: true,
-          useHTML: true,
-          verticalAlign: 'middle'
-        },
-        plotOptions: {
-          pie: {
-            borderColor: 'none',
-            borderWidth: 0,
-            showInLegend: true,
-            dataLabels: {
-              enabled: false
-            }
-          }
-        },
-        legend: {
-          symbolRadius: 10
-        },
-        series: [{
-          name: 'Montant',
-          minSize: 120,
-          innerSize: '90%',
-          endAngle: 270,
-          data: [{
-            name: 'Montant Prêté',
-            color: '#5FC5D1',
-            y: 252
-          }]
-        },{
-          name: 'Capital',
-          size: '66%',
-          minSize: 100,
-          innerSize: '90%',
-          endAngle: 270,
-          data: [{
-            name: 'Capital remboursé',
-            color: '#1B88DB',
-            y: 52
-          },{
-            name: 'Capital en attente',
-            color: '#B6D4E4',
-            y: 200
-          },{
-            name: 'Capital en difficulté',
-            color: '#F76965',
-            y: 5
-          }]
-        },{
-          name: 'Intérêts',
-          minSize: 80,
-          size: '33%',
-          innerSize: '90%',
-          endAngle: 330,
-          data: [{
-            name: '',
-            color: '#eeeeee',
-            dataLabels: {
-              enabled: false
-            },
-            showInLegend: false,
-            y: 225,
-            tooltip: false
-          },{
-            name: 'Intérêts reçus',
-            color: '#F2980C',
-            y: 18
-          },{
-            name: 'Intérêts à recevoir',
-            color: '#FFCA2C',
-            y: 46
-          }]
-        }]
-      }
-    }
-  },
+overviewStatistics: {
+type: 'preterProjectsOverview',
+background: 'none',
+highcharts: {
+chart: {
+type: 'pie',
+height: 300,
+plotBackgroundColor: null,
+plotBorderWidth: null,
+plotShadow: null,
+spacingTop: 0,
+spacingBottom: 0
+},
+title: {
+text: ''
+},
+subtitle: {
+text: 'TRI positif au-delà de ce seuil',
+color: '#999999',
+floating: true,
+useHTML: true,
+verticalAlign: 'middle'
+},
+plotOptions: {
+pie: {
+borderColor: 'none',
+borderWidth: 0,
+showInLegend: true,
+dataLabels: {
+enabled: false
+}
+}
+},
+legend: {
+symbolRadius: 10
+},
+series: [{
+name: 'Montant',
+minSize: 120,
+innerSize: '90%',
+endAngle: 270,
+data: [{
+name: 'Montant Prêté',
+color: '#5FC5D1',
+y: 252
+}]
+},{
+name: 'Capital',
+size: '66%',
+minSize: 100,
+innerSize: '90%',
+endAngle: 270,
+data: [{
+name: 'Capital remboursé',
+color: '#1B88DB',
+y: 52
+},{
+name: 'Capital en attente',
+color: '#B6D4E4',
+y: 200
+},{
+name: 'Capital en difficulté',
+color: '#F76965',
+y: 5
+}]
+},{
+name: 'Intérêts',
+minSize: 80,
+size: '33%',
+innerSize: '90%',
+endAngle: 330,
+data: [{
+name: '',
+color: '#eeeeee',
+dataLabels: {
+enabled: false
+},
+showInLegend: false,
+y: 225,
+tooltip: false
+},{
+name: 'Intérêts reçus',
+color: '#F2980C',
+y: 18
+},{
+name: 'Intérêts à recevoir',
+color: '#FFCA2C',
+y: 46
+}]
+}]
+}
+}
+},
 
 "stats": {
 "gross": [{
@@ -615,309 +604,272 @@ classNames: "page-single-apropos"
 }
 } %}
 
-{% block pageContentInner %}
-
-    <nav class="page-navigation">
-        <div class="site-wrap">
-            <ul data-nav-dropdown-menu="mobile">{#
-      #}
-                <li role="presentation"><a href="{{ route('apropos/quisommesnous') }}">Qui sommes-nous&nbsp;?</a></li>{#
-      #}
-                <li role="presentation"><a href="{{ route('apropos/commentcamarche') }}">Comment ça marche&nbsp;?</a>
-                </li>{#
-      #}
-                <li role="presentation"><a href="{{ route('apropos/chartdedeontologie') }}">Charte de déontologie</a>
-                </li>{#
-      #}
-                <li role="presentation" class="active"><a href="{{ route('apropos/statistiques') }}">Statistiques</a>
-                </li>{#
-    #}</ul>
-        </div><!-- /.site-wrap -->
-    </nav><!-- /.page-navigation -->
-
-   <section id="section-intro" class="page-section">
-        <div class="site-wrap">
-            <div class="row">
-                <div class="col-lg-6 col-md-6">
-                    <header class="block-header">
-                        <h1 class="h4">{% trans %} about-us-statistics_general-description-title {% endtrans %}</h1>
-                    </header>
-                </div>
-                <div class="col-lg-6 col-md-6">
-                    <div class="block-text">
-                        <p>Découvrez les dernières statistiques de la communauté Unilend.</p>
-                        <p>Les TPE-PME sont strictement sélectionnées : sur 19 687 demandes de financement reçues, seules 1,2 % ont été proposées à la communauté des prêteurs.</p>
-                        <p>Néanmoins, prêter présente un risque de non-remboursement : répartissez bien vos prêts et ne prêtez que de l'argent dont vous n'avez pas besoin immédiatement.</p>
-                        <p><a href="#todo" class="link">En savoir plus sur comment répartir ses prêts</a></p>
-                    </div>
+<section id="section-intro" class="page-section">
+    <div class="site-wrap">
+        <div class="row">
+            <div class="col-lg-6 col-md-6">
+                <header class="block-header">
+                    <h1 class="h4">{% trans %} about-us-statistics_general-description-title {% endtrans %}</h1>
+                </header>
+            </div>
+            <div class="col-lg-6 col-md-6">
+                <div class="block-text">
+                    <p>Découvrez les dernières statistiques de la communauté Unilend.</p>
+                    <p>Les TPE-PME sont strictement sélectionnées : sur 19 687 demandes de financement reçues, seules 1,2 % ont été proposées à la communauté des prêteurs.</p>
+                    <p>Néanmoins, prêter présente un risque de non-remboursement : répartissez bien vos prêts et ne prêtez que de l'argent dont vous n'avez pas besoin immédiatement.</p>
+                    <p><a href="#todo" class="link">En savoir plus sur comment répartir ses prêts</a></p>
                 </div>
             </div>
-        </div><!-- /.site-wrap -->
-    </section><!-- /.page-section -->
+        </div>
+    </div><!-- /.site-wrap -->
+</section><!-- /.page-section -->
 
-    <div class="bg-bg3">
-        <section id="section-preteurs" class="page-section">
-            <div class="site-wrap">
-                <div class="block-stats block-stats-p1">
-                    <header class="block-stats-header">
-                        <h2>Statistiques prêteurs</h2>
-                    </header>
-                    <div class="block-promos row readable-wrap bg-icon-linechart">
-                        <div class="promo col-lg-6 col-md-6 col-sm-4">
-                            <h3 class="promo-highlight promo-highlight-lg">
-                                <span data-textcount data-start-count="0" data-end-count="5.31" data-total-time="3000" data-limit-decimal="2" data-tween-count="easeOutCirc">5,31</span><sup>%</sup>
-                            </h3>
-                            <p>Taux de rendement<br/>
-                                interne global/an</p>
-                        </div><!-- /.promo -->
-                        <div class="promo col-lg-6 col-md-6 col-sm-4">
-                            <h3 class="promo-highlight promo-highlight-lg">
+<div class="bg-bg3">
+    <section id="section-preteurs" class="page-section">
+        <div class="site-wrap">
+            <div class="block-stats block-stats-p1">
+                <header class="block-stats-header">
+                    <h2>Statistiques prêteurs</h2>
+                </header>
+                <div class="block-promos row readable-wrap bg-icon-linechart">
+                    <div class="promo col-lg-6 col-md-6 col-sm-4">
+                        <h3 class="promo-highlight promo-highlight-lg">
+                            <span data-textcount data-start-count="0" data-end-count="5.31" data-total-time="3000" data-limit-decimal="2" data-tween-count="easeOutCirc">5,31</span><sup>%</sup>
+                        </h3>
+                        <p>Taux de rendement<br/>
+                            interne global/an</p>
+                    </div><!-- /.promo -->
+                    <div class="promo col-lg-6 col-md-6 col-sm-4">
+                        <h3 class="promo-highlight promo-highlight-lg">
                                 <span data-textcount data-start-count="0" data-end-count="8.41" data-total-time="3000" data-limit-decimal="2" data-tween-count="easeOutCirc">
                                     8,41</span><sup>%</sup>
-                            </h3>
-                            <p>Taux d'intérêt<br/>moyen/an</p>
-                        </div><!-- /.promo -->
-                    </div><!-- /.promos -->
-                    <div class="stats-charts row">
-                        <figure class="stats-chart stats-map">
-                            <div class="chart" data-chartview='{{ placeholderData.charts.preterStatisticsMap|json_encode|escape('html_attr') }}'>
-                                {# @todo Chart #}
-                                {# <img src="{{ siteurlmedia('apropos/statistiques/map-fr-repartition.png') }}" alt="" /> #}
-                            </div>
-                            <figcaption><p>Répartition des prêteurs par région</p></figcaption>
-                        </figure>
-                        <div class="stats-members">
-                            <img src="{{ siteurlmedia('apropos/statistiques/icons-members.png') }}" alt="">
-                            <div>
-                                <span class="stats-number"><span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">29&nbsp;221</span></span> membres
-                            </div>
-                            <div>
-                                <span class="stats-number"><span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">9&nbsp;416</span></span> membres
-                            </div>
-                        </div>
-                        <div class="stats-enterprises">
-                            <img src="{{ siteurlmedia('apropos/statistiques/icons-enterprises.png') }}" alt="">
-                            <div>
-                                <span class="stats-number"><span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">98</span><sup>%</sup></span> de particuliers
-                            </div>
-                            <div><span class="stats-number">2<sup>%</sup></span> d'entreprises</div>
-                        </div>
-                    </div><!-- /.stats-map -->
-                    <div class="block-promos row">
-                        <div class="promo col-lg-4 col-md-4">
-                            <h3 class="promo-highlight promo-highlight-lg">
-                                <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">421</span>
-                            </h3>
-                            <p>Préteurs par projet<br/>
-                                en moyenne</p>
-                        </div><!-- /.promo -->
-                        <div class="promo col-lg-4 col-md-4">
-                            <h3 class="promo-highlight promo-highlight-lg">
-                                <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">192</span><sup>€</sup>
-                            </h3>
-                            <p>Montant moyen<br/>
-                                de prét par projet</p>
-                        </div><!-- /.promo -->
-                        <div class="promo col-lg-4 col-md-4">
-                            <h3 class="promo-highlight promo-highlight-lg">
-                                <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">70</span>
-                            </h3>
-                            <p>Rendement positif<br/>
-                                assuré dés 70 prêts</p>
-                        </div><!-- /.promo -->
-                    </div><!-- /.promos -->
-                </div><!-- /.block-stats -->
-            </div>
-        </section><!-- /#section-preteurs -->
-
-        <section id="section-emprunteurs" class="page-section">
-            <div class="site-wrap">
-                <div class="block-stats block-stats-p2">
-                    <header class="block-stats-header">
-                        <h2>Statistiques emprunteurs</h2>
-                    </header>
-                    <div class="block-promos row bg-icon-money">
-                        <div class="promo col-lg-4 col-md-4">
-                            <h3 class="promo-highlight promo-highlight-md">
-                                <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">17&nbsp;962&nbsp;650</span><sup>€</sup>
-                            </h3>
-                            <p>Montant<br/>
-                                total emprunté</p>
-                        </div><!-- /.promo -->
-                        <div class="promo col-lg-4 col-md-4">
-                            <h3 class="promo-highlight promo-highlight-md">
-                                <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">4&nbsp;064&nbsp;783</span><sup>€</sup>
-                            </h3>
-                            <p>Capital<br/>
-                                remboursé</p>
-                        </div><!-- /.promo -->
-                        <div class="promo col-lg-4 col-md-4">
-                            <h3 class="promo-highlight promo-highlight-md">
-                                <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">1&nbsp;224&nbsp;391</span><sup>€</sup>
-                            </h3>
-                            <p>Intérêts bruts<br/>
-                                versés</p>
-                        </div><!-- /.promo -->
-                    </div>
-                    <div class="stats-charts row">
-                        <div class="col-lg-6 col-md-6">
-                            <figure class="stats-chart stats-map">
-                                <div class="chart" data-chartview='{{ placeholderData.charts.emprunterStatisticsMap|json_encode|escape('html_attr') }}'></div>
-                                <figcaption><p>Répartition des emprunters par région</p></figcaption>
-                            </figure>
-                        </div>
-                        <div class="col-lg-6 col-md-6">
-                            <figure class="stats-chart stats-treemap">
-                                <div class="chart" data-chartview='{{ placeholderData.charts.emprunterStatisticsCategories|json_encode|escape('html_attr') }}'></div>
-                                <figcaption><p>Répartition des emprunteurs par secteur d'activité</p></figcaption>
-                            </figure>
-                        </div>
-                    </div><!-- /.stats-map -->
-                    <div class="block-promos row">
-                        <div class="promo col-lg-3 col-md-3">
-                            <h3 class="promo-highlight promo-highlight-md">
-                                <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">46</span><sup>h</sup>
-                            </h3>
-                            <p>1 projet sur 2 financé en 46h</p>
-                        </div><!-- /.promo -->
-                        <div class="promo col-lg-3 col-md-3">
-                            <h3 class="promo-highlight promo-highlight-md">
-                                <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">77&nbsp;425</span><sup>€</sup>
-                            </h3>
-                            <p>Montant moyen emprunté</p>
-                        </div><!-- /.promo -->
-                        <div class="promo col-lg-3 col-md-3">
-                            <h3 class="promo-highlight promo-highlight-md">
-                                <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">97</span><sup>%</sup>
-                            </h3>
-                            <p>Campanges financées avec succès</p>
-                        </div><!-- /.promo -->
-                        <div class="promo col-lg-3 col-md-3">
-                            <h3 class="promo-highlight promo-highlight-md">
-                                <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">232</span><sup>%</sup>
-                            </h3>
-                            <p>Nombre de projets déjà financés</p>
-                        </div><!-- /.promo -->
-                    </div><!-- /.promos -->
-                </div><!-- /.block-stats -->
-            </div><!-- /.site-wrap -->
-        </section><!-- /#section-emprunters -->
-    </div><!-- /.bg-bg3 -->
-
-    <section id="section-records" class="page-section">
-        <div class="site-wrap">
-            <div class="block-promos block-promos-unilend">
-                <header class="promos-header">
-                    <h2>Les records Unilend</h2>
-                </header>
-                <div class="row">
-                    <div class="promo col-lg-4 col-md-4">
-                        <div class="promo-image">
-                            <img src="{{ siteurlmedia('apropos/statistiques/medal-bolt.png') }}" alt=""/>
-                        </div>
-                        <h3 class="promo-highlight promo-highlight-lg">
-                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">312</span><sup>€</sup>
                         </h3>
-                        <p>par minute : record de vitesse de financement d'un projet</p>
-                    </div>
-                    <div class="promo col-lg-4 col-md-4">
-                        <div class="promo-image">
-                            <img src="{{ siteurlmedia('apropos/statistiques/medal-handshake.png') }}" alt=""/>
+                        <p>Taux d'intérêt<br/>moyen/an</p>
+                    </div><!-- /.promo -->
+                </div><!-- /.promos -->
+                <div class="stats-charts row">
+                    <figure class="stats-chart stats-map">
+                        <div class="chart" data-chartview='{{ placeholderData.charts.preterStatisticsMap|json_encode|escape('html_attr') }}'>
+                            {# @todo Chart #}
+                            {# <img src="{{ siteurlmedia('apropos/statistiques/map-fr-repartition.png') }}" alt="" /> #}
                         </div>
-                        <h3 class="promo-highlight promo-highlight-lg">2<sup>min</sup></h3>
-                        <p>une offre de prêt réalisée toutes les 2 minutes sur le site</p>
-                    </div>
-                    <div class="promo col-lg-4 col-md-4">
-                        <div class="promo-image">
-                            <img src="{{ siteurlmedia('apropos/statistiques/medal-clock.png') }}" alt=""/>
+                        <figcaption><p>Répartition des prêteurs par région</p></figcaption>
+                    </figure>
+                    <div class="stats-members">
+                        <img src="{{ siteurlmedia('apropos/statistiques/icons-members.png') }}" alt="">
+                        <div>
+                            <span class="stats-number"><span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">29&nbsp;221</span></span> membres
                         </div>
+                        <div>
+                            <span class="stats-number"><span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">9&nbsp;416</span></span> membres
+                        </div>
+                    </div>
+                    <div class="stats-enterprises">
+                        <img src="{{ siteurlmedia('apropos/statistiques/icons-enterprises.png') }}" alt="">
+                        <div>
+                            <span class="stats-number"><span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">98</span><sup>%</sup></span> de particuliers
+                        </div>
+                        <div><span class="stats-number">2<sup>%</sup></span> d'entreprises</div>
+                    </div>
+                </div><!-- /.stats-map -->
+                <div class="block-promos row">
+                    <div class="promo col-lg-4 col-md-4">
                         <h3 class="promo-highlight promo-highlight-lg">
-                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">45</span><sup>min</sup>
+                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">421</span>
                         </h3>
-                        <p>record de temps de financement d'un projet à 100%</p>
-                    </div>
-                </div>
-            </div><!-- /.promos -->
-        </div><!-- /.site-wrap -->
-    </section><!-- /#section-records -->
-
-    <section id="section-platform" class="page-section bg-bg3">
-        <div class="site-wrap">
-            <div class="block-stats block-stats-unilend">
-                <header class="block-stats-header">
-                    <h2>La performance de la plateforme</h2>
-                </header>
-                <div class="row">
-                    <h3 class="c-t1">Taux de rendement interne global Unilend</h3>
-                    <div class="stats-chart stats-chart-unilend">
-                        <div class="chart" data-chartview='{{ placeholderData.charts.overviewStatistics|json_encode|escape('html_attr') }}'></div>
-                        <div class="stats-chart-unilend-key">
-                            <div class="row">
-                                {% for i, series in placeholderData.charts.overviewStatistics.highcharts.series %}
-                                    {% for j, dataItem in series.data if dataItem.showInLegend is defined and dataItem.showInLegend != false %}
-                                        <div class="chart-key col-lg-4 col-md-4 col-sm-4 col-xs-2">
-                                            <div class="icon" style="background-color: {{ dataItem.color|default(series.color) }}"></div>
-                                            <div class="label">{{ dataItem.name|default(series.name) }}</div>
-                                            <div class="value">{{ dataItem.y|default(series.value) }}€</div>
-                                        </div>
-                                    {% endfor %}
-                                {% endfor %}
-                            </div>
-                        </div><!-- /.stats-chart-unilend-key -->
-                    </div><!-- /.stats-chart-unilend -->
-                </div>
-                <div class="row">
-                    <h3 class="c-t1">Chiffres bruts de la plateform Unilend</h3>
-                    <div class="table-scroll">
-                        <table class="table table-stats-unilend">
-                            <thead>
-                            <tr>
-                                <th class="table-stats-unilend-item-label">&nbsp;</th>
-                                <th class="table-stats-unilend-item-value">2013–2014</th>
-                                <th class="table-stats-unilend-item-value">2015</th>
-                                <th class="table-stats-unilend-item-value">2016</th>
-                                <th class="table-stats-unilend-item-value">Total</th>
-                                </th>
-                            </thead>
-                            <tbody>
-                            {% for i, item in placeholderData.stats.gross %}
-                                <tr>
-                                    {% if item.data is iterable %}
-                                        <td class="table-stats-unilend-item-label">{{ item.label }}</td>
-                                        {% for j, dataItem in item.data %}
-                                            <td class="table-stats-unilend-item-value">{% if dataItem is even or dataItem is odd %}{{ dataItem|__num(0)|nbsp }}{% else %}{{ dataItem }}{% endif %}</td>
-                                        {% endfor %}
-                                    {% else %}
-                                        <td colspan="4" class="table-stats-unilend-item-label">{{ item.label }}</td>
-                                        <td class="table-stats-unilend-item-value">{{ item.data }}</td>
-                                    {% endif %}
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                    </div><!-- /.table-scroll -->
-                </div>
+                        <p>Préteurs par projet<br/>
+                            en moyenne</p>
+                    </div><!-- /.promo -->
+                    <div class="promo col-lg-4 col-md-4">
+                        <h3 class="promo-highlight promo-highlight-lg">
+                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">192</span><sup>€</sup>
+                        </h3>
+                        <p>Montant moyen<br/>
+                            de prét par projet</p>
+                    </div><!-- /.promo -->
+                    <div class="promo col-lg-4 col-md-4">
+                        <h3 class="promo-highlight promo-highlight-lg">
+                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">70</span>
+                        </h3>
+                        <p>Rendement positif<br/>
+                            assuré dés 70 prêts</p>
+                    </div><!-- /.promo -->
+                </div><!-- /.promos -->
             </div><!-- /.block-stats -->
+        </div>
+    </section><!-- /#section-preteurs -->
 
-            <div class="btn-toolbar">
-                <a href="{{ route('projets') }}" class="btn-primary">Voir tous les projets</a>
-            </div><!-- /.btn-toolbar -->
-        </div><!-- /.site-wrap -->
-    </section><!-- /#section-platform -->
-
-{% endblock %}
-
-{% block pageFooter %}
-    <footer class="page-footer">
-        <div class="page-navigate-next-page">
-            <a href="{{ route('apropos/commentcamarche') }}">
-                <div class="site-wrap">
-                    <div class="label">
-                        <div class="small">Lire la suite</div>
-                        <div class="big">Comment ça marche&nbsp;?</div>
+    <section id="section-emprunteurs" class="page-section">
+        <div class="site-wrap">
+            <div class="block-stats block-stats-p2">
+                <header class="block-stats-header">
+                    <h2>Statistiques emprunteurs</h2>
+                </header>
+                <div class="block-promos row bg-icon-money">
+                    <div class="promo col-lg-4 col-md-4">
+                        <h3 class="promo-highlight promo-highlight-md">
+                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">17&nbsp;962&nbsp;650</span><sup>€</sup>
+                        </h3>
+                        <p>Montant<br/>
+                            total emprunté</p>
+                    </div><!-- /.promo -->
+                    <div class="promo col-lg-4 col-md-4">
+                        <h3 class="promo-highlight promo-highlight-md">
+                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">4&nbsp;064&nbsp;783</span><sup>€</sup>
+                        </h3>
+                        <p>Capital<br/>
+                            remboursé</p>
+                    </div><!-- /.promo -->
+                    <div class="promo col-lg-4 col-md-4">
+                        <h3 class="promo-highlight promo-highlight-md">
+                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">1&nbsp;224&nbsp;391</span><sup>€</sup>
+                        </h3>
+                        <p>Intérêts bruts<br/>
+                            versés</p>
+                    </div><!-- /.promo -->
+                </div>
+                <div class="stats-charts row">
+                    <div class="col-lg-6 col-md-6">
+                        <figure class="stats-chart stats-map">
+                            <div class="chart" data-chartview='{{ placeholderData.charts.emprunterStatisticsMap|json_encode|escape('html_attr') }}'></div>
+                            <figcaption><p>Répartition des emprunters par région</p></figcaption>
+                        </figure>
                     </div>
-                </div><!-- /.site-wrap -->
-            </a>
-        </div><!-- /.page-navigate-next-page -->
-    </footer><!-- /.page-footer -->
-{% endblock %}
+                    <div class="col-lg-6 col-md-6">
+                        <figure class="stats-chart stats-treemap">
+                            <div class="chart" data-chartview='{{ placeholderData.charts.emprunterStatisticsCategories|json_encode|escape('html_attr') }}'></div>
+                            <figcaption><p>Répartition des emprunteurs par secteur d'activité</p></figcaption>
+                        </figure>
+                    </div>
+                </div><!-- /.stats-map -->
+                <div class="block-promos row">
+                    <div class="promo col-lg-3 col-md-3">
+                        <h3 class="promo-highlight promo-highlight-md">
+                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">46</span><sup>h</sup>
+                        </h3>
+                        <p>1 projet sur 2 financé en 46h</p>
+                    </div><!-- /.promo -->
+                    <div class="promo col-lg-3 col-md-3">
+                        <h3 class="promo-highlight promo-highlight-md">
+                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">77&nbsp;425</span><sup>€</sup>
+                        </h3>
+                        <p>Montant moyen emprunté</p>
+                    </div><!-- /.promo -->
+                    <div class="promo col-lg-3 col-md-3">
+                        <h3 class="promo-highlight promo-highlight-md">
+                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">97</span><sup>%</sup>
+                        </h3>
+                        <p>Campanges financées avec succès</p>
+                    </div><!-- /.promo -->
+                    <div class="promo col-lg-3 col-md-3">
+                        <h3 class="promo-highlight promo-highlight-md">
+                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">232</span><sup>%</sup>
+                        </h3>
+                        <p>Nombre de projets déjà financés</p>
+                    </div><!-- /.promo -->
+                </div><!-- /.promos -->
+            </div><!-- /.block-stats -->
+        </div><!-- /.site-wrap -->
+    </section><!-- /#section-emprunters -->
+</div><!-- /.bg-bg3 -->
+
+<section id="section-records" class="page-section">
+    <div class="site-wrap">
+        <div class="block-promos block-promos-unilend">
+            <header class="promos-header">
+                <h2>Les records Unilend</h2>
+            </header>
+            <div class="row">
+                <div class="promo col-lg-4 col-md-4">
+                    <div class="promo-image">
+                        <img src="{{ siteurlmedia('apropos/statistiques/medal-bolt.png') }}" alt=""/>
+                    </div>
+                    <h3 class="promo-highlight promo-highlight-lg">
+                        <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">312</span><sup>€</sup>
+                    </h3>
+                    <p>par minute : record de vitesse de financement d'un projet</p>
+                </div>
+                <div class="promo col-lg-4 col-md-4">
+                    <div class="promo-image">
+                        <img src="{{ siteurlmedia('apropos/statistiques/medal-handshake.png') }}" alt=""/>
+                    </div>
+                    <h3 class="promo-highlight promo-highlight-lg">2<sup>min</sup></h3>
+                    <p>une offre de prêt réalisée toutes les 2 minutes sur le site</p>
+                </div>
+                <div class="promo col-lg-4 col-md-4">
+                    <div class="promo-image">
+                        <img src="{{ siteurlmedia('apropos/statistiques/medal-clock.png') }}" alt=""/>
+                    </div>
+                    <h3 class="promo-highlight promo-highlight-lg">
+                        <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">45</span><sup>min</sup>
+                    </h3>
+                    <p>record de temps de financement d'un projet à 100%</p>
+                </div>
+            </div>
+        </div><!-- /.promos -->
+    </div><!-- /.site-wrap -->
+</section><!-- /#section-records -->
+
+<section id="section-platform" class="page-section bg-bg3">
+    <div class="site-wrap">
+        <div class="block-stats block-stats-unilend">
+            <header class="block-stats-header">
+                <h2>La performance de la plateforme</h2>
+            </header>
+            <div class="row">
+                <h3 class="c-t1">Taux de rendement interne global Unilend</h3>
+                <div class="stats-chart stats-chart-unilend">
+                    <div class="chart" data-chartview='{{ placeholderData.charts.overviewStatistics|json_encode|escape('html_attr') }}'></div>
+                    <div class="stats-chart-unilend-key">
+                        <div class="row">
+                            {% for i, series in placeholderData.charts.overviewStatistics.highcharts.series %}
+                                {% for j, dataItem in series.data if dataItem.showInLegend is defined and dataItem.showInLegend != false %}
+                                    <div class="chart-key col-lg-4 col-md-4 col-sm-4 col-xs-2">
+                                        <div class="icon" style="background-color: {{ dataItem.color|default(series.color) }}"></div>
+                                        <div class="label">{{ dataItem.name|default(series.name) }}</div>
+                                        <div class="value">{{ dataItem.y|default(series.value) }}€</div>
+                                    </div>
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+                    </div><!-- /.stats-chart-unilend-key -->
+                </div><!-- /.stats-chart-unilend -->
+            </div>
+            <div class="row">
+                <h3 class="c-t1">Chiffres bruts de la plateform Unilend</h3>
+                <div class="table-scroll">
+                    <table class="table table-stats-unilend">
+                        <thead>
+                        <tr>
+                            <th class="table-stats-unilend-item-label">&nbsp;</th>
+                            <th class="table-stats-unilend-item-value">2013–2014</th>
+                            <th class="table-stats-unilend-item-value">2015</th>
+                            <th class="table-stats-unilend-item-value">2016</th>
+                            <th class="table-stats-unilend-item-value">Total</th>
+                            </th>
+                        </thead>
+                        <tbody>
+                        {% for i, item in placeholderData.stats.gross %}
+                            <tr>
+                                {% if item.data is iterable %}
+                                    <td class="table-stats-unilend-item-label">{{ item.label }}</td>
+                                    {% for j, dataItem in item.data %}
+                                        <td class="table-stats-unilend-item-value">{% if dataItem is even or dataItem is odd %}{{ dataItem|__num(0)|nbsp }}{% else %}{{ dataItem }}{% endif %}</td>
+                                    {% endfor %}
+                                {% else %}
+                                    <td colspan="4" class="table-stats-unilend-item-label">{{ item.label }}</td>
+                                    <td class="table-stats-unilend-item-value">{{ item.data }}</td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div><!-- /.table-scroll -->
+            </div>
+        </div><!-- /.block-stats -->
+
+        <div class="btn-toolbar">
+            <a href="{{ route('projets') }}" class="btn-primary">Voir tous les projets</a>
+        </div><!-- /.btn-toolbar -->
+    </div><!-- /.site-wrap -->
+</section><!-- /#section-platform -->

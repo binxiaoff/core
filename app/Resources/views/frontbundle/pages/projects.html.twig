@@ -13,7 +13,7 @@
             <div class="hero-wrap">
                 <div class="site-wrap">
                     <h2 class="page-title">
-                        {{ 'projects-listing_page-title'|transchoice(projectsInFunding, {'%numberProjects%' : projectsInFunding|__num(0) , '%numberFinancedProjects%' : stats.numberProjects|__num(0) , '%numberActiveLenders%' : stats.numberActiveLenders|__num(0)})|nbsp|raw }}
+                        {{ 'projects-listing_page-title'|transchoice(projectsInFunding, {'%numberProjects%' : projectsInFunding|__num(0) , '%numberFinancedProjects%' : getStatistic('numberOfFinancedProjects')|round , '%numberActiveLenders%' : getStatistic('numberOfActiveLenders')})|nbsp|raw }}
                     </h2>
                 </div><!-- /.site-wrap -->
 

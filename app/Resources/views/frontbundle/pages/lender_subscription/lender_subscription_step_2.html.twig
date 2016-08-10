@@ -50,8 +50,7 @@ permalink: path('lender_subscription_step_2', {'clientHash' : client.hash })
                                             </div>
                                             <h3 class="promo-highlight">
                                                 <span class="ui-text-count" data-start-count="0" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc"
-                                                      data-end-count="{{ 'step-2-statistics-section-saving-value'|trans }}" >
-                                                    {% trans %} lender-subscription_step-2-statistics-section-saving-value {% endtrans %}</span><sup>%</sup>
+                                                      data-end-count="{{ 'lender-subscription_step-2-statistics-section-saving-value'|trans }}" ></span><sup>%</sup>
                                             </h3>
                                             <p>{% trans %} lender-subscription_step-2-statistics-section-saving-text {% endtrans %}</p>
                                         </div><!-- /.promo -->
@@ -61,14 +60,14 @@ permalink: path('lender_subscription_step_2', {'clientHash' : client.hash })
                                                 {{ svgimage('#promo-linechart2', '', 190, 190, 'none') | raw }}
                                             </div>
                                             <h3 class="promo-highlight">
-                                                {% if 'step-2-statistics-section-linechart-value'|trans != 'step-2-statistics-section-linechart-value' %}
-                                                    {% set valueLineChart = stats.irrUnilend %}
+                                                {% if 'lender-subscription_step-2-statistics-section-linechart-value'|trans != 'lender-subscription_step-2-statistics-section-linechart-value' %}
+                                                    {% set valueLineChart = getStatistic('unilendIRR')|round(1, 'floor')|localizednumber %}
                                                 {% else %}
-                                                    {% set 'step-2-statistics-section-linechart-value'|trans %}
+                                                    {% set valueLineChart = 'lender-subscription_step-2-statistics-section-linechart-value'|trans %}
                                                 {% endif %}
                                                 <span class="ui-text-count" data-start-count="0"
-                                                      data-end-count="value"
-                                                      data-total-time="3000" data-tween-count="easeOutQuint">{{ valueLineChart }}</span><sup>%</sup>
+                                                      data-end-count="{{ valueLineChart }}"
+                                                      data-total-time="3000" data-tween-count="easeOutQuint"></span><sup>%</sup>
                                             </h3>
                                             <p>{% trans %} lender-subscription_step-2-statistics-section-linechart-text {% endtrans %}</p>
                                         </div><!-- /.promo -->

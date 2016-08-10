@@ -53,12 +53,13 @@ class FrontBundleExtension extends \Twig_Extension
             new \Twig_SimpleFunction('svgimage', array($this, 'svgImageFunction')),
             new \Twig_SimpleFunction('__', array($this, 'temporaryTranslateFunction')),
             new \Twig_SimpleFunction('siteurlmedia', array($this, 'completeUrlMediaFunction')),
-            new \Twig_SimpleFunction('getStatistics', array($this, 'getStatistics')),
+            new \Twig_SimpleFunction('getStatistics', array($this, 'getStatistics')), //TODO delete
             new \Twig_SimpleFunction('getCategories', array($this, 'getCategoriesForSvg')),
             new \Twig_SimpleFunction('uploadedImage', array($this, 'uploadedImageFunction')),
             new \Twig_SimpleFunction('getMonths', array($this, 'getMonths')),
             new \Twig_SimpleFunction('photo', array($this, 'photo')),
-            new \Twig_SimpleFunction('dictionary', array($this, 'dictionary'))
+            new \Twig_SimpleFunction('dictionary', array($this, 'dictionary')),
+            new \Twig_SimpleFunction('getStatistic', array($this, 'getStatisticFunction')),
         );
     }
 
@@ -157,6 +158,11 @@ class FrontBundleExtension extends \Twig_Extension
     public function getStatistics()
     {
         return $this->statisticsManager->getAllStatistics();
+    }
+
+    public function getStatisticFunction($statisticType)
+    {
+        return $this->statisticsManager->getStatistic($statisticType);
     }
 
     public function getCategoriesForSvg()
