@@ -6,6 +6,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Bundle\FrontBundle\Form\SimpleProjectType;
 use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
@@ -19,7 +20,7 @@ class BorrowerAccountController extends Controller
      * @Route("/espace-emprunteur/projets", name="borrower_account_projects")
      * @Template("borrower_account/projects.html.twig")
      *
-     * @return array
+     * @return array|Response
      */
     public function projectsAction(Request $request)
     {
@@ -76,18 +77,49 @@ class BorrowerAccountController extends Controller
     }
 
     /**
+     *
+     * @param Request $request
+     *
      * @Route("/espace-emprunteur/operations", name="borrower_account_operations")
-     * @Template("borrower_account/operations.html.twig")
+     *
+     * @return array|Response|StreamedResponse
      */
-    public function operationsAction()
+    public function operationsAction(Request $request)
     {
+        if ($request->query->get('action') === 'export') {
+            return $this->operationsExportCsvAction($request);
+        }
+
+        $client              = $this->getClient();
         $projectsPostFunding = $this->getProjectsPostFunding();
+        $projectsIds         = array_column($projectsPostFunding, 'id_project');
 
-        $oDateTimeStart             = new \datetime('NOW - 1 month');
-        $oDateTimeEnd               = new \datetime('NOW');
-        $defaultFilterDate['start'] = $oDateTimeStart->format('d/m/Y');
-        $defaultFilterDate['end']   = $oDateTimeEnd->format('d/m/Y');
+        if ($request->isXmlHttpRequest()) {
+            $filter = $request->query->get('filter');
+            $start  = new \Datetime($filter['start']);
+            $end    = new \Datetime($filter['end']);
 
+            if ($filter['op'] !== 'all') {
+                $operation = (int)$filter['op'];
+            } else {
+                $operation = 0;
+            }
+
+            if ($filter['project'] !== 'all' && in_array($filter['project'], $projectsIds)) {
+                $projectsIds = array($filter['project']);
+            }
+
+            $borrowerOperations = $client->getDataForBorrowerOperations($projectsIds, $start, $end, $operation);
+
+            return $this->json(['html_response' => $this->render('borrower_account/operations_ajax.html.twig', ['operations' => $borrowerOperations])->getContent()]);
+        }
+
+        $start                      = new \Datetime('NOW - 1 month');
+        $end                        = new \Datetime();
+        $defaultFilterDate['start'] = $start->format('d/m/Y');
+        $defaultFilterDate['end']   = $end->format('d/m/Y');
+
+        /**** Document tab *********/
 
         /** @var \projects_pouvoir $projectsPouvoir */
         $projectsPouvoir = $this->get('unilend.service.entity_manager')->getRepository('projects_pouvoir');
@@ -120,7 +152,15 @@ class BorrowerAccountController extends Controller
             }
         }
 
-        return ['invoices' => $clientsInvoices, 'default_filter_date' => $defaultFilterDate, 'post_funding_projects' => $projectsPostFunding];
+        return $this->render(
+            'borrower_account/operations.html.twig',
+            [
+                'default_filter_date'   => $defaultFilterDate,
+                'projects_ids'          => $projectsIds,
+                'invoices'              => $clientsInvoices,
+                'post_funding_projects' => $projectsPostFunding
+            ]
+        );
     }
 
     /**
@@ -151,32 +191,152 @@ class BorrowerAccountController extends Controller
     }
 
     /**
-     * @Route("/espace-emprunteur/operation/csv", name="borrower_operation_export_csv")
+     *
+     * @param Request $request
+     *
+     * @return StreamedResponse
      */
-    public function operationExportCsvAction($project, $start, $end, $transaction)
+    private function operationsExportCsvAction(Request $request)
     {
-        $client = $this->getClient();
-        $aBorrowerOperations = $client->getDataForBorrowerOperations(
-            $project,
-            $start,
-            $end,
-            $transaction
-        );
+        $client              = $this->getClient();
+        $projectsPostFunding = $this->getProjectsPostFunding();
+        $projectsIds         = array_column($projectsPostFunding, 'id_project');
 
-        $sFilename      = 'operations';
-        $aColumnHeaders = array('Opération', 'Référence de projet', 'Date de l\'opération', 'Montant de l\'opération', 'Dont TVA');
+        $filter = $request->query->get('filter');
+        $start  = new \Datetime($filter['start']);
+        $end    = new \Datetime($filter['end']);
 
-        foreach ($aBorrowerOperations as $aOperation) {
-            $aData[] = array(
-                $this->lng['espace-emprunteur']['operations-type-' . $aOperation['type']],
-                $aOperation['id_project'],
-                $this->dates->formatDateMysqltoShortFR($aOperation['date']),
-                number_format($aOperation['montant'], 2, ',', ''),
-                (empty($aOperation['tva']) === false) ? number_format($aOperation['tva'], 2, ',', '') : '0'
-            );
+        if ($filter['op'] !== 'all') {
+            $operation = (int)$filter['op'];
+        } else {
+            $operation = 0;
         }
 
-        $this->exportCSV($aColumnHeaders, $aData, $sFilename);
+        if ($filter['project'] !== 'all' && in_array($filter['project'], $projectsIds)) {
+            $projectsIds = array($filter['project']);
+        }
+
+        $borrowerOperations = $client->getDataForBorrowerOperations($projectsIds, $start, $end, $operation);
+        $translator         = $this->get('unilend.service.translation_manager');
+
+
+        $response = new StreamedResponse();
+        $response->setCallback(function () use ($borrowerOperations, $translator) {
+            $handle = fopen('php://output', 'w+');
+            fputs($handle, "\xEF\xBB\xBF"); // add UTF-8 BOM in order to be compatible to Excel
+            fputcsv($handle, ['Opération', 'Référence de projet', 'Date de l\'opération', 'Montant de l\'opération', 'Dont TVA'], ';');
+
+            foreach ($borrowerOperations as $operation) {
+                $date = (new \DateTime($operation['date']))->format('d/m/Y');
+                fputcsv(
+                    $handle,
+                    [
+                        $translator->selectTranslation('borrower-operation', $operation['type']),
+                        $operation['id_project'],
+                        $date,
+                        number_format($operation['montant'], 2, ',', ''),
+                        (empty($operation['tva']) === false) ? number_format($operation['tva'], 2, ',', '') : '0'
+                    ],
+                    ';'
+                );
+            }
+
+            fclose($handle);
+        });
+
+        $response->setStatusCode(200);
+        $response->headers->set('Content-Type', 'text/csv; charset=utf-8');
+        $response->headers->set('Content-Disposition', 'attachment; filename="export-operations.csv"');
+
+        return $response;
+    }
+
+    /**
+     *
+     * @Route(
+     *     "/espace-emprunteur/export/lender-detail/csv/{type}/{projectId}/{repaymentOrder}",
+     *     requirements={"projectId" = "\d+"},
+     *     defaults={"repaymentOrder" = null},
+     *     name="borrower_account_export_lender_details_csv"
+     * )
+     *
+     * @param $type
+     * @param $projectId
+     * @param $repaymentOrder
+     *
+     * @return StreamedResponse
+     */
+    public function _exportCsvWithLenderDetailsAction($type, $projectId, $repaymentOrder)
+    {
+        /** @var \projects $project */
+        $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
+        $project->get($projectId, 'id_project');
+
+        $translator = $this->get('unilend.service.translation_manager');
+        switch ($type) {
+            case 'l':
+                $aColumnHeaders = array('ID Préteur', 'Nom ou Raison Sociale', 'Prénom', 'Mouvement', 'Montant', 'Date');
+                $sType          = $translator->selectTranslation('borrower-operation', 'mouvement-deblocage-des-fonds');
+                $aData          = $project->getLoansAndLendersForProject();
+                $sFilename      = 'details_prets';
+                break;
+            case 'e':
+                $aColumnHeaders = array(
+                    'ID Préteur',
+                    'Nom ou Raison Sociale',
+                    'Prénom',
+                    'Mouvement',
+                    'Montant',
+                    'Capital',
+                    'Intérets',
+                    'Date'
+                );
+                $sType          = $translator->selectTranslation('borrower-operation', 'mouvement-remboursement');
+                $aData          = $project->getDuePaymentsAndLenders(null, $repaymentOrder);
+                $oDateTime      = \DateTime::createFromFormat('Y-m-d H:i:s', $aData[0]['date']);
+                $sDate          = $oDateTime->format('mY');
+                $sFilename      = 'details_remboursements_' . $projectId . '_' . $sDate;
+                break;
+            default:
+                break;
+        }
+
+        $response = new StreamedResponse();
+        $response->setCallback(function () use ($aData, $sType, $aColumnHeaders) {
+            $handle = fopen('php://output', 'w+');
+            fputs($handle, "\xEF\xBB\xBF"); // add UTF-8 BOM in order to be compatible to Excel
+            fputcsv($handle, $aColumnHeaders, ';');
+
+            foreach ($aData as $key => $row) {
+                $line = $row;
+                if (empty($row['name']) === false) {
+                    $line['nom']    = $row['name'];
+                    $line['prenom'] = null;
+                }
+                $line['name'] = $sType;
+                $line['date'] = (new \DateTime($row['date']))->format('d/m/Y');
+
+                if (empty($row['amount']) === false) {
+                    $line['amount'] = $row['amount'] / 100;
+                }
+
+                if (empty($row['montant']) === false) {
+                    $line['montant'] = $row['montant'] / 100;
+                    $line['capital'] = $row['capital'] / 100;
+                    $line['interets'] = $row['interets'] / 100;
+                }
+
+                fputcsv($handle, $line, ';');
+            }
+
+            fclose($handle);
+        });
+
+        $response->setStatusCode(200);
+        $response->headers->set('Content-Type', 'text/csv; charset=utf-8');
+        $response->headers->set('Content-Disposition', 'attachment; filename="' . $sFilename . '.csv"');
+
+        return $response;
     }
 
     private function getProjectsPreFunding()
