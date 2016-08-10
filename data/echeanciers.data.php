@@ -781,11 +781,14 @@ class echeanciers extends echeanciers_crud
             "person"
           END AS client_type,
           CASE
-            (SELECT
-             IFNULL(resident_etranger, 0)
-             FROM lenders_imposition_history lih
-             WHERE lih.id_lender = la.id_lender_account AND lih.added <= e.date_echeance_reel
-             ORDER BY added DESC LIMIT 1)
+            IFNULL(
+              (SELECT resident_etranger
+                FROM lenders_imposition_history lih
+                WHERE lih.id_lender = la.id_lender_account AND lih.added <= e.date_echeance_reel
+                ORDER BY added DESC
+                LIMIT 1)
+              , 0
+            )
             WHEN 0 THEN "fr"
             ELSE "ww"
           END AS fiscal_residence,
