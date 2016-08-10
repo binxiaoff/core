@@ -5,7 +5,8 @@
     {% block panelHeader %}
       <h3 class="dashboard-panel-title">{% block panelTitle %}{% endblock %}</h3>
       <div class="dashboard-panel-controls">
-        {% block panelControls %}
+        {% block panelControls %}{% endblock %}
+        {% block panelClose %}
           <a href="javascript:;" class="btn-close"><span class="sr-only">Close panel</span></a>
         {% endblock %}
       </div>

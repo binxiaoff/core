@@ -68,6 +68,9 @@ status: 'read'
     <a href="{{ route('user/preter/profile') }}#profile-alerts" class="btn-settings"><span class="sr-only">Settings</span></a>
   {% endblock %}
 
+  {# Remove close control #}
+  {% block panelClose %} {% endblock %}
+
   {# Panel content #}
   {% block panelContent %}
     {{ listNotifications.render({

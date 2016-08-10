@@ -626,13 +626,16 @@
   #}</ul>
   </div>
 
-  <section class="dashboard-panels-content" data-movable-content>
+  <section class="dashboard-panels-content" data-dashboardpanels data-movable-content>
 
     {# Panel - My Account #}
     {% embed 'partials/components/dashboard-panel.twig' %}
-      {% block panelAttributes %}id="myaccount" data-draggable{% endblock %}
-      {% block panelClassNames %}dashboard-panel dashboard-myaccount col-lg-6 col-md-6 col-sm-8 col-xs-4{% endblock %}
+      {% block panelAttributes %}id="myaccount"{% endblock %}
+      {% block panelClassNames %}dashboard-panel dashboard-myaccount ui-draggable col-lg-6 col-md-6 col-sm-8 col-xs-4{% endblock %}
       {% block panelTitle %}Mon compte{% endblock %}
+      {% block panelControls %}
+        <span class="ui-draggable-handle"></span>
+      {% endblock %}
       {% block panelContent %}
         <div class="dashboard-panel-overview">
           <div class="label">Votre solde</div>
@@ -666,9 +669,12 @@
 
     {# Panel - User Level #}
     {% embed 'partials/components/dashboard-panel.twig' %}
-      {% block panelAttributes %}id="userlevel" data-draggable{% endblock %}
-      {% block panelClassNames %}dashboard-panel dashboard-userlevel col-lg-6 col-md-6 col-sm-8 col-xs-4{% endblock %}
+      {% block panelAttributes %}id="userlevel"{% endblock %}
+      {% block panelClassNames %}dashboard-panel dashboard-userlevel ui-draggable col-lg-6 col-md-6 col-sm-8 col-xs-4{% endblock %}
       {% block panelTitle %}Rendement de mon portefeuille{% endblock %}
+      {% block panelControls %}
+        <span class="ui-draggable-handle"></span>
+      {% endblock %}
       {% block panelContent %}
         <div class="dashboard-panel-overview">
           <div class="label">Votre taux de rendement</div>
@@ -696,9 +702,12 @@
 
     {# Panel - My Wallet #}
     {% embed 'partials/components/dashboard-panel.twig' %}
-      {% block panelAttributes %}id="mywallet" data-draggable{% endblock %}
-      {% block panelClassNames %}dashboard-panel dashboard-mywallet col-lg-12 col-md-12 col-sm-8 col-xs-4{% endblock %}
+      {% block panelAttributes %}id="mywallet"{% endblock %}
+      {% block panelClassNames %}dashboard-panel dashboard-mywallet ui-draggable col-lg-12 col-md-12 col-sm-8 col-xs-4{% endblock %}
       {% block panelTitle %}Mon portefeuille (742 offres){% endblock %}
+      {% block panelControls %}
+        <span class="ui-draggable-handle"></span>
+      {% endblock %}
       {% block panelContent %}
         <div class="row tabs">
           <div class="dashboard-mywallet-nav col-lg-2 col-md-3 col-sm-8 col-xs-4">
@@ -787,9 +796,12 @@
 
     {# Panel - My Offers in progress #}
     {% embed 'partials/components/dashboard-panel.twig' %}
-      {% block panelAttributes %}id="myoffers" data-draggable{% endblock %}
-      {% block panelClassNames %}dashboard-panel dashboard-myoffers col-lg-6 col-md-6 col-sm-8 col-xs-4{% endblock %}
+      {% block panelAttributes %}id="myoffers"{% endblock %}
+      {% block panelClassNames %}dashboard-panel dashboard-myoffers ui-draggable col-lg-6 col-md-6 col-sm-8 col-xs-4{% endblock %}
       {% block panelTitle %}Mes offres en cours{% endblock %}
+      {% block panelControls %}
+        <span class="ui-draggable-handle"></span>
+      {% endblock %}
       {% block panelContent %}
         <div class="autolend">
           <div class="autolend-switch">
@@ -837,9 +849,12 @@
 
     {# Panel - Projects to discover #}
     {% embed 'partials/components/dashboard-panel.twig' %}
-      {% block panelAttributes %}id="projects" data-draggable{% endblock %}
-      {% block panelClassNames %}dashboard-panel dashboard-projects col-lg-6 col-md-6 col-sm-8 col-xs-4{% endblock %}
+      {% block panelAttributes %}id="projects"{% endblock %}
+      {% block panelClassNames %}dashboard-panel dashboard-projects ui-draggable col-lg-6 col-md-6 col-sm-8 col-xs-4{% endblock %}
       {% block panelTitle %}Projets à découvrir{% endblock %}
+      {% block panelControls %}
+        <span class="ui-draggable-handle"></span>
+      {% endblock %}
       {% block panelContent %}
         <div class="message">
           <p>12 nouveaux projets depuis votre dernière connexion</p>
@@ -869,9 +884,12 @@
 
     {# Panel - My Remboursements #}
     {% embed 'partials/components/dashboard-panel.twig' %}
-      {% block panelAttributes %}id="myrembourse" data-draggable{% endblock %}
-      {% block panelClassNames %}dashboard-panel dashboard-myrembourse col-lg-12 col-md-12 col-sm-8 col-xs-4{% endblock %}
+      {% block panelAttributes %}id="myrembourse"{% endblock %}
+      {% block panelClassNames %}dashboard-panel dashboard-myrembourse ui-draggable col-lg-12 col-md-12 col-sm-8 col-xs-4{% endblock %}
       {% block panelTitle %}Mes remboursements{% endblock %}
+      {% block panelControls %}
+        <span class="ui-draggable-handle"></span>
+      {% endblock %}
       {% block panelContent %}
         <div class="dashboard-panel-chart">
           <div class="tabs nested-tabs">
@@ -904,9 +922,12 @@
     {# Panel - Autolend (Mobile only) #}
     {# @note keeping it here just in case people change their minds #}
     {# {% embed 'partials/components/dashboard-panel.twig' %}
-      {% block panelAttributes %}id="autolend" data-draggable{% endblock %}
-      {% block panelClassNames %}dashboard-panel dashboard-autolend col-lg-6 col-md-6 col-sm-8 col-xs-4{% endblock %}
+      {% block panelAttributes %}id="autolend"{% endblock %}
+      {% block panelClassNames %}dashboard-panel dashboard-autolend ui-draggable col-lg-6 col-md-6 col-sm-8 col-xs-4{% endblock %}
       {% block panelTitle %}Autolend{% endblock %}
+      {% block panelControls %}
+        <span class="ui-draggable-handle"></span>
+      {% endblock %}
       {% block panelControls %}
         {{ customInput.switch({
           id: 'autolend-enable',

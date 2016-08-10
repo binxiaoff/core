@@ -17,6 +17,7 @@ var raf = require('raf')
 var Clipboard = require('clipboard')
 var Tether = require('tether')
 var Drop = require('tether-drop')
+var SortableJS = require('sortablejs')
 
 // UI stuff
 require('jquery-ui')
@@ -51,6 +52,7 @@ var PasswordCheck = require('PasswordCheck')
 var FileAttach = require('FileAttach')
 var FormValidation = require('FormValidation')
 var DashboardPanel = require('DashboardPanel')
+var DashboardPanels = require('DashboardPanels')
 var CacheForm = require('CacheForm')
 var AutolendTable = require('AutolendTable')
 var NavDropdownMenu = require('NavDropdownMenu')
@@ -1962,34 +1964,25 @@ $(document).ready(function ($) {
   /*
    * Movable content area
    * Any [data-draggable] elements within this element can be dragged and sorted
-   * @note requires jquery-ui Draggable and Sortable modules
    */
   $('[data-movable-content]').each(function (i, elem) {
     var $elem = $(elem)
 
-    // Enable sorting
-    $elem.sortable(/*{
-      revert: true
-    }*/)
-
-    // Enable dragging on each element within
-    $elem.find('[data-draggable]').each(function (j, dragElem) {
-      var $dragElem = $(dragElem)
-
-      // Options per elem
-      var draggableOptions = {
-        connectToSortable: $elem,
-        containment: $elem
+    var sortablearea = SortableJS.create(elem, {
+      handle: '.ui-draggable-handle',
+      draggable: '.ui-draggable',
+      ghostClass: 'ui-movablecontent-ghost',
+      chosenClass: 'ui-movablecontent-chosen',
+      forceFallback: true,
+      fallbackClass: 'ui-movablecontent-fallback',
+      scroll: true,
+      scrollSensitivity: 100,
+      scrollSpeed: 20,
+      onUpdate: function (event) {
+        // @trigger elem `MovableContent:sortupdate` [elemItemMoved]
+        $elem.trigger('MovableContent:sortupdate', [event.item])
+        $(event.item).trigger('UI:update')
       }
-
-      // Set the dashboard panel title as the handle
-      if (Utility.checkElemIsOrHasParent($dragElem, '.dashboard-panel')) {
-        draggableOptions.handle = '.dashboard-panel-title'
-      }
-
-      // @debug
-      // console.log('draggable', draggableOptions)
-      $dragElem.draggable(draggableOptions)
     })
   })
 

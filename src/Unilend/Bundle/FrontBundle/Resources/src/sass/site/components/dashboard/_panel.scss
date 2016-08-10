@@ -41,7 +41,7 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
     line-height: $height-panel-header-sm;
     vertical-align: middle;
 
-    a {
+    > a {
       display: inline-block;
       box-sizing: border-box;
       padding: 0 10px;
@@ -53,18 +53,18 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
       vertical-align: middle;
 
       @include link-states(
-        $link: (
-          color: $c-t2,
-          text-decoration: none
-        ),
-        $hover: (
-          color: $c-t1,
-          text-decoration: none
-        ),
-        $active: (
-          color: $c-t1,
-          text-decoration: none
-        )
+              $link: (
+                      color: $c-t2,
+                      text-decoration: none
+              ),
+              $hover: (
+                      color: $c-t1,
+                      text-decoration: none
+              ),
+              $active: (
+                      color: $c-t1,
+                      text-decoration: none
+              )
       );
 
       &.btn-close {
@@ -73,6 +73,18 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
         &:before {
           font-size: $fs-base * 1.2;
         }
+      }
+
+      > span {
+        display: inline-block;
+        box-sizing: border-box;
+        padding: 0 10px;
+
+        background-color: transparent;
+        border-color: transparent;
+        font-size: $fs-base;
+        line-height: $height-panel-header-md;
+        vertical-align: middle;
       }
     }
 
@@ -160,7 +172,8 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
     line-height: $height-panel-header-md;
     @include background-image(-svg(linear-gradient(to left, $c-white 75%, fade-out($c-white, 1) 100%)));
 
-    a {
+    > span,
+    > a {
       height: $height-panel-header-md;
       line-height: $height-panel-header-md;
     }
@@ -185,9 +198,9 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
 
     a {
       @include link-states(
-        $link: (
-          color: $c-p1
-        )
+              $link: (
+                      color: $c-p1
+              )
       );
     }
   }
@@ -213,7 +226,8 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
     line-height: $height-panel-header-md;
     @include background-image(-svg(linear-gradient(to left, $c-white 75%, fade-out($c-white, 1) 100%)));
 
-    a {
+    > span,
+    > a {
       height: $height-panel-header-md;
       line-height: $height-panel-header-md;
     }
@@ -238,9 +252,9 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
 
     a {
       @include link-states(
-        $link: (
-          color: $c-p1
-        )
+              $link: (
+                      color: $c-p1
+              )
       );
     }
   }
@@ -264,7 +278,8 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
   .dashboard-panel-controls {
     line-height: $height-panel-header-lg;
 
-    a {
+    > span,
+    > a {
       height: $height-panel-header-lg;
       line-height: $height-panel-header-lg;
     }
@@ -310,7 +325,8 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
     line-height: $height-panel-header-sm;
     @include background-image(-svg(linear-gradient(to left, $c-bg3 75%, fade-out($c-bg3, 1) 100%)));
 
-    a {
+    > span,
+    > a {
       height: $height-panel-header-sm;
       line-height: $height-panel-header-sm;
     }
@@ -336,10 +352,10 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
 
     a {
       @include link-states(
-        $link: (
-          color: $c-t1,
-          text-decoration: none
-        )
+              $link: (
+                      color: $c-t1,
+                      text-decoration: none
+              )
       );
     }
   }
@@ -351,20 +367,70 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
 }
 
 // Draggable
+.dashboard-panel[data-draggable],
 .dashboard-panel.ui-draggable {
   @include devices('md', 'lg') {
     .dashboard-panel-controls {
-      &:before {
-        content: $fa-grip-u;
+      .ui-draggable-handle {
         padding-left: 15px;
         padding-right: 15px;
 
         cursor: move;
         cursor: grab;
-        font-family: $ff-icon;
-        font-size: $fs-base * 1.2;
         user-select: none;
         vertical-align: middle;
+
+        &:before {
+          content: $fa-grip-u;
+          font-family: $ff-icon;
+          font-size: $fs-base * 1.2;
+        }
+      }
+    }
+
+    // Movable content has extra classes for ghost/chosen/fallback items within
+    &.ui-movablecontent-ghost {
+      position: relative;
+      opacity: .5;
+      border-radius: 5px;
+
+      &:after {
+        content: '';
+        display: block;
+        border: dotted 3px $c-t3;
+        border-radius: 20px;
+        box-sizing: border-box;
+        background: fade-out($c-bg2, .5);
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 5;
+      }
+    }
+
+    &.ui-movablecontent-chosen {
+      opacity: 1;
+      background-color: fade-out($c-bg2, .5);
+      border-radius: 20px;
+    }
+
+    &.ui-movablecontent-fallback {
+      opacity: 1;
+      background-color: fade-out($c-bg2, .5);
+      border-radius: 20px;
+
+      .dashboard-panel-header {
+        border: solid 2px $c-bg1;
+      }
+      .dashboard-panel-footer {
+        border: solid 2px $c-bg1;
+      }
+
+      .dashboard-panel-content {
+        border-left: solid 2px $c-bg1;
+        border-right: solid 2px $c-bg1;
       }
     }
   }
