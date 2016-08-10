@@ -450,4 +450,51 @@ class MainController extends Controller
         return new Response('not an ajax request');
     }
 
+    /**
+     * @Route("/qui-sommes-nous", name="about_us")
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function aboutUsShowAction()
+    {
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var \tree $tree */
+        $tree = $entityManager->getRepository('tree');
+        $tree->get(['slug' => 'qui-sommes-nous']);
+
+        $response = $this->render('pages/static_pages/about_us.html.twig', []);
+
+        $finalElements = [
+            'contenu'      => $response->getContent(),
+            'complement'   => '',
+            'image-header' => 'apropos-header-1682x400.jpg?1465048259'
+        ];
+
+        return $this->renderCmsNav($tree, $finalElements, $entityManager);
+    }
+
+    /**
+     * @Route("/statistiques", name="statistics")
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function statisticsShowAction()
+    {
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var \tree $tree */
+        $tree = $entityManager->getRepository('tree');
+        $tree->get(['slug' => 'statistiques']);
+
+        $response = $this->render('pages/static_pages/statistics.html.twig', []);
+
+        $finalElements = [
+            'contenu'      => $response->getContent(),
+            'complement'   => '',
+            'image-header' => 'apropos-header-1682x400.jpg?1465048259'
+        ];
+
+        return $this->renderCmsNav($tree, $finalElements, $entityManager);
+    }
 }
