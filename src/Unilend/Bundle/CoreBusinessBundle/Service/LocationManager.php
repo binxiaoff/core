@@ -94,12 +94,12 @@ class LocationManager
             foreach ($results as $item) {
                 if ($lookUpBirthplace) {
                     // unique insee code
-                    $aCities[$item['insee'].'-'.$item['ville']] = array(
+                    $cityList[$item['insee'].'-'.$item['ville']] = array(
                         'label' => $item['ville'] . ' (' . $item['num_departement'] . ')',
                         'value' => $item['insee']
                     );
                 } else {
-                    $aCities[] = array(
+                    $cityList[] = array(
                         'label' => $item['ville'] . ' (' . $item['cp'] . ')',
                         'value' => $item['insee']
                     );
