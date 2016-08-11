@@ -28,8 +28,10 @@ use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
 class MainController extends Controller
 {
-    const CMS_TEMPLATE_BIG_HEADER = 1;
-    const CMS_TEMPLATE_NAV        = 2;
+    const CMS_TEMPLATE_BIG_HEADER            = 1;
+    const CMS_TEMPLATE_NAV                   = 2;
+    const CMS_TEMPLATE_BORROWER_LANDING_PAGE = 3;
+
     const SLUG_PAGE_BECOME_LENDER = 'devenir-preteur';
     const SLUG_ELEMENT_NAV_IMAGE  = 'image-header';
 
@@ -40,7 +42,7 @@ class MainController extends Controller
      */
     public function homeAction($type)
     {
-        $template = array();
+        $template = [];
 
         /** @var TestimonialManager $testimonialService */
         $testimonialService = $this->get('unilend.frontbundle.service.testimonial_manager');
@@ -153,14 +155,14 @@ class MainController extends Controller
                 $sTranslationComplement                 = $translationManager->selectTranslation('home-borrower', 'simulator-step-2-text-segment-motive-' . $motiveId);
                 $bmotiveSentenceComplementToBeDisplayed = (\borrowing_motive::OTHER == $motiveId) ? false : true;
 
-                return new JsonResponse(array(
+                return new JsonResponse([
                     'estimatedRate'                         => $estimatedRate,
                     'estimatedMonthlyRepayment'             => $estimatedMonthlyRepayment,
                     'translationComplement'                 => $sTranslationComplement,
                     'motiveSentenceComplementToBeDisplayed' => $bmotiveSentenceComplementToBeDisplayed,
                     'period'                                => $period,
                     'amount'                                => $amount
-                ));
+                ]);
             }
 
             return new JsonResponse('nok');
@@ -178,16 +180,17 @@ class MainController extends Controller
 
         /** @var ProjectRequestManager $projectRequestManager */
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
+        $project               = $projectRequestManager->saveSimulatorRequest($aFormData);
 
         $session = $request->getSession();
-        $session->set('esim/project_id', $projectRequestManager->saveSimulatorRequest($aFormData));
+        $session->set('esim/project_id', $project->id_project);
 
-        return $this->redirectToRoute('project_request_step_1');
+        return $this->redirectToRoute('project_request_contact', ['hash' => $project->hash]);
     }
 
     /**
      * @param Request $request
-     * @return ResponseInterface
+     * @return Response
      */
     public function cmsAction(Request $request)
     {
@@ -205,7 +208,7 @@ class MainController extends Controller
         /** @var \tree $tree */
         $tree = $entityManager->getRepository('tree');
 
-        if (false === $tree->get(['slug' => $slug])) {
+        if (false === $tree->get(['slug' => $slug, 'status' => 1])) {
             throw new NotFoundHttpException('Page with slug ' . $slug . ' could not be found');
         }
 
@@ -241,6 +244,8 @@ class MainController extends Controller
                 return $this->renderCmsBigHeader($tree, $finalElements['content']);
             case self::CMS_TEMPLATE_NAV:
                 return $this->renderCmsNav($tree, $finalElements['content'], $entityManager);
+            case self::CMS_TEMPLATE_BORROWER_LANDING_PAGE:
+                return $this->renderBorrowerLandingPage($request, $tree, $finalElements['content'], $finalElements['complement'], $entityManager);
             default:
                 return new RedirectResponse('/');
         }
@@ -261,7 +266,10 @@ class MainController extends Controller
         ];
 
         $page = [
-            'title' => $tree->meta_title
+            'title'       => $tree->meta_title,
+            'description' => $tree->meta_description,
+            'keywords'    => $tree->meta_keywords,
+            'isIndexable' => $tree->indexation == 1
         ];
 
         return $this->render('pages/template-big-header.html.twig', ['cms' => $cms, 'page' => $page]);
@@ -315,18 +323,118 @@ class MainController extends Controller
         ];
 
         $page = [
-            'title' => $currentPage->meta_title,
-            'next'  => $nextPage
+            'title'       => $currentPage->meta_title,
+            'description' => $currentPage->meta_description,
+            'keywords'    => $currentPage->meta_keywords,
+            'isIndexable' => $currentPage->indexation == 1,
+            'next'        => $nextPage
         ];
 
         return $this->render('pages/template-nav.html.twig', ['navigation' => $navigation, 'cms' => $cms, 'page' => $page]);
     }
 
     /**
-     * @param Request $request
-     * @return ResponseInterface
+     * @param Request       $request
+     * @param \tree         $tree
+     * @param array         $content
+     * @param array         $complement
+     * @param EntityManager $entityManager
+     * @return Response
      */
-    public function footerAction(Request $request)
+    private function renderBorrowerLandingPage(Request $request, \tree $tree, array $content, array $complement, EntityManager $entityManager)
+    {
+        $sessionHandler = $request->getSession();
+
+        /** @var \settings $settings */
+        $settings = $entityManager->getRepository('settings');
+
+        $settings->get('Google Tag Manager', 'type');
+        $googleTagManagerId = $settings->value;
+
+        $settings->get('Somme à emprunter min', 'type');
+        $minimumAmount = $settings->value;
+
+        $settings->get('Somme à emprunter max', 'type');
+        $maximumAmount = $settings->value;
+
+        $template = [
+            'cms'      => [
+                'title'                       => $content['titre'],
+                'center_blocks'               => [
+                    1 => [
+                        'text'      => $content['texte-bloc-1'],
+                        'image'     => $content['image-bloc-1'],
+                        'image_alt' => $complement['image-bloc-1']
+                    ],
+                    2 => [
+                        'text'      => $content['texte-bloc-2'],
+                        'image'     => $content['image-bloc-2'],
+                        'image_alt' => $complement['image-bloc-2']
+                    ],
+                    3 => [
+                        'text'      => $content['texte-bloc-3'],
+                        'image'     => $content['image-bloc-3'],
+                        'image_alt' => $complement['image-bloc-3']
+                    ]
+                ],
+                'center_button_text'          => $content['texte-bouton-centre'],
+                'right_block_title'           => $content['titre-bloc-droite'],
+                'form_validation_button_text' => $content['texte-bouton-validation-formulaire'],
+                'partner_logo'                => $content['logo-partenaire'],
+                'partner_logo_alt'            => $complement['logo-partenaire'],
+                'footer'                      => [
+                    $content['image-footer-1'] => $complement['image-footer-1'],
+                    $content['image-footer-2'] => $complement['image-footer-2'],
+                    $content['image-footer-3'] => $complement['image-footer-3'],
+                    $content['image-footer-4'] => $complement['image-footer-4'],
+                    $content['image-footer-5'] => $complement['image-footer-5'],
+                    $content['image-footer-6'] => $complement['image-footer-6'],
+                    $content['image-footer-7'] => $complement['image-footer-7']
+                ]
+            ],
+            'page'     => [
+                'title'       => $tree->meta_title,
+                'description' => $tree->meta_description,
+                'keywords'    => $tree->meta_keywords,
+                'isIndexable' => $tree->indexation == 1
+            ],
+            'form'     => [
+                'message' => empty($sessionHandler->get('project_request')['message']) ? '' : $sessionHandler->get('project_request')['message'],
+                'values'  => [
+                    'amount' => empty($sessionHandler->get('project_request')['values']['amount']) ? (empty($request->query->get('montant')) ? '' : $request->query->get('montant')) : $sessionHandler->get('project_request')['values']['amount'],
+                    'siren'  => empty($sessionHandler->get('project_request')['values']['siren']) ? (empty($request->query->get('siren')) ? '' : $request->query->get('siren')) : $sessionHandler->get('project_request')['values']['siren'],
+                    'email'  => empty($sessionHandler->get('project_request')['values']['email']) ? (empty($request->query->get('email')) ? '' : $request->query->get('email')) : $sessionHandler->get('project_request')['values']['email']
+                ],
+                'errors'  => empty($sessionHandler->get('project_request')['errors']) ? [] : $sessionHandler->get('project_request')['errors']
+            ],
+            'settings' => [
+                'googleTagManagerId' => $googleTagManagerId,
+                'minimumAmount'      => $minimumAmount,
+                'maximumAmount'      => $maximumAmount
+            ]
+        ];
+
+        $session = [];
+
+        /**
+         * If borrower is redirected to Unilend
+         * We save data to session
+         */
+        foreach (['prenom', 'nom', 'mobile'] as $fieldName) {
+            if ($request->query->get($fieldName)) {
+                $session['values'][$fieldName] = $request->query->get($fieldName);
+            }
+        }
+
+        $sessionHandler->set('project_request', $session);
+
+        return $this->render('pages/template-borrower-landing-page.html.twig', $template);
+    }
+
+    /**
+     * @return Response
+     */
+    public function footerAction()
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
@@ -379,10 +487,9 @@ class MainController extends Controller
     }
 
     /**
-     * @param Request $request
      * @return Response
      */
-    public function footerReviewsAction(Request $request)
+    public function footerReviewsAction()
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
@@ -429,7 +536,7 @@ class MainController extends Controller
      * @Method("POST")
      *
      * @param Request $request
-     * @return JsonResponse
+     * @return Response
      */
     public function acceptCookiesAction(Request $request)
     {

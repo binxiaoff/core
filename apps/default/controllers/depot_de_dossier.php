@@ -91,7 +91,7 @@ class depot_de_dossierController extends bootstrap
 
         $this->setSource($this->clients);
 
-        if (empty($_SESSION['forms']['depot-de-dossier']['email']) || true === $this->clients->existEmail($_SESSION['forms']['depot-de-dossier']['email'])) { // Email does not exist in DB
+        if (empty($_SESSION['forms']['depot-de-dossier']['email']) || false === $this->clients->existEmail($_SESSION['forms']['depot-de-dossier']['email'])) { // Email does not exist in DB
             $this->clients->email = $_SESSION['forms']['depot-de-dossier']['email'];
         } else {
             $this->clients->email = $_SESSION['forms']['depot-de-dossier']['email'] . '-' . time();
@@ -307,7 +307,7 @@ class depot_de_dossierController extends bootstrap
             $this->redirect(self::PAGE_NAME_STEP_2);
         }
 
-        if (true === $this->clients->existEmail($_POST['email'])) { // Email does not exist in DB
+        if (false === $this->clients->existEmail($_POST['email'])) { // Email does not exist in DB
             $this->clients->email = $_POST['email'];
         } elseif ($this->removeEmailSuffix($this->clients->email) !== $_POST['email']) { // Email exists but is different from previous one
             $this->clients->email = $_POST['email'] . '-' . time();
@@ -320,7 +320,6 @@ class depot_de_dossierController extends bootstrap
         $this->clients->telephone         = $_POST['telephone'];
         $this->clients->id_langue         = 'fr';
         $this->clients->slug              = $this->bdd->generateSlug($this->clients->prenom . '-' . $this->clients->nom);
-        $this->clients->status_transition = 1; // Used in bootstrap and ajax depot de dossier
         $this->clients->update();
 
         $this->companies->name          = $_POST['raison_sociale'];
@@ -328,7 +327,7 @@ class depot_de_dossierController extends bootstrap
         $this->companies->update();
 
         if ('non' === $_POST['gerant']) {
-            if (true === $this->clients_prescripteur->existEmail($_POST['email_prescripteur'])) { // Email does not exist in DB
+            if (false === $this->clients_prescripteur->existEmail($_POST['email_prescripteur'])) {
                 $this->clients_prescripteur->email = $_POST['email_prescripteur'];
             } elseif ($this->removeEmailSuffix($this->clients_prescripteur->email) !== $_POST['email_prescripteur']) { // Email exists but is different from previous one
                 $this->clients_prescripteur->email = $_POST['email_prescripteur'] . '-' . time();
@@ -624,7 +623,7 @@ class depot_de_dossierController extends bootstrap
             $this->redirect(self::PAGE_NAME_PARTNER);
         }
 
-        if (true === $this->clients->existEmail($_POST['email'])) { // Email does not exist in DB
+        if (false === $this->clients->existEmail($_POST['email'])) {
             $this->clients->email = $_POST['email'];
         } elseif ($this->removeEmailSuffix($this->clients->email) !== $_POST['email']) { // Email exists but is different from previous one
             $this->clients->email = $_POST['email'] . '-' . time();
@@ -637,7 +636,6 @@ class depot_de_dossierController extends bootstrap
         $this->clients->telephone         = $_POST['telephone'];
         $this->clients->id_langue         = 'fr';
         $this->clients->slug              = $this->bdd->generateSlug($this->clients->prenom . '-' . $this->clients->nom);
-        $this->clients->status_transition = 1; // Used in bootstrap and ajax depot de dossier
         $this->clients->update();
 
         $this->companies->name          = $_POST['raison_sociale'];
@@ -727,7 +725,7 @@ class depot_de_dossierController extends bootstrap
             $this->redirect(self::PAGE_NAME_PROSPECT);
         }
 
-        if (true === $this->clients->existEmail($_POST['email'])) { // Email does not exist in DB
+        if (false === $this->clients->existEmail($_POST['email'])) {
             $this->clients->email = $_POST['email'];
         } elseif ($this->removeEmailSuffix($this->clients->email) !== $_POST['email']) { // Email exists but is different from previous one
             $this->clients->email = $_POST['email'] . '-' . time();
@@ -740,7 +738,6 @@ class depot_de_dossierController extends bootstrap
         $this->clients->telephone         = $_POST['telephone'];
         $this->clients->id_langue         = 'fr';
         $this->clients->slug              = $this->bdd->generateSlug($this->clients->prenom . '-' . $this->clients->nom);
-        $this->clients->status_transition = 1; // Used in bootstrap and ajax depot de dossier
         $this->clients->update();
 
         $this->companies->name          = $_POST['raison_sociale'];

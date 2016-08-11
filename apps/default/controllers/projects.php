@@ -265,7 +265,7 @@ class projectsController extends bootstrap
                 } elseif ($email != $email2) {// conf email good/pas
                     $form_valid        = false;
                     $this->retour_form = $this->lng['landing-page']['confirmation-email-erreur'];
-                } elseif ($this->clients->existEmail($email) == false) {// si exite ou pas
+                } elseif ($this->clients->existEmail($email)) {
                     $form_valid        = false;
                     $this->retour_form = $this->lng['landing-page']['email-existe-deja'];
                 }

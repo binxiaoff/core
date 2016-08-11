@@ -562,10 +562,8 @@ class ajaxController extends bootstrap
 
             if ($this->ficelle->isEmail($_POST['email']) == false) {
                 $validMail = 'nok';
-            } elseif ($this->clients->existEmail($_POST['email']) == false) {
-                if ($_POST['email'] != $_POST['oldemail']) {
-                    $validMail = 'nok';
-                }
+            } elseif ($this->clients->existEmail($_POST['email']) && $_POST['email'] != $_POST['oldemail']) {
+                $validMail = 'nok';
             }
         }
         echo $validMail;

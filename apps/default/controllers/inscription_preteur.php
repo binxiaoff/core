@@ -950,7 +950,7 @@ class inscription_preteurController extends bootstrap
             $bFormOk = false;
         }
 
-        if (false === $this->clients->existEmail($_POST['email']) && (false === $bClientModification || $bClientModification && ($_POST['email'] != $this->clients->email))) {
+        if ($this->clients->existEmail($_POST['email']) && (false === $bClientModification || $bClientModification && ($_POST['email'] != $this->clients->email))) {
             $_SESSION['forms']['lender_subscription_step_1']['errors']['email'] = $this->lng['etape1']['erreur-email'];
             $bFormOk                                                            = false;
         }
@@ -1228,7 +1228,7 @@ class inscription_preteurController extends bootstrap
             $bFormOk = false;
         }
 
-        if (false === $this->clients->existEmail($_POST['email_inscription']) && (false === $bClientModification || $bClientModification && $_POST['email'] != $this->clients->email)) {
+        if ($this->clients->existEmail($_POST['email_inscription']) && (false === $bClientModification || $bClientModification && $_POST['email'] != $this->clients->email)) {
             $_SESSION['forms']['lender_subscription_step_1']['errors']['email'] = $this->lng['etape1']['erreur-email'];
             $bFormOk                                                            = false;
         }

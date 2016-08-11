@@ -76,8 +76,7 @@ permalink: route('user/access')
                                         {% if captchaInformation is defined and true == captchaInformation.displayWaitingPeriod %}
                                             {% if false == captchaInformation.displayCaptcha %}
                                                 <div id="form-connect-notifications">
-                                                    {% trans with { '%waitingPeriod%' : captchaInformation.waitingPeriod } %}                                             connect-subscribe-page_waiting-period-message
-                                                    {% endtrans %}
+                                                    {% trans with { '%waitingPeriod%' : captchaInformation.waitingPeriod } %} connect-subscribe-page_waiting-period-message {% endtrans %}
                                                 </div>
                                             {% endif %}
                                         {% endif %}
@@ -100,7 +99,7 @@ permalink: route('user/access')
                                             <p><a href="{{ route('emprunter') }}" class="link">{% trans %} connect-subscribe-page_subscribe-box-borrower-more-link {% endtrans %}</a></p>
                                         </div><!-- /.panel-inner -->
                                         <div class="btn-controls">
-                                            <a href="{{ path('project_request_step_1') }}" class="btn-alternate">{% trans %} connect-subscribe-page_subscribe-box-borrower-button {% endtrans %}</a>
+                                            <a href="{{ path('lp-depot-de-dossier') }}" class="btn-alternate">{% trans %} connect-subscribe-page_subscribe-box-borrower-button {% endtrans %}</a>
                                         </div>
                                     </div><!-- /.panel -->
                                 </div>
@@ -124,6 +123,5 @@ permalink: route('user/access')
                 {% include 'partials/components/list-socialmedia.html.twig' %}
             </div><!-- /.hero-wrap -->
         </section><!-- /.page-content -->
-
     </article><!-- /.page -->
 {% endblock %}

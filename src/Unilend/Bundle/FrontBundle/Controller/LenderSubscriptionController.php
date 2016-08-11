@@ -468,7 +468,7 @@ class LenderSubscriptionController extends Controller
             $this->addFlash('step1Errors', $translationManager->selectTranslation('lender-subscription', 'step-1-error-identity-wrong-email'));
         }
 
-        if (false === $client->existEmail($post['client_email'])) {
+        if ($client->existEmail($post['client_email'])) {
             $this->addFlash('step1Errors', $translationManager->selectTranslation('lender-subscription', 'step-1-error-existing-email'));
         }
 
