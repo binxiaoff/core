@@ -31,13 +31,13 @@
             {% for attachment in identityAttachments %}
                 {% if attachment.id_type == constant('\\attachment_type::CNI_PASSPORTE') %}
                     <span id="form-profile-info-file-identite-cni-1-output" class="file-justificatif file-identity-side-a"
-                          title="{{ "lender-profile_lender-attachement-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added, {'%date%' : attachment.added|date('d/m/Y')}) }}" data-toggle="tooltip">
-                                <span class="sr-only">{{ "lender-attachement-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added, {'%date%' : attachment.added|date('d/m/Y')}) }}</span>
+                          title="{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added, {'%date%' : attachment.added|date('d/m/Y')}) }}" data-toggle="tooltip">
+                                <span class="sr-only">{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added, {'%date%' : attachment.added|date('d/m/Y')}) }}</span>
                             </span>
                 {%  else  %}
                     <span id="form-profile-info-file-identite-cni-2-output" class="file-justificatif file-identity-side-b"
-                          title="{{ "lender-profile_lender-attachement-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added, {'%date%' : attachment.added|date('d/m/Y')}) }}" data-toggle="tooltip">
-                                <span class="sr-only">{{ "lender-attachement-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added, {'%date%' : attachment.added|date('d/m/Y')})}}</span>
+                          title="{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added, {'%date%' : attachment.added|date('d/m/Y')}) }}" data-toggle="tooltip">
+                                <span class="sr-only">{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added, {'%date%' : attachment.added|date('d/m/Y')})}}</span>
                             </span>
                 {% endif %}
             {% endfor %}

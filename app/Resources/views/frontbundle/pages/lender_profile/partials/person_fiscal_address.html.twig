@@ -25,13 +25,13 @@
                 {% if attachment.id_type == constant('\\attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT') %}
                     {% set isHousedByThirdPerson = true %}
                     <span id="form-profile-info-file-identite-cni-1-output" class="file-justificatif file-identity-side-a"
-                          title="{{ "lender-attachement-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added|date('d/m/Y')) }}"
+                          title="{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added|date('d/m/Y')) }}"
                           data-toggle="tooltip">
-                        <span class="sr-only">{{ "lender-attachement-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added|date('d/m/Y'))}}</span>
+                        <span class="sr-only">{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added|date('d/m/Y'))}}</span>
                     </span>
                 {% else %}
-                    <span id="form-profile-address-file-domicile-1-output" class="file-justificatif file-domicile" title="{{ "lender-attachement-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added|date('d/m/Y')) }}" data-toggle="tooltip">
-                        <span class="sr-only">{{ "lender-attachement-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added|date('d/m/Y')) }}</span>
+                    <span id="form-profile-address-file-domicile-1-output" class="file-justificatif file-domicile" title="{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added|date('d/m/Y')) }}" data-toggle="tooltip">
+                        <span class="sr-only">{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.id_type }" | transchoice(attachment.added|date('d/m/Y')) }}</span>
                     </span>
                 {% endif %}
             {% endfor %}

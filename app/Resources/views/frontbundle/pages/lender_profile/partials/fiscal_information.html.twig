@@ -32,7 +32,7 @@
                 <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-documents {% endtrans %}</dt>
                 <dd id="profile-fiscalite-bank-fichier-rib-output">
                     {% set ribDate = lenderAccount.fiscal_info.rib.updated|default(lenderAccount.fiscal_info.rib.added)|date('d/m/Y') %}
-                    {% set ribProvidedTranslation = "lender-profile_lender-attachement-provided-label-type-#{constant('\\attachment_type::RIB')}" | transchoice(ribDate, {'%date%': ribDate}) %}
+                    {% set ribProvidedTranslation = "lender-profile_lender-attachment-provided-label-type-#{constant('\\attachment_type::RIB')}" | transchoice(ribDate, {'%date%': ribDate}) %}
                     <span id="form-fiscalite-bank-file-rib-1-output" class="file-justificatif file-rib" title="{{ ribProvidedTranslation }}" data-toggle="tooltip">
                   </span>
                 </dd>
