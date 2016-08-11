@@ -1604,44 +1604,23 @@ class dossiersController extends bootstrap
 
                     if ($lEcheancesRembEmprunteur != false) {
                         foreach ($lEcheancesRembEmprunteur as $RembEmpr) {
-                            $montant                      = 0;
-                            $capital                      = 0;
-                            $interets                     = 0;
-                            $commission                   = 0;
-                            $tva                          = 0;
-                            $prelevements_obligatoires    = 0;
-                            $retenues_source              = 0;
-                            $csg                          = 0;
-                            $prelevements_sociaux         = 0;
-                            $contributions_additionnelles = 0;
-                            $prelevements_solidarite      = 0;
-                            $crds                         = 0;
+                            $Total_rembNet     = 0;
+                            $Total_etat        = 0;
 
-                            $lEcheances = $this->echeanciers->select('id_project = ' . $RembEmpr['id_project'] . ' AND status_emprunteur = 1 AND ordre = ' . $RembEmpr['ordre'] . ' AND status = 0');
+                            $lEcheances        = $this->echeanciers->selectEcheances_a_remb('id_project = ' . $RembEmpr['id_project'] . ' AND status_emprunteur = 1 AND ordre = ' . $RembEmpr['ordre'] . ' AND status = 0');
 
                             if ($lEcheances) {
                                 //BT 17882
                                 if (! $deja_passe) {
                                     $deja_passe = true;
                                     foreach ($lEcheances as $e) {
-                                        // on fait la somme de tout
-                                        $montant += ($e['montant'] / 100);
-                                        $capital += ($e['capital'] / 100);
-                                        $interets += ($e['interets'] / 100);
-                                        $commission += ($e['commission'] / 100);
-                                        $tva += ($e['tva'] / 100);
-                                        $prelevements_obligatoires += $e['prelevements_obligatoires'];
-                                        $retenues_source += $e['retenues_source'];
-                                        $csg += $e['csg'];
-                                        $prelevements_sociaux += $e['prelevements_sociaux'];
-                                        $contributions_additionnelles += $e['contributions_additionnelles'];
-                                        $prelevements_solidarite += $e['prelevements_solidarite'];
-                                        $crds += $e['crds'];
-
-                                        // Remb net preteur
-                                        $rembNet = ($e['montant'] / 100) - $e['prelevements_obligatoires'] - $e['retenues_source'] - $e['csg'] - $e['prelevements_sociaux'] - $e['contributions_additionnelles'] - $e['prelevements_solidarite'] - $e['crds'];
-
                                         if ($this->transactions->get($e['id_echeancier'], 'id_echeancier') == false) {
+                                            $rembNet = $e['rembNet'];
+                                            $etat    = $e['etat'];
+
+                                            $Total_rembNet = bcadd($rembNet, $Total_rembNet, 2);
+                                            $Total_etat    = bcadd($etat, $Total_etat, 2);
+
                                             $this->lenders_accounts->get($e['id_lender'], 'id_lender_account');
                                             $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
 
@@ -1652,29 +1631,29 @@ class dossiersController extends bootstrap
                                             $this->echeanciers->update();
 
                                             $this->transactions->id_client        = $this->lenders_accounts->id_client_owner;
-                                            $this->transactions->montant          = ($rembNet * 100);
+                                            $this->transactions->montant          = bcmul($rembNet, 100);
                                             $this->transactions->id_echeancier    = $e['id_echeancier']; // id de l'echeance remb
                                             $this->transactions->id_langue        = 'fr';
                                             $this->transactions->date_transaction = date('Y-m-d H:i:s');
-                                            $this->transactions->status           = '1';
-                                            $this->transactions->etat             = '1';
+                                            $this->transactions->status           = \transactions::STATUS_VALID;
+                                            $this->transactions->etat             = \transactions::PAYMENT_STATUS_OK;
                                             $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                                            $this->transactions->type_transaction = 5; // remb enchere
-                                            $this->transactions->transaction      = 2; // transaction virtuelle
+                                            $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT;
+                                            $this->transactions->transaction      = \transactions::VIRTUAL;
                                             $this->transactions->create();
 
                                             $this->wallets_lines->id_lender                = $e['id_lender'];
-                                            $this->wallets_lines->type_financial_operation = 40;
+                                            $this->wallets_lines->type_financial_operation = \wallets_lines::TYPE_REPAYMENT;
                                             $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
                                             $this->wallets_lines->status                   = 1; // non utilisé
-                                            $this->wallets_lines->type                     = 2; // transaction virtuelle
-                                            $this->wallets_lines->amount                   = $rembNet * 100;
+                                            $this->wallets_lines->type                     = \wallets_lines::VIRTUAL;
+                                            $this->wallets_lines->amount                   = bcmul($rembNet, 100);
                                             $this->wallets_lines->create();
 
                                             $this->notifications->type       = \notifications::TYPE_REPAYMENT;
                                             $this->notifications->id_lender  = $this->lenders_accounts->id_lender_account;
                                             $this->notifications->id_project = $this->projects->id_project;
-                                            $this->notifications->amount     = $rembNet * 100;
+                                            $this->notifications->amount     = bcmul($rembNet, 100);
                                             $this->notifications->create();
 
                                             $this->clients_gestion_mails_notif->id_client       = $this->lenders_accounts->id_client_owner;
@@ -1820,37 +1799,35 @@ class dossiersController extends bootstrap
                                 }
                             }
 
-                            // partie a retirer de bank unilend
-                            $rembNetTotal = $montant - $prelevements_obligatoires - $retenues_source - $csg - $prelevements_sociaux - $contributions_additionnelles - $prelevements_solidarite - $crds;
-
-                            // partie pour l'etat
-                            $TotalEtat = $prelevements_obligatoires + $retenues_source + $csg + $prelevements_sociaux + $contributions_additionnelles + $prelevements_solidarite + $crds;
-
                             // On evite de créer une ligne qui sert a rien
-                            if ($rembNetTotal != 0) {
+                            if ($Total_rembNet != 0) {
                                 $this->transactions->montant                  = 0;
                                 $this->transactions->id_echeancier            = 0; // on reinitialise
                                 $this->transactions->id_client                = 0; // on reinitialise
-                                $this->transactions->montant_unilend          = '-' . $rembNetTotal * 100;
-                                $this->transactions->montant_etat             = $TotalEtat * 100;
+                                $this->transactions->montant_unilend          = -bcmul($Total_rembNet, 100);
+                                $this->transactions->montant_etat             = bcmul($Total_etat, 100);
                                 $this->transactions->id_echeancier_emprunteur = $RembEmpr['id_echeancier_emprunteur']; // id de l'echeance emprunteur
                                 $this->transactions->id_langue                = 'fr';
                                 $this->transactions->date_transaction         = date('Y-m-d H:i:s');
-                                $this->transactions->status                   = '1';
-                                $this->transactions->etat                     = '1';
-                                $this->transactions->ip_client                = $_SERVER['REMOTE_ADDR'];
+                                $this->transactions->status                   = \transactions::PAYMENT_STATUS_OK;
+                                $this->transactions->etat                     = \transactions::STATUS_VALID;
                                 $this->transactions->type_transaction         = \transactions_types::TYPE_UNILEND_REPAYMENT;
-                                $this->transactions->transaction              = 2; // transaction virtuelle
+                                $this->transactions->transaction              = \transactions::VIRTUAL;
+                                $this->transactions->ip_client                = $_SERVER['REMOTE_ADDR'];
                                 $this->transactions->create();
 
                                 $this->bank_unilend->id_transaction         = $this->transactions->id_transaction;
                                 $this->bank_unilend->id_project             = $this->projects->id_project;
-                                $this->bank_unilend->montant                = '-' . $rembNetTotal * 100;
-                                $this->bank_unilend->etat                   = $TotalEtat * 100;
-                                $this->bank_unilend->type                   = 2; // remb unilend
+                                $this->bank_unilend->montant                = -bcmul($Total_rembNet, 100);
+                                $this->bank_unilend->etat                   = bcmul($Total_etat, 100);
+                                $this->bank_unilend->type                   = \bank_unilend::TYPE_REPAYMENT_LENDER;
                                 $this->bank_unilend->id_echeance_emprunteur = $RembEmpr['id_echeancier_emprunteur'];
                                 $this->bank_unilend->status                 = 1;
                                 $this->bank_unilend->create();
+
+                                /** @var platform_account_unilend $oAccountUnilend */
+                                $oAccountUnilend = $this->loadData('platform_account_unilend');
+                                $oAccountUnilend->addDueDateCommssion($RembEmpr['id_echeancier_emprunteur']);
 
                                 // MAIL FACTURE REMBOURSEMENT EMPRUNTEUR //
                                 $projects                = $this->loadData('projects');
@@ -1880,7 +1857,7 @@ class dossiersController extends bootstrap
                                     'datedelafacture' => $dateRemb,
                                     'mois'            => strtolower($this->dates->tableauMois['fr'][date('n')]),
                                     'annee'           => date('Y'),
-                                    'montantRemb'     => $this->ficelle->formatNumber($rembNetTotal),
+                                    'montantRemb'     => $this->ficelle->formatNumber($Total_rembNet),
                                     'lien_fb'         => $lien_fb,
                                     'lien_tw'         => $lien_tw
                                 );
@@ -1923,11 +1900,6 @@ class dossiersController extends bootstrap
                                     $_SESSION['freeow']['title']   = 'Remboursement prêteur';
                                     $_SESSION['freeow']['message'] = "Aucun remboursement n'a &eacute;t&eacute; effectu&eacute; aux preteurs !";
                                 }
-                            }
-                            if (0 < $commission) {
-                                /** @var platform_account_unilend $oAccountUnilend */
-                                $oAccountUnilend = $this->loadData('platform_account_unilend');
-                                $oAccountUnilend->addDueDateCommssion($RembEmpr['id_echeancier_emprunteur']);
                             }
                         }
 
