@@ -670,8 +670,9 @@ class pdfController extends bootstrap
             $this->preteur_adresse->get($this->lender->id_client_owner, 'id_client');
 
             $this->lEcheances = array_values($this->echeanciers->getYearlySchedule(array('id_loan' => $this->oLoans->id_loan)));
+            $this->lenderCountry = '';
 
-            if ($this->preteur->type == 2) {
+            if ($this->preteur->type == \clients::TYPE_LEGAL_ENTITY) {
                 $this->preteurCompanie->get($this->lender->id_company_owner, 'id_company');
 
                 $this->nomPreteur     = $this->preteurCompanie->name;
@@ -679,6 +680,14 @@ class pdfController extends bootstrap
                 $this->cpPreteur      = $this->preteurCompanie->zip;
                 $this->villePreteur   = $this->preteurCompanie->city;
             } else {
+                if ($this->preteur_adresse->id_pays > 1) {
+                    /** @var \pays_v2 $country */
+                    $country = $this->loadData('pays_v2');
+                    $country->get($this->preteur_adresse->id_pays, 'id_pays');
+
+                    $this->lenderCountry = $country->fr;
+                }
+
                 $this->nomPreteur     = $this->preteur->prenom . ' ' . $this->preteur->nom;
                 $this->adressePreteur = $this->preteur_adresse->adresse1;
                 $this->cpPreteur      = $this->preteur_adresse->cp;

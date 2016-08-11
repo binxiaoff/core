@@ -9,7 +9,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
  */
 class LenderManager
 {
-    /** @var EntityManager  */
+    /** @var EntityManager */
     private $oEntityManager;
 
     public function __construct(EntityManager $oEntityManager)
@@ -30,7 +30,8 @@ class LenderManager
         $oClient = $this->oEntityManager->getRepository('clients');
 
         if ($oClient->get($oLenderAccount->id_client_owner) && $oClient->status == \clients::STATUS_ONLINE
-             && $oClientStatus->getLastStatut($oLenderAccount->id_client_owner) && $oClientStatus->status == \clients_status::VALIDATED) {
+            && $oClientStatus->getLastStatut($oLenderAccount->id_client_owner) && $oClientStatus->status == \clients_status::VALIDATED
+        ) {
             return true;
         }
         return false;
@@ -55,4 +56,45 @@ class LenderManager
         }
     }
 
+    /**
+     * @param \lenders_accounts $lender
+     * @param null              $projectRates optional, for optimize the performance.
+     *
+     * @return array
+     */
+    public function getBadAutoBidSettings(\lenders_accounts $lender, $projectRates = null)
+    {
+        /** @var \autobid $autoBid */
+        $autoBid = $this->oEntityManager->getRepository('autobid');
+
+        if ($projectRates == null) {
+            /** @var \project_rate_settings $projectRateSettings */
+            $projectRateSettings = $this->oEntityManager->getRepository('project_rate_settings');
+            $projectRates        = $projectRateSettings->getSettings();
+        }
+
+        $projectMaxRate = [];
+        foreach ($projectRates as $rate) {
+            $projectMaxRate[$rate['id_period']][$rate['evaluation']] = $rate['rate_max'];
+        }
+
+        $autoBidSettings = $autoBid->getSettings($lender->id_lender_account);
+        $badSettings     = [];
+        foreach ($autoBidSettings as $setting) {
+            if (false === isset($projectMaxRate[$setting['id_period']][$setting['evaluation']])) {
+                continue;
+            }
+            if (bccomp($setting['rate_min'], $projectMaxRate[$setting['id_period']][$setting['evaluation']], 1) > 0) {
+                $badSettings[] = [
+                    'period_min'       => $setting['min'],
+                    'period_max'       => $setting['max'],
+                    'evaluation'       => $setting['evaluation'],
+                    'rate_min_autobid' => $setting['rate_min'],
+                    'rate_max_project' => $projectMaxRate[$setting['id_period']][$setting['evaluation']],
+                ];
+            }
+        }
+
+        return $badSettings;
+    }
 }

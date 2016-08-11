@@ -131,11 +131,11 @@
             case \notifications::TYPE_PROJECT_COMPULSORY_LIQUIDATION:
             case \notifications::TYPE_PROJECT_FAILURE:
                 $this->projects_notifs->get($r['id_project'], 'id_project');
-                $this->companies->get($this->projects_notifs->id_company);
+                $this->companies_notifs->get($this->projects_notifs->id_company);
                 ?>
                 <strong><?= $this->lng['notifications']['titre-' . $r['type']] ?></strong><br/>
                 <div class="content_notif">
-                    <?= str_replace('[ENTREPRISE]', '<a href="' . $this->lurl . '/projects/detail/' . $this->projects_notifs->slug . '">' . addslashes($this->companies->name) . '</a>', $this->lng['notifications']['contenu-' . $r['type']]) ?>
+                    <?= str_replace('[ENTREPRISE]', '<a href="' . $this->lurl . '/projects/detail/' . $this->projects_notifs->slug . '">' . addslashes($this->companies_notifs->name) . '</a>', $this->lng['notifications']['contenu-' . $r['type']]) ?>
                 </div><?php
                 break;
             case \notifications::TYPE_AUTOBID_BALANCE_INSUFFICIENT:

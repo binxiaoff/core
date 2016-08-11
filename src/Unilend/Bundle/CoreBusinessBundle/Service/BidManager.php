@@ -54,6 +54,12 @@ class BidManager
         $this->oLogger = $oLogger;
     }
 
+    /**
+     * @param \bids $oBid
+     * @param bool  $bSendNotification
+     *
+     * @return bool
+     */
     public function bid(\bids $oBid, $bSendNotification = true)
     {
         /** @var \settings $oSettings */
@@ -82,41 +88,78 @@ class BidManager
         $fAmount     = $oBid->amount / 100;
         $fRate       = round(floatval($oBid->rate), 1);
 
-        if ($iAmountMin > $fAmount) {
+        if (false === $project->get($iProjectId)) {
+            if($this->oLogger instanceof LoggerInterface) {
+                $this->oLogger->warning('unable to get the project: ' . $iProjectId, ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]);
+            }
             return false;
         }
 
-        if ($fRate > \bids::BID_RATE_MAX || $fRate < \bids::BID_RATE_MIN) {
+        if ($iAmountMin > $fAmount) {
+            if($this->oLogger instanceof LoggerInterface) {
+                $this->oLogger->warning('Amount is less than the min amount for a bid', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]);
+            }
+            return false;
+        }
+
+        $projectRates = $this->getProjectRateRange($project);
+
+        if (bccomp($fRate, $projectRates['rate_max'], 1) > 0 || bccomp($fRate, $projectRates['rate_min'], 1) < 0) {
+            if($this->oLogger instanceof LoggerInterface) {
+                $this->oLogger->warning(
+                    'Amount is less than the min amount for a bid',
+                    ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]
+                );
+            }
             return false;
         }
 
         $projectStatus->getLastStatut($iProjectId);
         if (false === in_array($projectStatus->status, array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING))) {
+            if($this->oLogger instanceof LoggerInterface) {
+                $this->oLogger->warning(
+                    'Project status is not valid for bidding',
+                    ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate, 'project_status' => $projectStatus->status]
+                );
+            }
             return false;
         }
 
-        $project->get($iProjectId);
         $oCurrentDate = new \DateTime();
         $oEndDate  = new \DateTime($project->date_retrait_full);
         if ($project->date_fin != '0000-00-00 00:00:00') {
             $oEndDate = new \DateTime($project->date_fin);
         }
-        
+
         if ($oCurrentDate > $oEndDate) {
+            if($this->oLogger instanceof LoggerInterface) {
+                $this->oLogger->warning(
+                    'Project end date is passed for bidding',
+                    ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate, 'project_ended' => $oEndDate->format('c'), 'now' => $oCurrentDate->format('c')]);
+            }
             return false;
         }
 
         if (false === $oLenderAccount->get($iLenderId)) {
+            if($this->oLogger instanceof LoggerInterface) {
+                $this->oLogger->warning('Cannot get lender', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]);
+            }
+            return false;
+        }
+
+        if (false === $this->oLenderManager->canBid($oLenderAccount)) {
+            if($this->oLogger instanceof LoggerInterface) {
+                $this->oLogger->warning('lender cannot bid', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]);
+            }
             return false;
         }
 
         $iClientId = $oLenderAccount->id_client_owner;
-        if (false === $this->oLenderManager->canBid($oLenderAccount)) {
-            return false;
-        }
-
         $iBalance = $oTransaction->getSolde($iClientId);
         if ($iBalance < $fAmount) {
+            if($this->oLogger instanceof LoggerInterface) {
+                $this->oLogger->warning('lender\s balance not enough for a bid', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate, 'balance' => $iBalance]);
+            }
             return false;
         }
 
@@ -269,10 +312,12 @@ class BidManager
         $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         /** @var \clients $oClient */
         $oClient = $this->oEntityManager->getRepository('clients');
+        /** @var \projects $project */
+        $project = $this->oEntityManager->getRepository('projects');
 
-        if (false === empty($oBid->id_autobid) && false === empty($oBid->id_bid) && $oAutoBid->get($oBid->id_autobid)) {
+        if (false === empty($oBid->id_autobid) && false === empty($oBid->id_bid) && $oAutoBid->get($oBid->id_autobid) && $project->get($oBid->id_project)) {
             if (
-                bccomp($currentRate, \bids::BID_RATE_MIN, 1) > 0
+                bccomp($currentRate, $this->getProjectRateRange($project)['rate_min'], 1) >= 0
                 && bccomp($currentRate, $oAutoBid->rate_min, 1) >= 0
                 && $oLenderAccount->get($oBid->id_lender_account)
                 && $oClient->get($oLenderAccount->id_client_owner)
@@ -389,5 +434,22 @@ class BidManager
                 $oTransaction->id_transaction
             );
         }
+    }
+
+    /**
+     * @param \projects $project
+     *
+     * @return array
+     */
+    public function getProjectRateRange(\projects $project)
+    {
+        /** @var \project_rate_settings $projectRateSettings */
+        $projectRateSettings = $this->oEntityManager->getRepository('project_rate_settings');
+
+        if (false === empty($project->id_rate) && $projectRateSettings->get($project->id_rate)) {
+            return ['rate_min' => (float) $projectRateSettings->rate_min, 'rate_max' => (float) $projectRateSettings->rate_max];
+        }
+
+        return $projectRateSettings->getGlobalMinMaxRate();
     }
 }

@@ -1728,8 +1728,6 @@ class profileController extends bootstrap
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
         $oAutoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
         $this->oLendersAccounts  = $this->loadData('lenders_accounts');
-        $this->loadData('autobid'); // load for constant
-        $this->loadData('client_settings'); // load for constant
 
         $this->oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
 
@@ -1743,9 +1741,12 @@ class profileController extends bootstrap
 
         $oClientStatus  = $this->loadData('clients_status');
         $oSettings      = $this->loadData('settings');
-        $oAutoBidPeriod = $this->loadData('autobid_periods');
         $oBid           = $this->loadData('bids');
         $oProject       = $this->loadData('projects');
+        /** @var autobid $autobid */
+        $autobid        = $this->loadData('autobid');
+        /** @var \project_rate_settings $projectRateSettings */
+        $projectRateSettings = $this->loadData('project_rate_settings');
 
         $this->lng['autobid'] = $this->ln->selectFront('autobid', $this->language, $this->App);
 
@@ -1759,17 +1760,26 @@ class profileController extends bootstrap
         $this->fAverageRateUnilend = round($oProject->getAvgRate(), 1);
         $this->sAcceptationRate    = json_encode($oBid->getAcceptationPossibilityRounded());
 
+        $projectRates   = $projectRateSettings->getSettings();
+        $projectRateFormatted = [];
+        foreach ($projectRates as $rate) {
+            $projectRateFormatted[$rate['id_period']][$rate['evaluation']] = $rate;
+        }
+
+        $this->projectRatesGlobal = $oAutoBidSettingsManager->getRateRange();
+
         $this->aAutoBidSettings = array();
-        $aAutoBidSettings       = $oAutoBidSettingsManager->getSettings($this->oLendersAccounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE), 'ap.min ASC, evaluation DESC');
+        $aAutoBidSettings       = $autobid->getSettings($this->oLendersAccounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
         foreach ($aAutoBidSettings as $aSetting) {
-            $aPeriod = $oAutoBidPeriod->getDurations($aSetting['id_autobid_period']);
-            if ($aPeriod) {
-                $aSetting['AverageRateUnilend']                           = $this->projects->getAvgRate($aSetting['evaluation'], $aPeriod['min'], $aPeriod['max']);
-                $aSetting['period_min']                                   = $aPeriod['min'];
-                $aSetting['period_max']                                   = $aPeriod['max'];
-                $aSetting['note']                                         = constant('\projects::RISK_' . $aSetting['evaluation']);
-                $this->aAutoBidSettings[$aSetting['id_autobid_period']][] = $aSetting;
+            $aSetting['AverageRateUnilend'] = $this->projects->getAvgRate($aSetting['evaluation'], $aSetting['min'], $aSetting['max']);
+            $aSetting['note']               = constant('\projects::RISK_' . $aSetting['evaluation']);
+            $aSetting['project_rate_min']   = $this->projectRatesGlobal['rate_min'];
+            $aSetting['project_rate_max']   = $this->projectRatesGlobal['rate_max'];
+            if (isset($projectRateFormatted[$aSetting['id_period']][$aSetting['evaluation']])) {
+                $aSetting['project_rate_min'] = $projectRateFormatted[$aSetting['id_period']][$aSetting['evaluation']]['rate_min'];
+                $aSetting['project_rate_max'] = $projectRateFormatted[$aSetting['id_period']][$aSetting['evaluation']]['rate_max'];
             }
+            $this->aAutoBidSettings[$aSetting['id_period']][] = $aSetting;
         }
 
         $aSettingsSubmitted       = isset($_SESSION['forms']['autobid-param-submit']['values']) ? $_SESSION['forms']['autobid-param-submit']['values'] : array();
@@ -1792,8 +1802,7 @@ class profileController extends bootstrap
             }
             if (empty($_POST['autobid-param-simple-taux-min']) ||
                 false === is_numeric($_POST['autobid-param-simple-taux-min']) ||
-                $_POST['autobid-param-simple-taux-min'] < \bids::BID_RATE_MIN ||
-                $_POST['autobid-param-simple-taux-min'] > \bids::BID_RATE_MAX
+                false === $oAutoBidSettingsManager->isRateValid($_POST['autobid-param-simple-taux-min'])
             ) {
                 $_SESSION['forms']['autobid-param-submit']['errors']['taux-min'] = true;
             }
@@ -1816,22 +1825,27 @@ class profileController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        /** @var $oAutoBidSettingsManager */
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
         $oAutoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
 
         $oLendersAccounts = $this->loadData('lenders_accounts');
         $oSettings        = $this->loadData('settings');
-        $oAutoBidPeriod   = $this->loadData('autobid_periods');
+        /** @var project_period $projectPeriod */
+        $projectPeriod   = $this->loadData('project_period');
         $oProject         = $this->loadData('projects');
 
         $oSettings->get('pret min', 'type');
         $this->iMinimumBidAmount = (int)$oSettings->value;
 
-        foreach ($oAutoBidPeriod->select('status = ' . \autobid_periods::STATUS_ACTIVE) as $aPeriod) {
+        foreach ($projectPeriod->select('status = ' . \project_period::STATUS_ACTIVE) as $aPeriod) {
             $aAutoBidPeriods[] = $aPeriod['id_period'];
         }
         $aRiskValues           = $oProject->getAvailableRisks();
         $iNumberOfSettingLines = count($aRiskValues) * count($aAutoBidPeriods);
+
+        $lng['autobid'] = $this->ln->selectFront('autobid', $this->language, $this->App);
+
+        $errorMsg = [];
 
         if (isset($_POST['validate_settings_expert'])) {
             $oLendersAccounts->get($_POST['id_client'], 'id_client_owner');
@@ -1845,25 +1859,37 @@ class profileController extends bootstrap
             }
 
             if ($iNumberOfSettingLines != count($aSettingsFromPOST)) {
-                $_SESSION['forms']['autobid-param-submit']['errors']['general-error'] = true;
+                $errorMsg[] = 'settings-count';
             }
 
             if (empty($_POST['autobid-amount']) || false === is_numeric($_POST['autobid-amount']) || $_POST['autobid-amount'] < $this->iMinimumBidAmount) {
-                $_SESSION['forms']['autobid-param-submit']['errors']['amount'] = true;
-                $_SESSION['forms']['autobid-param-submit']['values']['amount'] = $_POST['autobid-amount'];
+                $errorMsg[] = str_replace('[#MIN_AMOUNT#]', $this->iMinimumBidAmount, $lng['autobid']['error-message-simple-setting-amount-wrong']);
             }
 
             foreach ($aSettingsFromPOST as $aSetting) {
                 if (false === in_array($aSetting['evaluation'], $aRiskValues) || false === in_array($aSetting['period'], $aAutoBidPeriods)) {
-                    $_SESSION['forms']['autobid-param-submit']['errors']['general-error'] = true;
+                    $note = constant('\projects::RISK_' . $aSetting['evaluation']) . '*';
+                    $projectPeriod->get($aSetting['period']);
+                    $errorMsg[] = str_replace(
+                        ['[#RISK#]', '[#PERIOD_MIN#]', '[#PERIOD_MAX#]'],
+                        [$note, $projectPeriod->min, $projectPeriod->max],
+                        $lng['autobid']['error-message-expert-setting-category-non-exist']
+                    );
                 }
 
-                if (false === is_numeric($aSetting['value']) || $aSetting['value'] < \bids::BID_RATE_MIN || $aSetting['value'] > \bids::BID_RATE_MAX) {
-                    $_SESSION['forms']['autobid-param-submit']['errors']['rate'] = true;
+                if (false === is_numeric($aSetting['value']) || false === $oAutoBidSettingsManager->isRateValid($aSetting['value'], $aSetting['evaluation'], $aSetting['period'])) {
+                    $note = constant('\projects::RISK_' . $aSetting['evaluation']) . '*';
+                    $projectPeriod->get($aSetting['period']);
+                    $projectRateRange = $oAutoBidSettingsManager->getRateRange($aSetting['evaluation'], $aSetting['period']);
+                    $errorMsg[] = str_replace(
+                        ['[#RISK#]', '[#PERIOD_MIN#]', '[#PERIOD_MAX#]', '[#RATE_MIN#]', '[#RATE_MAX#]'],
+                        [$note, $projectPeriod->min, $projectPeriod->max, $projectRateRange['rate_min'], $projectRateRange['rate_max']],
+                        $lng['autobid']['error-message-expert-setting-rate-wrong']
+                    );
                 }
             }
 
-            if (empty($_SESSION['forms']['autobid-param-submit']['errors'])) {
+            if (empty($errorMsg)) {
                 if (false === $oAutoBidSettingsManager->isOn($oLendersAccounts)) {
                     $oAutoBidSettingsManager->on($oLendersAccounts);
                 }
@@ -1872,10 +1898,9 @@ class profileController extends bootstrap
                     $oAutoBidSettingsManager->saveSetting($oLendersAccounts->id_lender_account, $aSetting['evaluation'], $aSetting['period'], $aSetting['value'], $iAmount);
                     $oAutoBidSettingsManager->activateDeactivateSetting($oLendersAccounts->id_lender_account, $aSetting['evaluation'], $aSetting['period'], $aSetting['switch']);
                 }
-                echo 'settings_saved';
+                echo json_encode(['result' => 'OK']);
             } else {
-                $_SESSION['forms']['autobid-param-submit']['values']['expert'] = $aSettingsFromPOST;
-                echo 'error';
+                echo json_encode(['result' => 'KO', 'message' => $errorMsg]);
             }
         }
     }

@@ -337,7 +337,14 @@ class ajaxController extends bootstrap
             if ($inter['mois'] > 0) {
                 $this->lProjetsFunding[$iKey]['daterest'] = $inter['mois'] . ' ' . $this->lng['preteur-projets']['mois'];
             } else {
-                $this->lProjetsFunding[$iKey]['daterest'] = "Terminé";
+                if ($this->lProjetsFunding[$iKey]['date_fin'] != '0000-00-00 00:00:00') {
+                    $endDateTime = new \DateTime($this->lProjetsFunding[$iKey]['date_fin']);
+                } else {
+                    $endDateTime = new \DateTime($this->lProjetsFunding[$iKey]['date_retrait_full']);
+                }
+                $endDate                                  = strftime('%d %B', $endDateTime->getTimestamp());
+                $endTime                                  = $endDateTime->format('H\h');
+                $this->lProjetsFunding[$iKey]['daterest'] = str_replace(['[#date#]', '[#time#]'], [$endDate, $endTime], $this->lng['preteur-projets']['termine']);
             }
 
             $this->lProjetsFunding[$iKey]['taux'] = $this->ficelle->formatNumber($this->projects->getAverageInterestRate($aProject['id_project'], $aProject['status']), 1);
