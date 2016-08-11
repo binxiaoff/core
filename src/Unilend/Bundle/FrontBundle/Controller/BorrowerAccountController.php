@@ -82,7 +82,7 @@ class BorrowerAccountController extends Controller
      *
      * @Route("/espace-emprunteur/operations", name="borrower_account_operations")
      *
-     * @return array|Response|StreamedResponse
+     * @return Response|StreamedResponse
      */
     public function operationsAction(Request $request)
     {
@@ -169,7 +169,45 @@ class BorrowerAccountController extends Controller
      */
     public function profileAction()
     {
+        $client  = $this->getClient();
+        $company = $this->getCompany();
+        /** @var \pays_v2 $country */
+        $country      = $this->get('unilend.service.entity_manager')->getRepository('pays_v2');
+        $birthCountry = '';
+        if ($country->get($client->id_pays_naissance)) {
+            $birthCountry = $country->fr;
+        }
 
+        $nationality = '';
+        if ($country->get($client->id_nationalite)) {
+            $nationality = $country->fr;
+        }
+
+        $companyCountry = '';
+        if ($country->get($company->id_pays)) {
+            $companyCountry = $country->fr;
+        }
+
+        /** @var \attachment $attachment */
+        $attachment = $this->get('unilend.service.entity_manager')->getRepository('attachment');
+        $projects   = $company->getProjectsForCompany();
+        $projectIds = array_column($projects, 'id_project');
+        $id         = $attachment->select('id_type = ' . \attachment_type::CNI_PASSPORTE_DIRIGEANT . ' AND id_owner in (' . implode(',',
+                $projectIds) . ') AND type_owner = \'' . \attachment::PROJECT . '\'', 'added ASC', '', 1);
+        $idAdded    = null;
+        if (isset($id[0]['added'])) {
+            $idAdded = $id[0]['added'];
+        }
+        $idVersoAdded = null;
+        $idVerso      = $attachment->select('id_type = ' . \attachment_type::CNI_PASSPORTE_VERSO . ' AND id_owner in (' . implode(',',
+                $projectIds) . ') AND type_owner = \'' . \attachment::PROJECT . '\'', 'added ASC', '', 1);
+        if (isset($idVerso[0]['added'])) {
+            $idVersoAdded = $id[0]['added'];
+        }
+
+
+
+        return ['client' => $client, 'company' => $company, 'birthCountry' => $birthCountry, 'nationality' => $nationality, 'companyCountry' => $companyCountry, 'idAdded' => $idAdded, 'idVersoAdded' => $idVersoAdded];
     }
 
     /**
@@ -321,8 +359,8 @@ class BorrowerAccountController extends Controller
                 }
 
                 if (empty($row['montant']) === false) {
-                    $line['montant'] = $row['montant'] / 100;
-                    $line['capital'] = $row['capital'] / 100;
+                    $line['montant']  = $row['montant'] / 100;
+                    $line['capital']  = $row['capital'] / 100;
                     $line['interets'] = $row['interets'] / 100;
                 }
 
