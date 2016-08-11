@@ -35,11 +35,13 @@ function replaceKeywordsWithValues (input, props) {
         // console.log('Templating', matches[i], propName, propValue)
 
         // Check if props value has more keywords to match. If so, add to matches
-        var propValueKeywordMatches = propValue.match(reKeywordMatch)
-        if (propValueKeywordMatches && propValueKeywordMatches.length > 0) {
-          // @debug
-          // console.log('Found new keywords in propValue', propValueKeywordMatches)
-          matches = matches.concat(propValueKeywordMatches)
+        if (propValue) {
+          var propValueKeywordMatches = propValue.match(reKeywordMatch)
+          if (propValueKeywordMatches && propValueKeywordMatches.length > 0) {
+            // @debug
+            // console.log('Found new keywords in propValue', propValueKeywordMatches)
+            matches = matches.concat(propValueKeywordMatches)
+          }
         }
 
         // Prop is function, so run it
