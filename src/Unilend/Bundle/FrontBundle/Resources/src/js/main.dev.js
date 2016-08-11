@@ -2269,7 +2269,6 @@ $(document).ready(function ($) {
       // Don't output the item's value, as that will be extracted from the text and applied to the code/city inputs (it currently differs)
       onrenderitem: function (item) {
         var self = this
-        console.log('rendering custom autocomplete result item')
         return Templating.replace(this.templates.targetItem, {
           value: '',
           text: item.label
