@@ -2396,13 +2396,24 @@ class dossiersController extends bootstrap
         $oSettings->get('Twitter', 'type');
         $twitterUrl = $oSettings->value;
 
+        $oSettings->get('Part unilend', 'type');
+        $commission = $oSettings->value;
+
+        $oSettings->get('Commission remboursement', 'type');
+        $owedCapitalCommission = $oSettings->value;
+
+        $oSettings->get('TVA', 'type');
+        $vatRate = (float) $oSettings->value;
+
         $varMail = array(
-            'surl'                => $this->surl,
-            'url'                 => $this->furl,
-            'prenom_p'            => $oClients->prenom,
-            'lien_cgv_universign' => $sCgvLink,
-            'lien_tw'             => $twitterUrl,
-            'lien_fb'             => $facebookUrl,
+            'surl'                 => $this->surl,
+            'url'                  => $this->furl,
+            'prenom_p'             => $oClients->prenom,
+            'lien_cgv_universign'  => $sCgvLink,
+            'lien_tw'              => $twitterUrl,
+            'lien_fb'              => $facebookUrl,
+            'commission_deblocage' => bcmul($commission / (1 + $vatRate), 100),
+            'commission_crd'       => bcmul($owedCapitalCommission, 100),
         );
 
         if (empty($oClients->email)) {

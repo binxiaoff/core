@@ -9,7 +9,7 @@
                 <entry key="sfdc.debugMessagesFile" value="/data/log/unilend/dataloader/lenders.log"/>
                 <entry key="sfdc.endpoint" value="https://www.salesforce.com"/>
                 <entry key="sfdc.username" value="arnaud.schwartz@unilend.fr"/>
-                <entry key="sfdc.password" value="ac1e9ca2107cfc45ac6a172fa66dcc02dc67d9ef4be7d908d5e2153c74939a7f35ce25927192ec3c"/>
+                <entry key="sfdc.password" value="fe3b7e7797e1a3bcd60b9b218631e23b037b2e8c80747629a747476eb6d302ddaae071b2d3f5ad02"/>
                 <entry key="process.encryptionKeyFile" value="/data/sites/unilend/app/dataloader/conf/key.txt"/>
                 <entry key="sfdc.timeoutSecs" value="540"/>
                 <entry key="sfdc.loadBatchSize" value="200"/>
@@ -18,7 +18,7 @@
                 <entry key="sfdc.insertNulls" value="true"/>
                 <entry key="process.operation" value="upsert"/>
                 <entry key="process.mappingFile" value="/data/sites/unilend/app/dataloader/map/Mapping_Lenders.sdl"/>
-                <entry key="process.outputError" value="/data/log/unilend/dataloader/errorLenders.csv"/>
+                <entry key="process.outputError" value="/data/log/dataloader/errorLenders.csv"/>
                 <entry key="dataAccess.name" value="/data/medias/nfs/protected/dataloader/preteurs.csv" />
                 <entry key="dataAccess.type" value="csvRead" />
                 <entry key="dataAccess.readUTF8" value="true" />
@@ -36,7 +36,7 @@
                 <entry key="sfdc.debugMessagesFile" value="/data/log/unilend/dataloader/companies.log"/>
                 <entry key="sfdc.endpoint" value="https://www.salesforce.com"/>
                 <entry key="sfdc.username" value="arnaud.schwartz@unilend.fr"/>
-                <entry key="sfdc.password" value="ac1e9ca2107cfc45ac6a172fa66dcc02dc67d9ef4be7d908d5e2153c74939a7f35ce25927192ec3c"/>
+                <entry key="sfdc.password" value="fe3b7e7797e1a3bcd60b9b218631e23b037b2e8c80747629a747476eb6d302ddaae071b2d3f5ad02"/>
                 <entry key="process.encryptionKeyFile" value="/data/sites/unilend/app/dataloader/conf/key.txt"/>
                 <entry key="sfdc.timeoutSecs" value="540"/>
                 <entry key="sfdc.loadBatchSize" value="200"/>
@@ -45,7 +45,7 @@
                 <entry key="sfdc.externalIdField" value="ID_Emprunteur__c"/>
                 <entry key="process.operation" value="upsert"/>
                 <entry key="process.mappingFile" value="/data/sites/unilend/app/dataloader/map/Mapping_Company.sdl"/>
-                <entry key="process.outputError" value="/data/log/unilend/dataloader/errorCompanies.csv"/>
+                <entry key="process.outputError" value="/data/log/dataloader/errorCompanies.csv"/>
                 <entry key="dataAccess.name" value="/data/medias/nfs/protected/dataloader/companies.csv" />
                 <entry key="dataAccess.type" value="csvRead" />
                 <entry key="dataAccess.readUTF8" value="true" />
@@ -63,7 +63,7 @@
                 <entry key="sfdc.debugMessagesFile" value="/data/log/unilend/dataloader/Borrowers.log"/>
                 <entry key="sfdc.endpoint" value="https://www.salesforce.com"/>
                 <entry key="sfdc.username" value="arnaud.schwartz@unilend.fr"/>
-                <entry key="sfdc.password" value="ac1e9ca2107cfc45ac6a172fa66dcc02dc67d9ef4be7d908d5e2153c74939a7f35ce25927192ec3c"/>
+                <entry key="sfdc.password" value="fe3b7e7797e1a3bcd60b9b218631e23b037b2e8c80747629a747476eb6d302ddaae071b2d3f5ad02"/>
                 <entry key="process.encryptionKeyFile" value="/data/sites/unilend/app/dataloader/conf/key.txt"/>
                 <entry key="sfdc.timeoutSecs" value="540"/>
                 <entry key="sfdc.loadBatchSize" value="200"/>
@@ -72,7 +72,7 @@
                 <entry key="sfdc.externalIdField" value="ID_Client__c"/>
                 <entry key="process.operation" value="upsert"/>
                 <entry key="process.mappingFile" value="/data/sites/unilend/app/dataloader/map/Mapping_Borrowers.sdl"/>
-                <entry key="process.outputError" value="/data/log/unilend/dataloader/errorBorrowers.csv"/>
+                <entry key="process.outputError" value="/data/log/dataloader/errorBorrowers.csv"/>
                 <entry key="dataAccess.name" value="/data/medias/nfs/protected/dataloader/emprunteurs.csv" />
                 <entry key="dataAccess.type" value="csvRead" />
                 <entry key="dataAccess.readUTF8" value="true" />
@@ -90,7 +90,7 @@
                 <entry key="sfdc.debugMessagesFile" value="/data/log/unilend/dataloader/Projects.log"/>
                 <entry key="sfdc.endpoint" value="https://www.salesforce.com"/>
                 <entry key="sfdc.username" value="arnaud.schwartz@unilend.fr"/>
-                <entry key="sfdc.password" value="ac1e9ca2107cfc45ac6a172fa66dcc02dc67d9ef4be7d908d5e2153c74939a7f35ce25927192ec3c"/>
+                <entry key="sfdc.password" value="fe3b7e7797e1a3bcd60b9b218631e23b037b2e8c80747629a747476eb6d302ddaae071b2d3f5ad02"/>
                 <entry key="process.encryptionKeyFile" value="/data/sites/unilend/app/dataloader/conf/key.txt"/>
                 <entry key="sfdc.timeoutSecs" value="540"/>
                 <entry key="sfdc.loadBatchSize" value="200"/>
@@ -99,7 +99,7 @@
                 <entry key="sfdc.externalIdField" value="Numero_Dossier_BO__c"/>
                 <entry key="process.operation" value="upsert"/>
                 <entry key="process.mappingFile" value="/data/sites/unilend/app/dataloader/map/Mapping_Projects.sdl"/>
-                <entry key="process.outputError" value="/data/log/unilend/dataloader/errorProjects.csv"/>
+                <entry key="process.outputError" value="/data/log/dataloader/errorProjects.csv"/>
                 <entry key="dataAccess.name" value="/data/medias/nfs/protected/dataloader/projects.csv" />
                 <entry key="dataAccess.type" value="csvRead" />
                 <entry key="dataAccess.readUTF8" value="true" />

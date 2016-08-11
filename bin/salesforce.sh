@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
 # Generation the extractions
-php bin/console salesforce:extraction companies
-php bin/console salesforce:extraction borrowers
-php bin/console salesforce:extraction projects
-php bin/console salesforce:extraction lenders
+php /data/sites/unilend/bin/console salesforce:extraction companies --env=prod
+php /data/sites/unilend/bin/console salesforce:extraction borrowers --env=prod
+php /data/sites/unilend/bin/console salesforce:extraction projects --env=prod
+php /data/sites/unilend/bin/console salesforce:extraction lenders --env=prod
 
-# send the extractions to dataloader
-java -cp /home/unilend/dataloader/targetdataloader-26.0.0-uber.jar -Dsalesforce.config.dir=/home/unilend/app/www/dataloader/conf/ com.salesforce.dataloader.process.ProcessRunner process.name=preteurs
-java -cp /home/unilend/dataloader/targetdataloader-26.0.0-uber.jar -Dsalesforce.config.dir=/home/unilend/app/www/dataloader/conf/ com.salesforce.dataloader.process.ProcessRunner process.name=companies
-java -cp /home/unilend/dataloader/targetdataloader-26.0.0-uber.jar -Dsalesforce.config.dir=/home/unilend/app/www/dataloader/conf/ com.salesforce.dataloader.process.ProcessRunner process.name=emprunteurs
-java -cp /home/unilend/dataloader/targetdataloader-26.0.0-uber.jar -Dsalesforce.config.dir=/home/unilend/app/www/dataloader/conf/ com.salesforce.dataloader.process.ProcessRunner process.name=projects
+# send the extractions via Dataloader
+java -cp /data/dataloader/target/dataloader-37.0.0-uber.jar -Dsalesforce.config.dir=/data/sites/unilend/app/dataloader/conf/ com.salesforce.dataloader.process.ProcessRunner process.name=preteurs
+java -cp /data/dataloader/target/dataloader-37.0.0-uber.jar -Dsalesforce.config.dir=/data/sites/unilend/app/dataloader/conf/ com.salesforce.dataloader.process.ProcessRunner process.name=companies
+java -cp /data/dataloader/target/dataloader-37.0.0-uber.jar -Dsalesforce.config.dir=/data/sites/unilend/app/dataloader/conf/ com.salesforce.dataloader.process.ProcessRunner process.name=emprunteurs
+java -cp /data/dataloader/target/dataloader-37.0.0-uber.jar -Dsalesforce.config.dir=/data/sites/unilend/app/dataloader/conf/ com.salesforce.dataloader.process.ProcessRunner process.name=projects
