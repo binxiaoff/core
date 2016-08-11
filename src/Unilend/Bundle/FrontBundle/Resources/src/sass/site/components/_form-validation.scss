@@ -71,6 +71,12 @@
       color: $c-error;
     }
 
+    select, input[type=radio] {
+      background-color: $c-white;
+      border-color: $c-error;
+      color: $c-error;
+    }
+
     .input-group:after {
       content: $fa-exclamation; // Exclamation mark
       color: $c-error;

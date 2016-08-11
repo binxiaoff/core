@@ -46,16 +46,16 @@ class ProjectRequestManager
     public function saveSimulatorRequest($aFormData)
     {
         /** @var \projects $project */
-        $project       = $this->entityManager->getRepository('projects');
+        $project = $this->entityManager->getRepository('projects');
         /** @var \clients $client */
-        $client        = $this->entityManager->getRepository('clients');
+        $client = $this->entityManager->getRepository('clients');
         /** @var \clients_adresses $clientAddress */
         $clientAddress = $this->entityManager->getRepository('clients_adresses');
         /** @var \companies $company */
-        $company       = $this->entityManager->getRepository('companies');
+        $company = $this->entityManager->getRepository('companies');
 
         $client->id_langue = 'fr';
-        $client->email     = (true === $client->existEmail($aFormData['email'])) ? $aFormData['email'] : $aFormData['email'] . '-' . time();
+        $client->email     = $client->existEmail($aFormData['email']) ? $aFormData['email'] . '-' . time() : $aFormData['email'];
         $client->create();
 
         $clientAddress->id_client = $client->id_client;
@@ -63,7 +63,7 @@ class ProjectRequestManager
 
         $company->id_client_owner               = $client->id_client;
         $company->siren                         = $aFormData['siren'];
-        $company->status_adresse_correspondance = '1';
+        $company->status_adresse_correspondance = 1;
         $company->email_dirigeant               = $aFormData['email'];
         $company->create();
 
@@ -78,7 +78,6 @@ class ProjectRequestManager
 
         $this->projectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::DEMANDE_SIMULATEUR, $project);
 
-        return $project->id_project;
+        return $project;
     }
-
 }

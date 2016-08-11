@@ -7891,12 +7891,18 @@ label.custom-input-switch.custom-input-switch-sm > input[type="checkbox"]:checke
   color: #DE2F4C;
 }
 /* line 74, ../sass/site/components/_form-validation.scss */
+.form-field.ui-formvalidation-error select, .form-field.ui-formvalidation-error input[type=radio] {
+  background-color: #fff;
+  border-color: #DE2F4C;
+  color: #DE2F4C;
+}
+/* line 80, ../sass/site/components/_form-validation.scss */
 .form-field.ui-formvalidation-error .input-group:after {
   content: "";
   color: #DE2F4C;
 }
 
-/* line 81, ../sass/site/components/_form-validation.scss */
+/* line 87, ../sass/site/components/_form-validation.scss */
 .ui-formvalidation-messages {
   display: block;
   list-style-type: none;
@@ -7914,11 +7920,11 @@ label.custom-input-switch.custom-input-switch-sm > input[type="checkbox"]:checke
   list-style-type: none;
   margin: 0;
 }
-/* line 90, ../sass/site/components/_form-validation.scss */
+/* line 96, ../sass/site/components/_form-validation.scss */
 .ui-formvalidation-messages li {
   padding: 5px 10px;
 }
-/* line 94, ../sass/site/components/_form-validation.scss */
+/* line 100, ../sass/site/components/_form-validation.scss */
 .ui-formvalidation-messages:before {
   content: '';
   display: none;
@@ -7934,11 +7940,11 @@ label.custom-input-switch.custom-input-switch-sm > input[type="checkbox"]:checke
   background-position: center center;
   background-repeat: no-repeat;
 }
-/* line 112, ../sass/site/components/_form-validation.scss */
+/* line 118, ../sass/site/components/_form-validation.scss */
 .ui-formvalidation-error .ui-formvalidation-messages {
   background-color: #fadfe4;
 }
-/* line 116, ../sass/site/components/_form-validation.scss */
+/* line 122, ../sass/site/components/_form-validation.scss */
 .ui-formvalidation-error .ui-formvalidation-messages:before {
   display: block;
   background-image: inline-svg-code('<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="20" height="10" viewBox="0 0 20 10"><path fill="#fadfe4" d="M0 10 L 10 0 L 20 10 L 0 10" /></svg>');

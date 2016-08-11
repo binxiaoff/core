@@ -307,7 +307,7 @@ class profileController extends bootstrap
                 $this->form_ok = false;
             } elseif ($_POST['email'] != $_POST['conf_email']) {
                 $this->form_ok = false;
-            } elseif ($this->clients->existEmail($_POST['email']) == false) {
+            } elseif ($this->clients->existEmail($_POST['email'])) {
                 if ($_POST['email'] != $this->email) {
                     $this->reponse_email       = $this->lng['etape1']['erreur-email'];
                     $this->form_ok             = false;
@@ -845,7 +845,7 @@ class profileController extends bootstrap
                 $this->form_ok = false;
             } elseif ($_POST['email_inscription'] != $_POST['conf_email_inscription']) {
                 $this->form_ok = false;
-            } elseif ($this->clients->existEmail($_POST['email_inscription']) == false) {
+            } elseif ($this->clients->existEmail($_POST['email_inscription'])) {
                 if ($_POST['email_inscription'] != $this->email_temp) {
                     $this->reponse_email = $this->lng['etape1']['erreur-email'];
                 } else {
