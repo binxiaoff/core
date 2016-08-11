@@ -1,5 +1,12 @@
 # Created by https://www.gitignore.io/api/node
 
+# Ignore generated files
+src/css/
+src/js/main.js
+src/js/main.min.js
+src/js/app/modernizr
+src/images/svg/icons.svg
+
 ### Node ###
 # Logs
 logs
@@ -15,8 +22,8 @@ node_modules
 # Optional REPL history
 .node_repl_history
 
-# Builds (/public/ folder)
-/public/
+# Builds (public/ folder)
+public/
 
 ### Sass ###
 .sass-cache/
