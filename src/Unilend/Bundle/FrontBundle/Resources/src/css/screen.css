@@ -11886,7 +11886,7 @@ td.table-myoperations-borrower-item-amount {
   background-image: url('../images/dashboard/file-bond-28x38.png?1470388878');
 }
 
-/* line 284, ../sass/site/components/dashboard/_panel.scss */
+/* line 299, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel {
   margin: 0 0 20px;
   color: #787679;
@@ -11918,7 +11918,7 @@ td.table-myoperations-borrower-item-amount {
   vertical-align: middle;
 }
 /* line 44, ../sass/site/components/dashboard/_panel.scss */
-.dashboard-panel .dashboard-panel-controls a {
+.dashboard-panel .dashboard-panel-controls > a {
   display: inline-block;
   box-sizing: border-box;
   padding: 0 10px;
@@ -11929,73 +11929,84 @@ td.table-myoperations-borrower-item-amount {
   vertical-align: middle;
 }
 /* line 208, ../sass/site/common/_mixins.scss */
-.dashboard-panel .dashboard-panel-controls a, .dashboard-panel .dashboard-panel-controls a:link, .dashboard-panel .dashboard-panel-controls a:visited {
+.dashboard-panel .dashboard-panel-controls > a, .dashboard-panel .dashboard-panel-controls > a:link, .dashboard-panel .dashboard-panel-controls > a:visited {
   color: #787679;
   text-decoration: none;
 }
 /* line 224, ../sass/site/common/_mixins.scss */
-.dashboard-panel .dashboard-panel-controls a:hover, .dashboard-panel .dashboard-panel-controls a:focus {
+.dashboard-panel .dashboard-panel-controls > a:hover, .dashboard-panel .dashboard-panel-controls > a:focus {
   color: #302a32;
   text-decoration: none;
 }
 /* line 232, ../sass/site/common/_mixins.scss */
-.dashboard-panel .dashboard-panel-controls a:active {
+.dashboard-panel .dashboard-panel-controls > a:active {
   color: #302a32;
   text-decoration: none;
 }
 /* line 70, ../sass/site/components/dashboard/_panel.scss */
-.dashboard-panel .dashboard-panel-controls a.btn-close {
+.dashboard-panel .dashboard-panel-controls > a.btn-close {
   border: 0;
 }
 /* line 73, ../sass/site/components/dashboard/_panel.scss */
-.dashboard-panel .dashboard-panel-controls a.btn-close:before {
+.dashboard-panel .dashboard-panel-controls > a.btn-close:before {
   font-size: 21.6px;
 }
+/* line 78, ../sass/site/components/dashboard/_panel.scss */
+.dashboard-panel .dashboard-panel-controls > a > span {
+  display: inline-block;
+  box-sizing: border-box;
+  padding: 0 10px;
+  background-color: transparent;
+  border-color: transparent;
+  font-size: 18px;
+  line-height: 61px;
+  vertical-align: middle;
+}
 @media screen and (max-width: 599px), screen and (min-width: 600px) and (max-width: 1023px) {
-  /* line 81, ../sass/site/components/dashboard/_panel.scss */
+  /* line 93, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-controls .custom-input-switch {
     margin-right: 20px;
   }
-  /* line 85, ../sass/site/components/dashboard/_panel.scss */
+  /* line 97, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-controls .btn-close {
     display: none;
   }
 }
-/* line 91, ../sass/site/components/dashboard/_panel.scss */
+/* line 103, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel .dashboard-panel-content {
   box-sizing: border-box;
   background-color: #fff;
 }
-/* line 96, ../sass/site/components/dashboard/_panel.scss */
+/* line 108, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel .dashboard-panel-footer {
   box-sizing: border-box;
   text-align: center;
   background-color: #fff;
 }
-/* line 103, ../sass/site/components/dashboard/_panel.scss */
+/* line 115, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel.ui-dashboard-panel-hidden {
   display: none;
 }
 @media screen and (min-width: 1024px) and (max-width: 1599px), screen and (min-width: 1600px) {
-  /* line 284, ../sass/site/components/dashboard/_panel.scss */
+  /* line 299, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel {
     margin: 0;
   }
-  /* line 111, ../sass/site/components/dashboard/_panel.scss */
+  /* line 123, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-header {
     margin-left: 20px;
     margin-top: 20px;
     margin-right: 20px;
     margin-bottom: 0;
   }
-  /* line 118, ../sass/site/components/dashboard/_panel.scss */
+  /* line 130, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-content {
     margin-left: 20px;
     margin-top: 0;
     margin-right: 20px;
     margin-bottom: 0;
   }
-  /* line 125, ../sass/site/components/dashboard/_panel.scss */
+  /* line 137, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-footer {
     margin-left: 20px;
     margin-top: 0;
@@ -12003,7 +12014,7 @@ td.table-myoperations-borrower-item-amount {
     margin-bottom: 20px;
   }
 }
-/* line 133, ../sass/site/components/dashboard/_panel.scss */
+/* line 145, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel .message,
 .dashboard-panel .message-info,
 .dashboard-panel .message-alert,
@@ -12012,7 +12023,7 @@ td.table-myoperations-borrower-item-amount {
   padding: 20px;
   margin-bottom: 0;
 }
-/* line 147, ../sass/site/components/dashboard/_panel.scss */
+/* line 159, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel .dashboard-panel-header {
   height: 61px;
   padding: 20px;
@@ -12022,28 +12033,29 @@ td.table-myoperations-borrower-item-amount {
   line-height: 1em;
   text-align: center;
 }
-/* line 158, ../sass/site/components/dashboard/_panel.scss */
+/* line 170, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel .dashboard-panel-controls {
   padding-left: 2em;
   line-height: 61px;
   background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJvYmplY3RCb3VuZGluZ0JveCIgeDE9IjEuMCIgeTE9IjAuNSIgeDI9IjAuMCIgeTI9IjAuNSI+PHN0b3Agb2Zmc2V0PSI3NSUiIHN0b3AtY29sb3I9IiNmZmZmZmYiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNmZmZmZmYiIHN0b3Atb3BhY2l0eT0iMC4wIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmFkKSIgLz48L3N2Zz4g');
 }
-/* line 163, ../sass/site/components/dashboard/_panel.scss */
-.dashboard-panel .dashboard-panel-controls a {
+/* line 175, ../sass/site/components/dashboard/_panel.scss */
+.dashboard-panel .dashboard-panel-controls > span,
+.dashboard-panel .dashboard-panel-controls > a {
   height: 61px;
   line-height: 61px;
 }
-/* line 169, ../sass/site/components/dashboard/_panel.scss */
+/* line 182, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel .dashboard-panel-title {
   margin: 0;
   font-size: 21px;
   color: #b20066;
 }
-/* line 175, ../sass/site/components/dashboard/_panel.scss */
+/* line 188, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel .dashboard-panel-content {
   padding: 20px;
 }
-/* line 179, ../sass/site/components/dashboard/_panel.scss */
+/* line 192, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel .dashboard-panel-footer {
   min-height: 58px;
   padding: 20px;
@@ -12055,7 +12067,7 @@ td.table-myoperations-borrower-item-amount {
   color: #b20066;
 }
 @media screen and (min-width: 1024px) and (max-width: 1599px) {
-  /* line 284, ../sass/site/components/dashboard/_panel.scss */
+  /* line 299, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel {
     margin: 0 0 20px;
     color: #787679;
@@ -12087,7 +12099,7 @@ td.table-myoperations-borrower-item-amount {
     vertical-align: middle;
   }
   /* line 44, ../sass/site/components/dashboard/_panel.scss */
-  .dashboard-panel .dashboard-panel-controls a {
+  .dashboard-panel .dashboard-panel-controls > a {
     display: inline-block;
     box-sizing: border-box;
     padding: 0 10px;
@@ -12098,76 +12110,87 @@ td.table-myoperations-borrower-item-amount {
     vertical-align: middle;
   }
   /* line 208, ../sass/site/common/_mixins.scss */
-  .dashboard-panel .dashboard-panel-controls a, .dashboard-panel .dashboard-panel-controls a:link, .dashboard-panel .dashboard-panel-controls a:visited {
+  .dashboard-panel .dashboard-panel-controls > a, .dashboard-panel .dashboard-panel-controls > a:link, .dashboard-panel .dashboard-panel-controls > a:visited {
     color: #787679;
     text-decoration: none;
   }
   /* line 224, ../sass/site/common/_mixins.scss */
-  .dashboard-panel .dashboard-panel-controls a:hover, .dashboard-panel .dashboard-panel-controls a:focus {
+  .dashboard-panel .dashboard-panel-controls > a:hover, .dashboard-panel .dashboard-panel-controls > a:focus {
     color: #302a32;
     text-decoration: none;
   }
   /* line 232, ../sass/site/common/_mixins.scss */
-  .dashboard-panel .dashboard-panel-controls a:active {
+  .dashboard-panel .dashboard-panel-controls > a:active {
     color: #302a32;
     text-decoration: none;
   }
   /* line 70, ../sass/site/components/dashboard/_panel.scss */
-  .dashboard-panel .dashboard-panel-controls a.btn-close {
+  .dashboard-panel .dashboard-panel-controls > a.btn-close {
     border: 0;
   }
   /* line 73, ../sass/site/components/dashboard/_panel.scss */
-  .dashboard-panel .dashboard-panel-controls a.btn-close:before {
+  .dashboard-panel .dashboard-panel-controls > a.btn-close:before {
     font-size: 21.6px;
+  }
+  /* line 78, ../sass/site/components/dashboard/_panel.scss */
+  .dashboard-panel .dashboard-panel-controls > a > span {
+    display: inline-block;
+    box-sizing: border-box;
+    padding: 0 10px;
+    background-color: transparent;
+    border-color: transparent;
+    font-size: 18px;
+    line-height: 61px;
+    vertical-align: middle;
   }
 }
 @media screen and (min-width: 1024px) and (max-width: 1599px) and (max-width: 599px), screen and (min-width: 1024px) and (max-width: 1599px) and (min-width: 600px) and (max-width: 1023px) {
-  /* line 81, ../sass/site/components/dashboard/_panel.scss */
+  /* line 93, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-controls .custom-input-switch {
     margin-right: 20px;
   }
-  /* line 85, ../sass/site/components/dashboard/_panel.scss */
+  /* line 97, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-controls .btn-close {
     display: none;
   }
 }
 @media screen and (min-width: 1024px) and (max-width: 1599px) {
-  /* line 91, ../sass/site/components/dashboard/_panel.scss */
+  /* line 103, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-content {
     box-sizing: border-box;
     background-color: #fff;
   }
-  /* line 96, ../sass/site/components/dashboard/_panel.scss */
+  /* line 108, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-footer {
     box-sizing: border-box;
     text-align: center;
     background-color: #fff;
   }
-  /* line 103, ../sass/site/components/dashboard/_panel.scss */
+  /* line 115, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel.ui-dashboard-panel-hidden {
     display: none;
   }
 }
 @media screen and (min-width: 1024px) and (max-width: 1599px) and (min-width: 1024px) and (max-width: 1599px), screen and (min-width: 1024px) and (max-width: 1599px) and (min-width: 1600px) {
-  /* line 284, ../sass/site/components/dashboard/_panel.scss */
+  /* line 299, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel {
     margin: 0;
   }
-  /* line 111, ../sass/site/components/dashboard/_panel.scss */
+  /* line 123, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-header {
     margin-left: 20px;
     margin-top: 20px;
     margin-right: 20px;
     margin-bottom: 0;
   }
-  /* line 118, ../sass/site/components/dashboard/_panel.scss */
+  /* line 130, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-content {
     margin-left: 20px;
     margin-top: 0;
     margin-right: 20px;
     margin-bottom: 0;
   }
-  /* line 125, ../sass/site/components/dashboard/_panel.scss */
+  /* line 137, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-footer {
     margin-left: 20px;
     margin-top: 0;
@@ -12176,7 +12199,7 @@ td.table-myoperations-borrower-item-amount {
   }
 }
 @media screen and (min-width: 1024px) and (max-width: 1599px) {
-  /* line 133, ../sass/site/components/dashboard/_panel.scss */
+  /* line 145, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .message,
   .dashboard-panel .message-info,
   .dashboard-panel .message-alert,
@@ -12185,7 +12208,7 @@ td.table-myoperations-borrower-item-amount {
     padding: 20px;
     margin-bottom: 0;
   }
-  /* line 200, ../sass/site/components/dashboard/_panel.scss */
+  /* line 213, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-header {
     height: 61px;
     padding: 20px;
@@ -12195,28 +12218,29 @@ td.table-myoperations-borrower-item-amount {
     line-height: 1em;
     text-align: left;
   }
-  /* line 211, ../sass/site/components/dashboard/_panel.scss */
+  /* line 224, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-controls {
     padding-left: 2em;
     line-height: 61px;
     background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJvYmplY3RCb3VuZGluZ0JveCIgeDE9IjEuMCIgeTE9IjAuNSIgeDI9IjAuMCIgeTI9IjAuNSI+PHN0b3Agb2Zmc2V0PSI3NSUiIHN0b3AtY29sb3I9IiNmZmZmZmYiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNmZmZmZmYiIHN0b3Atb3BhY2l0eT0iMC4wIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmFkKSIgLz48L3N2Zz4g');
   }
-  /* line 216, ../sass/site/components/dashboard/_panel.scss */
-  .dashboard-panel .dashboard-panel-controls a {
+  /* line 229, ../sass/site/components/dashboard/_panel.scss */
+  .dashboard-panel .dashboard-panel-controls > span,
+  .dashboard-panel .dashboard-panel-controls > a {
     height: 61px;
     line-height: 61px;
   }
-  /* line 222, ../sass/site/components/dashboard/_panel.scss */
+  /* line 236, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-title {
     margin: 0;
     font-size: 21px;
     color: #b20066;
   }
-  /* line 228, ../sass/site/components/dashboard/_panel.scss */
+  /* line 242, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-content {
     padding: 20px;
   }
-  /* line 232, ../sass/site/components/dashboard/_panel.scss */
+  /* line 246, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-footer {
     min-height: 58px;
     padding: 20px;
@@ -12229,7 +12253,7 @@ td.table-myoperations-borrower-item-amount {
   }
 }
 @media screen and (min-width: 1600px) {
-  /* line 284, ../sass/site/components/dashboard/_panel.scss */
+  /* line 299, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel {
     margin: 0 0 20px;
     color: #787679;
@@ -12267,7 +12291,7 @@ td.table-myoperations-borrower-item-amount {
     vertical-align: middle;
   }
   /* line 44, ../sass/site/components/dashboard/_panel.scss */
-  .dashboard-panel .dashboard-panel-controls a {
+  .dashboard-panel .dashboard-panel-controls > a {
     display: inline-block;
     box-sizing: border-box;
     padding: 0 10px;
@@ -12278,76 +12302,87 @@ td.table-myoperations-borrower-item-amount {
     vertical-align: middle;
   }
   /* line 208, ../sass/site/common/_mixins.scss */
-  .dashboard-panel .dashboard-panel-controls a, .dashboard-panel .dashboard-panel-controls a:link, .dashboard-panel .dashboard-panel-controls a:visited {
+  .dashboard-panel .dashboard-panel-controls > a, .dashboard-panel .dashboard-panel-controls > a:link, .dashboard-panel .dashboard-panel-controls > a:visited {
     color: #787679;
     text-decoration: none;
   }
   /* line 224, ../sass/site/common/_mixins.scss */
-  .dashboard-panel .dashboard-panel-controls a:hover, .dashboard-panel .dashboard-panel-controls a:focus {
+  .dashboard-panel .dashboard-panel-controls > a:hover, .dashboard-panel .dashboard-panel-controls > a:focus {
     color: #302a32;
     text-decoration: none;
   }
   /* line 232, ../sass/site/common/_mixins.scss */
-  .dashboard-panel .dashboard-panel-controls a:active {
+  .dashboard-panel .dashboard-panel-controls > a:active {
     color: #302a32;
     text-decoration: none;
   }
   /* line 70, ../sass/site/components/dashboard/_panel.scss */
-  .dashboard-panel .dashboard-panel-controls a.btn-close {
+  .dashboard-panel .dashboard-panel-controls > a.btn-close {
     border: 0;
   }
   /* line 73, ../sass/site/components/dashboard/_panel.scss */
-  .dashboard-panel .dashboard-panel-controls a.btn-close:before {
+  .dashboard-panel .dashboard-panel-controls > a.btn-close:before {
     font-size: 21.6px;
+  }
+  /* line 78, ../sass/site/components/dashboard/_panel.scss */
+  .dashboard-panel .dashboard-panel-controls > a > span {
+    display: inline-block;
+    box-sizing: border-box;
+    padding: 0 10px;
+    background-color: transparent;
+    border-color: transparent;
+    font-size: 18px;
+    line-height: 61px;
+    vertical-align: middle;
   }
 }
 @media screen and (min-width: 1600px) and (max-width: 599px), screen and (min-width: 1600px) and (min-width: 600px) and (max-width: 1023px) {
-  /* line 81, ../sass/site/components/dashboard/_panel.scss */
+  /* line 93, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-controls .custom-input-switch {
     margin-right: 20px;
   }
-  /* line 85, ../sass/site/components/dashboard/_panel.scss */
+  /* line 97, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-controls .btn-close {
     display: none;
   }
 }
 @media screen and (min-width: 1600px) {
-  /* line 91, ../sass/site/components/dashboard/_panel.scss */
+  /* line 103, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-content {
     box-sizing: border-box;
     background-color: #fff;
   }
-  /* line 96, ../sass/site/components/dashboard/_panel.scss */
+  /* line 108, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-footer {
     box-sizing: border-box;
     text-align: center;
     background-color: #fff;
   }
-  /* line 103, ../sass/site/components/dashboard/_panel.scss */
+  /* line 115, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel.ui-dashboard-panel-hidden {
     display: none;
   }
 }
 @media screen and (min-width: 1600px) and (min-width: 1024px) and (max-width: 1599px), screen and (min-width: 1600px) and (min-width: 1600px) {
-  /* line 284, ../sass/site/components/dashboard/_panel.scss */
+  /* line 299, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel {
     margin: 0;
   }
-  /* line 111, ../sass/site/components/dashboard/_panel.scss */
+  /* line 123, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-header {
     margin-left: 20px;
     margin-top: 20px;
     margin-right: 20px;
     margin-bottom: 0;
   }
-  /* line 118, ../sass/site/components/dashboard/_panel.scss */
+  /* line 130, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-content {
     margin-left: 20px;
     margin-top: 0;
     margin-right: 20px;
     margin-bottom: 0;
   }
-  /* line 125, ../sass/site/components/dashboard/_panel.scss */
+  /* line 137, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-footer {
     margin-left: 20px;
     margin-top: 0;
@@ -12356,7 +12391,7 @@ td.table-myoperations-borrower-item-amount {
   }
 }
 @media screen and (min-width: 1600px) {
-  /* line 133, ../sass/site/components/dashboard/_panel.scss */
+  /* line 145, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .message,
   .dashboard-panel .message-info,
   .dashboard-panel .message-alert,
@@ -12389,7 +12424,7 @@ td.table-myoperations-borrower-item-amount {
     vertical-align: middle;
   }
   /* line 44, ../sass/site/components/dashboard/_panel.scss */
-  .dashboard-panel .dashboard-panel-controls a {
+  .dashboard-panel .dashboard-panel-controls > a {
     display: inline-block;
     box-sizing: border-box;
     padding: 0 10px;
@@ -12400,76 +12435,87 @@ td.table-myoperations-borrower-item-amount {
     vertical-align: middle;
   }
   /* line 208, ../sass/site/common/_mixins.scss */
-  .dashboard-panel .dashboard-panel-controls a, .dashboard-panel .dashboard-panel-controls a:link, .dashboard-panel .dashboard-panel-controls a:visited {
+  .dashboard-panel .dashboard-panel-controls > a, .dashboard-panel .dashboard-panel-controls > a:link, .dashboard-panel .dashboard-panel-controls > a:visited {
     color: #787679;
     text-decoration: none;
   }
   /* line 224, ../sass/site/common/_mixins.scss */
-  .dashboard-panel .dashboard-panel-controls a:hover, .dashboard-panel .dashboard-panel-controls a:focus {
+  .dashboard-panel .dashboard-panel-controls > a:hover, .dashboard-panel .dashboard-panel-controls > a:focus {
     color: #302a32;
     text-decoration: none;
   }
   /* line 232, ../sass/site/common/_mixins.scss */
-  .dashboard-panel .dashboard-panel-controls a:active {
+  .dashboard-panel .dashboard-panel-controls > a:active {
     color: #302a32;
     text-decoration: none;
   }
   /* line 70, ../sass/site/components/dashboard/_panel.scss */
-  .dashboard-panel .dashboard-panel-controls a.btn-close {
+  .dashboard-panel .dashboard-panel-controls > a.btn-close {
     border: 0;
   }
   /* line 73, ../sass/site/components/dashboard/_panel.scss */
-  .dashboard-panel .dashboard-panel-controls a.btn-close:before {
+  .dashboard-panel .dashboard-panel-controls > a.btn-close:before {
     font-size: 21.6px;
+  }
+  /* line 78, ../sass/site/components/dashboard/_panel.scss */
+  .dashboard-panel .dashboard-panel-controls > a > span {
+    display: inline-block;
+    box-sizing: border-box;
+    padding: 0 10px;
+    background-color: transparent;
+    border-color: transparent;
+    font-size: 18px;
+    line-height: 61px;
+    vertical-align: middle;
   }
 }
 @media screen and (min-width: 1600px) and (max-width: 599px), screen and (min-width: 1600px) and (min-width: 600px) and (max-width: 1023px) {
-  /* line 81, ../sass/site/components/dashboard/_panel.scss */
+  /* line 93, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-controls .custom-input-switch {
     margin-right: 20px;
   }
-  /* line 85, ../sass/site/components/dashboard/_panel.scss */
+  /* line 97, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-controls .btn-close {
     display: none;
   }
 }
 @media screen and (min-width: 1600px) {
-  /* line 91, ../sass/site/components/dashboard/_panel.scss */
+  /* line 103, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-content {
     box-sizing: border-box;
     background-color: #fff;
   }
-  /* line 96, ../sass/site/components/dashboard/_panel.scss */
+  /* line 108, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-footer {
     box-sizing: border-box;
     text-align: center;
     background-color: #fff;
   }
-  /* line 103, ../sass/site/components/dashboard/_panel.scss */
+  /* line 115, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel.ui-dashboard-panel-hidden {
     display: none;
   }
 }
 @media screen and (min-width: 1600px) and (min-width: 1024px) and (max-width: 1599px), screen and (min-width: 1600px) and (min-width: 1600px) {
-  /* line 284, ../sass/site/components/dashboard/_panel.scss */
+  /* line 299, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel {
     margin: 0;
   }
-  /* line 111, ../sass/site/components/dashboard/_panel.scss */
+  /* line 123, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-header {
     margin-left: 20px;
     margin-top: 20px;
     margin-right: 20px;
     margin-bottom: 0;
   }
-  /* line 118, ../sass/site/components/dashboard/_panel.scss */
+  /* line 130, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-content {
     margin-left: 20px;
     margin-top: 0;
     margin-right: 20px;
     margin-bottom: 0;
   }
-  /* line 125, ../sass/site/components/dashboard/_panel.scss */
+  /* line 137, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-footer {
     margin-left: 20px;
     margin-top: 0;
@@ -12478,7 +12524,7 @@ td.table-myoperations-borrower-item-amount {
   }
 }
 @media screen and (min-width: 1600px) {
-  /* line 133, ../sass/site/components/dashboard/_panel.scss */
+  /* line 145, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .message,
   .dashboard-panel .message-info,
   .dashboard-panel .message-alert,
@@ -12487,7 +12533,7 @@ td.table-myoperations-borrower-item-amount {
     padding: 30px;
     margin-bottom: 0;
   }
-  /* line 200, ../sass/site/components/dashboard/_panel.scss */
+  /* line 213, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-header {
     height: 61px;
     padding: 30px;
@@ -12497,28 +12543,29 @@ td.table-myoperations-borrower-item-amount {
     line-height: 1em;
     text-align: left;
   }
-  /* line 211, ../sass/site/components/dashboard/_panel.scss */
+  /* line 224, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-controls {
     padding-left: 2em;
     line-height: 61px;
     background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJvYmplY3RCb3VuZGluZ0JveCIgeDE9IjEuMCIgeTE9IjAuNSIgeDI9IjAuMCIgeTI9IjAuNSI+PHN0b3Agb2Zmc2V0PSI3NSUiIHN0b3AtY29sb3I9IiNmZmZmZmYiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNmZmZmZmYiIHN0b3Atb3BhY2l0eT0iMC4wIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmFkKSIgLz48L3N2Zz4g');
   }
-  /* line 216, ../sass/site/components/dashboard/_panel.scss */
-  .dashboard-panel .dashboard-panel-controls a {
+  /* line 229, ../sass/site/components/dashboard/_panel.scss */
+  .dashboard-panel .dashboard-panel-controls > span,
+  .dashboard-panel .dashboard-panel-controls > a {
     height: 61px;
     line-height: 61px;
   }
-  /* line 222, ../sass/site/components/dashboard/_panel.scss */
+  /* line 236, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-title {
     margin: 0;
     font-size: 21px;
     color: #b20066;
   }
-  /* line 228, ../sass/site/components/dashboard/_panel.scss */
+  /* line 242, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-content {
     padding: 30px;
   }
-  /* line 232, ../sass/site/components/dashboard/_panel.scss */
+  /* line 246, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-footer {
     min-height: 58px;
     padding: 30px;
@@ -12529,36 +12576,37 @@ td.table-myoperations-borrower-item-amount {
   .dashboard-panel .dashboard-panel-footer a, .dashboard-panel .dashboard-panel-footer a:link, .dashboard-panel .dashboard-panel-footer a:visited {
     color: #b20066;
   }
-  /* line 255, ../sass/site/components/dashboard/_panel.scss */
+  /* line 269, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-header {
     height: 85.2px;
     padding: 30px;
   }
-  /* line 260, ../sass/site/components/dashboard/_panel.scss */
+  /* line 274, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-title {
     font-size: 25.2px;
   }
-  /* line 264, ../sass/site/components/dashboard/_panel.scss */
+  /* line 278, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-controls {
     line-height: 85.2px;
   }
-  /* line 267, ../sass/site/components/dashboard/_panel.scss */
-  .dashboard-panel .dashboard-panel-controls a {
+  /* line 281, ../sass/site/components/dashboard/_panel.scss */
+  .dashboard-panel .dashboard-panel-controls > span,
+  .dashboard-panel .dashboard-panel-controls > a {
     height: 85.2px;
     line-height: 85.2px;
   }
-  /* line 273, ../sass/site/components/dashboard/_panel.scss */
+  /* line 288, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-content {
     padding: 30px;
   }
-  /* line 277, ../sass/site/components/dashboard/_panel.scss */
+  /* line 292, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel .dashboard-panel-footer {
     min-height: 78px;
     padding: 30px;
   }
 }
 
-/* line 349, ../sass/site/components/dashboard/_panel.scss */
+/* line 365, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel-alt {
   margin: 0 0 20px;
   color: #787679;
@@ -12590,7 +12638,7 @@ td.table-myoperations-borrower-item-amount {
   vertical-align: middle;
 }
 /* line 44, ../sass/site/components/dashboard/_panel.scss */
-.dashboard-panel-alt .dashboard-panel-controls a {
+.dashboard-panel-alt .dashboard-panel-controls > a {
   display: inline-block;
   box-sizing: border-box;
   padding: 0 10px;
@@ -12601,73 +12649,84 @@ td.table-myoperations-borrower-item-amount {
   vertical-align: middle;
 }
 /* line 208, ../sass/site/common/_mixins.scss */
-.dashboard-panel-alt .dashboard-panel-controls a, .dashboard-panel-alt .dashboard-panel-controls a:link, .dashboard-panel-alt .dashboard-panel-controls a:visited {
+.dashboard-panel-alt .dashboard-panel-controls > a, .dashboard-panel-alt .dashboard-panel-controls > a:link, .dashboard-panel-alt .dashboard-panel-controls > a:visited {
   color: #787679;
   text-decoration: none;
 }
 /* line 224, ../sass/site/common/_mixins.scss */
-.dashboard-panel-alt .dashboard-panel-controls a:hover, .dashboard-panel-alt .dashboard-panel-controls a:focus {
+.dashboard-panel-alt .dashboard-panel-controls > a:hover, .dashboard-panel-alt .dashboard-panel-controls > a:focus {
   color: #302a32;
   text-decoration: none;
 }
 /* line 232, ../sass/site/common/_mixins.scss */
-.dashboard-panel-alt .dashboard-panel-controls a:active {
+.dashboard-panel-alt .dashboard-panel-controls > a:active {
   color: #302a32;
   text-decoration: none;
 }
 /* line 70, ../sass/site/components/dashboard/_panel.scss */
-.dashboard-panel-alt .dashboard-panel-controls a.btn-close {
+.dashboard-panel-alt .dashboard-panel-controls > a.btn-close {
   border: 0;
 }
 /* line 73, ../sass/site/components/dashboard/_panel.scss */
-.dashboard-panel-alt .dashboard-panel-controls a.btn-close:before {
+.dashboard-panel-alt .dashboard-panel-controls > a.btn-close:before {
   font-size: 21.6px;
 }
+/* line 78, ../sass/site/components/dashboard/_panel.scss */
+.dashboard-panel-alt .dashboard-panel-controls > a > span {
+  display: inline-block;
+  box-sizing: border-box;
+  padding: 0 10px;
+  background-color: transparent;
+  border-color: transparent;
+  font-size: 18px;
+  line-height: 61px;
+  vertical-align: middle;
+}
 @media screen and (max-width: 599px), screen and (min-width: 600px) and (max-width: 1023px) {
-  /* line 81, ../sass/site/components/dashboard/_panel.scss */
+  /* line 93, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel-alt .dashboard-panel-controls .custom-input-switch {
     margin-right: 20px;
   }
-  /* line 85, ../sass/site/components/dashboard/_panel.scss */
+  /* line 97, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel-alt .dashboard-panel-controls .btn-close {
     display: none;
   }
 }
-/* line 91, ../sass/site/components/dashboard/_panel.scss */
+/* line 103, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel-alt .dashboard-panel-content {
   box-sizing: border-box;
   background-color: #fff;
 }
-/* line 96, ../sass/site/components/dashboard/_panel.scss */
+/* line 108, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel-alt .dashboard-panel-footer {
   box-sizing: border-box;
   text-align: center;
   background-color: #fff;
 }
-/* line 103, ../sass/site/components/dashboard/_panel.scss */
+/* line 115, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel-alt.ui-dashboard-panel-hidden {
   display: none;
 }
 @media screen and (min-width: 1024px) and (max-width: 1599px), screen and (min-width: 1600px) {
-  /* line 349, ../sass/site/components/dashboard/_panel.scss */
+  /* line 365, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel-alt {
     margin: 0;
   }
-  /* line 111, ../sass/site/components/dashboard/_panel.scss */
+  /* line 123, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel-alt .dashboard-panel-header {
     margin-left: 20px;
     margin-top: 20px;
     margin-right: 20px;
     margin-bottom: 0;
   }
-  /* line 118, ../sass/site/components/dashboard/_panel.scss */
+  /* line 130, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel-alt .dashboard-panel-content {
     margin-left: 20px;
     margin-top: 0;
     margin-right: 20px;
     margin-bottom: 0;
   }
-  /* line 125, ../sass/site/components/dashboard/_panel.scss */
+  /* line 137, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel-alt .dashboard-panel-footer {
     margin-left: 20px;
     margin-top: 0;
@@ -12675,7 +12734,7 @@ td.table-myoperations-borrower-item-amount {
     margin-bottom: 20px;
   }
 }
-/* line 133, ../sass/site/components/dashboard/_panel.scss */
+/* line 145, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel-alt .message,
 .dashboard-panel-alt .message-info,
 .dashboard-panel-alt .message-alert,
@@ -12684,7 +12743,7 @@ td.table-myoperations-borrower-item-amount {
   padding: 15px;
   margin-bottom: 0;
 }
-/* line 299, ../sass/site/components/dashboard/_panel.scss */
+/* line 314, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel-alt .dashboard-panel-header {
   height: 46.8px;
   padding: 15px 20px;
@@ -12692,29 +12751,30 @@ td.table-myoperations-borrower-item-amount {
   color: #302a32;
   line-height: 1em;
 }
-/* line 308, ../sass/site/components/dashboard/_panel.scss */
+/* line 323, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel-alt .dashboard-panel-controls {
   padding-right: 10px;
   line-height: 46.8px;
   background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJvYmplY3RCb3VuZGluZ0JveCIgeDE9IjEuMCIgeTE9IjAuNSIgeDI9IjAuMCIgeTI9IjAuNSI+PHN0b3Agb2Zmc2V0PSI3NSUiIHN0b3AtY29sb3I9IiNmOGY2ZjgiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNmOGY2ZjgiIHN0b3Atb3BhY2l0eT0iMC4wIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmFkKSIgLz48L3N2Zz4g');
 }
-/* line 313, ../sass/site/components/dashboard/_panel.scss */
-.dashboard-panel-alt .dashboard-panel-controls a {
+/* line 328, ../sass/site/components/dashboard/_panel.scss */
+.dashboard-panel-alt .dashboard-panel-controls > span,
+.dashboard-panel-alt .dashboard-panel-controls > a {
   height: 46.8px;
   line-height: 46.8px;
 }
-/* line 319, ../sass/site/components/dashboard/_panel.scss */
+/* line 335, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel-alt .dashboard-panel-title {
   margin: 0;
   color: inherit;
   font-size: 16.8px;
   line-height: 1em;
 }
-/* line 326, ../sass/site/components/dashboard/_panel.scss */
+/* line 342, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel-alt .dashboard-panel-content {
   padding: 20px;
 }
-/* line 330, ../sass/site/components/dashboard/_panel.scss */
+/* line 346, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel-alt .dashboard-panel-footer {
   min-height: 48px;
   padding: 15px 20px;
@@ -12729,54 +12789,112 @@ td.table-myoperations-borrower-item-amount {
 }
 
 @media screen and (min-width: 1024px) and (max-width: 1599px), screen and (min-width: 1600px) {
-  /* line 357, ../sass/site/components/dashboard/_panel.scss */
-  .dashboard-panel.ui-draggable .dashboard-panel-controls:before {
-    content: "";
+  /* line 374, ../sass/site/components/dashboard/_panel.scss */
+  .dashboard-panel[data-draggable] .dashboard-panel-controls .ui-draggable-handle,
+  .dashboard-panel.ui-draggable .dashboard-panel-controls .ui-draggable-handle {
     padding-left: 15px;
     padding-right: 15px;
     cursor: move;
     cursor: -webkit-grab;
     cursor: grab;
-    font-family: "unilend-fontawesome", "FontAwesome";
-    font-size: 21.6px;
     -webkit-user-select: none;
        -moz-user-select: none;
         -ms-user-select: none;
             user-select: none;
     vertical-align: middle;
   }
+  /* line 383, ../sass/site/components/dashboard/_panel.scss */
+  .dashboard-panel[data-draggable] .dashboard-panel-controls .ui-draggable-handle:before,
+  .dashboard-panel.ui-draggable .dashboard-panel-controls .ui-draggable-handle:before {
+    content: "";
+    font-family: "unilend-fontawesome", "FontAwesome";
+    font-size: 21.6px;
+  }
+  /* line 392, ../sass/site/components/dashboard/_panel.scss */
+  .dashboard-panel[data-draggable].ui-movablecontent-ghost,
+  .dashboard-panel.ui-draggable.ui-movablecontent-ghost {
+    position: relative;
+    opacity: .5;
+    border-radius: 5px;
+  }
+  /* line 397, ../sass/site/components/dashboard/_panel.scss */
+  .dashboard-panel[data-draggable].ui-movablecontent-ghost:after,
+  .dashboard-panel.ui-draggable.ui-movablecontent-ghost:after {
+    content: '';
+    display: block;
+    border: dotted 3px #9f9d9f;
+    border-radius: 20px;
+    box-sizing: border-box;
+    background: rgba(236, 234, 237, 0.5);
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 5;
+  }
+  /* line 413, ../sass/site/components/dashboard/_panel.scss */
+  .dashboard-panel[data-draggable].ui-movablecontent-chosen,
+  .dashboard-panel.ui-draggable.ui-movablecontent-chosen {
+    opacity: 1;
+    background-color: rgba(236, 234, 237, 0.5);
+    border-radius: 20px;
+  }
+  /* line 419, ../sass/site/components/dashboard/_panel.scss */
+  .dashboard-panel[data-draggable].ui-movablecontent-fallback,
+  .dashboard-panel.ui-draggable.ui-movablecontent-fallback {
+    opacity: 1;
+    background-color: rgba(236, 234, 237, 0.5);
+    border-radius: 20px;
+  }
+  /* line 424, ../sass/site/components/dashboard/_panel.scss */
+  .dashboard-panel[data-draggable].ui-movablecontent-fallback .dashboard-panel-header,
+  .dashboard-panel.ui-draggable.ui-movablecontent-fallback .dashboard-panel-header {
+    border: solid 2px #dedcdf;
+  }
+  /* line 427, ../sass/site/components/dashboard/_panel.scss */
+  .dashboard-panel[data-draggable].ui-movablecontent-fallback .dashboard-panel-footer,
+  .dashboard-panel.ui-draggable.ui-movablecontent-fallback .dashboard-panel-footer {
+    border: solid 2px #dedcdf;
+  }
+  /* line 431, ../sass/site/components/dashboard/_panel.scss */
+  .dashboard-panel[data-draggable].ui-movablecontent-fallback .dashboard-panel-content,
+  .dashboard-panel.ui-draggable.ui-movablecontent-fallback .dashboard-panel-content {
+    border-left: solid 2px #dedcdf;
+    border-right: solid 2px #dedcdf;
+  }
 }
 
-/* line 385, ../sass/site/components/dashboard/_panel.scss */
+/* line 451, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel-overview {
   text-align: center;
   margin-bottom: 20px;
 }
-/* line 389, ../sass/site/components/dashboard/_panel.scss */
+/* line 455, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel-overview .label {
   display: block;
   margin-bottom: 10px;
   color: #787679;
 }
-/* line 395, ../sass/site/components/dashboard/_panel.scss */
+/* line 461, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel-overview .value {
   display: block;
   color: #b20066;
   font-size: 33.6px;
 }
 
-/* line 403, ../sass/site/components/dashboard/_panel.scss */
+/* line 469, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel-chart {
   position: relative;
   text-align: center;
   min-height: 400px;
 }
-/* line 408, ../sass/site/components/dashboard/_panel.scss */
+/* line 474, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel-chart .chart {
   min-height: none;
 }
 @media screen and (min-width: 1024px) and (max-width: 1599px), screen and (min-width: 1600px) {
-  /* line 413, ../sass/site/components/dashboard/_panel.scss */
+  /* line 479, ../sass/site/components/dashboard/_panel.scss */
   .dashboard-panel-chart .nested-tabs .tab-navigation {
     position: absolute;
     right: 0;
@@ -12785,24 +12903,24 @@ td.table-myoperations-borrower-item-amount {
   }
 }
 
-/* line 423, ../sass/site/components/dashboard/_panel.scss */
+/* line 489, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel-summary {
   margin: 20px 0;
   text-align: center;
 }
-/* line 427, ../sass/site/components/dashboard/_panel.scss */
+/* line 493, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel-summary .label {
   color: #302a32;
 }
-/* line 431, ../sass/site/components/dashboard/_panel.scss */
+/* line 497, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel-summary .value {
   color: #b20066;
 }
-/* line 435, ../sass/site/components/dashboard/_panel.scss */
+/* line 501, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel-summary .primary {
   color: #302a32;
 }
-/* line 439, ../sass/site/components/dashboard/_panel.scss */
+/* line 505, ../sass/site/components/dashboard/_panel.scss */
 .dashboard-panel-summary .secondary {
   color: #787679;
   font-style: italic;
