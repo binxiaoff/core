@@ -16,13 +16,12 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Guard\Authenticator\AbstractFormLoginAuthenticator;
-use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
-use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
-use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Symfony\Component\Security\Http\Util\TargetPathTrait;
 
 class LoginAuthenticator extends AbstractFormLoginAuthenticator
 {
+    use TargetPathTrait;
     /** @var UserPasswordEncoder */
     private $securityPasswordEncoder;
     /** @var RouterInterface */
@@ -37,9 +36,22 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $this->entityManager           = $entityManager;
     }
 
-    protected function getDefaultSuccessRedirectUrl()
+    protected function getDefaultSuccessRedirectUrl(Request $request, UserInterface $user)
     {
-        return '/';
+        $targetPath = $request->get('_target_path');
+        if ($targetPath) {
+            return new RedirectResponse($targetPath);
+        }
+
+        if (in_array('ROLE_LENDER', $user->getRoles())) {
+            return $this->router->generate('lender_profile');
+        }
+
+        if (in_array('ROLE_BORROWER', $user->getRoles())) {
+            return $this->router->generate('borrower_account_projects');
+        }
+
+        return $this->router->generate('home');
     }
 
     /**
@@ -112,15 +124,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $user = $token->getUser();
         $request->getSession()->remove('captchaInformation');
 
-        if ($user instanceof BaseUser) {
-            // Restore Symfony default behavior
-            $targetPath = $request->get('_target_path');
-            if ($targetPath) {
-                return new RedirectResponse($targetPath);
-            }
-        }
-
-        if ($user instanceof UserLender) {
+        if ($user instanceof UserInterface && in_array('ROLE_LENDER', $user->getRoles())) {
             if ($user->getSubscriptionStep() < 3) {
                 //TODO uncomment once route created
                 //return new RedirectResponse($this->router->generate('lender_subscription'));
@@ -134,20 +138,15 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             if (false === $user->hasAcceptedCurrentTerms()) {
                 //TODO add  message about Terms
             }
-
-            if ($request->getSession()->get('_security.default.target_path')) {
-                return new RedirectResponse($request->getSession()->get('_security.default.target_path'));
-            }
-
-            return new RedirectResponse($this->router->generate('home'));
-
         }
 
-        if ($user instanceof UserBorrower) {
-            return new RedirectResponse($this->router->generate('borrower_account_projects'));
+        $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
+
+        if (!$targetPath) {
+            $targetPath = $this->getDefaultSuccessRedirectUrl($request, $user);
         }
 
-        return null;
+        return new RedirectResponse($targetPath);
     }
 
     /**

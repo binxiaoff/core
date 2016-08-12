@@ -220,15 +220,6 @@ class BorrowerAccountController extends Controller
     }
 
     /**
-     * @Route("/espace-emprunteur/faq", name="borrower_account_faq")
-     * @Template("borrower_account/faq.html.twig")
-     */
-    public function faqAction()
-    {
-
-    }
-
-    /**
      *
      * @param Request $request
      *
