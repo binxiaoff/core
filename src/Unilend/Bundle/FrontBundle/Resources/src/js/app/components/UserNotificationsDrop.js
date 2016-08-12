@@ -244,7 +244,7 @@ UserNotificationsDrop.prototype.render = function (notifications, pushOrReplace)
   })
 
   // Refresh the drop if contents have changed
-  if (self.drop.isOpened()) self.drop.position()
+  self.position()
 }
 
 // Render a single notification from a {NotificationObject}
@@ -285,6 +285,13 @@ UserNotificationsDrop.prototype.updatePip = function (amount) {
 
   // Set the elem's HTML
   self.$elem.html(pipHTML)
+}
+
+// Update the Drop's position. Do this if the contents ever change, or page view repaints somehow
+// @method position
+// @returns {Void}
+UserNotificationsDrop.prototype.position = function () {
+  if (self.drop.isOpened()) self.drop.position()
 }
 
 // Templates for rendering
@@ -328,7 +335,7 @@ UserNotificationsDrop.prototype.templates = {
 $.fn.uiUserNotificationsDrop = function (op) {
   // Fire a command to the UserNotificationsDrop object, e.g. $('[data-usernotificationsdrop]').uiUserNotificationsDrop('publicMethod', {..})
   // @todo add in list of public methods that $.fn.uiUserNotificationsDrop can reference
-  if (typeof op === 'string' && /^(publicMethod|anotherPublicMethod)$/.test(op)) {
+  if (typeof op === 'string' && /^(show|hide|render|position)$/.test(op)) {
     // Get further additional arguments to apply to the matched command method
     var args = Array.prototype.slice.call(arguments)
     args.shift()
@@ -370,127 +377,5 @@ $(document)
       return false
     }
   })
-//
-// var $userNotificationsToggle = $('.site-header .site-user a.profile-notifications')
-// var userNotificationsDrop = undefined
-// if ($userNotificationsToggle.length > 0) {
-//   userNotificationsDrop = new Drop({
-//     target: $userNotificationsToggle[0],
-//     content: '',
-//     classes: 'drop-profile-notifications',
-//     position: 'bottom center',
-//     openOn: 'click',
-//     tetherOptions: {
-//       attachment: 'top right',
-//       targetAttachment: 'bottom center',
-//       offset: '-15px -25px'
-//     }
-//   })
-//   var userNotificationsItems = []
-//
-//   $doc
-//
-//
-//   // HTML Templates
-//   var userNotificationsTemplates = {
-//
-//   }
-//
-//   function buildProfileNotificationsContent (notifications, pushOrReplace) {
-//     // Compiled list items to render
-//     var notificationsHTML = []
-//
-//     // Get any notifications on the page to populate
-//     // Reason why I have this is to pick up any other notifications on the page and collate them all here first before building the element
-//     if (notifications === undefined) {
-//       var $notifications = $('#profile-notifications .notification.ui-notification-status-unread')
-//       notifications = []
-//
-//       // Build the object from the element
-//       $notifications.each(function (i, notification) {
-//         var $n = $(notification)
-//         var notificationObj = {
-//           type: $n[0].className.replace(/^.*notification-type-([^ ]+).*/, '$1') || 'default',
-//           status: $n[0].className.replace(/^.*notification-status-([^ ]+).*$/, '$1') || 'unread',
-//           datetime: $n.find('.notification-datetime').html(),
-//           title: $n.find('.notification-title').html(),
-//           image: $n.find('.notification-image').html(),
-//           content: $n.find('.notification-content').html()
-//         }
-//         notifications.push(notificationObj)
-//       })
-//
-//       // console.log('buildProfileNotificationsContent auto-detected notifications', notifications)
-//     }
-//
-//     // Show empty
-//     if (notifications instanceof Array && notifications.length === 0 && !pushOrReplace) {
-//       pushOrReplace = false // Replace
-//       notificationsHTML.push(Templating.replace(userNotificationsTemplates.emptyItem, [__]))
-//
-//       // Render the notifications to the list
-//       // This script assumes notifications is ordered by most recent first
-//     } else {
-//       $.each(notifications, function (i, notification) {
-//         // Requires notifications to be structured as such:
-//         /*
-//          {
-//          type: 'offer-rejected',
-//          status: 'unread',
-//          datetime: 'Il y a 5 minutes',
-//          title: 'Offre refusée',
-//          content: 'Votre offre de prêt de 45€ au taux de 9,4% à Garage Toniol a été refusée.',
-//          image: '<svg role="img" title="Offre refusée" width="100" height="100" preserveAspectRatio="" class="svg-icon svg-file-notification-offer-rejected" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"><use xlink:href="/media/svg/icons.svg#notification-offer-rejected" class="svg-file-notification-offer-rejected"></use></svg>'
-//          }
-//          */
-//         notificationsHTML.push(Templating.replace(userNotificationsTemplates.listItem, [notification, __]))
-//       })
-//     }
-//
-//     // console.log('buildProfileNotificationsContent notificationsHTML', notificationsHTML)
-//
-//     // No notifications to render, don't do anything
-//     if (notificationsHTML.length === 0) return
-//
-//     // Push new items
-//     if (pushOrReplace) {
-//       // console.log('buildProfileNotificationsContent pushing new items')
-//       userNotificationsItems = notificationsHTML.concat(userNotificationsItems)
-//
-//       // Replace with new items
-//     } else {
-//       // console.log('buildProfileNotificationsContent replacing items')
-//       userNotificationsItems = notificationsHTML
-//     }
-//
-//     // Change the content in the drop
-//     userNotificationsDrop.content.innerHTML = Templating.replace(userNotificationsTemplates.list, {
-//       listItems: userNotificationsItems.join('')
-//     })
-//
-//     // Update the drop's position if it's open and new content was applied
-//     if ($body.is('.drop-open')) {
-//       userNotificationsDrop.position()
-//     }
-//
-//     // console.log('buildProfileNotificationsContent update drop content', userNotificationsDrop.content)
-//   }
-//
-//   // Show the profile notifications drop
-//   function showProfileNotifications (notifications, pushOrReplace) {
-//     buildProfileNotificationsContent(notifications, pushOrReplace)
-//     userNotificationsDrop.open()
-//   }
-//
-//   // Hide the profile notifications drop
-//   function hideProfileNotifications () {
-//     userNotificationsDrop.close()
-//   }
-//
-//   // Initialise any profile notifications into the drop on ready
-//   if ($('.list-notifications .notification').length > 0) {
-//     buildProfileNotificationsContent()
-//   }
-// }
 
 module.exports = UserNotificationsDrop

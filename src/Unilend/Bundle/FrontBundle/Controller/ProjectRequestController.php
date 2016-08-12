@@ -21,10 +21,10 @@ class ProjectRequestController extends Controller
     const PAGE_ROUTE_LANDING_PAGE = 'lp-depot-de-dossier';
     const PAGE_ROUTE_STEP_2       = 'project_request_contact';
     const PAGE_ROUTE_STEP_3       = 'project_request_finance';
-    const PAGE_ROUTE_FILES        = 'fichiers';
-    const PAGE_ROUTE_PROSPECT     = 'prospect';
-    const PAGE_ROUTE_END          = 'fin';
-    const PAGE_ROUTE_EMAILS       = 'emails';
+    const PAGE_ROUTE_PROSPECT     = 'project_request_prospect';
+    const PAGE_ROUTE_FILES        = 'project_request_files';
+    const PAGE_ROUTE_END          = 'project_request_end';
+    const PAGE_ROUTE_EMAILS       = 'project_request_emails';
     const PAGE_ROUTE_INDEX        = 'project_request_index';
     const PAGE_ROUTE_RECOVERY     = 'project_request_recovery';
     const PAGE_ROUTE_STAND_BY     = 'project_request_stand_by';
@@ -768,6 +768,333 @@ class ProjectRequestController extends Controller
         return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::A_TRAITER);
     }
 
+    /**
+     * @Route("/depot_de_dossier/prospect/{hash}", name="project_request_prospect", requirements={"hash": "[0-9a-f]{32}"})
+     * @Method({"GET"})
+     *
+     * @param string $hash
+     * @param Request $request
+     * @return Response
+     */
+    public function prospectAction($hash, Request $request)
+    {
+        $response = $this->checkProjectHash(self::PAGE_ROUTE_PROSPECT, $hash);
+
+        if ($response instanceof Response) {
+            return $response;
+        }
+
+        $session = $request->getSession()->get('project_request');
+        $values  = isset($session['values']) ? $session['values'] : [];
+
+        $template = [
+            'form' => [
+                'errors'  => isset($session['errors']) ? $session['errors'] : [],
+                'values'  => [
+                    'civility'   => isset($values['civility']) ? $values['civility'] : $this->client->civilite,
+                    'lastname'   => isset($values['lastname']) ? $values['lastname'] : $this->client->nom,
+                    'firstname'  => isset($values['firstname']) ? $values['firstname'] : $this->client->prenom,
+                    'email'      => isset($values['email']) ? $values['email'] : $this->removeEmailSuffix($this->client->email),
+                    'email_conf' => isset($values['email_conf']) ? $values['email_conf'] : '',
+                    'mobile'     => isset($values['mobile']) ? $values['mobile'] : $this->client->telephone,
+                    'function'   => isset($values['function']) ? $values['function'] : $this->client->fonction
+                ]
+            ],
+            'project' => [
+                'hash' => $this->project->hash
+            ]
+        ];
+
+        $request->getSession()->remove('project_request');
+
+        return $this->render('pages/project_request/prospect.html.twig', $template);
+    }
+
+    /**
+     * @Route("/depot_de_dossier/prospect/{hash}", name="project_request_prospect_form", requirements={"hash": "[0-9a-f]{32}"})
+     * @Method({"POST"})
+     *
+     * @param string $hash
+     * @param Request $request
+     * @return Response
+     */
+    public function prospectFormAction($hash, Request $request)
+    {
+        $response = $this->checkProjectHash(self::PAGE_ROUTE_PROSPECT, $hash);
+
+        if ($response instanceof Response) {
+            return $response;
+        }
+
+        $errors = [];
+
+        if (empty($request->request->get('civility')) || false === in_array($request->request->get('civility'), ['Mme', 'M.'])) {
+            $errors['civility'] = true;
+        }
+        if (empty($request->request->get('lastname'))) {
+            $errors['lastname'] = true;
+        }
+        if (empty($request->request->get('firstname'))) {
+            $errors['firstname'] = true;
+        }
+        if (empty($request->request->get('email')) || false === filter_var($request->request->get('email'), FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = true;
+        }
+        if (empty($request->request->get('email_conf')) || $request->request->get('email') !== $request->request->get('email_conf')) {
+            $errors['email_conf'] = true;
+        }
+        if (empty($request->request->get('mobile'))) {
+            $errors['mobile'] = true;
+        }
+        if (empty($request->request->get('function'))) {
+            $errors['function'] = true;
+        }
+
+        if (false === empty($errors)) {
+            $request->getSession()->set('project_request', [
+                'values'  => $request->request->all(),
+                'errors'  => $errors
+            ]);
+
+            return $this->redirectToRoute(self::PAGE_ROUTE_PROSPECT, ['hash' => $this->project->hash]);
+        }
+
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
+        $email   = $request->request->get('email');
+
+        if ($this->client->existEmail($email) && $this->removeEmailSuffix($this->client->email) !== $email) {
+            $email = $email . '-' . time();
+        }
+
+        $this->client->email     = $email;
+        $this->client->civilite  = $request->request->get('civility');
+        $this->client->prenom    = $request->request->get('firstname');
+        $this->client->nom       = $request->request->get('lastname');
+        $this->client->fonction  = $request->request->get('function');
+        $this->client->telephone = $request->request->get('mobile');
+        $this->client->id_langue = 'fr';
+        $this->client->slug      = $ficelle->generateSlug($this->client->prenom . '-' . $this->client->nom);
+        $this->client->update();
+
+        $this->company->email_dirigeant = $email;
+        $this->company->email_facture   = $email;
+        $this->company->update();
+
+        return $this->redirectToRoute(self::PAGE_ROUTE_END, ['hash' => $this->project->hash]);
+    }
+
+    /**
+     * @Route("/depot_de_dossier/fichiers/{hash}", name="project_request_files", requirements={"hash": "[0-9a-f]{32}"})
+     * @Method({"GET"})
+     *
+     * @param string $hash
+     * @return Response
+     */
+    public function filesAction($hash)
+    {
+        $response = $this->checkProjectHash(self::PAGE_ROUTE_FILES, $hash);
+
+        if ($response instanceof Response) {
+            return $response;
+        }
+
+        $template = [
+            'project' => [
+                'hash' => $this->project->hash
+            ]
+        ];
+
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
+
+        $this->attachmentType        = $entityManager->getRepository('attachment_type');
+        $attachmentTypes             = $this->attachmentType->getAllTypesForProjects('fr', true, [
+            \attachment_type::PRESENTATION_ENTRERPISE,
+            \attachment_type::RIB,
+            \attachment_type::CNI_PASSPORTE_DIRIGEANT,
+            \attachment_type::CNI_PASSPORTE_VERSO,
+            \attachment_type::DERNIERE_LIASSE_FISCAL,
+            \attachment_type::LIASSE_FISCAL_N_1,
+            \attachment_type::LIASSE_FISCAL_N_2,
+            \attachment_type::RAPPORT_CAC,
+            \attachment_type::PREVISIONNEL,
+            \attachment_type::BALANCE_CLIENT,
+            \attachment_type::BALANCE_FOURNISSEUR,
+            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_1,
+            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_1,
+            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_2,
+            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_2,
+            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_3,
+            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_3,
+            \attachment_type::SITUATION_COMPTABLE_INTERMEDIAIRE,
+            \attachment_type::DERNIERS_COMPTES_CONSOLIDES,
+            \attachment_type::STATUTS,
+            \attachment_type::PRESENTATION_PROJET,
+            \attachment_type::DERNIERE_LIASSE_FISCAL_HOLDING,
+            \attachment_type::KBIS_HOLDING,
+            \attachment_type::AUTRE1,
+            \attachment_type::AUTRE2
+        ]);
+        $template['attachmentTypes'] = $this->attachmentType->changeLabelWithDynamicContent($attachmentTypes);
+
+        /** @var \projects_last_status_history $projectLastStatusHistory */
+        $projectLastStatusHistory = $entityManager->getRepository('projects_last_status_history');
+        $projectLastStatusHistory->get($this->project->id_project, 'id_project');
+
+        /** @var \projects_status_history $projectStatusHistory */
+        $projectStatusHistory = $entityManager->getRepository('projects_status_history');
+        $projectStatusHistory->get($projectLastStatusHistory->id_project_status_history, 'id_project_status_history');
+
+        if (false === empty($projectStatusHistory->content)) {
+            $oDOMElement = new \DOMDocument();
+            $oDOMElement->loadHTML($projectStatusHistory->content);
+            $oList = $oDOMElement->getElementsByTagName('ul');
+            if ($oList->length > 0 && $oList->item(0)->childNodes->length > 0) {
+                $template['attachmentsList'] = $oList->item(0)->C14N();
+            }
+        }
+
+        return $this->render('pages/project_request/files.html.twig', $template);
+    }
+
+    /**
+     * @Route("/depot_de_dossier/fichiers/{hash}", name="project_request_files_form", requirements={"hash": "[0-9a-f]{32}"})
+     * @Method({"POST"})
+     *
+     * @param string $hash
+     * @param Request $request
+     * @return Response
+     */
+    public function filesFormAction($hash, Request $request)
+    {
+        $response = $this->checkProjectHash(self::PAGE_ROUTE_FILES, $hash);
+
+        if ($response instanceof Response) {
+            return $response;
+        }
+
+        $files  = empty($request->request->get('files')) ? [] : $request->request->get('files');
+
+        foreach ($request->files->all() as $fileName => $file) {
+            if ($file instanceof UploadedFile && false === empty($files[$fileName])) {
+                $this->uploadAttachment($fileName, $request->request->get('files')[$fileName]);
+            }
+        }
+
+        $this->sendCommercialEmail('notification-ajout-document-dossier');
+
+        return $this->redirectToRoute(self::PAGE_ROUTE_END, ['hash' => $this->project->hash]);
+    }
+
+    /**
+     * @Route("/depot_de_dossier/fin/{hash}", name="project_request_end", requirements={"hash": "[0-9a-f]{32}"})
+     * @Method({"GET"})
+     *
+     * @param string $hash
+     * @param Request $request
+     * @return Response
+     */
+    public function endAction($hash, Request $request)
+    {
+        $response = $this->checkProjectHash(self::PAGE_ROUTE_END, $hash);
+
+        if ($response instanceof Response) {
+            return $response;
+        }
+
+        /** @var Translator $translator */
+        $translator = $this->get('translator');
+
+        $addMoreFiles = false;
+        $message      = $translator->trans('project-request_end-page-not-entitled-message');
+
+        switch ($this->projectStatus) {
+            case \projects_status::ABANDON:
+                $message = $translator->trans('project-request_end-page-aborded-message');
+                break;
+            CASE \projects_status::PAS_3_BILANS:
+                $message = $translator->trans('project-request_end-page-not-3-annual-accounts-message');
+                break;
+            case \projects_status::REVUE_ANALYSTE:
+            case \projects_status::COMITE:
+            case \projects_status::PREP_FUNDING:
+                $message = $translator->trans('project-request_end-page-analysis-in-progress-message');
+                break;
+            case \projects_status::COMPLETUDE_ETAPE_3:
+            case \projects_status::A_TRAITER:
+            case \projects_status::EN_ATTENTE_PIECES:
+                $addMoreFiles = true;
+
+                if (1 == $this->project->process_fast) {
+                    $message = $translator->trans('project-request_end-page-fast-process-message');
+                } else {
+                    $message = $translator->trans('project-request_end-page-main-content');
+                }
+                break;
+            case \projects_status::NOTE_EXTERNE_FAIBLE:
+                switch ($this->project->retour_altares) {
+                    case Altares::RESPONSE_CODE_PROCEDURE:
+                        $message = $translator->trans('project-request_end-page-collective-proceeding-message');
+                        break;
+                    case Altares::RESPONSE_CODE_INACTIVE:
+                    case Altares::RESPONSE_CODE_UNKNOWN_SIREN:
+                        $message = $translator->trans('project-request_end-page-no-siren-message');
+                        break;
+                    case Altares::RESPONSE_CODE_NOT_REGISTERED:
+                        $message = $translator->trans('project-request_end-page-not-commercial-company-message');
+                        break;
+                    case Altares::RESPONSE_CODE_NEGATIVE_CAPITAL_STOCK:
+                    case Altares::RESPONSE_CODE_NEGATIVE_RAW_OPERATING_INCOMES:
+                        $message = $translator->trans('project-request_end-page-negative-operating-result-message');
+                        break;
+                    case Altares::RESPONSE_CODE_ELIGIBLE:
+                        if (
+                            $this->project->fonds_propres_declara_client < 0
+                            || $this->project->resultat_exploitation_declara_client < 0
+                            || $this->project->ca_declara_client <= \projects::MINIMUM_REVENUE
+                        ) {
+                            $message = $translator->trans('project-request_end-page-negative-operating-result-message');
+                        }
+                        break;
+                }
+                break;
+        }
+
+        $template = [
+            'addMoreFiles' => $addMoreFiles,
+            'message'      => $message,
+            'project'      => [
+                'hash' => $this->project->hash
+            ]
+        ];
+
+        return $this->render('pages/project_request/end.html.twig', $template);
+    }
+
+    /**
+     * @Route("/depot_de_dossier/emails/{hash}", name="project_request_emails", requirements={"hash": "[0-9a-f]{32}"})
+     * @Method({"GET"})
+     *
+     * @param string $hash
+     * @return Response
+     */
+    public function emailsAction($hash)
+    {
+        $response = $this->checkProjectHash(self::PAGE_ROUTE_EMAILS, $hash);
+
+        if ($response instanceof Response) {
+            return $response;
+        }
+
+        $this->project->stop_relances = 1;
+        $this->project->update();
+
+        $this->sendCommercialEmail('notification-stop-relance-dossier');
+
+        return $this->render('pages/project_request/emails.html.twig');
+    }
+
     private function sendSubscriptionConfirmationEmail()
     {
         /** @var EntityManager $entityManager */
@@ -816,6 +1143,38 @@ class ProjectRequestController extends Controller
         $message->setTo($sRecipient);
         $mailer = $this->get('mailer');
         $mailer->send($message);
+    }
+
+    /**
+     * @param string $emailType
+     */
+    private function sendCommercialEmail($emailType)
+    {
+        if ($this->project->id_commercial > 0) {
+            /** @var EntityManager $entityManager */
+            $entityManager = $this->get('unilend.service.entity_manager');
+
+            /** @var \users $user */
+            $user = $entityManager->getRepository('users');
+            $user->get($this->project->id_commercial, 'id_user');
+
+            /** @var \mail_templates $mailTemplate */
+            $mailTemplate = $entityManager->getRepository('mail_templates');
+            $mailTemplate->get($emailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
+
+            $aReplacements = [
+                '[ID_PROJET]'      => $this->project->id_project,
+                '[LIEN_BO_PROJET]' => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_admin') . '/dossiers/edit/' . $this->project->id_project,
+                '[RAISON_SOCIALE]' => $this->company->name,
+                '[SURL]'           => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default')
+            ];
+
+            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($mailTemplate->type, $aReplacements, false);
+            $message->setTo(trim($user->email));
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
+        }
     }
 
     /**
@@ -916,6 +1275,8 @@ class ProjectRequestController extends Controller
                 }
                 break;
         }
+
+        return null;
     }
 
     /**
