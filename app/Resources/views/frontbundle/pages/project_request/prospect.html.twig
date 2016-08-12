@@ -1,0 +1,182 @@
+{% extends 'layouts/_layout.html.twig' %}
+
+{% set bodyId = '' %}
+{% set page = {
+    title: 'Déposer un projet',
+    permalink: route('emprunter/new')
+} %}
+
+{% block siteContent %}
+    <article id="deposer-projet" class="page">
+        <div class="hero-wrap">
+            <header class="page-header">
+                <div class="site-wrap">
+                    <h1 id="project-create-title" class="h1">{% trans %} project-request_page-title {% endtrans %}</h1>
+                </div><!-- /.site-wrap -->
+            </header><!-- /.page-header -->
+
+            <div class="page-content">
+                <div class="site-wrap">
+                    <form id="form-project-create" action="{{ path('project_request_prospect_form', {'hash' : project.hash}) }}" method="post" class="form-project-create">
+                        <div class="row">
+                            <div class="col-lg-8 col-md-8">
+                                <div class="form-project-create-nav tab-nav">
+                                    <ul class="nav nav-progress">
+                                        <li id="project-create-1" role="presentation" class="complete">
+                                            <span class="project-create-progress-point">1.</span>
+                                            <span class="label">{% trans %} project-request_contact-tab-title {% endtrans %}</span>
+                                        </li>
+                                        <li id="project-create-2" role="presentation" class="complete">
+                                            <span class="project-create-progress-point">2.</span>
+                                            <span class="label">{% trans %} project-request_finance-tab-title {% endtrans %}</span>
+                                        </li>
+                                        <li id="project-create-3" role="presentation" class="active">
+                                            <span class="project-create-progress-point">3.</span>
+                                            <span class="label">{% trans %} project-request_prospect-tab-title {% endtrans %}</span>
+                                        </li>
+                                    </ul><!-- /.nav-progress -->
+                                </div><!-- /.form-project-create-nav -->
+                            </div>
+                        </div>
+
+                        <div class="row ui-sticky-parent">
+                            <div class="col-form col-lg-8 col-md-8">
+                                <div class="form-project-create-content tab-content">
+                                    <div id="form-project-create-3" aria-labelledby="project-create-3 project-create-title" data-formvalidation data-formvalidation-notificationselem="#form-project-create-3-notifications">
+                                        <fieldset class="panel">
+                                            <h3 class="h3">{% trans %} project-request_prospect-title {% endtrans %}</h3>
+
+                                            <div class="row">
+                                                <div class="message-info">
+                                                    <p>{% trans %} project-request_prospect-introduction {% endtrans %}</p>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="form-field form-field-multi{% if form.errors.civility is defined %} ui-formvalidation-error{% endif %}">
+                                                    <div class="field-label">
+                                                        <label>
+                                                            {% trans %} project-request_prospect-form-civility-field-label {% endtrans %}
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} project-request_mandatory-field {% endtrans %}</span></span>
+                                                        </label>
+                                                    </div>
+                                                    <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
+                                                        <li>
+                                                            <label>
+                                                                <input type="radio" name="civility" value="Mme"{% if 'Mme' == form.values.civility %} checked{% endif %}/>
+                                                                {% trans %} project-request_prospect-form-civility-female-value {% endtrans %}
+                                                            </label>
+                                                        </li>
+                                                        <li>
+                                                            <label>
+                                                                <input type="radio" name="civility" value="M."{% if 'M.' == form.values.civility %} checked{% endif %}/>
+                                                                {% trans %} project-request_prospect-form-civility-male-value {% endtrans %}
+                                                            </label>
+                                                        </li>
+                                                    </ul>
+                                                    {% if form.errors.civility is defined %}
+                                                        <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required-radio {% endtrans %}</li></ul>
+                                                    {% endif %}
+                                                </div><!-- /.form-field -->
+                                            </div>
+
+                                            <div class="row row-multi-col-computer">
+                                                <div class="form-field col-lg-6 col-md-6{% if form.errors.lastname is defined %} ui-formvalidation-error{% endif %}">
+                                                    <label for="form-project-create-identity-nom">
+                                                        {% trans %} project-request_prospect-form-lastname-field-label {% endtrans %}
+                                                        <span class="field-required">*<span class="sr-only"> {% trans %} project-request_mandatory-field {% endtrans %}</span></span>
+                                                    </label>
+                                                    <input id="form-project-create-identity-nom" type="text" name="lastname" value="{{ form.values.lastname }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                    {% if form.errors.lastname is defined %}
+                                                        <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
+                                                    {% endif %}
+                                                </div><!-- /.form-field -->
+
+                                                <div class="form-field col-lg-6 col-md-6{% if form.errors.firstname is defined %} ui-formvalidation-error{% endif %}">
+                                                    <label for="form-project-create-identity-prenom">
+                                                        {% trans %} project-request_prospect-form-firstname-field-label {% endtrans %}
+                                                        <span class="field-required">*<span class="sr-only"> {% trans %} project-request_mandatory-field {% endtrans %}</span></span>
+                                                    </label>
+                                                    <input id="form-project-create-identity-prenom" type="text" name="firstname" value="{{ form.values.firstname }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                    {% if form.errors.firstname is defined %}
+                                                        <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
+                                                    {% endif %}
+                                                </div><!-- /.form-field -->
+                                            </div>
+
+                                            <div class="row row-multi-col-computer">
+                                                <div class="form-field col-lg-6 col-md-6{% if form.errors.email is defined %} ui-formvalidation-error{% endif %}">
+                                                    <label for="form-project-create-identity-email">
+                                                        {% trans %} project-request_prospect-form-email-field-label {% endtrans %}
+                                                        <span class="field-required">*<span class="sr-only"> {% trans %} project-request_mandatory-field {% endtrans %}</span></span>
+                                                    </label>
+                                                    <input id="form-project-create-identity-email" type="email" name="email" value="{{ form.values.email }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                    {% if form.errors.email is defined %}
+                                                        <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
+                                                    {% endif %}
+                                                </div><!-- /.form-field -->
+
+                                                <div class="form-field col-lg-6 col-md-6{% if form.errors.email_conf is defined %} ui-formvalidation-error{% endif %}">
+                                                    <label for="form-project-create-identity-email-conf">
+                                                        {% trans %} project-request_prospect-form-email-confirmation-field-label {% endtrans %}
+                                                        <span class="field-required">*<span class="sr-only"> {% trans %} project-request_mandatory-field {% endtrans %}</span></span>
+                                                    </label>
+                                                    <div class="input-group">
+                                                        <input id="form-project-create-identity-email-conf" type="email" name="email_conf" value="{{ form.values.email_conf }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-samevalueas="#form-project-create-identity-email"/>
+                                                        {% if form.errors.email_conf is defined %}
+                                                            <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
+                                                        {% endif %}
+                                                    </div>
+                                                </div><!-- /.form-field -->
+                                            </div>
+
+                                            <div class="row row-multi-col-computer">
+                                                <div class="form-field col-lg-6 col-md-6{% if form.errors.mobile is defined %} ui-formvalidation-error{% endif %}">
+                                                    <label for="form-project-create-identity-mobile">
+                                                        {% trans %} project-request_prospect-form-mobile-field-label {% endtrans %}
+                                                        <span class="field-required">*<span class="sr-only"> {% trans %} project-request_mandatory-field {% endtrans %}</span></span>
+                                                    </label>
+                                                    <div class="input-group">
+                                                        <input id="form-project-create-identity-mobile" type="text" name="mobile" value="{{ form.values.mobile }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="telephone"/>
+                                                        {% if form.errors.mobile is defined %}
+                                                            <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
+                                                        {% endif %}
+                                                    </div>
+                                                </div><!-- /.form-field -->
+
+                                                <div class="form-field col-lg-6 col-md-6{% if form.errors.function is defined %} ui-formvalidation-error{% endif %}">
+                                                    <label for="form-project-create-identity-function">
+                                                        {% trans %} project-request_prospect-form-function-field-label {% endtrans %}
+                                                        <span class="field-required">*<span class="sr-only"> {% trans %} project-request_mandatory-field {% endtrans %}</span></span>
+                                                    </label>
+                                                    <div class="input-group">
+                                                        <input id="form-project-create-identity-function" type="text" name="function" value="{{ form.values.function }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                        {% if form.errors.function is defined %}
+                                                            <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
+                                                        {% endif %}
+                                                    </div>
+                                                </div><!-- /.form-field -->
+                                            </div>
+                                        </fieldset>
+
+                                        <div class="row btn-controls tab-footer">
+                                            <div class="col-back col-lg-1 col-md-1">&nbsp;</div>
+                                            <div class="col-next col-lg-12 col-md-12">
+                                                <button type="submit" class="btn-primary">
+                                                    {% trans %} project-request_prospect-validate-button {% endtrans %}
+                                                    <span class="icon fa-angle-right"></span>
+                                                </button>
+                                            </div>
+                                        </div><!-- /.btn-controls.tab-footer -->
+                                    </div><!-- /.tab-pane -->
+                                </div><!-- /.form-project-create-content -->
+                            </div><!-- /.col-form -->
+                        </div><!-- /.row -->
+                    </form><!-- /.form-project-create -->
+                </div><!-- /.site-wrap -->
+            </div><!-- /.page-content -->
+
+            {% include 'partials/components/list-socialmedia.html.twig' %}
+        </div><!-- /.hero-wrap -->
+    </article><!-- /.page -->
+{% endblock %}
