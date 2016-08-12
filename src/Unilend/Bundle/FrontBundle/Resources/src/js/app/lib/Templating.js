@@ -26,7 +26,7 @@ function replaceKeywordsWithValues (input, props) {
       if (props instanceof Dictionary) {
         propValue = props.__key(propName)
       } else {
-        propValue = (props.hasOwnProperty(propName) ? props[propName] : matches[i])
+        propValue = (props.hasOwnProperty(propName) ? props[propName] : matches[i]) + '' // Ensure it's a string, baby~
       }
 
       // Only replace if need to

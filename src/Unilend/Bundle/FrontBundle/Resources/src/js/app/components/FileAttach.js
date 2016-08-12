@@ -165,7 +165,7 @@ var FileAttach = function (elem, options) {
   }
 
   // @debug
-  console.log('new FileAttach', elem, self)
+  // console.log('new FileAttach', elem, self)
 
   // Init
   if (self.getFiles().length === 0) {

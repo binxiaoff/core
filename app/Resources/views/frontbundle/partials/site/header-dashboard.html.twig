@@ -28,7 +28,7 @@
                                     {{ svgimage('avatar-' ~ avatarSex ~ '-level-' ~ userProfile.level, '', 60, 60) }} #}
                                 </a>
                             </div><!-- /.profile-avatar -->
-                            <a href="{{ route('user/preter/notifications') }}" class="profile-notifications">
+                            <a href="{{ route('user/preter/notifications') }}" class="profile-notifications" data-usernotificationsdrop>
                                 {% set notificationsUnread = 0 %}
                                 {#{% for i, item in notifications if item.status == 'unread' %}#}
                                     {#{% set notificationsUnread = notificationsUnread + 1 %}#}

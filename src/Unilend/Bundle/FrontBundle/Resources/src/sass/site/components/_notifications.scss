@@ -109,7 +109,7 @@
 }
 
 // Drop notification
-.drop-profile-notifications.drop-element {
+.ui-usernotificationsdrop-drop-element.drop-element {
   max-width: 280px;
   z-index: $depth-drop;
   background-color: $c-white;
@@ -156,11 +156,6 @@
     overflow: auto;
   }
 
-  .notification {
-    // Extra padding on right for scroll
-    padding: 15px 25px 15px 15px;
-  }
-
   // Drop animation & visibility
   transform: translateZ(0);
   transform-origin: top right;
@@ -194,5 +189,10 @@
     &:after {
       display: block;
     }
+  }
+
+  .notification {
+    // Extra padding on right for scroll
+    padding: 15px 25px 15px 15px;
   }
 }
