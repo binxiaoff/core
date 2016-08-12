@@ -22,7 +22,10 @@ class LenderSubscriptionController extends Controller
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $this->checkProgressAndRedirect($client);
+        $response = $this->checkProgressAndRedirect($client);
+        if (false === $response instanceof \clients){
+            return $response;
+        }
 
         /** @var \settings $settings */
         $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
@@ -39,12 +42,14 @@ class LenderSubscriptionController extends Controller
 
         $formData = $request->getSession()->get('subscriptionStep1FormData', '');
         $request->getSession()->remove('subscriptionStep1FormData');
+        $landingPageData = $this->get('session')->get('landingPageData', '');
+        $this->get('session')->remove('landingPageData');
         $template['formData'] = [
             'client_form_of_address'           => isset($formData['client_form_of_address']) ? $formData['client_form_of_address'] : '',
-            'client_name'                      => isset($formData['client_name']) ? $formData['client_name'] : '',
-            'client_first_name'                => isset($formData['client_first_name']) ? $formData['client_first_name'] : '',
+            'client_name'                      => isset($formData['client_name']) ? $formData['client_name'] : isset($landingPageData['prospect_name'])? $landingPageData['prospect_name']: '',
+            'client_first_name'                => isset($formData['client_first_name']) ? $formData['client_first_name'] : isset($landingPageData['prospect_first_name'])? $landingPageData['prospect_first_name']: '',
             'client_used_name'                 => isset($formData['client_used_name']) ? $formData['client_used_name'] : '',
-            'client_email'                     => isset($formData['client_email']) ? $formData['client_email'] : '',
+            'client_email'                     => isset($formData['client_email']) ? $formData['client_email'] : isset($landingPageData['prospect_email'])? $landingPageData['prospect_email']: '',
             'client_secret_question'           => isset($formData['client_secret_question']) ? $formData['client_secret_question'] : '',
             'fiscal_address_street'            => isset($formData['fiscal_address_street']) ? $formData['fiscal_address_street'] : '',
             'fiscal_address_zip'               => isset($formData['fiscal_address_zip']) ? $formData['fiscal_address_zip'] : '',
@@ -93,7 +98,10 @@ class LenderSubscriptionController extends Controller
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $this->checkProgressAndRedirect($client);
+        $response = $this->checkProgressAndRedirect($client);
+        if (false === $response instanceof \clients){
+            return $response;
+        }
         /** @var \dates $dates */
         $dates = Loader::loadLib('dates');
         /** @var \ficelle $ficelle */
@@ -246,8 +254,10 @@ class LenderSubscriptionController extends Controller
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $this->checkProgressAndRedirect($client);
-
+        $response = $this->checkProgressAndRedirect($client);
+        if (false === $response instanceof \clients){
+            return $response;
+        }
         /** @var TranslationManager $translationManager */
         $translationManager = $this->get('unilend.service.translation_manager');
 
@@ -546,7 +556,10 @@ class LenderSubscriptionController extends Controller
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $this->checkProgressAndRedirect($client, $clientHash);
+        $response = $this->checkProgressAndRedirect($client, $clientHash);
+        if (false === $response instanceof \clients){
+            return $response;
+        }
         /** @var \clients_adresses $clientAddress */
         $clientAddress = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
         $clientAddress->get($client->id_client, 'id_client');
@@ -581,7 +594,10 @@ class LenderSubscriptionController extends Controller
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $this->checkProgressAndRedirect($client, $clientHash);
+        $response = $this->checkProgressAndRedirect($client, $clientHash);
+        if (false === $response instanceof \clients){
+            return $response;
+        }
 
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
@@ -776,7 +792,10 @@ class LenderSubscriptionController extends Controller
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $this->checkProgressAndRedirect($client, $clientHash);
+        $response = $this->checkProgressAndRedirect($client, $clientHash);
+        if (false === $response instanceof \clients){
+            return $response;
+        }
 
         $post = $request->request->all();
         $this->get('session')->set('subscriptionStep3WalletData', $post);
@@ -797,17 +816,93 @@ class LenderSubscriptionController extends Controller
 
 
     /**
+     * @Route("lp/inscription-preteur", name="landing_page_lender")
+     */
+    public function landingPageShowAction()
+    {
+        /** @var \blocs $block */
+        $block = $client = $this->get('unilend.service.entity_manager')->getRepository('blocs');
+        /** @var \blocs_elements $blockElement */
+        $blockElement = $client = $this->get('unilend.service.entity_manager')->getRepository('blocs_elements');
+        /** @var \elements $elements */
+        $elements = $client = $this->get('unilend.service.entity_manager')->getRepository('elements');
+
+        $partners = [];
+        if ($block->get('partenaires', 'slug')) {
+            $elementsId = array_column($elements->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'ordre ASC'), 'id_element');
+            foreach ($blockElement->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'FIELD(id_element, ' . implode(', ', $elementsId) . ') ASC') as $element) {
+                $partners[] = [
+                    'alt' => $element['complement'],
+                    'src' => $element['value']
+                ];
+            }
+        }
+
+        return $this->render('pages/lender_subscription/landing_page.html.twig', ['partners' => $partners]);
+    }
+
+    /**
+     * @Route("/lp/inscription-preteur/submit", name="landing_page_lender_submit")
+     * @Method("POST")
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     */
+    public function landingPageSaveAction(Request $request)
+    {
+        /** @var \clients $clients */
+        $clients = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        /** @var \prospects $prospect */
+        $prospect  = $this->get('unilend.service.entity_manager')->getRepository('prospects');
+        /** @var TranslationManager $translationManager */
+        $translationManager = $this->get('unilend.service.translation_manager');
+
+        $post = $request->request->all();
+        $this->get('session')->set('landingPageData', $post);
+
+        if (false === isset($post['prospect_name']) || strlen($post['prospect_name']) > 255 || strlen($post['prospect_name']) <= 0) {
+            $this->addFlash('landingPageErrors', $translationManager->selectTranslation('lender-landing-page', 'error-name'));
+        }
+        if (false === isset($post['prospect_first_name']) || strlen($post['prospect_first_name']) > 255 || strlen($post['prospect_first_name']) <= 0) {
+            $this->addFlash('landingPageErrors', $translationManager->selectTranslation('lender-landing-page', 'error-first-name'));
+        }
+        if (empty($post['prospect_email']) || strlen($post['prospect_email']) > 255 || strlen($post['prospect_email']) <= 0
+            || false == filter_var($post['prospect_email'], FILTER_VALIDATE_EMAIL)) {
+            $this->addFlash('landingPageErrors', $translationManager->selectTranslation('lender-landing-page', 'error-email'));
+        }
+        if (false === empty($post['prospect_email']) && $clients->existEmail($post['prospect_email']) && $clients->get($post['prospect_email'], 'email')){
+            $response = $this->checkProgressAndRedirect($clients);
+            if (false === $response instanceof \clients){
+                return $response;
+            }
+        }
+
+        if (false === $this->get('session')->getFlashBag()->has('landingPageErrors')) {
+            if (false === $prospect->exist($post['prospect_email'], 'email')) {
+                //TODO set source in prospect
+                $prospect->nom          = $post['prospect_name'];
+                $prospect->prenom       = $post['prospect_first_name'];
+                $prospect->email        = $post['prospect_email'];
+                $prospect->id_langue    = 'fr';
+                $prospect->create();
+            }
+            return $this->redirectToRoute('lender_subscription_step_1');
+        } else {
+            return $this->redirectToRoute('landing_page_lender');
+        }
+    }
+
+
+    /**
      * @param \clients $client
      * @param null $clientHash
      * @return \clients|\Symfony\Component\HttpFoundation\RedirectResponse
      */
     private function checkProgressAndRedirect(\clients &$client, $clientHash = null)
     {
-        if (false === is_null($clientHash) && false === $client->get($clientHash, 'hash')){
+        if (false === empty($client->id_client) || (false === is_null($clientHash) && false === $client->get($clientHash, 'hash'))){
             if (\clients::STATUS_ONLINE == $client->status && $client->etape_inscription_preteur < 3) {
-                return $this->redirectToRoute('lender_subscription_step_1');
-            } else {
                 return $this->redirectToRoute('lender_subscription_step_' . ($client->etape_inscription_preteur + 1), ['clientHash' => $client->hash]);
+            } else {
+                return $this->redirectToRoute('login');
             }
         }
 
