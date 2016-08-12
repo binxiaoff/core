@@ -405,21 +405,28 @@ var Utility = {
     return (value === '' || value === null || !self.isSet(value))
   },
 
-  // Check if an element is hidden
+  // Check if an element is hidden (if it has CSS of `display:none` or `visibility:hidden`)
   elemIsHidden: function (elem) {
     var $elem = $(elem)
     var isHidden = false
 
-    // Nothing
-    if ($elem.length === 0 || $elem.css('display') === 'none') return false
+    // No element to check
+    if ($elem.length === 0) return false
 
-    // Traverse parents
-    $elem.parents().each(function (i, parent) {
-      if ($(parent).css('display') === 'none') {
-        isHidden = true
-        return true
-      }
-    })
+    // Element is hidden
+    if ($elem.css('display') === 'none' || $elem.css('visibility') === 'hidden') isHidden = true
+
+    // If element isn't directly hidden, traverse parents to check their status
+    if (!isHidden) {
+      $elem.parents().each(function (i, parent) {
+        var $parent = $(parent)
+        if ($parent.css('display') === 'none' || $parent.css('visibility') === 'hidden') {
+          isHidden = true
+          // Break loop
+          return true
+        }
+      })
+    }
 
     // @debug
     // console.log('elemIsHidden', elem, isHidden)
@@ -594,15 +601,36 @@ var Utility = {
       // Reveal parents
       if ($parents.length > 0) Utility.revealElem($parents)
 
+      // Show message
+      if ($item.is('.message, .message-alert, .message-info, .message-success, .message-error')) {
+        // Slide the message up and remove it
+        $item.slideDown(function () {
+          // a11y stuff
+          if (Utility.isSet($item.attr('aria-hidden'))) $item.attr('aria-hidden', false)
+        })
+        return
+      }
+
       // Show collapse
       if ($item.is('.collapse, .collapsing')) {
         $item.collapse('show')
+        return
       }
 
       // Show tab
       if ($item.is('[role="tabpanel"], .tab-pane')) {
         // Get the first tab target to perform control operation on
         $('[href="' + targetSelector + '"][role="tab"]').first().tab('show')
+        return
+      }
+
+      // Show the element item (if hidden otherwise)
+      if ($item.css('display') === 'none' || $item.css('visibility') === 'hidden') {
+        // a11y stuff
+        if ($item.hasAttr('aria-hidden')) $item.attr('aria-hidden', false)
+
+        // Show the item
+        $item.show()
       }
     })
 
@@ -631,19 +659,36 @@ var Utility = {
       if ($item.is('.message, .message-alert, .message-info, .message-success, .message-error')) {
         // Slide the message up and remove it
         $item.slideUp(function () {
-          $(this).remove()
+          // a11y stuff
+          if (Utility.isSet($(this).attr('aria-hidden'))) {
+            $(this).attr('aria-hidden', true)
+          } else {
+            $(this).remove()
+          }
         })
+        return
       }
 
       // Hide collapse
       if ($item.is('.collapse, .collapsing')) {
         $item.collapse('hide')
+        return
       }
 
       // Hide tab
       if ($item.is('[role="tabpanel"], .tab-pane')) {
         // Get the first tab target to perform control operation on
         $('[href="' + targetSelector + '"][role="tab"]').first().tab('hide')
+        return
+      }
+
+      // Hide the element item (if visible otherwise)
+      if ($item.css('display') !== 'none' || $item.css('visibility') !== 'hidden') {
+        // a11y stuff
+        if ($item.hasAttr('aria-hidden')) $item.attr('aria-hidden', true)
+
+        // Hide the item
+        $item.hide()
       }
     })
 

@@ -431,8 +431,9 @@ FormValidation.prototype.validateInput = function (elem, options) {
     }), options)
   }
 
-  // Ignore disabled/hidden fields
+  // Ignore disabled/hidden fields by saying they're valid
   if ($elem.is(':disabled') || Utility.elemIsHidden(elem)) {
+    console.log('element is hidden', inputValidation)
     inputValidation.isValid = true
     return inputValidation
   }
@@ -718,7 +719,8 @@ FormValidation.prototype.rules = {
     if (typeof isRequired === 'string' && isRequired !== 'true' && isRequired !== 'false') {
       // @debug
       // console.log(isRequired, $(isRequired).length, getFieldValue(isRequired))
-      isRequired = ($(isRequired).length === 0 || Utility.isEmpty(getFieldValue(isRequired)))
+      // @note if the element is hidden, then the field is not required
+      isRequired = (Utility.elemExists(isRequired) || Utility.isEmpty(getFieldValue(isRequired))) && !Utility.elemIsHidden(isRequired)
       // @debug
       // console.log('isRequired:', isRequired)
     }

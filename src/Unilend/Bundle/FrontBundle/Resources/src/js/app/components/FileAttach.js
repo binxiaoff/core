@@ -81,11 +81,11 @@ var FileAttach = function (elem, options) {
   self.settings = $.extend({
     // Properties
     files: [],
-    maxFiles: 0, // 0 = multi (no limit), 1 = single, 2+ = multi
+    maxFiles: 0, // 0 = multi (no limit), 1 = single, 2+ = multi (with limit)
     maxSize: (1024 * 1024 * 8), // 8 MB
     fileTypes: 'pdf jpg jpeg png doc docx',
     inputName: 'fileattach',
-    emptyFileLabel: __.__('', 'emptyFileLabel'),
+    emptyFileLabel: __.__('Choose a file to attach', 'emptyFileLabel'),
     fileChange: true,
     fileRemove: true,
     multiFileNotation: '_%d', // `_%d` => `_0`. If you want multi file notation like an array, use `[%d]`
@@ -160,13 +160,13 @@ FileAttach.prototype.add = function (inhibitPrompt) {
 
   // Append a new file input
   var $file = $(Templating.replace(self.templates.fileItem, [{
-    fileName: self.templates.emptyFile,
+    fileName: self.templates.emptyFileLabel,
     inputName: self.settings.inputName,
     fileId: (self.settings.maxFiles !== 1 ? sprintf(self.settings.multiFileNotation, fileId) : '')
   }, {
-    attachFile: self.templates.attachFile,
-    removeFile: self.settings.fileRemove ? self.templates.removeFile : '{{ changeFile }}',
-    changeFile: self.settings.fileChange ? self.templates.changeFile : '',
+    attachFileButton: self.templates.attachFileButton,
+    removeFileButton: self.settings.fileRemove ? self.templates.removeFileButton : '{{ changeFileButton }}',
+    changeFileButton: self.settings.fileChange ? self.templates.changeFileButton : '',
     emptyFileLabel: self.settings.emptyFileLabel
   }, __]))
   $file.appendTo(self.$elem)
@@ -313,13 +313,13 @@ FileAttach.prototype.populate = function (fileInfos, appendFiles) {
           // If FileAttach supports multiple files, add a "_i"
           fileId: (self.settings.maxFiles > 1 ? sprintf(self.settings.multiFileNotation, i) : ''),
           // Enable/disable change/removing file content per file item
-          removeFile: (fileInfo.noRemove ? '{{ changeFile }}' : '{{ removeFile }}'),
-          changeFile: (fileInfo.noChange ? '' : '{{ changeFile }}')
+          removeFileButton: (fileInfo.noRemove ? '{{ changeFileButton }}' : '{{ removeFileButton }}'),
+          changeFileButton: (fileInfo.noChange ? '' : '{{ changeFileButton }}')
         }, {
           // Enable/disable change/removing file content
-          attachFile: self.templates.attachFile,
-          removeFile: (self.settings.fileRemove ? self.templates.removeFile : '{{ changeFile }}'),
-          changeFile: (self.settings.fileChange ? self.templates.changeFile : ''),
+          attachFileButton: self.templates.attachFileButton,
+          removeFileButton: (self.settings.fileRemove ? self.templates.removeFileButton : '{{ changeFileButton }}'),
+          changeFileButton: (self.settings.fileChange ? self.templates.changeFileButton : ''),
           emptyFileLabel: self.settings.emptyFileLabel
         }, __]))
         $files = $files.add($file)
@@ -348,18 +348,24 @@ FileAttach.prototype.populate = function (fileInfos, appendFiles) {
 // @returns {Void}
 FileAttach.prototype.remove = function (fileIndex) {
   var self = this
-  if (typeof fileIndex === 'undefined') return
+  if (!Utility.isSet(fileIndex)) return
 
   // Get the file and label elements
   if (self.getFiles().length > 1) {
     self.getFile(fileIndex).parents('label').remove()
+
+  // Clear the single fileattach item
   } else {
     self.getFiles().val('')
-      .parents('.ui-fileattach-item').removeAttr('data-fileattach-item-type')
-      .find('.ui-fileattach-filename').html(Templating.replace(self.templates.emptyFile, [{
-        // fileName: self.settings.emptyFileLabel,
-        emptyFileLabel: self.settings.emptyFileLabel
-      }, __]))
+      .parents('.ui-fileattach-item')
+        // Remove the item's file type
+        .removeAttr('data-fileattach-item-type')
+        // Remove any hidden styles on the input field
+        .find('input[type="file"]').css('display', '').parents('.ui-fileattach-item')
+        // Replace the filename with the empty file label
+        .find('.ui-fileattach-filename').html(Templating.replace(self.templates.emptyFileLabel, [{
+          emptyFileLabel: self.settings.emptyFileLabel
+        }, __]))
   }
 
   // If can add another...
@@ -398,22 +404,22 @@ FileAttach.prototype.getFile = function (fileIndex) {
 
 FileAttach.prototype.templates = {
   // The generic file item
-  fileItem: '<label class="ui-fileattach-item"><span class="ui-fileattach-filename">{{ fileName }}</span><input type="file" name="{{ inputName }}{{ fileId }}" value=""/>{{ attachFile }}{{ removeFile }}</label>',
+  fileItem: '<label class="ui-fileattach-item"><span class="ui-fileattach-filename">{{ fileName }}</span><input type="file" name="{{ inputName }}{{ fileId }}" value=""/>{{ attachFileButton }}{{ removeFileButton }}</label>',
 
   // A file item which has already been attached (i.e. located on the server)
-  attachedFileItem: '<label class="ui-fileattach-item ui-fileattach-alreadyattached" data-fileattach-item-type="{{ fileType }}"><span class="ui-fileattach-filename">{{ fileName }}</span><input type="file" name="{{ inputName }}{{ fileId }}" value="{{ fileUrl }}" style="display:none" />{{ attachFile }}{{ removeFile }}</label>',
+  attachedFileItem: '<label class="ui-fileattach-item ui-fileattach-alreadyattached" data-fileattach-item-type="{{ fileType }}"><span class="ui-fileattach-filename">{{ fileName }}</span><input type="file" name="{{ inputName }}{{ fileId }}" value="{{ fileUrl }}" style="display:none" />{{ attachFileButton }}{{ removeFileButton }}</label>',
 
   // Attach File Button
-  attachFile: '<span class="ui-fileattach-add-btn"><span class="label">{{ attachFileLabel }}</span></span>',
+  attachFileButton: '<span class="ui-fileattach-add-btn"><span class="label">{{ attachFileLabel }}</span></span>',
 
   // Change File Button
-  changeFile: '<span class="ui-fileattach-change-btn"><span class="label">{{ changeFileLabel }}</span></span>',
+  changeFileButton: '<span class="ui-fileattach-change-btn"><span class="label">{{ changeFileLabel }}</span></span>',
 
   // Remove File Button
-  removeFile: '<a href="javascript:;" class="ui-fileattach-remove-btn"><span class="label">{{ removeFileLabel }}</span></a>',
+  removeFileButton: '<a href="javascript:;" class="ui-fileattach-remove-btn"><span class="label">{{ removeFileLabel }}</span></a>',
 
   // Empty file label
-  emptyFile: '{{ emptyFileLabel }}',
+  emptyFileLabel: '{{ emptyFileLabel }}',
 
   // Error message
   errorMessage: '<div class="ui-fileattach-error"><div class="ui-fileattach-error-title">{{ error }}</div><div class="ui-fileattach-error-message">{{ message }}</div></div>'

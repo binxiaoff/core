@@ -81,18 +81,44 @@
                 <span id="form-profile-info-dob-commune">{{ client.ville_naissance }}</span>
             </div><!-- /.form-field -->
         </div><!-- /.row -->
-        <div class="message-alert" id="identity-change-alert-message">
+
+        {# Show this message if nationality/form_of_address is changed #}
+        <div class="message-alert" id="identity-change-alert-message" aria-hidden="true" style="display:none">
             {% trans %} lender-profile_information-tab-identity-section-change-ID-warning-message {% endtrans %}
         </div>
 
         <div class="row">
-            <div class="form-field">
+            <div id="form-profile-info-identity-files-field" class="form-field">
                 <label>{% trans %} lender-profile_information-tab-identity-section-ID-documents-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
 
                 <div class="form-field file-identity-side-a">
+                    {# Populate custom file input field with existing file (if one has already been uploaded) #}
+                    {% set fileInfo = [] %}
+                    {% if identityAttachments[constant('\\attachment_type::CNI_PASSPORTE')]['path'] is defined %}
+                        {% set fileInfo = [{
+                            type: identityAttachments[constant('\\attachment_type::CNI_PASSPORTE')]['path']|split('.')|last|default('file'),
+                            name: identityAttachments[constant('\\attachment_type::CNI_PASSPORTE')]['path'],
+                            url: identityAttachments[constant('\\attachment_type::CNI_PASSPORTE')]['path'],
+                            size: 0
+                        }] %}
+                    {% endif %}
+                    {# Show the custom file input field #}
+                    {{  customInput.file({
+                        id: 'form-profile-info-file-identite-cni-1',
+                        isRequired: true
+                    }, {
+                        inputname: 'id_recto',
+                        maxfiles: 1,
+                        emptyfilelabel: 'lender-profile_information-tab-identity-section-ID-recto'|trans,
+                        filechange: true,
+                        fileremove: false,
+                        files: fileInfo
+                    }) }}
+                    {# Legacy code
                     <div class="custom-input-file" id="form-profile-info-file-identite-cni-1"
-                         data-fileattach data-fileattach-inputname="id_recto"
+                         data-fileattach
+                         data-fileattach-inputname="id_recto"
                          data-fileattach-maxfiles="1"
                          data-fileattach-emptyfilelabel="
                                  {% if identityAttachments[constant('\\attachment_type::CNI_PASSPORTE')]['path'] is not empty %}
@@ -101,11 +127,36 @@
                                     {% trans %} lender-profile_information-tab-identity-section-ID-recto {% endtrans %}
                                  {% endif %}">
                     </div><!-- /.ui-fileattach -->
+                    #}
                 </div>
 
                 <div class="form-field file-identity-side-b">
+                    {# Populate custom file input field with existing file (if one has already been uploaded) #}
+                    {% set fileInfo = [] %}
+                    {% if identityAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')]['path'] is defined %}
+                        {% set fileInfo = [{
+                        type: identityAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')]['path']|split('.')|last|default('file'),
+                        name: identityAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')]['path'],
+                        url: identityAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')]['path'],
+                        size: 0
+                        }] %}
+                    {% endif %}
+                    {# Show the custom file input field #}
+                    {{  customInput.file({
+                        id: 'form-profile-info-file-identite-cni-2',
+                        isRequired: false
+                    }, {
+                        inputname: 'id_verso',
+                        maxfiles: 1,
+                        emptyfilelabel: 'lender-profile_information-tab-identity-section-ID-verso'|trans,
+                        filechange: true,
+                        fileremove: false,
+                        files: fileInfo
+                    }) }}
+                    {# Legacy code
                     <div class="custom-input-file" id="form-profile-info-file-identite-cni-2"
-                         data-fileattach data-fileattach-inputname="id_verso"
+                         data-fileattach
+                         data-fileattach-inputname="id_verso"
                          data-fileattach-maxfiles="1"
                          data-fileattach-emptyfilelabel="
                                  {% if identityAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')]['path'] is defined %}
@@ -113,7 +164,7 @@
                                  {% else %}
                                     {% trans %} lender-profile_information-tab-identity-section-ID-verso {% endtrans %}
                                  {% endif %}">
-                    </div><!-- /.ui-fileattach -->
+                    </div><!-- /.ui-fileattach -->#}
                 </div>
 
                 <div class="field-help">
