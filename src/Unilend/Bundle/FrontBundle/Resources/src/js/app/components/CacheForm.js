@@ -1,9 +1,16 @@
-//
-// Unilend CacheForm
-// Enables form input data to be cached to the browser storage
-// Helps with testing and if anyone has an error with filling in forms and has to start again
-// @note Forms must have an [id] attribute set and inputs to
-//       save/restore within must have a [name] attribute set
+/*
+ * Unilend CacheForm
+ * Enables form input data to be cached to the browser storage
+ * Helps with testing and if anyone has an error with filling in forms and has to start again
+ */
+
+/*
+ * Usage notes:
+ * - Set a form element with the attribute `data-cacheform` to enable caching that form's data. The form will also require an ID for restoration
+ * - Supported inputs must have a `name` attribute set
+ * - There are default supported and unsupported fields. These are applied throughout the CacheForm instance, not per form
+ * - Due to supporting IE9, Web API `FormData` is unavailable. You can use `CacheForm.getFormData(formElem)` to do something similar, even outside of CacheForm operations
+ */
 
 // Dependencies
 var $ = require('jquery')
@@ -28,6 +35,92 @@ var CacheForm = {
   /*
    * Methods
    */
+
+  // Gets the form's current data (all form input values and settings, etc.)
+  // @method getFormState
+  // @param {Mixed} elem Either {String} selector, {HTMLElement} or {jQueryObject}
+  // @param {Boolean} getAllFormFields Whether to get only the supported CacheForm fields or all fields (note: only those which have `name` attributes will be collected)
+  // @returns {Object}
+  getFormData: function (elem, getAllFormFields) {
+    var self = this
+    var $form = $(elem).first()
+    var formData = {
+      $form: $form,
+      $fields: undefined,
+      fieldData: []
+    }
+
+    // Get supported form fields, remove unsupported form fields
+    formData.$fields = $form.find(self.supportedFormFields).not(self.unsupportedFormFields)
+
+    // Get all the form fields (only those which have names)
+    if (getAllFormFields) formData.$fields = $form.find('input, select, textarea')
+
+    // Collate all the form's input field values into an {Object} to save into the storage
+    formData.$fields.each(function (i, field) {
+      var $field = $(field)
+      var fieldId = $field.attr('id')
+      var fieldName = $field.attr('name')
+      var $relatedFields = formData.$fields.filter('[name="' + fieldName + '"]')
+      var fieldNameIndex = $relatedFields.index($field)
+      var fieldValue = $field.val()
+      // @bookmark fieldSetting
+      var fieldSetting = {
+        id: fieldId,
+        name: fieldName,
+        nameIndex: fieldNameIndex,
+        value: fieldValue
+      }
+      var addFieldSetting = false
+
+      // Do special stuff with checkboxes
+      if ($field.is('[type="checkbox"]')) {
+        addFieldSetting = true
+
+        // Reset unchecked checkbox value
+        if (!$field.is(':checked')) fieldSetting.value = ''
+
+        // Only allow checked radios to be saved
+      } else if ($field.is('[type="radio"]')) {
+        if ($field.is(':checked')) addFieldSetting = true
+
+        // Everything else is saved
+      } else {
+        addFieldSetting = true
+      }
+
+      // @debug
+      // if ($field.is('[type="checkbox"]')) {
+      //   console.log('CacheData.saveFormState: field', {
+      //     $form: $form,
+      //     $fields: formData.$fields,
+      //     fieldData: formData.fieldData,
+      //     $field: $field,
+      //     $relatedFields: $relatedFields,
+      //     fieldIndex: i,
+      //     fieldSetting: fieldSetting
+      //   })
+      // }
+
+      if (addFieldSetting) {
+        // @trigger [input, select, textarea] `CacheForm:getFormData:fieldSetting`
+        $field.trigger('CacheForm:getFormData:fieldSetting', [{
+          $form: $form,
+          $fields: formData.$fields,
+          fieldData: formData.fieldData,
+          $field: $field,
+          $relatedFields: $relatedFields,
+          fieldSetting: fieldSetting
+        }])
+
+        // Push the field's settings to the form data
+        formData.fieldData.push(fieldSetting)
+      }
+    })
+
+    return formData
+  },
+
   // Runs through a form's input values and saves all to an object
   // @method save
   // @param {Mixed} elem Either {String} selector, {HTMLElement} or {jQueryObject}
@@ -37,9 +130,8 @@ var CacheForm = {
   save: function (elem, version, storageType) {
     var self = this
     var $form = $(elem).first()
-    var $fields
     var formId = $form.attr('id')
-    var formData = []
+    var formData = {}
     var dataKey
 
     // @debug
@@ -67,91 +159,17 @@ var CacheForm = {
     // Generate the dataKey
     dataKey = 'formState:' + formId + version
 
-    // Get supported form fields, remove unsupported form fields
-    $fields = $form.find(self.supportedFormFields).not(self.unsupportedFormFields)
-
     // Mark on the form that it is being saved
     $form.addClass('ui-cacheform-saving-state')
 
-    // Collate all the form's input field values into an {Object} to save into the storage
-    $fields.each(function (i, field) {
-      var $field = $(field)
-      var fieldId = $field.attr('id')
-      var fieldName = $field.attr('name')
-      var $relatedFields = $fields.filter('[name="' + fieldName + '"]')
-      var fieldNameIndex = $relatedFields.index($field)
-      var fieldValue = $field.val()
-      // @bookmark fieldSetting
-      var fieldSetting = {
-        id: fieldId,
-        name: fieldName,
-        nameIndex: fieldNameIndex,
-        value: fieldValue
-      }
-      var addFieldSetting = false
+    // Get the form data
+    formData = self.getFormData(elem)
 
-      // Do special stuff with checkboxes
-      if ($field.is('[type="checkbox"]')) {
-        addFieldSetting = true
+    // Set the dataKey
+    formData.dataKey = dataKey
 
-        // Reset unchecked checkbox value
-        if (!$field.is(':checked')) fieldSetting.value = ''
-
-      // Only allow checked radios to be saved
-      } else if ($field.is('[type="radio"]')) {
-        if ($field.is(':checked')) addFieldSetting = true
-
-      // Everything else is saved
-      } else {
-        addFieldSetting = true
-      }
-
-      // @debug
-      // if ($field.is('[type="checkbox"]')) {
-      //   console.log('CacheData.saveFormState: field', {
-      //     $form: $form,
-      //     $fields: $fields,
-      //     dataKey: dataKey,
-      //     formData: formData,
-      //     $field: $field,
-      //     $relatedFields: $relatedFields,
-      //     fieldIndex: i,
-      //     fieldSetting: fieldSetting
-      //   })
-      // }
-
-      if (addFieldSetting) {
-        // @trigger [input, select, textarea] `CacheForm:saveFormState:fieldSetting`
-        $field.trigger('CacheForm:saveFormState:fieldSetting', [{
-          $form: $form,
-          $fields: $fields,
-          dataKey: dataKey,
-          formData: formData,
-          $field: $field,
-          $relatedFields: $relatedFields,
-          fieldSetting: fieldSetting
-        }])
-
-        // Push the field's settings to the form data
-        formData.push(fieldSetting)
-      }
-    })
-
-    // @debug
-    // console.log('CacheForm.save', {
-    //   $form: $form,
-    //   $fields: $fields,
-    //   dataKey: dataKey,
-    //   formData: formData
-    // })
-
-    // @trigger form `CacheForm:saveFormState:beforeSet`
-    $form.trigger('CacheForm:saveFormState:beforeSave', [{
-      $form: $form,
-      $fields: $fields,
-      dataKey: dataKey,
-      formData: formData
-    }])
+    // @trigger form `CacheForm:saveFormState:beforeSave` [formData]
+    $form.trigger('CacheForm:saveFormState:beforeSave', [formData])
 
     // Remove saving mark on the form
     $form.removeClass('ui-cacheform-saving-state')
@@ -208,11 +226,11 @@ var CacheForm = {
     //   $form: $form,
     //   $fields: $fields,
     //   dataKey: dataKey,
-    //   formData: formData
+    //   fieldData: fieldData
     // })
 
     // No data retrieved
-    if (Utility.isEmpty(formData)) {
+    if (Utility.isEmpty(formData) || Utility.isEmpty(formData.fieldData)) {
       // Remove restoring mark on the form
       $form.removeClass('ui-cacheform-restoring-state')
 
@@ -220,15 +238,10 @@ var CacheForm = {
     }
 
     // @trigger form `CacheForm:restoreFormState:beforeRestore`
-    $form.trigger('CacheForm:restoreFormState:beforeRestore', [{
-      $form: $form,
-      $fields: $fields,
-      dataKey: dataKey,
-      formData: formData
-    }])
+    $form.trigger('CacheForm:restoreFormState:beforeRestore', [formData])
 
     // Restore the values of each field
-    $.each(formData, function (i, fieldSetting) {
+    $.each(formData.fieldData, function (i, fieldSetting) {
       var $field = $fields.filter('[name="' + fieldSetting.name + '"]')
       self.restoreField($field, fieldSetting)
     })
@@ -237,12 +250,7 @@ var CacheForm = {
     $form.removeClass('ui-cacheform-restoring-state')
 
     // @trigger form `CacheForm:restoreFormState:restored`
-    $form.trigger('CacheForm:restoreFormState:restored', [{
-      $form: $form,
-      $fields: $fields,
-      dataKey: dataKey,
-      formData: formData
-    }])
+    $form.trigger('CacheForm:restoreFormState:restored', [formData])
 
     return formData
   },
@@ -415,7 +423,7 @@ $(document)
   // On submit, clears the form state from browser cache
   .on('submit', 'form[data-cacheform]', function (event) {
     var $form = $(this)
-    if (Utility.convertToPrimitive($form.attr('data-cacheform-clearonsubmit]'))) {
+    if (Utility.convertToPrimitive($form.attr('data-cacheform-clearonsubmit'))) {
       $form.uiCacheForm('clear')
     }
   })

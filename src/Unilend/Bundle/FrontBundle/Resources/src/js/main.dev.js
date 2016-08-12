@@ -89,6 +89,7 @@ $(document).ready(function ($) {
   // @debug
   // window.__ = __
   // window.Utility = Utility
+  window.CacheForm = CacheForm
 
   // Remove HTML
   $html.removeClass('no-js')
@@ -99,7 +100,7 @@ $(document).ready(function ($) {
   /*
    * Test for IE
    */
-  function isIE (version) {
+  function isIE(version) {
     var versionNum = ~~(version + ''.replace(/\D+/g, ''))
     if (/^\</.test(version)) {
       version = 'lt-ie' + versionNum
@@ -122,11 +123,61 @@ $(document).ready(function ($) {
   // TWBS setup
   // $.support.transition = false
   // Bootstrap Tooltips
-   $('.ui-has-tooltip, [data-toggle="tooltip"]').tooltip()
+  $('.ui-has-tooltip, [data-toggle="tooltip"]').tooltip()
 
   /*
    * jQuery UI Date Picker
    */
+  // Set FR language in datepicker
+  // @note For supporting other languages, see: https://github.com/jquery/jquery-ui/blob/master/ui/i18n/
+  // @note I've inlined the language code since we are using browserify to compile code as it's a pain to do this kind of stuff in the Twig files
+  if (/^fr/i.test($('html').attr('lang'))) {
+    $.datepicker.regional.fr = {
+      closeText: "Fermer",
+      prevText: "Précédent",
+      nextText: "Suivant",
+      currentText: "Aujourd'hui",
+      monthNames: ["janvier", "février", "mars", "avril", "mai", "juin",
+        "juillet", "août", "septembre", "octobre", "novembre", "décembre"],
+      monthNamesShort: ["janv.", "févr.", "mars", "avr.", "mai", "juin",
+        "juil.", "août", "sept.", "oct.", "nov.", "déc."],
+      dayNames: ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"],
+      dayNamesShort: ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."],
+      dayNamesMin: ["D", "L", "M", "M", "J", "V", "S"],
+      weekHeader: "Sem.",
+      dateFormat: "dd/mm/yy",
+      firstDay: 1,
+      isRTL: false,
+      showMonthAfterYear: false,
+      yearSuffix: ""
+    }
+    $.datepicker.setDefaults($.datepicker.regional.fr)
+
+  // Italian
+  } else if (/^it/i.test($('html').attr('lang'))) {
+    datepicker.regional.it = {
+      closeText: "Chiudi",
+      prevText: "&#x3C;Prec",
+      nextText: "Succ&#x3E;",
+      currentText: "Oggi",
+      monthNames: [ "Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno",
+        "Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre" ],
+      monthNamesShort: [ "Gen","Feb","Mar","Apr","Mag","Giu",
+        "Lug","Ago","Set","Ott","Nov","Dic" ],
+      dayNames: [ "Domenica","Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato" ],
+      dayNamesShort: [ "Dom","Lun","Mar","Mer","Gio","Ven","Sab" ],
+      dayNamesMin: [ "Do","Lu","Ma","Me","Gi","Ve","Sa" ],
+      weekHeader: "Sm",
+      dateFormat: "dd/mm/yy",
+      firstDay: 1,
+      isRTL: false,
+      showMonthAfterYear: false,
+      yearSuffix: ""
+    }
+    $.datepicker.setDefaults($.datepicker.regional.it)
+  }
+
+  // Initialise any datepicker inputs
   $('.ui-has-datepicker, [data-ui-datepicker]').datepicker({
     firstDay: 1,
     format: 'dd/mm/yy'
@@ -134,7 +185,7 @@ $(document).ready(function ($) {
 
   // VideoJS
   // Running a modified version to customise the placement of items in the control bar
-  videojs.options.flash.swf = null // @TODO needs correct link '/js/vendor/videojs/video-js.swf'
+  videojs.options.flash.swf = '/bundles/unilendfront/js/vendor/videojs/video-js.swf' // @TODO needs correct link '/js/vendor/videojs/video-js.swf'
 
   // Site Search AutoComplete
   if ($('.site-header .site-search-input').length > 0) {
@@ -2209,6 +2260,56 @@ $(document).ready(function ($) {
 
     if ($target && $target.length > 0) Utility.dismissElem($target)
   })
+  
+  // Special modifications for address AutoComplete fields
+  $('[data-autocomplete-address').each(function (i, elem) {
+    new AutoComplete(elem, {
+      minTermLength: 2,
+      ajaxProp: 'zip',
+      // Don't output the item's value, as that will be extracted from the text and applied to the code/city inputs (it currently differs)
+      onrenderitem: function (item) {
+        var self = this
+        return Templating.replace(this.templates.targetItem, {
+          value: '',
+          text: item.label
+        })
+      }
+    })
+
+    // If the countryelem has been set to something other than France, disable the AutoComplete functionality
+    var countryElemSelector = $(elem).attr('data-autocomplete-address-countryelem')
+    if (countryElemSelector && Utility.elemExists(countryElemSelector)) {
+      var $countryElem = $(countryElemSelector)
+      $countryElem.on('change', function (event) {
+        // France === '1'
+        if ($(this).val() === '1') {
+          $(elem).uiAutoComplete('enable')
+        } else {
+          $(elem).uiAutoComplete('disable')
+        }
+      }).change() // Trigger the event to apply when document ready
+    }
+  })
+  // Set the new text value of the input and of the ville element
+  $doc.on('AutoComplete:setInputValue:complete', '[data-autocomplete-address]', function (event, elemAutoComplete, newValue) {
+      // Empty value given
+      newValue = (newValue + '').trim()
+      if (!newValue) return
+
+      // Separate the values from the city and the code
+      var codeValue = newValue.replace(/^.*\((\d+)\)$/, '$1')
+      var cityValue = newValue.replace(/ ?\(.*$/, '')
+
+      // Set the new code value
+      elemAutoComplete.$input.val(codeValue)
+
+      // Get the city element to set it with the city value
+      var cityElemSelector = elemAutoComplete.$input.attr('data-autocomplete-address-cityelem')
+      if (Utility.elemExists(cityElemSelector) && /^.*\(\d+\)$/.test(newValue)) {
+        var $cityElem = $(cityElemSelector)
+        $cityElem.val(cityValue)
+      }
+    })
 
   // @debug
   $('#test-svg1').html(Utility.svgImage('#misc-computermapmarker', '', 300, 300))

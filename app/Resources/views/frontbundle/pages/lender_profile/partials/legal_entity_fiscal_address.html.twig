@@ -14,12 +14,16 @@
 </section><!-- /.profile-address-view -->
 
 <section id="profile-address-edit" role="tabpanel" class="profile-address-edit collapse">
-    <form id="form-profile-address-edit" action="{{ path('profile_legal_entity_fiscal_address_update') }}" method="post" enctype="multipart/form-data" class="form-profile form-profile-address-edit" data-formvalidation data-formvalidation-notificationselem="#form-profile-address-notifications">
+    <form id="form-profile-address-edit" action="{{ path('profile_legal_entity_fiscal_address_update') }}" method="post" enctype="multipart/form-data" class="form-profile form-profile-address-edit"
+          data-formvalidation
+          data-formvalidation-notificationselem="#form-profile-address-notifications">
         <div class="row">
             <div class="form-field">
                 <label for="form-profile-address-street">{% trans %} lender-profile_information-tab-fiscal-address-section-address-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
-                <input id="form-profile-address-street" type="text" name="fiscal_address_street" value="{{ formData.legalEntity.fiscal_address_street }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                <input id="form-profile-address-street" type="text" name="fiscal_address_street" value="{{ formData.legalEntity.fiscal_address_street }}" class="input-field"
+                       data-formvalidation-input
+                       data-formvalidation-required="true"/>
             </div><!-- /.form-field -->
         </div>
 
@@ -27,12 +31,23 @@
             <div class="form-field col-lg-6 col-md-6">
                 <label for="form-profile-address-code">{% trans %} lender-profile_information-tab-fiscal-address-section-zip-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
-                <input id="form-profile-code" type="text" name="fiscal_address_zip" value="{{ formData.legalEntity.fiscal_address_zip  }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                <div class="input-group">
+                    <input id="form-profile-code" type="text" name="fiscal_address_zip" value="{{ formData.legalEntity.fiscal_address_zip  }}" class="input-field"
+                           data-formvalidation-input
+                           data-formvalidation-required="true"
+                           {# AutoComplete behaviours for addresses needs to be further marked and configured #}
+                           data-autocomplete-address
+                           data-autocomplete-ajaxurl="{{ path('lender_profile_ajax_zip') }}"
+                           data-autocomplete-address-countryelem="#form-profile-address-pays"
+                           data-autocomplete-address-cityelem="#form-profile-address-ville"/>
+                </div><!-- /.input-group -->
             </div><!-- /.form-field -->
             <div class="form-field col-lg-6 col-md-6">
                 <label for="form-profile-address-ville">{% trans %} lender-profile_information-tab-fiscal-address-section-city-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
-                <input id="form-profile-address-ville" type="text" name="fiscal_address_city" value="{{ formData.legalEntity.fiscal_address_city  }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                <input id="form-profile-address-ville" type="text" name="fiscal_address_city" value="{{ formData.legalEntity.fiscal_address_city  }}" class="input-field"
+                       data-formvalidation-input
+                       data-formvalidation-required="true"/>
             </div><!-- /.form-field -->
         </div>
 
