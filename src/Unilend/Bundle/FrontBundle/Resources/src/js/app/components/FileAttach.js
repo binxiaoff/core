@@ -85,7 +85,7 @@ var FileAttach = function (elem, options) {
     maxSize: (1024 * 1024 * 8), // 8 MB
     fileTypes: 'pdf jpg jpeg png doc docx',
     inputName: 'fileattach',
-    emptyFileLabel: __.__('', 'emptyFileLabel'),
+    emptyFileLabel: __.__('', 'empty-file-label'),
     fileChange: true,
     fileRemove: true,
     multiFileNotation: '_%d', // `_%d` => `_0`. If you want multi file notation like an array, use `[%d]`
@@ -228,8 +228,8 @@ FileAttach.prototype.attach = function (fileElem) {
   if (self.settings.fileTypes !== '*' && !(new RegExp(' ' + fileInfo.type + ' ', 'i').test(' ' + self.settings.fileTypes + ' '))) {
     // Generate errorHTML output
     var errorHTML = Templating.replace(self.templates.errorMessage, [{
-      error: __.__('File type <strong>{{ fileType }}</strong> not accepted', 'errorIncorrectFileTypeError'),
-      message: __.__('Accepting only: <strong>{{ acceptedFileTypes }}</strong>', 'errorIncorrectFileTypeMessage')
+      error: __.__('File type <strong>{{ fileType }}</strong> not accepted', 'error-incorrect-file-type-title'),
+      message: __.__('Accepting only: <strong>{{ acceptedFileTypes }}</strong>', 'error-incorrect-file-type-description')
     }, {
       fileType: fileInfo.type.toUpperCase(),
       acceptedFileTypes: self.settings.fileTypes.split(/[, ]+/).join(', ').toUpperCase()
@@ -246,8 +246,8 @@ FileAttach.prototype.attach = function (fileElem) {
   if (self.settings.maxSize && fileInfo.size && fileInfo.size > self.settings.maxSize) {
     // Generate errorHTML output
     var errorHTML = Templating.replace(self.templates.errorMessage, [{
-      error: __.__('File size exceeds maximum <strong>{{ acceptedFileSize }}</strong>', 'errorIncorrectFileSizeError'),
-      message: __.__('', 'errorIncorrectFileSizeMessage')
+      error: __.__('File size exceeds maximum <strong>{{ acceptedFileSize }}</strong>', 'error-incorrect-file-size-title'),
+      message: __.__('', 'error-incorrect-file-size-description')
     }, {
       fileSize: getFileSizeWithUnits(fileInfo.size),
       acceptedFileSize: getFileSizeWithUnits(self.settings.maxSize)
