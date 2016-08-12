@@ -72,6 +72,10 @@
     text-transform: uppercase;
   }
 
+  #form-connect-notifications {
+    color:#DE2F4C;
+  }
+
   @include devices('xs', 'sm') {
     .btn-controls {
       text-align: center;
