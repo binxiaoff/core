@@ -153,4 +153,78 @@ class LocationManager
             return $cachedItem->get();
         }
     }
+
+    /**
+     * $frenchRegions taken from http://www.insee.fr/fr/methodes/nomenclatures/cog/default.asp
+
+     *
+     * @param array $countByRegion
+     * @return array
+     */
+    private function getPercentageByRegion($countByRegion)
+    {
+        $frenchRegions = [
+            '44' => 'Alsace-Champagne-Ardenne-Lorraine',
+            '75' => 'Aquitaine-Limousin-Poitou-Charentes',
+            '84' => 'Auvergne-Rhône-Alpes',
+            '27' => 'Bourgogne-Franche-Comté',
+            '53' => 'Bretagne',
+            '24' => 'Centre-Val de Loire',
+            '94' => 'Corse',
+            '01' => 'Guadeloupe',
+            '03' => 'Guyane',
+            '11' => 'Île-de-France',
+            '04' => 'La Réunion',
+            '76' => 'Languedoc-Roussillon-Midi-Pyrénées',
+            '02' => 'Martinique',
+            '06' => 'Mayotte',
+            '32' => 'Nord-Pas-de-Calais-Picardie',
+            '28' => 'Normandie',
+            '52' => 'Pays de la Loire',
+            '93' => 'Provence-Alpes-Côte d\'Azur'
+        ];
+
+        if (isset($countByRegion['0'])) {
+            unset($countByRegion['0']);
+        }
+
+        $regions = [];
+
+        $total = array_sum($countByRegion);
+        foreach ($countByRegion as $inseeRegionCode => $count) {
+
+            if (array_key_exists($inseeRegionCode, $frenchRegions)) {
+                $regions[$inseeRegionCode] = [
+                    'count'      => $count,
+                    'percentage' => bcdiv($count, $total, 2)
+                ];
+            } else {
+                $regions[$inseeRegionCode] = [
+                    'count'      => 0,
+                    'percentage' => 0
+                ];
+            }
+            $regions[$inseeRegionCode]['name'] = $frenchRegions[$inseeRegionCode];
+        }
+
+        return $regions;
+    }
+
+    public function getLendersByRegion()
+    {
+        /** @var \clients $clients */
+        $clients = $this->entityManager->getRepository('clients');
+        $countByRegion = $clients->countClientsByRegion();
+
+        return $this->getPercentageByRegion($countByRegion);
+    }
+
+    public function getProjectsByRegion()
+    {
+        /** @var \projects $projects */
+        $projects = $this->entityManager->getRepository('projects');
+        $countByRegion = $projects->countProjectsByRegion();
+
+        return $this->getPercentageByRegion($countByRegion);
+    }
 }

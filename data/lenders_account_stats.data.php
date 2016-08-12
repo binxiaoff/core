@@ -135,8 +135,6 @@ class lenders_account_stats extends lenders_account_stats_crud
         return $aValuesIRR;
     }
 
-
-
     public function getLossRate($iLendersAccountId, lenders_accounts $oLendersAccounts)
     {
         $iSumOfLoans = $oLendersAccounts->sumLoansOfProjectsInRepayment($iLendersAccountId);
@@ -204,5 +202,22 @@ class lenders_account_stats extends lenders_account_stats_crud
             $aLenderIds[] = $aRecord;
         }
         return $aLenderIds;
+    }
+
+    public function getAverageIRRofAllLenders()
+    {
+        $query = 'SELECT ROUND(AVG(las.tri_value), 2)
+                    FROM
+                      lenders_account_stats las
+                      INNER JOIN (
+                            SELECT MAX(id_lenders_accounts_stats) AS id_lenders_accounts_stats
+                                   FROM lenders_account_stats
+                                   WHERE DATE(tri_date) <= NOW()
+                                   GROUP BY id_lender_account
+                                 ) las_max ON las.id_lenders_accounts_stats = las_max.id_lenders_accounts_stats
+                    WHERE DATE(las.tri_date) <= NOW()';
+        $statement = $this->bdd->executeQuery($query);
+
+        return $statement->fetchColumn(0);
     }
 }

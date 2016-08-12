@@ -1,3 +1,37 @@
+{% set projectsByCategoryChart = {
+    type: 'preterProjectsCategories',
+    background: 'none',
+    highcharts: {
+        chart: {
+            type: 'treemap',
+            spacing: [0, 0, 0, 0]
+            },
+        title: {
+        text: ''
+        },
+        plotOptions: {
+            treemap: {
+                borderColor: '#B40066',
+                borderWidth: 2,
+                dataLabels: {
+                    useHTML: true,
+                    zIndex: -1
+                }
+            }
+        },
+        tooltip: {
+            enabled: false,
+            useHTML: true
+        },
+        series: [{
+            type: 'treemap',
+            layoutAlgorithm: 'strip',
+            data: getStatistic('projectCountForCategoryTreeMap')
+        }]
+    }
+}
+%}
+{# the intended algorith was squiarfied, however we have too small values, it looks better in strip. To be changed once be have a better ratio in the categories #}
 
 {# Placeholder Data #}
 {% set placeholderData = {
@@ -5,7 +39,7 @@ charts: {
 preterStatisticsMap: {
 type: 'preterStatisticsMap',
 loadFirst: {
-mapGeoJson: ('vendor/geojson/fr-all.geo.json')
+mapGeoJson: ('/bundles/unilendfront/js/vendor/geojson/fr-all.geo.json')
 },
 background: 'none',
 highcharts: {
@@ -134,7 +168,7 @@ showInLegend: false
 emprunterStatisticsMap: {
 type: 'emprunterStatisticsMap',
 loadFirst: {
-mapGeoJson: ('bundles/unilendfront/js/vendor/geojson/fr-all.geo.json')
+mapGeoJson: ('/bundles/unilendfront/js/vendor/geojson/fr-all.geo.json')
 },
 background: 'none',
 highcharts: {
@@ -614,10 +648,10 @@ y: 46
             </div>
             <div class="col-lg-6 col-md-6">
                 <div class="block-text">
-                    <p>Découvrez les dernières statistiques de la communauté Unilend.</p>
-                    <p>Les TPE-PME sont strictement sélectionnées : sur 19 687 demandes de financement reçues, seules 1,2 % ont été proposées à la communauté des prêteurs.</p>
-                    <p>Néanmoins, prêter présente un risque de non-remboursement : répartissez bien vos prêts et ne prêtez que de l'argent dont vous n'avez pas besoin immédiatement.</p>
-                    <p><a href="#todo" class="link">En savoir plus sur comment répartir ses prêts</a></p>
+                    {% trans with {'%numberProjectRequests%' : getStatistic('numberOfProjectRequests'), '%percentageAcceptedRequests%' : getStatistic('percentageOfAcceptedProjects') }%} about-us-statistics_general-description-text {% endtrans %}
+                    <p><a href="{% trans %} about-us-statistics_link-under-general-description-target-url {% endtrans %}" class="link">
+                            {% trans %} about-us-statistics_link-under-general-description-text {% endtrans %}</a>
+                    </p>
                 </div>
             </div>
         </div>
@@ -629,22 +663,24 @@ y: 46
         <div class="site-wrap">
             <div class="block-stats block-stats-p1">
                 <header class="block-stats-header">
-                    <h2>Statistiques prêteurs</h2>
+                    <h2>{% trans %} about-us-statistics_lender-statistics-title {% endtrans %}</h2>
                 </header>
                 <div class="block-promos row readable-wrap bg-icon-linechart">
+                    {% set LineChartValue1 = getStatistic('unilendIRR')|round(1, 'floor')|localizednumber %}
+                    {% set LineChartValue2 = getStatistic('averageInterestRateForLenders')|round(1, 'floor')|localizednumber %}
                     <div class="promo col-lg-6 col-md-6 col-sm-4">
                         <h3 class="promo-highlight promo-highlight-lg">
-                            <span data-textcount data-start-count="0" data-end-count="5.31" data-total-time="3000" data-limit-decimal="2" data-tween-count="easeOutCirc">5,31</span><sup>%</sup>
+                            <span data-textcount data-start-count="0" data-end-count="{{ LineChartValue1 }}" data-total-time="3000" data-limit-decimal="1" data-tween-count="easeOutCirc">
+                                {{ LineChartValue1 }}</span><sup>%</sup>
                         </h3>
-                        <p>Taux de rendement<br/>
-                            interne global/an</p>
+                        <p>{% trans %} about-us-statistics_lender-statistics-linechart-unilend-irr-text {% endtrans %}</p>
                     </div><!-- /.promo -->
                     <div class="promo col-lg-6 col-md-6 col-sm-4">
                         <h3 class="promo-highlight promo-highlight-lg">
-                                <span data-textcount data-start-count="0" data-end-count="8.41" data-total-time="3000" data-limit-decimal="2" data-tween-count="easeOutCirc">
-                                    8,41</span><sup>%</sup>
+                                <span data-textcount data-start-count="0" data-end-count="{{ LineChartValue2 }}" data-total-time="3000" data-limit-decimal="1" data-tween-count="easeOutCirc">
+                                    {{ LineChartValue2 }}</span><sup>%</sup>
                         </h3>
-                        <p>Taux d'intérêt<br/>moyen/an</p>
+                        <p>{% trans %} about-us-statistics_lender-statistics-linechart-avg-interest-rate-text {% endtrans %}</p>
                     </div><!-- /.promo -->
                 </div><!-- /.promos -->
                 <div class="stats-charts row">
@@ -653,46 +689,47 @@ y: 46
                             {# @todo Chart #}
                             {# <img src="{{ siteurlmedia('apropos/statistiques/map-fr-repartition.png') }}" alt="" /> #}
                         </div>
-                        <figcaption><p>Répartition des prêteurs par région</p></figcaption>
+                        <figcaption><p>{% trans %} about-us-statistics_lender-statistics-map-title {% endtrans %}</p></figcaption>
                     </figure>
                     <div class="stats-members">
                         <img src="{{ siteurlmedia('apropos/statistiques/icons-members.png') }}" alt="">
                         <div>
-                            <span class="stats-number"><span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">29&nbsp;221</span></span> membres
+                            <span class="stats-number"><span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">{{ getStatistic('numberOfLendersInCommunity')|localizednumber }}</span></span> {% trans %} about-us-statistics_lender-statistics-members-active-not-text {% endtrans %}
                         </div>
                         <div>
-                            <span class="stats-number"><span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">9&nbsp;416</span></span> membres
+                            <span class="stats-number"><span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">{{ getStatistic('numberOfActiveLenders')|localizednumber }}</span></span> {% trans %} about-us-statistics_lender-statistics-members-type-text {% endtrans %}
                         </div>
                     </div>
+                    {% set lendersByType = getStatistic('lendersByType') %}
                     <div class="stats-enterprises">
                         <img src="{{ siteurlmedia('apropos/statistiques/icons-enterprises.png') }}" alt="">
                         <div>
-                            <span class="stats-number"><span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">98</span><sup>%</sup></span> de particuliers
+                            <span class="stats-number"><span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">{{ lendersByType.person.percentage|localizednumber }}</span><sup>%</sup></span> {% trans %} about-us-statistics_lender-statistics-members-type-person-text {% endtrans %}
                         </div>
-                        <div><span class="stats-number">2<sup>%</sup></span> d'entreprises</div>
+                        <div>
+                            <span class="stats-number">{{ lendersByType.legalEntity.percentage|localizednumber }}<sup>%</sup></span>
+                            {% trans %} about-us-statistics_lender-statistics-members-type-legal-entity-text {% endtrans %}</div>
                     </div>
                 </div><!-- /.stats-map -->
                 <div class="block-promos row">
                     <div class="promo col-lg-4 col-md-4">
                         <h3 class="promo-highlight promo-highlight-lg">
-                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">421</span>
+                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">{{ getStatistic('averageNumberOfLenders')|round|localizednumber }}</span>
                         </h3>
-                        <p>Préteurs par projet<br/>
-                            en moyenne</p>
+                        <p>{% trans %} about-us-statistics_lender-statistics-1-text {% endtrans %}</p>
                     </div><!-- /.promo -->
                     <div class="promo col-lg-4 col-md-4">
                         <h3 class="promo-highlight promo-highlight-lg">
-                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">192</span><sup>€</sup>
+                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">{{ getStatistic('averageLoanAmount')|round|localizednumber }}</span><sup>€</sup>
                         </h3>
-                        <p>Montant moyen<br/>
-                            de prét par projet</p>
+                        <p>{% trans %} about-us-statistics_lender-statistics-2-text {% endtrans %}</p>
                     </div><!-- /.promo -->
                     <div class="promo col-lg-4 col-md-4">
                         <h3 class="promo-highlight promo-highlight-lg">
-                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">70</span>
+                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">TODO</span>
+                            {#TODO#}
                         </h3>
-                        <p>Rendement positif<br/>
-                            assuré dés 70 prêts</p>
+                        <p>{% trans %} about-us-statistics_lender-statistics-3-text {% endtrans %}</p>
                     </div><!-- /.promo -->
                 </div><!-- /.promos -->
             </div><!-- /.block-stats -->
@@ -703,69 +740,68 @@ y: 46
         <div class="site-wrap">
             <div class="block-stats block-stats-p2">
                 <header class="block-stats-header">
-                    <h2>Statistiques emprunteurs</h2>
+                    <h2>{% trans %} about-us-statistics_borrower-statistics-money-title {% endtrans %}</h2>
                 </header>
                 <div class="block-promos row bg-icon-money">
                     <div class="promo col-lg-4 col-md-4">
                         <h3 class="promo-highlight promo-highlight-md">
-                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">17&nbsp;962&nbsp;650</span><sup>€</sup>
+                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">{{ getStatistic('amountBorrowed')|localizednumber }}</span><sup>€</sup>
                         </h3>
-                        <p>Montant<br/>
-                            total emprunté</p>
+                        <p>{% trans %} about-us-statistics_borrower-statistics-money-1-text {% endtrans %}</p>
                     </div><!-- /.promo -->
                     <div class="promo col-lg-4 col-md-4">
                         <h3 class="promo-highlight promo-highlight-md">
-                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">4&nbsp;064&nbsp;783</span><sup>€</sup>
+                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">{{ getStatistic('totalRepaidCapital')|round|localizednumber }}</span><sup>€</sup>
                         </h3>
-                        <p>Capital<br/>
-                            remboursé</p>
+                        <p>{% trans %} about-us-statistics_borrower-statistics-money-2-text {% endtrans %}</p>
                     </div><!-- /.promo -->
                     <div class="promo col-lg-4 col-md-4">
                         <h3 class="promo-highlight promo-highlight-md">
-                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">1&nbsp;224&nbsp;391</span><sup>€</sup>
+                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">{{ getStatistic('totalRepaidInterests')|round|localizednumber }}</span><sup>€</sup>
                         </h3>
-                        <p>Intérêts bruts<br/>
-                            versés</p>
+                        <p>{% trans %} about-us-statistics_borrower-statistics-money-3-text {% endtrans %}</p>
                     </div><!-- /.promo -->
                 </div>
                 <div class="stats-charts row">
                     <div class="col-lg-6 col-md-6">
                         <figure class="stats-chart stats-map">
                             <div class="chart" data-chartview='{{ placeholderData.charts.emprunterStatisticsMap|json_encode|escape('html_attr') }}'></div>
-                            <figcaption><p>Répartition des emprunters par région</p></figcaption>
+                            <figcaption><p>{% trans %} about-us-statistics_borrower-statistics-region-map-title {% endtrans %}</p></figcaption>
                         </figure>
                     </div>
                     <div class="col-lg-6 col-md-6">
                         <figure class="stats-chart stats-treemap">
-                            <div class="chart" data-chartview='{{ placeholderData.charts.emprunterStatisticsCategories|json_encode|escape('html_attr') }}'></div>
-                            <figcaption><p>Répartition des emprunteurs par secteur d'activité</p></figcaption>
+                            <div class="chart" data-chartview='{{ projectsByCategoryChart|json_encode|escape('html_attr') }}'></div>
+                            {#<div class="chart" data-chartview='{{ placeholderData.charts.emprunterStatisticsCategories|json_encode|escape('html_attr') }}'></div>#}
+
+                            <figcaption><p>{% trans %} about-us-statistics_borrower-statistics-category-map-title {% endtrans %}</p></figcaption>
                         </figure>
                     </div>
                 </div><!-- /.stats-map -->
                 <div class="block-promos row">
                     <div class="promo col-lg-3 col-md-3">
                         <h3 class="promo-highlight promo-highlight-md">
-                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">46</span><sup>h</sup>
+                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc"></span><sup>TODO</sup>
                         </h3>
-                        <p>1 projet sur 2 financé en 46h</p>
+                        <p>{% trans %} about-us-statistics_borrower-statistics-1-text {% endtrans %}</p>
                     </div><!-- /.promo -->
                     <div class="promo col-lg-3 col-md-3">
                         <h3 class="promo-highlight promo-highlight-md">
-                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">77&nbsp;425</span><sup>€</sup>
+                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">{{ getStatistic('averageProjectAmount') }}</span><sup>€</sup>
                         </h3>
-                        <p>Montant moyen emprunté</p>
+                        <p>{% trans %} about-us-statistics_borrower-statistics-2-text {% endtrans %}</p>
                     </div><!-- /.promo -->
                     <div class="promo col-lg-3 col-md-3">
                         <h3 class="promo-highlight promo-highlight-md">
-                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">97</span><sup>%</sup>
+                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">{{ getStatistic('percentageSuccessfullyFinancedProjects')|round }}</span><sup>%</sup>
                         </h3>
-                        <p>Campanges financées avec succès</p>
+                        <p>{% trans %} about-us-statistics_borrower-statistics-3-text {% endtrans %}</p>
                     </div><!-- /.promo -->
                     <div class="promo col-lg-3 col-md-3">
                         <h3 class="promo-highlight promo-highlight-md">
-                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">232</span><sup>%</sup>
+                            <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">{{ getStatistic('numberOfFinancedProjects')|localizednumber }}</span>
                         </h3>
-                        <p>Nombre de projets déjà financés</p>
+                        <p>{% trans %} about-us-statistics_borrower-statistics-4-text {% endtrans %}</p>
                     </div><!-- /.promo -->
                 </div><!-- /.promos -->
             </div><!-- /.block-stats -->
@@ -777,7 +813,7 @@ y: 46
     <div class="site-wrap">
         <div class="block-promos block-promos-unilend">
             <header class="promos-header">
-                <h2>Les records Unilend</h2>
+                <h2>{% trans %} about-us-statistics_unilend-records-title {% endtrans %}</h2>
             </header>
             <div class="row">
                 <div class="promo col-lg-4 col-md-4">
@@ -787,14 +823,14 @@ y: 46
                     <h3 class="promo-highlight promo-highlight-lg">
                         <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">312</span><sup>€</sup>
                     </h3>
-                    <p>par minute : record de vitesse de financement d'un projet</p>
+                    <p>{% trans %} about-us-statistics_unilend-records-medal-bolt-text {% endtrans %}</p>
                 </div>
                 <div class="promo col-lg-4 col-md-4">
                     <div class="promo-image">
                         <img src="{{ siteurlmedia('apropos/statistiques/medal-handshake.png') }}" alt=""/>
                     </div>
                     <h3 class="promo-highlight promo-highlight-lg">2<sup>min</sup></h3>
-                    <p>une offre de prêt réalisée toutes les 2 minutes sur le site</p>
+                    <p>{% trans %} about-us-statistics_unilend-records-medal-handshake-text {% endtrans %}</p>
                 </div>
                 <div class="promo col-lg-4 col-md-4">
                     <div class="promo-image">
@@ -803,7 +839,7 @@ y: 46
                     <h3 class="promo-highlight promo-highlight-lg">
                         <span data-textcount data-start-count="0" data-total-time="3000" data-tween-count="easeOutCirc">45</span><sup>min</sup>
                     </h3>
-                    <p>record de temps de financement d'un projet à 100%</p>
+                    <p>{% trans %} about-us-statistics_unilend-records-medal-clock-text {% endtrans %}</p>
                 </div>
             </div>
         </div><!-- /.promos -->
@@ -814,10 +850,10 @@ y: 46
     <div class="site-wrap">
         <div class="block-stats block-stats-unilend">
             <header class="block-stats-header">
-                <h2>La performance de la plateforme</h2>
+                <h2>{% trans %} about-us-statistics_unilend-performances-title {% endtrans %}</h2>
             </header>
             <div class="row">
-                <h3 class="c-t1">Taux de rendement interne global Unilend</h3>
+                <h3 class="c-t1">{% trans %} about-us-statistics_unilend-performances-chart-title {% endtrans %}</h3>
                 <div class="stats-chart stats-chart-unilend">
                     <div class="chart" data-chartview='{{ placeholderData.charts.overviewStatistics|json_encode|escape('html_attr') }}'></div>
                     <div class="stats-chart-unilend-key">
@@ -836,7 +872,7 @@ y: 46
                 </div><!-- /.stats-chart-unilend -->
             </div>
             <div class="row">
-                <h3 class="c-t1">Chiffres bruts de la plateform Unilend</h3>
+                <h3 class="c-t1">{% trans %} about-us-statistics_unilend-performances-gross-data-title {% endtrans %}</h3>
                 <div class="table-scroll">
                     <table class="table table-stats-unilend">
                         <thead>
@@ -869,7 +905,7 @@ y: 46
         </div><!-- /.block-stats -->
 
         <div class="btn-toolbar">
-            <a href="{{ route('projets') }}" class="btn-primary">Voir tous les projets</a>
+            <a href="{{ path('projects_list') }}" class="btn-primary">{% trans %} about-us-statistics_link-to-project-list {% endtrans %}</a>
         </div><!-- /.btn-toolbar -->
     </div><!-- /.site-wrap -->
 </section><!-- /#section-platform -->

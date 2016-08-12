@@ -1087,4 +1087,16 @@ class echeanciers extends echeanciers_crud
                  AND lenders_accounts.id_client_owner = " . $clientId;
         return bcdiv($this->bdd->executeQuery($sql)->fetchColumn(0), 100, 2);
     }
+
+    public function getTotalRepaidCapital()
+    {
+        $query = 'SELECT SUM(capital) FROM echeanciers WHERE status = 1';
+        return bcdiv($this->bdd->executeQuery($query)->fetchColumn(0), 100, 2);
+    }
+
+    public function getTotalRepaidInterests()
+    {
+        $query = 'SELECT SUM(interets) FROM echeanciers WHERE status = 1';
+        return bcdiv($this->bdd->executeQuery($query)->fetchColumn(0), 100, 2);
+    }
 }

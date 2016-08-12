@@ -707,7 +707,7 @@ var Utility = {
   // @note same used in `src/twig/extensions/twig.extensions.js`, just with minor modifications to reference the `window.site.assets.media` value for default URL
   svgImage: function (id, title, width, height, sizing) {
     // Default URL
-    var url = (window.site ? window.site.assets.media + 'svg/icons.svg' : '/media/svg/icons.svg')
+    var url = (window.site ? window.site.assets.media + 'svg/icons.svg' : '/bundles/unilendfront/images/svg/icons.svg')
     var svgHeaders = ' version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"'
     var uses = []
     var usesIds = []

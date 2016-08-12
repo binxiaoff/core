@@ -418,4 +418,17 @@ class loans extends loans_crud
         parent::unsetData();
         $this->aAcceptedBids = array();
     }
+
+    public function getAverageLoanAmount()
+    {
+        $query = 'SELECT avg(addedLoans.amount) / 100
+                    FROM (SELECT sum(amount) AS amount
+                          FROM `loans`
+                          WHERE status = 0
+                          GROUP BY id_project, id_lender) AS addedLoans';
+        $statement = $this->bdd->executeQuery($query);
+
+        return $statement->fetchColumn(0);
+
+    }
 }

@@ -974,14 +974,107 @@ class projects extends projects_crud
 
     public function getAverageAmount()
     {
-        $sQuery = 'SELECT ROUND(AVG(amount), 0)
+        $query = 'SELECT ROUND(AVG(amount), 0)
                     FROM `projects`
                     INNER JOIN projects_status_history ON projects.id_project = projects_status_history.id_project
                     INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                     WHERE projects_status.status = ' . \projects_status::FUNDE;
-        $oStatement = $this->bdd->executeQuery($sQuery);
+        $statement = $this->bdd->executeQuery($query);
 
-        return $oStatement->fetchColumn(0);
+        return $statement->fetchColumn(0);
+    }
+
+    public function getNumberOfUniqueProjectRequests()
+    {
+        $query = 'SELECT COUNT(DISTINCT companies.siren)
+                    FROM `projects`
+                      INNER JOIN companies USING (id_company)
+                    WHERE LENGTH(companies.siren) = 9 AND companies.siren NOT IN ("123456789", "987654321", "987456321", "123654789",
+                    "999999999", "888888888", "777777777", "666666666", "555555555", "444444444","333333333", "222222222", "111111111", "000000000")';
+        $statement = $this->bdd->executeQuery($query);
+
+        return $statement->fetchColumn(0);
+    }
+
+    public function countProjectsByRegion()
+    {
+        $query = 'SELECT
+                      CASE
+                      WHEN LEFT(client_base.cp, 2) IN (08, 10, 51, 52, 54, 55, 57, 67, 68, 88)
+                        THEN "44"
+                      WHEN LEFT(client_base.cp, 2) IN (16, 17, 19, 23, 24, 33, 40, 47, 64, 79, 86, 87)
+                        THEN "75"
+                      WHEN LEFT(client_base.cp, 2) IN (01, 03, 07, 15, 26, 38, 42, 43, 63, 69, 73, 74)
+                        THEN "84"
+                      WHEN LEFT(client_base.cp, 2) IN (21, 25, 39, 58, 70, 71, 89, 90)
+                        THEN "27"
+                      WHEN LEFT(client_base.cp, 2) IN (22, 29, 35, 56)
+                        THEN "53"
+                      WHEN LEFT(client_base.cp, 2) IN (18, 28, 36, 37, 41, 45)
+                        THEN "24"
+                      WHEN LEFT(client_base.cp, 2) IN (20)
+                        THEN "94"
+                      WHEN LEFT(client_base.cp, 3) IN (971)
+                        THEN "01"
+                      WHEN LEFT(client_base.cp, 3) IN (973)
+                        THEN "03"
+                      WHEN LEFT(client_base.cp, 2) IN (75, 77, 78, 91, 92, 93, 94, 95)
+                        THEN "11"
+                      WHEN LEFT(client_base.cp, 3) IN (974)
+                        THEN "04"
+                      WHEN LEFT(client_base.cp, 2) IN (09, 11, 12, 30, 31, 32, 34, 46, 48, 65, 66, 81, 82)
+                        THEN "76"
+                      WHEN LEFT(client_base.cp, 3) IN (972)
+                        THEN "02"
+                      WHEN LEFT(client_base.cp, 3) IN (976)
+                        THEN "06"
+                      WHEN LEFT(client_base.cp, 2) IN (02, 59, 60, 62, 80)
+                        THEN "32"
+                      WHEN LEFT(client_base.cp, 2) IN (14, 27, 50, 61, 76)
+                        THEN "28"
+                      WHEN LEFT(client_base.cp, 2) IN (44, 49, 53, 72, 85)
+                        THEN "52"
+                      WHEN LEFT(client_base.cp, 2) IN (04, 05, 06, 13, 83, 84)
+                        THEN "93"
+                      ELSE "0"
+                      END AS insee_region_code,
+                      COUNT(*) AS count
+                    FROM (SELECT
+                        clients.id_client,
+                        companies.zip AS cp
+                      FROM projects
+                        INNER JOIN companies ON projects.id_company = companies.id_company
+                        INNER JOIN clients ON clients.id_client = companies.id_client_owner
+                        INNER JOIN projects_status_history ON projects.id_project = projects_status_history.id_project AND projects_status_history.id_project_status = 4) AS client_base
+                    GROUP BY insee_region_code';
+
+        $statement = $this->bdd->executeQuery($query);
+        $regionsCount  = array();
+        while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
+            $regionsCount[] = $row;
+        }
+
+        return $regionsCount;
+    }
+
+    public function countProjectsByCategory()
+    {
+        $query = 'SELECT
+                  companies.sector,
+                  count(companies.sector) AS count
+                FROM projects
+                  INNER JOIN companies ON projects.id_company = companies.id_company
+                  INNER JOIN projects_status_history
+                    ON projects.id_project = projects_status_history.id_project AND projects_status_history.id_project_status = 4
+                GROUP BY companies.sector';
+
+        $statement = $this->bdd->executeQuery($query);
+        $categoriesCount  = array();
+        while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
+            $categoriesCount[$row['sector']] = $row['count'];
+        }
+
+        return $categoriesCount;
     }
 
 }
