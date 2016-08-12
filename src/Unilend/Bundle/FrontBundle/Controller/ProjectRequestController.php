@@ -5,9 +5,11 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\Translator;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
@@ -38,6 +40,18 @@ class ProjectRequestController extends Controller
 
     /** @var int */
     private $projectStatus;
+
+    /** @var \upload */
+    private $upload;
+
+    /** @var \attachment */
+    private $attachment;
+
+    /** @var \attachment_type */
+    private $attachmentType;
+
+    /** @var \attachment_helper */
+    private $attachmentHelper;
 
     /**
      * @Route("/depot_de_dossier/{hash}", name="project_request_index", requirements={"hash": "[0-9a-f]{32}"})
@@ -85,7 +99,7 @@ class ProjectRequestController extends Controller
             $message = $translator->trans('borrower-landing-page_required-fields-error');
             $errors['amount'] = true;
         } else {
-            $amount = str_replace([',', ' '], ['.', ''], $request->request->get('montant'));
+            $amount = str_replace(' ', '', $request->request->get('montant'));
 
             $settings->get('Somme à emprunter min', 'type');
             $minimumAmount = $settings->value;
@@ -528,6 +542,312 @@ class ProjectRequestController extends Controller
         $this->project->update();
 
         return $this->redirectStatus(self::PAGE_ROUTE_STEP_3, \projects_status::COMPLETUDE_ETAPE_3);
+    }
+
+    /**
+     * @Route("/depot_de_dossier/etape3/{hash}", name="project_request_finance", requirements={"hash": "[0-9a-f]{32}"})
+     * @Method({"GET"})
+     *
+     * @param string $hash
+     * @param Request $request
+     * @return Response
+     */
+    public function financeAction($hash, Request $request)
+    {
+        $template = [];
+        $response = $this->checkProjectHash(self::PAGE_ROUTE_STEP_3, $hash);
+
+        if ($response instanceof Response) {
+            return $response;
+        }
+
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var \companies_actif_passif $companyAssetsDebts */
+        $companyAssetsDebts = $entityManager->getRepository('companies_actif_passif');
+        /** @var \companies_bilans $annualAccountsEntity */
+        $annualAccountsEntity = $entityManager->getRepository('companies_bilans');
+
+        $this->attachmentType = $entityManager->getRepository('attachment_type');
+        $attachmentTypes      = $this->attachmentType->getAllTypesForProjects('fr', true, array(
+            \attachment_type::PRESENTATION_ENTRERPISE,
+            \attachment_type::RIB,
+            \attachment_type::CNI_PASSPORTE_DIRIGEANT,
+            \attachment_type::CNI_PASSPORTE_VERSO,
+            \attachment_type::DERNIERE_LIASSE_FISCAL,
+            \attachment_type::LIASSE_FISCAL_N_1,
+            \attachment_type::LIASSE_FISCAL_N_2,
+            \attachment_type::RAPPORT_CAC,
+            \attachment_type::PREVISIONNEL,
+            \attachment_type::BALANCE_CLIENT,
+            \attachment_type::BALANCE_FOURNISSEUR,
+            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_1,
+            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_1,
+            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_2,
+            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_2,
+            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_3,
+            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_3,
+            \attachment_type::SITUATION_COMPTABLE_INTERMEDIAIRE,
+            \attachment_type::DERNIERS_COMPTES_CONSOLIDES,
+            \attachment_type::STATUTS,
+            \attachment_type::PRESENTATION_PROJET,
+            \attachment_type::DERNIERE_LIASSE_FISCAL_HOLDING,
+            \attachment_type::KBIS_HOLDING,
+            \attachment_type::AUTRE1,
+            \attachment_type::AUTRE2
+        ));
+        $template['attachmentTypes'] = $this->attachmentType->changeLabelWithDynamicContent($attachmentTypes);
+
+        $altaresCapitalStock     = 0;
+        $altaresOperationIncomes = 0;
+        $altaresRevenue          = 0;
+        $annualAccounts          = $annualAccountsEntity->select('id_company = ' . $this->company->id_company, 'cloture_exercice_fiscal DESC', 0, 1);
+
+        if (false === empty($annualAccounts)) {
+            $companyAssetsDebts->get($annualAccounts[0]['id_bilan'], 'id_bilan');
+
+            $altaresCapitalStock     = $companyAssetsDebts->capitaux_propres;
+            $altaresOperationIncomes = $annualAccounts[0]['resultat_exploitation'];
+            $altaresRevenue          = $annualAccounts[0]['ca'];
+        }
+
+        $session = $request->getSession()->get('project_request');
+        $values  = isset($session['values']) ? $session['values'] : [];
+
+        $template['form'] = [
+            'errors' => isset($session['errors']) ? $session['errors'] : [],
+            'values' => [
+                'dl' => isset($values['dl']) ? $values['dl'] : (empty($this->project->fonds_propres_declara_client) ? (empty($altaresCapitalStock) ? '' : $altaresCapitalStock) : $this->project->fonds_propres_declara_client),
+                'fl' => isset($values['fl']) ? $values['fl'] : (empty($this->project->ca_declara_client) ? (empty($altaresRevenue) ? '' : $altaresRevenue) : $this->project->ca_declara_client),
+                'gg' => isset($values['gg']) ? $values['gg'] : (empty($this->project->resultat_exploitation_declara_client) ? (empty($altaresOperationIncomes) ? '' : $altaresOperationIncomes) : $this->project->resultat_exploitation_declara_client)
+            ]
+        ];
+
+        $template['project'] = [
+            'hash' => $this->project->hash
+        ];
+
+        $request->getSession()->remove('project_request');
+
+        return $this->render('pages/project_request/finance.html.twig', $template);
+    }
+
+    /**
+     * @Route("/depot_de_dossier/etape3/{hash}", name="project_request_finance_form", requirements={"hash": "[0-9a-f]{32}"})
+     * @Method({"POST"})
+     *
+     * @param string $hash
+     * @param Request $request
+     * @return Response
+     */
+    public function financeFormAction($hash, Request $request)
+    {
+        $response = $this->checkProjectHash(self::PAGE_ROUTE_STEP_3, $hash);
+
+        if ($response instanceof Response) {
+            return $response;
+        }
+
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
+
+        $errors = [];
+        $values = $request->request->get('finance');
+        $values = is_array($values) ? $values : [];
+        $files  = $request->files->all();
+
+        if (false === isset($values['dl']) || $values['dl'] === '') {
+            $errors['dl'] = true;
+        }
+        if (false === isset($values['fl']) || $values['fl'] === '') {
+            $errors['fl'] = true;
+        }
+        if (false === isset($values['gg']) || $values['gg'] === '') {
+            $errors['gg'] = true;
+        }
+        if (empty($files['accounts']) || false === ($files['accounts'] instanceof UploadedFile)) {
+            $errors['accounts'] = true;
+        } elseif (false === $this->uploadAttachment('accounts', \attachment_type::DERNIERE_LIASSE_FISCAL)) {
+            $errors['accounts'] = [
+                'message' => $this->upload->getErrorType()
+            ];
+        }
+
+        if (false === empty($errors)) {
+            $request->getSession()->set('project_request', [
+                'values'  => $values,
+                'errors'  => $errors
+            ]);
+
+            return $this->redirectToRoute(self::PAGE_ROUTE_STEP_3, ['hash' => $this->project->hash]);
+        }
+
+        if ('true' === $request->request->get('extra_files')) {
+            foreach ($files as $fileName => $file) {
+                if ('accounts' !== $fileName && $file instanceof UploadedFile && false === empty($request->request->get('files')[$fileName])) {
+                    $this->uploadAttachment($fileName, $request->request->get('files')[$fileName]);
+                }
+            }
+        }
+
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
+
+        $updateDeclaration = false;
+        $values['dl']       = $ficelle->cleanFormatedNumber($values['dl']);
+        $values['fl']       = $ficelle->cleanFormatedNumber($values['fl']);
+        $values['gg']       = $ficelle->cleanFormatedNumber($values['gg']);
+
+        /** @var \companies_actif_passif $companyAssetsDebts */
+        $companyAssetsDebts = $entityManager->getRepository('companies_actif_passif');
+        /** @var \companies_bilans $annualAccountsEntity */
+        $annualAccountsEntity = $entityManager->getRepository('companies_bilans');
+
+        $altaresCapitalStock     = 0;
+        $altaresOperationIncomes = 0;
+        $altaresRevenue          = 0;
+        $annualAccounts          = $annualAccountsEntity->select('id_company = ' . $this->company->id_company, 'cloture_exercice_fiscal DESC', 0, 1);
+
+        if (false === empty($annualAccounts)) {
+            $companyAssetsDebts->get($annualAccounts[0]['id_bilan'], 'id_bilan');
+
+            $altaresCapitalStock     = $companyAssetsDebts->capitaux_propres;
+            $altaresOperationIncomes = $annualAccounts[0]['resultat_exploitation'];
+            $altaresRevenue          = $annualAccounts[0]['ca'];
+        }
+
+        if ($altaresCapitalStock != $values['dl']) {
+            $this->project->fonds_propres_declara_client = $values['dl'];
+            $updateDeclaration = true;
+        } elseif (false === empty($this->project->fonds_propres_declara_client) && $altaresCapitalStock == $values['dl']) {
+            $this->project->fonds_propres_declara_client = 0;
+            $updateDeclaration = true;
+        }
+
+        if ($altaresOperationIncomes != $values['fl']) {
+            $this->project->resultat_exploitation_declara_client = $values['fl'];
+            $updateDeclaration = true;
+        } elseif (false === empty($this->project->resultat_exploitation_declara_client) && $altaresOperationIncomes == $values['fl']) {
+            $this->project->resultat_exploitation_declara_client = 0;
+            $updateDeclaration = true;
+        }
+
+        if ($altaresRevenue != $values['gg']) {
+            $this->project->ca_declara_client = $values['gg'];
+            $updateDeclaration = true;
+        } elseif (false === empty($this->project->ca_declara_client) && $altaresRevenue == $values['gg']) {
+            $this->project->ca_declara_client = 0;
+            $updateDeclaration = true;
+        }
+
+        if ($updateDeclaration) {
+            $this->project->update();
+        }
+
+        if ($values['dl'] < 0) {
+            return $this->redirectStatus(self::PAGE_ROUTE_PROSPECT, \projects_status::NOTE_EXTERNE_FAIBLE, 'Fonds propres négatifs');
+        }
+
+        if ($values['fl'] < 0) {
+            return $this->redirectStatus(self::PAGE_ROUTE_PROSPECT, \projects_status::NOTE_EXTERNE_FAIBLE, 'REX négatif');
+        }
+
+        if ($values['gg'] < \projects::MINIMUM_REVENUE) {
+            return $this->redirectStatus(self::PAGE_ROUTE_PROSPECT, \projects_status::NOTE_EXTERNE_FAIBLE, 'CA trop faibles');
+        }
+
+        if ('true' === $request->request->get('extra_files')) {
+            $this->project->process_fast = 1;
+            $this->project->update();
+
+            return $this->redirectToRoute(self::PAGE_ROUTE_FILES, ['hash' => $this->project->hash]);
+        }
+
+        $this->sendSubscriptionConfirmationEmail();
+
+        return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::A_TRAITER);
+    }
+
+    private function sendSubscriptionConfirmationEmail()
+    {
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var \clients $client */
+        $client = $entityManager->getRepository('clients');
+        /** @var \settings $settings */
+        $settings = $entityManager->getRepository('settings');
+
+        /** @var \mail_templates $mailTemplate */
+        $mailTemplate = $entityManager->getRepository('mail_templates');
+        $mailTemplate->get('confirmation-depot-de-dossier', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
+
+        if (false === empty($this->project->id_prescripteur)) {
+            /** @var \prescripteurs $advisor */
+            $advisor = $entityManager->getRepository('prescripteurs');
+
+            $advisor->get($this->project->id_prescripteur);
+            $client->get($advisor->id_client);
+        } else {
+            $client = $this->client;
+        }
+
+        $settings->get('Facebook', 'type');
+        $facebookLink = $settings->value;
+
+        $settings->get('Twitter', 'type');
+        $twitterLink = $settings->value;
+
+        $keywords = [
+            'prenom'               => $client->prenom,
+            'raison_sociale'       => $this->company->name,
+            'lien_reprise_dossier' => $this->generateUrl('project_request_recovery', ['hash' => $this->project->hash], UrlGeneratorInterface::ABSOLUTE_URL),
+            'lien_fb'              => $facebookLink,
+            'lien_tw'              => $twitterLink,
+            'sujet'                => htmlentities($mailTemplate->subject, null, 'UTF-8'),
+            'surl'                 => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
+            'url'                  => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default')
+        ];
+
+        $sRecipient = $client->email;
+        $sRecipient = $this->removeEmailSuffix(trim($sRecipient));
+
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($mailTemplate->type, $keywords);
+        $message->setTo($sRecipient);
+        $mailer = $this->get('mailer');
+        $mailer->send($message);
+    }
+
+    /**
+     * @param string $fieldName
+     * @param int    $attachmentType
+     * @return bool
+     */
+    private function uploadAttachment($fieldName, $attachmentType)
+    {
+        if (false === ($this->attachment instanceof \attachment)) {
+            $this->attachment = $this->get('unilend.service.entity_manager')->getRepository('attachment');
+        }
+
+        if (false === ($this->attachmentType instanceof \attachment_type)) {
+            $this->attachmentType = $this->get('unilend.service.entity_manager')->getRepository('attachment_type');
+        }
+
+        if (false === ($this->upload instanceof \upload)) {
+            $this->upload = Loader::loadLib('upload');
+        }
+
+        if (false === ($this->attachmentHelper instanceof \attachment_helper)) {
+            $this->attachmentHelper = Loader::loadLib('attachment_helper', [$this->attachment, $this->attachmentType, $this->getParameter('kernel.root_dir') . '/../']);
+        }
+
+        $resultUpload = false;
+        if (isset($_FILES[$fieldName]['name']) && $fileInfo = pathinfo($_FILES[$fieldName]['name'])) {
+            $fileName     = $fileInfo['filename'] . '_' . $this->project->id_project;
+            $resultUpload = $this->attachmentHelper->upload($this->project->id_project, \attachment::PROJECT, $attachmentType, $fieldName, $this->upload, $fileName);
+        }
+
+        return $resultUpload;
     }
 
     /**
