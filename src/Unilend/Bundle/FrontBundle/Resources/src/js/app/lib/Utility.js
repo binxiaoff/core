@@ -169,7 +169,6 @@ var Utility = {
       return self.convertStringToJson(input)
     }
 
-
     // Default to string
     return input
   },
@@ -867,6 +866,48 @@ var Utility = {
 
     // Since it didn't break above, consider it a success
     return traverseObj
+  },
+  
+  // Apply each arguments' properties to the first (target) argument
+  // Like $.extend, and _.assign but will replace previous value with new value even if new value is false/undefined/null
+  inherit: function () {
+    if (arguments.length < 2) return
+    var target = arguments[0]
+
+    // @debug
+    // console.log('Utility.inherit', arguments)
+
+    for (var i = 1; i < arguments.length; i++) {
+      // Move along if the target prop is same as reference prop, or reference isn't an object
+      if (target[j] === arguments[i] || typeof arguments[i] !== 'object') continue
+      
+      for (var j in arguments[i]) {
+        target[j] = arguments[i][j]
+      }
+    }
+
+    return target
+  },
+
+  // Same as inherit, except will also traverse nested objects
+  inheritNested: function () {
+    if (arguments.length < 2) return
+    var target = arguments[0]
+    for (var i = 1; i < arguments.length; i++) {
+      // Move along if the target prop is same as reference prop, or reference isn't an object
+      if (target[j] === arguments[i] || typeof arguments[i] !== 'object') continue
+
+      for (var j in arguments[i]) {
+        // If both target property and reference property are objects, do inheritNested
+        if (typeof target[j] === 'object' && typeof arguments[i][j] === 'object') {
+          // Create a new object to inherit into to avoid some weirdness
+          target[j] = Utility.inheritNested({}, target[j], arguments[i][j])
+        } else {
+          target[j] = arguments[i][j]
+        }
+      }
+    }
+    return target
   }
 }
 

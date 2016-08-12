@@ -78,10 +78,10 @@ var FileAttach = function (elem, options) {
 
   // Settings
   // -- Defaults
-  self.settings = $.extend({
+  self.settings = Utility.inherit({
     // Properties
     files: [],
-    maxFiles: 0, // 0 = multi (no limit), 1 = single, 2+ = multi (with limit)
+    maxFiles: 1, // 0 = multi (no limit), 1 = single, 2+ = multi (with limit)
     maxSize: (1024 * 1024 * 8), // 8 MB
     fileTypes: 'pdf jpg jpeg png doc docx',
     inputName: 'fileattach',
@@ -114,6 +114,41 @@ var FileAttach = function (elem, options) {
     self.settings.files = JSON.parse(self.settings.files)
   }
 
+  // Detect if any HTML file elements are already placed within element and
+  // configure the FileAttach's options accordingly to then re-render files
+  // using the component's methods and templates
+  var $files = self.$elem.find('input[type="file"]')
+  if ($files.length > 0 && (!self.settings.files || self.settings.files.length === 0)) {
+    self.settings.files = []
+    $files.each(function (i, fileElem) {
+      // Get the fileElem's info to translate to the `files` object
+      var $fileElem = $(fileElem)
+      var fileElemInputName = $fileElem.attr('name')
+      var fileElemValue = $fileElem.attr('value')
+
+      // If no value is set, ignore this file
+      if (!fileElemValue) return
+
+      // The file element's info to add to the files collection
+      var fileElemInfo = {
+        type: fileElemValue.split('.').pop() || 'file',
+        name: fileElemValue,
+        url: fileElemValue,
+        inputName: fileElemInputName,
+        size: 0
+      }
+
+      // Set the new default inputName value if it doesn't match the settings
+      if (self.settings.inputName === 'fileattach') self.settings.inputName = fileElemInputName
+
+      // Add to the files collection to then populate the FileAttach element with
+      self.settings.files.push(fileElemInfo)
+    })
+
+    // @debug
+    // console.log('Auto-detected input file elements within element', self.settings.files)
+  }
+
   // UI
   self.$elem.addClass('ui-fileattach')
   if (Utility.isEmpty(self.$elem.attr('id'))) self.$elem.attr('id', Utility.randomString())
@@ -130,7 +165,7 @@ var FileAttach = function (elem, options) {
   }
 
   // @debug
-  // console.log('new FileAttach', self)
+  console.log('new FileAttach', elem, self)
 
   // Init
   if (self.getFiles().length === 0) {
@@ -309,12 +344,12 @@ FileAttach.prototype.populate = function (fileInfos, appendFiles) {
           fileType: fileInfo.type || '',
           fileSize: fileInfo.size || '',
           fileUrl: fileInfo.url || '',
-          inputName: self.settings.inputName,
+          inputName: fileInfo.inputName || self.settings.inputName,
           // If FileAttach supports multiple files, add a "_i"
           fileId: (self.settings.maxFiles > 1 ? sprintf(self.settings.multiFileNotation, i) : ''),
           // Enable/disable change/removing file content per file item
-          removeFileButton: (fileInfo.noRemove ? '{{ changeFileButton }}' : '{{ removeFileButton }}'),
-          changeFileButton: (fileInfo.noChange ? '' : '{{ changeFileButton }}')
+          removeFileButton: (fileInfo.disableRemove || !self.settings.fileRemove ? '{{ changeFileButton }}' : '{{ removeFileButton }}'),
+          changeFileButton: (fileInfo.disableChange || !self.settings.fileChange ? '' : '{{ changeFileButton }}')
         }, {
           // Enable/disable change/removing file content
           attachFileButton: self.templates.attachFileButton,

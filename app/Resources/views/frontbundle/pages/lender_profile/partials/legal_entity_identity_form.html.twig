@@ -199,28 +199,28 @@
                     <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
                 <div class="form-field file-identity-side-a">
                     <div class="custom-input-file" id="form-profile-info-file-identite-cni-1"
-                         data-fileattach data-fileattach-inputname="id_recto"
+                         data-formvalidation-input
+                         data-formvalidation-required='input[type="file"][name="id_recto"]'
+                         data-fileattach
+                         data-fileattach-inputname="id_recto"
                          data-fileattach-maxfiles="1"
-                         data-fileattach-emptyfilelabel="
-                         {% if companyIdAttachments[constant('\\attachment_type::CNI_PASSPORTE_DIRIGEANT')] is not empty %}
-                            {{ companyIdAttachments[constant('\\attachment_type::CNI_PASSPORTE_DIRIGEANT')]['path'] }}
-                         {% else %}
-                            {% trans %} lender-profile_information-tab-identity-section-ID-recto {% endtrans %}
-                         {% endif %}">
+                         data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-identity-section-ID-recto {% endtrans %}"
+                         data-fileattach-fileremove="false">
+                        {% if companyIdAttachments[constant('\\attachment_type::CNI_PASSPORTE_DIRIGEANT')]['path'] is defined %}
+                            <input type="file" name="id_recto" value="{{ companyIdAttachments[constant('\\attachment_type::CNI_PASSPORTE_DIRIGEANT')]['path'] }}" />
+                        {% endif %}
                     </div><!-- /.ui-fileattach -->
                 </div>
 
                 <div class="form-field file-identity-side-b">
                     <div class="custom-input-file" id="form-profile-info-file-identite-cni-2"
-                         data-fileattach data-fileattach-inputname="id_verso"
+                         data-fileattach
+                         data-fileattach-inputname="id_verso"
                          data-fileattach-maxfiles="1"
-                         data-fileattach-emptyfilelabel="
-                             {% if companyIdAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')] is defined and
-                                    companyIdAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')] is not empty %}
-                                {{ companyIdAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')]['path'] }}
-                             {% else %}
-                                {% trans %} lender-profile_information-tab-identity-section-ID-verso {% endtrans %}
-                             {% endif %}">
+                         data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-identity-section-ID-verso {% endtrans %}">
+                        {% if companyIdAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')]['path'] is defined %}
+                            <input type="file" name="id_verso" value="{{ companyIdAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')]['path'] }}" />
+                        {% endif %}
                     </div><!-- /.ui-fileattach -->
                 </div>
 
@@ -236,28 +236,31 @@
                  <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
             <div class="form-field file-domicile">
                 <div class="custom-input-file" id="form-profile-info-file-company-registration"
-                     data-fileattach data-fileattach-inputname="company-registration"
+                     data-formvalidation-input
+                     data-formvalidation-required='input[type="file"][name="company-registration"]'
+                     data-fileattach
+                     data-fileattach-inputname="company-registration"
                      data-fileattach-maxfiles="1"
-                     data-fileattach-emptyfilelabel="
-                                 {% if companyOtherAttachments[constant('\\attachment_type::KBIS')] is not empty %}
-                                    {{ companyOtherAttachments[constant('\\attachment_type::KBIS')]['path'] }}
-                                 {% else %}
-                                    {% trans %} lender-profile_information-tab-identity-section-company-registration {% endtrans %}
-                                 {% endif %}">
+                     data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-identity-section-company-registration {% endtrans %}"
+                     data-fileattach-fileremove="false">
+                    {% if companyOtherAttachments[constant('\\attachment_type::KBIS')]['path'] is defined %}
+                        <input type="file" name="company-registration" value="{{ companyOtherAttachments[constant('\\attachment_type::KBIS')]['path'] }}" />
+                    {% endif %}
                 </div><!-- /.ui-fileattach -->
             </div>
             {% if formData.legalEntity.company_client_status > 1 or true %}
                 <div class="form-field file-domicile">
                     <div class="custom-input-file" id="form-profile-info-file-delegation-authority"
-                         data-fileattach data-fileattach-inputname="delegation-of-authority"
-                         data-fileattach-maxfiles="1"
-                         data-fileattach-emptyfilelabel="
-                                 {% if companyOtherAttachments[constant('\\attachment_type::DELEGATION_POUVOIR')] is defined and
-                                        companyOtherAttachments[constant('\\attachment_type::DELEGATION_POUVOIR')] is not empty %}
-                                    {{ companyOtherAttachments[constant('\\attachment_type::DELEGATION_POUVOIR')]['path'] }}
-                                 {% else %}
-                                    {% trans %} lender-profile_information-tab-identity-section-delegation-of-authority {% endtrans %}
-                                 {% endif %}">
+                        data-formvalidation-input
+                        data-formvalidation-required='input[type="file"][name="delegation-of-authority"]'
+                        data-fileattach
+                        data-fileattach-inputname="delegation-of-authority"
+                        data-fileattach-maxfiles="1"
+                        data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-identity-section-delegation-of-authority {% endtrans %}"
+                        data-fileattach-fileremove="false">
+                        {% if companyOtherAttachments[constant('\\attachment_type::DELEGATION_POUVOIR')]['path'] is defined %}
+                            <input type="file" name="company-registration" value="{{ companyOtherAttachments[constant('\\attachment_type::KBIS')]['path'] }}" />
+                        {% endif %}
                     </div><!-- /.ui-fileattach -->
                 </div>
             </div>
