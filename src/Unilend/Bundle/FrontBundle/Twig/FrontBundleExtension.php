@@ -53,7 +53,6 @@ class FrontBundleExtension extends \Twig_Extension
             new \Twig_SimpleFunction('svgimage', array($this, 'svgImageFunction')),
             new \Twig_SimpleFunction('__', array($this, 'temporaryTranslateFunction')),
             new \Twig_SimpleFunction('siteurlmedia', array($this, 'completeUrlMediaFunction')),
-            new \Twig_SimpleFunction('getStatistics', array($this, 'getStatistics')), //TODO delete
             new \Twig_SimpleFunction('getCategories', array($this, 'getCategoriesForSvg')),
             new \Twig_SimpleFunction('uploadedImage', array($this, 'uploadedImageFunction')),
             new \Twig_SimpleFunction('getMonths', array($this, 'getMonths')),
@@ -153,11 +152,6 @@ class FrontBundleExtension extends \Twig_Extension
     public function completeUrlMediaFunction($sPath)
     {
         return $this->url . '/bundles/unilendfront/images/' . $sPath;
-    }
-
-    public function getStatistics()
-    {
-        return $this->statisticsManager->getAllStatistics();
     }
 
     public function getStatisticFunction($statisticType)

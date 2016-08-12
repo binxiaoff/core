@@ -380,32 +380,96 @@ class lenders_accounts extends lenders_accounts_crud
      */
     public function countLenders($bOnlyActive = false)
     {
-        $sClientStatus = $bOnlyActive ? ' INNER JOIN clients_status_history csh ON (csh.id_client = c.id_client  AND csh.id_client_status = 6)' : '';
+        $clientStatus = $bOnlyActive ? ' INNER JOIN clients_status_history csh ON (csh.id_client = c.id_client AND csh.id_client_status = 6)' : '';
 
-        $sQuery = 'SELECT COUNT(DISTINCT(c.id_client))
+        $query = 'SELECT COUNT(DISTINCT(c.id_client))
                     FROM clients c
-                    '. $sClientStatus .'
+                    INNER JOIN lenders_accounts la ON c.id_client = la.id_client_owner AND la.status = 1
+                    '. $clientStatus .'
                     WHERE c.status = ' . \clients::STATUS_ONLINE;
-        $statement = $this->bdd->executeQuery($sQuery);
+        $statement = $this->bdd->executeQuery($query);
 
         return $statement->fetchColumn(0);
     }
 
     public function countLendersByClientType($aClientType, $bOnlyActive = false)
     {
-        $sClientStatus = $bOnlyActive ? ' INNER JOIN clients_status_history csh ON (csh.id_client = c.id_client  AND csh.id_client_status = 6)' : '';
-        $aType         = array('clientTypes'  => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY, 'clientStatus' => \PDO::PARAM_INT);
-        $aBind         = array('clientTypes' => $aClientType, 'clientStatus' => \clients::STATUS_ONLINE);
+        $clientStatus = $bOnlyActive ? ' INNER JOIN clients_status_history csh ON (csh.id_client = c.id_client AND csh.id_client_status = 6)' : '';
+        $type         = ['idLender' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY, 'clientStatus' => \PDO::PARAM_INT];
+        $bind         = ['idLender' => $aClientType, 'clientStatus' => \clients::STATUS_ONLINE];
 
-        $sQuery    = 'SELECT COUNT(DISTINCT(c.id_client))
-                    FROM clients c
-                    ' . $sClientStatus . '
-                    WHERE c.type IN (:clientTypes) AND c.status = :clientStatus';
-        $statement = $this->bdd->executeQuery($sQuery, $aBind, $aType);
+        $query    = 'SELECT COUNT(DISTINCT(c.id_client))
+                        FROM clients c
+                        INNER JOIN lenders_accounts la ON c.id_client = la.id_client_owner AND la.status = 1
+                        ' . $clientStatus . '
+                        WHERE c.type IN (:clientTypes) AND c.status = :clientStatus';
+        $statement = $this->bdd->executeQuery($query, $bind, $type);
 
         return $statement->fetchColumn(0);
     }
 
+    //@TODO @Mesbah kdo pour toi :)
+    public function countProjectsForLenderByRegion($lenderId)
+    {
+        $bind = ['lenderId' => $lenderId];
+        $type = ['lenderId' => \PDO::PARAM_INT];
 
+        $query = 'SELECT
+                      CASE
+                      WHEN LEFT(client_base.cp, 2) IN (08, 10, 51, 52, 54, 55, 57, 67, 68, 88)
+                        THEN "44"
+                      WHEN LEFT(client_base.cp, 2) IN (16, 17, 19, 23, 24, 33, 40, 47, 64, 79, 86, 87)
+                        THEN "75"
+                      WHEN LEFT(client_base.cp, 2) IN (01, 03, 07, 15, 26, 38, 42, 43, 63, 69, 73, 74)
+                        THEN "84"
+                      WHEN LEFT(client_base.cp, 2) IN (21, 25, 39, 58, 70, 71, 89, 90)
+                        THEN "27"
+                      WHEN LEFT(client_base.cp, 2) IN (22, 29, 35, 56)
+                        THEN "53"
+                      WHEN LEFT(client_base.cp, 2) IN (18, 28, 36, 37, 41, 45)
+                        THEN "24"
+                      WHEN LEFT(client_base.cp, 2) IN (20)
+                        THEN "94"
+                      WHEN LEFT(client_base.cp, 3) IN (971)
+                        THEN "01"
+                      WHEN LEFT(client_base.cp, 3) IN (973)
+                        THEN "03"
+                      WHEN LEFT(client_base.cp, 2) IN (75, 77, 78, 91, 92, 93, 94, 95)
+                        THEN "11"
+                      WHEN LEFT(client_base.cp, 3) IN (974)
+                        THEN "04"
+                      WHEN LEFT(client_base.cp, 2) IN (09, 11, 12, 30, 31, 32, 34, 46, 48, 65, 66, 81, 82)
+                        THEN "76"
+                      WHEN LEFT(client_base.cp, 3) IN (972)
+                        THEN "02"
+                      WHEN LEFT(client_base.cp, 3) IN (976)
+                        THEN "06"
+                      WHEN LEFT(client_base.cp, 2) IN (02, 59, 60, 62, 80)
+                        THEN "32"
+                      WHEN LEFT(client_base.cp, 2) IN (14, 27, 50, 61, 76)
+                        THEN "28"
+                      WHEN LEFT(client_base.cp, 2) IN (44, 49, 53, 72, 85)
+                        THEN "52"
+                      WHEN LEFT(client_base.cp, 2) IN (04, 05, 06, 13, 83, 84)
+                        THEN "93"
+                      ELSE "0"
+                      END AS insee_region_code,
+                      COUNT(*) AS count
+                    FROM (SELECT
+                              companies.zip AS cp
+                            FROM lenders_accounts
+                              INNER JOIN loans ON loans.id_lender = lenders_accounts.id_lender_account
+                              INNER JOIN projects ON loans.id_project = projects.id_project
+                              INNER JOIN companies ON projects.id_company = companies.id_company
+                            WHERE lenders_accounts.id_lender_account = :lenderId ) AS client_base
+                    GROUP BY insee_region_code';
 
+        $statement = $this->bdd->executeQuery($query, $bind, $type);
+        $regionsCount  = array();
+        while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
+            $regionsCount[] = $row;
+        }
+
+        return $regionsCount;
+    }
 }
