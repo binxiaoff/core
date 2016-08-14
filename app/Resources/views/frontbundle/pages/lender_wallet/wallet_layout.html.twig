@@ -3,13 +3,11 @@
 {% import 'extensions/_general.macros.twig' as general %}
 {% import 'partials/modules/_custom-input.macros.twig' as customInput %}
 
-{# Page data #}
-{% set bodyId = '' %}
 {% set page = {
-id: 'user-preter-balance',
-title: 'Prêteur / Apport - Retrait',
-permalink: route('user/preter/balance'),
-classNames: 'user-preter-balance'
+    id: 'user-preter-balance',
+    title: 'Prêteur / Apport - Retrait',
+    permalink: route('user/preter/balance'),
+    classNames: 'user-preter-balance'
 } %}
 
 {% block dashboardContent %}

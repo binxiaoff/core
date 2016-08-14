@@ -1,12 +1,10 @@
 {# Contact page #}
 {% extends 'layouts/_page-simple.twig' %}
 
-{# Page data #}
-{% set bodyId = '' %}
 {% set page = {
-id: 'page-contact',
-title: 'Contact',
-permalink: route('contact')
+  id: 'page-contact',
+  title: 'Contact',
+  permalink: route('contact')
 } %}
 
 {% block extendPageHeader %}

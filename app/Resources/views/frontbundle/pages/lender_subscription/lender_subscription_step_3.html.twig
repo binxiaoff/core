@@ -2,11 +2,9 @@
 {% extends 'layouts/_layout.html.twig' %}
 {% import 'extensions/_general.macros.twig' as general %}
 
-{# Page data #}
-{% set bodyId = '' %}
 {% set page = {
-title: 'Devenir Prêteur',
-permalink: path('lender_subscription_step_3', {'clientHash' : client.hash })
+    title: 'Devenir Prêteur',
+    permalink: path('lender_subscription_step_3', {'clientHash' : client.hash })
 } %}
 
 {% block siteContent %}

@@ -60,7 +60,7 @@
     {% block extendHead %}
     {% endblock %}
 </head>
-  <body id="{{ bodyId }}" class="{% if app.user is defined %}ui-user-level-{{ app.user.level|default(1) }}{% endif %}{% if bodyClassNames is defined %} {{ bodyClassNames }}{% endif %}">
+  <body class="{% if app.user is defined %}ui-user-level-{{ app.user.level|default(1) }}{% endif %}{% if bodyClassNames is defined %} {{ bodyClassNames }}{% endif %}">
 
 <div id="top" class="site">
     {% block siteHeader %}

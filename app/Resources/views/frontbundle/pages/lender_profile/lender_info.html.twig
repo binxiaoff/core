@@ -3,20 +3,17 @@
 {% import 'extensions/_general.macros.twig' as general %}
 {% import 'partials/modules/_custom-input.macros.twig' as customInput %}
 
-{# Page data #}
-{% set bodyId = '' %}
 {% set page = {
-id: 'user-preter-profile',
-title: 'Prêteur / Profil',
-permalink: route('user/preter/profile'),
-classNames: 'user-preter-profile'
+    id: 'user-preter-profile',
+    title: 'Prêteur / Profil',
+    permalink: route('user/preter/profile'),
+    classNames: 'user-preter-profile'
 } %}
 
 {# See config/twig.json for the data value of `userProfile` #}
 {# @todo Update the edited input output variables with what was saved (should be in an AJAX call) #}
 
 {% block dashboardContent %}
-
     <div class="dashboard-tabs tabs">
         <div class="dashboard-tabs-nav">
             <ul class="nav nav-dashboard-tabs" data-nav-dropdown-menu="mobile">{#
@@ -53,5 +50,4 @@ classNames: 'user-preter-profile'
             </div><!-- /#profile-alerts.dashboard-tab-pane -->
         </div><!-- /.dashboard-tabs-content -->
     </div><!-- /.dashboard-tabs -->
-
 {% endblock %}

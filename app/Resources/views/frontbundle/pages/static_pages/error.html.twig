@@ -1,12 +1,10 @@
 {# Error page #}
 {% extends 'layouts/_page-simple.html.twig' %}
 
-{# Page data #}
-{% set bodyId = '' %}
 {% set page = {
-id: 'page-error',
-title: 'Error 404',
-permalink: route('error')
+    id: 'page-error',
+    title: 'Error 404',
+    permalink: route('error')
 } %}
 
 {% block pageAsideBody %}

@@ -1,13 +1,10 @@
 {# Projects Index #}
 {% extends 'layouts/_layout.html.twig' %}
 
-{# Page data #}
-{% set bodyId = '' %}
 {% set page = {
-title: 'Devenir Prêteur',
-permalink: path('landing_page_lender')
+    title: 'Devenir Prêteur',
+    permalink: path('landing_page_lender')
 } %}
-
 
 {# @TODO I'm having troubles with Twig.js, so the below implementation should work better than the one above which just copy+pastes code #}
 {% block siteHeader %}
@@ -22,7 +19,6 @@ permalink: path('landing_page_lender')
 
 {% block siteContent %}
     <article id="devenir-preteur" class="page page-lp">
-
         <div class="hero-wrap">
             <div class="page-content">
                 <div class="site-wrap">

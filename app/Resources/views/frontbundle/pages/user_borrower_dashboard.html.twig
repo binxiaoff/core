@@ -2,13 +2,11 @@
 {% extends 'layouts/_dashboard-borrower.twig' %}
 {% import 'partials/common/_custom-input.macros.twig' as customInput %}
 
-{# Page data #}
-{% set bodyId = '' %}
 {% set page = {
-id: 'user-borrower-dashboard',
-title: 'Emprunteur / Dashboard',
-permalink: route('user/borrower/dashboard'),
-classNames: 'user-emprunteur-dashboard'
+    id: 'user-borrower-dashboard',
+    title: 'Emprunteur / Dashboard',
+    permalink: route('user/borrower/dashboard'),
+    classNames: 'user-emprunteur-dashboard'
 } %}
 
 {% block dashboardContent %}

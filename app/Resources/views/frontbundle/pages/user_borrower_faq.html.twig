@@ -3,13 +3,11 @@
 {% import 'extensions/_general.macros.twig' as general %}
 {% import 'partials/common/_custom-input.macros.twig' as customInput %}
 
-{# Page data #}
-{% set bodyId = '' %}
 {% set page = {
-id: 'user-borrower-faq',
-title: 'Emprunteur / faq',
-permalink: route('user/borrower/faq'),
-classNames: 'user-borrower-faq'
+  id: 'user-borrower-faq',
+  title: 'Emprunteur / faq',
+  permalink: route('user/borrower/faq'),
+  classNames: 'user-borrower-faq'
 } %}
 
 {# See config/twig.json for the data value of `userProfile` #}

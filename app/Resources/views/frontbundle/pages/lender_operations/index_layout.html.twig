@@ -1,16 +1,14 @@
 {% extends ':frontbundle/layouts:_dashboard.html.twig' %}
 {% import ':frontbundle/extensions:_general.macros.twig' as general %}
-{# Page data #}
-{% set bodyId = '' %}
+
 {% set page = {
-id: 'user-preter-operations',
-title: 'Prêteur / Operations',
-permalink: route('user/preter/operations'),
-classNames: 'user-preter-operations'
+    id: 'user-preter-operations',
+    title: 'Prêteur / Operations',
+    permalink: route('user/preter/operations'),
+    classNames: 'user-preter-operations'
 } %}
 
 {% block dashboardContent %}
-
     <section class="dashboard-tabs tabs">
         <div class="dashboard-tabs-nav">
             <ul class="nav nav-dashboard-tabs">
@@ -31,5 +29,4 @@ classNames: 'user-preter-operations'
             </article><!-- /#myloans.tab-pane -->
         </div><!-- /.dashboard-tabs-content -->
     </section><!-- /.dashboard-tabs -->
-
 {% endblock %}
