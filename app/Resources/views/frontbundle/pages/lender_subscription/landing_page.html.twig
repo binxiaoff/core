@@ -30,7 +30,7 @@
                                 <p class="small">{% trans %} lender-landing-page_stats-section-IRR-text {% endtrans %}
                                     <span class="c-p1">{{ getStatistic('unilendIRR')|localizednumber }}%</span><br/>
                                     {% trans %} lender-landing-page_stats-section-amount-borrowed {% endtrans %}
-                                    <span class="c-p1">{{ (getStatistic('amountBorrowed')/1000000)|round|localizednumber }}M€</span>
+                                    <span class="c-p1">{{ (getStatistic('amountBorrowedinMillions')|localizednumber }}M€</span>
                                 </p>
                             </div>
                         </div>

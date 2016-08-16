@@ -109,6 +109,14 @@ class StatisticsManager
         }
     }
 
+    public function getAmountBorrowedInMillions()
+    {
+        return bcdiv($this->getAmountBorrowed(), 1000000, 0);
+    }
+
+
+
+
     public function getUnilendIRR()
     {
         $cachedItem = $this->cachePool->getItem('unilendIRR');
