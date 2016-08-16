@@ -2049,4 +2049,106 @@ class preteursController extends bootstrap
         }
     }
 
+    public function _bids()
+    {
+        $this->lenders_accounts = $this->loadData('lenders_accounts');
+        $this->clients          = $this->loadData('clients');
+        $this->clients_adresses = $this->loadData('clients_adresses');
+
+        $this->lenders_accounts->get($this->params[0], 'id_lender_account');
+        $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
+        $this->clients_adresses->get($this->clients->id_client, 'id_client');
+
+        if (isset($_POST['send_dates'])) {
+            $_SESSION['FilterBids']['StartDate'] = $_POST['debut'];
+            $_SESSION['FilterBids']['EndDate']   = $_POST['fin'];
+
+            header('Location: ' . $this->lurl . '/preteurs/bids/' . $this->params[0]);
+            die;
+        }
+
+        if (isset($_SESSION['FilterBids'])) {
+            $dateTimeStart = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterBids']['StartDate']);
+            $dateTimeEnd   = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterBids']['EndDate']);
+
+            unset($_SESSION['FilterBids']);
+        } else {
+            $dateTimeStart = new \DateTime('NOW - 1 year');
+            $dateTimeEnd   = new \DateTime('NOW');
+        }
+
+        $this->sDisplayDateTimeStart = $dateTimeStart->format('d/m/Y');
+        $this->sDisplayDateTimeEnd   = $dateTimeEnd->format('d/m/Y');
+        $this->bidList               = [];
+
+        /** @var \bids $bids */
+        $bids = $this->loadData('bids');
+        foreach ($bids->getBidsByLenderAndDates($this->lenders_accounts, $dateTimeStart, $dateTimeEnd) as $key => $value) {
+            $this->bidList[$key]['id_project'] = $value['id_project'];
+            $this->bidList[$key]['id_bid']     = $value['id_bid'];
+            $this->bidList[$key]['id_client']  = $this->clients->id_client;
+            $this->bidList[$key]['added']      = $value['added'];
+            $this->bidList[$key]['amount']     = $this->ficelle->formatNumber($value['amount'] / 100);
+            $this->bidList[$key]['rate']       = $this->ficelle->formatNumber($value['rate']);
+
+            switch ($value['status']) {
+                case \bids::STATUS_BID_PENDING:
+                    $this->bidList[$key]['status'] = 'Bid en cours';
+                    break;
+                case \bids::STATUS_BID_ACCEPTED:
+                    $this->bidList[$key]['status'] = 'Bid accepté';
+                    break;
+                case \bids::STATUS_BID_REJECTED:
+                    $this->bidList[$key]['status'] = 'Bid rejeté';
+                    break;
+                case \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY:
+                    $this->bidList[$key]['status'] = 'Bid rejeté temporairement';
+                    break;
+                default:
+                    $this->bidList[$key]['status'] = '';
+                    break;
+            }
+        }
+
+        if (isset($_POST['extraction_csv'])) {
+            $this->extractBidsCSV();
+        }
+    }
+
+    private function extractBidsCSV()
+    {
+        $header = array('Id projet', 'Id bid', 'Client', 'Date bid', 'Statut bid', 'Montant', 'Taux');
+
+        PHPExcel_Settings::setCacheStorageMethod(
+            PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
+            array('memoryCacheSize' => '2048MB', 'cacheTime' => 1200)
+        );
+
+        $document    = new PHPExcel();
+        $activeSheet = $document->setActiveSheetIndex(0);
+
+        foreach ($header as $index => $columnName) {
+            $activeSheet->setCellValueByColumnAndRow($index, 1, $columnName);
+        }
+
+        foreach ($this->bidList as $rowIndex => $row) {
+            $colIndex = 0;
+            foreach ($row as $cellValue) {
+                $activeSheet->setCellValueByColumnAndRow($colIndex++, $rowIndex + 2, $cellValue);
+            }
+        }
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment;filename=bids_lender_' . $this->lenders_accounts->id_lender_account . '.csv');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Expires: 0');
+
+        /** @var \PHPExcel_Writer_CSV $writer */
+        $writer = PHPExcel_IOFactory::createWriter($document, 'CSV');
+        $writer->setUseBOM(true);
+        $writer->setDelimiter(';');
+        $writer->save('php://output');
+
+        die;
+    }
 }

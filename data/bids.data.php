@@ -324,4 +324,33 @@ class bids extends bids_crud
 
         return $bids;
     }
+
+    /**
+     * @param \lenders_accounts $lender
+     * @param DateTime|null $dateTimeStart
+     * @param DateTime|null $dateTimeEnd
+     * @return array
+     */
+    public function getBidsByLenderAndDates(\lenders_accounts $lender, $dateTimeStart = null, $dateTimeEnd = null)
+    {
+        $bids = [];
+        $sql  = '
+            SELECT id_project, id_bid, added, status, amount, rate
+            FROM bids
+            WHERE id_lender_account = ' . $lender->id_lender_account;
+
+        if ($dateTimeStart && $dateTimeEnd) {
+            $sql .= ' AND (added BETWEEN "' . $dateTimeStart->format('Y-m-d H:i:s') . '" AND "' . $dateTimeEnd->format('Y-m-d H:i:s') . '")';
+        }
+
+        $sql .= ' ORDER BY added DESC';
+
+        $query = $this->bdd->query($sql);
+
+        while ($row = $this->bdd->fetch_assoc($query)) {
+            $bids[] = $row;
+        }
+
+        return $bids;
+    }
 }
