@@ -18,7 +18,7 @@ class LenderSubscriptionController extends Controller
     /**
      * @Route("inscription_preteur/etape1", name="lender_subscription_step_1")
      */
-    public function lenderSubscriptionStep1ShowAction(Request $request)
+    public function lenderSubscriptionStep1Action(Request $request)
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
@@ -94,7 +94,7 @@ class LenderSubscriptionController extends Controller
      * @Route("inscription_preteur/person-submit-step-1", name="lender_subscription_person_submit_step_1")
      * @Method("POST")
      */
-    public function lenderSubscriptionPersonStep1SaveAction(Request $request)
+    public function saveLenderSubscriptionPersonStep1Action(Request $request)
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
@@ -250,7 +250,7 @@ class LenderSubscriptionController extends Controller
      * @Route("inscription_preteur/legal-entity-submit-step-1", name="lender_subscription_legal_entity_submit_step_1")
      * @Method("POST")
      */
-    public function lenderSubscriptionLegalEntityStep1SaveAction(Request $request)
+    public function saveLenderSubscriptionLegalEntityStep1Action(Request $request)
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
@@ -552,7 +552,7 @@ class LenderSubscriptionController extends Controller
     /**
      * @Route("inscription_preteur/etape2/{clientHash}", name="lender_subscription_step_2")
      */
-    public function lenderSubscriptionStep2ShowAction($clientHash, Request $request)
+    public function lenderSubscriptionStep2Action($clientHash, Request $request)
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
@@ -590,7 +590,7 @@ class LenderSubscriptionController extends Controller
      * @Route("inscription_preteur/submit-step-2/{clientHash}", name="lender_subscription_submit_step_2")
      * @Method("POST")
      */
-    public function lenderSubscriptionStep2SaveAction($clientHash, Request $request)
+    public function saveLenderSubscriptionStep2Action($clientHash, Request $request)
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
@@ -762,7 +762,7 @@ class LenderSubscriptionController extends Controller
     /**
      * @Route("inscription_preteur/etape3/{clientHash}", name="lender_subscription_step_3")
      */
-    public function lenderSubscriptionStep3ShowAction($clientHash)
+    public function lenderSubscriptionStep3Action($clientHash)
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
@@ -818,7 +818,7 @@ class LenderSubscriptionController extends Controller
     /**
      * @Route("lp/inscription-preteur", name="landing_page_lender")
      */
-    public function landingPageShowAction()
+    public function landingPageAction()
     {
         /** @var \blocs $block */
         $block = $client = $this->get('unilend.service.entity_manager')->getRepository('blocs');
@@ -846,7 +846,7 @@ class LenderSubscriptionController extends Controller
      * @Method("POST")
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
-    public function landingPageSaveAction(Request $request)
+    public function saveLandingPageAction(Request $request)
     {
         /** @var \clients $clients */
         $clients = $this->get('unilend.service.entity_manager')->getRepository('clients');

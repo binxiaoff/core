@@ -22,7 +22,7 @@ class LenderProfileController extends Controller
      * @Route("/profile", name="lender_profile")
      * @Security("has_role('ROLE_LENDER')")
      */
-    public function showLenderInformationAction(Request $request)
+    public function lenderInformationAction(Request $request)
     {
         /** @var array $templateData */
         $templateData = [];
@@ -562,7 +562,7 @@ class LenderProfileController extends Controller
      * @Route("/profile/legal-entity/fiscal-address-update", name="profile_legal_entity_fiscal_address_update")
      * @Method("POST")
      */
-    public function updateLegalEntityFiscalAddress(Request $request)
+    public function updateLegalEntityFiscalAddressAction(Request $request)
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
@@ -640,7 +640,7 @@ class LenderProfileController extends Controller
      * @Route("/profile/postal-address-update", name="profile_postal_address_update")
      * @Method("POST")
      */
-    public function updatePostalAddress(Request $request)
+    public function updatePostalAddressAction(Request $request)
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
@@ -689,7 +689,7 @@ class LenderProfileController extends Controller
      * @Route("/profile/documents", name="lender_completeness")
      * @Security("has_role('ROLE_LENDER')")
      */
-    public function showLenderCompletenessForm()
+    public function lenderCompletenessAction()
     {
         return $this->render('Ici viendra le formulaire d\'upload des fichiers de complétude');
     }

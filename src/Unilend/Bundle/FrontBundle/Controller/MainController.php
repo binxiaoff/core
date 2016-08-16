@@ -562,7 +562,7 @@ class MainController extends Controller
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function aboutUsShowAction()
+    public function aboutUsAction()
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
@@ -570,7 +570,7 @@ class MainController extends Controller
         $tree = $entityManager->getRepository('tree');
         $tree->get(['slug' => 'qui-sommes-nous']);
 
-        $response = $this->render('pages/static_pages/about_us.html.twig', []);
+        $response = $this->render('pages/static_pages/about_us.html.twig');
 
         $finalElements = [
             'contenu'      => $response->getContent(),
@@ -586,7 +586,7 @@ class MainController extends Controller
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function statisticsShowAction()
+    public function statisticsAction()
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
@@ -594,7 +594,7 @@ class MainController extends Controller
         $tree = $entityManager->getRepository('tree');
         $tree->get(['slug' => 'statistiques']);
 
-        $response = $this->render('pages/static_pages/statistics.html.twig', []);
+        $response = $this->render('pages/static_pages/statistics.html.twig');
 
         $finalElements = [
             'contenu'      => $response->getContent(),
