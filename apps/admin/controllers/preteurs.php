@@ -2084,30 +2084,8 @@ class preteursController extends bootstrap
         /** @var \bids $bids */
         $bids = $this->loadData('bids');
         foreach ($bids->getBidsByLenderAndDates($this->lenders_accounts, $dateTimeStart, $dateTimeEnd) as $key => $value) {
-            $this->bidList[$key]['id_project'] = $value['id_project'];
-            $this->bidList[$key]['id_bid']     = $value['id_bid'];
-            $this->bidList[$key]['id_client']  = $this->clients->id_client;
-            $this->bidList[$key]['added']      = $value['added'];
-            $this->bidList[$key]['amount']     = $this->ficelle->formatNumber($value['amount'] / 100);
-            $this->bidList[$key]['rate']       = $this->ficelle->formatNumber($value['rate']);
-
-            switch ($value['status']) {
-                case \bids::STATUS_BID_PENDING:
-                    $this->bidList[$key]['status'] = 'Bid en cours';
-                    break;
-                case \bids::STATUS_BID_ACCEPTED:
-                    $this->bidList[$key]['status'] = 'Bid accepté';
-                    break;
-                case \bids::STATUS_BID_REJECTED:
-                    $this->bidList[$key]['status'] = 'Bid rejeté';
-                    break;
-                case \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY:
-                    $this->bidList[$key]['status'] = 'Bid rejeté temporairement';
-                    break;
-                default:
-                    $this->bidList[$key]['status'] = '';
-                    break;
-            }
+            $this->bidList[$key]              = $value;
+            $this->bidList[$key]['id_client'] = $this->clients->id_client;
         }
 
         if (isset($_POST['extraction_csv'])) {

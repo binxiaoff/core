@@ -333,20 +333,21 @@ class bids extends bids_crud
      */
     public function getBidsByLenderAndDates(\lenders_accounts $lender, $dateTimeStart = null, $dateTimeEnd = null)
     {
-        $bids = [];
         $sql  = '
-            SELECT id_project, id_bid, added, status, amount, rate
-            FROM bids
-            WHERE id_lender_account = ' . $lender->id_lender_account;
+            SELECT  b.id_project, b.id_bid, la.id_client_owner, b.added, (CASE b.STATUS WHEN 0 THEN "En cours" WHEN 1 THEN "OK" WHEN 2 THEN "KO" END) AS status, ROUND((b.amount / 100), 0) AS amount, REPLACE (b.rate, ".", ",") AS rate
+            FROM bids b
+            INNER JOIN lenders_accounts la ON la.id_lender_account = b.id_lender_account
+            WHERE b.id_lender_account = ' . $lender->id_lender_account;
 
         if ($dateTimeStart && $dateTimeEnd) {
-            $sql .= ' AND (added BETWEEN "' . $dateTimeStart->format('Y-m-d H:i:s') . '" AND "' . $dateTimeEnd->format('Y-m-d H:i:s') . '")';
+            $sql .= ' AND (b.added BETWEEN "' . $dateTimeStart->format('Y-m-d H:i:s') . '" AND "' . $dateTimeEnd->format('Y-m-d H:i:s') . '")';
         }
 
-        $sql .= ' ORDER BY added DESC';
+        $sql .= ' ORDER BY b.added DESC';
 
         $query = $this->bdd->query($sql);
 
+        $bids = [];
         while ($row = $this->bdd->fetch_assoc($query)) {
             $bids[] = $row;
         }
