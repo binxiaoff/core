@@ -76,7 +76,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             } else {
                 $mois = mktime(0, 0, 0, date('m', $time), 1, date('Y', $time));
             }
-          
+
             $dateTime  = (new \DateTime())->setTimestamp($mois);
             $aColumns  = $this->getColumns();
             $monthDays = $this->getMonthDays($mois);
@@ -687,9 +687,9 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
     private function combineTransactionTypes(array $a, array $b)
     {
         foreach (array_intersect_key($a, $b) as $date => $row) {
-            $a[$date]['montant']         = bcadd($a[$date]['montant'], $b[$date]['montant']);
-            $a[$date]['montant_unilend'] = bcadd($a[$date]['montant_unilend'], $b[$date]['montant_unilend']);
-            $a[$date]['montant_etat']    = bcadd($a[$date]['montant_etat'], $b[$date]['montant_etat']);
+            $a[$date]['montant']         = bcadd($a[$date]['montant'], $b[$date]['montant'], 2);
+            $a[$date]['montant_unilend'] = bcadd($a[$date]['montant_unilend'], $b[$date]['montant_unilend'], 2);
+            $a[$date]['montant_etat']    = bcadd($a[$date]['montant_etat'], $b[$date]['montant_etat'], 2);
         }
         return $a + $b;
     }
