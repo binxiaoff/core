@@ -52,7 +52,7 @@ class TaxManager
 
         foreach ($taxesTypes as $taxTypeId) {
             $taxType->get($taxTypeId);
-            $iTaxAmount = round($transaction->montant * bcdiv($taxType->rate, 100, 2));
+            $iTaxAmount = round($transaction->montant * $taxType->rate / 100);
             $iTotalTaxAmount += $iTaxAmount;
 
             $taxes[] = array(
