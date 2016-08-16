@@ -41,8 +41,14 @@ var MapView = function (elem, options) {
   var self = this
   self.$elem = $(elem).first()
 
+  // Default options to empty object if none given
+  options = options || {}
+
   // Error: no element to apply mapview to
   if (self.$elem.length === 0 || elem.hasOwnProperty('MapView')) return false
+  
+  // Set this as default for attribution
+  Utility.setObjProp(options, 'mapbox.attributionControl.compact', true)
 
   // Settings
   self.settings = $.extend({

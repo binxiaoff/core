@@ -774,7 +774,7 @@ var Utility = {
     return svgHtml
   },
 
-  // Set's an object's property according to the propChain and
+  // Sets an object's property according to the propChain and
   // will automatically create the objects in the propChain if they don't exist
   // Saves having to write multiple typeof x === 'undefined' conditions
   // @param {Boolean} extend Extends the final prop's object instead of setting
