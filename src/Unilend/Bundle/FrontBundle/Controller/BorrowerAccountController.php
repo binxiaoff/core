@@ -16,14 +16,30 @@ class BorrowerAccountController extends Controller
 {
 
     /**
-     * @param Request $request
      *
      * @Route("/espace-emprunteur/projets", name="borrower_account_projects")
      * @Template("borrower_account/projects.html.twig")
      *
+     * @return array
+     */
+    public function projectsAction()
+    {
+        $projectsPreFunding  = $this->getProjectsPreFunding();
+        $projectsFunding     = $this->getProjectsFunding();
+        $projectsPostFunding = $this->getProjectsPostFunding();
+
+        return ['pre_funding_projects' => $projectsPreFunding, 'funding_projects' => $projectsFunding, 'post_funding_projects' => $projectsPostFunding];
+    }
+
+    /**
+     * @param Request $request
+     *
+     * @Route("/espace-emprunteur/nouvelle-demande", name="borrower_account_new_demand")
+     * @Template("borrower_account/new_demand.html.twig")
+     *
      * @return array|Response
      */
-    public function projectsAction(Request $request)
+    public function newDemandAction(Request $request)
     {
         $projectForm = $this->createForm(SimpleProjectType::class);
         $projectForm->handleRequest($request);
@@ -66,15 +82,11 @@ class BorrowerAccountController extends Controller
 
                 $this->addFlash('success', $translator->trans('borrower-demand_success'));
 
-                return $this->redirect($this->generateUrl($request->get('_route')) . '#profile-newrequest');
+                return $this->redirect($this->generateUrl($request->get('_route')));
             }
         }
 
-        $projectsPreFunding  = $this->getProjectsPreFunding();
-        $projectsFunding     = $this->getProjectsFunding();
-        $projectsPostFunding = $this->getProjectsPostFunding();
-
-        return ['pre_funding_projects' => $projectsPreFunding, 'funding_projects' => $projectsFunding, 'post_funding_projects' => $projectsPostFunding, 'project_form' => $projectForm->createView()];
+        return ['project_form' => $projectForm->createView()];
     }
 
     /**

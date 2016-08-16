@@ -15,12 +15,12 @@ classNames: 'user-emprunteur-projects'
     <div class="dashboard-tabs tabs">
         <div class="dashboard-tabs-nav">
             <ul class="nav nav-dashboard-tabs" data-nav-dropdown-menu="mobile">
-                <li role="presentation" class="active"><a href="#profile-projects" role="tab" data-toggle="tab">{{ 'borrower-projects_your-projects'|trans|capitalize }}</a></li>
-                <li role="presentation"><a href="#profile-newrequest" role="tab" data-toggle="tab">{{ 'borrower-demand_new_demand'|trans|capitalize }}</a></li>
+                <li role="presentation" class="active"><a href="#">{{ 'borrower-projects_your-projects'|trans|capitalize }}</a></li>
+                <li role="presentation"><a href="{{ path('borrower_account_new_demand') }}">{{ 'borrower-demand_new_demand'|trans|capitalize }}</a></li>
             </ul>
         </div><!-- /.dashboard-nav-content -->
         <div class="dashboard-tabs-content tab-content">
-            <div id="profile-projects" role="tabpanel" class="dashboard-tab-pane tab-pane active">
+            <div id="profile-projects" class="dashboard-tab-pane">
                 <article class="panel">
                     <section role="tablist" class="ui-toggle-group" aria-multiselectable="true">
 
@@ -177,34 +177,6 @@ classNames: 'user-emprunteur-projects'
                     </section><!-- /.ui-toggle-group -->
                 </article><!-- /.panel -->
             </div><!-- /#profile-info.dashboard-tab-pane -->
-
-            <div id="profile-newrequest" role="tabpanel" class="dashboard-tab-pane tab-pane">
-                <article class="panel">
-                    <section id="profile-fiscalite-bank-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
-                        <section id="profile-fiscalite-bank-view" role="tabpanel" class="profile-bank-view collapse in">
-                            <div class="dashboard-newrequest">
-                                {% if app.session.flashBag.has('error') %}
-                                    <div class="message-error">
-                                        <p>{% trans %} borrower-demand_error {% endtrans %}</p>
-                                        {% for error in app.session.flashBag.get('error') %}
-                                            <p>{{ error }}</p>
-                                        {% endfor %}
-                                    </div>
-                                {% elseif app.session.flashBag.has('success') %}
-                                    <div class="message-success">
-                                        {% for success in app.session.flashBag.get('success') %}
-                                            <p>{{ success }}</p>
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-
-                                {{ form(project_form, {'attr': {'id': 'borrower_new_demand', 'action': path(app.request.get('_route')) ~ '#profile-newrequest'}}) }}
-                                <button type="submit" form="borrower_new_demand" class="btn-primary ui-dialog-confirm"><span class="icon fa-angle-right"></span> {{ 'borrower-demand_valid-btn'|trans|capitalize }}</button>
-                            </div><!-- /.dashboard-newrequest -->
-                        </section>
-                    </section><!-- /.ui-toggle-group -->
-                </article><!-- /.panel -->
-            </div><!-- /#profile-fiscalite.dashboard-tab-pane -->
         </div><!-- /.dashboard-tabs-content -->
     </div><!-- /.dashboard-tabs -->
 
