@@ -13,21 +13,21 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\Translator;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\FrontBundle\Service\RouteProvider;
 use Unilend\core\Loader;
 use Unilend\librairies\Altares;
 
 class ProjectRequestController extends Controller
 {
-    const PAGE_ROUTE_LANDING_PAGE = 'lp-depot-de-dossier';
-    const PAGE_ROUTE_STEP_2       = 'project_request_contact';
-    const PAGE_ROUTE_STEP_3       = 'project_request_finance';
-    const PAGE_ROUTE_PROSPECT     = 'project_request_prospect';
-    const PAGE_ROUTE_FILES        = 'project_request_files';
-    const PAGE_ROUTE_END          = 'project_request_end';
-    const PAGE_ROUTE_EMAILS       = 'project_request_emails';
-    const PAGE_ROUTE_INDEX        = 'project_request_index';
-    const PAGE_ROUTE_RECOVERY     = 'project_request_recovery';
-    const PAGE_ROUTE_STAND_BY     = 'project_request_stand_by';
+    const PAGE_ROUTE_STEP_2   = 'project_request_contact';
+    const PAGE_ROUTE_STEP_3   = 'project_request_finance';
+    const PAGE_ROUTE_PROSPECT = 'project_request_prospect';
+    const PAGE_ROUTE_FILES    = 'project_request_files';
+    const PAGE_ROUTE_END      = 'project_request_end';
+    const PAGE_ROUTE_EMAILS   = 'project_request_emails';
+    const PAGE_ROUTE_INDEX    = 'project_request_index';
+    const PAGE_ROUTE_RECOVERY = 'project_request_recovery';
+    const PAGE_ROUTE_STAND_BY = 'project_request_stand_by';
 
     /** @var \clients */
     private $client;
@@ -69,7 +69,7 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        return $this->redirectToRoute(self::PAGE_ROUTE_LANDING_PAGE);
+        return $this->redirectToRoute(RouteProvider::ROUTE_PROJECT_REQUEST_LANDING_PAGE);
     }
 
     /**
@@ -1224,7 +1224,7 @@ class ProjectRequestController extends Controller
         $this->project = $entityManager->getRepository('projects');
 
         if (false === $this->project->get($hash, 'hash')) {
-            return $this->redirectToRoute(self::PAGE_ROUTE_LANDING_PAGE);
+            return $this->redirectToRoute(RouteProvider::ROUTE_PROJECT_REQUEST_LANDING_PAGE);
         }
 
         /** @var \projects_status $projectStatus */

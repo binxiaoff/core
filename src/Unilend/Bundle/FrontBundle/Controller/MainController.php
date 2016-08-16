@@ -604,4 +604,38 @@ class MainController extends Controller
 
         return $this->renderCmsNav($tree, $finalElements, $entityManager);
     }
+
+    /**
+     * @Route("/faq-preteur", name="lender_faq")
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function lenderFaq()
+    {
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
+
+        /** @var \settings $settings */
+        $settings = $entityManager->getRepository('settings');
+        $settings->get('URL FAQ preteur', 'type');
+
+        return $this->redirect($settings->value);
+    }
+
+    /**
+     * @Route("/faq-emprunteur", name="borrower_faq")
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function borrowerFaq()
+    {
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
+
+        /** @var \settings $settings */
+        $settings = $entityManager->getRepository('settings');
+        $settings->get('URL FAQ emprunteur', 'type');
+
+        return $this->redirect($settings->value);
+    }
 }
