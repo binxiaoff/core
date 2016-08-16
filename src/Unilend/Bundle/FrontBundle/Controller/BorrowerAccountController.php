@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use Unilend\Bundle\FrontBundle\Form\BorrowerContactType;
 use Unilend\Bundle\FrontBundle\Form\SimpleProjectType;
 use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
 
@@ -33,19 +34,19 @@ class BorrowerAccountController extends Controller
             $fMinAmount     = $projectManager->getMinProjectAmount();
             $fMaxAmount     = $projectManager->getMaxProjectAmount();
 
-            $translator = $this->get('unilend.service.translation_manager');
+            $translator = $this->get('translator');
             $error      = false;
             if (empty($formData['amount']) || $fMinAmount > $formData['amount'] || $fMaxAmount < $formData['amount']) {
                 $error = true;
-                $this->addFlash('error', $translator->selectTranslation('borrower-demand', 'amount_error'));
+                $this->addFlash('error', $translator->trans('borrower-demand_amount_error'));
             }
             if (empty($formData['duration'])) {
                 $error = true;
-                $this->addFlash('error', $translator->selectTranslation('borrower-demand', 'duration_error'));
+                $this->addFlash('error', $translator->trans('borrower-demand_duration_error'));
             }
             if (empty($formData['message'])) {
                 $error = true;
-                $this->addFlash('error', $translator->selectTranslation('borrower-demand', 'message_error'));
+                $this->addFlash('error', $translator->trans('borrower-demand_message_error'));
             }
             if (false === $error) {
                 $company = $this->getCompany();
@@ -63,7 +64,7 @@ class BorrowerAccountController extends Controller
 
                 $projectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::A_TRAITER, $project);
 
-                $this->addFlash('success', $translator->selectTranslation('borrower-demand', 'success'));
+                $this->addFlash('success', $translator->trans('borrower-demand_success'));
 
                 return $this->redirect($this->generateUrl($request->get('_route')) . '#profile-newrequest');
             }
@@ -205,18 +206,115 @@ class BorrowerAccountController extends Controller
             $idVersoAdded = $id[0]['added'];
         }
 
-
-
-        return ['client' => $client, 'company' => $company, 'birthCountry' => $birthCountry, 'nationality' => $nationality, 'companyCountry' => $companyCountry, 'idAdded' => $idAdded, 'idVersoAdded' => $idVersoAdded];
+        return ['client'         => $client,
+                'company'        => $company,
+                'birthCountry'   => $birthCountry,
+                'nationality'    => $nationality,
+                'companyCountry' => $companyCountry,
+                'idAdded'        => $idAdded,
+                'idVersoAdded'   => $idVersoAdded
+        ];
     }
 
     /**
      * @Route("/espace-emprunteur/contact", name="borrower_account_contact")
      * @Template("borrower_account/contact.html.twig")
      */
-    public function contactAction()
+    public function contactAction(Request $request)
     {
+        $company = $this->getCompany();
 
+        $contactForm = $this->createForm(BorrowerContactType::class);
+        $contactForm->handleRequest($request);
+
+        if ($contactForm->isSubmitted() && $contactForm->isValid()) {
+            $formData = $contactForm->getData();
+            $translator = $this->get('translator');
+            $error    = false;
+
+            if (empty($formData['first_name'])) {
+                $error = true;
+                $this->addFlash('error', $translator->trans('common-validator_error-first-name-empty'));
+            }
+            if (empty($formData['last_name'])) {
+                $error = true;
+                $this->addFlash('error', $translator->trans('common-validator_error-last-name-empty'));
+            }
+            if (empty($formData['mobile']) || strlen($formData['mobile']) < 9 || strlen($formData['mobile']) > 14) {
+                $error = true;
+                $this->addFlash('error', $translator->trans('common-validator_error-phone-number-invalid'));
+            }
+            if (empty($formData['email']) || false == filter_var($formData['email'], FILTER_VALIDATE_EMAIL)) {
+                $error = true;
+                $this->addFlash('error', $translator->trans('common-validator_error-email-address-invalid'));
+            }
+            if (empty($formData['message'])) {
+                $error = true;
+                $this->addFlash('error', $translator->trans('common-validator_error-email-message-empty'));
+            }
+
+            if (false === $error) {
+                $filePath = '';
+                if (isset($_FILES['attachment']['name'] ) && $_FILES['attachment']['name'] !== '') {
+                    $oUpload = new \upload;
+                    $path = $this->get('kernel')->getRootDir() . '/../';
+                    $oUpload->setUploadDir($path, 'protected/contact/');
+                    $oUpload->doUpload('attachment');
+                    $filePath = $path . 'protected/contact/' . $oUpload->getName();
+                }
+
+                /** @var \settings $oSettings */
+                $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
+                $settings->get('Facebook', 'type');
+                $facebookURL = $settings->value;
+
+                $settings->get('Twitter', 'type');
+                $twitterURL = $settings->value;
+
+                $aVariables = array(
+                    'surl'     => $this->get('assets.packages')->getUrl(''),
+                    'url'      => $request->getBaseUrl(),
+                    'prenom_c' => $formData['first_name'],
+                    'projets'  => $this->generateUrl('projects_list'),
+                    'lien_fb'  => $facebookURL,
+                    'lien_tw'  => $twitterURL
+                );
+
+                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('demande-de-contact', $aVariables);
+                $message->setTo($formData['email']);
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
+
+                $settings->get('Adresse emprunteur', 'type');
+
+                $aReplacements = array(
+                    '[siren]'     => $company->siren,
+                    '[company]'   => $company->name,
+                    '[prenom]'    => $formData['first_name'],
+                    '[nom]'       => $formData['last_name'],
+                    '[email]'     => $formData['email'],
+                    '[telephone]' => $formData['mobile'],
+                    '[demande]'   => $translator->trans('borrower-contact_subject-option-' . $formData['subject']),
+                    '[message]'   => $formData['message'],
+                    '[SURL]'      => $this->get('assets.packages')->getUrl('')
+                );
+
+                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-demande-de-contact-emprunteur', $aReplacements, false);
+                $message->setTo(trim($settings->value));
+                if (empty($filePath) === false) {
+                    $message->attach(\Swift_Attachment::fromPath($filePath));
+                }
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
+
+                @unlink($filePath);
+                $this->addFlash('success', $translator->trans('borrower-contact_success-message'));
+            }
+        }
+
+        return ['contact_form' => $contactForm->createView(), 'company_siren' => $company->siren, 'company_name' => $company->name];
     }
 
     /**

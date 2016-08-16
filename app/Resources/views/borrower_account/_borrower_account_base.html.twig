@@ -4,6 +4,7 @@
     {% include 'borrower_account/_borrower_header_dashboard.html.twig' %}
 {% endblock %}
 
+{% set faqUrl = 'https://unilend.desk.com/?b_id=13135' %}
 
 {% block siteContent %}
 
@@ -14,15 +15,15 @@
                     <nav class="dashboard-nav">
                         {% block dashboardNav %}
                             <ul>
-                                <li role="presentation" class="dashboard-nav-dashboard"><a href="{{ path('borrower_account_projects') }}"><span class="icon fa-project-u"></span><span class="label">{{ 'borrower-account-nav_your-projects'|trans|capitalize }}</span></a></li>
+                                <li role="presentation" class="dashboard-nav-dashboard {% if app.request.get('_route') == 'borrower_account_projects' %}active{% endif %}"><a href="{{ path('borrower_account_projects') }}"><span class="icon fa-project-u"></span><span class="label">{{ 'borrower-account-nav_your-projects'|trans|capitalize }}</span></a></li>
 
-                                <li role="presentation" class="dashboard-nav-operations {% if '/user_preter_operations.html' == page.permalink %}active{% endif %}"><a href="{{ path('borrower_account_operations') }}"><span class="icon fa-operations-u"></span><span class="label">{{ 'borrower-account-nav_your-operations'|trans|capitalize }}</span></a></li>
+                                <li role="presentation" class="dashboard-nav-operations {% if app.request.get('_route') == 'borrower_account_operations' %}active{% endif %}"><a href="{{ path('borrower_account_operations') }}"><span class="icon fa-operations-u"></span><span class="label">{{ 'borrower-account-nav_your-operations'|trans|capitalize }}</span></a></li>
 
-                                <li role="presentation" class="dashboard-nav-profile {% if ' ' == page.permalink %}active{% endif %}"><a href="{{ path('borrower_account_profile') }}"><span class="icon fa-profile-u"></span><span class="label">{{ 'borrower-account-nav_profile'|trans|capitalize }}</span></a></li>
+                                <li role="presentation" class="dashboard-nav-profile {% if app.request.get('_route') == 'borrower_account_profile' %}active{% endif %}"><a href="{{ path('borrower_account_profile') }}"><span class="icon fa-profile-u"></span><span class="label">{{ 'borrower-account-nav_profile'|trans|capitalize }}</span></a></li>
 
-                                <li role="presentation" class="dashboard-nav-contact {% if ' ' == page.permalink %}active{% endif %}"><a href="{{ path('borrower_account_contact') }}"><span class="icon fa-pen-u"></span><span class="label">{{ 'borrower-account-nav_contact'|trans|capitalize }}</span></a></li>
+                                <li role="presentation" class="dashboard-nav-contact {% if app.request.get('_route') == 'borrower_account_contact' %}active{% endif %}"><a href="{{ path('borrower_account_contact') }}"><span class="icon fa-pen-u"></span><span class="label">{{ 'borrower-account-nav_contact'|trans|capitalize }}</span></a></li>
 
-                                <li role="presentation" class="dashboard-nav-faq {% if ' ' == page.permalink %}active{% endif %}"><a href="{{ path('borrower_account_faq') }}"><span class="icon fa-question-circle-o"></span><span class="label">{{ 'borrower-account-nav_faq'|trans|capitalize }}</span></a></li>
+                                <li role="presentation" class="dashboard-nav-faq"><a href="{{ faqUrl }}"><span class="icon fa-question-circle-o"></span><span class="label">{{ 'borrower-account-nav_faq'|trans|capitalize }}</span></a></li>
 
                             </ul>
                         {% endblock %}

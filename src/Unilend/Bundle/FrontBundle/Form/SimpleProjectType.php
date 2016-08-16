@@ -6,16 +6,17 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
-use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
 class SimpleProjectType extends AbstractType
 {
     /** @var EntityManager */
     private $entityManager;
+    /** @var TranslatorInterface */
     private $translator;
 
-    public function __construct(EntityManager $entityManager, TranslationManager $translator)
+    public function __construct(EntityManager $entityManager, TranslatorInterface $translator)
     {
         $this->entityManager = $entityManager;
         $this->translator = $translator;
@@ -30,8 +31,8 @@ class SimpleProjectType extends AbstractType
         $settings->get('Durée des prêts autorisées', 'type');
         $possibleDuration = explode(',', $settings->value);
         $durationLabel = array_map(function($duration){
-            $month = $this->translator->selectTranslation('borrower-projects', 'month');
-            return $duration . ' ' . $month;
+            $month = $this->translator->transChoice('common_month', $duration, ['%count%' => $duration]);
+            return $month;
         }, $possibleDuration);
         $builder
             ->add('amount', IntegerType::class, [

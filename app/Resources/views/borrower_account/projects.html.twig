@@ -56,7 +56,7 @@ classNames: 'user-emprunteur-projects'
                                     <tr>
                                         <td>{{ project.id_project }}</td>
                                         <td>{{ project.nature_project }}</td>
-                                        <td>{{ project.amount|localizednumber }}&nbsp;€<br>{{ project.period }}&nbsp;{% trans %} borrower-projects_month {% endtrans %}</td>
+                                        <td>{{ project.amount|localizednumber }}&nbsp;€<br>{% transchoice project.period with {'%count%': project.period} %} common_month {% endtranschoice %}</td>
                                         <td>{{ ('borrower-projects_' ~ project.project_status_label)|trans|capitalize }}</td>
                                         <td>{% if project.predict_autobid > 0 %} {{ project.predict_autobid|localizednumber }}&nbsp;% {% endif %}</td>
                                         <td class="center">
@@ -106,7 +106,7 @@ classNames: 'user-emprunteur-projects'
                                     <tr>
                                         <td>{{ project.id_project }}</td>
                                         <td>{{ project.nature_project }}</td>
-                                        <td>{{ project.amount|localizednumber }}&nbsp;€<br>{{ project.period }}&nbsp;{% trans %} borrower-projects_month {% endtrans %}</td>
+                                        <td>{{ project.amount|localizednumber }}&nbsp;€<br>{% transchoice project.period with {'%count%': project.period} %} common_month {% endtranschoice %}</td>
                                         <td>{{ project.ended|localizeddate('short', 'none')}}</td>
                                         <td>{{ project.funding_progress|localizednumber }}&nbsp;%</td>
                                         <td>{{ project.average_ir|localizednumber }}&nbsp;%</td>
@@ -159,7 +159,7 @@ classNames: 'user-emprunteur-projects'
                                     <tr>
                                         <td>{{ project.id_project }}</td>
                                         <td>{{ project.nature_project }}</td>
-                                        <td>{{ project.amount|localizednumber }}&nbsp;€<br>{{ project.period }}&nbsp;{% trans %} borrower-projects_month {% endtrans %}</td>
+                                        <td>{{ project.amount|localizednumber }}&nbsp;€<br>{% transchoice project.period with {'%count%': project.period} %} common_month {% endtranschoice %}</td>
                                         <td>{{ project.ended|localizeddate('short', 'none')}}</td>
                                         <td>{{ project.monthly_payment|localizedcurrency('EUR') }}</td>
                                         <td>{{ project.average_ir|localizednumber }}&nbsp;%</td>
@@ -198,7 +198,7 @@ classNames: 'user-emprunteur-projects'
                                     </div>
                                 {% endif %}
 
-                                {{ form(project_form, {'attr': {'novalidate': 'novalidate', 'id': 'borrower_new_demand', 'action': path(app.request.get('_route')) ~ '#profile-newrequest'}}) }}
+                                {{ form(project_form, {'attr': {'id': 'borrower_new_demand', 'action': path(app.request.get('_route')) ~ '#profile-newrequest'}}) }}
                                 <button type="submit" form="borrower_new_demand" class="btn-primary ui-dialog-confirm"><span class="icon fa-angle-right"></span> {{ 'borrower-demand_valid-btn'|trans|capitalize }}</button>
                             </div><!-- /.dashboard-newrequest -->
                         </section>

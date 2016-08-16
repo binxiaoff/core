@@ -102,15 +102,7 @@ classNames: 'user-borrower-profile'
                                 <dt>{{ 'borrower-profile_bic'|trans|upper }}</dt>
                                 <dd>{{ company.bic }}</dd>
                                 <dt>{{ 'borrower-profile_iban'|trans|upper }}</dt>
-                                <dd>
-                                    {{ company.iban[0:4] }}
-                                    {{ company.iban[4:4] }}
-                                    {{ company.iban[8:4] }}
-                                    {{ company.iban[12:4] }}
-                                    {{ company.iban[16:4] }}
-                                    {{ company.iban[20:4] }}
-                                    {{ company.iban[24:3] }}
-                                </dd>
+                                <dd>{{ company.iban|split('', 4)|join(' ') }}</dd>
                             </dl>
                             <p>{{ 'borrower-profile_bank-information-modification-message'|trans }}</p>
                         </section>
