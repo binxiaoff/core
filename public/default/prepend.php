@@ -16,6 +16,8 @@ $noCacheControllers = array('ajax', 'cron', 'crongeckoboard', 'pdf', 'LP_inscrip
 
 if (in_array($currentController, $noCacheControllers)) {
     $nocache = true;
+} else if (0 === strcmp($exp[1], 'projects') && isset($exp[2]) && 0 === strcmp($exp[2], 'bidsExport')) {
+    $nocache = true;
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
