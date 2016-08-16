@@ -115,7 +115,7 @@ var UserNotificationsDrop = function (elem, options) {
   self.$elem.trigger('UserNotificationsDrop:initialised', [self])
 
   // @debug
-  console.log('new UserNotificationsDrop', self)
+  // console.log('new UserNotificationsDrop', self)
 
   return self
 }
@@ -291,7 +291,7 @@ UserNotificationsDrop.prototype.updatePip = function (amount) {
 // @method position
 // @returns {Void}
 UserNotificationsDrop.prototype.position = function () {
-  if (self.drop.isOpened()) self.drop.position()
+  if (self.drop && self.drop.isOpened()) self.drop.position()
 }
 
 // Templates for rendering

@@ -35,7 +35,7 @@
 
 @mixin message($bg-color: $c-purple-l2, $text-color: $c-t1, $icon-color: $c-p1, $show-icon: false) {
   box-sizing: border-box;
-  display: block;
+  //display: block;
   padding: 20px;
   margin-bottom: 20px;
   position: relative;
@@ -79,6 +79,12 @@
     &:before {
       font-size: $fs-base;
     }
+  }
+
+  // Ignore min-height if collapsing
+  &.collapsing {
+    min-height: 0;
+    overflow: hidden;
   }
 }
 

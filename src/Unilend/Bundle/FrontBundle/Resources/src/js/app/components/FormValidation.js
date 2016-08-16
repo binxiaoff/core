@@ -658,12 +658,13 @@ FormValidation.prototype.validate = function (options) {
 FormValidation.prototype.clear = function () {
   var self = this
   self.getInputs().each(function (i, input) {
-    $(elem)
+    $(input)
       .parents('.form-field').removeClass('ui-formvalidation-error ui-formvalidation-success')
       .find('.ui-formvalidation-messages').html('')
   })
   self.$notifications.html('')
-  // @trigger group `FormValidation:clear`
+
+  // @trigger group `FormValidation:clear` [elemFormValidation]
   self.$elem.trigger('FormValidation:clear', [self])
 }
 
@@ -855,7 +856,10 @@ FormValidation.prototype.rules = {
           // Allowed: +33 644 911 250
           //          (0) 12.34.56.78.90
           //          856-6688
-          if (!/^\+?[0-9\-\. \(\)]{6,}$/.test(inputValidation.value)) {
+          // if (!/^\+?[0-9\-\. \(\)]{6,}$/.test(inputValidation.value)) {
+          
+          // DEV-578 mobile phone number format upon input (exclude + before area code)
+          if (/\D+/.test(inputValidation.value) || inputValidation.value.length < 6) {
             inputValidation.errors.push({
               type: 'inputType',
               description: __.__('Not a valid telephone number', 'errorFieldInputTypeTelephone')
@@ -1094,6 +1098,12 @@ $(document)
   // Auto-init component behaviours on document ready, or when parent element (or self) is made visible with `UI:visible` custom event
   .on('ready UI:visible', function (event) {
     $(event.target).find('[data-formvalidation]').not('.ui-formvalidation').uiFormValidation()
+  })
+
+  // Clear notifications on form reset
+  .on('reset', 'form.ui-formvalidation', function () {
+    console.log('reset form with formvalidation')
+    $(this).uiFormValidation('clearAll')
   })
 
 module.exports = FormValidation

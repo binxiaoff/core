@@ -59,6 +59,7 @@ var NavDropdownMenu = require('NavDropdownMenu')
 var MapView = require('MapView')
 var ChartView = require('ChartView')
 var UserNotificationsDrop = require('./app/components/UserNotificationsDrop')
+var Sticky = require('./app/components/Sticky')
 
 var BorrowerEsimForm = require('./app/components/BorrowerEsimForm')
 var LoginTimer = require('./app/components/LoginTimer')
@@ -82,9 +83,6 @@ $(document).ready(function ($) {
   var $html = $('html')
   var $body = $('body')
   var $win = $(window)
-  var $siteHeader = $('.site-header')
-  var $siteContent = $('.site-content')
-  var $siteFooter = $('.site-footer')
   var Modernizr = window.Modernizr
   raf.polyfill()
 
@@ -861,7 +859,7 @@ $(document).ready(function ($) {
    */
   function setDeviceHeights() {
     // Always get the site header height to remove from the element's height
-    var siteHeaderHeight = $('.site-header').outerHeight()
+    var siteHeaderHeight = Utility.$siteHeader.outerHeight()
     var deviceHeight = window.innerHeight - siteHeaderHeight
 
     // Set element to height of device
@@ -985,7 +983,7 @@ $(document).ready(function ($) {
     setEqualHeights()
 
     // Update the stickies (perform hardUpdate due to resize/orientationchange)
-    updateStickyWatchers(1)
+    Sticky.prototype._updateAllStickyWatchers(1)
 
     // Trigger UI:update event to signal to any other elements that need to update on this event
     // @trigger elem `UI:update`
@@ -1047,7 +1045,7 @@ $(document).ready(function ($) {
 
   function updateProjectSingleNavOffsetTop () {
     if ($projectSingleMenu.length > 0) {
-      projectSingleNavOffsetTop = $('.project-single-content .project-single-nav').first().offset().top - (parseInt($siteHeader.height(), 10) * 0.5)
+      projectSingleNavOffsetTop = $('.project-single-content .project-single-nav').first().offset().top - (parseInt(Utility.$siteHeader.height(), 10) * 0.5)
     } else {
       projectSingleNavOffsetTop = undefined
     }
@@ -1186,11 +1184,11 @@ $(document).ready(function ($) {
     if ($projectSingleInfo.length === 1 && /md|lg/.test(currentBreakpoint)) {
       var bufferTop = 25
       var bufferBottom = 100
-      var siteHeaderHeight = $siteHeader.outerHeight()
+      var siteHeaderHeight = Utility.$siteHeader.outerHeight()
       var winScrollTop = $win.scrollTop()
       var startInfoFixed = $projectSingleInfoWrap.offset().top + parseFloat($projectSingleInfoPos.css('margin-top')) - siteHeaderHeight - bufferTop
       var infoHeight = $projectSingleInfo.outerHeight()
-      var endInfoFixed = $siteFooter.offset().top - infoHeight - siteHeaderHeight - bufferTop - bufferBottom
+      var endInfoFixed = Utility.$siteFooter.offset().top - infoHeight - siteHeaderHeight - bufferTop - bufferBottom
       var translateAmount = winScrollTop - startInfoFixed
       var offsetInfo = 0
 
@@ -1218,268 +1216,8 @@ $(document).ready(function ($) {
     offsetProjectSingleInfo()
   }
 
-  /*
-   * Sticky stuff
-   */
-  var STICKY_WATCHERS = []
-
-  // This will go and update any stickied element on the page
-  function updateStickyWatchers (hardUpdate) {
-    $.each(STICKY_WATCHERS, function (i, sticky) {
-      sticky.update(hardUpdate)
-    })
-  }
-
-  /*
-   * Sticky
-   * @class
-   */
-  var Sticky = function (elem, options) {
-    var self = this
-    self.$elem = $(elem)
-    if (self.$elem.length === 0) return false
-
-    // Settings
-    self.settings = $.extend({
-      breakpoints: /md|lg/,
-      bufferTop: 25,
-      bufferBottom: 0,
-
-      // The parent to detect scrollTop from
-      scrollParent: window,
-      bounds: undefined,
-
-      // Fires before recalculating necessary values
-      onbeforehardupdate: function () {
-        // Ensure the (fixed) siteHeaderHeight modifies the buffers too
-        var siteHeaderHeight = $siteHeader.outerHeight()
-        this.track.buffer.top = this.settings.bufferTop + siteHeaderHeight
-        this.track.buffer.bottom = this.track.buffer.top + this.settings.bufferBottom
-      }
-    },
-    // Override with element's attribute settings
-    ElementAttrsObject(elem, {
-      bufferTop: 'data-sticky-buffertop',
-      bufferBottom: 'data-sticky-bufferbottom',
-      scrollParent: 'data-sticky-scrollparent',
-      bounds: 'data-sticky-bounds'
-    }),
-    // Override with JS instantiation settings
-    options)
-
-    // Track
-    self.track = {
-      buffer: {
-        top: 0,
-        bottom: 0
-      },
-      scrollParent: {
-        scroll: {
-          top: 0,
-          left: 0
-        }
-      },
-      bounds: {
-        height: 0,
-        offset: {
-          top: 0,
-          left: 0
-        }
-      },
-      elem: {
-        height: 0
-      },
-      sticky: {
-        start: 0,
-        end: 0,
-        amount: 0,
-        offset: 0
-      }
-    }
-
-    // Elements
-
-    // @todo Support non-window scroll parent elements (if necessary -- pretty tricky with managing offsets with nested scrollTop values)
-    self.$scrollParent = $(self.settings.scrollParent || window)
-
-    // Bounds element sets the area that the sticky can stick into
-    if (!self.settings.bounds || $(self.settings.bounds).length === 0) {
-      self.$elem.parents().each(function (i, parent) {
-        var $parent = $(parent)
-        var posType = $parent.css('position')
-        if ($parent.is('.ui-sticky-bounds') || posType === 'relative') {
-          self.settings.bounds = parent
-          return false
-        }
-      })
-
-      // Still no bounds? Use the scrollParent
-      if (!self.settings.bounds) self.settings.bounds = self.settings.scrollParent
-    }
-    self.$bounds = $(self.settings.bounds)
-
-    // Methods
-
-    /*
-     * Offset the element by margin
-     *
-     * @method _offsetMargin
-     * @param {Mixed} amount The {Int} pixel amount to offset by, or {Boolean} false to remove any CSS offset
-     * @return {Void}
-     */
-    self._offsetMargin = function (amount) {
-      if (amount !== false) {
-        self.$elem.css('marginTop', amount + 'px')
-      } else {
-        self.$elem.css('marginTop', '')
-      }
-    }
-
-    /*
-     * Offset the element by CSS3 transform
-     *
-     * @method _offsetTransform
-     * @param {Mixed} amount The {Int} pixel amount to offset by, or {Boolean} false to remove any CSS offset
-     * @return {Void}
-     */
-    self._offsetTransform = function (amount) {
-      if (amount !== false) {
-        self.$elem.css('transform', 'translateY(' + amount + 'px)')
-      } else {
-        self.$elem.css('transform', '')
-      }
-    }
-
-    /*
-     * Offset the element (chooses from either _offsetMargin or _offsetTransform depending on
-     * the device's capabilities)
-     *
-     * @method offset
-     * @param {Mixed} amount The amount to offset by, or {Boolean} false to remove any CSS offset
-     * @return {Void}
-     */
-    if ($html.is('.has-csstransforms')) {
-      self.offset = self._offsetTransform
-    } else {
-      self.offset = self._offsetMargin
-    }
-
-    /*
-     * Update the element (and calculate the necessary offsets)
-     *
-     * @method update
-     * @param {Boolean} hardUpdate Whether to update all the values before calculating the offset
-     * @return {Void}
-     */
-    self.update = function (hardUpdate) {
-      if (Utility.isBreakpointActive(self.settings.breakpoints)) {
-        // Hard Update recalculates all the main values
-        if (hardUpdate) {
-          // Update bounds values
-          self.track.bounds.offset = self.$bounds.offset()
-          self.track.bounds.height = self.$bounds.outerHeight()
-
-          // Update elem values
-          self.track.elem.height = self.$elem.outerHeight()
-
-          // Set the buffer top/bottom
-          self.track.buffer.top = self.settings.bufferTop
-          self.track.buffer.bottom = self.settings.bufferBottom
-
-          // Run function before hardupdate
-          if (self.settings.onbeforehardupdate) self.settings.onbeforehardupdate.call(self)
-
-          // Figure out sticky start/end
-          self.track.sticky.start = self.track.bounds.offset.top - self.track.buffer.top
-          self.track.sticky.end = self.track.bounds.offset.top + self.track.bounds.height - self.track.elem.height - self.track.buffer.bottom
-        }
-
-        // Calculate the offset amount based on parent's scrollTop
-        self.track.scrollParent.scroll.top = self.$scrollParent.scrollTop()
-        self.track.sticky.amount = self.track.scrollParent.scroll.top - self.track.sticky.start
-
-        // Constrain within the sticky's start/end
-        if (self.track.scrollParent.scroll.top > self.track.sticky.start) {
-          if (self.track.scrollParent.scroll.top < self.track.sticky.end) {
-            self.track.sticky.offset = self.track.sticky.amount
-          } else {
-            self.track.sticky.offset = self.track.sticky.end - self.track.sticky.start
-          }
-
-          // Apply the offset
-          // console.log('apply offset', self.track.sticky.offset)
-          self.offset(self.track.sticky.offset)
-
-        // Reset the offset
-        } else {
-          // console.log('reset offset')
-          self.offset(false)
-        }
-
-        // @debug
-        // console.log('Sticky.update %s', (hardUpdate ? '(hard)' : ''), self.track.sticky.offset, self.track)
-      } else {
-        self.offset(false)
-      }
-    }
-
-    // Initialise
-    self.$elem.addClass('ui-sticky')
-    self.$elem[0].Sticky = self
-    STICKY_WATCHERS.push(self)
-
-    // Don't forget to update yerself before you try to stick yerself!
-    self.update(1)
-
-    return self
-  }
-
-  /*
-   * jQuery Plugin for Sticky
-   */
-  $.fn.uiSticky = function (op) {
-    return this.each(function (i, elem) {
-      if (!elem.hasOwnProperty('Sticky')) {
-        new Sticky(elem, op)
-      }
-    })
-  }
-
-  // Instantiate any stickies
-  $('[data-sticky], .ui-has-sticky').uiSticky()
-
-  // Watch the window scroll
-  watchWindow.watch(window, updateStickyWatchers)
-
-  /*
-   * Debug
-   * @todo remove for production
-   */
-  if ($('#invalid-route').length > 0 && window.location.search) {
-    var queryVars = []
-
-    if (/^\?/.test(window.location.search)) {
-      var qv = (window.location.search + '').replace('?', '')
-
-      // Split again
-      if (/&(amp;)?/i.test(qv)) {
-        qv = qv.split(/&(amp;)?/)
-      } else {
-        qv = [qv]
-      }
-
-      // Process each qv
-      for (var i = 0; i < qv.length; i++) {
-        var qvSplit = qv[i].split('=')
-        queryVars[qvSplit[0]] = qvSplit[1]
-      }
-
-      // Output the invalid route to the view
-      $('#invalid-route').html('<pre><code>' + decodeURIComponent(queryVars.invalidroute) + '</code></pre>').css({
-        display: 'block'
-      })
-    }
-  }
+  // Watch the window scroll and update any Sticky elements
+  watchWindow.watch(window, Sticky.prototype._updateAllStickyWatchers)
 
   /*
    * Devenir Preteur
@@ -2013,18 +1751,22 @@ $(document).ready(function ($) {
    * Because bootstrap is quite opinionated and I don't need all their markup and specific classes
    * this here is a work-around to use the collapse within toggleable groups, i.e. accordians
    * minus all the reliance on certain element classes, e.g. `.panel`
-   * To use this behaviour, the collapseable element must be within a `.ui-toggle-group`
+   * To use this behaviour, the collapsable element must be within a `.ui-toggle-group`
    */
-  $doc.on('show.bs.collapse', '.ui-toggle-group .collapse', function (event) {
+  $doc.on('show.bs.collapse', '.ui-toggle-group > .collapse', function (event) {
     var $target = $(event.target)
-    var $group = $target.parents('.ui-toggle-group').first()
-    var $siblings = $target.siblings('.collapse')
 
-    // @debug
-    // console.log('ui-toggle-group hiding siblings')
+    // Only fire on direct descendants of the `.ui-toggle-group`
+    if ($target.is('.ui-toggle-group > .collapse')) {
+      // var $group = $target.parents('.ui-toggle-group').first()
+      var $siblings = $target.siblings('.collapse')
 
-    // This one is already showing, so hide the others via bootstrap
-    $siblings.collapse('hide')
+      // @debug
+      // console.log('ui-toggle-group hiding siblings', event.target, $siblings)
+
+      // This one is already showing, so hide the others via bootstrap
+      $siblings.collapse('hide')
+    }
   })
 
   /*
@@ -2077,6 +1819,23 @@ $(document).ready(function ($) {
     }
 
     if ($target && $target.length > 0) Utility.dismissElem($target)
+  })
+
+  // Toggle an element
+  // @note setting a link with class `.ui-toggle` or attribute `[data-ui-toggle]` enables this behaviour
+  $doc.on(Utility.clickEvent, '.ui-toggle, [data-ui-toggle]', function (event) {
+    var $elem = $(this)
+    var targetSelector = Utility.checkSelector($elem.attr('data-target') || $elem.attr('href'))
+    var $target
+
+    // If visible, dismiss
+    if ($target.is(':visible')) {
+      Utility.dismissElem(targetSelector)
+
+    // If not (assume hidden), reveal
+    } else {
+      Utility.revealElem(targetSelector)
+    }
   })
   
   // Special modifications for address AutoComplete fields

@@ -210,6 +210,9 @@ FileAttach.prototype.add = function (inhibitPrompt) {
   // console.log('add fn', inhibitPrompt, $file.find('[name]').first().attr('name'))
 
   if (!inhibitPrompt || typeof inhibitPrompt === 'undefined') $file.click()
+
+  // @trigger elemFile `FileAttach:added` [elemFileAttach, elemFile]
+  $file.trigger('FileAttach:added', [self, $file[0]])
 }
 
 // File info from name
@@ -274,6 +277,9 @@ FileAttach.prototype.attach = function (fileElem) {
     $file.val('')
       .parents('.ui-fileattach-item').removeAttr('data-fileattach-item-type').addClass('ui-fileattach-errored')
       .find('.ui-fileattach-filename').html(errorHTML)
+
+    // @trigger elemFile `FileAttach:attach:error:type` [elemFileAttach, elemFile, fileInfo]
+    $file.trigger('FileAttach:attach:error:type', [self, $file[0], fileInfo])
     return
   }
 
@@ -292,6 +298,9 @@ FileAttach.prototype.attach = function (fileElem) {
     $file.val('')
       .parents('.ui-fileattach-item').removeAttr('data-fileattach-item-type').addClass('ui-fileattach-errored')
       .find('.ui-fileattach-filename').html(errorHTML)
+
+    // @trigger elemFile `FileAttach:attach:error:size` [elemFileAttach, elemFile, fileInfo]
+    $file.trigger('FileAttach:attach:error:size', [self, $file[0], fileInfo])
     return
   }
 
@@ -314,6 +323,9 @@ FileAttach.prototype.attach = function (fileElem) {
 
   // @debug
   // console.log('attach fn')
+
+  // @trigger elemFile `FileAttach:attached` [elemFileAttach, elemFile, fileInfo]
+  $file.trigger('FileAttach:attached', [self, $file[0], fileInfo])
 
   // If can add another...
   if (self.getFiles().length < self.settings.maxFiles) self.add(true)
@@ -421,7 +433,7 @@ FileAttach.prototype.clear = function () {
     self.remove(i)
   })
 
-  // @trigger elem `FileAttach:removed` [FileAttach]
+  // @trigger elem `FileAttach:cleared` [FileAttach]
   self.$elem.trigger('FileAttached:cleared', [self])
 }
 

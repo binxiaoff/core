@@ -17,6 +17,11 @@ var Utility = {
   // Animation end event
   animationEndEvent: 'animationend webkitAnimationEnd oAnimationEnd oanimationend',
 
+  // Common elements
+  $siteHeader: $('.site-header'),
+  $siteContent: $('.site-content'),
+  $siteFooter: $('.site-footer'),
+
   // Breakpoints
   // @note if you change these here, please update `sass/site/common/dimensions.scss` too (and vice-versa)
   breakpoints: {
@@ -626,7 +631,7 @@ var Utility = {
       // Show the element item (if hidden otherwise)
       if ($item.css('display') === 'none' || $item.css('visibility') === 'hidden') {
         // a11y stuff
-        if ($item.hasAttr('aria-hidden')) $item.attr('aria-hidden', false)
+        if (typeof $item.attr('aria-hidden') !== 'undefined') $item.attr('aria-hidden', false)
 
         // Show the item
         $item.show()
@@ -684,7 +689,7 @@ var Utility = {
       // Hide the element item (if visible otherwise)
       if ($item.css('display') !== 'none' || $item.css('visibility') !== 'hidden') {
         // a11y stuff
-        if ($item.hasAttr('aria-hidden')) $item.attr('aria-hidden', true)
+        if (typeof $item.attr('aria-hidden') !== 'undefined') $item.attr('aria-hidden', true)
 
         // Hide the item
         $item.hide()

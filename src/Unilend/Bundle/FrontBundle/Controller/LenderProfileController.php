@@ -89,7 +89,8 @@ class LenderProfileController extends Controller
             $templateData['residenceAttachments'] = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [
                 \attachment_type::JUSTIFICATIF_DOMICILE,
                 \attachment_type::ATTESTATION_HEBERGEMENT_TIERS,
-                \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT
+                \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT,
+                \attachment_type::JUSTIFICATIF_FISCAL
             ]);
             $templateData['isLivingAbroad'] = ($clientAddress->id_pays_fiscal > \pays_v2::COUNTRY_FRANCE);
 
