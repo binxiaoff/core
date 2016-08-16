@@ -816,7 +816,7 @@ class LenderSubscriptionController extends Controller
 
 
     /**
-     * @Route("lp/inscription-preteur", name="landing_page_lender")
+     * @Route("devenir-preteur-lp", name="landing_page_lender")
      */
     public function landingPageAction()
     {
@@ -888,6 +888,15 @@ class LenderSubscriptionController extends Controller
         } else {
             return $this->redirectToRoute('landing_page_lender');
         }
+    }
+
+    /**
+     * @Route("form-devenir-preteur-lp", name="landing_page_lender_form")
+     * @return Response
+     */
+    public function renderLandingPageFormAction()
+    {
+        return $this->render('pages/lender_subscription/landing_page_form_only.html.twig');
     }
 
 

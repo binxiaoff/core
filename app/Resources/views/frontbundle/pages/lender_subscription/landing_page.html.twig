@@ -6,7 +6,6 @@
     permalink: path('landing_page_lender')
 } %}
 
-{# @TODO I'm having troubles with Twig.js, so the below implementation should work better than the one above which just copy+pastes code #}
 {% block siteHeader %}
     {% embed 'partials/site/header.html.twig' %}
         {% block siteHeaderMobileMenuOpen %} {% endblock %}
@@ -30,64 +29,13 @@
                                 <p class="small">{% trans %} lender-landing-page_stats-section-IRR-text {% endtrans %}
                                     <span class="c-p1">{{ getStatistic('unilendIRR')|localizednumber }}%</span><br/>
                                     {% trans %} lender-landing-page_stats-section-amount-borrowed {% endtrans %}
-                                    <span class="c-p1">{{ (getStatistic('amountBorrowedinMillions')|localizednumber }}M€</span>
+                                    <span class="c-p1">{{ getStatistic('amountBorrowedInMillions')|localizednumber }}M€</span>
                                 </p>
                             </div>
                         </div>
+
                         <div class="push-lg-1 col-lg-5 push-md-1 col-md-5">
-
-                            <div id="form-preter-lp-notifications">
-                                {% if app.session.flashBag.has('landingPageErrors') %}
-                                    <div class="message-error">
-                                        {% for error in app.session.flashBag.get('landingPageErrors') %}
-                                            <p>{{ error }}</p>
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
-
-                            <form action="{{ path('landing_page_lender_submit') }}" method="post" class="form-preter-lp" data-formvalidation data-formvalidation-notificationselem="#form-preter-lp-notifications">
-
-                                <div class="form-field row row-multi-col-computer">
-                                    <div class="col-lg-2 col-md-3">
-                                        <label for="form-preter-lp-nom" class="field-label">{% trans %} lender-landing-page_form-field-name-label {% endtrans %}<span class="field-required">* <span class="sr-only">{% trans %} lender-landing-page_required-form-field {% endtrans %}</span></span></label>
-                                    </div>
-                                    <div class="col-lg-7 col-md-7">
-                                        <input type="text" id="form-preter-lp-nom" name="prospect_name" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
-                                        <ul class="ui-formvalidation-messages"></ul>
-                                    </div>
-                                </div><!-- /.form-field -->
-
-                                <div class="form-field row row-multi-col-computer">
-                                    <div class="col-lg-2 col-md-3">
-                                        <label for="form-preter-lp-prenom" class="field-label">{% trans %} lender-landing-page_form-field-first-name-label {% endtrans %}<span class="field-required">* <span class="sr-only">{% trans %} lender-landing-page_required-form-field {% endtrans %}</span></span></label>
-                                    </div>
-                                    <div class="col-lg-7 col-md-7">
-                                        <input type="text" id="form-preter-lp-prenom" name="prospect_first_name" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
-                                        <ul class="ui-formvalidation-messages"></ul>
-                                    </div>
-                                </div><!-- /.form-field -->
-
-                                <div class="form-field row row-multi-col-computer">
-                                    <div class="col-lg-2 col-md-3">
-                                        <label for="form-preter-lp-email" class="field-label">{% trans %} lender-landing-page_form-field-email-label {% endtrans %}<span class="field-required">* <span class="sr-only">{% trans %} lender-landing-page_required-form-field {% endtrans %}</span></span></label>
-                                    </div>
-                                    <div class="col-lg-7 col-md-7">
-                                        <input type="email" id="form-preter-lp-email" name="prospect_email" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
-                                        <ul class="ui-formvalidation-messages"></ul>
-                                    </div>
-                                </div><!-- /.form-field -->
-
-                                <footer class="form-preter-lp-footer row row-multi-col-computer">
-                                    <div class="col-submit push-lg-2 col-lg-7 push-md-3 col-md-7">
-                                        <button type="submit" class="btn-primary btn-size-full">{% trans %} lender-landing-page_form-submit-button {% endtrans %}</button>
-                                    </div>
-                                </footer><!-- /.form-preter-lp-footer -->
-
-                                <div class="stamp bg-p1" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
-                                    {% trans %} lender-landing-page_welcome-offer-text {% endtrans %}
-                                </div><!-- /.stamp -->
-                            </form><!-- /.form-preter-lp -->
+                            {% include 'pages/lender_subscription/partials/landing_page_form.html.twig' %}
                         </div>
                     </div>
 
@@ -140,7 +88,7 @@
         <div class="hide-accessible">
 
             <div id="dialog-conditions-content" class="dialog-content readable-wrap text-align-center">
-                <h3>{% trans %} lender-landing-page_welcome-offer-conditions-title {% endtrans %}</h3>
+                <h3>{% trans %} lender-landing-page_welcome-offer-conditions-title {% endtrans %} </h3>
                 {% trans %} lender-landing-page_welcome-offer-conditions-text {% endtrans %}
             </div><!-- /#dialog-conditions-content -->
 
