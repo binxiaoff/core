@@ -11,9 +11,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Component\Translation\Translator;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
-use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 use Unilend\core\Loader;
 
 class LenderProfileController extends Controller
@@ -149,8 +149,8 @@ class LenderProfileController extends Controller
         $lenderAccount->get($client->id_client, 'id_client_owner');
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
-        /** @var TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translation_manager');
+        /** @var Translator $translator */
+        $translator = $this->get('translator');
 
         if ($request->request->get('person_identity_form')) {
             /** @var array $post */
@@ -169,36 +169,36 @@ class LenderProfileController extends Controller
             if (isset($_FILES['id_recto']) && $_FILES['id_recto']['name'] != '') {
                 $attachmentIdRecto = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE, 'id_recto');
                 if (false === is_numeric($attachmentIdRecto)) {
-                    $this->addFlash('personIdentityErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-upload-files-error-message'));
+                    $this->addFlash('personIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-upload-files-error-message'));
                 } else {
-                    $historyContent .= '<li>'. $translationManager->selectTranslation('projet', 'document-type-' . \attachment_type::CNI_PASSPORTE) .'</li>';
+                    $historyContent .= '<li>'. $translator->trans('projet_document-type-' . \attachment_type::CNI_PASSPORTE) .'</li>';
                 }
             }
 
             if (isset($_FILES['id_verso']) && $_FILES['id_verso']['name'] != '') {
                 $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE_VERSO, 'id_verso');
                 if (false === is_numeric($attachmentIdVerso)) {
-                    $this->addFlash('personIdentityErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-upload-files-error-message'));
+                    $this->addFlash('personIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-upload-files-error-message'));
                 } else {
-                    $historyContent .= '<li>'. $translationManager->selectTranslation('projet', 'document-type-' . \attachment_type::CNI_PASSPORTE_VERSO) .'</li>';
+                    $historyContent .= '<li>'. $translator->trans('projet_document-type-' . \attachment_type::CNI_PASSPORTE_VERSO) .'</li>';
                 }
             }
 
             if ($client->id_nationalite != $post['nationality'] || $client->civilite != $post['form_of_address']) {
                 if (isset($attachmentIdRecto)) {
                     $client->id_nationalite = $post['nationality'];
-                    $historyContent .= '<li>'. $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-nationality-label') .'</li>';
+                    $historyContent .= '<li>'. $translator->trans('lender-profile_information-tab-identity-section-nationality-label') .'</li>';
                 } else {
-                    $this->addFlash('personIdentityErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-change-ID-warning-message'));
+                    $this->addFlash('personIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-change-ID-warning-message'));
                 }
             }
 
             if ($client->civilite != $post['form_of_address']) {
                 if (isset($attachmentIdRecto)){
                     $client->civilite = $post['form_of_address'];
-                    $historyContent .= '<li>'. $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-form-of-address-label') .'</li>';
+                    $historyContent .= '<li>'. $translator->trans('lender-profile_information-tab-identity-section-form-of-address-label') .'</li>';
                 } else {
-                    $this->addFlash('personIdentityErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-change-ID-warning-message'));
+                    $this->addFlash('personIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-change-ID-warning-message'));
                 }
             }
 
@@ -208,7 +208,7 @@ class LenderProfileController extends Controller
                 $request->getSession()->set('personIdentityData', $post);
             } else {
                 $client->update();
-                $this->addFlash('personIdentitySuccess', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-files-update-success-message'));
+                $this->addFlash('personIdentitySuccess', $translator->trans('lender-profile_information-tab-identity-section-files-update-success-message'));
 
                 if (false !== strpos($historyContent, '<li>')) {
                     $this->updateClientStatusAndNotifyClient($client, $historyContent);
@@ -234,8 +234,8 @@ class LenderProfileController extends Controller
         $clientAddress = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
         /** @var \companies $company */
         $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
-        /** @var TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translation_manager');
+        /** @var Translator $translator */
+        $translator = $this->get('translator');
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
@@ -252,81 +252,81 @@ class LenderProfileController extends Controller
 
             if ($company->name != $form['company_name']) {
                 $company->name = $form['company_name'];
-                $historyContent .= '<li>'. $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-name-label') .'</li>';
+                $historyContent .= '<li>'. $translator->trans('lender-profile_information-tab-identity-section-company-name-label') .'</li>';
             }
 
             if ($company->forme != $form['company_legal_form']) {
                 $company->forme = $form['company_legal_form'];
-                $historyContent .= '<li>'. $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-legal-form-label') .'</li>';
+                $historyContent .= '<li>'. $translator->trans('lender-profile_information-tab-identity-section-company-legal-form-label') .'</li>';
             }
 
             if ($company->capital != $form['company_social_capital']) {
                 $company->capital = str_replace(' ', '', $form['company_social_capital']);
-                $historyContent .= '<li>'. $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-social-capital-label') .'</li>';
+                $historyContent .= '<li>'. $translator->trans('lender-profile_information-tab-identity-section-company-social-capital-label') .'</li>';
             }
 
             if ($company->phone != $form['company_phone'] && strlen($form['company_phone']) > 9 && strlen($form['company_phone']) < 14 ) {
                 $company->phone = str_replace(' ', '', $form['company_phone']);
-                $historyContent .= '<li>'. $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-phone-label') .'</li>';
+                $historyContent .= '<li>'. $translator->trans('lender-profile_information-tab-identity-section-company-phone-label') .'</li>';
             }
 
             if ($company->status_client != $form['company_client_status']) {
                 $company->status_client = $form['company_client_status'];
-                $historyContent .= '<li>'. $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-client-status-label') .'</li>';
+                $historyContent .= '<li>'. $translator->trans('lender-profile_information-tab-identity-section-company-client-status-label') .'</li>';
             }
 
             if ($form['company_client_status'] > \companies::CLIENT_STATUS_MANAGER) {
-                $directorSection = $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-director-title');
+                $directorSection = $translator->trans('lender-profile_information-tab-identity-section-company-director-title');
 
                 if (empty($form['company_external_counsel']) || (3 == $form['company_external_counsel'] && empty($form['company_client_status_other']))) {
-                    $this->addFlash('legalEntityIdentityErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-external-counsel-error-message'));
+                    $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-company-external-counsel-error-message'));
                 } else {
                     $company->status_client                       = $form['company_client_status'];
                     $company->status_conseil_externe_entreprise   = $form['company_external_counsel'];
                     $company->preciser_conseil_externe_entreprise = $form['company_client_status_other'];
-                    $historyContent .= '<li>'. $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-client-status-label') .'</li>';
+                    $historyContent .= '<li>'. $translator->trans('lender-profile_information-tab-identity-section-company-client-status-label') .'</li>';
                 }
 
                 if (empty($form['company_director_form_of_address'])) {
-                    $this->addFlash('legalEntityIdentityErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-director-form-of-address-missing'));
+                    $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-company-director-form-of-address-missing'));
                 } else {
                     $company->civilite_dirigeant = $form['company_director_form_of_address'];
-                    $historyContent .= '<li>'. $directorSection . ': ' . $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-form-of-address-label') . '</li>';
+                    $historyContent .= '<li>'. $directorSection . ': ' . $translator->trans('lender-profile_information-tab-identity-section-form-of-address-label') . '</li>';
                 }
 
                 if (empty($form['company_director_name'])) {
-                    $this->addFlash('legalEntityIdentityErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-director-name-missing'));
+                    $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-company-director-name-missing'));
                 } else {
                     $company->nom_dirigeant = $ficelle->majNom($form['company_director_name']);
-                    $historyContent .= '<li>'. $directorSection . ': ' . $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-name-label') .'</li>';
+                    $historyContent .= '<li>'. $directorSection . ': ' . $translator->trans('lender-profile_information-tab-identity-section-name-label') .'</li>';
                 }
 
                 if (empty($form['company_director_first_name'])) {
-                    $this->addFlash('legalEntityIdentityErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-director-first-name-missing'));
+                    $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-company-director-first-name-missing'));
                 } else {
                     $company->prenom_dirigeant = $ficelle->majNom($form['company_director_first_name']);
-                    $historyContent .= '<li>'. $directorSection . ': ' . $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-first-name-label') . '</li>';
+                    $historyContent .= '<li>'. $directorSection . ': ' . $translator->trans('lender-profile_information-tab-identity-section-first-name-label') . '</li>';
                 }
 
                 if (empty($form['company_director_position'])) {
-                    $this->addFlash('legalEntityIdentityErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-director-position-missing'));
+                    $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-company-director-position-missing'));
                 } else {
                     $company->fonction_dirigeant = $form['company_director_position'];
-                    $historyContent .= '<li>'. $directorSection . ': ' . $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-first-name-label') . '</li>';
+                    $historyContent .= '<li>'. $directorSection . ': ' . $translator->trans('lender-profile_information-tab-identity-section-first-name-label') . '</li>';
                 }
 
                 if (empty($form['company_director_phone']) || false === is_numeric($form['company_director_phone']) || strlen($form['company_director_phone']) < 9 || strlen($form['company_director_phone']) > 14) {
-                    $this->addFlash('legalEntityIdentityErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-director-phone-missing'));
+                    $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-company-director-phone-missing'));
                 } else {
                     $company->phone_dirigeant = $form['company_director_phone'];
-                    $historyContent .= '<li>'. $directorSection . ': ' . $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-director-phone') .'</li>';
+                    $historyContent .= '<li>'. $directorSection . ': ' . $translator->trans('lender-profile_information-tab-identity-section-company-director-phone') .'</li>';
                 }
 
                 if (empty($form['company_director_email']) || false === filter_var($form['company_director_email'], FILTER_VALIDATE_EMAIL)) {
-                    $this->addFlash('legalEntityIdentityErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-director-email-missing'));
+                    $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-company-director-email-missing'));
                 } else {
                     $company->email_dirigeant = $form['company_director_email'];
-                    $historyContent .= '<li>'. $directorSection . ': ' . $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-director-email') . '</li>';
+                    $historyContent .= '<li>'. $directorSection . ': ' . $translator->trans('lender-profile_information-tab-identity-section-company-director-email') . '</li>';
                 }
             } else {
                 $company->status_client                       = $form['company_client_status'];
@@ -340,26 +340,26 @@ class LenderProfileController extends Controller
                 $company->email_dirigeant                     = '';
             }
 
-            $representativeSection = $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-representative-title');
+            $representativeSection = $translator->trans('lender-profile_information-tab-identity-section-company-representative-title');
 
             if ($client->civilite != $form['client_form_of_address']) {
                 $client->civilite = $form['client_form_of_address'];
-                $historyContent .= '<li>' . $representativeSection . ' : ' . $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-form-of-address-label') .'</li>';
+                $historyContent .= '<li>' . $representativeSection . ' : ' . $translator->trans('lender-profile_information-tab-identity-section-form-of-address-label') .'</li>';
             }
 
             if ($client->nom != $form['client_name']) {
                 $client->nom = $ficelle->majNom($form['client_name']);
-                $historyContent .= '<li>' . $representativeSection . ' : ' . $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-name-label') .'</li>';
+                $historyContent .= '<li>' . $representativeSection . ' : ' . $translator->trans('lender-profile_information-tab-identity-section-name-label') .'</li>';
             }
 
             if ($client->prenom != $form['client_first_name']) {
                 $client->prenom = $ficelle->majNom($form['client_first_name']);
-                $historyContent .= '<li>' . $representativeSection . ' : ' . $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-first-name-label') .'</li>';
+                $historyContent .= '<li>' . $representativeSection . ' : ' . $translator->trans('lender-profile_information-tab-identity-section-first-name-label') .'</li>';
             }
 
             if ($client->fonction != $form['client_position']) {
                 $client->fonction = $form['client_position'];
-                $historyContent .= '<li>' . $representativeSection . ' : ' . $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-company-client-position-label') .'</li>';
+                $historyContent .= '<li>' . $representativeSection . ' : ' . $translator->trans('lender-profile_information-tab-identity-section-company-client-position-label') .'</li>';
             }
 
             $historyContent .= '</ul>';
@@ -367,27 +367,27 @@ class LenderProfileController extends Controller
             if (isset($_FILES['id_recto']) && $_FILES['id_recto']['name'] != '') {
                 $attachmentIdRecto = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE_DIRIGEANT, 'id_recto');
                 if (false === is_numeric($attachmentIdRecto)) {
-                    $this->addFlash('legalEntityIdentityErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-upload-files-error-message'));
+                    $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-upload-files-error-message'));
                 } else {
-                    $historyContent .= '<li>'. $translationManager->selectTranslation('projet', 'document-type-' . \attachment_type::CNI_PASSPORTE_DIRIGEANT) .'</li>';
+                    $historyContent .= '<li>'. $translator->trans('projet_document-type-' . \attachment_type::CNI_PASSPORTE_DIRIGEANT) .'</li>';
                 }
             }
 
             if (isset($_FILES['id_verso']) && $_FILES['id_verso']['name'] != '') {
                 $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE_VERSO, 'id_verso');
                 if (false === is_numeric($attachmentIdVerso)) {
-                    $this->addFlash('legalEntityIdentityErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-upload-files-error-message'));
+                    $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-upload-files-error-message'));
                 } else {
-                    $historyContent .= '<li>'. $translationManager->selectTranslation('projet', 'document-type-' . \attachment_type::CNI_PASSPORTE_VERSO) .'</li>';
+                    $historyContent .= '<li>'. $translator->trans('projet_document-type-' . \attachment_type::CNI_PASSPORTE_VERSO) .'</li>';
                 }
             }
 
             if (isset($_FILES['company-registration']) && $_FILES['company-registration']['name'] != '') {
                 $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::KBIS, 'company-registration');
                 if (false === is_numeric($attachmentIdVerso)) {
-                    $this->addFlash('legalEntityIdentityErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-upload-files-error-message'));
+                    $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-upload-files-error-message'));
                 } else {
-                    $historyContent .= '<li>'. $translationManager->selectTranslation('projet', 'document-type-' . \attachment_type::KBIS) .'</li>';
+                    $historyContent .= '<li>'. $translator->trans('projet_document-type-' . \attachment_type::KBIS) .'</li>';
                 }
             }
 
@@ -395,9 +395,9 @@ class LenderProfileController extends Controller
                 if (isset($_FILES['delegation-of-authority']) && $_FILES['delegation-of-authority']['name'] != '') {
                     $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::DELEGATION_POUVOIR, 'delegation-of-authority');
                     if (false === is_numeric($attachmentIdVerso)) {
-                        $this->addFlash('legalEntityIdentityErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-upload-files-error-message'));
+                        $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-upload-files-error-message'));
                     } else {
-                        $historyContent .= '<li>' . $translationManager->selectTranslation('projet', 'document-type-' . \attachment_type::DELEGATION_POUVOIR) . '</li>';
+                        $historyContent .= '<li>' . $translator->trans('projet_document-type-' . \attachment_type::DELEGATION_POUVOIR) . '</li>';
                     }
                 }
             }
@@ -407,7 +407,7 @@ class LenderProfileController extends Controller
             } else {
                 $company->update();
                 $client->update();
-                $this->addFlash('legalEntityIdentitySuccess', $translationManager->selectTranslation('lender-profile', 'information-tab-identity-section-files-update-success-message'));
+                $this->addFlash('legalEntityIdentitySuccess', $translator->trans('lender-profile_information-tab-identity-section-files-update-success-message'));
 
                 if (false != strpos($historyContent, '<li>')) {
                     $this->updateClientStatusAndNotifyClient($client, $historyContent);
@@ -435,8 +435,8 @@ class LenderProfileController extends Controller
         $clientAddress = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
         $clientAddress->get($client->id_client, 'id_client');
 
-        /** @var TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translation_manager');
+        /** @var Translator $translator */
+        $translator = $this->get('translator');
         /** @var string $historyContent */
         $historyContent = '<ul>';
 
@@ -450,7 +450,7 @@ class LenderProfileController extends Controller
 
             if ($clientAddress->adresse_fiscal != $post['fiscal_address_street']) {
                 $clientAddress->adresse_fiscal = $post['fiscal_address_street'];
-                $historyContent .= '<li>' . $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-address-label') . '</li>';
+                $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-fiscal-address-section-address-label') . '</li>';
             }
 
             if ($clientAddress->cp_fiscal != $post['fiscal_address_zip']) {
@@ -459,33 +459,33 @@ class LenderProfileController extends Controller
                     $cities = $this->get('unilend.service.entity_manager')->getRepository('villes');
                     if ($cities->exist($post['fiscal_address_zip'], 'cp')) {
                         $clientAddress->cp_fiscal = $post['fiscal_address_zip'];
-                        $historyContent .= '<li>' . $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-zip-label') . '</li>';
+                        $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-fiscal-address-section-zip-label') . '</li>';
                         unset($cities);
                     } else {
-                        $this->addFlash('personFiscalAddressErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-unknown-zip-code-error-message'));
+                        $this->addFlash('personFiscalAddressErrors', $translator->trans('lender-profile_information-tab-fiscal-address-section-unknown-zip-code-error-message'));
                     }
                 } else {
                     $clientAddress->cp_fiscal = $post['fiscal_address_zip'];
-                    $historyContent .= '<li>' . $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-zip-label') . '</li>';
+                    $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-fiscal-address-section-zip-label') . '</li>';
                 }
             }
 
             if ($clientAddress->ville_fiscal != $post['fiscal_address_city']) {
                 $clientAddress->ville_fiscal = $post['fiscal_address_city'];
-                $historyContent .= '<li>' . $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-city-label') . '</li>';
+                $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-fiscal-address-section-city-label') . '</li>';
             }
 
             if ($clientAddress->id_pays_fiscal != $post['fiscal_address_country']) {
                 $clientAddress->id_pays_fiscal = $post['fiscal_address_country'];
-                $historyContent .= '<li>' . $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-country-label') . '</li>';
+                $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-fiscal-address-section-country-label') . '</li>';
             }
 
             if (isset($post['same_postal_address']) && (bool)$clientAddress->meme_adresse_fiscal != $post['same_postal_address']) {
                 if (false == $post['same_postal_address'] && empty($form['postal'])) {
-                    $this->addFlash('personFiscalAddressErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-postal-address-missing-data'));
+                    $this->addFlash('personFiscalAddressErrors', $translator->trans('lender-profile_information-tab-postal-address-missing-data'));
                 } else {
                     $clientAddress->meme_adresse_fiscal = ($post['same_postal_address'] == true) ? 1 : 0;
-                    $historyContent .= '<li>' . $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-postal-checkbox') . '</li>';
+                    $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-fiscal-address-section-postal-checkbox') . '</li>';
                     $clientAddress->adresse1 = $clientAddress->adresse_fiscal;
                     $clientAddress->cp       = $clientAddress->cp_fiscal;
                     $clientAddress->ville    = $clientAddress->ville_fiscal;
@@ -495,49 +495,49 @@ class LenderProfileController extends Controller
 
             if ($clientAddress->id_pays_fiscal > \pays_v2::COUNTRY_FRANCE) {
                 if (isset($post['no_us_person']) && false == $post['no_us_person']) {
-                    $historyContent .= '<li>'. $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-us-person-checkbox-label') .'</li>';
+                    $historyContent .= '<li>'. $translator->trans('lender-profile_information-tab-fiscal-address-us-person-checkbox-label') .'</li>';
                 }
             }
 
             if ($post['fiscal_address_country'] > \pays_v2::COUNTRY_FRANCE) {
                 if (isset($_FILES['tax-certificate']) && $_FILES['tax-certificate']['name'] != '') {
                     if (false === is_numeric($this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::JUSTIFICATIF_FISCAL, 'tax-certificate'))) {
-                        $this->addFlash('personFiscalAddressErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-upload-files-error-message'));
+                        $this->addFlash('personFiscalAddressErrors', $translator->trans('lender-profile_information-tab-fiscal-address-section-upload-files-error-message'));
                     } else {
-                        $historyContent .= '<li>'. $translationManager->selectTranslation('projet', 'document-type-' . \attachment_type::JUSTIFICATIF_FISCAL) .'</li>';
+                        $historyContent .= '<li>'. $translator->trans('projet_document-type-' . \attachment_type::JUSTIFICATIF_FISCAL) .'</li>';
                     }
                 } else {
-                    $this->addFlash('personFiscalAddressErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-missing-tax-certificate'));
+                    $this->addFlash('personFiscalAddressErrors', $translator->trans('lender-profile_information-tab-fiscal-address-section-missing-tax-certificate'));
                 }
             }
 
             if (isset($_FILES['housing-certificate']) && $_FILES['housing-certificate']['name'] != '') {
                 if (false === is_numeric($this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::JUSTIFICATIF_DOMICILE, 'housing-certificate'))) {
-                    $this->addFlash('personFiscalAddressErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-upload-files-error-message'));
+                    $this->addFlash('personFiscalAddressErrors', $translator->trans('lender-profile_information-tab-fiscal-address-section-upload-files-error-message'));
                 } else {
-                    $historyContent .= '<li>'. $translationManager->selectTranslation('projet', 'document-type-' . \attachment_type::JUSTIFICATIF_DOMICILE) .'</li>';
+                    $historyContent .= '<li>'. $translator->trans('projet_document-type-' . \attachment_type::JUSTIFICATIF_DOMICILE) .'</li>';
                 }
             }
 
             if (isset($post['housed_by_third_person']) && true == $post['housed_by_third_person']){
                 if (isset($_FILES['housed-by-third-person-declaration']) && $_FILES['housed-by-third-person-declaration']['name'] != ''){
                     if (false === is_numeric($this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::ATTESTATION_HEBERGEMENT_TIERS, 'housed-by-third-person-declaration'))) {
-                        $this->addFlash('personFiscalAddressErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-upload-files-error-message'));
+                        $this->addFlash('personFiscalAddressErrors', $translator->trans('lender-profile_information-tab-fiscal-address-section-upload-files-error-message'));
                     } else {
-                        $historyContent .= '<li>'. $translationManager->selectTranslation('projet', 'document-type-' . \attachment_type::ATTESTATION_HEBERGEMENT_TIERS) .'</li>';
+                        $historyContent .= '<li>'. $translator->trans('projet_document-type-' . \attachment_type::ATTESTATION_HEBERGEMENT_TIERS) .'</li>';
                     }
                 } else {
-                    $this->addFlash('personFiscalAddressErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-missing-housed-by-third-person-declaration'));
+                    $this->addFlash('personFiscalAddressErrors', $translator->trans('lender-profile_information-tab-fiscal-address-missing-housed-by-third-person-declaration'));
                 }
 
                 if (isset($_FILES['id-third-person-housing']) && $_FILES['housed-by-third-person-declaration']['name'] != ''){
                     if (false === is_numeric($this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT, 'id-third-person-housing'))) {
-                        $this->addFlash('personFiscalAddressErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-upload-files-error-message'));
+                        $this->addFlash('personFiscalAddressErrors', $translator->trans('lender-profile_information-tab-fiscal-address-section-upload-files-error-message'));
                     } else {
-                        $historyContent .= '<li>'. $translationManager->selectTranslation('projet', 'document-type-' . \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT) .'</li>';
+                        $historyContent .= '<li>'. $translator->trans('projet_document-type-' . \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT) .'</li>';
                     }
                 } else {
-                    $this->addFlash('personFiscalAddressErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-missing-id-third-person-housing'));
+                    $this->addFlash('personFiscalAddressErrors', $translator->trans('lender-profile_information-tab-fiscal-address-missing-id-third-person-housing'));
                 }
             }
 
@@ -547,7 +547,7 @@ class LenderProfileController extends Controller
                 $request->getSession()->set('personFiscalAddressData', $post);
             } else {
                 $clientAddress->update();
-                $this->addFlash('personFiscalAddressSuccess', $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-form-success-message'));
+                $this->addFlash('personFiscalAddressSuccess', $translator->trans('lender-profile_information-tab-fiscal-address-form-success-message'));
 
                 if (false !== strpos($historyContent, '<li>')) {
                     $this->updateClientStatusAndNotifyClient($client, $historyContent);
@@ -572,8 +572,8 @@ class LenderProfileController extends Controller
         $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
         $company->get($client->id_client, 'id_client_owner');
 
-        /** @var TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translation_manager');
+        /** @var Translator $translator */
+        $translator = $this->get('translator');
 
         /** @var string $historyContent */
         $historyContent = '<ul>';
@@ -583,7 +583,7 @@ class LenderProfileController extends Controller
 
             if ($company->adresse1 != $post['fiscal_address_street']) {
                 $company->adresse1 = $post['fiscal_address_street'];
-                $historyContent .= '<li>' . $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-address-label') . '</li>';
+                $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-fiscal-address-section-address-label') . '</li>';
             }
 
             if ($company->zip != $post['fiscal_address_zip']) {
@@ -592,33 +592,33 @@ class LenderProfileController extends Controller
                     $cities = $this->get('unilend.service.entity_manager')->getRepository('villes');
                     if ($cities->exist($post['fiscal_address_zip'], 'cp')) {
                         $company->zip = $post['fiscal_address_zip'];
-                        $historyContent .= '<li>' . $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-zip-label') . '</li>';
+                        $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-fiscal-address-section-zip-label') . '</li>';
                         unset($cities);
                     } else {
-                        $this->addFlash('legalEntityFiscalAddressErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-unknown-zip-code-error-message'));
+                        $this->addFlash('legalEntityFiscalAddressErrors', $translator->trans('lender-profile_information-tab-fiscal-address-section-unknown-zip-code-error-message'));
                     }
                 } else {
                     $company->zip = $post['fiscal_address_zip'];
-                    $historyContent .= '<li>' . $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-zip-label') . '</li>';
+                    $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-fiscal-address-section-zip-label') . '</li>';
                 }
             }
 
             if ($company->city != $post['fiscal_address_city']) {
                 $company->city = $post['fiscal_address_city'];
-                $historyContent .= '<li>' . $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-city-label') . '</li>';
+                $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-fiscal-address-section-city-label') . '</li>';
             }
 
             if ($company->id_pays != $post['fiscal_address_country']) {
                 $company->id_pays  = $post['fiscal_address_country'];
-                $historyContent .= '<li>' . $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-country-label') . '</li>';
+                $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-fiscal-address-section-country-label') . '</li>';
             }
 
             if (isset($post['same_postal_address']) && (bool)$company->status_adresse_correspondance != $post['same_postal_address']) {
                 if (false == $post['same_postal_address'] && empty($form['postal'])) {
-                    $this->addFlash('legalEntityFiscalAddressErrors', $translationManager->selectTranslation('lender-profile', 'information-tab-postal-address-missing-data'));
+                    $this->addFlash('legalEntityFiscalAddressErrors', $translator->trans('lender-profile_information-tab-postal-address-missing-data'));
                 } else {
                     $company->status_adresse_correspondance->meme_adresse_fiscal = ($post['same_postal_address'] == true) ? 1 : 0 ;
-                    $historyContent .= '<li>' . $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-section-postal-checkbox') . '</li>';
+                    $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-fiscal-address-section-postal-checkbox') . '</li>';
                 }
             }
 
@@ -626,7 +626,7 @@ class LenderProfileController extends Controller
                 $request->getSession()->set('legalEntityFiscalAddressData', $post);
             } else {
                 $company->update();
-                $this->addFlash('legalEntityFiscalAddressSuccess', $translationManager->selectTranslation('lender-profile', 'information-tab-fiscal-address-form-success-message'));
+                $this->addFlash('legalEntityFiscalAddressSuccess', $translator->trans('lender-profile_information-tab-fiscal-address-form-success-message'));
 
                 if (false != strpos($historyContent, '<li>')) {
                     $this->updateClientStatusAndNotifyClient($client, $historyContent);
@@ -650,8 +650,8 @@ class LenderProfileController extends Controller
         $clientAddress = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
         $clientAddress->get($client->id_client, 'id_client');
 
-        /** @var TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translation_manager');
+        /** @var Translator $translator */
+        $translator = $this->get('translator');
         /** @var bool $clientAddressModified */
         $clientAddressModified = false;
 
@@ -679,7 +679,7 @@ class LenderProfileController extends Controller
 
             if ($clientAddressModified) {
                 $clientAddress->update();
-                $this->addFlash('postalAddressSuccess', $translationManager->selectTranslation('lender-profile', 'information-tab-postal-address-form-success-message'));
+                $this->addFlash('postalAddressSuccess', $translator->trans('lender-profile_information-tab-postal-address-form-success-message'));
             }
         }
         $this->saveClientActionHistory($client, serialize(['id_client' => $client->id_client, 'post' => $request->request->all()]));
@@ -825,6 +825,8 @@ class LenderProfileController extends Controller
         $ifu = $this->get('unilend.service.entity_manager')->getRepository('ifu');
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        /** @var Translator $translator */
+        $translator = $this->get('translator');
 
         $client->get($this->getUser()->getClientId());
         if ($client->hash == $request->query->get('hash')) {
@@ -842,11 +844,11 @@ class LenderProfileController extends Controller
                     ]
                 );
             } else {
-                $errorTitle = $this->get('unilend.service.translation_manager')->selectTranslation('lender-error-page', 'file-not-found');
+                $errorTitle = $translator->trans('lender-error-page_file-not-found');
                 $status = Response::HTTP_NOT_FOUND;
             }
         } else {
-            $errorTitle = $this->get('unilend.service.translation_manager')->selectTranslation('lender-error-page', 'access-denied');
+            $errorTitle = $translator->trans('lender-error-page_access-denied');
             $status = Response::HTTP_FORBIDDEN;
         }
         return $this->render('pages/static_pages/error.html.twig', ['errorTitle' => $errorTitle])->setStatusCode($status);
@@ -859,8 +861,8 @@ class LenderProfileController extends Controller
      */
     public function updateBankDetails(Request $request)
     {
-        /** @var TranslationManager $translation */
-        $translation = $this->get('unilend.service.translation_manager');
+        /** @var Translator $translator */
+        $translator = $this->get('translator');
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
         /** @var |clients $client */
@@ -876,7 +878,7 @@ class LenderProfileController extends Controller
         if (false == empty($newIban) && true === $ficelle->isIBAN($newIban && false === strlen($newIban) < 27)) {
             $lenderAccount->iban = $newIban;
         } else {
-            $this->addFlash('bankInfoUpdateError', $translation->selectTranslation('lender-profile', 'fiscal-tab-wrong-iban'));
+            $this->addFlash('bankInfoUpdateError', $translator->trans('lender-profile_fiscal-tab-wrong-iban'));
         }
 
         $newSwift = str_replace(' ', '', $request->request->get('bic', $lenderAccount->bic));
@@ -884,7 +886,7 @@ class LenderProfileController extends Controller
         if (false == empty($newSwift) && true === $ficelle->swift_validate($newSwift)) {
             $lenderAccount->bic = $newSwift;
         } else {
-            $this->addFlash('bankInfoUpdateError', $translation->selectTranslation('lender-profile', 'fiscal-tab-wrong-swift'));
+            $this->addFlash('bankInfoUpdateError', $translator->trans('lender-profile_fiscal-tab-wrong-swift'));
         }
 
         $newFundsOrigin = $request->request->get('funds_origin', $lenderAccount->origine_des_fonds);
@@ -892,21 +894,21 @@ class LenderProfileController extends Controller
         if (false === empty($newFundsOrigin)) {
             $lenderAccount->origine_des_fonds = $newFundsOrigin;
         } else {
-            $this->addFlash('bankInfoUpdateError', $translation->selectTranslation('lender-profile', 'fiscal-tab-wrong-funds-origin'));
+            $this->addFlash('bankInfoUpdateError', $translator->trans('lender-profile_fiscal-tab-wrong-funds-origin'));
         }
 
         if (false === empty($_FILES['iban-certificate']['name'])) {
 
             if (false === $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::RIB, 'iban-certificate')) {
-                $this->addFlash('bankInfoUpdateError', $translation->selectTranslation('lender-profile', 'fiscal-tab-rib-file-error'));
+                $this->addFlash('bankInfoUpdateError', $translator->trans('lender-profile_fiscal-tab-rib-file-error'));
             }
         }
 
         if (false === $this->get('session')->getFlashBag()->has('bankInfoUpdateError')){
             $lenderAccount->update();
-            $this->addFlash('bankInfoUpdateSuccess', $translation->selectTranslation('lender-profile', 'fiscal-tab-bank-info-update-ok'));
+            $this->addFlash('bankInfoUpdateSuccess', $translator->trans('lender-profile_fiscal-tab-bank-info-update-ok'));
         } else {
-            $this->addFlash('bankInfoUpdateError', $translation->selectTranslation('lender-profile', 'fiscal-tab-bank-info-update-ko'));
+            $this->addFlash('bankInfoUpdateError', $translator->trans('lender-profile_fiscal-tab-bank-info-update-ko'));
         }
 
         return $this->redirectToRoute('lender_profile');
