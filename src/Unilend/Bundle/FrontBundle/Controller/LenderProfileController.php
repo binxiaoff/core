@@ -77,7 +77,7 @@ class LenderProfileController extends Controller
                 'fiscal_address_zip'               => isset($form['legalEntityFiscal']['fiscal_address_zip']) ? $form['legalEntityFiscal']['fiscal_address_zip'] : $company->zip,
                 'fiscal_address_city'              => isset($form['legalEntityFiscal']['fiscal_address_city']) ? $form['legalEntityFiscal']['fiscal_address_city'] : $company->city,
                 'fiscal_address_country'           => isset($form['legalEntityFiscal']['fiscal_address_country']) ? $form['legalEntityFiscal']['fiscal_address_country'] : $company->id_pays,
-                'same_postal_address'              => isset($form['legalEntityFiscal']['same_postal_address']) ? $form['legalEntityFiscal']['same_postal_address'] : (bool) $clientAddress->meme_adresse_fiscal,
+                'same_postal_address'              => isset($form['legalEntityFiscal']['same_postal_address']) ? $form['legalEntityFiscal']['same_postal_address'] : $clientAddress->meme_adresse_fiscal,
             ];
 
         } else {
@@ -104,7 +104,6 @@ class LenderProfileController extends Controller
                 'fiscal_address_city'    => isset($form['personFiscal']['fiscal_address_city']) ? $form['personFiscal']['fiscal_address_city'] : $clientAddress->ville_fiscal,
                 'fiscal_address_country' => isset($form['personFiscal']['fiscal_address_country']) ? $form['personFiscal']['fiscal_address_country'] : $clientAddress->id_pays_fiscal,
                 'client_mobile'          => isset($form['personFiscal']['client_mobile']) ? $form['personFiscal']['client_mobile'] : $client->mobile,
-                'same_postal_address'    => isset($form['personFiscal']['same_postal_address']) ? $form['personFiscal']['same_postal_address'] : (bool) $clientAddress->meme_adresse_fiscal,
                 'no_us_person'           => isset($form['personFiscal']['no_us_person']) ? $form['personFiscal']['no_us_person'] : true,
                 'housed_by_third_person' => isset($form['personFiscal']['housed_by_third_person']) ? $form['personFiscal']['housed_by_third_person'] : false
             ];
@@ -119,6 +118,7 @@ class LenderProfileController extends Controller
             'postal_address_zip'     => isset($form['postal']['postal_address_zip']) ? $form['postal']['postal_address_zip'] : $clientAddress->cp,
             'postal_address_city'    => isset($form['postal']['postal_address_city']) ? $form['postal']['postal_address_city'] : $clientAddress->ville,
             'postal_address_country' => isset($form['postal']['postal_address_country']) ? $form['postal']['postal_address_country'] : $clientAddress->id_pays,
+            'same_postal_address'    => isset($form['postal']['same_postal_address']) ? $form['postal']['same_postal_address'] : $clientAddress->meme_adresse_fiscal
         ];
         /** @var LocationManager $locationManager */
         $locationManager = $this->get('unilend.service.location_manager');
@@ -480,19 +480,6 @@ class LenderProfileController extends Controller
                 $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-fiscal-address-section-country-label') . '</li>';
             }
 
-            if (isset($post['same_postal_address']) && (bool)$clientAddress->meme_adresse_fiscal != $post['same_postal_address']) {
-                if (false == $post['same_postal_address'] && empty($form['postal'])) {
-                    $this->addFlash('personFiscalAddressErrors', $translator->trans('lender-profile_information-tab-postal-address-missing-data'));
-                } else {
-                    $clientAddress->meme_adresse_fiscal = ($post['same_postal_address'] == true) ? 1 : 0;
-                    $historyContent .= '<li>' . $translator->trans('lender-profile_information-tab-fiscal-address-section-postal-checkbox') . '</li>';
-                    $clientAddress->adresse1 = $clientAddress->adresse_fiscal;
-                    $clientAddress->cp       = $clientAddress->cp_fiscal;
-                    $clientAddress->ville    = $clientAddress->ville_fiscal;
-                    $clientAddress->id_pays  = $clientAddress->id_pays_fiscal;
-                }
-            }
-
             if ($clientAddress->id_pays_fiscal > \pays_v2::COUNTRY_FRANCE) {
                 if (isset($post['no_us_person']) && false == $post['no_us_person']) {
                     $historyContent .= '<li>'. $translator->trans('lender-profile_information-tab-fiscal-address-us-person-checkbox-label') .'</li>';
@@ -652,36 +639,39 @@ class LenderProfileController extends Controller
 
         /** @var Translator $translator */
         $translator = $this->get('translator');
-        /** @var bool $clientAddressModified */
-        $clientAddressModified = false;
 
         if ($request->request->get('postal_address_form')) {
             $formPostalAddress = $request->request->all();
-            if ($clientAddress->adresse1 != $formPostalAddress['postal_address_street']) {
-                $clientAddress->adresse1 = $formPostalAddress['postal_address_street'];
-                $clientAddressModified = true;
-            }
 
-            if ($clientAddress->cp != $formPostalAddress['postal_address_zip']) {
-                $clientAddress->cp = $formPostalAddress['postal_address_zip'];
-                $clientAddressModified = true;
-            }
+            if (isset($formPostalAddress['same_postal_address']) && true == $formPostalAddress['same_postal_address']) {
+                $clientAddress->meme_adresse_fiscal = 1;
+                $clientAddress->adresse1            = $clientAddress->adresse_fiscal;
+                $clientAddress->cp                  = $clientAddress->cp_fiscal;
+                $clientAddress->ville               = $clientAddress->ville_fiscal;
+                $clientAddress->id_pays             = $clientAddress->id_pays_fiscal;
+            } else {
+                $clientAddress->meme_adresse_fiscal = 0;
 
-            if ($clientAddress->ville != $formPostalAddress['postal_address_city']) {
-                $clientAddress->ville = $formPostalAddress['postal_address_city'];
-                $clientAddressModified = true;
-            }
+                if ($clientAddress->adresse1 != $formPostalAddress['postal_address_street']) {
+                    $clientAddress->adresse1 = $formPostalAddress['postal_address_street'];
+                }
 
-            if ($clientAddress->id_pays != $formPostalAddress['postal_address_country']) {
-                $clientAddress->id_pays = $formPostalAddress['postal_address_country'];
-                $clientAddressModified = true;
-            }
+                if ($clientAddress->cp != $formPostalAddress['postal_address_zip']) {
+                    $clientAddress->cp = $formPostalAddress['postal_address_zip'];
+                }
 
-            if ($clientAddressModified) {
-                $clientAddress->update();
-                $this->addFlash('postalAddressSuccess', $translator->trans('lender-profile_information-tab-postal-address-form-success-message'));
+                if ($clientAddress->ville != $formPostalAddress['postal_address_city']) {
+                    $clientAddress->ville = $formPostalAddress['postal_address_city'];
+                }
+
+                if ($clientAddress->id_pays != $formPostalAddress['postal_address_country']) {
+                    $clientAddress->id_pays = $formPostalAddress['postal_address_country'];
+                }
             }
+            $clientAddress->update();
+            $this->addFlash('postalAddressSuccess', $translator->trans('lender-profile_information-tab-postal-address-form-success-message'));
         }
+
         $this->saveClientActionHistory($client, serialize(['id_client' => $client->id_client, 'post' => $request->request->all()]));
         return $this->redirectToRoute('lender_profile');
     }

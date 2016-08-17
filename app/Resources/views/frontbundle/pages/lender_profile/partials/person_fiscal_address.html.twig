@@ -90,22 +90,11 @@
             </div><!-- /.form-field -->
         </div>
 
-        {# <div id="form-profile-address-is-correspondence-field" class="row">
-            <div class="form-field form-field-single-checkbox">
-                <label>
-                    <input id="form-profile-address-is-correspondence" type="checkbox" name="same_postal_address" value="true"
-                           {% if formData.person.same_postal_address %}checked="checked"{% endif %} />
-                    <span class="label">{% trans %} lender-profile_information-tab-fiscal-address-section-postal-checkbox {% endtrans %}</span>
-                </label>
-            </div><!-- /.form-field -->
-        </div> #}
-
         {# US Person #}
         <div class="row collapse {% if isLivingAbroad %} in {% endif %}" id="us-person">
             <div class="form-field form-field-single-checkbox">
                 <label>
-                    <input id="form-profile-no-us-person" type="checkbox" name="no_us_person" value="true"
-                           {% if isLivingAbroad == true %}checked="checked"{% endif %}>
+                    <input id="form-profile-no-us-person" type="checkbox" name="no_us_person" value="true" checked="checked">
                     <span class="label">{% trans %} lender-profile_information-tab-fiscal-address-us-person-checkbox-label {% endtrans %}</span>
                 </label>
             </div><!-- /.form-field -->

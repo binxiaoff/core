@@ -95,15 +95,16 @@
                 <div class="form-field file-identity-side-a">
                     <div class="custom-input-file" id="form-profile-info-file-identite-cni-1"
                          data-formvalidation-input
-                         data-formvalidation-required='input[type="file"][name="id_recto"]'
                          data-fileattach
                          data-fileattach-inputname="id_recto"
                          data-fileattach-maxfiles="1"
-                         data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-identity-section-ID-recto {% endtrans %}"
+                         data-fileattach-emptyfilelabel="
+                         {% if identityAttachments[constant('\\attachment_type::CNI_PASSPORTE')]['path'] is defined %}
+                            {{ identityAttachments[constant('\\attachment_type::CNI_PASSPORTE')]['path'] }}
+                         {% else %}
+                            {% trans %} lender-profile_information-tab-identity-section-ID-recto {% endtrans %}
+                         {% endif %}"
                          data-fileattach-fileremove="false">
-                        {% if identityAttachments[constant('\\attachment_type::CNI_PASSPORTE')]['path'] is defined %}
-                            <input type="file" name="id_recto" value="{{ identityAttachments[constant('\\attachment_type::CNI_PASSPORTE')]['path'] }}" />
-                        {% endif %}
                     </div><!-- /.ui-fileattach -->
                 </div>
 
@@ -112,10 +113,12 @@
                          data-fileattach
                          data-fileattach-inputname="id_verso"
                          data-fileattach-maxfiles="1"
-                         data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-identity-section-ID-verso {% endtrans %}">
-                        {% if identityAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')]['path'] is defined %}
-                            <input type="file" name="id_verso" value="{{ identityAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')]['path'] }}" />
-                        {% endif %}
+                         data-fileattach-emptyfilelabel="
+                         {% if identityAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')]['path'] is defined %}
+                            {{ identityAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')]['path'] }}
+                        {% else %}
+                            {% trans %} lender-profile_information-tab-identity-section-ID-verso {% endtrans %}
+                        {% endif %}">
                     </div><!-- /.ui-fileattach -->
                 </div>
 

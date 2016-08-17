@@ -26,13 +26,12 @@
             <div class="form-field form-field-single-checkbox">
                 <label>
                     <input id="correspondence-is-same" type="checkbox" name="same_postal_address" value="true"
-                           {% if formData.person.same_postal_address %}checked="checked"{% endif %} />
+                           {% if formData.postal.same_postal_address == 1 %}checked="checked"{% endif %} />
                     <span class="label">{% trans %} lender-profile_information-tab-fiscal-address-section-postal-checkbox {% endtrans %}</span>
                 </label>
             </div><!-- /.form-field -->
         </div>
-
-        <div class="profile-correspondence-not-same collapse {% if formData.person.same_postal_address != true %} in {% endif %}">
+        <div class="profile-correspondence-not-same collapse {% if formData.postal.same_postal_address != 1 %} in {% endif %}">
             <div class="row">
                 <div class="form-field">
                     <label for="form-profile-correspondence-street">{% trans %} lender-profile_information-tab-postal-address-section-address-label {% endtrans %}
