@@ -9,9 +9,6 @@ permalink: path('borrower_account_contact'),
 classNames: 'user-borrower-profile'
 } %}
 
-{# See config/twig.json for the data value of `userProfile` #}
-{# @todo Update the edited input output variables with what was saved (should be in an AJAX call) #}
-
 {% block dashboardContent %}
 
     <div class="dashboard-tabs">
@@ -19,9 +16,8 @@ classNames: 'user-borrower-profile'
             <div role="tabpanel" class="dashboard-tab-pane">
                 <article class="panel">
                     <header class="panel-header">
-                        <h3>{{ 'borrower-contact_contact-us'|trans|capitalize }} contacter</h3>
+                        <h3>{{ 'borrower-contact_contact-us'|trans|capitalize }}</h3>
                     </header>
-                    <section>
                         <section class="page-section">
                             {% if app.session.flashBag.has('error') %}
                                 <div class="message-error">

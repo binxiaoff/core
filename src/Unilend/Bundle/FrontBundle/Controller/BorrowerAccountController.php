@@ -11,6 +11,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Bundle\FrontBundle\Form\BorrowerContactType;
 use Unilend\Bundle\FrontBundle\Form\SimpleProjectType;
 use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
+use Unilend\core\Loader;
 
 class BorrowerAccountController extends Controller
 {
@@ -100,7 +101,7 @@ class BorrowerAccountController extends Controller
     public function operationsAction(Request $request)
     {
         if ($request->query->get('action') === 'export') {
-            return $this->operationsExportCsvAction($request);
+            return $this->operationsExportCsv($request);
         }
 
         $client              = $this->getClient();
@@ -246,23 +247,23 @@ class BorrowerAccountController extends Controller
 
             if (empty($formData['first_name'])) {
                 $error = true;
-                $this->addFlash('error', $translator->trans('common-validator_error-first-name-empty'));
+                $this->addFlash('error', $translator->trans('common-validator_first-name-empty'));
             }
             if (empty($formData['last_name'])) {
                 $error = true;
-                $this->addFlash('error', $translator->trans('common-validator_error-last-name-empty'));
+                $this->addFlash('error', $translator->trans('common-validator_last-name-empty'));
             }
             if (empty($formData['mobile']) || strlen($formData['mobile']) < 9 || strlen($formData['mobile']) > 14) {
                 $error = true;
-                $this->addFlash('error', $translator->trans('common-validator_error-phone-number-invalid'));
+                $this->addFlash('error', $translator->trans('common-validator_phone-number-invalid'));
             }
             if (empty($formData['email']) || false == filter_var($formData['email'], FILTER_VALIDATE_EMAIL)) {
                 $error = true;
-                $this->addFlash('error', $translator->trans('common-validator_error-email-address-invalid'));
+                $this->addFlash('error', $translator->trans('common-validator_email-address-invalid'));
             }
             if (empty($formData['message'])) {
                 $error = true;
-                $this->addFlash('error', $translator->trans('common-validator_error-email-message-empty'));
+                $this->addFlash('error', $translator->trans('common-validator_email-message-empty'));
             }
 
             if (false === $error) {
@@ -335,7 +336,7 @@ class BorrowerAccountController extends Controller
      *
      * @return StreamedResponse
      */
-    private function operationsExportCsvAction(Request $request)
+    private function operationsExportCsv(Request $request)
     {
         $client              = $this->getClient();
         $projectsPostFunding = $this->getProjectsPostFunding();
@@ -476,6 +477,74 @@ class BorrowerAccountController extends Controller
         $response->headers->set('Content-Disposition', 'attachment; filename="' . $sFilename . '.csv"');
 
         return $response;
+    }
+
+    /**
+
+     * @param Request $request
+     * @param $token
+     *
+     * @Route("/1espace-emprunteur1/securite/{token}", name="borrower_account_security")
+     * @Template("borrower_account/security.html.twig")
+     *
+     * @return array
+     */
+    public function SecurityAction(Request $request, $token)
+    {
+        /** @var \temporary_links_login $temporaryLinks */
+        $temporaryLinks   = $this->get('unilend.service.entity_manager')->getRepository('temporary_links_login');
+        $isLinkExpired = false;
+
+        $temporaryLinks->get($token, 'token');
+        $now         = new \datetime();
+        $linkExpires = new \datetime($temporaryLinks->expires);
+
+        if ($linkExpires <= $now) {
+            $isLinkExpired = true;
+        } else {
+            $temporaryLinks->accessed = $now->format('Y-m-d H:i:s');
+            $temporaryLinks->update();
+
+            /** @var \clients $client */
+            $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+
+            $client->get($temporaryLinks->id_client);
+            if ($request->isMethod('POST')) {
+                $translator = $this->get('translator');
+                /** @var \ficelle $ficelle */
+                $ficelle = Loader::loadLib('ficelle');
+                $formData = $request->request->get('borrower_security');
+                $error = false;
+                if (empty($formData['password']) || false === $ficelle->password_fo($formData['password'], 6)) {
+                    $error = true;
+                    $this->addFlash('error', $translator->trans('common-validator_password-invalid'));
+                }
+                if ($formData['password'] !== $formData['repeated_password']) {
+                    $error = true;
+                    $this->addFlash('error', $translator->trans('common-validator_password-not-equal'));
+                }
+                if (empty($formData['question'])) {
+                    $error = true;
+                    $this->addFlash('error', $translator->trans('common-validator_secret-question-invalid'));
+                }
+                if (empty($formData['answer'])) {
+                    $error = true;
+                    $this->addFlash('error', $translator->trans('common-validator_secret-answer-invalid'));
+                }
+                if (false === $error) {
+                    $borrower = $this->get('unilend.frontbundle.security.user_provider')->loadUserByUsername($client->email);
+                    $password = $this->get('security.password_encoder')->encodePassword($borrower, $formData['password']);
+                    $client->password         = $password;
+                    $client->secrete_question = $formData['question'];
+                    $client->secrete_reponse  = md5($formData['answer']);
+                    $client->status           = 1;
+                    $client->update();
+                    return $this->redirect($this->generateUrl('login'));
+                }
+            }
+        }
+
+        return ['expired' => $isLinkExpired];
     }
 
     private function getProjectsPreFunding()
