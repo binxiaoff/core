@@ -47,18 +47,19 @@ class UserProvider implements UserProviderInterface
         $lenderAccount = $this->entityManager->getRepository('lenders_accounts');
 
         if ($client->get($username, 'email')) {
-            $balance   = $this->clientManager->getClientBalance($client);
-            $initials  = $this->clientManager->getClientInitials($client);
-            $isActive  = $this->clientManager->isActive($client);
-            $roles     = ['ROLE_USER'];
-            $lenderAccount->get($client->id_client, 'id_client_owner');
-            $userLevel = $this->lenderManager->getDiversificationLevel($lenderAccount);
+            $balance  = $this->clientManager->getClientBalance($client);
+            $initials = $this->clientManager->getClientInitials($client);
+            $isActive = $this->clientManager->isActive($client);
+            $roles    = ['ROLE_USER'];
 
             if ($this->clientManager->isLender($client)) {
                 $roles[]                 = 'ROLE_LENDER';
                 $clientStatus            = $this->clientManager->getCurrentClientStatus($client);
                 $hasAcceptedCurrentTerms = $this->clientManager->hasAcceptedCurrentTerms($client);
                 $notificationsUnread     = $this->notificationManager->countUnreadNotificationsForClient($client);
+
+                $lenderAccount->get($client->id_client, 'id_client_owner');
+                $userLevel = $this->lenderManager->getDiversificationLevel($lenderAccount);
 
                 return new UserLender(
                     $client->email,
