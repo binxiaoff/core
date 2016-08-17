@@ -638,4 +638,31 @@ class MainController extends Controller
 
         return $this->redirect($settings->value);
     }
+
+
+    /**
+     * @Route("/plan-du-site", name="sitemap")
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function siteMapAction()
+    {
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var \tree $pages */
+        $pages = $entityManager->getRepository('tree');
+        $template = [];
+        $pagesBySections = [];
+
+        foreach ($pages->select('status = 1 AND prive = 1 AND id_parent = 1', 'ordre ASC') as $template) {
+            foreach ($pages->select('status = 1 AND prive = 0 AND status_menu = 1 AND id_parent = ' . $template['id_tree'], 'ordre ASC') as $section) {
+                $pagesBySections[$section['title']]['title']    = $section['title'];
+                $pagesBySections[$section['title']]['slug']     = $section['slug'];
+                $pagesBySections[$section['title']]['children'] = $pages->select('status = 1 AND prive = 0 AND id_parent = ' . $section['id_tree'], 'ordre ASC');
+            }
+        }
+        $template['sections'] =  $pagesBySections;
+
+        return $this->render('pages/static_pages/sitemap.html.twig', $template);
+    }
 }

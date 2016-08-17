@@ -140,7 +140,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <th><label>Statut dans la navigation :</label></th>
+                            <th><label>Visible dans le Sitemap du site :</label></th>
                             <td>
                                 <input type="radio" value="1" id="status_menu1_<?= $key ?>" name="status_menu_<?= $key ?>" class="radio"<?= ($this->tree->status_menu == 1 ? ' checked="checked"' : '') ?> />
                                 <label for="status_menu1_<?= $key ?>" class="label_radio">Visible</label>

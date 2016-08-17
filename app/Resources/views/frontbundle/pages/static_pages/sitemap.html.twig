@@ -1,0 +1,36 @@
+{# Site Map / Plan du Page #}
+{% extends 'layouts/_page-simple.html.twig' %}
+
+{% set page = {
+id: 'page-sitemap',
+title: 'Plan du site',
+permalink: path('plan-du-site')
+} %}
+
+{% block extendPageHeader %}
+    <div class="page-header-image">{{ svgimage('#header-plandusite', 'Plan du site', 300, 300, 'contain')|raw }}</div>
+{% endblock %}
+
+{% block pageAsideBody %}
+    <div class="page-aside-body hide-xs hide-sm c-p1" style="text-align: center;">
+        {{ svgimage('#misc-computermapmarker', 'Plan du site', 500, 500, 'contain')|raw }}
+    </div><!-- /.page-aside-body -->
+{% endblock %}
+
+{% block pageContentBody %}
+    <section class="page-section">
+        <h2 class="link"><a href="{{ route('/') }}">Home</a></h2>
+        <h2 class="link"><a href="{{ route('projects_list') }}">Projets</a></h2>
+
+        {% for section in sections %}
+        <h2 class="link">{{ section.title }}</h2>
+            <ul class="list-links">
+                    {% for child in section.children %}
+                        <li>
+                            <a href="{{ child.slug }}">{{ child.title }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+        {% endfor %}
+    </section><!-- /.page-section -->
+{% endblock %}
