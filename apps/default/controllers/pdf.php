@@ -180,53 +180,55 @@ class pdfController extends bootstrap
         }
 
         $this->clients = $this->loadData('clients');
-        $oProjects     = $this->loadData('projects');
-        $oCompanies    = $this->loadData('companies');
-
-        $sClientHash = $this->params[0];
-        $iProjectId  = $this->params[1];
+        /** @var \projects $project */
+        $project = $this->loadData('projects');
+        /** @var \companies $company */
+        $company = $this->loadData('companies');
 
         if (
-            $this->clients->get($sClientHash, 'hash')
-            && $oProjects->get($iProjectId, 'id_project')
-            && $oCompanies->get($this->clients->id_client, 'id_client_owner')
-            && $oProjects->id_company == $oCompanies->id_company
+            $this->clients->get($this->params[0], 'hash')
+            && $project->get($this->params[1], 'id_project')
+            && $company->get($this->clients->id_client, 'id_client_owner')
+            && $project->id_company == $company->id_company
         ) {
-            $sPath           = $this->path . 'protected/pdf/mandat/';
-            $sNamePdfClient  = 'MANDAT-UNILEND-' . $oProjects->slug . '-' . $this->clients->id_client;
+            $path            = $this->path . 'protected/pdf/mandat/';
+            $namePDFClient   = 'MANDAT-UNILEND-' . $project->slug . '-' . $this->clients->id_client;
             $oClientsMandats = $this->loadData('clients_mandats');
-            $aMandats        = $oClientsMandats->select(
-                'id_project = ' . $iProjectId . ' AND id_client = ' . $this->clients->id_client . ' AND status IN (' . \clients_mandats::STATUS_PENDING . ',' . \clients_mandats::STATUS_SIGNED . ')',
+            $mandates        = $oClientsMandats->select(
+                'id_project = ' . $project->id_project . ' AND id_client = ' . $this->clients->id_client . ' AND status IN (' . \clients_mandats::STATUS_PENDING . ',' . \clients_mandats::STATUS_SIGNED . ',' . \clients_mandats::STATUS_CANCELED . ')',
                 'id_mandat DESC'
             );
 
-            if (false === empty($aMandats)) {
-                $aMandat = array_shift($aMandats);
+            if (false === empty($mandates)) {
+                $mandate = array_shift($mandates);
 
-                foreach ($aMandats as $aMandatToArchive) {
-                    $oClientsMandats->get($aMandatToArchive['id_mandat']);
+                foreach ($mandates as $mandateToArchive) {
+                    $oClientsMandats->get($mandateToArchive['id_mandat']);
                     $oClientsMandats->status = \clients_mandats::STATUS_ARCHIVED;
                     $oClientsMandats->update();
                 }
 
-                if (\clients_mandats::STATUS_SIGNED == $aMandat['status']) {
-                    $this->ReadPdf($sPath . $aMandat['name'], $sNamePdfClient);
+                if (\clients_mandats::STATUS_SIGNED == $mandate['status']) {
+                    $this->ReadPdf($path . $mandate['name'], $namePDFClient);
+                    die;
+                } elseif (\clients_mandats::STATUS_CANCELED == $mandate['status']) {
+                    header('Location: ' . $this->lurl . '/espace_emprunteur/operations');
                     die;
                 }
 
-                $oClientsMandats->get($aMandat['id_mandat']);
+                $oClientsMandats->get($mandate['id_mandat']);
             } else {
                 $oClientsMandats->id_client  = $this->clients->id_client;
-                $oClientsMandats->url_pdf    = '/pdf/mandat/' . $sClientHash . '/' . $iProjectId;
-                $oClientsMandats->name       = 'mandat-' . $sClientHash . '-' . $iProjectId . '.pdf';
-                $oClientsMandats->id_project = $oProjects->id_project;
+                $oClientsMandats->url_pdf    = '/pdf/mandat/' . $this->params[0] . '/' . $this->params[1];
+                $oClientsMandats->name       = 'mandat-' . $this->params[0] . '-' . $this->params[1] . '.pdf';
+                $oClientsMandats->id_project = $project->id_project;
                 $oClientsMandats->status     = \clients_mandats::STATUS_PENDING;
                 $oClientsMandats->create();
             }
 
-            if (false === file_exists($sPath . $oClientsMandats->name)) {
+            if (false === file_exists($path . $oClientsMandats->name)) {
                 $this->GenerateWarrantyHtml();
-                $this->WritePdf($sPath . $oClientsMandats->name, 'warranty');
+                $this->WritePdf($path . $oClientsMandats->name, 'warranty');
             }
 
             header('Location: ' . $this->url . '/universign/mandat/' . $oClientsMandats->id_mandat);
@@ -317,64 +319,68 @@ class pdfController extends bootstrap
             if ($this->projects->get($this->params[1], 'id_company = ' . $this->companies->id_company . ' AND id_project')) {
                 $this->oProjectsPouvoir = $this->loadData('projects_pouvoir');
 
-                $bSigned        = false;
-                $sPath          = $this->path . 'protected/pdf/pouvoir/';
-                $sNamePdfClient = 'POUVOIR-UNILEND-' . $this->projects->slug . '-' . $this->clients->id_client;
-                $sFileName      = 'pouvoir-' . $this->params[0] . '-' . $this->params[1] . '.pdf';
+                $signed        = false;
+                $path          = $this->path . 'protected/pdf/pouvoir/';
+                $namePdfClient = 'POUVOIR-UNILEND-' . $this->projects->slug . '-' . $this->clients->id_client;
+                $fileName      = 'pouvoir-' . $this->params[0] . '-' . $this->params[1] . '.pdf';
 
-                $aProjectPouvoir        = $this->oProjectsPouvoir->select('id_project = ' . $this->projects->id_project, 'added ASC');
-                $aProjectPouvoirToTreat = (is_array($aProjectPouvoir) && false === empty($aProjectPouvoir)) ? array_shift($aProjectPouvoir) : null;
+                $projectPouvoir        = $this->oProjectsPouvoir->select('id_project = ' . $this->projects->id_project, 'added ASC');
+                $projectPouvoirToTreat = (is_array($projectPouvoir) && false === empty($projectPouvoir)) ? array_shift($projectPouvoir) : null;
 
-                if (is_array($aProjectPouvoir) && 0 < count($aProjectPouvoir)) {
-                    foreach ($aProjectPouvoir as $aProjectPouvoirToDelete) {
-                        $this->oLogger->info('Deleting proxy (' . $aProjectPouvoirToDelete['id_pouvoir'] . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project));
-                        $this->oProjectsPouvoir->delete($aProjectPouvoirToDelete['id_pouvoir'], 'id_pouvoir');
+                if (is_array($projectPouvoir) && 0 < count($projectPouvoir)) {
+                    foreach ($projectPouvoir as $projectPouvoirToDelete) {
+                        $this->oLogger->info('Deleting proxy (' . $projectPouvoirToDelete['id_pouvoir'] . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project));
+                        $this->oProjectsPouvoir->delete($projectPouvoirToDelete['id_pouvoir'], 'id_pouvoir');
                     }
                 }
 
-                if (false === is_null($aProjectPouvoirToTreat)) {
-                    // si c'est un upload manuel du BO on affiche directement
-                    if ($aProjectPouvoirToTreat['id_universign'] == 'no_universign' && file_exists($sPath . $aProjectPouvoirToTreat['name'])) {
-                        $this->ReadPdf($sPath . $aProjectPouvoirToTreat['name'], $sNamePdfClient);
+                if (false === is_null($projectPouvoirToTreat)) {
+                    $this->oProjectsPouvoir->get($projectPouvoirToTreat['id_pouvoir'], 'id_pouvoir');
+                    if ($this->oProjectsPouvoir->status == \projects_pouvoir::STATUS_CANCELLED) {
+                        header('Location: ' . $this->lurl . '/espace_emprunteur/operations');
                         die;
                     }
 
-                    $bSigned        = $aProjectPouvoirToTreat['status'] == \projects_pouvoir::STATUS_SIGNED;
-                    $bInstantCreate = false;
-
-                    if (false === file_exists($sPath . $aProjectPouvoirToTreat['name'])) {
-                        $this->GenerateProxyHtml();
-                        $this->WritePdf($sPath . $aProjectPouvoirToTreat['name'], 'authority');
-                        $bSigned        = false;
-                        $bInstantCreate = true;
+                    // si c'est un upload manuel du BO on affiche directement
+                    if ($projectPouvoirToTreat['id_universign'] == 'no_universign' && file_exists($path . $projectPouvoirToTreat['name'])) {
+                        $this->ReadPdf($path . $projectPouvoirToTreat['name'], $namePdfClient);
+                        die;
                     }
 
-                    $this->oProjectsPouvoir->get($aProjectPouvoirToTreat['id_pouvoir'], 'id_pouvoir');
+                    $signed        = $projectPouvoirToTreat['status'] == \projects_pouvoir::STATUS_SIGNED;
+                    $instantCreate = false;
+
+                    if (false === file_exists($path . $projectPouvoirToTreat['name'])) {
+                        $this->GenerateProxyHtml();
+                        $this->WritePdf($path . $projectPouvoirToTreat['name'], 'authority');
+                        $signed        = false;
+                        $instantCreate = true;
+                    }
                 } else {
                     $this->GenerateProxyHtml();
-                    $this->WritePdf($sPath . $sFileName, 'authority');
+                    $this->WritePdf($path . $fileName, 'authority');
 
                     $this->oProjectsPouvoir->id_project = $this->projects->id_project;
                     $this->oProjectsPouvoir->url_pdf    = '/pdf/pouvoir/' . $this->params[0] . '/' . (isset($this->params[1]) ? $this->params[1] . '/' : '');
-                    $this->oProjectsPouvoir->name       = $sFileName;
+                    $this->oProjectsPouvoir->name       = $fileName;
                     $this->oProjectsPouvoir->id_pouvoir = $this->oProjectsPouvoir->create();
                     $this->oProjectsPouvoir->get($this->oProjectsPouvoir->id_pouvoir, 'id_pouvoir');
-                    $bInstantCreate = true;
+                    $instantCreate = true;
                 }
 
-                if (false === $bSigned) {
-                    if (file_exists($sPath . $sFileName) && filesize($sPath . $sFileName) > 0 && date('Y-m-d', filemtime($sPath . $sFileName)) != date('Y-m-d')) {
-                        unlink($sPath . $sFileName);
+                if (false === $signed) {
+                    if (file_exists($path . $fileName) && filesize($path . $fileName) > 0 && date('Y-m-d', filemtime($path . $fileName)) != date('Y-m-d')) {
+                        unlink($path . $fileName);
 
-                        $this->oLogger->info('File "' . $sPath . $sFileName . '" deleted', array('class' => __CLASS__, 'function' => __FUNCTION__));
+                        $this->oLogger->info('File "' . $path . $fileName . '" deleted', array('class' => __CLASS__, 'function' => __FUNCTION__));
 
                         $this->GenerateProxyHtml();
-                        $this->WritePdf($sPath . $sFileName, 'authority');
-                        $bInstantCreate = true;
+                        $this->WritePdf($path . $fileName, 'authority');
+                        $instantCreate = true;
                     }
-                    $this->generateProxyUniversign($bInstantCreate);
+                    $this->generateProxyUniversign($instantCreate);
                 } else {
-                    $this->ReadPdf($sPath . $sFileName, $sNamePdfClient);
+                    $this->ReadPdf($path . $fileName, $namePdfClient);
                 }
 
             } else {

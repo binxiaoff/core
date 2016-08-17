@@ -717,6 +717,18 @@ class ProjectManager
             case \projects_status::A_FUNDER:
                 $this->oMailerManager->sendProjectOnlineToBorrower($oProject);
                 break;
+            case \projects_status::PRET_REFUSE:
+                /** @var \clients_mandats $mandate */
+                $mandate = $this->oEntityManager->getRepository('clients_mandats');
+                $mandate->get($oProject->id_project, 'id_project');
+                $mandate->status = \clients_mandats::STATUS_CANCELED;
+                $mandate->update();
+                /** @var \projects_pouvoir $proxy */
+                $proxy = $this->oEntityManager->getRepository('projects_pouvoir');
+                $proxy->get($oProject->id_project, 'id_project');
+                $proxy->status = \projects_pouvoir::STATUS_CANCELLED;
+                $proxy->update();
+                break;
             case \projects_status::REMBOURSEMENT:
             case \projects_status::PROBLEME:
             case \projects_status::PROBLEME_J_X:

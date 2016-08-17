@@ -615,16 +615,15 @@ class universignController extends bootstrap
                 $this->titre    = 'Confirmation pouvoir';
                 $this->lien_pdf = $this->lurl . $projects_pouvoir->url_pdf;
 
-                // si pouvoir ok
-                if ($projects_pouvoir->status == 1) {
+                if ($projects_pouvoir->status == \projects_pouvoir::STATUS_SIGNED) {
                     $this->message = 'Votre pouvoir a bien été signé';
 
                     $this->oLogger->info('Proxy confirmation: signed (project ' . $projects_pouvoir->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
-                } elseif ($projects_pouvoir->status == 2) {// pouvoir annulé
+                } elseif ($projects_pouvoir->status == \projects_pouvoir::STATUS_CANCELLED) {
                     $this->message = 'Votre pouvoir a bien été annulé vous pouvez le signer plus tard.';
 
                     $this->oLogger->info('Proxy confirmation: cancelled (project ' . $projects_pouvoir->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
-                } elseif ($projects_pouvoir->status == 3) {// pouvoir fail
+                } elseif ($projects_pouvoir->status == \projects_pouvoir::STATUS_FAILED) {
                     $this->message = 'Une erreur s\'est produite ressayez plus tard';
 
                     $this->oLogger->info('Proxy confirmation: error (project ' . $projects_pouvoir->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
