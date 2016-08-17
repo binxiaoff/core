@@ -28,7 +28,7 @@ class UserProvider implements UserProviderInterface
     /**
      * @inheritDoc
      */
-    public function __construct($entityManager, $clientManager, $notificationManager, $lenderManager)
+    public function __construct(EntityManager $entityManager, ClientManager $clientManager, NotificationManager $notificationManager, LenderManager $lenderManager)
     {
         $this->entityManager       = $entityManager;
         $this->clientManager       = $clientManager;
@@ -78,8 +78,21 @@ class UserProvider implements UserProviderInterface
             }
 
             if ($this->clientManager->isBorrower($client)) {
+                /** @var \companies $company */
+                $company = $this->entityManager->getRepository('companies');
+                $company->get($client->id_client, 'id_client_owner');
                 $roles[] = 'ROLE_BORROWER';
-                return new UserBorrower($client->email, $client->password, '', $roles, $isActive, $client->id_client);
+                return new UserBorrower(
+                    $client->email,
+                    $client->password,
+                    '',
+                    $roles,
+                    $isActive,
+                    $client->id_client,
+                    $client->prenom,
+                    $client->nom,
+                    $company->siren
+                );
             }
         }
 

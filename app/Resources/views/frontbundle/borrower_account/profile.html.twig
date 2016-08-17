@@ -1,0 +1,116 @@
+{% extends 'borrower_account/_borrower_account_base.html.twig' %}
+
+{# Page data #}
+{% set bodyId = '' %}
+{% set page = {
+id: 'user-borrower-profile',
+title: 'Emprunteur / Profil',
+permalink: path('borrower_account_profile'),
+classNames: 'user-borrower-profile'
+} %}
+
+{% block dashboardContent %}
+
+    <div class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-nav">
+            <ul class="nav nav-dashboard-tabs" data-nav-dropdown-menu="mobile">{#
+              #}<li role="presentation" class="active"><a href="#profile-info" role="tab" data-toggle="tab">{{ 'borrower-profile_information'|trans|capitalize }}</a></li>{#
+              #}<li role="presentation"><a href="#profile-infobank" role="tab" data-toggle="tab">{{ 'borrower-profile_bank-details'|trans|capitalize }}</a></li>{#
+            #}</ul>
+        </div><!-- /.dashboard-nav-content -->
+        <div class="dashboard-tabs-content tab-content">
+            <div id="profile-info" role="tabpanel" class="dashboard-tab-pane tab-pane active">
+                <article id="panel-info" class="panel">
+                    <header class="panel-header">
+                        <h3>{{ 'borrower-profile_identity'|trans|capitalize }}</h3>
+                    </header>
+                    <section id="profile-info-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                        <section id="profile-info-view" role="tabpanel" class="profile-info-view collapse in">
+                            <dl class="list-2col">
+                                <dt>{{ 'borrower-profile_fonction'|trans|capitalize }}</dt>
+                                <dd id="profile-info-statut-output">{{ client.fonction|default('') }}</dd>
+                                <dt>{{ 'borrower-profile_civility'|trans|capitalize }}</dt>
+                                <dd id="profile-info-civilite-output">{{ client.civilite|default('') }}</dd>
+                                <dt>{{ 'borrower-profile_last-name'|trans|capitalize }}</dt>
+                                <dd id="profile-info-nom-output">{{ client.nom|default('') }}</dd>
+                                <dt>{{ 'borrower-profile_first-name'|trans|capitalize }}</dt>
+                                <dd id="profile-info-prenom-output">{{ client.prenom|default('') }}</dd>
+                                <dt>{{ 'borrower-profile_birthday'|trans|capitalize }}</dt>
+                                <dd id="profile-info-dob-output">{{ client.naissance|localizeddate('long', 'none')|default('') }}</dd>
+                                <dt>{{ 'borrower-profile_birth-country'|trans|capitalize }}</dt>
+                                <dd id="profile-info-dob-pays-output">{{ birthCountry|default('') }}</dd>
+                                <dt>{{ 'borrower-profile_birth-city'|trans|capitalize }}</dt>
+                                <dd id="profile-info-dob-commune-output">{{ client.ville_naissance|default('') }}</dd>
+                                <dt>{{ 'borrower-profile_nationality'|trans|capitalize }}</dt>
+                                <dd id="profile-info-dob-nationalite-output">{{ nationality|default('') }}</dd>
+                                <dt>{{ 'borrower-profile_identity-document'|trans|capitalize }}</dt>
+                                <dd id="profile-info-fichier-identitie-output">
+                                    {% if idAdded is not null %}
+                                        <span id="form-profile-info-file-identite-cni-1-output" class="file-justificatif file-identity-side-a" title="{{ 'borrower-profile_identity-document-uploaded-on'|trans|capitalize }} {{ idAdded|localizeddate('short', 'none') }}" data-toggle="tooltip">
+                                          <span class="sr-only">{{ 'borrower-profile_identity-document-uploaded-on'|trans|capitalize }} {{ idAdded|localizeddate('short', 'none') }}</span>
+                                        </span>
+                                    {% endif %}
+                                    {% if idVersoAdded is not null %}
+                                        <span id="form-profile-info-file-identite-cni-2-output" class="file-justificatif file-identity-side-b" title="{{ 'borrower-profile_identity-document-uploaded-on'|trans|capitalize }} {{ idAdded|localizeddate('short', 'none') }}" data-toggle="tooltip">
+                                            <span class="sr-only">{{ 'borrower-profile_identity-document-uploaded-on'|trans|capitalize }} {{ idVersoAdded|localizeddate('short', 'none') }}</span>
+                                        </span>
+                                    {% endif %}
+                                </dd>
+                            </dl>
+                        </section>
+                    </section><!-- /.ui-toggle-group -->
+                </article><!-- /.panel -->
+
+                <article id="panel-address" class="panel">
+                    <header class="panel-header">
+                        <h3>{{ 'borrower-profile_identity-document'|trans|capitalize }}</h3>
+                    </header>
+                    <section id="profile-address-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                        <section id="profile-address-view" role="tabpanel" class="profile-address-view collapse in">
+                            <dl class="list-2col">
+                                <dt>{{ 'borrower-profile_siren'|trans|upper }}</dt>
+                                <dd>{{ company.siren }}</dd>
+                                <dt>{{ 'borrower-profile_company-name'|trans|capitalize }}</dt>
+                                <dd>{{ company.name }}</dd>
+                                <dt>{{ 'borrower-profile_address'|trans|capitalize }}</dt>
+                                <dd id="profile-address-street-output">{{ company.adresse1 }}</dd>
+                                <dt>{{ 'borrower-profile_post-code'|trans|capitalize }}</dt>
+                                <dd id="profile-address-code-output">{{ company.zip }}</dd>
+                                <dt>{{ 'borrower-profile_city'|trans|capitalize }}</dt>
+                                <dd id="profile-address-ville-output">{{ company.city }}</dd>
+                                <dt>{{ 'borrower-profile_country'|trans|capitalize }}</dt>
+                                <dd id="profile-address-pays-output">{{ companyCountry }}</dd>
+                                <dt>{{ 'borrower-profile_company-phone-number'|trans|capitalize }}</dt>
+                                <dd id="profile-address-mobile-output">{{ company.phone }}</dd>
+                                <dt>{{ 'borrower-profile_invoice-email'|trans|capitalize }}</dt>
+                                <dd>{{ company.email_facture }}</dd>
+                            </dl>
+                        </section><!-- /.profile-address-view -->
+                    </section><!-- /.ui-toggle-group -->
+                    <a href="{{ path('borrower_account_contact') }}" class="btn-primary borrower-profil-button-modification">{{ 'borrower-profile_ask-to-modify-these-information'|trans|capitalize }}</a>
+                </article><!-- /.panel -->
+            </div><!-- /#profile-info.dashboard-tab-pane -->
+
+            <div id="profile-infobank" role="tabpanel" class="dashboard-tab-pane tab-pane">
+                <article id="panel-bank" class="panel">
+                    <header class="panel-header">
+                        <h3>{{ 'borrower-profile_bank-information'|trans|capitalize }}</h3>
+                    </header><!-- .panel-header -->
+                    <section id="profile-fiscalite-bank-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                        <section id="profile-fiscalite-bank-view" role="tabpanel" class="profile-bank-view collapse in">
+                            <dl class="list-2col">
+                                <dt>{{ 'borrower-profile_bic'|trans|upper }}</dt>
+                                <dd>{{ company.bic }}</dd>
+                                <dt>{{ 'borrower-profile_iban'|trans|upper }}</dt>
+                                <dd>{{ company.iban|split('', 4)|join(' ') }}</dd>
+                            </dl>
+                            <p>{{ 'borrower-profile_bank-information-modification-message'|trans }}</p>
+                        </section>
+                    </section><!-- /.ui-toggle-group -->
+                    <a href="{{ path('borrower_account_contact') }}" class="btn-primary borrower-profil-button-modification">{{ 'borrower-profile_ask-to-modify-these-information'|trans|capitalize }}</a>
+                </article><!-- /.panel -->
+            </div><!-- /#profile-fiscalite.dashboard-tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </div><!-- /.dashboard-tabs -->
+
+{% endblock %}

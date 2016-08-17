@@ -1,0 +1,31 @@
+<header class="site-header site-header-dashboard">
+    <div class="site-band"></div>
+
+    <div class="site-header-inner">
+        <div class="site-wrap">
+            <h1 class="site-title"><a href="{{ path('home') }}" class="site-logo" tabindex="2">Unilend</a></h1>
+
+            <div class="site-controls">
+
+                {% block siteHeaderControls %}
+                    <div class="site-user">
+                        <div class="site-user-profile">
+                            <div class="profile-avatar">
+                                <a href="#">
+                                    {{ app.user.initials }}
+                                </a>
+                            </div><!-- /.profile-avatar -->
+                            <div class="profile-name">{{ 'borrower-header_greeting'|trans|capitalize }} {{ app.user.firstName }}</div>
+                            <div class="profile-balance">
+                                <span class="label">{% trans %} borrower-header_siren {% endtrans %}</span>
+                                <span class="value">{{ app.user.siren }}</span>
+                            </div><!-- /.profile-balance -->
+                            <a href="{{ path('logout') }}" class="profile-logout link"><span class="label">{{ 'borrower-header_logout'|trans|capitalize }}</span></a>
+                        </div><!-- /.site-user-profile -->
+                    </div><!-- /.site-user -->
+                {% endblock %}
+
+            </div><!-- /.site-controls -->
+        </div><!-- /.site-wrap -->
+    </div><!-- /.site-header-inner -->
+</header>

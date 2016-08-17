@@ -1,0 +1,287 @@
+{% extends 'borrower_account/_borrower_account_base.html.twig' %}
+
+{# Page data #}
+{% set bodyId = '' %}
+{% set page = {
+id: 'user-emprunteur-operations',
+title: 'Emprunteur / Operations',
+permalink: path('borrower_account_operations'),
+classNames: 'user-emprunteur-operations'
+} %}
+
+{% block dashboardContent %}
+
+    <section class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-nav">
+            <ul class="nav nav-dashboard-tabs">
+                <li role="presentation" class="active"><a href="#operations" role="tab" data-toggle="tab">{{ 'borrower-operation_your-operations'|trans|capitalize }}</a></li>
+                <li role="presentation"><a href="#mydocuments" role="tab" data-toggle="tab">{{ 'borrower-document_documents'|trans|capitalize }}</a></li>
+            </ul>
+        </div>
+        <div class="dashboard-tabs-content tab-content">
+            {# MY OPERATIONS #}
+            <article id="operations" role="tabpanel" class="dashboard-tab-pane tab-pane active">
+                <div class="panel panel-operations-operations">
+                    <header class="panel-header">
+                        <h3 class="panel-title">{{ 'borrower-operation_all-your-operations'|trans|capitalize }}</h3>
+                        <div class="panel-controls">
+                            <a href="#todo" class="btn-default"><span class="icon fa-print-u32"></span><span class="label">{{ 'borrower-operation_print'|trans|capitalize }}</span></a>
+                            <a id="link-export-operations" href="#" class="btn-default"><span class="icon fa-excel-u32"></span><span class="label">{{ 'borrower-operation_csv-export'|trans }}</span></a>
+                        </div>
+                    </header><!-- /.panel-header -->
+                    <div class="panel-content">
+
+                        <form id="form-filters-operations" action="{{ path(app.request.get('_route')) }}" method="get" class="form-filters" data-ajax>
+                            <input type="hidden" name="action" value=""/>
+                            <div id="filters" class="row row-multi-col-computer collapse in">
+                                <div class="row">
+                                    <div class="form-field">
+                                        <div class="field-label">
+                                            <label>{{ 'borrower-operation_choose-a-period'|trans|capitalize }}</label>
+                                        </div><!-- /.field-label -->
+                                        <div class="row input-fields">
+                                            <div class="col-lg-3 col-md-3 col-sm-4">
+                                                <label class="grey-label">{{ 'borrower-operation_range'|trans|capitalize }}</label>
+                                                <div class="row">
+                                                    <select name="filter[slide]" class="input-field">
+                                                        <optgroup>
+                                                            <option value="1">1 {{ 'borrower-operation_month'|trans|capitalize }}</option>
+                                                            <option value="3">3 {{ 'borrower-operation_month'|trans|capitalize }}</option>
+                                                            <option value="6">6 {{ 'borrower-operation_month'|trans|capitalize }}</option>
+                                                            <option value="12">12 {{ 'borrower-operation_month'|trans|capitalize }}</option>
+                                                        </optgroup>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3 col-md-3 col-sm-4">
+                                                <label class="grey-label">{{ 'borrower-operation_year'|trans|capitalize }}</label>
+                                                <div class="row">
+                                                    <select name="filter[year]" class="input-field">
+                                                        <optgroup>
+                                                            {% for year in  "now"|date("Y")..2013 %}
+                                                            <option value="{{ year }}">{{ year }}</option>
+                                                            {% endfor %}
+                                                        </optgroup>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3 col-md-3 col-sm-4">
+                                                <label class="grey-label">{{ 'borrower-operation_customized-date'|trans|capitalize }}</label>
+                                                <div class="row">
+                                                    <div class="input-group set-right">
+                                                        <input type="text" id="filter-start" name="filter[start]" value="{{ default_filter_date.start }}" placeholder="Début" class="input-field ui-has-datepicker" />
+                                                        <div class="btn-group">
+                                                            <label for="filter-start"><span class="icon fa-calendar-u32 c-p1"><span class="sr-only">{{ 'borrower-operation_select-start-date'|trans|capitalize }}</span></span></label>
+                                                        </div><!-- /.btn-group -->
+                                                    </div><!-- /.input-group -->
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3 col-md-3 col-sm-4">
+                                                <label>&nbsp;</label>
+                                                <div class="row">
+                                                    <div class="input-group set-right">
+                                                        <input type="text" id="filter-end" name="filter[end]" value="{{ default_filter_date.end }}" placeholder="Fin" class="input-field ui-has-datepicker"/>
+                                                        <div class="btn-group">
+                                                            <label for="filter-end"><span class="icon fa-calendar-u32 c-p1"><span class="sr-only">{{ 'borrower-operation_select-end-date'|trans|capitalize }}</span></span></label>
+                                                        </div><!-- /.btn-group -->
+                                                    </div><!-- /.input-group -->
+                                                </div>
+                                            </div>
+                                        </div><!-- /.input-fields -->
+                                    </div><!-- /.form-field -->
+                                </div>
+                                <div class="row" style="padding:0;">
+                                    <div class="form-field">
+                                        <div class="field-label">
+                                            <label>{{ 'borrower-operation_choose-one-or-several-filter'|trans|capitalize }}</label>
+                                        </div><!-- /.field-label -->
+                                    </div>
+                                    <div class="col-lg-3 col-md-3 col-sm-4">
+                                        <label class="grey-label">{{ 'borrower-operation_filter-by-operation'|trans|capitalize }}</label>
+                                        <div class="row">
+                                            <select name="filter[op]" class="input-field">
+                                                <optgroup>
+                                                    <option value="all">{{ 'borrower-operation_all-the-operations'|trans|capitalize }}</option>
+                                                    <option value="1">{{ 'borrower-operation_financement'|trans|capitalize }}</option>
+                                                    <option value="2">{{ 'borrower-operation_virement'|trans|capitalize }}</option>
+                                                    <option value="3">{{ 'borrower-operation_commission-deblocage'|trans|capitalize }}</option>
+                                                    <option value="4">{{ 'borrower-operation_prelevement-mensualite'|trans|capitalize }}</option>
+                                                    <option value="5">{{ 'borrower-operation_affectation-preteurs'|trans|capitalize }}</option>
+                                                    <option value="6">{{ 'borrower-operation_commission-mensuelle'|trans|capitalize }}</option>
+                                                    <option value="7">{{ 'borrower-operation_remboursement-anticipe'|trans|capitalize }}</option>
+                                                    <option value="8">{{ 'borrower-operation_affectation-ra-preteur'|trans|capitalize }}</option>
+
+
+                                                    <option value="7">Remboursement anticipé</option>
+                                                    <option value="8">Affectation aux préteurs du remboursement anticipé</option>
+                                                </optgroup>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-3 col-sm-4">
+                                        <label class="grey-label">{{ 'borrower-operation_filter-by-project'|trans|capitalize }}</label>
+                                        <div class="row">
+                                            <select name="filter[project]" class="input-field">
+                                                <optgroup>
+                                                    <option value="all">{{ 'borrower-operation_all-the-projects'|trans|capitalize }}</option>
+                                                    {% for project_id in projects_ids %}
+                                                    <option value="{{ project_id }}">{{ project_id }}</option>
+                                                    {% endfor %}
+                                                </optgroup>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form><!-- /.form-operations-filters -->
+
+                        <div class="table-scroll">
+                            <table class="table table-myoperations">
+                                <thead class="table-sortable-columns">
+                                <tr>
+                                    <th class="table-column table-myoperations-borrower-item-operation">
+                                        <span class="label">{% trans %}borrower-operation_operation{% endtrans %}</span>
+                                    </th>
+                                    <th class="table-column cell-right table-myoperations-borrower-item-projet">
+                                        <span class="label">{% trans %}borrower-operation_project{% endtrans %}</span>
+                                    </th>
+                                    <th class="table-column cell-right table-myoperations-borrower-item-date">
+                                        <span class="label">{% trans %}borrower-operation_operation-date{% endtrans %}</span>
+                                    </th>
+                                    <th class="table-column cell-right table-myoperations-borrower-item-amount">
+                                        <span class="label">{% trans %}borrower-operation_amount{% endtrans %}</span>
+                                    </th>
+                                    <th class="table-column cell-right table-myoperations-borrower-item-detail">
+                                        <span class="label">{% trans %}borrower-operation_detail{% endtrans %}</span>
+                                    </th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table><!-- /.table-myoperations -->
+                        </div><!-- /.table-scroll -->
+                    </div><!-- /.panel-content -->
+                </div><!-- /.panel -->
+            </article><!-- /#myoperations.tab-pane -->
+
+
+            <article id="mydocuments" role="tabpanel" class="dashboard-tab-pane tab-pane">
+                <div class="panel panel-operations-operations">
+                    <h3 class="panel-title">Documents contractuels</h3>
+                    <div class="panel-content">
+                        <div class="table-scroll">
+                            <table class="table table-mydocuments">
+                                <thead>
+                                <tr>
+                                    <th class="table-column table-mydocuments-borrower-item-filenumber">
+                                        <span class="label">Numéro du dossier</span>
+                                    </th>
+                                    <th class="table-column table-mydocuments-borrower-item-pouvoir">
+                                        <span class="label">Pouvoir</span>
+                                    </th>
+                                    <th class="table-column table-mydocuments-borrower-item-mandat">
+                                        <span class="label">Mandat</span>
+                                    </th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr class="table-mydocuments-item list-files">
+                                    <td>
+                                        27685
+                                    </td>
+                                    <td>
+                                        <div class="document-download">
+                                            <a href="#todo" target="_blank">
+                                                <img class="document-download" src="{{ siteurlmedia('dashboard/file-bond-28x38.png') }}" alt="Pouvoir"/>
+                                                Télécharger
+                                            </a>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="document-download">
+                                            <a href="#todo" target="_blank">
+                                                <img class="document-download" src="{{ siteurlmedia('dashboard/file-contract-28x38.png') }}" alt="Mandat"/>
+                                                Télécharger
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table><!-- /.table-myoperations -->
+                        </div><!-- /.table-scroll -->
+                    </div>
+                    <h3 class="panel-title">Factures</h3>
+                    <div class="panel-content">
+                        <div class="table-scroll">
+                            <table class="table table-mydocuments">
+                                <thead>
+                                <tr>
+                                    <th class="table-column table-mydocuments-borrower-item-billnumber">
+                                        <span class="label">N° de facture</span>
+                                    </th>
+                                    <th class="table-column table-mydocuments-borrower-item-billfilenumber">
+                                        <span class="label">N° du dossier</span>
+                                    </th>
+                                    <th class="table-column table-mydocuments-borrower-item-billdate">
+                                        <span class="label">Date de la facture</span>
+                                    </th>
+                                    <th class="table-column table-mydocuments-borrower-item-bill">
+                                        <span class="label">Facture</span>
+                                    </th>
+                                </tr>
+                                </thead>
+                                <tbody>
+
+                                {% set placeholderData = {
+                                bills : [{
+                                billnumber: 'FR-E200562154',
+                                filenumber: '27658',
+                                datetime: '12/06/2016'
+                                },{
+                                billnumber: 'FR-E200562458',
+                                filenumber: '27698',
+                                datetime: '12/07/2016'
+                                },{
+                                billnumber: 'FR-E200562169',
+                                filenumber: '22358',
+                                datetime: '17/07/2016'
+                                },{
+                                billnumber: 'FR-E200562999',
+                                filenumber: '17648',
+                                datetime: '21/07/2016'
+                                }]
+                                } %}
+
+                                {% set bills = placeholderData.bills %}
+
+                                {% for i, item in bills %}
+                                    <tr class="table-mydocuments-item list-files">
+                                        <td class="table-mydocuments-borrower-item-billnumber">
+                                            {{ bills[i].billnumber }}
+                                        </td>
+                                        <td class="table-mydocuments-borrower-item-billfilenumber">
+                                            {{ bills[i].filenumber }}
+                                        </td>
+                                        <td class="table-mydocuments-borrower-item-billdate">
+                                            {{ bills[i].datetime }}
+                                        </td>
+                                        <td class="table-mydocuments-borrower-item-bill">
+                                            <div class="document-download">
+                                                <a href="#todo" target="_blank">
+                                                    <img class="document-download" src="{{ siteurlmedia('dashboard/file-pdf-60x80.png') }}" alt="PDF"/>
+                                                    Télécharger
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table><!-- /.table-myoperations -->
+                        </div><!-- /.table-scroll -->
+                    </div>
+                </div>
+            </article><!-- /#mydocuments.tab-pane
+    </div><!-- /.dashboard-tabs-content -->
+    </section><!-- /.dashboard-tabs -->
+
+{% endblock %}

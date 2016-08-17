@@ -1,20 +1,45 @@
 //
 // Unilend Table My Operations borrower
 //
-.ad-line{
-  color:#787679;
+#user-borrower-dashboard .table {
+  th {
+    font-size:11px;
+    text-transform:uppercase;
+    padding-left:2px;
+    padding-right:2px;
+    text-align:center;
+  }
+  margin:20px 0;
+  td {
+    font-size:15px;
+  }
+  .center {
+    text-align:center;
+  }
+}
+
+#user-emprunteur-operations #form-filters-operations {
+  margin-bottom:70px;
+}
+
+#user-emprunteur-operations .cell-right {
   text-align:right;
 }
+
+#user-emprunteur-operations .export {
+  color:#2cbaa4;
+}
+
 .grey-label {
   color:#9f9d9f;
 }
 
 .table-myoperations-borrower-item-operation {
-  width:20%;
+  width:50%;
 }
 
 .table-myoperations-borrower-item-projet {
-  width:20%;
+  width:10%;
   text-align:right;
 }
 
@@ -24,7 +49,7 @@
 }
 
 .table-myoperations-borrower-item-amount {
-  width:20%;
+  width:10%;
   text-align:right;
 }
 
@@ -37,11 +62,144 @@ td.table-myoperations-borrower-item-amount {
 }
 
 .table-myoperations-borrower-item-detail {
-  width:20%;
+  width:10%;
   text-align:center;
-  .detail-borrower {
-    color:#2cbaa4;
-    font-size:30px;
-    line-height:45px;
+}
+
+// PREFUNDING
+
+.table-myoperations-prefunding {
+  table-layout: fixed;
+  td {
+    font-size:11px;
+  }
+  .table-borrower-file {
+    width:10%;
+  }
+
+  .table-borrower-nature {
+    width:30%;
+  }
+
+  .table-borrower-amount {
+    width:10%;
+  }
+
+  .table-borrower-status {
+    width:16%;
+  }
+
+  .table-borrower-autolend {
+    width:15%;
+  }
+
+  .table-borrower-upload {
+    width:11%;
+  }
+
+  .min{
+    text-transform:none;
+    font-size:9px;
+  }
+
+}
+
+// END PREFUNDING
+
+// FUNDING
+
+.table-myoperations-funding {
+  table-layout: fixed;
+  th {
+    text-align:left;
+    /*font-size:12px;*/
+    text-transform:none;
+  }
+  td {
+    font-size:11px;
+  }
+  .table-borrower-file {
+    width:10%;
+  }
+
+  .table-borrower-nature {
+    width:20%;
+  }
+
+  .table-borrower-amount {
+    width:12%;
+  }
+
+  .table-borrower-ending-date {
+    width:12%;
+  }
+
+  .table-borrower-funding-rate {
+    width:12%;
+  }
+
+  .table-borrower-average-rate {
+    width:10%;
+  }
+
+  .table-borrower-stop {
+    width:10%;
+  }
+
+  .table-borrower-link-to {
+    width:10%;
+  }
+
+}
+
+// END FUNDING
+.table-myoperations-postfunding {
+  table-layout: fixed;
+  th {
+    text-align:left;
+    font-size:12px;
+
+    text-transform:none;
+  }
+  td {
+    font-size:11px;
+  }
+  .table-borrower-file {
+    width:10%;
+  }
+
+  .table-borrower-nature {
+    width:15%;
+  }
+
+  .table-borrower-amount {
+    width:10%;
+  }
+
+  .table-borrower-ending-date {
+    width:10%;
+  }
+
+  .table-borrower-monthly {
+    width:10%;
+  }
+
+  .table-borrower-average-rate {
+    width:10%;
+  }
+
+  .table-borrower-crd {
+    width:10%;
+  }
+
+  .table-borrower-date {
+    width:10%;
+  }
+
+  .table-borrower-button {
+    width:10%;
   }
 }
+// POST FUNDING
+
+// END POSTFUNDING

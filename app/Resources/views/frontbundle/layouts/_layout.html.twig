@@ -67,7 +67,7 @@
         {% if app.user is defined and is_granted('ROLE_LENDER') %}
             {% include 'partials/site/header-dashboard.html.twig' %}
         {% elseif app.user is defined and is_granted('ROLE_BORROWER') %}
-            {# TODO : add borrower header once DEV-768 done #}
+            {% include 'borrower_account/_borrower_header_dashboard.html.twig' %}
         {% else %}
             {% include 'partials/site/header.html.twig' %}
         {%  endif %}

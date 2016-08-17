@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\FrontBundle\Security\User;
 
-
 use Symfony\Component\Security\Core\User\AdvancedUserInterface;
 use Symfony\Component\Security\Core\User\EquatableInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -19,12 +18,12 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface
 
     public function __construct($username, $password, $salt, array $roles, $isActive, $clientId)
     {
-        $this->username                = $username;
-        $this->password                = $password;
-        $this->salt                    = $salt;
-        $this->roles                   = $roles;
-        $this->isActive                = $isActive;
-        $this->clientId                = $clientId;
+        $this->username = $username;
+        $this->password = $password;
+        $this->salt     = $salt;
+        $this->roles    = $roles;
+        $this->isActive = $isActive;
+        $this->clientId = $clientId;
     }
 
     /**
