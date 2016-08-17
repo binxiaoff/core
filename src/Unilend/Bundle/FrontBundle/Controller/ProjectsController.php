@@ -217,7 +217,24 @@ class ProjectsController extends Controller
         $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower);
 
         if (false === $isFullyConnectedUser) {
-            $template['project']['title'] = $this->get('translator')->trans('company-sector_sector-' . $template['project']['company']['sectorId']);
+            /** @var Translator $translator */
+            $translator = $this->get('translator');
+            /** @var EntityManager $entityManager */
+            $entityManager = $this->get('unilend.service.entity_manager');
+            /** @var \companies $company */
+            $company = $entityManager->getRepository('companies');
+
+            $template['project']['title'] = $translator->trans('company-sector_sector-' . $template['project']['company']['sectorId']);
+
+            if (isset($template['project']['navigation']['previousProject']['title'])) {
+                $company->get($template['project']['navigation']['previousProject']['id_company']);
+                $template['project']['navigation']['previousProject']['title'] = $translator->trans('company-sector_sector-' . $company->sector);
+            }
+
+            if (isset($template['project']['navigation']['nextProject']['title'])) {
+                $company->get($template['project']['navigation']['nextProject']['id_company']);
+                $template['project']['navigation']['nextProject']['title'] = $translator->trans('company-sector_sector-' . $company->sector);
+            }
         }
 
         $template['conditions'] = [
