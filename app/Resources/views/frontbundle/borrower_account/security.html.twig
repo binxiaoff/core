@@ -3,10 +3,10 @@
 {# Page data #}
 {% set bodyId = '' %}
 {% set page = {
-id: 'user-borrower-profile',
-title: 'Emprunteur / Profil',
-permalink: path('borrower_account_contact'),
-classNames: 'user-borrower-profile'
+id: 'user-borrower-security',
+title: 'Emprunteur / securité',
+permalink: path(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')),
+classNames: 'user-borrower-security'
 } %}
 {% block siteHeader %}
     {% include 'partials/site/header.html.twig' %}

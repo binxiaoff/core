@@ -484,7 +484,7 @@ class BorrowerAccountController extends Controller
      * @param Request $request
      * @param $token
      *
-     * @Route("/1espace-emprunteur1/securite/{token}", name="borrower_account_security")
+     * @Route("/espace-emprunteur/securite/{token}", name="borrower_account_security")
      * @Template("borrower_account/security.html.twig")
      *
      * @return array
