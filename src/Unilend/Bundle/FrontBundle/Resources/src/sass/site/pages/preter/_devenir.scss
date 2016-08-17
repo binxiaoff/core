@@ -373,6 +373,20 @@
       }
     }
   }
+
+  &.form-only {
+    @include devices('tablet-l', 'laptop', 'lg') {
+      margin-top: 35px;
+    }
+
+    @include devices('xs', 'sm') {
+      .form-preter-lp {
+        .stamp {
+          right: 0;
+        }
+      }
+    }
+  }
 }
 
 // Add extra space on top of the site-header-message
