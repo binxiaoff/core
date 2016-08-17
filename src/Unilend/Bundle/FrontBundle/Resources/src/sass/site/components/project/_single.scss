@@ -726,10 +726,18 @@
   }
 }
 .project-single-content {
-  .page-section.separate {
-    border-bottom:2px solid #eceaed;
-    padding-bottom:70px;
-    margin-bottom:20px;
+  .page-section {
+    padding-bottom: 50px;
+    padding-top: 30px;
+
+    &.separate {
+      border-bottom: 2px solid #eceaed;
+      margin-bottom: 30px;
+    }
+
+    > h3 {
+      margin-top: 0;
+    }
   }
 }
 

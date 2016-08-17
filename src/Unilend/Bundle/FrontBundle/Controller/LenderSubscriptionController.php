@@ -861,13 +861,16 @@ class LenderSubscriptionController extends Controller
         if (false === isset($post['prospect_name']) || strlen($post['prospect_name']) > 255 || strlen($post['prospect_name']) <= 0) {
             $this->addFlash('landingPageErrors', $translator->trans('lender-landing-page_error-name'));
         }
+
         if (false === isset($post['prospect_first_name']) || strlen($post['prospect_first_name']) > 255 || strlen($post['prospect_first_name']) <= 0) {
             $this->addFlash('landingPageErrors', $translator->trans('lender-landing-page_error-first-name'));
         }
+
         if (empty($post['prospect_email']) || strlen($post['prospect_email']) > 255 || strlen($post['prospect_email']) <= 0
             || false == filter_var($post['prospect_email'], FILTER_VALIDATE_EMAIL)) {
             $this->addFlash('landingPageErrors', $translator->trans('lender-landing-page_error-email'));
         }
+
         if (false === empty($post['prospect_email']) && $clients->existEmail($post['prospect_email']) && $clients->get($post['prospect_email'], 'email')){
             $response = $this->checkProgressAndRedirect($clients);
             if (false === $response instanceof \clients){
@@ -899,7 +902,6 @@ class LenderSubscriptionController extends Controller
         return $this->render('pages/lender_subscription/landing_page_form_only.html.twig');
     }
 
-
     /**
      * @param \clients $client
      * @param null $clientHash
@@ -926,26 +928,25 @@ class LenderSubscriptionController extends Controller
         return $client;
     }
 
-
     /**
      * @param \clients $client
      * @param $post
      */
     private function saveClientHistoryAction(\clients $client, $post)
     {
-        $formId = '';
-        $clientType = in_array($client->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])? 'particulier' : 'entreprise';
+        $formId     = '';
+        $clientType = in_array($client->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER]) ? 'particulier' : 'entreprise';
 
-        switch($client->etape_inscription_preteur){
+        switch ($client->etape_inscription_preteur) {
             case 1:
                 $post['client_password']              = md5($post['client_password']);
                 $post['client_password_confirmation'] = md5($post['client_password_confirmation']);
                 $post['client_secret_response']       = md5($post['client_secret_answer']);
-                $formId = 14;
+                $formId                               = 14;
                 break;
             case 2:
                 $formId = in_array($client->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER]) ? 17 : 19;
-            break;
+                break;
         }
 
         /** @var \clients_history_actions $clientHistoryActions */
@@ -956,7 +957,6 @@ class LenderSubscriptionController extends Controller
             $client->id_client, serialize(['id_client' => $client->id_client, 'post' => $post])
         );
     }
-
 
     /**
      * @param integer $lenderAccountId
