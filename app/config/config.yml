@@ -165,6 +165,6 @@ services:
         tags:
             - { name: twig.extension }
     twig.extension.intl:
-        class: Twig_Extensions_Extension_Intl
+        class: Unilend\Bundle\FrontBundle\Twig\IntlExtension
         tags:
             - { name: twig.extension }

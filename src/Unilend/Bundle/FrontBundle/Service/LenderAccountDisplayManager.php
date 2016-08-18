@@ -77,7 +77,7 @@ class LenderAccountDisplayManager
         $loanInfo['remainingToBeRepaid']   = $repaymentSchedule->getSumRestanteARembByProject($lenderAccount->id_lender_account, $projectId);
         $loanInfo['remainingMonths']       = $repaymentSchedule->counterPeriodRestantes($lenderAccount->id_lender_account, $projectId);
         $loanInfo['myLoanOnProject']       = $loans->getBidsValid($projectId, $lenderAccount->id_lender_account);
-        $loanInfo['myAverageLoanRate']     = $loans->getAvgLoansPreteur($projectId, $lenderAccount->id_lender_account);
+        $loanInfo['myAverageLoanRate']     = round($loans->getAvgLoansPreteur($projectId, $lenderAccount->id_lender_account), 2);
         $loanInfo['percentageRecovered']   = $loanInfo['myLoanOnProject']['solde']> 0 ? $loanInfo['amountAlreadyPaidBack'] / $loanInfo['myLoanOnProject']['solde'] * 100 : 0;
 
         return $loanInfo;

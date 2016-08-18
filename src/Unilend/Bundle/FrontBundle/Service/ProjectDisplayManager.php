@@ -125,7 +125,7 @@ class ProjectDisplayManager
             ],
             'status'               => $projectStatus->status,
             'finished'             => ($projectStatus->status > \projects_status::EN_FUNDING || $end < $now),
-            'averageRate'          => $projects->getAverageInterestRate($project['id_project']),
+            'averageRate'          => round($projects->getAverageInterestRate($project['id_project']), 1),
             'totalLenders'         => (\projects_status::EN_FUNDING == $projectStatus->status) ? $bids->countLendersOnProject($project['id_project']) : $loans->getNbPreteurs($project['id_project'])
         ];
 
@@ -319,7 +319,7 @@ class ProjectDisplayManager
 
         $fundingStatistics['fundingTime']  = $startFundingPeriod->diff($endFundingPeriod);
         $fundingStatistics['NumberLender'] = $loans->getNbPreteurs($project->id_project);
-        $fundingStatistics['AvgRate']      = $project->getAverageInterestRate($project->id_project, $status);
+        $fundingStatistics['AvgRate']      = round($project->getAverageInterestRate($project->id_project, $status), 1);
 
         return $fundingStatistics;
     }

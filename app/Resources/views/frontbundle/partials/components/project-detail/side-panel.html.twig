@@ -3,7 +3,7 @@
         <div class="project-single-info">
             <div class="project-single-cost">
                 <div class="project-single-cost-total">
-                    {% trans with {'%amount%' : project.amount|__num(0)|nbsp, '%startTag%' : '<span class="sr-only">', '%endTag%' : '</span>'} %} project-detail_amount-sentence {% endtrans %}
+                    {% trans with {'%amount%' : project.amount|localizednumber|nbsp, '%startTag%' : '<span class="sr-only">', '%endTag%' : '</span>'} %} project-detail_amount-sentence {% endtrans %}
                 </div>
                 <div class="project-single-cost-progress"
                     title="{% trans with {'%percentFunded%' : project.percentFunded} %}
@@ -14,10 +14,10 @@
                 </div><!-- /.project-single-cost-progress -->
                 {% if project.status == constant('\\projects_status::EN_FUNDING') %}
                     <div class="project-single-cost-amount">
-                        <div class="project-single-cost-amount-funded">{% transchoice project.costFunded with {'%costFunded%' : project.costFunded|__num(0)} %} project-detail_already-bid-amount {% endtranschoice %}</div>
+                        <div class="project-single-cost-amount-funded">{% transchoice project.costFunded with {'%costFunded%' : project.costFunded|localizednumber} %} project-detail_already-bid-amount {% endtranschoice %}</div>
                         {% if  project.costRemaining == 0 %}
                             <div class="project-single-cost-amount-remaining">
-                                {% transchoice project.costRemaining with {'%costRemaining%' : project.costRemaining|__num(0)|nbsp} %} project-detail_remaining-amount {% endtranschoice %}
+                                {% transchoice project.costRemaining with {'%costRemaining%' : project.costRemaining|localizednumber|nbsp} %} project-detail_remaining-amount {% endtranschoice %}
                             </div>
                         {% endif %}
                     </div><!-- /.project-single-cost-amount -->
@@ -27,7 +27,7 @@
                 <div class="row">
                     <div class="project-single-interest">
                         <span class="icon fa-linechart-u32"></span>
-                        <span class="c-p1"><strong>{{ project.averageRate|__num(1) }}</strong>%</span>
+                        <span class="c-p1"><strong>{{ project.averageRate|localizednumber }}</strong>&nbsp;%</span>
                         <div class="label">{% trans %} project-detail_average-rate-label {% endtrans %}</div>
                     </div><!-- /.project-single-interest -->
 
@@ -44,15 +44,15 @@
                     <p>
                         {% transchoice project.lender.loans.myLoanOnProject.nbValid with {
                             '%amountUserLoan%' : project.lender.loans.myLoanOnProject.solde,
-                            '%avgRateUserLoan%' : project.lender.loans.myAverageLoanRate|__num(2)
+                            '%avgRateUserLoan%' : project.lender.loans.myAverageLoanRate|localizednumber
                         } %} project-detail_project-repaid-user-message {% endtranschoice %}
                     </p>
                 {% endif %}
             {% elseif project.status == constant('\\projects_status::FUNDE') or project.status >= constant('\\projects_status::REMBOURSEMENT') %}
                 <p>
                     {% trans with {
-                        '%NumberLender%' : project.fundingStatistics.NumberLender|__num(0),
-                        '%AvgRate%' : project.fundingStatistics.AvgRate|__num(1),
+                        '%NumberLender%' : project.fundingStatistics.NumberLender|localizednumber,
+                        '%AvgRate%' : project.fundingStatistics.AvgRate|localizednumber,
                         '%fundingDays%' : project.fundingStatistics.fundingTime.days,
                         '%fundingMinutes%' : project.fundingStatistics.fundingTime.i,
                         '%fundingHours%' : project.fundingStatistics.fundingTime.h
@@ -76,7 +76,7 @@
                     {% endif %}
 
                     {% if project.maxValidRate > constant('\\bids::BID_RATE_MIN') %}
-                        <form action="{{ path('place_bid', {'projectId' : project.projectId}) }}" data-bid-confirmation method="post" class="project-single-form project-single-form-invest">
+                        <form action="{{ path('place_bid', {'projectId' : project.projectId}) }}" method="post" class="project-single-form project-single-form-invest" data-bid-confirmation>
                             <div class="form-field">
                                 <label>
                                     <span class="sr-only">{% trans %} project-detail_side-bar-bids-amount-label {% endtrans %}</span>
@@ -90,21 +90,20 @@
                                     <select data-popup-rate name="invest[interest]" class="input-field">
                                         <option value="">{% trans %} project-detail_side-bar-bids-rate-placeholder {% endtrans %}</option>
                                         {% for rate in range(project.maxValidRate - 0.1, constant('\\bids::BID_RATE_MIN'), 0.1) %}
-                                            <option value="{{ rate }}">{{ rate|__num(1) }} %</option>
+                                            <option value="{{ rate }}">{{ rate|localizednumberwithprecision(1) }} %</option>
                                         {% endfor %}
                                     </select>
                                 </label>
                             </div><!-- /.form-field -->
                             <div class="btn-toolbar">
-                                <div data-bid-confirmation-button class="btn-primary btn-size-full cursor">{% trans %} project-detail_side-bar-bids-submit-button {% endtrans %}</div>
+                                <button type="submit" class="btn-primary btn-size-full cursor">{% trans %} project-detail_side-bar-bids-submit-button {% endtrans %}</button>
                                 <input type="hidden" name="invest[bidToken]" value="{{ bidToken }}">
-                                <button class="btn-primary btn-size-full hidden">{% trans %} project-detail_side-bar-bids-submit-button {% endtrans %}</button>
                             </div><!-- /.btn-toolbar -->
                             <div class="field-help">
                                 <p>
                                     {% trans with {
-                                        '%rateMin%' : constant('\\bids::BID_RATE_MIN')|__num(1),
-                                        '%rateMax%' : (project.maxValidRate - 0.1)|__num(1)
+                                        '%rateMin%' : constant('\\bids::BID_RATE_MIN')|localizednumber,
+                                        '%rateMax%' : (project.maxValidRate - 0.1)|localizednumber
                                     }|raw %} project-detail_side-bar-bids-help-text {% endtrans %}
                                 </p>
                             </div>
