@@ -22,6 +22,7 @@ use Symfony\Component\Security\Http\Util\TargetPathTrait;
 class LoginAuthenticator extends AbstractFormLoginAuthenticator
 {
     use TargetPathTrait;
+
     /** @var UserPasswordEncoder */
     private $securityPasswordEncoder;
     /** @var RouterInterface */
@@ -39,8 +40,9 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     protected function getDefaultSuccessRedirectUrl(Request $request, UserInterface $user)
     {
         $targetPath = $request->get('_target_path');
+
         if ($targetPath) {
-            return new RedirectResponse($targetPath);
+            return $targetPath;
         }
 
         if (in_array('ROLE_LENDER', $user->getRoles())) {
