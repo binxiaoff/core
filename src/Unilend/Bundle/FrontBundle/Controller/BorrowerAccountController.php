@@ -110,8 +110,8 @@ class BorrowerAccountController extends Controller
 
         if ($request->isXmlHttpRequest()) {
             $filter = $request->query->get('filter');
-            $start  = new \Datetime($filter['start']);
-            $end    = new \Datetime($filter['end']);
+            $start  = \DateTime::createFromFormat('d/m/Y', $filter['start']);
+            $end    = \DateTime::createFromFormat('d/m/Y', $filter['end']);
 
             if ($filter['op'] !== 'all') {
                 $operation = (int)$filter['op'];

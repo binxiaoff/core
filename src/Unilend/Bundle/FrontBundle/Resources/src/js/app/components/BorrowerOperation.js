@@ -18,22 +18,25 @@ $(function(){
 
 });
 
-$("#user-emprunteur-operations input, select").change(function () {
-    var action = $(this).attr('name').match(/filter\[(.*)]/)[1];
-    var start = new Date(),
-        end = new Date();
-    if (action == 'slide') {
-        start.setMonth(end.getMonth() - $(this).val());
-        $('#filter-start').datepicker("setDate", start);
-        $('#filter-end').datepicker("setDate", end);
-    } else if (action == 'year') {
-        start = new Date($(this).val(), 0, 1);
-        end = new Date($(this).val(), 11, 31);
-        $('#filter-start').datepicker("setDate", start);
-        $('#filter-end').datepicker("setDate", end);
-    }
+$("#user-emprunteur-operations input, #user-emprunteur-operations select").change(function () {
+    var action = $(this).attr('name').match(/filter\[(.*)]/);
+    if (action !== null) {
+        action = action[1];
+        var start = new Date(),
+            end = new Date();
+        if (action == 'slide') {
+            start.setMonth(end.getMonth() - $(this).val());
+            $('#filter-start').datepicker("setDate", start);
+            $('#filter-end').datepicker("setDate", end);
+        } else if (action == 'year') {
+            start = new Date($(this).val(), 0, 1);
+            end = new Date($(this).val(), 11, 31);
+            $('#filter-start').datepicker("setDate", start);
+            $('#filter-end').datepicker("setDate", end);
+        }
 
-    loadOperations();
+        loadOperations();
+    }
 });
 
 $("#user-emprunteur-operations #link-export-operations").click(function (event) {
