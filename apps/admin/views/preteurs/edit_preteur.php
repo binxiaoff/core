@@ -818,15 +818,15 @@
 
                 <div class="liwording">
                     <table>
-                        <?php for ($i = 1; $i <= $this->nbWordingCompletude; $i++) : ?>
+                        <?php foreach($this->completude_wording as $key => $message): ?>
                             <tr>
-                                <td><img class="add" id="add-<?= $i ?>" src="<?= $this->surl ?>/images/admin/add.png"></td>
-                                <td><span class="content-add-<?= $i ?>"><?= $this->completude_wording['cas-' . $i] ?></span></td>
+                                <td><img class="add" id="add-<?= $key ?>" src="<?= $this->surl ?>/images/admin/add.png"></td>
+                                <td><span class="content-add-<?= $key ?>"><?= $message ?></span></td>
                             </tr>
-                            <?php if (in_array($i, array(3, 6, 11))) : ?>
+                            <?php if (substr($key, -1, 1) == 3) : ?>
                                 <tr><td colspan="2">&nbsp;</td></tr>
                             <?php endif; ?>
-                        <?php endfor; ?>
+                        <?php endforeach; ?>
                     </table>
                 </div>
                 <br/>

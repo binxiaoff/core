@@ -221,12 +221,16 @@ class preteursController extends bootstrap
     private function setAttachments($iIdClient, $oAttachmentTypes)
     {
         /** @var \greenpoint_attachment $oGreenPointAttachment */
-        $oGreenPointAttachment   = $this->loadData('greenpoint_attachment');
-        $aGreenpointAttachmentStatus = array();
-        $this->aIdentity             = array();
-        $this->aDomicile             = array();
-        $this->aRibAndFiscale        = array();
-        $this->aOther                = array();
+        $oGreenPointAttachment       = $this->loadData('greenpoint_attachment');
+        $aGreenpointAttachmentStatus = [];
+        $this->aIdentity             = [];
+        $this->aDomicile             = [];
+        $this->aRibAndFiscale        = [];
+        $this->aOther                = [];
+        $this->aRibAndFiscaleToAdd   = [];
+        $this->aIdentityToAdd        = [];
+        $this->aDomicileToAdd        = [];
+        $this->aOtherToAdd           = [];
 
         foreach ($oGreenPointAttachment->select('id_client = ' . $iIdClient) as $aGPAS) {
             $aGreenpointAttachmentStatus[$aGPAS['id_attachment']] = $aGPAS;
@@ -265,13 +269,10 @@ class preteursController extends bootstrap
         $this->lNatio                  = $this->nationalites->select();
         $this->lPays                   = $this->pays->select('', 'ordre ASC');
         $this->settings                = $this->loadData('settings');
-        $this->completude_wording = [];
+        /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
+        $translationManager = $this->get('unilend.service.translation_manager');
+        $this->completude_wording = $translationManager->getAllTranslationsForSection('lender-completeness');
 
-        $lElements = $this->blocs_elements->select('id_bloc = 9 AND id_langue = "' . $this->language . '"');
-        foreach ($lElements as $b_elt) {
-            $this->elements->get($b_elt['id_element']);
-            $this->completude_wording[$this->elements->slug] = $b_elt['value'];
-        }
         $this->nbWordingCompletude = count($this->completude_wording);
 
         $this->settings->get("Liste deroulante conseil externe de l'entreprise", 'type');

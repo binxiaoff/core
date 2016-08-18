@@ -14,7 +14,11 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\Translation\Translator;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 use Unilend\core\Loader;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+
 
 class LenderProfileController extends Controller
 {
@@ -682,7 +686,83 @@ class LenderProfileController extends Controller
      */
     public function lenderCompletenessAction()
     {
-        return $this->render('Ici viendra le formulaire d\'upload des fichiers de complétude');
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var \clients $client */
+        $client = $entityManager->getRepository('clients');
+        $client->get($this->getUser()->getClientId());
+        /** @var \clients_status $clientStatus */
+        $clientStatus          = $entityManager->getRepository('clients_status');
+        /** @var \clients_status_history $clientStatusHistory */
+        $clientStatusHistory   = $entityManager->getRepository('clients_status_history');
+        /** @var \attachment_type $attachmentType */
+        $attachmentType       = $entityManager->getRepository('attachment_type');
+
+        $clientStatus->getLastStatut($client->id_client);
+
+        $completenessRequestContent = $clientStatusHistory->getCompletnessRequestContent($client);
+        $template['attachmentTypes'] = $attachmentType->getAllTypesForLender('fr');
+        $template['attachmentsList'] = '';
+
+        if (false === empty($completenessRequestContent)) {
+            $oDOMElement = new \DOMDocument();
+            $oDOMElement->loadHTML($completenessRequestContent);
+            $oList = $oDOMElement->getElementsByTagName('ul');
+            if ($oList->length > 0 && $oList->item(0)->childNodes->length > 0) {
+                $template['attachmentsList'] = $oList->item(0)->C14N();
+            }
+        }
+
+        return $this->render('pages/lender_profile/lender_completeness.html.twig', $template);
+    }
+
+    /**
+     * @Route("/profile/documents/submit", name="lender_completeness_submit")
+     * @Method("POST")
+     */
+    public function saveLenderCompletenessDocuments(Request $request)
+    {
+        /** @var EntityManager$ $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var \clients $client */
+        $client = $entityManager->getRepository('clients');
+        $client->get($this->getUser()->getClientId());
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount  = $entityManager->getRepository('lenders_accounts');
+        $lenderAccount->get($client->id_client, 'id_client_owner');
+        /** @var \clients_history_actions $clientHistoryActions */
+        $clientHistoryActions = $entityManager->getRepository('clients_history_actions');
+        /** @var \clients_status $clientStatus */
+        $clientStatus = $entityManager->getRepository('clients_status');
+        /** @var TranslationManager $translationManager */
+        $translationManager = $this->get('unilend.service.translation_manager');
+        $translations = $translationManager->getAllTranslationsForSection('projet');
+        /** @var Translator $translator */
+        $translator = $this->get('translator');
+
+        $clientStatus->getLastStatut($client->id_client);
+
+        $files = $request->request->get('files', []);
+        $contentHistory = '';
+
+        foreach ($request->files->all() as $fileName => $file) {
+            $contentHistory = '<ul>';
+            if ($file instanceof UploadedFile && false === empty($files[$fileName])) {
+                $this->uploadAttachment($lenderAccount->id_lender_account, $request->request->get('files')[$fileName], $fileName);
+                $contentHistory .= '<li>' .$translations['document-type-' . $request->request->get('files')[$fileName]] . '</li>';
+            }
+            $contentHistory .= '</ul>';
+        }
+
+        if (false !== strpos($contentHistory, '<li>')) {
+            $this->updateClientStatusAndNotifyClient($client, $contentHistory);
+            $this->addFlash('completenessSuccess', $translator->trans('lender-profile_completeness-form-success-message'));
+        }
+
+        $sSerialize = serialize(array('id_client' => $client->id_client, 'post' => $_POST));
+        $clientHistoryActions->histo(12, 'upload doc profile', $client->id_client, $sSerialize);
+
+        return $this->redirectToRoute('lender_completeness');
     }
 
     /**
@@ -948,4 +1028,6 @@ class LenderProfileController extends Controller
         $fundsOriginList = explode(';', $settings->value);
         return array_combine(range(1, count($fundsOriginList)), array_values($fundsOriginList));
     }
+
+
 }
