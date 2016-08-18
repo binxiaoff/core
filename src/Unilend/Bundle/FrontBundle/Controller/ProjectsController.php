@@ -240,7 +240,7 @@ class ProjectsController extends Controller
         $template['conditions'] = [
             'validatedUser'       => $isFullyConnectedUser,
             'bids'                => isset($template['project']['bids']) && $template['project']['status'] == \projects_status::EN_FUNDING,
-            'myBids'              => isset($template['lender']) && $template['lender']['bids']['count'] > 0,
+            'myBids'              => isset($template['project']['lender']) && $template['project']['lender']['bids']['count'] > 0,
             'finance'             => $isFullyConnectedUser,
             'history'             => $isFullyConnectedUser && ($template['project']['status'] == \projects_status::FUNDE || $template['project']['status'] >= \projects_status::REMBOURSEMENT),
             'canBid'              => $isFullyConnectedUser && $user instanceof UserLender && $user->hasAcceptedCurrentTerms(),

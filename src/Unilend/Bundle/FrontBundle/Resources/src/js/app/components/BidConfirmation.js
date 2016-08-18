@@ -1,41 +1,36 @@
 // Lib Dependencies
 var $ = require('jquery')
 
-$(document).on('click', 'div[data-bid-confirmation-button]', function() {
+$(document).on('submit', 'form[data-bid-confirmation]', function (e) {
+  var form = e.target
 
-    if($('input[data-popup-amount]').val() == "" || $('input[data-popup-rate]').val() == "") {
+  e.preventDefault();
 
-        $('input[data-popup-amount],input[data-popup-rate]').each(function() {
-            var el = $(this)
+  if ($('[data-popup-amount]').val() == '' || $('[data-popup-rate]').val() == '') {
+    $('[data-popup-amount], [data-popup-rate]').each(function () {
+      var el = $(this)
 
-            if(el.val() == "") {
-                el.closest('.form-field').addClass('ui-formvalidation-error');
-            }
+      if (el.val() == "") {
+        el.closest('.form-field').addClass('ui-formvalidation-error');
+      }
+      else {
+        el.closest('.form-field').removeClass('ui-formvalidation-error');
+      }
+    })
+  }
+  else {
+    $('[data-popup-amount], [data-popup-rate]').closest('.form-field').removeClass('ui-formvalidation-error');
 
-            else {
-                el.closest('.form-field').removeClass('ui-formvalidation-error');
-            }
+    $('.ui-BidConfirmation').show();
 
-        })
+    $('[data-popup-bid-confirmation-yes]').click(function () {
+      $('.ui-BidConfirmation').hide();
 
-    }
+      form.submit()
+    })
 
-    else {
-
-        $('input[data-popup-amount],input[data-popup-rate]').closest('.form-field').removeClass('ui-formvalidation-error');
-        $('.ui-BidConfirmation').show();
-
-        $('a[data-popup-bid-confirmation-yes]').click(function(e) {
-            e.preventDefault;
-            $('.ui-BidConfirmation').hide();
-            $('form[data-bid-confirmation] button').click();
-        })
-
-        $('a[data-popup-bid-confirmation-no]').click(function(e) {
-            e.preventDefault;
-            $('.ui-BidConfirmation').hide();
-        })
-
-    }
+    $('[data-popup-bid-confirmation-no]').click(function () {
+      $('.ui-BidConfirmation').hide();
+    })
+  }
 })
-
