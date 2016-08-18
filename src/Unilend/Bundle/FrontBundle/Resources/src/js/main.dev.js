@@ -1296,42 +1296,41 @@ $(document).ready(function ($) {
   $doc.on('keyup', '.custom-input-iban .iban-input', checkIbanInput)
   checkIbanInput()
 
-
   /*
-   * Presenter un projet
+   * Ajouter des fichiers
    */
-  var $projectExtraFilesElem = $('#form-project-create-finance-extrafiles')
-  var $projectExtraFilesList = $('.form-project-create-extrafiles-list')
-  var $projectExtraFilesToggle = $('input#form-project-create-extrafiles-toggle')
-  var projectExtraFileTemplate = $('#form-project-create-extrafiles-template').html()
+  var $extraFilesElem = $('#form-extrafiles')
+  var $extraFilesList = $('.form-extrafiles-list')
+  var $extraFilesToggle = $('input#form-extrafiles-toggle')
+  var extraFileTemplate = $('#form-extrafiles-template').html()
 
   // Toggle extra files
-  $doc.on('change', 'input#form-project-create-extrafiles-toggle', function (event) {
-    checkProjectHasExtraFiles()
+  $doc.on('change', 'input#form-extrafiles-toggle', function (event) {
+    checkFormHasExtraFiles()
   })
 
-  function checkProjectHasExtraFiles () {
-    if ($projectExtraFilesToggle.is(':checked')) {
-      $projectExtraFilesElem.slideDown()
+  function checkFormHasExtraFiles () {
+    if ($extraFilesToggle.is(':checked')) {
+      $extraFilesElem.slideDown()
     } else {
-      $projectExtraFilesElem.slideUp()
+      $extraFilesElem.slideUp()
     }
   }
 
   // Add extra files item
-  $doc.on(Utility.clickEvent, '.ui-form-project-create-extrafiles-add', function (event) {
+  $doc.on(Utility.clickEvent, '.ui-form-extrafiles-add', function (event) {
     event.preventDefault()
-    addProjectExtraFile()
+    addFormExtraFile()
   })
 
-  function addProjectExtraFile () {
-    var totalExtraFiles = $projectExtraFilesList.find('.file-upload-extra').length
+  function addFormExtraFile () {
+    var totalExtraFiles = $extraFilesList.find('.file-upload-extra').length
 
     // Prepare the template
-    template = projectExtraFileTemplate.replace(/__NUM__/g, totalExtraFiles - 1)
+    template = extraFileTemplate.replace(/__NUM__/g, totalExtraFiles - 1)
 
     // Make the new one and add to the list
-    var $extraFile = $(template).appendTo($projectExtraFilesList)
+    var $extraFile = $(template).appendTo($extraFilesList)
     var $extraFileAttach = $extraFile.find('[data-fileattach], .ui-has-fileattach, .ui-fileattach')
 
     // Make sure the FileAttach behaviours are loaded
@@ -1339,11 +1338,11 @@ $(document).ready(function ($) {
   }
 
   // Show the collapse
-  if ($projectExtraFilesElem.length > 0) {
-    checkProjectHasExtraFiles()
+  if ($extraFilesElem.length > 0) {
+    checkFormHasExtraFiles()
 
     // Add one to prompt the user
-    addProjectExtraFile()
+    addFormExtraFile()
   }
 
   // Esim
@@ -1886,7 +1885,7 @@ $(document).ready(function ($) {
       Utility.revealElem(targetSelector)
     }
   })
-  
+
   // Special modifications for address AutoComplete fields
   $('[data-autocomplete-address').each(function (i, elem) {
     new AutoComplete(elem, {

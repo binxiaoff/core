@@ -1,12 +1,13 @@
 {% extends 'layouts/_dashboard.html.twig' %}
+
 {% import 'extensions/_general.macros.twig' as general %}
 {% import 'partials/modules/_custom-input.macros.twig' as customInput %}
 
 {% set page = {
-id: 'user-preter-profile-documents',
-title: 'Prêteur / Vos Documents',
-permalink: route('user/preter/profile'),
-classNames: 'user-preter-profile'
+    id: 'user-preter-profile-documents',
+    title: 'Prêteur / Vos Documents',
+    permalink: route('user/preter/profile'),
+    classNames: 'user-preter-profile'
 } %}
 
 {% block dashboardContent %}
@@ -17,10 +18,13 @@ classNames: 'user-preter-profile'
                     <header class="panel-header">
                         <h3>{% trans %} lender-profile_completeness-form-title {% endtrans %}</h3>
                     </header>
+
                     <section id="profile-lender-completeness-section">
-                        <form id="form-lender-completeness" action="{{ path('lender_completeness_submit') }}" method="post" enctype="multipart/form-data" class="form-project-create">
-                            <div id="form-project-create-files" aria-labelledby="project-create-files project-create-title" data-formvalidation data-formvalidation-notificationselem="#form-project-create-files-notifications">
+                        <form id="form-lender-completeness" action="{{ path('lender_completeness_submit') }}" method="post" enctype="multipart/form-data" class="form-lender-completeness">
+                            <div id="form-lender-completeness-content" aria-labelledby="lender-completeness lender-completeness-title" data-formvalidation data-formvalidation-notificationselem="#form-lender-completeness-notifications">
                                 <fieldset class="panel">
+                                    <div id="form-lender-completeness-notifications" class="ui-formvalidation-notifications"></div>
+
                                     <div class="row">
                                         <div class="form-field">
                                             {% if app.session.flashBag.has('completenessSuccess') %}
@@ -42,7 +46,7 @@ classNames: 'user-preter-profile'
 
                                             <div class="form-field">
                                                 {# Template is defined here so you can better do the translation and select field stuff #}
-                                                <div id="form-project-create-extrafiles-template" class="ui-template-definition" style="display: none" disabled="disabled" aria-hidden="true">
+                                                <div id="form-extrafiles-template" class="ui-template-definition" style="display: none" disabled="disabled" aria-hidden="true">
                                                     <div class="form-field file-upload-extra row row-multi-col-computer">
                                                         <div class="col-lg-6 col-md-6">
                                                             <select name="files[extra__NUM__]" class="input-field">
@@ -53,12 +57,12 @@ classNames: 'user-preter-profile'
                                                             </select>
                                                         </div>
                                                         <div class="col-lg-6 col-md-6">
-                                                            <div class="custom-input-file" id="form-project-create-finance-extrafile" data-fileattach data-fileattach-inputname="extra__NUM__" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png tiff doc docx"></div><!-- /.ui-fileattach -->
+                                                            <div class="custom-input-file" id="form-extrafile" data-fileattach data-fileattach-inputname="extra__NUM__" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png tiff doc docx"></div><!-- /.ui-fileattach -->
                                                         </div>
                                                     </div><!-- /.file-upload-extra -->
                                                 </div><!-- /.ui-template-definition -->
 
-                                                <div class="form-project-create-extrafiles-list">
+                                                <div class="form-extrafiles-list">
                                                     <div class="form-field row row-multi-col-computer" style="margin-bottom: 0">
                                                         <div class="col-lg-6 col-md-6" style="margin-bottom: 0">
                                                             <label class="field-label">{% trans %} lender-profile_completeness-form-document-type-column-title {% endtrans %}</label>
@@ -78,14 +82,14 @@ classNames: 'user-preter-profile'
                                                             </select>
                                                         </div>
                                                         <div class="col-lg-6 col-md-6">
-                                                            <div class="custom-input-file" id="form-project-create-finance-file" data-fileattach data-fileattach-inputname="file" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png tiff doc docx" data-formvalidation-input data-formvalidation-required='input[type="file"][name="file[0]"]'></div><!-- /.ui-fileattach -->
+                                                            <div class="custom-input-file" id="form-file" data-fileattach data-fileattach-inputname="file" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png tiff doc docx" data-formvalidation-input data-formvalidation-required='input[type="file"][name="file[0]"]'></div><!-- /.ui-fileattach -->
                                                         </div>
                                                     </div>
 
                                                     {# Other files will get added here #}
-                                                </div><!-- /.form-project-create-extrafiles-list -->
+                                                </div><!-- /.form-extrafiles-list -->
 
-                                                <a href="javascript:;" class="btn-default btn-shape-sq-md ui-form-project-create-extrafiles-add">
+                                                <a href="javascript:;" class="btn-default btn-shape-sq-md ui-form-extrafiles-add">
                                                     <span class="icon fa-plus-u16 c-t2"></span>
                                                     <span class="sr-only">{% trans %} lender-profile_completeness-form-add-file-label {% endtrans %}</span>
                                                 </a>

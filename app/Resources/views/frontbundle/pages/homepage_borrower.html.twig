@@ -76,7 +76,7 @@
                 <div class="row page-section-footer">
                     <div class="btn-toolbar">
                         <a href="{{ route('search') }}" class="btn-default ui-open-site-search">{% trans %} home-borrower_question-button {% endtrans %}</a>
-                        <a href="{{ route('projet/new') }}" class="btn-alternate">{% trans %} home-borrower_submit-project-button {% endtrans %}</a>
+                        <a href="{{ path('lp-depot-de-dossier') }}" class="btn-alternate">{% trans %} home-borrower_submit-project-button {% endtrans %}</a>
                     </div>
                 </div><!-- /.page-section-footer -->
             </div><!-- /.site-wrap -->
@@ -91,7 +91,7 @@
                     classColor: 'p2',
                     classCtaButton: 'btn-color-alternate',
                     labelCtaButton: BattenberglabelCtaButton,
-                    urlCtaButton: route('projet/new'),
+                    urlCtaButton: path('lp-depot-de-dossier'),
                     people: testimonialPeople
                 }) }}
 

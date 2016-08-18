@@ -134,19 +134,19 @@
 
                                                     <div class="form-field form-field-single-checkbox">
                                                         <label>
-                                                            <input id="form-project-create-extrafiles-toggle" type="checkbox" name="extra_files" value="true" data-cacheform-ignore>
+                                                            <input id="form-extrafiles-toggle" type="checkbox" name="extra_files" value="true" data-cacheform-ignore>
                                                             <span class="label">{% trans %} project-request_step-2-process-fast-selectbox-label {% endtrans %}</span>
                                                         </label>
                                                     </div>
 
-                                                    <div id="form-project-create-finance-extrafiles" style="display: none">
+                                                    <div id="form-extrafiles" style="display: none">
                                                         <div class="message-info">
                                                             {% trans %} project-request_step-2-process-fast-info-message {% endtrans %}
                                                         </div><!-- /.message-info -->
 
                                                         <div class="form-field">
                                                             {# Template is defined here so you can better do the translation and select field stuff #}
-                                                            <div id="form-project-create-extrafiles-template" class="ui-template-definition" style="display: none" disabled="disabled" aria-hidden="true">
+                                                            <div id="form-extrafiles-template" class="ui-template-definition" style="display: none" disabled="disabled" aria-hidden="true">
                                                                 <div class="form-field file-upload-extra row row-multi-col-computer">
                                                                     <div class="col-lg-6 col-md-6">
                                                                         <select name="files[extra__NUM__]" class="input-field">
@@ -157,12 +157,12 @@
                                                                         </select>
                                                                     </div>
                                                                     <div class="col-lg-6 col-md-6">
-                                                                        <div class="custom-input-file" id="form-project-create-finance-extrafile" data-fileattach data-fileattach-inputname="extra__NUM__" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png tiff doc docx"></div><!-- /.ui-fileattach -->
+                                                                        <div class="custom-input-file" id="form-extrafile" data-fileattach data-fileattach-inputname="extra__NUM__" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png tiff doc docx"></div><!-- /.ui-fileattach -->
                                                                     </div>
                                                                 </div><!-- /.file-upload-extra -->
                                                             </div><!-- /.ui-template-definition -->
 
-                                                            <div class="form-project-create-extrafiles-list">
+                                                            <div class="form-extrafiles-list">
                                                                 <div class="form-field row row-multi-col-computer" style="margin-bottom: 0">
                                                                     <div class="col-lg-6 col-md-6" style="margin-bottom: 0">
                                                                         <label class="field-label">{% trans %} project-request_step-2-process-fast-files-select-label {% endtrans %}</label>
@@ -172,9 +172,9 @@
                                                                     </div>
                                                                 </div>
                                                                 {# Files will get added here #}
-                                                            </div><!-- /.form-project-create-extrafiles-list -->
+                                                            </div><!-- /.form-extrafiles-list -->
 
-                                                            <a href="javascript:;" class="btn-default btn-shape-sq-md ui-form-project-create-extrafiles-add">
+                                                            <a href="javascript:;" class="btn-default btn-shape-sq-md ui-form-extrafiles-add">
                                                                 <span class="icon fa-plus-u16 c-t2"></span>
                                                                 <span class="sr-only">{% trans %} project-request_step-2-process-fast-files-add-file-label {% endtrans %}</span>
                                                             </a>
