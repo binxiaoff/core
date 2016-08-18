@@ -13,18 +13,18 @@
         <div class="promo-image">
             {{ svgimage('#promo-linechart2', '', 190, 190, 'none') | raw }}
         </div>
-        {% if 'lender-subscription_step-2-statistics-section-linechart-value'|trans != 'lender-subscription_step-2-statistics-section-linechart-value' %}
-            {% set valueLineChart = getStatistic('averageInterestRateForLenders')|round(1, 'floor')|localizednumber %}
+        {% if 'lender-subscription_step-2-statistics-section-linechart-value'|trans == 'lender-subscription_step-2-statistics-section-linechart-value' %}
+            {% set valueLineChart = getStatistic('averageInterestRateForLenders')|round(1, 'floor') %}
         {% else %}
             {% set valueLineChart = 'lender-subscription_step-2-statistics-section-linechart-value'|trans %}
         {% endif %}
         <h3 class="promo-highlight">
             <span class="ui-text-count" data-start-count="0" data-end-count="{{ valueLineChart }}" data-total-time="3000" data-limit-decimal="1" data-tween-count="easeOutCirc">
-                {{ valueLineChart }}
+                {{ valueLineChart|localizednumber }}
             </span>
             <sup>%</sup>
         </h3>
-        <p>{% trans with {'%avgYearlyInterestRate%' : valueLineChart }%} lender-subscription_step-1-statistics-linechart2-text {% endtrans %}</p>
+        <p>{% trans with {'%avgYearlyInterestRate%' : valueLineChart|localizednumber }%} lender-subscription_step-1-statistics-linechart2-text {% endtrans %}</p>
     </div><!-- /.promo -->
 
     <div class="promo">
