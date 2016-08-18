@@ -496,7 +496,7 @@
     vertical-align: middle;
     white-space: nowrap;
 
-    > a {
+    > span {
       display: block;
       padding-left: 30px;
       padding-right: 0;
@@ -530,7 +530,7 @@
     &.complete {
       border-color: $c-p1;
 
-      > a {
+      > span {
         color: $c-t1;
 
         &:before {
