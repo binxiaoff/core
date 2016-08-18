@@ -1015,7 +1015,6 @@ class preteursController extends bootstrap
         $this->settings->get('Twitter', 'type');
         $lien_tw = $this->settings->value;
 
-        $lapage         = (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) ? 'particulier_doc' : 'societe_doc';
         $this->lActions = $this->clients_status_history->select('id_client = ' . $this->clients->id_client, 'added DESC');
         $timeCreate     = (false === empty($this->lActions[0]['added'])) ? strtotime($this->lActions[0]['added']) : strtotime($this->clients->added);
         $month          = $this->dates->tableauMois['fr'][date('n', $timeCreate)];
@@ -1026,7 +1025,7 @@ class preteursController extends bootstrap
             'prenom_p'      => $this->clients->prenom,
             'date_creation' => date('d', $timeCreate) . ' ' . $month . ' ' . date('Y', $timeCreate),
             'content'       => utf8_encode($_SESSION['content_email_completude'][$this->clients->id_client]),
-            'lien_upload'   => $this->furl . '/profile/' . $lapage,
+            'lien_upload'   => $this->furl . '/profile/documents',
             'lien_fb'       => $lien_fb,
             'lien_tw'       => $lien_tw
         );
