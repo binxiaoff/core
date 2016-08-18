@@ -186,7 +186,7 @@ FileAttach.prototype.add = function (inhibitPrompt) {
 
   // See if any are empty and select that instead
   if ($emptyItems.length > 0) {
-    if (!inhibitPrompt || typeof inhibitPrompt === 'undefined') $emptyItems.first().click()
+    if (!inhibitPrompt || typeof inhibitPrompt === 'undefined') $emptyItems.first().find('input[type="file"]').click()
     return
   }
 
