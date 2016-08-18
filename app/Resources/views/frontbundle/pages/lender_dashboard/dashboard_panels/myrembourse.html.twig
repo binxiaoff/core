@@ -1,0 +1,42 @@
+{# Panel - My Remboursements #}
+{% embed 'partials/components/dashboard-panel.html.twig' %}
+    {% block panelAttributes %}id="myrembourse"{% endblock %}
+    {% block panelClassNames %}dashboard-panel dashboard-myrembourse ui-draggable {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %} col-lg-12 col-md-12 col-sm-8 col-xs-4{% endblock %}
+    {% block panelTitle %}{{ "lender-dashboard_panel-title-#{ panelId }" | trans }}{% endblock %}
+    {% block panelControls %}
+        <span class="ui-draggable-handle"></span>
+    {% endblock %}
+    {% block panelContent %}
+        <div class="dashboard-panel-chart">
+            <div class="tabs nested-tabs">
+                <div class="tab-navigation">
+                    <ul class="nav nav-tabs-text">{#
+      #}
+                        <li role="presentation" class="active">
+                            <a href="#myrembourse-graph-mth" role="tab" data-toggle="tab">Mois</a></li>{#
+      #}
+                        <li role="presentation">
+                            <a href="#myrembourse-graph-3mth" role="tab" data-toggle="tab">Trimestre</a></li>{#
+      #}
+                        <li role="presentation">
+                            <a href="#myrembourse-graph-year" role="tab" data-toggle="tab">Année</a></li>{#
+    #}</ul>
+                </div><!-- /.tab-navigation -->
+                <div class="tab-content">
+                    <div id="myrembourse-graph-mth" role="tabpanel" class="tab-pane active">
+                        <div class="chart chart-myremboursements" data-chartview='{{ placeholderData.charts.preterRemboursementsMth|json_encode|escape('html_attr') }}'></div>
+                    </div><!-- /.tab-pane -->
+                    <div id="myrembourse-graph-3mth" role="tabpanel" class="tab-pane">
+                        <div class="chart chart-myremboursements" data-chartview='{{ placeholderData.charts.preterRemboursements3Mth|json_encode|escape('html_attr') }}'></div>
+                    </div><!-- /.tab-pane -->
+                    <div id="myrembourse-graph-year" role="tabpanel" class="tab-pane">
+                        <div class="chart chart-myremboursements" data-chartview='{{ placeholderData.charts.preterRemboursementsYear|json_encode|escape('html_attr') }}'></div>
+                    </div><!-- /.tab-pane -->
+                </div><!-- /.tab-content -->
+            </div><!-- /.nested-tabs -->
+        </div><!-- /.dashboard-panel-chart -->
+    {% endblock %}
+    {% block panelFooter %}
+        <a href="{{ path('lender_operations') }}" class="link">Voir le détail de mes opérations</a>
+    {% endblock %}
+{% endembed %}

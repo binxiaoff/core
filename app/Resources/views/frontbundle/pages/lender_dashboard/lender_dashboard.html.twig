@@ -1,0 +1,400 @@
+{# User / Preter / Dashboard #}
+{% extends 'layouts/_dashboard.html.twig' %}
+{#{% import 'partials/common/_custom-input.macros.twig' as customInput %}#}
+
+{# Page data #}
+{% set bodyId = '' %}
+{% set page = {
+  id: 'user-preter-dashboard',
+  title: 'Prêteur / Dashboard',
+  permalink: route('user/preter/dashboard'),
+  classNames: 'user-preter-dashboard'
+} %}
+
+{% set placeholderData = {
+  charts: {
+
+    preterProjectsCategoriesMap: {
+      type: 'preterProjectsCategoriesMap',
+      loadFirst: {
+        mapGeoJson: '/bundles/unilendfront/js/vendor/geojson/fr-all.geo.json'
+      },
+      background: 'none',
+      highcharts: {
+        chart: {
+          type: 'map',
+          marginTop: 0,
+          marginBottom: 0,
+          marginLeft: 0,
+          marginRight: 0,
+          spacingTop: 0,
+          spacingBottom: 0,
+          spacingLeft: 0,
+          spacingRight: 0
+        },
+        title: {
+          text: ''
+        },
+        mapNavigation: {
+          enabled: false
+        },
+        legend: {
+          enabled: false
+        },
+        tooltip: {
+          enabled: true,
+          headerFormat: '',
+          pointFormat: '{point.name}: {point.value}%'
+        },
+        colorAxis: {
+          minColor: 'rgba(255,255,255,.2)',
+          maxColor: 'rgba(255,255,255,1)'
+        },
+        series: [{
+          data: [{
+            "hc-key": "fr-t",
+            "value": 0
+          },{
+            "hc-key": "fr-h",
+            "value": 1
+          },{
+            "hc-key": "fr-e",
+            "value": 2
+          },{
+            "hc-key": "fr-r",
+            "value": 3
+          },{
+            "hc-key": "fr-u",
+            "value": 4
+          },{
+            "hc-key": "fr-n",
+            "value": 5
+          },{
+            "hc-key": "fr-p",
+            "value": 6
+          },{
+            "hc-key": "fr-o",
+            "value": 7
+          },{
+            "hc-key": "fr-v",
+            "value": 8
+          },{
+            "hc-key": "fr-s",
+            "value": 9
+          },{
+            "hc-key": "fr-g",
+            "value": 10
+          },{
+            "hc-key": "fr-k",
+            "value": 11
+          },{
+            "hc-key": "fr-a",
+            "value": 12
+          },{
+            "hc-key": "fr-c",
+            "value": 13
+          },{
+            "hc-key": "fr-f",
+            "value": 14
+          },{
+            "hc-key": "fr-l",
+            "value": 15
+          },{
+            "hc-key": "fr-d",
+            "value": 16
+          },{
+            "hc-key": "fr-b",
+            "value": 17
+          },{
+            "hc-key": "fr-i",
+            "value": 18
+          },{
+            "hc-key": "fr-q",
+            "value": 19
+          },{
+            "hc-key": "fr-j",
+            "value": 20
+          },{
+            "hc-key": "fr-m",
+            "value": 21
+          },{
+            "hc-key": "fr-re",
+            "value": 22
+          },{
+            "hc-key": "fr-yt",
+            "value": 23
+          },{
+            "hc-key": "fr-gf",
+            "value": 24
+          },{
+            "hc-key": "fr-mq",
+            "value": 25
+          },{
+            "hc-key": "fr-gp",
+            "value": 26
+          }],
+          joinBy: 'hc-key',
+          color: 'rgba(255,255,255,.2)',
+          borderColor: 'rgba(0,0,0,.2)',
+          borderWidth: 2,
+          showInLegend: false,
+          dataLabels: {
+            enabled: true,
+            format: '{point.value}%',
+            color: '#ffffff',
+            style: {
+              textShadow: '0 2px 2px rgba(0,0,0,.2), 0 2px 2px rgba(0,0,0,.2), 0 2px 2px rgba(0,0,0,.2)',
+              fontSize: '16px'
+            }
+          },
+          states: {
+            hover: {
+              color: 'rgba(255,255,255,.8)'
+            }
+          },
+          showInLegend: false
+        }]
+      }
+    },
+
+    preterRemboursementsYear: {
+      type: 'preterRemboursements',
+      background: 'none',
+      highcharts: {
+        chart: {
+          type: 'column'
+        },
+        title: {
+          text: ''
+        },
+        xAxis: {
+          categories: [2013, 2014, 2015, 2016, 2017, 2018],
+          crosshair: true,
+          plotBands: [{
+            from: 2.5,
+            to: 5.5,
+            borderWidth: 0,
+            color: {
+              linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+              stops: [
+                 [0, 'rgba(95, 196, 208, .5)'],
+                 [1, 'rgba(95, 196, 208, 0)']
+              ]
+            },
+            zIndex: 1,
+            label: {
+              text: 'Prévisions à titre indicatif',
+              style: {
+                color: '#294347'
+              }
+            }
+          }],
+          plotLines: [{
+            color: '#5FC4D0',
+            dashStyle: 'ShortDot',
+            value: 2.5,
+            width: 2
+          }]
+        },
+        yAxis: {
+          min: 0,
+          title: {
+            text: ''
+          },
+          units: '€',
+          gridLineColor: '#efefef'
+        },
+        plotOptions: {
+          column: {
+            stacking: 'normal'
+          }
+        },
+        legend: {
+          symbolRadius: 10
+        },
+        series: [{
+          name: 'Capital remboursé',
+          data: [250, 200, 125, 100, 80, 60],
+          color: '#1A87DA'
+        },{
+          name: 'Intérêts reçus',
+          data: [50, 80, 100, 80, 60, 30],
+          color: '#EF980B'
+        },{
+          name: 'Prélèvements fiscaux',
+          data: [20, 50, 80, 60, 30, 10],
+          color: '#F76965'
+        }]
+      }
+    },
+    preterRemboursements3Mth: {
+      type: 'preterRemboursements',
+      background: 'none',
+      highcharts: {
+        chart: {
+          type: 'column'
+        },
+        title: {
+          text: ''
+        },
+        xAxis: {
+          categories: ['Jan-Mar 2013', 'Apr-Jun 2013', 'Jul-Sep 2013', 'Oct-Dec 2013', 'Jan-Mar 2014', 'Apr-Jun 2014', 'Jul-Sep 2014', 'Oct-Dec 2014', 'Jan-Mar 2015', 'Apr-Jun 2015', 'Jul-Sep 2015', 'Oct-Dec 2015', 'Jan-Mar 2016', 'Apr-Jun 2016', 'Jul-Sep 2016', 'Oct-Dec 2016', 'Jan-Mar 2017', 'Apr-Jun 2017', 'Jul-Sep 2017', 'Oct-Dec 2017', 'Jan-Mar 2018', 'Apr-Jun 2018', 'Jul-Sep 2018', 'Oct-Dec 2018'],
+          crosshair: true,
+          plotBands: [{
+            from: 11.5,
+            to: 24.5,
+            borderWidth: 0,
+            color: {
+              linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+              stops: [
+                 [0, 'rgba(95, 196, 208, .5)'],
+                 [1, 'rgba(95, 196, 208, 0)']
+              ]
+            },
+            zIndex: 1,
+            label: {
+              text: 'Prévisions à titre indicatif',
+              style: {
+                color: '#294347'
+              }
+            }
+          }],
+          plotLines: [{
+            color: '#5FC4D0',
+            dashStyle: 'ShortDot',
+            value: 11.5,
+            width: 2
+          }]
+        },
+        yAxis: {
+          min: 0,
+          title: {
+            text: ''
+          },
+          units: '€',
+          gridLineColor: '#efefef'
+        },
+        plotOptions: {
+          column: {
+            stacking: 'normal'
+          }
+        },
+        legend: {
+          symbolRadius: 10
+        },
+        series: [{
+          name: 'Capital remboursé',
+          data: [250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60],
+          color: '#1A87DA'
+        },{
+          name: 'Intérêts reçus',
+          data: [250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60],
+          color: '#EF980B'
+        },{
+          name: 'Prélèvements fiscaux',
+          data: [250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60],
+          color: '#F76965'
+        }]
+      }
+    },
+    preterRemboursementsMth: {
+      type: 'preterRemboursements',
+      background: 'none',
+      highcharts: {
+        chart: {
+          type: 'column'
+        },
+        title: {
+          text: ''
+        },
+        xAxis: {
+          categories: ['Jan 2013', 'Feb 2013', 'Mar 2013', 'Apr 2013', 'May 2013', 'Jun 2013', 'Jul 2013', 'Aug 2013', 'Sep 2013', 'Oct 2013', 'Nov 2013', 'Dec 2013',
+                       'Jan 2014', 'Feb 2014', 'Mar 2014', 'Apr 2014', 'May 2014', 'Jun 2014', 'Jul 2014', 'Aug 2014', 'Sep 2014', 'Oct 2014', 'Nov 2014', 'Dec 2014',
+                       'Jan 2015', 'Feb 2015', 'Mar 2015', 'Apr 2015', 'May 2015', 'Jun 2015', 'Jul 2015', 'Aug 2015', 'Sep 2015', 'Oct 2015', 'Nov 2015', 'Dec 2015',
+                       'Jan 2016', 'Feb 2016', 'Mar 2016', 'Apr 2016', 'May 2016', 'Jun 2016', 'Jul 2016', 'Aug 2016', 'Sep 2016', 'Oct 2016', 'Nov 2016', 'Dec 2016',
+                       'Jan 2017', 'Feb 2017', 'Mar 2017', 'Apr 2017', 'May 2017', 'Jun 2017', 'Jul 2017', 'Aug 2017', 'Sep 2017', 'Oct 2017', 'Nov 2017', 'Dec 2017',
+                       'Jan 2018', 'Feb 2018', 'Mar 2018', 'Apr 2018', 'May 2018', 'Jun 2018', 'Jul 2018', 'Aug 2018', 'Sep 2018', 'Oct 2018', 'Nov 2018', 'Dec 2018'],
+          crosshair: true,
+          plotBands: [{
+            from: 35.5,
+            to: 72.5,
+            borderWidth: 0,
+            color: {
+              linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+              stops: [
+                 [0, 'rgba(95, 196, 208, .5)'],
+                 [1, 'rgba(95, 196, 208, 0)']
+              ]
+            },
+            zIndex: 1,
+            label: {
+              text: 'Prévisions à titre indicatif',
+              style: {
+                color: '#294347'
+              }
+            }
+          }],
+          plotLines: [{
+            color: '#5FC4D0',
+            dashStyle: 'ShortDot',
+            value: 35.5,
+            width: 2
+          }]
+        },
+        yAxis: {
+          min: 0,
+          title: {
+            text: ''
+          },
+          units: '€',
+          gridLineColor: '#efefef'
+        },
+        plotOptions: {
+          column: {
+            stacking: 'normal'
+          }
+        },
+        legend: {
+          symbolRadius: 10
+        },
+        series: [{
+          name: 'Capital remboursé',
+          data: [250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60, 250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60],
+          color: '#1A87DA'
+        },{
+          name: 'Intérêts reçus',
+          data: [250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60, 250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60],
+          color: '#EF980B'
+        },{
+          name: 'Prélèvements fiscaux',
+          data: [250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60, 250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60],
+          color: '#F76965'
+        }]
+      }
+    }
+  }
+} %}
+
+{% block dashboardContent %}
+
+    <div class="dashboard-panels-nav">
+        <ul class="list-inline-block">
+            {% for panelId, panelInfo in dashboardPanels %}
+                <li role="presentation">
+                    <a href="#{{ panelId }}" class="dashboard-panel-toggle {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %}" data-toggle="ui">
+                        {{ "lender-dashboard_panel-title-#{ panelId }" | trans }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <section class="dashboard-panels-content" data-dashboardpanels data-dashboardpanels-ajaxurl="{{ path('save_user_preferences') }}" data-movable-content>
+
+        {% for panelId, panelInfo in dashboardPanels %}
+            {% include('pages/lender_dashboard/dashboard_panels/' ~ panelId ~ '.html.twig') %}
+        {% endfor %}
+
+    </section>
+
+{% endblock %}

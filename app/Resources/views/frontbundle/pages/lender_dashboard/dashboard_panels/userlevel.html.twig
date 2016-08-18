@@ -1,0 +1,35 @@
+{# Panel - User Level #}
+{% embed 'partials/components/dashboard-panel.html.twig' %}
+    {% block panelAttributes %}id="userlevel"{% endblock %}
+    {% block panelClassNames %}dashboard-panel dashboard-userlevel ui-draggable {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %} col-lg-6 col-md-6 col-sm-8 col-xs-4{% endblock %}
+    {% block panelTitle %}{{ "lender-dashboard_panel-title-#{ panelId }" | trans }}{% endblock %}
+    {% block panelControls %}
+        <span class="ui-draggable-handle"></span>
+    {% endblock %}
+    {% block panelContent %}
+        <div class="dashboard-panel-overview">
+            <div class="label">{% trans %} lender-dashboard_portfolio-performance-panel-your-performance-rate {% endtrans %}</div>
+            <div class="value">{{ lenderDetails.irr }}<sup>%</sup></div>
+        </div>
+        <div class="dashboard-panel-chart">
+            <div class="user-avatar">
+                <div class="user-avatar-level"></div>
+                <div class="user-avatar-initials">{{ lenderDetails.initials }}</div>
+                <div class="user-avatar-stars">{% for i in 1..5 %}
+                    <span class="icon fa-star ui-user-level-star-{{ i }}"></span>{% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="dashboard-panel-summary">
+            <h3>
+                <span class="label">{% trans %} lender-dashboard_portfolio-performance-panel-diversification-level {% endtrans %}</span>
+                <span class="value">{{ "lender-dashboard_level-#{ lenderDetails.level }"|trans }}</span>
+            </h3>
+            <p class="primary">{% transchoice lenderDetails.number_of_companies with {'%borrowerCount%' : lenderDetails.number_of_companies } %} lender-dashboard_portfolio-performance-panel-diversification-message {% endtranschoice %}</p>
+            <p class="secondary">{% trans %} lender-dashboard_portfolio-performance-panel-internal-performance {% endtrans %} {{ lenderDetails.unilend_irr }}%</p>
+        </div>
+    {% endblock %}
+    {% block panelFooter %}
+       {{ "lender-dashboard_irr-explanation-link"|trans|raw }}
+    {% endblock %}
+{% endembed %}

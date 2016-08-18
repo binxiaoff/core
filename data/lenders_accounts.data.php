@@ -454,14 +454,18 @@ class lenders_accounts extends lenders_accounts_crud
                         THEN "93"
                       ELSE "0"
                       END AS insee_region_code,
-                      COUNT(*) AS count
+                      COUNT(*) AS count,
+                      sum(client_base.amount) / 100 AS loaned_amount,
+                      avg(client_base.rate) AS average_rate
                     FROM (SELECT
-                              companies.zip AS cp
-                            FROM lenders_accounts
+                            companies.zip AS cp,
+                            loans.amount,
+                            loans.rate
+                          FROM lenders_accounts
                               INNER JOIN loans ON loans.id_lender = lenders_accounts.id_lender_account
                               INNER JOIN projects ON loans.id_project = projects.id_project
                               INNER JOIN companies ON projects.id_company = companies.id_company
-                            WHERE lenders_accounts.id_lender_account = :lenderId ) AS client_base
+                          WHERE lenders_accounts.id_lender_account = :lenderId ) AS client_base
                     GROUP BY insee_region_code';
 
         $statement = $this->bdd->executeQuery($query, $bind, $type);

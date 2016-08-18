@@ -26,6 +26,7 @@
 //  Coupable : CM
 //
 // **************************************************************************************************** //
+use \Doctrine\DBAL\Driver\Statement;
 
 class projects extends projects_crud
 {
@@ -1075,6 +1076,38 @@ class projects extends projects_crud
         }
 
         return $categoriesCount;
+    }
+
+    /**
+     * get the lender loans details split by sector
+     * @param int $lenderId
+     * @return array
+     */
+    public function getLoanDetailsAllocation($lenderId)
+    {
+        $result = [];
+        $sql = '
+        SELECT
+          companies.sector,
+          count(companies.sector) AS count,
+          sum(l.amount) / 100 AS loaned_amount,
+          avg(l.rate) AS average_rate
+        FROM companies
+          INNER JOIN projects ON projects.id_company = companies.id_company
+          INNER JOIN projects_status_history
+            ON projects.id_project = projects_status_history.id_project AND projects_status_history.id_project_status = 4
+          INNER JOIN loans l ON l.id_project = projects.id_project
+        WHERE l.id_lender = :id_lender AND l.status = 0
+        GROUP BY companies.sector
+        ';
+
+        /** @var Statement $query */
+        $query = $this->bdd->executeQuery($sql, ['id_lender' => $lenderId], ['id_lender' => \PDO::PARAM_INT]);
+
+        while ($row = $query->fetch(\PDO::FETCH_ASSOC)) {
+            $result[$row['sector']] = $row;
+        }
+        return $result;
     }
 
 }

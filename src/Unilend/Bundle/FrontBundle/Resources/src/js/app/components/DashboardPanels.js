@@ -59,6 +59,9 @@ var DashboardPanels = function (elem, options) {
     self.$elem[0].DashboardPanels = self
     self.updateData()
 
+    // @trigger elem `DashboardPanels:initialised` [elemDashboardPanels]
+    self.$elem.trigger('DashboardPanels:initialised', [self])
+
     return self
 }
 
@@ -98,7 +101,7 @@ DashboardPanels.prototype.getPanelData = function (panelElem) {
     var panelData = {
         id: $panel.attr('id'),
         order: 0, // Default is 0, unless placed into a specific order (see `updateData`)
-        hidden: !$panel.hasClass('ui-dashboard-panel-hidden')
+        hidden: $panel.hasClass('ui-dashboard-panel-hidden')
     }
 
     return panelData
@@ -118,12 +121,13 @@ DashboardPanels.prototype.pullData = function () {
     }
 
     // @trigger elem `DashboardPanels:pullData:before` [elemDashboard, ajaxData]
-    self.$elem.trigger('DashboardPanels:pullData:before', [self, ajaxData])
+    self.$elem.trigger('DashboardPanels:pullData:before', [self, self.data])
 
     // Get the dashboard data
     $.ajax({
         url: self.settings.ajaxUrl,
         method: 'GET',
+        data: self.data,
         success: function (responseData, textStatus, xhr) {
             // Success
             if (responseData.hasOwnProperty('success')) {
@@ -361,19 +365,25 @@ $.fn.uiDashboardPanels = function (op) {
  * jQuery Events
  */
 $(document)
-// Auto-init `[data-dashboardpanels]` elements
+    // Auto-init `[data-dashboardpanels]` elements
     .on('ready UI:visible', function (event) {
         $(event.target).find('[data-dashboardpanels]').not('.ui-dashboardpanels').uiDashboardPanels()
     })
 
-    // Push data if any movable contents have changed
-    // @note `sortupdate` is an event emitted by jQuery UI sortable
-    .on('sortupdate', '.ui-dashboardpanels[data-movable-content] .ui-dashboard-panel[data-draggable]', function (event) {
-        $(event.target).parents('.ui-dashboardpanels').uiDashboardPanels('delayedPushData')
-    })
+    // Pull data from backend to establish user preferences
+    // .on('DashboardPanels:initialised', function (event, elemDashboardPanels) {
+    //     elemDashboardPanels.pullData()
+    // })
 
     // Push data if any movable contents have changed
     // @note `sortupdate` is an event emitted by jQuery UI sortable
-    .on('DashboardPanel:show DashboardPanel:hide', '.ui-dashboard-panel', function (event) {
-        $(event.target).parents('.ui-dashboardpanels').uiDashboardPanels('delayedPushData')
+    .on('MovableContent:sortupdate', '.ui-dashboardpanels[data-movable-content]', function (event, itemMoved) {
+        console.log('hiya')
+        $(this).uiDashboardPanels('delayedPushData')
+    })
+
+    // Push data if any movable contents have changed
+    .on('DashboardPanel:show DashboardPanel:hide', '.ui-dashboardpanels[data-movable-content]', function (event) {
+        console.log('hide', event)
+        $(this).uiDashboardPanels('delayedPushData')
     })

@@ -1,5 +1,8 @@
-
 reloadTabContent = function () {
+    /**
+     * @todo fix the event undefined on other browsers : firefox
+     * the instruction is not necessary
+     */
     event.preventDefault();
     var form = $(this).closest('form'),
         action = $(this).attr('name').match(/filter\[(.*)\]/)[1];

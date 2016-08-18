@@ -1576,7 +1576,8 @@ $(document).ready(function ($) {
     var $elem = $(elem)
 
     var sortablearea = SortableJS.create(elem, {
-      handle: '.ui-draggable-handle',
+      //handle: '.ui-draggable-handle',
+      handle: '.dashboard-panel-header',
       draggable: '.ui-draggable',
       ghostClass: 'ui-movablecontent-ghost',
       chosenClass: 'ui-movablecontent-chosen',
@@ -1588,9 +1589,12 @@ $(document).ready(function ($) {
       onUpdate: function (event) {
         // @trigger elem `MovableContent:sortupdate` [elemItemMoved]
         $elem.trigger('MovableContent:sortupdate', [event.item])
+        console.log(event.item)
         $(event.item).trigger('UI:update')
       }
     })
+
+    console.log(sortablearea);
   })
 
   /*

@@ -889,7 +889,7 @@ class LenderProfileController extends Controller
      * @Route("/profile/ifu", name="get_ifu")
      * @Security("has_role('ROLE_LENDER')")
      */
-    public function downloadIFU(Request $request)
+    public function downloadIFUAction(Request $request)
     {
         /** @var \ifu $ifu */
         $ifu = $this->get('unilend.service.entity_manager')->getRepository('ifu');
@@ -929,7 +929,7 @@ class LenderProfileController extends Controller
      * @return JsonResponse
      * @Route("/profile/update_bank_details", name="update_bank_details")
      */
-    public function updateBankDetails(Request $request)
+    public function updateBankDetailsAction(Request $request)
     {
         /** @var Translator $translator */
         $translator = $this->get('translator');

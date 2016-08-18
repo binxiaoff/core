@@ -52,6 +52,9 @@ DashboardPanel.prototype.show = function () {
     self.$elem.removeClass('ui-dashboard-panel-hidden')
     self.getToggles().removeClass('ui-dashboard-panel-hidden')
     self.refreshLayout()
+
+    // @trigger elem `DashboardPanel:show` [elemDashboardPanel]
+    self.$elem.trigger('DashboardPanel:show', [self])
 }
 
 // Hide the panel
@@ -60,6 +63,9 @@ DashboardPanel.prototype.hide = function () {
     self.$elem.addClass('ui-dashboard-panel-hidden')
     self.getToggles().addClass('ui-dashboard-panel-hidden')
     self.refreshLayout()
+
+    // @trigger elem `DashboardPanel:hide` [elemDashboardPanel]
+    self.$elem.trigger('DashboardPanel:hide', [self])
 }
 
 // Toggle the panel

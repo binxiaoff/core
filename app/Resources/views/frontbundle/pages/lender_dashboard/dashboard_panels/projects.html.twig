@@ -1,0 +1,34 @@
+{# Panel - Projects to discover #}
+{% embed 'partials/components/dashboard-panel.html.twig' %}
+    {% block panelAttributes %}id="projects"{% endblock %}
+    {% block panelClassNames %}dashboard-panel dashboard-projects ui-draggable {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %} col-lg-6 col-md-6 col-sm-8 col-xs-4{% endblock %}
+    {% block panelTitle %}{{ "lender-dashboard_panel-title-#{ panelId }" | trans }}{% endblock %}
+    {% block panelControls %}
+        <span class="ui-draggable-handle"></span>
+    {% endblock %}
+    {% block panelContent %}
+        <div class="message">
+            <p>12 nouveaux projets depuis votre dernière connexion</p>
+        </div>
+        <ul class="list-projects">
+            {# Placeholder #}
+            {% for i in 1..6 %}
+                <li class="project">
+                    <div class="project-name">Garage Toniol</div>
+                    <div class="project-location">La Haie-Fouassière, 75000</div>
+                    <div class="project-cost">150&nbsp;000€</div>
+                    <div class="project-rating">
+                        <span class="rating rating-4-5"><span class="sr-only">Rated 4.5 out of 5</span></span>
+                    </div>
+                    <div class="project-interest">8,2%</div>
+                    <div class="project-period">7 jours restants</div>
+                    <div class="project-offers"><span class="value">117</span> offres</div>
+                    <a href="#todo" class="project-hotspot">&nbsp;</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endblock %}
+    {% block panelFooter %}
+        <a href="#todo" class="link">Voir toutes mes offres en cours</a>
+    {% endblock %}
+{% endembed %}

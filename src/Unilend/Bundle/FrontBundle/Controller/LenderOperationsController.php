@@ -266,7 +266,7 @@ class LenderOperationsController extends Controller
      * @Route("/operations/exportOperationsCsv", name="export_operations_csv")
      * @Security("has_role('ROLE_LENDER')")
      */
-    public function exportOperationsCsv()
+    public function exportOperationsCsvAction()
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
@@ -622,7 +622,7 @@ class LenderOperationsController extends Controller
      * @Route("/operations/exportLoansCsv", name="export_loans_csv")
      * @Security("has_role('ROLE_LENDER')")
      */
-    public function exportLoansCsv(Request $request)
+    public function exportLoansCsvAction(Request $request)
     {
         /** @var \lenders_accounts $lender */
         $lender = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');

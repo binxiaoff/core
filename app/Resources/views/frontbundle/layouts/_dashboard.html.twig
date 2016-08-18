@@ -20,25 +20,25 @@
                     <nav class="dashboard-nav">
                         {% block dashboardNav %}
                             <ul>
-                                <li role="presentation" class="dashboard-nav-dashboard {{ general.isRouteActiveClass(route('user/preter/dashboard'), page.permalink, true) }}">
-                                    <a href="{{ route('user/preter/dashboard') }}"><span class="icon fa-dashboard-u"></span><span class="label">Tableau de bord</span></a>
+                                <li role="presentation" class="dashboard-nav-dashboard {% if app.request.attributes.get('_route') == 'lender_dasboard' %}active{% else %}complete{% endif %}">
+                                    <a href="{{ path('lender_dashboard') }}"><span class="icon fa-dashboard-u"></span><span class="label">Tableau de bord</span></a>
                                 </li>
-                                <li role="presentation" class="dashboard-nav-balance {{ general.isRouteActiveClass(route('user/preter/balance'), page.permalink, true) }}">
+                                <li role="presentation" class="dashboard-nav-balance {% if app.request.attributes.get('_route') == 'wallet' %}active{% else %}complete{% endif %}">
                                     <a href="{{ path('wallet') }}"><span class="icon fa-money-u32"></span><span class="label">{% trans %} lender-dashboard-navigation_wallet-link {% endtrans %}</span></a>
                                 </li>
-                                <li role="presentation" class="dashboard-nav-projects {{ general.isRouteActiveClass(route('user/preter/projects'), page.permalink, true) }}">
+                                <li role="presentation" class="dashboard-nav-projects {% if app.request.attributes.get('_route') == 'user/preter/projects' %}active{% else %}complete{% endif %}">
                                     <a href="{{ route('user/preter/projects') }}"><span class="icon fa-project-u"></span><span class="label">Projets</span></a>
                                 </li>
-                                <li role="presentation" class="dashboard-nav-operations {{ general.isRouteActiveClass(route('user/preter/operations'), page.permalink, true) }}">
+                                <li role="presentation" class="dashboard-nav-operations {% if app.request.attributes.get('_route') == 'lender_operations' %}active{% else %}complete{% endif %}">
                                     <a href="{{ path('lender_operations') }}"><span class="icon fa-operations-u"></span><span class="label">{% trans %} lender-dashboard-navigation_operations-link {% endtrans %}</span></a>
                                 </li>
-                                <li role="presentation" class="dashboard-nav-profile {{ general.isRouteActiveClass(route('user/preter/profile'), page.permalink, true) }}">
+                                <li role="presentation" class="dashboard-nav-profile {% if app.request.attributes.get('_route') == 'lender_profile' %}active{% else %}complete{% endif %}">
                                     <a href="{{ path('lender_profile') }}"><span class="icon fa-profile-u"></span><span class="label">{% trans %} lender-dashboard-navigation_profile-link {% endtrans %}</span></a>
                                 </li>
-                                <li role="presentation" class="dashboard-nav-autolend {{ general.isRouteActiveClass(route('user/preter/autolend'), page.permalink, true) }}">
+                                <li role="presentation" class="dashboard-nav-autolend {% if app.request.attributes.get('_route') == 'user/preter/autolend' %}active{% else %}complete{% endif %}">
                                     <a href="{{ route('user/preter/autolend') }}"><span class="icon fa-autolend-u"></span><span class="label">Autolend</span></a>
                                 </li>
-                                <li role="presentation" class="dashboard-nav-notifications {{ general.isRouteActiveClass(route('user/preter/notifications'), page.permalink, true) }}">
+                                <li role="presentation" class="dashboard-nav-notifications {% if app.request.attributes.get('_route') == 'user/preter/notifications' %}active{% else %}complete{% endif %}">
                                     <a href="{{ route('user/preter/notifications') }}"><span class="icon fa-bell-u"></span><span class="label">Notifications</span></a>
                                 </li>
                             </ul>
