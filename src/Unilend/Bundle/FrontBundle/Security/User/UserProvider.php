@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\FrontBundle\Security\User;
 
-
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -68,6 +67,7 @@ class UserProvider implements UserProviderInterface
                     $roles,
                     $isActive,
                     $client->id_client,
+                    $client->hash,
                     $balance,
                     $initials,
                     $client->prenom,
@@ -75,7 +75,8 @@ class UserProvider implements UserProviderInterface
                     $hasAcceptedCurrentTerms,
                     $notificationsUnread,
                     $client->etape_inscription_preteur,
-                    $userLevel);
+                    $userLevel
+                );
             }
 
             if ($this->clientManager->isBorrower($client)) {
@@ -90,6 +91,7 @@ class UserProvider implements UserProviderInterface
                     $roles,
                     $isActive,
                     $client->id_client,
+                    $client->hash,
                     $client->prenom,
                     $client->nom,
                     $company->siren
@@ -124,6 +126,4 @@ class UserProvider implements UserProviderInterface
     {
         return $class === 'FrontBundle\Security\User\BaseUser';
     }
-
-
 }

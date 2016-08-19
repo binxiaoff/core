@@ -8,15 +8,15 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class BaseUser implements AdvancedUserInterface, EquatableInterface
 {
-
     private $username;
     private $password;
     private $salt;
     private $roles;
     private $isActive;
     private $clientId;
+    private $hash;
 
-    public function __construct($username, $password, $salt, array $roles, $isActive, $clientId)
+    public function __construct($username, $password, $salt, array $roles, $isActive, $clientId, $hash)
     {
         $this->username = $username;
         $this->password = $password;
@@ -24,6 +24,7 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface
         $this->roles    = $roles;
         $this->isActive = $isActive;
         $this->clientId = $clientId;
+        $this->hash     = $hash;
     }
 
     /**
@@ -66,6 +67,11 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface
     public function getClientId()
     {
         return $this->clientId;
+    }
+
+    public function getHash()
+    {
+        return $this->hash;
     }
 
     /**

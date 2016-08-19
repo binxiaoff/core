@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Unilend\Bundle\FrontBundle\Security\User;
 
 class UserBorrower extends BaseUser
@@ -9,9 +8,9 @@ class UserBorrower extends BaseUser
     private $lastName;
     private $siren;
 
-    public function __construct($username, $password, $salt, array $roles, $isActive, $clientId, $firstName, $lastName, $siren)
+    public function __construct($username, $password, $salt, array $roles, $isActive, $clientId, $hash, $firstName, $lastName, $siren)
     {
-        parent::__construct($username, $password, $salt, $roles, $isActive, $clientId);
+        parent::__construct($username, $password, $salt, $roles, $isActive, $clientId, $hash);
 
         $this->firstName = $firstName;
         $this->lastName  = $lastName;

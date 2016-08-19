@@ -20,9 +20,10 @@ class UserLender extends BaseUser
     /** @var int */
     private $level;
 
-    public function __construct($username, $password, $salt, array $roles, $isActive, $clientId, $balance, $initials, $firstName, $clientStatus, $hasAcceptedCurrentTerms, $notificationsUnread, $subscriptionStep, $level)
+    public function __construct($username, $password, $salt, array $roles, $isActive, $clientId, $hash, $balance, $initials, $firstName, $clientStatus, $hasAcceptedCurrentTerms, $notificationsUnread, $subscriptionStep, $level)
     {
-        parent::__construct($username, $password, $salt, $roles, $isActive, $clientId);
+        parent::__construct($username, $password, $salt, $roles, $isActive, $clientId, $hash);
+
         $this->balance                 = $balance;
         $this->initials                = $initials;
         $this->firstName               = $firstName;
@@ -80,5 +81,4 @@ class UserLender extends BaseUser
     {
         $this->balance = $balance;
     }
-
 }
