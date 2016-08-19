@@ -18,11 +18,11 @@
     </dl>
     <h5>{% trans %} lender-profile_information-tab-identity-section-company-representative-title {% endtrans %}</h5>
     <dl class="list-2col">
-    <dt>{% trans %} lender-profile_information-tab-identity-section-form-of-address-label {% endtrans %}</dt>
+    <dt>{% trans %} common_form-of-address {% endtrans %}</dt>
         {% if client.civilite == 'M.' %}
-            <dd id="profile-info-civilite-output">{% trans %} lender-profile_information-tab-identity-section-form-of-address-male-label {% endtrans %}</dd>
+            <dd id="profile-info-civilite-output">{% trans %} common_form-of-address-male {% endtrans %}</dd>
         {% else %}
-            <dd id="profile-info-civilite-output">{% trans %} lender-profile_information-tab-identity-section-form-of-address-female-label {% endtrans %}</dd>
+            <dd id="profile-info-civilite-output">{% trans %} common_form-of-address-female {% endtrans %}</dd>
         {% endif %}
         <dt>{% trans %} lender-profile_information-tab-identity-section-company-client-status-label {% endtrans %}</dt>
         <dd><span>{{ "lender-profile_information-tab-identity-section-company-client-status-#{ company.status_client }" | trans }} </span>
@@ -34,9 +34,9 @@
                 {% endif %}
             {% endif %}
         </dd>
-        <dt>{% trans %} lender-profile_information-tab-identity-section-name-label {% endtrans %}</dt>
+        <dt>{% trans %} common_name {% endtrans %}</dt>
         <dd id="profile-info-nom-output">{{ client.nom }}</dd>
-        <dt>{% trans %} lender-profile_information-tab-identity-section-first-name-label {% endtrans %}</dt>
+        <dt>{% trans %} common_firstname {% endtrans %}</dt>
         <dd id="profile-info-prenom-output">{{ client.prenom }}</dd>
         <dt>{% trans %} lender-profile_information-tab-identity-section-company-client-function-label {% endtrans %}</dt>
         <dd id="profile-info-dob-output">{{ client.fonction }}</dd>
@@ -44,21 +44,21 @@
     {% if company.status_client > 1 %}
     <h5>{% trans %} lender-profile_information-tab-identity-section-company-director-title {% endtrans %}</h5>
     <dl class="list-2col">
-        <dt>{% trans %} lender-profile_information-tab-identity-section-form-of-address-label {% endtrans %}</dt>
+        <dt>{% trans %} common_form-of-address {% endtrans %}</dt>
         {% if company.civilite_dirigeant == 'M.' %}
-            <dd id="profile-info-civilite-output">{% trans %} lender-profile_information-tab-identity-section-form-of-address-male-label {% endtrans %}</dd>
+            <dd id="profile-info-civilite-output">{% trans %} common_form-of-address-male {% endtrans %}</dd>
         {% else %}
-            <dd id="profile-info-civilite-output">{% trans %} lender-profile_information-tab-identity-section-form-of-address-female-label {% endtrans %}</dd>
+            <dd id="profile-info-civilite-output">{% trans %} common_form-of-address-female {% endtrans %}</dd>
         {% endif %}
-        <dt>{% trans %} lender-profile_information-tab-identity-section-name-label {% endtrans %}</dt>
+        <dt>{% trans %} common_name {% endtrans %}</dt>
         <dd id="profile-info-nom-output">{{ company.nom_dirigeant }}</dd>
-        <dt>{% trans %} lender-profile_information-tab-identity-section-first-name-label {% endtrans %}</dt>
+        <dt>{% trans %} common_firstname {% endtrans %}</dt>
         <dd id="profile-info-prenom-output">{{ company.prenom_dirigeant }}</dd>
         <dt>{% trans %} lender-profile_information-tab-identity-section-company-client-function-label {% endtrans %}</dt>
         <dd id="profile-info-dob-output">{{ company.fonction_dirigeant }}</dd>
-        <dt>{% trans %} lender-profile_information-tab-identity-section-company-director-phone {% endtrans %}</dt>
+        <dt>{% trans %} common_phone {% endtrans %}</dt>
         <dd id="profile-info-dob-output">{{ company.phone_dirigeant }}</dd>
-        <dt>{% trans %} lender-profile_information-tab-identity-section-company-director-email {% endtrans %}</dt>
+        <dt>{% trans %} common_email {% endtrans %}</dt>
         <dd id="profile-info-dob-output">{{ company.email_dirigeant }}</dd>
     </dl>
     {% endif %}

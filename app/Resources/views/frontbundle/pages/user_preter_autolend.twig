@@ -45,7 +45,7 @@
         </div>
         <div class="row row-multi-col">
           <div class="form-field col-lg-3 col-md-3 col-sm-4 col-xs-2">
-            <label for="autolend-amount">Montant à prêter <span class="field-required">*<span class="sr-only"> Required</span></span></label>
+            <label for="autolend-amount">Montant à prêter <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
             <div class="input-group set-left">
               <div class="btn-group">
                 <span class="icon fa-euro"></span>
@@ -54,7 +54,7 @@
             </div><!-- /.input-group -->
           </div><!-- /.form-field -->
           <div class="form-field col-lg-3 col-md-3 col-sm-4 col-xs-2">
-            <label for="autolend-amount">Taux minimum <span class="field-required">*<span class="sr-only"> Required</span></span></label>
+            <label for="autolend-amount">Taux minimum <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
             <div class="input-group set-left">
               <div class="btn-group"><span class="icon fa-percent"></span></div><!-- /.btn-group -->
               <input type="number" id="autolend-interest" name="autolend[interest]" min="4" max="10" step="0.1" value="{{ userProfile.autolend.interest|default(0) }}" class="input-field"{% if userProfile.autolend.enableTable == true %} disabled="disabled"{% endif %} data-formvalidation-input data-formvalidation-required="true" />

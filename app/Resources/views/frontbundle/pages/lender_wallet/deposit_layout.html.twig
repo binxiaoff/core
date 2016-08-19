@@ -62,7 +62,7 @@
                     <form id="form-balance-deposit" action="{{ path('deposit_money') }}" method="post" class="form-balance-deposit" data-formvalidation data-formvalidation-render="false" data-ajax>
                         <div class="form-field col-lg-5 col-md-5">
                             <label for="form-balance-deposit-amount">{% trans %} lender-wallet_amount {% endtrans %}
-                                <span class="field-required">*<span class="sr-only"> Required</span></span>
+                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                             </label>
                             <div class="input-group set-left">
                                 <div class="btn-group">

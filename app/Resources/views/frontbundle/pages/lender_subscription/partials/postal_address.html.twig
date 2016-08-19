@@ -5,7 +5,7 @@
     <div class="row">
         <div class="form-field">
             <label for="form-lender-postal-address-street">{% trans %} lender-subscription_address-form-postal-address-label {% endtrans %}
-                <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
             <input id="form-lender-postal-address-street" type="text" name="postal_address_street" value="" class="input-field" placeholder="" data-formvalidation-input data-formvalidation-required="false"/>
         </div><!-- /.form-field -->
     </div>
@@ -13,12 +13,12 @@
     <div class="row row-multi-col-computer">
         <div class="form-field col-lg-6 col-md-6">
             <label for="form-lender-postal-address-zip">{% trans %} lender-subscription_address-form-address-postcode-label {% endtrans %}
-                <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
             <input id="form-lender-postal-address-zip" type="text" name="postal_address_zip" value="" class="input-field" data-formvalidation-input data-formvalidation-required="#form-preter-address-is-correspondence"/>
         </div><!-- /.form-field -->
         <div class="form-field col-lg-6 col-md-6">
             <label for="form-lender-postal-address-city">{% trans %} lender-subscription_address-form-address-city-label {% endtrans %}
-                <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
             <input id="form-lender-postal-address-city" type="text" name="postal_address_city" value="" class="input-field" data-formvalidation-input data-formvalidation-required="false"/>
         </div><!-- /.form-field -->
     </div>
@@ -26,7 +26,7 @@
     <div class="row row-multi-col-computer">
         <div class="form-field col-lg-6 col-md-6">
             <label for="form-lender-postal-address-country">{% trans %} lender-subscription_address-form-address-country-label {% endtrans %}
-                <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
             <select id="form-lender-postal-address-country" name="postal_address_country" class="input-field"
                     data-formvalidation-input data-formvalidation-required="false">
                 {% for i, country in countries %}

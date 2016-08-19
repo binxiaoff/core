@@ -114,7 +114,7 @@
                 </div>
                 <div class="form-row">
                     <input type="email" name="email" id="email"
-                           placeholder="{% trans %} borrower-landing-page_email-placeholder {% endtrans %}"
+                           placeholder="{% trans %} common_email {% endtrans %} *"
                            value="{{ form.values.email }}"
                            class="field{% if form.errors.email is defined %} LV_invalid_field{% endif %}"
                            data-validators="Presence&amp;Email">

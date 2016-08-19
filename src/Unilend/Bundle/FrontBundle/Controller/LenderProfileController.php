@@ -191,7 +191,7 @@ class LenderProfileController extends Controller
             if ($client->id_nationalite != $post['nationality'] || $client->civilite != $post['form_of_address']) {
                 if (isset($attachmentIdRecto)) {
                     $client->id_nationalite = $post['nationality'];
-                    $historyContent .= '<li>'. $translator->trans('lender-profile_information-tab-identity-section-nationality-label') .'</li>';
+                    $historyContent .= '<li>'. $translator->trans('common_nationality') .'</li>';
                 } else {
                     $this->addFlash('personIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-change-ID-warning-message'));
                 }
@@ -200,7 +200,7 @@ class LenderProfileController extends Controller
             if ($client->civilite != $post['form_of_address']) {
                 if (isset($attachmentIdRecto)){
                     $client->civilite = $post['form_of_address'];
-                    $historyContent .= '<li>'. $translator->trans('lender-profile_information-tab-identity-section-form-of-address-label') .'</li>';
+                    $historyContent .= '<li>'. $translator->trans('common_form-of-address') .'</li>';
                 } else {
                     $this->addFlash('personIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-change-ID-warning-message'));
                 }
@@ -295,7 +295,7 @@ class LenderProfileController extends Controller
                     $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-company-director-form-of-address-missing'));
                 } else {
                     $company->civilite_dirigeant = $form['company_director_form_of_address'];
-                    $historyContent .= '<li>'. $directorSection . ': ' . $translator->trans('lender-profile_information-tab-identity-section-form-of-address-label') . '</li>';
+                    $historyContent .= '<li>'. $directorSection . ': ' . $translator->trans('common_form-of-address') . '</li>';
                 }
 
                 if (empty($form['company_director_name'])) {
@@ -309,28 +309,28 @@ class LenderProfileController extends Controller
                     $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-company-director-first-name-missing'));
                 } else {
                     $company->prenom_dirigeant = $ficelle->majNom($form['company_director_first_name']);
-                    $historyContent .= '<li>'. $directorSection . ': ' . $translator->trans('lender-profile_information-tab-identity-section-first-name-label') . '</li>';
+                    $historyContent .= '<li>'. $directorSection . ': ' . $translator->trans('common_firstname') . '</li>';
                 }
 
                 if (empty($form['company_director_position'])) {
                     $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-company-director-position-missing'));
                 } else {
                     $company->fonction_dirigeant = $form['company_director_position'];
-                    $historyContent .= '<li>'. $directorSection . ': ' . $translator->trans('lender-profile_information-tab-identity-section-first-name-label') . '</li>';
+                    $historyContent .= '<li>'. $directorSection . ': ' . $translator->trans('common_firstname') . '</li>';
                 }
 
                 if (empty($form['company_director_phone']) || false === is_numeric($form['company_director_phone']) || strlen($form['company_director_phone']) < 9 || strlen($form['company_director_phone']) > 14) {
                     $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-company-director-phone-missing'));
                 } else {
                     $company->phone_dirigeant = $form['company_director_phone'];
-                    $historyContent .= '<li>'. $directorSection . ': ' . $translator->trans('lender-profile_information-tab-identity-section-company-director-phone') .'</li>';
+                    $historyContent .= '<li>'. $directorSection . ': ' . $translator->trans('common_phone') .'</li>';
                 }
 
                 if (empty($form['company_director_email']) || false === filter_var($form['company_director_email'], FILTER_VALIDATE_EMAIL)) {
-                    $this->addFlash('legalEntityIdentityErrors', $translator->trans('lender-profile_information-tab-identity-section-company-director-email-missing'));
+                    $this->addFlash('legalEntityIdentityErrors', $translator->trans('common_email-missing'));
                 } else {
                     $company->email_dirigeant = $form['company_director_email'];
-                    $historyContent .= '<li>'. $directorSection . ': ' . $translator->trans('lender-profile_information-tab-identity-section-company-director-email') . '</li>';
+                    $historyContent .= '<li>'. $directorSection . ': ' . $translator->trans('common_email') . '</li>';
                 }
             } else {
                 $company->status_client                       = $form['company_client_status'];
@@ -348,7 +348,7 @@ class LenderProfileController extends Controller
 
             if ($client->civilite != $form['client_form_of_address']) {
                 $client->civilite = $form['client_form_of_address'];
-                $historyContent .= '<li>' . $representativeSection . ' : ' . $translator->trans('lender-profile_information-tab-identity-section-form-of-address-label') .'</li>';
+                $historyContent .= '<li>' . $representativeSection . ' : ' . $translator->trans('common_form-of-address') .'</li>';
             }
 
             if ($client->nom != $form['client_name']) {
@@ -358,12 +358,12 @@ class LenderProfileController extends Controller
 
             if ($client->prenom != $form['client_first_name']) {
                 $client->prenom = $ficelle->majNom($form['client_first_name']);
-                $historyContent .= '<li>' . $representativeSection . ' : ' . $translator->trans('lender-profile_information-tab-identity-section-first-name-label') .'</li>';
+                $historyContent .= '<li>' . $representativeSection . ' : ' . $translator->trans('common_firstname') .'</li>';
             }
 
             if ($client->fonction != $form['client_position']) {
                 $client->fonction = $form['client_position'];
-                $historyContent .= '<li>' . $representativeSection . ' : ' . $translator->trans('lender-profile_information-tab-identity-section-company-client-position-label') .'</li>';
+                $historyContent .= '<li>' . $representativeSection . ' : ' . $translator->trans('common_position') .'</li>';
             }
 
             $historyContent .= '</ul>';
@@ -486,7 +486,7 @@ class LenderProfileController extends Controller
 
             if ($clientAddress->id_pays_fiscal > \pays_v2::COUNTRY_FRANCE) {
                 if (isset($post['no_us_person']) && false == $post['no_us_person']) {
-                    $historyContent .= '<li>'. $translator->trans('lender-profile_information-tab-fiscal-address-us-person-checkbox-label') .'</li>';
+                    $historyContent .= '<li>'. $translator->trans('common_no-us-person-declaration') .'</li>';
                 }
             }
 
@@ -1028,6 +1028,13 @@ class LenderProfileController extends Controller
         $fundsOriginList = explode(';', $settings->value);
         return array_combine(range(1, count($fundsOriginList)), array_values($fundsOriginList));
     }
+
+    public function securityAction()
+    {
+        $this->render('pages/lender_profile/partials/security.html.twig');
+    }
+
+
 
 
 }

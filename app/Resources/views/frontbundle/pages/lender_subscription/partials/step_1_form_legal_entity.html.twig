@@ -22,7 +22,7 @@
                         <div class="form-field form-field-multi">
                             <div class="field-label">
                                 <label>{% trans %} lender-subscription_identity-client-type-label {% endtrans %}
-                                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span>
+                                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                 </label>
                             </div>
                             <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
@@ -43,31 +43,31 @@
 
                         <div class="row row-multi-col-computer">
                             <div class="form-field col-lg-6 col-md-6">
-                                <label for="form-lender-legal-entity-name">{% trans %} lender-subscription_step-1-company-name-label {% endtrans %}<span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                <label for="form-lender-legal-entity-name">{% trans %} lender-subscription_step-1-company-name-label {% endtrans %}<span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                                 <input id="form-lender-legal-entity-name" type="text" name="company_name" value="{{ formData.company_name }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                             </div><!-- /.form-field -->
                             <div class="form-field col-lg-6 col-md-6">
                                 <label for="form-lender-legal-entity-legal-form">{% trans %} lender-subscription_step-1-company-legal-form-label {% endtrans %}
-                                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                                 <input id="form-lender-legal-entity-legal-form" type="text" name="company_legal_form" value="{{ formData.company_legal_form }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                             </div><!-- /.form-field -->
                         </div><!-- /.row -->
 
                         <div class="row row-multi-col-computer">
                             <div class="form-field col-lg-6 col-md-6">
-                                <label for="form-lender-legal-entity-social-capital">{% trans %} lender-subscription_step-1-company-social-capital-label {% endtrans %}<span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                <label for="form-lender-legal-entity-social-capital">{% trans %} lender-subscription_step-1-company-social-capital-label {% endtrans %}<span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                                 <input id="form-lender-legal-entity-social-capital" type="text" name="company_social_capital" value="{{ formData.company_social_capital }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                             </div><!-- /.form-field -->
                             <div class="form-field col-lg-6 col-md-6">
                                 <label for="form-lender-legal-entity-siren">{% trans %} lender-subscription_step-1-company-siren-label {% endtrans %}
-                                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                                 <input id="form-lender-legal-entity-siren" type="text" name="company_siren" value="{{ formData.company_siren }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                             </div><!-- /.form-field -->
                         </div><!-- /.row -->
 
                         <div class="row row-multi-col-computer">
                             <div class="form-field col-lg-6 col-md-6">
-                                <label for="form-lender-legal-entity-phone">{% trans %} lender-subscription_step-1-company-phone-label {% endtrans %}<span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                <label for="form-lender-legal-entity-phone">{% trans %} lender-subscription_step-1-company-phone-label {% endtrans %}<span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                                 <input id="form-lender-legal-entity-phone" type="text" name="company_phone" value="{{ formData.company_phone }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                             </div><!-- /.form-field -->
                             <div class="form-field col-lg-6 col-md-6">
@@ -83,7 +83,7 @@
                         <div class="form-field form-field-multi">
                             <div class="field-label">
                                 <label>{% trans %} lender-subscription_step-1-company-client-status-label {% endtrans %}
-                                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                             </div>
                             <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
                                 <li>
@@ -107,7 +107,7 @@
                         <div class="row row-multi-col-computer">
                             <div class="form-field col-lg-6 col-md-6">
                                 <label for="form-lender-legal-entity-client-status">{% trans %} lender-subscription_step-1-company-external-counsel-label {% endtrans %}
-                                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                                 <select id="form-lender-legal-entity-client-status" name="company_external_counsel" class="input-field" data-formvalidation-input data-formvalidation-required="true">
                                     {% for i, status in externalCounselList %}
                                         <option value="{{ i }}"{% if formData.company_external_counsel == i %} selected="selected"{% endif %}>{{ status }}</option>
@@ -118,7 +118,7 @@
                             <div class="form-field col-lg-6 col-md-6">
                                 {% if 3 == 3 %}
                                 <label for="form-lender-legal-entity-client-status-other">{% trans %} lender-subscription_step-1-company-other-external-counsel-label {% endtrans %}
-                                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                                     <input id="form-lender-legal-entity-client-status-other" type="text" name="company_external_counsel_other" value="{{ formData.company_external_counsel_other }}" class="input-field" data-formvalidation-input {% if 3 == 3 %}data-formvalidation-required="true"{% endif %}"/>
                                 {% endif %}
                             </div><!-- /.form-field -->
@@ -128,18 +128,18 @@
                     <div class="row">
                         <div class="form-field form-field-multi">
                             <div class="field-label">
-                                <label>{% trans %} lender-subscription_identity-form-of-address-label {% endtrans %}
-                                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                <label>{% trans %} common_form-of-address {% endtrans %}
+                                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                             </div>
                             <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
                                 <li>
                                     <label><input type="radio" name="client_form_of_address" value="Mme" {% if formData.client_form_of_address == 'Mme' %} checked {% endif %}/>
-                                        {% trans %} lender-subscription_identity-form-of-address-female-label {% endtrans %}
+                                        {% trans %} common_form-of-address-female {% endtrans %}
                                     </label>
                                 </li>
                                 <li>
                                     <label><input type="radio" name="client_form_of_address" value="M." {% if formData.client_form_of_address == 'M.' %} checked {% endif %}/>
-                                        {% trans %} lender-subscription_identity-form-of-address-male-label {% endtrans %}
+                                        {% trans %} common_form-of-address-male {% endtrans %}
                                     </label>
                                 </li>
                             </ul>
@@ -148,20 +148,20 @@
 
                     <div class="row row-multi-col-computer">
                         <div class="form-field col-lg-6 col-md-6">
-                            <label for="form-lender-legal_entity-name">{% trans %} lender-subscription_identity-form-family-name-label {% endtrans %}
-                                <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                            <label for="form-lender-legal_entity-name">{% trans %} common_name {% endtrans %}
+                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                             <input id="form-lender-legal_entity-name" type="text" name="client_name" value="{{ formData.client_name }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                         </div><!-- /.form-field -->
                         <div class="form-field col-lg-6 col-md-6">
-                            <label for="form-lender-legal_entity-first-name">{% trans %} lender-subscription_identity-form-first-name-label {% endtrans %}
-                                <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                            <label for="form-lender-legal_entity-first-name">{% trans %} common_firstname {% endtrans %}
+                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                             <input id="form-lender-legal_entity-first-name" type="text" name="client_first_name" value="{{ formData.client_first_name }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                         </div><!-- /.form-field -->
                     </div>
 
                     <div class="row row-multi-col-computer">
                         <div class="form-field col-lg-6 col-md-6">
-                            <label for="form-lender-legal-entity-client-function">{% trans %} lender-subscription_identity-form-client-position-label {% endtrans %}</label>
+                            <label for="form-lender-legal-entity-client-function">{% trans %} common_position {% endtrans %}</label>
                             <input id="form-lender-legal-entity-client-function" type="text" name="client_position" value="{{ formData.client_position }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                         </div><!-- /.form-field -->
                         <div class="form-field col-lg-6 col-md-6">
@@ -179,15 +179,15 @@
                         <div class="row">
                             <div class="form-field form-field-multi">
                                 <div class="field-label">
-                                    <label>{% trans %} lender-subscription_step-1-director-form-of-address-label {% endtrans %}
-                                        <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                                    <label>{% trans %} common_form-of-address {% endtrans %}
+                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                                 </div>
                                 <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
                                     <li>
-                                        <label><input type="radio" name="company_director_form_of_address" value="Mme" {% if formData.company_director_form_of_address == 'Mme' %}checked="checked"{% endif %}/> {% trans %} lender-subscription_identity-form-of-address-female-label {% endtrans %}</label>
+                                        <label><input type="radio" name="company_director_form_of_address" value="Mme" {% if formData.company_director_form_of_address == 'Mme' %}checked="checked"{% endif %}/> {% trans %} common_form-of-address-female {% endtrans %}</label>
                                     </li>
                                     <li>
-                                        <label><input type="radio" name="company_director_form_of_address" value="M." {% if formData.company_director_form_of_address == 'M.' %}checked="checked"{% endif %}/> {% trans %} lender-subscription_identity-form-of-address-male-label {% endtrans %}</label>
+                                        <label><input type="radio" name="company_director_form_of_address" value="M." {% if formData.company_director_form_of_address == 'M.' %}checked="checked"{% endif %}/> {% trans %} common_form-of-address-male {% endtrans %}</label>
                                     </li>
                                 </ul>
                             </div><!-- /.form-field -->
@@ -195,21 +195,21 @@
 
                         <div class="row row-multi-col-computer">
                             <div class="form-field col-lg-6 col-md-6">
-                                <label for="form-lender-legal-entity-director-name">{% trans %} lender-subscription_identity-form-family-name-label {% endtrans %}
-                                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                                <label for="form-lender-legal-entity-director-name">{% trans %} common_name {% endtrans %}
+                                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                                 <input id="form-lender-legal-entity-director-name" type="text" name="company_director_name" value="{{ formData.company_director_name }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                             </div><!-- /.form-field -->
                             <div class="form-field col-lg-6 col-md-6">
-                                <label for="form-lender-legal-entity-director-first-name">{% trans %} lender-subscription_identity-form-first-name-label{% endtrans %}
-                                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                                <label for="form-lender-legal-entity-director-first-name">{% trans %} common_firstname{% endtrans %}
+                                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                                 <input id="form-lender-legal-entity-director-first-name" type="text" name="company_director_first_name" value="{{ formData.company_director_first_name }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                             </div><!-- /.form-field -->
                         </div><!-- /.row -->
 
                         <div class="row row-multi-col-computer">
                             <div class="form-field col-lg-6 col-md-6">
-                                <label for="form-lender-legal-entity-director-position">{% trans %} lender-subscription_step-1-company-client-position-label {% endtrans %}
-                                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                                <label for="form-lender-legal-entity-director-position">{% trans %} common_position {% endtrans %}
+                                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                                 <input id="form-lender-legal-entity-director-position" type="text" name="company_director_position" value="{{ formData.company_director_position }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                             </div><!-- /.form-field -->
                             <div class="form-field col-lg-6 col-md-6">
@@ -218,13 +218,13 @@
 
                         <div class="row row-multi-col-computer">
                             <div class="form-field col-lg-6 col-md-6">
-                                <label for="form-lender-legal-entity-director-phone">{% trans %} lender-subscription_step-1-company-director-phone {% endtrans %}
-                                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                                <label for="form-lender-legal-entity-director-phone">{% trans %} common_phone {% endtrans %}
+                                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                                 <input id="form-lender-legal-entity-director-phone" type="text" name="company_director_phone" value="{{ formData.company_director_phone }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                             </div><!-- /.form-field -->
                             <div class="form-field col-lg-6 col-md-6">
-                                <label for="form-lender-legal-entity-client-first-name">{% trans %} lender-subscription_step-1-company-director-email {% endtrans %}
-                                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                                <label for="form-lender-legal-entity-client-first-name">{% trans %} common_email {% endtrans %}
+                                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                                 <input id="form-lender-legal-entity-client-name" type="text" name="company_director_email" value="{{ formData.company_director_email }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                             </div><!-- /.form-field -->
                         </div><!-- /.row -->
@@ -236,7 +236,7 @@
                     <div class="row">
                         <div class="form-field">
                             <label for="form-lender-legal_entity-fiscal-address-street">{% trans %} lender-subscription_address-form-fiscal-address-label {% endtrans %}
-                                <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                             <input id="form-lender-legal_entity-fiscal-address-street" type="text" name="fiscal_address_street" value="{{ formData.fiscal_address_street }}" class="input-field"
                                    placeholder="{% trans %} lender-subscription_address-form-fiscal-address-placeholder {% endtrans %}" data-formvalidation-input data-formvalidation-required="true"/>
                         </div><!-- /.form-field -->
@@ -245,12 +245,12 @@
                     <div class="row row-multi-col-computer">
                         <div class="form-field col-lg-6 col-md-6">
                             <label for="form-lender-legal_entity-fiscal-address-zip">{% trans %} lender-subscription_address-form-address-postcode-label {% endtrans %}
-                                <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                             <input id="form-lender-legal_entity-fiscal-address-zip" type="text" name="fiscal_address_zip" value="{{ formData.fiscal_address_zip }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                         </div><!-- /.form-field -->
                         <div class="form-field col-lg-6 col-md-6">
                             <label for="form-lender-legal_entity-fiscal-address-city">{% trans %} lender-subscription_address-form-address-city-label {% endtrans %}
-                                <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                             <input id="form-lender-legal_entity-fiscal-address-city" type="text" name="fiscal_address_city" value="{{ formData.fiscal_address_city }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                         </div><!-- /.form-field -->
                     </div>
@@ -258,7 +258,7 @@
                     <div class="row row-multi-col-computer">
                         <div class="form-field col-lg-6 col-md-6">
                             <label for="form-lender-legal_entity-fiscal-address-country">{% trans %} lender-subscription_address-form-address-country-label {% endtrans %}
-                                <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                             <select id="form-lender-legal_entity-fiscal-address-country" name="fiscal_address_country" class="input-field"
                                     data-formvalidation-input data-formvalidation-required="true">
                                 {% for i, country in countries %}
@@ -268,8 +268,8 @@
                             </select>
                         </div><!-- /.form-field -->
                         <div class="form-field col-lg-6 col-md-6">
-                            <label for="form-lender-legal_entity-client-mobile">{% trans %} lender-subscription_address-form-mobile-phone-label {% endtrans %}
-                                <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                            <label for="form-lender-legal_entity-client-mobile">{% trans %} common_mobile-phone {% endtrans %}
+                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                             <div class="input-group">
                                 <input id="form-lender-legal_entity-client-mobile" type="text" name="client_mobile" value="{{ formData.client_mobile }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="telephone"/>
                             </div>
@@ -291,7 +291,7 @@
                         <div class="form-field form-field-single-checkbox">
                             <label><input type="checkbox" name="terms_of_use" value="true" data-formvalidation-input data-formvalidation-required="true">
                         <span class="label">{% trans %} lender-subscription_terms-of-use-acceptance {% endtrans %}
-                            <span class="field-required">* <span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}
+                            <span class="field-required">* <span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}
                                 </span>
                             </span>
                         </span>

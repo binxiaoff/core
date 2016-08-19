@@ -35,7 +35,7 @@
             <div class="row">
                 <div class="form-field">
                     <label for="form-profile-correspondence-street">{% trans %} lender-profile_information-tab-postal-address-section-address-label {% endtrans %}
-                        <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                     <input id="form-profile-correspondence-street" type="text" name="postal_address_street" value="{{ formData.postal.postal_address_street }}" class="input-field" placeholder="Addresse utilisée pour vos avis d'imposition"
                            data-formvalidation-input
                            data-formvalidation-required="true"/>
@@ -45,7 +45,7 @@
             <div class="row row-multi-col-computer">
                 <div class="form-field col-lg-6 col-md-6">
                     <label for="form-profile-correspondence-code">{% trans %} lender-profile_information-tab-postal-address-section-zip-label {% endtrans %}
-                        <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                     <input id="form-profile-correspondence-code" type="text" name="postal_address_zip" value="{{ formData.postal.postal_address_zip }}" class="input-field"
                            data-formvalidation-input
                            data-formvalidation-required="true"
@@ -57,14 +57,14 @@
                 </div><!-- /.form-field -->
                 <div class="form-field col-lg-6 col-md-6">
                     <label for="form-profile-correspondence-ville">{% trans %} lender-profile_information-tab-postal-address-section-city-label {% endtrans %}
-                        <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                     <input id="form-profile-correspondence-ville" type="text" name="postal_address_city" value="{{ formData.postal.postal_address_city }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                 </div><!-- /.form-field -->
             </div>
 
             <div class="row row-multi-col-computer">
                 <div class="form-field col-lg-6 col-md-6">
-                    <label for="form-profile-correspondence-pays">{% trans %} lender-profile_information-tab-postal-address-section-country-label {% endtrans %} <span class="field-required">*<span class="sr-only"> Required</span></span></label>
+                    <label for="form-profile-correspondence-pays">{% trans %} lender-profile_information-tab-postal-address-section-country-label {% endtrans %} <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                     <select id="form-profile-correspondence-pays" name="postal_address_country" class="input-field"
                             data-formvalidation-input
                             data-formvalidation-required="true">

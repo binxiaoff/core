@@ -13,7 +13,7 @@
         <dd id="profile-address-ville-output">{{ clientAddresses.ville_fiscal }}</dd>
         <dt>{% trans %} lender-profile_information-tab-fiscal-address-section-country-label {% endtrans %}</dt>
         <dd id="profile-address-pays-output">{{ clientAddresses.id_pays_fiscal|countryLabel }}</dd>
-        <dt>{% trans %} lender-profile_information-tab-fiscal-address-section-phone-label {% endtrans %}</dt>
+        <dt>{% trans %} common_mobile-phone {% endtrans %}</dt>
         <dd id="profile-address-mobile-output">{{ client.mobile }}</dd>
         <dt>{% trans %} lender-profile_information-tab-fiscal-address-section-attachments {% endtrans %}</dt>
         <dd id="profile-address-fichier-domicile-output">
@@ -41,7 +41,7 @@
         <div class="row">
             <div class="form-field">
                 <label for="form-profile-address-street">{% trans %} lender-profile_information-tab-fiscal-address-section-address-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <input id="form-profile-address-street" type="text" name="fiscal_address_street" value="{{ formData.person.fiscal_address_street }}" class="input-field"
                         data-formvalidation-input data-formvalidation-required="true"/>
@@ -51,7 +51,7 @@
         <div class="row row-multi-col-computer">
             <div class="form-field col-lg-6 col-md-6">
                 <label for="form-profile-address-code">{% trans %} lender-profile_information-tab-fiscal-address-section-zip-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <div class="input-group">
                     <input id="form-profile-address-code" type="text" name="fiscal_address_zip" value="{{ formData.person.fiscal_address_zip  }}" class="input-field"
@@ -66,7 +66,7 @@
             </div><!-- /.form-field -->
             <div class="form-field col-lg-6 col-md-6">
                 <label for="form-profile-address-ville">{% trans %} lender-profile_information-tab-fiscal-address-section-city-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                 <input id="form-profile-address-ville" type="text" name="fiscal_address_city" value="{{ formData.person.fiscal_address_city  }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
             </div><!-- /.form-field -->
         </div>
@@ -74,7 +74,7 @@
         <div class="row row-multi-col-computer">
             <div class="form-field col-lg-6 col-md-6">
                 <label for="form-profile-address-pays">{% trans %} lender-profile_information-tab-fiscal-address-section-country-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                 <select id="form-profile-address-pays" name="fiscal_address_country" class="input-field" data-formvalidation-input data-formvalidation-required="true">
                     {% for i, country in countries %}
                         <option value="{{ i }}"{% if i == formData.person.fiscal_address_country  %} selected="selected"{% endif %}>{{ country }}</option>
@@ -82,8 +82,8 @@
                 </select>
             </div><!-- /.form-field -->
             <div class="form-field col-lg-6 col-md-6">
-                <label for="form-profile-address-mobile">{% trans %} lender-profile_information-tab-fiscal-address-section-phone-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                <label for="form-profile-address-mobile">{% trans %} common_mobile-phone {% endtrans %}
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                 <div class="input-group">
                     <input id="form-profile-address-mobile" type="text" name="client_mobile" value="{{ formData.person.client_mobile  }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="telephone"/>
                 </div>
@@ -95,7 +95,7 @@
             <div class="form-field form-field-single-checkbox">
                 <label>
                     <input id="form-profile-no-us-person" type="checkbox" name="no_us_person" value="true" checked="checked">
-                    <span class="label">{% trans %} lender-profile_information-tab-fiscal-address-us-person-checkbox-label {% endtrans %}</span>
+                    <span class="label">{% trans %} common_no-us-person-declaration {% endtrans %}</span>
                 </label>
             </div><!-- /.form-field -->
 
@@ -113,7 +113,7 @@
         <div id="tax-certificate" class="row collapse {% if isLivingAbroad == true %} in {% endif %}">
             <div class="form-field">
                 <label>{% trans %} lender-profile_information-tab-fiscal-address-tax-certificate-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <div class="custom-input-file" id="form-profile-info-file-tax-certificate"
                      data-formvalidation-input
@@ -139,7 +139,7 @@
         <div id="form-profile-info-domicile-files-field" class="row">
             <div class="form-field">
                 <label>{% trans %} lender-profile_information-tab-fiscal-address-location-certificate {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <div class="custom-input-file" id="form-profile-info-file-domicile"
                      data-formvalidation-input
@@ -171,7 +171,7 @@
         <div id="upload-housed-by-third-person" class="row collapse {% if isHousedByThirdPerson == true %} in {% endif %}">
             <div class="form-field">
                 <label>{% trans %} lender-profile_information-tab-fiscal-address-housed-by-third-person-declaration {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <div class="custom-input-file" id="form-profile-info-file-housed-by-third-person-declaration"
                      data-formvalidation-input
@@ -188,7 +188,7 @@
             </div>
             <div class="form-field">
                 <label>{% trans %} lender-profile_information-tab-fiscal-address-id-third-person-housing {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <div class="form-field file-identity-side-a">
                     <div class="custom-input-file" id="form-profile-info-file-id-third-person-housing"

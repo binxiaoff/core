@@ -68,12 +68,12 @@ class BorrowerContactType extends AbstractType
 
         $builder
             ->add('last_name', TextType::class, [
-                'label'    => 'borrower-contact_last-name',
+                'label'    => 'common_name',
                 'data'     => $lastName,
                 'required' => true
             ])
             ->add('first_name', TextType::class, [
-                'label'    => 'borrower-contact_first-name',
+                'label'    => 'common_firstname',
                 'data'     => $firstName,
                 'required' => true
             ])
@@ -83,7 +83,7 @@ class BorrowerContactType extends AbstractType
                 'required' => true
             ])
             ->add('email', EmailType::class, [
-                'label'    => 'borrower-contact_email',
+                'label'    => 'common_email',
                 'data'     => $email,
                 'required' => true
             ])

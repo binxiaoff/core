@@ -119,7 +119,7 @@ class LenderSubscriptionController extends Controller
             $this->addFlash('Step1Errors', $translator->trans('lender-subscription_step-1-identity-missing-form-of-address'));
         }
         if (empty($post['client_name'])) {
-            $this->addFlash('Step1Errors', $translator->trans('lender-subscription_step-1-error-identity-missing-name'));
+            $this->addFlash('Step1Errors', $translator->trans('common-validator_last-name-empty'));
         }
         if (empty($post['client_first_name'])) {
             $this->addFlash('Step1Errors', $translator->trans('lender-subscription_step-1-error-identity-missing-first-name'));
@@ -277,13 +277,13 @@ class LenderSubscriptionController extends Controller
             $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-identity-missing-siren'));
         }
         if (empty($post['company_phone']) || (strlen($post['company_phone']) < 9 || strlen($post['company_phone']) > 14)) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-identity-company-phone'));
+            $this->addFlash('step1Errors', $translator->trans('common-validator_phone-number-invalid'));
         }
         if (empty($post['client_form_of_address'])) {
             $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-identity-missing-form-of-address'));
         }
         if (empty($post['client_name'])) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-identity-missing-name'));
+            $this->addFlash('step1Errors', $translator->trans('common-validator_last-name-empty'));
         }
         if (empty($post['client_first_name'])) {
             $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-identity-missing-first-name'));
@@ -311,7 +311,7 @@ class LenderSubscriptionController extends Controller
                     $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-company-director-position-missing'));
                 }
                 if (empty($post['company_director_email']) || (isset($post['company_director_email']) && false == filter_var($post['company_director_email'], FILTER_VALIDATE_EMAIL))) {
-                    $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-company-director-email-missing'));
+                    $this->addFlash('step1Errors', $translator->trans('common_email-missing'));
                 }
                 if (empty($post['company_director_phone']) || strlen($post['company_director_phone']) < 9 || strlen($post['company_director_phone']) > 14) {
                     $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-company-director-phone-missing'));
@@ -859,11 +859,11 @@ class LenderSubscriptionController extends Controller
         $this->get('session')->set('landingPageData', $post);
 
         if (false === isset($post['prospect_name']) || strlen($post['prospect_name']) > 255 || strlen($post['prospect_name']) <= 0) {
-            $this->addFlash('landingPageErrors', $translator->trans('lender-landing-page_error-name'));
+            $this->addFlash('landingPageErrors', $translator->trans('common-validator_last-name-empty'));
         }
 
         if (false === isset($post['prospect_first_name']) || strlen($post['prospect_first_name']) > 255 || strlen($post['prospect_first_name']) <= 0) {
-            $this->addFlash('landingPageErrors', $translator->trans('lender-landing-page_error-first-name'));
+            $this->addFlash('landingPageErrors', $translator->trans('common-validator_first-name-empty'));
         }
 
         if (empty($post['prospect_email']) || strlen($post['prospect_email']) > 255 || strlen($post['prospect_email']) <= 0

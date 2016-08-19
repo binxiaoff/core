@@ -27,27 +27,26 @@ classNames: 'user-borrower-profile'
                     <section id="profile-info-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
                         <section id="profile-info-view" role="tabpanel" class="profile-info-view collapse in">
                             <dl class="list-2col">
-                                <dt>{{ 'borrower-profile_fonction'|trans|capitalize }}</dt>
+                                <dt>{{ 'common_position'|trans|capitalize }}</dt>
                                 <dd id="profile-info-statut-output">{{ client.fonction|default('') }}</dd>
-                                <dt>{{ 'borrower-profile_civility'|trans|capitalize }}</dt>
+                                <dt>{{ 'common_form-of-address'|trans|capitalize }}</dt>
                                 <dd id="profile-info-civilite-output">{{ client.civilite|default('') }}</dd>
-                                <dt>{{ 'borrower-profile_last-name'|trans|capitalize }}</dt>
+                                <dt>{{ 'common_name'|trans|capitalize }}</dt>
                                 <dd id="profile-info-nom-output">{{ client.nom|default('') }}</dd>
-                                <dt>{{ 'borrower-profile_first-name'|trans|capitalize }}</dt>
+                                <dt>{{ 'common_firstname'|trans|capitalize }}</dt>
                                 <dd id="profile-info-prenom-output">{{ client.prenom|default('') }}</dd>
-                                <dt>{{ 'borrower-profile_birthday'|trans|capitalize }}</dt>
+                                <dt>{{ 'common_birthday'|trans|capitalize }}</dt>
                                 <dd id="profile-info-dob-output">{{ client.naissance|localizeddate('long', 'none')|default('') }}</dd>
-                                <dt>{{ 'borrower-profile_birth-country'|trans|capitalize }}</dt>
+                                <dt>{{ 'common_birth-country'|trans|capitalize }}</dt>
                                 <dd id="profile-info-dob-pays-output">{{ birthCountry|default('') }}</dd>
-                                <dt>{{ 'borrower-profile_birth-city'|trans|capitalize }}</dt>
+                                <dt>{{ 'common_birth-city'|trans|capitalize }}</dt>
                                 <dd id="profile-info-dob-commune-output">{{ client.ville_naissance|default('') }}</dd>
-                                <dt>{{ 'borrower-profile_nationality'|trans|capitalize }}</dt>
+                                <dt>{{ 'common_nationality'|trans|capitalize }}</dt>
                                 <dd id="profile-info-dob-nationalite-output">{{ nationality|default('') }}</dd>
                                 <dt>{{ 'borrower-profile_identity-document'|trans|capitalize }}</dt>
                                 <dd id="profile-info-fichier-identitie-output">
                                     {% if idAdded is not null %}
-                                        <span id="form-profile-info-file-identite-cni-1-output" class="file-justificatif file-identity-side-a" title="{{ 'borrower-profile_identity-document-uploaded-on'|trans|capitalize }} {{ idAdded|localizeddate('short', 'none') }}" data-toggle="tooltip">
-                                          <span class="sr-only">{{ 'borrower-profile_identity-document-uploaded-on'|trans|capitalize }} {{ idAdded|localizeddate('short', 'none') }}</span>
+                                        <span id="form-profile-info-file-identite-cni-1-output" class="file-justificatif file-identity-side-a" title="{{ 'borrower-profile_identity-document-uploaded-on'|trans|capitalize }} {{ idAdded|localizeddate('short', 'none') }}" data-toggle="tooltip"><span class="sr-only">{{ 'borrower-profile_identity-document-uploaded-on'|trans|capitalize }} {{ idAdded|localizeddate('short', 'none') }}</span>
                                         </span>
                                     {% endif %}
                                     {% if idVersoAdded is not null %}

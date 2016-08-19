@@ -4,7 +4,7 @@
             <div class="form-field form-field-multi">
                 <div class="field-label">
                     <label>{% trans %} lender-profile_information-tab-identity-section-client-type-label {% endtrans %}
-                        <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                 </div>
                 <ul class="list-input-values">
                     <li>
@@ -19,15 +19,15 @@
         <div class="row">
             <div class="form-field form-field-multi">
                 <div class="field-label">
-                    <label>{% trans %} lender-profile_information-tab-identity-section-form-of-address-label {% endtrans %}
-                        <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                    <label>{% trans %} common_form-of-address {% endtrans %}
+                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                 </div>
                 <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
                     <li>
-                        <label><input type="radio" name="form_of_address" value="Mme" {% if formData.person.form_of_address == 'Mme' %}checked="checked"{% endif %}/> {% trans %} lender-profile_information-tab-identity-section-form-of-address-female-label {% endtrans %}</label>
+                        <label><input type="radio" name="form_of_address" value="Mme" {% if formData.person.form_of_address == 'Mme' %}checked="checked"{% endif %}/> {% trans %} common_form-of-address-female {% endtrans %}</label>
                     </li>
                     <li>
-                        <label><input type="radio" name="form_of_address" value="M." {% if formData.person.form_of_address == 'M.' %}checked="checked"{% endif %}/> {% trans %} lender-profile_information-tab-identity-section-form-of-address-male-label {% endtrans %}</label>
+                        <label><input type="radio" name="form_of_address" value="M." {% if formData.person.form_of_address == 'M.' %}checked="checked"{% endif %}/> {% trans %} common_form-of-address-male {% endtrans %}</label>
                     </li>
                 </ul>
             </div><!-- /.form-field -->
@@ -35,20 +35,20 @@
 
         <div class="row row-multi-col-computer">
             <div class="form-field col-lg-6 col-md-6">
-                <label for="form-profile-info-nom">{% trans %} lender-profile_information-tab-identity-section-name-label {% endtrans %}</label>
+                <label for="form-profile-info-nom">{% trans %} common_name {% endtrans %}</label>
                 <span id="form-profile-info-nom" >{{ client.nom }}</span>
             </div><!-- /.form-field -->
             <div class="form-field col-lg-6 col-md-6">
-                <label for="form-profile-info-prenom">{% trans %} lender-profile_information-tab-identity-section-first-name-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                <label for="form-profile-info-prenom">{% trans %} common_firstname {% endtrans %}
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                 <input id="form-profile-info-prenom" type="text" name="first_name" value="{{ formData.person.first_name }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
             </div><!-- /.form-field -->
         </div><!-- /.row -->
 
         <div class="row row-multi-col-computer">
             <div class="form-field col-lg-6 col-md-6">
-                <label for="form-profile-info-prenom">{% trans %} lender-profile_information-tab-identity-section-used-name-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                <label for="form-profile-info-prenom">{% trans %} common_used-name {% endtrans %}
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                 <input id="form-profile-info-prenom" type="text" name="used_name" value="{{ formData.person.used_name }}" class="input-field" data-formvalidation-input data-formvalidation-required="false"/>
             </div><!-- /.form-field -->
             <div class="form-field col-lg-6 col-md-6">
@@ -57,12 +57,12 @@
 
         <div class="row row-multi-col-computer">
             <div class="form-field col-lg-6 col-md-6">
-                <label>{% trans %} lender-profile_information-tab-identity-section-birthdate-label {% endtrans %}</label>
+                <label>{% trans %} common_birthday {% endtrans %}</label>
                 <span id="profile-info-dob-output">{{ client.naissance|date('d/m/Y') }}</span>
             </div><!-- /.form-field -->
             <div class="form-field col-lg-6 col-md-6">
-                <label for="form-profile-info-nationalite">{% trans %} lender-profile_information-tab-identity-section-nationality-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                <label for="form-profile-info-nationalite">{% trans %} common_nationality {% endtrans %}
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                 <select id="form-profile-info-nationalite" name="nationality" class="input-field" data-formvalidation-input data-formvalidation-required="true">
                     {% for i, nationality in nationalities %}
                         <option value="{{ i }}"{% if i == formData.person.nationality %} selected="selected"{% endif %}>{{ nationality }}</option>
@@ -73,11 +73,11 @@
 
         <div class="row row-multi-col-computer">
             <div class="form-field col-lg-6 col-md-6">
-                <label for="form-profile-info-dob-pays">{% trans %} lender-profile_information-tab-identity-section-birthcountry-label {% endtrans %}</label>
+                <label for="form-profile-info-dob-pays">{% trans %} common_birth-country {% endtrans %}</label>
                 <dd id="form-profile-info-dob-pays">{{ client.id_pays_naissance|nationalityLabel }}</dd>
             </div><!-- /.form-field -->
             <div class="form-field col-lg-6 col-md-6">
-                <label for="form-profile-info-dob-commune">{% trans %} lender-profile_information-tab-identity-section-birthplace-label {% endtrans %}</label>
+                <label for="form-profile-info-dob-commune">{% trans %} common_birth-city {% endtrans %}</label>
                 <span id="form-profile-info-dob-commune">{{ client.ville_naissance }}</span>
             </div><!-- /.form-field -->
         </div><!-- /.row -->
@@ -90,7 +90,7 @@
         <div class="row">
             <div id="form-profile-info-identity-files-field" class="form-field">
                 <label>{% trans %} lender-profile_information-tab-identity-section-ID-documents-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
 
                 <div class="form-field file-identity-side-a">
                     <div class="custom-input-file" id="form-profile-info-file-identite-cni-1"

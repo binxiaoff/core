@@ -20,7 +20,7 @@
         <div class="row">
             <div class="form-field">
                 <label for="form-profile-address-street">{% trans %} lender-profile_information-tab-fiscal-address-section-address-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                 <input id="form-profile-address-street" type="text" name="fiscal_address_street" value="{{ formData.legalEntity.fiscal_address_street }}" class="input-field"
                        data-formvalidation-input
                        data-formvalidation-required="true"/>
@@ -30,7 +30,7 @@
         <div class="row row-multi-col-computer">
             <div class="form-field col-lg-6 col-md-6">
                 <label for="form-profile-address-code">{% trans %} lender-profile_information-tab-fiscal-address-section-zip-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                 <div class="input-group">
                     <input id="form-profile-code" type="text" name="fiscal_address_zip" value="{{ formData.legalEntity.fiscal_address_zip  }}" class="input-field"
                            data-formvalidation-input
@@ -44,7 +44,7 @@
             </div><!-- /.form-field -->
             <div class="form-field col-lg-6 col-md-6">
                 <label for="form-profile-address-ville">{% trans %} lender-profile_information-tab-fiscal-address-section-city-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                 <input id="form-profile-address-ville" type="text" name="fiscal_address_city" value="{{ formData.legalEntity.fiscal_address_city  }}" class="input-field"
                        data-formvalidation-input
                        data-formvalidation-required="true"/>
@@ -54,7 +54,7 @@
         <div class="row row-multi-col-computer">
             <div class="form-field col-lg-6 col-md-6">
                 <label for="form-profile-address-pays">{% trans %} lender-profile_information-tab-fiscal-address-section-country-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} lender-profile_mandatory-field {% endtrans %}</span></span></label>
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                 <select id="form-profile-address-pays" name="fiscal_address_country" class="input-field"
                         data-formvalidation-input
                         data-formvalidation-required="true">

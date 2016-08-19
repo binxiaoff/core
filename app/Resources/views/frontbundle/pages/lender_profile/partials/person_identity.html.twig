@@ -5,26 +5,26 @@
     <dl class="list-2col">
         <dt>{% trans %} lender-profile_information-tab-identity-section-client-type-label {% endtrans %}</dt>
             <dd id="profile-info-statut-output">{% trans %} lender-profile_information-tab-identity-section-client-type-person-label {% endtrans %}</dd>
-        <dt>{% trans %} lender-profile_information-tab-identity-section-form-of-address-label {% endtrans %}</dt>
+        <dt>{% trans %} common_form-of-address {% endtrans %}</dt>
         {% if client.civilite == 'M.' %}
-            <dd id="profile-info-civilite-output">{% trans %} lender-profile_information-tab-identity-section-form-of-address-male-label {% endtrans %}</dd>
+            <dd id="profile-info-civilite-output">{% trans %} common_form-of-address-male {% endtrans %}</dd>
         {% else %}
-            <dd id="profile-info-civilite-output">{% trans %} lender-profile_information-tab-identity-section-form-of-address-female-label {% endtrans %}</dd>
+            <dd id="profile-info-civilite-output">{% trans %} common_form-of-address-female {% endtrans %}</dd>
         {% endif %}
 
-        <dt>{% trans %} lender-profile_information-tab-identity-section-name-label {% endtrans %}</dt>
+        <dt>{% trans %} common_name {% endtrans %}</dt>
         <dd id="profile-info-nom-output">{{ client.nom }}</dd>
-        <dt>{% trans %} lender-profile_information-tab-identity-section-used-name-label {% endtrans %}</dt>
+        <dt>{% trans %} common_used-name {% endtrans %}</dt>
         <dd id="profile-info-prenom-output">{{ client.nom_usage }}</dd>
-        <dt>{% trans %} lender-profile_information-tab-identity-section-first-name-label {% endtrans %}</dt>
+        <dt>{% trans %} common_firstname {% endtrans %}</dt>
         <dd id="profile-info-prenom-output">{{ client.prenom }}</dd>
-        <dt>{% trans %} lender-profile_information-tab-identity-section-birthdate-label {% endtrans %}</dt>
+        <dt>{% trans %} common_birthday {% endtrans %}</dt>
         <dd id="profile-info-dob-output">{{ client.naissance|date('d/m/Y') }}</dd>
-        <dt>{% trans %} lender-profile_information-tab-identity-section-birthcountry-label {% endtrans %}</dt>
+        <dt>{% trans %} common_birth-country {% endtrans %}</dt>
         <dd id="profile-info-dob-pays-output">{{ client.id_pays_naissance|countryLabel }}</dd>
-        <dt>{% trans %} lender-profile_information-tab-identity-section-birthplace-label {% endtrans %}</dt>
+        <dt>{% trans %} common_birth-city {% endtrans %}</dt>
         <dd id="profile-info-dob-commune-output">{{ client.ville_naissance }}</dd>
-        <dt>{% trans %} lender-profile_information-tab-identity-section-nationality-label {% endtrans %}</dt>
+        <dt>{% trans %} common_nationality {% endtrans %}</dt>
         <dd id="profile-info-dob-nationalite-output">{{ client.id_pays_naissance|nationalityLabel }}</dd>
         <dt>{% trans %} lender-profile_information-tab-identity-section-ID-documents-label {% endtrans %}</dt>
         <dd id="profile-info-fichier-identitie-output">

@@ -92,7 +92,7 @@
                                                     <div class="field-label">
                                                         <label for="form-project-create-duration">
                                                             {% trans %} project-request_step-1-period-field-label {% endtrans %}
-                                                            <span class="field-required">*<span class="sr-only"> {% trans %} project-request_mandatory-field {% endtrans %}</span></span>
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                         </label>
                                                     </div>
                                                     <select id="form-project-create-duration" name="project[duration]" class="input-field" data-formvalidation-input data-formvalidation-required="true">
@@ -115,21 +115,21 @@
                                                 <div class="form-field form-field-multi{% if form.errors.contact.civility is defined %} ui-formvalidation-error{% endif %}">
                                                     <div class="field-label">
                                                         <label>
-                                                            {% trans %} project-request_step-1-representative-identity-form-of-address-label {% endtrans %}
-                                                            <span class="field-required">*<span class="sr-only"> {% trans %} project-request_mandatory-field {% endtrans %}</span></span>
+                                                            {% trans %} common_form-of-address {% endtrans %}
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                         </label>
                                                     </div>
                                                     <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
                                                         <li>
                                                             <label>
                                                                 <input type="radio" name="contact[civility]" value="Mme"{% if 'Mme' == form.values.contact.civility %} checked{% endif %}/>
-                                                                {% trans %} project-request_step-1-representative-identity-form-of-address-female {% endtrans %}
+                                                                {% trans %} common_form-of-address-female {% endtrans %}
                                                             </label>
                                                         </li>
                                                         <li>
                                                             <label>
                                                                 <input type="radio" name="contact[civility]" value="M."{% if 'M.' == form.values.contact.civility %} checked{% endif %}/>
-                                                                {% trans %} project-request_step-1-representative-identity-form-of-address-male {% endtrans %}
+                                                                {% trans %} common_form-of-address {% endtrans %}
                                                             </label>
                                                         </li>
                                                     </ul>
@@ -142,8 +142,8 @@
                                             <div class="row row-multi-col-computer">
                                                 <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.lastname is defined %} ui-formvalidation-error{% endif %}">
                                                     <label for="form-project-create-identity-nom">
-                                                        {% trans %} project-request_step-1-representative-identity-name-field-label {% endtrans %}
-                                                        <span class="field-required">*<span class="sr-only"> {% trans %} project-request_mandatory-field {% endtrans %}</span></span>
+                                                        {% trans %} common_name {% endtrans %}
+                                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
                                                     <input id="form-project-create-identity-nom" type="text" name="contact[lastname]" value="{{ form.values.contact.lastname }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                                                     {% if form.errors.contact.lastname is defined %}
@@ -153,8 +153,8 @@
 
                                                 <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.firstname is defined %} ui-formvalidation-error{% endif %}">
                                                     <label for="form-project-create-identity-prenom">
-                                                        {% trans %} project-request_step-1-representative-identity-first-name-field-label {% endtrans %}
-                                                        <span class="field-required">*<span class="sr-only"> {% trans %} project-request_mandatory-field {% endtrans %}</span></span>
+                                                        {% trans %} common_firstname {% endtrans %}
+                                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
                                                     <input id="form-project-create-identity-prenom" type="text" name="contact[firstname]" value="{{ form.values.contact.firstname }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                                                     {% if form.errors.contact.firstname is defined %}
@@ -166,8 +166,8 @@
                                             <div class="row row-multi-col-computer">
                                                 <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.email is defined %} ui-formvalidation-error{% endif %}">
                                                     <label for="form-project-create-identity-email">
-                                                        {% trans %} project-request_step-1-representative-identity-email-field-label {% endtrans %}
-                                                        <span class="field-required">*<span class="sr-only"> {% trans %} project-request_mandatory-field {% endtrans %}</span></span>
+                                                        {% trans %} common_email {% endtrans %}
+                                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
                                                     <input id="form-project-create-identity-email" type="email" name="contact[email]" value="{{ form.values.contact.email }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                                                     {% if form.errors.contact.email is defined %}
@@ -177,8 +177,8 @@
 
                                                 <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.email_conf is defined %} ui-formvalidation-error{% endif %}">
                                                     <label for="form-project-create-identity-email-conf">
-                                                        {% trans %} project-request_step-1-representative-identity-email-confirmation-field-label {% endtrans %}
-                                                        <span class="field-required">*<span class="sr-only"> {% trans %} project-request_mandatory-field {% endtrans %}</span></span>
+                                                        {% trans %} common_email-confirmation {% endtrans %}
+                                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
                                                     <div class="input-group">
                                                         <input id="form-project-create-identity-email-conf" type="email" name="contact[email_conf]" value="{{ form.values.contact.email_conf }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-samevalueas="#form-project-create-identity-email"/>
@@ -192,8 +192,8 @@
                                             <div class="row row-multi-col-computer">
                                                 <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.mobile is defined %} ui-formvalidation-error{% endif %}">
                                                     <label for="form-project-create-identity-mobile">
-                                                        {% trans %} project-request_step-1-representative-identity-telephone-field-label {% endtrans %}
-                                                        <span class="field-required">*<span class="sr-only"> {% trans %} project-request_mandatory-field {% endtrans %}</span></span>
+                                                        {% trans %} common_phone {% endtrans %}
+                                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
                                                     <div class="input-group">
                                                         <input id="form-project-create-identity-mobile" type="text" name="contact[mobile]" value="{{ form.values.contact.mobile }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="telephone"/>
@@ -205,8 +205,8 @@
 
                                                 <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.function is defined %} ui-formvalidation-error{% endif %}">
                                                     <label for="form-project-create-identity-function">
-                                                        {% trans %} project-request_step-1-representative-identity-function-field-label {% endtrans %}
-                                                        <span class="field-required">*<span class="sr-only"> {% trans %} project-request_mandatory-field {% endtrans %}</span></span>
+                                                        {% trans %} common_position {% endtrans %}
+                                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
                                                     <div class="input-group">
                                                         <input id="form-project-create-identity-function" type="text" name="contact[function]" value="{{ form.values.contact.function }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
@@ -222,7 +222,7 @@
                                                     <div class="field-label">
                                                         <label>
                                                             {% trans %} project-request_step-1-representative-identity-role-field-label {% endtrans %}
-                                                            <span class="field-required">*<span class="sr-only"> {% trans %} project-request_mandatory-field {% endtrans %}</span></span>
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                         </label>
                                                     </div>
                                                     <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
@@ -253,21 +253,21 @@
                                                 <div class="form-field form-field-multi{% if form.errors.advisor.civility is defined %} ui-formvalidation-error{% endif %}">
                                                     <div class="field-label">
                                                         <label>
-                                                            {% trans %} project-request_step-1-advisor-identity-form-of-address-label {% endtrans %}
-                                                            <span class="field-required">*<span class="sr-only"> {% trans %} project-request_mandatory-field {% endtrans %}</span></span>
+                                                            {% trans %} common_form-of-address {% endtrans %}
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                         </label>
                                                     </div>
                                                     <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
                                                         <li>
                                                             <label>
                                                                 <input type="radio" name="advisor[civility]" value="Mme"{% if 'Mme' == form.values.advisor.civility %} checked{% endif %}/>
-                                                                {% trans %} project-request_step-1-advisor-identity-form-of-address-female {% endtrans %}
+                                                                {% trans %} common_form-of-address-female {% endtrans %}
                                                             </label>
                                                         </li>
                                                         <li>
                                                             <label>
                                                                 <input type="radio" name="advisor[civility]" value="M."{% if 'M.' == form.values.advisor.civility %} checked{% endif %}/>
-                                                                {% trans %} project-request_step-1-advisor-identity-form-of-address-male {% endtrans %}
+                                                                {% trans %} common_form-of-address {% endtrans %}
                                                             </label>
                                                         </li>
                                                     </ul>
@@ -280,8 +280,8 @@
                                             <div class="row row-multi-col-computer">
                                                 <div class="form-field col-lg-6 col-md-6{% if form.errors.advisor.lastname is defined %} ui-formvalidation-error{% endif %}">
                                                     <label for="form-project-create-identity-advisor-nom">
-                                                        {% trans %} project-request_step-1-advisor-identity-name-field-label {% endtrans %}
-                                                        <span class="field-required">*<span class="sr-only"> {% trans %} project-request_mandatory-field {% endtrans %}</span></span>
+                                                        {% trans %} common_name {% endtrans %}
+                                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
                                                     <input id="form-project-create-identity-advisor-nom" type="text" name="advisor[lastname]" value="{{ form.values.advisor.lastname }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                                                     {% if form.errors.advisor.lastname is defined %}
@@ -291,8 +291,8 @@
 
                                                 <div class="form-field col-lg-6 col-md-6{% if form.errors.advisor.firstname is defined %} ui-formvalidation-error{% endif %}">
                                                     <label for="form-project-create-identity-advisor-prenom">
-                                                        {% trans %} project-request_step-1-advisor-identity-first-name-field-label {% endtrans %}
-                                                        <span class="field-required">*<span class="sr-only"> {% trans %} project-request_mandatory-field {% endtrans %}</span></span>
+                                                        {% trans %} common_firstname{% endtrans %}
+                                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
                                                     <input id="form-project-create-identity-advisor-prenom" type="text" name="advisor[firstname]" value="{{ form.values.advisor.firstname }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                                                     {% if form.errors.advisor.firstname is defined %}
@@ -304,8 +304,8 @@
                                             <div class="row row-multi-col-computer">
                                                 <div class="form-field col-lg-6 col-md-6{% if form.errors.advisor.email is defined %} ui-formvalidation-error{% endif %}">
                                                     <label for="form-project-create-identity-advisor-email">
-                                                        {% trans %} project-request_step-1-advisor-identity-email-field-label {% endtrans %}
-                                                        <span class="field-required">*<span class="sr-only"> {% trans %} project-request_mandatory-field {% endtrans %}</span></span>
+                                                        {% trans %} common_email {% endtrans %}
+                                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
                                                     <input id="form-project-create-identity-advisor-email" type="email" name="advisor[email]" value="{{ form.values.advisor.email }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                                                     {% if form.errors.advisor.email is defined %}
@@ -315,8 +315,8 @@
 
                                                 <div class="form-field col-lg-6 col-md-6{% if form.errors.advisor.email_conf is defined %} ui-formvalidation-error{% endif %}">
                                                     <label for="form-project-create-identity-advisor-email-conf">
-                                                        {% trans %} project-request_step-1-advisor-identity-email-confirmation-field-label {% endtrans %}
-                                                        <span class="field-required">*<span class="sr-only"> {% trans %} project-request_mandatory-field {% endtrans %}</span></span>
+                                                        {% trans %} common_email-confirmation {% endtrans %}
+                                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
                                                     <div class="input-group">
                                                         <input id="form-project-create-identity-advisor-email-conf" type="email" name="advisor[email_conf]" value="{{ form.values.advisor.email_conf }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-samevalueas="#form-project-create-identity-advisor-email"/>
@@ -330,8 +330,8 @@
                                             <div class="row row-multi-col-computer">
                                                 <div class="form-field col-lg-6 col-md-6{% if form.errors.advisor.mobile is defined %} ui-formvalidation-error{% endif %}">
                                                     <label for="form-project-create-identity-advisor-mobile">
-                                                        {% trans %} project-request_step-1-advisor-identity-telephone-field-label {% endtrans %}
-                                                        <span class="field-required">*<span class="sr-only"> {% trans %} project-request_mandatory-field {% endtrans %}</span></span>
+                                                        {% trans %} common_phone {% endtrans %}
+                                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
                                                     <div class="input-group">
                                                         <input id="form-project-create-identity-advisor-mobile" type="text" name="advisor[mobile]" value="{{ form.values.advisor.mobile }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="telephone"/>
@@ -343,8 +343,8 @@
 
                                                 <div class="form-field col-lg-6 col-md-6{% if form.errors.advisor.function is defined %} ui-formvalidation-error{% endif %}">
                                                     <label for="form-project-create-identity-advisor-function">
-                                                        {% trans %} project-request_step-1-advisor-identity-function-field-label {% endtrans %}
-                                                        <span class="field-required">*<span class="sr-only"> {% trans %} project-request_mandatory-field {% endtrans %}</span></span>
+                                                        {% trans %} common_position {% endtrans %}
+                                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
                                                     <div class="input-group">
                                                         <input id="form-project-create-identity-advisor-function" type="text" name="advisor[function]" value="{{ form.values.advisor.function }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
@@ -363,7 +363,7 @@
                                                 <div class="form-field col-lg-12 col-md-12{% if form.errors.project.need is defined %} ui-formvalidation-error{% endif %}">
                                                     <label for="form-project-create-need">
                                                         {% trans %} project-request_project-need-label {% endtrans %}
-                                                        <span class="field-required">*<span class="sr-only"> {% trans %} project-request_mandatory-field {% endtrans %}</span></span>
+                                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
                                                     <div class="input-group">
                                                         <select id="form-project-create-need" name="project[need]" class="input-field" data-formvalidation-input data-formvalidation-required="true">
@@ -383,7 +383,7 @@
                                                 <div class="form-field col-lg-12 col-md-12{% if form.errors.project.description is defined %} ui-formvalidation-error{% endif %}">
                                                     <label for="form-project-create-description">
                                                         {% trans %} project-request_project-description-label {% endtrans %}
-                                                        <span class="field-required">*<span class="sr-only"> {% trans %} project-request_mandatory-field {% endtrans %}</span></span>
+                                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
                                                     <textarea id="form-project-create-description" name="project[description]" class="input-field" rows="5" placeholder="{{ 'project-request_project-description-placeholder'|trans|escape('html_attr') }}" data-formvalidation-input data-formvalidation-required="true">{{ form.values.project.description }}</textarea>
                                                     {% if form.errors.project.description is defined %}
@@ -398,7 +398,7 @@
                                                 <div class="form-field form-field-single-checkbox{% if form.errors.terms is defined %} ui-formvalidation-error{% endif %}">
                                                     <label>
                                                         <input type="checkbox" name="terms" value="true" data-formvalidation-input data-formvalidation-required="true">
-                                                        <span class="label">{% trans with {'%tosStart%' : '<a href="' ~ termsOfSaleLink ~ '">', '%tosEnd%' : '</a>'} %} project-request_step-1-confirm-terms-of-use {% endtrans %} <span class="field-required">* <span class="sr-only"> {% trans %} project-request_mandatory-field {% endtrans %}</span></span></span>
+                                                        <span class="label">{% trans with {'%tosStart%' : '<a href="' ~ termsOfSaleLink ~ '">', '%tosEnd%' : '</a>'} %} project-request_step-1-confirm-terms-of-use {% endtrans %} <span class="field-required">* <span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></span>
                                                     </label>
                                                     {% if form.errors.terms is defined %}
                                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required-checkbox {% endtrans %}</li></ul>
