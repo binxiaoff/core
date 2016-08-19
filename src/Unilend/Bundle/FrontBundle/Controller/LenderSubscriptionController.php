@@ -9,7 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Translation\Translator;
+use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\core\Loader;
 
@@ -42,7 +42,7 @@ class LenderSubscriptionController extends Controller
 
         $formData = $request->getSession()->get('subscriptionStep1FormData', '');
         $request->getSession()->remove('subscriptionStep1FormData');
-        $landingPageData = $this->get('session')->get('landingPageData', '');
+        $landingPageData = $this->get('session')->get('landingPageData', []);
         $this->get('session')->remove('landingPageData');
         $template['formData'] = [
             'client_form_of_address'           => isset($formData['client_form_of_address']) ? $formData['client_form_of_address'] : '',
@@ -106,7 +106,7 @@ class LenderSubscriptionController extends Controller
         $dates = Loader::loadLib('dates');
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
-        /** @var Translator $translator */
+        /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
 
         /** @var array $post */
@@ -193,6 +193,8 @@ class LenderSubscriptionController extends Controller
             }
         }
 
+        $this->checkSecuritySectionPost($post);
+
         if ($this->get('session')->getFlashBag()->has('step1Errors')) {
             $request->getSession()->set('subscriptionStep1FormData', $post);
             return $this->redirectToRoute('lender_subscription_step_1');
@@ -258,7 +260,7 @@ class LenderSubscriptionController extends Controller
         if (false === $response instanceof \clients){
             return $response;
         }
-        /** @var Translator $translator */
+        /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
 
         /** @var array $post */
@@ -469,7 +471,7 @@ class LenderSubscriptionController extends Controller
      */
     private function checkSecuritySectionPost($post)
     {
-        /** @var Translator $translator */
+        /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
@@ -508,7 +510,7 @@ class LenderSubscriptionController extends Controller
      */
     private function checkPostalAddressSectionPost($post)
     {
-        /** @var Translator $translator */
+        /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
 
         if (false === isset($post['postal_address_street'])) {
@@ -607,7 +609,7 @@ class LenderSubscriptionController extends Controller
         $clientAddress = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
-        /** @var Translator $translator */
+        /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
 
         $post = $request->request->all();
@@ -661,7 +663,7 @@ class LenderSubscriptionController extends Controller
         }
     }
 
-    private function validateAttachmentsPerson($post, \lenders_accounts $lenderAccount, \clients_adresses $clientAddress, Translator $translator)
+    private function validateAttachmentsPerson($post, \lenders_accounts $lenderAccount, \clients_adresses $clientAddress, TranslatorInterface $translator)
     {
         $uploadErrorMessage = $translator->trans('lender-subscription_step-2-upload-files-error-message');
 
@@ -718,7 +720,7 @@ class LenderSubscriptionController extends Controller
         }
     }
 
-    private function validateAttachmentsLegalEntity(\lenders_accounts $lenderAccount, \companies $company, Translator $translator)
+    private function validateAttachmentsLegalEntity(\lenders_accounts $lenderAccount, \companies $company, TranslatorInterface $translator)
     {
         $uploadErrorMessage = $translator->trans('lender-subscription_step-2-upload-files-error-message');
 
@@ -805,10 +807,9 @@ class LenderSubscriptionController extends Controller
             $ficelle = Loader::loadLib('ficelle');
             $amount = $ficelle->cleanFormatedNumber($post['amount']);
 
-            if ($amount >= LenderWalletController::MIN_DEPOSIT_AMOUNT && $amount <= LenderWalletController::MAX_DEPOSIT_AMOUNT) {
-                $this->get('session')->set('subscriptionStep3WalletData', $post);
-                return $this->redirectToRoute('wallet');
-            }
+            //call oayline as dies walletController, redirect URL same, with parameter,
+            //add parameter to the function that treats payline return so it redirects to the right place
+            //implement success message in view
         }
 
         return $this->redirectToRoute('lender_subscription_step_3', ['clientHash' => $client->hash]);
@@ -852,7 +853,7 @@ class LenderSubscriptionController extends Controller
         $clients = $this->get('unilend.service.entity_manager')->getRepository('clients');
         /** @var \prospects $prospect */
         $prospect  = $this->get('unilend.service.entity_manager')->getRepository('prospects');
-        /** @var Translator $translator */
+        /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');;
 
         $post = $request->request->all();

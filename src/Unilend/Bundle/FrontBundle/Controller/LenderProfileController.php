@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
-use Symfony\Component\Translation\Translator;
+use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
@@ -228,7 +228,7 @@ class LenderProfileController extends Controller
         $lenderAccount = $this->getLenderAccount();
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
-        /** @var Translator $translator */
+        /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
 
         if ($request->request->get('person_identity_form')) {
@@ -311,7 +311,7 @@ class LenderProfileController extends Controller
         $lenderAccount = $this->getLenderAccount();
         /** @var \companies $company */
         $company = $this->getCompany();
-        /** @var Translator $translator */
+        /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
@@ -503,7 +503,7 @@ class LenderProfileController extends Controller
         $lenderAccount  = $this->getLenderAccount();
         /** @var \clients_adresses $clientAddress */
         $clientAddress = $this->getClientAddress();
-        /** @var Translator $translator */
+        /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
         /** @var string $historyContent */
         $historyContent = '<ul>';
@@ -624,7 +624,7 @@ class LenderProfileController extends Controller
         $client = $this->getClient();
         /** @var \companies $company */
         $company = $this->getCompany();
-        /** @var Translator $translator */
+        /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
         /** @var string $historyContent */
         $historyContent = '<ul>';
@@ -698,7 +698,7 @@ class LenderProfileController extends Controller
         $client = $this->getClient();
         /** @var \clients_adresses $clientAddress */
         $clientAddress = $this->getClientAddress();
-        /** @var Translator $translator */
+        /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
 
         if ($request->request->get('postal_address_form')) {
@@ -785,7 +785,7 @@ class LenderProfileController extends Controller
         /** @var TranslationManager $translationManager */
         $translationManager = $this->get('unilend.service.translation_manager');
         $translations = $translationManager->getAllTranslationsForSection('projet');
-        /** @var Translator $translator */
+        /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
 
         $files = $request->request->get('files', []);
@@ -941,7 +941,7 @@ class LenderProfileController extends Controller
         $ifu = $this->get('unilend.service.entity_manager')->getRepository('ifu');
         /** @var \clients $client */
         $client = $this->getClient();
-        /** @var Translator $translator */
+        /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
 
         if ($client->hash == $request->query->get('hash')) {
@@ -975,7 +975,7 @@ class LenderProfileController extends Controller
      */
     public function updateBankDetailsAction(Request $request)
     {
-        /** @var Translator $translator */
+        /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->getLenderAccount();
@@ -1078,7 +1078,7 @@ class LenderProfileController extends Controller
     {
         /** @var \clients $client */
         $client = $this->getClient();
-        /** @var Translator $translator */
+        /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
 
         $post = $request->request->all();
