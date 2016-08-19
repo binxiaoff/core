@@ -367,8 +367,8 @@ class BorrowerAccountController extends Controller
         $projectsIds         = array_column($projectsPostFunding, 'id_project');
 
         $filter = $request->query->get('filter');
-        $start  = new \Datetime($filter['start']);
-        $end    = new \Datetime($filter['end']);
+        $start  = \Datetime::createFromFormat('d/m/Y', $filter['start']);
+        $end    = \Datetime::createFromFormat('d/m/Y', $filter['end']);
 
         if ($filter['op'] !== 'all') {
             $operation = (int)$filter['op'];

@@ -54,7 +54,7 @@
                                                 <td>{{ ('borrower-projects_' ~ project.project_status_label)|trans }}</td>
                                                 <td>{% if project.predict_autobid > 0 %} {{ project.predict_autobid|localizednumber }}&nbsp;% {% endif %}</td>
                                                 <td class="center">
-                                                    <a href="{{ path('project_request_files', {'hash' : project.hash}) }}" class="ui-has-tooltip" data-original-title="{% trans %} borrower-projects_padd-doccuments-icon {% endtrans %}"><span class="icon fa-file-u16"></span></a>
+                                                    <a href="{{ path('project_request_files', {'hash' : project.hash}) }}" class="ui-has-tooltip" data-original-title="{% trans %} borrower-projects_add-documents-icon {% endtrans %}"><span class="icon fa-file-u16"></span></a>
                                                 </td>
                                             </tr>
                                         {% endfor %}
@@ -147,19 +147,19 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                {% for project in post_funding_projects %}
-                                    <tr>
-                                        <td>{{ project.id_project }}</td>
-                                        <td>{{ project.nature_project }}</td>
-                                        <td>{{ project.amount|localizednumber }}&nbsp;€<br>{% transchoice project.period with {'%count%': project.period} %} common_month {% endtranschoice %}</td>
-                                        <td>{{ project.ended|localizeddate('short', 'none')}}</td>
-                                        <td>{{ project.monthly_payment|localizedcurrency('EUR') }}</td>
-                                        <td>{{ project.average_ir|localizednumber }}&nbsp;%</td>
-                                        <td>{{ project.outstanding_capital|localizedcurrency('EUR') }}</td>
-                                        <td>{{ project.next_maturity_date|localizeddate('short', 'none') }}</td>
-                                        <td><a href="{{ path('project_detail', {'projectSlug' : project.slug }) }}" class="ui-has-tooltip" data-original-title="{{ 'borrower-projects_see-the-project'|trans }}"><span class="icon fa-eye-u16"></span></a></td>
-                                    </tr>
-                                {% endfor %}
+                                    {% for project in post_funding_projects %}
+                                        <tr>
+                                            <td>{{ project.id_project }}</td>
+                                            <td>{{ project.nature_project }}</td>
+                                            <td>{{ project.amount|localizednumber }}&nbsp;€<br>{% transchoice project.period with {'%count%': project.period} %} common_month {% endtranschoice %}</td>
+                                            <td>{{ project.ended|localizeddate('short', 'none')}}</td>
+                                            <td>{{ project.monthly_payment|localizedcurrency('EUR') }}</td>
+                                            <td>{{ project.average_ir|localizednumber }}&nbsp;%</td>
+                                            <td>{{ project.outstanding_capital|localizedcurrency('EUR') }}</td>
+                                            <td>{{ project.next_maturity_date|localizeddate('short', 'none') }}</td>
+                                            <td><a href="{{ path('project_detail', {'projectSlug' : project.slug }) }}" class="ui-has-tooltip" data-original-title="{{ 'borrower-projects_project-detail-link-icon'|trans }}"><span class="icon fa-eye-u16"></span></a></td>
+                                        </tr>
+                                    {% endfor %}
                                 </tbody>
                                 {% endif %}
                             </table>
