@@ -68,16 +68,11 @@
                                         {% endif %}
                                         <div class="field-help">
                                             <p>
-                                                <a href="#dialog-conditions-content" class="fancybox-html">{% trans %} connect-subscribe-page_login-box-password-forgotten-link {% endtrans %}</a>
+                                                <a href="#dialog-conditions-content" class="fancybox-html">
+                                                    {% trans %} connect-subscribe-page_login-box-password-forgotten-link {% endtrans %}
+                                                </a>
                                             </p>
                                         </div>
-
-                                        {# Hidden text until made visible through the fancybox #}
-                                        <div class="hide-accessible">
-                                            {{ include('partials/components/password_forgotten.html.twig') }}
-                                        </div><!-- /.hide-accessible -->
-
-
                                         {% if captchaInformation is defined and true == captchaInformation.displayWaitingPeriod %}
                                             {% if false == captchaInformation.displayCaptcha %}
                                                 <div id="form-connect-notifications">
@@ -91,6 +86,12 @@
                                     </div>
                                 </div><!-- /.panel -->
                             </form><!-- /.form-connect -->
+
+                            {# Hidden text until made visible through the fancybox #}
+                            <div class="hide-accessible">
+                                {{ include('partials/components/password_forgotten.html.twig') }}
+                            </div><!-- /.hide-accessible -->
+
                         </div><!-- /.col-connect -->
 
                         <div class="col-register col-lg-8 col-md-8">
