@@ -73,6 +73,7 @@ var LenderWallet = require('./app/components/LenderWallet')
 var LenderOperations = require('./app/components/LenderOperations')
 var LenderProfile = require('./app/components/LenderProfile')
 var BorrowerOperations = require('./app/components/BorrowerOperation')
+var NewPassword = require('./app/components/NewPasswordRequest')
 
 // @debug
 // CacheData.clearAll()

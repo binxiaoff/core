@@ -68,9 +68,16 @@
                                         {% endif %}
                                         <div class="field-help">
                                             <p>
-                                                <a href="{{ route('user/forgotpassword') }}" class="link">{% trans %} connect-subscribe-page_login-box-password-forgotten-link {% endtrans %}</a>
+                                                <a href="#dialog-conditions-content" class="fancybox-html">{% trans %} connect-subscribe-page_login-box-password-forgotten-link {% endtrans %}</a>
                                             </p>
                                         </div>
+
+                                        {# Hidden text until made visible through the fancybox #}
+                                        <div class="hide-accessible">
+                                            {{ include('partials/components/password_forgotten.html.twig') }}
+                                        </div><!-- /.hide-accessible -->
+
+
                                         {% if captchaInformation is defined and true == captchaInformation.displayWaitingPeriod %}
                                             {% if false == captchaInformation.displayCaptcha %}
                                                 <div id="form-connect-notifications">

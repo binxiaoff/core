@@ -3,11 +3,14 @@
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Unilend\core\Loader;
 
 class SecurityController extends Controller
 {
@@ -92,6 +95,62 @@ class SecurityController extends Controller
         $request->getSession()->set('captchaInformation/captchaCode', $code);
 
         return $response;
+    }
+
+    /**
+     * @Route("/pwd", name="pwd_forgotten")
+     * @Method("POST")
+     */
+    public function passwordForgottenAction(Request $request)
+    {
+        if ($request->isXMLHttpRequest()) {
+
+            /** @var \clients $clients */
+            $clients = $this->get('unilend.service.entity_manager')->getRepository('clients');
+            /** @var \ficelle $ficelle */
+            $ficelle = Loader::loadLib('ficelle');
+            /** @var \settings $settings */
+            $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
+
+            $post = $request->request->all();
+
+            if (isset($post['email']) && $ficelle->isEmail($post['email']) && $clients->get($post['email'], 'email')) {
+                $settings->get('Facebook', 'type');
+                $lien_fb = $settings->value;
+                $settings->get('Twitter', 'type');
+                $lien_tw = $settings->value;
+
+                $varMail = [
+                    'surl'          => $this->get('assets.packages')->getUrl(''),
+                    'url'           => $this->get('assets.packages')->getUrl(''),
+                    'prenom'        => $clients->prenom,
+                    'login'         => $clients->email,
+                    'link_password' => $this->generateUrl('define_new_password', ['clientHash' => $clients->hash]),
+                    'lien_fb'       => $lien_fb,
+                    'lien_tw'       => $lien_tw
+                ];
+
+                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie', $varMail);
+                $message->setTo($clients->email);
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
+
+                return new JsonResponse('ok');
+            } else {
+                return new JsonResponse('nok');
+            }
+        } else {
+            return new Response('not an ajax request');
+        }
+    }
+
+    /**
+     * @Route("/nouveau-mot-de-passe/{clientHash}", name="define_new_password")
+     */
+    public function defineNewPasswordAction($clientHash, Request $request)
+    {
+        return 'ici viendra la page de nouveau mot de passe';
     }
 
 }
