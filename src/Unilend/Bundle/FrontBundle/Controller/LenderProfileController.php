@@ -15,6 +15,7 @@ use Symfony\Component\Translation\Translator;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 use Unilend\core\Loader;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -26,97 +27,170 @@ class LenderProfileController extends Controller
      * @Route("/profile", name="lender_profile")
      * @Security("has_role('ROLE_LENDER')")
      */
-    public function lenderInformationAction(Request $request)
+    public function lenderProfileAction(Request $request)
     {
         /** @var array $templateData */
         $templateData = [];
+        /** @var \settings $settings */
+        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
         /** @var \clients $client */
-        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        $client = $this->getClient();
         /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount  = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
+        $lenderAccount = $this->getLenderAccount();
+
+        $templateData['client']              = $client->select('id_client = ' . $client->id_client)[0];
+        $templateData['lenderAccount']       = $lenderAccount->select('id_lender_account = ' . $lenderAccount->id_lender_account)[0];
+
+        $this->addPersonalInformationDataToTemplate($templateData, $request, $client, $lenderAccount, $settings);
+        $this->addFiscalInformationTemplateData($templateData, $client, $lenderAccount);
+        $this->addFormDataForSecurity($templateData, $request, $client);
+
+        return $this->render('pages/lender_profile/lender_info.html.twig', $templateData);
+    }
+
+    /**
+     * @param array $templateData
+     * @param Request $request
+     * @param \clients $client
+     * @param \lenders_accounts $lenderAccount
+     * @param \settings $settings
+     */
+    private function addPersonalInformationDataToTemplate(&$templateData, Request $request, \clients $client, \lenders_accounts $lenderAccount, \settings $settings)
+    {
+        $form = $this->getSessionFormDataForPersonalInformation($request);
+
         /** @var \clients_adresses $clientAddress */
         $clientAddress = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');$client->get($this->getUser()->getClientId());
-        $lenderAccount->get($client->id_client, 'id_client_owner');
         $clientAddress->get($client->id_client, 'id_client');
+        $templateData['clientAddresses']     = $clientAddress->select('id_client = ' . $client->id_client)[0];
 
-        $form = $this->getSessionFormData($request);
+        /** @var LocationManager $locationManager */
+        $locationManager               = $this->get('unilend.service.location_manager');
+        $templateData['countries']     = $locationManager->getCountries();
+        $templateData['nationalities'] = $locationManager->getNationalities();
+
+        $this->addFormDataPostalAddress($templateData, $form, $clientAddress);
 
         if (in_array($client->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
             /** @var \companies $company */
             $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
-
             $company->get($client->id_client, 'id_client_owner');
-            $templateData['company'] = $company->select('id_client_owner = ' . $client->id_client)[0];
-            $templateData['companyIdAttachments'] = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [
-                \attachment_type::CNI_PASSPORTE_DIRIGEANT,
-                \attachment_type::CNI_PASSPORTE_VERSO
-            ]);
-            $templateData['companyOtherAttachments'] = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [
-                \attachment_type::KBIS,
-                \attachment_type::DELEGATION_POUVOIR
-            ]);
-            $settings->get("Liste deroulante conseil externe de l'entreprise", 'type');
-            $templateData['externalCounselList'] = json_decode($settings->value, true);
-
-            $templateData['formData']['legalEntity'] = [
-                'company_name'                     => isset($form['legalEntity']['company_name']) ? $form['legalEntity']['company_name'] : $company->name,
-                'company_legal_form'               => isset($form['legalEntity']['company_legal_form']) ? $form['legalEntity']['company_legal_form'] : $company->forme,
-                'company_social_capital'           => isset($form['legalEntity']['company_social_capital']) ? $form['legalEntity']['company_social_capital'] : $company->capital,
-                'company_phone'                    => isset($form['legalEntity']['company_phone']) ? $form['legalEntity']['company_phone'] : $company->phone,
-                'company_client_status'            => isset($form['legalEntity']['company_client_status']) ? $form['legalEntity']['company_client_status'] : $company->status_client,
-                'company_external_counsel'         => isset($form['legalEntity']['company_external_counsel']) ? $form['legalEntity']['company_external_counsel'] : $company->status_conseil_externe_entreprise,
-                'company_external_counsel_other'   => isset($form['legalEntity']['company_external_counsel_other']) ? $form['legalEntity']['company_external_counsel_other'] : $company->preciser_conseil_externe_entreprise,
-                'company_director_form_of_address' => isset($form['legalEntity']['company_director_form_of_address']) ? $form['legalEntity']['company_director_form_of_address'] : $company->civilite_dirigeant,
-                'company_director_name'            => isset($form['legalEntity']['company_director_name']) ? $form['legalEntity']['company_director_name'] : $company->nom_dirigeant,
-                'company_director_first_name'      => isset($form['legalEntity']['company_director_first_name']) ? $form['legalEntity']['company_director_first_name'] : $company->prenom_dirigeant,
-                'company_director_phone'           => isset($form['legalEntity']['company_director_phone']) ? $form['legalEntity']['company_director_phone'] : $company->phone_dirigeant,
-                'company_director_email'           => isset($form['legalEntity']['company_director_email']) ? $form['legalEntity']['company_director_email'] : $company->email_dirigeant,
-                'client_form_of_address'           => isset($form['legalEntity']['client_form_of_address']) ? $form['legalEntity']['client_form_of_address'] : $client->civilite,
-                'client_name'                      => isset($form['legalEntity']['client_name']) ? $form['legalEntity']['client_name'] : $client->nom_usage,
-                'client_first_name'                => isset($form['legalEntity']['client_first_name']) ? $form['legalEntity']['client_first_name'] : $client->prenom,
-                'client_position'                  => isset($form['legalEntity']['client_position']) ? $form['legalEntity']['client_position'] : $client->fonction,
-                'fiscal_address_street'            => isset($form['legalEntityFiscal']['fiscal_address_street']) ? $form['legalEntityFiscal']['fiscal_address_street'] : $company->adresse1,
-                'fiscal_address_zip'               => isset($form['legalEntityFiscal']['fiscal_address_zip']) ? $form['legalEntityFiscal']['fiscal_address_zip'] : $company->zip,
-                'fiscal_address_city'              => isset($form['legalEntityFiscal']['fiscal_address_city']) ? $form['legalEntityFiscal']['fiscal_address_city'] : $company->city,
-                'fiscal_address_country'           => isset($form['legalEntityFiscal']['fiscal_address_country']) ? $form['legalEntityFiscal']['fiscal_address_country'] : $company->id_pays,
-                'same_postal_address'              => isset($form['legalEntityFiscal']['same_postal_address']) ? $form['legalEntityFiscal']['same_postal_address'] : $clientAddress->meme_adresse_fiscal,
-            ];
-
+            $this->addTemplateDataLegalEntity($templateData, $client, $lenderAccount, $company , $settings);
+            $this->addFormDataLegalEntity($templateData, $form, $client, $company, $clientAddress);
         } else {
-            $templateData['identityAttachments'] = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [
-                \attachment_type::CNI_PASSPORTE,
-                \attachment_type::CNI_PASSPORTE_VERSO
-            ]);
+            $this->addTemplateDataPerson($templateData, $lenderAccount, $clientAddress);
+            $this->addFormDataPerson($templateData, $form, $client, $clientAddress);
 
-            $templateData['residenceAttachments'] = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [
-                \attachment_type::JUSTIFICATIF_DOMICILE,
-                \attachment_type::ATTESTATION_HEBERGEMENT_TIERS,
-                \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT,
-                \attachment_type::JUSTIFICATIF_FISCAL
-            ]);
-            $templateData['isLivingAbroad'] = ($clientAddress->id_pays_fiscal > \pays_v2::COUNTRY_FRANCE);
-
-            $templateData['formData']['person'] = [
-                'form_of_address' => isset($form['person']['form_of_address']) ? $form['person']['form_of_address'] : $client->civilite,
-                'used_name'       => isset($form['person']['used_name']) ? $form['person']['used_name'] : $client->nom_usage,
-                'nationality'     => isset($form['person']['nationality']) ? $form['person']['nationality'] : $client->id_nationalite,
-                'first_name'      => isset($form['person']['first_name']) ? $form['person']['first_name'] : $client->prenom,
-                'fiscal_address_street'  => isset($form['personFiscal']['fiscal_address_street']) ? $form['personFiscal']['fiscal_address_street'] : $clientAddress->adresse_fiscal,
-                'fiscal_address_zip'     => isset($form['personFiscal']['fiscal_address_zip']) ? $form['personFiscal']['fiscal_address_zip'] : $clientAddress->cp_fiscal,
-                'fiscal_address_city'    => isset($form['personFiscal']['fiscal_address_city']) ? $form['personFiscal']['fiscal_address_city'] : $clientAddress->ville_fiscal,
-                'fiscal_address_country' => isset($form['personFiscal']['fiscal_address_country']) ? $form['personFiscal']['fiscal_address_country'] : $clientAddress->id_pays_fiscal,
-                'client_mobile'          => isset($form['personFiscal']['client_mobile']) ? $form['personFiscal']['client_mobile'] : $client->mobile,
-                'no_us_person'           => isset($form['personFiscal']['no_us_person']) ? $form['personFiscal']['no_us_person'] : true,
-                'housed_by_third_person' => isset($form['personFiscal']['housed_by_third_person']) ? $form['personFiscal']['housed_by_third_person'] : false
-            ];
         }
+    }
 
-        $templateData['client']              = $client->select('id_client = ' . $client->id_client)[0];
-        $templateData['lenderAccount']       = $lenderAccount->select('id_lender_account = ' . $lenderAccount->id_lender_account)[0];
-        $templateData['clientAddresses']     = $clientAddress->select('id_client = ' . $client->id_client)[0];
+    /**
+     * @param array $templateData
+     * @param $form
+     * @param \clients $client
+     * @param \companies $company
+     * @param \clients_adresses $clientAddress
+     */
+    private function addFormDataLegalEntity(&$templateData, $form, \clients $client, \companies $company, \clients_adresses $clientAddress)
+    {
+       $templateData['formData']['legalEntity'] = [
+            'company_name'                     => isset($form['legalEntity']['company_name']) ? $form['legalEntity']['company_name'] : $company->name,
+            'company_legal_form'               => isset($form['legalEntity']['company_legal_form']) ? $form['legalEntity']['company_legal_form'] : $company->forme,
+            'company_social_capital'           => isset($form['legalEntity']['company_social_capital']) ? $form['legalEntity']['company_social_capital'] : $company->capital,
+            'company_phone'                    => isset($form['legalEntity']['company_phone']) ? $form['legalEntity']['company_phone'] : $company->phone,
+            'company_client_status'            => isset($form['legalEntity']['company_client_status']) ? $form['legalEntity']['company_client_status'] : $company->status_client,
+            'company_external_counsel'         => isset($form['legalEntity']['company_external_counsel']) ? $form['legalEntity']['company_external_counsel'] : $company->status_conseil_externe_entreprise,
+            'company_external_counsel_other'   => isset($form['legalEntity']['company_external_counsel_other']) ? $form['legalEntity']['company_external_counsel_other'] : $company->preciser_conseil_externe_entreprise,
+            'company_director_form_of_address' => isset($form['legalEntity']['company_director_form_of_address']) ? $form['legalEntity']['company_director_form_of_address'] : $company->civilite_dirigeant,
+            'company_director_name'            => isset($form['legalEntity']['company_director_name']) ? $form['legalEntity']['company_director_name'] : $company->nom_dirigeant,
+            'company_director_first_name'      => isset($form['legalEntity']['company_director_first_name']) ? $form['legalEntity']['company_director_first_name'] : $company->prenom_dirigeant,
+            'company_director_phone'           => isset($form['legalEntity']['company_director_phone']) ? $form['legalEntity']['company_director_phone'] : $company->phone_dirigeant,
+            'company_director_email'           => isset($form['legalEntity']['company_director_email']) ? $form['legalEntity']['company_director_email'] : $company->email_dirigeant,
+            'client_form_of_address'           => isset($form['legalEntity']['client_form_of_address']) ? $form['legalEntity']['client_form_of_address'] : $client->civilite,
+            'client_name'                      => isset($form['legalEntity']['client_name']) ? $form['legalEntity']['client_name'] : $client->nom_usage,
+            'client_first_name'                => isset($form['legalEntity']['client_first_name']) ? $form['legalEntity']['client_first_name'] : $client->prenom,
+            'client_position'                  => isset($form['legalEntity']['client_position']) ? $form['legalEntity']['client_position'] : $client->fonction,
+            'fiscal_address_street'            => isset($form['legalEntityFiscal']['fiscal_address_street']) ? $form['legalEntityFiscal']['fiscal_address_street'] : $company->adresse1,
+            'fiscal_address_zip'               => isset($form['legalEntityFiscal']['fiscal_address_zip']) ? $form['legalEntityFiscal']['fiscal_address_zip'] : $company->zip,
+            'fiscal_address_city'              => isset($form['legalEntityFiscal']['fiscal_address_city']) ? $form['legalEntityFiscal']['fiscal_address_city'] : $company->city,
+            'fiscal_address_country'           => isset($form['legalEntityFiscal']['fiscal_address_country']) ? $form['legalEntityFiscal']['fiscal_address_country'] : $company->id_pays,
+            'same_postal_address'              => isset($form['legalEntityFiscal']['same_postal_address']) ? $form['legalEntityFiscal']['same_postal_address'] : $clientAddress->meme_adresse_fiscal,
+        ];
+    }
 
+    /**
+     * @param array $templateData
+     * @param \clients $client
+     * @param \lenders_accounts $lenderAccount
+     * @param \companies $company
+     * @param \settings $settings
+     */
+    private function addTemplateDataLegalEntity(&$templateData, \clients $client, \lenders_accounts $lenderAccount, \companies $company , \settings $settings)
+    {
+        $templateData['company'] = $company->select('id_client_owner = ' . $client->id_client)[0];
+        $templateData['companyIdAttachments'] = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [
+            \attachment_type::CNI_PASSPORTE_DIRIGEANT,
+            \attachment_type::CNI_PASSPORTE_VERSO
+        ]);
+        $templateData['companyOtherAttachments'] = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [
+            \attachment_type::KBIS,
+            \attachment_type::DELEGATION_POUVOIR
+        ]);
+        $settings->get("Liste deroulante conseil externe de l'entreprise", 'type');
+        $templateData['externalCounselList'] = json_decode($settings->value, true);
+    }
+
+    /**
+     * @param array $templateData
+     * @param \lenders_accounts $lenderAccount
+     * @param \clients_adresses $clientAddress
+     */
+    private function addTemplateDataPerson(&$templateData, \lenders_accounts $lenderAccount, \clients_adresses $clientAddress)
+    {
+        $templateData['identityAttachments'] = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [
+            \attachment_type::CNI_PASSPORTE,
+            \attachment_type::CNI_PASSPORTE_VERSO
+        ]);
+        $templateData['residenceAttachments'] = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [
+            \attachment_type::JUSTIFICATIF_DOMICILE,
+            \attachment_type::ATTESTATION_HEBERGEMENT_TIERS,
+            \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT,
+            \attachment_type::JUSTIFICATIF_FISCAL
+        ]);
+        $templateData['isLivingAbroad'] = ($clientAddress->id_pays_fiscal > \pays_v2::COUNTRY_FRANCE);
+
+    }
+
+    /**
+     * @param array $templateData
+     * @param array $form
+     * @param \clients $client
+     * @param \clients_adresses $clientAddress
+     */
+    private function addFormDataPerson(&$templateData, $form, \clients $client, \clients_adresses $clientAddress)
+    {
+        $templateData['formData']['person'] = [
+            'form_of_address' => isset($form['person']['form_of_address']) ? $form['person']['form_of_address'] : $client->civilite,
+            'used_name'       => isset($form['person']['used_name']) ? $form['person']['used_name'] : $client->nom_usage,
+            'nationality'     => isset($form['person']['nationality']) ? $form['person']['nationality'] : $client->id_nationalite,
+            'first_name'      => isset($form['person']['first_name']) ? $form['person']['first_name'] : $client->prenom,
+            'fiscal_address_street'  => isset($form['personFiscal']['fiscal_address_street']) ? $form['personFiscal']['fiscal_address_street'] : $clientAddress->adresse_fiscal,
+            'fiscal_address_zip'     => isset($form['personFiscal']['fiscal_address_zip']) ? $form['personFiscal']['fiscal_address_zip'] : $clientAddress->cp_fiscal,
+            'fiscal_address_city'    => isset($form['personFiscal']['fiscal_address_city']) ? $form['personFiscal']['fiscal_address_city'] : $clientAddress->ville_fiscal,
+            'fiscal_address_country' => isset($form['personFiscal']['fiscal_address_country']) ? $form['personFiscal']['fiscal_address_country'] : $clientAddress->id_pays_fiscal,
+            'client_mobile'          => isset($form['personFiscal']['client_mobile']) ? $form['personFiscal']['client_mobile'] : $client->mobile,
+            'no_us_person'           => isset($form['personFiscal']['no_us_person']) ? $form['personFiscal']['no_us_person'] : true,
+            'housed_by_third_person' => isset($form['personFiscal']['housed_by_third_person']) ? $form['personFiscal']['housed_by_third_person'] : false
+        ];
+    }
+
+    /**
+     * @param array $templateData
+     * @param array $form
+     * @param \clients_adresses $clientAddress
+     */
+    private function addFormDataPostalAddress(&$templateData, $form, \clients_adresses $clientAddress)
+    {
         $templateData['formData']['postal'] = [
             'postal_address_street'  => isset($form['postal']['postal_address_street']) ? $form['postal']['postal_address_street'] : $clientAddress->adresse1,
             'postal_address_zip'     => isset($form['postal']['postal_address_zip']) ? $form['postal']['postal_address_zip'] : $clientAddress->cp,
@@ -124,20 +198,23 @@ class LenderProfileController extends Controller
             'postal_address_country' => isset($form['postal']['postal_address_country']) ? $form['postal']['postal_address_country'] : $clientAddress->id_pays,
             'same_postal_address'    => isset($form['postal']['same_postal_address']) ? $form['postal']['same_postal_address'] : $clientAddress->meme_adresse_fiscal
         ];
-        /** @var LocationManager $locationManager */
-        $locationManager = $this->get('unilend.service.location_manager');
-        $templateData['countries'] = $locationManager->getCountries();
-        $templateData['nationalities'] = $locationManager->getNationalities();
+    }
 
+    /**
+     * @param array $templateData
+     * @param \clients $client
+     * @param \lenders_accounts $lenderAccount
+     */
+    private function addFiscalInformationTemplateData(&$templateData, \clients $client, \lenders_accounts $lenderAccount)
+    {
         /** @var \ifu $ifu */
         $ifu                                                         = $this->get('unilend.service.entity_manager')->getRepository('ifu');
         $templateData['lenderAccount']['fiscal_info']['documents']   = $ifu->select('id_client =' . $client->id_client . ' AND statut = 1', 'annee ASC');
         $templateData['lenderAccount']['fiscal_info']['amounts']     = $this->getFiscalBalanceAndOwedCapital();
         $templateData['lenderAccount']['fiscal_info']['rib']         = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [\attachment_type::RIB])[\attachment_type::RIB];
         $templateData['lenderAccount']['fiscal_info']['fundsOrigin'] = $this->getFundsOrigin($client->type);
-
-        return $this->render('pages/lender_profile/lender_info.html.twig', $templateData);
     }
+
 
     /**
      * @Route("/profile/person/identity-update", name="profile_person_identity_update")
@@ -146,11 +223,9 @@ class LenderProfileController extends Controller
     public function updatePersonAction(Request $request)
     {
         /** @var \clients $client */
-        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $client->get($this->getUser()->getClientId());
+        $client = $this->getClient();
         /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount  = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
-        $lenderAccount->get($client->id_client, 'id_client_owner');
+        $lenderAccount = $this->getLenderAccount();
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
         /** @var Translator $translator */
@@ -231,22 +306,15 @@ class LenderProfileController extends Controller
     public function updateLegalEntityAction(Request $request)
     {
         /** @var \clients $client */
-        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        $client = $this->getClient();
         /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
-        /** @var \clients_adresses $clientAddress */
-        $clientAddress = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
+        $lenderAccount = $this->getLenderAccount();
         /** @var \companies $company */
-        $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
+        $company = $this->getCompany();
         /** @var Translator $translator */
         $translator = $this->get('translator');
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
-
-        $client->get($this->getUser()->getClientId());
-        $lenderAccount->get($client->id_client, 'id_client_owner');
-        $clientAddress->get($client->id_client, 'id_client');
-        $company->get($client->id_client, 'id_client_owner');
 
         if ($request->request->get('legal_entity_info_form')){
             /** @var array $form */
@@ -430,15 +498,11 @@ class LenderProfileController extends Controller
     public function updatePersonFiscalAddressAction(Request $request)
     {
         /** @var \clients $client */
-        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $client->get($this->getUser()->getClientId());
+        $client = $this->getClient();
         /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount  = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
-        $lenderAccount->get($client->id_client, 'id_client_owner');
+        $lenderAccount  = $this->getLenderAccount();
         /** @var \clients_adresses $clientAddress */
-        $clientAddress = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
-        $clientAddress->get($client->id_client, 'id_client');
-
+        $clientAddress = $this->getClientAddress();
         /** @var Translator $translator */
         $translator = $this->get('translator');
         /** @var string $historyContent */
@@ -557,15 +621,11 @@ class LenderProfileController extends Controller
     public function updateLegalEntityFiscalAddressAction(Request $request)
     {
         /** @var \clients $client */
-        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $client->get($this->getUser()->getClientId());
+        $client = $this->getClient();
         /** @var \companies $company */
-        $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
-        $company->get($client->id_client, 'id_client_owner');
-
+        $company = $this->getCompany();
         /** @var Translator $translator */
         $translator = $this->get('translator');
-
         /** @var string $historyContent */
         $historyContent = '<ul>';
 
@@ -635,12 +695,9 @@ class LenderProfileController extends Controller
     public function updatePostalAddressAction(Request $request)
     {
         /** @var \clients $client */
-        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $client->get($this->getUser()->getClientId());
+        $client = $this->getClient();
         /** @var \clients_adresses $clientAddress */
-        $clientAddress = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
-        $clientAddress->get($client->id_client, 'id_client');
-
+        $clientAddress = $this->getClientAddress();
         /** @var Translator $translator */
         $translator = $this->get('translator');
 
@@ -689,16 +746,11 @@ class LenderProfileController extends Controller
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
-        $client->get($this->getUser()->getClientId());
-        /** @var \clients_status $clientStatus */
-        $clientStatus          = $entityManager->getRepository('clients_status');
+        $client = $this->getClient();
         /** @var \clients_status_history $clientStatusHistory */
         $clientStatusHistory   = $entityManager->getRepository('clients_status_history');
         /** @var \attachment_type $attachmentType */
         $attachmentType       = $entityManager->getRepository('attachment_type');
-
-        $clientStatus->getLastStatut($client->id_client);
 
         $completenessRequestContent = $clientStatusHistory->getCompletnessRequestContent($client);
         $template['attachmentTypes'] = $attachmentType->getAllTypesForLender('fr');
@@ -725,22 +777,16 @@ class LenderProfileController extends Controller
         /** @var EntityManager$ $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
-        $client->get($this->getUser()->getClientId());
+        $client = $this->getClient();
         /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount  = $entityManager->getRepository('lenders_accounts');
-        $lenderAccount->get($client->id_client, 'id_client_owner');
+        $lenderAccount  = $this->getLenderAccount();
         /** @var \clients_history_actions $clientHistoryActions */
         $clientHistoryActions = $entityManager->getRepository('clients_history_actions');
-        /** @var \clients_status $clientStatus */
-        $clientStatus = $entityManager->getRepository('clients_status');
         /** @var TranslationManager $translationManager */
         $translationManager = $this->get('unilend.service.translation_manager');
         $translations = $translationManager->getAllTranslationsForSection('projet');
         /** @var Translator $translator */
         $translator = $this->get('translator');
-
-        $clientStatus->getLastStatut($client->id_client);
 
         $files = $request->request->get('files', []);
         $contentHistory = '';
@@ -851,7 +897,7 @@ class LenderProfileController extends Controller
      * @param Request $request
      * @return mixed
      */
-    private function getSessionFormData(Request $request)
+    private function getSessionFormDataForPersonalInformation(Request $request)
     {
         $form['person']            = $request->getSession()->get('personIdentityData', '');
         $form['legalEntity']       = $request->getSession()->get('legalEntityIdentityData', '');
@@ -894,11 +940,10 @@ class LenderProfileController extends Controller
         /** @var \ifu $ifu */
         $ifu = $this->get('unilend.service.entity_manager')->getRepository('ifu');
         /** @var \clients $client */
-        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        $client = $this->getClient();
         /** @var Translator $translator */
         $translator = $this->get('translator');
 
-        $client->get($this->getUser()->getClientId());
         if ($client->hash == $request->query->get('hash')) {
 
             if ($ifu->get($this->getUser()->getClientId(), 'annee = ' . $request->query->get('year') . ' AND statut = 1 AND id_client') &&
@@ -926,7 +971,6 @@ class LenderProfileController extends Controller
 
     /**
      * @param Request $request
-     * @return JsonResponse
      * @Route("/profile/update_bank_details", name="update_bank_details")
      */
     public function updateBankDetailsAction(Request $request)
@@ -934,14 +978,9 @@ class LenderProfileController extends Controller
         /** @var Translator $translator */
         $translator = $this->get('translator');
         /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
-        /** @var |clients $client */
-        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        $lenderAccount = $this->getLenderAccount();
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
-
-        $lenderAccount->get($this->getUser()->getClientId(), 'id_client_owner');
-        $client->get($this->getUser()->getClientId());
 
         $newIban = str_replace(' ', '', $request->request->get('iban', $lenderAccount->iban));
 
@@ -1029,9 +1068,111 @@ class LenderProfileController extends Controller
         return array_combine(range(1, count($fundsOriginList)), array_values($fundsOriginList));
     }
 
-    public function securityAction()
+
+    /**
+     * @param Request $request
+     * @Route("profile/security/submit-identification", name="profile_security_submit_identification")
+     * @return Response
+     */
+    public function saveIdentificationAction(Request $request)
     {
-        $this->render('pages/lender_profile/partials/security.html.twig');
+        /** @var \clients $client */
+        $client = $this->getClient();
+        /** @var Translator $translator */
+        $translator = $this->get('translator');
+
+        $post = $request->request->all();
+
+        if (empty($post['client_mobile']) || false === is_numeric($post['client_mobile'])) {
+            $this->addFlash('securityIdentificationErrors', $translator->trans('common_mobile-phone') . ' : ' . $translator->trans('common-validator_phone-number-invalid'));
+        }
+        if (isset($post['client_landline']) && false === is_numeric($post['client_landline'])) {
+            $this->addFlash('securityIdentificationErrors', $translator->trans('common_landline') . ' : ' . $translator->trans('common-validator_phone-number-invalid'));
+        }
+        if ((empty($post['client_email']) && false !== filter_var($post['client_email'], FILTER_VALIDATE_EMAIL))
+            || $post['client_email'] != $post['client_email_confirmation']) {
+            $this->addFlash('securityIdentificationErrors', $translator->trans('common-validator_email-address-invalid'));
+        }
+        if ($post['client_email'] !== $client->email && $client->existEmail($post['client_email'])) {
+            $this->addFlash('securityIdentificationErrors', $translator->trans('lender-profile_security-identification-error-existing-email'));
+        }
+
+        if ($this->get('session')->getFlashBag()->has('securityIdentificationErrors')){
+            $request->getSession()->set('securityIdentificationData', $post);
+        } else {
+            $client->update();
+            $this->addFlash('securityIdentificationSuccess', $translator->trans('lender-profile_security-identification-form-success-message'));
+        }
+
+        $this->saveClientActionHistory($client, serialize(['id_client' => $client->id_client, 'post' => $request->request->all()]));
+        return $this->redirectToRoute('lender_profile');
+    }
+
+    /**
+     * @param array $template
+     * @param Request $request
+     * @param \clients $client
+     */
+    private function addFormDataForSecurity(&$template, Request $request, \clients $client)
+    {
+        $form = $request->getSession()->get('securityIdentificationData', []);
+        $request->getSession()->remove('securityIdentificationData');
+
+        $template['formData']['security'] = [
+            'client_email'              => isset($form['client_email']) ? $form['client_email'] : $client->email,
+            'client_email_confirmation' => isset($form['client_email']) ? $form['client_email'] : $client->email,
+            'client_mobile'             => isset($form['client_mobile']) ? $form['client_mobile'] : $client->mobile,
+            'client_landline'           => isset($form['client_landline']) ? $form['client_landline'] : $client->telephone
+        ];
+    }
+
+
+    private function getClient()
+    {
+        /** @var UserLender $user */
+        $user     = $this->getUser();
+        $clientId = $user->getClientId();
+        /** @var \clients $client */
+        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        $client->get($clientId);
+
+        return $client;
+    }
+
+    private function getLenderAccount()
+    {
+        /** @var UserLender $user */
+        $user     = $this->getUser();
+        $clientId = $user->getClientId();
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount  = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
+        $lenderAccount->get($clientId, 'id_client_owner');
+
+        return $lenderAccount;
+    }
+
+    private function getClientAddress()
+    {
+        /** @var UserLender $user */
+        $user     = $this->getUser();
+        $clientId = $user->getClientId();
+        /** @var \clients_adresses $clientAddress */
+        $clientAddress = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
+        $clientAddress->get($clientId, 'id_client');
+
+        return $clientAddress;
+    }
+
+    private function getCompany()
+    {
+        /** @var UserLender $user */
+        $user     = $this->getUser();
+        $clientId = $user->getClientId();
+        /** @var \companies $company */
+        $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
+        $company->get($clientId, 'id_client');
+
+        return $company;
     }
 
 
