@@ -1,12 +1,18 @@
 var loadOperations = function() {
-
     var form = $('#form-filters-operations');
+
     $.ajax({
         method: form.attr('method'),
         url: form.attr('action'),
         data: form.serialize(),
         dataType: 'json'
     }).done(function (data) {
+        if (data.count) {
+            $('table.table-myoperations').show().next('.message-info').hide();
+        }
+        else {
+            $('table.table-myoperations').hide().next('.message-info').show();
+        }
         $('table.table-myoperations tbody').html(data.html_response);
     });
 }

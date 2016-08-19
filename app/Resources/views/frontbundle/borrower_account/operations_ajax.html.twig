@@ -2,16 +2,17 @@
     {% set classAmount = op.montant > 0 ? 'ui-amount-positive' : 'ui-amount-negative' %}
     {% if op.type == 'commission-mensuelle' %}
         {% set data_details = {
-        "label":"commission-mensuelle",
-        "items": [{
-        "label": 'borrower-operation_commission-excl-tax'|trans|capitalize,
-        "value": op.commission|localizedcurrency('EUR')
-        },{
-        "label": 'borrower-operation_vat'|trans,
-        "value": op.tva|localizedcurrency('EUR')
-        }]
-        }
-        %}
+            "label":"commission-mensuelle",
+            "items": [
+                {
+                    "label": 'borrower-operation_commission-excl-tax'|trans,
+                    "value": op.commission|localizedcurrency('EUR')
+                },{
+                    "label": 'borrower-operation_vat'|trans,
+                    "value": op.tva|localizedcurrency('EUR')
+                }
+            ]
+        } %}
     {% endif %}
 
     <tr id="operation-{{ i }}" {% if op.type == 'commission-mensuelle' %} data-details="{{ data_details|json_encode|escape('html_attr') }}" {% endif %} class="table-myoperations-item {{ classAmount }}">

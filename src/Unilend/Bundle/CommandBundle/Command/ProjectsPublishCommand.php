@@ -209,7 +209,7 @@ EOF
         );
 
         /** @var \translations $translations */
-        $translations                          = $oEntityManager->getRepository('textes');
+        $translations                          = $oEntityManager->getRepository('translations');
         $aTranslations['email-nouveau-projet'] = $translations->selectFront('email-nouveau-projet', 'fr');
 
         /** @var \project_period $oProjectPeriods */

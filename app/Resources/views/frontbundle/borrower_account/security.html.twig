@@ -1,27 +1,29 @@
-{% extends 'borrower_account/_borrower_account_base.html.twig' %}
+{% extends 'borrower_account/_layout.html.twig' %}
 
-{# Page data #}
-{% set bodyId = '' %}
 {% set page = {
-id: 'user-borrower-security',
-title: 'Emprunteur / securité',
-permalink: path(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')),
-classNames: 'user-borrower-security'
+    id: 'user-borrower-security',
+    title: 'Emprunteur / securité',
+    permalink: path(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')),
+    classNames: 'user-borrower-security'
 } %}
+
 {% block siteHeader %}
     {% include 'partials/site/header.html.twig' %}
 {% endblock %}
-{% block dashboardNav %}{% endblock %}
-{% block dashboardContent %}
 
-    <div class="dashboard-tabs">
-        <div class="dashboard-tabs-content">
-            <div role="tabpanel" class="dashboard-tab-pane">
-                <article class="panel">
-                    <header class="panel-header">
-                        <h3>{{ 'borrower-security_title'|trans|capitalize }}</h3>
-                    </header>
-                        <section class="page-section">
+{% block dashboardNav %} {% endblock %}
+
+{% block dashboardContent %}
+    <div class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-content tab-content">
+            <div class="dashboard-tab-pane">
+                <article class="dashboard-tab-pane tab-pane">
+                    <div class="panel">
+                        <header class="panel-header">
+                            <h3>{{ 'borrower-profile_security-title'|trans }}</h3>
+                        </header>
+
+                        <div class="panel-content">
                             {% if app.session.flashBag.has('error') %}
                                 <div class="message-error">
                                     {% for error in app.session.flashBag.get('error') %}
@@ -63,13 +65,13 @@ classNames: 'user-borrower-security'
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <button type="submit" class="btn-primary ui-dialog-confirm">{{ 'common_button-send'|trans|capitalize }}</button>
+                                    <button type="submit" class="btn-primary ui-dialog-confirm">{{ 'borrower-profile_security-submit-button'|trans }}</button>
                                 </div>
                             </form>
-                        </section><!-- /.page-section -->
-                </article><!-- /.panel -->
-            </div><!-- /#profile-info.dashboard-tab-pane -->
+                        </div><!-- /.panel-content -->
+                    </div><!-- /.panel -->
+                </article><!-- /.dashboard-tab-pane -->
+            </div><!-- /.dashboard-tab-pane -->
         </div><!-- /.dashboard-tabs-content -->
     </div><!-- /.dashboard-tabs -->
-
 {% endblock %}

@@ -66,7 +66,7 @@
             {% elseif project.projectPending is defined and project.projectPending == true %}
                 <p>{% trans %} project-detail_side-bar-project-closing-pending {% endtrans %}</p>
             {% elseif is_granted('IS_AUTHENTICATED_FULLY') %}
-                {% if app.user.getClientStatus() < constant('\\clients_status::VALIDATED') %}
+                {% if is_granted('ROLE_LENDER') and app.user.getClientStatus() < constant('\\clients_status::VALIDATED') %}
                     <p>{% trans %} project-detail_side-bar-completeness-message {% endtrans %}</p>
                 {% elseif conditions.canBid %}
                     {% if lender.bidResult is defined %}

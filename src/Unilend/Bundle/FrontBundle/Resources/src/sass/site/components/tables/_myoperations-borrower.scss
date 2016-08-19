@@ -18,6 +18,15 @@
   }
 }
 
+#user-emprunteur-operations {
+  .table-myoperations {
+    display: none;
+
+    + .message-info {
+      display: none;
+    }
+  }
+}
 #user-emprunteur-operations #form-filters-operations {
   margin-bottom:70px;
 }
@@ -66,13 +75,22 @@ td.table-myoperations-borrower-item-amount {
   text-align:center;
 }
 
-// PREFUNDING
+.table-myoperations-prefunding,
+.table-myoperations-funding,
+.table-myoperations-postfunding {
+  table-layout: fixed;
+
+  th {
+    text-align: left;
+    font-size: 12px;
+  }
+
+  td {
+    font-size: 12px;
+  }
+}
 
 .table-myoperations-prefunding {
-  table-layout: fixed;
-  td {
-    font-size:11px;
-  }
   .table-borrower-file {
     width:10%;
   }
@@ -104,20 +122,18 @@ td.table-myoperations-borrower-item-amount {
 
 }
 
-// END PREFUNDING
-
-// FUNDING
-
 .table-myoperations-funding {
-  table-layout: fixed;
+  table-layout:fixed;
+
   th {
     text-align:left;
-    /*font-size:12px;*/
-    text-transform:none;
+    font-size:12px;
   }
+
   td {
-    font-size:11px;
+    font-size:12px;
   }
+
   .table-borrower-file {
     width:10%;
   }
@@ -152,18 +168,7 @@ td.table-myoperations-borrower-item-amount {
 
 }
 
-// END FUNDING
 .table-myoperations-postfunding {
-  table-layout: fixed;
-  th {
-    text-align:left;
-    font-size:12px;
-
-    text-transform:none;
-  }
-  td {
-    font-size:11px;
-  }
   .table-borrower-file {
     width:10%;
   }
@@ -200,6 +205,3 @@ td.table-myoperations-borrower-item-amount {
     width:10%;
   }
 }
-// POST FUNDING
-
-// END POSTFUNDING

@@ -36,10 +36,10 @@ class SimpleProjectType extends AbstractType
         }, $possibleDuration);
         $builder
             ->add('amount', IntegerType::class, [
-                'label'    => 'borrower-demand_wanted-amount',
+                'label'    => 'borrower-demand_amount',
                 'required' => true,
                 'attr' => [
-                    'placeholder' => 'borrower-demand_amount-placeholder-msg',
+                    'placeholder' => 'borrower-demand_amount-placeholder',
                 ]
             ])
             ->add('duration', ChoiceType::class, [
@@ -48,10 +48,10 @@ class SimpleProjectType extends AbstractType
                 'choices'  => array_combine($durationLabel, $possibleDuration)
             ])
             ->add('message', TextareaType::class, [
-                'label'    => 'borrower-demand_describe-your-project',
+                'label'    => 'borrower-demand_project-description',
                 'required' => true,
                 'attr' => [
-                    'placeholder' => 'borrower-demand_describe-your-project-placeholder-msg',
+                    'placeholder' => 'borrower-demand_project-description-placeholder',
                     'rows' => 6,
                 ]
             ]);

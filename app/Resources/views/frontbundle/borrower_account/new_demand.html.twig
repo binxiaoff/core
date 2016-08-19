@@ -1,22 +1,18 @@
-{% extends 'borrower_account/_borrower_account_base.html.twig' %}
+{% extends 'borrower_account/_layout.html.twig' %}
 
-{# Page data #}
-{% set bodyId = '' %}
 {% set page = {
-id: 'user-borrower-projects',
-title: 'Emprunteur / Dashboard',
-permalink: path('borrower_account_projects'),
-classNames: 'user-emprunteur-projects'
+    id: 'user-borrower-projects',
+    title: 'Emprunteur / Dashboard',
+    permalink: path('borrower_account_projects'),
+    classNames: 'user-emprunteur-projects'
 } %}
 
-
 {% block dashboardContent %}
-
     <div class="dashboard-tabs tabs">
         <div class="dashboard-tabs-nav">
             <ul class="nav nav-dashboard-tabs" data-nav-dropdown-menu="mobile">
-                <li role="presentation"><a href="{{ path('borrower_account_projects') }}">{{ 'borrower-projects_your-projects'|trans|capitalize }}</a></li>
-                <li role="presentation" class="active"><a href="#">{{ 'borrower-demand_new_demand'|trans|capitalize }}</a></li>
+                <li role="presentation"><a href="{{ path('borrower_account_projects') }}">{{ 'borrower-projects_projects-tab-title'|trans }}</a></li>
+                <li role="presentation" class="active"><a href="#">{{ 'borrower-demand_new-demand-tab-title'|trans }}</a></li>
             </ul>
         </div><!-- /.dashboard-nav-content -->
         <div class="dashboard-tabs-content tab-content">
@@ -40,12 +36,11 @@ classNames: 'user-emprunteur-projects'
                             {% endif %}
 
                             {{ form(project_form, {'attr': {'id': 'borrower_new_demand'}}) }}
-                            <button type="submit" form="borrower_new_demand" class="btn-primary ui-dialog-confirm"><span class="icon fa-angle-right"></span> {{ 'borrower-demand_valid-btn'|trans|capitalize }}</button>
+                            <button type="submit" form="borrower_new_demand" class="btn-primary ui-dialog-confirm"><span class="icon fa-angle-right"></span> {{ 'borrower-demand_form-submit-button'|trans }}</button>
                         </div><!-- /.dashboard-newrequest -->
                     </section><!-- /.ui-toggle-group -->
                 </article><!-- /.panel -->
             </div><!-- /#profile-fiscalite.dashboard-tab-pane -->
         </div><!-- /.dashboard-tabs-content -->
     </div><!-- /.dashboard-tabs -->
-
 {% endblock %}
