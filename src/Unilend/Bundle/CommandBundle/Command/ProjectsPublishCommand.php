@@ -9,6 +9,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager;
 use Unilend\librairies\CacheKeys;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
 
 class ProjectsPublishCommand extends ContainerAwareCommand
 {
@@ -46,6 +47,13 @@ EOF
 
                 $bHasProjectPublished = true;
                 $oProjectManager->publish($oProject);
+
+                if ($oProjectManager->isFunded($oProject)) {
+                    /** @var MailerManager $mailerManager */
+                    $mailerManager = $this->getContainer()->get('unilend.service.email_manager');
+                    $mailerManager->sendFundedToBorrower($oProject);
+                }
+
                 $this->zipProjectAttachments($oProject, $oEntityManager, $oLogger);
                 $this->sendNewProjectEmail($oProject, $oEntityManager);
             }
