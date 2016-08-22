@@ -584,7 +584,8 @@ class preteursController extends bootstrap
                 ////////////////
 
                 if (isset($_POST['statut_valider_preteur']) && 1 == $_POST['statut_valider_preteur']) {
-                    $aExistingClient       = array_shift($this->clients->getDuplicates($this->clients->nom, $this->clients->prenom, $this->clients->naissance));
+                    $aExistingClient       = $this->clients->getDuplicates($this->clients->nom, $this->clients->prenom, $this->clients->naissance);
+                    $aExistingClient       = array_shift($aExistingClient);
                     $iOriginForUserHistory = 3;
 
                     if (false === empty($aExistingClient) && $aExistingClient['id_client'] != $this->clients->id_client) {
