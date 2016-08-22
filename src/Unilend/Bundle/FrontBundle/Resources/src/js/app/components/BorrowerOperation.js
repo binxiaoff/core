@@ -21,7 +21,6 @@ $(function(){
     if ($("#user-emprunteur-operations").length > 0) {
         loadOperations();
     }
-
 });
 
 $("#user-emprunteur-operations input, #user-emprunteur-operations select").change(function () {
@@ -43,11 +42,4 @@ $("#user-emprunteur-operations input, #user-emprunteur-operations select").chang
 
         loadOperations();
     }
-});
-
-$("#user-emprunteur-operations #link-export-operations").click(function (event) {
-    event.preventDefault();
-    var form = $('#form-filters-operations');
-    form.children('input[name=action]').val('export');
-    form.submit();
 });

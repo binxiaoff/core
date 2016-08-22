@@ -12,6 +12,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\FrontBundle\Form\BorrowerContactType;
 use Unilend\Bundle\FrontBundle\Form\SimpleProjectType;
 use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
+use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 use Unilend\core\Loader;
 
 class BorrowerAccountController extends Controller
@@ -389,7 +390,6 @@ class BorrowerAccountController extends Controller
         $borrowerOperations = $client->getDataForBorrowerOperations($projectsIds, $start, $end, $operation);
         $translator         = $this->get('unilend.service.translation_manager');
 
-
         $response = new StreamedResponse();
         $response->setCallback(function () use ($borrowerOperations, $translator) {
             $handle = fopen('php://output', 'w+');
@@ -417,6 +417,71 @@ class BorrowerAccountController extends Controller
         $response->setStatusCode(200);
         $response->headers->set('Content-Type', 'text/csv; charset=utf-8');
         $response->headers->set('Content-Disposition', 'attachment; filename="export-operations.csv"');
+
+        return $response;
+    }
+
+    /**
+     * @param Request $request
+     * @return StreamedResponse
+     */
+    private function operationsPrint(Request $request)
+    {
+        $client              = $this->getClient();
+        $projectsPostFunding = $this->getProjectsPostFunding();
+        $projectsIds         = array_column($projectsPostFunding, 'id_project');
+
+        $filter = $request->query->get('filter');
+        $start  = \Datetime::createFromFormat('d/m/Y', $filter['start']);
+        $end    = \Datetime::createFromFormat('d/m/Y', $filter['end']);
+
+        if ($filter['op'] !== 'all') {
+            $operation = (int)$filter['op'];
+        } else {
+            $operation = 0;
+        }
+
+        if ($filter['project'] !== 'all' && in_array($filter['project'], $projectsIds)) {
+            $projectsIds = array($filter['project']);
+        }
+
+        /** @var array $config */
+        $rootDir = $this->get('kernel')->getRootDir() . '/..';
+
+        include $rootDir . '/config.php';
+        include $rootDir . '/apps/default/bootstrap.php';
+        include $rootDir . '/apps/default/controllers/pdf.php';
+
+        $pdfCommand    = new \Command('pdf', 'setDisplay', 'fr');
+        $pdfController = new \pdfController($pdfCommand, $config, 'default');
+        $pdfController->setContainer($this->container);
+        $pdfController->initialize();
+
+        $fileName = 'operations_emprunteur_' . date('Y-m-d') . '.pdf';
+        $fullPath = $rootDir . '/protected/operations_export_pdf/' . $client->id_client . '/' . $fileName;
+
+        /** @var TranslationManager $translationManager */
+        $translationManager = $this->get('unilend.service.translation_manager');
+
+        $pdfController->lng['espace-emprunteur']                 = $translationManager->getAllTranslationsForSection('espace-emprunteur');
+        $pdfController->lng['preteur-operations-vos-operations'] = $translationManager->getAllTranslationsForSection('preteur-operations-vos-operations');
+        $pdfController->lng['preteur-operations-pdf']            = $translationManager->getAllTranslationsForSection('preteur-operations-pdf');
+        $pdfController->aBorrowerOperations = $client->getDataForBorrowerOperations($projectsIds, $start, $end, $operation);
+        $pdfController->companies = $this->get('unilend.service.entity_manager')->getRepository('companies');
+        $pdfController->companies->get($client->id_client, 'id_client_owner');
+        $pdfController->setDisplay('operations_emprunteur_pdf_html');
+        $pdfController->WritePdf($fullPath, 'operations');
+
+        $response = new StreamedResponse();
+        $response->setCallback(function () use ($fullPath) {
+            $handle = fopen('php://output', 'w+');
+            readfile($fullPath);
+            fclose($handle);
+        });
+
+        $response->setStatusCode(200);
+        $response->headers->set('Content-Type', 'application/force-download');
+        $response->headers->set('Content-Disposition', 'attachment; filename="' . $fileName . '"');
 
         return $response;
     }
