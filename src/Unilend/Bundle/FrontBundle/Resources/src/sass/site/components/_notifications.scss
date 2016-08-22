@@ -34,6 +34,12 @@
     color: $c-t3;
     user-select: none;
 
+    //img,
+    //svg {
+    //  max-width: 100%;
+    //  max-height: 100%;
+    //}
+
     .svg-icon-wrap {
       width: 70px;
       height: 70px;
@@ -110,27 +116,34 @@
 
 // Drop notification
 .ui-usernotificationsdrop-drop-element.drop-element {
-  max-width: 280px;
+  display: none;
+  width: 0;
+  height: 0;
+  overflow: hidden;
   z-index: $depth-drop;
-  background-color: $c-white;
-  border-radius: 4px;
   filter: drop-shadow(0 0 10px fade-out($c-grey-l, .1));
 
-  // Arrow
-  &:before {
-    content: '';
-    display: none;
-    width: 30px;
-    height: 20px;
-    position: absolute;
-    right: 10px;
-    top: -20px;
-    z-index: $depth-drop + 1;
+  // Animation/visibility
+  opacity: 0;
+  transform: translateZ(0);
+  transform-origin: top right;
+  transition: opacity 0.1s, width 0.1s, height 0.1s;
 
-    background-color: transparent;
-    background-image: inline-svg-code('<svg width="30" height="20" viewBox="0 0 30 20" version="1.1" xmlns="http://www.w3.org/2000/svg"><path style="fill:#{$c-white}" d="M0 20 L 15 0 L 30 20 L 0 20" /></svg>');
-    background-repeat: no-repeat;
-    background-position: center center;
+  // Arrow
+  &:after {
+    content: '';
+    width: 0;
+    height: 0;
+
+    position: absolute;
+    right: 12px;
+    top: -15px;
+    z-index: $depth-drop + 10;
+
+    border: solid transparent;
+    border-bottom-color: $c-white;
+    border-width: 15px;
+    border-top-width: 0;
   }
 
   // Text overflow gradient
@@ -151,28 +164,31 @@
   // }
 
   .drop-content {
+    width: 280px;
+    height: 300px;
     position: relative;
-    max-height: 300px;
     overflow: auto;
-  }
 
-  // Drop animation & visibility
-  transform: translateZ(0);
-  transform-origin: top right;
-  transition: opacity 100ms;
-  opacity: 0;
+    background-color: $c-white;
+    border-radius: 4px;
 
-  & .drop-content {
-    transition: transform 0.3s cubic-bezier(0, 0, 0.265, 1.55);
+    // Animation
+    transition: transform 0.3s;// cubic-bezier(0, 0, 0.265, 1.55);
     transform: scale(0) translateZ(0);
     transform-origin: top right;
   }
+
   &.drop-open {
     display: none;
+    overflow: visible;
+    width: 280px;
+    height: 300px;
   }
+
   &.drop-open-transitionend {
     display: block;
   }
+
   &.drop-after-open {
     transition: none;
     opacity: 1;
@@ -181,18 +197,26 @@
     &:after {
       display: block;
     }
-  }
-  &.drop-after-open .drop-content {
-    transform: scale(1) translateZ(0);
 
-    &:before,
-    &:after {
-      display: block;
+    .drop-content {
+      transform: scale(1) translateZ(0);
+
+      &:before,
+      &:after {
+        display: block;
+      }
     }
   }
 
   .notification {
     // Extra padding on right for scroll
     padding: 15px 25px 15px 15px;
+
+    .notification-image {
+      svg {
+        max-width: 100%;
+        max-height: 100%;
+      }
+    }
   }
 }

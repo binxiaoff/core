@@ -20,8 +20,10 @@
     </header><!-- .panel-header -->
     <section id="profile-fiscalite-bank-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
         <section id="profile-fiscalite-bank-view" role="tabpanel" class="profile-bank-view collapse in">
-            <a href="#profile-fiscalite-bank-edit" role="button" data-toggle="collapse" data-parent="#profile-fiscalite-bank-section" class="btn-edit" aria-controls="#profile-fiscalite-bank-edit" aria-expanded="false"><span class="icon fa-pencil-u32"></span>
-                <span class="label">{% trans %} lender-profile_fiscal-tab-modification-button {% endtrans %}</span></a>
+            <a href="javascript:;" data-target="#profile-fiscalite-bank-edit" role="button" data-toggle="collapse" data-parent="#profile-fiscalite-bank-section" class="btn-edit" aria-controls="#profile-fiscalite-bank-edit" aria-expanded="false">
+                <span class="icon fa-pencil-u32"></span>
+                <span class="label">{% trans %} lender-profile_fiscal-tab-modification-button {% endtrans %}</span>
+            </a>
             <dl class="list-2col">
                 <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-funds-origin-label {% endtrans %}</dt>
                 <dd id="profile-fiscalite-bank-origin-output">{{ lenderAccount.fiscal_info.fundsOrigin[lenderAccount.origine_des_fonds] }}</dd>

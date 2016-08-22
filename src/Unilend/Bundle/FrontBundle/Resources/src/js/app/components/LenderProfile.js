@@ -10,7 +10,7 @@ var $body = $('body')
 
 $doc.on('ready', function () {
   // If nationality or form_of_address (civilite/gender) inputs are modified, display message that ID files need to be updated (`#identity-change-alert-message`)
-  $doc.on('change', '[name="nationality"], [name="form_of_address"]', function (event) {
+  $doc.on('change', '[name="nationality"], [name="form_of_address"]', function () {
     $('#identity-change-alert-message').collapse('show')
     
     // Additionally, mark the identity fileattach fields as requiring new files now
@@ -18,7 +18,7 @@ $doc.on('ready', function () {
   })
 
   // Show message if any modifications have been made to the fiscal address form inputs
-  $doc.on('change', '#form-profile-address-street, #form-profile-address-code, #form-profile-address-ville, #form-profile-address-pays', function (event) {
+  $doc.on('change', '#form-profile-address-street, #form-profile-address-code, #form-profile-address-ville, #form-profile-address-pays', function () {
     $('#message-change-address').collapse('show')
 
     // Additionally, mark the justificatif de domicile (housing-certificate) field as requiring new files now
@@ -26,12 +26,12 @@ $doc.on('ready', function () {
   })
   
   // When a file has been attached, hide the #message-change-address
-  $doc.on('FileAttach:attached', '#form-profile-info-domicile-files-field .ui-fileattach', function (event) {
+  $doc.on('FileAttach:attached', '#form-profile-info-domicile-files-field .ui-fileattach', function () {
     $('#message-change-address').collapse('hide')
   })
 
   // Update/hide elements if fiscal address form was reset
-  $doc.on('reset', '#form-profile-address-edit', function (event) {
+  $doc.on('reset', '#form-profile-address-edit', function () {
     // Update UI on reset
     // For some weird reason needs to have delay before checking
     setTimeout(function () {
@@ -52,7 +52,7 @@ $doc.on('ready', function () {
     }
   }
   checkIsHousedByThirdPerson()
-  $doc.on('change', '#housed-by-third-person', function (event) {
+  $doc.on('change', '#housed-by-third-person', function () {
     checkIsHousedByThirdPerson()
   })
     
@@ -70,8 +70,23 @@ $doc.on('ready', function () {
     }
   }
   checkIsLivingAbroad()
-  $doc.on('change', '#form-profile-address-pays', function (event) {
+  $doc.on('change', '#form-profile-address-pays', function () {
     checkIsLivingAbroad()
+  })
+
+  // If #us-person not checked, show #message-us-person
+  function checkUSPerson() {
+    console.log('checkUSPerson', $('#form-profile-no-us-person').prop('checked'))
+
+    if ($('#form-profile-no-us-person').prop('checked')) {
+      $('#message-us-person').collapse('hide')
+    } else {
+      $('#message-us-person').collapse('show')
+    }
+  }
+  checkUSPerson()
+  $doc.on('change', '#form-profile-no-us-person', function () {
+    checkUSPerson()
   })
   
   // If correspondence address is same as fiscal, show the form details
@@ -90,7 +105,7 @@ $doc.on('ready', function () {
   })
 
   // Update/hide elements if correspondence address form was reset
-  $doc.on('reset', '#form-profile-correspondence-edit', function (event) {
+  $doc.on('reset', '#form-profile-correspondence-edit', function () {
     // Update UI on reset
     // For some weird reason needs to have delay before checking
     setTimeout(function () {

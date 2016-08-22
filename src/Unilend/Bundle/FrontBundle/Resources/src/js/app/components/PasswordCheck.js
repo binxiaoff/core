@@ -32,6 +32,11 @@ function escapeQuotes (input) {
   return input.replace(/'/g, '&#39;').replace(/"/g, '&#34;')
 }
 
+// PasswordCheck
+// @class
+// @param {Mixed} input
+// @param {Object} options
+// @param {PasswordCheck}
 var PasswordCheck = function (input, options) {
   var self = this
   self.$input = $(input)
@@ -313,6 +318,12 @@ var PasswordCheck = function (input, options) {
     event.preventDefault()
     self.$elem.toggleClass('ui-passwordcheck-info-open')
   })
+
+  // Initialise
+  self.$input[0].PasswordCheck = self
+  self.$elem[0].PasswordCheck = self
+
+  return self
 }
 
 /*
@@ -335,6 +346,7 @@ PasswordCheck.prototype.templates = {
 $.fn.uiPasswordCheck = function (options) {
   return this.each(function (i, elem) {
     if (!elem.hasOwnProperty('PasswordCheck')) {
+      console.log('PasswordCheck instantiated')
       new PasswordCheck(elem, options)
     }
   })

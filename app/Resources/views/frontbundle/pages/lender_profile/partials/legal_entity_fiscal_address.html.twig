@@ -1,6 +1,10 @@
 <section id="profile-address-view" role="tabpanel" class="profile-address-view collapse in">
-    <a href="#profile-address-edit" role="button" data-toggle="collapse" data-parent="#profile-address-section" class="btn-edit" aria-controls="#profile-address-edit" aria-expanded="false"><span class="icon fa-pencil-u32"></span>
-        <span class="label">{% trans %} lender-profile_information-tab-identity-section-modify-button {% endtrans %}</span></a>
+    <a href="javascript:;" data-target="#profile-address-edit" role="button" data-toggle="collapse" data-parent="#profile-address-section" class="btn-edit"
+    aria-controls="#profile-address-edit"
+       aria-expanded="false">
+        <span class="icon fa-pencil-u32"></span>
+        <span class="label">{% trans %} lender-profile_information-tab-identity-section-modify-button {% endtrans %}</span>
+    </a>
     <dl class="list-2col">
         <dt>{% trans %} lender-profile_information-tab-fiscal-address-section-address-label {% endtrans %}</dt>
         <dd id="profile-address-street-output">{{ company.adresse1 }}</dd>

@@ -2,8 +2,11 @@
     <p>{% trans %} lender-profile_information-tab-fiscal-address-help-message {% endtrans %}</p>
 </div>
 <section id="profile-address-view" role="tabpanel" class="profile-address-view collapse in">
-    <a href="#profile-address-edit" role="button" data-toggle="collapse" data-parent="#profile-address-section" class="btn-edit" aria-controls="#profile-address-edit" aria-expanded="false"><span class="icon fa-pencil-u32"></span>
-        <span class="label">{% trans %} lender-profile_information-tab-identity-section-modify-button {% endtrans %}</span></a>
+    <a href="javascript:;" data-target="#profile-address-edit" role="button" data-toggle="collapse" data-parent="#profile-address-section" class="btn-edit"
+    aria-controls="#profile-address-edit" aria-expanded="false">
+        <span class="icon fa-pencil-u32"></span>
+        <span class="label">{% trans %} lender-profile_information-tab-identity-section-modify-button {% endtrans %}</span>
+    </a>
     <dl class="list-2col">
         <dt>{% trans %} lender-profile_information-tab-fiscal-address-section-address-label {% endtrans %}</dt>
         <dd id="profile-address-street-output">{{ clientAddresses.adresse_fiscal }}</dd>
@@ -89,26 +92,23 @@
                 <label for="form-profile-address-mobile">{% trans %} common_mobile-phone {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                 <div class="input-group">
-                    <input id="form-profile-address-mobile" type="text" name="client_mobile" value="{{ formData.person.client_mobile  }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="telephone"/>
+                    <input id="form-profile-address-mobile" type="text" name="client_mobile" value="{{ formData.person.client_mobile }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="telephone"/>
                 </div>
             </div><!-- /.form-field -->
         </div>
 
         {# US Person #}
-        <div class="row collapse {% if isLivingAbroad %} in {% endif %}" id="us-person">
+        <div id="us-person" class="row collapse {% if isLivingAbroad == true %} in {% endif %}">
             <div class="form-field form-field-single-checkbox">
                 <label>
-                    <input id="form-profile-no-us-person" type="checkbox" name="no_us_person" value="true" checked="checked">
+                    <input id="form-profile-no-us-person" type="checkbox" name="no_us_person" value="true" {% if formData.person.no_us_person == true %} checked="checked" {%
+                    endif %}>
                     <span class="label">{% trans %} common_no-us-person-declaration {% endtrans %}</span>
                 </label>
             </div><!-- /.form-field -->
 
             {# Only show message if checkbox is unchecked #}
-            <div id="message-us-person" {% if isLivingAbroad == true %}
-                class="message-info collapse in" aria-hidden="false"
-            {% else %}
-                class="message-info collapse" aria-hidden="true"
-            {% endif %}>
+            <div id="message-us-person" class="message-info collapse {% if formData.person.no_us_person != true %} in {% endif %} ">
                 <p>{% trans %} lender-profile_information-tab-fiscal-address-us-person-checkbox-message {% endtrans %}</p>
             </div>
         </div>

@@ -561,6 +561,61 @@ $(document)
   // Auto-init component behaviours on document ready, or when parent element (or self) is made visible with `UI:visible` custom event
   .on('ready UI:visible', function (event) {
     $(event.target).find('[data-autocomplete]').not('.uni-autocomplete').uiAutoComplete()
+
+    // Special modifications for address AutoComplete fields
+    $('[data-autocomplete-address]').each(function (i, elem) {
+      // Ignore if already has AutoComplete
+      if (elem.hasOwnProperty('AutoComplete')) return
+
+      // Instantiate AutoComplete with specific address values
+      new AutoComplete(elem, {
+        minTermLength: 2,
+        ajaxProp: 'zip',
+        // Don't output the item's value, as that will be extracted from the text and applied to the code/city inputs (it currently differs)
+        onrenderitem: function (item) {
+          var self = this
+          return Templating.replace(this.templates.targetItem, {
+            value: '',
+            text: item.label
+          })
+        }
+      })
+
+      // If the countryelem has been set to something other than France, disable the AutoComplete functionality
+      var countryElemSelector = $(elem).attr('data-autocomplete-address-countryelem')
+      if (countryElemSelector && Utility.elemExists(countryElemSelector)) {
+        var $countryElem = $(countryElemSelector)
+        $countryElem.on('change', function (event) {
+          // France === '1'
+          if ($(this).val() === '1') {
+            $(elem).uiAutoComplete('enable')
+          } else {
+            $(elem).uiAutoComplete('disable')
+          }
+        }).change() // Trigger the event to apply when document ready
+      }
+    })
+
+    // Set the new text value of the input and of the ville element
+    $(document).on('AutoComplete:setInputValue:complete', '[data-autocomplete-address]', function (event, elemAutoComplete, newValue) {
+      // Empty value given
+      newValue = (newValue + '').trim()
+      if (!newValue) return
+
+      // Separate the values from the city and the code
+      var codeValue = newValue.replace(/^.*\((\d+)\)$/, '$1')
+      var cityValue = newValue.replace(/ ?\(.*$/, '')
+
+      // Set the new code value
+      elemAutoComplete.$input.val(codeValue)
+
+      // Get the city element to set it with the city value
+      var cityElemSelector = elemAutoComplete.$input.attr('data-autocomplete-address-cityelem')
+      if (Utility.elemExists(cityElemSelector) && /^.*\(\d+\)$/.test(newValue)) {
+        var $cityElem = $(cityElemSelector)
+        $cityElem.val(cityValue)
+      }
+    })
   })
 
 module.exports = AutoComplete

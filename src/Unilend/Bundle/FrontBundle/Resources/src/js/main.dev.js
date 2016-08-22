@@ -3,7 +3,6 @@
  * @linter Standard JS (http://standardjs.com/)
  */
 
-// @TODO AutoComplete needs hooked up to AJAX
 // @TODO Sortable may need AJAX functionality
 // @TODO FileAttach may need AJAX functionality
 
@@ -90,7 +89,7 @@ $(document).ready(function ($) {
 
   // @debug
   // window.__ = __
-  window.Utility = Utility
+  // window.Utility = Utility
   // window.CacheForm = CacheForm
 
   // Remove HTML
@@ -1890,61 +1889,6 @@ $(document).ready(function ($) {
       Utility.revealElem(targetSelector)
     }
   })
-
-  // Special modifications for address AutoComplete fields
-  $('[data-autocomplete-address').each(function (i, elem) {
-    new AutoComplete(elem, {
-      minTermLength: 2,
-      ajaxProp: 'zip',
-      // Don't output the item's value, as that will be extracted from the text and applied to the code/city inputs (it currently differs)
-      onrenderitem: function (item) {
-        var self = this
-        return Templating.replace(this.templates.targetItem, {
-          value: '',
-          text: item.label
-        })
-      }
-    })
-
-    // If the countryelem has been set to something other than France, disable the AutoComplete functionality
-    var countryElemSelector = $(elem).attr('data-autocomplete-address-countryelem')
-    if (countryElemSelector && Utility.elemExists(countryElemSelector)) {
-      var $countryElem = $(countryElemSelector)
-      $countryElem.on('change', function (event) {
-        // France === '1'
-        if ($(this).val() === '1') {
-          $(elem).uiAutoComplete('enable')
-        } else {
-          $(elem).uiAutoComplete('disable')
-        }
-      }).change() // Trigger the event to apply when document ready
-    }
-  })
-  // Set the new text value of the input and of the ville element
-  $doc.on('AutoComplete:setInputValue:complete', '[data-autocomplete-address]', function (event, elemAutoComplete, newValue) {
-      // Empty value given
-      newValue = (newValue + '').trim()
-      if (!newValue) return
-
-      // Separate the values from the city and the code
-      var codeValue = newValue.replace(/^.*\((\d+)\)$/, '$1')
-      var cityValue = newValue.replace(/ ?\(.*$/, '')
-
-      // Set the new code value
-      elemAutoComplete.$input.val(codeValue)
-
-      // Get the city element to set it with the city value
-      var cityElemSelector = elemAutoComplete.$input.attr('data-autocomplete-address-cityelem')
-      if (Utility.elemExists(cityElemSelector) && /^.*\(\d+\)$/.test(newValue)) {
-        var $cityElem = $(cityElemSelector)
-        $cityElem.val(cityValue)
-      }
-    })
-
-  // @debug
-  $('#test-svg1').html(Utility.svgImage('#misc-computermapmarker', '', 300, 300))
-  $('#test-svg2').html(Utility.svgImage('#header-fiscalite', '', 300, 300))
-  $('#test-svg3').html(Utility.svgImage('#category-medical', '', 300, 300))
 
   // Perform on initialisation
   svg4everybody()
