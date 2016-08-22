@@ -208,13 +208,15 @@ class LenderProfileController extends Controller
     private function addFiscalInformationTemplateData(&$templateData, \clients $client, \lenders_accounts $lenderAccount)
     {
         /** @var \ifu $ifu */
-        $ifu                                                         = $this->get('unilend.service.entity_manager')->getRepository('ifu');
+        $ifu = $this->get('unilend.service.entity_manager')->getRepository('ifu');
+
+        $attachment = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [\attachment_type::RIB]);
+
         $templateData['lenderAccount']['fiscal_info']['documents']   = $ifu->select('id_client =' . $client->id_client . ' AND statut = 1', 'annee ASC');
         $templateData['lenderAccount']['fiscal_info']['amounts']     = $this->getFiscalBalanceAndOwedCapital();
-        $templateData['lenderAccount']['fiscal_info']['rib']         = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [\attachment_type::RIB])[\attachment_type::RIB];
+        $templateData['lenderAccount']['fiscal_info']['rib']         = isset($attachment[\attachment_type::RIB]) ? $attachment[\attachment_type::RIB] : [];
         $templateData['lenderAccount']['fiscal_info']['fundsOrigin'] = $this->getFundsOrigin($client->type);
     }
-
 
     /**
      * @Route("/profile/person/identity-update", name="profile_person_identity_update")
