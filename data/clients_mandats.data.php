@@ -51,7 +51,7 @@ class clients_mandats extends clients_mandats_crud
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
 
@@ -71,7 +71,7 @@ class clients_mandats extends clients_mandats_crud
     public function exist($id, $field = 'id_mandat')
     {
         $result = $this->bdd->query('SELECT * FROM clients_mandats WHERE ' . $field . ' = "' . $id . '"');
-        return ($this->bdd->fetch_array($result) > 0);
+        return ($this->bdd->fetch_assoc($result) > 0);
     }
 
     /**

@@ -32,7 +32,7 @@ class BorrowerAccountController extends Controller
         $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
         $settings->get('URL FAQ emprunteur', 'type');
 
-        return ['pre_funding_projects' => $projectsPreFunding, 'funding_projects' => $projectsFunding, 'post_funding_projects' => $projectsPostFunding, 'faqUrl' => $settings->value];
+        return ['pre_funding_projects' => $projectsPreFunding, 'funding_projects' => $projectsFunding, 'post_funding_projects' => $projectsPostFunding, 'faq_url' => $settings->value];
     }
 
     /**
@@ -93,7 +93,7 @@ class BorrowerAccountController extends Controller
         $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
         $settings->get('URL FAQ emprunteur', 'type');
 
-        return ['project_form' => $projectForm->createView(), 'faqUrl' => $settings->value];
+        return ['project_form' => $projectForm->createView(), 'faq_url' => $settings->value];
     }
 
     /**
@@ -106,6 +106,10 @@ class BorrowerAccountController extends Controller
     {
         if ($request->query->get('action') === 'export') {
             return $this->operationsExportCsv($request);
+        }
+
+        if ($request->query->get('action') === 'print') {
+            return $this->operationsPrint($request);
         }
 
         $client              = $this->getClient();
@@ -157,11 +161,13 @@ class BorrowerAccountController extends Controller
                 }
             }
         }
+
         /** @var \factures $oInvoices */
         $oInvoices       = $this->get('unilend.service.entity_manager')->getRepository('factures');
         $company         = $this->getCompany();
         $client          = $this->getClient();
         $clientsInvoices = $oInvoices->select('id_company = ' . $company->id_company, 'date DESC');
+
         foreach ($clientsInvoices as $iKey => $aInvoice) {
             switch ($aInvoice['type_commission']) {
                 case \factures::TYPE_COMMISSION_FINANCEMENT :
@@ -184,7 +190,7 @@ class BorrowerAccountController extends Controller
                 'projects_ids'          => $projectsIds,
                 'invoices'              => $clientsInvoices,
                 'post_funding_projects' => $projectsPostFunding,
-                'faqUrl' => $settings->value
+                'faq_url'               => $settings->value
             ]
         );
     }
@@ -245,7 +251,7 @@ class BorrowerAccountController extends Controller
             'companyCountry' => $companyCountry,
             'idAdded'        => $idAdded,
             'idVersoAdded'   => $idVersoAdded,
-            'faqUrl'         => $settings->value
+            'faq_url'        => $settings->value
         ];
     }
 
@@ -353,7 +359,7 @@ class BorrowerAccountController extends Controller
         $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
         $settings->get('URL FAQ emprunteur', 'type');
 
-        return ['contact_form' => $contactForm->createView(), 'company_siren' => $company->siren, 'company_name' => $company->name, 'faqUrl' => $settings->value];
+        return ['contact_form' => $contactForm->createView(), 'company_siren' => $company->siren, 'company_name' => $company->name, 'faq_url' => $settings->value];
     }
 
     /**

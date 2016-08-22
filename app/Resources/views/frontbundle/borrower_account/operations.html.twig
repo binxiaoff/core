@@ -181,31 +181,32 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr class="table-mydocuments-item list-files">
-                                        <td>
-                                            27685
-                                        </td>
-                                        <td>
-                                            <div class="document-download">
-                                                <a href="#todo" target="_blank">
-                                                    <img class="document-download" src="{{ siteurlmedia('dashboard/file-bond-28x38.png') }}" alt="Pouvoir"/>
-                                                    Télécharger
-                                                </a>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="document-download">
-                                                <a href="#todo" target="_blank">
-                                                    <img class="document-download" src="{{ siteurlmedia('dashboard/file-contract-28x38.png') }}" alt="Mandat"/>
-                                                    Télécharger
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                    {% for project in post_funding_projects %}
+                                        <tr class="table-mydocuments-item list-files">
+                                            <td>{{ project.id_project }}</td>
+                                            <td>
+                                                <div class="document-download">
+                                                    <a href="/pdf/pouvoir/{{ app.user.hash }}/{{ project.id_project }}" target="_blank">
+                                                        <img class="document-download" src="{{ siteurlmedia('dashboard/file-bond-28x38.png') }}" alt="Pouvoir"/>
+                                                        Télécharger
+                                                    </a>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="document-download">
+                                                    <a href="/pdf/mandat/{{ app.user.hash }}/{{ project.id_project }}" target="_blank">
+                                                        <img class="document-download" src="{{ siteurlmedia('dashboard/file-contract-28x38.png') }}" alt="Mandat"/>
+                                                        Télécharger
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                {% endfor %}
                                 </tbody>
                             </table><!-- /.table-mydocuments -->
                         </div><!-- /.table-scroll -->
                     </div>
+
                     <h3 class="panel-title">Factures</h3>
                     <div class="panel-content">
                         <div class="table-scroll">

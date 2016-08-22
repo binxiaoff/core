@@ -53,7 +53,7 @@ class projects_pouvoir extends projects_pouvoir_crud
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -72,6 +72,6 @@ class projects_pouvoir extends projects_pouvoir_crud
     public function exist($id, $field = 'id_pouvoir')
     {
         $result = $this->bdd->query('SELECT * FROM projects_pouvoir WHERE ' . $field . ' = "' . $id . '"');
-        return ($this->bdd->fetch_array($result) > 0);
+        return ($this->bdd->fetch_assoc($result) > 0);
     }
 }
