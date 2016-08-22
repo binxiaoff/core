@@ -19,23 +19,22 @@
             {# MY OPERATIONS #}
             <article id="operations" role="tabpanel" class="dashboard-tab-pane tab-pane active">
                 <div class="panel panel-operations-operations">
-                    <header class="panel-header">
-                        <h3 class="panel-title">{{ 'borrower-operation_panel-title'|trans }}</h3>
-                        <div class="panel-controls">
-                            <button type="submit" name="action" value="print" class="btn-default">
-                                <span class="icon fa-print-u32"></span>
-                                <span class="label">{{ 'borrower-operation_print'|trans }}</span>
-                            </button>
-                            <button id="link-export-operations" type="submit" name="action" value="export" class="btn-default">
-                                <span class="icon fa-excel-u32"></span>
-                                <span class="label">{{ 'borrower-operation_csv-export'|trans }}</span>
-                            </button>
-                        </div>
-                    </header><!-- /.panel-header -->
+                    <form id="form-filters-operations" action="{{ path(app.request.get('_route')) }}" method="get" class="form-filters" data-ajax>
+                        <header class="panel-header">
+                            <h3 class="panel-title">{{ 'borrower-operation_panel-title'|trans }}</h3>
+                            <div class="panel-controls">
+                                <button type="submit" name="action" value="print" class="btn-default">
+                                    <span class="icon fa-print-u32"></span>
+                                    <span class="label">{{ 'borrower-operation_print'|trans }}</span>
+                                </button>
+                                <button type="submit" name="action" value="export" class="btn-default">
+                                    <span class="icon fa-excel-u32"></span>
+                                    <span class="label">{{ 'borrower-operation_csv-export'|trans }}</span>
+                                </button>
+                            </div>
+                        </header><!-- /.panel-header -->
 
-                    <div class="panel-content">
-                        <form id="form-filters-operations" action="{{ path(app.request.get('_route')) }}" method="get" class="form-filters" data-ajax>
-                            <input type="hidden" name="action" value=""/>
+                        <div class="panel-content">
                             <div id="filters" class="row row-multi-col-computer collapse in">
                                 <div class="row">
                                     <div class="form-field">
@@ -129,35 +128,35 @@
                                     </div>
                                 </div>
                             </div>
-                        </form><!-- /.form-operations-filters -->
 
-                        <div class="table-scroll">
-                            <table class="table table-myoperations">
-                                <thead class="table-sortable-columns">
-                                    <tr>
-                                        <th class="table-column table-myoperations-borrower-item-operation">
-                                            <span class="label">{% trans %} borrower-operation_operation {% endtrans %}</span>
-                                        </th>
-                                        <th class="table-column cell-right table-myoperations-borrower-item-projet">
-                                            <span class="label">{% trans %} borrower-operation_project {% endtrans %}</span>
-                                        </th>
-                                        <th class="table-column cell-right table-myoperations-borrower-item-date">
-                                            <span class="label">{% trans %} borrower-operation_operation-date {% endtrans %}</span>
-                                        </th>
-                                        <th class="table-column cell-right table-myoperations-borrower-item-amount">
-                                            <span class="label">{% trans %} borrower-operation_amount {% endtrans %}</span>
-                                        </th>
-                                        <th class="table-column cell-right table-myoperations-borrower-item-detail">
-                                            <span class="label">{% trans %} borrower-operation_detail {% endtrans %}</span>
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table><!-- /.table-myoperations -->
-                            <div class="message-info">{% trans %} borrower-operation_no-operation-message {% endtrans %}</div>
-                        </div><!-- /.table-scroll -->
-                    </div><!-- /.panel-content -->
+                            <div class="table-scroll">
+                                <table class="table table-myoperations">
+                                    <thead class="table-sortable-columns">
+                                        <tr>
+                                            <th class="table-column table-myoperations-borrower-item-operation">
+                                                <span class="label">{% trans %} borrower-operation_operation {% endtrans %}</span>
+                                            </th>
+                                            <th class="table-column cell-right table-myoperations-borrower-item-projet">
+                                                <span class="label">{% trans %} borrower-operation_project {% endtrans %}</span>
+                                            </th>
+                                            <th class="table-column cell-right table-myoperations-borrower-item-date">
+                                                <span class="label">{% trans %} borrower-operation_operation-date {% endtrans %}</span>
+                                            </th>
+                                            <th class="table-column cell-right table-myoperations-borrower-item-amount">
+                                                <span class="label">{% trans %} borrower-operation_amount {% endtrans %}</span>
+                                            </th>
+                                            <th class="table-column cell-right table-myoperations-borrower-item-detail">
+                                                <span class="label">{% trans %} borrower-operation_detail {% endtrans %}</span>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table><!-- /.table-myoperations -->
+                                <div class="message-info">{% trans %} borrower-operation_no-operation-message {% endtrans %}</div>
+                            </div><!-- /.table-scroll -->
+                        </div><!-- /.panel-content -->
+                    </form><!-- /.form-operations-filters -->
                 </div><!-- /.panel -->
             </article><!-- /#myoperations.tab-pane -->
 

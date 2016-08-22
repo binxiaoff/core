@@ -96,13 +96,17 @@ class bootstrap extends Controller
         // XSS protection
         if (false === empty($_POST)) {
             foreach ($_POST as $key => $value) {
-                $_POST[$key] = htmlspecialchars(strip_tags($value));
+                if (is_string($value)) {
+                    $_POST[$key] = htmlspecialchars(strip_tags($value));
+                }
             }
         }
 
         if (false === empty($_GET)) {
             foreach ($_GET as $key => $value) {
-                $_GET[$key] = htmlspecialchars(strip_tags($value));
+                if (is_string($value)) {
+                    $_GET[$key] = htmlspecialchars(strip_tags($value));
+                }
             }
         }
 
