@@ -163,20 +163,20 @@
 
             <article id="mydocuments" role="tabpanel" class="dashboard-tab-pane tab-pane">
                 <div class="panel panel-operations-operations">
-                    <h3 class="panel-title">Documents contractuels</h3>
+                    <h3 class="panel-title">{% trans %} borrower-document_contracts-section-title {% endtrans %}</h3>
                     <div class="panel-content">
                         <div class="table-scroll">
                             <table class="table table-mydocuments">
                                 <thead>
                                     <tr>
                                         <th class="table-column table-mydocuments-borrower-item-filenumber">
-                                            <span class="label">Numéro du dossier</span>
+                                            <span class="label">{% trans %} borrower-document_contracts-project-id-column-title {% endtrans %}</span>
                                         </th>
                                         <th class="table-column table-mydocuments-borrower-item-pouvoir">
-                                            <span class="label">Pouvoir</span>
+                                            <span class="label">{% trans %} borrower-document_contracts-proxy-column-title {% endtrans %}</span>
                                         </th>
                                         <th class="table-column table-mydocuments-borrower-item-mandat">
-                                            <span class="label">Mandat</span>
+                                            <span class="label">{% trans %} borrower-document_contracts-mandate-column-title {% endtrans %}</span>
                                         </th>
                                     </tr>
                                 </thead>
@@ -187,16 +187,16 @@
                                             <td>
                                                 <div class="document-download">
                                                     <a href="/pdf/pouvoir/{{ app.user.hash }}/{{ project.id_project }}" target="_blank">
-                                                        <img class="document-download" src="{{ siteurlmedia('dashboard/file-bond-28x38.png') }}" alt="Pouvoir"/>
-                                                        Télécharger
+                                                        <img class="document-download" src="{{ siteurlmedia('dashboard/file-bond-28x38.png') }}" alt="{% trans %} borrower-document_contracts-proxy-download-link-placeholder {% endtrans %}"/>
+                                                        {% trans %} borrower-document_contracts-proxy-download-link {% endtrans %}
                                                     </a>
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="document-download">
                                                     <a href="/pdf/mandat/{{ app.user.hash }}/{{ project.id_project }}" target="_blank">
-                                                        <img class="document-download" src="{{ siteurlmedia('dashboard/file-contract-28x38.png') }}" alt="Mandat"/>
-                                                        Télécharger
+                                                        <img class="document-download" src="{{ siteurlmedia('dashboard/file-contract-28x38.png') }}" alt="{% trans %} borrower-document_contracts-mandate-download-link-placeholder {% endtrans %}"/>
+                                                        {% trans %} borrower-document_contracts-mandate-download-link {% endtrans %}
                                                     </a>
                                                 </div>
                                             </td>
@@ -207,71 +207,48 @@
                         </div><!-- /.table-scroll -->
                     </div>
 
-                    <h3 class="panel-title">Factures</h3>
+                    <h3 class="panel-title">{% trans %} borrower-document_invoices-section-title {% endtrans %}</h3>
                     <div class="panel-content">
                         <div class="table-scroll">
                             <table class="table table-mydocuments">
                                 <thead>
                                 <tr>
                                     <th class="table-column table-mydocuments-borrower-item-billnumber">
-                                        <span class="label">N° de facture</span>
+                                        <span class="label">{% trans %} borrower-document_invoices-invoice-id-column-title {% endtrans %}</span>
                                     </th>
                                     <th class="table-column table-mydocuments-borrower-item-billfilenumber">
-                                        <span class="label">N° du dossier</span>
+                                        <span class="label">{% trans %} borrower-document_invoices-project-id-column-title {% endtrans %}</span>
                                     </th>
                                     <th class="table-column table-mydocuments-borrower-item-billdate">
-                                        <span class="label">Date de la facture</span>
+                                        <span class="label">{% trans %} borrower-document_invoices-invoice-date-column-title {% endtrans %}</span>
                                     </th>
                                     <th class="table-column table-mydocuments-borrower-item-bill">
-                                        <span class="label">Facture</span>
+                                        <span class="label">{% trans %} borrower-document_invoices-invoice-column-title {% endtrans %}</span>
                                     </th>
                                 </tr>
                                 </thead>
                                 <tbody>
-
-                                {% set placeholderData = {
-                                bills : [{
-                                billnumber: 'FR-E200562154',
-                                filenumber: '27658',
-                                datetime: '12/06/2016'
-                                },{
-                                billnumber: 'FR-E200562458',
-                                filenumber: '27698',
-                                datetime: '12/07/2016'
-                                },{
-                                billnumber: 'FR-E200562169',
-                                filenumber: '22358',
-                                datetime: '17/07/2016'
-                                },{
-                                billnumber: 'FR-E200562999',
-                                filenumber: '17648',
-                                datetime: '21/07/2016'
-                                }]
-                                } %}
-
-                                {% set bills = placeholderData.bills %}
-
-                                {% for i, item in bills %}
-                                    <tr class="table-mydocuments-item list-files">
-                                        <td class="table-mydocuments-borrower-item-billnumber">
-                                            {{ bills[i].billnumber }}
-                                        </td>
-                                        <td class="table-mydocuments-borrower-item-billfilenumber">
-                                            {{ bills[i].filenumber }}
-                                        </td>
-                                        <td class="table-mydocuments-borrower-item-billdate">
-                                            {{ bills[i].datetime }}
-                                        </td>
-                                        <td class="table-mydocuments-borrower-item-bill">
-                                            <div class="document-download">
-                                                <a href="#todo" target="_blank">
-                                                    <img class="document-download" src="{{ siteurlmedia('dashboard/file-pdf-60x80.png') }}" alt="PDF"/>
-                                                    Télécharger
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
+                                    {% for invoice in invoices %}
+                                        <tr class="table-mydocuments-item list-files">
+                                            <td class="table-mydocuments-borrower-item-billnumber">
+                                                {{ invoice.id_facture }}
+                                            </td>
+                                            <td class="table-mydocuments-borrower-item-billfilenumber">
+                                                {{ invoice.id_project }}
+                                            </td>
+                                            <td class="table-mydocuments-borrower-item-billdate">
+                                                {{ invoice.date|localizeddate('short', 'none') }}
+                                            </td>
+                                            <td class="table-mydocuments-borrower-item-bill">
+                                                <div class="document-download">
+                                                    <a href="{{ invoice.url }}" target="_blank">
+                                                        <img class="document-download" src="{{ siteurlmedia('dashboard/file-pdf-60x80.png') }}" alt="{% trans %} borrower-document_invoices-invoice-download-link-placeholder {% endtrans %}"/>
+                                                        {% trans %} borrower-document_invoices-invoice-download-link {% endtrans %}
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
                                 </tbody>
                             </table><!-- /.table-myoperations -->
                         </div><!-- /.table-scroll -->
