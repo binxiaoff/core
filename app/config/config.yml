@@ -37,11 +37,12 @@ cmf_routing:
 
 twig:
     strict_variables: "%kernel.debug%"
+    exception_controller:  UnilendFrontBundle:Compatibility:dispatch
     paths:
         - "%kernel.root_dir%/Resources/views/frontbundle/"
-#    exception_controller:  UnilendFrontBundle:Compatibility:dispatch
     form_themes:
         - 'frontbundle/layouts/form_layout.html.twig'
+
 assetic:
     debug:          '%kernel.debug%'
     use_controller: '%kernel.debug%'

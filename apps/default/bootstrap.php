@@ -178,32 +178,6 @@ class bootstrap extends Controller
             'J' => 'etoile10'
         );
 
-        // Recuperation du bloc nos-partenaires
-        $oCachedItem = $oCachePool->getItem('Blocs_Partenaires_' . $this->blocs->id_bloc . '_' . $this->language);
-        if (false === $oCachedItem->isHit()) {
-            $this->blocs->get('nos-partenaires', 'slug');
-            $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
-            foreach ($lElements as $b_elt) {
-                $this->elements->get($b_elt['id_element']);
-                $this->bloc_partenaires[$this->elements->slug]           = $b_elt['value'];
-                $this->bloc_partenairesComplement[$this->elements->slug] = $b_elt['complement'];
-            }
-
-            $aElements = array(
-                'blocPartenaires'           => $this->bloc_partenaires,
-                'blocPartenairesComplement' => $this->bloc_partenairesComplement
-            );
-
-            $oCachedItem->set($aElements)
-                        ->expiresAfter(3600);
-            $oCachePool->save($oCachedItem);
-        } else {
-            $aElements   = $oCachedItem->get();
-        }
-
-        $this->bloc_partenaires           = $aElements['blocPartenaires'];
-        $this->bloc_partenairesComplement = $aElements['blocPartenairesComplement'];
-
         //Recuperation des element de traductions
         $oCachedItem = $oCachePool->getItem('Trad_Header_Footer_home');
 
