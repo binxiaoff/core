@@ -53,7 +53,7 @@
                 <label for="form-profile-address-code">{% trans %} lender-profile_information-tab-fiscal-address-section-zip-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
-                <div class="input-group">
+                <div class="input-group set-right">
                     <input id="form-profile-address-code" type="text" name="fiscal_address_zip" value="{{ formData.person.fiscal_address_zip  }}" class="input-field"
                            data-formvalidation-input
                            data-formvalidation-required="true"
@@ -61,7 +61,11 @@
                            data-autocomplete-address
                            data-autocomplete-ajaxurl="{{ path('lender_profile_ajax_zip') }}"
                            data-autocomplete-address-countryelem="#form-profile-address-pays"
-                           data-autocomplete-address-cityelem="#form-profile-address-ville"/>
+                           data-autocomplete-address-cityelem="#form-profile-address-ville"
+                           data-has-spinner="#spinner-profile-address-code"/>
+                    <div class="btn-group">
+                        <span id="spinner-profile-address-code" class="ui-is-spinner"><span class="sr-only">Loading...</span></span>
+                    </div>
                 </div><!-- /.input-group -->
             </div><!-- /.form-field -->
             <div class="form-field col-lg-6 col-md-6">

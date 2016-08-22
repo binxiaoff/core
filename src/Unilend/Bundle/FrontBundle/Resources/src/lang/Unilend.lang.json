@@ -89,7 +89,7 @@
   "en": {
     "number-decimal":  ".",
     "number-milli":    ",",
-    "number-currency": "$",
+    "number-currency": "$"
   },
   "en-gb": {
     "numberDecimal":  ".",

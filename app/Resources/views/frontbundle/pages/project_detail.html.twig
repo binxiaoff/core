@@ -9,7 +9,8 @@
 {% set classRating = project.risk|convertRisk|split('.')|join('-') %}
 
 {% block siteContent %}
-    <article id="project-single" class="page project-single project-category-{{ project.company.sectorId }}{% if project.finished %} ui-project-expired{% endif %}">
+    <article id="project-single" class="page project-single project-category-{{ project.company.sectorId }}{% if project.finished %} ui-project-expired{% endif %}"
+             data-has-spinner>
         <header class="project-single-header-wrap">
             <div class="project-single-map">
                 {% if project.company.latitude is not empty and project.company.longitude is not empty %}

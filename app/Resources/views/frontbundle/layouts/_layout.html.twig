@@ -157,6 +157,7 @@
 {% endblock %}
 <script type="text/javascript">
     // Translations for JS modules
+    var UTILITY_LANG = JSON.parse('{{ dictionary('utility')|json_encode|escape('js')|raw }}');
     var AUTOCOMPLETE_LANG = JSON.parse('{{ dictionary('auto-complete')|json_encode|escape('js')|raw }}');
     var FORMVALIDATION_LANG = JSON.parse('{{ dictionary('form-validation')|json_encode|escape('js')|raw }}');
     var PASSWORDCHECK_LANG = JSON.parse('{{ dictionary('password-check')|json_encode|escape('js')|raw }}');

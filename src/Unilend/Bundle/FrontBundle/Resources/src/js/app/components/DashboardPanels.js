@@ -122,12 +122,14 @@ DashboardPanels.prototype.pullData = function () {
 
     // @trigger elem `DashboardPanels:pullData:before` [elemDashboard, ajaxData]
     self.$elem.trigger('DashboardPanels:pullData:before', [self, self.data])
+    self.$elem.trigger('Spinner:showLoading');
 
     // Get the dashboard data
     $.ajax({
         url: self.settings.ajaxUrl,
         method: 'GET',
         data: self.data,
+        global: false,
         success: function (responseData, textStatus, xhr) {
             // Success
             if (responseData.hasOwnProperty('success')) {
@@ -155,6 +157,9 @@ DashboardPanels.prototype.pullData = function () {
 
             // @trigger elem `DashboardPanels:pullData:error` [elemDashboard, textStatus, xhr]
             self.$elem.trigger('DashboardPanels:pullData:error', [self, textStatus, xhr])
+        },
+        complete: function () {
+            self.$elem.trigger('Spinner:hideLoading');
         }
     })
 }

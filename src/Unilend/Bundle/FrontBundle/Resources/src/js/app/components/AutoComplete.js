@@ -250,11 +250,15 @@ var AutoComplete = function (elem, options) {
     // Set the property correctly within the data object to send to the AJAX endpoint
     ajaxData[self.settings.ajaxProp] = term
 
+    // @trigger input `Spinner:showLoading`
+    self.$input.trigger('Spinner:showLoading')
+
     // Do the ajax operation
     $.ajax({
       url: self.settings.ajaxUrl,
       method: 'GET',
       data: ajaxData,
+      global: false,
       success: function (data, textStatus, xhr) {
         if ( textStatus === 'success' ) {
           // @todo support AJAX results
@@ -284,6 +288,10 @@ var AutoComplete = function (elem, options) {
 
         // @trigger `AutoComplete:findTermViaAjax:errored` [elemAutoComplete, term, data, textStatus, xhr]
         self.$input.trigger('AutoComplete:findTermViaAjax:errored', [self, term, undefined, textStatus, xhr])
+      },
+      complete: function () {
+        // @trigger input `Spinner:hideLoading`
+        self.$input.trigger('Spinner:hideLoading')
       }
     })
   }
