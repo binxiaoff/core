@@ -106,9 +106,13 @@ class LenderProfileController extends Controller
             'company_director_first_name'      => isset($form['legalEntity']['company_director_first_name']) ? $form['legalEntity']['company_director_first_name'] : $company->prenom_dirigeant,
             'company_director_phone'           => isset($form['legalEntity']['company_director_phone']) ? $form['legalEntity']['company_director_phone'] : $company->phone_dirigeant,
             'company_director_email'           => isset($form['legalEntity']['company_director_email']) ? $form['legalEntity']['company_director_email'] : $company->email_dirigeant,
+           'company_director_position'         => isset($form['legalEntity']['company_director_position']) ? $form['legalEntity']['company_director_position'] :
+               $company->fonction_dirigeant,
             'client_form_of_address'           => isset($form['legalEntity']['client_form_of_address']) ? $form['legalEntity']['client_form_of_address'] : $client->civilite,
             'client_name'                      => isset($form['legalEntity']['client_name']) ? $form['legalEntity']['client_name'] : $client->nom_usage,
             'client_first_name'                => isset($form['legalEntity']['client_first_name']) ? $form['legalEntity']['client_first_name'] : $client->prenom,
+            'client_phone'                     => isset($form['legalEntity']['client_phone']) ? $form['legalEntity']['client_phone'] : $client->telephone,
+            'client_email'                     => isset($form['legalEntity']['client_email']) ? $form['legalEntity']['client_email'] : $client->email,
             'client_position'                  => isset($form['legalEntity']['client_position']) ? $form['legalEntity']['client_position'] : $client->fonction,
             'fiscal_address_street'            => isset($form['legalEntityFiscal']['fiscal_address_street']) ? $form['legalEntityFiscal']['fiscal_address_street'] : $company->adresse1,
             'fiscal_address_zip'               => isset($form['legalEntityFiscal']['fiscal_address_zip']) ? $form['legalEntityFiscal']['fiscal_address_zip'] : $company->zip,
@@ -1172,12 +1176,8 @@ class LenderProfileController extends Controller
         $clientId = $user->getClientId();
         /** @var \companies $company */
         $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
-        $company->get($clientId, 'id_client');
+        $company->get($clientId, 'id_client_owner');
 
         return $company;
     }
-
-
-
-
 }

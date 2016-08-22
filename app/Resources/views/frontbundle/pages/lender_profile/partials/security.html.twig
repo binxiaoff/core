@@ -1,5 +1,6 @@
 {# IDENTIFICATION #}
 <article id="panel-identification" class="panel">
+
     <header class="panel-header">
         <h3>{% trans %} lender-profile_security-identification-section-title {% endtrans %}</h3>
         <div id="form-profile-info-notifications">
@@ -19,12 +20,15 @@
             {% endif %}
             </div>
     </header><!-- .panel-header -->
+
     <section id="profile-security-identification-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
         <section id="profile-security-identification-view" role="tabpanel" class="profile-security-identification-view collapse in">
-            <a href="javascript:;" data-target="#profile-security-identification-edit" role="button" data-toggle="collapse" data-parent="#profile-security-identification-section" class="btn-edit" aria-controls="#profile-security-identification-edit" aria-expanded="false">
+
+            <button data-target="#profile-security-identification-edit" role="button" data-toggle="collapse" data-parent="#profile-security-identification-section" class="btn-edit" aria-controls="#profile-security-identification-edit" aria-expanded="false">
                 <span class="icon fa-pencil-u32"></span>
                 <span class="label">{% trans %} lender-profile_security-identity-section-modify-button {% endtrans %}</span>
-            </a>
+            </button>
+
             <dl class="list-2col">
                 <dt>{% trans %} common_email {% endtrans %}</dt>
                 <dd id="profile-security-identification-email-output">{{ client.email }}</dd>
@@ -33,7 +37,8 @@
                 <dt>{% trans %} common_landline {% endtrans %}</dt>
                 <dd id="profile-security-identification-telephone-output">{{ client.telephone }}</dd>
             </dl>
-        </section>
+
+        </section><!-- /#profile-security-identification-view -->
 
         <section id="profile-security-identification-edit" role="tabpanel" class="profile-security-identification-view collapse">
             <form id="form-profile-security-identification-edit" action="{{ path('profile_security_submit_identification') }}" method="post" class="form-security form-profile-security-identification-edit"
@@ -88,10 +93,11 @@
 
                 <div class="btn-controls">
                     <button class="btn-primary">{% trans %} lender-profile_security-identity-section-submit-button {% endtrans %}</button>
-                    <button type="reset" role="button" data-toggle="collapse" data-target="#profile-security-identification-view" data-parent="#profile-security-identification-section" class="btn-default" aria-controls="#profile-security-identification-view" aria-expanded="true">{% trans %} lender-profile_security-identity-section-cancel-button {% endtrans %}</button>
+                    <button type="reset" role="button" data-toggle="collapse" data-target="#profile-security-identification-view" data-parent="#profile-security-identification-section" class="btn-default">{% trans %} lender-profile_security-identity-section-cancel-button {% endtrans %}</button>
                 </div><!-- /.btn-controls -->
             </form><!-- /.form-security-identification-edit -->
         </section><!-- /#profile-security-identification-edit -->
+
     </section><!-- /.ui-toggle-group -->
 </article><!-- /.panel -->
 
@@ -100,20 +106,27 @@
     <header class="panel-header">
         <h3>Mot de passe</h3>
     </header><!-- .panel-header -->
+
     <section id="profile-security-password-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
         <section id="profile-security-password-view" role="tabpanel" class="profile-security-password-view collapse in">
-            <a href="#profile-security-password-edit" role="button" data-toggle="collapse" data-parent="#profile-security-password-section" class="btn-edit" aria-controls="#profile-security-password-edit" aria-expanded="false"><span class="icon fa-pencil-u32"></span>
-                <span class="label">Changer mon mot de passe</span></a>
+
+            <button data-target="#profile-security-password-edit" role="button" data-toggle="collapse" data-parent="#profile-security-password-section" class="btn-edit">
+                <span class="icon fa-pencil-u32"></span>
+                <span class="label">Changer mon mot de passe</span>
+            </button>
+
             <dl class="list-2col">
                 <dt>Mot de passe</dt>
                 <dd>************</dd>
             </dl>
-        </section>
+
+        </section><!-- /#profile-security-password-view -->
 
         <section id="profile-security-password-edit" role="tabpanel" class="profile-security-password-view collapse">
             <form id="form-profile-security-password-edit" action="{{ route('user/preter/profile/password/update') }}" method="post" class="form-security form-profile-security-password-edit"
                   data-formvalidation
                   data-formvalidation-notificationselem="#form-profile-security-password-notifications">
+
                 <div id="form-profile-security-password-notifications"></div>
 
                 <div class="row row-multi-col-computer">
@@ -160,6 +173,7 @@
                 </div><!-- /.btn-controls -->
             </form><!-- /.form-security-password-edit -->
         </section><!-- /#profile-security-password-edit -->
+
     </section><!-- /.ui-toggle-group -->
 </article><!-- /.panel -->
 
@@ -171,9 +185,13 @@
     <p>Cette question vous sera posée dans le cas où vous auriez oublié votre mot de passe.</p>
     <section id="profile-security-question-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
         <section id="profile-security-question-view" role="tabpanel" class="profile-security-question-view collapse in">
-            <a href="#profile-security-question-edit" role="button" data-toggle="collapse" data-parent="#profile-security-question-section" class="btn-edit" aria-controls="#profile-security-question-edit" aria-expanded="false"><span class="icon fa-pencil-u32"></span>
-                <span class="label">Modifier</span></a>
-        </section>
+
+            <button href="#profile-security-question-edit" role="button" data-toggle="collapse" data-parent="#profile-security-question-section" class="btn-edit">
+                <span class="icon fa-pencil-u32"></span>
+                <span class="label">Modifier</span>
+            </button>
+
+        </section><!-- /#profile-security-question-view -->
 
         <section id="profile-security-question-edit" role="tabpanel" class="profile-security-question-view collapse">
             <form id="form-profile-security-question-edit" action="{{ route('user/preter/profile/question/update') }}" method="post" class="form-security form-profile-security-question-edit"
@@ -207,5 +225,6 @@
                 </div><!-- /.btn-controls -->
             </form><!-- /.form-security-question-edit -->
         </section><!-- /#profile-security-question-edit -->
+
     </section><!-- /.ui-toggle-group -->
 </article><!-- /.panel -->

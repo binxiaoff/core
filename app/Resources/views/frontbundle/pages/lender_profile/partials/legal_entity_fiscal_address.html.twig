@@ -1,10 +1,10 @@
 <section id="profile-address-view" role="tabpanel" class="profile-address-view collapse in">
-    <a href="javascript:;" data-target="#profile-address-edit" role="button" data-toggle="collapse" data-parent="#profile-address-section" class="btn-edit"
-    aria-controls="#profile-address-edit"
-       aria-expanded="false">
+
+    <button data-target="#profile-address-edit" role="button" data-toggle="collapse" data-parent="#profile-address-section" class="btn-edit" aria-controls="#profile-address-edit">
         <span class="icon fa-pencil-u32"></span>
         <span class="label">{% trans %} lender-profile_information-tab-identity-section-modify-button {% endtrans %}</span>
-    </a>
+    </button>
+
     <dl class="list-2col">
         <dt>{% trans %} lender-profile_information-tab-fiscal-address-section-address-label {% endtrans %}</dt>
         <dd id="profile-address-street-output">{{ company.adresse1 }}</dd>
@@ -15,6 +15,7 @@
         <dt>{% trans %} lender-profile_information-tab-fiscal-address-section-country-label {% endtrans %}</dt>
         <dd id="profile-address-pays-output">{{ company.id_pays|countryLabel }}</dd>
     </dl>
+
 </section><!-- /.profile-address-view -->
 
 <section id="profile-address-edit" role="tabpanel" class="profile-address-edit collapse">
@@ -76,20 +77,11 @@
             </div><!-- /.form-field -->
         </div>
 
-        <div class="row">
-            <div class="form-field form-field-single-checkbox">
-                <label><input id="form-profile-address-is-correspondence" type="checkbox" name="same_postal_address" value="true"
-                              {% if formData.legalEntity.same_postal_address %}checked="checked"{% endif %}>
-                    <span class="label">{% trans %} lender-profile_information-tab-fiscal-address-section-postal-checkbox {% endtrans %}</span></label>
-            </div><!-- /.form-field -->
-        </div>
-        {#TODO: if box is unchecked, postal and fiscal need to be submitted, to be discussed #}
-
         <input type="hidden" name="fiscal_address_company_form" value="true" />
 
         <div class="btn-controls">
             <button class="btn-primary">{% trans %} lender-profile_information-tab-identity-save-modifications-button {% endtrans %}</button>
-            <button type="reset" role="button" data-toggle="collapse" data-target="#profile-address-view" data-parent="#profile-address-section" class="btn-default" aria-controls="#profile-address-view" aria-expanded="true">{% trans %} lender-profile_information-tab-identity-cancel-modifications-button {% endtrans %}</button>
+            <button type="reset" role="button" data-toggle="collapse" data-target="#profile-address-view" data-parent="#profile-address-section" class="btn-default">{% trans %} lender-profile_information-tab-identity-cancel-modifications-button {% endtrans %}</button>
         </div><!-- /.btn-controls -->
     </form><!-- /.form-profile-address-edit -->
 </section><!-- /.profile-address-edit -->

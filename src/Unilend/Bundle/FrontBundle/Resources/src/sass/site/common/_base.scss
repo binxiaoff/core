@@ -47,3 +47,11 @@ img {
     top: 0;
   }
 }
+
+// Wait until JS kicks in for this to be available
+.no-js {
+  [role="tab"][data-toggle],
+  [role="button"][data-toggle] {
+    visibility: hidden;
+  }
+}

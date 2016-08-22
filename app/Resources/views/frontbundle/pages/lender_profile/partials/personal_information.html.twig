@@ -5,6 +5,7 @@
     <header class="panel-header">
         <h3>{% trans %} lender-profile_information-tab-identity-section-title {% endtrans %}</h3>
         <div id="form-profile-info-notifications">
+
             {% if app.session.flashBag.has('personIdentityErrors') %}
                 <div class="message-error">
                     {% for error in app.session.flashBag.get('personIdentityErrors') %}
@@ -109,7 +110,7 @@
 </article><!-- /.panel -->
 
 
-<article id="panel-terms-of-use" class="panel collapse in">
+<article id="panel-terms-of-use" class="panel">
     <header class="panel-header">
         <h3>{% trans %} lender-profile_information-tab-terms-of-use-section-title {% endtrans %}</h3>
     </header>

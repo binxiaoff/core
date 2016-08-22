@@ -850,6 +850,7 @@ FormValidation.prototype.rules = {
           }
           break
 
+        case 'tel':
         case 'phone':
         case 'telephone':
         case 'mobile':

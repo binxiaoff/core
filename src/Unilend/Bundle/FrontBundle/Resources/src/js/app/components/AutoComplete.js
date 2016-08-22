@@ -1,19 +1,13 @@
 /*
  * Unilend Autocomplete
- * @note this was the first JS component that I made, so it differs slightly from the others as
- *       I developed and improved my API planning and implentation as time went on
+ * Display potential matches to what a user is typing into an input field
  */
-
-/*
-@todo support AJAX results
-@todo finesse keyboard up/down on results
-*/
 
 var $ = require('jquery')
 var Utility = require('Utility')
 var ElementAttrsObject = require('ElementAttrsObject')
 var Templating = require('Templating')
-var Tether = require('Tether')
+var Tether = require('tether')
 
 // Case-insensitive selector `:Contains()`
 jQuery.expr[':'].Contains = function(a, i, m) {

@@ -346,7 +346,6 @@ PasswordCheck.prototype.templates = {
 $.fn.uiPasswordCheck = function (options) {
   return this.each(function (i, elem) {
     if (!elem.hasOwnProperty('PasswordCheck')) {
-      console.log('PasswordCheck instantiated')
       new PasswordCheck(elem, options)
     }
   })

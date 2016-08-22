@@ -1,8 +1,9 @@
 <section id="profile-correspondence-view" role="tabpanel" class="profile-correspondence-view collapse in">
-    <a href="#profile-correspondence-edit" role="button" data-toggle="collapse" data-parent="#profile-correspondence-section" class="btn-edit" aria-controls="#profile-correspondence-edit" aria-expanded="false">
+
+    <button data-target="#profile-correspondence-edit" role="button" data-toggle="collapse" data-parent="#profile-correspondence-section" class="btn-edit">
         <span class="icon fa-pencil-u32"></span>
         <span class="label">{% trans %} lender-profile_information-tab-identity-section-modify-button {% endtrans %}</span>
-    </a>
+    </button>
 
     <div class="profile-correspondence-is-same collapse {% if clientAddresses.meme_adresse_fiscal == 1 %} in {% endif %}">
         <span class="icon fa-check-u32"></span>{% trans %} lender-profile_information-tab-fiscal-address-section-postal-checkbox {% endtrans %}
@@ -18,6 +19,7 @@
         <dt>{% trans %} lender-profile_information-tab-postal-address-section-country-label {% endtrans %}</dt>
         <dd id="profile-correspondence-pays-output">{{ clientAddresses.id_pays|countryLabel }}</dd>
     </dl>
+
 </section><!-- /.profile-correspondence-view -->
 
 <section id="profile-correspondence-edit" role="tabpanel" class="profile-correspondence-edit collapse">
