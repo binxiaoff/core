@@ -2,8 +2,10 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -21,9 +23,10 @@ class BorrowerAccountController extends Controller
      * @Route("/espace-emprunteur/projets", name="borrower_account_projects")
      * @Template("borrower_account/projects.html.twig")
      *
+     * @param Request $request
      * @return array
      */
-    public function projectsAction()
+    public function projectsAction(Request $request)
     {
         $projectsPreFunding  = $this->getProjectsPreFunding();
         $projectsFunding     = $this->getProjectsFunding();
@@ -33,7 +36,51 @@ class BorrowerAccountController extends Controller
         $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
         $settings->get('URL FAQ emprunteur', 'type');
 
-        return ['pre_funding_projects' => $projectsPreFunding, 'funding_projects' => $projectsFunding, 'post_funding_projects' => $projectsPostFunding, 'faq_url' => $settings->value];
+        return [
+            'pre_funding_projects'  => $projectsPreFunding,
+            'funding_projects'      => $projectsFunding,
+            'post_funding_projects' => $projectsPostFunding,
+            'closing_projects'      => $request->getSession()->get('closingProjects'),
+            'faq_url'               => $settings->value
+        ];
+    }
+
+    /**
+     * @Route("/espace-emprunteur/cloture-projet", name="borrower_account_close_project")
+     * @Method("POST")
+     *
+     * @param Request $request
+     * @return RedirectResponse
+     */
+    public function closeFundingProjectAction(Request $request)
+    {
+        if ($request->request->get('project')) {
+            /** @var \projects $project */
+            $project   = $this->get('unilend.service.entity_manager')->getRepository('projects');
+            $projectId = $request->request->get('project');
+
+            if (
+                $projectId == (int) $projectId
+                && $project->get($projectId)
+                && $project->id_company == $this->getCompany()->id_company
+            ) {
+                $session = $request->getSession();
+
+                $closingProjects = $session->get('closingProjects', []);
+                $closingProjects[$project->id_project] = true;
+
+                $session->set('closingProjects', $closingProjects);
+
+                $closingDate = new \DateTime();
+                $closingDate->modify('+5 minutes');
+
+                $project->date_retrait_full = $closingDate->format('Y-m-d H:i:s');
+                $project->date_retrait      = $closingDate->format('Y-m-d');
+                $project->update();
+            }
+        }
+
+        return new RedirectResponse($this->generateUrl('borrower_account_projects'));
     }
 
     /**
@@ -658,7 +705,7 @@ class BorrowerAccountController extends Controller
         foreach ($projectsFunding as $key => $project) {
             $projectsFunding[$key] = $projectsFunding[$key] + [
                 'average_ir'       => round($projects->getAverageInterestRate($project['id_project'], $project['project_status']), 2),
-                'funding_progress' => round((1 - ($project['amount'] - $bids->getSoldeBid($project['id_project'])) / $project['amount']) * 100, 1),
+                'funding_progress' => min(100, round((1 - ($project['amount'] - $bids->getSoldeBid($project['id_project'])) / $project['amount']) * 100, 1)),
                 'ended'            => \DateTime::createFromFormat('Y-m-d H:i:s', $project['date_retrait_full'])
             ];
         }
@@ -690,7 +737,7 @@ class BorrowerAccountController extends Controller
 
         foreach ($projectsPostFunding as $key => $project) {
             $projects->get($project['id_project']);
-            $aNextRepayment                                   = $repaymentSchedule->select(
+            $aNextRepayment = $repaymentSchedule->select(
                 'status_emprunteur = 0 AND id_project = ' . $project['id_project'],
                 'date_echeance_emprunteur ASC',
                 '',
