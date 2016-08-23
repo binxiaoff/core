@@ -199,6 +199,9 @@ class depot_de_dossierController extends bootstrap
         $this->bDisplayTouchvibes = true;
 
         $this->checkProjectHash(self::PAGE_NAME_STEP_2);
+        if (false === empty($this->clients->id_client)) {
+            $this->addDataLayer('ID_Emprunteur', $this->clients->id_client);
+        }
 
         $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-etape-2'];
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-etape-2'];
@@ -403,6 +406,9 @@ class depot_de_dossierController extends bootstrap
         $this->page = 'depot_dossier_3';
 
         $this->checkProjectHash(self::PAGE_NAME_STEP_3);
+        if (false === empty($this->clients->id_client)) {
+            $this->addDataLayer('ID_Emprunteur', $this->clients->id_client);
+        }
 
         $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-etape-3'];
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-etape-3'];
@@ -533,6 +539,9 @@ class depot_de_dossierController extends bootstrap
         $this->page = 'depot_dossier_partenaire';
 
         $this->checkProjectHash(self::PAGE_NAME_PARTNER);
+        if (false === empty($this->clients->id_client)) {
+            $this->addDataLayer('ID_Emprunteur', $this->clients->id_client);
+        }
 
         $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-etape-2'];
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-etape-2'];
@@ -684,6 +693,9 @@ class depot_de_dossierController extends bootstrap
         $this->page = 'depot_dossier_prospect';
 
         $this->checkProjectHash(self::PAGE_NAME_PROSPECT);
+        if (false === empty($this->clients->id_client)) {
+            $this->addDataLayer('ID_Emprunteur', $this->clients->id_client);
+        }
 
         $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-prospect'];
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-prospect'];
@@ -767,6 +779,9 @@ class depot_de_dossierController extends bootstrap
         $this->page = 'depot_dossier_fichiers';
 
         $this->checkProjectHash(self::PAGE_NAME_FILES);
+        if (false === empty($this->clients->id_client)) {
+            $this->addDataLayer('ID_Emprunteur', $this->clients->id_client);
+        }
 
         $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-fichiers'];
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-fichiers'];
@@ -821,6 +836,9 @@ class depot_de_dossierController extends bootstrap
         $this->page = 'depot_dossier_fin';
 
         $this->checkProjectHash(self::PAGE_NAME_END);
+        if (false === empty($this->clients->id_client)) {
+            $this->addDataLayer('ID_Emprunteur', $this->clients->id_client);
+        }
 
         $this->lng['depot-de-dossier-fin'] = $this->ln->selectFront('depot-de-dossier-fin', $this->language, $this->App);
 
@@ -921,6 +939,9 @@ class depot_de_dossierController extends bootstrap
         $this->page = 'depot_dossier_emails';
 
         $this->checkProjectHash(self::PAGE_NAME_EMAILS);
+        if (false === empty($this->clients->id_client)) {
+            $this->addDataLayer('ID_Emprunteur', $this->clients->id_client);
+        }
 
         $this->projects->stop_relances = 1;
         $this->projects->update();
