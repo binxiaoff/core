@@ -42,14 +42,6 @@ twig:
 #    exception_controller:  UnilendFrontBundle:Compatibility:dispatch
     form_themes:
         - 'frontbundle/layouts/form_layout.html.twig'
-assetic:
-    debug:          '%kernel.debug%'
-    use_controller: '%kernel.debug%'
-    bundles: [UnilendFrontBundle]
-    write_to: '%kernel.root_dir%/../public/default'
-    read_from : '%kernel.root_dir%/../public/default'
-    filters:
-        cssrewrite: ~
 
 doctrine:
     dbal:

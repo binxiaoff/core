@@ -31,25 +31,13 @@
 
     <!-- CSS Site -->
     {% block cssFiles %}
-        {#{% stylesheets
-            'bundles/unilendfront/fonts/style.css'
-            'bundles/unilendfront/css/*.css'
-            'bundles/unilendfront/js/vendor/videojs/video-js.min.css'
-            'bundles/unilendfront/js/vendor/videojs/video-js.min.css'
-            'bundles/unilendfront/js/vendor/swiper/css/swiper.min.css'
-            'bundles/unilendfront/js/vendor/fancybox/css/jquery.fancybox.css'
-            'bundles/unilendfront/js/vendor/jquery-ui/themes/base/minified/jquery-ui.min.css' %}
-        <link rel="stylesheet" href="{{ asset_url }}" />
-        {% endstylesheets %}#}
-        <link rel="stylesheet" href="/bundles/unilendfront/fonts/style.css" />
-        <link rel="stylesheet" href="/bundles/unilendfront/css/ie.css" />
-        <link rel="stylesheet" href="/bundles/unilendfront/css/print.css" />
-        <link rel="stylesheet" href="/bundles/unilendfront/css/screen.css" />
-        <link rel="stylesheet" href="/bundles/unilendfront/js/vendor/videojs/video-js.min.css" />
-        <link rel="stylesheet" href="/bundles/unilendfront/js/vendor/videojs/video-js.min.css" />
-        <link rel="stylesheet" href="/bundles/unilendfront/js/vendor/swiper/css/swiper.min.css" />
-        <link rel="stylesheet" href="/bundles/unilendfront/js/vendor/fancybox/css/jquery.fancybox.css" />
-        <link rel="stylesheet" href="/bundles/unilendfront/js/vendor/jquery-ui/themes/base/minified/jquery-ui.min.css" />
+        <link rel="stylesheet" href="{{ asset('assets/fonts/style.css') }}" />
+        <link rel="stylesheet" href="{{ asset('assets/css/main.min.css') }}" />
+        <link rel="stylesheet" href="{{ asset('assets/js/vendor/videojs/video-js.min.css') }}" />
+        <link rel="stylesheet" href="{{ asset('assets/js/vendor/videojs/video-js.min.css') }}" />
+        <link rel="stylesheet" href="{{ asset('assets/js/vendor/swiper/css/swiper.min.css') }}" />
+        <link rel="stylesheet" href="{{ asset('assets/js/vendor/fancybox/css/jquery.fancybox.css') }}" />
+        <link rel="stylesheet" href="{{ asset('assets/js/vendor/jquery-ui/themes/base/minified/jquery-ui.min.css') }}" />
     {% endblock %}
 
     <!-- JS -->
@@ -167,11 +155,9 @@
 
 <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js"></script>
 <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js"></script>
-{% javascripts
-    'bundles/unilendfront/js/*' %}
+<script type="text/javascript" src="{{ asset('assets/js/dependencies.js') }}"></script>
+<script type="text/javascript" src="{{ asset('assets/js/main.js') }}"></script>
 
-<script src="{{ asset_url }}"></script>
-{% endjavascripts %}
 
 {% block extendFoot %}
 {% endblock %}
