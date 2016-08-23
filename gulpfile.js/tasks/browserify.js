@@ -1,18 +1,20 @@
 var config       = require('../config')
 if(!config.tasks.browserify) return
 
-var gulp         = require('gulp');
-var browserify   = require('browserify');
-var source       = require('vinyl-source-stream');
-var bundleLogger = require('../lib/bundleLogger');
-var handleErrors = require('../lib/handleErrors');
-var path         = require('path');
+var gulp         = require('gulp')
+var browserify   = require('browserify')
+var source       = require('vinyl-source-stream')
+var bundleLogger = require('../lib/bundleLogger')
+var handleErrors = require('../lib/handleErrors')
+var path         = require('path')
 var buffer       = require('vinyl-buffer')
 var uglify       = require('gulp-uglify')
-var sourcemaps   = require('gulp-sourcemaps');
-var gulpIf   = require('gulp-if');
+var sourcemaps   = require('gulp-sourcemaps')
+var gulpIf       = require('gulp-if')
+var browserSync  = require('browser-sync')
+var watchify     = require('watchify')
 
-var browserifyTask =  function() {
+var browserifyTask =  function(watchMode) {
 
   var browserifyThis = function(bundleConfig) {
 
@@ -34,17 +36,29 @@ var browserifyTask =  function() {
         .pipe(gulpIf(!global.production, uglify()))
         .pipe(gulpIf(!global.production, sourcemaps.write('./')))
         .pipe(gulp.dest(path.join(config.root.dest, bundleConfig.dest)))
-        .on('end', function() {bundleLogger.end(bundleConfig.outputName)});
-    };
+        .on('end', function() {bundleLogger.end(bundleConfig.outputName)})
+        .pipe(browserSync.reload({
+          stream: true
+        }));
 
-    return bundle();
-  };
+    }
 
-  config.tasks.browserify.bundleConfigs.forEach(browserifyThis);
+    if(watchMode) {
+      // Wrap with watchify and rebundle on changes
+      bundler = watchify(bundler);
+      // Rebundle on update
+      bundler.on('update', bundle);
+      bundleLogger.watch(bundleConfig.outputName);
+    }
+
+    return bundle()
+  }
+
+  config.tasks.browserify.bundleConfigs.forEach(browserifyThis)
 }
 
 /**
  * Run JavaScript through Browserify
  */
-gulp.task('browserify', browserifyTask);
+gulp.task('browserify', browserifyTask)
 module.exports = browserifyTask

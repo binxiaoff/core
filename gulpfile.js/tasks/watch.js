@@ -1,8 +1,8 @@
-var config = require('../config')
-var gulp   = require('gulp')
-var path   = require('path')
-var watch  = require('gulp-watch')
-var watchify = require('watchify')
+var config         = require('../config')
+var gulp           = require('gulp')
+var path           = require('path')
+var watch          = require('gulp-watch')
+var browserifyTask = require('./browserify');
 
 var watchTask = function() {
   var watchableTasks = ['fonts', 'css', 'images','browserify', 'icon']
@@ -11,19 +11,13 @@ var watchTask = function() {
     var task = config.tasks[taskName]
 
     if(task) {
-      var watchfn = function() {
-        require('./' + taskName)()
-      }
-
       if (taskName === 'browserify') {
-        var bundles = task.bundleConfigs;
-        bundles.forEach(function (bundle){
-          var glob = [path.join(config.root.src, bundle.entries), path.join(config.root.src, task.src, '/**/*.js')]
-          watch(glob, watchfn)
-        })
+        browserifyTask(true)
       } else {
         var glob = path.join(config.root.src, task.src, '**/*.{' + task.extensions.join(',') + '}')
-        watch(glob, watchfn)
+        watch(glob, function() {
+          require('./' + taskName)()
+        })
       }
     }
   })
