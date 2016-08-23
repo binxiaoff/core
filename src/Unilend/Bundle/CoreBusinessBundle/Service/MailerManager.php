@@ -44,12 +44,15 @@ class MailerManager
     /** @var \Swift_Mailer */
     private $mailer;
 
+    /** @var string */
+    private $locale;
+
     public function __construct(
         ContainerInterface $container,
         EntityManager $oEntityManager,
         TemplateMessageProvider $messageProvider,
         \Swift_Mailer $mailer,
-        $defaultLanguage,
+        $defaultLocale,
         Packages $assetsPackages,
         $schema,
         $frontHost,
@@ -67,7 +70,7 @@ class MailerManager
         $this->oDate       = Loader::loadLib('dates');
         $this->oWorkingDay = Loader::loadLib('jours_ouvres');
 
-        $this->sLanguage = $defaultLanguage;
+        $this->locale = $defaultLocale;
 
         $this->sSUrl = $assetsPackages->getUrl('');
         $this->sFUrl = $schema . '://' . $frontHost;
@@ -106,7 +109,7 @@ class MailerManager
 
             $timeAdd      = strtotime($oBid->added);
             $month        = $this->oDate->tableauMois['fr'][date('n', $timeAdd)];
-            $pageProjects = $oTree->getSlug(4, $this->sLanguage);
+            $pageProjects = $oTree->getSlug(4, substr($this->locale, 0, 2));
 
             $oProject->get($oBid->id_project);
             $oCompany->get($oProject->id_company, 'id_company');
@@ -620,7 +623,7 @@ class MailerManager
         }
 
         $iLendersNb = $oLoan->getNbPreteurs($oProject->id_project);
-        $this->oMailTemplate->get('notification-projet-fini', 'locale = "' . $this->sLanguage . '" AND type');
+        $this->oMailTemplate->get('notification-projet-fini', 'locale = "' . $this->locale . '" AND status = ' . \mail_templates::STATUS_ACTIVE . ' AND type');
 
         $varMail = array(
             '$surl'         => $this->sSUrl,
