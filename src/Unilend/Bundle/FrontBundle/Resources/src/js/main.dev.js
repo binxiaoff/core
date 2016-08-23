@@ -59,6 +59,8 @@ var MapView = require('MapView')
 var ChartView = require('ChartView')
 var UserNotificationsDrop = require('./app/components/UserNotificationsDrop')
 var Sticky = require('./app/components/Sticky')
+var Modal = require('./app/components/Modal')
+// var ModalTOS = require('./app/components/ModalTOS')
 
 var BorrowerEsimForm = require('./app/components/BorrowerEsimForm')
 var LoginTimer = require('./app/components/LoginTimer')

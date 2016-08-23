@@ -48,7 +48,14 @@ img {
   }
 }
 
-// Wait until JS kicks in for this to be available
+hr {
+  padding: 0;
+  margin: 15px 0;
+  border: solid transparent;
+  border-top: solid 1px $c-bg1;
+}
+
+// Wait until JS kicks in for this to be visible
 .no-js {
   [role="tab"][data-toggle],
   [role="button"][data-toggle] {
