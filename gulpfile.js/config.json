@@ -86,7 +86,7 @@
       ]
     },
     "production" : {
-      "rev": true
+      "rev": false
     }
   }
 }
