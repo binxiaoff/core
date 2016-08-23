@@ -116,7 +116,7 @@
                 <div style="clear:both;"></div>
                 <div class="form-row">
                     <input type="text" name="siren" id="siren"
-                           placeholder="<?= $this->lng['landing-page']['siren-siret'] ?>"
+                           placeholder="<?= $this->lng['landing-page']['siren'] ?>"
                            value="<?= isset($this->aForm['values']['siren']) ? $this->aForm['values']['siren'] : '' ?>"
                            class="field required<?= isset($this->aForm['errors']['siren']) ? ' LV_invalid_field' : '' ?>"
                            data-validators="Presence&amp;Numericality&amp;Length, [ 9, 14 ]">
