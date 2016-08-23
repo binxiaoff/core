@@ -77,7 +77,14 @@ class depot_de_dossierController extends bootstrap
         $this->lng['landing-page'] = $this->ln->selectFront('landing-page', $this->language, $this->App);
 
         $iAmount = $_SESSION['forms']['depot-de-dossier']['values']['montant'];
-        $iSIREN  = $_SESSION['forms']['depot-de-dossier']['values']['siren'];
+
+        $siret = '';
+        if (strlen($_SESSION['forms']['depot-de-dossier']['values']['siren']) === 9) {
+            $siren = $_SESSION['forms']['depot-de-dossier']['values']['siren'];
+        } else {
+            $siret = $_SESSION['forms']['depot-de-dossier']['values']['siren'];
+            $siren = substr($siret, 0, 9);
+        }
 
         $_SESSION['forms']['depot-de-dossier']['email'] = isset($_SESSION['forms']['depot-de-dossier']['values']['email']) && $this->ficelle->isEmail($_SESSION['forms']['depot-de-dossier']['values']['email']) ? $_SESSION['forms']['depot-de-dossier']['values']['email'] : '';
 
@@ -109,7 +116,7 @@ class depot_de_dossierController extends bootstrap
         $this->clients_adresses->create();
 
         $this->companies->id_client_owner               = $this->clients->id_client;
-        $this->companies->siren                         = $iSIREN;
+        $this->companies->siren                         = $siren;
         $this->companies->status_adresse_correspondance = '1';
         $this->companies->email_dirigeant               = $_SESSION['forms']['depot-de-dossier']['email'];
         $this->companies->create();
@@ -129,24 +136,29 @@ class depot_de_dossierController extends bootstrap
 
         try {
             $oAltares = new Altares();
-            $oResult  = $oAltares->getEligibility($iSIREN);
+            $oResult  = $oAltares->getEligibility($siren);
         } catch (\Exception $oException) {
-            $oLogger->error('Calling Altares::getEligibility() using SIREN ' . $iSIREN . ' - Exception message: ' . $oException->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $iSIREN));
+            $oLogger->error('Calling Altares::getEligibility() using SIREN ' . $siren . ' - Exception message: ' . $oException->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren));
 
             mail($sAlertEmail, '[ALERTE] ERREUR ALTARES 2', 'Date ' . date('Y-m-d H:i:s') . '' . $oException->getMessage());
             $this->redirect(self::PAGE_NAME_STEP_2, \projects_status::COMPLETUDE_ETAPE_2);
         }
-
         if (false === empty($oResult->exception)) {
             $oLogger->error('Altares error code: ' . $oResult->exception->code . ' - Altares error description: ' . $oResult->exception->description . ' - Altares error: ' . $oResult->exception->erreur, array('class' => __CLASS__, 'function' => __FUNCTION__));
 
-            mail($sAlertEmail, '[ALERTE] ERREUR ALTARES 1', 'Date ' . date('Y-m-d H:i:s') . 'SIREN : ' . $iSIREN . ' | ' . $oResult->exception->code . ' | ' . $oResult->exception->description . ' | ' . $oResult->exception->erreur);
+            mail($sAlertEmail, '[ALERTE] ERREUR ALTARES 1', 'Date ' . date('Y-m-d H:i:s') . 'SIREN : ' . $siren . ' | ' . $oResult->exception->code . ' | ' . $oResult->exception->description . ' | ' . $oResult->exception->erreur);
             $this->redirect(self::PAGE_NAME_STEP_2, \projects_status::COMPLETUDE_ETAPE_2);
         }
 
         $this->projects->retour_altares = $oResult->myInfo->codeRetour;
 
         $oAltares->setCompanyData($this->companies, $oResult->myInfo);
+
+        if (false === empty($siret) && $oResult->myInfo->motif != 'SIREN inconnu') {
+            /** @var LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->info('Client ' . $this->clients->id_client . ' entered a SIRET value (' . $siret . ')', array('class' => __CLASS__, 'function' => __FUNCTION__));
+        }
 
         if (is_numeric($this->companies->name) || 0 === strcasecmp($this->companies->name, 'Monsieur') || 0 === strcasecmp($this->companies->name, 'Madame')) {
             $oLogger->error('TMA-749 : wrong company name - altares return : ' . serialize($oResult), array('class' => __CLASS__, 'function' => __FUNCTION__));
