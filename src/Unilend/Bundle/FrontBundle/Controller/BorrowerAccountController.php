@@ -2,8 +2,10 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -21,9 +23,10 @@ class BorrowerAccountController extends Controller
      * @Route("/espace-emprunteur/projets", name="borrower_account_projects")
      * @Template("borrower_account/projects.html.twig")
      *
+     * @param Request $request
      * @return array
      */
-    public function projectsAction()
+    public function projectsAction(Request $request)
     {
         $projectsPreFunding  = $this->getProjectsPreFunding();
         $projectsFunding     = $this->getProjectsFunding();
@@ -33,7 +36,51 @@ class BorrowerAccountController extends Controller
         $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
         $settings->get('URL FAQ emprunteur', 'type');
 
-        return ['pre_funding_projects' => $projectsPreFunding, 'funding_projects' => $projectsFunding, 'post_funding_projects' => $projectsPostFunding, 'faq_url' => $settings->value];
+        return [
+            'pre_funding_projects'  => $projectsPreFunding,
+            'funding_projects'      => $projectsFunding,
+            'post_funding_projects' => $projectsPostFunding,
+            'closing_projects'      => $request->getSession()->get('closingProjects'),
+            'faq_url'               => $settings->value
+        ];
+    }
+
+    /**
+     * @Route("/espace-emprunteur/cloture-projet", name="borrower_account_close_project")
+     * @Method("POST")
+     *
+     * @param Request $request
+     * @return RedirectResponse
+     */
+    public function closeFundingProjectAction(Request $request)
+    {
+        if ($request->request->get('project')) {
+            /** @var \projects $project */
+            $project   = $this->get('unilend.service.entity_manager')->getRepository('projects');
+            $projectId = $request->request->get('project');
+
+            if (
+                $projectId == (int) $projectId
+                && $project->get($projectId)
+                && $project->id_company == $this->getCompany()->id_company
+            ) {
+                $session = $request->getSession();
+
+                $closingProjects = $session->get('closingProjects', []);
+                $closingProjects[$project->id_project] = true;
+
+                $session->set('closingProjects', $closingProjects);
+
+                $closingDate = new \DateTime();
+                $closingDate->modify('+5 minutes');
+
+                $project->date_retrait_full = $closingDate->format('Y-m-d H:i:s');
+                $project->date_retrait      = $closingDate->format('Y-m-d');
+                $project->update();
+            }
+        }
+
+        return new RedirectResponse($this->generateUrl('borrower_account_projects'));
     }
 
     /**
@@ -206,39 +253,6 @@ class BorrowerAccountController extends Controller
     {
         $client  = $this->getClient();
         $company = $this->getCompany();
-        /** @var \pays_v2 $country */
-        $country      = $this->get('unilend.service.entity_manager')->getRepository('pays_v2');
-        $birthCountry = '';
-        if ($country->get($client->id_pays_naissance)) {
-            $birthCountry = $country->fr;
-        }
-
-        $nationality = '';
-        if ($country->get($client->id_nationalite)) {
-            $nationality = $country->fr;
-        }
-
-        $companyCountry = '';
-        if ($country->get($company->id_pays)) {
-            $companyCountry = $country->fr;
-        }
-
-        /** @var \attachment $attachment */
-        $attachment = $this->get('unilend.service.entity_manager')->getRepository('attachment');
-        $projects   = $company->getProjectsForCompany();
-        $projectIds = array_column($projects, 'id_project');
-        $id         = $attachment->select('id_type = ' . \attachment_type::CNI_PASSPORTE_DIRIGEANT . ' AND id_owner in (' . implode(',',
-                $projectIds) . ') AND type_owner = \'' . \attachment::PROJECT . '\'', 'added ASC', '', 1);
-        $idAdded    = null;
-        if (isset($id[0]['added'])) {
-            $idAdded = $id[0]['added'];
-        }
-        $idVersoAdded = null;
-        $idVerso      = $attachment->select('id_type = ' . \attachment_type::CNI_PASSPORTE_VERSO . ' AND id_owner in (' . implode(',',
-                $projectIds) . ') AND type_owner = \'' . \attachment::PROJECT . '\'', 'added ASC', '', 1);
-        if (isset($idVerso[0]['added'])) {
-            $idVersoAdded = $id[0]['added'];
-        }
 
         /** @var \settings $settings */
         $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
@@ -247,11 +261,6 @@ class BorrowerAccountController extends Controller
         return [
             'client'         => $client,
             'company'        => $company,
-            'birthCountry'   => $birthCountry,
-            'nationality'    => $nationality,
-            'companyCountry' => $companyCountry,
-            'idAdded'        => $idAdded,
-            'idVersoAdded'   => $idVersoAdded,
             'faq_url'        => $settings->value
         ];
     }
@@ -696,7 +705,7 @@ class BorrowerAccountController extends Controller
         foreach ($projectsFunding as $key => $project) {
             $projectsFunding[$key] = $projectsFunding[$key] + [
                 'average_ir'       => round($projects->getAverageInterestRate($project['id_project'], $project['project_status']), 2),
-                'funding_progress' => round((1 - ($project['amount'] - $bids->getSoldeBid($project['id_project'])) / $project['amount']) * 100, 1),
+                'funding_progress' => min(100, round((1 - ($project['amount'] - $bids->getSoldeBid($project['id_project'])) / $project['amount']) * 100, 1)),
                 'ended'            => \DateTime::createFromFormat('Y-m-d H:i:s', $project['date_retrait_full'])
             ];
         }
@@ -728,7 +737,7 @@ class BorrowerAccountController extends Controller
 
         foreach ($projectsPostFunding as $key => $project) {
             $projects->get($project['id_project']);
-            $aNextRepayment                                   = $repaymentSchedule->select(
+            $aNextRepayment = $repaymentSchedule->select(
                 'status_emprunteur = 0 AND id_project = ' . $project['id_project'],
                 'date_echeance_emprunteur ASC',
                 '',

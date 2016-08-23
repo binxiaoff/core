@@ -14,8 +14,6 @@ class FrontBundleExtension extends \Twig_Extension
 {
     /** @var Kernel */
     private $kernel;
-    /** @var string $url */
-    private $url;
     /** @var StatisticsManager */
     private $statisticsManager;
     /** @var TranslationManager */
@@ -26,6 +24,8 @@ class FrontBundleExtension extends \Twig_Extension
     private $cachePool;
     /** @var LocationManager */
     private $locationManager;
+    /** @var Packages */
+    private $packages;
 
     public function __construct(
         Kernel $kernel,
@@ -37,7 +37,7 @@ class FrontBundleExtension extends \Twig_Extension
         LocationManager $locationManager
     ) {
         $this->kernel             = $kernel;
-        $this->url                = $assetsPackages->getUrl('');
+        $this->packages           = $assetsPackages;
         $this->statisticsManager  = $statisticsManager;
         $this->translationManager = $translationManager;
         $this->entityManager      = $entityManager;
@@ -97,7 +97,7 @@ class FrontBundleExtension extends \Twig_Extension
 
     public function uploadedImageFunction($image)
     {
-        return $this->url . '/var/images/' . $image;
+        return $this->packages->getUrl('/var/images/' . $image);
     }
 
     public function getName()
@@ -107,7 +107,7 @@ class FrontBundleExtension extends \Twig_Extension
 
     public function svgImageFunction($sId, $sTitle, $iWidth, $iHeight, $sSizing = null)
     {
-        $sUrl        = $this->url . '/bundles/unilendfront/images/svg/icons.svg';
+        $sUrl        = $this->packages->getUrl('assets/images/svg/icons.svg');
         $sSvgHeaders = ' version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"';
 
         // Supported sizing sizes, using preserveAspectRatio
@@ -151,7 +151,7 @@ class FrontBundleExtension extends \Twig_Extension
 
     public function completeUrlMediaFunction($sPath)
     {
-        return $this->url . '/bundles/unilendfront/images/' . $sPath;
+        return  $this->packages->getUrl('/bundles/unilendfront/images/' . $sPath);
     }
 
     public function getStatisticFunction($statisticType)
@@ -189,12 +189,12 @@ class FrontBundleExtension extends \Twig_Extension
 
     public function projectImagePathFilter($image, $size = 'source')
     {
-        return $this->url . '/images/dyn/projets/' . $size . '/' . $image;
+        return  $this->packages->getUrl('/images/dyn/projets/' . $size . '/' . $image);
     }
 
     public function addBaseUrl($sUrl)
     {
-        return $this->url . $sUrl;
+        return  $this->packages->getUrl($sUrl);
     }
 
     public function getCountry($countryId)
@@ -234,7 +234,7 @@ class FrontBundleExtension extends \Twig_Extension
      */
     public function photo($image, $format = '')
     {
-        $photos = new \photos([$this->kernel->getRootDir() . '/../public/default/var/', $this->url]);
+        $photos = new \photos([$this->kernel->getRootDir() . '/../public/default/var/',  $this->packages->getUrl('')]);
         return $photos->display($image, $format);
     }
 

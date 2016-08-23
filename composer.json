@@ -32,7 +32,6 @@
     "incenteev/composer-parameter-handler": "^2.0",
     "facile-it/doctrine-mysql-come-back": "^1.6",
     "symfony/twig-bundle": "^3.0",
-    "symfony/assetic-bundle": "^2.8",
     "symfony/security": "^3.1",
     "symfony-cmf/routing-bundle": "dev-master",
     "twig/extensions": "^1.3"

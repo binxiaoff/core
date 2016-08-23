@@ -1,0 +1,93 @@
+{
+  "root": {
+    "src": "./app/Resources/assets",
+    "dest": "./public/default/assets"
+  },
+
+  "tasks": {
+    "browserSync": {
+      "server": {
+        "baseDir": "public"
+      }
+    },
+
+    "jsDependencies": {
+      "src": "js",
+      "dest": "js",
+      "vendorSrc": "js/vendor",
+      "vendorDest": "js/vendor",
+      "extensions": ["js", "json"],
+      "dependencies": [
+        "./app/Resources/assets/js/app/modernizr/modernizr.js",
+        "./node_modules/jquery/dist/jquery.js",
+        "./node_modules/fancybox/dist/js/jquery.fancybox.js",
+        "./node_modules/fancybox/dist/helpers/js/jquery.fancybox-media.js",
+        "./app/Resources/assets/js/vendor/videojs/video.js",
+        "./node_modules/videojs-youtube/dist/Youtube.js",
+        "./app/Resources/assets/js/vendor/swiper/js/swiper.jquery.js",
+        "./app/Resources/assets/js/vendor/jquery.caret.js"
+      ],
+      "extractSharedJs": false
+    },
+
+    "css": {
+      "src": "sass",
+      "dest": "css",
+      "autoprefixer": {
+        "browsers": ["last 2 versions"],
+        "cascade": true
+      },
+      "compass": {
+        "css": "./css",
+        "sass": "./sass",
+        "image": "./images"
+      },
+      "extensions": ["sass", "scss", "css"]
+    },
+
+    "images": {
+      "src": "images",
+      "dest": "images",
+      "extensions": ["jpg", "png", "svg", "gif"]
+    },
+
+    "icon": {
+      "src": "icons",
+      "dest": "images/svg",
+      "extensions": ["svg"]
+    },
+
+    "fonts": {
+      "src": "fonts",
+      "dest": "fonts",
+      "extensions": ["woff2", "woff", "eot", "ttf", "svg", "css", "scss"],
+      "compass": {
+        "css": "./css",
+        "sass": "./"
+      }
+    },
+
+    "modernizr": {
+      "srcCss": "./css",
+      "srcJs": "./js",
+      "srcExclude" : "./js/*.min.js",
+      "dest": "./js/app/modernizr"
+    },
+
+    "browserify": {
+      "src": "./js/app",
+      "bundleConfigs": [
+        {
+          "entries":    "js/main.dev.js",
+          "dest":       "js",
+          "outputName": "main.js",
+          "extensions": [],
+          "debug": true
+        }
+      ]
+    },
+    "production" : {
+      "rev": false
+    }
+  }
+}

@@ -25,35 +25,16 @@
                     <section id="profile-info-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
                         <section id="profile-info-view" role="tabpanel" class="profile-info-view collapse in">
                             <dl class="list-2col">
-                                <dt>{{ 'common_position'|trans }}</dt>
-                                <dd id="profile-info-statut-output">{{ client.fonction|default('') }}</dd>
-                                <dt>{{ 'common_form-of-address'|trans }}</dt>
-                                <dd id="profile-info-civilite-output">{{ client.civilite|default('') }}</dd>
                                 <dt>{{ 'common_name'|trans }}</dt>
                                 <dd id="profile-info-nom-output">{{ client.nom|default('') }}</dd>
                                 <dt>{{ 'common_firstname'|trans }}</dt>
                                 <dd id="profile-info-prenom-output">{{ client.prenom|default('') }}</dd>
-                                <dt>{{ 'common_birthday'|trans }}</dt>
-                                <dd id="profile-info-dob-output">{{ client.naissance|localizeddate('long', 'none')|default('') }}</dd>
-                                <dt>{{ 'common_birth-country'|trans }}</dt>
-                                <dd id="profile-info-dob-pays-output">{{ birthCountry|default('') }}</dd>
-                                <dt>{{ 'common_birth-city'|trans }}</dt>
-                                <dd id="profile-info-dob-commune-output">{{ client.ville_naissance|default('') }}</dd>
-                                <dt>{{ 'common_nationality'|trans }}</dt>
-                                <dd id="profile-info-dob-nationalite-output">{{ nationality|default('') }}</dd>
-                                <dt>{{ 'borrower-profile_identity-document'|trans }}</dt>
-                                <dd id="profile-info-fichier-identitie-output">
-                                    {% if idAdded is not null %}
-                                        <span id="form-profile-info-file-identite-cni-1-output" class="file-justificatif file-identity-side-a" title="{{ 'borrower-profile_identity-document-uploaded-on'|trans }} {{ idAdded|localizeddate('short', 'none') }}" data-toggle="tooltip">
-                                            <span class="sr-only">{{ 'borrower-profile_identity-document-uploaded-on'|trans }} {{ idAdded|localizeddate('short', 'none') }}</span>
-                                        </span>
-                                    {% endif %}
-                                    {% if idVersoAdded is not null %}
-                                        <span id="form-profile-info-file-identite-cni-2-output" class="file-justificatif file-identity-side-b" title="{{ 'borrower-profile_identity-document-uploaded-on'|trans }} {{ idAdded|localizeddate('short', 'none') }}" data-toggle="tooltip">
-                                            <span class="sr-only">{{ 'borrower-profile_identity-document-uploaded-on'|trans }} {{ idVersoAdded|localizeddate('short', 'none') }}</span>
-                                        </span>
-                                    {% endif %}
-                                </dd>
+                                <dt>{{ 'common_position'|trans }}</dt>
+                                <dd id="profile-info-statut-output">{{ client.fonction|default('') }}</dd>
+                                <dt>{{ 'common_phone'|trans }}</dt>
+                                <dd id="profile-info-phone-output">{{ client.mobile|default('') }}</dd>
+                                <dt>{{ 'common_email'|trans }}</dt>
+                                <dd id="profile-info-email-output">{{ client.email|default('') }}</dd>
                             </dl>
                         </section>
                     </section><!-- /.ui-toggle-group -->
@@ -76,8 +57,6 @@
                                 <dd id="profile-address-code-output">{{ company.zip }}</dd>
                                 <dt>{{ 'borrower-profile_city'|trans }}</dt>
                                 <dd id="profile-address-ville-output">{{ company.city }}</dd>
-                                <dt>{{ 'borrower-profile_country'|trans }}</dt>
-                                <dd id="profile-address-pays-output">{{ companyCountry }}</dd>
                                 <dt>{{ 'borrower-profile_company-phone-number'|trans }}</dt>
                                 <dd id="profile-address-mobile-output">{{ company.phone }}</dd>
                                 <dt>{{ 'borrower-profile_invoice-email'|trans }}</dt>

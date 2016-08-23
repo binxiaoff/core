@@ -103,8 +103,28 @@
                                                 <td>{{ project.ended|localizeddate('short', 'none')}}</td>
                                                 <td>{{ project.funding_progress|localizednumber }}&nbsp;%</td>
                                                 <td>{{ project.average_ir|localizednumber }}&nbsp;%</td>
-                                                <td><a href="#todo" class="ui-has-tooltip" data-original-title="Arrêter le projet"><span class="icon fa-close-u32"></span></a></td>
-                                                <td><a href="{{ path('project_detail', {'projectSlug' : project.slug }) }}" class="ui-has-tooltip" data-original-title="{{ 'borrower-projects_project-detail-link-icon'|trans }}"><span class="icon fa-eye-u16"></span></a></td>
+                                                <td>
+                                                    {% if project.funding_progress >= 100 and app.session.get('closingProjects')[project.id_project] is not defined %}
+                                                        <a href="#close-funding-project-{{ project.id_project }}" class="fancybox-html ui-has-tooltip" data-original-title="{{ 'borrower-projects_early-closing-stop-tooltip'|trans|escape('html_attr') }}">
+                                                            <span class="icon fa-close-u32"></span>
+                                                        </a>
+                                                        <div class="hide-accessible">
+                                                            <div id="close-funding-project-{{ project.id_project }}">
+                                                                <form action="{{ path('borrower_account_close_project') }}" method="post">
+                                                                    <h1>{{ 'borrower-projects_early-closing-lightbox-title'|trans }}</h1>
+                                                                    <p>{{ 'borrower-projects_early-closing-lightbox-content'|trans({'%currentRate%' : project.average_ir|localizednumber})|raw }}</p>
+                                                                    <a href="javascript:;" onclick="$.fancybox.close();" class="btn-default">{{ 'borrower-projects_early-closing-lightbox-cancel-button'|trans }}</a>
+                                                                    <button type="submit" name="project" value="{{ project.id_project }}" class="btn-primary">{{ 'borrower-projects_early-closing-lightbox-confirm-button'|trans }}</button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    {% elseif project.funding_progress >= 100  %}
+                                                        <a class="ui-has-tooltip" data-original-title="{{ 'borrower-projects_early-closing-processing-tooltip'|trans|escape('html_attr') }}">
+                                                            <span class="icon fa-refresh"></span>
+                                                        </a>
+                                                    {% endif %}
+                                                </td>
+                                                <td><a href="{{ path('project_detail', {'projectSlug' : project.slug }) }}" class="ui-has-tooltip" data-original-title="{{ 'borrower-projects_project-detail-link-icon'|trans|escape('html_attr') }}"><span class="icon fa-eye-u16"></span></a></td>
                                             </tr>
                                         {% endfor %}
                                     </tbody>
