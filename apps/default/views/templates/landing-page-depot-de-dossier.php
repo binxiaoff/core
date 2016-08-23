@@ -120,7 +120,7 @@
                            value="<?= isset($this->aForm['values']['siren']) ? $this->aForm['values']['siren'] : '' ?>"
                            class="field required<?= isset($this->aForm['errors']['siren']) ? ' LV_invalid_field' : '' ?>"
                            data-validators="Presence&amp;Numericality&amp;Length, [ 9, 14 ]">
-                    <em class="caractmax<?= isset($this->aForm['errors']['siren']) ? ' error' : '' ?>"><?= $this->lng['landing-page']['9-ou-14-caracteres-numeriques'] ?></em>
+                    <em class="caractmax<?= isset($this->aForm['errors']['siren']) ? ' error' : '' ?>"><?= $this->lng['landing-page']['9-caracteres-numeriques'] ?></em>
                 </div>
                 <?php if (false === $this->bShortTunnel) : ?>
                 <div class="form-row">
