@@ -320,6 +320,7 @@ class dossiersController extends bootstrap
                         }
 
                         $oAltares->setCompanyData($this->companies, $oResult->myInfo);
+                        $oAltares->setProjectData($this->projects, $oResult->myInfo);
 
                         $oCompanyCreationDate = new \DateTime($this->companies->date_creation);
                         $oInterval            = $oCompanyCreationDate->diff(new \DateTime());
@@ -328,7 +329,6 @@ class dossiersController extends bootstrap
                             $_SESSION['freeow']['title']   = 'Données Altares';
                             $_SESSION['freeow']['message'] = 'Société non éligible';
                         } else {
-                            $oAltares->setProjectData($this->projects, $oResult->myInfo);
                             $oAltares->setCompanyBalance($this->companies);
 
                             $_SESSION['freeow']['title']   = 'Données Altares';
