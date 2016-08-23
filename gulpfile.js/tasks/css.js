@@ -35,7 +35,7 @@ var cssTask = function () {
     .on('error', handleErrors)
     .pipe(gulpIf(!global.production, sourcemaps.init({loadMaps: true})))
     .pipe(autoprefixer(config.tasks.css.autoprefixer))
-    .pipe(concat('main.min.css'))
+    .pipe(concat('main.css'))
     .pipe(cleanCss({shorthandCompacting: false, processImport: false}))
     .pipe(gulpIf(!global.production, sourcemaps.write('./')))
     .pipe(gulp.dest(paths.dest))
