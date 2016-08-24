@@ -188,6 +188,7 @@ class usersController extends bootstrap
             } elseif (false === $previousPasswords->isValidPassword($_POST['new_pass'], $this->users->id_user)) {
                 $this->retour_pass = "Ce mot de passe a déja été utilisé";
             } else {
+                $oldPassword                  = $this->users->password;
                 $this->users->password        = password_hash($_POST['new_pass'], PASSWORD_DEFAULT);
                 $this->users->password_edited = date("Y-m-d H:i:s");
                 $this->users->update();
@@ -200,7 +201,7 @@ class usersController extends bootstrap
                 $mailerManager->sendPasswordModificationEmail($this->users);
 
                 $previousPasswords->id_user  = $this->users->id_user;
-                $previousPasswords->password = $this->users->password;
+                $previousPasswords->password = $oldPassword;
                 $previousPasswords->archived = date("Y-m-d H:i:s");
                 $previousPasswords->create();
                 $previousPasswords->deleteOldPasswords($this->users->id_user);

@@ -138,7 +138,7 @@ class rootController extends bootstrap
             } elseif ($this->users->password != md5($_POST['old_pass']) && $this->users->password != password_verify($_POST['old_pass'], $this->users->password)) {
                 $this->retour_pass = "L'ancien mot de passe ne correspond pas";
             } elseif (false === $this->users->checkPasswordStrength($_POST['new_pass'])) {
-                $this->retour_pass = "Le mot de passe doit contenir au moins 10 caractères, ainsi qu'au moins 1 chiffre et un caractère spécial";
+                $this->retour_pass = "Le mot de passe doit contenir au moins 10 caractères, ainsi qu'au moins 1 majuscule, minuscule, chiffre et caractère spécial";
             } elseif (false === $previousPasswords->isValidPassword($_POST['new_pass'], $this->users->id_user)) {
                 $this->retour_pass = "Ce mot de passe a déja été utilisé";
             } elseif ($_POST['new_pass'] == $_POST['new_pass2']) {

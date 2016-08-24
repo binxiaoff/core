@@ -45,7 +45,7 @@ class previous_passwords extends previous_passwords_crud
     {
         $previousPasswords = $this->select($userId, 'id_user');
         foreach ($previousPasswords as $previousPassword) {
-            if (password_verify($password, $previousPassword['password']) || $password == md5($previousPassword['password'])) {
+            if (password_verify($password, $previousPassword['password']) || md5($password) == $previousPassword['password']) {
                 return false;
             }
         }
