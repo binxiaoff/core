@@ -14,6 +14,19 @@ $doc.on('ready', function () {
     var $formArea = $(this).parents('.panel').find('form').first().parents('.collapse')
     $formArea.collapse('show')
   })
+
+  // Make sure that if any form area is opened, that any other opened ones are closed
+  $doc.on('show.bs.collapse', '[role="tabpanel"] [role="tablist"].ui-toggle-group > [role="tabpanel"]', function (event) {
+    var $target = $(event.target)
+    var $targetParentCollapsable = $target.parents('[role="tablist"].ui-toggle-group')
+    var $collapsables = $('[role="tabpanel"] [role="tablist"].ui-toggle-group').not($targetParentCollapsable)
+
+    // Hide every second one (which is the edit form)
+    $collapsables.each(function (i, elem) {
+      $(elem).find('> [role="tabpanel"]:eq(0)').collapse('show')
+      $(elem).find('> [role="tabpanel"]:eq(1)').collapse('hide')
+    })
+  })
   
   // If nationality or form_of_address (civilite/gender) inputs are modified, display message that ID files need to be updated (`#identity-change-alert-message`)
   $doc.on('change', '[name="nationality"], [name="form_of_address"]', function () {
@@ -118,11 +131,12 @@ $doc.on('ready', function () {
   })
 
   // If the legal entity's status changes, show/hide certain areas
+  // @note this will also affect any other page which has an input named `company_client_status`, such as `inscription_preteur` / `LenderSubscription`
   function checkLegalEntityStatus() {
     var legalEntityStatus
 
     // Get the value from the various radio buttons
-    $('[name="company_client_status"]').each(function (i, input) {
+    $('input[name="company_client_status"]').each(function (i, input) {
       if ($(input).prop('checked')) {
         legalEntityStatus = $(input).val()
         return true
@@ -142,33 +156,21 @@ $doc.on('ready', function () {
     }
   }
   checkLegalEntityStatus()
-  $doc.on('change', '[name="company_client_status"]', function () {
+  $doc.on('change', 'input[name="company_client_status"]', function () {
     checkLegalEntityStatus()
   })
 
   // Show the "Autre" ("Other") text field if the company_external_counsel is equal to 3
+  // @note this will also affect any other page which has an input named `company_client_status`, such as `inscription_preteur` / `LenderSubscription`
   function checkEntityExternalCounsel() {
-    if ($('#form-profile-info-company-client-status').val() == 3) {
-      $('#form-profile-info-company-client-status-other-field').collapse('show')
+    if ($('select[name="company_external_counsel"]').val() == 3) {
+      $('.legal-entity-status-other-field').collapse('show')
     } else {
-      $('#form-profile-info-company-client-status-other-field').collapse('hide')
+      $('.legal-entity-status-other-field').collapse('hide')
     }
   }
   checkEntityExternalCounsel()
-  $doc.on('change', '#form-profile-info-company-client-status', function () {
+  $doc.on('change', 'select[name="company_external_counsel"]', function () {
     checkEntityExternalCounsel()
-  })
-  
-  // Make sure that if any form area is opened, that any other opened ones are closed
-  $doc.on('show.bs.collapse', '[role="tabpanel"] [role="tablist"].ui-toggle-group > [role="tabpanel"]', function (event) {
-    var $target = $(event.target)
-    var $targetParentCollapsable = $target.parents('[role="tablist"].ui-toggle-group')
-    var $collapsables = $('[role="tabpanel"] [role="tablist"].ui-toggle-group').not($targetParentCollapsable)
-
-    // Hide every second one (which is the edit form)
-    $collapsables.each(function (i, elem) {
-      $(elem).find('> [role="tabpanel"]:eq(0)').collapse('show')
-      $(elem).find('> [role="tabpanel"]:eq(1)').collapse('hide')
-    })
   })
 })

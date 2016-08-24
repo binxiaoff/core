@@ -999,7 +999,7 @@ class LenderSubscriptionController extends Controller
         if ($request->isXMLHttpRequest()) {
             /** @var LocationManager $locationManager */
             $locationManager = $this->get('unilend.service.location_manager');
-            return new JsonResponse($locationManager->getCities( $request->query->get('birthPlace'), true));
+            return new JsonResponse($locationManager->getCities( $request->query->get('birthPlace')));
         }
 
         return new Response('not an ajax request');
@@ -1029,10 +1029,16 @@ class LenderSubscriptionController extends Controller
         if ($request->isXMLHttpRequest()) {
             /** @var \dates $dates */
             $dates = Loader::loadLib('dates');
-            if ($dates->ageplus18($request->request->get('day_of_birth') . '-' . $request->request->get('month_of_birth') . '-' . $request->request->get('year_of_birth'))) {
-                return new JsonResponse('ok');
+            if ($dates->ageplus18($request->request->get('year_of_birth') . '-' . $request->request->get('month_of_birth') . '-' . $request->request->get('day_of_birth'))) {
+                return new JsonResponse([
+                    'status' => true
+                ]);
             } else {
-                return new JsonResponse('nok');
+                return new JsonResponse([
+                    'status' => false,
+                    // @todo translated output
+                    'error'  => 'Vous devez avoir plus de 18 ans'
+                ]);
             }
         }
         return new Response('not an ajax request');
@@ -1049,9 +1055,15 @@ class LenderSubscriptionController extends Controller
             $ficelle = Loader::loadLib('ficelle');
 
             if ($ficelle->password_fo($request->request->get('client_password'), 6)) {
-                return new JsonResponse('ok');
+                return new JsonResponse([
+                    'status' => true
+                ]);
             } else {
-                return new JsonResponse('nok');
+                return new JsonResponse([
+                    'status' => false,
+                    // @todo translated output
+                    'error' => 'Assurez-vous que votre mot de passe comporte au moins 6 caractères'
+                ]);
             }
         }
         return new Response('not an ajax request');

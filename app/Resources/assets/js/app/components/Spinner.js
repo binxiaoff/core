@@ -25,7 +25,7 @@ $doc
     }
 
     // @debug
-    console.log('Spinner:showLoading', $elem[0], $spinnerTarget[0])
+    // console.log('Spinner:showLoading', $elem[0], $spinnerTarget[0])
 
     if ($spinnerTarget) {
       $spinnerTarget.addClass("ui-is-loading")
@@ -47,7 +47,7 @@ $doc
     }
 
     // @debug
-    console.log('Spinner:hideLoading', $elem[0], $spinnerTarget[0])
+    // console.log('Spinner:hideLoading', $elem[0], $spinnerTarget[0])
 
     if ($spinnerTarget) {
       $spinnerTarget.removeClass("ui-is-loading")
@@ -99,8 +99,8 @@ $doc
     }
 
     // @debug
-    console.log('spinner ajaxStop', event, event.target.activeElement)
-    console.log('spinnerTarget', $spinnerTarget)
+    // console.log('spinner ajaxStop', event, event.target.activeElement)
+    // console.log('spinnerTarget', $spinnerTarget)
 
     // Hide spinner
     $spinnerTarget.removeClass("ui-is-loading")

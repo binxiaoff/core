@@ -61,7 +61,8 @@ var AutoComplete = function (elem, options) {
     // Special events
     onbeforeajax: undefined, // function (AutoComplete) { return {Boolean} if you want it to continue }
     onrender: undefined, // function (results) { return {String} representing all items },
-    onrenderitem: undefined // function (item) { return {String} representing single item }
+    onrenderitem: undefined, // function (item) { return {String} representing single item }
+    onsetinputvalue: undefined // function (value, itemElement) {}
   },
   // Options set via the element attributes
   ElementAttrsObject(elem, {
@@ -159,7 +160,7 @@ var AutoComplete = function (elem, options) {
   // Click result to complete the input
   self.$target.on(Utility.clickEvent, '.autocomplete-results a', function (event) {
     event.preventDefault()
-    self.setInputValue($(this).data('value') || $(this).text())
+    self.setInputValue($(this).data('value') || $(this).text(), this)
     self.hide()
   })
 
@@ -202,7 +203,7 @@ var AutoComplete = function (elem, options) {
       // -- Press enter or right arrow on highlighted result to complete the input
       } else if (event.which === 39 || event.which === 13) {
         event.preventDefault()
-        self.setInputValue($(this).data('value') || $(this).text())
+        self.setInputValue($(this).data('value') || $(this).text(), this)
         self.hide()
       }
     }
@@ -414,10 +415,16 @@ var AutoComplete = function (elem, options) {
 
   // Set the input's value
   self.setInputValue = function (newValue, item) {
+    // Custom event
+    if (typeof self.settings.onsetinputvalue === 'function') {
+      self.settings.onsetinputvalue.apply(self, [newValue, item])
+    }
+
+    // Set the new value to the input
     self.$input.val(newValue).focus()
 
-    // @trigger input `AutoComplete:setInputValue:complete` [elemAutoComplete, newValue]
-    self.$input.trigger('AutoComplete:setInputValue:complete', [self, newValue])
+    // @trigger input `AutoComplete:setInputValue:complete` [elemAutoComplete, newValue, itemElement]
+    self.$input.trigger('AutoComplete:setInputValue:complete', [self, newValue, item])
   }
 
   // Show the autocomplete

@@ -120,11 +120,11 @@ function getFieldValue (elem) {
     })
 
     // @debug
-    // console.log('getFieldValue:groupedinputs', {
-    //   $inputs: $inputs,
-    //   inputNames: inputNames,
-    //   inputValues: inputValues
-    // })
+    console.log('getFieldValue:groupedinputs', {
+      $inputs: $inputs,
+      inputNames: inputNames,
+      inputValues: inputValues
+    })
 
     // The return value
     if (inputNames.length === 1) {
@@ -222,7 +222,7 @@ var FormValidation = function (elem, options) {
 
     // The specific events to watch to trigger the form/field validation
     watchFormEvents: 'submit',
-    watchFieldEvents: 'keydown keyup blur change',
+    watchFieldEvents: 'blur change',
 
     // Show successful/errored validation on field
     showSuccessOnField: true,
@@ -372,10 +372,10 @@ FormValidation.prototype.validateInput = function (elem, options) {
   if ($elem.length === 0) return false
 
   // Input is group of related inputs: checkbox, radio, etc.
-  if (!$elem.is('input, textarea, select')) {
+  if (!$elem.is('.form-field, input, textarea, select')) {
     // @debug
     // console.log('FormValidation.validateInput Error: make sure the elem is, or contains, at least one input, textarea or select element')
-    if ($elem.find('input, textarea, select').length === 0) return false
+    if ($elem.find('.form-field, input, textarea, select').length === 0) return false
   }
 
   // Field validation object
@@ -385,17 +385,20 @@ FormValidation.prototype.validateInput = function (elem, options) {
     // Properties
     isValid: false,
     $elem: $elem,
-    $formField: Utility.getElemIsOrHasParent($elem, '.form-field'),
-    $notifications: Utility.getElemIsOrHasParent($elem, '.form-field').find('.ui-formvalidation-messages').first(),
+    $formField: $elem.closest('.form-field'),
+    $notifications: $elem.closest('.form-field').find('.ui-formvalidation-messages').first(),
     value: getFieldValue($elem),
     type: 'auto', // Set to auto-detect type
     errors: [],
     messages: [],
 
     // Options
-    options: $.extend({
+    options: Utility.inheritNested({
       // Rules to validate this field by
-      rules: $.extend({}, self.rules.defaultRules,
+      rules: Utility.inherit({},
+        // Use default rules as a base
+        self.rules.defaultRules,
+
         // Inherit attribute values
         ElementAttrsObject(elem, {
           required: 'data-formvalidation-required',
@@ -422,18 +425,21 @@ FormValidation.prototype.validateInput = function (elem, options) {
       onsuccess: self.settings.onfieldsuccess,
       onerror: self.settings.onfielderror,
       oncomplete: self.settings.onfieldcomplete
-    }, ElementAttrsObject(elem, {
+    },
+    // Get options set in the HTML element's attributes
+    ElementAttrsObject(elem, {
       rules: 'data-formvalidation-rules',
       notificationsElem: 'data-formvalidation-notificationselem',
       showSuccess: 'data-formvalidation-showsuccess',
       showError: 'data-formvalidation-showerror',
       render: 'data-formvalidation-render'
-    }), options)
+    }),
+    // Override with JS invocation options
+    options)
   }
 
   // Ignore disabled/hidden fields by saying they're valid
   if ($elem.is(':disabled') || Utility.elemIsHidden(elem)) {
-    console.log('element is hidden', inputValidation)
     inputValidation.isValid = true
     return inputValidation
   }
@@ -442,7 +448,7 @@ FormValidation.prototype.validateInput = function (elem, options) {
   if (typeof inputValidation.rules === 'string') {
     var checkRules = JSON.parse(inputValidation.rules)
     if (typeof checkRules === 'object') {
-      inputValidation.options = $.extend(inputValidation.options, checkRules)
+      inputValidation.options = Utility.inherit(inputValidation.options, checkRules)
     }
   }
 
@@ -992,7 +998,7 @@ FormValidation.prototype.rules = {
 
     if (typeof custom === 'function') {
       // For custom validations, ensure you modify the inputValidation object accordingly
-      custom.apply(self, [self, inputValidation])
+      custom.apply(self, [inputValidation, self])
     }
   }
 }
