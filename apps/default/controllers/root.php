@@ -313,6 +313,15 @@ class rootController extends bootstrap
             if ($paramSlug === 'validation-virement') {
                 $this->page = 'alimentation';
             }
+
+            if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr' && $this->tree->id_template != 14) {
+                header('Location: http://prets-entreprises-unilend.capital.fr/capital/');
+                die;
+            } elseif ($this->lurl == 'http://financementparticipatifpme.lefigaro.fr' && $this->tree->id_template != 14) {
+                header('Location: http://financementparticipatifpme.lefigaro.fr/figaro/');
+                die;
+            }
+
             //////////////////////////
             // FIN TEMPLATE PROJETS //
             //////////////////////////
@@ -835,7 +844,7 @@ class rootController extends bootstrap
         $this->autoFireFooter = false;
 
         if (isset($_SESSION['client'])) {
-            header('Location:' . $this->lurl);
+            header('Location: ' . $this->furl);
             die;
         }
 
@@ -844,19 +853,6 @@ class rootController extends bootstrap
 
         $this->haut = str_replace(array('<!--TITLE_ZONE_HEAD-->', '<!--TITLE_ZONE-->'), array('Financement Participatif  : Prêtez aux entreprises françaises & Recevez des intérêts chaque mois', 'Financement participatif'), $content[0]);
         $this->bas  = str_replace('<!--XITI_ZONE-->', 'Unilend-accueil', $content[1]);
-    }
-
-    public function _challenges()
-    {
-        $this->autoFireHeader = false;
-        $this->autoFireDebug  = false;
-        $this->autoFireHead   = true;
-        $this->autoFireFooter = false;
-
-        $this->meta_title = "Financement Participatif  : Prêtez aux entreprises françaises & Recevez des intérêts chaque mois";
-
-        $this->haut = file_get_contents('http://www.challenges.fr/partners/header.php');
-        $this->bas  = file_get_contents('http://www.challenges.fr/partners/footer.php');
     }
 
     public function _lexpress()
@@ -883,7 +879,7 @@ class rootController extends bootstrap
 
         // Si on a une session d'ouverte on redirige
         if (isset($_SESSION['client'])) {
-            header('Location:' . $this->lurl);
+            header('Location: ' . $this->furl);
             die;
         }
 
@@ -937,7 +933,7 @@ class rootController extends bootstrap
 
         // Si on a une session d'ouverte on redirige
         if (isset($_SESSION['client'])) {
-            header('Location:' . $this->lurl);
+            header('Location: ' . $this->furl);
             die;
         }
 
@@ -975,7 +971,7 @@ class rootController extends bootstrap
         $this->autoFireFooter = false;
 
         if (isset($_SESSION['client'])) {
-            header('Location:' . $this->lurl);
+            header('Location: ' . $this->furl);
             die;
         }
     }
