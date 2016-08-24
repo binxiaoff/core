@@ -58,7 +58,7 @@
             </fieldset>
         </form>
     </div>
-    <div style="margin-bottom:20px; float:right;"><a onClick="document.forms['recupCSV'].submit();" class="btn colorAdd">Récupération du CSV</a></div>
+    <div style="margin-bottom:20px; float:right;"><a onClick="document.forms['recupCSV'].submit();" class="btn_link">Récupération du CSV</a></div>
     <table class="tablesorter">
         <thead>
         <tr>

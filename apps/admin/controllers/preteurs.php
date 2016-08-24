@@ -2053,11 +2053,16 @@ class preteursController extends bootstrap
     {
         $this->lenders_accounts = $this->loadData('lenders_accounts');
         $this->clients          = $this->loadData('clients');
-        $this->clients_adresses = $this->loadData('clients_adresses');
 
         $this->lenders_accounts->get($this->params[0], 'id_lender_account');
         $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
-        $this->clients_adresses->get($this->clients->id_client, 'id_client');
+
+        if (isset($_POST['extraction_csv'])) {
+            $this->extractBidsCSV();
+            $this->hideDecoration();
+            $this->autoFireView = false;
+            return;
+        }
 
         if (isset($_POST['send_dates'])) {
             $_SESSION['FilterBids']['StartDate'] = $_POST['debut'];
@@ -2084,12 +2089,7 @@ class preteursController extends bootstrap
         /** @var \bids $bids */
         $bids = $this->loadData('bids');
         foreach ($bids->getBidsByLenderAndDates($this->lenders_accounts, $dateTimeStart, $dateTimeEnd) as $key => $value) {
-            $this->bidList[$key]              = $value;
-            $this->bidList[$key]['id_client'] = $this->clients->id_client;
-        }
-
-        if (isset($_POST['extraction_csv'])) {
-            $this->extractBidsCSV();
+            $this->bidList[$key] = $value;
         }
     }
 
@@ -2104,6 +2104,15 @@ class preteursController extends bootstrap
 
         $document    = new PHPExcel();
         $activeSheet = $document->setActiveSheetIndex(0);
+
+        $dateTimeStart = \DateTime::createFromFormat('d/m/Y', $_POST['date_from']);
+        $dateTimeEnd   = \DateTime::createFromFormat('d/m/Y', $_POST['date_to']);
+
+        /** @var \bids $bids */
+        $bids = $this->loadData('bids');
+        foreach ($bids->getBidsByLenderAndDates($this->lenders_accounts, $dateTimeStart, $dateTimeEnd) as $key => $value) {
+            $this->bidList[$key] = $value;
+        }
 
         foreach ($header as $index => $columnName) {
             $activeSheet->setCellValueByColumnAndRow($index, 1, $columnName);
@@ -2126,7 +2135,5 @@ class preteursController extends bootstrap
         $writer->setUseBOM(true);
         $writer->setDelimiter(';');
         $writer->save('php://output');
-
-        die;
     }
 }
