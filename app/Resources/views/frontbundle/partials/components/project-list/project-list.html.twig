@@ -13,9 +13,9 @@
         <div class="project-list-content tab-content">
             <div id="project-list-view" role="tabpanel" class="tab-pane active">
                 <div class="project-list-filters">
-                    <div class="project-list-item-category project-list-filter">
+                    <div class="project-list-item-category project-list-filter {% if sortType == 'sector' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
                         {% if showSortable %}
-                            <a href="javascript:;">
+                            <a href="/projets-a-financer/{{ currentPage }}/sector/{% if sortDirection == 'desc' %}asc{% else %}desc{% endif %}">
                                 <span class="label">{% trans %} project-list_table-title-category {% endtrans %}</span>
                                 <span class="project-list-filter-order"></span>
                             </a>
@@ -23,9 +23,9 @@
                             <span class="label">{% trans %} project-list_table-title-category {% endtrans %}</span>
                         {% endif %}
                     </div><!-- /.project-list-filter -->
-                    <div class="project-list-item-info project-list-filter">
+                    <div class="project-list-item-info project-list-filter {% if sortType == 'amount' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
                         {% if showSortable %}
-                            <a href="javascript:;">
+                            <a href="/projets-a-financer/{{ currentPage }}/amount/{% if sortDirection == 'desc' %}asc{% else %}desc{% endif %}">
                                 <span class="label">{% trans %} project-list_table-title-amount {% endtrans %}</span>
                                 <span class="project-list-filter-order"></span>
                             </a>
@@ -33,9 +33,9 @@
                             <span class="label">{% trans %} project-list_table-title-amount {% endtrans %}</span>
                         {% endif %}
                     </div><!-- /.project-list-filter -->
-                    <div class="project-list-item-stats project-list-filter">
+                    <div class="project-list-item-stats project-list-filter {% if sortType == 'rate' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
                         {% if showSortable %}
-                            <a href="javascript:;">
+                            <a href="/projets-a-financer/{{ currentPage }}/rate/{% if sortDirection == 'desc' %}asc{% else %}desc{% endif %}">
                                 <span class="label">{% trans %} project-list_table-title-average-rate {% endtrans %}</span>
                                 <span class="project-list-filter-order"></span>
                             </a>
@@ -43,9 +43,9 @@
                             <span class="label">{% trans %} project-list_table-title-average-rate {% endtrans %}
                         {% endif %}
                     </div><!-- /.project-list-filter -->
-                    <div class="project-list-item-rating project-list-filter">
+                    <div class="project-list-item-rating project-list-filter {% if sortType == 'risk' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
                         {% if showSortable %}
-                            <a href="javascript:;">
+                            <a href="/projets-a-financer/{{ currentPage }}/risk/{% if sortDirection == 'desc' %}asc{% else %}desc{% endif %}">
                                 <span class="label">{% trans %} project-list_table-title-risk {% endtrans %}</span>
                                 <span class="project-list-filter-order"></span>
                             </a>
@@ -53,9 +53,9 @@
                             <span class="label">{% trans %} project-list_table-title-risk {% endtrans %}</span>
                         {% endif %}
                     </div><!-- /.project-list-filter -->
-                    <div class="project-list-item-period project-list-filter">
+                    <div class="project-list-item-period project-list-filter {% if sortType == 'end' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
                         {% if showSortable %}
-                            <a href="javascript:;">
+                            <a href="/projets-a-financer/{{ currentPage }}/end/{% if sortDirection == 'desc' %}asc{% else %}desc{% endif %}">
                                 <span class="label">{% trans %} project-list_table-title-remaining-time {% endtrans %}</span>
                                 <span class="project-list-filter-order"></span>
                             </a>

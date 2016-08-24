@@ -94,6 +94,9 @@ class ProjectsController extends Controller
         $template['pagination']        = $this->pagination($page, $limit);
         $template['showPagination']    = true;
         $template['showSortable']      = true;
+        $template['currentPage']       = $page;
+        $template['sortType']          = strtolower($sortType);
+        $template['sortDirection']     = strtolower($sortDirection);
 
         return $this->render('pages/projects.html.twig', $template);
     }

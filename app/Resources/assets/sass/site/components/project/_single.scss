@@ -161,6 +161,7 @@
 // The actual window block of the header
 .project-single-header-inner {
   display: inline-block;
+  min-height: 400px;
   padding: 20px;
   position: relative;
   background-color: $c-bg5;
@@ -292,11 +293,32 @@
     font-style: italic;
     margin-bottom: 6px;
   }
+}
 
-  a > .label {
-    display: inline;
+// Map toggle
+a#{$js-project-single-map-toggle} {
+  .label {
     font-style: normal;
     margin: auto;
+  }
+
+  // Map not visible
+  .ui-project-single-map-show-label {
+    display: inline;
+  }
+  .ui-project-single-map-hide-label {
+    display: none;
+  }
+
+  // Map visible
+  #{$js-project-single-map-open} & {
+    .ui-project-single-map-show-label {
+      display: none;
+    }
+
+    .ui-project-single-map-hide-label {
+      display: inline;
+    }
   }
 }
 

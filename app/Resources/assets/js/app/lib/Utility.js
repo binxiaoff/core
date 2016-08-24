@@ -7,9 +7,14 @@ var $ = require('jquery')
 var sprintf = require('sprintf-js').sprintf
 var __ = require('__')
 
+var $win = $(window)
+var $doc = $(document)
+var $html = $('html')
+var $body = $('body')
+
 var Utility = {
   // Click event
-  clickEvent: $('html').is('.has-touchevents') ? 'touchend' : 'click',
+  clickEvent: $html.is('.has-touchevents') ? 'touchend' : 'click',
 
   // Transition end event
   transitionEndEvent: 'transitionend webkitTransitionEnd oTransitionEnd otransitionend',
@@ -913,6 +918,161 @@ var Utility = {
       }
     }
     return target
+  },
+
+  /*
+   * Test for IE
+   */
+  
+  isIE: function (version) {
+    var versionNum = ~~(version + ''.replace(/\D+/g, ''))
+    if (/^\</.test(version)) {
+      version = 'lt-ie' + versionNum
+    } else {
+      version = 'ie' + versionNum
+    }
+    return $html.is('.' + version)
+  },
+
+  /*
+   * Responsive
+   */
+
+  /*
+   * Set to device height
+   * Relies on element to have [data-set-device-height] attribute set
+   * to one or many breakpoint names, e.g. `data-set-device-height="xs sm"`
+   * for device's height to be applied at those breakpoints
+   */
+  setDeviceHeights: function () {
+    // Always get the site header height to remove from the element's height
+    var siteHeaderHeight = Utility.$siteHeader.outerHeight()
+    var deviceHeight = window.innerHeight - siteHeaderHeight
+
+    // Set element to height of device
+    $('[data-set-device-height]').each(function (i, elem) {
+      var $elem = $(elem)
+      var checkBp = $elem.attr('data-set-device-height').trim().toLowerCase()
+      var setHeight = false
+
+      // Turn elem setting into an array to iterate over later
+      if (!/[, ]/.test(checkBp)) {
+        checkBp = [checkBp]
+      } else {
+        checkBp = checkBp.split(/[, ]+/)
+      }
+
+      // Check if elem should be set to device's height
+      for (var j in checkBp) {
+        if (new RegExp(checkBp[j], 'i').test(Utility.getActiveBreakpoints())) {
+          setHeight = checkBp[j]
+          break
+        }
+      }
+
+      // Set the height
+      if (setHeight) {
+        // @debug
+        // console.log('Setting element height to device', currentBreakpoint, checkBp)
+        $elem.css('height', deviceHeight + 'px').addClass('ui-set-device-height')
+      } else {
+        $elem.css('height', '').removeClass('ui-set-device-height')
+      }
+    })
+  },
+
+  /*
+   * Equal Height
+   * Sets multiple elements to be the equal (maximum) height
+   * Elements require attribute [data-equal-height] set. You can also specify the
+   * breakpoints you only want this to be applied to in this attribute, e.g.
+   * `<div data-equal-height="xs">..</div>` would only be applied in `xs` breakpoint
+   * If you want to separate equal height elements into groups, additionally
+   * set the [data-equal-height-group] attribute to a unique string ID, e.g.
+   * `<div data-equal-height="xs" data-equal-height-group="promo1">..</div>`
+   */
+  setEqualHeights: function () {
+    var equalHeights = {}
+    $('[data-equal-height]').each(function (i, elem) {
+      var $elem = $(elem)
+      var groupName = $elem.attr('data-equal-height-group') || 'default'
+      var elemHeight = $elem.css('height', '').outerHeight()
+
+      // Create value to save max height to
+      if (!equalHeights.hasOwnProperty(groupName)) equalHeights[groupName] = 0
+
+      // Set max height
+      if (elemHeight > equalHeights[groupName]) equalHeights[groupName] = elemHeight
+
+      // After processing all, apply height (depending on breakpoint)
+    }).each(function (i, elem) {
+      var $elem = $(elem)
+      var groupName = $elem.attr('data-equal-height-group') || 'default'
+      var applyToBp = $elem.attr('data-equal-height')
+
+      // Only apply to certain breakpoints
+      if (applyToBp) {
+        applyToBp = applyToBp.split(/[ ,]+/)
+
+        // Test breakpoint
+        if (new RegExp(applyToBp.join('|'), 'i').test(Utility.getActiveBreakpoints())) {
+          $elem.height(equalHeights[groupName])
+
+          // Remove height
+        } else {
+          $elem.css('height', '')
+        }
+
+        // No breakpoint set? Apply indiscriminately
+      } else {
+        $elem.height(equalHeights[groupName])
+      }
+    })
+
+    // @debug
+    // console.log('equalHeights', equalHeights)
+  },
+
+  /*
+   * Update Window
+   */
+  // Manual debouncing instead of using requestAnimationFrame
+  // I found significant slowness when using requestAnimationFrame
+  timerDebounceUpdateWindow: 0,
+  debounceUpdateWindow: function () {
+    clearTimeout(Utility.timerDebounceUpdateWindow)
+    Utility.timerDebounceUpdateWindow = setTimeout(function () {
+      Utility.updateWindow()
+    }, 50)
+  },
+
+  // Perform actions when the window needs to be updated
+  // This should be only invoked by debounceUpdateWindow
+  updateWindow: function () {
+    clearTimeout(Utility.timerDebounceUpdateWindow)
+    // requestAnimationFrame(updateWindow)
+
+    // @trigger doc `UI:beforeupdate`
+    $doc.trigger('UI:beforeupdate')
+
+    // Get active breakpoints
+    window.currentBreakpoint = Utility.getActiveBreakpoints()
+
+    // @trigger doc `UI:update:beforeresize`
+    $doc.trigger('UI:update:beforeresize')
+
+    // Set device heights
+    Utility.setDeviceHeights()
+
+    // Update equal heights
+    Utility.setEqualHeights()
+
+    // @trigger doc `UI:update:afterresize`
+    $doc.trigger('UI:update:afterresize')
+
+    // Trigger UI:update event to signal to any other elements that need to update on this event
+    // @trigger doc `UI:update`
+    $doc.trigger('UI:update')
   }
 }
 
@@ -933,5 +1093,18 @@ $.fn.uiScrollTo = function (options) {
     }
   })
 }
+
+/*
+ * jQuery Events
+ */
+$doc.on('ready', function () {
+
+    // Hook into orientationchange/resize event to update the window
+    $win.on('orientationchange resize', Utility.debounceUpdateWindow)
+
+    // @bind document `UI:updateWindow` Fire debounceUpdateWindow to update any elements due to repaint/reflow
+    $doc.on('UI:updateWindow', Utility.debounceUpdateWindow)
+
+  })
 
 module.exports = Utility

@@ -703,11 +703,5 @@ $(document)
 
   // Ensure refresh of chartview if item is visible/updated
   .on('UI:visible UI:update', function (event) {
-    $(event.target).find('[data-chartview], .ui-chartview').uiChartView('refresh')
-  })
-
-$(window)
-  // Ensure refresh of chartview if item is visible/updated (also redrawing element)
-  .on('resize orientationchange', function (event) {
-    $('[data-chartview], .ui-chartview').uiChartView('refresh', 1)
+    $(event.target).find('[data-chartview], .ui-chartview').uiChartView('refresh', 1)
   })

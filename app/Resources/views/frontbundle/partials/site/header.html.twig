@@ -43,8 +43,9 @@
                             <input id="site-search-input" type="text" name="search" placeholder="{% trans %} site-general_search-placeholder {% endtrans %}"
                                    value="" tabindex="1" class="input-field site-search-input">
 
-                            <div class="autocomplete" aria-hidden="true">
+                            <div id="site-search-autocomplete" class="autocomplete" aria-hidden="true">
                                 <ul class="autocomplete-results">
+                                    {# Site search AutoComplete AJAX results will be rendered here #}
                                     <li><a href="#" tabindex="-1"><span class="highlight">Comment</span> les prêteurs alimentent leur compte&nbsp;?</a></li>
                                     <li><a href="#" tabindex="-1"><span class="highlight">Comment</span> prêter sur un projet&nbsp;?</a></li>
                                     <li><a href="#" tabindex="-1"><span class="highlight">Comment</span> sont calculés les intérêts&nbsp;?</a></li>

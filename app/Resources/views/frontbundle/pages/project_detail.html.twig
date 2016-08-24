@@ -71,8 +71,9 @@
                                             <span class="icon fa-map-marker-u16"></span>
                                             <span class="label">{{ project.company.city }}, {{ project.company.zip }}</span>
                                             {% if mapview is defined %}
-                                                <a href="javascript:;" class="link ui-project-single-map-toggle">
-                                                    <span class="label">{% trans %} project-detail_show-map-label {% endtrans %}</span>
+                                                <a href="javascript:;" class="link ui-project-single-map-toggle ui-project-single-map-hidden">
+                                                    <span class="ui-project-single-map-show-label label">{% trans %} project-detail_show-map-label {% endtrans %}</span>
+                                                    <span class="ui-project-single-map-hide-label label">{% trans %} project-detail_hide-map-label {% endtrans %}</span>
                                                 </a>
                                             {% endif %}
                                         </h4>

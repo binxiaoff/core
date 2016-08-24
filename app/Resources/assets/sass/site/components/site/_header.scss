@@ -518,9 +518,11 @@
     font-size: 18px;
     line-height: $height-btn - 4px;
 
-    // Hide the btn-group and show the site-search-toggle
+    // Show the site-search-toggle
     .site-search-toggle {
       display: block;
+      width: $height-btn;
+      height: $height-btn;
 
       position: absolute;
       top: 0;
@@ -528,13 +530,16 @@
       bottom: 0;
       left: 0;
 
+      line-height: $height-btn;
+      text-align: center;
+
       &:before {
         content: $fa-search;
         font-family: $ff-icon;
-        line-height: $height-btn;
       }
     }
 
+    // Hide input until opened by pressing the site-search-toggle
     .form-field-inline {
       > .btn-group {
         display: none;
@@ -559,13 +564,18 @@
       }
     }
 
-    // Site search is open or fixed menu is active
-    #{$js-site-header-fixed} &,
-    #{$js-site-search-open} & {
+    // Site search is open
+    #{$js-site-search-open} &,
+    #{$js-site-header-fixed}#{$js-site-search-open} & {
+      transform: translateY(0);
+      width: $width-site-header-search-full-fixed-open !important;
+
+      // Hide the toggle
       .site-search-toggle {
         display: none;
       }
 
+      // Show the button group which has the submit button
       .form-field-inline {
         > .btn-group {
           display: block;
@@ -573,6 +583,7 @@
 
         > .input-field {
           padding-left: $height-btn;
+          padding-right: 0;
           color: $c-t1;
 
           @include input-placeholder {
@@ -584,13 +595,6 @@
           }
         }
       }
-    }
-
-    // Site search is open
-    #{$js-site-search-open} &,
-    #{$js-site-header-fixed}#{$js-site-search-open} & {
-      transform: translateY(0);
-      width: 350px;
     }
   }
 
@@ -754,9 +758,14 @@
     }
 
     .site-search {
-      width: 200px;
+      width: $width-site-header-search-full-fixed;
       height: $height-fixed-menu;
       margin-right: 0;
+
+      .site-search-toggle {
+        height: $height-fixed-menu;
+        line-height: $height-fixed-menu;
+      }
 
       .form-field-inline {
         > .btn-group {
@@ -767,7 +776,8 @@
           border-radius: 0;
           height: $height-fixed-menu;
           padding-left: $height-btn;
-          padding-right: 10px;
+          padding-right: 0;
+          //padding-right: 10px;
 
           border-top-width: 0;
           border-bottom-width: 0;
@@ -877,7 +887,7 @@
 
   // Search
   .site-search {
-    width: 200px;
+    width: $width-site-header-search-full-md;
 
     .site-search-toggle {
       display: none;
@@ -906,7 +916,7 @@
   // Fixed header modifications
   #{$js-site-header-fixed} & {
     .site-search {
-      width: 200px;
+      width: $width-site-header-search-full-fixed-md;
     }
 
     .site-user {
@@ -946,7 +956,7 @@
   }
 
   .site-search {
-    width: 200px;
+    width: $width-site-header-search-full-lg;
 
     .form-field-inline {
       > .btn-group {
@@ -981,7 +991,7 @@
   // Fixed header modifications
   #{$js-site-header-fixed} & {
     .site-search {
-      width: 200px;
+      width: $width-site-header-search-full-fixed-lg;
 
       .form-field-inline {
         > .btn-group {

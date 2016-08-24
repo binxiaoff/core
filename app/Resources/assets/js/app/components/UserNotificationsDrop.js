@@ -362,12 +362,17 @@ $.fn.uiUserNotificationsDrop = function (op) {
  */
 $(document)
   // Auto-init `[data-usernotificationsdrop]` elements
-  .on('ready UI:visible', function (event) {
+  .on('ready UI:visible', function () {
     $(event.target).find('[data-usernotificationsdrop]').not('.ui-usernotificationsdrop').uiUserNotificationsDrop()
   })
 
+  // Reposition any drops on UI:update
+  .on('UI:update', function () {
+    $('.ui-usernotificationsdrop').uiUserNotificationsDrop('position')
+  })
+
   // Prevent notifications drop showing when in unsupported breakpoints
-  .on(Utility.clickEvent, '.site-user a.profile-notifications[href]', function (event) {
+  .on(Utility.clickEvent, '.site-user a.profile-notifications[href]', function () {
     // Show/hide of drop is handled with "openOn: click" above
     // This behaviour below is if user on mobile/tablet
     if (/(xs|mobile)/.test(Utility.getActiveBreakpoints())) {

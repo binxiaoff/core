@@ -57,6 +57,7 @@ var AutoComplete = function (elem, options) {
     showSingle: true, // Show the autocomplete if only one result found
     attachTargetAfter: false, // Whether to apply the target to be directly after the input, or at the bottom in the body
     constrainTargetWidth: 'input', // Constrain the target's width. Accepted values: {Boolean} false, {String} 'input', or {Int} specific width in pixels
+    useTether: true, // Use tether to attach the target element
 
     // Special events
     onbeforeajax: undefined, // function (AutoComplete) { return {Boolean} if you want it to continue }
@@ -74,7 +75,8 @@ var AutoComplete = function (elem, options) {
     showEmpty: 'data-autocomplete-showempty',
     showSingle: 'data-autocomplete-showsingle',
     attachTargetAfter: 'data-autocomplete-attachtargetafter',
-    constrainTargetWidth: 'data-autocomplete-constraintargetwidth'
+    constrainTargetWidth: 'data-autocomplete-constraintargetwidth',
+    useTether: 'data-autocomplete-usetether'
   }),
   // Options set via JS
   options)
@@ -82,7 +84,7 @@ var AutoComplete = function (elem, options) {
   // Properties
   // -- Use jQuery to select elem, distinguish between string, HTMLElement and jQuery Object
   self.$input = $(self.settings.input)
-  self.$target = $(self.settings.target)
+  self.$target = undefined
 
   // Needs an input element to be valid
   if (self.$input.length === 0) return self.error('input element doesn\'t exist')
@@ -91,7 +93,7 @@ var AutoComplete = function (elem, options) {
   if (self.$input[0].hasOwnProperty('AutoComplete')) return false
 
   // Create a new target element for the results
-  if (!self.settings.target || self.$target.length === 0) {
+  if (!self.settings.target || !Utility.elemExists(self.settings.target)) {
     self.$target = $(self.templates.target)
 
     // Place the target after the input
@@ -102,11 +104,13 @@ var AutoComplete = function (elem, options) {
     } else {
       self.$target.appendTo('body')
     }
+  // Use an existing target to display results
+  } else {
+    self.$target = $(self.settings.target)
   }
 
+
   // Properties
-  self.input = self.$input[0]
-  self.target = self.$target[0]
   self.timer = undefined
   self.hideTimer = undefined
   self.Tether = undefined
@@ -454,15 +458,17 @@ var AutoComplete = function (elem, options) {
     if (!self.settings.enable) return
 
     // Ensure tethered
-    if (!self.Tether) {
-      self.Tether = new Tether({
-        element: self.target,
-        target: self.input,
-        attachment: 'top left',
-        targetAttachment: 'bottom left'
-      })
-    } else {
-      self.Tether.position()
+    if (self.settings.useTether) {
+      if (!self.Tether) {
+        self.Tether = new Tether({
+          element: self.$target[0],
+          target: self.$input[0],
+          attachment: 'top left',
+          targetAttachment: 'bottom left'
+        })
+      } else {
+        self.positionTarget()
+      }
     }
 
     // Constrain the target's width
@@ -490,6 +496,13 @@ var AutoComplete = function (elem, options) {
     // @trigger [input, target] `AutoComplete:show:complete`, [elemAutoComplete]
     self.$input.trigger('AutoComplete:show:complete', [self])
     self.$target.trigger('AutoComplete:show:complete', [self])
+  }
+
+  // Update the target's position if it has been tethered
+  self.positionTarget = function () {
+    if (self.settings.useTether && self.Tether) {
+      self.Tether.position()
+    }
   }
 
   // Hide the autocomplete
@@ -556,7 +569,7 @@ AutoComplete.prototype.templates = {
  */
 $.fn.uiAutoComplete = function (op) {
   // Fire a command to the AutoComplete object, e.g. $('[data-autocomplete]').uiAutoComplete('show')
-  if (typeof op === 'string' && /^(show|hide|enable|disable|findTerm)$/.test(op)) {
+  if (typeof op === 'string' && /^(show|hide|enable|disable|findTerm|positionTarget)$/.test(op)) {
     // Get further additional arguments to apply to the matched command method
     var args = Array.prototype.slice.call(arguments)
     args.shift()
@@ -581,10 +594,17 @@ $.fn.uiAutoComplete = function (op) {
 /*
  * jQuery Events
  */
-$(document)
+var $doc = $(document)
+
+$doc
   // Auto-init component behaviours on document ready, or when parent element (or self) is made visible with `UI:visible` custom event
   .on('ready UI:visible', function (event) {
     $(event.target).find('[data-autocomplete]').not('.uni-autocomplete').uiAutoComplete()
+
+    // Update any tethered targets
+    $doc.on('UI:update', function () {
+
+    })
 
     // Special modifications for address AutoComplete fields
     $('[data-autocomplete-address]').each(function (i, elem) {

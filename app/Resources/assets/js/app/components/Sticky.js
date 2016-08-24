@@ -239,8 +239,13 @@ $.fn.uiSticky = function (op) {
 
 // Instantiate any stickies
 $(document)
-  .on('ready UI:visible', function (event) {
+  .on('ready UI:visible', function () {
     $('[data-sticky], .ui-has-sticky').not('.ui-sticky').uiSticky()
+  })
+
+  // Update the stickies on UI:update (perform hardUpdate due to resize/orientationchange that would have occurred before it)
+  .on('UI:update', function () {
+    Sticky.prototype._updateAllStickyWatchers(1)
   })
 
 module.exports = Sticky

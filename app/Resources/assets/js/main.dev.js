@@ -41,7 +41,7 @@ var ElementAttrsObject = require('ElementAttrsObject')
 var CacheData = require('CacheData')
 var Templating = require('Templating')
 
-// Components & behaviours
+// Components
 var AutoComplete = require('AutoComplete')
 var WatchScroll = require('WatchScroll')
 var TextCount = require('TextCount')
@@ -59,9 +59,12 @@ var MapView = require('MapView')
 var ChartView = require('ChartView')
 var UserNotificationsDrop = require('./app/components/UserNotificationsDrop')
 var Sticky = require('./app/components/Sticky')
+var Spinner = require('./app/components/Spinner')
 var Modal = require('./app/components/Modal')
 // var ModalTOS = require('./app/components/ModalTOS')
 
+// Page controllers
+// (probably good to put these into a different folder called `controllers` instead of components)
 var BorrowerEsimForm = require('./app/components/BorrowerEsimForm')
 var LoginTimer = require('./app/components/LoginTimer')
 var LoginCaptcha = require('./app/components/LoginCaptcha')
@@ -69,13 +72,13 @@ var SimpleTimer = require('./app/components/SimpleCountDown')
 var BidConfirmation = require('./app/components/BidConfirmation')
 var CookieCheck = require('./app/components/Cookies')
 var BidsDetail = require('./app/components/BidsDetail')
-var Spinner = require('./app/components/Spinner')
 var LenderProfile = require('./app/components/LenderSubscription')
 var LenderWallet = require('./app/components/LenderWallet')
 var LenderOperations = require('./app/components/LenderOperations')
 var LenderProfile = require('./app/components/LenderProfile')
 var BorrowerOperations = require('./app/components/BorrowerOperation')
 var NewPassword = require('./app/components/NewPasswordRequest')
+var Projects = require('./app/components/Projects')
 
 // @debug
 // CacheData.clearAll()
@@ -100,29 +103,6 @@ $(document).ready(function ($) {
 
   // Track the current breakpoints (also updated in updateWindow())
   var currentBreakpoint = window.currentBreakpoint = Utility.getActiveBreakpoints()
-
-  /*
-   * Test for IE
-   */
-  function isIE(version) {
-    var versionNum = ~~(version + ''.replace(/\D+/g, ''))
-    if (/^\</.test(version)) {
-      version = 'lt-ie' + versionNum
-    } else {
-      version = 'ie' + versionNum
-    }
-    return $html.is('.' + version)
-  }
-
-  /*
-   * I hate IE
-   */
-  if (isIE(9)) {
-    // Specific fixes for IE
-    $('.project-list-item .project-list-item-category').each(function (i, item) {
-      $(this).wrapInner('<div style="width: 100%; height: 100%; position: relative"></div>')
-    })
-  }
 
   // TWBS setup
   // $.support.transition = false
@@ -196,7 +176,8 @@ $(document).ready(function ($) {
     var siteSearchAutoComplete = new AutoComplete('.site-header .site-search-input', {
       // @TODO eventually when AJAX is connected, the URL will go here
       // ajaxUrl: '',
-      target: '.site-header .site-search .autocomplete'
+      target: '#site-search-autocomplete',
+      useTether: false
     })
   }
 
@@ -303,14 +284,14 @@ $(document).ready(function ($) {
 
   function openSiteMobileMenu () {
     // @debug console.log('openSiteMobileMenu')
-    if (isIE(9) || isIE('<9')) return showSiteMobileMenu()
+    if (Utility.isIE(9) || Utility.isIE('<9')) return showSiteMobileMenu()
     if (!$html.is('.ui-site-mobile-menu-open, .ui-site-mobile-menu-opening')) {
       $html.removeClass('ui-site-mobile-menu-closing').addClass('ui-site-mobile-menu-opening')
     }
   }
 
   function closeSiteMobileMenu () {
-    if (isIE(9) || isIE('<9')) return hideSiteMobileMenu()
+    if (Utility.isIE(9) || Utility.isIE('<9')) return hideSiteMobileMenu()
     // @debug console.log('closeSiteMobileMenu')
     $html.removeClass('ui-site-mobile-menu-opening ui-site-mobile-menu-open').addClass('ui-site-mobile-menu-closing')
   }
@@ -538,95 +519,19 @@ $(document).ready(function ($) {
   // @todo Remove this call when the Twig views have been updated
   $('.ui-text-count, .ui-has-textcount').uiTextCount()
 
-  // @debug
-  // @todo remove for production
-  $doc
-    .on(Utility.clickEvent, '#set-lang-en', function (event) {
-      event.preventDefault()
-      $html.attr('lang', 'en')
-      __.defaultLang = 'en'
-    })
-    .on(Utility.clickEvent, '#set-lang-en-gb', function (event) {
-      event.preventDefault()
-      $html.attr('lang', 'en-gb')
-      __.defaultLang = 'en-gb'
-    })
-    .on(Utility.clickEvent, '#set-lang-fr', function (event) {
-      event.preventDefault()
-      $html.attr('lang', 'fr')
-      __.defaultLang = 'fr'
-    })
-    .on(Utility.clickEvent, '#set-lang-es', function (event) {
-      event.preventDefault()
-      $html.attr('lang', 'es')
-      __.defaultLang = 'es'
-    })
-    .on(Utility.clickEvent, '#restart-text-counters', function (event) {
-      event.preventDefault()
-      $('.ui-text-count, .ui-textcount, [data-textcount]').uiTextCount('resetCount').uiTextCount('startCount')
-    })
-
-  /*
-   * Time counters
-   */
-  // Set different update/complete function for these time counters
-  $('.project .ui-has-timecount, .project-list-item .ui-has-timecount, .project-single .ui-has-timecount').uiTimeCount({
-    onupdate: function (timeDiff) {
-      var elemTimeCount = this
-      var outputTime
-
-      // Show relative time outside of 2 days
-      if (timeDiff.total > (3600000 * 48)) {
-        outputTime = elemTimeCount.getRelativeTime()
-
-      } else {
-        // Expired
-        if (timeDiff.total < 0) {
-          outputTime = __.__('Project expired', 'projectPeriodExpired')
-
-        // Countdown
-        } else {
-          // Custom timecode
-          outputTime = Utility.leadingZero(timeDiff.hours + (24 * timeDiff.days)) + ':' + Utility.leadingZero(timeDiff.minutes) + ':' + Utility.leadingZero(timeDiff.seconds)
-        }
-      }
-
-      // Update counter
-      elemTimeCount.$elem.text(outputTime)
-    },
-    oncomplete: function () {
-      var elemTimeCount = this
-
-      // Project list item
-      if (elemTimeCount.$elem.parents('.project-list-item').length > 0) {
-        elemTimeCount.$elem.parents('.project-list-item').addClass('ui-project-expired')
-        elemTimeCount.$elem.text(__.__('Project expired', 'projectListItemPeriodExpired'))
-
-      // Project Single
-      } else if (elemTimeCount.$elem.parents('.project-single').length > 0) {
-        elemTimeCount.$elem.parents('.project-single').addClass('ui-project-expired')
-        elemTimeCount.$elem.text(__.__('Project expired', 'projectSinglePeriodExpired'))
-
-      // Project
-      } else {
-        elemTimeCount.$elem.parents('.project').addClass('ui-project-expired')
-        elemTimeCount.$elem.text(__.__('Project expired', 'projectListItemPeriodExpired'))
-      }
-    }
-  })
-
   /*
    * Watch Scroll
+   * This aims to batch all window scroll operations in one place.
    */
-  // Window scroll watcher
-  var watchWindow = new WatchScroll.Watcher(window)
+  // Attach WatchScroll instance to watch the window's scrolling
+  window.watchWindow = new WatchScroll.Watcher(window)
     // Fix site nav
     .watch(window, 'scrollTop>50', function () {
       if (!$html.is('.ui-site-header-fixed')) {
         // @debug
         // console.log('add ui-site-header-fixed')
         $html.addClass('ui-site-header-fixed')
-        debounceUpdateWindow()
+        Utility.debounceUpdateWindow()
       }
     })
 
@@ -636,7 +541,7 @@ $(document).ready(function ($) {
         // @debug
         // console.log('remove ui-site-header-fixed')
         $html.removeClass('ui-site-header-fixed')
-        debounceUpdateWindow()
+        Utility.debounceUpdateWindow()
       }
     })
 
@@ -647,6 +552,8 @@ $(document).ready(function ($) {
     })
 
   // Dynamic watchers specified through view attributes (single action per element)
+  // This enables setting basic watchscroll actions on elements, rather than assigning via JS
+  // It's primarily used with the items which start text counts when the user has scrolled the element into the view
   // @note if you need to add more than one action, I suggest doing it via JS
   $('[data-watchscroll-action]').each(function (i, elem) {
     var $elem = $(elem)
@@ -700,7 +607,8 @@ $(document).ready(function ($) {
   }
 
   /*
-   * WatchScroll Nav: If item is visible (via WatchScroll action `enter`) then make the navigation item active
+   * WatchScroll Nav
+   * If item is visible (via WatchScroll action `enter`) then make the navigation item active
    */
   $('[data-watchscroll-nav]').each(function (i, elem) {
     watchWindow.watch(elem, WatchScroll.actions.withinMiddle)
@@ -836,167 +744,6 @@ $(document).ready(function ($) {
     // })
 
   /*
-   * Project List
-   */
-  $doc.on(Utility.clickEvent, '.project-list-item', function (event) {
-    var $target = $(event.target)
-    var href = $target.closest('.project-list-item').find('.project-list-item-title a').first().attr('href')
-
-    // Not an anchor link? Let's go...
-    if ($target.closest('a, [data-toggle="tooltip"]').length === 0) {
-      event.preventDefault()
-
-      // Go to the project page
-      window.location = href
-    }
-  })
-
-  /*
-   * Responsive
-   */
-
-  /*
-   * Set to device height
-   * Relies on element to have [data-set-device-height] attribute set
-   * to one or many breakpoint names, e.g. `data-set-device-height="xs sm"`
-   * for device's height to be applied at those breakpoints
-   */
-  function setDeviceHeights() {
-    // Always get the site header height to remove from the element's height
-    var siteHeaderHeight = Utility.$siteHeader.outerHeight()
-    var deviceHeight = window.innerHeight - siteHeaderHeight
-
-    // Set element to height of device
-    $('[data-set-device-height]').each(function (i, elem) {
-      var $elem = $(elem)
-      var checkBp = $elem.attr('data-set-device-height').trim().toLowerCase()
-      var setHeight = false
-
-      // Turn elem setting into an array to iterate over later
-      if (!/[, ]/.test(checkBp)) {
-        checkBp = [checkBp]
-      } else {
-        checkBp = checkBp.split(/[, ]+/)
-      }
-
-      // Check if elem should be set to device's height
-      for (var j in checkBp) {
-        if (new RegExp(checkBp[j], 'i').test(currentBreakpoint)) {
-          setHeight = checkBp[j]
-          break
-        }
-      }
-
-      // Set the height
-      if (setHeight) {
-        // @debug
-        // console.log('Setting element height to device', currentBreakpoint, checkBp)
-        $elem.css('height', deviceHeight + 'px').addClass('ui-set-device-height')
-      } else {
-        $elem.css('height', '').removeClass('ui-set-device-height')
-      }
-    })
-  }
-
-  /*
-   * Equal Height
-   * Sets multiple elements to be the equal (maximum) height
-   * Elements require attribute [data-equal-height] set. You can also specify the
-   * breakpoints you only want this to be applied to in this attribute, e.g.
-   * `<div data-equal-height="xs">..</div>` would only be applied in `xs` breakpoint
-   * If you want to separate equal height elements into groups, additionally
-   * set the [data-equal-height-group] attribute to a unique string ID, e.g.
-   * `<div data-equal-height="xs" data-equal-height-group="promo1">..</div>`
-   */
-  function setEqualHeights () {
-    var equalHeights = {}
-    $('[data-equal-height]').each(function (i, elem) {
-      var $elem = $(elem)
-      var groupName = $elem.attr('data-equal-height-group') || 'default'
-      var elemHeight = $elem.css('height', '').outerHeight()
-
-      // Create value to save max height to
-      if (!equalHeights.hasOwnProperty(groupName)) equalHeights[groupName] = 0
-
-      // Set max height
-      if (elemHeight > equalHeights[groupName]) equalHeights[groupName] = elemHeight
-
-    // After processing all, apply height (depending on breakpoint)
-    }).each(function (i, elem) {
-      var $elem = $(elem)
-      var groupName = $elem.attr('data-equal-height-group') || 'default'
-      var applyToBp = $elem.attr('data-equal-height')
-
-      // Only apply to certain breakpoints
-      if (applyToBp) {
-        applyToBp = applyToBp.split(/[ ,]+/)
-
-        // Test breakpoint
-        if (new RegExp(applyToBp.join('|'), 'i').test(currentBreakpoint)) {
-          $elem.height(equalHeights[groupName])
-
-        // Remove height
-        } else {
-          $elem.css('height', '')
-        }
-
-      // No breakpoint set? Apply indiscriminately
-      } else {
-        $elem.height(equalHeights[groupName])
-      }
-    })
-
-    // @debug
-    // console.log('equalHeights', equalHeights)
-  }
-
-  /*
-   * Update Window
-   */
-  // Manual debouncing instead of using requestAnimationFrame
-  // I found significant slowness when using requestAnimationFrame
-  var timerDebounceUpdateWindow = 0
-  function debounceUpdateWindow () {
-    clearTimeout(timerDebounceUpdateWindow)
-    timerDebounceUpdateWindow = setTimeout(function () {
-      updateWindow()
-    }, 50)
-  }
-  $win.on('orientationchange resize', debounceUpdateWindow)
-
-  // Perform actions when the window needs to be updated
-  function updateWindow () {
-    clearTimeout(timerDebounceUpdateWindow)
-    // requestAnimationFrame(updateWindow)
-
-    // Get active breakpoints
-    currentBreakpoint = Utility.getActiveBreakpoints()
-
-    // Update the position of the project-single-menu top offset
-    if (!$html.is('.ui-project-single-menu-fixed') && typeof projectSingleNavOffsetTop !== 'undefined') {
-      updateProjectSingleNavOffsetTop()
-    }
-
-    // Adjust drops
-    $('.ui-usernotificationsdrop').uiUserNotificationsDrop('position')
-
-    // Set device heights
-    setDeviceHeights()
-
-    // Update equal heights
-    setEqualHeights()
-
-    // Update the stickies (perform hardUpdate due to resize/orientationchange)
-    Sticky.prototype._updateAllStickyWatchers(1)
-
-    // Trigger UI:update event to signal to any other elements that need to update on this event
-    // @trigger elem `UI:update`
-    $doc.trigger('UI:update')
-  }
-  // @bind document `UI:updateWindow` Fire debounceUpdateWindow to update any elements due to repaint/reflow
-  $doc.on('UI:updateWindow', debounceUpdateWindow)
-
-  /*
    * Smooth scrolling to point on screen or specific element
    */
   // Scroll to an item which has been referenced on this page
@@ -1035,190 +782,11 @@ $(document).ready(function ($) {
     }
 
     // Trigger the updateWindow since the collapse/tab content may cause widths/heights to change
-    debounceUpdateWindow()
+    Utility.debounceUpdateWindow()
 
     // Child components bind to the `UI:visible` event in order to render themselves when their parent is visible (i.e. not `display:none`). This is used primarily for items which require "physical" space to render, like maps and charts
     $target.trigger('UI:visible')
   })
-
-  /*
-   * Project Single Fixed Menu
-   */
-  var projectSingleNavOffsetTop = 0
-  var $projectSingleMenu = $('.project-single-menu')
-
-  function updateProjectSingleNavOffsetTop () {
-    if ($projectSingleMenu.length > 0) {
-      projectSingleNavOffsetTop = $('.project-single-content .project-single-nav').first().offset().top - (parseInt(Utility.$siteHeader.height(), 10) * 0.5)
-    } else {
-      projectSingleNavOffsetTop = undefined
-    }
-  }
-
-  // Add to window WatchScroll watcher means to make project-single-menu fixed
-  if ($projectSingleMenu.length > 0) {
-    updateProjectSingleNavOffsetTop()
-    watchWindow
-      .watch(window, function (params) {
-        // @debug console.log($win.scrollTop() >= projectSingleNavOffsetTop)
-        if (typeof projectSingleNavOffsetTop !== 'undefined' && $win.scrollTop() >= projectSingleNavOffsetTop) {
-          if (!$html.is('.ui-project-single-menu-fixed')) {
-            // @debug
-            // console.log('add ui-project-single-menu-fixed')
-            $html.addClass('ui-project-single-menu-fixed')
-          }
-        } else {
-          if ($html.is('.ui-project-single-menu-fixed')) {
-            // @debug
-            // console.log('remove ui-project-single-menu-fixed')
-            $html.removeClass('ui-project-single-menu-fixed')
-          }
-        }
-      })
-  }
-
-  /*
-   * Project Single Map
-   * @todo should be refactored out to own app component
-   */
-  $doc
-    // -- Click to show map
-    .on(Utility.clickEvent, '.ui-project-single-map-toggle', function (event) {
-      event.preventDefault()
-      toggleProjectSingleMap()
-    })
-    // -- Animation Events
-    .on(Utility.transitionEndEvent, '.ui-project-single-map-opening', function (event) {
-      showProjectSingleMap()
-    })
-    .on(Utility.transitionEndEvent, '.ui-project-single-map-closing', function (event) {
-      hideProjectSingleMap()
-    })
-
-  function openProjectSingleMap () {
-    // @debug console.log('openProjectSingleMap')
-    if (isIE(9) || isIE('<9')) return showProjectSingleMap()
-    if (!$html.is('.ui-project-single-map-open, .ui-project-single-map-opening')) {
-      $html.removeClass('ui-project-single-map-open ui-project-single-map-closing').addClass('ui-project-single-map-opening')
-    }
-  }
-
-  function closeProjectSingleMap () {
-    // @debug console.log('closeProjectSingleMap')
-    if (isIE(9) || isIE('<9')) return hideProjectSingleMap()
-    $html.removeClass('ui-project-single-map-opening ui-project-single-map-open').addClass('ui-project-single-map-closing')
-  }
-
-  function showProjectSingleMap () {
-    // @debug console.log('showProjectSingleMap')
-    if (!$html.is('.ui-project-single-map-open')) {
-      $html.removeClass('ui-project-single-map-opening ui-project-single-map-closing').addClass('ui-project-single-map-open')
-      $('.ui-project-single-map-toggle .label').text(__.__('Hide map', 'projectSingleMapHideLabel'))
-
-      // Initialise the project map using the settings JSON object
-      if (projectMapViewSettings) {
-        projectMapViewSettings = Utility.convertStringToJson(projectMapViewSettings)
-
-        // Initialise the map only if an object was given
-        if (typeof projectMapViewSettings === 'object') {
-          // Ensure target is set
-          if (!projectMapViewSettings.target) projectMapViewSettings.target = '#project-map'
-          $(projectMapViewSettings.target).uiMapView(projectMapViewSettings)
-        }
-      }
-
-      // Manually trigger refreshMapbox on the MapView
-      $('[data-mapview], .ui-mapview').uiMapView('refreshMapbox')
-    }
-  }
-
-  function hideProjectSingleMap () {
-    // @debug console.log('hideProjectSingleMap')
-    $html.removeClass('ui-project-single-map-opening ui-project-single-map-open ui-project-single-map-closing')
-    $('.ui-project-single-map-toggle .label').text(__.__('View map', 'projectSingleMapShowLabel'))
-
-    // Manually trigger refreshMapbox on the MapView
-    $('[data-mapview], .ui-mapview').uiMapView('refreshMapbox')
-  }
-
-  function toggleProjectSingleMap () {
-    if($html.is('.ui-project-single-map-open, .ui-project-single-map-opening')) {
-      closeProjectSingleMap()
-    } else {
-      openProjectSingleMap()
-    }
-  }
-
-  /*
-   * Sticky things
-   */
-  // @todo probably needs a lot of refactoring. Trickiest thing is all the responsive stuff
-
-  // Offset sticky by marginTop
-  var doStickyOffset = function ($elem, amount) {
-    if (amount !== false) {
-      $elem.css('marginTop', amount + 'px')
-    } else {
-      $elem.css('marginTop', '')
-    }
-  }
-
-  // Offset sticky by CSS transform
-  if ($html.is('.has-csstransforms')) {
-    doStickyOffset = function ($elem, amount) {
-      if (amount !== false) {
-        $elem.css('transform', 'translateY(' + amount + 'px)')
-      } else {
-        $elem.css('transform', '')
-      }
-    }
-  }
-
-  /*
-   * Sticky Project Single Info
-   * @note Slightly more complex than normal sticky because of the project-single-map and negative margins everywhere!
-   * @todo potentially use the Sticky class for this, but there might be trouble with the bounds (try using the onbeforehardupdate to calculate the top buffer using the negative margins... ?)
-   */
-  var $projectSingleInfoWrap = $('.project-single-info-wrap')
-  var $projectSingleInfoPos = $('.project-single-info-position')
-  var $projectSingleInfo = $('.project-single-info')
-
-  function offsetProjectSingleInfo () {
-    // Only do if within the md/lg breakpoint
-    if ($projectSingleInfo.length === 1 && /md|lg/.test(currentBreakpoint)) {
-      var bufferTop = 25
-      var bufferBottom = 100
-      var siteHeaderHeight = Utility.$siteHeader.outerHeight()
-      var winScrollTop = $win.scrollTop()
-      var startInfoFixed = $projectSingleInfoWrap.offset().top + parseFloat($projectSingleInfoPos.css('margin-top')) - siteHeaderHeight - bufferTop
-      var infoHeight = $projectSingleInfo.outerHeight()
-      var endInfoFixed = Utility.$siteFooter.offset().top - infoHeight - siteHeaderHeight - bufferTop - bufferBottom
-      var translateAmount = winScrollTop - startInfoFixed
-      var offsetInfo = 0
-
-      // Constrain info within certain area
-      if (winScrollTop > startInfoFixed) {
-        if (winScrollTop < endInfoFixed) {
-          offsetInfo = translateAmount
-        } else {
-          offsetInfo = endInfoFixed - startInfoFixed
-        }
-      }
-
-      // Apply offset
-      doStickyOffset($projectSingleInfo, offsetInfo)
-
-    // Reset
-    } else {
-      doStickyOffset($projectSingleInfo, false)
-    }
-  }
-
-  // Debounce update to reduce jank
-  if ($projectSingleInfoWrap.length > 0) {
-    watchWindow.watch(window, offsetProjectSingleInfo)
-    offsetProjectSingleInfo()
-  }
 
   // Watch the window scroll and update any Sticky elements
   watchWindow.watch(window, Sticky.prototype._updateAllStickyWatchers)
@@ -1895,10 +1463,10 @@ $(document).ready(function ($) {
 
   // Perform on initialisation
   svg4everybody()
-  debounceUpdateWindow()
+  Utility.debounceUpdateWindow()
 
   // Battle FOUT with a setTimeout! Not perfect...
   setTimeout(function () {
-    debounceUpdateWindow()
+    Utility.debounceUpdateWindow()
   }, 1000)
 })
