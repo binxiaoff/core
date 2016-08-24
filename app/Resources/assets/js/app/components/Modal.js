@@ -559,7 +559,7 @@ $(document)
   // Open a modal by clicking another element
   .on(Utility.clickEvent, '[data-modal-toggle], .ui-modal-toggle', function (event) {
     var $elem = $(this)
-    var targetModal = $elem.attr('href') || $elem.attr('data-target') || $elem.attr('data-modal-toggle')
+    var targetModal = $elem.attr('data-target') || $elem.attr('data-modal-toggle')
 
     // Open the modal
     if (Utility.elemExists(targetModal)) {

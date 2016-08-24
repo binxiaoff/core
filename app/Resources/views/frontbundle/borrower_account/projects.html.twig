@@ -105,16 +105,22 @@
                                                 <td>{{ project.average_ir|localizednumber }}&nbsp;%</td>
                                                 <td>
                                                     {% if project.funding_progress >= 100 and app.session.get('closingProjects')[project.id_project] is not defined %}
-                                                        <a href="#close-funding-project-{{ project.id_project }}" class="fancybox-html ui-has-tooltip" data-original-title="{{ 'borrower-projects_early-closing-stop-tooltip'|trans|escape('html_attr') }}">
+                                                        <a href="javascript:;" class="ui-has-tooltip" data-original-title="{{ 'borrower-projects_early-closing-stop-tooltip'|trans|escape('html_attr') }}" data-modal-toggle="#close-funding-project-{{ project.id_project }}">
                                                             <span class="icon fa-close-u32"></span>
                                                         </a>
-                                                        <div class="hide-accessible">
-                                                            <div id="close-funding-project-{{ project.id_project }}">
+                                                        <div style="display:none">
+                                                            <div id="close-funding-project-{{ project.id_project }}" data-modal>
                                                                 <form action="{{ path('borrower_account_close_project') }}" method="post">
-                                                                    <h1>{{ 'borrower-projects_early-closing-lightbox-title'|trans }}</h1>
-                                                                    <p>{{ 'borrower-projects_early-closing-lightbox-content'|trans({'%currentRate%' : project.average_ir|localizednumber})|raw }}</p>
-                                                                    <a href="javascript:;" onclick="$.fancybox.close();" class="btn-default">{{ 'borrower-projects_early-closing-lightbox-cancel-button'|trans }}</a>
-                                                                    <button type="submit" name="project" value="{{ project.id_project }}" class="btn-primary">{{ 'borrower-projects_early-closing-lightbox-confirm-button'|trans }}</button>
+                                                                    <header class="modal-header">
+                                                                        <h2>{{ 'borrower-projects_early-closing-lightbox-title'|trans }}</h2>
+                                                                    </header>
+                                                                    <div class="modal-body">
+                                                                        <p>{{ 'borrower-projects_early-closing-lightbox-content'|trans({'%currentRate%' : project.average_ir|localizednumber})|raw }}</p>
+                                                                    </div>
+                                                                    <footer class="modal-footer">
+                                                                        <a href="javascript:;" class="btn-default" data-modal-doactionclose>{{ 'borrower-projects_early-closing-lightbox-cancel-button'|trans }}</a>
+                                                                        <button type="submit" name="project" value="{{ project.id_project }}" class="btn-primary">{{ 'borrower-projects_early-closing-lightbox-confirm-button'|trans }}</button>
+                                                                    </footer>
                                                                 </form>
                                                             </div>
                                                         </div>
