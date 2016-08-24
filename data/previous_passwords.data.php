@@ -19,7 +19,7 @@ class previous_passwords extends previous_passwords_crud
 
         $sql = 'SELECT * FROM `previous_passwords`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
-        $result   = array();
+        $result   = [];
         $resultat = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
@@ -41,11 +41,11 @@ class previous_passwords extends previous_passwords_crud
         return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `previous_passwords` WHERE ' . $field . ' = "' . $id . '"')) > 0;
     }
 
-    public function isValidPassword($sPassword, $sUserId)
+    public function isValidPassword($password, $userId)
     {
-        $aPreviousPasswords = $this->select($sUserId, 'id_user');
-        foreach ($aPreviousPasswords as $previousPassword) {
-            if (password_verify($sPassword, $previousPassword['password']) || $sPassword == md5($previousPassword['password'])) {
+        $previousPasswords = $this->select($userId, 'id_user');
+        foreach ($previousPasswords as $previousPassword) {
+            if (password_verify($password, $previousPassword['password']) || $password == md5($previousPassword['password'])) {
                 return false;
             }
         }

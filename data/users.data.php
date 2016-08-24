@@ -89,7 +89,7 @@ class users extends users_crud
         if (isset($_POST[$button])) {
             $user = $this->login($_POST[$email], $_POST[$pass]);
 
-            if ($user != false) {
+            if ($user != false && $this->get($user['email'], 'email')) {
                 $_SESSION['auth']  = true;
                 $_SESSION['token'] = md5(md5(time() . $this->securityKey));
                 $_SESSION['user']  = $user;
@@ -97,9 +97,12 @@ class users extends users_crud
                 if (md5($_POST[$pass]) === $user['password'] || password_needs_rehash($user['password'], PASSWORD_DEFAULT)) {
                     $user['password']             = password_hash($_POST[$pass], PASSWORD_DEFAULT);
                     $_SESSION['user']['password'] = $user['password'];
+                    $this->password               = $user['password'];
                 }
 
-                $this->bdd->query('UPDATE ' . $this->userTable . ' SET lastlogin = NOW(), password = "' . $user['password'] . '" WHERE email = "' . $_POST[$email] . '"');
+                $this->lastlogin = date('Y-m-d H:i:s');
+                $this->update();
+
                 if (isset($_SESSION['request_url']) && $_SESSION['request_url'] != '' && $_SESSION['request_url'] != 'login' && $_SESSION['request_url'] != 'captcha') {
                     header('Location: ' . $_SESSION['request_url']);
                     die;

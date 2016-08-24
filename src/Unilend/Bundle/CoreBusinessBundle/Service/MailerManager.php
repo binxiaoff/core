@@ -1804,7 +1804,7 @@ class MailerManager
      */
     public function sendNewPasswordEmail(\users $user, $newPassword)
     {
-        $aReplacements = array(
+        $replacements = array(
             'surl'    => $this->sSUrl,
             'url'     => $this->sFUrl,
             'email'   => trim($user->email),
@@ -1815,7 +1815,7 @@ class MailerManager
         );
 
         /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('user-nouveau-mot-de-passe', $aReplacements);
+        $message = $this->messageProvider->newMessage('user-nouveau-mot-de-passe', $replacements);
         $message->setTo(trim($user->email));
         $this->mailer->send($message);
     }
@@ -1825,7 +1825,7 @@ class MailerManager
      */
     public function sendPasswordModificationEmail(\users $user)
     {
-        $aReplacements = array(
+        $replacements = array(
             'surl'    => $this->sSUrl,
             'url'     => $this->sFUrl,
             'email'   => trim($user->email),
@@ -1835,7 +1835,7 @@ class MailerManager
         );
 
         /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('admin-nouveau-mot-de-passe', $aReplacements);
+        $message = $this->messageProvider->newMessage('admin-nouveau-mot-de-passe', $replacements);
         $message->setTo(trim($user->email));
 
         /** @var \settings $settings */

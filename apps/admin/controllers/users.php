@@ -21,9 +21,21 @@ class usersController extends bootstrap
         $this->users->checkAccess('admin');
 
         if (isset($_POST['form_add_users'])) {
-            if (isset($_POST['email']) && $this->ficelle->isEmail($_POST['email']) && $this->users->select('email = "' . $_POST['email'] . '"')) {
+            if (false === isset($_POST['email'])) {
                 $_SESSION['freeow']['title']   = 'Ajout d\'un utilisateur';
-                $_SESSION['freeow']['message'] = 'Cet utilisateur existe d&eacute;ja !';
+                $_SESSION['freeow']['message'] = 'Veuillez entrer une adresse e-mail';
+
+                header('Location: ' . $this->lurl . '/users');
+                die;
+            } elseif (false === $this->ficelle->isEmail($_POST['email'])) {
+                $_SESSION['freeow']['title']   = 'Ajout d\'un utilisateur';
+                $_SESSION['freeow']['message'] = 'Veuillez entrer une adresse e-mail valide';
+
+                header('Location: ' . $this->lurl . '/users');
+                die;
+            } elseif ($this->users->select('email = "' . $_POST['email'] . '"')) {
+                $_SESSION['freeow']['title']   = 'Ajout d\'un utilisateur';
+                $_SESSION['freeow']['message'] = 'Cet utilisateur existe déjà';
 
                 header('Location: ' . $this->lurl . '/users');
                 die;
@@ -40,14 +52,14 @@ class usersController extends bootstrap
             $this->users->password     = password_hash($newPassword, PASSWORD_DEFAULT);
             $this->users->id_user      = $this->users->create();
 
-            /** @var \users_zones $users_zones */
-            $users_zones = $this->loadData('users_zones');
+            /** @var \users_zones $usersZones */
+            $usersZones = $this->loadData('users_zones');
 
             $lZones = $this->users_types_zones->select('id_user_type = ' . $this->users->id_user_type . ' ');
             foreach ($lZones as $zone) {
-                $users_zones->id_user = $this->users->id_user;
-                $users_zones->id_zone = $zone['id_zone'];
-                $users_zones->create();
+                $usersZones->id_user = $this->users->id_user;
+                $usersZones->id_zone = $zone['id_zone'];
+                $usersZones->create();
             }
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
@@ -231,12 +243,12 @@ class usersController extends bootstrap
     public function _generate_new_password()
     {
         if ($this->users->checkAccess('admin') && isset($this->params[0]) && $this->users->get($this->params[0], 'id_user')) {
-            $sNewPassword = $this->ficelle->generatePassword(10);
-            $this->users->changePassword($sNewPassword, $this->users, true);
+            $newPassword = $this->ficelle->generatePassword(10);
+            $this->users->changePassword($newPassword, $this->users, true);
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
             $mailerManager = $this->get('unilend.service.email_manager');
-            $mailerManager->sendNewPasswordEmail($this->users, $sNewPassword);
+            $mailerManager->sendNewPasswordEmail($this->users, $newPassword);
         }
         $_SESSION['freeow']['title']   = 'Modification du mot de passe';
         $_SESSION['freeow']['message'] = 'Le mot de passe a bien &eacute;t&eacute; modifi&eacute; !';

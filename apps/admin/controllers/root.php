@@ -17,12 +17,12 @@ class rootController extends bootstrap
 
         if (isset($_POST['form_new_password'])) {
             if ($this->users->get(trim($_POST['email']), 'email')) {
-                $sNewPassword = $this->ficelle->generatePassword(10);
-                $this->users->changePassword($sNewPassword, $this->users, true);
+                $newPassword = $this->ficelle->generatePassword(10);
+                $this->users->changePassword($newPassword, $this->users, true);
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
                 $mailerManager = $this->get('unilend.service.email_manager');
-                $mailerManager->sendNewPasswordEmail($sNewPassword, $this->users);
+                $mailerManager->sendNewPasswordEmail($newPassword, $this->users);
 
                 $this->loggin_connection_admin                 = $this->loadData('loggin_connection_admin');
                 $this->loggin_connection_admin->id_user        = $this->users->id_user;
