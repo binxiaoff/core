@@ -160,6 +160,11 @@ class depot_de_dossierController extends bootstrap
             $logger->info('Client ' . $this->clients->id_client . ' entered a SIRET value (' . $siret . ')', array('class' => __CLASS__, 'function' => __FUNCTION__));
         }
 
+        // @todo Revert when TMA-749 is resolved
+        if (is_numeric($this->companies->name) || 0 === strcasecmp($this->companies->name, 'Monsieur') || 0 === strcasecmp($this->companies->name, 'Madame')) {
+            $oLogger->error('Wrong company name - altares return : ' . serialize($oResult), array('class' => __CLASS__, 'function' => __FUNCTION__));
+        }
+
         switch ($oResult->myInfo->eligibility) {
             case 'Oui':
                 $oAltares->setProjectData($this->projects, $oResult->myInfo);

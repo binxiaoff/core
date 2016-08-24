@@ -1,6 +1,7 @@
 <?php
 
 use Unilend\librairies\Altares;
+use Psr\Log\LoggerInterface;
 
 class dossiersController extends bootstrap
 {
@@ -321,6 +322,13 @@ class dossiersController extends bootstrap
 
                         $oAltares->setCompanyData($this->companies, $oResult->myInfo);
                         $oAltares->setProjectData($this->projects, $oResult->myInfo);
+
+                        // @todo Revert when TMA-749 is resolved
+                        if (is_numeric($this->companies->name) || 0 === strcasecmp($this->companies->name, 'Monsieur') || 0 === strcasecmp($this->companies->name, 'Madame')) {
+                            /** @var LoggerInterface $logger */
+                            $logger = $this->get('logger');
+                            $logger->error('Wrong company name - altares return : ' . serialize($oResult), array('class' => __CLASS__, 'function' => __FUNCTION__));
+                        }
 
                         $oCompanyCreationDate = new \DateTime($this->companies->date_creation);
                         $oInterval            = $oCompanyCreationDate->diff(new \DateTime());
@@ -1402,6 +1410,14 @@ class dossiersController extends bootstrap
                 $oAltares = new Altares();
                 $oResult  = $oAltares->getEligibility($this->companies->siren);
                 $oAltares->setCompanyData($this->companies, $oResult->myInfo);
+
+                // @todo Revert when TMA-749 is resolved
+                if (is_numeric($this->companies->name) || 0 === strcasecmp($this->companies->name, 'Monsieur') || 0 === strcasecmp($this->companies->name, 'Madame')) {
+                    /** @var LoggerInterface $logger */
+                    $logger = $this->get('logger');
+                    $logger->error('Wrong company name - altares return : ' . serialize($oResult), array('class' => __CLASS__, 'function' => __FUNCTION__));
+                }
+
                 $oAltares->setProjectData($this->projects, $oResult->myInfo);
                 $oAltares->setCompanyBalance($this->companies);
 
