@@ -899,6 +899,16 @@ FormValidation.prototype.rules = {
           }
           break
 
+        case 'bic':
+          // See: http://stackoverflow.com/a/19057449
+          if (!/^[a-z]{6}[2-9a-z][0-9a-np-z]([a-z0-9]{3}|x{3})?$/i.test(inputValidation.value)) {
+            inputValidation.errors.push({
+              type: 'inputType',
+              description: __.__('Not a valid BIC number. Please ensure you have entered your number in correctly', 'errorFieldInputTypeBic')
+            })
+          }
+          break
+
         case 'iban':
           // Uses npm library `iban` to validate
           if (!Iban.isValid(inputValidation.value.replace(/\s+/g, ''))) {

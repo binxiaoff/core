@@ -75,7 +75,7 @@
                                     {% trans %} lender-subscription_step-1-company-siren-label {% endtrans %}
                                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                 </label>
-                                <input id="form-lender-legal-entity-siren" type="text" name="company_siren" value="{{ formData.company_siren }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                <input id="form-lender-legal-entity-siren" type="text" name="company_siren" value="{{ formData.company_siren }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="siren"/>
                             </div><!-- /.form-field -->
                         </div><!-- /.row -->
 
@@ -85,7 +85,7 @@
                                     {% trans %} lender-subscription_step-1-company-phone-label {% endtrans %}
                                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                 </label>
-                                <input id="form-lender-legal-entity-phone" type="text" name="company_phone" value="{{ formData.company_phone }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                <input id="form-lender-legal-entity-phone" type="tel" name="company_phone" value="{{ formData.company_phone }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                             </div><!-- /.form-field -->
                             <div class="form-field col-lg-6 col-md-6">
                             </div><!-- /.form-field -->

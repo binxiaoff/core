@@ -108,6 +108,7 @@ var AutoComplete = function (elem, options) {
   self.input = self.$input[0]
   self.target = self.$target[0]
   self.timer = undefined
+  self.hideTimer = undefined
   self.Tether = undefined
 
   // UI
@@ -151,10 +152,20 @@ var AutoComplete = function (elem, options) {
     }
   })
 
-  // Hide autocomplete
-  self.$input.on('AutoComplete:hide, autocomplete-hide', function ( event ) {
-    // console.log('autocomplete-hide', self.input)
-    self.hide()
+  // Hide AutoComplete after time on blur
+  self.$input.on('blur', function () {
+    self.hideResultsAfterDelay()
+  })
+  self.$target.on('blur', function () {
+    self.hideResultsAfterDelay()
+  })
+
+  // Cancel hide if any thing is focused
+  self.$input.on('focus', function () {
+    clearTimeout(self.hideTimer)
+  })
+  self.$target.on('focus', function () {
+    clearTimeout(self.hideTimer)
   })
 
   // Click result to complete the input
@@ -166,6 +177,8 @@ var AutoComplete = function (elem, options) {
 
   // Keyboard operations on results
   self.$target.on('keydown', '.autocomplete-results a:focus', function (event) {
+    clearTimeout(self.hideTimer)
+
     // Move between results and input
     if (self.settings.enable) {
 
@@ -293,6 +306,7 @@ var AutoComplete = function (elem, options) {
 
   // Display the results
   self.showResults = function (term, results) {
+    clearTimeout(self.hideTimer)
     var reTerm = new RegExp('(' + self.reEscape(term) + ')', 'gi')
 
     // Remove any messages
@@ -387,6 +401,14 @@ var AutoComplete = function (elem, options) {
     self.$input.trigger('AutoComplete:showResults:complete', [self, results])
   }
 
+  // Hide the results after a delay
+  self.hideResultsAfterDelay = function () {
+    clearTimeout(self.hideTimer)
+    self.hideTimer = setTimeout(function () {
+      self.hide()
+    }, 2000)
+  }
+
   // Escape a string for regexp purposes
   // See: http://stackoverflow.com/a/6969486
   self.reEscape = function (str) {
@@ -473,6 +495,7 @@ var AutoComplete = function (elem, options) {
   // Hide the autocomplete
   self.hide = function () {
     clearTimeout(self.timer)
+    clearTimeout(self.hideTimer)
     self.$target.hide()
 
     // Accesibility

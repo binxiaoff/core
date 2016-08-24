@@ -7,95 +7,169 @@
 
     <div class="row">
         <div class="form-field">
-            <label>{% trans %} lender-subscription_step-2-person-id-attachments-section-title {% endtrans %}
-                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+            <label>
+                {% trans %} lender-subscription_step-2-person-id-attachments-section-title {% endtrans %}
+                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+            </label>
+
+            <div class="form-field">
+                <div class="custom-input-file" id="form-lender-step-2-person-file-identity-cni-1"
+                     data-formvalidation-input
+                     data-formvalidation-required='input[type="file"][name="id_recto"]'
+                     data-fileattach
+                     data-fileattach-inputname="id_recto"
+                     data-fileattach-maxfiles="1"
+                     data-fileattach-emptyfilelabel="{% trans %} lender-subscription_step-2-person-id-attachment-recto-placeholder {% endtrans %}">
+
+                    {# {% if identityAttachments[constant('\\attachment_type::CNI_PASSPORTE')]['path'] is defined %}
+                        <input type="file" name="id_recto" value="{{ identityAttachments[constant('\\attachment_type::CNI_PASSPORTE')]['path'] }}" />
+                    {% endif %} #}
+                </div><!-- /.ui-fileattach -->
+            </div><!-- /.form-field -->
+
+            <div class="form-field">
+                <div class="custom-input-file" id="form-lender-step-2-person-file-identity-cni-2"
+                     data-fileattach
+                     data-fileattach-inputname="id_verso"
+                     data-fileattach-maxfiles="1"
+                     data-fileattach-emptyfilelabel="{% trans %} lender-subscription_step-2-person-id-attachment-verso-placeholder {% endtrans %}">
+
+                    {# {% if identityAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')]['path'] is defined %}
+                        <input type="file" name="id_verso" value="{{ identityAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')]['path'] }}" />
+                    {% endif %} #}
+                </div><!-- /.ui-fileattach -->
+            </div><!-- /.form-field -->
+
             <div class="field-help">
                 <p>{% trans %} lender-subscription_step-2-person-id-attachments-section-info {% endtrans %}</p>
             </div>
-            <div class="form-field">
-                <div class="custom-input-file" id="form-lender-step-2-file-identity-cni-1" data-fileattach-maxfiles="1"
-                     data-fileattach data-fileattach-inputname="id_recto"
-                     data-fileattach-emptyfilelabel="{% trans %} lender-subscription_step-2-person-id-attachment-recto-placeholder {% endtrans %}"
-                     data-formvalidation-input data-formvalidation-required='input[type="file"][name="fichier[identite][cni_a][0]"]'></div><!-- /.ui-fileattach -->
-            </div>
-            <div class="form-field">
-                <div class="custom-input-file" id="form-preter-file-identite-cni-2" data-fileattach-maxfiles="1"
-                     data-fileattach data-fileattach-inputname="id_verso"
-                     data-fileattach-emptyfilelabel="{% trans %} lender-subscription_step-2-person-id-attachment-verso-placeholder {% endtrans %}"></div><!-- /.ui-fileattach -->
-            </div>
-        </div>
+        </div><!-- /.form-field -->
     </div>
 
     <div class="row">
         <div class="form-field">
-            <label>{% trans %} lender-subscription_step-2-person-housing-certificate-section-title {% endtrans %}
-                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+            <label>
+                {% trans %} lender-subscription_step-2-person-housing-certificate-section-title {% endtrans %}
+                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+            </label>
+
+            <div class="custom-input-file" id="form-lender-step-2-person-file-domicile"
+                 data-formvalidation-input
+                 data-formvalidation-required='input[type="file"][name="housing-certificate"]'
+                 data-fileattach
+                 data-fileattach-inputname="housing-certificate"
+                 data-fileattach-maxfiles="1"
+                 data-fileattach-emptyfilelabel="{% trans %} lender-subscription_step-2-person-id-attachment-housing-certificate {% endtrans %}">
+                {# @todo Show already uploaded files if server-side form validation errored #}
+                {# {% if residenceAttachments[constant('\\attachment_type::JUSTIFICATIF_DOMICILE')]['path'] is defined %}
+                    <input type="file" name="housing-certificate" value="{{ residenceAttachments[constant('\\attachment_type::JUSTIFICATIF_DOMICILE')]['path'] }}" />
+                {% endif %} #}
+            </div><!-- /.ui-fileattach -->
+
+            <ul class="ui-formvalidation-messages"></ul>
 
             <div class="field-help">
                 <p>{% trans %} lender-subscription_step-2-person-housing-certificate-section-info {% endtrans %}</p>
             </div>
+        </div><!-- /.form-field -->
+    </div>
 
-            <div class="custom-input-file" id="form-preter-file-domicile" data-fileattach-maxfiles="1"
-                 data-fileattach data-fileattach-inputname="housing-certificate"
-                 data-formvalidation-input data-formvalidation-required='input[type="file"][name="fichier[domicile][0]"]'></div><!-- /.ui-fileattach -->
-
-            <ul class="ui-formvalidation-messages"></ul>
-            <p>
-                <a href="#todo" class="link">{% trans %} lender-subscription_step-2-housed-by-third-person {% endtrans %}</a>
-                {#TODO when click collapse the next section#}
-            </p>
-            {#TODO: only show if housed by third person is checked #}
-
-            <div class="row" id="upload-housed-by-third-person-declaration">
-                <div class="form-field ">
-                    <label>{% trans %} lender-subscription_step-2-housed-by-third-person-declaration {% endtrans %}
-                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
-                    <div class="custom-input-file" id="form-lender-subscription-info-file-housed-by-third-person-declaration"
-                         data-fileattach data-fileattach-inputname="housed-by-third-person-declaration"
-                         data-fileattach-maxfiles="1" >
-                    </div><!-- /.ui-fileattach -->
-                </div>
-            </div>
-            <div class="row" id="upload-id-third-person-housing">
-                <div class="form-field">
-                    <label>{% trans %} lender-subscription_step-2-id-third-person-housing {% endtrans %}
-                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
-                    <div class="custom-input-file" id="form-lender-subscription-info-file-id-third-person-housing"
-                         data-fileattach data-fileattach-inputname="id-third-person-housing"
-                         data-fileattach-maxfiles="1">
-                    </div><!-- /.ui-fileattach -->
-                </div>
-            </div>
+    {# Housed by Third Person #}
+    {% set isHousedByThirdPerson = false %}
+    {# @todo set if user is housed by third person. Below was taken from `pages/lender_profile/partials/person_fiscal_address.html.twig` #}
+    {# {% for attachment in residenceAttachments if attachment.id_type == constant('\\attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT') %}
+        {% set isHousedByThirdPerson = true %}
+    {% endfor %} #}
+    <div class="row">
+        <div class="form-field form-field-single-checkbox">
+            <label>
+                <input id="housed-by-third-person" type="checkbox" value="true" {% if isHousedByThirdPerson == true %} checked="checked" {% endif %}/>
+                <span class="label">{% trans %} lender-subscription_step-2-housed-by-third-person {% endtrans %}</span>
+            </label>
         </div>
     </div>
 
-    <div class="row" {% if not isLivingAbroad %} style="display: none;" {% endif %} id="tax-certificate">
+    {# Show if housed by third person is checked #}
+    <div id="upload-housed-by-third-person" class="row collapse {% if isHousedByThirdPerson == true %} in {% endif %}">
         <div class="form-field">
-            <label>{% trans %} lender-profile_information-tab-fiscal-address-tax-certificate-label {% endtrans %}
-                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
-            <div class="custom-input-file"
-                 id="form-lender-subscription-info-file-tax-certificate"
-                 data-fileattach data-fileattach-inputname="tax-certificate"
+            <label>
+                {% trans %} lender-subscription_step-2-housed-by-third-person-declaration {% endtrans %}
+                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+            </label>
+
+            <div class="custom-input-file" id="form-lender-subscription-info-file-housed-by-third-person-declaration"
+                 data-formvalidation-input
+                 data-formvalidation-required='input[type="file"][name="housed-by-third-person-declaration"]'
+                 data-fileattach
+                 data-fileattach-inputname="housed-by-third-person-declaration"
                  data-fileattach-maxfiles="1">
+                {# @todo Show already uploaded files if server-side form validation errored #}
+                {# {% if residenceAttachments[constant('\\attachment_type::ATTESTATION_HEBERGEMENT_TIERS')]['path'] is defined %}
+                    <input type="file" name="housed-by-third-person-declaration" value="{{ residenceAttachments[constant('\\attachment_type::ATTESTATION_HEBERGEMENT_TIERS')]['path'] }}" />
+                {% endif %} #}
             </div><!-- /.ui-fileattach -->
-        </div>
+        </div><!-- /.form-field -->
+
+        <div class="form-field">
+            <label>
+                {% trans %} lender-subscription_step-2-id-third-person-housing {% endtrans %}
+                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+            </label>
+
+            <div class="custom-input-file" id="form-lender-subscription-info-file-id-third-person-housing"
+                 data-formvalidation-input
+                 data-formvalidation-required='input[type="file"][name="id-third-person-housing"]'
+                 data-fileattach
+                 data-fileattach-inputname="id-third-person-housing"
+                 data-fileattach-maxfiles="1">
+                {# @todo Show already uploaded files if server-side form validation errored #}
+                {# {% if residenceAttachments[constant('\\attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT')]['path'] is defined %}
+                    <input type="file" name="id-third-person-housing" value="{{ residenceAttachments[constant('\\attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT')]['path'] }}" />
+                {% endif %} #}
+            </div><!-- /.ui-fileattach -->
+        </div><!-- /.form-field -->
+    </div><!-- /#upload-housed-by-third-person -->
+
+    <div id="tax-certificate" class="row collapse {% if not isLivingAbroad %} in {% endif %}">
+        <div class="form-field">
+            <label>
+                {% trans %} lender-profile_information-tab-fiscal-address-tax-certificate-label {% endtrans %}
+                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+            </label>
+
+            <div class="custom-input-file" id="form-lender-subscription-info-file-tax-certificate"
+                 data-formvalidation-input
+                 data-formvalidation-required='input[type="true"][name="tax-certificate"]'
+                 data-fileattach
+                 data-fileattach-inputname="tax-certificate"
+                 data-fileattach-maxfiles="1">
+
+            </div><!-- /.ui-fileattach -->
+        </div><!-- /.form-field -->
     </div>
 
     <div class="row">
         <div class="form-field">
-            <label for="form-preter-fichier-identité">{% trans %} lender-subscription_step-2-rib {% endtrans %}
-                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+            <label for="form-preter-fichier-identité">
+                {% trans %} lender-subscription_step-2-rib {% endtrans %}
+                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+            </label>
 
-            <div class="custom-input-file" id="form-preter-file-file-rib" data-fileattach-maxfiles="1"
-                 data-fileattach data-fileattach-inputname="rib"
-                 data-formvalidation-input data-formvalidation-required='input[type="file"][name="fichier[rib][0]"]'></div><!-- /.ui-fileattach -->
+            <div class="custom-input-file" id="form-preter-file-file-rib"
+                 data-formvalidation-input
+                 data-formvalidation-required='input[type="file"][name="rib"]'
+                 data-fileattach
+                 data-fileattach-inputname="rib"
+                 data-fileattach-maxfiles="1">
+
+            </div><!-- /.ui-fileattach -->
 
             <ul class="ui-formvalidation-messages"></ul>
 
             <div class="field-help">
                 <p>{% trans %} lender-subscription_step-2-rib-info {% endtrans %}</p>
             </div>
-        </div>
+        </div><!-- /.form-field -->
     </div>
 
 </fieldset>

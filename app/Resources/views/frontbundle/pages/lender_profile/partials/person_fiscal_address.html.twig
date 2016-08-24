@@ -152,7 +152,7 @@
                      data-fileattach
                      data-fileattach-inputname="housing-certificate"
                      data-fileattach-maxfiles="1"
-                     {# data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-fiscal-address-location-certificate {% endtrans %}"#}
+                     data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-fiscal-address-location-certificate {% endtrans %}"
                      data-fileattach-fileremove="false">
                     {% if residenceAttachments[constant('\\attachment_type::JUSTIFICATIF_DOMICILE')]['path'] is defined %}
                         <input type="file" name="housing-certificate" value="{{ residenceAttachments[constant('\\attachment_type::JUSTIFICATIF_DOMICILE')]['path'] }}" />
@@ -190,7 +190,8 @@
                         <input type="file" name="housed-by-third-person-declaration" value="{{ residenceAttachments[constant('\\attachment_type::ATTESTATION_HEBERGEMENT_TIERS')]['path'] }}" />
                     {% endif %}
                 </div><!-- /.ui-fileattach -->
-            </div>
+            </div><!-- /.form-field -->
+
             <div class="form-field">
                 <label>{% trans %} lender-profile_information-tab-fiscal-address-id-third-person-housing {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -209,8 +210,8 @@
                         {% endif %}
                     </div><!-- /.ui-fileattach -->
                 </div>
-            </div>
-        </div>
+            </div><!-- /.form-field -->
+        </div><!-- /#upload-housed-by-third-person -->
 
         <input type="hidden" name="person_fiscal_address_form" value="true" />
         <div class="btn-controls">

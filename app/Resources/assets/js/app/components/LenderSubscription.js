@@ -15,6 +15,10 @@ $doc.on('ready', function () {
   var ageTimer = 0
   var pwdTimer = 0
   var ajaxDelay = 2000
+  
+  /*
+   * Step 1
+   */
 
   // Change from person to society form
   function checkClientType() {
@@ -114,6 +118,10 @@ $doc.on('ready', function () {
   $doc.on('change', 'input[name="client_password"]', function () {
     var $elem = $(this)
 
+    // Do quick JS validation before doing AJAX validation
+    // @note FormValidation already supports checking with the minLength rule
+    if ($elem.val().length >= 6) return false
+
     // Debounce AJAX
     clearTimeout(pwdTimer)
     pwdTimer = setTimeout(function () {
@@ -153,5 +161,10 @@ $doc.on('ready', function () {
     $('#form-lender-person-birth-place').val(itemLabel)
     $('#form-lender-person-birth-place-insee').val(itemValue)
   })
+
+  /*
+   * Step 2
+   */
+  
   
 })

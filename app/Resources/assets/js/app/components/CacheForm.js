@@ -47,6 +47,7 @@ var CacheForm = {
     var formData = {
       $form: $form,
       $fields: undefined,
+      formId: $form.attr('id'),
       fieldData: []
     }
 
@@ -168,6 +169,13 @@ var CacheForm = {
     // Set the dataKey
     formData.dataKey = dataKey
 
+    // Remove non-JSON fields before saving
+    delete formData.$form
+    delete formData.$fields
+
+    // @debug
+    // console.log('saving form data', formData)
+
     // @trigger form `CacheForm:saveFormState:beforeSave` [formData]
     $form.trigger('CacheForm:saveFormState:beforeSave', [formData])
 
@@ -226,7 +234,7 @@ var CacheForm = {
     //   $form: $form,
     //   $fields: $fields,
     //   dataKey: dataKey,
-    //   fieldData: fieldData
+    //   formData: formData
     // })
 
     // No data retrieved
@@ -270,8 +278,8 @@ var CacheForm = {
 
     $relatedFields = $field.parents('form').find('[name="' + fieldSetting.name + '"]').not(self.unsupportedFormFields)
     $field.each(function (i, input) {
-      if (i === fieldSetting.nameIndex) {
-        var $input = $(input)
+      var $input = $(input)
+      if ((fieldSetting.hasOwnProperty('id') && $input.attr('id') === fieldSetting.id) || i === fieldSetting.nameIndex) {
         var inputValue = $input.val()
 
         // @debug
@@ -410,25 +418,33 @@ $.fn.uiCacheForm = function (op) {
 /*
  * jQuery Events
  */
-$(document)
-  // If form changes, save its state
-  .on('change', 'form[data-cacheform]', function (event) {
-    $(this).uiCacheForm('save')
-  })
-  // If a form is reset, restore its state
-  // @todo need to test if use-case supports this
-  .on('reset', 'form[data-cacheform]', function (event) {
-    $(this).uiCacheForm('restore')
-  })
-  // On submit, clears the form state from browser cache
-  .on('submit', 'form[data-cacheform]', function (event) {
-    var $form = $(this)
-    if (Utility.convertToPrimitive($form.attr('data-cacheform-clearonsubmit'))) {
-      $form.uiCacheForm('clear')
-    }
-  })
-  // By default restores form states on ready (if there is a state to restore)
+var $doc = $(document)
+
+$doc
+  // Apply further events only when the form is ready
   .on('ready', function () {
+
+    $doc
+      // If form changes, save its state
+      .on('change', 'form[data-cacheform]', function (event) {
+        $(this).uiCacheForm('save')
+      })
+
+      // If a form is reset, restore its state
+      // @todo need to test if use-case supports this
+      .on('reset', 'form[data-cacheform]', function (event) {
+        $(this).uiCacheForm('restore')
+      })
+
+      // On submit, clears the form state from browser cache
+      .on('submit', 'form[data-cacheform]', function (event) {
+        var $form = $(this)
+        if (Utility.convertToPrimitive($form.attr('data-cacheform-clearonsubmit'))) {
+          $form.uiCacheForm('clear')
+        }
+      })
+
+    // By default restores form states on ready (if there is a state to restore)
     $('form[data-cacheform]').uiCacheForm('restore')
   })
 
