@@ -103,14 +103,15 @@ class thickboxController extends bootstrap
         switch ($this->params[1]) {
             case \projects_status::PROBLEME:
                 $this->bAskEmail         = true;
-                $this->bCustomEmail      = false;
+                $this->bCustomEmail      = true;
                 $this->bCustomSite       = true;
                 $this->bDecisionDate     = false;
                 $this->bReceiver         = false;
                 $this->bAskEmailBorrower = true;
 
-                $aProjectTexts           = $this->ln->selectFront('projet', $this->language, $this->App);
-                $this->sInfoStatusChange = trim($aProjectTexts['info-passage-statut-probleme']);
+                $aProjectTexts              = $this->ln->selectFront('projet', $this->language, $this->App);
+                $this->sInfoStatusChange    = trim($aProjectTexts['info-passage-statut-probleme']);
+                $this->mailInfoStatusChange = trim($aProjectTexts['mail-info-passage-statut-probleme']);
 
                 break;
             case \projects_status::PROBLEME_J_X:
