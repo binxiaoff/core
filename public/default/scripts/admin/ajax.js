@@ -626,8 +626,8 @@ function valid_rejete_etape7(status, id_project) {
         rate_message       = '';
     if (status == 1) {
         if ($('#min_rate').val() != '' && $('#max_rate').val() != '') {
-            var min_rate     = parseFloat($('#min_rate').val().replace(',', '.')),
-                max_rate     = parseFloat($('#max_rate').val().replace(',', '.')),
+            var min_rate     = $('#min_rate').val(),
+                max_rate     = $('#max_rate').val(),
                 rate_message = '\nTaux (min / max) indicatif : ' + min_rate + ' % / ' + max_rate + ' %';
         }
         var message            = 'valider',

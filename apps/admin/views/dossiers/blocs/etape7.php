@@ -112,6 +112,7 @@
                     indicateur_risque_dynamique = Math.round(indicateur_risque_dynamique * 10) / 10;
 
                     moyenne = Math.round((performance_fianciere * 0.2 + marche_opere * 0.2 + dirigeance * 0.2 + indicateur_risque_dynamique * 0.4) * 10) / 10;
+                    document.getElementById("note_comite").value = moyenne;
 
                     $("#marche_opere_comite").html(marche_opere);
                     $("#performance_fianciere_comite").html(performance_fianciere);
