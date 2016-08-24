@@ -107,7 +107,7 @@ class rootController extends bootstrap
             // Recuperation du contenu de la page
             $oCachePool = $this->get('memcache.default');
 
-            $oCachedItem  = $oCachePool->getItem('Home_Tree_Childs_Elements_' . $this->tree->id_tree . '_' . $this->language);
+            $oCachedItem = $oCachePool->getItem('Home_Tree_Childs_Elements_' . $this->tree->id_tree . '_' . $this->language);
             if (false === $oCachedItem->isHit()) {
                 $this->content          = array();
                 $this->complement       = array();
@@ -138,10 +138,10 @@ class rootController extends bootstrap
                 );
 
                 $oCachedItem->set($aElements)
-                            ->expiresAfter(3600);
+                    ->expiresAfter(3600);
                 $oCachePool->save($oCachedItem);
             } else {
-                $aElements    = $oCachedItem->get();
+                $aElements = $oCachedItem->get();
             }
 
             $this->content          = $aElements['content'];
@@ -158,7 +158,7 @@ class rootController extends bootstrap
             }
 
             // Recuperation des positions des blocs
-            $oCachedItem  = $oCachePool->getItem('Home_Blocs_Elements_' . $this->tree->id_tree . '_' . $this->language);
+            $oCachedItem = $oCachePool->getItem('Home_Blocs_Elements_' . $this->tree->id_tree . '_' . $this->language);
 
             if (false === $oCachedItem->isHit()) {
                 $this->bloc_content    = array();
@@ -182,10 +182,10 @@ class rootController extends bootstrap
                 );
 
                 $oCachedItem->set($aElements)
-                            ->expiresAfter(3600);
+                    ->expiresAfter(3600);
                 $oCachePool->save($oCachedItem);
             } else {
-                $aElements    = $oCachedItem->get();
+                $aElements = $oCachedItem->get();
             }
 
             $this->bloc_content    = $aElements['bloc_content'];
@@ -253,38 +253,20 @@ class rootController extends bootstrap
                 // on signal que c'est une page du fo
                 $this->page              = 'projets_fo';
                 $_SESSION['page_projet'] = $this->page;
-
-                // restriction pour capital
-                if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr'
-                    || $this->lurl == 'http://partenaire.unilend.challenges.fr'
-                    || $this->lurl == 'http://financementparticipatifpme.lefigaro.fr'
-                    || $this->lurl == 'http://financementparticipatifpme.lefigaro.fr'
-                ) {
-                    $this->autoFireHeader = true;
-                    $this->autoFireDebug  = false;
-                    $this->autoFireHead   = true;
-                    $this->autoFireFooter = false;
-                }
             }
 
             if ($paramSlug === 'validation-virement') {
                 $this->page = 'alimentation';
             }
 
-            // restriction pour capital
             if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr' && $this->tree->id_template != 14) {
                 header('Location: http://prets-entreprises-unilend.capital.fr/capital/');
-                die;
-            } elseif ($this->lurl == 'http://partenaire.unilend.challenges.fr' && $this->tree->id_template != 14) {
-                header('Location: http://partenaire.unilend.challenges.fr/challenges/');
-                die;
-            } elseif ($this->lurl == 'http://financementparticipatifpme.lefigaro.fr' && $this->tree->id_template != 14) {
-                header('Location: http://financementparticipatifpme.lefigaro.fr/figaro/');
                 die;
             } elseif ($this->lurl == 'http://financementparticipatifpme.lefigaro.fr' && $this->tree->id_template != 14) {
                 header('Location: http://financementparticipatifpme.lefigaro.fr/figaro/');
                 die;
             }
+
             //////////////////////////
             // FIN TEMPLATE PROJETS //
             //////////////////////////
@@ -728,25 +710,16 @@ class rootController extends bootstrap
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
 
+        if (isset($_SESSION['client'])) {
+            header('Location: ' . $this->furl);
+            die;
+        }
+
         $oXml    = new SimpleXMLElement(file_get_contents('http://www.capital.fr/wrapper-unilend.xml'));
         $content = explode('<!--CONTENT_ZONE-->', (string)$oXml->content);
 
         $this->haut = str_replace(array('<!--TITLE_ZONE_HEAD-->', '<!--TITLE_ZONE-->'), array('Financement Participatif  : Prêtez aux entreprises françaises & Recevez des intérêts chaque mois', 'Financement participatif'), $content[0]);
         $this->bas  = str_replace('<!--XITI_ZONE-->', 'Unilend-accueil', $content[1]);
-
-    }
-
-    public function _challenges()
-    {
-        $this->autoFireHeader = false;
-        $this->autoFireDebug  = false;
-        $this->autoFireHead   = true;
-        $this->autoFireFooter = false;
-
-        $this->meta_title = "Financement Participatif  : Prêtez aux entreprises françaises & Recevez des intérêts chaque mois";
-
-        $this->haut = file_get_contents('http://www.challenges.fr/partners/header.php');
-        $this->bas  = file_get_contents('http://www.challenges.fr/partners/footer.php');
     }
 
     public function _figaro()
@@ -756,50 +729,9 @@ class rootController extends bootstrap
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
 
-        $this->projects                = $this->loadData('projects');
-        $this->clients                 = $this->loadData('clients');
-        $this->clients_adresses        = $this->loadData('clients_adresses');
-        $this->companies               = $this->loadData('companies');
-        $this->projects_status_history = $this->loadData('projects_status_history');
-        $this->projects                = $this->loadData('projects');
-
-        $this->lng['landing-page'] = $this->ln->selectFront('landing-page', $this->language, $this->App);
-
-        $this->settings->get('Somme à emprunter min', 'type');
-        $this->sommeMin = $this->settings->value;
-
-        $this->settings->get('Somme à emprunter max', 'type');
-        $this->sommeMax = $this->settings->value;
-
-        // Si on a une session d'ouverte on redirige
         if (isset($_SESSION['client'])) {
-            header('Location:' . $this->lurl);
+            header('Location: ' . $this->furl);
             die;
-        }
-
-        // page projet tri
-        // 1 : terminé bientot
-        // 2 : nouveauté
-        //$this->tabOrdreProject[....] <--- dans le bootstrap pour etre accessible partout (page default et ajax)
-
-        $this->ordreProject = 1;
-        $this->type         = 0;
-
-        $aElementsProjects = $this->projects->getProjectsStatusAndCount(implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT)), $this->tabOrdreProject[$this->ordreProject], 0, 6);
-
-        // Liste des projets en funding and nombre des projets en funding
-        $this->lProjetsFunding = $aElementsProjects['lProjetsFunding'];
-        $this->nbProjects      = $aElementsProjects['nbProjects'];
-
-        $this->le_id_tree = 282;
-        $this->le_slug    = $this->tree->getSlug($this->le_id_tree, $this->language);
-
-        // Recuperation du contenu de la page
-        $contenu = $this->tree_elements->select('id_tree = "' . $this->le_id_tree . '" AND id_langue = "' . $this->language . '"');
-        foreach ($contenu as $elt) {
-            $this->elements->get($elt['id_element']);
-            $this->content[$this->elements->slug]    = $elt['value'];
-            $this->complement[$this->elements->slug] = $elt['complement'];
         }
     }
 

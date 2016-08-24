@@ -1,4 +1,10 @@
-<?php $url_site = 'https://' . $_SERVER['HTTP_HOST']; ?>
+<?php $url_site = 'https://' . $_SERVER['HTTP_HOST'];
+if (strstr($_SERVER['HTTP_HOST'], 'financementparticipatifpme.lefigaro.fr') || strstr($_SERVER['HTTP_HOST'], 'prets-entreprises-unilend.capital.fr')) {
+    $isPartnerSite = true;
+} else {
+    $isPartnerSite = false;
+}
+?>
 <!DOCTYPE html>
 <!--[if lt IE 7]>
 <html class="lt-ie9 lt-ie8 lt-ie7" lang="fr"> <![endif]-->
@@ -7,8 +13,53 @@
 <!--[if IE 8]>
 <html class="lt-ie9" lang="fr"> <![endif]-->
 <!--[if gt IE 8]><!-->
-<html lang="fr"> <!--<![endif]-->
+<html lang="fr" <?= $isPartnerSite ? "style='overflow-x:hidden;'" : '' ?>> <!--<![endif]-->
 <head>
+    <?php if ($isPartnerSite) : ?>
+        <style type="text/css">
+            h1 {
+                color: black;
+                font-family: arial, serif;
+                font-size: 26px;
+                font-weight: bold;
+                letter-spacing: 0;
+                line-height: 40px;
+                padding-bottom: 0px;
+                margin-top: 10px;
+                text-transform: uppercase;
+            }
+
+            h2 {
+                color: black;
+                font-family: arial, serif;
+                font-size: 16px;
+                font-weight: bold;
+                letter-spacing: 0;
+                line-height: 30px;
+                margin-top: 0px;
+                text-transform: uppercase;
+            }
+
+            .partenariat {
+                float: right;
+                color: #727272;
+                text-transform: uppercase;
+                font-family: arial, serif;
+                font-weight: bold;
+                letter-spacing: 0;
+                line-height: 30px;
+                font-size: 14px;
+                margin-bottom: 10px;
+                margin-right: 25px;
+            }
+
+            .partenariat img {
+                width: auto;
+                height: 33px;
+                float: right;
+            }
+        </style>
+    <?php endif; ?>
     <title>Unilend : les particuliers prêtent aux entreprises françaises</title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -73,7 +124,7 @@ $slug_origine = 'Lp-2015-web';
 ?>
 <div id="form">
     <section class="wrapper">
-        <form action="#" method="post" id="form_inscription" class="etape1" novalidate>
+        <form <?= $isPartnerSite ? "style='width: 302px; right: 22px;'" : '' ?> action="#" method="post" id="form_inscription" class="etape1" novalidate>
             <div class="form_promo border10">
                 <a href="#bloc_mentions" class="macaron"><span>20 €</span> <b>OFFERTS</b> pour prêter !</a>
             </div>
@@ -768,11 +819,18 @@ $slug_origine = 'Lp-2015-web';
 </div>
 <div id="home" class="wrapper100">
     <section class="wrapper">
-        <div class="logo disp_0">
-            <div class="disp_1">
-                <a href="#" id="logo"></a>
+        <?php if ($isPartnerSite) : ?>
+            <div class="partenariat">
+                En partenariat avec<br>
+                <a href="https://www.unilend.fr"><img alt="Unilend" src="https://www.unilend.fr/styles/default/images/logo.png"></a>
             </div>
-        </div>
+        <?php else : ?>
+            <div class="logo disp_0">
+                <div class="disp_1">
+                    <a href="#" id="logo"></a>
+                </div>
+            </div>
+        <?php endif; ?>
         <h1>Prêtez directement aux entreprises</h1>
         <h2>Recevez chaque mois vos intérêts</h2>
         <div class="w_1 bloc_mac">
