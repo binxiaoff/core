@@ -1,15 +1,10 @@
     <script type="text/javascript">
         $(document).ready(function(){
-            <?
-            if($_SESSION['msgErreur'] != '')
-            {
-            ?>
-            $.fn.colorbox({
-                href:"<?=$this->lurl?>/thickbox/<?=$_SESSION['msgErreur']?>"
-            });
-            <?
-            }
-            ?>
+            <?php if ($_SESSION['msgErreur'] != '') : ?>
+                $.fn.colorbox({
+                    href:"<?=$this->lurl?>/thickbox/<?=$_SESSION['msgErreur']?>"
+                });
+            <?php endif; ?>
         });
     </script>
 
@@ -22,21 +17,16 @@
     </style>
 
     <script type="text/javascript">
-        <?
-        if(isset($_SESSION['freeow']))
-        {
-        ?>
-        $(document).ready(function(){
-            var title, message, opts, container;
-            title = "<?=$_SESSION['freeow']['title']?>";
-            message = "<?=$_SESSION['freeow']['message']?>";
-            opts = {};
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-        });
-        <?
-        }
-        ?>
+        <?php if (isset($_SESSION['freeow'])) : ?>
+            $(document).ready(function(){
+                var title, message, opts, container;
+                title = "<?=$_SESSION['freeow']['title']?>";
+                message = "<?=$_SESSION['freeow']['message']?>";
+                opts = {};
+                opts.classes = ['smokey'];
+                $('#freeow-tr').freeow(title, message, opts);
+            });
+        <?php endif; ?>
     </script>
     <div id="freeow-tr" class="freeow freeow-top-right"></div>
     <div id="contenu">
@@ -45,16 +35,10 @@
                 <br /><br />
                 <h1>Modification de votre mot de passe</h1>
 
-                <?php
-                if(isset($this->retour_pass) && $this->retour_pass != "")
-                {
-                    ?>
+                <?php if (false === empty($this->retour_pass)) : ?>
                     <br />
-                    <div style="color:red; font-weight:bold;"><?=$this->retour_pass?></div>
-
-                    <?php
-                }
-                ?>
+                    <div style="color:red; font-weight:bold;"><?= $this->retour_pass ?></div>
+                <?php endif; ?>
                 <br /><br />
                 <table class="large edit_pass">
                     <tr>
