@@ -241,8 +241,9 @@ class bids extends bids_crud
                         WHERE ps.status >= :funded
                         AND ps.status != :fundingKo GROUP BY b.rate ORDER BY b.rate DESC';
         try {
-            $result = $this->bdd->executeQuery($sQuery, array('funded' => \projects_status::FUNDE, 'fundingKo' => \projects_status::FUNDING_KO), array('funded' => \PDO::PARAM_INT, 'fundingKo' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
-                ->fetchAll(PDO::FETCH_ASSOC);
+            $statement = $this->bdd->executeQuery($sQuery, array('funded' => \projects_status::FUNDE, 'fundingKo' => \projects_status::FUNDING_KO), array('funded' => \PDO::PARAM_INT, 'fundingKo' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)));
+            $result    = $statement->fetchAll(PDO::FETCH_ASSOC);
+            $statement->closeCursor();
         } catch (\Doctrine\DBAL\DBALException $ex) {
             return false;
         }

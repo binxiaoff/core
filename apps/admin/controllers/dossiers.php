@@ -320,6 +320,7 @@ class dossiersController extends bootstrap
                         }
 
                         $oAltares->setCompanyData($this->companies, $oResult->myInfo);
+                        $oAltares->setProjectData($this->projects, $oResult->myInfo);
 
                         $oCompanyCreationDate = new \DateTime($this->companies->date_creation);
                         $oInterval            = $oCompanyCreationDate->diff(new \DateTime());
@@ -328,7 +329,6 @@ class dossiersController extends bootstrap
                             $_SESSION['freeow']['title']   = 'Données Altares';
                             $_SESSION['freeow']['message'] = 'Société non éligible';
                         } else {
-                            $oAltares->setProjectData($this->projects, $oResult->myInfo);
                             $oAltares->setCompanyBalance($this->companies);
 
                             $_SESSION['freeow']['title']   = 'Données Altares';
@@ -918,7 +918,9 @@ class dossiersController extends bootstrap
             }
         }
 
-        $this->sendProblemStatusEmailBorrower($iStatus);
+        if (1 == $_POST['send_email_borrower']) {
+            $this->sendProblemStatusEmailBorrower($iStatus);
+        }
 
         if (false === empty($_POST['send_email'])) {
             $this->sendProblemStatusEmailLender($iStatus, $projectStatusHistoryDetails);
@@ -1149,7 +1151,7 @@ class dossiersController extends bootstrap
                             'prenom_p'                    => $this->clients->prenom,
                             'entreprise'                  => $this->companies->name,
                             'montant_pret'                => $this->ficelle->formatNumber($fLoansAmount / 100, 0),
-                            'montant_rembourse'           => $this->ficelle->formatNumber($fTotalPayedBack),
+                            'montant_rembourse'           => empty($fTotalPayedBack) ? '' : '<span style=\'color:#b20066;\'>' . $this->ficelle->formatNumber($fTotalPayedBack) . '&nbsp;euros</span> vous ont d&eacute;j&agrave; &eacute;t&eacute; rembours&eacute;s.<br/><br/>',
                             'nombre_prets'                => $iLoansCount . ' ' . (($iLoansCount > 1) ? 'pr&ecirc;ts' : 'pr&ecirc;t'), // @todo intl
                             'date_prochain_remboursement' => $this->dates->formatDate($aNextRepayment[0]['date_echeance'], 'd/m/Y'), // @todo intl
                             'CRD'                         => $this->ficelle->formatNumber($fLoansAmount / 100 - $fTotalPayedBack)

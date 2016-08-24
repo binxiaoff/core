@@ -102,57 +102,64 @@ class thickboxController extends bootstrap
 
         switch ($this->params[1]) {
             case \projects_status::PROBLEME:
-                $this->bAskEmail     = true;
-                $this->bCustomEmail  = false;
-                $this->bCustomSite   = true;
-                $this->bDecisionDate = false;
-                $this->bReceiver     = false;
+                $this->bAskEmail         = true;
+                $this->bCustomEmail      = false;
+                $this->bCustomSite       = true;
+                $this->bDecisionDate     = false;
+                $this->bReceiver         = false;
+                $this->bAskEmailBorrower = true;
 
-                $aProjectTexts = $this->ln->selectFront('projet', $this->language, $this->App);
+                $aProjectTexts           = $this->ln->selectFront('projet', $this->language, $this->App);
                 $this->sInfoStatusChange = trim($aProjectTexts['info-passage-statut-probleme']);
 
                 break;
             case \projects_status::PROBLEME_J_X:
-                $this->bAskEmail     = true;
-                $this->bCustomEmail  = true;
-                $this->bCustomSite   = true;
-                $this->bDecisionDate = false;
-                $this->bReceiver     = false;
+                $this->bAskEmail         = true;
+                $this->bCustomEmail      = true;
+                $this->bCustomSite       = true;
+                $this->bDecisionDate     = false;
+                $this->bReceiver         = false;
+                $this->bAskEmailBorrower = true;
                 break;
             case \projects_status::RECOUVREMENT:
-                $this->bAskEmail     = true;
-                $this->bCustomEmail  = true;
-                $this->bCustomSite   = true;
-                $this->bDecisionDate = false;
-                $this->bReceiver     = false;
+                $this->bAskEmail         = true;
+                $this->bCustomEmail      = true;
+                $this->bCustomSite       = true;
+                $this->bDecisionDate     = false;
+                $this->bReceiver         = false;
+                $this->bAskEmailBorrower = true;
                 break;
             case \projects_status::PROCEDURE_SAUVEGARDE:
-                $this->bAskEmail     = false;
-                $this->bCustomEmail  = true;
-                $this->bCustomSite   = true;
-                $this->bDecisionDate = true;
-                $this->bReceiver     = true;
+                $this->bAskEmail         = false;
+                $this->bCustomEmail      = true;
+                $this->bCustomSite       = true;
+                $this->bDecisionDate     = true;
+                $this->bReceiver         = true;
+                $this->bAskEmailBorrower = true;
                 break;
             case \projects_status::REDRESSEMENT_JUDICIAIRE:
-                $this->bAskEmail     = false;
-                $this->bCustomEmail  = true;
-                $this->bCustomSite   = true;
-                $this->bDecisionDate = true;
-                $this->bReceiver     = true;
+                $this->bAskEmail         = false;
+                $this->bCustomEmail      = true;
+                $this->bCustomSite       = true;
+                $this->bDecisionDate     = true;
+                $this->bReceiver         = true;
+                $this->bAskEmailBorrower = true;
                 break;
             case \projects_status::LIQUIDATION_JUDICIAIRE:
-                $this->bAskEmail     = false;
-                $this->bCustomEmail  = true;
-                $this->bCustomSite   = true;
-                $this->bDecisionDate = true;
-                $this->bReceiver     = true;
+                $this->bAskEmail         = false;
+                $this->bCustomEmail      = true;
+                $this->bCustomSite       = true;
+                $this->bDecisionDate     = true;
+                $this->bReceiver         = true;
+                $this->bAskEmailBorrower = true;
                 break;
             case \projects_status::DEFAUT:
-                $this->bAskEmail     = false;
-                $this->bCustomEmail  = false;
-                $this->bCustomSite   = true;
-                $this->bDecisionDate = true;
-                $this->bReceiver     = true;
+                $this->bAskEmail         = false;
+                $this->bCustomEmail      = false;
+                $this->bCustomSite       = true;
+                $this->bDecisionDate     = true;
+                $this->bReceiver         = true;
+                $this->bAskEmailBorrower = true;
                 break;
         }
 
