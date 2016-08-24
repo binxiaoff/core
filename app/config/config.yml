@@ -14,6 +14,9 @@ framework:
     assets:
         base_urls:
             - "%router.request_context.scheme%://%url.host_default%"
+        packages:
+            gulp:
+                base_path: /assets
     translator:
         enabled: true
         fallbacks: ["fr_FR"]

@@ -31,13 +31,12 @@
 
     <!-- CSS Site -->
     {% block cssFiles %}
-        <link rel="stylesheet" href="{{ asset('assets/js/vendor/videojs/video-js.min.css') }}" />
-        <link rel="stylesheet" href="{{ asset('assets/js/vendor/videojs/video-js.min.css') }}" />
-        <link rel="stylesheet" href="{{ asset('assets/js/vendor/swiper/css/swiper.min.css') }}" />
-        <link rel="stylesheet" href="{{ asset('assets/js/vendor/fancybox/css/jquery.fancybox.css') }}" />
-        <link rel="stylesheet" href="{{ asset('assets/js/vendor/jquery-ui/themes/base/minified/jquery-ui.min.css') }}" />
-        <link rel="stylesheet" href="{{ asset('assets/fonts/style.css') }}" />
-        <link rel="stylesheet" href="{{ asset('assets/css/main.css') }}" />
+        <link rel="stylesheet" href="{{ asset('js/vendor/videojs/video-js.min.css', 'gulp') }}" />
+        <link rel="stylesheet" href="{{ asset('js/vendor/swiper/css/swiper.min.css', 'gulp') }}" />
+        <link rel="stylesheet" href="{{ asset('js/vendor/fancybox/css/jquery.fancybox.css', 'gulp') }}" />
+        <link rel="stylesheet" href="{{ asset('js/vendor/jquery-ui/themes/base/minified/jquery-ui.min.css', 'gulp') }}" />
+        <link rel="stylesheet" href="{{ asset('fonts/style.css', 'gulp') }}" />
+        <link rel="stylesheet" href="{{ asset('css/main.css', 'gulp') }}" />
     {% endblock %}
 
     <!-- JS -->
@@ -221,8 +220,8 @@
 
 <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js"></script>
 <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js"></script>
-<script type="text/javascript" src="{{ asset('assets/js/dependencies.js') }}"></script>
-<script type="text/javascript" src="{{ asset('assets/js/main.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/dependencies.js', 'gulp') }}"></script>
+<script type="text/javascript" src="{{ asset('js/main.js', 'gulp') }}"></script>
 
 
 {% block extendFoot %}

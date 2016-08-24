@@ -107,7 +107,7 @@ class FrontBundleExtension extends \Twig_Extension
 
     public function svgImageFunction($sId, $sTitle, $iWidth, $iHeight, $sSizing = null)
     {
-        $sUrl        = $this->packages->getUrl('assets/images/svg/icons.svg');
+        $sUrl        = $this->packages->getUrl('images/svg/icons.svg', 'gulp');
         $sSvgHeaders = ' version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"';
 
         // Supported sizing sizes, using preserveAspectRatio
