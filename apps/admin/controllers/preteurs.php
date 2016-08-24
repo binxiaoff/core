@@ -2057,13 +2057,6 @@ class preteursController extends bootstrap
         $this->lenders_accounts->get($this->params[0], 'id_lender_account');
         $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
 
-        if (isset($_POST['extraction_csv'])) {
-            $this->extractBidsCSV();
-            $this->hideDecoration();
-            $this->autoFireView = false;
-            return;
-        }
-
         if (isset($_POST['send_dates'])) {
             $_SESSION['FilterBids']['StartDate'] = $_POST['debut'];
             $_SESSION['FilterBids']['EndDate']   = $_POST['fin'];
@@ -2093,8 +2086,19 @@ class preteursController extends bootstrap
         }
     }
 
-    private function extractBidsCSV()
+    public function _extract_bids_csv()
     {
+        /** @var \lenders_accounts $lender */
+        $lender = $this->loadData('lenders_accounts');
+        /** @var \bids $bids */
+        $bids = $this->loadData('bids');
+
+        $lender->get($this->params[0], 'id_lender_account');
+        $lenderBids = $bids->getBidsByLenderAndDates($lender);
+
+        $this->autoFireView = false;
+        $this->hideDecoration();
+
         $header = array('Id projet', 'Id bid', 'Client', 'Date bid', 'Statut bid', 'Montant', 'Taux');
 
         PHPExcel_Settings::setCacheStorageMethod(
@@ -2105,20 +2109,11 @@ class preteursController extends bootstrap
         $document    = new PHPExcel();
         $activeSheet = $document->setActiveSheetIndex(0);
 
-        $dateTimeStart = \DateTime::createFromFormat('d/m/Y', $_POST['date_from']);
-        $dateTimeEnd   = \DateTime::createFromFormat('d/m/Y', $_POST['date_to']);
-
-        /** @var \bids $bids */
-        $bids = $this->loadData('bids');
-        foreach ($bids->getBidsByLenderAndDates($this->lenders_accounts, $dateTimeStart, $dateTimeEnd) as $key => $value) {
-            $this->bidList[$key] = $value;
-        }
-
         foreach ($header as $index => $columnName) {
             $activeSheet->setCellValueByColumnAndRow($index, 1, $columnName);
         }
 
-        foreach ($this->bidList as $rowIndex => $row) {
+        foreach ($lenderBids as $rowIndex => $row) {
             $colIndex = 0;
             foreach ($row as $cellValue) {
                 $activeSheet->setCellValueByColumnAndRow($colIndex++, $rowIndex + 2, $cellValue);
@@ -2126,7 +2121,7 @@ class preteursController extends bootstrap
         }
 
         header('Content-Type: text/csv');
-        header('Content-Disposition: attachment;filename=bids_lender_' . $this->lenders_accounts->id_lender_account . '.csv');
+        header('Content-Disposition: attachment;filename=bids_lender_' . $lender->id_lender_account . '.csv');
         header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
         header('Expires: 0');
 

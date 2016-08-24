@@ -30,11 +30,6 @@
         <li>Portefeuille & Performances</li>
     </ul>
     <h1>Historique des bids prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
-    <form method="post" name="recupCSV">
-        <input type="hidden" name="extraction_csv"/>
-        <input type="hidden" name="date_from" value="<?= false === empty($this->sDisplayDateTimeStart) ? $this->sDisplayDateTimeStart : '' ?>"/>
-        <input type="hidden" name="date_to" value="<?= false === empty($this->sDisplayDateTimeEnd) ? $this->sDisplayDateTimeEnd : '' ?>"/>
-    </form>
 
     <div class="btnDroite">
         <a href="<?= $this->lurl ?>/preteurs/bids/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Bids</a>
@@ -58,7 +53,7 @@
             </fieldset>
         </form>
     </div>
-    <div style="margin-bottom:20px; float:right;"><a onClick="document.forms['recupCSV'].submit();" class="btn_link">Récupération du CSV</a></div>
+    <div style="margin-bottom:20px; float:right;"><a href="<?= $this->lurl ?>/preteurs/extract_bids_csv/<?= $this->lenders_accounts->id_lender_account ?>"  class="btn_link">Récupération du CSV</a></div>
     <table class="tablesorter">
         <thead>
         <tr>
