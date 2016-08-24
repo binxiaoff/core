@@ -1,6 +1,7 @@
 <?php
 
 use Unilend\librairies\Altares;
+use Psr\Log\LoggerInterface;
 
 class dossiersController extends bootstrap
 {
@@ -139,7 +140,7 @@ class dossiersController extends bootstrap
             $this->current_projects_status->getLastStatut($this->projects->id_project);
 
             $this->bHasAdvisor       = false;
-            $this->bReadonlyRiskNote = $this->current_projects_status->status >= \projects_status::EN_FUNDING;
+            $this->bReadonlyRiskNote = $this->current_projects_status->status >= \projects_status::PREP_FUNDING;
 
             if ($this->projects->id_prescripteur > 0 && $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur')) {
                 $this->clients_prescripteurs->get($this->prescripteurs->id_client, 'id_client');
@@ -254,9 +255,18 @@ class dossiersController extends bootstrap
                 $this->updateProblematicStatus($_POST['problematic_status']);
             }
 
-            if ($this->projects_status->status == projects_status::PREP_FUNDING) {
+            if (false === empty($this->projects->risk) && false === empty($this->projects->period) && $this->projects_status->status >= projects_status::PREP_FUNDING) {
+
                 $fPredictAmountAutoBid = $this->get('unilend.service.autobid_settings_manager')->predictAmount($this->projects->risk, $this->projects->period);
                 $this->fPredictAutoBid = round(($fPredictAmountAutoBid / $this->projects->amount) * 100, 1);
+
+                if (false === empty($this->projects->id_rate)) {
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BidManager $bidManager */
+                    $bidManager     = $this->get('unilend.service.bid_manager');
+                    $rateRange      = $bidManager->getProjectRateRange($this->projects);
+                    $this->rate_min = $rateRange['rate_min'];
+                    $this->rate_max = $rateRange['rate_max'];
+                }
             }
 
             if (isset($_POST['last_annual_accounts'])) {
@@ -311,6 +321,14 @@ class dossiersController extends bootstrap
                         }
 
                         $oAltares->setCompanyData($this->companies, $oResult->myInfo);
+                        $oAltares->setProjectData($this->projects, $oResult->myInfo);
+
+                        // @todo Revert when TMA-749 is resolved
+                        if (is_numeric($this->companies->name) || 0 === strcasecmp($this->companies->name, 'Monsieur') || 0 === strcasecmp($this->companies->name, 'Madame')) {
+                            /** @var LoggerInterface $logger */
+                            $logger = $this->get('logger');
+                            $logger->error('Wrong company name - altares return : ' . serialize($oResult), array('class' => __CLASS__, 'function' => __FUNCTION__));
+                        }
 
                         $oCompanyCreationDate = new \DateTime($this->companies->date_creation);
                         $oInterval            = $oCompanyCreationDate->diff(new \DateTime());
@@ -319,7 +337,6 @@ class dossiersController extends bootstrap
                             $_SESSION['freeow']['title']   = 'Données Altares';
                             $_SESSION['freeow']['message'] = 'Société non éligible';
                         } else {
-                            $oAltares->setProjectData($this->projects, $oResult->myInfo);
                             $oAltares->setCompanyBalance($this->companies);
 
                             $_SESSION['freeow']['title']   = 'Données Altares';
@@ -538,17 +555,15 @@ class dossiersController extends bootstrap
 
                     $this->projects->title           = $_POST['title'];
                     $this->projects->title_bo        = $_POST['title_bo'];
-                    $this->projects->period          = $_POST['duree'];
                     $this->projects->nature_project  = $_POST['nature_project'];
-                    $this->projects->amount          = str_replace(' ', '', str_replace(',', '.', $_POST['montant']));
-                    $this->projects->target_rate     = '-';
                     $this->projects->id_analyste     = $_POST['analyste'];
                     $this->projects->id_commercial   = $_POST['commercial'];
                     $this->projects->display         = $_POST['display_project'];
                     $this->projects->id_project_need = $_POST['need'];
 
-                    if ($this->current_projects_status->status >= \projects_status::PREP_FUNDING) {
-                        $this->projects->risk = $_POST['risk'];
+                    if (false === $this->bReadonlyRiskNote) {
+                        $this->projects->period = $_POST['duree'];
+                        $this->projects->amount = str_replace(' ', '', str_replace(',', '.', $_POST['montant']));
                     }
 
                     if ($this->current_projects_status->status <= \projects_status::A_FUNDER) {
@@ -565,6 +580,14 @@ class dossiersController extends bootstrap
                         if (isset($_POST['date_retrait']) && ! empty($_POST['date_retrait'])) {
                             $this->projects->date_retrait      = $this->dates->formatDateFrToMysql($_POST['date_retrait']);
                             $this->projects->date_retrait_full = $this->projects->date_retrait . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute'] . ':0';
+                        }
+
+                        if (false === empty($this->projects->risk) && false === empty($this->projects->period)) {
+                            try {
+                                $oProjectManager->setProjectRateRange($this->projects);
+                            } catch (\Exception $exception) {
+                                $_SESSION['freeow']['message'] .= $exception->getMessage();
+                            }
                         }
                     }
 
@@ -903,7 +926,9 @@ class dossiersController extends bootstrap
             }
         }
 
-        $this->sendProblemStatusEmailBorrower($iStatus);
+        if (1 == $_POST['send_email_borrower']) {
+            $this->sendProblemStatusEmailBorrower($iStatus);
+        }
 
         if (false === empty($_POST['send_email'])) {
             $this->sendProblemStatusEmailLender($iStatus, $projectStatusHistoryDetails);
@@ -1134,7 +1159,7 @@ class dossiersController extends bootstrap
                             'prenom_p'                    => $this->clients->prenom,
                             'entreprise'                  => $this->companies->name,
                             'montant_pret'                => $this->ficelle->formatNumber($fLoansAmount / 100, 0),
-                            'montant_rembourse'           => $this->ficelle->formatNumber($fTotalPayedBack),
+                            'montant_rembourse'           => empty($fTotalPayedBack) ? '' : '<span style=\'color:#b20066;\'>' . $this->ficelle->formatNumber($fTotalPayedBack) . '&nbsp;euros</span> vous ont d&eacute;j&agrave; &eacute;t&eacute; rembours&eacute;s.<br/><br/>',
                             'nombre_prets'                => $iLoansCount . ' ' . (($iLoansCount > 1) ? 'pr&ecirc;ts' : 'pr&ecirc;t'), // @todo intl
                             'date_prochain_remboursement' => $this->dates->formatDate($aNextRepayment[0]['date_echeance'], 'd/m/Y'), // @todo intl
                             'CRD'                         => $this->ficelle->formatNumber($fLoansAmount / 100 - $fTotalPayedBack)
@@ -1385,6 +1410,14 @@ class dossiersController extends bootstrap
                 $oAltares = new Altares();
                 $oResult  = $oAltares->getEligibility($this->companies->siren);
                 $oAltares->setCompanyData($this->companies, $oResult->myInfo);
+
+                // @todo Revert when TMA-749 is resolved
+                if (is_numeric($this->companies->name) || 0 === strcasecmp($this->companies->name, 'Monsieur') || 0 === strcasecmp($this->companies->name, 'Madame')) {
+                    /** @var LoggerInterface $logger */
+                    $logger = $this->get('logger');
+                    $logger->error('Wrong company name - altares return : ' . serialize($oResult), array('class' => __CLASS__, 'function' => __FUNCTION__));
+                }
+
                 $oAltares->setProjectData($this->projects, $oResult->myInfo);
                 $oAltares->setCompanyBalance($this->companies);
 
@@ -2433,13 +2466,24 @@ class dossiersController extends bootstrap
         $oSettings->get('Twitter', 'type');
         $twitterUrl = $oSettings->value;
 
+        $oSettings->get('Part unilend', 'type');
+        $commission = $oSettings->value;
+
+        $oSettings->get('Commission remboursement', 'type');
+        $owedCapitalCommission = $oSettings->value;
+
+        $oSettings->get('TVA', 'type');
+        $vatRate = (float) $oSettings->value;
+
         $varMail = array(
-            'surl'                => $this->surl,
-            'url'                 => $this->furl,
-            'prenom_p'            => $oClients->prenom,
-            'lien_cgv_universign' => $sCgvLink,
-            'lien_tw'             => $twitterUrl,
-            'lien_fb'             => $facebookUrl,
+            'surl'                 => $this->surl,
+            'url'                  => $this->furl,
+            'prenom_p'             => $oClients->prenom,
+            'lien_cgv_universign'  => $sCgvLink,
+            'lien_tw'              => $twitterUrl,
+            'lien_fb'              => $facebookUrl,
+            'commission_deblocage' => bcmul($commission / (1 + $vatRate), 100),
+            'commission_crd'       => bcmul($owedCapitalCommission, 100),
         );
 
         if (empty($oClients->email)) {

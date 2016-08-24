@@ -257,7 +257,9 @@ class projects extends projects_crud
                 'number'       => \PDO::PARAM_INT,
                 'start'        => \PDO::PARAM_INT
             );
-            $result = $this->bdd->executeQuery($sql, $aBind, $aTypes, $QCProfile)->fetchAll(\PDO::FETCH_ASSOC);
+            $statement = $this->bdd->executeQuery($sql, $aBind, $aTypes, $QCProfile);
+            $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
+            $statement->closeCursor();
         } catch (\Doctrine\DBAL\DBALException $ex) {
             $result = array();
         }
@@ -283,7 +285,13 @@ class projects extends projects_crud
             WHERE projects_status.status IN (:status)' . $where;
 
         try {
-            return $this->bdd->executeQuery($sQuery, $aBind, $aType, $oQCProfile)->fetchColumn(0);
+            $statement = $this->bdd->executeQuery($sQuery, $aBind, $aType, $oQCProfile);
+            $result = $statement->fetchAll(PDO::FETCH_COLUMN);
+            $statement->closeCursor();
+            if (empty($result)) {
+                return 0;
+            }
+            return array_shift($result);
         } catch (\Doctrine\DBAL\DBALException $ex) {
             return 0;
         }
@@ -590,6 +598,7 @@ class projects extends projects_crud
             case \projects_status::PRET_REFUSE:
             case \projects_status::EN_FUNDING:
             case \projects_status::AUTO_BID_PLACED:
+            case \projects_status::BID_TERMINATED:
             case \projects_status::A_FUNDER:
                 $rResult = $this->bdd->query('
                     SELECT SUM(amount * rate) / SUM(amount) AS avg_rate
@@ -740,7 +749,13 @@ class projects extends projects_crud
                         ) t1
                         ';
         try {
-            return $this->bdd->executeQuery($sQuery, $aBind, $aType, new \Doctrine\DBAL\Cache\QueryCacheProfile(1800, md5(__METHOD__)))->fetchColumn(0);
+            $statement = $this->bdd->executeQuery($sQuery, $aBind, $aType, new \Doctrine\DBAL\Cache\QueryCacheProfile(1800, md5(__METHOD__)));
+            $result = $statement->fetchAll(PDO::FETCH_COLUMN);
+            $statement->closeCursor();
+            if (empty($result)) {
+                return false;
+            }
+            return array_shift($result);
         } catch (\Doctrine\DBAL\DBALException $ex) {
             return false;
         }

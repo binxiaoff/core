@@ -9,6 +9,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager;
 use Unilend\librairies\CacheKeys;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
 
 class ProjectsPublishCommand extends ContainerAwareCommand
 {
@@ -46,6 +47,13 @@ EOF
 
                 $bHasProjectPublished = true;
                 $oProjectManager->publish($oProject);
+
+                if ($oProjectManager->isFunded($oProject)) {
+                    /** @var MailerManager $mailerManager */
+                    $mailerManager = $this->getContainer()->get('unilend.service.email_manager');
+                    $mailerManager->sendFundedToBorrower($oProject);
+                }
+
                 $this->zipProjectAttachments($oProject, $oEntityManager, $oLogger);
                 $this->sendNewProjectEmail($oProject, $oEntityManager);
             }
@@ -212,13 +220,13 @@ EOF
         $translations                          = $oEntityManager->getRepository('textes');
         $aTranslations['email-nouveau-projet'] = $translations->selectFront('email-nouveau-projet', 'fr');
 
-        /** @var \autobid_periods $oAutobidPeriods */
-        $oAutobidPeriods = $oEntityManager->getRepository('autobid_periods');
-        $aPeriod         = $oAutobidPeriods->getPeriod($project->period);
+        /** @var \project_period $oProjectPeriods */
+        $oProjectPeriods = $oEntityManager->getRepository('project_period');
+        $oProjectPeriods->getPeriod($project->period);
 
         /** @var \autobid $oAutobid */
         $oAutobid    = $oEntityManager->getRepository('autobid');
-        $aAutobiders = array_column($oAutobid->getSettings(null, $project->risk, $aPeriod['id_period'], array(\autobid::STATUS_ACTIVE)), 'amount', 'id_lender');
+        $aAutobiders = array_column($oAutobid->getSettings(null, $project->risk, $oProjectPeriods->id_period, array(\autobid::STATUS_ACTIVE)), 'amount', 'id_lender');
 
         /** @var \bids $oBids */
         $oBids            = $oEntityManager->getRepository('bids');

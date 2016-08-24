@@ -3,6 +3,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 use Unilend\core\Loader;
@@ -31,6 +32,9 @@ class MailerManager
     private $sFUrl;
     private $sAUrl;
 
+    /** @var ContainerInterface */
+    private $container;
+
     /** @var EntityManager */
     private $oEntityManager;
 
@@ -41,6 +45,7 @@ class MailerManager
     private $mailer;
 
     public function __construct(
+        ContainerInterface $container,
         EntityManager $oEntityManager,
         TemplateMessageProvider $messageProvider,
         \Swift_Mailer $mailer,
@@ -50,6 +55,7 @@ class MailerManager
         $frontHost,
         $adminHost
     ) {
+        $this->container       = $container;
         $this->oEntityManager  = $oEntityManager;
         $this->messageProvider = $messageProvider;
         $this->mailer          = $mailer;
@@ -505,12 +511,15 @@ class MailerManager
             $sInterval  = $this->formatDateDiff($oNow, $oEndDate);
             $bIsAutoBid = false === empty($oBid->id_autobid);
 
+            $bidManager   = $this->container->get('unilend.service.bid_manager');
+            $projectRates = $bidManager->getProjectRateRange($oProject);
+
             if ($bIsAutoBid) {
                 $oAutoBid->get($oBid->id_autobid);
 
                 if ($oEndDate <= $oNow) {
                     $sMailTemplate = 'preteur-autobid-ko-apres-fin-de-periode-projet';
-                } elseif ($oBid->getProjectMaxRate($oProject) > \bids::BID_RATE_MIN) {
+                } elseif ($oBid->getProjectMaxRate($oProject) > $projectRates['rate_min']) {
                     $sMailTemplate = 'preteur-autobid-ko';
                 } else {
                     $sMailTemplate = 'preteur-autobid-ko-minimum-rate';
@@ -518,7 +527,7 @@ class MailerManager
             } else {
                 if ($oEndDate <= $oNow) {
                     $sMailTemplate = 'preteur-bid-ko-apres-fin-de-periode-projet';
-                } elseif ($oBid->getProjectMaxRate($oProject) > \bids::BID_RATE_MIN) {
+                } elseif ($oBid->getProjectMaxRate($oProject) > $projectRates['rate_min']) {
                     $sMailTemplate = 'preteur-bid-ko';
                 } else {
                     $sMailTemplate = 'preteur-bid-ko-minimum-rate';
@@ -619,10 +628,10 @@ class MailerManager
             '$id_projet'    => $oProject->id_project,
             '$title_projet' => $oProject->title,
             '$nbPeteurs'    => $iLendersNb,
-            '$tx'           => $oProject->target_rate,
             '$montant_pret' => $oProject->amount,
             '$montant'      => $iBidTotal,
-            '$sujetMail'    => htmlentities($this->oMailTemplate->subject)
+            '$sujetMail'    => htmlentities($this->oMailTemplate->subject),
+            '$taux_moyen'   => $this->oFicelle->formatNumber($oProject->getAverageInterestRate(), 1)
         );
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage($this->oMailTemplate->type, $varMail, false);

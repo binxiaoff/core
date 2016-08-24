@@ -459,6 +459,7 @@ class transactions extends transactions_crud
                 AND t.display = 0
                 AND t.id_client = ' . $iClientId . '
                 AND psh.id_project_status_history = (SELECT MIN(id_project_status_history) FROM projects_status_history psh1 WHERE psh1.id_project = lo.id_project AND psh1.id_project_status = 8)
+                GROUP BY lo.id_loan
         )';
 
         $this->bdd->query('SET SQL_BIG_SELECTS = 1');  //Set it before your main query

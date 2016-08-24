@@ -130,11 +130,12 @@ class AutoBidSettingsManager
             return false;
         }
 
-        if ($fRate < \bids::BID_RATE_MIN || $fRate > \bids::BID_RATE_MAX) {
+
+        if (false === $this->isRateValid($fRate)) {
             return false;
         }
 
-        $aAutoBids = $oAutoBid->select('evaluation = "' . $sEvaluation . '" AND id_autobid_period = ' . $iAutoBidPeriodId . ' AND status != ' . \autobid::STATUS_ARCHIVED . ' AND id_lender = ' . $iLenderId);
+        $aAutoBids = $oAutoBid->select('evaluation = "' . $sEvaluation . '" AND id_period = ' . $iAutoBidPeriodId . ' AND status != ' . \autobid::STATUS_ARCHIVED . ' AND id_lender = ' . $iLenderId);
 
         if (empty($aAutoBids)) {
             $this->createSetting($iLenderId, $sEvaluation, $iAutoBidPeriodId, $fRate, $iAmount);
@@ -180,33 +181,13 @@ class AutoBidSettingsManager
         /** @var \autobid $oAutoBid */
         $oAutoBid = $this->oEntityManager->getRepository('autobid');
 
-        $oAutoBid->id_lender         = $iLenderId;
-        $oAutoBid->status            = \autobid::STATUS_ACTIVE;
-        $oAutoBid->evaluation        = $sEvaluation;
-        $oAutoBid->id_autobid_period = $iAutoBidPeriodId;
-        $oAutoBid->rate_min          = $fRate;
-        $oAutoBid->amount            = $iAmount;
+        $oAutoBid->id_lender  = $iLenderId;
+        $oAutoBid->status     = \autobid::STATUS_ACTIVE;
+        $oAutoBid->evaluation = $sEvaluation;
+        $oAutoBid->id_period  = $iAutoBidPeriodId;
+        $oAutoBid->rate_min   = $fRate;
+        $oAutoBid->amount     = $iAmount;
         $oAutoBid->create();
-    }
-
-    /**
-     * Get all settings of which their period is active and fit the criteria
-     *
-     * @param int    $iLenderId
-     * @param string $sEvaluation
-     * @param int    $iAutoBidPeriodId
-     * @param array  $aStatus
-     * @param string $sOrder
-     * @param int    $iLimit
-     * @param int    $iOffset
-     *
-     * @return array
-     */
-    public function getSettings($iLenderId = null, $sEvaluation = null, $iAutoBidPeriodId = null, $aStatus = array(\autobid::STATUS_ACTIVE), $sOrder = null, $iLimit = null, $iOffset = null)
-    {
-        /** @var \autobid $oAutoBid */
-        $oAutoBid = $this->oEntityManager->getRepository('autobid');
-        return $oAutoBid->getSettings($iLenderId, $sEvaluation, $iAutoBidPeriodId, $aStatus, $sOrder, $iLimit, $iOffset);
     }
 
     /**
@@ -224,7 +205,7 @@ class AutoBidSettingsManager
             if ($oAutobid->exist($oLendersAccount->id_lender_account . '" AND status = "' . \autobid::STATUS_INACTIVE, 'id_lender')) {
                 $bIsNovice = false;
             } else {
-                $aAutobids = $this->getSettings($oLendersAccount->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE), null);
+                $aAutobids = $oAutobid->getSettings($oLendersAccount->id_lender_account);
                 $fRate     = $aAutobids[0]['rate_min'];
                 $iAmount   = $aAutobids[0]['amount'];
 
@@ -247,11 +228,11 @@ class AutoBidSettingsManager
      */
     public function saveNoviceSetting($iLenderId, $fRate, $iAmount)
     {
-        /** @var \autobid_periods $oAutoBidPeriods */
-        $oAutoBidPeriods = $this->oEntityManager->getRepository('autobid_periods');
+        /** @var \project_period $oAutoBidPeriods */
+        $oAutoBidPeriods = $this->oEntityManager->getRepository('project_period');
         /** @var \projects $oProject */
         $oProject        = $this->oEntityManager->getRepository('projects');
-        $aAutoBidPeriods = $oAutoBidPeriods->select('status = ' . \autobid_periods::STATUS_ACTIVE);
+        $aAutoBidPeriods = $oAutoBidPeriods->select('status = ' . \project_period::STATUS_ACTIVE);
         $aRiskValues     = $oProject->getAvailableRisks();
 
         foreach ($aAutoBidPeriods as $aPeriod) {
@@ -284,7 +265,7 @@ class AutoBidSettingsManager
         $oAutoBid = $this->oEntityManager->getRepository('autobid');
         $oAutoBid->get(
             $iLenderId,
-            'status != ' . \autobid::STATUS_ARCHIVED . ' AND evaluation = "' . $sEvaluation . '" AND id_autobid_period = '
+            'status != ' . \autobid::STATUS_ARCHIVED . ' AND evaluation = "' . $sEvaluation . '" AND id_period = '
             . $iAutoBidPeriodId . ' AND id_lender'
         );
 
@@ -389,17 +370,41 @@ class AutoBidSettingsManager
         return $oClientHistoryActions->counter('id_client = ' . $oLendersAccount->id_client_owner . ' AND nom_form = "autobid_on_off" ') > 0;
     }
 
-    /**
-     * Get autobid_period object by a duration
-     *
-     * @param $iDuration
-     *
-     * @return bool|\autobid_periods
-     */
-    public function getPeriod($iDuration)
+    public function getRateRange($evaluation = null, $periodId = null)
     {
-        /** @var \autobid_periods $oAutoBidPeriods */
-        $oAutoBidPeriods = $this->oEntityManager->getRepository('autobid_periods');
-        return $oAutoBidPeriods->getPeriod($iDuration);
+        /** @var \project_rate_settings $projectRateSettings */
+        $projectRateSettings = $this->oEntityManager->getRepository('project_rate_settings');
+
+        if ($evaluation === null || $periodId === null) {
+            $projectMinMaxRate = $projectRateSettings->getGlobalMinMaxRate();
+        } else {
+            $projectRates = $projectRateSettings->getSettings($evaluation, $periodId);
+            $projectMinMaxRate = array_shift($projectRates);
+            if (empty($projectMinMaxRate)) {
+                $projectMinMaxRate = $projectRateSettings->getGlobalMinMaxRate();
+            }
+        }
+
+        return $projectMinMaxRate;
+    }
+
+    /**
+     * Check if a autobid settings rate is valid (don't use it for a bid on a particular project. in this case, use getProjectRateRange() of bid manager)
+     *
+     * @param      $fRate
+     * @param null $evaluation
+     * @param null $periodId
+     *
+     * @return bool
+     */
+    public function isRateValid($fRate, $evaluation = null, $periodId = null)
+    {
+        $projectRate = $this->getRateRange($evaluation, $periodId);
+
+        if (bccomp($fRate, $projectRate['rate_min'], 1) >= 0 && bccomp($fRate, $projectRate['rate_max'], 1) <= 0) {
+            return true;
+        }
+
+        return false;
     }
 }
