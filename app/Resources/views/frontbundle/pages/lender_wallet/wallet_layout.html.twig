@@ -6,14 +6,12 @@
 {% set page = {
     id: 'user-preter-balance',
     title: 'Prêteur / Apport - Retrait',
-    permalink: route('user/preter/balance'),
+    permalink: path('lender_wallet'),
     classNames: 'user-preter-balance'
 } %}
 
 {% block dashboardContent %}
-
     <div class="dashboard-tabs tabs">
-
         <div class="dashboard-tabs-nav">
             <ul class="nav nav-dashboard-tabs">
                 <li role="presentation" class="active">
@@ -29,7 +27,5 @@
             {% include ':frontbundle/pages/lender_wallet:deposit_layout.html.twig' %}
             {% include ':frontbundle/pages/lender_wallet:withdraw_layout.html.twig' %}
         </div><!-- /.dashboard-tabs-content -->
-
     </div><!-- /.dashboard-tabs -->
-
 {% endblock %}

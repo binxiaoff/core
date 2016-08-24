@@ -14,15 +14,14 @@ use Unilend\core\Loader;
 
 class LenderWalletController extends Controller
 {
-    /** @var int  */
     const MAX_DEPOSIT_AMOUNT = 1000;
-    /** @var int  */
     const MIN_DEPOSIT_AMOUNT = 20;
 
     /**
-     * @param Request $request
-     * @Route("/alimentation", name="wallet")
+     * @Route("/alimentation", name="lender_wallet")
      * @Security("has_role('ROLE_LENDER')")
+     *
+     * @param Request $request
      * @return Response
      */
     public function walletAction(Request $request)
@@ -59,15 +58,16 @@ class LenderWalletController extends Controller
     }
 
     /**
-     * @param Request $request
      * @Route("/alimentation/retrait", name="withdraw_money")
      * @Security("has_role('ROLE_LENDER')")
+     *
+     * @param Request $request
      * @return JsonResponse
      */
     public function withdrawMoneyAction(Request $request)
     {
         if (false === $request->isXmlHttpRequest()) {
-            return $this->redirectToRoute('wallet');
+            return $this->redirectToRoute('lender_wallet');
         }
 
         /** @var EntityManager $entityManager */
@@ -108,7 +108,7 @@ class LenderWalletController extends Controller
             $clientStatus->getLastStatut($client->id_client);
 
             if ($clientStatus->status < \clients_status::VALIDATED) {
-                $this->redirectToRoute('wallet');
+                $this->redirectToRoute('lender_wallet');
             }
             $lender->get($client->id_client, 'id_client_owner');
 
@@ -286,15 +286,16 @@ class LenderWalletController extends Controller
     }
 
     /**
-     * @param Request $request
-     * @return JsonResponse
      * @Route("/alimentation/apport", name="deposit_money")
      * @Security("has_role('ROLE_LENDER')")
+     *
+     * @param Request $request
+     * @return JsonResponse
      */
     public function depositMoneyAction(Request $request)
     {
         if (false === $request->isXmlHttpRequest()) {
-            return $this->redirectToRoute('wallet');
+            return $this->redirectToRoute('lender_wallet');
         }
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
@@ -399,11 +400,12 @@ class LenderWalletController extends Controller
     }
 
     /**
+     * @Route("/alimentation/payment/{hash}", name="wallet_payment")
+     * @Security("has_role('ROLE_LENDER')")
+     *
      * @param Request $request
      * @param $hash
      * @return JsonResponse
-     * @Route("/alimentation/payment/{hash}", name="wallet_payment")
-     * @Security("has_role('ROLE_LENDER')")
      */
     public function paymentAction(Request $request, $hash)
     {
@@ -441,7 +443,7 @@ class LenderWalletController extends Controller
 
             if (true === empty($array['token'])) {
                 $logger->error('Payline token not found, id_client=' . $client->id_client, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
-                return $this->redirectToRoute('wallet', ['depositResult' => true]);
+                return $this->redirectToRoute('lender_wallet', ['depositResult' => true]);
             }
             $array['version'] = $request->request->get('version', '3');
 
@@ -540,7 +542,7 @@ class LenderWalletController extends Controller
                             $mailer->send($message);
                         }
                     }
-                    return $this->redirectToRoute('wallet', ['depositResult' => true, 'depositCode' => Response::HTTP_OK, 'depositAmount' => bcdiv($response['payment']['amount'], 100, 2)]);
+                    return $this->redirectToRoute('lender_wallet', ['depositResult' => true, 'depositCode' => Response::HTTP_OK, 'depositAmount' => bcdiv($response['payment']['amount'], 100, 2)]);
 
                 } elseif ($response['result']['code'] == '02319') { // Payment cancelled
                     $transaction->get($response['order']['ref'], 'id_transaction');
@@ -552,7 +554,7 @@ class LenderWalletController extends Controller
                 } else { // Payment error
                     mail('alertesit@unilend.fr', 'unilend payline erreur', 'erreur sur page payment alimentation preteur (client : ' . $client->id_client . ') : ' . serialize($response));
                 }
-                return $this->redirectToRoute('wallet', ['depositResult' => true]);
+                return $this->redirectToRoute('lender_wallet', ['depositResult' => true]);
             }
         }
     }
