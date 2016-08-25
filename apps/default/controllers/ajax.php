@@ -195,7 +195,13 @@ class ajaxController extends bootstrap
                             setTimeout('decompte(letime" . $project['id_project'] . ",\"val" . $project['id_project'] . "\")', 500);
                         </script>";
                 } else {
-                    $dateRest = 'Terminé';
+                    if ($project['date_fin'] != '0000-00-00 00:00:00') {
+                        $endDateTime = new \DateTime($project['date_fin']);
+                    } else {
+                        $endDateTime = new \DateTime($project['date_retrait_full']);
+                    }
+                    $endDate  = strftime('%d %B', $endDateTime->getTimestamp());
+                    $dateRest = str_replace('[#date#]', $endDate, $this->lng['preteur-projets']['termine']);
                 }
 
                 if ($project['photo_projet'] != '') {
@@ -231,13 +237,14 @@ class ajaxController extends bootstrap
                 $affichage .= "<td><a class='lien' href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'>";
                 $affichage .= $this->ficelle->formatNumber($avgRate, 1) . "%";
                 $affichage .= "</a></td>";
-                $affichage .= "<td><a class='lien' href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'><strong id='val" . $project['id_project'] . "'>" . $dateRest . "</strong></a></td>
-                <td>";
+                $affichage .= "<td><a class='lien' href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'>";
 
                 if ($this->projects_status->status >= \projects_status::FUNDE) {
-                    $affichage .= "<a href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "' class='btn btn-info btn-small multi grise1 btn-grise'>" . $this->lng['preteur-projets']['voir-le-projet'] . "</a>";
+                    $affichage .= "<span class=\"project_ended\" id='val" . $project['id_project'] . "'>" . $dateRest . "</span></a></td>
+                <td><a href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "' class='btn btn-info btn-small multi grise1 btn-grise'>" . $this->lng['preteur-projets']['voir-le-projet'] . "</a>";
                 } else {
-                    $affichage .= "<a href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "' class='btn btn-info btn-small'>" . $this->lng['preteur-projets']['pretez'] . "</a>";
+                    $affichage .= "<span id='val" . $project['id_project'] . "'>" . $dateRest . "</span></a></td>
+                <td><a href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "' class='btn btn-info btn-small'>" . $this->lng['preteur-projets']['pretez'] . "</a>";
                 }
                 $affichage .= "</td>
             </tr>
@@ -358,8 +365,7 @@ class ajaxController extends bootstrap
                     $endDateTime = new \DateTime($this->lProjetsFunding[$iKey]['date_retrait_full']);
                 }
                 $endDate                                  = strftime('%d %B', $endDateTime->getTimestamp());
-                $endTime                                  = $endDateTime->format('H\h');
-                $this->lProjetsFunding[$iKey]['daterest'] = str_replace(['[#date#]', '[#time#]'], [$endDate, $endTime], $this->lng['preteur-projets']['termine']);
+                $this->lProjetsFunding[$iKey]['daterest'] = str_replace('[#date#]', $endDate, $this->lng['preteur-projets']['termine']);
             }
 
             $this->lProjetsFunding[$iKey]['taux'] = $this->ficelle->formatNumber($this->projects->getAverageInterestRate($aProject['id_project'], $aProject['status']), 1);
