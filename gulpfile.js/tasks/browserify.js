@@ -43,7 +43,7 @@ var browserifyTask =  function(watchMode) {
 
     }
 
-    if(watchMode) {
+    if(watchMode == true) {
       // Wrap with watchify and rebundle on changes
       bundler = watchify(bundler);
       // Rebundle on update

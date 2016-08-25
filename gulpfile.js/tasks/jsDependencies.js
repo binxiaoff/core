@@ -10,6 +10,7 @@ var rename       = require('gulp-rename')
 var browserSync  = require('browser-sync')
 var gulpif       = require('gulp-if')
 var sourcemaps   = require('gulp-sourcemaps')
+var del          = require('del')
 
 var paths = {
   src: path.join(config.root.src, config.tasks.jsDependencies.src),
@@ -24,7 +25,12 @@ config.tasks.jsDependencies.dependencies.forEach(function(entry) {
   dependencies.push(entry)
 })
 
-gulp.task('jsDependencies', function () {
+var jsDependenciesTask = function () {
+
+  var cleanModernizr = function() {
+    del(path.join(config.root.src, config.tasks.modernizr.dest))
+  }
+
   gulp.src(dependencies)
     .on('error', handleErrors)
     .pipe(gulpif(!global.production, sourcemaps.init()))
@@ -35,4 +41,8 @@ gulp.task('jsDependencies', function () {
 
   gulp.src(paths.vendorSrc)
     .pipe(gulp.dest(paths.vendorDest))
-})
+    .on('end', cleanModernizr)
+}
+
+gulp.task('jsDependencies', jsDependenciesTask)
+module.exports = jsDependenciesTask

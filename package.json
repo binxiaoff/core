@@ -11,10 +11,9 @@
     "type": "git"
   },
   "scripts": {
-    "start": "gulp",
     "gulp": "gulp",
-    "development": "gulp",
-    "production": "gulp production"
+    "gulp:dev": "gulp",
+    "gulp:prod": "gulp production"
   },
   "devDependencies": {
     "bootstrap": "^3.3.7",
