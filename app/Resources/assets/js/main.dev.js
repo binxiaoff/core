@@ -169,7 +169,7 @@ $(document).ready(function ($) {
 
   // VideoJS
   // Running a modified version to customise the placement of items in the control bar
-  videojs.options.flash.swf = '/bundles/unilendfront/js/vendor/videojs/video-js.swf' // @TODO needs correct link '/js/vendor/videojs/video-js.swf'
+  videojs.options.flash.swf = '/assets/js/vendor/videojs/video-js.swf' // @TODO needs correct link '/js/vendor/videojs/video-js.swf'
 
   // Site Search AutoComplete
   if ($('.site-header .site-search-input').length > 0) {

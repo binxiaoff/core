@@ -716,7 +716,7 @@ var Utility = {
   // @note same used in `src/twig/extensions/twig.extensions.js`, just with minor modifications to reference the `window.site.assets.media` value for default URL
   svgImage: function (id, title, width, height, sizing) {
     // Default URL
-    var url = (window.site ? window.site.assets.media + 'svg/icons.svg' : '/bundles/unilendfront/images/svg/icons.svg')
+    var url = (window.site ? window.site.assets.media + 'svg/icons.svg' : '/assets/images/svg/icons.svg')
     var svgHeaders = ' version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"'
     var uses = []
     var usesIds = []
@@ -877,7 +877,7 @@ var Utility = {
     // Since it didn't break above, consider it a success
     return traverseObj
   },
-  
+
   // Apply each arguments' properties to the first (target) argument
   // Like $.extend, and _.assign but will replace previous value with new value even if new value is false/undefined/null
   inherit: function () {
@@ -890,7 +890,7 @@ var Utility = {
     for (var i = 1; i < arguments.length; i++) {
       // Move along if the target prop is same as reference prop, or reference isn't an object
       if (target[j] === arguments[i] || typeof arguments[i] !== 'object') continue
-      
+
       for (var j in arguments[i]) {
         target[j] = arguments[i][j]
       }
@@ -923,7 +923,7 @@ var Utility = {
   /*
    * Test for IE
    */
-  
+
   isIE: function (version) {
     var versionNum = ~~(version + ''.replace(/\D+/g, ''))
     if (/^\</.test(version)) {

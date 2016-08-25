@@ -9,7 +9,7 @@
     {% block panelContent %}
         <div class="dashboard-panel-overview">
             <div class="label">{% trans %} lender-dashboard_portfolio-performance-panel-your-performance-rate {% endtrans %}</div>
-            <div class="value">{{ lenderDetails.irr }}<sup>%</sup></div>
+            <div class="value">{% if lenderDetails.irr > 0 %}+ {% endif %}{{ lenderDetails.irr }}<sup>%</sup></div>
         </div>
         <div class="dashboard-panel-chart">
             <div class="user-avatar">

@@ -15,9 +15,10 @@ use Unilend\core\Loader;
 class LenderDashboardController extends Controller
 {
     /**
-     * @return Response
      * @Route("synthese", name="lender_dashboard")
      * @Security("has_role('ROLE_LENDER')")
+     *
+     * @return Response
      */
     public function indexAction()
     {
@@ -61,12 +62,12 @@ class LenderDashboardController extends Controller
         if ($this->getUser()->getLevel() > 0) {
             $aLastIRR = $oLenderAccountStats->getLastIRRForLender($lender->id_lender_account);
             if ($aLastIRR) {
-                $irr = ($aLastIRR['tri_value'] > 0) ? '+ ' . $ficelle->formatNumber($aLastIRR['tri_value']) : $ficelle->formatNumber($aLastIRR['tri_value']);
+                $irr = $ficelle->formatNumber($aLastIRR['tri_value']);
             } else {
                 $fLossRate = $oLenderAccountStats->getLossRate($lender->id_lender_account, $lender);
 
                 if ($fLossRate > 0) {
-                    $irr = $ficelle->formatNumber(-$fLossRate);
+                    $irr = $ficelle->formatNumber(- $fLossRate);
                 } else {
                     $irr = '';
                 }
@@ -105,7 +106,7 @@ class LenderDashboardController extends Controller
         $lenderDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
 
         $aLastUnilendIRR      = $oIRRManager->getLastUnilendIRR();
-        $IRRUnilend           = $ficelle->formatNumber((float) $aLastUnilendIRR['value']);
+        $IRRUnilend           = $ficelle->formatNumber($aLastUnilendIRR['value']);
         $lenderRepaymentsData = $echeancier->getRepaymentAmountDetailsByPeriod($lender->id_lender_account);
         $repaymentData        = $this->getQuarterAndYearSum($lenderRepaymentsData);
         $repaymentDateRange   = $echeancier->getFirstAndLastRepaymentDates($lender->id_lender_account);
@@ -184,19 +185,18 @@ class LenderDashboardController extends Controller
     }
 
     /**
-     * @param Request $request
-     * @return JsonResponse
      * @Route("synthese/preferences", name="save_user_preferences")
      * @Security("has_role('ROLE_LENDER')")
+     *
+     * @param Request $request
+     * @return JsonResponse
      */
     public function saveUserDisplayPreferencesAction(Request $request)
     {
         /** @var \user_preferences $userPreferences */
         $userPreferences = $this->get('unilend.service.entity_manager')->getRepository('user_preferences');
-
-        $pageName = 'lender_dashboard';
-
-        $postData = $request->request->get('panels');
+        $pageName        = 'lender_dashboard';
+        $postData        = $request->request->get('panels');
 
         if ($request->getMethod() === 'PUT') {
             try {
@@ -262,11 +262,11 @@ class LenderDashboardController extends Controller
             'projects'    => ['order' => 4, 'id' => 'projects', 'hidden' => false],
             'myrembourse' => ['order' => 5, 'id' => 'myrembourse', 'hidden' => false],
         ];
+
         try {
             $preferences = $userPreferences->getUserPreferencesByPage($this->getUser()->getClientId(), $pageName);
 
             if (false === empty($preferences)) {
-
                 foreach ($preferences as $panelName => $panel) {
                     $userPreferencesData[$panelName] = ['id' => $panelName, 'order' => $panel['panel_order'], 'hidden' => ($panel['hidden'] == 1) ? true : false];
                 }
@@ -292,10 +292,10 @@ class LenderDashboardController extends Controller
         $monthBandOrigin = 0;
 
         while ($firstDateTime->format('Y-m') <= $lastDateTime->format('Y-m')) {
-
             if ($firstDateTime->format('Y-m') == date('Y-m')) {
                 $monthBandOrigin = count($monthAxis) - 0.5;
             }
+
             $monthAxis[] = $firstDateTime->format('M Y');
             $firstDateTime->add($interval);
         }
@@ -313,7 +313,6 @@ class LenderDashboardController extends Controller
         $quarterBandOrigin = 0;
 
         foreach ($lenderRepaymentsData as $lenderRepayment) {
-
             if (date('Y-m') == $lenderRepayment['month']) {
                 $quarterBandOrigin = count($quarterAxis) - 1.5;
             }
@@ -322,6 +321,7 @@ class LenderDashboardController extends Controller
                 $quarterAxis[] = $quarterLabel;
             }
         }
+
         return ['quarterAxis' => $quarterAxis, 'quarterBandOrigin' => $quarterBandOrigin];
     }
 
@@ -356,8 +356,8 @@ class LenderDashboardController extends Controller
         $yearCapital      = [];
         $yearInterests    = [];
         $yearTax          = [];
-        foreach ($lenderRepaymentsData as $lenderRepayment) {
 
+        foreach ($lenderRepaymentsData as $lenderRepayment) {
             if (false === isset($quarterCapital[$lenderRepayment['year']][$lenderRepayment['quarter']])) {
                 $quarterCapital[$lenderRepayment['year']][$lenderRepayment['quarter']] = 0;
             }
