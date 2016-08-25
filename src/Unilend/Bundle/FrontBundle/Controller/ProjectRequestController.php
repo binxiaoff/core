@@ -131,10 +131,6 @@ class ProjectRequestController extends Controller
             $siren = substr($request->request->get('siren'), 0, 9);
         }
 
-        if (14 === $sirenLength) {
-
-        }
-
         if ($request->getSession()->get('partnerProjectRequest')) {
             $email = '';
         } elseif (
@@ -231,6 +227,15 @@ class ProjectRequestController extends Controller
             mail($alertEmail, '[ALERTE] ERREUR ALTARES 1', 'Date ' . date('Y-m-d H:i:s') . 'SIREN : ' . $siren . ' | ' . $result->exception->code . ' | ' . $result->exception->description . ' | ' . $result->exception->erreur);
 
             return $this->redirectStatus(self::PAGE_ROUTE_STEP_2, \projects_status::COMPLETUDE_ETAPE_2);
+        }
+
+        if (14 === $sirenLength) {
+            /** @var LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->info(
+                'Project ' . $this->project->id_project . ' requested with SIRET value: ' . $request->request->get('siren'),
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'projectId' => $this->project->id_project]
+            );
         }
 
         $this->project->retour_altares = $result->myInfo->codeRetour;
