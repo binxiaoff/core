@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -16,13 +15,14 @@ use Unilend\core\Loader;
 class LenderSubscriptionController extends Controller
 {
     /**
-     * @Route("inscription_preteur/etape1", name="lender_subscription_step_1")
+     * @Route("inscription_preteur/etape1", name="lender_subscription_contact")
      */
-    public function lenderSubscriptionStep1Action(Request $request)
+    public function contactAction(Request $request)
     {
         /** @var \clients $client */
-        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        $client   = $this->get('unilend.service.entity_manager')->getRepository('clients');
         $response = $this->checkProgressAndRedirect($client);
+
         if (false === $response instanceof \clients){
             return $response;
         }
@@ -87,14 +87,14 @@ class LenderSubscriptionController extends Controller
             'company_director_email'           => isset($formData['company_director_email']) ? $formData['company_director_email'] : ''
         ];
 
-        return $this->render('pages/lender_subscription/lender_subscription_step_1.html.twig', $template);
+        return $this->render('pages/lender_subscription/lender_subscription_contact.html.twig', $template);
     }
 
     /**
-     * @Route("inscription_preteur/person-submit-step-1", name="lender_subscription_person_submit_step_1")
+     * @Route("inscription_preteur/etape1/person", name="lender_subscription_contact_person_form")
      * @Method("POST")
      */
-    public function saveLenderSubscriptionPersonStep1Action(Request $request)
+    public function contactPersonAction(Request $request)
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
@@ -197,7 +197,7 @@ class LenderSubscriptionController extends Controller
 
         if ($this->get('session')->getFlashBag()->has('step1Errors')) {
             $request->getSession()->set('subscriptionStep1FormData', $post);
-            return $this->redirectToRoute('lender_subscription_step_1');
+            return $this->redirectToRoute('lender_subscription_contact');
         } else {
             /** @var \lenders_accounts $lenderAccount */
             $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
@@ -244,15 +244,16 @@ class LenderSubscriptionController extends Controller
 
             $this->saveClientHistoryAction($client, $post);
             $this->sendSubscriptionConfirmationEmail($client);
-            return $this->redirectToRoute('lender_subscription_step_2', ['clientHash' => $client->hash]);
+
+            return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $client->hash]);
         }
     }
 
     /**
-     * @Route("inscription_preteur/legal-entity-submit-step-1", name="lender_subscription_legal_entity_submit_step_1")
+     * @Route("inscription_preteur/etape1/entity", name="lender_subscription_contact_legal_entity_form")
      * @Method("POST")
      */
-    public function saveLenderSubscriptionLegalEntityStep1Action(Request $request)
+    public function contactLegalEntityAction(Request $request)
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
@@ -358,7 +359,7 @@ class LenderSubscriptionController extends Controller
 
         if ($this->get('session')->getFlashBag()->has('step1Errors')) {
             $request->getSession()->set('subscriptionStep1FormData', $post);
-            return $this->redirectToRoute('lender_subscription_step_1');
+            return $this->redirectToRoute('lender_subscription_contact');
         } else {
             /** @var \companies $company */
             $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
@@ -432,7 +433,8 @@ class LenderSubscriptionController extends Controller
             $this->saveTermsOfUse($client, 'legal_entity');
             $this->saveClientHistoryAction($client, $post);
             $this->sendSubscriptionConfirmationEmail($client);
-            return $this->redirectToRoute('lender_subscription_step_2', ['clientHash' => $client->hash]);
+
+            return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $client->hash]);
         }
     }
 
@@ -552,9 +554,10 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("inscription_preteur/etape2/{clientHash}", name="lender_subscription_step_2")
+     * @Route("inscription_preteur/etape2/{clientHash}", name="lender_subscription_documents")
+     * @Method("GET")
      */
-    public function lenderSubscriptionStep2Action($clientHash, Request $request)
+    public function step2Action($clientHash, Request $request)
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
@@ -585,14 +588,14 @@ class LenderSubscriptionController extends Controller
             $template['company'] = $company->select('id_client_owner = ' . $client->id_client)[0];
         }
 
-        return $this->render('pages/lender_subscription/lender_subscription_step_2.html.twig', $template);
+        return $this->render('pages/lender_subscription/lender_subscription_documents.html.twig', $template);
     }
 
     /**
-     * @Route("inscription_preteur/submit-step-2/{clientHash}", name="lender_subscription_submit_step_2")
+     * @Route("inscription_preteur/etape2/{clientHash}", name="lender_subscription_documents_form")
      * @Method("POST")
      */
-    public function saveLenderSubscriptionStep2Action($clientHash, Request $request)
+    public function documentsFormAction($clientHash, Request $request)
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
@@ -644,7 +647,7 @@ class LenderSubscriptionController extends Controller
 
         if ($this->get('session')->getFlashBag()->has('step2Errors')) {
             $request->getSession()->set('subscriptionStep2FormData', $post);
-            return $this->redirectToRoute('lender_subscription_step_2', ['clientHash' => $client->hash]);
+            return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $client->hash]);
         } else {
             $lenderAccount->bic           = trim(strtoupper($post['bic']));
             $lenderAccount->iban          = trim(strtoupper($post['iban']));
@@ -659,7 +662,7 @@ class LenderSubscriptionController extends Controller
             $clientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED, $client->id_client);
             $this->saveClientHistoryAction($client, $post);
 
-            return $this->redirectToRoute('lender_subscription_step_3', ['clientHash' => $client->hash]);
+            return $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->hash]);
         }
     }
 
@@ -762,9 +765,10 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("inscription_preteur/etape3/{clientHash}", name="lender_subscription_step_3")
+     * @Route("inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit")
+     * @Method("GET")
      */
-    public function lenderSubscriptionStep3Action($clientHash)
+    public function moneyDepositAction($clientHash)
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
@@ -782,15 +786,15 @@ class LenderSubscriptionController extends Controller
             'lenderBankMotif'  => $client->getLenderPattern($client->id_client)
         ];
 
-        return $this->render('pages/lender_subscription/lender_subscription_step_3.html.twig', $template);
+        return $this->render('pages/lender_subscription/lender_subscription_money_deposit.html.twig', $template);
     }
 
     /**
-     * @Route("inscription_preteur/add-money/{clientHash}", name="lender_subscription_step_3_add_money")
+     * @Route("inscription_preteur/add-money/{clientHash}", name="lender_subscription_money_deposit_form")
      * @Method("POST")
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
-    public function lenderSubscriptionStep3MoneyTransferAction($clientHash, Request $request)
+    public function moneyDepositFormAction($clientHash, Request $request)
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
@@ -812,12 +816,13 @@ class LenderSubscriptionController extends Controller
             //implement success message in view
         }
 
-        return $this->redirectToRoute('lender_subscription_step_3', ['clientHash' => $client->hash]);
+        return $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->hash]);
     }
 
 
     /**
-     * @Route("devenir-preteur-lp", name="landing_page_lender")
+     * @Route("devenir-preteur-lp", name="lender_landing_page")
+     * @Method("GET")
      */
     public function landingPageAction()
     {
@@ -843,11 +848,21 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("/lp/inscription-preteur/submit", name="landing_page_lender_submit")
+     * @Route("devenir-preteur-lp-form", name="lender_landing_page_form_only")
+     * @Method("GET")
+     * @return Response
+     */
+    public function landingPageFormOnlyAction()
+    {
+        return $this->render('pages/lender_subscription/landing_page_form_only.html.twig');
+    }
+
+    /**
+     * @Route("/devenir-preteur-lp", name="lender_landing_page_form")
      * @Method("POST")
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
-    public function saveLandingPageAction(Request $request)
+    public function landingPageFormAction(Request $request)
     {
         /** @var \clients $clients */
         $clients = $this->get('unilend.service.entity_manager')->getRepository('clients');
@@ -888,29 +903,20 @@ class LenderSubscriptionController extends Controller
                 $prospect->id_langue    = 'fr';
                 $prospect->create();
             }
-            return $this->redirectToRoute('lender_subscription_step_1');
+            return $this->redirectToRoute('lender_subscription_contact');
         } else {
-            return $this->redirectToRoute('landing_page_lender');
+            return $this->redirectToRoute('lender_landing_page');
         }
     }
 
     /**
-     * @Route("form-devenir-preteur-lp", name="landing_page_lender_form")
-     * @return Response
-     */
-    public function renderLandingPageFormAction()
-    {
-        return $this->render('pages/lender_subscription/landing_page_form_only.html.twig');
-    }
-
-    /**
      * @param \clients $client
-     * @param null $clientHash
+     * @param string|null $clientHash
      * @return \clients|\Symfony\Component\HttpFoundation\RedirectResponse
      */
     private function checkProgressAndRedirect(\clients &$client, $clientHash = null)
     {
-        if (false === empty($client->id_client) || (false === is_null($clientHash) && false === $client->get($clientHash, 'hash'))){
+        if (false === empty($client->id_client) || (false === is_null($clientHash) && false === $client->get($clientHash, 'hash'))) {
             if (\clients::STATUS_ONLINE == $client->status && $client->etape_inscription_preteur < 3) {
                 return $this->redirectToRoute('lender_subscription_step_' . ($client->etape_inscription_preteur + 1), ['clientHash' => $client->hash]);
             } else {
@@ -918,10 +924,13 @@ class LenderSubscriptionController extends Controller
             }
         }
 
-        if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
-            && ($this->get('security.authorization_checker')->isGranted('ROLE_BORROWER')
+        if (
+            $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
+            && (
+                $this->get('security.authorization_checker')->isGranted('ROLE_BORROWER')
                 || ($this->get('security.authorization_checker')->isGranted('ROLE_LENDER') && $this->getUser()->getSubscriptionStep() >= 3)
-                || (false === is_null($clientHash) && $client->id_client != $this->getUser()->getClientId()))
+                || (false === is_null($clientHash) && $client->id_client != $this->getUser()->getClientId())
+            )
         ) {
             return $this->redirectToRoute('projects_list');
         }
@@ -1045,7 +1054,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("/inscription_preteur/ajax/pwd", name="lender_subscription_ajax_pwd")
+     * @Route("/inscription_preteur/ajax/password", name="lender_subscription_ajax_password")
      * @Method("POST")
      */
     public function checkPassWordComplexityAction(Request $request)
@@ -1066,8 +1075,7 @@ class LenderSubscriptionController extends Controller
                 ]);
             }
         }
+
         return new Response('not an ajax request');
     }
-
-
 }

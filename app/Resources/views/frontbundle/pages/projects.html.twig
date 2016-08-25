@@ -27,7 +27,7 @@
                 <div class="row page-section-footer">
                     {% if not is_granted('IS_AUTHENTICATED_FULLY') %}
                         <div class="btn-toolbar">
-                            <a href="{{ path('lender_subscription_step_1') }}" class="btn-primary">{% trans %} projects-listing_become-lender-button {% endtrans %}</a>
+                            <a href="{{ path('lender_subscription_contact') }}" class="btn-primary">{% trans %} projects-listing_become-lender-button {% endtrans %}</a>
                         </div>
                     {% endif %}
                     <p>

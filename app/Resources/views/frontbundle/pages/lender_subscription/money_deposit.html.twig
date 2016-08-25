@@ -4,7 +4,7 @@
 
 {% set page = {
     title: 'Devenir Prêteur',
-    permalink: path('lender_subscription_step_3', {'clientHash' : client.hash })
+    permalink: path('lender_subscription_money_deposit', {'clientHash' : client.hash })
 } %}
 
 {% block siteContent %}
@@ -21,7 +21,7 @@
                 <div class="site-wrap">
                     <div class="tabs ui-tabs-progress">
                         <div class="form-preter-content tab-content">
-                            <form action="{{ path('lender_subscription_step_3_add_money', {'clientHash' : client.hash }) }}" method="post" class="form-preter-deposit">
+                            <form action="{{ path('lender_subscription_money_deposit_form', {'clientHash' : client.hash }) }}" method="post" class="form-preter-deposit">
                                 <div id="form-preter-3" role="tabpanel" class="tab-pane active" aria-labelledby="preter-create-3 preter-create-title">
                                     <div class="row">
                                         <div class="col-form col-lg-8 col-md-8">

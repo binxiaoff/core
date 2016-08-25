@@ -4,7 +4,7 @@
 
 {% set page = {
     title: 'Devenir Prêteur',
-    permalink: path('lender_subscription_step_2', {'clientHash' : client.hash })
+    permalink: path('lender_subscription_documents', {'clientHash' : client.hash })
 } %}
 
 {# Set input ID namespace to "person" #}
@@ -32,7 +32,7 @@
                     {% include 'pages/lender_subscription/partials/progress_bar.html.twig' %}
 
                     <div class="form-preter-content tab-content">
-                        <form id="form-lender-step-2" method="post" action="{{ path('lender_subscription_submit_step_2', {'clientHash' : client.hash }) }}" class="form-preter-create" enctype="multipart/form-data">
+                        <form id="form-lender-step-2" method="post" action="{{ path('lender_subscription_documents_form', {'clientHash' : client.hash }) }}" class="form-preter-create" enctype="multipart/form-data">
                             <div id="form-preter-2" role="tabpanel" class="tab-pane active" aria-labelledby="preter-create-2 preter-create-title">
                                 <div class="row">
                                     <div class="col-form col-lg-8 col-md-8" data-formvalidation data-formvalidation-notificationselem="#form-preter-2-notifications">
