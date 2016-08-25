@@ -955,19 +955,28 @@ var Utility = {
       var checkBp = $elem.attr('data-set-device-height').trim().toLowerCase()
       var setHeight = false
 
-      // Turn elem setting into an array to iterate over later
-      if (!/[, ]/.test(checkBp)) {
-        checkBp = [checkBp]
-      } else {
-        checkBp = checkBp.split(/[, ]+/)
-      }
+      // @debug
+      // console.log(typeof checkBp, checkBp, setHeight)
 
-      // Check if elem should be set to device's height
-      for (var j in checkBp) {
-        if (new RegExp(checkBp[j], 'i').test(Utility.getActiveBreakpoints())) {
-          setHeight = checkBp[j]
-          break
+      // Turn elem setting into an array to iterate over later
+      if (checkBp) {
+        if (!/[, ]/.test(checkBp)) {
+          checkBp = [checkBp]
+        } else {
+          checkBp = checkBp.split(/[, ]+/)
         }
+
+        // Check if elem should be set to device's height
+        for (var j in checkBp) {
+          if (new RegExp(checkBp[j], 'i').test(Utility.getActiveBreakpoints())) {
+            setHeight = checkBp[j]
+            break
+          }
+        }
+
+      // If no breakpoint(s) given, assume height of all devices
+      } else {
+        setHeight = true
       }
 
       // Set the height
@@ -993,22 +1002,51 @@ var Utility = {
    */
   setEqualHeights: function () {
     var equalHeights = {}
+
+    // Iterate over items with [data-equal-height] attribute
     $('[data-equal-height]').each(function (i, elem) {
       var $elem = $(elem)
+
+      // Equal height config per elem
+      var applyToBp = $elem.attr('data-equal-height')
       var groupName = $elem.attr('data-equal-height-group') || 'default'
-      var elemHeight = $elem.css('height', '').outerHeight()
+
+      // Calc eleme's height
+      var elemHeight
+      // Height set via equal-height, so clear it to get the original element height
+      if ($elem.is('.ui-set-equal-height')) {
+        // Height was originally set on element via inline CSS, so reference that value
+        if ($elem.is('.ui-equal-height-inlinecss')) {
+          elemHeight = parseFloat($elem.attr('data-equal-height-original'))
+
+        } else {
+          // Remove height set via inline CSS to test height of element
+          elemHeight = $elem.css('height', '').outerHeight()
+        }
+
+      } else {
+        // Mark elem's height was set via inline CSS
+        if ($elem.attr('style') && $elem.attr('style').match(/[^-]height:/i)) {
+          $elem.addClass('ui-equal-height-inlinecss')
+        }
+
+        // Get the height of the element
+        elemHeight = $elem.outerHeight()
+      }
+
+      // Get the original height
+      var originalHeight = $elem.attr('data-equal-height-original') || elemHeight
+
+      // Add px to the original height value if not already set
+      if (typeof originalHeight === 'number') originalHeight += 'px'
+
+      // Set the original height if not already set
+      if (typeof $elem.attr('data-equal-height-original') === 'undefined') {
+        $elem.attr('data-equal-height-original', originalHeight)
+      }
 
       // Create value to save max height to
       if (!equalHeights.hasOwnProperty(groupName)) equalHeights[groupName] = 0
-
-      // Set max height
-      if (elemHeight > equalHeights[groupName]) equalHeights[groupName] = elemHeight
-
-      // After processing all, apply height (depending on breakpoint)
-    }).each(function (i, elem) {
-      var $elem = $(elem)
-      var groupName = $elem.attr('data-equal-height-group') || 'default'
-      var applyToBp = $elem.attr('data-equal-height')
 
       // Only apply to certain breakpoints
       if (applyToBp) {
@@ -1016,15 +1054,42 @@ var Utility = {
 
         // Test breakpoint
         if (new RegExp(applyToBp.join('|'), 'i').test(Utility.getActiveBreakpoints())) {
+          // Set max height
+          if (elemHeight > equalHeights[groupName]) equalHeights[groupName] = elemHeight
+        }
+
+      // No breakpoint set? Doits
+      } else {
+        // Set max height
+        if (elemHeight > equalHeights[groupName]) equalHeights[groupName] = elemHeight
+      }
+
+    // After processing all, apply height (depending on breakpoint)
+    }).each(function (i, elem) {
+      var $elem = $(elem)
+      var groupName = $elem.attr('data-equal-height-group') || 'default'
+      var applyToBp = $elem.attr('data-equal-height')
+      var originalHeight = $elem.attr('data-equal-height-original')
+
+      // Only apply to certain breakpoints
+      if (applyToBp) {
+        applyToBp = applyToBp.split(/[ ,]+/)
+
+        // Test breakpoint
+        if (new RegExp(applyToBp.join('|'), 'i').test(Utility.getActiveBreakpoints())) {
+          $elem.addClass('ui-set-equal-height')
           $elem.height(equalHeights[groupName])
 
           // Remove height
         } else {
-          $elem.css('height', '')
+          // Set to the original height, or remove the height CSS style to use CSS class's style
+          $elem.removeClass('ui-set-equal-height')
+            .css('height', $elem.is('.ui-equal-height-inlinecss') ? originalHeight : '')
         }
 
-        // No breakpoint set? Apply indiscriminately
+      // No breakpoint set? Apply indiscriminately
       } else {
+        $elem.addClass('ui-set-equal-height')
         $elem.height(equalHeights[groupName])
       }
     })
