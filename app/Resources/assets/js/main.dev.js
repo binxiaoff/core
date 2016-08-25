@@ -1349,6 +1349,14 @@ $(document).ready(function ($) {
   })
 
   /*
+   * Show print dialog
+   */
+  $doc.on(Utility.clickEvent, '.btn-print, .ui-print', function (event) {
+    event.preventDefault()
+    window.print()
+  })
+
+  /*
    * Collapse
    */
   // Mark on [data-toggle] triggers that the collapseable is/isn't collapsed

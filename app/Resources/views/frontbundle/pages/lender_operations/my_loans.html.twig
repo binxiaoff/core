@@ -52,13 +52,21 @@
     <header class="panel-header">
         <h3 class="panel-title">{% transchoice lenderLoans|length with { '%count%' : lenderLoans|length } %} lender-operations_loans-made {% endtranschoice %}</h3>
         <div class="panel-controls">
-            <a href="#todo" class="btn-default"><span class="icon fa-print-u32"></span><span class="label"> {% trans %} lender-operations_print {% endtrans %} </span></a>
-            <a href="{{ path('export_loans_csv') }}" class="btn-default"><span class="icon fa-excel-u32"></span><span class="label"> {% trans %} lender-operations_csv-export {% endtrans %} </span></a>
+            <a href="javascript:;" class="btn-default ui-print">
+                <span class="icon fa-print-u32"></span>
+                <span class="label"> {% trans %} lender-operations_print {% endtrans %} </span>
+            </a>
+            <a href="{{ path('export_loans_csv') }}" class="btn-default">
+                <span class="icon fa-excel-u32"></span>
+                <span class="label"> {% trans %} lender-operations_csv-export {% endtrans %} </span>
+            </a>
         </div><!-- /.panel-controls -->
     </header><!-- /.panel-header -->
+
     <div class="panel-content">
         <div class="panel-before-table">
             <div class="chart" data-chartview='{{ loansChartData.charts.lenderOperations|json_encode|escape('html_attr') }}'></div>
+
             {# Responsive issues, so I am rendering the legend in the page itself, rather than in the chart above #}
             <div class="chart-legend">
                 {% for i, series in loansChartData.charts.lenderOperations.highcharts.series %}
@@ -78,7 +86,7 @@
                         <select id="filter-status" name="filter[status]" class="input-field">
                             <option value="">{% trans %} lender-operations_by-status {% endtrans %}</option>
                             {% for statusDetail in loansStatusFilter %}
-                                <option value="{{ statusDetail.status }}">{{ "lender-operations_project-status-filter-#{ statusDetail.status }" | trans }}</option>
+                                <option value="{{ statusDetail.status }}" {% if currentFilters is not empty and currentFilters.filter.status == statusDetail.status %} selected="selected" {% endif %}>{{ "lender-operations_project-status-filter-#{ statusDetail.status }" | trans }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -86,7 +94,7 @@
                         <select id="filter-next" name="filter[date]" class="input-field">
                             <option value=""> {% trans %} lender-operations_by-date {% endtrans %} </option>
                             {% for year, nbLoan in loansYears %}
-                                <option value="{{ year }}"> {{ year }} </option>
+                                <option value="{{ year }}" {% if currentFilters is not empty and currentFilters.filter.date == year %} selected="selected" {% endif %}> {{ year }} </option>
                             {% endfor %}
                         </select>
                     </div>

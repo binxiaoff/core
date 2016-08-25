@@ -1,5 +1,5 @@
-{% extends ':frontbundle/layouts:_dashboard.html.twig' %}
-{% import ':frontbundle/extensions:_general.macros.twig' as general %}
+{% extends 'layouts/_dashboard.html.twig' %}
+{% import 'extensions/_general.macros.twig' as general %}
 
 {% set page = {
     id: 'user-preter-operations',
@@ -20,12 +20,12 @@
                 </li>
             </ul>
         </div><!-- /.dashboard-tabs-nav -->
-        <div class="dashboard-tabs-content tab-content" id="lender-operations-loans">
+        <div class="dashboard-tabs-content tab-content" id="dashboard-lender-operations">
             <article id="operations" role="tabpanel" class="dashboard-tab-pane tab-pane active">
-                {% include ':frontbundle/pages/lender_operations:my_operations.html.twig' %}
+                {% include 'pages/lender_operations/my_operations.html.twig' %}
             </article><!-- /#myoperations.tab-pane -->
             <article id="loans" role="tabpanel" class="dashboard-tab-pane tab-pane">
-                {% include ':frontbundle/pages/lender_operations:my_loans.html.twig' %}
+                {% include 'pages/lender_operations/my_loans.html.twig' %}
             </article><!-- /#myloans.tab-pane -->
         </div><!-- /.dashboard-tabs-content -->
     </section><!-- /.dashboard-tabs -->
