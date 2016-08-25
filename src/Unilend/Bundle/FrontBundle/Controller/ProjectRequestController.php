@@ -118,15 +118,21 @@ class ProjectRequestController extends Controller
             }
         }
 
+        $sirenLength = strlen($request->request->get('siren'));
+
         if (
             empty($request->request->get('siren'))
             || false === filter_var($request->request->get('siren'), FILTER_VALIDATE_INT)
-            || strlen($request->request->get('siren')) !== 9
+            || false === in_array($sirenLength, [9, 14]) // SIRET numbers also allowed
         ) {
             $message = $translator->trans('borrower-landing-page_required-fields-error');
             $errors['siren'] = true;
         } else {
-            $siren = $request->request->get('siren');
+            $siren = substr($request->request->get('siren'), 0, 9);
+        }
+
+        if (14 === $sirenLength) {
+
         }
 
         if ($request->getSession()->get('partnerProjectRequest')) {
@@ -182,6 +188,7 @@ class ProjectRequestController extends Controller
         $this->company = $entityManager->getRepository('companies');
         $this->company->id_client_owner               = $client->id_client;
         $this->company->siren                         = $siren;
+        $this->company->siret                         = $sirenLength === 14 ? $request->request->get('siren') : '';
         $this->company->status_adresse_correspondance = 1;
         $this->company->email_dirigeant               = $email;
         $this->company->email_facture                 = $email;
