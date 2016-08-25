@@ -15,7 +15,7 @@ $doc.on('ready', function () {
   var ageTimer = 0
   var pwdTimer = 0
   var ajaxDelay = 2000
-  
+
   /*
    * Step 1
    */
@@ -30,11 +30,11 @@ $doc.on('ready', function () {
     // Show person form
     if ($clientTypePerson.prop('checked')) {
       // Clear form validation messages on hiding form
-      $('#form-lender-legal_entity .ui-formvalidation').uiFormValidation('clearAll')
+      $('#form-lender-legal-entity .ui-formvalidation').uiFormValidation('clearAll')
 
       // Show person form, hide legal entity form
       $('#form-lender-person').show()
-      $('#form-lender-legal_entity').hide()
+      $('#form-lender-legal-entity').hide()
 
       // Change values across inputs on both forms
       $('input[name="client_type"][value="person"]').prop('checked', true)
@@ -47,7 +47,7 @@ $doc.on('ready', function () {
 
       // Hide person form, show legal entity form
       $('#form-lender-person').hide()
-      $('#form-lender-legal_entity').show()
+      $('#form-lender-legal-entity').show()
 
       // Change values across inputs on both forms
       $('input[name="client_type"][value="person"]').removeProp('checked')
@@ -58,7 +58,7 @@ $doc.on('ready', function () {
   $doc.on('change', 'input[name="client_type"]:visible', function () {
     checkClientType()
   })
-  
+
   // Show/hide postal address section
   function checkAddressIsNotSame() {
     // @debug
@@ -152,7 +152,7 @@ $doc.on('ready', function () {
       })
     }, ajaxDelay)
   })
-  
+
   // When AutoComplete has set a value for the commune de naissance / birthplace field, ensure the hidden insee value is set by extracting the value from the AutoComplete's result item
   $doc.on('AutoComplete:setInputValue:complete', '#form-lender-person-birth-place', function (event, elemAutoComplete, newValue, item) {
     var $item = $(item)
@@ -165,6 +165,6 @@ $doc.on('ready', function () {
   /*
    * Step 2
    */
-  
-  
+
+
 })

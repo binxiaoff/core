@@ -37,12 +37,12 @@
                                 <div class="row">
                                     <div class="col-form col-lg-8 col-md-8" data-formvalidation data-formvalidation-notificationselem="#form-preter-2-notifications">
 
-                                        {% include 'pages/lender_subscription/partials/step_2_bank_info.html.twig' %}
+                                        {% include 'pages/lender_subscription/partials/documents_bank_info.html.twig' %}
 
                                         {% if idClientType == 'person' %}
-                                            {% include 'pages/lender_subscription/partials/step_2_attachments_person.html.twig' %}
+                                            {% include 'pages/lender_subscription/partials/documents_attachments_person.html.twig' %}
                                         {% else %}
-                                            {% include 'pages/lender_subscription/partials/step_2_attachments_legal_entity.html.twig' %}
+                                            {% include 'pages/lender_subscription/partials/documents_attachments_legal_entity.html.twig' %}
                                         {% endif %}
 
                                         <div class="row reverse btn-controls tab-footer">

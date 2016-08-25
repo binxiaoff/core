@@ -87,7 +87,7 @@ class LenderSubscriptionController extends Controller
             'company_director_email'           => isset($formData['company_director_email']) ? $formData['company_director_email'] : ''
         ];
 
-        return $this->render('pages/lender_subscription/lender_subscription_contact.html.twig', $template);
+        return $this->render('pages/lender_subscription/contact.html.twig', $template);
     }
 
     /**
@@ -588,7 +588,7 @@ class LenderSubscriptionController extends Controller
             $template['company'] = $company->select('id_client_owner = ' . $client->id_client)[0];
         }
 
-        return $this->render('pages/lender_subscription/lender_subscription_documents.html.twig', $template);
+        return $this->render('pages/lender_subscription/documents.html.twig', $template);
     }
 
     /**
@@ -786,7 +786,7 @@ class LenderSubscriptionController extends Controller
             'lenderBankMotif'  => $client->getLenderPattern($client->id_client)
         ];
 
-        return $this->render('pages/lender_subscription/lender_subscription_money_deposit.html.twig', $template);
+        return $this->render('pages/lender_subscription/money_deposit.html.twig', $template);
     }
 
     /**
