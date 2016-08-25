@@ -40,7 +40,7 @@ class MainController extends Controller
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function homeAction($type)
+    public function homeAction($type = 'acquisition')
     {
         $template = [];
 

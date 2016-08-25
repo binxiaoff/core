@@ -1,3 +1,11 @@
 front:
     resource: "@UnilendFrontBundle/Controller"
     type:     annotation
+
+# redirecting the root
+root:
+    path: /
+    defaults:
+        _controller: UnilendFrontBundle:Main:home
+        path: /home
+        permanent: true
