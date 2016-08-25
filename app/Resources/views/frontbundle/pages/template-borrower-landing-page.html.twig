@@ -11,7 +11,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=0">
     <title>{{ page.title }}</title>
     <link rel="shortcut icon" href="/landing-page/css/images/favicon.ico">
-    <link rel="stylesheet" href="/bundles/unilendfront/fonts/style.css" />
+    <link rel="stylesheet" href="/assets/fonts/style.css" />
     <link rel="stylesheet" href="/landing-page/css/style.css" type="text/css">
 
     <script src="/landing-page/js/modernizr.js"></script>
@@ -112,14 +112,16 @@
                            data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9, maximum: 9}">
                     <em{% if form.errors.siren is defined %} class="error"{% endif %}>{% trans %} borrower-landing-page_siren-legend {% endtrans %}</em>
                 </div>
-                <div class="form-row">
-                    <input type="email" name="email" id="email"
-                           placeholder="{% trans %} common_email {% endtrans %} *"
-                           value="{{ form.values.email }}"
-                           class="field{% if form.errors.email is defined %} LV_invalid_field{% endif %}"
-                           data-validators="Presence&amp;Email">
-                    <em{% if form.errors.email is defined %} class="error"{% endif %}>{% trans %} borrower-landing-page_email-legend {% endtrans %}</em>
-                </div>
+                {% if not cms.partner_funnel %}
+                    <div class="form-row">
+                        <input type="email" name="email" id="email"
+                               placeholder="{% trans %} common_email {% endtrans %} *"
+                               value="{{ form.values.email }}"
+                               class="field{% if form.errors.email is defined %} LV_invalid_field{% endif %}"
+                               data-validators="Presence&amp;Email">
+                        <em{% if form.errors.email is defined %} class="error"{% endif %}>{% trans %} borrower-landing-page_email-legend {% endtrans %}</em>
+                    </div>
+                {% endif %}
                 <button type="submit" class="button submit">
                     {{ cms.form_validation_button_text }}
                     <span class="arrow"></span>

@@ -2,7 +2,7 @@
 
 {% set page = {
     title: 'Déposer un projet',
-    permalink: route('emprunter/new')
+    permalink: path('project_request_finance')
 } %}
 
 {% block siteContent %}
@@ -157,7 +157,7 @@
                                                                     <div class="col-lg-6 col-md-6">
                                                                         <select name="files[extra__NUM__]" class="input-field">
                                                                             <option value="">{% trans %} project-request_step-2-process-fast-files-select {% endtrans %}</option>
-                                                                            {% for attachment in attachmentTypes  %}
+                                                                            {% for attachment in attachment_types  %}
                                                                                 <option value="{{ attachment.id }}">{{ attachment.label }}</option>
                                                                             {% endfor %}
                                                                         </select>
@@ -191,7 +191,7 @@
                                         </fieldset>
 
                                         <div class="row reverse btn-controls tab-footer">
-                                            <div class="col-submit col-lg-7 col-md-7">
+                                            <div class="col-submit col-lg-12 col-md-12">
                                                 <button type="submit" class="btn-primary">
                                                     <span class="icon fa-check-u16"></span>
                                                     {% trans %} project-request_submit-project-button {% endtrans %}

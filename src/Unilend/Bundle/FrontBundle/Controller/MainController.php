@@ -357,6 +357,8 @@ class MainController extends Controller
         $settings->get('Somme à emprunter max', 'type');
         $maximumAmount = $settings->value;
 
+        $isPartnerFunnel = $content['tunnel-partenaire'] == 1;
+
         $template = [
             'cms'      => [
                 'title'                       => $content['titre'],
@@ -390,7 +392,8 @@ class MainController extends Controller
                     $content['image-footer-5'] => $complement['image-footer-5'],
                     $content['image-footer-6'] => $complement['image-footer-6'],
                     $content['image-footer-7'] => $complement['image-footer-7']
-                ]
+                ],
+                'partner_funnel'              => $isPartnerFunnel
             ],
             'page'     => [
                 'title'       => $tree->meta_title,
@@ -399,13 +402,13 @@ class MainController extends Controller
                 'isIndexable' => $tree->indexation == 1
             ],
             'form'     => [
-                'message' => empty($sessionHandler->get('project_request')['message']) ? '' : $sessionHandler->get('project_request')['message'],
+                'message' => empty($sessionHandler->get('projectRequest')['message']) ? '' : $sessionHandler->get('projectRequest')['message'],
                 'values'  => [
-                    'amount' => empty($sessionHandler->get('project_request')['values']['amount']) ? (empty($request->query->get('montant')) ? '' : $request->query->get('montant')) : $sessionHandler->get('project_request')['values']['amount'],
-                    'siren'  => empty($sessionHandler->get('project_request')['values']['siren']) ? (empty($request->query->get('siren')) ? '' : $request->query->get('siren')) : $sessionHandler->get('project_request')['values']['siren'],
-                    'email'  => empty($sessionHandler->get('project_request')['values']['email']) ? (empty($request->query->get('email')) ? '' : $request->query->get('email')) : $sessionHandler->get('project_request')['values']['email']
+                    'amount' => empty($sessionHandler->get('projectRequest')['values']['amount']) ? (empty($request->query->get('montant')) ? '' : $request->query->get('montant')) : $sessionHandler->get('projectRequest')['values']['amount'],
+                    'siren'  => empty($sessionHandler->get('projectRequest')['values']['siren']) ? (empty($request->query->get('siren')) ? '' : $request->query->get('siren')) : $sessionHandler->get('projectRequest')['values']['siren'],
+                    'email'  => empty($sessionHandler->get('projectRequest')['values']['email']) ? (empty($request->query->get('email')) ? '' : $request->query->get('email')) : $sessionHandler->get('projectRequest')['values']['email']
                 ],
-                'errors'  => empty($sessionHandler->get('project_request')['errors']) ? [] : $sessionHandler->get('project_request')['errors']
+                'errors'  => empty($sessionHandler->get('projectRequest')['errors']) ? [] : $sessionHandler->get('projectRequest')['errors']
             ],
             'settings' => [
                 'googleTagManagerId' => $googleTagManagerId,
@@ -426,7 +429,8 @@ class MainController extends Controller
             }
         }
 
-        $sessionHandler->set('project_request', $session);
+        $sessionHandler->set('projectRequest', $session);
+        $sessionHandler->set('partnerProjectRequest', $isPartnerFunnel);
 
         return $this->render('pages/template-borrower-landing-page.html.twig', $template);
     }
