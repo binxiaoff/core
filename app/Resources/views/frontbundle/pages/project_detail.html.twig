@@ -42,13 +42,14 @@
                         }]
                     } %}
 
-                    {# @note This MapView will only be initialised when it's first viewed, to reduce calls to Mapbox and lower API usage (see showProjectSingleMap function in main.dev.js) #}
-                    <div id="project-map" class="project-single-map-embed">
+                    {# @note This MapView will only be initialised when it's first viewed, to reduce calls to Mapbox and lower API usage (see showProjectSingleMap function in components/Projects.js) #}
+                    <div id="project-map" class="project-single-map-embed" data-has-spinner="#spinner-project-single-map">
                         <a href="javascript:;" class="btn-close ui-project-single-map-toggle"><span class="label sr-only">{% trans %} project-detail_map-close-button {% endtrans %}</span></a>
                     </div>
                     <script type="text/javascript">
                         var projectMapViewSettings = '{{ mapview|json_encode|escape('js') }}'
                     </script>
+                    <div id="spinner-project-single-map" class="spinner-mapview"><span class="icon fa-refresh"></span></div>
                 {% endif %}
             </div><!-- /.project-single-map -->
 

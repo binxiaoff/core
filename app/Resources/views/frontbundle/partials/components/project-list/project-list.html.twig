@@ -11,7 +11,9 @@
             </ul>
         </div><!-- /.project-list-nav -->
         <div class="project-list-content tab-content">
+
             <div id="project-list-view" role="tabpanel" class="tab-pane active">
+
                 <div class="project-list-filters">
                     <div class="project-list-item-category project-list-filter {% if sortType == 'sector' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
                         {% if showSortable %}
@@ -67,6 +69,7 @@
                         <span class="label">&nbsp;</span>
                     </div><!-- /.project-list-filter -->
                 </div><!-- /.project-list-filters -->
+
                 <div class="project-list-items">
                     {% for project in projects %}
                         <article class="project-list-item{% if project.finished %} ui-project-expired{% endif %}{% if project.lender is defined and project.lender.bids.count > 0 %} ui-current-user-involved{% endif %}">
@@ -142,7 +145,9 @@
             </div><!-- /#project-list-view.tab-pane -->
 
             <div id="project-list-map" role="tabpanel" class="tab-pane">
+
                 {% include 'partials/components/project-list/project-map.html.twig' %}
+
             </div><!-- /#project-list-map.tab-pane -->
         </div><!-- /.project-list-content -->
     </div><!-- /.tabs -->

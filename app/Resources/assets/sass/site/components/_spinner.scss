@@ -1,20 +1,31 @@
+
+// Small inline spinner (mostly used within btn-groups for AutoComplete input elements)
 .ui-is-spinner {
   display: none !important;
-  color: $c-grey;
+  color: $c-t3;
   font-family: $ff-icon;
+  opacity: 0;
+
+  animation: 1s linear 0s infinite spinnerloading;
+  transition: opacity .2s, color .2s;
 
   &:before {
     content: $fa-refresh;
   }
 
-  &.ui-is-loading {
+  &#{$js-is-loading} {
     display: inline-block !important;
-    color: $c-purple;
-    animation: 1s linear 0s infinite spinnerloading;
-    transition: color .2s;
+    color: $c-p1;
+    opacity: 1;
+  }
+
+  &#{$js-is-loading-end} {
+    display: inline-block !important;
+    opacity: 0;
   }
 }
 
+// Full page spinner
 .modal-spinner {
   display:    none;
   position:   fixed;
@@ -24,14 +35,14 @@
   height:     100%;
   width:      100%;
   background-color: rgba( 255, 255, 255, .5 );
-  background-repeat:no-repeat;
+  background-repeat: no-repeat;
 
-  .ui-is-loading & {
+  #{$js-is-loading} & {
     display: block;
   }
 }
 
-body.ui-is-loading {
+body#{$js-is-loading} {
   overflow: hidden;
 }
 

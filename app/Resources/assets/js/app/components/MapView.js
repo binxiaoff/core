@@ -14,11 +14,35 @@ var Utility = require('Utility')
 var ElementAttrsObject = require('ElementAttrsObject')
 var Templating = require('Templating')
 
+// Dictionary
+var Dictionary = require('Dictionary')
+var MAPVIEW_LANG_LEGACY = {
+  "en": {
+    "groupLabelActive": "Active",
+    "groupLabelExpired": "Expired"
+  },
+  "fr": {
+    "groupLabelActive": "En cours",
+    "groupLabelExpired": "Terminés"
+  }
+}
+if (window.MAPVIEW_LANG) {
+  var __ = new Dictionary(window.MAPVIEW_LANG)
+} else {
+  var __ = new Dictionary(MAPVIEW_LANG_LEGACY, {
+    legacyMode: true
+  })
+  // @debug
+  console.log('MapView: using MAPVIEW_LANG_LEGACY for Dictionary. Please ensure window.MAPVIEW_LANG is correctly set.')
+}
+
 // Other depencendies
 // See: https://github.com/mapbox/mapbox.js/#usage-with-browserify
 // require('leaflet.markercluster')
-var L = require('mapbox.js')
+// var L = require('mapbox.js')
+var L = window.L
 
+// Unilend access token
 L.mapbox.accessToken = 'pk.eyJ1IjoidW5pbGVuZCIsImEiOiJjaXJiczA4ejQwMDVvaWZsdzdmMmpnOGRtIn0._IBtG2TUy17m7S6jwVBrcg'
 
 // Private variables
@@ -46,12 +70,9 @@ var MapView = function (elem, options) {
 
   // Error: no element to apply mapview to
   if (self.$elem.length === 0 || elem.hasOwnProperty('MapView')) return false
-  
-  // Set this as default for attribution
-  Utility.setObjProp(options, 'mapbox.attributionControl.compact', true)
 
   // Settings
-  self.settings = $.extend({
+  self.settings = Utility.inherit({
     // The target element (assume elem given)
     target: elem,
 
@@ -94,7 +115,7 @@ var MapView = function (elem, options) {
     // Specify cluster groups to put markers into. Default is `active` and `expired`
     groups: [{
       name: 'active',
-      label: 'En cours',
+      label: __.__('Active', 'groupLabelActive'),
       showFilter: true,
       visible: true,
 
@@ -120,7 +141,7 @@ var MapView = function (elem, options) {
       }
     },{
       name: 'expired',
-      label: 'Terminés',
+      label: __.__('Expired', 'groupLabelExpired'),
       showFilter: true,
       visible: true,
 
@@ -184,6 +205,9 @@ var MapView = function (elem, options) {
   // Options specified in JS call override all the previous
   options)
 
+  // Set this as default value for attribution
+  Utility.setObjProp(options, 'mapbox.attributionControl.compact', true)
+
   // Properties
   // self.initialised = false
   self.map = undefined // Mapbox map
@@ -207,11 +231,11 @@ var MapView = function (elem, options) {
   // Assign instance of class to the element
   self.$elem[0].MapView = self
 
-  // @debug
-  // console.log('new MapView', options, self)
-
   // Initialise MapView's Mapbox (set any markers if necessary)
   self.init(self.settings.markers)
+
+  // @debug
+  // console.log('new MapView', self)
 
   return self
 }
@@ -238,6 +262,10 @@ MapView.prototype.init = function (markerData) {
   // Ensure the $target has an ID
   if (!self.$target.attr('id')) self.$target.attr('id', 'mapview' + Utility.randomString())
 
+  // Show the spinner
+  // @trigger elem `Spinner:showLoading`
+  self.$elem.trigger('Spinner:showLoading')
+
   // Initialise the map
   // -- Using link to Mapbox style (`mapbox://styles/...`)
   if (/^mapbox\:\/\/styles\//i.test(self.settings.style)) {
@@ -259,7 +287,13 @@ MapView.prototype.init = function (markerData) {
 
   // Error
   if (!self.map) {
-    console.log('MapView.init Error: Couldn\'t initialise mapbox')
+    // @trigger elem `MapView:init:error` [elemMapView, errorMsg]
+    self.$elem.trigger('MapView:init:error', [self, 'Couldn\'t initialise mapbox'])
+
+    // Hide the spinner
+    // @trigger elem `Spinner:hideLoading`
+    self.$elem.trigger('Spinner:hideLoading')
+
     return false
   }
 
@@ -323,6 +357,10 @@ MapView.prototype.init = function (markerData) {
   if (self.settings.showFilters && !Utility.elemExists(self.$filters)) {
     self.$target.append(self.$filters)
   }
+
+  // Hide the spinner
+  // @trigger elem `Spinner:hideLoading`
+  self.$elem.trigger('Spinner:hideLoading')
 
   // @trigger elem `MapView:initialised` [{MapView}]
   self.$elem.trigger('MapView:initialised', [self])
@@ -1263,7 +1301,7 @@ MapView.prototype.refreshMapbox = function (options) {
  * jQuery Plugin
  */
 $.fn.uiMapView = function (op) {
-  // Fire a command to the Sortable object, e.g. $('[data-mapview]').uiMapView('addMarker', {..})
+  // Fire a command to the MapView object, e.g. $('[data-mapview]').uiMapView('addMarker', {..})
   if (typeof op === 'string' && /^(panTo|zoom|populateMarkers|addMarker|removeMarker|showMarker|refreshMapbox|refreshFilters|showGroup|hideGroup|debug)$/.test(op)) {
     // Get further additional arguments to apply to the matched command method
     var args = Array.prototype.slice.call(arguments)
@@ -1295,7 +1333,7 @@ $(document)
     $(event.target).find('[data-mapview]').not('.ui-mapview').uiMapView()
   })
 
-  // Only initialise on view
+  // Only initialise when viewed
   .on('UI:visible', function (event) {
     $(event.target).find('.ui-has-mapview').not('.ui-mapview').uiMapView()
   })
@@ -1331,7 +1369,7 @@ $(document)
     }
   })
 
-  // Refresh the MapView's map when the window has been updated
-  .on('UI:update', function (event) {
+  // Refresh the MapView's map when the window has been updated or when made visible
+  .on('UI:update UI:visible', function (event) {
     $('.ui-mapview').uiMapView('refreshMapbox')
   })

@@ -4,6 +4,10 @@
 // Anything related to the site UI JS will either be in main.dev.js
 // or in the related component JS file, e.g. FileAttach.js, Sortable.js, etc.
 
+// Mark something in UI is loading or working
+$js-is-loading: '.ui-is-loading';
+$js-is-loading-end: '.ui-is-loading-end'; // Loading has finished, this is for animation/transition end of loading
+
 // Site header fixed class (applied to <html>)
 $js-site-header-fixed: '.ui-site-header-fixed';
 

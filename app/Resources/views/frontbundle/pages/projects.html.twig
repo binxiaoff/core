@@ -21,7 +21,9 @@
 
         <section id="projets-index-project-list" class="page-section">
             <div class="site-wrap">
+
                 {% include 'partials/components/project-list/project-list.html.twig' %}
+
                 <div class="row page-section-footer">
                     {% if not is_granted('IS_AUTHENTICATED_FULLY') %}
                         <div class="btn-toolbar">

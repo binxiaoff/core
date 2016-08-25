@@ -28,6 +28,7 @@
   $loops: ceil(str-length($svg)/$slice);
   @for $i from 1 through $loops {
     $chunk: str-slice($svg, $index, $index + $slice - 1);
+    //$chunk: str-replace($chunk,' ','%20');
     $chunk: str-replace($chunk,'"','\'');
     $chunk: str-replace($chunk,'<','%3C');
     $chunk: str-replace($chunk,'>','%3E');
@@ -36,7 +37,7 @@
     $encoded: #{$encoded}#{$chunk};
     $index: $index + $slice;
   }
-  @return url("data:image/svg+xml;charset=utf8,#{$encoded}");
+  @return url("data:image/svg+xml;utf8,#{$encoded}");
 }
 
 // Get inline SVG code as a `url()` string for CSS inlining

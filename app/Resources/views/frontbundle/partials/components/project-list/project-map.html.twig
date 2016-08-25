@@ -1,6 +1,9 @@
+{% set mapviewItems = [] %}
+
 <div class="project-list-map">
-    {#<div id="project-list-map-view" class="project-list-map-view ui-has-mapview" data-mapview="{{ settings.mapview|json_encode|escape('html_attr') }}"></div>#}
-    <div id="project-list-map-view" class="project-list-map-view ui-has-mapview"></div>
+    <div id="project-list-map-view" class="project-list-map-view ui-has-mapview" data-has-spinner="#spinner-project-list-map"></div>
+    <div id="spinner-project-list-map" class="spinner-mapview"><span class="icon fa-refresh"></span></div>
+
     <div class="project-list-map-list">
         <ul class="list-projects">
             {% for project in projects %}

@@ -10,6 +10,14 @@ $doc = $(document)
 $body = $("body")
 
 $doc
+  // Some extra CSS classes to mark that the transition has ended
+  .on(Utility.transitionEndEvent, '.ui-is-loading-end', function (event) {
+    var $target = $(event.target)
+
+    // console.log('Spinner loading end: complete')
+    $target.removeClass('ui-is-loading-end')
+  })
+
   // Show the spinner manually
   .on('Spinner:showLoading', '[data-has-spinner], .ui-has-spinner', function () {
     var $elem = $(this)
@@ -28,7 +36,7 @@ $doc
     // console.log('Spinner:showLoading', $elem[0], $spinnerTarget[0])
 
     if ($spinnerTarget) {
-      $spinnerTarget.addClass("ui-is-loading")
+      $spinnerTarget.removeClass('ui-is-loading-end').addClass('ui-is-loading')
     }
   })
 
@@ -50,7 +58,7 @@ $doc
     // console.log('Spinner:hideLoading', $elem[0], $spinnerTarget[0])
 
     if ($spinnerTarget) {
-      $spinnerTarget.removeClass("ui-is-loading")
+      $spinnerTarget.removeClass('ui-is-loading').addClass('ui-is-loading-end')
     }
   })
 
