@@ -21,7 +21,10 @@ class ExceptionController extends Controller
      */
     public function error404Action()
     {
-        $response = new Response('', Response::HTTP_NOT_FOUND);
-        return $this->render('pages/static_pages/error.html.twig', [], $response);
+        $response    = new Response('', Response::HTTP_NOT_FOUND);
+        $translator  = $this->get('translator');
+        $title       = $translator->trans('error-page_404-title');
+        $details = $translator->trans('error-page_404-details');
+        return $this->render('pages/static_pages/error.html.twig', ['errorTitle' => $title, 'errorDetails' => $details], $response);
     }
 }

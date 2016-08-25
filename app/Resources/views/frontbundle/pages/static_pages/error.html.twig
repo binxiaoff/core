@@ -19,7 +19,7 @@
             <h2>{{ errorTitle }}</h2>
         {% endif %}
         {% if errorDetails is defined %}
-            <p>{{ errorDetails }}</p>
+            {{ errorDetails|raw }}
         {% endif %}
         <div class="btn-toolbar text-align-left">
             <a href="{{ path('home') }}" class="btn-primary">{% trans %} lender-error-page_button-welcome-page {% endtrans %}</a>
