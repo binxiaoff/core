@@ -122,7 +122,7 @@ class dossiersController extends bootstrap
             $taxType = $this->loadData('tax_type');
 
             $taxRate        = $taxType->getTaxRateByCountry('fr');
-            $this->fVATRate = bcdiv($taxRate[\tax_type::TYPE_VAT], 100, 2);
+            $this->fVATRate = $taxRate[\tax_type::TYPE_VAT] / 100;
 
             $debutFunding        = explode(':', $this->debutFunding);
             $this->HdebutFunding = $debutFunding[0];
@@ -1034,6 +1034,8 @@ class dossiersController extends bootstrap
 
     private function sendProblemStatusEmailLender($iStatus, $projectStatusHistoryDetails)
     {
+        $this->transactions = $this->loadData('transactions');
+
         $this->settings->get('Facebook', 'type');
         $sFacebookURL = $this->settings->value;
 
@@ -1202,7 +1204,7 @@ class dossiersController extends bootstrap
         $taxType = $this->loadData('tax_type');
 
         $taxRate        = $taxType->getTaxRateByCountry('fr');
-        $this->fVATRate = bcdiv($taxRate[\tax_type::TYPE_VAT], 100, 2);
+        $this->fVATRate = $taxRate[\tax_type::TYPE_VAT] / 100;
 
         /** @var company_rating $oCompanyRating */
         $oCompanyRating = $this->loadData('company_rating');
@@ -1496,9 +1498,7 @@ class dossiersController extends bootstrap
         $taxType = $this->loadData('tax_type');
 
         $taxRate   = $taxType->getTaxRateByCountry('fr');
-        $this->tva = bcdiv($taxRate[\tax_type::TYPE_VAT], 100, 2);
-        /** @var \Psr\Log\LoggerInterface $oLogger */
-        $oLogger = $this->get('logger');
+        $this->tva = $taxRate[\tax_type::TYPE_VAT] / 100;
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             $this->companies->get($this->projects->id_company, 'id_company');
@@ -1535,7 +1535,7 @@ class dossiersController extends bootstrap
             foreach ($lRembs as $k => $r) {
                 if ($r['status_emprunteur'] == 1) {
                     $this->nbRembEffet += 1;
-                    $this->totalEffet += round($r['montant'] + $r['commission'] + $r['tva'], 2);
+                    $this->totalEffet += $r['montant'] + $r['commission'] + $r['tva'];
                     $this->interetEffet += $r['interets'];
                     $this->capitalEffet += $r['capital'];
                     $this->commissionEffet += $r['commission'];
@@ -1546,7 +1546,7 @@ class dossiersController extends bootstrap
                     }
 
                     $this->nbRembaVenir += 1;
-                    $this->totalaVenir += round($r['montant'] + $r['commission'] + $r['tva'], 2);
+                    $this->totalaVenir += $r['montant'] + $r['commission'] + $r['tva'];
                     $this->interetaVenir += $r['interets'];
                     $this->capitalaVenir += $r['capital'];
                     $this->commissionaVenir += $r['commission'];
@@ -1763,6 +1763,9 @@ class dossiersController extends bootstrap
                                     $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
                                     $this->clients_gestion_mails_notif->update();
 
+                                    $this->loans->get($e['id_loan']);
+                                    $lastProjectRepayment = (0 == $this->echeanciers->counter('id_project = ' . $this->projects->id_project . ' AND id_loan = ' . $this->loans->id_loan . ' AND status = 0 AND id_lender = ' . $e['id_lender']));
+
                                     $this->companies->get($this->projects->id_company, 'id_company');
 
                                     $nbpret = $this->loans->counter('id_lender = ' . $e['id_lender'] . ' AND id_project = ' . $e['id_project']);
@@ -1811,6 +1814,9 @@ class dossiersController extends bootstrap
                                 }
                             }
                         } catch (\Exception $exception) {
+                            /** @var \Psr\Log\LoggerInterface $oLogger */
+                            $oLogger = $this->get('logger');
+
                             $oLogger->error('id_project=' . $e['id_project'] . ', id_echeancier=' . $e['id_echeancier'] . ' - An error occurred when calculating the refund details - Exception message: ' . $exception->getMessage() . ' - Exception code: ' . $exception->getCode(),
                                 array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $e['id_project']));
                         }

@@ -500,7 +500,7 @@ class ProjectManager
         $taxType = $this->loadData('tax_type');
 
         $taxRate = $taxType->getTaxRateByCountry('fr');
-        $fVAT    = bcdiv($taxRate[\tax_type::TYPE_VAT], 100, 2);
+        $fVAT    = $taxRate[\tax_type::TYPE_VAT] / 100;
 
         $fAmount           = $oProject->amount;
         $iMonthNb          = $oProject->period;

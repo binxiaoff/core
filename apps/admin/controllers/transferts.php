@@ -829,7 +829,7 @@ class transfertsController extends bootstrap
 
                     /** @var \platform_account_unilend $oAccountUnilend */
                     $oAccountUnilend                 = $this->loadData('platform_account_unilend');
-                    
+
                     $oAccountUnilend->id_transaction = $transactions->id_transaction;
                     $oAccountUnilend->id_project     = $project->id_project;
                     $oAccountUnilend->amount         = bcmul($partUnilend, 100);
@@ -843,7 +843,7 @@ class transfertsController extends bootstrap
                     $virements->motif          = $oProjectManager->getBorrowerBankTransferLabel($project);
                     $virements->type           = 2;
                     $virements->create();
-                    
+
                     /** @var \prelevements $prelevements */
                     $prelevements = $this->loadData('prelevements');
 
@@ -908,7 +908,7 @@ class transfertsController extends bootstrap
                         bcdiv(
                             $fCommission,
                             bcadd(
-                                bcdiv($taxRate[\tax_type::TYPE_VAT], 100, 2),
+                                $taxRate[\tax_type::TYPE_VAT] / 100,
                                 1,
                                 2),
                             2);

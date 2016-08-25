@@ -407,8 +407,8 @@ class depot_de_dossierController extends bootstrap
         $taxType = $this->loadData('tax_type');
 
         $taxRate  = $taxType->getTaxRateByCountry('fr');
-        $fVATRate = bcdiv($taxRate[\tax_type::TYPE_VAT], 100, 2);
-        
+        $fVATRate = $taxRate[\tax_type::TYPE_VAT] / 100;
+
         $this->settings->get('Commission remboursement', 'type');
         $fCommission = ($oFinancial->PMT($this->settings->value / 12, $this->projects->period, - $this->projects->amount) - $oFinancial->PMT(0, $this->projects->period, - $this->projects->amount)) * (1 + $fVATRate);
 
