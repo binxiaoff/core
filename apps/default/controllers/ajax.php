@@ -240,9 +240,11 @@ class ajaxController extends bootstrap
                 $affichage .= "<td><a class='lien' href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'>";
 
                 if ($this->projects_status->status >= \projects_status::FUNDE) {
-                    $affichage .= "<span class='project_ended' id='val" . $project['id_project'] . "'>" . $dateRest . "</span></a></td><td>";
+                    $affichage .= "<span class=\"project_ended\" id='val" . $project['id_project'] . "'>" . $dateRest . "</span></a></td>
+                <td><a href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "' class='btn btn-info btn-small multi grise1 btn-grise'>" . $this->lng['preteur-projets']['voir-le-projet'] . "</a>";
                 } else {
-                    $affichage .= "<span id='val" . $project['id_project'] . "'>" . $dateRest . "</span></a></td><td>";
+                    $affichage .= "<span id='val" . $project['id_project'] . "'>" . $dateRest . "</span></a></td>
+                <td><a href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "' class='btn btn-info btn-small'>" . $this->lng['preteur-projets']['pretez'] . "</a>";
                 }
                 $affichage .= "</td>
             </tr>
