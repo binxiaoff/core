@@ -1034,6 +1034,9 @@ class dossiersController extends bootstrap
 
     private function sendProblemStatusEmailLender($iStatus, $projectStatusHistoryDetails)
     {
+        /** @var \Psr\Log\LoggerInterface $logger */
+        $logger = $this->get('logger');
+
         $this->transactions = $this->loadData('transactions');
 
         $this->settings->get('Facebook', 'type');
@@ -1116,7 +1119,8 @@ class dossiersController extends bootstrap
         }
 
         $aLenderLoans = $this->loans->getProjectLoansByLender($this->projects->id_project);
-
+$logger->debug('lenderLoans : ' . json_encode($aLenderLoans), ['id_project' => $this->projects->id_project, 'class' => __CLASS__, 'function' => __FUNCTION__]);
+$logger->info('lenderLoans : ' . json_encode($aLenderLoans), ['id_project' => $this->projects->id_project, 'class' => __CLASS__, 'function' => __FUNCTION__]);
         if (is_array($aLenderLoans)) {
             foreach ($aLenderLoans as $aLoans) {
                 $this->lenders_accounts->get($aLoans['id_lender'], 'id_lender_account');
@@ -1127,7 +1131,7 @@ class dossiersController extends bootstrap
                 $fLoansAmount    = $aLoans['amount'];
 
                 foreach ($this->echeanciers->select('id_loan IN (' . $aLoans['loans'] . ') AND id_project = ' . $this->projects->id_project . ' AND status = 1') as $aPayment) {
-                    $fTotalPayedBack += $this->transactions->getRepaymentTransactionsAmount($aPayment['id_echeance']);
+                    $fTotalPayedBack += $this->transactions->getRepaymentTransactionsAmount($aPayment['id_echeancier']);
                 }
 
                 $this->notifications->type       = $iNotificationType;
@@ -1167,12 +1171,13 @@ class dossiersController extends bootstrap
                     $this->mail_template->get($sMailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $locale . '" AND type');
 
                     $aReplacements['sujet'] = $this->mail_template->subject;
-
+$logger->info('email data : ' . json_encode($aReplacements), ['id_project' => $this->projects->id_project, 'class' => __CLASS__, 'function' => __FUNCTION__]  );
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                     $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMailType, $aReplacements);
                     $message->setTo($this->clients->email);
                     $mailer = $this->get('mailer');
-                    $mailer->send($message);
+                    $iResult = $mailer->send($message);
+$logger->info('number of emails sent : ' . json_encode($iResult), ['id_project' => $this->projects->id_project, 'class' => __CLASS__, 'function' => __FUNCTION__] );
                 }
             }
         }
