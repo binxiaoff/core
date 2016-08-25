@@ -42,6 +42,10 @@ class LoginSubscriber implements EventSubscriberInterface
         $clients->saveLogin(new \DateTime('NOW'), $user->getUsername(), $user->getPassword());
         $clients->get($user->getClientId());
 
+        /** @var \clients_history $clientHistory */
+        $clientHistory = $this->entityManager->getRepository('clients_history');
+        $clientHistory->logClientAction($clients, \clients_history::STATUS_ACTION_LOGIN);
+
         /** @var \clients_gestion_notifications $clientNotificationSettings */
         $clientNotificationSettings = $this->entityManager->getRepository('clients_gestion_notifications');
         if (false === $clientNotificationSettings->select('id_client = ' . $user->getClientId())){

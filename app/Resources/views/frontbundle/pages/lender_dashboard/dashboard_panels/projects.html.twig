@@ -8,27 +8,37 @@
     {% endblock %}
     {% block panelContent %}
         <div class="message">
-            <p>12 nouveaux projets depuis votre dernière connexion</p>
+            <p>{% transchoice newOngoingProjects|length with {'%count%': newOngoingProjects|length} %} lender-dashboard_projects-list-panel-number-of-projects-to-discover {% endtranschoice %}</p>
         </div>
-        <ul class="list-projects">
-            {# Placeholder #}
-            {% for i in 1..6 %}
-                <li class="project">
-                    <div class="project-name">Garage Toniol</div>
-                    <div class="project-location">La Haie-Fouassière, 75000</div>
-                    <div class="project-cost">150&nbsp;000€</div>
-                    <div class="project-rating">
-                        <span class="rating rating-4-5"><span class="sr-only">Rated 4.5 out of 5</span></span>
-                    </div>
-                    <div class="project-interest">8,2%</div>
-                    <div class="project-period">7 jours restants</div>
-                    <div class="project-offers"><span class="value">117</span> offres</div>
-                    <a href="#todo" class="project-hotspot">&nbsp;</a>
-                </li>
-            {% endfor %}
-        </ul>
+        {% if newOngoingProjects|length > 0 %}
+            <ul class="list-projects">
+                {% for project in newOngoingProjects %}
+                    <li class="project">
+                        <div class="project-name">{{ project.title }}</div>
+                        <div class="project-location">project.company_address</div>
+                        <div class="project-cost">{{ project.amount|localizednumber|nbsp }}€</div>
+                        <div class="project-rating">
+                            <span class="rating rating-{{ project.risk|convertRisk|split('.')|join('-') }}"><span class="sr-only">Rated {{ project.risk }} out of 5</span></span>
+                        </div>
+                        <div class="project-interest">{{ project.average_rate|localizednumber|nbsp }}%</div>
+                        <div class="project-period">{% transchoice project.days_left with {'%daysCount%': project.days_left} %} lender-dashboard_project-remaining-days-before-closure {% endtranschoice %}</div>
+                        {% set styledCount = {'%count%': '<span class="value">' ~ project.bid_count ~ '</span>'} %}
+                        <div class="project-offers">{% transchoice project.bid_count with styledCount %} lender-dashboard_projects-list-panel-number-of-offers {% endtranschoice %}</div>
+
+                        {#@todo use correct link into project detais page#}
+
+                        <a href="#todo" class="project-hotspot">&nbsp;</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
     {% endblock %}
-    {% block panelFooter %}
-        <a href="#todo" class="link">Voir toutes mes offres en cours</a>
-    {% endblock %}
+    {% if ongoingProjects|length > 0 %}
+        {% block panelFooter %}
+
+            {#@todo use correct link into lenders offers list detais page#}
+
+            <a href="#todo" class="link">{% trans %} lender-dashboard_see-all-my-offers-in-progress {% endtrans %}</a>
+        {% endblock %}
+    {% endif %}
 {% endembed %}

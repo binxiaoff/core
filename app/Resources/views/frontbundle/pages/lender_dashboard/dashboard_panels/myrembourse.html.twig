@@ -1,3 +1,230 @@
+{% set seriesLegend = {
+    'capital': {
+        name: "lender-dashboard_repaid-capital"|trans,
+        color: '#1A87DA'
+    },
+    'interests': {
+        name: "lender-dashboard_received-interests"|trans,
+        color: '#EF980B'
+    },
+    'tax': {
+        name: "lender-dashboard_tax-levies"|trans,
+        color: '#F76965'
+    }}
+%}
+{% set refundChartDataYear = {
+        type: 'preterRemboursements',
+        background: 'none',
+        highcharts: {
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: ''
+            },
+            xAxis: {
+                categories: timeAxis.year,
+                crosshair: true,
+                plotBands: [{
+                    from: bandOrigin.year,
+                    to: timeAxis.year|length,
+                    borderWidth: 0,
+                    color: {
+                        linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                        stops: [
+                            [0, 'rgba(95, 196, 208, .5)'],
+                            [1, 'rgba(95, 196, 208, 0)']
+                        ]
+                    },
+                    zIndex: 1,
+                    label: {
+                        text: 'Prévisions à titre indicatif',
+                        style: {
+                            color: '#294347'
+                        }
+                    }
+                }],
+                plotLines: [{
+                color: '#5FC4D0',
+                dashStyle: 'ShortDot',
+                value: bandOrigin.year,
+                width: 2
+                }]
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: ''
+                },
+                units: '€',
+                gridLineColor: '#efefef'
+            },
+            plotOptions: {
+                column: {
+                    stacking: 'normal'
+                }
+            },
+            legend: {
+                symbolRadius: 10
+            },
+            series: [{
+                name: seriesLegend.capital.name,
+                data: yearSum.capital,
+                color: seriesLegend.capital.color
+            },{
+                name: seriesLegend.interests.name,
+                data: yearSum.interests,
+                color: seriesLegend.interests.color
+            },{
+                name: seriesLegend.tax.name,
+                data: yearSum.tax,
+                color: seriesLegend.tax.color
+            }]
+        }
+    }
+%}
+{%  set refundChartDataQuarter = {
+        type: 'preterRemboursements',
+        background: 'none',
+        highcharts: {
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: ''
+            },
+            xAxis: {
+                categories: timeAxis.quarter,
+                crosshair: true,
+                plotBands: [{
+                    from: bandOrigin.quarter,
+                    to: timeAxis.quarter|length,
+                    borderWidth: 0,
+                    color: {
+                        linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                        stops: [
+                            [0, 'rgba(95, 196, 208, .5)'],
+                            [1, 'rgba(95, 196, 208, 0)']
+                        ]
+                    },
+                    zIndex: 1,
+                    label: {
+                        text: 'Prévisions à titre indicatif',
+                        style: {
+                            color: '#294347'
+                        }
+                    }
+                }],
+                plotLines: [{
+                    color: '#5FC4D0',
+                    dashStyle: 'ShortDot',
+                    value: bandOrigin.quarter,
+                    width: 2
+                }]
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                text: ''
+                },
+                units: '€',
+                gridLineColor: '#efefef'
+            },
+            plotOptions: {
+                column: {
+                    stacking: 'normal'
+                }
+            },
+            legend: {
+                symbolRadius: 10
+            },
+            series: [{
+                name: seriesLegend.capital.name,
+                data: quarterSum.capital,
+                color: seriesLegend.capital.color
+            },{
+                name: seriesLegend.interests.name,
+                data: quarterSum.interests,
+                color: seriesLegend.interests.color
+            },{
+                name: seriesLegend.tax.name,
+                data: quarterSum.tax,
+                color: seriesLegend.tax.color,
+            }]
+        }
+    }
+%}
+{% set refundChartDataMonth = {
+        type: 'preterRemboursements',
+        background: 'none',
+        highcharts: {
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: ''
+            },
+            xAxis: {
+                categories: timeAxis.month,
+                crosshair: true,
+                plotBands: [{
+                    from: bandOrigin.month,
+                    to: timeAxis.month|length,
+                    borderWidth: 0,
+                    color: {
+                        linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                        stops: [
+                            [0, 'rgba(95, 196, 208, .5)'],
+                            [1, 'rgba(95, 196, 208, 0)']
+                        ]
+                    },
+                    zIndex: 1,
+                    label: {
+                        text: 'Prévisions à titre indicatif',
+                        style: {
+                            color: '#294347'
+                        }
+                    }
+                }],
+                plotLines: [{
+                    color: '#5FC4D0',
+                    dashStyle: 'ShortDot',
+                    value: bandOrigin.month,
+                    width: 2
+                }]
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: ''
+                },
+                units: '€',
+                gridLineColor: '#efefef'
+            },
+            plotOptions: {
+                column: {
+                    stacking: 'normal'
+                }
+            },
+            legend: {
+                symbolRadius: 10
+            },
+            series: [{
+                name: seriesLegend.capital.name,
+                data: monthSum.capital,
+                color: seriesLegend.capital.color,
+            },{
+                name: seriesLegend.interests.name,
+                data: monthSum.interests,
+                color: seriesLegend.interests.color
+            },{
+                name: seriesLegend.tax.name,
+                data: monthSum.tax,
+                color: seriesLegend.tax.color,
+            }]
+        }
+    }
+%}
 {# Panel - My Remboursements #}
 {% embed 'partials/components/dashboard-panel.html.twig' %}
     {% block panelAttributes %}id="myrembourse"{% endblock %}
@@ -10,33 +237,33 @@
         <div class="dashboard-panel-chart">
             <div class="tabs nested-tabs">
                 <div class="tab-navigation">
-                    <ul class="nav nav-tabs-text">{#
-      #}
+                    <ul class="nav nav-tabs-text">
                         <li role="presentation" class="active">
-                            <a href="#myrembourse-graph-mth" role="tab" data-toggle="tab">Mois</a></li>{#
-      #}
+                            <a href="#myrembourse-graph-mth" role="tab" data-toggle="tab">{% transchoice 2 %} lender-dashboard_month {% endtranschoice %}</a>
+                        </li>
                         <li role="presentation">
-                            <a href="#myrembourse-graph-3mth" role="tab" data-toggle="tab">Trimestre</a></li>{#
-      #}
+                            <a href="#myrembourse-graph-3mth" role="tab" data-toggle="tab">{% transchoice 2 %} common_quarter {% endtranschoice %}</a>
+                        </li>
                         <li role="presentation">
-                            <a href="#myrembourse-graph-year" role="tab" data-toggle="tab">Année</a></li>{#
-    #}</ul>
+                            <a href="#myrembourse-graph-year" role="tab" data-toggle="tab">{% transchoice 2 %} common_year {% endtranschoice %}</a>
+                        </li>
+                    </ul>
                 </div><!-- /.tab-navigation -->
                 <div class="tab-content">
                     <div id="myrembourse-graph-mth" role="tabpanel" class="tab-pane active">
-                        <div class="chart chart-myremboursements" data-chartview='{{ placeholderData.charts.preterRemboursementsMth|json_encode|escape('html_attr') }}'></div>
+                        <div class="chart chart-myremboursements" data-chartview='{{ refundChartDataMonth|json_encode|escape('html_attr') }}'></div>
                     </div><!-- /.tab-pane -->
                     <div id="myrembourse-graph-3mth" role="tabpanel" class="tab-pane">
-                        <div class="chart chart-myremboursements" data-chartview='{{ placeholderData.charts.preterRemboursements3Mth|json_encode|escape('html_attr') }}'></div>
+                        <div class="chart chart-myremboursements" data-chartview='{{ refundChartDataQuarter|json_encode|escape('html_attr') }}'></div>
                     </div><!-- /.tab-pane -->
                     <div id="myrembourse-graph-year" role="tabpanel" class="tab-pane">
-                        <div class="chart chart-myremboursements" data-chartview='{{ placeholderData.charts.preterRemboursementsYear|json_encode|escape('html_attr') }}'></div>
+                        <div class="chart chart-myremboursements" data-chartview='{{ refundChartDataYear|json_encode|escape('html_attr') }}'></div>
                     </div><!-- /.tab-pane -->
                 </div><!-- /.tab-content -->
             </div><!-- /.nested-tabs -->
         </div><!-- /.dashboard-panel-chart -->
     {% endblock %}
     {% block panelFooter %}
-        <a href="{{ path('lender_operations') }}" class="link">Voir le détail de mes opérations</a>
+        <a href="{{ path('lender_operations') }}" class="link">{% trans %} lender-dashboard_see-my-operations-details {% endtrans %}</a>
     {% endblock %}
 {% endembed %}

@@ -26,7 +26,7 @@
 //  Coupable : CM
 //
 // **************************************************************************************************** //
-use \Doctrine\DBAL\Driver\Statement;
+use \Doctrine\DBAL\Statement;
 
 class projects extends projects_crud
 {

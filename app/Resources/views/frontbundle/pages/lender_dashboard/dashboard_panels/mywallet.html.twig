@@ -114,8 +114,7 @@
 {% embed 'partials/components/dashboard-panel.html.twig' %}
     {% block panelAttributes %}id="mywallet"{% endblock %}
     {% block panelClassNames %}dashboard-panel dashboard-mywallet ui-draggable {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %} col-lg-12 col-md-12 col-sm-8 col-xs-4{% endblock %}
-    {% set offersCount = 742 %}
-    {% block panelTitle %}{% transchoice offersCount with {'%offersCount%' : offersCount} %} lender-dashboard_panel-title-mywallet {% endtranschoice %}{% endblock %}
+    {% block panelTitle %}{% transchoice lenderDetails.numberOfLoans with {'%offersCount%' : lenderDetails.numberOfLoans} %} lender-dashboard_panel-title-mywallet {% endtranschoice %}{% endblock %}
     {% block panelControls %}
         <span class="ui-draggable-handle"></span>
     {% endblock %}

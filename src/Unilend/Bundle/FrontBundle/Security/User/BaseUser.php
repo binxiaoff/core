@@ -15,8 +15,9 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface
     private $isActive;
     private $clientId;
     private $hash;
+    private $lastLoginDate;
 
-    public function __construct($username, $password, $salt, array $roles, $isActive, $clientId, $hash)
+    public function __construct($username, $password, $salt, array $roles, $isActive, $clientId, $hash, $lastLoginDate = null)
     {
         $this->username = $username;
         $this->password = $password;
@@ -25,6 +26,7 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface
         $this->isActive = $isActive;
         $this->clientId = $clientId;
         $this->hash     = $hash;
+        $this->lastLoginDate = $lastLoginDate;
     }
 
     /**
@@ -131,6 +133,14 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface
     public function isAccountNonLocked()
     {
         return $this->isActive;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getLastLoginDate()
+    {
+        return $this->lastLoginDate;
     }
 
 }

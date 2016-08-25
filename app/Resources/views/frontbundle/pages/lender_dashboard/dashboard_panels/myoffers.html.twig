@@ -8,73 +8,44 @@
     {% endblock %}
     {% block panelContent %}
         <div class="autolend">
-            <div class="autolend-switch">
-                {#{{ customInput.switch({#}
-                {#id: 'autolend-enable',#}
-                {#name: 'autolend-enable',#}
-                {#isChecked: app.user.autolend.enabled#}
-                {#}) }}#}
-
-                {% set options = {
-                id: 'autolend-enable',
-                name: 'autolend-enable',
-                isChecked: true
-                } %}
-
-                {% set settings = {
-                classNames: '',
-                id: '',
-                name: '',
-                value: 'true',
-                isChecked: true,
-                srLabel: 'Switch off/on',
-                attrs: null
-                } %}
-
-                {# Set options to settings #}
-                {% if options is not empty %}
-                    {% set settings = settings|merge(options) %}
-                {% endif %}
-
-                <label{% if settings.id is not empty %} id="{{ settings.id|escape('html_attr') }}-switch"{% endif %} class="custom-input-switch{% if settings.classNames is not empty %} {{ settings.classNames|escape('html_attr') }}{% endif %}" data-custom-input>
-                    <input type="checkbox"{% if settings.id is not empty %} id="{{ settings.id|escape('html_attr') }}"{% endif %}{% if settings.name is not empty %} id="{{ settings.name|escape('html_attr') }}"{% endif %} value="{{ settings.value|escape('html_attr') }}"{% if settings.isChecked == true %} checked="checked"{% endif %}/>
-                    <span class="label"><span class="sr-only">{{ settings.srLabel }}</span></span>
-                </label>
-                <label for="autolend-enable" class="autolend-switch-label">Activer Autolend</label>
-            </div><!-- /.autolend-switch -->
             <div class="field-help">
-                <div class="hide-md hide-lg">Connectez vous à votre espace depuis un ordinateur pour configurer vos offres Autolend</div>
                 <div class="hide-xs hide-sm">Rendez-vous sur
-                    <a href="{{ route('user/preter/autolend') }}">votre espace Autolend</a> pour configurer les offres
+                    <a href="{#@todo put the correct route name to autolend settings here#}">votre espace Autolend</a> pour configurer les offres
                 </div>
             </div><!-- /.field-help -->
         </div><!-- /.autolend -->
         <div class="message">
-            <p>Vous avez actuellement 16 offres en cours</p>
+            <p>{% transchoice ongoingBids with {'%count%': ongoingBids} %} lender-dashboard_my-offers-panel-offers-in-progress-number {% endtranschoice %}</p>
         </div><!-- /.message -->
-        <ul class="list-myoffers">
-            {# Placeholder #}
-            {% for i in 1..3 %}
-                <li class="myoffer">
-                    <div class="myoffer-project-name">Garage Toniol</div>
-                    <div class="myoffer-project-cost">150&nbsp;000€</div>
-                    <div class="myoffer-project-period">7 jours restants</div>
-                    <div class="myoffer-amount">
-                        <span class="amount">450€</span> à <span class="interest">7,2%</span>
-                    </div>
-                </li>
-                <li class="myoffer myoffer-autolend">
-                    <div class="myoffer-project-name">Elevage bovin</div>
-                    <div class="myoffer-project-cost">150&nbsp;000€</div>
-                    <div class="myoffer-project-period">7 jours restants</div>
-                    <div class="myoffer-amount">
-                        Autolend: <span class="amount">45€</span> à <span class="interest">6,4%</span>
-                    </div>
-                </li>
-            {% endfor %}
-        </ul><!-- /.list-myoffers -->
+        {% if ongoingProjects|length > 0 %}
+            <ul class="list-myoffers">
+                {# Placeholder #}
+                {% for project in ongoingProjects %}
+                    <li class="myoffer">
+                        <div class="myoffer-project-name">{{ project.title }}</div>
+                        <div class="myoffer-project-cost">{{ project.amount|localizednumber }}&nbsp;€</div>
+                        <div class="myoffer-project-period">{% transchoice project.days_left with {'%daysCount%': project.days_left} %} lender-dashboard_project-remaining-days-before-closure {% endtranschoice %}</div>
+                        {% for bid in project.aPendingBids %}
+                            <div class="myoffer-amount">
+                                {% set transParams = {
+                                        '%amount%' : '<span class="amount">' ~ bid.amount_euro|localizednumber|nbsp ~ '€</span>',
+                                        '%rate%' : '<span class="interest">' ~ bid.rate|localizednumber|nbsp ~ '%</span>'
+                                    }
+                                %}
+                                {% if bid.id_autobid != 0 %}<span class="icon fa-autolend-u"></span> Autolend: {% endif %} {% trans with transParams %} lender-dashboard_my-offers-panel-bid-amount-and-rate {% endtrans %}
+                            </div>
+                        {% endfor %}
+                    </li>
+                {% endfor %}
+            </ul><!-- /.list-myoffers -->
+        {% endif %}
     {% endblock %}
-    {% block panelFooter %}
-        <a href="#todo" class="link">Voir toutes mes offres en cours</a>
-    {% endblock %}
+    {% if ongoingProjects|length > 0 %}
+        {% block panelFooter %}
+
+            {#@todo use correct link into lenders offers list detais page#}
+
+            <a href="#todo" class="link">{% trans %} lender-dashboard_see-all-my-offers-in-progress {% endtrans %}</a>
+        {% endblock %}
+    {% endif %}
 {% endembed %}

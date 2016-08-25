@@ -1099,4 +1099,75 @@ class echeanciers extends echeanciers_crud
         $query = 'SELECT SUM(interets) FROM echeanciers WHERE status = 1';
         return bcdiv($this->bdd->executeQuery($query)->fetchColumn(0), 100, 2);
     }
+
+    /**
+     * @param int $lenderId
+     * @param int|null $projectId
+     * @return mixed
+     */
+    public function getFirstAndLastRepaymentDates($lenderId, $projectId = null)
+    {
+        $params['id_lender'] = $lenderId;
+        $binds['id_lender']  = \PDO::PARAM_INT;
+        $sql                 = '
+        SELECT
+          DATE(MIN(e.date_echeance)) AS first_repayment_date,
+          Date(MAX(e.date_echeance)) AS last_repayment_date
+        FROM echeanciers e
+        WHERE e.id_lender = :id_lender
+        ';
+
+        if (false === empty($iProjectId)) {
+            $sql .= ' AND e.id_project = :id_project';
+            $params['id_project'] = $projectId;
+            $binds['id_project']  = \PDO::PARAM_INT;
+        }
+        /** @var \Doctrine\DBAL\Statement $statement */
+        $statement = $this->bdd->executeQuery($sql, $params, $binds);
+
+        return $statement->fetch(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Returns capital, interests and tax sum amounts grouped by month, quarter and year for a given lender and project
+     * @param int $lenderId
+     * @param int|null $projectId
+     * @return array
+     */
+    public function getRepaymentAmountDetailsByPeriod($lenderId, $projectId = null)
+    {
+        $params['id_lender'] = $lenderId;
+        $binds['id_lender']  = \PDO::PARAM_INT;
+        $sql                 = '
+        SELECT
+            LEFT(e.date_echeance, 7) AS month,
+            QUARTER(e.date_echeance) AS quarter,
+            YEAR(e.date_echeance) AS year,
+            ROUND(SUM(e.capital) / 100, 2) AS capital,
+            ROUND(SUM(e.interets) / 100, 2) AS interests,
+            ROUND(SUM(e.prelevements_obligatoires + e.retenues_source + e.csg + e.prelevements_sociaux + e.contributions_additionnelles + e.prelevements_solidarite + e.crds), 2) AS tax
+        FROM echeanciers e
+        WHERE e.id_lender = :id_lender
+        ';
+
+        if (false === empty($projectId)) {
+            $sql .= ' AND e.id_project = :id_project';
+            $params['id_project'] = $projectId;
+            $binds['id_project']  = \PDO::PARAM_INT;
+        }
+        $sql .= '
+            GROUP BY year, quarter, month
+            ORDER BY year, quarter, month ASC
+        ';
+        /** @var \Doctrine\DBAL\Statement $statement */
+        $statement = $this->bdd->executeQuery($sql, $params, $binds);
+        $data = [];
+        while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
+            $row['capital'] = floatval($row['capital']);
+            $row['interests'] = floatval($row['interests']);
+            $row['tax'] = floatval($row['tax']);
+            $data[] = $row;
+        }
+        return $data;
+    }
 }
