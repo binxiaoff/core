@@ -1119,8 +1119,7 @@ class dossiersController extends bootstrap
         }
 
         $aLenderLoans = $this->loans->getProjectLoansByLender($this->projects->id_project);
-$logger->debug('lenderLoans : ' . json_encode($aLenderLoans), ['id_project' => $this->projects->id_project, 'class' => __CLASS__, 'function' => __FUNCTION__]);
-$logger->info('lenderLoans : ' . json_encode($aLenderLoans), ['id_project' => $this->projects->id_project, 'class' => __CLASS__, 'function' => __FUNCTION__]);
+
         if (is_array($aLenderLoans)) {
             foreach ($aLenderLoans as $aLoans) {
                 $this->lenders_accounts->get($aLoans['id_lender'], 'id_lender_account');
@@ -1171,13 +1170,11 @@ $logger->info('lenderLoans : ' . json_encode($aLenderLoans), ['id_project' => $t
                     $this->mail_template->get($sMailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $locale . '" AND type');
 
                     $aReplacements['sujet'] = $this->mail_template->subject;
-$logger->info('email data : ' . json_encode($aReplacements), ['id_project' => $this->projects->id_project, 'class' => __CLASS__, 'function' => __FUNCTION__]  );
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                     $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMailType, $aReplacements);
                     $message->setTo($this->clients->email);
                     $mailer = $this->get('mailer');
-                    $iResult = $mailer->send($message);
-$logger->info('number of emails sent : ' . json_encode($iResult), ['id_project' => $this->projects->id_project, 'class' => __CLASS__, 'function' => __FUNCTION__] );
+                    $mailer->send($message);
                 }
             }
         }
