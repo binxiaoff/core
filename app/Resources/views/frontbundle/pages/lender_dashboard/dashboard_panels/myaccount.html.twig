@@ -39,7 +39,8 @@
                 data: [{
                     name: "lender-dashboard_loaned-amount"|trans,
                     color: '#5FC5D1',
-                    y:  amountDetails.loaned_amount,
+                    y: amountDetails.loaned_amount,
+                    value: amountDetails.loaned_amount|localizedcurrency('EUR'),
                     showInLegend: true,
                 }]
             },{
@@ -52,16 +53,19 @@
                     name:  "lender-dashboard_repaid-capital"|trans,
                     color: '#1B88DB',
                     y: capitalDetails.repaid_capital,
+                    value: capitalDetails.repaid_capital|localizedcurrency('EUR'),
                     showInLegend: true,
                 },{
                     name: "lender-dashboard_owed-capital"|trans,
                     color: '#B6D4E4',
                     y: capitalDetails.owed_capital,
+                    value: capitalDetails.owed_capital|localizedcurrency('EUR'),
                     showInLegend: true
                 },{
                     name: "lender-dashboard_capital-in-difficulty"|trans,
                     color: '#F76965',
                     y: capitalDetails.capital_in_difficulty,
+                    value: capitalDetails.capital_in_difficulty|localizedcurrency('EUR'),
                     showInLegend: true
                 }]
             },{
@@ -83,11 +87,13 @@
                     name: "lender-dashboard_received-interests"|trans,
                     color: '#F2980C',
                     y: interestsDetails.received_interests,
+                    value: interestsDetails.received_interests|localizedcurrency('EUR'),
                     showInLegend: true
                 },{
                     name: "lender-dashboard_upcoming-interests"|trans,
                     color: '#FFCA2C',
                     y: interestsDetails.upcoming_interests,
+                    value: interestsDetails.upcoming_interests|localizedcurrency('EUR'),
                     showInLegend: true
                 }]
             }]
@@ -114,7 +120,7 @@
             <div class="dashboard-panel-summary">
                 <h3>
                     <span class="label">{% trans %} lender-dashboard_my-account-panel-expected-earnings {% endtrans %}</span>
-                    <span class="value">{{ amountDetails.expected_earnings|localizednumber }}&nbsp;€</span></h3>
+                    <span class="value">{{ amountDetails.expected_earnings|localizedcurrency('EUR') }}</span></h3>
             </div>
             {# Include the legend as it's not included in the highchart due to rendering issues #}
             <div class="dashboard-myaccount-chart-key">
@@ -124,7 +130,7 @@
                             <div class="chart-key col-lg-4 col-md-4 col-sm-4 col-xs-2">
                                 <div class="icon" style="background-color: {{ dataItem.color }}"></div>
                                 <div class="label">{% if dataItem.name is not empty %} {{ dataItem.name }} {% else %} {{ series.name }} {% endif %}</div>
-                                <div class="value">{% if dataItem.y is not empty %} {{ dataItem.y }} {% else %} {{ series.value }} {% endif %}&nbsp;€</div>
+                                <div class="value">{% if dataItem.value is not empty %} {{ dataItem.value }} {% else %} {{ series.value }} {% endif %}</div>
                             </div>
                         {% endfor %}
                     {% endfor %}

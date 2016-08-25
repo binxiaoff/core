@@ -151,7 +151,7 @@ class FrontBundleExtension extends \Twig_Extension
 
     public function completeUrlMediaFunction($sPath)
     {
-        return  $this->packages->getUrl('/bundles/unilendfront/images/' . $sPath);
+        return  $this->packages->getUrl('/assets/images/' . $sPath);
     }
 
     public function getStatisticFunction($statisticType)
