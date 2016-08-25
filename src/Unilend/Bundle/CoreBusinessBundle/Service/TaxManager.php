@@ -63,7 +63,7 @@ class TaxManager
                 'updated'        => date('Y-m-d H:i:s'),
             );
         }
-        $transaction->montant -= $iTaxAmount;
+        $transaction->montant -= $iTotalTaxAmount;
         $transaction->update();
         $tax->multiInsert($taxes);
 
