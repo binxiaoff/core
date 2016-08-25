@@ -189,11 +189,12 @@ class ProjectDisplayManager
             foreach (range(\bids::BID_RATE_MAX, \bids::BID_RATE_MIN, 0.1) as $rate) {
                 $rate = (string) $rate; // Fix an issue with float array keys
                 $rateSummary[$rate] = [
-                    'rate'             => $rate,
-                    'activeBidsCount'  => isset($bidsSummary[$rate]) ? (int) $bidsSummary[$rate]['activeBidsCount'] : 0,
-                    'bidsCount'        => isset($bidsSummary[$rate]) ? (int) $bidsSummary[$rate]['bidsCount'] : 0,
-                    'totalAmount'      => isset($bidsSummary[$rate]) ? (float) $bidsSummary[$rate]['totalAmount'] : 0,
-                    'activePercentage' => isset($bidsSummary[$rate]) ? (float) $bidsSummary[$rate]['activePercentage'] : 100,
+                    'rate'              => $rate,
+                    'activeBidsCount'   => isset($bidsSummary[$rate]) ? (int) $bidsSummary[$rate]['activeBidsCount'] : 0,
+                    'bidsCount'         => isset($bidsSummary[$rate]) ? (int) $bidsSummary[$rate]['bidsCount'] : 0,
+                    'totalAmount'       => isset($bidsSummary[$rate]) ? (float) $bidsSummary[$rate]['totalAmount'] : 0,
+                    'activeTotalAmount' => isset($bidsSummary[$rate]) ? (float) $bidsSummary[$rate]['activeTotalAmount'] : 0,
+                    'activePercentage'  => isset($bidsSummary[$rate]) ? (float) $bidsSummary[$rate]['activePercentage'] : 100,
                 ];
             }
 

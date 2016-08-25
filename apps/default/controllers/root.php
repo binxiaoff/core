@@ -30,7 +30,7 @@ class rootController extends bootstrap
             header('Location:' . $this->lurl . '/' . $this->redirections->to_slug, true, 301);
             die;
         }
-        $error404Page = $this->url . '/erreur404';
+
         // Recuperation des infos de la page
         if ($this->tree->get(array('slug' => $paramSlug, 'id_langue' => $this->language))) {
             if ($this->tree->prive == 1) {
@@ -583,18 +583,25 @@ class rootController extends bootstrap
             ////////////////////////////////////////////////
             // FIN TEMPLATE LANDING PAGE DEPOT DE DOSSIER //
             ////////////////////////////////////////////////
+
             // Chargemement du tempalte
             if ($this->templates->slug == '' || $this->tree->id_template == 7) {
                 //header("HTTP/1.0 404 Not Found");
-                header('Location: ' . $error404Page);
+                header($_SERVER["SERVER_PROTOCOL"] . " 404 Not Found");
+                $this->hideDecoration();
+                $this->setView('../root/404');
             } elseif ($this->tree->status == 0 && ! isset($_SESSION['user'])) {
                 //header("HTTP/1.0 404 Not Found");
-                header('Location: ' . $error404Page);
+                header($_SERVER["SERVER_PROTOCOL"] . " 404 Not Found");
+                $this->hideDecoration();
+                $this->setView('../root/404');
             } else {
                 $this->setView('../templates/' . $this->templates->slug, true);
             }
         } else {
-            header('Location: ' . $error404Page);
+            header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found');
+            $this->hideDecoration();
+            $this->setView('../root/404');
         }
     }
 

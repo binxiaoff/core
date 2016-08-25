@@ -109,7 +109,7 @@
                            placeholder="{% trans %} borrower-landing-page_siren-placeholder {% endtrans %}"
                            value="{{ form.values.siren }}"
                            class="field required{% if form.errors.siren is defined %} LV_invalid_field{% endif %}"
-                           data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9, maximum: 9}">
+                           data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9, maximum: 14}">
                     <em{% if form.errors.siren is defined %} class="error"{% endif %}>{% trans %} borrower-landing-page_siren-legend {% endtrans %}</em>
                 </div>
                 {% if not cms.partner_funnel %}
