@@ -1,5 +1,5 @@
 /*
- * jQuery-Simple-Timer
+ * Unilend Simple Count Down
  */
 
 var SimpleCountDown = function(callback) {

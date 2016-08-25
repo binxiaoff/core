@@ -24,19 +24,19 @@
                                         <li id="project-create-1" role="presentation" class="active">
                                             <span>
                                                 <span class="project-create-progress-point">1.</span>
-                                                <span class="label">{% trans %} project-request_contact-tab-title {% endtrans %}</span>
+                                                <span class="label hide-mobile">{% trans %} project-request_contact-tab-title {% endtrans %}</span>
                                             </span>
                                         </li>
                                         <li id="project-create-2" role="presentation">
                                             <span>
                                                 <span class="project-create-progress-point">2.</span>
-                                                <span class="label">{% trans %} project-request_finance-tab-title {% endtrans %}</span>
+                                                <span class="label hide-mobile">{% trans %} project-request_finance-tab-title {% endtrans %}</span>
                                             </span>
                                         </li>
                                         <li id="project-create-3" role="presentation">
                                             <span>
                                                 <span class="project-create-progress-point">3.</span>
-                                                <span class="label">{% trans %} project-request_end-tab-title {% endtrans %}</span>
+                                                <span class="label hide-mobile">{% trans %} project-request_end-tab-title {% endtrans %}</span>
                                             </span>
                                         </li>
                                     </ul><!-- /.nav-progress -->
@@ -246,7 +246,7 @@
                                             </div>
                                         </fieldset>
 
-                                        <fieldset class="panel">
+                                        <fieldset class="toggle-if-not-manager panel collapse {% if form.values.manager == 'no' %} in {% endif %}">
                                             <h3 class="h3">{% trans %} project-request_step-1-advisor-identity-section-title {% endtrans %}</h3>
 
                                             <div class="row">
@@ -393,12 +393,12 @@
                                             </div>
                                         </fieldset>
 
-                                        <fieldset class="panel">
+                                        <fieldset class="toggle-if-manager panel collapse {% if form.values.manager == 'yes' %} in {% endif %}">
                                             <div class="row">
                                                 <div class="form-field form-field-single-checkbox{% if form.errors.terms is defined %} ui-formvalidation-error{% endif %}">
                                                     <label>
                                                         <input type="checkbox" name="terms" value="true" data-formvalidation-input data-formvalidation-required="true">
-                                                        <span class="label">{% trans with {'%tosStart%' : '<a href="' ~ terms_of_sale_link ~ '">', '%tosEnd%' : '</a>'} %} project-request_step-1-confirm-terms-of-use {% endtrans %} <span class="field-required">* <span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></span>
+                                                        <span class="label">{% trans with {'%tosStart%' : '<a href="' ~ terms_of_sale_link ~ '" target="_blank">', '%tosEnd%' : '</a>'} %} project-request_step-1-confirm-terms-of-use {% endtrans %} <span class="field-required">* <span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></span>
                                                     </label>
                                                     {% if form.errors.terms is defined %}
                                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required-checkbox {% endtrans %}</li></ul>

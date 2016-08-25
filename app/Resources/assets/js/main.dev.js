@@ -62,23 +62,24 @@ var Sticky = require('./app/components/Sticky')
 var Spinner = require('./app/components/Spinner')
 var Modal = require('./app/components/Modal')
 // var ModalTOS = require('./app/components/ModalTOS')
-
-// Page controllers
-// (probably good to put these into a different folder called `controllers` instead of components)
-var BorrowerEsimForm = require('./app/components/BorrowerEsimForm')
+var CookieCheck = require('./app/components/Cookies')
 var LoginTimer = require('./app/components/LoginTimer')
 var LoginCaptcha = require('./app/components/LoginCaptcha')
-var SimpleTimer = require('./app/components/SimpleCountDown')
+var SimpleCountDown = require('./app/components/SimpleCountDown')
+var BorrowerEsimForm = require('./app/components/BorrowerEsimForm')
 var BidConfirmation = require('./app/components/BidConfirmation')
-var CookieCheck = require('./app/components/Cookies')
 var BidsDetail = require('./app/components/BidsDetail')
-var LenderProfile = require('./app/components/LenderSubscription')
-var LenderWallet = require('./app/components/LenderWallet')
-var LenderOperations = require('./app/components/LenderOperations')
-var LenderProfile = require('./app/components/LenderProfile')
-var BorrowerOperations = require('./app/components/BorrowerOperation')
-var NewPassword = require('./app/components/NewPasswordRequest')
-var Projects = require('./app/components/Projects')
+
+// Page controllers
+// Control page-specific behaviours
+require('./app/controllers/BorrowerOperation')
+require('./app/controllers/NewPasswordRequest')
+require('./app/controllers/LenderSubscription')
+require('./app/controllers/LenderWallet')
+require('./app/controllers/LenderOperations')
+require('./app/controllers/LenderProfile')
+require('./app/controllers/Projects')
+require('./app/controllers/ProjectRequest')
 
 // @debug
 // CacheData.clearAll()
