@@ -295,7 +295,8 @@ class bids extends bids_crud
                     rate, 
                     COUNT(*) AS bidsCount,
                     SUM(IF(status = 0, 1, 0)) AS activeBidsCount,
-                    SUM(ROUND(amount / 100, 2)) AS totalAmount, 
+                    SUM(ROUND(amount / 100, 2)) AS totalAmount,
+                    SUM(IF(status = 0, ROUND(amount / 100, 2), 0)) AS activeTotalAmount, 
                     IF(SUM(amount) > 0, ROUND(SUM(IF(status = 2, 0, ROUND(amount / 100, 2))) / SUM(ROUND(amount / 100, 2)) * 100, 1), 100) AS activePercentage
                 FROM bids
                 WHERE id_project = ' . $iProjectId . '

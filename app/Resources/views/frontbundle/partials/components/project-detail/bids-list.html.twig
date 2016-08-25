@@ -35,19 +35,21 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr class="rejected-offers">
-                                <td colspan="4">{% trans %} project-detail_all-bids-table-rejected-bids-show-action {% endtrans %}</td>
-                            </tr>
+                            {% if (project.bids.summary|first).activePercentage == 0 %}
+                                <tr class="rejected-offers">
+                                    <td colspan="4">{% trans %} project-detail_all-bids-table-rejected-bids-show-action {% endtrans %}</td>
+                                </tr>
+                            {% endif %}
                             {% for rateSummary in project.bids.summary %}
                                 {% if rateSummary.bidsCount > 0 %}
                                     <tr class="bids-row {% if rateSummary.activePercentage == 0 %} rejected-row {% endif %}" data-bid-rate="{{ rateSummary.rate }}">
                                         <td>
-                                            <span class="bid-rate-cta">{{ rateSummary.rate | __num(1) }}&nbsp;%</span>
+                                            <span class="bid-rate-cta">{{ rateSummary.rate|__num(1) }}&nbsp;%</span>
                                             <span class="icon-cta icon fa-caret-r-u32"></span>
                                             <span class="icon-cta icon fa-caret-d-u32"></span>
                                         </td>
-                                        <td>{{ rateSummary.totalAmount | __num(0) | nbsp | raw }}&nbsp;€</td>
-                                        <td>{{ rateSummary.bidsCount | __num(0) | nbsp | raw }}</td>
+                                        <td>{{ rateSummary.totalAmount|__num(0)|nbsp|raw }}&nbsp;€</td>
+                                        <td>{{ rateSummary.bidsCount|__num(0)|nbsp|raw }}</td>
                                         <td>
                                             <span class="c-p1 {% if rateSummary.activePercentage == 0 %} all-rejected {% endif %}">
                                                 <span class="icon icon-rejected fa-refused-u32"></span>
@@ -88,6 +90,9 @@
                             "align": "right",
                             "style": {"color": "#5FC5D1", "fontSize": "14px"}
                         },
+                        "tooltip": {
+                            "valueSuffix": " €"
+                        },
                         "xAxis": {
                             "categories": [{% for rate, rateSummary in project.bids.graph.summary %}"{{ rate }}%"{% if not loop.last %},{% endif %}{% endfor %}],
                             "plotBands": [{
@@ -113,14 +118,14 @@
                             "color": "#5FC5D1",
                             "fillOpacity": 0.25,
                             "showInLegend": false,
-                            "data": [{% for rate, rateSummary in project.bids.graph.summary %}{{ rateSummary.activeBidsCount }}{% if not loop.last %},{% endif %}{% endfor %}]
+                            "data": [{% for rate, rateSummary in project.bids.graph.summary %}{{ rateSummary.activeTotalAmount }}{% if not loop.last %},{% endif %}{% endfor %}]
                         }]
                     }
                 }
             {% endspaceless %}{% endset %}
 
             <div id="alloffers-graph" role="tabpanel" class="tab-pane">
-                <div class="chart" data-chartview='{{ projectOffers | raw | escape('html_attr') }}'></div>
+                <div class="chart" data-chartview='{{ projectOffers|raw|escape('html_attr') }}'></div>
             </div>
         </div><!-- /.section-tabs-content -->
     </div><!-- /tabs -->
