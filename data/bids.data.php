@@ -376,4 +376,50 @@ class bids extends bids_crud
         return $bids;
     }
 
+    /**
+     * @param int $bidStatus
+     * @param int|null $projectId
+     * @param int|null $lenderId
+     * @return array
+     * @throws \Exception
+     */
+    public function getBidsByStatus($bidStatus, $projectId = null, $lenderId = null )
+    {
+        $sql = '
+            SELECT
+            id_bid
+            ,id_lender_account
+            ,id_project
+            ,id_autobid
+            ,id_lender_wallet_line
+            ,amount
+            ,rate
+            ,ordre
+            ,status
+            ,checked
+            ,added
+            ,updated
+            ,ROUND(amount / 100) as amount_euro
+            FROM bids
+            WHERE status = :status
+        ';
+
+        if (false === empty($projectId)) {
+            $sql .= ' AND id_project = :id_project ';
+            $bind['id_project'] = $projectId;
+            $type['id_project'] = \PDO::PARAM_INT;
+        }
+
+        if (false === empty($lenderId)) {
+            $sql .= ' AND id_lender_account = :id_lender ';
+            $bind['id_lender'] = $lenderId;
+            $type['id_lender'] = \PDO::PARAM_INT;
+        }
+        $sql .= ' ORDER BY id_bid DESC';
+        $bind['status'] = $bidStatus;
+        $type['status'] = \PDO::PARAM_INT;
+
+        return $this->bdd->executeQuery($sql, $bind, $type)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
 }

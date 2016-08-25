@@ -8,9 +8,9 @@ class UserBorrower extends BaseUser
     private $lastName;
     private $siren;
 
-    public function __construct($username, $password, $salt, array $roles, $isActive, $clientId, $hash, $firstName, $lastName, $siren)
+    public function __construct($username, $password, $salt, array $roles, $isActive, $clientId, $hash, $firstName, $lastName, $siren, $lastLoginDate = null)
     {
-        parent::__construct($username, $password, $salt, $roles, $isActive, $clientId, $hash);
+        parent::__construct($username, $password, $salt, $roles, $isActive, $clientId, $hash, $lastLoginDate);
 
         $this->firstName = $firstName;
         $this->lastName  = $lastName;

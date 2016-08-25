@@ -44,12 +44,20 @@ class UserProvider implements UserProviderInterface
         $client = $this->entityManager->getRepository('clients');
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->entityManager->getRepository('lenders_accounts');
+        /** @var \clients_history $clientHistory */
+        $clientHistory = $this->entityManager->getRepository('clients_history');
 
         if ($client->get($username, 'email')) {
-            $balance  = $this->clientManager->getClientBalance($client);
-            $initials = $this->clientManager->getClientInitials($client);
-            $isActive = $this->clientManager->isActive($client);
-            $roles    = ['ROLE_USER'];
+            $balance       = $this->clientManager->getClientBalance($client);
+            $initials      = $this->clientManager->getClientInitials($client);
+            $isActive      = $this->clientManager->isActive($client);
+            $roles         = ['ROLE_USER'];
+            try {
+                $lastLoginDate = $clientHistory->getClientLastLogin($client->id_client);
+            } catch (\Exception $exception) {
+                $lastLoginDate = null;
+            }
+
 
             if ($this->clientManager->isLender($client)) {
                 $roles[]                 = 'ROLE_LENDER';
@@ -75,7 +83,8 @@ class UserProvider implements UserProviderInterface
                     $hasAcceptedCurrentTerms,
                     $notificationsUnread,
                     $client->etape_inscription_preteur,
-                    $userLevel
+                    $userLevel,
+                    $lastLoginDate
                 );
             }
 
@@ -94,7 +103,8 @@ class UserProvider implements UserProviderInterface
                     $client->hash,
                     $client->prenom,
                     $client->nom,
-                    $company->siren
+                    $company->siren,
+                    $lastLoginDate
                 );
             }
         }
