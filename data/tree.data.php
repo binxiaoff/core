@@ -87,7 +87,7 @@ class tree extends tree_crud
     //**************************************** AJOUTS ******************************************//
     //******************************************************************************************//
     // Definition des types d'éléments
-    public $typesElements = array('Texte', 'Textearea', 'Texteditor', 'Lien Interne', 'Lien Externe', 'Image', 'Fichier', 'Fichier Protected', 'Date', 'Checkbox', 'SVG');
+    public $typesElements = array('Texte', 'Textearea', 'Texteditor', 'Lien Interne', 'Lien Externe', 'Image', 'Fichier', 'Fichier Protected', 'Date', 'Checkbox', 'Boolean', 'SVG');
 
     // Affichage des elements de formulaire en fonction du type d'élément
     public function displayFormElement($id_tree, $element, $type = 'tree', $langue = 'fr')
@@ -344,6 +344,19 @@ class tree extends tree_crud
                     </tr>';
                     break;
 
+                case 'Boolean':
+                    echo '
+                    <tr>
+                        <th>
+                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' : </label>
+                            <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">
+                                <option value="0"' . ($this->params['tree_elements']->value == 0 ? ' selected' : '') . '>Non</option>
+                                <option value="1"' . ($this->params['tree_elements']->value == 1 ? ' selected' : '') . '>Oui</option>
+                            </select>
+                        </th>
+                    </tr>';
+                    break;
+
                 default:
                     echo '
                     <tr>
@@ -583,6 +596,42 @@ class tree extends tree_crud
                         <th class="bas">
                             <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . '</label> :
                             <input type="checkbox" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" value="1"' . ($this->params['blocs_elements']->value == 1 ? ' checked="checked"' : '') . ' />
+                        </th>
+                    </tr>';
+                    break;
+
+                case 'Boolean':
+                    echo '
+                    <tr>
+                        <th>
+                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' : </label>
+                            <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">
+                                <option value="0"' . ($this->params['blocs_elements']->value == 0 ? ' selected' : '') . '>Non</option>
+                                <option value="1"' . ($this->params['blocs_elements']->value == 1 ? ' selected' : '') . '>Oui</option>
+                            </select>
+                        </th>
+                    </tr>';
+                    break;
+
+                case 'SVG':
+                    $icons = ['header-contact', 'header-fiscalite', 'header-legal', 'header-plandusite', 'header-recrutement', 'header-securite', 'avatar-f-level-1', 'category-1', 'category-10', 'category-11', 'category-12', 'category-13', 'category-14', 'category-15', 'category-2', 'category-3', 'category-4', 'category-5', 'category-6', 'category-7', 'category-8', 'category-9', 'promo-balance', 'promo-barchart', 'promo-calendarweek', 'promo-clock', 'promo-francemap', 'promo-handshake', 'promo-info', 'promo-linechart', 'promo-linechart2', 'promo-money', 'promo-pagestack', 'promo-people', 'promo-piggybank', 'promo-profile', 'promo-projects', 'promo-protection', 'promo-saving', 'promo-transparancy', 'promo-verified'];
+                    sort($icons);
+                    echo '
+                    <tr>
+                        <th>
+                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' : </label>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th class="bas">
+                            <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">
+                                <option value=""></option>';
+                    foreach ($icons as $icon) {
+                        echo '<option value="' . $icon . '"' . ($this->params['blocs_elements']->value === $icon ? ' selected' : '') . '>' . $icon . '</option>';
+                    }
+                    echo '
+                            </select>
+                            <a href="https://unilend.atlassian.net/wiki/display/PROJ/UI+nouveau+site" target="_blank">Voir la liste</a>
                         </th>
                     </tr>';
                     break;
