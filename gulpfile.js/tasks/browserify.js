@@ -45,7 +45,7 @@ var browserifyTask =  function(watchMode) {
 
     if(watchMode == true) {
       // Wrap with watchify and rebundle on changes
-      bundler = watchify(bundler);
+      bundler = watchify(bundler, {poll: true});
       // Rebundle on update
       bundler.on('update', bundle);
       bundleLogger.watch(bundleConfig.outputName);

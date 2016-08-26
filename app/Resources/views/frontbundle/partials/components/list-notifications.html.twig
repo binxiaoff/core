@@ -1,0 +1,16 @@
+{# List Notifications component partial #}
+{# {% include 'partials/components/list-notifications.html.twig' with {'settings': settingsObject, 'items': arrayOfNotificationObjects} %} #}
+
+<div {% if settings.id is defined %}id="{{ settings.id|escape('html_attr') }}"{% endif %} {% if settings.classNames is defined %}class="{{ settings.classNames|escape('html_attr') }}"{% endif %} data-usernotificationslist>
+    <ul class="list-notifications">
+        {% for i, item in items %}
+            {% include 'partials/components/list-notification-item.html.twig' with {'item': item} %}
+        {% else %}
+            <li class="notification notification-type-empty">
+                <div class="notification-content">
+                    <p>{% trans %} user-notifications_empty-label {% endtrans %}</p>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+</div>

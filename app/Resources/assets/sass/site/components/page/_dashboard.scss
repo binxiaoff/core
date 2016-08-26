@@ -285,7 +285,11 @@
 }
 
 .dashboard-panels-nav {
+  position: relative;
 
+  li {
+    float: left;
+  }
 }
 
 .dashboard-panel-toggle {

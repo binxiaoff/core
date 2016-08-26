@@ -1,0 +1,23 @@
+{# A single notifications item to render in the notifications list #}
+{# {% include 'partials/components/list-notification-item.html.twig' with {'item': notificationObject} %} #}
+
+<li class="notification notification-type-{{ item.type|default('message')|escape('html_attr') }} ui-notification-status-{{ item.status }}" data-notification-id="{{ item.id|default(item.datetime|date('U'))|escape('html_attr') }}">
+    <header class="notification-header">
+        {% if item.datetime is not empty %}
+            <h5 class="notification-datetime">{{ item.datetime }}</h5>
+        {% endif %}
+        {% if item.title is not empty %}
+            <h4 class="notification-title">{{ item.title }}</h4>
+        {% endif %}
+        {% if item.image is not empty %}
+            <div class="notification-image">
+                <span class="svg-icon-wrap">{{ item.image|raw }}</span>
+            </div>
+        {% endif %}
+    </header>
+    {% if item.content is not empty %}
+        <div class="notification-content">
+            <p>{{ item.content|nl2br }}</p>
+        </div>
+    {% endif %}
+</li><!-- /.notification -->

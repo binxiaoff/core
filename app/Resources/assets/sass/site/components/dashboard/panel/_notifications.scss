@@ -16,6 +16,13 @@
   }
 
   .dashboard-panel-footer {
-    display: none;
+    //display: none;
+    min-height: 0;
+    padding: 0;
+
+    a {
+      display: block;
+      padding: 15px 15px;
+    }
   }
 }

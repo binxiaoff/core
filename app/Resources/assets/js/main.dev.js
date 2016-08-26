@@ -42,6 +42,9 @@ var CacheData = require('CacheData')
 var Templating = require('Templating')
 
 // Components
+var UserNotifications = require('UserNotifications')
+var UserNotificationsList = require('UserNotificationsList')
+var UserNotificationsDrop = require('UserNotificationsDrop')
 var AutoComplete = require('AutoComplete')
 var WatchScroll = require('WatchScroll')
 var TextCount = require('TextCount')
@@ -57,8 +60,7 @@ var AutolendTable = require('AutolendTable')
 var NavDropdownMenu = require('NavDropdownMenu')
 var MapView = require('MapView')
 var ChartView = require('ChartView')
-var UserNotificationsDrop = require('./app/components/UserNotificationsDrop')
-var Sticky = require('./app/components/Sticky')
+var Sticky = require('Sticky')
 var Spinner = require('./app/components/Spinner')
 var Modal = require('./app/components/Modal')
 // var ModalTOS = require('./app/components/ModalTOS')
@@ -1148,8 +1150,7 @@ $(document).ready(function ($) {
     var $elem = $(elem)
 
     var sortablearea = SortableJS.create(elem, {
-      //handle: '.ui-draggable-handle',
-      handle: '.dashboard-panel-header',
+      handle: '.ui-draggable-handle',
       draggable: '.ui-draggable',
       ghostClass: 'ui-movablecontent-ghost',
       chosenClass: 'ui-movablecontent-chosen',
@@ -1161,12 +1162,11 @@ $(document).ready(function ($) {
       onUpdate: function (event) {
         // @trigger elem `MovableContent:sortupdate` [elemItemMoved]
         $elem.trigger('MovableContent:sortupdate', [event.item])
-        console.log(event.item)
+
+        // Trigger update on any elements which might have charts to re-render
         $(event.item).trigger('UI:update')
       }
     })
-
-    console.log(sortablearea);
   })
 
   /*

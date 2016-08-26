@@ -1,6 +1,7 @@
 /*
  * User Notifications Drop
  * Shows user's notifications drop-down when clicked
+ * 
  * @component `UserNotificationsDrop`
  * @ui `ui-usernotificationsdrop`
  * @data `data-usernotificationsdrop`
@@ -12,6 +13,7 @@ var $ = require('jquery')
 var Utility = require('Utility')
 var ElementAttrsObject = require('ElementAttrsObject')
 var Templating = require('Templating')
+var UserNotifications = require('UserNotifications')
 var Tether = require('tether')
 var Drop = require('tether-drop')
 
@@ -19,27 +21,20 @@ var Drop = require('tether-drop')
  * Dictionary
  */
 var Dictionary = require('Dictionary')
-var USERNOTIFICATIONSDROP_LANG_LEGACY = {
-  "fr": {
-    "emptyLabel": "Aucun des notifications nouveaux"
-  },
-  "en": {
-    "emptyLabel": "No unread notifications"
-  }
-}
+var USERNOTIFICATIONS_LANG_LEGACY = require('../../../lang/UserNotifications.lang.json')
 // -- Support new translation dictionary language format, e.g. `example-translation-key-name`
-if (window.USERNOTIFICATIONSDROP_LANG) {
-  __ = new Dictionary(window.USERNOTIFICATIONSDROP_LANG)
+if (window.USERNOTIFICATIONS_LANG) {
+  __ = new Dictionary(window.USERNOTIFICATIONS_LANG)
   // @debug
-  // console.log('UserNotificationsDrop: using window.USERNOTIFICATIONSDROP_LANG for Dictionary')
+  // console.log('UserNotificationsList: using window.USERNOTIFICATIONS_LANG for Dictionary')
 
 // -- Support new legacy dictionary language format for fallbacks, e.g. `exampleTranslationKeyName`
 } else {
-  __ = new Dictionary(USERNOTIFICATIONSDROP_LANG_LEGACY, {
+  __ = new Dictionary(USERNOTIFICATIONS_LANG_LEGACY, {
     legacyMode: true
   })
   // @debug
-  console.log('UserNotificationsDrop: using USERNOTIFICATIONSDROP_LANG_LEGACY for Dictionary. Please ensure window.USERNOTIFICATIONSDROP_LANG is correctly set.')
+  console.log('UserNotificationsList: using USERNOTIFICATIONS_LANG_LEGACY for Dictionary. Please ensure window.USERNOTIFICATIONS_LANG is correctly set.')
 }
 
 /*
@@ -56,6 +51,9 @@ var UserNotificationsDrop = function (elem, options) {
     return
   }
 
+  // Don't instantiate another if it already has one
+  if (self.$elem[0].hasOwnProperty('UserNotificationsDrop')) return
+
   // Decouple options.dropOptions to inherit separately
   var optionsDropOptions = {}
   if (options && options.hasOwnProperty('dropOptions')) {
@@ -65,8 +63,10 @@ var UserNotificationsDrop = function (elem, options) {
 
   // Settings
   self.settings = Utility.inherit({
-    notifications: window.USERNOTIFICATIONS || [],
-    emptyLabel: 'No new activity',
+    notifications: [],
+    emptyLabel: __.__('user-notifications_empty-label', 'emptyLabel'),
+    markAllReadLabel: __.__('user-notifications_mark-all-read-label', 'markAllReadLabel'),
+    showOnlyUnread: false, // default is false = shows all
 
     // The default options for the drop
     // The value of this option matches what Drop JS plugin takes
@@ -76,6 +76,14 @@ var UserNotificationsDrop = function (elem, options) {
       classes: 'ui-usernotificationsdrop-drop-element',
       position: 'bottom center',
       openOn: 'click',
+
+      // Stop the drop from auto-closing when "mark all read" is clicked
+      beforeClose: function (event) {
+        if ($(event.target).is('[data-usernotifications-markallread]')) {
+          return false
+        }
+      },
+
       tetherOptions: {
         attachment: 'top right',
         targetAttachment: 'bottom center',
@@ -84,21 +92,22 @@ var UserNotificationsDrop = function (elem, options) {
     }, optionsDropOptions),
 
     // Custom events
-    onbeforerender: undefined, // function (notifications, pushOrReplace) {}
-    onrender: undefined, // function (notifications, pushOrReplace) {}
+    onbeforerender: undefined, // function (notifications) {}
+    onrender: undefined, // function (notifications) {}
     onrendernotification: undefined, // function (notification) {}
   },
   // Get options from the element
   ElementAttrsObject(elem, {
-    emptyLabel: 'data-usernotificationsdrop-emptylabel'
+    emptyLabel: 'data-usernotificationsdrop-emptylabel',
+    markAllReadLabel: 'data-usernotificationsdrop-markallreadlabel',
+    showOnlyUnread: 'data-usernotificationsdrop-showonlyunread'
   }),
   // Override options through JS call
   options)
 
-  // Properties
-  // A collection of all the notifications being shown in this component
-  self.notifications = []
-
+  /*
+   * Properties
+   */
   // DROP THA BAAAASSSSSSSS~~~~~~!!!
   self.drop = new Drop(self.settings.dropOptions)
 
@@ -108,8 +117,8 @@ var UserNotificationsDrop = function (elem, options) {
   // Initialise
   self.$elem[0].UserNotificationsDrop = this
 
-  // Render any notifications
-  self.render(self.settings.notifications, false)
+  // Render any notifications on init (references UserNotifications component for notifications to render)
+  self.render()
 
   // @trigger elem `UserNotificationsDrop:initialised` [elemUserNotificationsDrop]
   self.$elem.trigger('UserNotificationsDrop:initialised', [self])
@@ -129,16 +138,17 @@ var UserNotificationsDrop = function (elem, options) {
 // @param {Array} notifications An array of {NotificationObject}s
 // @param {Boolean} pushOrReplace Whether to push or to replace the notifications to the list
 // @returns {Void}
-UserNotificationsDrop.prototype.show = function (notifications, pushOrReplace) {
+UserNotificationsDrop.prototype.show = function () {
   var self = this
 
-  // @trigger `UserNotificationsDrop:show:before` [elemUserNotificationsDrop, notifications, pushOrReplace]
-  self.$elem.trigger('UserNotificationsDrop:show:before', [self, notifications, pushOrReplace])
+  // @trigger `UserNotificationsDrop:show:before` [elemUserNotificationsDrop]
+  self.$elem.trigger('UserNotificationsDrop:show:before', [self])
 
-  self.render(notifications, pushOrReplace)
+  // Ensure notifications are rendered
+  self.render()
 
   // Open the drop UI
-  self.drop.open()
+  if (!self.drop.isOpened()) self.drop.open()
 }
 
 // Hide the user notifications
@@ -155,83 +165,69 @@ UserNotificationsDrop.prototype.hide = function () {
 }
 
 // Render notifications
+// This will generate new HTML to output into the drop element
 // @method render
-// @param {Array} notifications An array of {NotificationObject}s
-// @param {Boolean} pushOrReplace Whether to push or to replace the notifications to the list
 // @returns {Void}
-UserNotificationsDrop.prototype.render = function (notifications, pushOrReplace) {
+UserNotificationsDrop.prototype.render = function () {
   var self = this
-  var newNotifications = notifications.length || 0
+  // Make a copy since this component is read-only
+  var notifications = UserNotifications.collection.slice(0)
+  var unreadNotifications = 0
 
-  // @trigger `UserNotificationsDrop:render:before` [elemUserNotificationsDrop, notifications, pushOrReplace]
-  self.$elem.trigger('UserNotificationsDrop:render:before', [self, notifications, pushOrReplace])
+  // @trigger `UserNotificationsDrop:render:before` [elemUserNotificationsDrop, notifications]
+  self.$elem.trigger('UserNotificationsDrop:render:before', [self, notifications])
 
   // Custom event `onbeforerender`
   if (self.settings.onbeforerender === 'function') {
-    self.settings.onbeforerender.apply(self, [notifications, pushOrReplace])
+    self.settings.onbeforerender.apply(self, [notifications])
   }
-
-  // Create the new list of notifications
-  if (notifications instanceof Array) {
-    // Only show unread notifications
-    if (self.settings.showOnlyUnread) {
-      var onlyUnreadNotifications = []
-      for (var i in notifications) {
-        if (notifications[i].status === 'unread') {
-          onlyUnreadNotifications.push(notifications[i])
-        }
+  
+  // Customise output depending on settings
+  if (self.settings.showOnlyUnread) {
+    var onlyUnreadNotifications = []
+    for (var i = 0; i < notifications.length; i++) {
+      if (notifications[i].status === 'unread') {
+        onlyUnreadNotifications.push(notifications[i])
       }
-
-      // Update the number of notifications
-      newNotifications = onlyUnreadNotifications.length
-
-      // Point it back for further process
-      notifications = onlyUnreadNotifications
     }
+    notifications = onlyUnreadNotifications
+    unreadNotifications = notifications.length
 
-    // -- Push
-    if (pushOrReplace && notifications.length > 0) {
-      self.notifications = notifications.concat(self.notifications)
-
-    // -- Replace
-    } else {
-      self.notifications = notifications
+  // Count unread
+  } else {
+    for (var i in notifications) {
+      if (notifications[i].status === 'unread') unreadNotifications += 1
     }
   }
 
   // Render the array of {NotificationObjects}s to HTML
   var notificationsHTML = ''
 
-  // Use custom event `onrender`
-  if (typeof self.settings.onrender === 'function') {
-    notificationsHTML = self.settings.onrender.apply(self, [notifications, pushOrReplace])
+  // -- Show the empty message
+  if (notifications.length === 0) {
+    notificationsHTML = Templating.replace(self.templates.listItemEmpty)
 
-  // Default rendering
+  // -- Render the list
   } else {
-    if (self.notifications instanceof Array && self.notifications.length > 0) {
-      for (var i in self.notifications) {
-        notificationsHTML += self.renderNotification(self.notifications[i])
+    // Use custom event `onrender`
+    if (typeof self.settings.onrender === 'function') {
+      notificationsHTML = self.settings.onrender.apply(self, [notifications])
+
+    // Default rendering
+    } else {
+      if (notifications instanceof Array && notifications.length > 0) {
+        for (var i = 0; i < notifications.length; i++) {
+          notificationsHTML += self.renderNotification(notifications[i])
+        }
       }
     }
   }
 
-  // Show the empty message, only if pushOrReplace == false
-  if (!notificationsHTML && !pushOrReplace) {
-    notificationsHTML = Templating.replace(self.templates.listItemEmpty, {
-      emptyLabel: __.__(self.settings.emptyLabel, 'emptyLabel')
-    })
+  // Update the pip with the amount of new notifications
+  self.updatePip(unreadNotifications)
 
-    // Remove the pip!
-    self.$elem.html('')
-  }
-
-  // Update the pip if there are notifications!
-  if (newNotifications > 0) {
-    self.updatePip(newNotifications)
-  }
-
-  // Don't bother rendering if nothing to render and in push mode
-  if (!notificationsHTML && pushOrReplace) return
+  // @debug
+  console.log('UserNotificationsDrop.render', self.$elem[0])
 
   // Place notifications into the list
   notificationsHTML = Templating.replace(self.templates.list, {
@@ -240,7 +236,9 @@ UserNotificationsDrop.prototype.render = function (notifications, pushOrReplace)
 
   // Replace the drop's content with the new html
   self.drop.content.innerHTML = Templating.replace(self.templates.frame, {
-    content: notificationsHTML
+    content: notificationsHTML,
+    emptyLabel: self.settings.emptyLabel,
+    markAllReadLabel: self.settings.markAllReadLabel
   })
 
   // Refresh the drop if contents have changed
@@ -261,6 +259,7 @@ UserNotificationsDrop.prototype.renderNotification = function (notificationObjec
 
   // Default rendering notification operation
   return Templating.replace(self.templates.listItem, {
+    id: notificationObject.id || Utility.randomString(),
     type: notificationObject.type || 'default',
     status: notificationObject.status || 'unread',
     datetime: (typeof notificationObject.datetime === 'object' ? Utility.getRelativeTime(notificationObject.datetime) : notificationObject.datetime || ''),
@@ -276,12 +275,15 @@ UserNotificationsDrop.prototype.renderNotification = function (notificationObjec
 // @returns {Void}
 UserNotificationsDrop.prototype.updatePip = function (amount) {
   var self = this
+  var pipHTML = ''
 
-  // Generate the new pip HTML
-  var pipHTML = Templating.replace(self.templates.pip, {
-    amount: amount,
-    classNames: amount > 9 ? 'pip-has-many' : ''
-  })
+  // Generate the new pip HTML if there are any unread notifications specified by amount
+  if (amount > 0) {
+    pipHTML = Templating.replace(self.templates.pip, {
+      amount: amount,
+      classNames: amount > 9 ? 'pip-has-many' : ''
+    })
+  }
 
   // Set the elem's HTML
   self.$elem.html(pipHTML)
@@ -291,6 +293,7 @@ UserNotificationsDrop.prototype.updatePip = function (amount) {
 // @method position
 // @returns {Void}
 UserNotificationsDrop.prototype.position = function () {
+  var self = this
   if (self.drop && self.drop.isOpened()) self.drop.position()
 }
 
@@ -300,21 +303,24 @@ UserNotificationsDrop.prototype.templates = {
   pip: '<span class="pip {{ classNames }}"><span class="pip-number">{{ amount }}</span></span>',
 
   // The drop's frame, holds all the content for the drop
-  frame: '<div class="user-notifications-drop">\
+  frame: '<div class="notifications-drop">\
+      <div class="notifications-drop-controls">\
+        <a href="javascript:;" class="ui-usernotifications-markallread" data-usernotifications-markallread>{{ markAllReadLabel }}</a>\
+      </div>\
       {{ content }}\
     </div>',
 
   // The list, holds all the notification items
-  list: '<ul class="user-notifications-drop-list list-notifications">\
+  list: '<ul class="notifications-drop-list list-notifications">\
       {{ listItems }}\
     </ul>',
 
   // The drop's notification list item, which represents a single notification
-  listItem: '<li class="notification notification-type-{{ type }} ui-notification-status-{{ status }}">\
+  listItem: '<li class="notification notification-type-{{ type }} ui-notification-status-{{ status }}" data-notification-id="{{ id }}">\
       <header class="notification-header">\
         <h5 class="notification-datetime">{{ datetime }}</h5>\
         <h4 class="notification-title">{{ title }}</h4>\
-        <div class="notification-image">{{ image }}</div>\
+        <div class="notification-image"><span class="svg-icon-wrap">{{ image }}</span></div>\
       </header>\
       <div class="notification-content">\
         <p>{{ content }}</p>\
@@ -335,7 +341,7 @@ UserNotificationsDrop.prototype.templates = {
 $.fn.uiUserNotificationsDrop = function (op) {
   // Fire a command to the UserNotificationsDrop object, e.g. $('[data-usernotificationsdrop]').uiUserNotificationsDrop('publicMethod', {..})
   // @todo add in list of public methods that $.fn.uiUserNotificationsDrop can reference
-  if (typeof op === 'string' && /^(show|hide|render|position)$/.test(op)) {
+  if (typeof op === 'string' && /^(show|hide|render|position|updatePip)$/.test(op)) {
     // Get further additional arguments to apply to the matched command method
     var args = Array.prototype.slice.call(arguments)
     args.shift()
@@ -381,6 +387,18 @@ $(document)
       window.location = $(this).attr('href')
       return false
     }
+  })
+
+  // Update the unread notifications count on the global event
+  .on('UserNotifications:updateUnreadCount:complete', function (event, unreadCount) {
+    $('.ui-usernotificationsdrop').uiUserNotificationsDrop('updatePip', unreadCount)
+  })
+
+  // Re-render UI notifications drop elements after global markAllRead complete event
+  .on('UserNotifications:updated', function (event) {
+    // @debug
+    // console.log('After UserNotifications:updated, re-render the drops')
+    $('.ui-usernotificationsdrop').uiUserNotificationsDrop('render')
   })
 
 module.exports = UserNotificationsDrop

@@ -13,7 +13,8 @@
   "scripts": {
     "gulp": "gulp",
     "gulp:dev": "gulp",
-    "gulp:prod": "gulp production"
+    "gulp:prod": "gulp production",
+    "dev": "npm install && gulp"
   },
   "devDependencies": {
     "bootstrap": "^3.3.7",
@@ -83,7 +84,6 @@
     "jquery": "2.2.1",
     "jquery-ui": "1.10.5",
     "loadjson": "1.1.2",
-    "lodash": "4.6.1",
     "lolex": "1.4.0",
     "mocha": "2.4.5",
     "modernizr": "3.3.1",
@@ -151,6 +151,9 @@
     "NavDropdownMenu": "./app/Resources/assets/js/app/components/NavDropdownMenu.js",
     "MapView": "./app/Resources/assets/js/app/components/MapView.js",
     "ChartView": "./app/Resources/assets/js/app/components/ChartView.js",
+    "UserNotifications": "./app/Resources/assets/js/app/components/UserNotifications.js",
+    "UserNotificationsList": "./app/Resources/assets/js/app/components/UserNotificationsList.js",
+    "UserNotificationsDrop": "./app/Resources/assets/js/app/components/UserNotificationsDrop.js",
     "highcharts/highstock.src": "./app/Resources/assets/js/vendor/highcharts/highstock.src.js",
     "highcharts/modules/treemap": "./app/Resources/assets/js/vendor/highcharts/modules/treemap.js",
     "highcharts/modules/map": "./app/Resources/assets/js/vendor/highcharts/modules/map.js"

@@ -892,7 +892,10 @@ var Utility = {
       if (target[j] === arguments[i] || typeof arguments[i] !== 'object') continue
 
       for (var j in arguments[i]) {
-        target[j] = arguments[i][j]
+        // Ignore prototype properties
+        if (arguments[i].hasOwnProperty(j)) {
+          target[j] = arguments[i][j]
+        }
       }
     }
 
@@ -908,12 +911,15 @@ var Utility = {
       if (target[j] === arguments[i] || typeof arguments[i] !== 'object') continue
 
       for (var j in arguments[i]) {
-        // If both target property and reference property are objects, do inheritNested
-        if (typeof target[j] === 'object' && typeof arguments[i][j] === 'object') {
-          // Create a new object to inherit into to avoid some weirdness
-          target[j] = Utility.inheritNested({}, target[j], arguments[i][j])
-        } else {
-          target[j] = arguments[i][j]
+        // Ignore prototype properties
+        if (arguments[i].hasOwnProperty(j)) {
+          // If both target property and reference property are objects, do inheritNested
+          if (typeof target[j] === 'object' && typeof arguments[i][j] === 'object') {
+            // Create a new object to inherit into to avoid some weirdness
+            target[j] = Utility.inheritNested({}, target[j], arguments[i][j])
+          } else {
+            target[j] = arguments[i][j]
+          }
         }
       }
     }

@@ -13,6 +13,7 @@
     margin: 0;
     color: $c-t3;
     font-size: $fs-h6;
+    text-transform: capitalize;
   }
 
   .notification-title {
@@ -144,6 +145,32 @@
     border-bottom-color: $c-white;
     border-width: 15px;
     border-top-width: 0;
+  }
+
+  // The controls
+  .notifications-drop-controls {
+    font-size: $fs-base * .8;
+    text-align: center;
+
+    a,
+    a:link,
+    a:visited,
+    a:hover,
+    a:active {
+      color: $c-t3;
+      text-decoration: none;
+    }
+
+    .ui-usernotifications-markallread {
+      padding: 5px 15px;
+
+      &:after {
+        content: $fa-eye-u16;
+        display: inline-block;
+        margin-left: 5px;
+        font-family: $ff-icon;
+      }
+    }
   }
 
   // Text overflow gradient

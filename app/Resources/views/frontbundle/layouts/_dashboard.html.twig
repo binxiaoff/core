@@ -5,12 +5,6 @@
     {% include 'partials/site/header-dashboard.html.twig' %}
 {% endblock %}
 
-{#{% block siteFooter %}
-  {% embed 'partials/site/footer.twig' %}
-    {% block siteMobileMenu %} {% endblock %}
-  {% endembed %}
-{% endblock %} #}
-
 {% block siteContent %}
 
     <article{% if page.id is not empty %} id="{{ page.id }}"{% endif %} class="dashboard{% if page.classNames is not empty %} {{ page.classNames }}{% endif %}">
@@ -57,64 +51,4 @@
         </div><!-- /.dashboard-inner -->
     </article><!-- /.dashboard -->
 
-{% endblock %}
-
-{# Put in the notifications as a JSON object here, then other JS components can reference as a single source rather than dotted throughout multiple files #}
-{% block extendHead %}
-    {# Placeholder data #}
-    {% set placeholderData = {
-        notifications: [{
-            type: 'offer-rejected',
-            title: 'Offre refusée',
-            datetime: 'now'|date_modify('-5 minutes'),
-            content: 'Votre offre de prêt de 45€ au taux de 9,4% à Garage Toniol a été refusée.',
-            image: svgimage('#notification-offer-rejected', 'Offre refusée', 100, 100, 'none'),
-            status: 'unread'
-        },{
-            type: 'remboursement',
-            title: 'Remboursement',
-            datetime: 'now'|date_modify('-2 hours'),
-            content: 'Vous avez reçu un remboursement de 12,35€ de Garage Toniol.',
-            image: svgimage('#notification-remboursement', 'Remboursement', 100, 100, 'none'),
-            status: 'unread'
-        },{
-            type: 'offer-accepted',
-            title: 'Remboursement',
-            datetime: 'now'|date_modify('-3 days')|date('j F, H:i'),
-            content: 'Vous avez reçu un remboursement de 12,35€ de Garage Toniol.',
-            image: svgimage('#notification-offer-accepted', 'Offre acceptée', 100, 100, 'none'),
-            status: 'unread'
-        },{
-            type: 'account',
-            title: 'Solde bas',
-            datetime: 'now'|date_modify('-4 days')|date('j F, H:i'),
-            content: '',
-            image: svgimage('#notification-account-lowbalance', 'Solde bas', 100, 100, 'none'),
-            status: 'read'
-        },{
-            type: 'remboursement',
-            title: 'Remboursement',
-            datetime: 'now'|date_modify('-5 days 8 hours 35 minutes')|date('j F, H:i'),
-            content: 'Vous avez reçu un remboursement de 12,35€ de Garage Toniol.',
-            image: svgimage('#notification-remboursement', 'Remboursement', 100, 100, 'none'),
-            status: 'read'
-        },{
-            type: 'remboursement',
-            title: 'Remboursement',
-            datetime: 'now'|date_modify('-5 days 15 hours 20 minutes')|date('j F, H:i'),
-            content: 'Vous avez reçu un remboursement de 12,35€ de Garage Toniol.',
-            image: svgimage('#notification-remboursement', 'Remboursement', 100, 100, 'none'),
-            status: 'read'
-        },{
-            type: 'project-added',
-            title: 'Nouveau projet',
-            datetime: 'now'|date_modify('-6.5 days')|date('j F, H:i'),
-            content: 'Created a new project.',
-            image: svgimage('#notification-project-added', 'Nouveau projet', 100, 100, 'none'),
-            status: 'read'
-        }]
-    } %}
-    <script type="text/javascript" rel="notifications">
-        var USERNOTIFICATIONS = JSON.parse('{{ placeholderData.notifications|json_encode|escape('js')|raw }}')
-    </script>
 {% endblock %}
