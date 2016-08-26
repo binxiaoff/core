@@ -868,6 +868,8 @@ class LenderOperationsController extends Controller
      */
     private function commonLoans(Request $request, \lenders_accounts $lender)
     {
+        /** @var TranslationManager $translationManager */
+        $translationManager = $this->get('unilend.service.translation_manager');
         /** @var \loans $loanEntity */
         $loanEntity = $this->get('unilend.service.entity_manager')->getRepository('loans');
         /** @var \projects $project */
