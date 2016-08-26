@@ -603,7 +603,8 @@ $doc
 
     // Update any tethered targets
     $doc.on('UI:update', function () {
-
+      // Update the position of any tethered AutoComplete targets
+      $('.ui-autocomplete').uiAutoComplete('positionTarget')
     })
 
     // Special modifications for address AutoComplete fields
