@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 use Unilend\core\Loader;
 
@@ -867,14 +868,10 @@ class LenderOperationsController extends Controller
      */
     private function commonLoans(Request $request, \lenders_accounts $lender)
     {
-        /** @var TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translation_manager');
-        /** @var \loans $loan */
-        $loan = $this->get('unilend.service.entity_manager')->getRepository('loans');
+        /** @var \loans $loanEntity */
+        $loanEntity = $this->get('unilend.service.entity_manager')->getRepository('loans');
         /** @var \projects $project */
         $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
-        /** @var \clients $client */
-        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
 
         $orderField     = $request->request->get('type', 'start');
         $orderDirection = strtoupper($request->request->get('order', 'ASC'));
@@ -918,10 +915,11 @@ class LenderOperationsController extends Controller
                 $sOrderBy   = 'debut ' . $orderDirection . ', p.title ASC';
                 break;
         }
+
         $projectsInDept = $project->getProjectsInDebt();
         $year           = empty($request->request->get('filter', null)['date']) ? null : $request->request->get('filter', null)['date'];
         $status         = empty($request->request->get('filter', null)['status']) ? null : $request->request->get('filter', null)['status'];
-        $lenderLoans    = $loan->getSumLoansByProject($lender->id_lender_account, $sOrderBy, $year, $status);
+        $lenderLoans    = $loanEntity->getSumLoansByProject($lender->id_lender_account, $sOrderBy, $year, $status);
         $loanStatus     = [
             'no-problem'            => 0,
             'late-repayment'        => 0,
@@ -971,6 +969,9 @@ class LenderOperationsController extends Controller
                     break;
             }
 
+            /** @var UserLender $user */
+            $user = $this->getUser();
+
             /**
              * "documents": [{
              * "docType": "contract",
@@ -980,30 +981,44 @@ class LenderOperationsController extends Controller
              * "size": 123456789
              * }]
              */
-
             if ($aProjectLoans['nb_loan'] == 1) {
-
+                // @todo getContractType
+                $contractType = (1 == $aProjectLoans['id_type_contract']) ? 'bondsCount' : 'contractsCount';
+                $lenderLoans[$iLoandIndex]['contracts'] = [
+                    $contractType => 1
+                ];
                 $lenderLoans[$iLoandIndex]['documents'] = $this->getDocumentDetail(
                     $aProjectLoans['project_status'],
-                    $client->hash,
+                    $user->getHash(),
                     $aProjectLoans['id_loan_if_one_loan'],
                     $aProjectLoans['id_type_contract'],
                     $projectsInDept,
                     $aProjectLoans['id_project']);
             } else {
-                $lenderLoans[$iLoandIndex]['loan_details'] = $loan->select('id_lender = ' . $lender->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project']);
+                $loans                                     = $loanEntity->select('id_lender = ' . $lender->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project']);
+                $lenderLoans[$iLoandIndex]['contracts']    = [];
+                $lenderLoans[$iLoandIndex]['loan_details'] = [];
 
-                foreach ($lenderLoans[$iLoandIndex]['loan_details'] as $key => $item) {
-                    $lenderLoans[$iLoandIndex]['loan_details'][$key]['documents'] = $this->getDocumentDetail(
-                        $aProjectLoans['project_status'],
-                        $client->hash,
-                        $item['id_loan'],
-                        $item['id_type_contract'],
-                        $projectsInDept,
-                        $aProjectLoans['id_project']);
+                foreach ($loans as $loan) {
+                    $contractType = (1 == $loan['id_type_contract']) ? 'bondsCount' : 'contractsCount';
+                    $lenderLoans[$iLoandIndex]['contracts'][$contractType] = isset($lenderLoans[$iLoandIndex]['contracts'][$contractType]) ? $lenderLoans[$iLoandIndex]['contracts'][$contractType] + 1 : 1;
+                    $lenderLoans[$iLoandIndex]['loan_details'][] = [
+                        'rate'      => $loan['rate'],
+                        'amount'    => round($loan['amount'] / 100, 2),
+                        'monthly'   => rand(20, 150),
+                        'documents' => $this->getDocumentDetail(
+                            $aProjectLoans['project_status'],
+                            $user->getHash(),
+                            $loan['id_loan'],
+                            $loan['id_type_contract'],
+                            $projectsInDept,
+                            $aProjectLoans['id_project']
+                        )
+                    ];
                 }
             }
         }
+
         $chartColors = [
             'late-repayment'        => '#5FC4D0',
             'recovery'              => '#FFCA2C',
