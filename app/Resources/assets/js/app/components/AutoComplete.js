@@ -611,10 +611,12 @@ $doc
       // Ignore if already has AutoComplete
       if (elem.hasOwnProperty('AutoComplete')) return
 
+      var ajaxProp = $(elem).attr('data-autocomplete-ajaxprop')
+
       // Instantiate AutoComplete with specific address values
       new AutoComplete(elem, {
         minTermLength: 2,
-        ajaxProp: 'zip',
+        ajaxProp: ajaxProp ? ajaxProp : 'zip',
         // Don't output the item's value, as that will be extracted from the text and applied to the code/city inputs (it currently differs)
         onrenderitem: function (item) {
           var self = this
@@ -658,6 +660,13 @@ $doc
       if (Utility.elemExists(cityElemSelector) && /^.*\(\d+\)$/.test(newValue)) {
         var $cityElem = $(cityElemSelector)
         $cityElem.val(cityValue)
+      }
+
+      // Get the zip element to set it with the zip value
+      var zipElemSelector = elemAutoComplete.$input.attr('data-autocomplete-address-zipelem')
+      if (Utility.elemExists(zipElemSelector)) {
+        var $zipElem = $(zipElemSelector)
+        $zipElem.val(codeValue)
       }
     })
   })

@@ -40,16 +40,18 @@ class LenderSubscriptionController extends Controller
         $template['countries']     = $locationManager->getCountries();
         $template['nationalities'] = $locationManager->getNationalities();
 
-        $formData = $request->getSession()->get('subscriptionStep1FormData', '');
+        $formData = $request->getSession()->get('subscriptionStep1FormData', []);
         $request->getSession()->remove('subscriptionStep1FormData');
+
         $landingPageData = $this->get('session')->get('landingPageData', []);
         $this->get('session')->remove('landingPageData');
+
         $template['formData'] = [
             'client_form_of_address'           => isset($formData['client_form_of_address']) ? $formData['client_form_of_address'] : '',
-            'client_name'                      => isset($formData['client_name']) ? $formData['client_name'] : isset($landingPageData['prospect_name'])? $landingPageData['prospect_name']: '',
-            'client_first_name'                => isset($formData['client_first_name']) ? $formData['client_first_name'] : isset($landingPageData['prospect_first_name'])? $landingPageData['prospect_first_name']: '',
+            'client_name'                      => isset($formData['client_name']) ? $formData['client_name'] : (isset($landingPageData['prospect_name']) ? $landingPageData['prospect_name']: ''),
+            'client_first_name'                => isset($formData['client_first_name']) ? $formData['client_first_name'] : (isset($landingPageData['prospect_first_name'])? $landingPageData['prospect_first_name']: ''),
             'client_used_name'                 => isset($formData['client_used_name']) ? $formData['client_used_name'] : '',
-            'client_email'                     => isset($formData['client_email']) ? $formData['client_email'] : isset($landingPageData['prospect_email'])? $landingPageData['prospect_email']: '',
+            'client_email'                     => isset($formData['client_email']) ? $formData['client_email'] : (isset($landingPageData['prospect_email'])? $landingPageData['prospect_email']: ''),
             'client_secret_question'           => isset($formData['client_secret_question']) ? $formData['client_secret_question'] : '',
             'fiscal_address_street'            => isset($formData['fiscal_address_street']) ? $formData['fiscal_address_street'] : '',
             'fiscal_address_zip'               => isset($formData['fiscal_address_zip']) ? $formData['fiscal_address_zip'] : '',
@@ -62,7 +64,7 @@ class LenderSubscriptionController extends Controller
             'postal_address_city'              => isset($formData['postal_address_city']) ? $formData['postal_address_city'] : '',
             'postal_address_country'           => isset($formData['postal_address_country']) ? $formData['postal_address_country'] : \pays_v2::COUNTRY_FRANCE,
             'client_day_of_birth'              => isset($formData['client_day_of_birth']) ? $formData['client_day_of_birth'] : '',
-            'client_month_of_birth'            => isset($formData['client_month_of_birth']) ? $formData['client_month_of_birth'] : 1,
+            'client_month_of_birth'            => isset($formData['client_month_of_birth']) ? $formData['client_month_of_birth'] : '',
             'client_year_of_birth'             => isset($formData['client_year_of_birth']) ? $formData['client_year_of_birth'] : '',
             'client_nationality'               => isset($formData['client_nationality']) ? $formData['client_nationality'] : \nationalites_v2::NATIONALITY_FRENCH,
             'client_country_of_birth'          => isset($formData['client_country_of_birth']) ? $formData['client_country_of_birth'] : \pays_v2::COUNTRY_FRANCE,
@@ -71,8 +73,8 @@ class LenderSubscriptionController extends Controller
             'client_no_us_person'              => isset($formData['client_no_us_person']) ? $formData['client_no_us_person'] : '',
             'client_type'                      => isset($formData['client_type']) ? $formData['client_type'] : '',
             'company_name'                     => isset($formData['company_name']) ? $formData['company_name'] : '',
-            'company_legal_form'               => isset($formData['client_type']) ? $formData['client_type'] : '',
-            'company_social_capital'           => isset($formData['company_legal_form']) ? $formData['company_legal_form'] : '',
+            'company_legal_form'               => isset($formData['company_legal_form']) ? $formData['company_legal_form'] : '',
+            'company_social_capital'           => isset($formData['company_social_capital']) ? $formData['company_social_capital'] : '',
             'company_siren'                    => isset($formData['company_siren']) ? $formData['company_siren'] : '',
             'company_phone'                    => isset($formData['company_phone']) ? $formData['company_phone'] : '',
             'company_client_status'            => isset($formData['company_client_status']) ? $formData['company_client_status'] : \companies::CLIENT_STATUS_MANAGER,
@@ -94,14 +96,16 @@ class LenderSubscriptionController extends Controller
      * @Route("inscription_preteur/etape1/person", name="lender_subscription_contact_person_form")
      * @Method("POST")
      */
-    public function contactPersonAction(Request $request)
+    public function contactPersonFormAction(Request $request)
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
         $response = $this->checkProgressAndRedirect($client);
-        if (false === $response instanceof \clients){
+
+        if (false === $response instanceof \clients) {
             return $response;
         }
+
         /** @var \dates $dates */
         $dates = Loader::loadLib('dates');
         /** @var \ficelle $ficelle */
@@ -130,7 +134,7 @@ class LenderSubscriptionController extends Controller
         if (empty($post['terms_of_use'])) {
             $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-terms-of-use'));
         }
-        if (false === isset($post['client_mobile']) || false === is_numeric($post['client_mobile'])) {
+        if (false === isset($post['client_mobile']) || false === is_numeric(str_replace([' ', '.'], '', $post['client_mobile']))) {
             $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-wrong-mobile-format'));
         }
         if (empty($post['fiscal_address_street'])) {
@@ -174,14 +178,14 @@ class LenderSubscriptionController extends Controller
             $bCountryCheckOk = false;
             $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-wrong-birth-country'));
         }
-        if (false === isset($post['client_place_of_birth']) || \pays_v2::COUNTRY_FRANCE == $countries->id_pays && false === $cities->exist($post['client_place_of_birth'], 'ville')) {
+        if (false === isset($post['client_place_of_birth']) || \pays_v2::COUNTRY_FRANCE == $countries->id_pays && false === $cities->getByName($post['client_place_of_birth'], 'ville')) {
             $bCountryCheckOk = false;
             $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-wrong-birth-place'));
         }
 
         if ($bCountryCheckOk) {
             if (\pays_v2::COUNTRY_FRANCE == $post['client_country_of_birth']) {
-                $inseePlaceOfBirth = (false === isset($post['client_insee_place_of_birth']) || '' === $post['client_insee_place_of_birth']) ? $cities->insee : $post['client_insee_place_of_birth'];
+                $inseePlaceOfBirth = empty($post['client_insee_place_of_birth']) ? $cities->insee : $post['client_insee_place_of_birth'];
                 unset($cities);
             } else {
                 /** @var \insee_pays $inseeCountries */
@@ -212,7 +216,7 @@ class LenderSubscriptionController extends Controller
             $client->secrete_question           = $post['client_secret_question'];
             $client->secrete_reponse            = md5($post['client_secret_answer']);
             $client->password                   = password_hash($post['client_password'], PASSWORD_DEFAULT);
-            $client->mobile                     = str_replace(' ', '', $post['client_mobile']);
+            $client->mobile                     = str_replace([' ', '.'], '', $post['client_mobile']);
             $client->ville_naissance            = $post['client_place_of_birth'];
             $client->insee_birth                = $inseePlaceOfBirth;
             $client->id_pays_naissance          = $post['client_country_of_birth'];
@@ -253,7 +257,7 @@ class LenderSubscriptionController extends Controller
      * @Route("inscription_preteur/etape1/entity", name="lender_subscription_contact_legal_entity_form")
      * @Method("POST")
      */
-    public function contactLegalEntityAction(Request $request)
+    public function contactLegalEntityFormAction(Request $request)
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
@@ -375,7 +379,7 @@ class LenderSubscriptionController extends Controller
             $client->prenom                     = $ficelle->majNom($post['client_first_name']);
             $client->fonction                   = $post['client_position'];
             $client->email                      = $post['client_email'];
-            $client->mobile                     = str_replace(' ', '', $post['client_mobile']);
+            $client->mobile                     = str_replace([' ', '.'], '', $post['client_mobile']);
             $client->id_langue                  = 'fr';
             $client->nom_usage                  = '';
             $client->naissance                  = '0000-00-00';
@@ -393,8 +397,8 @@ class LenderSubscriptionController extends Controller
             $company->id_client_owner               = $client->id_client;
             $company->name                          = $post['company_name'];
             $company->forme                         = $post['company_legal_form'];
-            $company->capital                       = str_replace(' ', '', $post['company_social_capital']);
-            $company->phone                         = str_replace(' ', '', $post['company_phone']);
+            $company->capital                       = str_replace([' ', '.'], '', $post['company_social_capital']);
+            $company->phone                         = str_replace([' ', '.'], '', $post['company_phone']);
             $company->siren                         = $post['company_siren'];
             $company->status_adresse_correspondance = isset($post['same_postal_address']) && false === empty($post['same_postal_address']) ? 1 : 0;
             $company->adresse1                      = $post['fiscal_address_street'];
@@ -409,7 +413,7 @@ class LenderSubscriptionController extends Controller
                 $company->prenom_dirigeant   = $ficelle->majNom($post['company_director_first_name']);
                 $company->fonction_dirigeant = $post['company_director_position'];
                 $company->email_dirigeant    = $post['company_director_email'];
-                $company->phone_dirigeant    = str_replace(' ', '', $post['company_director_phone']);
+                $company->phone_dirigeant    = str_replace([' ', '.'], '', $post['company_director_phone']);
 
                 if (\companies::CLIENT_STATUS_EXTERNAL_CONSULTANT == $post['company_client_status']) {
                     $company->status_conseil_externe_entreprise   = $post['company_external_counsel'];
@@ -621,7 +625,7 @@ class LenderSubscriptionController extends Controller
             $this->addFlash('step2Errors', $translator->trans('lender-subscription_step-2-bic-error-message'));
         }
 
-        if (empty($post['iban']) || strlen($post['iban']) < 27 || false == $ficelle->isIBAN($post['iban'])) {
+        if (empty($post['iban']) || false == $ficelle->isIBAN($post['iban'])) {
             $this->addFlash('step2Errors', $translator->trans('lender-subscription_step-2-iban-error-message'));
         } elseif (strtoupper(substr($post['iban'], 0, 2)) !== 'FR') {
             $this->addFlash('step2Errors', $translator->trans('lender-subscription_step-2-iban-not-french-error-message'));
@@ -650,7 +654,7 @@ class LenderSubscriptionController extends Controller
             return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $client->hash]);
         } else {
             $lenderAccount->bic           = trim(strtoupper($post['bic']));
-            $lenderAccount->iban          = trim(strtoupper($post['iban']));
+            $lenderAccount->iban          = trim(strtoupper(str_replace(' ', '', $post['iban'])));
             $lenderAccount->cni_passeport = 1;
             $lenderAccount->update();
 
@@ -1000,15 +1004,30 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("/inscription_preteur/ajax/birthplace", name="lender_subscription_ajax_birthplace")
+     * @Route("/inscription_preteur/ajax/birth_place", name="lender_subscription_ajax_birth_place")
      * @Method("GET")
      */
-    public function getBirthplaceAction(Request $request)
+    public function getBirthPlaceAction(Request $request)
     {
         if ($request->isXMLHttpRequest()) {
             /** @var LocationManager $locationManager */
             $locationManager = $this->get('unilend.service.location_manager');
-            return new JsonResponse($locationManager->getCities( $request->query->get('birthPlace')));
+            return new JsonResponse($locationManager->getCities($request->query->get('birthPlace'), true));
+        }
+
+        return new Response('not an ajax request');
+    }
+
+    /**
+     * @Route("/inscription_preteur/ajax/city", name="lender_subscription_ajax_city")
+     * @Method("GET")
+     */
+    public function getCityAction(Request $request)
+    {
+        if ($request->isXMLHttpRequest()) {
+            /** @var LocationManager $locationManager */
+            $locationManager = $this->get('unilend.service.location_manager');
+            return new JsonResponse($locationManager->getCities($request->query->get('city')));
         }
 
         return new Response('not an ajax request');
@@ -1023,7 +1042,7 @@ class LenderSubscriptionController extends Controller
         if ($request->isXMLHttpRequest()) {
             /** @var LocationManager $locationManager */
             $locationManager = $this->get('unilend.service.location_manager');
-            return new JsonResponse($locationManager->getCities( $request->query->get('zip')));
+            return new JsonResponse($locationManager->getCities($request->query->get('zip')));
         }
 
         return new Response('not an ajax request');

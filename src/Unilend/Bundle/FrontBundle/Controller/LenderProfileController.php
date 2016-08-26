@@ -216,10 +216,12 @@ class LenderProfileController extends Controller
 
         $attachment = $lenderAccount->getAttachments($lenderAccount->id_lender_account, [\attachment_type::RIB]);
 
-        $templateData['lenderAccount']['fiscal_info']['documents']   = $ifu->select('id_client =' . $client->id_client . ' AND statut = 1', 'annee ASC');
-        $templateData['lenderAccount']['fiscal_info']['amounts']     = $this->getFiscalBalanceAndOwedCapital();
-        $templateData['lenderAccount']['fiscal_info']['rib']         = isset($attachment[\attachment_type::RIB]) ? $attachment[\attachment_type::RIB] : [];
-        $templateData['lenderAccount']['fiscal_info']['fundsOrigin'] = $this->getFundsOrigin($client->type);
+        $templateData['lenderAccount']['fiscal_info'] = [
+            'documents'   => $ifu->select('id_client =' . $client->id_client . ' AND statut = 1', 'annee ASC'),
+            'amounts'     => $this->getFiscalBalanceAndOwedCapital(),
+            'rib'         => isset($attachment[\attachment_type::RIB]) ? $attachment[\attachment_type::RIB] : [],
+            'fundsOrigin' => $this->getFundsOrigin($client->type)
+        ];
     }
 
     /**
@@ -1034,9 +1036,6 @@ class LenderProfileController extends Controller
      */
     private function getFiscalBalanceAndOwedCapital()
     {
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
-
         /** @var \indexage_vos_operations $indexageVosOperations */
         $indexageVosOperations = $this->get('unilend.service.entity_manager')->getRepository('indexage_vos_operations');
         /** @var \projects_status_history $projectsStatusHistory */
@@ -1047,8 +1046,8 @@ class LenderProfileController extends Controller
         $projects_en_remboursement = $projectsStatusHistory->select('id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ') AND added < "' . date('Y') . '-01-01 00:00:00"');
 
         return [
-            'balance'     => $ficelle->formatNumber($indexageVosOperations->getFiscalBalanceToDeclare($this->getUser()->getClientId(), date('Y'))),
-            'owedCapital' => $ficelle->formatNumber($echeancier->getLenderOwedCapital($this->getUser()->getClientId(), date('Y'), array_column($projects_en_remboursement, 'id_project')))
+            'balance'     => $indexageVosOperations->getFiscalBalanceToDeclare($this->getUser()->getClientId(), date('Y')),
+            'owedCapital' => $echeancier->getLenderOwedCapital($this->getUser()->getClientId(), date('Y'), array_column($projects_en_remboursement, 'id_project'))
         ];
     }
 

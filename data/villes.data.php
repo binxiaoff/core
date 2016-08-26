@@ -28,31 +28,9 @@
 
 class villes extends villes_crud
 {
-
     public function villes($bdd, $params = '')
     {
         parent::villes($bdd, $params);
-    }
-
-    public function get($id, $field = 'id_ville')
-    {
-        return parent::get($id, $field);
-    }
-
-    public function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    public function delete($id, $field = 'id_ville')
-    {
-        parent::delete($id, $field);
-    }
-
-    public function create($cs = '')
-    {
-        $id = parent::create($cs);
-        return $id;
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -67,7 +45,7 @@ class villes extends villes_crud
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -85,7 +63,7 @@ class villes extends villes_crud
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -97,7 +75,7 @@ class villes extends villes_crud
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `villes` ' . $where;
+        $sql = 'SELECT COUNT(*) FROM `villes` ' . $where;
 
         $result = $this->bdd->query($sql);
         return (int)($this->bdd->result($result, 0, 0));
@@ -105,9 +83,22 @@ class villes extends villes_crud
 
     public function exist($id, $field = 'id_ville')
     {
-        $sql    = 'SELECT * FROM `villes` WHERE ' . $field . '="' . $id . '"';
+        $sql    = 'SELECT * FROM `villes` WHERE ' . $field . ' = "' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result) > 0);
+        return ($this->bdd->fetch_assoc($result) > 0);
+    }
+
+    public function getByName($name)
+    {
+        $sql    = 'SELECT * FROM villes WHERE ville LIKE "' . $name . '"';
+        $result = $this->bdd->query($sql);
+
+        if ($this->bdd->num_rows($result) === 1) {
+            $record = $this->bdd->fetch_assoc($result);
+            return $this->get($record['id_ville']);
+        }
+
+        return false;
     }
 
     public function generateCodeInsee($sCodeDepartement, $sCodeCommune)
@@ -134,8 +125,8 @@ class villes extends villes_crud
                 $sWhere .= ' OR ';
                 $sWhereBis .= ' OR ';
             }
-            $sWhere .= $sField . ' LIKE "'.$sTerm.'%"';
-            $sWhereBis .= $sField . ' LIKE "%'.$sTerm.'%"';
+            $sWhere .= $sField . ' LIKE "' . $sTerm . '%"';
+            $sWhereBis .= $sField . ' LIKE "%' . $sTerm . '%"';
         }
         $sIncludeOldCity = '';
         if (false === $bIncludeOldCity) {
@@ -145,7 +136,7 @@ class villes extends villes_crud
         $sql = 'SELECT * FROM (
                   SELECT id_ville, ville, cp, insee, num_departement
                   FROM villes
-                  WHERE ('.$sWhere.') '.$sIncludeOldCity.'
+                  WHERE (' . $sWhere . ') ' . $sIncludeOldCity . '
                   ORDER BY ville ASC
                 ) start_by
                 UNION
@@ -154,10 +145,11 @@ class villes extends villes_crud
                     FROM villes
                     WHERE (' . $sWhereBis . ') ' . $sIncludeOldCity . '
                     ORDER BY ville ASC
-                ) contain';
+                ) contain
+                LIMIT 25';
         $oQuery = $this->bdd->query($sql);
         $aResult   = array();
-        while ($aRow = $this->bdd->fetch_array($oQuery)) {
+        while ($aRow = $this->bdd->fetch_assoc($oQuery)) {
             $aResult[] = $aRow;
         }
         return $aResult;
@@ -188,7 +180,7 @@ class villes extends villes_crud
         }
 
         if ($this->bdd->num_rows($oQuery) == 1) {
-            $aVille = $this->bdd->fetch_array($oQuery);
+            $aVille = $this->bdd->fetch_assoc($oQuery);
 
             if (isset($aVille['insee']) && '' !== $aVille['insee']) {
                 return $aVille['insee'];

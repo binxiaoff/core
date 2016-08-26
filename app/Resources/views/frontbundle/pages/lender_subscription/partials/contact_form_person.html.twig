@@ -1,7 +1,7 @@
 {# Set this to 'person' to make included partials' JS UX functionality compatible with this form #}
 {% set idClientType = 'person' %}
 
-<form action="{{ path('lender_subscription_contact_person_form') }}" class="form-preter-create" data-formvalidation data-formvalidation-notificationselem="#form-preter-person-1-notifications">
+<form action="{{ path('lender_subscription_contact_person_form') }}" method="post" class="form-preter-create" data-formvalidation data-formvalidation-notificationselem="#form-preter-person-1-notifications">
     <fieldset class="panel">
         <div class="message-info">
             <p>{% trans %} lender-subscription_person-mandatory-documents-information {% endtrans %}</p>
@@ -108,26 +108,31 @@
         <div class="row">
             <div class="form-field">
                 <label for="form-lender-person-fiscal-address-street">{% trans %} lender-subscription_address-form-fiscal-address-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                </label>
                 <input id="form-lender-person-fiscal-address-street" type="text" name="fiscal_address_street" value="{{ formData.fiscal_address_street }}" class="input-field"
-                       placeholder="{% trans %} lender-subscription_address-form-fiscal-address-placeholder {% endtrans %}" data-formvalidation-input data-formvalidation-required="true"/>
+                       placeholder="{% trans %} lender-subscription_address-form-fiscal-address-placeholder {% endtrans %}"
+                       data-formvalidation-input
+                       data-formvalidation-required="true"/>
             </div><!-- /.form-field -->
         </div>
 
         <div class="row row-multi-col-computer">
             <div class="form-field col-lg-6 col-md-6">
                 <label for="form-lender-person-fiscal-address-zip">{% trans %} lender-subscription_address-form-address-postcode-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                </label>
                 <div class="input-group set-right">
-                    <input id="form-lender-person-fiscal-address-zip" type="text" name="fiscal_address_zip" value="{{ formData.fiscal_address_zip }}" class="input-field"
-                       data-formvalidation-input
-                       data-formvalidation-required="true"
-                        {# AutoComplete behaviours for addresses needs to be further marked and configured #}
-                       data-autocomplete-address
-                       data-autocomplete-ajaxurl="{{ path('lender_subscription_ajax_zip') }}"
-                       data-autocomplete-address-countryelem="#form-lender-person-fiscal-address-country"
-                       data-autocomplete-address-cityelem="#form-lender-person-fiscal-address-city"
-                       data-has-spinner="#person-zip-autocomplete-spinner"/>
+                    <input id="form-lender-person-fiscal-address-zip" type="text" name="fiscal_address_zip" value="{{ formData.fiscal_address_zip }}" autocomplete="off" class="input-field"
+                           data-formvalidation-input
+                           data-formvalidation-required="true"
+                            {# AutoComplete behaviours for addresses needs to be further marked and configured #}
+                           data-autocomplete-address
+                           data-autocomplete-ajaxurl="{{ path('lender_subscription_ajax_zip') }}"
+                           data-autocomplete-address-countryelem="#form-lender-person-fiscal-address-country"
+                           data-autocomplete-address-cityelem="#form-lender-person-fiscal-address-city"
+                           data-autocomplete-address-zipelem="#form-lender-person-fiscal-address-zip"
+                           data-has-spinner="#person-zip-autocomplete-spinner"/>
                     <div class="btn-group">
                         <span id="person-zip-autocomplete-spinner" class="ui-is-spinner"></span>
                     </div>
@@ -135,8 +140,24 @@
             </div><!-- /.form-field -->
             <div class="form-field col-lg-6 col-md-6">
                 <label for="form-lender-person-fiscal-address-city">{% trans %} lender-subscription_address-form-address-city-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
-                <input id="form-lender-person-fiscal-address-city" type="text" name="fiscal_address_city" value="{{ formData.fiscal_address_city }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                </label>
+                <div class="input-group set-right">
+                    <input id="form-lender-person-fiscal-address-city" type="text" name="fiscal_address_city" value="{{ formData.fiscal_address_city }}" autocomplete="off" class="input-field"
+                           data-formvalidation-input
+                           data-formvalidation-required="true"
+                            {# AutoComplete behaviours for addresses needs to be further marked and configured #}
+                           data-autocomplete-address
+                           data-autocomplete-ajaxurl="{{ path('lender_subscription_ajax_city') }}"
+                           data-autocomplete-ajaxprop="city"
+                           data-autocomplete-address-countryelem="#form-lender-person-fiscal-address-country"
+                           data-autocomplete-address-cityelem="#form-lender-person-fiscal-address-city"
+                           data-autocomplete-address-zipelem="#form-lender-person-fiscal-address-zip"
+                           data-has-spinner="#person-city-autocomplete-spinner"/>
+                    <div class="btn-group">
+                        <span id="person-city-autocomplete-spinner" class="ui-is-spinner"></span>
+                    </div>
+                </div><!-- /.input-group -->
             </div><!-- /.form-field -->
         </div>
 
@@ -147,10 +168,12 @@
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <select id="form-lender-person-fiscal-address-country" name="fiscal_address_country" class="input-field"
-                        data-formvalidation-input data-formvalidation-required="true">
+                        data-formvalidation-input
+                        data-formvalidation-required="true">
                     {% for i, country in countries %}
-                        <option value="{{ i }}" {% if formData.fiscal_address_country == i %} selected {% endif %}>
-                            {{ country }}</option>
+                        <option value="{{ i }}"{% if formData.fiscal_address_country == i %} selected{% endif %}>
+                            {{ country }}
+                        </option>
                     {% endfor %}
                 </select>
             </div><!-- /.form-field -->
@@ -169,7 +192,7 @@
         <div class="row">
             <div class="form-field form-field-single-checkbox">
                 <label>
-                    <input type="checkbox" name="same_postal_address" value="true" class="toggle-correspondence-address" {% if formData.same_postal_address is empty %} checked="checked" {% endif %}>
+                    <input type="checkbox" name="same_postal_address" value="true" class="toggle-correspondence-address"{% if formData.same_postal_address is empty %} checked{% endif %}>
                     <span class="label">{% trans %} lender-subscription_address-form-same-postal-address-checkbox {% endtrans %}</span>
                 </label>
             </div><!-- /.form-field -->
@@ -186,31 +209,36 @@
 
         <div class="row row-multi-col-computer">
             <div id="form-lender-person-birthdate" class="form-field col-lg-6 col-md-6">
-                <label>
+                <label for="client_day_of_birth" >
                     {% trans %} common_birthday {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
-                <select name="client_day_of_birth" class="input-field input-field-short" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-date="day">
+                <select id="client_day_of_birth" name="client_day_of_birth" class="input-field input-field-short" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-date="day">
+                    <option value=""></option>
                     {% for i in 1..31 %}
-                        <option value="{{ i }}"{% if formData.client_day_of_birth == i %} selected="selected"{% endif %}>{{ i }}</option>
+                        <option value="{{ i }}"{% if formData.client_day_of_birth == i %} selected{% endif %}>{{ i }}</option>
                     {% endfor %}
                 </select>
                 <select name="client_month_of_birth" class="input-field input-field-short" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-date="month">
+                    <option value=""></option>
                     {% for i, month in getMonths() %}
-                        <option value="{{ i }}"{% if formData.client_month_of_birth == i %} selected="selected"{% endif %}>{{ month }}</option>
+                        <option value="{{ i }}"{% if formData.client_month_of_birth == i %} selected{% endif %}>{{ month }}</option>
                     {% endfor %}
                 </select>
                 <select name="client_year_of_birth" class="input-field input-field-short" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-date="year">
+                    <option value=""></option>
                     {% for i in date('NOW-18 years')|date('Y')..1910 %}
-                        <option value="{{ i }}"{% if formData.client_year_of_birth == i %} selected="selected"{% endif %}>{{ i }}</option>
+                        <option value="{{ i }}"{% if formData.client_year_of_birth == i %} selected{% endif %}>{{ i }}</option>
                     {% endfor %}
                 </select>
             </div><!-- /.form-field -->
             <div class="form-field col-lg-6 col-md-6">
                 <label for="form-lender-person-nationality">{% trans %} common_nationality {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                </label>
                 <select id="form-lender-person-nationality" name="client_nationality" class="input-field"
-                        data-formvalidation-input data-formvalidation-required="true">
+                        data-formvalidation-input
+                        data-formvalidation-required="true">
                     {% for i, nationality in nationalities %}
                         <option value="{{ i }}"{% if formData.client_nationality == i %} selected {% endif %}>{{ nationality }}</option>
                     {% endfor %}
@@ -221,7 +249,8 @@
         <div class="row row-multi-col-computer">
             <div class="form-field col-lg-6 col-md-6">
                 <label for="form-lender-person-birth-country">{% trans %} common_birth-country {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                </label>
                 <select id="form-lender-person-birth-country" name="client_country_of_birth" class="input-field" data-formvalidation-input data-formvalidation-required="true">
                     {% for i, country in countries %}
                         <option value="{{ i }}" {% if formData.client_country_of_birth == i %} selected {% endif %}>{{ country }}</option>
@@ -234,11 +263,11 @@
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <div class="input-group set-right">
-                    <input id="form-lender-person-birth-place" type="text" name="client_place_of_birth" value="" class="input-field"
+                    <input id="form-lender-person-birth-place" type="text" name="client_place_of_birth" value="{{ formData.client_place_of_birth }}" autocomplete="off" class="input-field"
                            data-formvalidation-input
                            data-formvalidation-required="true"
                            data-autocomplete
-                           data-autocomplete-ajaxurl="/inscription_preteur/ajax/birthplace"
+                           data-autocomplete-ajaxurl="{{ path('lender_subscription_ajax_birth_place') }}"
                            data-autocomplete-ajaxprop="birthPlace"
                            data-has-spinner="#person-birthplace-spinner"/>
                     <input id="form-lender-person-birth-place-insee" type="hidden" name="client_insee_place_of_birth" value="{{ formData.client_insee_place_of_birth }}"/>
@@ -253,12 +282,13 @@
     <fieldset class="panel">
         <div class="row">
             <div class="form-field form-field-single-checkbox">
-                <label><input type="checkbox" name="terms_of_use" value="true" data-formvalidation-input data-formvalidation-required="true">
-            <span class="label">{% trans %} lender-subscription_terms-of-use-acceptance {% endtrans %}
-                <span class="field-required">* <span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}
+                <label>
+                    <input type="checkbox" name="terms_of_use" value="true" data-formvalidation-input data-formvalidation-required="true">
+                    <span class="label">{% trans %} lender-subscription_terms-of-use-acceptance {% endtrans %}
+                        <span class="field-required">* <span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}
+                            </span>
+                        </span>
                     </span>
-                </span>
-            </span>
                 </label>
             </div>
         </div>
@@ -266,7 +296,8 @@
         <div class="row">
             <div class="form-field form-field-single-checkbox">
                 <label><input type="checkbox" name="client_no_us_person" value="true" {% if formData.client_no_us_person %}checked {% endif %}>
-                    <span class="label">{% trans %} common_no-us-person-declaration {% endtrans %}</span></label>
+                    <span class="label">{% trans %} common_no-us-person-declaration {% endtrans %}</span>
+                </label>
             </div>
         </div>
     </fieldset>
@@ -274,7 +305,6 @@
     <div class="row btn-controls tab-footer">
         <div class="col-back col-lg-6 col-md-6">&nbsp;</div>
         <div class="col-next col-lg-6 col-md-6">
-            <input type="hidden" name="client_type" value="person"/>
             <button class="btn-primary">
                 {% trans %} lender-subscription_part1-validate-button {% endtrans %}
                 <span class="icon fa-angle-right"></span>
