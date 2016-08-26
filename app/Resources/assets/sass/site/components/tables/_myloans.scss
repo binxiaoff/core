@@ -86,6 +86,42 @@
       }
     }
   }
+
+  // Row has details
+  &[data-details] {
+    cursor: pointer;
+
+    &:hover {
+      background-color: $c-bg3;
+    }
+
+    .table-myloans-item-type {
+      &:after {
+        content: $fa-angle-d-u; // Angle down
+        display: inline-block;
+        width: $fs-base;
+        height: $fs-base;
+        margin-left: 5px;
+        color: $c-t3;
+        font-family: $ff-icon;
+        font-size: inherit;
+        line-height: $fs-base;
+        text-align: center;
+        vertical-align: middle;
+        transform: rotate(0deg);
+        transform-origin: center center;
+        transition: transform .2s;
+      }
+    }
+
+    &#{$js-operation-details-open} {
+      background-color: $c-bg3;
+
+      .table-myloans-item-type:after {
+        transform: rotate(-180deg);
+      }
+    }
+  }
 }
 
 .loan-doc {
