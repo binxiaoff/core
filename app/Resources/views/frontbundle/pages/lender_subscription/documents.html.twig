@@ -73,13 +73,16 @@
                                             </div>
                                             <h3 class="promo-highlight">
                                                 {% if 'lender-subscription_step-2-statistics-section-linechart-value'|trans != 'lender-subscription_step-2-statistics-section-linechart-value' %}
-                                                    {% set valueLineChart = getStatistic('unilendIRR')|round(1, 'floor')|localizednumber %}
+                                                    {% set valueLineChart = getStatistic('unilendIRR')|round(2, 'floor') %}
                                                 {% else %}
                                                     {% set valueLineChart = 'lender-subscription_step-2-statistics-section-linechart-value'|trans %}
                                                 {% endif %}
                                                 <span class="ui-text-count" data-start-count="0"
                                                       data-end-count="{{ valueLineChart }}"
-                                                      data-total-time="3000" data-tween-count="easeOutQuint"></span><sup>%</sup>
+                                                      data-total-time="3000"
+                                                      data-limit-decimal="2"
+                                                      data-tween-count="easeOutQuint"></span>
+                                                <sup>%</sup>
                                             </h3>
                                             <p>{% trans %} lender-subscription_step-2-statistics-section-linechart-text {% endtrans %}</p>
                                         </div><!-- /.promo -->

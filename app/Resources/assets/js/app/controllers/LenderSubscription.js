@@ -73,6 +73,7 @@ $doc.on('ready', function () {
   checkAddressIsNotSame()
   $doc.on('change', '.form-preter-create:visible .toggle-correspondence-address', function () {
     checkAddressIsNotSame()
+    setTimeout(checkAddressIsNotSame, 500)
   })
 
   // Validate the birthdate via AJAX
@@ -127,7 +128,7 @@ $doc.on('ready', function () {
     pwdTimer = setTimeout(function () {
       // Talk to AJAX
       $.ajax({
-        url: '/inscription_preteur/ajax/pwd',
+        url: '/inscription_preteur/ajax/password',
         method: 'post',
         data: {
           client_password: $elem.val()
@@ -161,10 +162,5 @@ $doc.on('ready', function () {
     $('#form-lender-person-birth-place').val(itemLabel)
     $('#form-lender-person-birth-place-insee').val(itemValue)
   })
-
-  /*
-   * Step 2
-   */
-
-
 })
+

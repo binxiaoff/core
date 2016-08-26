@@ -18,6 +18,7 @@
             {% endif %}
         </div>
     </header><!-- .panel-header -->
+
     <section id="profile-fiscalite-bank-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
         <section id="profile-fiscalite-bank-view" role="tabpanel" class="profile-bank-view collapse in">
             <a href="javascript:;" data-target="#profile-fiscalite-bank-edit" role="button" data-toggle="collapse" data-parent="#profile-fiscalite-bank-section" class="btn-edit" aria-controls="#profile-fiscalite-bank-edit" aria-expanded="false">
@@ -26,7 +27,7 @@
             </a>
             <dl class="list-2col">
                 <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-funds-origin-label {% endtrans %}</dt>
-                <dd id="profile-fiscalite-bank-origin-output">{{ lenderAccount.fiscal_info.fundsOrigin[lenderAccount.origine_des_fonds] }}</dd>
+                <dd id="profile-fiscalite-bank-origin-output">{% if lenderAccount.fiscal_info.fundsOrigin[lenderAccount.origine_des_fonds] is defined %}{{ lenderAccount.fiscal_info.fundsOrigin[lenderAccount.origine_des_fonds] }}{% else %}-{% endif %}</dd>
                 <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-bic {% endtrans %}</dt>
                 <dd id="profile-fiscalite-bank-bic-output">{{ lenderAccount.bic }}</dd>
                 <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-iban {% endtrans %}</dt>
@@ -59,7 +60,6 @@
                             </div><!-- /.input-group -->
 
                             <ul class="ui-formvalidation-messages"></ul>
-
                         </div><!-- /.iban-add -->
                     </div><!-- /.form-field -->
                 </div>
@@ -139,9 +139,9 @@
         <p>{% trans with { '%currentYear%': date()|date('Y'), '%lastYear%': date()|date('Y') - 1 } %} lender-profile_fiscal-solidarity-tax-on-wealth-msg {% endtrans %}</p>
         <dl class="list-2col">
             <dt>{% trans %} lender-profile_balance-to-declare {% endtrans %}</dt>
-            <dd>{{ lenderAccount.fiscal_info.amounts.balance }}€</dd>
+            <dd>{{ lenderAccount.fiscal_info.amounts.balance|localizedcurrency('EUR') }}</dd>
             <dt>{% trans %} lender-profile_owed-capital {% endtrans %}</dt>
-            <dd>{{ lenderAccount.fiscal_info.amounts.owedCapital }}€</dd>
+            <dd>{{ lenderAccount.fiscal_info.amounts.owedCapital|localizedcurrency('EUR') }}</dd>
         </dl>
     </div><!-- /.panel-content -->
 </article><!-- /#panel-reports.panel -->

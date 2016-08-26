@@ -18,6 +18,7 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Guard\Authenticator\AbstractFormLoginAuthenticator;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
+use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
 
 class LoginAuthenticator extends AbstractFormLoginAuthenticator
 {
@@ -123,8 +124,17 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      */
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
+        /** @var BaseUser $user */
         $user = $token->getUser();
         $request->getSession()->remove('captchaInformation');
+
+        if (password_needs_rehash($user->getPassword(), PASSWORD_BCRYPT)) {
+            /** @var \clients $client */
+            $client = $this->entityManager->getRepository('clients');
+            $client->get($user->getClientId());
+            $client->password = password_hash($this->getCredentials($request)['password'], PASSWORD_BCRYPT);
+            $client->update();
+        }
 
         if ($user instanceof UserInterface && in_array('ROLE_LENDER', $user->getRoles())) {
             if ($user->getSubscriptionStep() < 3) {
@@ -156,7 +166,6 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      */
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
-
         if ($exception instanceof LockedException || $exception instanceof DisabledException || $exception instanceof AccountExpiredException) {
             $customException = new CustomUserMessageAuthenticationException('closed-account');
             $request->getSession()->set(Security::AUTHENTICATION_ERROR, $customException);

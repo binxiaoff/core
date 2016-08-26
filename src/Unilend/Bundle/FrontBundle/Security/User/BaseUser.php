@@ -2,11 +2,12 @@
 
 namespace Unilend\Bundle\FrontBundle\Security\User;
 
+use Symfony\Component\Security\Core\Encoder\EncoderAwareInterface;
 use Symfony\Component\Security\Core\User\AdvancedUserInterface;
 use Symfony\Component\Security\Core\User\EquatableInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-class BaseUser implements AdvancedUserInterface, EquatableInterface
+class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwareInterface
 {
     private $username;
     private $password;
@@ -59,6 +60,17 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface
     public function getUsername()
     {
         return $this->username;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getEncoderName()
+    {
+        if (1 === preg_match('/^[0-9a-f]{32}$/', $this->password)) {
+            return 'md5';
+        }
+        return 'default';
     }
 
     public function getIsActive()

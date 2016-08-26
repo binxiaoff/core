@@ -53,9 +53,12 @@
                                     {% set valueLineChart = 'lender-subscription_step-2-statistics-section-linechart-value'|trans %}
                                 {% endif %}
                                 <h3 class="promo-highlight">
-                                    <span class="ui-text-count" data-start-count="0" data-end-count="{{ valueLineChart }}" data-total-time="3000" data-limit-decimal="1" data-tween-count="easeOutCirc">
-                                        {{ valueLineChart|localizednumber }}
-                                    </span>
+                                    <span class="ui-text-count"
+                                          data-start-count="0"
+                                          data-end-count="{{ valueLineChart }}"
+                                          data-total-time="3000"
+                                          data-limit-decimal="1"
+                                          data-tween-count="easeOutCirc">{{ valueLineChart|localizednumber }}</span>
                                     <sup>%</sup>
                                 </h3>
                                 <p>{% trans with {'%avgYearlyInterestRate%' : valueLineChart|localizednumber }%} lender-subscription_step-1-statistics-linechart2-text {% endtrans %}</p>
@@ -73,15 +76,8 @@
                 </div><!-- /.tabs -->
             </div><!-- /.site-wrap -->
         </div><!-- /.page-content -->
+
         {% include 'partials/components/list-socialmedia.html.twig' %}
     </div><!-- /.hero-wrap -->
 </article><!-- /.page -->
 {% endblock %}
-
-
-
-
-
-
-
-
