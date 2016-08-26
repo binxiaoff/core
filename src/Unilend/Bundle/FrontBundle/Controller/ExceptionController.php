@@ -21,7 +21,7 @@ class ExceptionController extends Controller
      */
     public function error404Action()
     {
-        $response    = new Response('', Response::HTTP_NOT_FOUND);
+        $response    = new Response();
         $translator  = $this->get('translator');
         $title       = $translator->trans('error-page_404-title');
         $details = $translator->trans('error-page_404-details');
