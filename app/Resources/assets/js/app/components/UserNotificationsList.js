@@ -245,7 +245,7 @@ $.fn.uiUserNotificationsList = function (op) {
  */
 $(document)
   // Auto-init `[data-usernotificationslist]` elements
-  .on('ready UI:visible', function () {
+  .on('ready UI:visible', function (event) {
     $(event.target).find('[data-usernotificationslist]').not('.ui-usernotificationslist').uiUserNotificationsList()
   })
 

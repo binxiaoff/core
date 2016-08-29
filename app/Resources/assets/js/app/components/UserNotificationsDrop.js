@@ -368,7 +368,7 @@ $.fn.uiUserNotificationsDrop = function (op) {
  */
 $(document)
   // Auto-init `[data-usernotificationsdrop]` elements
-  .on('ready UI:visible', function () {
+  .on('ready UI:visible', function (event) {
     $(event.target).find('[data-usernotificationsdrop]').not('.ui-usernotificationsdrop').uiUserNotificationsDrop()
   })
 
