@@ -12,20 +12,12 @@
     </style>
 <?php endif; ?>
 <?php
-    $tab_date_retrait      = explode(' ', $this->projects->date_retrait_full);
-    $heure                 = $tab_date_retrait[1];
-    $tab_heure_sans_minute = explode(':', $heure);
-    $heure_sans_minute     = $tab_heure_sans_minute[0] . "h" . $tab_heure_sans_minute[1];
-
-    if ($heure_sans_minute == '00h00') {
-        $HfinFunding       = explode(':', $this->heureFinFunding);
-        $heure_sans_minute = $HfinFunding[0] . 'h00';
-    }
+    $heure_sans_minute = $this->projectEndedDate->format('G\hi');
 
     if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->page_attente) :
         $this->dateRest = $this->lng['preteur-projets']['termine_short'];
     else :
-        $this->heureFinFunding = $tab_heure_sans_minute[0] . ':' . $tab_heure_sans_minute[1]; ?>
+        $this->heureFinFunding = $this->projectEndedDate->format('G:i'); ?>
     <script type="text/javascript">
         var cible = new Date('<?= $this->mois_jour ?>, <?= $this->annee ?> <?= $this->heureFinFunding ?>:00');
         var letime = parseInt((cible.getTime()) / 1000, 10);

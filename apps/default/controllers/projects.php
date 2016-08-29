@@ -404,6 +404,8 @@ class projectsController extends bootstrap
             $this->bidsStatistics = $projectManager->getBidsStatistics($this->projects);
             $this->meanBidAmount  = round(array_sum(array_column($this->bidsStatistics, 'amount_total')) / array_sum(array_column($this->bidsStatistics, 'nb_bids')), 2);
 
+            $this->projectEndedDate = $projectManager->getProjectEndDate($this->projects);
+
             if (false === empty($this->clients->id_client)) {
                 $this->bidsEncours = $this->bids->getBidsEncours($this->projects->id_project, $this->lenders_accounts->id_lender_account);
                 $this->lBids       = $this->bids->select('id_lender_account = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $this->projects->id_project . ' AND status = 0', 'added ASC');
@@ -430,11 +432,8 @@ class projectsController extends bootstrap
                     $date1 = strtotime($this->projects->date_publication . ' 00:00:00');
                 }
 
-                if ($this->projects->date_retrait_full != '0000-00-00 00:00:00') {
-                    $date2 = strtotime($this->projects->date_retrait_full);
-                } else {
-                    $date2 = strtotime($this->projects->date_fin);
-                }
+
+                $date2 = $this->projectEndedDate->getTimestamp();
 
                 $this->interDebutFin = $this->dates->dateDiff($date1, $date2);
             }
