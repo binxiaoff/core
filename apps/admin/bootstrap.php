@@ -2,6 +2,50 @@
 
 class bootstrap extends Controller
 {
+    /** @var \dates */
+    protected $dates;
+    /** @var \ficelle */
+    protected $ficelle;
+    /** @var \upload */
+    protected $upload;
+    /** @var \photos */
+    protected $photos;
+    /** @var \translations */
+    protected $ln;
+    /** @var \settings */
+    protected $settings;
+    /** @var \tree_elements */
+    protected $tree_elements;
+    /** @var \blocs */
+    protected $blocs;
+    /** @var \blocs_elements */
+    protected $blocs_elements;
+    /** @var \elements */
+    protected $elements;
+    /** @var \tree */
+    protected $tree;
+    /** @var \users */
+    protected $users;
+    /** @var \users_zones */
+    protected $users_zones;
+    /** @var \users_history */
+    protected $users_history;
+    /** @var \mail_templates */
+    protected $mail_template;
+    /** @var \projects */
+    protected $projects;
+    /** @var \clients */
+    protected $clients;
+    /** @var \companies */
+    protected $companies;
+    /** @var \bids */
+    protected $bids;
+    /** @var \loans */
+    protected $loans;
+    /** @var \lenders_accounts */
+    protected $lenders_accounts;
+    /** @var \echeanciers */
+    protected $echeanciers;
 
     public function initialize()
     {

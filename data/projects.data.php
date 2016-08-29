@@ -159,7 +159,6 @@ class projects extends projects_crud
 
         $sql = 'SELECT
                     p.*,
-                    p.status as statusProject,
                     co.siren,
                     co.name,
                     ps.label,

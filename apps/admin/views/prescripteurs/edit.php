@@ -107,7 +107,7 @@
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> id="ledossier<?= $p['id_project'] ?>">
                     <td><?= $p['id_project'] ?></td>
                     <td><?= $p['siren'] ?></td>
-                    <td><?= $p['name'] ?> <?= ($p['statusProject'] == 1 ? '<i style="color:red">(Hors ligne)</i>' : '') ?></td>
+                    <td><?= $p['name'] ?></td>
                     <td><?= $this->dates->formatDate($p['added'], 'd/m/Y') ?></td>
                     <td><?= $this->dates->formatDate($p['updated'], 'd/m/Y') ?></td>
                     <td><?= $this->ficelle->formatNumber($p['amount']) ?> €</td>

@@ -673,7 +673,7 @@ class ProjectManager
         return $oEndDate;
     }
 
-    public function addProjectStatus($iUserId, $iProjectStatus, \projects $oProject, $iReminderNumber = 0, $sContent = '')
+    public function addProjectStatus($iUserId, $iProjectStatus, \projects &$oProject, $iReminderNumber = 0, $sContent = '')
     {
         /** @var \projects_status_history $oProjectsStatusHistory */
         $oProjectsStatusHistory = $this->oEntityManager->getRepository('projects_status_history');
@@ -691,6 +691,9 @@ class ProjectManager
         $oProjectsStatusHistory->numero_relance    = $iReminderNumber;
         $oProjectsStatusHistory->content           = $sContent;
         $oProjectsStatusHistory->create();
+
+        $oProject->status = $iProjectStatus;
+        $oProject->update();
 
         $this->projectStatusUpdateTrigger($oProjectStatus, $oProject);
     }
@@ -828,7 +831,7 @@ class ProjectManager
         return (int) $settings->value;
     }
 
-    public function setProjectRateRange(\projects $project)
+    public function getProjectRateRange(\projects $project)
     {
         if (empty($project->period)) {
             throw new \Exception('project period not set.');
@@ -850,8 +853,7 @@ class ProjectManager
                 throw new \Exception('No settings found for the project.');
             }
             if (count($rateSettings) === 1) {
-                $project->id_rate = $rateSettings[0]['id_rate'];
-                $project->update();
+                return $rateSettings[0]['id_rate'];
             } else {
                 throw new \Exception('More than one settings found for the project.');
             }
