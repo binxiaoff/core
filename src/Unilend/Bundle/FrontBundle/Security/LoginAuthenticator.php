@@ -1,6 +1,7 @@
 <?php
 namespace Unilend\Bundle\FrontBundle\Security;
 
+use Lexik\Bundle\DataLayerBundle\Manager\DataLayerManager;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RouterInterface;
@@ -16,6 +17,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Guard\Authenticator\AbstractFormLoginAuthenticator;
+use Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
@@ -30,12 +32,19 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     private $router;
     /** @var EntityManager */
     private $entityManager;
+    /** @var NotificationManager */
+    private $notificationManager;
 
-    public function __construct(UserPasswordEncoder $securityPasswordEncoder, RouterInterface $router, EntityManager $entityManager)
-    {
+    public function __construct(
+        UserPasswordEncoder $securityPasswordEncoder,
+        RouterInterface $router,
+        EntityManager $entityManager,
+        NotificationManager $notificationManager
+    ) {
         $this->securityPasswordEncoder = $securityPasswordEncoder;
         $this->router                  = $router;
         $this->entityManager           = $entityManager;
+        $this->notificationManager     = $notificationManager;
     }
 
     protected function getDefaultSuccessRedirectUrl(Request $request, UserInterface $user)
@@ -127,11 +136,11 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         /** @var BaseUser $user */
         $user = $token->getUser();
         $request->getSession()->remove('captchaInformation');
+        /** @var \clients $client */
+        $client = $this->entityManager->getRepository('clients');
+        $client->get($user->getClientId());
 
         if (password_needs_rehash($user->getPassword(), PASSWORD_BCRYPT)) {
-            /** @var \clients $client */
-            $client = $this->entityManager->getRepository('clients');
-            $client->get($user->getClientId());
             $client->password = password_hash($this->getCredentials($request)['password'], PASSWORD_BCRYPT);
             $client->update();
         }
@@ -154,8 +163,20 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
 
         $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
 
-        if (!$targetPath) {
+        if (! $targetPath) {
             $targetPath = $this->getDefaultSuccessRedirectUrl($request, $user);
+        }
+
+        $client->saveLogin(new \DateTime('NOW'), $user->getUsername(), $user->getPassword());
+
+        /** @var \clients_history $clientHistory */
+        $clientHistory = $this->entityManager->getRepository('clients_history');
+        $clientHistory->logClientAction($client, \clients_history::STATUS_ACTION_LOGIN);
+
+        /** @var \clients_gestion_notifications $clientNotificationSettings */
+        $clientNotificationSettings = $this->entityManager->getRepository('clients_gestion_notifications');
+        if (false === $clientNotificationSettings->select('id_client = ' . $user->getClientId())) {
+            $this->notificationManager->generateDefaultNotificationSettings($client);
         }
 
         return new RedirectResponse($targetPath);
@@ -195,6 +216,17 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
 
             $request->getSession()->set('captchaInformation', $aCaptchaInformation);
         }
+
+        $credentials = $this->getCredentials($request);
+        /** @var \login_log $loginLog */
+        $loginLog = $this->entityManager->getRepository('login_log');
+
+        $loginLog->pseudo      = $credentials['username'];
+        $loginLog->IP          = $request->getClientIp();
+        $loginLog->date_action = date('Y-m-d H:i:s');
+        $loginLog->statut      = 0;
+        $loginLog->retour      = $exception->getMessage();
+        $loginLog->create();
 
         return new RedirectResponse($this->getLoginUrl());
     }

@@ -3,7 +3,6 @@ namespace Unilend\Bundle\FrontBundle\EventSubscriber;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
 
 class SourceSubscriber implements EventSubscriberInterface
@@ -25,6 +24,6 @@ class SourceSubscriber implements EventSubscriberInterface
 
     public function setSource()
     {
-        $this->sourceManager->handleSource();
+        $this->sourceManager->handle();
     }
 }
