@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
+use Unilend\Bundle\FrontBundle\Service\SourceManager;
 use Unilend\core\Loader;
 
 class LenderSubscriptionController extends Controller
@@ -207,7 +208,12 @@ class LenderSubscriptionController extends Controller
             $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
             /** @var \clients_adresses $clientAddress */
             $clientAddress = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
+            $sourceManager = $this->get('unilend.frontbundle.service.source_manager');
 
+            $client->source                     = $sourceManager->getSource(SourceManager::SOURCE1);
+            $client->source2                    = $sourceManager->getSource(SourceManager::SOURCE2);
+            $client->source3                    = $sourceManager->getSource(SourceManager::SOURCE3);
+            $client->slug_origine               = $sourceManager->getSource(SourceManager::ENTRY_SLUG);
             $client->civilite                   = $post['client_form_of_address'];
             $client->nom                        = $ficelle->majNom($post['client_name']);
             $client->nom_usage                  = isset($post['client_used_name']) ? $ficelle->majNom($post['client_used_name']) : '';
@@ -372,8 +378,13 @@ class LenderSubscriptionController extends Controller
             /** @var \lenders_accounts $lenderAccount */
             $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
             /** @var \ficelle $ficelle */
-            $ficelle = Loader::loadLib('ficelle');
+            $ficelle       = Loader::loadLib('ficelle');
+            $sourceManager = $this->get('unilend.frontbundle.service.source_manager');
 
+            $client->source                     = $sourceManager->getSource(SourceManager::SOURCE1);
+            $client->source2                    = $sourceManager->getSource(SourceManager::SOURCE2);
+            $client->source3                    = $sourceManager->getSource(SourceManager::SOURCE3);
+            $client->slug_origine               = $sourceManager->getSource(SourceManager::ENTRY_SLUG);
             $client->civilite                   = $post['client_form_of_address'];
             $client->nom                        = $ficelle->majNom($post['client_name']);
             $client->prenom                     = $ficelle->majNom($post['client_first_name']);

@@ -12,10 +12,10 @@ parameters:
     mailjet.api_secret:             ~
     mailer_transport:               mail # mailjet for prod, mail for the rest of the environments
 
-    mapbox.token:                   pk.eyJ1IjoidW5pbGVuZCIsImEiOiJjaXJiczA4ejQwMDVvaWZsdzdmMmpnOGRtIn0._IBtG2TUy17m7S6jwVBrcg
-
     desk_user:                      equipeit@unilend.fr
     desk_password:                  password
+
+    gtm_token:                      GTM-W2WQKW
 
     url.universign:                 'https://equipeit@unilend.fr:universign4unilend@ws.universign.eu/sign/rpc/'
     url.host_admin:                 'admin.local.unilend.fr' # for Front to know the url BO
@@ -47,3 +47,5 @@ parameters:
     path.protected:                 %path.shared%protected/
     path.payline:                   /data/sites/unilend/librairies/payline/
     cms:                            iZicom
+
+    mapbox.token:                   pk.eyJ1IjoidW5pbGVuZCIsImEiOiJjaXJiczA4ejQwMDVvaWZsdzdmMmpnOGRtIn0._IBtG2TUy17m7S6jwVBrcg

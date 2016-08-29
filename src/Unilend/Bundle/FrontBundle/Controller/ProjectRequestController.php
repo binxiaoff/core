@@ -14,6 +14,7 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Service\RouteProvider;
+use Unilend\Bundle\FrontBundle\Service\SourceManager;
 use Unilend\core\Loader;
 use Unilend\librairies\Altares;
 
@@ -171,6 +172,13 @@ class ProjectRequestController extends Controller
         $client->email     = $email;
         $client->id_langue = 'fr';
         $client->status    = \clients::STATUS_ONLINE;
+
+        $sourceManager = $this->get('unilend.frontbundle.service.source_manager');
+
+        $client->source       = $sourceManager->getSource(SourceManager::SOURCE1);
+        $client->source2      = $sourceManager->getSource(SourceManager::SOURCE2);
+        $client->source3      = $sourceManager->getSource(SourceManager::SOURCE3);
+        $client->slug_origine = $sourceManager->getSource(SourceManager::ENTRY_SLUG);
 
         if (empty($client->create())) {
             return $this->redirect($request->headers->get('referer'));

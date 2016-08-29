@@ -40,6 +40,7 @@ class AppKernel extends Kernel
             new Unilend\Bundle\TranslationBundle\UnilendTranslationBundle(),
             new Symfony\Bundle\SecurityBundle\SecurityBundle(),
             new Symfony\Cmf\Bundle\RoutingBundle\CmfRoutingBundle,
+            new Xynnn\GoogleTagManagerBundle\GoogleTagManagerBundle(),
         ];
 
         if (in_array($this->getEnvironment(), ['dev', 'test'], true)) {

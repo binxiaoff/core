@@ -66,5 +66,10 @@
             <argument type="service" id="unilend.service.translation_manager" />
             <argument type="service" id="memcache.default" />
         </service>
+
+        <service id="unilend.frontbundle.service.source_manager" class="Unilend\Bundle\FrontBundle\Service\SourceManager">
+            <argument type="service" id="google_tag_manager" />
+            <argument type="service" id="request_stack" />
+        </service>
     </services>
 </container>
