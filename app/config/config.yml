@@ -167,4 +167,4 @@ services:
 google_tag_manager:
     enabled: true
     id: "%gtm_token%"
-    autoAppend: true
+    autoAppend: false

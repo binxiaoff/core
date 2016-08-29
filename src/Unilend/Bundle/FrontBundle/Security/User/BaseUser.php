@@ -11,6 +11,7 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
 {
     private $username;
     private $password;
+    private $email;
     private $salt;
     private $roles;
     private $isActive;
@@ -18,10 +19,11 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
     private $hash;
     private $lastLoginDate;
 
-    public function __construct($username, $password, $salt, array $roles, $isActive, $clientId, $hash, $lastLoginDate = null)
+    public function __construct($username, $password, $email, $salt, array $roles, $isActive, $clientId, $hash, $lastLoginDate = null)
     {
         $this->username = $username;
         $this->password = $password;
+        $this->email    = $email;
         $this->salt     = $salt;
         $this->roles    = $roles;
         $this->isActive = $isActive;
@@ -44,6 +46,11 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
     public function getPassword()
     {
         return $this->password;
+    }
+
+    public function getEmail()
+    {
+        return $this->email;
     }
 
     /**
