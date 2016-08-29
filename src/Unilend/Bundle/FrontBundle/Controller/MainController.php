@@ -23,6 +23,7 @@ use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
 use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
+use Unilend\Bundle\FrontBundle\Service\SourceManager;
 use Unilend\Bundle\FrontBundle\Service\TestimonialManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
@@ -358,6 +359,13 @@ class MainController extends Controller
         $maximumAmount = $settings->value;
 
         $isPartnerFunnel = $content['tunnel-partenaire'] == 1;
+
+        if ($isPartnerFunnel) {
+            $sourceManager = $this->get('unilend.frontbundle.service.source_manager');
+            $sourceManager->setSource(SourceManager::SOURCE1, '');
+            $sourceManager->setSource(SourceManager::SOURCE2, '');
+            $sourceManager->setSource(SourceManager::SOURCE3, '');
+        }
 
         $template = [
             'cms'      => [
