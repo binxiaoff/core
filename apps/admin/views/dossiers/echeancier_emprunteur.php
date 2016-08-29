@@ -76,7 +76,9 @@
                     <th>Capital restant</th>
                     <th>Date d'envoi du prélèvement</th>
                     <th>Date echeance Emprunteur</th>
-                    <th>Statut</th>
+                    <th>Date echeance Prêteur</th>
+                    <th>Statut Emprunteur</th>
+                    <th>Statut Prêteur</th>
                 </tr>
             </thead>
             <tbody>
@@ -132,7 +134,9 @@
                         <td style="text-align:right"><?= $this->ficelle->formatNumber($capRestant / 100) ?></td>
                         <td><?= $date_envoi_prelevement ?></td>
                         <td><?= $this->dates->formatDate($r['date_echeance_emprunteur'], 'd/m/Y') ?></td>
+                        <td><?= $this->dates->formatDate($r['date_echeance_preteur'], 'd/m/Y') ?></td>
                         <td><?= $sStatus ?></td>
+                        <td><?= $r['statut_preteur'] ?></td>
                     </tr>
                         <?php
                         $i++;
@@ -151,7 +155,9 @@
                         <td style="text-align:right">0</td>
                         <td><?= $this->dates->formatDate($this->date_ra, 'd/m/Y') ?></td>
                         <td><?= $this->dates->formatDate($this->date_ra, 'd/m/Y') ?></td>
+                        <td><?= $this->dates->formatDate($r['date_echeance_preteur'], 'd/m/Y') ?></td>
                         <td><?= $sStatus ?></td>
+                        <td><?= $r['statut_preteur'] ?></td>
                     </tr>
                     <?php } ?>
             </tbody>
