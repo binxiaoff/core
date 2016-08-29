@@ -1,7 +1,7 @@
 /*
  * User Notifications Drop
  * Shows user's notifications drop-down when clicked
- * 
+ *
  * @component `UserNotificationsDrop`
  * @ui `ui-usernotificationsdrop`
  * @data `data-usernotificationsdrop`
@@ -181,7 +181,7 @@ UserNotificationsDrop.prototype.render = function () {
   if (self.settings.onbeforerender === 'function') {
     self.settings.onbeforerender.apply(self, [notifications])
   }
-  
+
   // Customise output depending on settings
   if (self.settings.showOnlyUnread) {
     var onlyUnreadNotifications = []
@@ -227,7 +227,7 @@ UserNotificationsDrop.prototype.render = function () {
   self.updatePip(unreadNotifications)
 
   // @debug
-  console.log('UserNotificationsDrop.render', self.$elem[0])
+  // console.log('UserNotificationsDrop.render', self.$elem[0])
 
   // Place notifications into the list
   notificationsHTML = Templating.replace(self.templates.list, {

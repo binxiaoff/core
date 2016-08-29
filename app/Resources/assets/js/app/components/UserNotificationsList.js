@@ -1,7 +1,7 @@
 /*
  * User Notifications Drop
  * Manages updating any HTML component which is tied to the UserNotifications component
- * 
+ *
  * @component `UserNotificationsList`
  * @ui `ui-usernotificationslist`
  * @data `data-usernotificationslist`
@@ -26,7 +26,7 @@ var USERNOTIFICATIONS_LANG_LEGACY = require('../../../lang/UserNotifications.lan
 if (window.USERNOTIFICATIONS_LANG) {
   __ = new Dictionary(window.USERNOTIFICATIONS_LANG)
   // @debug
-  // console.log('UserNotificationsList: using window.USERNOTIFICATIONS_LANG for Dictionary')
+  console.log('UserNotificationsList: using window.USERNOTIFICATIONS_LANG for Dictionary')
 
 // -- Support new legacy dictionary language format for fallbacks, e.g. `exampleTranslationKeyName`
 } else {
@@ -157,7 +157,7 @@ UserNotificationsList.prototype.render = function () {
 
   // Replace the drop's content with the new html
   self.$elem.html(notificationsHTML)
-    
+
   // @trigger elem `UserNotificationsList:render:complete`, [elemUserNotificationsList]
   self.$elem.trigger('UserNotificationsList:render:complete', [self])
 }

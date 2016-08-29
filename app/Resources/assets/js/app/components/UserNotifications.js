@@ -133,7 +133,7 @@ var UserNotifications = window.UserNotifications = {
     if (UserNotifications.collection.length === 0) return
 
     // @debug
-    console.log('UserNotifications.sort')
+    // console.log('UserNotifications.sort')
 
     // Sort via which has a newer date
     function testDateTime (a, b) {
@@ -180,7 +180,7 @@ var UserNotifications = window.UserNotifications = {
   push: function (notifications, options) {
 
     // @debug
-    console.log('UserNotifications.push', notifications, options)
+    // console.log('UserNotifications.push', notifications, options)
 
     // Only operate on legal arrays
     if (!(notifications instanceof Array)) {
@@ -221,7 +221,7 @@ var UserNotifications = window.UserNotifications = {
   replace: function (notifications, options) {
 
     // @debug
-    console.log('UserNotifications.replace', notifications, options)
+    // console.log('UserNotifications.replace', notifications, options)
 
     // Only operate on legal arrays
     if (!(notifications instanceof Array)) {
@@ -272,7 +272,7 @@ var UserNotifications = window.UserNotifications = {
     var flatmap = UserNotifications.flatmap()
 
     // @debug
-    console.log('UserNotifications.patch', notifications, options)
+    // console.log('UserNotifications.patch', notifications, options)
 
     // Only operate on legal arrays
     if (!(notifications instanceof Array)) {
@@ -312,7 +312,7 @@ var UserNotifications = window.UserNotifications = {
   // @returns {Void}
   clearAll: function () {
     // @debug
-    console.log('UserNotifications.clearAll')
+    // console.log('UserNotifications.clearAll')
 
     UserNotifications.collection = []
 
@@ -334,7 +334,7 @@ var UserNotifications = window.UserNotifications = {
     var flatmap = UserNotifications.flatmap()
 
     // @debug
-    console.log('UserNotifications.markRead', id, flatmap['__' + id])
+    // console.log('UserNotifications.markRead', id, flatmap['__' + id])
 
     if (flatmap.hasOwnProperty('__' + id)) {
       flatmap['__' + id].status = 'read'
@@ -356,7 +356,7 @@ var UserNotifications = window.UserNotifications = {
     if (UserNotifications.unreadCount === 0) return
 
     // @debug
-    console.log('UserNotifications.markAllRead')
+    // console.log('UserNotifications.markAllRead')
 
     // Set all stored unread notifications to read
     if (UserNotifications.collection instanceof Array && UserNotifications.collection.length > 0) {
@@ -384,7 +384,7 @@ var UserNotifications = window.UserNotifications = {
   updateUnreadCount: function (unreadCount) {
 
     // @debug
-    console.log('UserNotifications.updateUnreadCount', unreadCount)
+    // console.log('UserNotifications.updateUnreadCount', unreadCount)
 
     // Count unread if param was incorrect
     if (typeof unreadCount !== 'number') {
@@ -410,7 +410,7 @@ var UserNotifications = window.UserNotifications = {
     clearTimeout(UserNotifications.delayTimer)
     UserNotifications.delayTimer = setTimeout(function () {
       // @debug
-      console.log('UserNotifications.delayUpdated: Triggering UserNotifications:updated event now...')
+      // console.log('UserNotifications.delayUpdated: Triggering UserNotifications:updated event now...')
 
       // @trigger document `UserNotifications:updated`
       $doc.trigger('UserNotifications:updated', [UserNotifications])
