@@ -71,6 +71,7 @@ class UserProvider implements UserProviderInterface
                 return new UserLender(
                     $client->email,
                     $client->password,
+                    $client->email,
                     '',
                     $roles,
                     $isActive,
@@ -96,6 +97,7 @@ class UserProvider implements UserProviderInterface
                 return new UserBorrower(
                     $client->email,
                     $client->password,
+                    $client->email,
                     '',
                     $roles,
                     $isActive,

@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
+@use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
 use Unilend\core\Loader;
 
@@ -243,6 +244,9 @@ class LenderSubscriptionController extends Controller
             $client->etape_inscription_preteur  = 1;
             $client->create();
 
+            $request->getSession()->set(DataLayerCollector::SESSION_KEY_CLIENT_EMAIL, $client->email);
+            $request->getSession()->set(DataLayerCollector::SESSION_KEY_LENDER_CLIENT_ID, $client->id_client);
+
             $clientAddress->adresse_fiscal      = $post['fiscal_address_street'];
             $clientAddress->ville_fiscal        = $post['fiscal_address_city'];
             $clientAddress->cp_fiscal           = $post['fiscal_address_zip'];
@@ -412,6 +416,9 @@ class LenderSubscriptionController extends Controller
             $client->etape_inscription_preteur  = 1;
             $client->type                       = (\pays_v2::COUNTRY_FRANCE == $post['fiscal_address_country']) ? \clients::TYPE_LEGAL_ENTITY : \clients::TYPE_LEGAL_ENTITY_FOREIGNER;
             $client->create();
+
+            $request->getSession()->set(DataLayerCollector::SESSION_KEY_CLIENT_EMAIL, $client->email);
+            $request->getSession()->set(DataLayerCollector::SESSION_KEY_LENDER_CLIENT_ID, $client->id_client);
 
             $company->id_client_owner               = $client->id_client;
             $company->name                          = $post['company_name'];

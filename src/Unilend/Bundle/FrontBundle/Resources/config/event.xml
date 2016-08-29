@@ -5,14 +5,12 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
-        <service id="unilend.frontbundle.security_subscriber" class="Unilend\Bundle\FrontBundle\EventSubscriber\LoginSubscriber">
-            <argument type="service" id="unilend.service.entity_manager" />
-            <argument type="service" id="unilend.service.notification_manager" />
+        <service id="unilend.frontbundle.event.source_subscriber" class="Unilend\Bundle\FrontBundle\EventSubscriber\SourceSubscriber">
+            <argument type="service" id="unilend.frontbundle.service.source_manager" />
             <tag name="kernel.event_subscriber" />
         </service>
-
-        <service id="unilend.frontbundle.source_subscriber" class="Unilend\Bundle\FrontBundle\EventSubscriber\SourceSubscriber">
-            <argument type="service" id="unilend.frontbundle.service.source_manager" />
+        <service id="unilend.frontbundle.event.data_layer_subscriber" class="Unilend\Bundle\FrontBundle\EventSubscriber\DataLayerSubscriber">
+            <argument type="service" id="unilend.frontbundle.service.data_layer_collector" />
             <tag name="kernel.event_subscriber" />
         </service>
     </services>

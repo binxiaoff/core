@@ -13,6 +13,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\RouteProvider;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
 use Unilend\core\Loader;
@@ -182,6 +183,9 @@ class ProjectRequestController extends Controller
 
         if (empty($client->create())) {
             return $this->redirect($request->headers->get('referer'));
+        } else{
+            $request->getSession()->set(DataLayerCollector::SESSION_KEY_CLIENT_EMAIL, $client->email);
+            $request->getSession()->set(DataLayerCollector::SESSION_KEY_BORROWER_CLIENT_ID, $client->id_client);
         }
 
         /** @var \clients_adresses $address */

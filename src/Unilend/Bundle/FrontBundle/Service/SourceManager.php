@@ -1,10 +1,7 @@
 <?php
 namespace Unilend\Bundle\FrontBundle\Service;
 
-
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Xynnn\GoogleTagManagerBundle\Service\GoogleTagManager;
 
 class SourceManager
 {
@@ -13,14 +10,11 @@ class SourceManager
     const SOURCE3    = 'user_source_utm_source_campaign';
     const ENTRY_SLUG = 'user_source_entry_slug';
 
-    /** @var GoogleTagManager */
-    private $googleTagManager;
     /** @var RequestStack */
     private $requestStack;
 
-    public function __construct(GoogleTagManager $googleTagManager, RequestStack $requestStack)
+    public function __construct(RequestStack $requestStack)
     {
-        $this->googleTagManager = $googleTagManager;
         $this->requestStack     = $requestStack;
 
         $this->sources = [
@@ -31,7 +25,7 @@ class SourceManager
         ];
     }
 
-    public function handleSource()
+    public function handle()
     {
         $request = $this->requestStack->getCurrentRequest();
         $session = $request->getSession();
@@ -41,13 +35,11 @@ class SourceManager
                 if (false === $session->has(self::ENTRY_SLUG)) {
                     $slug = $request->getRequestUri();
                     $session->set($sessionKey, $slug);
-                    $this->googleTagManager->addData($sourceKey, $slug);
                 }
             } else {
                 $source = $request->get($sourceKey);
                 if (false === empty($source)) {
                     $session->set($sessionKey, $source);
-                    $this->googleTagManager->addData($sourceKey, $source);
                 }
             }
         }
