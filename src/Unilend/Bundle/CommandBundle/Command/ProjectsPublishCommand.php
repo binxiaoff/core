@@ -55,7 +55,10 @@ EOF
                 }
 
                 $this->zipProjectAttachments($oProject, $oEntityManager, $oLogger);
-                $this->sendNewProjectEmail($oProject, $oEntityManager);
+
+                if (false === $oProjectManager->isRateMinReached($oProject)) {
+                    $this->sendNewProjectEmail($oProject, $oEntityManager);
+                }
             }
         }
         if ($bHasProjectPublished) {
