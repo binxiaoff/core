@@ -47,7 +47,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         }
 
         if (in_array('ROLE_LENDER', $user->getRoles())) {
-            return $this->router->generate('lender_profile');
+            return $this->router->generate('lender_dashboard');
         }
 
         if (in_array('ROLE_BORROWER', $user->getRoles())) {

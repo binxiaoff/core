@@ -1,4 +1,3 @@
-{# Dashboard #}
 {% extends 'layouts/_layout.html.twig' %}
 
 {% block siteHeader %}
@@ -6,7 +5,6 @@
 {% endblock %}
 
 {% block siteContent %}
-
     <article{% if page.id is not empty %} id="{{ page.id }}"{% endif %} class="dashboard{% if page.classNames is not empty %} {{ page.classNames }}{% endif %}">
         <div class="dashboard-inner">
             <div class="site-wrap">
@@ -14,7 +12,7 @@
                     <nav class="dashboard-nav">
                         {% block dashboardNav %}
                             <ul>
-                                <li role="presentation" class="dashboard-nav-dashboard {% if app.request.attributes.get('_route') == 'lender_dasboard' %}active{% else %}complete{% endif %}">
+                                <li role="presentation" class="dashboard-nav-dashboard {% if app.request.attributes.get('_route') == 'lender_dashboard' %}active{% else %}complete{% endif %}">
                                     <a href="{{ path('lender_dashboard') }}"><span class="icon fa-dashboard-u"></span><span class="label">Tableau de bord</span></a>
                                 </li>
                                 <li role="presentation" class="dashboard-nav-balance {% if app.request.attributes.get('_route') == 'lender_wallet' %}active{% else %}complete{% endif %}">
@@ -42,7 +40,6 @@
                     {% block dashboardNotifications %}
                         {% include 'partials/components/dashboard-panel-notifications.twig' %}
                     {% endblock %}
-
                 </div><!-- /.col-menu -->
                 <div class="col-content dashboard-content">
                     {% block dashboardContent %} {% endblock %}
@@ -50,5 +47,4 @@
             </div><!-- /.site-wrap -->
         </div><!-- /.dashboard-inner -->
     </article><!-- /.dashboard -->
-
 {% endblock %}

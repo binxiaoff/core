@@ -8,7 +8,7 @@
     <div class="site-header-inner">
         <div class="site-wrap">
             <h1 class="site-title">
-                <a href="{{ path('lender_profile') }}" class="site-logo" tabindex="2">{{ site.title|default('Unilend') }}</a>
+                <a href="{{ path('lender_dashboard') }}" class="site-logo" tabindex="2">{{ site.title|default('Unilend') }}</a>
             </h1>
 
             {% block siteHeaderNav %}
@@ -31,7 +31,7 @@
 
                         <div class="site-user-profile">
                             <div class="profile-avatar">
-                                <a href="{{ path('lender_profile') }}">
+                                <a href="{{ path('lender_dashboard') }}">
                                     {{ app.user.initials }}
                                 </a>
                             </div><!-- /.profile-avatar -->
