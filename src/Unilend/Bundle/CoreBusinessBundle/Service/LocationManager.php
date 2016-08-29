@@ -65,7 +65,7 @@ class LocationManager
             if ($response && ($response = json_decode($response)) && false === empty($response->features)) {
                 return [
                     'latitude'  => $response->features[0]->center[1],
-                    'longitude' =>$response->features[0]->center[0]
+                    'longitude' => $response->features[0]->center[0]
                 ];
             }
         }

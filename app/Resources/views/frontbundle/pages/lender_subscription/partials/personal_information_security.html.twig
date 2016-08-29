@@ -14,7 +14,7 @@
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
             <div class="input-group">
-                <input id="form-lender-{{ idClientType }}-email-conf" type="email" name="client_email_confirmation" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-samevalueas="#form-lender-{{ idClientType }}-email"/>
+                <input id="form-lender-{{ idClientType }}-email-conf" type="email" name="client_email_confirmation" value="{{ formData.client_email }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-samevalueas="#form-lender-{{ idClientType }}-email"/>
             </div>
         </div><!-- /.form-field -->
     </div>
@@ -25,7 +25,8 @@
                 {% trans %} common_password {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
-            <input id="form-lender-{{ idClientType }}-pwd" type="password" name="client_password" value="" class="input-field" data-passwordcheck data-formvalidation-input data-formvalidation-required="true" data-formvalidation-minlength="6"/>
+            <input id="form-lender-{{ idClientType }}-pwd" type="password" name="client_password" value="" class="input-field"
+                   data-passwordcheck data-formvalidation-input data-formvalidation-required="true" data-formvalidation-minlength="6"/>
         </div><!-- /.form-field -->
 
         <div class="form-field col-lg-6 col-md-6">
@@ -45,7 +46,8 @@
                 {% trans %} lender-subscription_security-form-secret-question-label {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
-            <input id="form-lender-{{ idClientType }}-security-question" type="text" name="client_secret_question" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+            <input id="form-lender-{{ idClientType }}-security-question" type="text" name="client_secret_question" class="input-field" value="{{ formData.client_secret_question }}"
+                   data-formvalidation-input data-formvalidation-required="true">
             <div class="field-help">{% trans %} lender-subscription_security-form-secret-question-info {% endtrans %}</div>
         </div><!-- /.form-field -->
     </div>
@@ -56,7 +58,7 @@
                 {% trans %} lender-subscription_security-form-secret-answer-label {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
-            <input type="text" id="form-lender-{{ idClientType }}-security-answer" name="client_secret_answer" value="" autocomplete="off" class="input-field" data-formvalidation-input data-formvalidation-required="true" />
+            <input type="text" id="form-lender-{{ idClientType }}-security-answer" name="client_secret_answer" value="{{ formData.client_secret_answer }}" autocomplete="off" class="input-field" data-formvalidation-input data-formvalidation-required="true" />
         </div><!-- /.form-field -->
     </div>
 </fieldset>

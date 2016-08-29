@@ -1,23 +1,23 @@
 <fieldset class="panel">
     <div id="form-preter-2-notifications" class="ui-formvalidation-notifications">
-        {% if app.session.flashBag.has('step2Errors') %}
+        {% if app.session.flashBag.has('documentsErrors') %}
             <div class="message-error">
-                {% for error in app.session.flashBag.get('step2Errors') %}
+                {% for error in app.session.flashBag.get('documentsErrors') %}
                     <p>{{ error }}</p>
                 {% endfor %}
             </div>
         {% endif %}
     </div>
-    <h3 class="h3">{% trans %} lender-subscription_step-2-title {% endtrans %}</h3>
+    <h3 class="h3">{% trans %} lender-subscription_documents-title {% endtrans %}</h3>
 
     <div class="row">
         <div class="form-field form-field-iban">
             <div class="message-info">
-                <p>{% trans %} lender-subscription_step-2-bank-information-explanation {% endtrans %}</p>
+                <p>{% trans %} lender-subscription_documents-bank-information-explanation {% endtrans %}</p>
             </div><!-- /.message-info -->
 
             <label for="form-lender-step-2-bic" class="form-field-label">
-                {% trans %} lender-subscription_step-2-bic-field-label {% endtrans %}
+                {% trans %} lender-subscription_documents-bic-field-label {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
 
@@ -33,7 +33,7 @@
     <div class="row">
         <div class="form-field">
             <label for="form-lender-step-2-iban" class="form-field-label">
-                {% trans %} lender-subscription_step-2-iban-field-label {% endtrans %}
+                {% trans %} lender-subscription_documents-iban-field-label {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
 
