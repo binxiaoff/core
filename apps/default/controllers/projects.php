@@ -27,12 +27,11 @@ class projectsController extends bootstrap
         }
         $this->clients->checkAccessLender();
 
-        $this->projects        = $this->loadData('projects');
-        $this->projects_status = $this->loadData('projects_status');
-        $this->companies       = $this->loadData('companies');
-        $this->favoris         = $this->loadData('favoris');
-        $this->bids            = $this->loadData('bids');
-        $this->loans           = $this->loadData('loans');
+        $this->projects  = $this->loadData('projects');
+        $this->companies = $this->loadData('companies');
+        $this->favoris   = $this->loadData('favoris');
+        $this->bids      = $this->loadData('bids');
+        $this->loans     = $this->loadData('loans');
 
         $this->settings->get('Tri par taux', 'type');
         $this->triPartx = $this->settings->value;
@@ -75,7 +74,6 @@ class projectsController extends bootstrap
         $this->projects                      = $this->loadData('projects');
         $this->companies                     = $this->loadData('companies');
         $this->favoris                       = $this->loadData('favoris');
-        $this->projects_status               = $this->loadData('projects_status');
         $this->companies_actif_passif        = $this->loadData('companies_actif_passif');
         $this->companies_bilans              = $this->loadData('companies_bilans');
         $this->transactions                  = $this->loadData('transactions');
@@ -100,8 +98,8 @@ class projectsController extends bootstrap
             $this->clients_status->getLastStatut($this->clients->id_client);
         }
 
-        $this->bIsConnected                  = $this->clients->checkAccess();
-        $this->bIsAllowedToSeeAutobid        = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
+        $this->bIsConnected           = $this->clients->checkAccess();
+        $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
 
         if ($this->bIsConnected) {
             $this->setHeader('header_account');
@@ -122,13 +120,12 @@ class projectsController extends bootstrap
             $this->lSecteurs = $translationManager->getTranslatedCompanySectorList();
 
             $this->companies->get($this->projects->id_company, 'id_company');
-            $this->projects_status->getLastStatut($this->projects->id_project);
 
             $this->lastStatushisto = $this->projects_status_history->select('id_project = ' . $this->projects->id_project, 'id_project_status_history DESC', 0, 1);
             $this->lastStatushisto = $this->lastStatushisto[0];
 
             // si le status est inferieur a "a funder" on autorise pas a voir le projet
-            if ($this->projects_status->status < \projects_status::A_FUNDER) {
+            if ($this->projects->status < \projects_status::A_FUNDER) {
                 header('Location: ' . $this->lurl);
                 die;
             }
@@ -147,7 +144,7 @@ class projectsController extends bootstrap
 
             // page d'attente entre la cloture du projet et le traitement de cloture du projet
             $this->page_attente = false;
-            if ($dateRetrait <= $today && $this->projects_status->status == \projects_status::EN_FUNDING) {
+            if ($dateRetrait <= $today && $this->projects->status == \projects_status::EN_FUNDING) {
                 $this->page_attente = true;
             }
 
@@ -205,7 +202,7 @@ class projectsController extends bootstrap
                     $this->form_ok = false;
                 } elseif ($montant_p >= $this->projects->amount) {
                     $this->form_ok = false;
-                } elseif ($this->projects_status->status != \projects_status::EN_FUNDING) {
+                } elseif ($this->projects->status != \projects_status::EN_FUNDING) {
                     $this->form_ok = false;
                 }
 
@@ -290,7 +287,7 @@ class projectsController extends bootstrap
                 }
             }
 
-            $this->nbProjects = $this->projects->countSelectProjectsByStatus(implode(',', $this->tabProjectDisplay) . ',' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = ' . \projects::DISPLAY_PROJECT_ON);
+            $this->nbProjects = $this->projects->countSelectProjectsByStatus(implode(',', $this->tabProjectDisplay) . ',' . \projects_status::PRET_REFUSE, ' AND p.display = ' . \projects::DISPLAY_PROJECT_ON);
             $this->mois_jour  = $this->dates->formatDate($this->projects->date_retrait, 'F d');
             $this->annee      = $this->dates->formatDate($this->projects->date_retrait, 'Y');
 
@@ -301,7 +298,7 @@ class projectsController extends bootstrap
                 $this->dateRest = '';
             }
 
-            if ($this->projects_status->status == \projects_status::EN_FUNDING) {
+            if ($this->projects->status == \projects_status::EN_FUNDING) {
                 $this->date_retrait  = $this->dates->formatDateComplete($this->projects->date_retrait);
                 $this->heure_retrait = substr($this->heureFinFunding, 0, 2);
             } else {
@@ -390,7 +387,7 @@ class projectsController extends bootstrap
                 $this->txLenderMax          = $this->rateRange['rate_max'];
             }
 
-            $this->avgRate   = $this->projects->getAverageInterestRate($this->projects->id_project, $this->projects_status->status);
+            $this->avgRate   = $this->projects->getAverageInterestRate($this->projects->id_project, $this->projects->status);
             $this->status    = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
             $this->direction = 1;
 
@@ -404,7 +401,7 @@ class projectsController extends bootstrap
                 $this->lBids       = $this->bids->select('id_lender_account = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $this->projects->id_project . ' AND status = 0', 'added ASC');
             }
 
-            if ($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) {
+            if ($this->projects->status == \projects_status::FUNDE || $this->projects->status >= \projects_status::REMBOURSEMENT) {
                 if (false === empty($this->clients->id_client)) {
                     $this->bidsvalid        = $this->loans->getBidsValid($this->projects->id_project, $this->lenders_accounts->id_lender_account);
                     $this->AvgLoansPreteur  = $this->loans->getAvgLoansPreteur($this->projects->id_project, $this->lenders_accounts->id_lender_account);

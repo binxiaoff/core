@@ -208,12 +208,8 @@ class ajaxController extends bootstrap
             $order        = 'ordre ' . $direction;
         }
 
-        /** @var \projects_status $oProjectStatus */
-        $oProjectStatus = $this->loadData('projects_status');
-        $oProjectStatus->getLastStatut($this->projects->id_project);
-
         $this->aBids   = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
-        $this->avgRate = $this->projects->getAverageInterestRate($this->projects->id_project, $oProjectStatus->status);
+        $this->avgRate = $this->projects->getAverageInterestRate();
         $this->status  = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
     }
 

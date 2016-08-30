@@ -181,14 +181,10 @@ class ProjectManager
      */
     public function autoBid(\projects $oProject)
     {
-        /** @var \projects_status $oProjectStatus */
-        $oProjectStatus = $this->oEntityManager->getRepository('projects_status');
-        if ($oProjectStatus->getLastStatut($oProject->id_project)) {
-            if ($oProjectStatus->status == \projects_status::A_FUNDER) {
-                $this->bidAllAutoBid($oProject);
-            } elseif ($oProjectStatus->status == \projects_status::EN_FUNDING) {
-                $this->reBidAutoBid($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE, true);
-            }
+        if ($oProject->status == \projects_status::A_FUNDER) {
+            $this->bidAllAutoBid($oProject);
+        } elseif ($oProject->status == \projects_status::EN_FUNDING) {
+            $this->reBidAutoBid($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE, true);
         }
     }
 
@@ -418,8 +414,6 @@ class ProjectManager
         $oSettings = $this->oEntityManager->getRepository('settings');
         /** @var \loans $oLoan */
         $oLoan = $this->oEntityManager->getRepository('loans');
-        /** @var \projects_status $oProjectStatus */
-        $oProjectStatus = $this->oEntityManager->getRepository('projects_status');
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         /** @var \echeanciers $oRepaymentSchedule */
@@ -456,10 +450,8 @@ class ProjectManager
         $oSettings->get('EQ-Retenue à la source', 'type');
         $retenues_source = $oSettings->value;
 
-        $oProjectStatus->getLastStatut($oProject->id_project);
-
         // Si le projet est bien en funde on créer les echeances
-        if ($oProjectStatus->status == \projects_status::FUNDE) {
+        if ($oProject->status == \projects_status::FUNDE) {
             $lLoans = $oLoan->select('id_project = ' . $oProject->id_project);
 
             $iLoanNbTotal   = count($lLoans);
@@ -695,15 +687,15 @@ class ProjectManager
         $oProject->status = $iProjectStatus;
         $oProject->update();
 
-        $this->projectStatusUpdateTrigger($oProjectStatus, $oProject);
+        $this->projectStatusUpdateTrigger($iProjectStatus, $oProject);
     }
 
-    private function projectStatusUpdateTrigger(\projects_status $oProjectStatus, \projects $oProject)
+    private function projectStatusUpdateTrigger($iProjectStatus, \projects $oProject)
     {
         /** @var \settings $oSettings */
         $oSettings = $this->oEntityManager->getRepository('settings');
 
-        switch ($oProjectStatus->status) {
+        switch ($iProjectStatus) {
             case \projects_status::A_TRAITER:
                 $oSettings->get('Adresse notification inscription emprunteur', 'type');
                 $this->oMailerManager->sendProjectNotificationToStaff('notification-depot-de-dossier', $oProject, trim($oSettings->value));

@@ -61,7 +61,7 @@ class ProjectDisplayManager
         }
 
         $projectsData = [];
-        $projects     = $projectsEntity->selectProjectsByStatus($projectStatus, ' AND p.status = 0 AND p.display = ' . \projects::DISPLAY_PROJECT_ON, $sort, $start, $limit);
+        $projects     = $projectsEntity->selectProjectsByStatus($projectStatus, ' AND p.display = ' . \projects::DISPLAY_PROJECT_ON, $sort, $start, $limit);
 
         foreach ($projects as $project) {
             $projectsData[$project['id_project']] = $this->getBaseData($project);
@@ -87,14 +87,11 @@ class ProjectDisplayManager
         $loans = $this->entityManager->getRepository('loans');
         /** @var \projects $projects */
         $projects = $this->entityManager->getRepository('projects');
+        $projects->get($project['id_project']);
 
         /** @var \companies $company */
         $company = $this->entityManager->getRepository('companies');
         $company->get($project['id_company']);
-
-        /** @var \projects_status $projectStatus */
-        $projectStatus = $this->entityManager->getRepository('projects_status');
-        $projectStatus->getLastStatut($project['id_project']);
 
         $now = new \DateTime('NOW');
         $end = new \DateTime($project['date_retrait_full']);
@@ -123,10 +120,10 @@ class ProjectDisplayManager
                 'latitude'  => $company->latitude,
                 'longitude' => $company->longitude
             ],
-            'status'               => $projectStatus->status,
-            'finished'             => ($projectStatus->status > \projects_status::EN_FUNDING || $end < $now),
-            'averageRate'          => round($projects->getAverageInterestRate($project['id_project']), 1),
-            'totalLenders'         => (\projects_status::EN_FUNDING == $projectStatus->status) ? $bids->countLendersOnProject($project['id_project']) : $loans->getNbPreteurs($project['id_project'])
+            'status'               => $project['status'],
+            'finished'             => ($project['status'] > \projects_status::EN_FUNDING || $end < $now),
+            'averageRate'          => round($projects->getAverageInterestRate(), 1),
+            'totalLenders'         => (\projects_status::EN_FUNDING == $project['status']) ? $bids->countLendersOnProject($project['id_project']) : $loans->getNbPreteurs($project['id_project'])
         ];
 
         $daysLeft = $now->diff($end);
@@ -204,7 +201,7 @@ class ProjectDisplayManager
                 'activeBidsCount' => array_sum(array_column($bidsSummary, 'activeBidsCount'))
             ];
         } else {
-            $projectData['fundingStatistics'] = $this->getProjectFundingStatistic($project, $projectData['status']);
+            $projectData['fundingStatistics'] = $this->getProjectFundingStatistic($project);
         }
 
         return $projectData;
@@ -310,7 +307,7 @@ class ProjectDisplayManager
         return $finance;
     }
 
-    public function getProjectFundingStatistic(\projects $project, $status)
+    public function getProjectFundingStatistic(\projects $project)
     {
         /** @var \loans $loans */
         $loans = $this->entityManager->getRepository('loans');
@@ -320,7 +317,7 @@ class ProjectDisplayManager
 
         $fundingStatistics['fundingTime']  = $startFundingPeriod->diff($endFundingPeriod);
         $fundingStatistics['NumberLender'] = $loans->getNbPreteurs($project->id_project);
-        $fundingStatistics['AvgRate']      = round($project->getAverageInterestRate($project->id_project, $status), 1);
+        $fundingStatistics['AvgRate']      = round($project->getAverageInterestRate(), 1);
 
         return $fundingStatistics;
     }
@@ -329,6 +326,6 @@ class ProjectDisplayManager
     {
         /** @var \projects $projects */
         $projects  = $this->entityManager->getRepository('projects');
-        return $projects->countSelectProjectsByStatus(implode(',', self::$projectsStatus), ' AND p.status = 0 AND p.display = ' . \projects::DISPLAY_PROJECT_ON);
+        return $projects->countSelectProjectsByStatus(implode(',', self::$projectsStatus), ' AND p.display = ' . \projects::DISPLAY_PROJECT_ON);
     }
 }

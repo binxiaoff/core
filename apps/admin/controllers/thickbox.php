@@ -166,11 +166,12 @@ class thickboxController extends bootstrap
         }
 
         if (in_array($this->params[1], array(\projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE))) {
-            $oProjectsLastStatusHistory = $this->loadData('projects_last_status_history');
-            $oProjectsLastStatusHistory->get($this->params[0], 'id_project');
+            /** @var \projects_status_history $oProjectsStatusHistory */
+            $oProjectsStatusHistory = $this->loadData('projects_status_history');
+            $oProjectsStatusHistory->loadLastProjectHistory($this->params[0]);
 
             $oProjectsStatusHistoryDetails = $this->loadData('projects_status_history_details');
-            $oProjectsStatusHistoryDetails->get($oProjectsLastStatusHistory->id_project_status_history, 'id_project_status_history');
+            $oProjectsStatusHistoryDetails->get($oProjectsStatusHistory->id_project_status_history, 'id_project_status_history');
 
             $this->sPreviousReceiver = $oProjectsStatusHistoryDetails->receiver;
         }

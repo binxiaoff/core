@@ -1207,10 +1207,6 @@ class transfertsController extends bootstrap
             $clients = $this->loadData('clients');
             $clients->get($companies->id_client_owner, 'id_client');
 
-            /** @var \projects_status $projectStatus */
-            $projectStatus = $this->loadData('projects_status');
-            $projectStatus->getLastStatut($project->id_project);
-
             /** @var LoggerInterface $logger */
             $logger = $this->get('logger');
             $logger->info('Checking refund status (project ' . $project->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
@@ -1219,7 +1215,7 @@ class transfertsController extends bootstrap
             $paymentInspectionStopped = $this->loadData('settings');
             $paymentInspectionStopped->get('Controle statut remboursement', 'type');
 
-            if ($projectStatus->status != \projects_status::FUNDE) {
+            if ($project->status != \projects_status::FUNDE) {
                 $_SESSION['freeow']['title']   = 'Déblocage des fonds impossible';
                 $_SESSION['freeow']['message'] = 'Le projet n\'est pas fundé';
             } elseif ($paymentInspectionStopped->value == 1) {

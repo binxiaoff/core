@@ -89,7 +89,7 @@ class ProjectsController extends Controller
         /** @var \projects $projects */
         $projects = $this->get('unilend.service.entity_manager')->getRepository('projects');
 
-        $template['projectsInFunding'] = $projects->countSelectProjectsByStatus(\projects_status::EN_FUNDING, ' AND p.status = 0 AND p.display = ' . \projects::DISPLAY_PROJECT_ON);
+        $template['projectsInFunding'] = $projects->countSelectProjectsByStatus(\projects_status::EN_FUNDING, ' AND p.display = ' . \projects::DISPLAY_PROJECT_ON);
         $template['pagination']        = $this->pagination($page, $limit);
         $template['showPagination']    = true;
         $template['showSortable']      = true;

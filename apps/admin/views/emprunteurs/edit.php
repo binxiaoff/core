@@ -164,7 +164,7 @@
             </thead>
             <tbody>
             <?php foreach ($this->lprojects as $iIndex => $aProject) : ?>
-                <?php $this->projects_status->getLastStatut($aProject['id_project']); ?>
+                <?php $this->projects_status->get($aProject['status'], 'status'); ?>
                 <tr<?= (++$iIndex % 2 == 1 ? '' : ' class="odd"') ?>>
                     <td><?= $aProject['id_project'] ?></td>
                     <td><?= $aProject['title'] ?></td>

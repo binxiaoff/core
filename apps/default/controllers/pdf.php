@@ -848,11 +848,7 @@ class pdfController extends bootstrap
     {
         ini_set('max_execution_time', 300);
 
-        /** @var \projects_status $projectStatus */
-        $projectStatus = $this->loadData('projects_status');
-        $projectStatus->getLastStatut($this->projects->id_project);
-
-        if ($projectStatus->status == \projects_status::FUNDE) {
+        if ($this->projects->status == \projects_status::FUNDE) {
             /** @var \echeanciers $lenderRepaymentSchedule */
             $lenderRepaymentSchedule = $this->loadData('echeanciers');
             /** @var \echeanciers_emprunteur $borrowerRepaymentSchedule */
@@ -916,8 +912,7 @@ class pdfController extends bootstrap
         $this->pays                            = $this->loadData('pays_v2');
         $this->echeanciers                     = $this->loadData('echeanciers');
         $this->companiesEmpr                   = $this->loadData('companies');
-        $this->projects_status                 = $this->loadData('projects_status');
-        $this->projects_last_status_history    = $this->loadData('projects_last_status_history');
+        $this->projects_status_history         = $this->loadData('projects_status_history');
         $this->projects_status_history_details = $this->loadData('projects_status_history_details');
 
         $this->oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
@@ -925,8 +920,6 @@ class pdfController extends bootstrap
         if ($this->oLoans->get($this->oLendersAccounts->id_lender_account, 'id_loan = ' . $this->params[1] . ' AND id_lender')) {
             $this->projects->get($this->oLoans->id_project, 'id_project');
             $this->companiesEmpr->get($this->projects->id_company, 'id_company');
-
-            $this->projects_status->getLastStatut($this->projects->id_project);
 
             if (in_array($this->clients->type, array(1, 4))) {
                 $this->clients_adresses->get($this->clients->id_client, 'id_client');
@@ -943,14 +936,14 @@ class pdfController extends bootstrap
             $this->pays->get($iCountryId, 'id_pays');
             $this->pays_fiscal = $this->pays->fr;
 
-            if (in_array($this->projects_status->status, array(\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE))) {
-                $this->projects_last_status_history->get($this->oLoans->id_project, 'id_project');
-                $this->projects_status_history_details->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history');
+            if (in_array($this->projects->status, array(\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE))) {
+                $this->projects_status_history->loadLastProjectHistory($this->oLoans->id_project);
+                $this->projects_status_history_details->get($this->projects_status_history->id_project_status_history, 'id_project_status_history');
 
                 $this->mandataires_var = $this->projects_status_history_details->receiver;
 
                 // @todo intl
-                switch ($this->projects_status->status) {
+                switch ($this->projects->status) {
                     case \projects_status::PROCEDURE_SAUVEGARDE:
                         $this->nature_var = 'Procédure de sauvegarde';
                         break;

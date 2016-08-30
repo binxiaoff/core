@@ -40,10 +40,7 @@ class dossiersController extends bootstrap
     protected $companies_prescripteurs;
     /** @var int Count project in searchDossiers */
     public $iCountProjects;
-
-    /**
-     * @var string for block risk note and comments
-     */
+    /** @var bool block risk note and comments */
     public $bReadonlyRiskNote;
 
     public function initialize()
@@ -379,7 +376,7 @@ class dossiersController extends bootstrap
 
                     $bCreate = (false === $oProjectsStatusHistoryDetails->get($oProjectStatusHistory->id_project_status_history, 'id_project_status_history'));
 
-                    switch ($this->projects_status->status) {
+                    switch ($this->projects->status) {
                         case \projects_status::REJETE:
                             $oProjectsStatusHistoryDetails->commercial_rejection_reason = $_POST['rejection_reason'];
                             break;
@@ -812,7 +809,7 @@ class dossiersController extends bootstrap
             $oProjectNeed = $this->loadData('project_need');
             $this->aNeeds = $oProjectNeed->getTree();
 
-            if (in_array($this->projects_status->status, array(\projects_status::REJETE, \projects_status::REJET_ANALYSTE, \projects_status::REJET_COMITE))) {
+            if (in_array($this->projects->status, [\projects_status::REJETE, \projects_status::REJET_ANALYSTE, \projects_status::REJET_COMITE])) {
                 /** @var \projects_status_history_details $oProjectsStatusHistoryDetails */
                 $oProjectsStatusHistoryDetails = $this->loadData('projects_status_history_details');
                 /** @var \project_rejection_reason $oRejectionReason */
@@ -1367,7 +1364,6 @@ class dossiersController extends bootstrap
         $this->clients_adresses = $this->loadData('clients_adresses');
         $this->companies        = $this->loadData('companies');
         $this->projects         = $this->loadData('projects');
-        $this->projects_status  = $this->loadData('projects_status');
 
         if (isset($_POST['send_create_etape1'])) {
             if (isset($_POST['id_client']) && $this->clients->get($_POST['id_client'], 'id_client')) {
@@ -1457,14 +1453,14 @@ class dossiersController extends bootstrap
     {
         $this->setView('remboursements');
         $this->pageTitle = 'Remboursements';
-        $this->listing(array(\projects_status::FUNDE, \projects_status::REMBOURSEMENT));
+        $this->listing([\projects_status::FUNDE, \projects_status::REMBOURSEMENT]);
     }
 
     public function _no_remb()
     {
         $this->setView('remboursements');
         $this->pageTitle = 'Incidents de remboursement';
-        $this->listing(array(\projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT));
+        $this->listing([\projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT]);
     }
 
     private function listing(array $aStatus)
@@ -1515,7 +1511,7 @@ class dossiersController extends bootstrap
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
             $this->users->get($this->projects->id_analyste, 'id_user');
-            $this->projects_status->getLastStatut($this->projects->id_project);
+            $this->projects_status->get($this->projects->status, 'status');
 
             $this->nbPeteurs = $this->loans->getNbPreteurs($this->projects->id_project);
 
@@ -1703,7 +1699,7 @@ class dossiersController extends bootstrap
                                             $this->clients_gestion_mails_notif->id_transaction  = $this->transactions->id_transaction;
                                             $this->clients_gestion_mails_notif->create();
 
-                                            if ($this->projects_status->status == \projects_status::RECOUVREMENT) {
+                                            if ($this->projects->status == \projects_status::RECOUVREMENT) {
                                                 $this->companies->get($this->projects->id_company, 'id_company');
 
                                                 $varMail = array(
@@ -1982,8 +1978,8 @@ class dossiersController extends bootstrap
 
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
                     $oProjectManager                     = $this->get('unilend.service.project_manager');
-                    // si le projet etait en statut Recouvrement/probleme on le repasse en remboursement  || $this->projects_status->status == 100
-                    if ($this->projects_status->status == \projects_status::RECOUVREMENT) {
+                    // si le projet etait en statut Recouvrement/probleme on le repasse en remboursement
+                    if ($this->projects->status == \projects_status::RECOUVREMENT) {
                         $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT, $this->projects);
                     }
 

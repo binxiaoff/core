@@ -103,5 +103,5 @@ if ($bProcessForm) {
 $this->ordreProject = 1;
 $this->type = 0;
 
-$this->lProjetsFunding = $this->projects->selectProjectsByStatus([\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT], ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], 0, 6);
-$this->nbProjects      = $this->projects->countSelectProjectsByStatus(implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT)), ' AND p.status = 0 AND p.display = 0');
+$this->lProjetsFunding = $this->projects->selectProjectsByStatus([\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT], ' AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], 0, 6);
+$this->nbProjects      = $this->projects->countSelectProjectsByStatus(implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT)), ' AND p.display = 0');
