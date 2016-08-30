@@ -625,14 +625,14 @@ function valid_rejete_etape7(status, id_project) {
     var validation_message = '',
         rate_message       = '';
     if (status == 1) {
-        if ($('#min_rate').val() != '' && $('#max_rate').val() != '') {
+        if ($('#min_rate').val() != '' && $('#max_rate').val() != '' && typeof $('#min_rate').val() != "undefined" && typeof $('#max_rate').val() != "undefined") {
             var min_rate     = $('#min_rate').val(),
                 max_rate     = $('#max_rate').val(),
                 rate_message = '\nTaux (min / max) indicatif : ' + min_rate + ' % / ' + max_rate + ' %';
         }
         var message            = 'valider',
-            note_comite        = parseFloat($('#note_comite').val().replace(',', '.')),
-            validation_message = 'Note comité : ' + note_comite + ' / 10 \nMontant du projet : ' + $('#amount').val() + ' euros \nDurée du projet : ' + $('#period').val() + ' mois' + rate_message + '\n';
+            note_comite        = $('span.moyenneNote').text(),
+            validation_message = 'Note comité : ' + note_comite + ' \nMontant du projet : ' + $('#montant').val() + ' euros \nDurée du projet : ' + $('#duree').val() + ' mois' + rate_message + '\n';
 
     }
     else if (status == 2) var message = 'rejeter';
@@ -672,17 +672,13 @@ function valid_rejete_etape7(status, id_project) {
             alert('Vous devez renseigner le motif de rejet');
         }
         else if (status == 1) {
-            if ($.isNumeric($('#period').val()) == false || $('#period').val() <= 0) {
+            if ($.isNumeric($('#duree').val()) == false || $('#duree').val() <= 0) {
                 form_ok = false;
                 alert('Vous devez renseigner la durée du prêt');
             }
-            else if ($.isNumeric($('#amount').val()) == false || $('#amount').val() <= 0) {
+            else if ($('#montant').val() <= 0) {
                 form_ok = false;
                 alert('Vous devez renseigner le montant du prêt');
-            }
-            else if ($.isNumeric(note_comite) == false || note_comite <= 0) {
-                form_ok = false;
-                alert('Vous devez renseigner note pour ce projet');
             }
         }
 
