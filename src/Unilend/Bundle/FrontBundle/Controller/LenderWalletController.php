@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\FrontBundle\Service\PaylineManager;
 use Unilend\core\Loader;
 
 class LenderWalletController extends Controller
@@ -47,12 +48,6 @@ class LenderWalletController extends Controller
             'depositAmount'   => $request->query->get('depositAmount', 0),
             'depositCode'     => $request->query->get('depositCode', 0),
         ];
-
-        $lenderSubscriptionStep3Form  = $this->get('session')->get('subscriptionStep3WalletData');
-        $this->get('session')->remove('subscriptionStep3WalletData');
-        if ($client->get($lenderSubscriptionStep3Form['clientId'], 'id_client') && $client->id_client == $this->getUser()->getClientId()) {
-            $template['formData'] = $lenderSubscriptionStep3Form;
-        }
 
         return $this->render(':frontbundle/pages/lender_wallet:wallet_layout.html.twig', $template);
     }
@@ -319,14 +314,13 @@ class LenderWalletController extends Controller
 
             /** @var \clients_history_actions $clientActionHistory */
             $clientActionHistory = $entityManager->getRepository('clients_history_actions');
-
             $clientActionHistory->histo(2, 'alim cb', $client->id_client, serialize(array('id_client' => $client->id_client, 'post' => $request->request->all())));
 
             $transaction->id_client        = $client->id_client;
             $transaction->montant          = $amount;
             $transaction->id_langue        = 'fr';
             $transaction->date_transaction = date('Y-m-d H:i:s');
-            $transaction->status           = '0';
+            $transaction->status           = \transactions::STATUS_PENDING;
             $transaction->etat             = '0';
             $transaction->ip_client        = $request->server->get('REMOTE_ADDR');
             $transaction->civilite_fac     = $client->civilite;
@@ -335,7 +329,6 @@ class LenderWalletController extends Controller
             if ($client->type == 2) {
                 /** @var \companies $company */
                 $company = $entityManager->getRepository('companies');
-
                 $transaction->societe_fac = $company->name;
             }
             $clientAddress->get($client->id_client, 'id_client');
@@ -344,10 +337,10 @@ class LenderWalletController extends Controller
             $transaction->ville_fac        = $clientAddress->ville;
             $transaction->id_pays_fac      = $clientAddress->id_pays;
             $transaction->type_transaction = \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT;
-            $transaction->transaction      = 1;
-            $transaction->id_transaction   = $transaction->create();
+            $transaction->transaction      = \transactions::PHYSICAL;
+            $transaction->create();
 
-            $array = [];
+            $paylineParameter = [];
             require_once $this->getParameter('path.payline') . 'include.php';
             /** @var \paylineSDK $payline */
             $payline                  = new \paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
@@ -355,24 +348,24 @@ class LenderWalletController extends Controller
             $payline->cancelURL       = $payline->returnURL;
             $payline->notificationURL = NOTIFICATION_URL;
 
-            $array['payment']['amount']   = $amount;
-            $array['payment']['currency'] = ORDER_CURRENCY;
-            $array['payment']['action']   = PAYMENT_ACTION;
-            $array['payment']['mode']     = PAYMENT_MODE;
+            $paylineParameter['payment']['amount']   = $amount;
+            $paylineParameter['payment']['currency'] = ORDER_CURRENCY;
+            $paylineParameter['payment']['action']   = PAYMENT_ACTION;
+            $paylineParameter['payment']['mode']     = PAYMENT_MODE;
 
-            $array['order']['ref']      = $transaction->id_transaction;
-            $array['order']['amount']   = $amount;
-            $array['order']['currency'] = ORDER_CURRENCY;
+            $paylineParameter['order']['ref']      = $transaction->id_transaction;
+            $paylineParameter['order']['amount']   = $amount;
+            $paylineParameter['order']['currency'] = ORDER_CURRENCY;
 
-            $array['payment']['contractNumber'] = CONTRACT_NUMBER;
+            $paylineParameter['payment']['contractNumber'] = CONTRACT_NUMBER;
             $contracts                          = explode(";", CONTRACT_NUMBER_LIST);
-            $array['contracts']                 = $contracts;
+            $paylineParameter['contracts']                 = $contracts;
             $secondContracts                    = explode(";", SECOND_CONTRACT_NUMBER_LIST);
-            $array['secondContracts']           = $secondContracts;
+            $paylineParameter['secondContracts']           = $secondContracts;
 
-            $logger->info('Calling Payline::doWebPayment: return URL=' . $payline->returnURL . ' Transmetted data: ' . json_encode($array), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
+            $logger->info('Calling Payline::doWebPayment: return URL=' . $payline->returnURL . ' Transmetted data: ' . json_encode($paylineParameter), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
 
-            $result = $payline->doWebPayment($array);
+            $result = $payline->doWebPayment($paylineParameter);
             $logger->info('Payline response : ' . json_encode(['$result']), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
 
             $transaction->get($transaction->id_transaction, 'id_transaction');
@@ -415,144 +408,37 @@ class LenderWalletController extends Controller
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \clients $client */
         $client = $entityManager->getRepository('clients');
-        /** @var \transactions $transaction */
-        $transaction = $entityManager->getRepository('transactions');
-        /** @var \wallets_lines $walletLine */
-        $walletLine = $entityManager->getRepository('wallets_lines');
-        /** @var \bank_lines $bankLine */
-        $bankLine = $entityManager->getRepository('bank_lines');
-        /** @var \lenders_accounts $lender */
-        $lender = $entityManager->getRepository('lenders_accounts');
-        /** @var \notifications $notification */
-        $notification = $entityManager->getRepository('notifications');
-        /** @var \clients_gestion_notifications $clientNotification */
-        $clientNotification = $entityManager->getRepository('clients_gestion_notifications');
-        /** @var \clients_gestion_mails_notif $clientMailNotification */
-        $clientMailNotification = $entityManager->getRepository('clients_gestion_mails_notif');
-        /** @var \backpayline $backPayline */
-        $backPayline = $entityManager->getRepository('backpayline');
+
         /** @var LoggerInterface $logger */
         $logger = $this->get('logger');
 
+
         if ($client->get($hash, 'hash')) {
-            $array = array();
+            $paylineParameter = [];
             /** @var \paylineSDK $payline */
             $payline = new \paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
 
-            $array['token'] = $request->request->get('token', $request->query->get('token'));
+            $paylineParameter['token'] = $request->request->get('token', $request->query->get('token'));
 
-            if (true === empty($array['token'])) {
+            if (true === empty($paylineParameter['token'])) {
                 $logger->error('Payline token not found, id_client=' . $client->id_client, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
                 return $this->redirectToRoute('lender_wallet', ['depositResult' => true]);
             }
-            $array['version'] = $request->request->get('version', '3');
-
-            $response = $payline->getWebPaymentDetails($array);
+            $paylineParameter['version'] = $request->request->get('version', '3');
+            $response = $payline->getWebPaymentDetails($paylineParameter);
+            $partnerId = $request->getSession()->get('id_partenaire' ,'');
 
             if (false === empty($response)) {
-                $backPayline->code      = $response['result']['code'];
-                $backPayline->token     = $array['token'];
-                $backPayline->id        = $response['transaction']['id'];
-                $backPayline->date      = $response['transaction']['date'];
-                $backPayline->amount    = $response['payment']['amount'];
-                $backPayline->serialize = serialize($response);
-                $backPayline->create();
+                /** @var PaylineManager $paylineManager */
+                $paylineManager = $this->get('unilend.frontbundle.service.payline_manager');
+                $paylineManager->setLogger($logger);
+                if ($paylineManager->handlePaylineReturn($client, $response, $paylineParameter, $partnerId, PaylineManager::PAYMENT_LOCATION_LENDER_WALLET)) {
 
-                // Paiement approuvé
-                if ($response['result']['code'] == '00000') {
-                    if ($transaction->get($response['order']['ref'], 'status = 0 AND etat = 0 AND id_transaction')) {
-                        $transaction->id_backpayline   = $backPayline->id_backpayline;
-                        $transaction->montant          = $response['payment']['amount'];
-                        $transaction->id_langue        = 'fr';
-                        $transaction->date_transaction = date('Y-m-d H:i:s');
-                        $transaction->status           = '1';
-                        $transaction->etat             = '1';
-                        /** @todo id_partenaire is set from db table : partenaires.id_partenaire */
-                        $transaction->id_partenaire    = $request->getSession()->get('id_partenaire' ,'');
-                        $transaction->type_paiement    = ($response['extendedCard']['type'] == 'VISA' ? '0' : ($response['extendedCard']['type'] == 'MASTERCARD' ? '3' : ''));
-                        $transaction->update();
-
-                        $lender->get($client->id_client, 'id_client_owner');
-                        $lender->status = 1;
-                        $lender->update();
-
-                        $walletLine->id_lender                = $lender->id_lender_account;
-                        $walletLine->type_financial_operation = 30; // Inscription preteur
-                        $walletLine->id_transaction           = $transaction->id_transaction;
-                        $walletLine->status                   = 1;
-                        $walletLine->type                     = 1;
-                        $walletLine->amount                   = $response['payment']['amount'];
-                        $walletLine->create();
-
-                        // Transaction physique donc on enregistre aussi dans la bank lines
-                        $bankLine->id_wallet_line    = $walletLine->id_wallet_line;
-                        $bankLine->id_lender_account = $lender->id_lender_account;
-                        $bankLine->status            = 1;
-                        $bankLine->amount            = $response['payment']['amount'];
-                        $bankLine->create();
-
-                        $notification->type      = \notifications::TYPE_CREDIT_CARD_CREDIT;
-                        $notification->id_lender = $lender->id_lender_account;
-                        $notification->amount    = $response['payment']['amount'];
-                        $notification->create();
-
-                        $clientMailNotification->id_client       = $lender->id_client_owner;
-                        $clientMailNotification->id_notif        = \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT;
-                        $clientMailNotification->date_notif      = date('Y-m-d H:i:s');
-                        $clientMailNotification->id_notification = $notification->id_notification;
-                        $clientMailNotification->id_transaction  = $transaction->id_transaction;
-                        $clientMailNotification->create();
-
-                        if ($client->etape_inscription_preteur < 3) {
-                            $client->etape_inscription_preteur = 3;
-                            $client->update();
-                        }
-
-                        if ($clientNotification->getNotif($client->id_client, 7, 'immediatement') == true) {
-                            $clientMailNotification->get($clientMailNotification->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
-                            $clientMailNotification->immediatement = 1;
-                            $clientMailNotification->update();
-
-                            /** @var \settings $oSettings */
-                            $oSettings = $entityManager->getRepository('settings');
-                            $oSettings->get('Facebook', 'type');
-                            $lien_fb = $oSettings->value;
-
-                            $oSettings->get('Twitter', 'type');
-                            $lien_tw = $oSettings->value;
-
-                            $varMail = array(
-                                'surl'            => $this->get('assets.packages')->getUrl(''),
-                                'url'             => $this->get('assets.packages')->getUrl(''),
-                                'prenom_p'        => $client->prenom,
-                                'fonds_depot'     => bcdiv($response['payment']['amount'], 100, 2),
-                                'solde_p'         => bcadd($this->getUser()->getBalance(), bcdiv($response['payment']['amount'], 100, 2), 2),
-                                'link_mandat'     => $this->get('assets.packages')->getUrl('') . '/images/default/mandat.jpg',
-                                'motif_virement'  => $client->getLenderPattern($client->id_client),
-                                'projets'         => $this->get('assets.packages')->getUrl('') . $this->generateUrl('home', ['type' => 'projets-a-financer']),
-                                'gestion_alertes' => $this->get('assets.packages')->getUrl('') . $this->generateUrl('lender_profile'),
-                                'lien_fb'         => $lien_fb,
-                                'lien_tw'         => $lien_tw
-                            );
-
-                            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-alimentation-cb', $varMail);
-                            $message->setTo($client->email);
-                            $mailer = $this->get('mailer');
-                            $mailer->send($message);
-                        }
-                    }
-                    return $this->redirectToRoute('lender_wallet', ['depositResult' => true, 'depositCode' => Response::HTTP_OK, 'depositAmount' => bcdiv($response['payment']['amount'], 100, 2)]);
-
-                } elseif ($response['result']['code'] == '02319') { // Payment cancelled
-                    $transaction->get($response['order']['ref'], 'id_transaction');
-                    $transaction->id_backpayline = $backPayline->id_backpayline;
-                    $transaction->statut         = '0';
-                    $transaction->etat           = '3';
-                    $transaction->update();
-
-                } else { // Payment error
-                    mail('alertesit@unilend.fr', 'unilend payline erreur', 'erreur sur page payment alimentation preteur (client : ' . $client->id_client . ') : ' . serialize($response));
+                    $this->redirectToRoute('lender_wallet', [
+                        'depositResult' => true,
+                        'depositCode' => Response::HTTP_OK,
+                        'depositAmount' => bcdiv($response['payment']['amount'], 100, 2)
+                    ]);
                 }
                 return $this->redirectToRoute('lender_wallet', ['depositResult' => true]);
             }

@@ -31,6 +31,10 @@ class lenders_accounts extends lenders_accounts_crud
     const LENDER_STATUS_ONLINE  = 1;
     const LENDER_STATUS_OFFLINE = 0;
 
+    const MONEY_TRANSFER_TYPE_BANK_TRANSFER = 1;
+    const MONEY_TRANSFER_TYPE_CARD          = 2;
+
+
     public function __construct($bdd, $params = '')
     {
         parent::lenders_accounts($bdd, $params);

@@ -62,5 +62,19 @@
             <argument type="service" id="request_stack" />
             <argument type="service" id="google_tag_manager" />
         </service>
+
+        <service id="unilend.frontbundle.service.payline_manager" class="Unilend\Bundle\FrontBundle\Service\PaylineManager">
+            <argument type="service" id="unilend.service.entity_manager" />
+            <argument type="service" id="unilend.swiftmailer.message_provider"/>
+            <argument type="service" id="swiftmailer.mailer.default" />
+            <argument type="service" id="unilend.service.client_manager" />
+            <argument type="service" id="router" />
+            <argument type="service" id="assets.packages" />
+            <argument>%path.payline%</argument>
+            <call method="setLogger">
+                <argument type="service" id="logger" on-invalid="null"/>
+            </call>
+        </service>
+
     </services>
 </container>

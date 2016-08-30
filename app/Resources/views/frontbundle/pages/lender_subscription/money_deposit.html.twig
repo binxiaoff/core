@@ -25,12 +25,30 @@
                                 <div id="form-preter-3" role="tabpanel" class="tab-pane active" aria-labelledby="preter-create-3 preter-create-title">
                                     <div class="row">
                                         <div class="col-form col-lg-8 col-md-8">
+                                            {% if app.session.flashBag.has('moneyTransferSuccess')%}
                                             <fieldset class="panel" data-formvalidation data-formvalidation-notificationselem="#form-preter-deposit-notifications">
                                                 <h3 class="h3">{% trans %} lender-subscription_step-3-account-validation-title {% endtrans %}</h3>
                                                 {% trans %} lender-subscription_step-3-validation-explanation {% endtrans %}
-
+                                                <div id="form-preter-deposit-notifications">
+                                                    <div class="message-success">
+                                                        {% for message in app.session.flashBag.get('moneyTransferSuccess') %}                                                                                                                     <p>{{ message }}</p>
+                                                        {%  endfor %}
+                                                    </div>
+                                                </div>
+                                            </fieldset>
+                                            {% else %}
+                                            <fieldset class="panel" data-formvalidation data-formvalidation-notificationselem="#form-preter-deposit-notifications">
+                                                <h3 class="h3">{% trans %} lender-subscription_step-3-account-validation-title {% endtrans %}</h3>
+                                                {% trans %} lender-subscription_step-3-validation-explanation {% endtrans %}
                                                 <h3 class="h3">{% trans %} lender-subscription_step-3-money-transfer-title {% endtrans %}</h3>
-                                                <div id="form-preter-deposit-notifications"></div>
+                                                    {% if app.session.flashBag.has('moneyTransferError') %}
+                                                        <div id="form-preter-deposit-notifications">
+                                                            <div class="message-error">
+                                                                {% for message in app.session.flashBag.get('moneyTransferError') %}                                                                                                                     <p>{{ message }}</p>
+                                                                {%  endfor %}
+                                                            </div>
+                                                        </div>
+                                                    {% endif %}
                                                 <div class="row row-multi-col-computer">
                                                     <div class="form-field col-lg-7 col-md-7">
                                                         <label for="form-preter-amount">{% trans %} lender-subscription_step-3-money-transfer-amount-field-label {% endtrans %}</label>
@@ -57,10 +75,8 @@
                                                     </button>
                                                 </p>
                                             </fieldset>
-
                                             <fieldset class="panel">
                                                 <div class="unilend-iban-info">
-                                                    {#<a href="#todo" class="btn-print"><span class="icon fa-print-u32"></span><span class="sr-only">Print</span></a>#}
                                                     <dl class="list-2col">
                                                         <dt>{% trans %} lender-subscription_step-3-money-transfer-bank-account-details {% endtrans %}</dt>
                                                         <dd>{{ lenderBankMotif }}</dd>
@@ -76,11 +92,11 @@
                                                 </div><!-- /.unilend-iban-info -->
                                                 <p>{% trans %} lender-subscription_step-3-money-transfer-help-message {% endtrans %}</p>
                                             </fieldset>
+                                            {% endif %}
 
                                             <div class="row btn-controls tab-footer">
                                                 <div class="col-lg-1 col-md-1">&nbsp;</div>
                                                 <div class="col-lg-11 col-md-11">
-                                                    {# <a href="{{ route('search') }}" class="btn-default ui-open-site-search">Une question&nbsp;?</a> #}
                                                     <a href="{{ path('projects_list') }}" class="btn-default">{% trans %} lender-subscription_step-3-button-to-project-list-label {% endtrans %}</a>
                                                     <a href="{{ path('lender_profile') }}" class="btn-primary">{% trans %} lender-subscription_step-3-button-to-lender-dashboard-label {% endtrans %}</a>
                                                 </div>
