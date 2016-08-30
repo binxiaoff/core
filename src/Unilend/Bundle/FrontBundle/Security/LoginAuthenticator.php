@@ -1,10 +1,10 @@
 <?php
 namespace Unilend\Bundle\FrontBundle\Security;
 
-use Lexik\Bundle\DataLayerBundle\Manager\DataLayerManager;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Security\Core\Encoder\EncoderAwareInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
 use Symfony\Component\Security\Core\Exception\AccountExpiredException;
 use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
@@ -136,12 +136,15 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         /** @var BaseUser $user */
         $user = $token->getUser();
         $request->getSession()->remove('captchaInformation');
+
         /** @var \clients $client */
         $client = $this->entityManager->getRepository('clients');
         $client->get($user->getClientId());
 
-        if (password_needs_rehash($user->getPassword(), PASSWORD_BCRYPT)) {
-            $client->password = password_hash($this->getCredentials($request)['password'], PASSWORD_BCRYPT);
+        // Update the password encoder if it's legacy
+        if ($user instanceof EncoderAwareInterface && (null !== $encoderName = $user->getEncoderName())) {
+            $user->useDefaultEncoder(); // force to use the default password encoder
+            $client->password = $this->securityPasswordEncoder->encodePassword($user, $this->getCredentials($request)['password']);
             $client->update();
         }
 
@@ -167,7 +170,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             $targetPath = $this->getDefaultSuccessRedirectUrl($request, $user);
         }
 
-        $client->saveLogin(new \DateTime('NOW'), $user->getUsername(), $user->getPassword());
+        $client->saveLogin(new \DateTime('NOW'), $user->getUsername());
 
         /** @var \clients_history $clientHistory */
         $clientHistory = $this->entityManager->getRepository('clients_history');

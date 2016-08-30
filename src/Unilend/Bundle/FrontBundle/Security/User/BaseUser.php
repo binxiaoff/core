@@ -18,6 +18,7 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
     private $clientId;
     private $hash;
     private $lastLoginDate;
+    private $encoderName;
 
     public function __construct($username, $password, $email, $salt, array $roles, $isActive, $clientId, $hash, $lastLoginDate = null)
     {
@@ -74,10 +75,20 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
      */
     public function getEncoderName()
     {
+        if ('default' === $this->encoderName) {
+            return null;
+        }
+
         if (1 === preg_match('/^[0-9a-f]{32}$/', $this->password)) {
             return 'md5';
         }
-        return 'default';
+
+        return null; // use the default encoder
+    }
+
+    public function useDefaultEncoder()
+    {
+        $this->encoderName = 'default';
     }
 
     public function getIsActive()

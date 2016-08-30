@@ -1,8 +1,6 @@
 security:
     encoders:
-        default:
-            algorithm: bcrypt
-            cost: 10
+        Unilend\Bundle\FrontBundle\Security\User\BaseUser: bcrypt
         md5:
             algorithm: md5
             encode_as_base64: false

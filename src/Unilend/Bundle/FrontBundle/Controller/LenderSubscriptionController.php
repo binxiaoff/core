@@ -230,6 +230,7 @@ class LenderSubscriptionController extends Controller
             $client->email                      = $post['client_email'];
             $client->secrete_question           = $post['client_secret_question'];
             $client->secrete_reponse            = md5($post['client_secret_answer']);
+            // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
             $client->password                   = password_hash($post['client_password'], PASSWORD_DEFAULT);
             $client->mobile                     = str_replace([' ', '.'], '', $post['client_mobile']);
             $client->ville_naissance            = $placeOfBirth;
@@ -411,6 +412,7 @@ class LenderSubscriptionController extends Controller
             $client->slug                       = $ficelle->generateSlug($client->prenom . '-' . $client->nom);
             $client->secrete_question           = $post['client_secret_question'];
             $client->secrete_reponse            = md5($post['client_secret_answer']);
+            // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
             $client->password                   = password_hash($post['client_password'], PASSWORD_DEFAULT);
             $client->status                     = \clients::STATUS_ONLINE;
             $client->status_inscription_preteur = 1;

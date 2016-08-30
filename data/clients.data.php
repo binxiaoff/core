@@ -115,7 +115,7 @@ class clients extends clients_crud
                     $_SESSION['client']['password'] = $client['password'];
                 }
 
-                $this->saveLogin(new \DateTime('NOW'), $client['email'], $client['password']);
+                $this->saveLogin(new \DateTime('NOW'), $client['email']);
                 return true;
             }
             return false;
@@ -125,16 +125,15 @@ class clients extends clients_crud
     /**
      * @param DateTime $dateLogin
      * @param string   $email
-     * @param string   $hashedPassword
      */
-    public function saveLogin(\DateTime $dateLogin, $email, $hashedPassword)
+    public function saveLogin(\DateTime $dateLogin, $email)
     {
-        $aBind = array('lastLogin' => $dateLogin->format('Y-m-d H:i:s'), 'email' => $email, 'password' => $hashedPassword);
-        $aType = array('lastLogin' => \PDO::PARAM_STR, 'email' => \PDO::PARAM_STR, 'password' => \PDO::PARAM_STR);
+        $aBind = array('lastLogin' => $dateLogin->format('Y-m-d H:i:s'), 'email' => $email);
+        $aType = array('lastLogin' => \PDO::PARAM_STR, 'email' => \PDO::PARAM_STR);
 
         $sQuery =  '
             UPDATE clients
-            SET lastlogin = :lastLogin, password = :password
+            SET lastlogin = :lastLogin
             WHERE email = :email AND status = 1';
         $this->bdd->executeUpdate($sQuery, $aBind, $aType);
     }
