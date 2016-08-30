@@ -23,7 +23,7 @@ class LenderSubscriptionController extends Controller
     {
         /** @var \clients $client */
         $client   = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $response = $this->checkProgressAndRedirect($client);
+        $response = $this->checkProgressAndRedirect($client, $request->getUri());
 
         if (false === $response instanceof \clients){
             return $response;
@@ -103,9 +103,8 @@ class LenderSubscriptionController extends Controller
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $response = $this->checkProgressAndRedirect($client);
-
-        if (false === $response instanceof \clients) {
+        $response = $this->checkProgressAndRedirect($client, $request->getPathInfo());
+        if (false === $response instanceof \clients){
             return $response;
         }
 
@@ -278,7 +277,7 @@ class LenderSubscriptionController extends Controller
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $response = $this->checkProgressAndRedirect($client);
+        $response = $this->checkProgressAndRedirect($client, $request->getPathInfo());
         if (false === $response instanceof \clients){
             return $response;
         }
@@ -597,7 +596,7 @@ class LenderSubscriptionController extends Controller
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $response = $this->checkProgressAndRedirect($client, $clientHash);
+        $response = $this->checkProgressAndRedirect($client, $request->getPathInfo(), $clientHash);
 
         if (false === $response instanceof \clients){
             return $response;
@@ -636,7 +635,7 @@ class LenderSubscriptionController extends Controller
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $response = $this->checkProgressAndRedirect($client, $clientHash);
+        $response = $this->checkProgressAndRedirect($client, $request->getPathInfo(), $clientHash);
         if (false === $response instanceof \clients){
             return $response;
         }
@@ -805,12 +804,14 @@ class LenderSubscriptionController extends Controller
      * @Route("inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit")
      * @Method("GET")
      */
-    public function moneyDepositAction($clientHash)
+    public function moneyDepositAction($clientHash, Request $request)
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $this->checkProgressAndRedirect($client, $clientHash);
-
+        $response = $this->checkProgressAndRedirect($client, $request->getPathInfo(), $clientHash);
+        if (false === $response instanceof \clients){
+            return $response;
+        }
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
         $lenderAccount->get($client->id_client, 'id_client_owner');
@@ -835,7 +836,7 @@ class LenderSubscriptionController extends Controller
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $response = $this->checkProgressAndRedirect($client, $clientHash);
+        $response = $this->checkProgressAndRedirect($client, $request->getPathInfo(), $clientHash);
         if (false === $response instanceof \clients){
             return $response;
         }
@@ -925,7 +926,7 @@ class LenderSubscriptionController extends Controller
         }
 
         if (false === empty($post['prospect_email']) && $clients->existEmail($post['prospect_email']) && $clients->get($post['prospect_email'], 'email')){
-            $response = $this->checkProgressAndRedirect($clients);
+            $response = $this->checkProgressAndRedirect($clients, $request->getPathInfo());
             if (false === $response instanceof \clients){
                 return $response;
             }
@@ -954,41 +955,64 @@ class LenderSubscriptionController extends Controller
 
     /**
      * @param \clients $client
+     * @param string $requestPathInfo
      * @param string|null $clientHash
      * @return \clients|\Symfony\Component\HttpFoundation\RedirectResponse
      */
-    private function checkProgressAndRedirect(\clients &$client, $clientHash = null)
+    private function checkProgressAndRedirect(\clients &$client, $requestPathInfo, $clientHash = null)
     {
-        if (false === empty($client->id_client) || (false === is_null($clientHash) && false === $client->get($clientHash, 'hash'))) {
+        if (false === empty($client->id_client) || (false === is_null($clientHash) && $client->get($clientHash, 'hash'))) {
             if (\clients::STATUS_ONLINE == $client->status && $client->etape_inscription_preteur >= 1 && $client->etape_inscription_preteur < 3) {
-                $redirectPath = '';
-                switch($client->etape_inscription_preteur){
-                    case 1 :
-                        $redirectPath = 'lender_subscription_documents';
-                        break;
-                    case 2 :
-                        $redirectPath = 'lender_subscription_money_deposit';
-                        break;
+
+                $redirectRoute = $this->getSubscriptionStepRedirectRoute($client->etape_inscription_preteur,$client->hash);
+                if ($requestPathInfo !== $redirectRoute) {
+                    return $this->redirect($redirectRoute);
                 }
-                return $this->redirectToRoute($redirectPath, ['clientHash' => $client->hash]);
 
             } else {
                 return $this->redirectToRoute('login');
             }
         }
 
-        if (
-            $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
-            && (
-                $this->get('security.authorization_checker')->isGranted('ROLE_BORROWER')
-                || ($this->get('security.authorization_checker')->isGranted('ROLE_LENDER') && $this->getUser()->getSubscriptionStep() >= 3)
-                || (false === is_null($clientHash) && $client->id_client != $this->getUser()->getClientId())
-            )
-        ) {
-            return $this->redirectToRoute('projects_list');
+        if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')) {
+
+            if ($this->get('security.authorization_checker')->isGranted('ROLE_BORROWER')) {
+                return $this->redirectToRoute('projects_list');
+            }
+
+            if ($this->get('security.authorization_checker')->isGranted('ROLE_LENDER')) {
+                if (false === is_null($clientHash) && $client->get($clientHash, 'hash') && $client->id_client != $this->getUser()->getClientId()) {
+                    return $this->redirectToRoute('projects_list');
+                } else {
+                    $client->get($this->getUser()->getClientId());
+                    $redirectRoute = $this->getSubscriptionStepRedirectRoute($client->etape_inscription_preteur, $client->hash);
+                    if ($requestPathInfo !== $redirectRoute) {
+                        return $this->redirect($redirectRoute);
+                    }
+                }
+            }
         }
 
         return $client;
+    }
+
+    private function getSubscriptionStepRedirectRoute($alreadyCompletedStep, $clientHash = null)
+    {
+        switch($alreadyCompletedStep){
+            case 1 :
+                $redirectRoute = $this->generateUrl('lender_subscription_documents', ['clientHash' => $clientHash]);
+                break;
+            case 2 :
+                $redirectRoute = $this->generateUrl('lender_subscription_money_deposit', ['clientHash' => $clientHash]);
+                break;
+            case 3 :
+                $redirectRoute = $this->generateUrl('login');
+                break;
+            default :
+                $redirectRoute = $this->generateUrl('project_list');
+        }
+
+        return $redirectRoute;
     }
 
     /**
