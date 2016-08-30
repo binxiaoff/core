@@ -118,6 +118,7 @@ class depot_de_dossierController extends bootstrap
         $this->projects->ca_declara_client                    = 0;
         $this->projects->resultat_exploitation_declara_client = 0;
         $this->projects->fonds_propres_declara_client         = 0;
+        $this->projects->status                               = \projects_status::DEMANDE_SIMULATEUR;
         $this->projects->create();
 
         $this->settings->get('Altares email alertes', 'type');

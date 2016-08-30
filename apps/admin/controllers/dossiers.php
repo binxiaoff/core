@@ -1392,6 +1392,7 @@ class dossiersController extends bootstrap
 
             $this->projects->id_company = $this->companies->id_company;
             $this->projects->create_bo  = 1; // on signale que le projet a été créé en Bo
+            $this->projects->status     = \projects_status::A_TRAITER;
             $this->projects->create();
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
