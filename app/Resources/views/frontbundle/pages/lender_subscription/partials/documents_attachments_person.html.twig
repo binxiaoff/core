@@ -20,10 +20,6 @@
                      data-fileattach-inputname="id_recto"
                      data-fileattach-maxfiles="1"
                      data-fileattach-emptyfilelabel="{% trans %} lender-subscription_documents-person-id-attachment-recto-placeholder {% endtrans %}">
-
-                    {# {% if identityAttachments[constant('\\attachment_type::CNI_PASSPORTE')]['path'] is defined %}
-                        <input type="file" name="id_recto" value="{{ identityAttachments[constant('\\attachment_type::CNI_PASSPORTE')]['path'] }}" />
-                    {% endif %} #}
                 </div><!-- /.ui-fileattach -->
             </div><!-- /.form-field -->
 
@@ -33,10 +29,6 @@
                      data-fileattach-inputname="id_verso"
                      data-fileattach-maxfiles="1"
                      data-fileattach-emptyfilelabel="{% trans %} lender-subscription_documents-person-id-attachment-verso-placeholder {% endtrans %}">
-
-                    {# {% if identityAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')]['path'] is defined %}
-                        <input type="file" name="id_verso" value="{{ identityAttachments[constant('\\attachment_type::CNI_PASSPORTE_VERSO')]['path'] }}" />
-                    {% endif %} #}
                 </div><!-- /.ui-fileattach -->
             </div><!-- /.form-field -->
 
@@ -70,23 +62,17 @@
         </div><!-- /.form-field -->
     </div>
 
-    {# Housed by Third Person #}
-    {% set isHousedByThirdPerson = false %}
-    {# @todo set if user is housed by third person. Below was taken from `pages/lender_profile/partials/person_fiscal_address.html.twig` #}
-    {# {% for attachment in residenceAttachments if attachment.id_type == constant('\\attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT') %}
-        {% set isHousedByThirdPerson = true %}
-    {% endfor %} #}
     <div class="row">
         <div class="form-field form-field-single-checkbox">
             <label>
-                <input id="housed-by-third-person" type="checkbox" value="true" {% if isHousedByThirdPerson == true %} checked="checked" {% endif %}/>
+                <input id="housed-by-third-person" type="checkbox" value="true"/>
                 <span class="label">{% trans %} lender-subscription_documents-housed-by-third-person {% endtrans %}</span>
             </label>
         </div>
     </div>
 
     {# Show if housed by third person is checked #}
-    <div id="upload-housed-by-third-person" class="row collapse {% if isHousedByThirdPerson == true %} in {% endif %}">
+    <div id="upload-housed-by-third-person" class="row collapse">
         <div class="form-field">
             <label>
                 {% trans %} lender-subscription_documents-housed-by-third-person-declaration {% endtrans %}
@@ -118,7 +104,7 @@
         </div><!-- /.form-field -->
     </div><!-- /#upload-housed-by-third-person -->
 
-    <div id="tax-certificate" class="row collapse {% if not isLivingAbroad %} in {% endif %}">
+    <div id="lender-subscription-tax-certificate" class="row collapse {% if isLivingAbroad %} in {% endif %}">
         <div class="form-field">
             <label>
                 {% trans %} lender-profile_information-tab-fiscal-address-tax-certificate-label {% endtrans %}
