@@ -25,17 +25,13 @@ class LenderAccountDisplayManager
         $this->cachePool          = $cachePool;
     }
 
-    public function getActivityForProject(\lenders_accounts $lenderAccount, $projectId)
+    public function getActivityForProject(\lenders_accounts $lenderAccount, $projectId, $projectStatus)
     {
-        /** @var \projects_status $projectStatus */
-        $projectStatus = $this->entityManager->getRepository('projects_status');
-        $projectStatus->getLastStatut($projectId);
-
         $lenderActivity = [
             'bids' => $this->getBidsForProject($projectId, $lenderAccount)
         ];
 
-        if ($projectStatus->status >= \projects_status::FUNDE) {
+        if ($projectStatus >= \projects_status::FUNDE) {
             $lenderActivity['loans'] = $this->getLoansForProject($projectId, $lenderAccount);
         }
 

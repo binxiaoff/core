@@ -70,6 +70,8 @@ class MainController extends Controller
         $template['borrowingMotives']  = $translationManager->getTranslatedBorrowingMotiveList();
         $template['showPagination']    = false;
         $template['showSortable']      = false;
+        $template['sortType']          = strtolower(\projects::SORT_FIELD_END);
+        $template['sortDirection']     = strtolower(\projects::SORT_DIRECTION_DESC);
 
         /** @var BaseUser $user */
         $user = $this->getUser();

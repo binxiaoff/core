@@ -72,7 +72,7 @@ class ProjectsController extends Controller
             $template['projects'] = $projectDisplayManager->getProjectsList([], $sort, $start, $limit, $lenderAccount);
 
             array_walk($template['projects'], function(&$project) use ($lenderAccountDisplayManager, $lenderAccount) {
-                $project['lender'] = $lenderAccountDisplayManager->getActivityForProject($lenderAccount, $project['projectId']);
+                $project['lender'] = $lenderAccountDisplayManager->getActivityForProject($lenderAccount, $project['projectId'], $project['status']);
             });
         } else {
             $template['projects'] = $projectDisplayManager->getProjectsList([], $sort, $start, $limit);
@@ -208,7 +208,7 @@ class ProjectsController extends Controller
 
             /** @var LenderAccountDisplayManager $lenderAccountDisplayManager */
             $lenderAccountDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
-            $template['project']['lender'] = $lenderAccountDisplayManager->getActivityForProject($lenderAccount, $project->id_project);
+            $template['project']['lender'] = $lenderAccountDisplayManager->getActivityForProject($lenderAccount, $project->id_project, $project->status);
 
             if (false === empty($request->getSession()->get('bidResult'))) {
                 $template['lender']['bidResult'] = $request->getSession()->get('bidResult');
@@ -275,13 +275,8 @@ class ProjectsController extends Controller
             throw $this->createNotFoundException();
         }
 
-        /** @var \projects_status $projectStatus */
-        $projectStatus = $entityManager->getRepository('projects_status');
-        $projectStatus->getLastStatut($project->id_project);
-
         if (
-            0 == $project->status
-            && $projectStatus->status >= \projects_status::EN_FUNDING
+            $project->status >= \projects_status::EN_FUNDING
             && (
                 $project->display == \projects::DISPLAY_PROJECT_ON
                 || $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') && 28002 == $project->id_project
