@@ -1498,7 +1498,8 @@ class dossiersController extends bootstrap
 
         /** @var \tax_type $taxType */
         $taxType = $this->loadData('tax_type');
-
+        /** @var \Psr\Log\LoggerInterface $oLogger */
+        $oLogger = $this->get('logger');
         $taxRate   = $taxType->getTaxRateByCountry('fr');
         $this->tva = $taxRate[\tax_type::TYPE_VAT] / 100;
 
@@ -1606,6 +1607,7 @@ class dossiersController extends bootstrap
                     $taxManager = $this->get('unilend.service.tax_manager');
                     /** @var \lender_repayment $lenderRepayment */
                     $lenderRepayment = $this->loadData('lender_repayment');
+                    $oLogger->info('Manual repayment, transactions found: ' . json_encode($lEcheances), ['class' => __CLASS__, 'function' => __FUNCTION__]);
 
                     foreach ($lEcheances as $e) {
                         $repaymentDate = date('Y-m-d H:i:s');
@@ -1638,7 +1640,7 @@ class dossiersController extends bootstrap
                                 $this->transactions->etat             = \transactions::STATUS_VALID;
                                 $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                                 $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL;
-                                $this->transactions->create();
+                                $capitalTransactionId = $this->transactions->create();
 
                                 $iTaxOnCapital = $taxManager->taxTransaction($this->transactions);
 
@@ -1681,14 +1683,11 @@ class dossiersController extends bootstrap
                                 $this->notifications->amount     = $iTotalEAT;
                                 $this->notifications->create();
 
+                                $this->clients_gestion_mails_notif->id_transaction  = $capitalTransactionId;
                                 $this->clients_gestion_mails_notif->id_client       = $this->lenders_accounts->id_client_owner;
                                 $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_REPAYMENT;
                                 $this->clients_gestion_mails_notif->date_notif      = $repaymentDate;
                                 $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                                /**
-                                 * @todo replace id_transaction  by id_lender_repayment
-                                 */
-                                $this->clients_gestion_mails_notif->id_transaction = $this->transactions->id_transaction;
                                 $this->clients_gestion_mails_notif->create();
 
                                 if ($this->projects_status->status == \projects_status::RECOUVREMENT) {
@@ -1710,6 +1709,7 @@ class dossiersController extends bootstrap
                                         'lien_fb'          => $lien_fb,
                                         'lien_tw'          => $lien_tw
                                     );
+                                    $oLogger->info('Manual repayment, Send preteur-dossier-recouvre email. Data to use: ' . var_export($varMail, true), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $e['id_project']]);
 
                                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                                     $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-dossier-recouvre', $varMail);
@@ -1753,6 +1753,7 @@ class dossiersController extends bootstrap
                                         'lien_fb'               => $lien_fb,
                                         'lien_tw'               => $lien_tw
                                     );
+                                    $oLogger->info('Manual repayment, Send preteur-regularisation-remboursement. Data to use: ' . var_export($varMail, true), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $e['id_project']]);
 
                                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                                     $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-regularisation-remboursement', $varMail);
@@ -1806,9 +1807,11 @@ class dossiersController extends bootstrap
                                     if ($lastProjectRepayment) {
                                         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                                         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-dernier-remboursement', $varMail);
+                                        $oLogger->info('Manual repayment, Send preteur-dernier-remboursement. Data to use: ' . var_export($varMail, true), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $e['id_project']]);
                                     } else {
                                         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                                         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-remboursement', $varMail);
+                                        $oLogger->info('Manual repayment, Send preteur-remboursement. Data to use: ' . var_export($varMail, true), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $e['id_project']]);
                                     }
                                     $message->setTo($this->clients->email);
                                     $mailer = $this->get('mailer');
@@ -1889,6 +1892,7 @@ class dossiersController extends bootstrap
                             'lien_fb'         => $lien_fb,
                             'lien_tw'         => $lien_tw
                         );
+                        $oLogger->info('Manual repayment, Send facture-emprunteur-remboursement. Data to use: ' . var_export($varMail, true), ['class' => __CLASS__, 'function' => __FUNCTION__]);
 
                         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('facture-emprunteur-remboursement', $varMail);
@@ -1945,7 +1949,7 @@ class dossiersController extends bootstrap
                             'id_projet'      => $this->projects->id_project,
                             'annee'          => date('Y')
                         );
-
+                        $oLogger->info('Manual repayment, Send preteur-dernier-remboursement-controle. Data to use: ' . var_export($varMail, true), ['class' => __CLASS__, 'function' => __FUNCTION__]);
                         /** @var TemplateMessage $messageBO */
                         $messageBO = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-dernier-remboursement-controle', $varMail);
                         $messageBO->setTo($mailBO);
@@ -2014,10 +2018,11 @@ class dossiersController extends bootstrap
                             status_emprunteur = 1,
                             updated = NOW(),
                             status_ra = 1,
+                            capital_rembourse = capital,
                             date_echeance_emprunteur_reel = NOW()
                         WHERE id_project = ' . $this->projects->id_project . ' AND status_emprunteur = 0'
                     );
-
+                    $oLogger->info('Manual Anticipated repayment, echeanciers and echeanciers_emprunteur update. Project id: ' . $this->projects->id_project, ['class' => __CLASS__, 'function' => __FUNCTION__]);
                     $this->prelevements = $this->loadData('prelevements');
                     $this->prelevements->delete($this->projects->id_project, 'type_prelevement = 1 AND type = 2 AND status = 0 AND id_project');
 

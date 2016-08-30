@@ -851,7 +851,7 @@ class MailerManager
         $companies = $this->oEntityManager->getRepository('companies');
         $companies->get($project->id_company, 'id_company');
 
-        /** @var \clients_gestion_notifications $clients_gestion_notifications */
+        /** @var \clients_gestion_notifications $clientNotifications */
         $clientNotifications = $this->oEntityManager->getRepository('clients_gestion_notifications');
 
         /** @var \lenders_accounts $lender */
@@ -931,6 +931,7 @@ class MailerManager
                                         <td style="' . $sStyleTD . '">' . $sContractType . '</td></tr>';
 
                     if ($clientNotifications->getNotif($lender->id_client_owner, 4, 'immediatement') == true) {
+                        /** @var \clients_gestion_mails_notif $clientMailNotifications */
                         $clientMailNotifications = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
                         $clientMailNotifications->get($aLoan['id_loan'], 'id_client = ' . $lender->id_client_owner . ' AND id_loan');
                         $clientMailNotifications->immediatement = 1;
@@ -1661,6 +1662,10 @@ class MailerManager
                 $aCustomerMailNotifications[$aMailNotifications['id_client']][] = $aMailNotifications;
             }
 
+            if ($this->oLogger instanceof LoggerInterface) {
+                $this->oLogger->debug('Customer mail notifications: ' . var_export($aCustomerMailNotifications, true) , array('class' => __CLASS__, 'function' => __FUNCTION__));
+            }
+
             foreach ($aCustomerMailNotifications as $iCustomerId => $aMailNotifications) {
                 try {
                     $oCustomer->get($iCustomerId);
@@ -1703,8 +1708,7 @@ class MailerManager
                                 Important : le remboursement de <span style='color: #b20066;'>" . $this->oFicelle->formatNumber($oTransaction->montant / 100) . "&nbsp;&euro;</span> correspond au remboursement total du capital restant d&ucirc; de votre pr&egrave;t &agrave; <span style='color: #b20066;'>" . htmlentities($oCompanies->name) . "</span>.
                                 Comme le pr&eacute;voient les r&egrave;gles d'Unilend, <span style='color: #b20066;'>" . htmlentities($oCompanies->name) . "</span> a choisi de rembourser son emprunt par anticipation sans frais.
                                 <br/><br/>
-                                Depuis l'origine, il vous a vers&eacute; <span style='color: #b20066;'>" . $this->oFicelle->formatNumber($oLenderRepayment->getSumRembByloan_remb_ra($oTransaction->id_loan_remb,
-                                    'interets')) . "&nbsp;&euro;</span> d'int&eacute;r&ecirc;ts soit un taux d'int&eacute;r&ecirc;t annualis&eacute; moyen de <span style='color: #b20066;'>" . $this->oFicelle->formatNumber($oLoan->getWeightedAverageInterestRateForLender($oLender->id_lender_account,
+                                Depuis l'origine, il vous a vers&eacute; <span style='color: #b20066;'>" . $this->oFicelle->formatNumber($oLenderRepayment->getRepaidInterests(['id_loan' => $oTransaction->id_loan_remb])) . "&nbsp;&euro;</span> d'int&eacute;r&ecirc;ts soit un taux d'int&eacute;r&ecirc;t annualis&eacute; moyen de <span style='color: #b20066;'>" . $this->oFicelle->formatNumber($oLoan->getWeightedAverageInterestRateForLender($oLender->id_lender_account,
                                     $oProject->id_project), 1) . " %.</span><br/><br/> ";
                         } else {
                             /** @var \tax $tax */
