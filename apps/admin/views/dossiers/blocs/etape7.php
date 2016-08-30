@@ -1,4 +1,4 @@
-<div id="content_etape7"><?php if ($this->current_projects_status->status >= \projects_status::COMITE) : ?>
+<div id="content_etape7"><?php if ($this->projects->status >= \projects_status::COMITE) : ?>
         <?php
         $moyenne  = round($this->projects_notes->performance_fianciere_comite * 0.2 + $this->projects_notes->marche_opere_comite * 0.2 + $this->projects_notes->dirigeance_comite * 0.2 + $this->projects_notes->indicateur_risque_dynamique_comite * 0.4, 1);
         $start = '';
@@ -147,7 +147,7 @@
                 <?php if (false === $this->bReadonlyRiskNote): ?>
                     <input type="button" onclick="valid_rejete_etape7(3, <?= $this->projects->id_project ?>)" class="btn" value="Sauvegarder">
                 <?php endif; ?>
-                <?php if ($this->current_projects_status->status == \projects_status::COMITE): ?>
+                <?php if ($this->projects->status == \projects_status::COMITE): ?>
                     <input type="button" onclick="valid_rejete_etape7(1, <?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape7" style="background:#009933;border-color:#009933;" value="Valider">
                     <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/7/<?= $this->projects->id_project ?>" class="btn btnValid_rejet_etape7 btn_link thickbox" style="background:#CC0000;border-color:#CC0000;">Rejeter</a>
                     <input type="button" onclick="valid_rejete_etape7(4, <?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape7" value="Plus d'informations">

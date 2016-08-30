@@ -142,10 +142,8 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
         $sNextWeekPayment = '
             SELECT ee.*
             FROM echeanciers_emprunteur ee
-            INNER JOIN projects_last_status_history plsh ON plsh.id_project = ee.id_project
-            INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
-            INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
-            WHERE ps.status = '. \projects_status::REMBOURSEMENT .' AND status_emprunteur = 0 AND DATE_ADD(CURDATE(), INTERVAL '. $iDaysInterval .' DAY) = DATE(date_echeance_emprunteur)';
+            INNER JOIN projects p ON p.id_project = ee.id_project
+            WHERE p.status = ' . \projects_status::REMBOURSEMENT . ' AND ee.status_emprunteur = 0 AND DATE_ADD(CURDATE(), INTERVAL ' . $iDaysInterval . ' DAY) = DATE(ee.date_echeance_emprunteur)';
 
         $rResult          = $this->bdd->query($sNextWeekPayment);
         $aNextWeekPayment = array();

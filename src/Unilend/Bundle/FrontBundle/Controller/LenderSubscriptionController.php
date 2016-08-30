@@ -1104,11 +1104,12 @@ class LenderSubscriptionController extends Controller
     {
         if (false === empty($client->id_client) || (false === is_null($clientHash) && $client->get($clientHash, 'hash'))) {
             if (\clients::STATUS_ONLINE == $client->status && $client->etape_inscription_preteur >= 1 && $client->etape_inscription_preteur < 3) {
-
                 $redirectRoute = $this->getSubscriptionStepRedirectRoute($client->etape_inscription_preteur,$client->hash);
                 if ($requestPathInfo !== $redirectRoute) {
                     return $this->redirect($redirectRoute);
                 }
+            } else {
+                return $this->redirectToRoute('login');
             }
         }
 
@@ -1141,8 +1142,10 @@ class LenderSubscriptionController extends Controller
                 $redirectRoute = $this->generateUrl('lender_subscription_documents', ['clientHash' => $clientHash]);
                 break;
             case 2 :
-            case 3 :
                 $redirectRoute = $this->generateUrl('lender_subscription_money_deposit', ['clientHash' => $clientHash]);
+                break;
+            case 3 :
+                $redirectRoute = $this->generateUrl('login');
                 break;
             default :
                 $redirectRoute = $this->generateUrl('project_list');

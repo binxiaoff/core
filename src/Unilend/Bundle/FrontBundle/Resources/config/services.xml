@@ -75,6 +75,5 @@
                 <argument type="service" id="logger" on-invalid="null"/>
             </call>
         </service>
-
     </services>
 </container>

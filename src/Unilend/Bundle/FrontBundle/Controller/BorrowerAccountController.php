@@ -666,7 +666,7 @@ class BorrowerAccountController extends Controller
         $projectsPreFunding = $this->getCompany()->getProjectsForCompany(null, $statusPreFunding);
 
         foreach ($projectsPreFunding as $key => $project) {
-            switch ($project['project_status']) {
+            switch ($project['status']) {
                 case \projects_status::EN_ATTENTE_PIECES:
                 case \projects_status::A_TRAITER:
                     $projectsPreFunding[$key]['project_status_label'] = 'waiting-for-documents';
@@ -700,11 +700,13 @@ class BorrowerAccountController extends Controller
         $bids = $this->get('unilend.service.entity_manager')->getRepository('bids');
         /** @var \projects $projects */
         $projects        = $this->get('unilend.service.entity_manager')->getRepository('projects');
-        $projectsFunding = $this->getCompany()->getProjectsForCompany(null, \projects_status::EN_FUNDING);
+        $projectsFunding = $this->getCompany()->getProjectsForCompany(null, [\projects_status::EN_FUNDING]);
 
         foreach ($projectsFunding as $key => $project) {
+            $projects->get($project['id_project']);
+
             $projectsFunding[$key] = $projectsFunding[$key] + [
-                'average_ir'       => round($projects->getAverageInterestRate($project['id_project'], $project['project_status']), 2),
+                'average_ir'       => round($projects->getAverageInterestRate(), 2),
                 'funding_progress' => min(100, round((1 - ($project['amount'] - $bids->getSoldeBid($project['id_project'])) / $project['amount']) * 100, 1)),
                 'ended'            => \DateTime::createFromFormat('Y-m-d H:i:s', $project['date_retrait_full'])
             ];
@@ -737,6 +739,7 @@ class BorrowerAccountController extends Controller
 
         foreach ($projectsPostFunding as $key => $project) {
             $projects->get($project['id_project']);
+
             $aNextRepayment = $repaymentSchedule->select(
                 'status_emprunteur = 0 AND id_project = ' . $project['id_project'],
                 'date_echeance_emprunteur ASC',
@@ -745,7 +748,7 @@ class BorrowerAccountController extends Controller
             )[0];
 
             $projectsPostFunding[$key] = $projectsPostFunding[$key] + [
-                'average_ir'          => round($projects->getAverageInterestRate($project['id_project'], $project['project_status']), 2),
+                'average_ir'          => round($projects->getAverageInterestRate(), 2),
                 'outstanding_capital' => $this->calculateOutstandingCapital($project['id_project']),
                 'monthly_payment'     => ($aNextRepayment['montant'] + $aNextRepayment['commission'] + $aNextRepayment['tva']) / 100,
                 'next_maturity_date'  => \DateTime::createFromFormat('Y-m-d H:i:s', $aNextRepayment['date_echeance_emprunteur']),

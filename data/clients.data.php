@@ -1044,34 +1044,30 @@ class clients extends clients_crud
      */
     public function getBorrowersContactDetailsAndSource(\DateTime $oStartDate, \DateTime $oEndDate, $bGroupBySiren)
     {
-        $sGroupBy    = ($bGroupBySiren) ? 'GROUP BY com.siren ' : '';
-        $sCountSiren = ($bGroupBySiren) ? 'count(com.siren) AS "countSiren", ' : '';
+        $sGroupBy    = $bGroupBySiren ? 'GROUP BY com.siren ' : '';
+        $sCountSiren = $bGroupBySiren ? 'COUNT(com.siren) AS countSiren, ' : '';
 
-        $sQuery = 'SELECT
-                        p.id_project,'
-                        . $sCountSiren . '
-                        com.siren,
-                        c.nom,
-                        c.prenom,
-                        c.email,
-                        c.mobile,
-                        c.telephone,
-                        c.source,
-                        c.source2,
-                        c.added,
-                        ps.label
-                    FROM
-                        projects p
-                        INNER JOIN companies com ON p.id_company = com.id_company
-                        INNER JOIN clients c ON com.id_client_owner = c.id_client
-                        INNER JOIN projects_last_status_history plsh ON p.id_project = plsh.id_project
-                        INNER JOIN projects_status_history psh ON plsh.id_project_status_history = psh.id_project_status_history
-                        INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                    WHERE
-                        DATE(p.added) BETWEEN "'. $oStartDate->format('Y-m-d') . '"
-                        AND "'. $oEndDate->format('Y-m-d') . '" '
-                    . $sGroupBy . '
-                    ORDER BY com.siren DESC, c.added DESC';
+        $sQuery = '
+            SELECT
+                p.id_project,'
+                . $sCountSiren . '
+                com.siren,
+                c.nom,
+                c.prenom,
+                c.email,
+                c.mobile,
+                c.telephone,
+                c.source,
+                c.source2,
+                c.added,
+                ps.label
+            FROM projects p
+            INNER JOIN companies com ON p.id_company = com.id_company
+            INNER JOIN clients c ON com.id_client_owner = c.id_client
+            INNER JOIN projects_status ps ON p.status = ps.status
+            WHERE DATE(p.added) BETWEEN "'. $oStartDate->format('Y-m-d') . '" AND "'. $oEndDate->format('Y-m-d') . '" '
+            . $sGroupBy . '
+            ORDER BY com.siren DESC, c.added DESC';
 
         $rQuery = $this->bdd->query($sQuery);
         $aResult = array();

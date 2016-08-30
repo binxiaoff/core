@@ -52,8 +52,10 @@ class LenderDashboardController extends Controller
         $ongoingProjects = $project->selectProjectsByStatus([\projects_status::EN_FUNDING], '', [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_ASC], 0, 30);
 
         foreach ($ongoingProjects as $iKey => $aProject) {
-            $ongoingProjects[$iKey]['avgrate'] = $project->getAverageInterestRate($aProject['id_project'], $aProject['status']);
+            $project->get($aProject['id_project']);
+            $ongoingProjects[$iKey]['avgrate'] = $project->getAverageInterestRate();
         }
+
         $ongoingBidsSum      = $bid->sumBidsEncours($lender->id_lender_account);
         $problematicProjects = $echeancier->getProblematicProjects($lender->id_lender_account);
         $netInterestsAmount  = $echeancier->getSumRemb($lender->id_lender_account . ' AND status_ra = 0', 'interets') - $echeancier->getSumRevenuesFiscalesRemb($lender->id_lender_account . ' AND status_ra = 0');

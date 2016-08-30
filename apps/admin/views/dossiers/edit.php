@@ -151,7 +151,7 @@
             changeYear: true
         });
         $('#duree').change(function() {
-            if (0 == $(this).val() && <?= \projects_status::PREP_FUNDING ?> == <?= $this->current_projects_status->status ?>) {
+            if (0 == $(this).val() && <?= \projects_status::PREP_FUNDING ?> == <?= $this->projects->status ?>) {
                 $("#status").css('display', 'none');
                 $("#msgProject").css('display', 'none');
                 $("#displayPeriodHS").css('display', 'block');
@@ -396,7 +396,7 @@
                             </select>
                         </td>
                     </tr>
-                    <tr class="content_risk" <?= ($this->current_projects_status->status >= \projects_status::PREP_FUNDING ? '' : 'style="display:none"') ?>>
+                    <tr class="content_risk" <?= ($this->projects->status >= \projects_status::PREP_FUNDING ? '' : 'style="display:none"') ?>>
                         <th><label for="risk">Niveau de risque* :</label></th>
                         <td>
                             <?php
@@ -432,7 +432,7 @@
                 </table>
                 <br><br>
 
-                <?php if ($this->current_projects_status->status == \projects_status::REMBOURSEMENT) : ?>
+                <?php if ($this->projects->status == \projects_status::REMBOURSEMENT) : ?>
                     <h2>Remboursement anticipé / Information</h2>
                     <table class="form" style="width: 538px; border: 1px solid #B10366;">
                         <tr>
@@ -528,7 +528,7 @@
                             </select>
                         </td>
                     </tr>
-                    <tr id="analysts-row"<?php if ($this->current_projects_status->status < \projects_status::ATTENTE_ANALYSTE && empty($this->projects->id_analyste)) { ?> style="display: none;"<?php } ?>>
+                    <tr id="analysts-row"<?php if ($this->projects->status < \projects_status::ATTENTE_ANALYSTE && empty($this->projects->id_analyste)) { ?> style="display: none;"<?php } ?>>
                         <th><label for="analyste">Analyste :</label></th>
                         <td>
                             <select name="analyste" id="analyste" class="select">
@@ -542,7 +542,7 @@
                     <tr>
                         <th><label for="status">Statut :</label></th>
                         <td id="current_statut">
-                            <input type="hidden" name="current_status" value="<?= $this->current_projects_status->status ?>"/>
+                            <input type="hidden" name="current_status" value="<?= $this->projects->status ?>"/>
                             <?php
                                 $sDisplayPeriodHS    = 'none';
                                 $sDisplayMsgPeriodHs = 'none';
@@ -553,7 +553,7 @@
                                 <?php
                                     if (
                                         (in_array($this->projects->period, array(0, 1000000)) || empty($this->aAttachments[3]['path'])) // No RIB or no duration selected
-                                        && $this->current_projects_status->status == \projects_status::PREP_FUNDING
+                                        && $this->projects->status == \projects_status::PREP_FUNDING
                                     ) {
                                         $sDisplayPeriodHS    = 'block';
                                         $sDisplayStatus      = 'none';
@@ -562,16 +562,16 @@
                                     }
                                 ?>
                                 <span id="displayPeriodHS" style="display:<?= $sDisplayPeriodHS ?>;">
-                                    <?= $this->current_projects_status->label ?>
+                                    <?= $this->projects_status->label ?>
                                 </span>
-                                <select name="status" id="status" class="select" style="display:<?= $sDisplayStatus ?>;" <?= ($this->current_projects_status->status == \projects_status::REMBOURSEMENT_ANTICIPE ? '"disabled"' : "") ?>>
+                                <select name="status" id="status" class="select" style="display:<?= $sDisplayStatus ?>;" <?= ($this->projects->status == \projects_status::REMBOURSEMENT_ANTICIPE ? '"disabled"' : "") ?>>
                                 <?php foreach ($this->lProjects_status as $s) { ?>
-                                    <option <?= ($this->current_projects_status->status == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>"><?= $s['label'] ?></option>
+                                    <option <?= ($this->projects->status == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>"><?= $s['label'] ?></option>
                                 <?php } ?>
                                 </select>
                             <?php  else : ?>
-                                <input type="hidden" name="status" id="status" value="<?= $this->current_projects_status->status ?>" />
-                                <?= $this->current_projects_status->label ?>
+                                <input type="hidden" name="status" id="status" value="<?= $this->projects->status ?>" />
+                                <?= $this->projects_status->label ?>
                                 <?php if (false === empty($this->sRejectionReason)) : ?>
                                     (<?= $this->sRejectionReason ?>)
                                 <?php endif; ?>
@@ -580,17 +580,17 @@
                         <td>
                             <?php if (
                                 in_array($this->users->id_user_type, array(\users_types::TYPE_ADMIN, \users_types::TYPE_ANALYSTE))
-                                && in_array($this->current_projects_status->status, array(\projects_status::REJET_ANALYSTE, \projects_status::REJET_COMITE, \projects_status::REJETE))
+                                && in_array($this->projects->status, array(\projects_status::REJET_ANALYSTE, \projects_status::REJET_COMITE, \projects_status::REJETE))
                             ) : ?>
                                 <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/0/<?= $this->projects->id_project ?>" title="Modifier le motif de rejet" class="thickbox"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier le motif de rejet"/></a>
                             <?php endif; ?>
                             <a href="<?= $this->lurl ?>/thickbox/project_history/<?= $this->projects->id_project ?>" class="thickbox"><img src="<?= $this->surl ?>/images/admin/info.png" alt="Information" /></a>
                         </td>
                     </tr>
-                    <?php if ($this->current_projects_status->status == \projects_status::NOTE_EXTERNE_FAIBLE && false === empty($this->current_projects_status_history->content)) { ?>
+                    <?php if ($this->projects->status == \projects_status::NOTE_EXTERNE_FAIBLE && false === empty($this->projects_status_history->content)) { ?>
                     <tr>
                         <th><label for="status">Motif :</label></th>
-                        <td><?= $this->current_projects_status_history->content ?></td>
+                        <td><?= $this->projects_status_history->content ?></td>
                     </tr>
                     <?php } ?>
                 </table>
@@ -599,8 +599,8 @@
                 <input type="hidden" name="check_confirmation_send_email" id="check_confirmation_send_email" value="0">
 
                 <table class="form" style="width: 538px;">
-                    <?php if (in_array($this->current_projects_status->status, array(\projects_status::ATTENTE_ANALYSTE, \projects_status::REVUE_ANALYSTE, \projects_status::COMITE, \projects_status::PREP_FUNDING))) { ?>
-                        <tr class="change_statut" <?= ($this->current_projects_status->status == \projects_status::PREP_FUNDING ? '' : 'style="display:none"') ?>>
+                    <?php if (in_array($this->projects->status, array(\projects_status::ATTENTE_ANALYSTE, \projects_status::REVUE_ANALYSTE, \projects_status::COMITE, \projects_status::PREP_FUNDING))) { ?>
+                        <tr class="change_statut" <?= ($this->projects->status == \projects_status::PREP_FUNDING ? '' : 'style="display:none"') ?>>
                             <td colspan="2">
                                 <span id="msgProject" style="display:<?= $sDisplayMsgProject ?>;">Vous devez changer le statut du projet pour ajouter une date de publication et de retrait</span>
                                 <span id="msgProjectPeriodHS" style="display:<?= $sDisplayMsgPeriodHs ?>;">V&eacute;rifiez la dur&eacute;e du pr&ecirc;t et le rib avant de pouvoir changer de statut</span>
@@ -608,11 +608,11 @@
                             </td>
                         </tr>
                     <?php } ?>
-                    <tr class="content_date_publicaion" <?= ($this->current_projects_status->status >= \projects_status::PREP_FUNDING ? '' : 'style="display:none"') ?>>
+                    <tr class="content_date_publicaion" <?= ($this->projects->status >= \projects_status::PREP_FUNDING ? '' : 'style="display:none"') ?>>
                         <th><label for="date_publication">Date de publication* :</label></th>
                         <td id="date_publication">
                             <?php
-                            if (in_array($this->current_projects_status->status, array(\projects_status::EN_ATTENTE_PIECES, \projects_status::REVUE_ANALYSTE, \projects_status::COMITE, \projects_status::PREP_FUNDING, \projects_status::A_FUNDER))) {
+                            if (in_array($this->projects->status, array(\projects_status::EN_ATTENTE_PIECES, \projects_status::REVUE_ANALYSTE, \projects_status::COMITE, \projects_status::PREP_FUNDING, \projects_status::A_FUNDER))) {
                                 ?>
                                 <input style="background-color:#AAACAC;" type="text" name="date_publication" id="date_pub" class="input_dp" value="<?= ($this->projects->date_publication != '0000-00-00' ? $this->dates->formatDate($this->projects->date_publication, 'd/m/Y') : '') ?>" />
                                 <?php
@@ -657,11 +657,11 @@
                             ?>
                         </td>
                     </tr>
-                    <tr class="content_date_retrait" <?= ($this->current_projects_status->status >= \projects_status::PREP_FUNDING ? '' : 'style="display:none"') ?>>
+                    <tr class="content_date_retrait" <?= ($this->projects->status >= \projects_status::PREP_FUNDING ? '' : 'style="display:none"') ?>>
                         <th><label for="date_retrait">Date de retrait* :</label></th>
                         <td id="date_retrait">
                             <?php
-                            if (in_array($this->current_projects_status->status, array(\projects_status::EN_ATTENTE_PIECES, \projects_status::REVUE_ANALYSTE, \projects_status::COMITE, \projects_status::PREP_FUNDING, \projects_status::A_FUNDER))) {
+                            if (in_array($this->projects->status, array(\projects_status::EN_ATTENTE_PIECES, \projects_status::REVUE_ANALYSTE, \projects_status::COMITE, \projects_status::PREP_FUNDING, \projects_status::A_FUNDER))) {
                                 ?>
                                 <input  style="background-color:#AAACAC;" type="text" name="date_retrait" id="date_de_retrait" class="input_dp" value="<?= ($this->projects->date_retrait != '0000-00-00' ? $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y') : '') ?>" />
                                 <?php
@@ -704,7 +704,7 @@
                                     echo $this->dates->formatDate($this->projects->date_retrait_full, 'd/m/Y H:i');
                                 }
 
-                                if ($this->current_projects_status->status < \projects_status::FUNDE) {
+                                if ($this->projects->status < \projects_status::FUNDE) {
                                     ?>
                                     &nbsp;&nbsp;&nbsp;<a href="<?= $this->lurl ?>/thickbox/pop_up_edit_date_retrait/<?= $this->projects->id_project ?>" class="thickbox btn_link ">Modifier</a>
                                     <?php
@@ -722,7 +722,7 @@
                     <tr>
                         <td></td>
                         <td id="status_dossier">
-                        <?php if ($this->current_projects_status->status == \projects_status::EN_ATTENTE_PIECES) { ?>
+                        <?php if ($this->projects->status == \projects_status::EN_ATTENTE_PIECES) { ?>
                             <input type="button" id="status_dosier_valider" class="btn" onclick="check_status_dossier(<?= \projects_status::ATTENTE_ANALYSTE ?>, <?= $this->projects->id_project ?>);" style="background:#009933;border-color:#009933;font-size:10px;" value="Revue du dossier">
                             <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/1/<?= $this->projects->id_project ?>" class="btn btn_link thickbox" style="background:#CC0000;border-color:#CC0000;font-size:10px;">Rejeter dossier</a>
                         <?php } ?>
@@ -742,14 +742,14 @@
                                 </div>
                             </td>
                         </tr>
-                    <?php } elseif ($this->current_projects_status->status == \projects_status::FUNDE) { ?>
+                    <?php } elseif ($this->projects->status == \projects_status::FUNDE) { ?>
                         <tr>
                             <th><label for="upload_pouvoir">Pouvoir :</label></th>
                             <td><input type="file" name="upload_pouvoir" id="upload_pouvoir"/></td>
                         </tr>
                     <?php } ?>
 
-                    <?php if ($this->current_projects_status->status == \projects_status::FUNDE) { ?>
+                    <?php if ($this->projects->status == \projects_status::FUNDE) { ?>
                         <tr>
                             <th>Prêt refusé :</th>
                             <td>

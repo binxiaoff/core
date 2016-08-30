@@ -41,9 +41,6 @@ class ProjectRequestController extends Controller
     /** @var \projects */
     private $project;
 
-    /** @var int */
-    private $projectStatus;
-
     /** @var \upload */
     private $upload;
 
@@ -1169,13 +1166,9 @@ class ProjectRequestController extends Controller
         ]);
         $template['attachment_types'] = $this->attachmentType->changeLabelWithDynamicContent($attachmentTypes);
 
-        /** @var \projects_last_status_history $projectLastStatusHistory */
-        $projectLastStatusHistory = $entityManager->getRepository('projects_last_status_history');
-        $projectLastStatusHistory->get($this->project->id_project, 'id_project');
-
         /** @var \projects_status_history $projectStatusHistory */
         $projectStatusHistory = $entityManager->getRepository('projects_status_history');
-        $projectStatusHistory->get($projectLastStatusHistory->id_project_status_history, 'id_project_status_history');
+        $projectStatusHistory->loadLastProjectHistory($this->project->id_project);
 
         if (false === empty($projectStatusHistory->content)) {
             $oDOMElement = new \DOMDocument();
@@ -1240,7 +1233,7 @@ class ProjectRequestController extends Controller
         $addMoreFiles = false;
         $message      = $translator->trans('project-request_end-page-not-entitled-message');
 
-        switch ($this->projectStatus) {
+        switch ($this->project->status) {
             case \projects_status::ABANDON:
                 $message = $translator->trans('project-request_end-page-aborded-message');
                 break;
@@ -1460,22 +1453,17 @@ class ProjectRequestController extends Controller
             return $this->redirectToRoute(RouteProvider::ROUTE_PROJECT_REQUEST_LANDING_PAGE);
         }
 
-        /** @var \projects_status $projectStatus */
-        $projectStatus = $entityManager->getRepository('projects_status');
         $this->client  = $entityManager->getRepository('clients');
         $this->company = $entityManager->getRepository('companies');
 
         $this->company->get($this->project->id_company);
         $this->client->get($this->company->id_client_owner);
 
-        $projectStatus->getLastStatut($this->project->id_project);
-        $this->projectStatus = $projectStatus->status;
-
         if (self::PAGE_ROUTE_EMAILS === $route) {
             return null;
         }
 
-        switch ($this->projectStatus) {
+        switch ($this->project->status) {
             case \projects_status::PAS_3_BILANS:
             case \projects_status::NOTE_EXTERNE_FAIBLE:
                 if (false === in_array($route, [self::PAGE_ROUTE_END, self::PAGE_ROUTE_PROSPECT])) {
@@ -1526,7 +1514,7 @@ class ProjectRequestController extends Controller
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
         $oProjectManager = $this->get('unilend.service.project_manager');
 
-        if ($this->projectStatus != $projectStatus) {
+        if ($this->project->status != $projectStatus) {
             $oProjectManager->addProjectStatus(\users::USER_ID_FRONT, $projectStatus, $this->project, 0, $rejectionMessage);
         }
 

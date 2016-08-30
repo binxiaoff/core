@@ -28,7 +28,6 @@ class depot_de_dossierController extends bootstrap
         $this->companies_bilans              = $this->loadData('companies_bilans');
         $this->companies_actif_passif        = $this->loadData('companies_actif_passif');
         $this->projects                      = $this->loadData('projects');
-        $this->projects_status               = $this->loadData('projects_status');
         $this->projects_status_history       = $this->loadData('projects_status_history');
         $this->clients                       = $this->loadData('clients');
         $this->clients_adresses              = $this->loadData('clients_adresses');
@@ -766,9 +765,7 @@ class depot_de_dossierController extends bootstrap
         $this->sYearLessTwo   = date('Y') - 2;
         $this->sYearLessThree = date('Y') - 3;
 
-        $this->projects_last_status_history = $this->loadData('projects_last_status_history');
-        $this->projects_last_status_history->get($this->projects->id_project, 'id_project');
-        $this->projects_status_history->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history');
+        $this->projects_status_history->loadLastProjectHistory($this->projects->id_project);
 
         if (false === empty($this->projects_status_history->content)) {
             $oDOMElement = new DOMDocument();
@@ -817,7 +814,7 @@ class depot_de_dossierController extends bootstrap
         $this->sMessage        = $this->lng['depot-de-dossier-fin']['contenu-non-eligible'];
         $this->bDisplayTouchvibes = false;
 
-        switch ($this->projects_status->status) {
+        switch ($this->projects->status) {
             case \projects_status::ABANDON:
                 $this->sMessage = $this->lng['depot-de-dossier-fin']['abandon'];
                 break;
@@ -1023,13 +1020,11 @@ class depot_de_dossierController extends bootstrap
             $this->companies_prescripteur->get($this->prescripteurs->id_entite, 'id_company');
         }
 
-        $this->projects_status->getLastStatut($this->projects->id_project);
-
         if (self::PAGE_NAME_EMAILS === $sPage) {
             return;
         }
 
-        switch ($this->projects_status->status) {
+        switch ($this->projects->status) {
             case \projects_status::PAS_3_BILANS:
             case \projects_status::NOTE_EXTERNE_FAIBLE:
                 if (false === in_array($sPage, array(self::PAGE_NAME_END, self::PAGE_NAME_PROSPECT))) {
@@ -1080,7 +1075,7 @@ class depot_de_dossierController extends bootstrap
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
         $oProjectManager = $this->get('unilend.service.project_manager');
 
-        if (false === is_null($iProjectStatus) && $this->projects_status->status != $iProjectStatus) {
+        if (false === is_null($iProjectStatus) && $this->projects->status != $iProjectStatus) {
             $oProjectManager->addProjectStatus(\users::USER_ID_FRONT, $iProjectStatus, $this->projects, 0, $sRejectionMessage);
         }
 
