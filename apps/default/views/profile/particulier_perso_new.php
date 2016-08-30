@@ -7,6 +7,8 @@ $dateDepartControlPays = strtotime('2014-07-31 18:00:00');
 if(strtotime($this->clients->added) >= $dateDepartControlPays)
 {
     $required = 'required';
+} else {
+    $required = '';
 }
 
 ?>

@@ -88,7 +88,7 @@
                 $solde = $t['solde'];
             }
 
-            if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
+            if (in_array($t['type_transaction'], array(5, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
                 $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
                 ?>
                 <tr class="transact remb_<?= $t['id_transaction'] ?> <?= ($i % 2 == 1 ? '' : 'odd') ?>">
@@ -101,7 +101,7 @@
                 </tr>
                 <tr class="content_transact <?= ($i % 2 == 1 ? '' : 'odd') ?>" height="0">
                     <td colspan="7">
-                    <?php if (true === in_array($t['type_transaction'], [\transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS, \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL])): ?>
+                    <?php if (5 == $t['type_transaction']): ?>
                         <div class="div_content_transact content_remb_<?= $t['id_transaction'] ?>">
                             <table class="soustable" width="100%">
                                 <tbody>

@@ -36,7 +36,7 @@
         <?php if (count($this->liste_docs) > 0): ?>
             <table class="table vos_operations" border="0" cellspacing="0" cellpadding="0">
                 <tr>
-                    <th id="order_operations" class="narrow-th" width="105">
+                    <th class="narrow-th" width="105">
                         <b><?= $this->lng['preteur-operations']['vos-documents-nom-colonne'] ?></b>
                     </th>
                     <th width="50">

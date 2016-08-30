@@ -1172,7 +1172,7 @@ class pdfController extends bootstrap
                 \transactions_types::TYPE_LENDER_LOAN,
                 \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
                 \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
-                \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL,
+                5,
                 \transactions_types::TYPE_DIRECT_DEBIT,
                 \transactions_types::TYPE_LENDER_WITHDRAWAL,
                 \transactions_types::TYPE_WELCOME_OFFER,
@@ -1196,7 +1196,7 @@ class pdfController extends bootstrap
             4 => array(\transactions_types::TYPE_LENDER_WITHDRAWAL),
             5 => array(\transactions_types::TYPE_LENDER_LOAN),
             6 => array(
-                \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL,
+                5,
                 \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
                 \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
             )

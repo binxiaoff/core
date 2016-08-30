@@ -3,6 +3,11 @@
 class operationsController extends bootstrap
 {
     const LAST_OPERATION_DATE = '2013-01-01';
+    /**
+     * This is a fictive transaction type,
+     * it will be used only in indexage_vos_operaitons in order to get single repayment line with total of capital and interests repayment amount
+     */
+    const TYPE_REPAYMENT_TRANSACTION = 5;
 
     public function initialize()
     {
@@ -461,7 +466,7 @@ class operationsController extends bootstrap
                 \transactions_types::TYPE_LENDER_LOAN,
                 \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
                 \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
-                \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL,
+                self::TYPE_REPAYMENT_TRANSACTION,
                 \transactions_types::TYPE_DIRECT_DEBIT,
                 \transactions_types::TYPE_LENDER_WITHDRAWAL,
                 \transactions_types::TYPE_WELCOME_OFFER,
@@ -485,7 +490,7 @@ class operationsController extends bootstrap
             4 => array(\transactions_types::TYPE_LENDER_WITHDRAWAL),
             5 => array(\transactions_types::TYPE_LENDER_LOAN),
             6 => array(
-                \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL,
+                self::TYPE_REPAYMENT_TRANSACTION,
                 \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
                 \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
             )
@@ -597,14 +602,14 @@ class operationsController extends bootstrap
                 $sProjectId = $t['id_projet'] == 0 ? '' : $t['id_projet'];
                 $solde      = $t['solde'];
 
-                if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT))) {
+                if (in_array($t['type_transaction'], array(self::TYPE_REPAYMENT_TRANSACTION, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
                     $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
 
                     foreach ($aTaxType as $aType) {
                         $aTax[$aType['id_tax_type']]['amount'] = 0;
                     }
 
-                    if (false === in_array($t['type_transaction'], [\transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS, \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL])) {
+                    if (self::TYPE_REPAYMENT_TRANSACTION != $t['type_transaction']) {
                         $this->echeanciers->capital = $t['montant_operation'];
                     } else {
                         $aTax = $oTax->getTaxListByRepaymentId($t['id_echeancier']);
@@ -747,7 +752,7 @@ class operationsController extends bootstrap
             ),
             \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT      => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
             \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT    => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL       => 'Remboursement',
+            \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL       => $this->lng['preteur-operations-vos-operations']['remboursement'],
             \transactions_types::TYPE_DIRECT_DEBIT                   => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
             \transactions_types::TYPE_LENDER_WITHDRAWAL              => $this->lng['preteur-operations-vos-operations']['retrait-dargents'],
             \transactions_types::TYPE_WELCOME_OFFER                  => $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'],
@@ -786,38 +791,26 @@ class operationsController extends bootstrap
                 $this->indexage_vos_operations->id_transaction      = $t['id_transaction'];
                 $this->indexage_vos_operations->id_echeancier       = $t['id_echeancier'];
                 $this->indexage_vos_operations->id_projet           = $t['le_id_project'];
-                $this->indexage_vos_operations->type_transaction    = $t['type_transaction'];
+                $this->indexage_vos_operations->type_transaction    = (\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL == $t['type_transaction']) ? self::TYPE_REPAYMENT_TRANSACTION : $t['type_transaction'];
                 $this->indexage_vos_operations->libelle_operation   = $t['type_transaction_alpha'];
                 $this->indexage_vos_operations->bdc                 = $t['bdc'];
                 $this->indexage_vos_operations->libelle_projet      = $t['title'];
                 $this->indexage_vos_operations->date_operation      = $t['date_tri'];
                 $this->indexage_vos_operations->solde               = bcmul($t['solde'], 100);
-                $this->indexage_vos_operations->montant_operation   = $t['amount_operation'];
                 $this->indexage_vos_operations->libelle_prelevement = $libelle_prelevements;
                 $this->indexage_vos_operations->montant_prelevement = $oTax->getAmountByRepaymentId($t['id_echeancier']);
+                $this->indexage_vos_operations->montant_operation   = $t['amount_operation'] + $this->indexage_vos_operations->montant_prelevement;
 
-                $capital  = 0.0;
-                $interets = 0.0;
+                $capital   = 0.0;
+                $interests = 0.0;
 
-                if ($this->echeanciers->get($t['id_echeancier'], 'id_echeancier')) {
-                    $capital  = $this->echeanciers->capital;
-                    $interets = $this->echeanciers->interets;
+                if (false === empty($t['id_echeancier'])) {
+                    $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
+                    $capital   = $this->echeanciers->capital;
+                    $interests = $this->echeanciers->interets;
                 }
-
-                switch ($t['type_transaction']) {
-                    case \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL:
-                        $this->indexage_vos_operations->montant_capital = $t['montant'];
-                        $this->indexage_vos_operations->montant_interet = $t['amount_operation'] - $t['montant'];
-                        break;
-                    case \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS:
-                        $this->indexage_vos_operations->montant_capital = $t['montant'];
-                        $this->indexage_vos_operations->montant_interet = 0;
-                        break;
-                    default:
-                        $this->indexage_vos_operations->montant_capital = $capital;
-                        $this->indexage_vos_operations->montant_interet = $interets;
-                }
-
+                $this->indexage_vos_operations->montant_capital = $capital;
+                $this->indexage_vos_operations->montant_interet = $interests;
                 $this->indexage_vos_operations->create();
             }
         }

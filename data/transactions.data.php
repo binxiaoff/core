@@ -138,8 +138,18 @@ class transactions extends transactions_crud
     public function selectTransactionsOp($array_type_transactions, $sIndexationDateStart, $iClientId)
     {
         $sql = '
-        ( SELECT t.*,
-
+        ( SELECT
+            t.id_transaction,
+            t.date_transaction,
+            t.id_client,
+            t.id_echeancier,
+            t.type_transaction,
+            CASE t.type_transaction
+            WHEN ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . '
+                THEN (SELECT sum(t_refund.montant)
+                   FROM transactions t_refund
+                   WHERE t_refund.id_echeancier = t.id_echeancier AND t_refund.type_transaction IN (' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . ', ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '))
+            ELSE t.montant END                        AS montant,
             CASE ';
 
         foreach ($array_type_transactions as $key => $t) {
@@ -189,13 +199,7 @@ class transactions extends transactions_crud
                 WHEN ' . \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT . ' THEN (SELECT e.id_loan FROM echeanciers e WHERE e.id_project = t.id_project AND w.id_lender = e.id_lender LIMIT 1)
                 ELSE ""
             END AS bdc,
-            
-            CASE t.type_transaction
-                WHEN ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . '
-                    THEN (SELECT sum(t_refund.montant) FROM transactions t_refund WHERE t_refund.id_echeancier = t.id_echeancier AND t_refund.type_transaction IN (' . implode(', ', array(\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS)) . '))
-                ELSE t.montant
-            END AS amount_operation
-
+            t.montant as amount_operation
             FROM transactions t
             LEFT JOIN wallets_lines w ON t.id_transaction = w.id_transaction
             LEFT JOIN bids b ON w.id_wallet_line = b.id_lender_wallet_line
@@ -209,7 +213,17 @@ class transactions extends transactions_crud
         UNION ALL
         (
             SELECT
-              t.*,
+                t.id_transaction,
+                t.date_transaction,
+                t.id_client,
+                t.id_echeancier,
+                t.type_transaction,
+                CASE t.type_transaction
+                WHEN ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . '
+                THEN (SELECT sum(t_refund.montant)
+                   FROM transactions t_refund
+                   WHERE t_refund.id_echeancier = t.id_echeancier AND t_refund.type_transaction IN (' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . ', ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '))
+                ELSE t.montant END                        AS montant,
               "' . $array_type_transactions[2][3] . '" AS type_transaction_alpha,
               lo.id_project AS le_id_project,
               psh.added AS date_tri,

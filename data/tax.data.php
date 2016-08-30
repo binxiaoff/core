@@ -76,7 +76,7 @@ class tax extends tax_crud
      */
     public function getAmountByRepaymentId($iRepaymentId)
     {
-        $sql = 'SELECT SUM(tax.amount) 
+        $sql = 'SELECT IFNULL(SUM(tax.amount), 0) AS taxAmount
                   FROM tax 
                 WHERE tax.id_transaction = 
                   (SELECT t.id_transaction 
@@ -84,7 +84,7 @@ class tax extends tax_crud
                    WHERE t.id_echeancier = ' . $iRepaymentId . ' AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . ')';
 
         $result = $this->bdd->query($sql);
-        $return = (int) ($this->bdd->result($result, 0, 0));
+        $return = $this->bdd->result($result, 0, 0);
         return $return;
     }
 

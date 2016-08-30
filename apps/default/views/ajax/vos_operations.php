@@ -135,13 +135,13 @@ foreach ($this->lTrans as $t) {
         $t['bdc'] = '';
     }
 
-    if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
+    if (in_array($t['type_transaction'], array(5 , \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
         // Récupération de la traduction et non plus du libelle dans l'indexation (si changement on est ko)
         $html .= '
             <!-- debut transasction remb -->
             <tr class="transact remb_' . $t['id_transaction'] . ' ' . ($i % 2 == 1 ? '' : 'odd') . '">
                 <td>' . $t['libelle_operation'];
-        if (true === in_array($t['type_transaction'], [\transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS, \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL])) {
+        if (5 == $t['type_transaction']) {
             $html .= '<span class="plusmoinsOperations"></span>';
         }
 
@@ -156,7 +156,7 @@ foreach ($this->lTrans as $t) {
             <tr class="content_transact ' . ($i % 2 == 1 ? '' : 'odd') . '" height="0">
                 <td colspan="7">';
 
-        if (\transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT != $t['type_transaction']) {
+        if (5 == $t['type_transaction']) {
             $html .= '<div class="div_content_transact content_remb_' . $t['id_transaction'] . '" style="display:none;">
                     <table class="soustable" width="100%">
                         <tbody>
