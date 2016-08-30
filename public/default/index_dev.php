@@ -25,20 +25,16 @@ if (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVE
     );
 }
 
-//session_start();
-//ini_set('session.gc_maxlifetime', 3600); // 1h la session
-
 Debug::enable();
 
-$oKernel = new AppKernel('dev', true);
+$kernel = new AppKernel('dev', true);
+$request  = Request::createFromGlobals();
 
 try {
-    Request::enableHttpMethodParameterOverride();
-    $request  = Request::createFromGlobals();
-    $response = $oKernel->handle($request);
+    $response = $kernel->handle($request);
     $response->send();
-    $oKernel->terminate($request, $response);
+    $kernel->terminate($request, $response);
 } catch (NotFoundHttpException $exception) {
-    $oKernel->boot();
-    $oDispatcher = new \Unilend\core\Dispatcher($oKernel, 'default', $config);
+    $kernel->boot();
+    $dispatcher = new \Unilend\core\Dispatcher($kernel, 'default', $config);
 }
