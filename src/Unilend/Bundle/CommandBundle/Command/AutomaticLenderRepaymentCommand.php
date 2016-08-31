@@ -230,7 +230,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                     'annee'           => date('Y'),
                     'lien_fb'         => $sFB,
                     'lien_tw'         => $sTwitter,
-                    'montantRemb'     => $ficelle->formatNumber($rembNetTotal)
+                    'montantRemb'     => $ficelle->formatNumber(bcdiv($rembNetTotal, 100, 2))
                 );
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */

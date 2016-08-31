@@ -984,6 +984,11 @@ class dossiersController extends bootstrap
             $aNextRepayment = $oPaymentSchedule->select('id_project = ' . $this->projects->id_project . ' AND date_echeance_emprunteur > "' . date('Y-m-d') . '"', 'date_echeance_emprunteur ASC', 0, 1);
             $oNow           = new \DateTime();
             $aReplacements['delai_regularisation'] = $oNow->diff(new \DateTime($aNextRepayment[0]['date_echeance_emprunteur']))->days;
+            if ($aReplacements['delai_regularisation'] >= 2) {
+                $aReplacements['delai_regularisation'] .= ' jours';
+            } else {
+                $aReplacements['delai_regularisation'] .= ' jour';
+            }
         }
 
         if (in_array($iStatus, array(\projects_status::RECOUVREMENT, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE))) {
@@ -1025,6 +1030,10 @@ class dossiersController extends bootstrap
         $this->mail_template->get($sMailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
         $aReplacements['sujet'] = $this->mail_template->subject;
 
+        /** @var \Psr\Log\LoggerInterface $logger */
+        $logger = $this->get('logger');
+        $logger->debug('Mail to send : ' . $sMailType . ' Variables : ' . json_encode($aReplacements), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project]);
+
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMailType, $aReplacements);
         $message->setTo($this->clients->email);
@@ -1034,9 +1043,6 @@ class dossiersController extends bootstrap
 
     private function sendProblemStatusEmailLender($iStatus, $projectStatusHistoryDetails)
     {
-        /** @var \Psr\Log\LoggerInterface $logger */
-        $logger = $this->get('logger');
-
         $this->transactions = $this->loadData('transactions');
 
         $this->settings->get('Facebook', 'type');
@@ -1159,17 +1165,21 @@ class dossiersController extends bootstrap
                             'prenom_p'                    => $this->clients->prenom,
                             'entreprise'                  => $this->companies->name,
                             'montant_pret'                => $this->ficelle->formatNumber($fLoansAmount / 100, 0),
-                            'montant_rembourse'           => $this->ficelle->formatNumber($fTotalPayedBack),
+                            'montant_rembourse'           => $this->ficelle->formatNumber($fTotalPayedBack / 100),
                             'nombre_prets'                => $iLoansCount . ' ' . (($iLoansCount > 1) ? 'pr&ecirc;ts' : 'pr&ecirc;t'), // @todo intl
                             'date_prochain_remboursement' => $this->dates->formatDate($aNextRepayment[0]['date_echeance'], 'd/m/Y'), // @todo intl
-                            'CRD'                         => $this->ficelle->formatNumber($fLoansAmount / 100 - $fTotalPayedBack)
+                            'CRD'                         => $this->ficelle->formatNumber($fLoansAmount / 100 - $fTotalPayedBack / 100)
                         );
 
                     $sMailType = (in_array($this->clients->type, array(1, 3))) ? $sEmailTypePerson : $sEmailTypeSociety;
                     $locale  = $this->getParameter('locale');
                     $this->mail_template->get($sMailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $locale . '" AND type');
-
                     $aReplacements['sujet'] = $this->mail_template->subject;
+
+                    /** @var \Psr\Log\LoggerInterface $logger */
+                    $logger = $this->get('logger');
+                    $logger->debug('Mail to send : ' . $sMailType . ' Variables : ' . json_encode($aReplacements), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project]);
+
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                     $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMailType, $aReplacements);
                     $message->setTo($this->clients->email);
@@ -1732,19 +1742,19 @@ class dossiersController extends bootstrap
                                     $nbpret = $this->loans->counter('id_lender = ' . $e['id_lender'] . ' AND id_project = ' . $e['id_project']);
 
                                     // euro avec ou sans "s"
-                                    if (bcdiv($iTotalEAT, 100, 2) > 1) {
+                                    if (bcdiv($iTotalEAT, 100) >= 2) {
                                         $euros = ' euros';
                                     } else {
                                         $euros = ' euro';
                                     }
                                     $rembNetEmail = $this->ficelle->formatNumber(bcdiv($iTotalEAT, 100, 2)) . $euros;
+                                    $balance      = $this->transactions->getSolde($this->clients->id_client);
 
-                                    if ($balance = $this->transactions->getSolde($this->clients->id_client) > 1) {
+                                    if ($balance >= 2) {
                                         $euros = ' euros';
                                     } else {
                                         $euros = ' euro';
                                     }
-                                    $solde   = $this->ficelle->formatNumber($balance) . $euros;
                                     $timeAdd = strtotime($dateDernierStatut);
                                     $month   = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
 
@@ -1757,7 +1767,7 @@ class dossiersController extends bootstrap
                                         'nom_entreprise'        => $this->companies->name,
                                         'date_bid_accepte'      => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
                                         'nbre_prets'            => $nbpret,
-                                        'solde_p'               => $solde,
+                                        'solde_p'               => $this->ficelle->formatNumber($balance) . $euros,
                                         'motif_virement'        => $this->clients->getLenderPattern($this->clients->id_client),
                                         'lien_fb'               => $lien_fb,
                                         'lien_tw'               => $lien_tw
@@ -1782,14 +1792,15 @@ class dossiersController extends bootstrap
 
                                     $nbpret = $this->loans->counter('id_lender = ' . $e['id_lender'] . ' AND id_project = ' . $e['id_project']);
 
-                                    if (bcdiv($iTotalEAT, 100, 2) > 1) {
+                                    if (bcdiv($iTotalEAT, 100) >= 2) {
                                         $euros = ' euros';
                                     } else {
                                         $euros = ' euro';
                                     }
                                     $rembNetEmail = $this->ficelle->formatNumber(bcdiv($iTotalEAT, 100, 2)) . $euros;
+                                    $balance      = $this->transactions->getSolde($this->clients->id_client);
 
-                                    if ($balance = $this->transactions->getSolde($this->clients->id_client) > 1) {
+                                    if ($balance >= 2) {
                                         $euros = ' euros';
                                     } else {
                                         $euros = ' euro';

@@ -259,7 +259,7 @@ class transactions extends transactions_crud
 
     public function getRepaymentTransactionsAmount($iEcheanceId)
     {
-        if (is_int($iEcheanceId)) {
+        if (false == empty($iEcheanceId)) {
             $sWhere = 'type_transaction IN (' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . ', ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . ')
             AND id_echeancier = ' . $iEcheanceId;
             return $this->sum($sWhere, 'montant');
