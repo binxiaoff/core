@@ -1134,10 +1134,10 @@ class LenderProfileController extends Controller
             $this->addFlash('securityPasswordErrors', $translator->trans('lender-profile_security-password-section-error-missing-former-password'));
         }
         if (empty($post['client_new_password'])) {
-            $this->addFlash('securityPasswordErrors', $translator->trans('lender-profile_security-password-section-error-missing-new-password'));
+            $this->addFlash('securityPasswordErrors', $translator->trans('common-validators_missing-new-password'));
         }
         if (empty($post['client_new_password_confirmation'])) {
-            $this->addFlash('securityPasswordErrors', $translator->trans('lender-profile_security-password-section-error-missing-new-password-confirmation'));
+            $this->addFlash('securityPasswordErrors', $translator->trans('common-validators_missing-new-password-confirmation'));
         }
 
         if (false === empty($post['client_former_password']) && false === empty($post['client_new_password']) && false === empty($post['client_new_password_confirmation'])) {
@@ -1161,7 +1161,7 @@ class LenderProfileController extends Controller
 
         /** @var \clients_history_actions $clientHistoryActions */
         $clientHistoryActions = $this->get('unilend.service.entity_manager')->getRepository('clients_history_actions');
-        $clientHistoryActions->histo(7, 'change mdp', $client->id_client, serialize(['id_client' => $client->id_client, 'newmdp' => md5($_POST['client_new_password'])]));
+        $clientHistoryActions->histo(7, 'change mdp', $client->id_client, serialize(['id_client' => $client->id_client, 'newmdp' => md5($post['client_new_password'])]));
 
         return $this->redirectToRoute('lender_profile');
     }
