@@ -1,6 +1,6 @@
     <script type="text/javascript">
         $(document).ready(function(){
-            <?php if ($_SESSION['msgErreur'] != '') : ?>
+            <?php if (false === empty($_SESSION['msgErreur'])) : ?>
                 $.fn.colorbox({
                     href:"<?=$this->lurl?>/thickbox/<?=$_SESSION['msgErreur']?>"
                 });
