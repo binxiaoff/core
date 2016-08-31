@@ -53,7 +53,7 @@
     <!-- Contenu de la page du Partenaire -->
     <!-- ################## -->
 
-    <iframe scrolling="auto" src="<?=$this->lurl?>/Landing-Pages-Externes/Lp-2015-web/" width="100%" height="1200px"></iframe>
+    <iframe scrolling="auto" src="https://www.unilend.fr/Landing-Pages-Externes/Lp-2015-web/" width="100%" height="1200px"></iframe>
 
     <!-- ################## -->
     <!-- /Contenu de la page du Partenaire -->
