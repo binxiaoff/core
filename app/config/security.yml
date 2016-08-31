@@ -21,7 +21,9 @@ security:
                     - unilend.frontbundle.security.login_authenticator
             logout:
                 path: logout
-                target: home
+                target: /
+
+    access_denied_url: /login
 
     access_control:
             - { path: ^/espace-emprunteur/securite, roles: IS_AUTHENTICATED_ANONYMOUSLY }
