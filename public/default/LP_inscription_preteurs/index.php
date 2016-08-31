@@ -71,20 +71,12 @@ if (false === ($civilite = filter_input(INPUT_GET, 'civilite', FILTER_SANITIZE_S
     $civilite = '';
 }
 
-if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
-    $page         = 'lexpress';
-    $slug_origine = 'LP_inscription_preteurs_lexpress';
-} else {
-    $page         = '';
-    $slug_origine = 'LP_inscription_preteurs';
-    ?>
-    <style type="text/css">
-        #chiffres, #presse{display:none;}
-    </style>
-    <?php
-}
-
+$page         = '';
+$slug_origine = 'LP_inscription_preteurs';
 ?>
+<style type="text/css">
+    #chiffres, #presse{display:none;}
+</style>
 <div id="form">
     <section class="wrapper">
         <form action="#" method="post" id="form_inscription" class="etape1" novalidate>

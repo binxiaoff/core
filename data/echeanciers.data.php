@@ -837,6 +837,7 @@ class echeanciers extends echeanciers_crud
                 id_echeancier,
                 id_lender,
                 id_project,
+                ordre,
                 id_loan,
                 montant,
                 capital,

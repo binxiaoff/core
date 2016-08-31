@@ -25,6 +25,9 @@
 //  Coupable : CM
 //
 // **************************************************************************************************** //
+
+use Unilend\core\Loader;
+
 class users extends users_crud
 {
     const USER_ID_CRON  = -1;
@@ -86,13 +89,19 @@ class users extends users_crud
         if (isset($_POST[$button])) {
             $user = $this->login($_POST[$email], $_POST[$pass]);
 
-            if ($user != false) {
+            if ($user != false && $this->get($user['email'], 'email')) {
                 $_SESSION['auth']  = true;
                 $_SESSION['token'] = md5(md5(time() . $this->securityKey));
                 $_SESSION['user']  = $user;
 
-                $sql = 'UPDATE ' . $this->userTable . ' SET lastlogin = NOW() WHERE email = "' . $_POST[$email] . '" AND password = "' . md5($_POST[$pass]) . '"';
-                $this->bdd->query($sql);
+                if (md5($_POST[$pass]) === $user['password'] || password_needs_rehash($user['password'], PASSWORD_DEFAULT)) {
+                    $user['password']             = password_hash($_POST[$pass], PASSWORD_DEFAULT);
+                    $_SESSION['user']['password'] = $user['password'];
+                    $this->password               = $user['password'];
+                }
+
+                $this->lastlogin = date('Y-m-d H:i:s');
+                $this->update();
 
                 if (isset($_SESSION['request_url']) && $_SESSION['request_url'] != '' && $_SESSION['request_url'] != 'login' && $_SESSION['request_url'] != 'captcha') {
                     header('Location: ' . $_SESSION['request_url']);
@@ -103,7 +112,6 @@ class users extends users_crud
                 }
             } else {
                 $_SESSION['msgErreur'] = 'loginError';
-
                 header('Location: ' . $this->params['lurl'] . '/login');
                 die;
             }
@@ -123,21 +131,17 @@ class users extends users_crud
     public function login($email, $pass)
     {
         $email = $this->bdd->escape_string($email);
+        $sql   = 'SELECT * FROM ' . $this->userTable . ' WHERE ' . $this->userMail . ' = "' . $email . '" AND status = 1';
+        $res   = $this->bdd->query($sql);
 
-        $sql = 'SELECT * FROM ' . $this->userTable . ' WHERE ' . $this->userMail . ' = "' . $email . '" AND ' . $this->userPass . ' = "' . md5($pass) . '" AND status = 1';
-        $res = $this->bdd->query($sql);
+        if ($res->rowCount() === 1) {
+            $user = $res->fetch(\PDO::FETCH_ASSOC);
 
-        if ($this->bdd->num_rows($res) == 1) {
-            return $this->bdd->fetch_array($res);
-        } else {
-            return false;
+            if (md5($pass) === $user['password'] || password_verify($pass, $user['password'])) {
+                return $user;
+            }
         }
-    }
-
-    public function changePassword($email, $pass)
-    {
-        $sql = 'UPDATE ' . $this->userTable . ' SET ' . $this->userPass . ' = "' . md5($pass) . '" WHERE ' . $this->userMail . ' = "' . $email . '"';
-        $this->bdd->query($sql);
+        return false;
     }
 
     public function existEmail($email)
@@ -225,4 +229,40 @@ class users extends users_crud
         }
         return '';
     }
+
+    /**
+     * @param string $password
+     * @param users $user
+     * @param $bExpired
+     */
+    public function changePassword($password, \users $user, $bExpired)
+    {
+        /** @var \previous_passwords $previousPasswords */
+        $previousPasswords = Loader::loadData('previous_passwords');
+
+        $user->password        = password_hash($password, PASSWORD_DEFAULT);
+        $user->password_edited = $bExpired ? '0000-00-00 00:00:00' : date('Y-m-d H:i:s');
+        $user->update();
+
+        $previousPasswords->id_user  = $user->id_user;
+        $previousPasswords->password = $user->password;
+        $previousPasswords->archived = date('Y-m-d H:i:s');
+        $previousPasswords->create();
+        $previousPasswords->deleteOldPasswords($user->id_user);
+    }
+
+    /**
+     * Returns true if password contains at least 10 characters
+     * including digits, lower, upper case and special characters
+     * @param string $password
+     * @return bool
+     */
+    public function checkPasswordStrength($password)
+    {
+        if (1 === preg_match('/(?=.*[A-Z])(?=.*[$&+,:;=?@#|\'<>.^_*()%!-])(?=.*[a-z])(?=.*\d).{10,}/', $password)) {
+            return true;
+        }
+        return false;
+    }
+
 }

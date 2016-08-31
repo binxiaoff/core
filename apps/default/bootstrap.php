@@ -26,7 +26,6 @@ class bootstrap extends Controller
         if ($this->current_function != 'login') {
             $_SESSION['redirection_url'] = $_SERVER['REQUEST_URI'];
         }
-
         $this->upload = $this->loadLib('upload');
 
         $this->settings                = $this->loadData('settings');
@@ -423,33 +422,6 @@ class bootstrap extends Controller
             ) {
             } else {
                 header('location: http://partenaire.unilend.challenges.fr/challenges/');
-                die;
-            }
-        } elseif ($this->lurl == 'http://lexpress.unilend.fr') {
-            if (
-                $this->Command->Name == 'root' && $this->Command->Function == 'lexpress'
-                || $this->Command->Name == 'root' && $this->Command->Function == 'default'
-            ) {
-            } else {
-                header('location: ' . $this->surl);
-                die;
-            }
-        } elseif ($this->lurl == 'http://pret-entreprise.votreargent.lexpress.fr') {
-            if (
-                $this->Command->Name == 'root' && $this->Command->Function == 'lexpress'
-                || $this->Command->Name == 'root' && $this->Command->Function == 'default'
-            ) {
-            } else {
-                header('location: ' . $this->surl);
-                die;
-            }
-        } elseif ($this->lurl == 'http://emprunt-entreprise.lentreprise.lexpress.fr') {
-            if (
-                $this->Command->Name == 'root' && $this->Command->Function == 'lexpress'
-                || $this->Command->Name == 'root' && $this->Command->Function == 'default'
-            ) {
-            } else {
-                header('location: ' . $this->surl);
                 die;
             }
         }

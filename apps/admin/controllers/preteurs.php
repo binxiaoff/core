@@ -2049,4 +2049,86 @@ class preteursController extends bootstrap
         }
     }
 
+    public function _bids()
+    {
+        $this->lenders_accounts = $this->loadData('lenders_accounts');
+        $this->clients          = $this->loadData('clients');
+
+        $this->lenders_accounts->get($this->params[0], 'id_lender_account');
+        $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
+
+        if (isset($_POST['send_dates'])) {
+            $_SESSION['FilterBids']['StartDate'] = $_POST['debut'];
+            $_SESSION['FilterBids']['EndDate']   = $_POST['fin'];
+
+            header('Location: ' . $this->lurl . '/preteurs/bids/' . $this->params[0]);
+            die;
+        }
+
+        if (isset($_SESSION['FilterBids'])) {
+            $dateTimeStart = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterBids']['StartDate']);
+            $dateTimeEnd   = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterBids']['EndDate']);
+
+            unset($_SESSION['FilterBids']);
+        } else {
+            $dateTimeStart = new \DateTime('NOW - 1 year');
+            $dateTimeEnd   = new \DateTime('NOW');
+        }
+
+        $this->sDisplayDateTimeStart = $dateTimeStart->format('d/m/Y');
+        $this->sDisplayDateTimeEnd   = $dateTimeEnd->format('d/m/Y');
+        $this->bidList               = [];
+
+        /** @var \bids $bids */
+        $bids = $this->loadData('bids');
+        foreach ($bids->getBidsByLenderAndDates($this->lenders_accounts, $dateTimeStart, $dateTimeEnd) as $key => $value) {
+            $this->bidList[$key] = $value;
+        }
+    }
+
+    public function _extract_bids_csv()
+    {
+        /** @var \lenders_accounts $lender */
+        $lender = $this->loadData('lenders_accounts');
+        /** @var \bids $bids */
+        $bids = $this->loadData('bids');
+
+        $lender->get($this->params[0], 'id_lender_account');
+        $lenderBids = $bids->getBidsByLenderAndDates($lender);
+
+        $this->autoFireView = false;
+        $this->hideDecoration();
+
+        $header = array('Id projet', 'Id bid', 'Client', 'Date bid', 'Statut bid', 'Montant', 'Taux');
+
+        PHPExcel_Settings::setCacheStorageMethod(
+            PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
+            array('memoryCacheSize' => '2048MB', 'cacheTime' => 1200)
+        );
+
+        $document    = new PHPExcel();
+        $activeSheet = $document->setActiveSheetIndex(0);
+
+        foreach ($header as $index => $columnName) {
+            $activeSheet->setCellValueByColumnAndRow($index, 1, $columnName);
+        }
+
+        foreach ($lenderBids as $rowIndex => $row) {
+            $colIndex = 0;
+            foreach ($row as $cellValue) {
+                $activeSheet->setCellValueByColumnAndRow($colIndex++, $rowIndex + 2, $cellValue);
+            }
+        }
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment;filename=bids_lender_' . $lender->id_lender_account . '.csv');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Expires: 0');
+
+        /** @var \PHPExcel_Writer_CSV $writer */
+        $writer = PHPExcel_IOFactory::createWriter($document, 'CSV');
+        $writer->setUseBOM(true);
+        $writer->setDelimiter(';');
+        $writer->save('php://output');
+    }
 }
