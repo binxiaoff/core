@@ -1599,15 +1599,23 @@ class dossiersController extends bootstrap
 
                     $montant                  = 0;
                     $iTotalTaxAmount          = 0;
-                    $lEcheancesRembEmprunteur = $this->echeanciers_emprunteur->select('id_project = ' . $this->projects->id_project . ' AND status_emprunteur = 1', 'ordre ASC', 0, 1);
-                    $RembEmpr                 = $lEcheancesRembEmprunteur[0];
-                    $lEcheances               = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND status_emprunteur = 1 AND ordre = ' . $RembEmpr['ordre'] . ' AND status = 0');
+                    $lEcheancesRembEmprunteur = $this->echeanciers_emprunteur->select('id_project = ' . $this->projects->id_project . ' AND status_emprunteur = 1', 'ordre ASC');
+                    $oLogger->debug('Borrower repayment schedule for id_project: ' . $this->projects->id_project . ' = ' . json_encode($lEcheancesRembEmprunteur), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project]);
 
+                    if (false === empty($lEcheancesRembEmprunteur)) {
+                        foreach ($lEcheancesRembEmprunteur as $RembEmpr) {
+                            $lEcheances = $this->echeanciers->select('id_project = ' . $RembEmpr['id_project'] . ' AND status_emprunteur = 1 AND ordre = ' . $RembEmpr['ordre'] . ' AND status = 0');
+
+                            if (false === empty($lEcheances)) {
+                                break;
+                            }
+                        }
+                    }
                     /** @var TaxManager $taxManager */
                     $taxManager = $this->get('unilend.service.tax_manager');
                     /** @var \lender_repayment $lenderRepayment */
                     $lenderRepayment = $this->loadData('lender_repayment');
-                    $oLogger->info('Manual repayment, transactions found: ' . json_encode($lEcheances), ['class' => __CLASS__, 'function' => __FUNCTION__]);
+                    $oLogger->info('Manual repayment, lender repayments found: ' . json_encode($lEcheances), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project]);
 
                     foreach ($lEcheances as $e) {
                         $repaymentDate = date('Y-m-d H:i:s');
@@ -1676,6 +1684,7 @@ class dossiersController extends bootstrap
                                 $this->wallets_lines->amount                   = $this->transactions->montant;
                                 $this->wallets_lines->create();
 
+                                $oLogger->debug('Manual repayment : repayment amount= ' . $e['montant'] . ' Interests tax= ' . $iTaxOnInterests . ' Capital tax= ' . $iTaxOnCapital, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project]);
                                 $iTotalEAT                       = $e['montant'] - $iTaxOnInterests - $iTaxOnCapital;
                                 $this->notifications->type       = \notifications::TYPE_REPAYMENT;
                                 $this->notifications->id_lender  = $this->lenders_accounts->id_lender_account;
@@ -1701,7 +1710,7 @@ class dossiersController extends bootstrap
                                         'url'              => $this->furl,
                                         'prenom_p'         => $this->clients->prenom,
                                         'cab_recouvrement' => $sRecoveryCompany,
-                                        'mensualite_p'     => $this->ficelle->formatNumber(bcdiv($iTotalEAT, 100)),
+                                        'mensualite_p'     => $this->ficelle->formatNumber(bcdiv($iTotalEAT, 100, 2)),
                                         'nom_entreprise'   => $this->companies->name,
                                         'solde_p'          => $this->transactions->getSolde($this->clients->id_client),
                                         'link_echeancier'  => $this->furl,
@@ -1723,19 +1732,19 @@ class dossiersController extends bootstrap
                                     $nbpret = $this->loans->counter('id_lender = ' . $e['id_lender'] . ' AND id_project = ' . $e['id_project']);
 
                                     // euro avec ou sans "s"
-                                    if (bcdiv($iTotalEAT, 100) >= 2) {
+                                    if (bcdiv($iTotalEAT, 100, 2) > 1) {
                                         $euros = ' euros';
                                     } else {
                                         $euros = ' euro';
                                     }
-                                    $rembNetEmail = $this->ficelle->formatNumber(bcdiv($iTotalEAT, 100)) . $euros;
+                                    $rembNetEmail = $this->ficelle->formatNumber(bcdiv($iTotalEAT, 100, 2)) . $euros;
 
-                                    if ($this->transactions->getSolde($this->clients->id_client) >= 2) {
+                                    if ($balance = $this->transactions->getSolde($this->clients->id_client) > 1) {
                                         $euros = ' euros';
                                     } else {
                                         $euros = ' euro';
                                     }
-                                    $solde   = $this->ficelle->formatNumber($this->transactions->getSolde($this->clients->id_client)) . $euros;
+                                    $solde   = $this->ficelle->formatNumber($balance) . $euros;
                                     $timeAdd = strtotime($dateDernierStatut);
                                     $month   = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
 
@@ -1773,19 +1782,18 @@ class dossiersController extends bootstrap
 
                                     $nbpret = $this->loans->counter('id_lender = ' . $e['id_lender'] . ' AND id_project = ' . $e['id_project']);
 
-                                    if (bcdiv($iTotalEAT, 100) >= 2) {
+                                    if (bcdiv($iTotalEAT, 100, 2) > 1) {
                                         $euros = ' euros';
                                     } else {
                                         $euros = ' euro';
                                     }
-                                    $rembNetEmail = $this->ficelle->formatNumber(bcdiv($iTotalEAT, 100)) . $euros;
+                                    $rembNetEmail = $this->ficelle->formatNumber(bcdiv($iTotalEAT, 100, 2)) . $euros;
 
-                                    if ($this->transactions->getSolde($this->clients->id_client) >= 2) {
+                                    if ($balance = $this->transactions->getSolde($this->clients->id_client) > 1) {
                                         $euros = ' euros';
                                     } else {
                                         $euros = ' euro';
                                     }
-                                    $solde   = $this->ficelle->formatNumber($this->transactions->getSolde($this->clients->id_client)) . $euros;
                                     $timeAdd = strtotime($dateDernierStatut);
                                     $month   = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
 
@@ -1798,7 +1806,7 @@ class dossiersController extends bootstrap
                                         'nom_entreprise'        => $this->companies->name,
                                         'date_bid_accepte'      => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
                                         'nbre_prets'            => $nbpret,
-                                        'solde_p'               => $solde,
+                                        'solde_p'               => $this->ficelle->formatNumber($balance) . $euros,
                                         'motif_virement'        => $this->clients->getLenderPattern($this->clients->id_client),
                                         'lien_fb'               => $lien_fb,
                                         'lien_tw'               => $lien_tw
@@ -1888,7 +1896,7 @@ class dossiersController extends bootstrap
                             'datedelafacture' => $dateRemb,
                             'mois'            => strtolower($this->dates->tableauMois['fr'][date('n')]),
                             'annee'           => date('Y'),
-                            'montantRemb'     => $this->ficelle->formatNumber($rembNetTotal),
+                            'montantRemb'     => $this->ficelle->formatNumber(bcdiv($rembNetTotal, 100, 2)),
                             'lien_fb'         => $lien_fb,
                             'lien_tw'         => $lien_tw
                         );
