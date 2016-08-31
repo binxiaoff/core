@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
@@ -228,7 +229,7 @@ class LenderProfileController extends Controller
      * @Route("/profile/person/identity-update", name="profile_person_identity_update")
      * @Method("POST")
      */
-    public function updatePersonAction(Request $request)
+    public function personFormAction(Request $request)
     {
         /** @var \clients $client */
         $client = $this->getClient();
@@ -311,7 +312,7 @@ class LenderProfileController extends Controller
      * @Route("/profile/legal-entity/identity-update", name="profile_legal_entity_identity_update")
      * @Method("POST")
      */
-    public function updateLegalEntityAction(Request $request)
+    public function legalEntityFormAction(Request $request)
     {
         /** @var \clients $client */
         $client = $this->getClient();
@@ -503,7 +504,7 @@ class LenderProfileController extends Controller
      * @Route("/profile/person/fiscal-address-update", name="profile_person_fiscal_address_update")
      * @Method("POST")
      */
-    public function updatePersonFiscalAddressAction(Request $request)
+    public function personFiscalAddressFormAction(Request $request)
     {
         /** @var \clients $client */
         $client = $this->getClient();
@@ -626,7 +627,7 @@ class LenderProfileController extends Controller
      * @Route("/profile/legal-entity/fiscal-address-update", name="profile_legal_entity_fiscal_address_update")
      * @Method("POST")
      */
-    public function updateLegalEntityFiscalAddressAction(Request $request)
+    public function legalEntityFiscalAddressFormAction(Request $request)
     {
         /** @var \clients $client */
         $client = $this->getClient();
@@ -700,7 +701,7 @@ class LenderProfileController extends Controller
      * @Route("/profile/postal-address-update", name="profile_postal_address_update")
      * @Method("POST")
      */
-    public function updatePostalAddressAction(Request $request)
+    public function postalAddressFormAction(Request $request)
     {
         /** @var \clients $client */
         $client = $this->getClient();
@@ -780,7 +781,7 @@ class LenderProfileController extends Controller
      * @Route("/profile/documents/submit", name="lender_completeness_submit")
      * @Method("POST")
      */
-    public function saveLenderCompletenessDocuments(Request $request)
+    public function lenderCompletenessFormAction(Request $request)
     {
         /** @var EntityManager$ $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
@@ -875,33 +876,6 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param \clients $client
-     */
-    private function sendAccountModificationEmail(\clients $client)
-    {
-        /** @var \settings $oSettings */
-        $oSettings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $oSettings->get('Facebook', 'type');
-        $lien_fb = $oSettings->value;
-        $oSettings->get('Twitter', 'type');
-        $lien_tw = $oSettings->value;
-
-        $varMail = [
-            'surl'    => $this->get('assets.packages')->getUrl(''),
-            'url'     => $this->get('assets.packages')->getUrl(''),
-            'prenom'  => $client->prenom,
-            'lien_fb' => $lien_fb,
-            'lien_tw' => $lien_tw
-        ];
-
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-modification-compte', $varMail);
-        $message->setTo($client->email);
-        $mailer = $this->get('mailer');
-        $mailer->send($message);
-    }
-
-    /**
      * @param Request $request
      * @return mixed
      */
@@ -981,7 +955,7 @@ class LenderProfileController extends Controller
      * @param Request $request
      * @Route("/profile/update_bank_details", name="update_bank_details")
      */
-    public function updateBankDetailsAction(Request $request)
+    public function bankDetailsFormAction(Request $request)
     {
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
@@ -1079,7 +1053,7 @@ class LenderProfileController extends Controller
      * @Route("profile/security/submit-identification", name="profile_security_submit_identification")
      * @return Response
      */
-    public function saveIdentificationAction(Request $request)
+    public function securityIdentificationFormAction(Request $request)
     {
         /** @var \clients $client */
         $client = $this->getClient();
@@ -1120,17 +1094,174 @@ class LenderProfileController extends Controller
      */
     private function addFormDataForSecurity(&$template, Request $request, \clients $client)
     {
-        $form = $request->getSession()->get('securityIdentificationData', []);
+        $identificationForm = $request->getSession()->get('securityIdentificationData', []);
         $request->getSession()->remove('securityIdentificationData');
 
+        $secretQuestionForm = $request->getSession()->get('securitySecretQuestionData', []);
+        $request->getSession()->remove('securitySecretQuestionData');
+
         $template['formData']['security'] = [
-            'client_email'              => isset($form['client_email']) ? $form['client_email'] : $client->email,
-            'client_email_confirmation' => isset($form['client_email']) ? $form['client_email'] : $client->email,
-            'client_mobile'             => isset($form['client_mobile']) ? $form['client_mobile'] : $client->mobile,
-            'client_landline'           => isset($form['client_landline']) ? $form['client_landline'] : $client->telephone
+            'client_email'              => isset($identificationForm['client_email']) ? $identificationForm['client_email'] : $client->email,
+            'client_email_confirmation' => isset($identificationForm['client_email']) ? $identificationForm['client_email'] : $client->email,
+            'client_mobile'             => isset($identificationForm['client_mobile']) ? $identificationForm['client_mobile'] : $client->mobile,
+            'client_landline'           => isset($identificationForm['client_landline']) ? $identificationForm['client_landline'] : $client->telephone,
+            'client_secret_question'    => isset($secretQuestionForm['client_secret_question']) ? $secretQuestionForm['client_secret_question'] : '',
+            'client_secret_answer'      => isset($secretQuestionForm['client_secret_question']) ? $secretQuestionForm['client_secret_question'] : ''
         ];
     }
 
+    /**
+     * @param Request $request
+     * @Route("/profile/security/submit-password", name="profile_security_submit_password")
+     * @Method("POST")
+     * @Security("has_role('ROLE_LENDER')")
+     * @return Response
+     */
+    public function securityPasswordFormAction(Request $request)
+    {
+        /** @var \clients $client */
+        $client = $this->getClient();
+        /** @var TranslatorInterface $translator */
+        $translator = $this->get('translator');
+        /** @var UserPasswordEncoder $securityPasswordEncoder */
+        $securityPasswordEncoder = $this->get('security.password_encoder');
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
+
+        $post = $request->request->all();
+
+        if (empty($post['client_former_password'])) {
+            $this->addFlash('securityPasswordErrors', $translator->trans('lender-profile_security-password-section-error-missing-former-password'));
+        }
+        if (empty($post['client_new_password'])) {
+            $this->addFlash('securityPasswordErrors', $translator->trans('lender-profile_security-password-section-error-missing-new-password'));
+        }
+        if (empty($post['client_new_password_confirmation'])) {
+            $this->addFlash('securityPasswordErrors', $translator->trans('lender-profile_security-password-section-error-missing-new-password-confirmation'));
+        }
+
+        if (false === empty($post['client_former_password']) && false === empty($post['client_new_password']) && false === empty($post['client_new_password_confirmation'])) {
+            if (false === $securityPasswordEncoder->isPasswordValid($this->getUser(), $post['client_former_password'])) {
+                $this->addFlash('securityPasswordErrors', $translator->trans('lender-profile_security-password-section-error-wrong-former-password'));
+            }
+            if ($post['client_new_password'] !== $post['client_new_password_confirmation']){
+                $this->addFlash('securityPasswordErrors', $translator->trans('common-validators_password-not-equal'));
+            }
+            if (false === $ficelle->password_fo($post['client_new_password'], 6)) {
+                $this->addFlash('securityPasswordErrors', $translator->trans('common-validators_password-invalid'));
+            }
+        }
+
+        if (false === $this->get('session')->getFlashBag()->has('securityPasswordErrors')){
+            $client->password = $securityPasswordEncoder->encodePassword($this->getUser(), $post['client_new_password']);
+            $client->update();
+            $this->sendPasswordModificationEmail($client);
+            $this->addFlash('securityPasswordSuccess', $translator->trans('lender-profile_security-password-section-form-success-message'));
+        }
+
+        /** @var \clients_history_actions $clientHistoryActions */
+        $clientHistoryActions = $this->get('unilend.service.entity_manager')->getRepository('clients_history_actions');
+        $clientHistoryActions->histo(7, 'change mdp', $client->id_client, serialize(['id_client' => $client->id_client, 'newmdp' => md5($_POST['client_new_password'])]));
+
+        return $this->redirectToRoute('lender_profile');
+    }
+
+    /**
+     * @param Request $request
+     * @Route("/profile/security/submit-secret-question", name="profile_security_submit_secret_question")
+     * @Method("POST")
+     * @Security("has_role('ROLE_LENDER')")
+     * @return Response
+     */
+    public function securitySecretQuestionFormAction(Request $request)
+    {
+        /** @var \clients $client */
+        $client = $this->getClient();
+        /** @var TranslatorInterface $translator */
+        $translator = $this->get('translator');
+        /** @var array $post */
+        $post = $request->request->all();
+
+        if (empty(trim($post['client_secret_question']))) {
+            $this->addFlash('securitySecretQuestionErrors', $translator->trans('common-validators_secret-question-invalid'));
+        }
+        if (empty(trim($post['client_secret_question']))) {
+            $this->addFlash('securitySecretQuestionErrors', $translator->trans('common-validators_secret-answer-invalid'));
+        }
+
+        if ($this->get('session')->getFlashBag()->has('securitySecretQuestionErrors')){
+            $request->getSession()->set('securitySecretQuestionData', $post);
+        } else {
+            $client->secrete_question = $post['client_secret_question'];
+            $client->secrete_reponse = $post['client_secret_answer'];
+            $client->update();
+
+            $this->addFlash('securitySecretQuestionSuccess', $translator->trans('lender-profile_security-secret-question-section-form-success-message'));
+        }
+
+        /** @var \clients_history_actions $clientHistoryActions */
+        $clientHistoryActions = $this->get('unilend.service.entity_manager')->getRepository('clients_history_actions');
+        $clientHistoryActions->histo(6, 'change secret question', $client->id_client, serialize([
+            'id_client' => $client->id_client,
+            'question'  => isset($post['client_secret_question']) ? $post['client_secret_question'] : '',
+            'response'  => isset($post['client_secret_answer']) ? md5($post['client_secret_answer']) : ''
+        ]));
+
+        return $this->redirectToRoute('lender_profile');
+    }
+
+    /**
+     * @param \clients $client
+     */
+    private function sendPasswordModificationEmail(\clients $client)
+    {
+        $varMail = array_merge($this->getCommonEmailVariables(), [
+            'login'    => $client->email,
+            'prenom_p' => $client->prenom,
+        ]);
+
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('generation-mot-de-passe', $varMail);
+        $message->setTo($client->email);
+        $mailer = $this->get('mailer');
+        $mailer->send($message);
+    }
+
+
+    /**
+     * @param \clients $client
+     */
+    private function sendAccountModificationEmail(\clients $client)
+    {
+        $varMail = array_merge($this->getCommonEmailVariables(), [
+            'prenom_p' => $client->prenom,
+        ]);
+
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-modification-compte', $varMail);
+        $message->setTo($client->email);
+        $mailer = $this->get('mailer');
+        $mailer->send($message);
+    }
+
+    private function getCommonEmailVariables()
+    {
+        /** @var \settings $settings */
+        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
+        $settings->get('Facebook', 'type');
+        $lien_fb = $settings->value;
+        $settings->get('Twitter', 'type');
+        $lien_tw = $settings->value;
+
+        $varMail = [
+            'surl'    => $this->get('assets.packages')->getUrl(''),
+            'url'     => $this->get('assets.packages')->getUrl(''),
+            'lien_fb' => $lien_fb,
+            'lien_tw' => $lien_tw
+        ];
+
+        return $varMail;
+    }
 
     private function getClient()
     {
