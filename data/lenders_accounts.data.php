@@ -395,8 +395,8 @@ class lenders_accounts extends lenders_accounts_crud
     public function countLendersByClientType($aClientType, $bOnlyActive = false)
     {
         $clientStatus = $bOnlyActive ? ' INNER JOIN clients_status_history csh ON (csh.id_client = c.id_client AND csh.id_client_status = 6)' : '';
-        $type         = ['idLender' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY, 'clientStatus' => \PDO::PARAM_INT];
-        $bind         = ['idLender' => $aClientType, 'clientStatus' => \clients::STATUS_ONLINE];
+        $type         = ['clientTypes' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY, 'clientStatus' => \PDO::PARAM_INT];
+        $bind         = ['clientTypes' => $aClientType, 'clientStatus' => \clients::STATUS_ONLINE];
 
         $query    = 'SELECT COUNT(DISTINCT(c.id_client))
                         FROM clients c
