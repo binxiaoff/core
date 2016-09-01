@@ -1663,7 +1663,7 @@ class MailerManager
             }
 
             if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->debug('Customer mail notifications: ' . var_export($aCustomerMailNotifications, true) , array('class' => __CLASS__, 'function' => __FUNCTION__));
+                $this->oLogger->debug('Customer IDs in mail notifications: ' . json_encode(array_keys($aCustomerMailNotifications)) , array('class' => __CLASS__, 'function' => __FUNCTION__));
             }
 
             foreach ($aCustomerMailNotifications as $iCustomerId => $aMailNotifications) {
@@ -1717,8 +1717,12 @@ class MailerManager
 
                             $fRepaymentCapital              = bcdiv($oLenderRepayment->capital, 100, 2);
                             $fRepaymentInterestsTaxIncluded = bcdiv($oLenderRepayment->interets, 100, 2);
-                            $fRepaymentTax                  = bcdiv($tax->getAmountByRepaymentId($oLenderRepayment->id_echeancier), 100, 2);
-                            $fRepaymentAmount               = bcsub(bcadd($fRepaymentCapital, $fRepaymentInterestsTaxIncluded, 2), $fRepaymentTax, 2);
+                            if (false == empty($oLenderRepayment->id_echeancier)) {
+                                $fRepaymentTax = bcdiv($tax->getAmountByRepaymentId($oLenderRepayment->id_echeancier), 100, 2);
+                            } else {
+                                $fRepaymentTax = 0;
+                            }
+                            $fRepaymentAmount = bcsub(bcadd($fRepaymentCapital, $fRepaymentInterestsTaxIncluded, 2), $fRepaymentTax, 2);
                         }
 
                         $fTotalAmount += $fRepaymentAmount;
