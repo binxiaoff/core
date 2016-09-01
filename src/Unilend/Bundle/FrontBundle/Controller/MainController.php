@@ -2,10 +2,10 @@
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -678,5 +678,70 @@ class MainController extends Controller
         $template['sections'] =  $pagesBySections;
 
         return $this->render('pages/static_pages/sitemap.html.twig', $template);
+    }
+
+    /**
+     * @Route("/cgv-popup", name="tos_popup", condition="request.isXmlHttpRequest()")
+     *
+     * @Security("has_role('ROLE_LENDER')")
+     */
+    public function lastTermsOfServiceAction(Request $request)
+    {
+        $user = $this->getUser();
+        /** @var \clients $client */
+        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        $tosDetails = '';
+        if ($client->get($user->getClientId())) {
+            if ($request->isMethod('GET')) {
+                /** @var \blocs $block */
+                $block = $this->get('unilend.service.entity_manager')->getRepository('blocs');
+                $block->get('cgv', 'slug');
+
+                $elementSlug = 'tos-new';
+                /** @var \acceptations_legal_docs $acceptationsTos */
+                $acceptationsTos = $this->get('unilend.service.entity_manager')->getRepository('acceptations_legal_docs');
+                if ($acceptationsTos->exist($client->id_client, 'id_client')) {
+                    /** @var \settings $settings */
+                    $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
+
+                    $settings->get('Date nouvelles CGV avec 2 mandats', 'type');
+                    $newTermsOfServiceDate = $settings->value;
+
+                    /** @var \lenders_accounts $lenderAccount */
+                    $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
+                    $lenderAccount->get($client->id_client, 'id_client_owner');
+
+                    /** @var \loans $loans */
+                    $loans = $this->get('unilend.service.entity_manager')->getRepository('loans');
+                    if (0 < $loans->counter('id_lender = ' . $lenderAccount->id_lender_account . ' AND added < "' . $newTermsOfServiceDate . '"')) {
+                        $elementSlug = 'tos-update-lended';
+                    } else {
+                        $elementSlug = 'tos-update';
+                    }
+                }
+                /** @var \elements $elements */
+                $elements = $this->get('unilend.service.entity_manager')->getRepository('elements');
+                if ($elements->get($elementSlug, 'slug')) {
+                    /** @var \blocs_elements $blockElement */
+                    $blockElement = $this->get('unilend.service.entity_manager')->getRepository('blocs_elements');
+
+                    if ($blockElement->get($elements->id_element, 'id_element')) {
+                        $tosDetails = $blockElement->value;
+                    } else {
+                        $this->get('logger')->error('The block element id : ' . $elements->id_element . 'doesn\'t exist');
+                    }
+                } else {
+                    $this->get('logger')->error('The element slug : ' . $elementSlug . 'doesn\'t exist');
+                }
+            } elseif ($request->isMethod('POST')) {
+                if ('true' === $request->request->get('terms')) {
+                    $clientManager = $this->get('unilend.service.client_manager');
+                    $clientManager->acceptLastTos($client);
+                }
+                return $this->json([]);
+            }
+        }
+
+        return $this->render('partials/site/tos_popup.html.twig', ['tosDetails' => $tosDetails]);
     }
 }

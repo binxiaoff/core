@@ -13,5 +13,9 @@
             <argument type="service" id="unilend.frontbundle.service.data_layer_collector" />
             <tag name="kernel.event_subscriber" />
         </service>
+        <service id="unilend.frontbundle.event.tos_subscriber" class="Unilend\Bundle\FrontBundle\EventSubscriber\TermsOfServiceSubscriber">
+            <argument type="service" id="unilend.service.client_manager" />
+            <tag name="kernel.event_subscriber" />
+        </service>
     </services>
 </container>

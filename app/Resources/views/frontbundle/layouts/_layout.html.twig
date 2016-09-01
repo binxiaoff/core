@@ -163,50 +163,12 @@
     {% endblock %}
 
     {# Global site-wide modals can be placed here #}
-
-    {# DEV-860 Lightbox when changing TOS #}
-    {# @TODO add in backend condition to show TOS change #}
-    {% set showUpdatedTOS = false %}
-    {% if showUpdatedTOS == true %}
-    <div id="modal-tos" data-modal data-modal-openonload="true">
-        <form id="form-tos" method="post">
-
-            <header class="modal-header">
-                <h2 class="modal-title">{% trans %} Mise à jour des Conditions Générales de Vente {% endtrans %}</h2>
-            </header><!-- /.modal-header -->
-
-            <div class="modal-body">
-                <p class="c-t2">Our Terms of Service have recently updated. Please read over our new Terms of Service and indicate below whether you will continue to use Unilend.</p>
-                <hr />
-                <div class="row">
-                    <h3>Lorem ipsum dolor sit amet, consectetur adipiscing elit</h3>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum pulvinar feugiat pharetra. In cursus mollis dolor, in fermentum nibh maximus nec. Fusce a massa et lacus suscipit efficitur vitae vitae metus. Integer ac nunc vel leo accumsan mattis id at turpis. Praesent varius aliquet felis, dictum venenatis velit. Fusce nec lacinia enim. Sed in felis sit amet quam posuere interdum. Duis rutrum sapien id augue commodo cursus. Cras non nisi posuere, efficitur nibh nec, sollicitudin ligula. Donec consequat dui ipsum, et accumsan orci mattis nec.</p>
-                    <p>Etiam in erat imperdiet, malesuada ex in, pulvinar neque. Etiam egestas diam in dui finibus eleifend. Proin pharetra posuere lectus eget fringilla. Praesent non fringilla mi. Pellentesque volutpat a tortor vitae fringilla. In placerat dui ut ante tincidunt, non auctor sem rhoncus. Quisque suscipit, ex et convallis placerat, purus nulla ornare neque, eu hendrerit dui orci non purus. Proin quis tellus blandit, consequat lectus eget, ultricies neque. Curabitur vel velit blandit dolor egestas tincidunt. Donec in arcu id tortor tincidunt ornare vel nec lectus. Integer fermentum ullamcorper arcu, eu porta lorem mattis non.</p>
-                    <h3>Class aptent taciti sociosqu ad litora torquent per conubia</h3>
-                    <p>Sed quis tortor magna. Phasellus rutrum felis vitae sollicitudin consequat. Sed porta sapien turpis, nec ullamcorper diam blandit et. Ut nec lacinia ex, ut porttitor massa. Duis eu nisi imperdiet, lobortis tortor eu, lobortis urna. Maecenas posuere, ante vitae euismod finibus, magna augue aliquet sem, non bibendum lectus odio a urna. Proin ornare nunc in venenatis consectetur. Etiam gravida ante non arcu feugiat iaculis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nam laoreet neque eget dictum dictum. Aenean bibendum tellus in feugiat porta. Aenean tristique, dui eget commodo volutpat, sapien metus ultricies tellus, non commodo massa nulla sed lectus. Aliquam ut arcu eu nisl rhoncus lobortis.</p>
-                    <p>Duis luctus et mi sit amet mollis. Ut et mi quis libero consequat molestie. Curabitur molestie magna mauris, in pretium enim pharetra sed. Donec a ultrices est. Curabitur convallis velit eget ex imperdiet, sit amet laoreet tortor sollicitudin. Maecenas ex purus, posuere non nisl et, malesuada scelerisque mi. Nam erat ligula, sollicitudin quis mi sit amet, vestibulum convallis nibh. Nulla facilisi. Nulla ac pretium sem, at rutrum est. Suspendisse nec sem iaculis risus faucibus tincidunt lacinia sed est. Nunc at eros facilisis, sollicitudin lectus a, iaculis orci. Nunc id volutpat arcu.</p>
-                    <h3>Aenean aliquet, enim eget dictum blandit</h3>
-                    <p>Nunc congue, risus ut ornare auctor, justo sem tristique massa, nec faucibus purus sem egestas ipsum. Aliquam blandit, elit in viverra lobortis, justo purus luctus justo, non semper quam nulla ac ex. Donec non neque odio. Sed congue ullamcorper quam et fermentum. Aenean aliquet, enim eget dictum blandit, ex sapien faucibus urna, ut blandit orci ante quis sem. Phasellus ac tortor arcu. Cras sit amet interdum arcu. Phasellus rhoncus fermentum lacus sed ultricies. Curabitur leo massa, dapibus sed metus quis, fermentum tincidunt augue.</p>
-                </div>
-                <hr />
-            </div><!-- /.modal-body -->
-
-            <footer class="modal-footer">
-                <div id="accept-tos" class="form-field form-field-single-checkbox">
-                    <label>
-                        <input type="checkbox" name="terms" value="true" checked="checked">
-                        <span class="label">{% trans %} Je certifie avoir pris connaissance et accepter expressément les conditions générales d’utilisation du site internet et les conditions générales de vente d'Unilend, y compris ses annexes {% endtrans %}</span>
-                    </label>
-                </div>
-                <input type="hidden" name="id_legal_doc" value="474" />
-                <a href="javascript:;" class="btn-default btn-shape-md" data-modal-doactionclose>{% trans %} Cancel {% endtrans %}</a>
-                <button type="submit" class="btn-primary btn-shape-md" data-modal-doactionconfirm>{% trans %} Valider {% endtrans %}<span class="icon fa-angle-r"></span></button>
-            </footer><!-- /.modal-footer -->
-
-        </form><!-- /#form-tos -->
-    </div><!-- /#modal-tos -->
+    {% set tos_session_key = constant('Unilend\\Bundle\\CoreBusinessBundle\\Service\\ClientManager::SESSION_KEY_TOS_ACCEPTED') %}
+    {% if app.user
+        and app.session.has(tos_session_key)
+        and false == app.session.get(tos_session_key) %}
+        <div id="modal-tos" data-modal data-modal-openonload="true"><form id="form-tos" method="post" action="{{ path('tos_popup') }}"></form></div>
     {% endif %}
-
 </div>
 
 {# Placeholder data for notifications #}
