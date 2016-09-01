@@ -123,7 +123,7 @@
                             </div>
                             <div class="project-list-item-period">
                                 {% if project.finished %}
-                                    {% trans %} project-list_project-finished {% endtrans %}
+                                    {{ "project-list_project-finished"|trans({'%date%': project.endDate|localizeddate('medium', 'none', app.request.locale)})|raw}}
                                 {% elseif project.daysLeft <= 2 %}
                                     <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|escape('html_attr') }}"></span>
                                 {% else %}
