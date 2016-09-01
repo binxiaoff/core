@@ -171,7 +171,7 @@ class bootstrap extends Controller
             && $this->current_function != 'logout'
             && $this->current_controller != 'thickbox'
             && $this->current_controller != 'ajax'
-            && !empty($_SESSION['user']['id_user'])
+            && false === empty($_SESSION['user']['id_user'])
         ) {
             $ilya3mois             = mktime(0, 0, 0, date('m') - 3, date('d'), date('Y'));
             $tab_date_pass         = explode(' ', $_SESSION['user']['password_edited']);
@@ -183,7 +183,7 @@ class bootstrap extends Controller
                 $_SESSION['freeow']['title']   = 'Modification de votre mot de passe';
                 $_SESSION['freeow']['message'] = 'Votre mot de passe doit &ecirc;tre mis &agrave; jour afin de conserver un niveau de s&eacute;curit&eacute; optimal!';
 
-                header('Location:' . $this->lurl . '/edit_password/' . $_SESSION['user']['id_user']);
+                header('Location:' . $this->lurl . '/edit_password/');
                 die;
             }
         }

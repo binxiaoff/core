@@ -598,6 +598,7 @@ class projects extends projects_crud
             case \projects_status::PRET_REFUSE:
             case \projects_status::EN_FUNDING:
             case \projects_status::AUTO_BID_PLACED:
+            case \projects_status::BID_TERMINATED:
             case \projects_status::A_FUNDER:
                 $rResult = $this->bdd->query('
                     SELECT SUM(amount * rate) / SUM(amount) AS avg_rate

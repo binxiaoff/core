@@ -323,6 +323,14 @@ class dossiersController extends bootstrap
                         }
 
                         $oAltares->setCompanyData($this->companies, $oResult->myInfo);
+                        $oAltares->setProjectData($this->projects, $oResult->myInfo);
+
+                        // @todo Revert when TMA-749 is resolved
+                        if (is_numeric($this->companies->name) || 0 === strcasecmp($this->companies->name, 'Monsieur') || 0 === strcasecmp($this->companies->name, 'Madame')) {
+                            /** @var LoggerInterface $logger */
+                            $logger = $this->get('logger');
+                            $logger->error('Wrong company name - altares return : ' . serialize($oResult), array('class' => __CLASS__, 'function' => __FUNCTION__));
+                        }
 
                         $oCompanyCreationDate = new \DateTime($this->companies->date_creation);
                         $oInterval            = $oCompanyCreationDate->diff(new \DateTime());
@@ -331,7 +339,6 @@ class dossiersController extends bootstrap
                             $_SESSION['freeow']['title']   = 'Données Altares';
                             $_SESSION['freeow']['message'] = 'Société non éligible';
                         } else {
-                            $oAltares->setProjectData($this->projects, $oResult->myInfo);
                             $oAltares->setCompanyBalance($this->companies);
 
                             $_SESSION['freeow']['title']   = 'Données Altares';
@@ -1165,7 +1172,7 @@ class dossiersController extends bootstrap
                             'prenom_p'                    => $this->clients->prenom,
                             'entreprise'                  => $this->companies->name,
                             'montant_pret'                => $this->ficelle->formatNumber($fLoansAmount / 100, 0),
-                            'montant_rembourse'           => $this->ficelle->formatNumber($fTotalPayedBack / 100),
+                            'montant_rembourse'           => '<span style=\'color:#b20066;\'>' . $this->ficelle->formatNumber($fTotalPayedBack / 100) . '&nbsp;euros</span> vous ont d&eacute;j&agrave; &eacute;t&eacute; rembours&eacute;s.<br/><br/>',
                             'nombre_prets'                => $iLoansCount . ' ' . (($iLoansCount > 1) ? 'pr&ecirc;ts' : 'pr&ecirc;t'), // @todo intl
                             'date_prochain_remboursement' => $this->dates->formatDate($aNextRepayment[0]['date_echeance'], 'd/m/Y'), // @todo intl
                             'CRD'                         => $this->ficelle->formatNumber($fLoansAmount / 100 - $fTotalPayedBack / 100)
@@ -1422,6 +1429,14 @@ class dossiersController extends bootstrap
                 $oAltares = new Altares();
                 $oResult  = $oAltares->getEligibility($this->companies->siren);
                 $oAltares->setCompanyData($this->companies, $oResult->myInfo);
+
+                // @todo Revert when TMA-749 is resolved
+                if (is_numeric($this->companies->name) || 0 === strcasecmp($this->companies->name, 'Monsieur') || 0 === strcasecmp($this->companies->name, 'Madame')) {
+                    /** @var LoggerInterface $logger */
+                    $logger = $this->get('logger');
+                    $logger->error('Wrong company name - altares return : ' . serialize($oResult), array('class' => __CLASS__, 'function' => __FUNCTION__));
+                }
+
                 $oAltares->setProjectData($this->projects, $oResult->myInfo);
                 $oAltares->setCompanyBalance($this->companies);
 
@@ -1879,6 +1894,10 @@ class dossiersController extends bootstrap
                         $this->bank_unilend->status                 = 1;
                         $this->bank_unilend->create();
 
+                        /** @var platform_account_unilend $oAccountUnilend */
+                        $oAccountUnilend = $this->loadData('platform_account_unilend');
+                        $oAccountUnilend->addDueDateCommssion($RembEmpr['id_echeancier_emprunteur']);
+
                         // MAIL FACTURE REMBOURSEMENT EMPRUNTEUR //
                         $projects                = $this->loadData('projects');
                         $companies               = $this->loadData('companies');
@@ -1948,12 +1967,6 @@ class dossiersController extends bootstrap
                     } else {
                         $_SESSION['freeow']['title']   = 'Remboursement prêteur';
                         $_SESSION['freeow']['message'] = "Aucun remboursement n'a été effectué aux prêteurs !";
-                    }
-
-                    if (0 < $RembEmpr['commission']) {
-                        /** @var platform_account_unilend $oAccountUnilend */
-                        $oAccountUnilend = $this->loadData('platform_account_unilend');
-                        $oAccountUnilend->addDueDateCommssion($RembEmpr['id_echeancier_emprunteur']);
                     }
 
                     if (0 == $this->echeanciers->counter('id_project = ' . $this->projects->id_project . ' AND status = 0')) {

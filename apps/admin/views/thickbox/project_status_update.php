@@ -20,7 +20,7 @@
         <?php endif; ?>
         <?php if ($this->bCustomEmail): ?>
             <label for="mail_content"><em>Email d'information aux prêteurs</em></label><br/><br/>
-            <textarea id="mail_content" name="mail_content" class="textarea_lng" style="height: 100px;width: 420px;"></textarea><br/><br/>
+            <textarea id="mail_content" name="mail_content" class="textarea_lng" style="height: 100px;width: 420px;"><?= isset($this->mailInfoStatusChange) ? $this->mailInfoStatusChange : '' ;?></textarea><br/><br/>
         <?php endif; ?>
         <?php if ($this->bAskEmail): ?>
             </div>

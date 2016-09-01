@@ -1,6 +1,3 @@
-<?php if (isset($_SESSION['lexpress'])): ?>
-    <iframe name="lexpress" SRC="<?= $_SESSION['lexpress']['header'] ?>" scrolling="no" height="138px" width="100%" FRAMEBORDER="no"></iframe>
-<?php endif; ?>
 <div class="wrapper">
     <div class="header">
         <div class="shell clearfix">

@@ -16,7 +16,7 @@
         <script type="text/javascript">
             $(document).ready(function(){
                 <?
-                if($_SESSION['msgErreur'] != '')
+                if(false === empty($_SESSION['msgErreur']))
                 {
                 ?>
                     $.fn.colorbox({
@@ -81,16 +81,10 @@
                     <i>Votre mot de passe doit contenir au minimum 10 caractères. <br />Au moins 1 chiffre et 1 caractère spécial.</i>
                     <br />
 
-                    <?php
-                    if($this->retour_pass != "")
-                    {
-                        ?>
+                    <?php if (false === empty($this->retour_pass)) : ?>
                         <br />
-                        <div style="color:red; font-weight:bold;"><?=$this->retour_pass?></div>
-
-                        <?php
-                    }
-                    ?>
+                        <div style="color:red; font-weight:bold;"><?= $this->retour_pass ?></div>
+                    <?php endif; ?>
                     <br /><br />
                     <table class="large edit_pass">
                         <tr>
