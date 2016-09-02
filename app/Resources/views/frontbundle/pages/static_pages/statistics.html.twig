@@ -649,8 +649,10 @@ y: 46
             <div class="col-lg-6 col-md-6">
                 <div class="block-text">
                     {% trans with {'%numberProjectRequests%' : getStatistic('numberOfProjectRequests'), '%percentageAcceptedRequests%' : getStatistic('percentageOfAcceptedProjects') }%} about-us-statistics_general-description-text {% endtrans %}
-                    <p><a href="{% trans %} about-us-statistics_link-under-general-description-target-url {% endtrans %}" class="link">
-                            {% trans %} about-us-statistics_link-under-general-description-text {% endtrans %}</a>
+                    <p>
+                        <a href="{% trans %} about-us-statistics_link-under-general-description-target-url {% endtrans %}" class="link">
+                            {% trans %} about-us-statistics_link-under-general-description-text {% endtrans %}
+                        </a>
                     </p>
                 </div>
             </div>
@@ -896,7 +898,7 @@ y: 46
                                     {% if item.data is iterable %}
                                         <td class="table-stats-unilend-item-label">{{ item.label|raw }}</td>
                                         {% for j, dataItem in item.data %}
-                                            <td class="table-stats-unilend-item-value">{% if dataItem is even or dataItem is odd %}{{ dataItem|__num(0)|nbsp|raw }}{% else %}{{ dataItem }}{% endif %}</td>
+                                            <td class="table-stats-unilend-item-value">{{ dataItem|localizednumberwithprecision(0)|nbsp|raw }}</td>
                                         {% endfor %}
                                     {% else %}
                                         <td colspan="4" class="table-stats-unilend-item-label">{{ item.label|raw }}</td>

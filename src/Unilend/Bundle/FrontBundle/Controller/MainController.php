@@ -327,9 +327,10 @@ class MainController extends Controller
      * @param \tree         $currentPage
      * @param array         $content
      * @param EntityManager $entityManager
+     * @param string|null   $pageId
      * @return Response
      */
-    private function renderCmsNav(\tree $currentPage, array $content, EntityManager $entityManager)
+    private function renderCmsNav(\tree $currentPage, array $content, EntityManager $entityManager, $pageId = null)
     {
         /** @var \tree $pages */
         $pages = $entityManager->getRepository('tree');
@@ -371,6 +372,7 @@ class MainController extends Controller
         ];
 
         $page = [
+            'id'          => $pageId,
             'title'       => $currentPage->meta_title,
             'description' => $currentPage->meta_description,
             'keywords'    => $currentPage->meta_keywords,
@@ -634,7 +636,7 @@ class MainController extends Controller
         $finalElements = [
             'contenu'      => $response->getContent(),
             'complement'   => '',
-            'image-header' => 'apropos-header-1682x400.jpg?1465048259'
+            'image-header' => 'apropos-header-1682x400.jpg'
         ];
 
         return $this->renderCmsNav($tree, $finalElements, $entityManager);
@@ -658,10 +660,10 @@ class MainController extends Controller
         $finalElements = [
             'contenu'      => $response->getContent(),
             'complement'   => '',
-            'image-header' => 'apropos-header-1682x400.jpg?1465048259'
+            'image-header' => 'apropos-header-1682x400.jpg'
         ];
 
-        return $this->renderCmsNav($tree, $finalElements, $entityManager);
+        return $this->renderCmsNav($tree, $finalElements, $entityManager, 'apropos-statistiques');
     }
 
     /**
