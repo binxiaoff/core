@@ -40,12 +40,12 @@
                                         <span class="label">{% trans %} lender-dashboard-navigation_profile-link {% endtrans %}</span>
                                     </a>
                                 </li>
-                                <li role="presentation" class="dashboard-nav-autolend {% if app.request.attributes.get('_route') == 'autolend' %}active{% else %}complete{% endif %}">
-                                    <a href="{{ path('autolend') }}">
-                                        <span class="icon fa-autolend-u"></span>
-                                        <span class="label">{% trans %} lender-dashboard-navigation_autolend-link {% endtrans %}</span>
-                                    </a>
-                                </li>
+                                {#<li role="presentation" class="dashboard-nav-autolend {% if app.request.attributes.get('_route') == 'autolend' %}active{% else %}complete{% endif %}">#}
+                                    {#<a href="{{ path('autolend') }}">#}
+                                        {#<span class="icon fa-autolend-u"></span>#}
+                                        {#<span class="label">{% trans %} lender-dashboard-navigation_autolend-link {% endtrans %}</span>#}
+                                    {#</a>#}
+                                {#</li>#}
                                 <li role="presentation" class="dashboard-nav-notifications {% if app.request.attributes.get('_route') == 'user/preter/notifications' %}active{% else %}complete{% endif %}">
                                     <a href="{{ route('user/preter/notifications') }}"><span class="icon fa-bell-u"></span><span class="label">Notifications</span></a>
                                 </li>
