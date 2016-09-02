@@ -2050,7 +2050,6 @@ class dossiersController extends bootstrap
                             status_emprunteur = 1,
                             updated = NOW(),
                             status_ra = 1,
-                            capital_rembourse = capital,
                             date_echeance_emprunteur_reel = NOW()
                         WHERE id_project = ' . $this->projects->id_project . ' AND status_emprunteur = 0'
                     );

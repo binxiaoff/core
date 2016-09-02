@@ -110,7 +110,7 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                             'url'                   => $sUrl,
                             'prenom_p'              => $clients->prenom,
                             'mensualite_p'          => $rembNetEmail,
-                            'mensualite_avantfisca' => bcdiv($e['montant'], 100),
+                            'mensualite_avantfisca' => bcdiv($e['montant'], 100, 2),
                             'nom_entreprise'        => $companies->name,
                             'date_bid_accepte'      => $day . ' ' . $month . ' ' . $year,
                             'solde_p'               => $solde,

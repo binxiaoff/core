@@ -1,6 +1,7 @@
 <?php
 namespace Unilend\Bundle\CommandBundle\Command;
 
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
@@ -56,6 +57,8 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
         $earlyRepaymentEmail = $entityManager->getRepository('remboursement_anticipe_mail_a_envoyer');
         /** @var \settings $settings */
         $settings = $entityManager->getRepository('settings');
+        /** @var LoggerInterface $logger */
+        $logger = $this->getContainer()->get('monolog.logger.console');
 
         $staticUrl = $this->getContainer()->get('assets.packages')->getUrl('');
         $frontUrl  = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
@@ -106,7 +109,10 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
                 $client->get($lender->id_client_owner, 'id_client');
 
                 if ($client->status == 1) {
-                    $lenderRemainingCapital   = $lenderRepaymentSchedule->getOwedCapital(['id_lender' => $projectLender['id_lender'], 'id_loan' => $projectLender['id_loan'], 'status_ra' => 1, 'id_project' => $project->id_project]);
+                    $lenderRemainingCapital      = $lenderRepaymentSchedule->getEarlyRepaidCapital(['id_lender' => $projectLender['id_lender'], 'id_loan' => $projectLender['id_loan'], 'id_project' => $project->id_project]);
+                    $montant_ra_from_transaction = $borrowerTransaction->sum(' id_client = ' . $client->id_client . ' AND id_loan = ' . $projectLender['id_loan_remb'] . ' AND id_project = ' . $project->id_project);
+                    $logger->debug('Comparing early refunded amount on id_project: ' . $project->id_project . '. Amount calculated from echeanciers using getEarlyRepaidCapital: ' . $lenderRemainingCapital . '. Amount calculated from transactions: ' . $montant_ra_from_transaction / 100, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
+
                     $notification->type       = \notifications::TYPE_REPAYMENT;
                     $notification->id_lender  = $projectLender['id_lender'];
                     $notification->id_project = $project->id_project;
@@ -136,7 +142,7 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
                             'nom_entreprise'       => $company->name,
                             'taux_bid'             => $ficelle->formatNumber($loan->rate),
                             'nbecheancesrestantes' => $remainingRepaymentsCount,
-                            'interetsdejaverses'   => $ficelle->formatNumber(bcmul($lenderRepaymentSchedule->getRepaidInterests(array('id_project' => $project->id_project, 'id_loan' => $projectLender['id_loan'], 'id_lender' => $projectLender['id_lender'])), 100, 2)),
+                            'interetsdejaverses'   => $ficelle->formatNumber($lenderRepaymentSchedule->getRepaidInterests(array('id_project' => $project->id_project, 'id_loan' => $projectLender['id_loan'], 'id_lender' => $projectLender['id_lender']))),
                             'crdpreteur'           => $ficelle->formatNumber($lenderRemainingCapital) . ($lenderRemainingCapital >= 2 ? ' euros' : ' euro'),
                             'Datera'               => date('d/m/Y'),
                             'solde_p'              => $ficelle->formatNumber($accountBalance) . ($accountBalance >= 2 ? ' euros' : ' euro'),
