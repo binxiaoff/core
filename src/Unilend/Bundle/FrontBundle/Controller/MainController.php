@@ -42,31 +42,58 @@ class MainController extends Controller
      */
     public function homeAction()
     {
-        $template = [];
-
         /** @var TestimonialManager $testimonialService */
         $testimonialService = $this->get('unilend.frontbundle.service.testimonial_manager');
-        /** @var ProjectDisplayManager $projectDisplayManager */
-        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
-        /** @var ProjectManager $projectManager */
-        $projectManager = $this->get('unilend.service.project_manager');
-        /** @var WelcomeOfferManager $welcomeOfferManager */
-        $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
-        /** @var TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translation_manager');
         /** @var AuthorizationChecker $authorizationChecker */
         $authorizationChecker = $this->get('security.authorization_checker');
+        /** @var ProjectDisplayManager $projectDisplayManager */
+        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
+        /** @var WelcomeOfferManager $welcomeOfferManager */
+        $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
 
+        $template = [];
+        $template['showWelcomeOffer']  = $welcomeOfferManager->displayOfferOnHome();
         $template['testimonialPeople'] = $testimonialService->getActiveBattenbergTestimonials();
         $template['videoHeroes']       = [
             'Lenders'   => $testimonialService->getActiveVideoHeroes('preter'),
             'Borrowers' => $testimonialService->getActiveVideoHeroes('emprunter')
         ];
+        $template['projects'] = $projectDisplayManager->getProjectsList(
+            [\projects_status::EN_FUNDING],
+            [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC]
+        );
+
+        if ($authorizationChecker->isGranted('ROLE_LENDER')) {
+            $this->redirectToRoute('home_lender');
+        } elseif ($authorizationChecker->isGranted('ROLE_BORROWER')) {
+            $this->redirectToRoute('home_borrower');
+        }
+
+        return $this->render('pages/homepage_acquisition.html.twig', $template);
+    }
+
+    /**
+     * @Route("/preter", name="home_lender")
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function homeLenderAction()
+    {
+        /** @var ProjectDisplayManager $projectDisplayManager */
+        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
+        /** @var AuthorizationChecker $authorizationChecker */
+        $authorizationChecker = $this->get('security.authorization_checker');
+        /** @var WelcomeOfferManager $welcomeOfferManager */
+        $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
+        /** @var TestimonialManager $testimonialService */
+        $testimonialService = $this->get('unilend.frontbundle.service.testimonial_manager');
+
+        $template = [];
         $template['showWelcomeOffer']  = $welcomeOfferManager->displayOfferOnHome();
-        $template['loanPeriods']       = $projectManager->getPossibleProjectPeriods();
-        $template['projectAmountMax']  = $projectManager->getMaxProjectAmount();
-        $template['projectAmountMin']  = $projectManager->getMinProjectAmount();
-        $template['borrowingMotives']  = $translationManager->getTranslatedBorrowingMotiveList();
+        $template['testimonialPeople'] = $testimonialService->getActiveBattenbergTestimonials();
+        $template['videoHeroes']       = [
+            'Lenders'   => $testimonialService->getActiveVideoHeroes('preter'),
+            'Borrowers' => $testimonialService->getActiveVideoHeroes('emprunter')
+        ];
         $template['showPagination']    = false;
         $template['showSortable']      = false;
         $template['sortType']          = strtolower(\projects::SORT_FIELD_END);
@@ -97,14 +124,6 @@ class MainController extends Controller
             );
         }
 
-        if ($authorizationChecker->isGranted('ROLE_LENDER')) {
-            $templateToRender = 'pages/homepage_lender.html.twig';
-        } elseif ($authorizationChecker->isGranted('ROLE_BORROWER')) {
-            $templateToRender = 'pages/homepage_borrower.html.twig';
-        } else {
-            $templateToRender = 'pages/homepage_acquisition.html.twig';
-        }
-
         $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower);
 
         if (false === $isFullyConnectedUser) {
@@ -115,7 +134,40 @@ class MainController extends Controller
             });
         }
 
-        return $this->render($templateToRender, $template);
+        return $this->render('pages/homepage_lender.html.twig', $template);
+    }
+
+    /**
+     * @Route("/emprunter", name="home_borrower")
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function homeBorrowerAction()
+    {
+        /** @var ProjectManager $projectManager */
+        $projectManager = $this->get('unilend.service.project_manager');
+        /** @var TranslationManager $translationManager */
+        $translationManager = $this->get('unilend.service.translation_manager');
+        /** @var TestimonialManager $testimonialService */
+        $testimonialService = $this->get('unilend.frontbundle.service.testimonial_manager');
+        /** @var ProjectDisplayManager $projectDisplayManager */
+        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
+
+        $template = [];
+        $template['testimonialPeople'] = $testimonialService->getActiveBattenbergTestimonials();
+        $template['videoHeroes']       = [
+            'Lenders'   => $testimonialService->getActiveVideoHeroes('preter'),
+            'Borrowers' => $testimonialService->getActiveVideoHeroes('emprunter')
+        ];
+        $template['loanPeriods']       = $projectManager->getPossibleProjectPeriods();
+        $template['projectAmountMax']  = $projectManager->getMaxProjectAmount();
+        $template['projectAmountMin']  = $projectManager->getMinProjectAmount();
+        $template['borrowingMotives']  = $translationManager->getTranslatedBorrowingMotiveList();
+        $template['projects'] = $projectDisplayManager->getProjectsList(
+            [\projects_status::EN_FUNDING],
+            [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC]
+        );
+
+        return $this->render('pages/homepage_borrower.html.twig', $template);
     }
 
     /**

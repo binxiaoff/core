@@ -147,9 +147,9 @@
 
                 <div class="row page-section-footer">
                     <div class="btn-toolbar">
-                        <a href="#" class="btn-primary">{% trans %} home-lender_lending-button-below-unilend-facts {% endtrans %}</a>
+                        <a href="{{ path('lender_subscription_personal_information') }}" class="btn-primary">{% trans %} home-lender_lending-button-below-unilend-facts {% endtrans %}</a>
                     </div>
-                    <p><a href="#" class="link c-p2">{% trans %} home-lender_borrow-link-below-unilend-facts {% endtrans %}</a></p>
+                    <p><a href="{{ path('home_borrower') }}" class="link c-p2">{% trans %} home-lender_borrow-link-below-unilend-facts {% endtrans %}</a></p>
                 </div>
             </div><!-- /.site-wrap -->
         </section><!-- /.promos -->
