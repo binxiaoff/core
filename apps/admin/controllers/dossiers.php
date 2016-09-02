@@ -2101,6 +2101,7 @@ class dossiersController extends bootstrap
                     $this->bdd->query('
                         UPDATE echeanciers SET
                             status = 1,
+                            capital_rembourse = capital,
                             updated = NOW(),
                             date_echeance_reel = NOW(),
                             date_echeance_emprunteur_reel = NOW(),

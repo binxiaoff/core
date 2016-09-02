@@ -109,14 +109,12 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
                 $client->get($lender->id_client_owner, 'id_client');
 
                 if ($client->status == 1) {
-                    $lenderRemainingCapital      = $lenderRepaymentSchedule->getEarlyRepaidCapital(['id_lender' => $projectLender['id_lender'], 'id_loan' => $projectLender['id_loan'], 'id_project' => $project->id_project]);
-                    $montant_ra_from_transaction = $borrowerTransaction->sum(' id_client = ' . $client->id_client . ' AND id_loan = ' . $projectLender['id_loan_remb'] . ' AND id_project = ' . $project->id_project);
-                    $logger->debug('Comparing early refunded amount on id_project: ' . $project->id_project . '. Amount calculated from echeanciers using getEarlyRepaidCapital: ' . $lenderRemainingCapital . '. Amount calculated from transactions: ' . $montant_ra_from_transaction / 100, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
+                    $lenderRemainingCapital = $borrowerTransaction->sum('type_transaction = ' . \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT .' AND id_client = ' . $client->id_client . ' AND id_loan = ' . $projectLender['id_loan_remb'] . ' AND id_project = ' . $project->id_project);
 
                     $notification->type       = \notifications::TYPE_REPAYMENT;
                     $notification->id_lender  = $projectLender['id_lender'];
                     $notification->id_project = $project->id_project;
-                    $notification->amount     = bcmul($lenderRemainingCapital, 100);
+                    $notification->amount     = $lenderRemainingCapital;
                     $notification->create();
 
                     $lenderTransaction->get($projectLender['id_loan'], 'id_loan_remb');
@@ -143,7 +141,7 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
                             'taux_bid'             => $ficelle->formatNumber($loan->rate),
                             'nbecheancesrestantes' => $remainingRepaymentsCount,
                             'interetsdejaverses'   => $ficelle->formatNumber($lenderRepaymentSchedule->getRepaidInterests(array('id_project' => $project->id_project, 'id_loan' => $projectLender['id_loan'], 'id_lender' => $projectLender['id_lender']))),
-                            'crdpreteur'           => $ficelle->formatNumber($lenderRemainingCapital) . ($lenderRemainingCapital >= 2 ? ' euros' : ' euro'),
+                            'crdpreteur'           => $ficelle->formatNumber($lenderRemainingCapital / 100) . (($lenderRemainingCapital / 100) >= 2 ? ' euros' : ' euro'),
                             'Datera'               => date('d/m/Y'),
                             'solde_p'              => $ficelle->formatNumber($accountBalance) . ($accountBalance >= 2 ? ' euros' : ' euro'),
                             'motif_virement'       => $client->getLenderPattern($client->id_client),

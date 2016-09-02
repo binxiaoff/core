@@ -209,7 +209,7 @@ class echeanciers extends echeanciers_crud
      */
     public function getEarlyRepaidCapital(array $selector)
     {
-        return $this->getPartialSum('capital', $selector, array(self::STATUS_REPAID, self::STATUS_PARTIALLY_REPAID), 1);
+        return $this->getPartialSum('capital_rembourse', $selector, array(self::STATUS_REPAID, self::STATUS_PARTIALLY_REPAID), 1);
     }
 
     /**
