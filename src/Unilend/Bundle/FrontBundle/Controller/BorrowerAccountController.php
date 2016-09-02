@@ -740,12 +740,16 @@ class BorrowerAccountController extends Controller
         foreach ($projectsPostFunding as $key => $project) {
             $projects->get($project['id_project']);
 
-            $aNextRepayment = $repaymentSchedule->select(
-                'status_emprunteur = 0 AND id_project = ' . $project['id_project'],
-                'date_echeance_emprunteur ASC',
-                '',
-                1
-            )[0];
+            if (false === in_array($project['status'],[\projects_status::REMBOURSEMENT_ANTICIPE,\projects_status::REMBOURSE])) {
+               $aNextRepayment = $repaymentSchedule->select(
+                   'status_emprunteur = 0 AND id_project = ' . $project['id_project'],
+                   'date_echeance_emprunteur ASC',
+                   '',
+                   1
+               )[0];
+            } else {
+                $aNextRepayment = 0;
+            }
 
             $projectsPostFunding[$key] = $projectsPostFunding[$key] + [
                 'average_ir'          => round($projects->getAverageInterestRate(), 2),
