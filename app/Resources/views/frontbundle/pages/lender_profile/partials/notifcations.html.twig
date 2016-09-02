@@ -1,122 +1,23 @@
-    <form id="form-alerts" class="panel form-alerts">
-        <header class="panel-header">
-            <h3>Alertes email instantanées</h3>
-        </header>
-        <div class="panel-content">
-            <p>Choisissez les évènements pour lesquels vous souhaitez recevois un email de notification instantané. Pour rappel toutes vos notifications apparaïssent également dans la colonne de gauche de votre espace client.</p>
-            <ul class="list-block">
-                <li>
-                    {{ customInput.switch({
-                        id: 'alert-projects_new',
-                        name: 'alerts[project_new]',
-                        isChecked: userProfile.alerts.projects_new
-                    }) }}
-                    <label for="alert-projects_new">Annonce des nouveaux projets</label>
-                </li>
-                <li>
-                    {{ customInput.switch({
-                        id: 'alert-offers_made',
-                        name: 'alerts[offers_made]',
-                        isChecked: userProfile.alerts.offers_made
-                    }) }}
-                    <label for="alert-offers_made">Offres réalisées</label>
-                </li>
-                <li>
-                    {{ customInput.switch({
-                        id: 'alert-offers_accepted',
-                        name: 'alerts[offers_accepted]',
-                        isChecked: userProfile.alerts.offers_accepted
-                    }) }}
-                    <label for="alert-offers_accepted">Offres acceptées</label>
-                </li>
-                <li>
-                    {{ customInput.switch({
-                        id: 'alert-offers_rejected',
-                        name: 'alerts[offers_rejected]',
-                        isChecked: userProfile.alerts.offers_rejected
-                    }) }}
-                    <label for="alert-offers_rejected">Offres refusées</label>
-                </li>
-                <li>
-                    {{ customInput.switch({
-                        id: 'alert-remboursements',
-                        name: 'alerts[remboursements]',
-                        isChecked: userProfile.alerts.remboursements
-                    }) }}
-                    <label for="alert-remboursements">Remboursements, retards et régularisations</label>
-                </li>
-                <li>
-                    {{ customInput.switch({
-                        id: 'alert-confirmation_deposit',
-                        name: 'alerts[confirmation_deposit]',
-                        isChecked: userProfile.alerts.confirmation_deposit
-                    }) }}
-                    <label for="alert-confirmation_deposit">Confirmation d'alimentation de votre compte</label>
-                </li>
-                <li>
-                    {{ customInput.switch({
-                        id: 'alert-confirmation_withdraw',
-                        name: 'alerts[confirmation_withdraw]',
-                        isChecked: userProfile.alerts.confirmation_withdraw
-                    }) }}
-                    <label for="alert-confirmation_withdraw">Confirmation de retrait</label>
-                </li>
-                <li>
-                    {{ customInput.switch({
-                        id: 'alert-autolend_balance_low',
-                        name: 'alerts[autolend_balance_low]',
-                        isChecked: userProfile.alerts.autolend_balance_low
-                    }) }}
-                    <label for="alert-autolend_balance_low">Autolend: solde faible</label>
-                </li>
-                <li>
-                    {{ customInput.switch({
-                        id: 'alert-autolend_balance_negative',
-                        name: 'alerts[autolend_balance_negative]',
-                        isChecked: userProfile.alerts.autolend_balance_negative
-                    }) }}
-                    <label for="alert-autolend_balance_negative">Autolend: insuffisant</label>
-                </li>
-                <li>
-                    {{ customInput.switch({
-                        id: 'alert-connexion',
-                        name: 'alerts[connexion]',
-                        isChecked: userProfile.alerts.connexion
-                    }) }}
-                    <label for="alert-connexion">Alertes de connexion</label>
-                </li>
-            </ul>
-        </div>
-        <header class="panel-header">
-            <h3>Vos synthèses email</h3>
-        </header>
-        <div class="panel-content">
-            <p>Unilend prépare pour vous une synthèse résumant les derniers évènements de votre compte prêteur. Choisissez la fréquence de réception de ces synthèses.</p>
-            <ul class="list-block">
-                <li>
-                    {{ customInput.switch({
-                        id: 'alert-frequency-daily',
-                        name: 'alerts[frequency][daily]',
-                        isChecked: userProfile.alerts.frequency.daily
-                    }) }}
-                    <label for="alert-frequency-daily">Une fois par jour</label>
-                </li>
-                <li>
-                    {{ customInput.switch({
-                        id: 'alert-frequency-weekly',
-                        name: 'alerts[frequency][weekly]',
-                        isChecked: userProfile.alerts.frequency.weekly
-                    }) }}
-                    <label for="alert-frequency-weekly">Une fois par semaine</label>
-                </li>
-                <li>
-                    {{ customInput.switch({
-                        id: 'alert-frequency-monthly',
-                        name: 'alerts[frequency][monthly]',
-                        isChecked: userProfile.alerts.frequency.monthly
-                    }) }}
-                    <label for="alert-frequency-monthly">Une fois par mois</label>
-                </li>
-            </ul><!-- /.list-block -->
-        </div><!-- /.panel-content -->
-    </form><!-- /#form-alerts.panel -->
+<form id="form-alerts" class="panel form-alerts" method="post" action="{{ path('lender_profile_notification') }}">
+    {% for type, settings in notification_settings %}
+    <header class="panel-header">
+        <h3>{{ "notification-settings_#{ type }-email-alert-title"|trans }}</h3>
+    </header>
+    <div class="panel-content">
+        <p>{{ "notification-settings_#{ type }-email-alert-details"|trans }}</p>
+        <ul class="list-block">
+            {% for key, isActived in settings %}
+            <li>
+                <label class="custom-input-switch" id="label-alert-{{ type }}-{{ key }}">
+                    <input type="checkbox" {% if isActived %}checked="checked"{% endif %} value="true" name="{{ type }}-{{ key }}" id="input-alert-{{ type }}-{{ key }}">
+                    <span class="label">
+                        <span class="sr-only">Switch off/on</span>
+                    </span>
+                </label>
+                <label for="input-alert-{{ type }}-{{ key }}">{{ "notification-settings_alart-#{ key }"|trans }}</label>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endfor %}
+</form><!-- /#form-alerts.panel -->

@@ -27,11 +27,11 @@ $doc.on('ready', function () {
       $(elem).find('> [role="tabpanel"]:eq(1)').collapse('hide')
     })
   })
-  
+
   // If nationality or form_of_address (civilite/gender) inputs are modified, display message that ID files need to be updated (`#identity-change-alert-message`)
   $doc.on('change', '[name="nationality"], [name="form_of_address"]', function () {
     $('#identity-change-alert-message').collapse('show')
-    
+
     // Additionally, mark the identity fileattach fields as requiring new files now
     $('#form-profile-info-identity-files-field .ui-fileattach').uiFileAttach('clear')
   })
@@ -43,7 +43,7 @@ $doc.on('ready', function () {
     // Additionally, mark the justificatif de domicile (housing-certificate) field as requiring new files now
     $('#form-profile-info-domicile-files-field .ui-fileattach').uiFileAttach('clear')
   })
-  
+
   // When a file has been attached, hide the #message-change-address
   $doc.on('FileAttach:attached', '#form-profile-info-domicile-files-field .ui-fileattach', function () {
     $('#message-change-address').collapse('hide')
@@ -61,7 +61,7 @@ $doc.on('ready', function () {
     // Collapse the change message
     $('#message-change-address').collapse('hide')
   })
-    
+
   // If enabled (checked), show the file input
   function checkIsHousedByThirdPerson () {
     if ($('#housed-by-third-person').prop('checked')) {
@@ -74,7 +74,7 @@ $doc.on('ready', function () {
   $doc.on('change', '#housed-by-third-person', function () {
     checkIsHousedByThirdPerson()
   })
-    
+
   // If change of country to other than France display #us-person and #tax-certificate
   function checkIsLivingAbroad () {
     var checkFR = ($('#form-profile-address-pays').val() == 1)
@@ -105,7 +105,7 @@ $doc.on('ready', function () {
   $doc.on('change', '#form-profile-no-us-person', function () {
     checkUSPerson()
   })
-  
+
   // If correspondence address is same as fiscal, show the form details
   function checkCorrespondenceIsSame () {
     if ($('#correspondence-is-same').prop('checked')) {
@@ -173,4 +173,31 @@ $doc.on('ready', function () {
   $doc.on('change', 'select[name="company_external_counsel"]', function () {
     checkEntityExternalCounsel()
   })
+
+  function updateNotificationSettings() {
+    $('#form-alerts input[type="checkbox"]').on('change', function () {
+      var inputName = $(this).attr('name').split('-');
+      var period = inputName[0];
+      var typeId = inputName[1];
+      $.ajax({
+        // Setup AJAX
+        url: $('#form-alerts').attr('action'),
+        method: $('#form-alerts').attr('method'),
+        global: false,
+        data: {
+          period: period,
+          type_id: typeId,
+          active: $(this).is(':checked')
+        },
+        // Event: received server response
+        success: function (data, textStatus, xhr) {
+        },
+        // Event: server error
+        error: function (textStatus, error, xhr) {
+
+        }
+      })
+    })
+  }
+  updateNotificationSettings()
 })
