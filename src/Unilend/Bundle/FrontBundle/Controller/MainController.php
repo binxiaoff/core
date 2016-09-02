@@ -37,11 +37,10 @@ class MainController extends Controller
     const SLUG_ELEMENT_NAV_IMAGE  = 'image-header';
 
     /**
-     * @Route("/home/{type}", defaults={"type" = "acquisition"}, name="home")
-     *
+     * @Route("/", name="home")
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function homeAction($type = 'acquisition')
+    public function homeAction()
     {
         $template = [];
 
@@ -98,6 +97,14 @@ class MainController extends Controller
             );
         }
 
+        if ($authorizationChecker->isGranted('ROLE_LENDER')) {
+            $templateToRender = 'pages/homepage_lender.html.twig';
+        } elseif ($authorizationChecker->isGranted('ROLE_BORROWER')) {
+            $templateToRender = 'pages/homepage_borrower.html.twig';
+        } else {
+            $templateToRender = 'pages/homepage_acquisition.html.twig';
+        }
+
         $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower);
 
         if (false === $isFullyConnectedUser) {
@@ -108,21 +115,7 @@ class MainController extends Controller
             });
         }
 
-        //TODO replace switch by cookie check
-        switch($type) {
-            case 'lender' :
-                $sTemplateToRender = 'pages/homepage_lender.html.twig';
-                break;
-            case 'borrower' :
-                $sTemplateToRender = 'pages/homepage_borrower.html.twig';
-                break;
-            case 'acquisition':
-            default:
-                $sTemplateToRender = 'pages/homepage_acquisition.html.twig';
-                break;
-        };
-
-        return $this->render($sTemplateToRender, $template);
+        return $this->render($templateToRender, $template);
     }
 
     /**

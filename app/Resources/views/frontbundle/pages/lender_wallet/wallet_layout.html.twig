@@ -1,5 +1,5 @@
 {# User / Preter / Apport - Retrait #}
-{% extends 'layouts/_dashboard.html.twig' %}
+{% extends 'layouts/_layout_lender.html.twig' %}
 {% import 'extensions/_general.macros.twig' as general %}
 
 {% set page = {
@@ -23,8 +23,8 @@
         </div><!-- /.dashboard-tabs-nav -->
 
         <div class="dashboard-tabs-content tab-content">
-            {% include ':frontbundle/pages/lender_wallet:deposit_layout.html.twig' %}
-            {% include ':frontbundle/pages/lender_wallet:withdraw_layout.html.twig' %}
+            {% include '/pages/lender_wallet/deposit_layout.html.twig' %}
+            {% include '/pages/lender_wallet/withdraw_layout.html.twig' %}
         </div><!-- /.dashboard-tabs-content -->
     </div><!-- /.dashboard-tabs -->
 {% endblock %}

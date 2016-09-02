@@ -4,18 +4,11 @@
     <div class="site-header-inner">
         <div class="site-wrap">
             <h1 class="site-title">
-                <a href="{{ path('borrower_account_projects') }}" class="site-logo" tabindex="2">{{ site.title|default('Unilend') }}</a>
+                <a href="{{ path('home') }}" class="site-logo" tabindex="2">{{ site.title|default('Unilend') }}</a>
             </h1>
 
             {% block siteHeaderNav %}
-                <nav class="site-nav" role="navigation">
-                    <ul class="site-nav-menu">
-                        <li role="presentation"><a href="{{ path('home', {'type' : 'lender'}) }}" tabindex="2">{% trans %} header_menu-item-lend {% endtrans %}</a></li>
-                        <li role="presentation"><a href="{{ path('home', {'type' : 'borrower'}) }}" tabindex="2">{% trans %} header_menu-item-borrow {% endtrans %}</a></li>
-                        <li role="presentation"><a href="{{ path('projects_list') }}" tabindex="2">{% trans %} header_menu-item-projects {% endtrans %}</a></li>
-                        <li role="presentation"><a href="{{ route('about') }}" tabindex="2">{% trans %} header_menu-item-about {% endtrans %}</a></li>
-                    </ul>
-                </nav><!-- /.site-nav -->
+                {% include 'partials/site/header_nav.html.twig' %}
             {% endblock siteHeaderNav %}
 
             <div class="site-controls">
