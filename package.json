@@ -13,6 +13,8 @@
   "scripts": {
     "gulp": "gulp",
     "gulp:dev": "gulp",
+    "gulp:demo": "gulp",
+    "gulp:preprod": "gulp",
     "gulp:prod": "gulp production",
     "dev": "npm install && gulp"
   },
