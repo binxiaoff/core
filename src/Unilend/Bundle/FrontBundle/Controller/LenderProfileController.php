@@ -170,9 +170,9 @@ class LenderProfileController extends Controller
             $notificationSettings->get(['id_client' => $client->id_client, 'id_notif' => $typeId]);
             $notificationSettings->$type = $active === 'true' ? 1 : 0;
             $notificationSettings->update(['id_client' => $client->id_client, 'id_notif' => $typeId]);
-            return $this->json(['ok']);
+            return $this->json('ok');
         }
-        return $this->json(['ko']);
+        return $this->json('ko');
     }
 
     /**

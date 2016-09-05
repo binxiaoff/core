@@ -176,7 +176,8 @@ $doc.on('ready', function () {
 
   function updateNotificationSettings() {
     $('#form-alerts input[type="checkbox"]').on('change', function () {
-      var inputName = $(this).attr('name').split('-');
+      var switcher = $(this);
+      var inputName = switcher.attr('name').split('-');
       var period = inputName[0];
       var typeId = inputName[1];
       $.ajax({
@@ -184,17 +185,21 @@ $doc.on('ready', function () {
         url: $('#form-alerts').attr('action'),
         method: $('#form-alerts').attr('method'),
         global: false,
+        dataType: 'json',
         data: {
           period: period,
           type_id: typeId,
-          active: $(this).is(':checked')
+          active: switcher.is(':checked')
         },
         // Event: received server response
-        success: function (data, textStatus, xhr) {
+        success: function (data) {
+          if (data == 'ko') {
+            switcher.prop('checked', !switcher.is(':checked'));
+          }
         },
         // Event: server error
-        error: function (textStatus, error, xhr) {
-
+        error: function () {
+          switcher.prop('checked', !switcher.is(':checked'));
         }
       })
     })
