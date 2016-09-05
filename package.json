@@ -12,6 +12,7 @@
   },
   "scripts": {
     "gulp": "gulp",
+    "gulp:watch": "gulp watch",
     "gulp:dev": "gulp",
     "gulp:demo": "gulp",
     "gulp:preprod": "gulp",
