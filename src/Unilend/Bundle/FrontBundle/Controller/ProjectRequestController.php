@@ -1470,6 +1470,7 @@ class ProjectRequestController extends Controller
                     return $this->redirectToRoute(self::PAGE_ROUTE_END, ['hash' => $hash]);
                 }
                 break;
+            case \projects_status::DEMANDE_SIMULATEUR:
             case \projects_status::COMPLETUDE_ETAPE_2:
                 if ($route !== self::PAGE_ROUTE_STEP_2 && empty($request->getSession()->get('partnerProjectRequest'))) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_STEP_2, ['hash' => $hash]);

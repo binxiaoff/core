@@ -68,7 +68,6 @@ var CookieCheck = require('./app/components/Cookies')
 var LoginTimer = require('./app/components/LoginTimer')
 var LoginCaptcha = require('./app/components/LoginCaptcha')
 var SimpleCountDown = require('./app/components/SimpleCountDown')
-var BorrowerEsimForm = require('./app/components/BorrowerEsimForm')
 var BidConfirmation = require('./app/components/BidConfirmation')
 var BidsDetail = require('./app/components/BidsDetail')
 
@@ -729,22 +728,55 @@ $(document).ready(function ($) {
       // Hide the continue button
       $('.emprunter-sim').removeClass('ui-emprunter-sim-estimate-show')
     })
-    .on('FormValidation:validate:success', '#esim1', function () {
-      // Show the continue button
-      $('.emprunter-sim').addClass('ui-emprunter-sim-estimate-show')
+    .on('click', '#submit-step-1', function () {
+      var period = $("input[id^='esim-input-duration-']:checked").val(),
+          amount = $("#esim-input-amount").val(),
+          motiveId = $("#esim-input-reason > option:selected").val()
+
+      if (! $(".form-validation-notifications .message-error").length) {
+        $.ajax({
+          type: 'POST',
+          url: '/simulateur-projet-etape1',
+          data: {
+            period: period,
+            amount: amount,
+            motiveId: motiveId
+          },
+          success: function(response) {
+            // Show the continue button
+            $('.emprunter-sim').addClass('ui-emprunter-sim-estimate-show')
+
+            $(".ui-esim-output-cost").prepend(response.amount);
+            $('.ui-esim-output-duration').prepend(response.period)
+            $('.ui-esim-monthly-output').html(response.estimatedMonthlyRepayment)
+            $('.ui-esim-interest-output').html(response.estimatedRate)
+
+            if (!response.motiveSentenceComplementToBeDisplayed) {
+              $('p[data-borrower-motive]').show()
+              while ($('.ui-esim-output-duration')[0].nextSibling != null) {
+                $('.ui-esim-output-duration')[0].nextSibling.remove()
+              }
+              $('#esim2 > fieldset > div:nth-child(2) > div > p:nth-child(1)').append('.')
+            }
+            else {
+              var text = $('p[data-borrower-motive]').html()
+                  text = text.replace(/\.$/g, '')
+
+              $('p[data-borrower-motive]')
+                .show()
+                .html(text + response.translationComplement + '.')
+            }
+          },
+          error: function() {
+            console.log("error retrieving data");
+          }
+        });
+
+        $('a[href*="esim1"]')
+          .removeAttr("href data-toggle aria-expanded")
+          .attr("nohref", "nohref")
+      }
     })
-    .on('change', 'form.emprunter-sim', function (event) {
-      // console.log(event.type, event.target)
-    })
-    // Step 2
-    // .on('FormValidation:validate:error', '#esim2', function () {
-    //   // Hide the submit button
-    //   $('.emprunter-sim').removeClass('ui-emprunter-sim-step-2')
-    // })
-    // .on('FormValidation:validate:success', '#esim2', function () {
-    //   // Show the submit button
-    //   $('.emprunter-sim').removeClass('ui-emprunter-sim-step-1').addClass('ui-emprunter-sim-step-2')
-    // })
 
   /*
    * Smooth scrolling to point on screen or specific element

@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\Translator;
+use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager;
@@ -26,6 +27,7 @@ use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
 use Unilend\Bundle\FrontBundle\Service\TestimonialManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
+use Unilend\core\Loader;
 
 class MainController extends Controller
 {
@@ -171,13 +173,12 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/esim-step-1", name="esim_step_1")
+     * @Route("/simulateur-projet-etape1", name="project_simulator")
      * @Method("POST")
      */
     public function projectSimulatorStepOneAction(Request $request)
     {
         if ($request->isXMLHttpRequest()) {
-
             $period   = $request->request->get('period');
             $amount   = $request->request->get('amount');
             $motiveId = $request->request->get('motiveId');
@@ -185,31 +186,33 @@ class MainController extends Controller
             /** @var ProjectRequestManager $projectRequestManager */
             $projectRequestManager = $this->get('unilend.service.project_request_manager');
             /** @var ProjectManager $projectManager */
-            $projectManager        = $this->get('unilend.service.project_manager');
-            /** @var TranslationManager $translationManager */
-            $translationManager = $this->get('unilend.service.translation_manager');
+            $projectManager = $this->get('unilend.service.project_manager');
+            /** @var TranslatorInterface $translator */
+            $translator = $this->get('translator');
+            /** @var \ficelle $ficelle */
+            $ficelle = Loader::loadLib('ficelle');
 
-            $aProjectPeriods   = $projectManager->getPossibleProjectPeriods();
-            $iProjectAmountMax = $projectManager->getMaxProjectAmount();
-            $iProjectAmountMin = $projectManager->getMinProjectAmount();
+            $projectPeriods   = $projectManager->getPossibleProjectPeriods();
+            $projectAmountMax = $projectManager->getMaxProjectAmount();
+            $projectAmountMin = $projectManager->getMinProjectAmount();
 
             if (
-                in_array($period, $aProjectPeriods)
-                && $amount >= $iProjectAmountMin
-                && $amount <= $iProjectAmountMax
+                in_array($period, $projectPeriods)
+                && $amount >= $projectAmountMin
+                && $amount <= $projectAmountMax
             ){
-                $estimatedRate                          = $projectRequestManager->getMonthlyRateEstimate();
-                $estimatedMonthlyRepayment              = $projectRequestManager->getMonthlyPaymentEstimate($amount, $period, $estimatedRate);
-                $sTranslationComplement                 = $translationManager->selectTranslation('home-borrower', 'simulator-step-2-text-segment-motive-' . $motiveId);
-                $bmotiveSentenceComplementToBeDisplayed = (\borrowing_motive::OTHER == $motiveId) ? false : true;
+                $estimatedRate                           = $projectRequestManager->getMonthlyRateEstimate();
+                $estimatedMonthlyRepayment               = $projectRequestManager->getMonthlyPaymentEstimate($amount, $period, $estimatedRate);
+                $isMotiveSentenceComplementToBeDisplayed = (false === in_array($motiveId, ['', \borrowing_motive::OTHER]));
+                $translationComplement                   = $isMotiveSentenceComplementToBeDisplayed ? $translator->trans('home-borrower_simulator-step-2-text-segment-motive-' . $motiveId) : '';
 
                 return new JsonResponse([
-                    'estimatedRate'                         => $estimatedRate,
-                    'estimatedMonthlyRepayment'             => $estimatedMonthlyRepayment,
-                    'translationComplement'                 => $sTranslationComplement,
-                    'motiveSentenceComplementToBeDisplayed' => $bmotiveSentenceComplementToBeDisplayed,
+                    'estimatedRate'                         => $ficelle->formatNumber($estimatedRate, 1),
+                    'estimatedMonthlyRepayment'             => $ficelle->formatNumber($estimatedMonthlyRepayment, 0),
+                    'amount'                                => $ficelle->formatNumber($amount, 0),
                     'period'                                => $period,
-                    'amount'                                => $amount
+                    'motiveSentenceComplementToBeDisplayed' => $isMotiveSentenceComplementToBeDisplayed,
+                    'translationComplement'                 => $translationComplement
                 ]);
             }
 
@@ -219,7 +222,7 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/esim-step-2", name="esim_step_2")
+     * @Route("/simulateur-projet", name="project_simulator_form")
      * @Method("POST")
      */
     public function projectSimulatorStepTwoAction(Request $request)

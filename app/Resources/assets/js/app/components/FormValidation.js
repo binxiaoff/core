@@ -120,11 +120,11 @@ function getFieldValue (elem) {
     })
 
     // @debug
-    console.log('getFieldValue:groupedinputs', {
-      $inputs: $inputs,
-      inputNames: inputNames,
-      inputValues: inputValues
-    })
+    // console.log('getFieldValue:groupedinputs', {
+    //   $inputs: $inputs,
+    //   inputNames: inputNames,
+    //   inputValues: inputValues
+    // })
 
     // The return value
     if (inputNames.length === 1) {
@@ -864,7 +864,7 @@ FormValidation.prototype.rules = {
           //          (0) 12.34.56.78.90
           //          856-6688
           // if (!/^\+?[0-9\-\. \(\)]{6,}$/.test(inputValidation.value)) {
-          
+
           // DEV-578 mobile phone number format upon input (exclude + before area code)
           if (/\D+/.test(inputValidation.value) || inputValidation.value.length < 6) {
             inputValidation.errors.push({

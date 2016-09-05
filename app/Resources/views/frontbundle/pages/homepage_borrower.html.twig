@@ -102,12 +102,15 @@
             <div class="site-wrap">
                 <h2 class="h2">{% trans %} home-borrower_simulator-title {% endtrans %}</h2>
 
-                <form action="{{ path('esim_step_2') }}" method="post" class="emprunter-sim tabs ui-tabs-progress">
+                <form action="{{ path('project_simulator_form') }}" method="post" class="emprunter-sim tabs ui-tabs-progress">
                     <div class="emprunter-sim-nav">
                         <ul class="nav nav-steps" role="tablist">
                             <li role="presentation" class="active">
-                                <a href="#esim1" role="tab" data-toggle="tab">{% trans %} home-borrower_simulator-step-1 {% endtrans %}</a></li>
-                            <li role="presentation"><a href="#esim2" role="tab" data-toggle="tab">{% trans %} home-borrower_simulator-step-2 {% endtrans %}</a></li>
+                                <a href="#esim1" role="tab" data-toggle="tab">{% trans %} home-borrower_simulator-step-1 {% endtrans %}</a>
+                            </li>
+                            <li role="presentation">
+                                <a href="#esim2" role="tab" data-toggle="tab">{% trans %} home-borrower_simulator-step-2 {% endtrans %}</a>
+                            </li>
                         </ul>
                     </div><!-- /.emprunter-sim-nav -->
 
@@ -115,10 +118,11 @@
                         <div id="esim1" role="tabpanel" class="tab-pane active">
                             <fieldset class="emprunter-sim-pane-inner" data-formvalidation data-formvalidation-notificationselem=".form-validation-notifications">
                                 <div class="form-validation-notifications"></div>
-                <div class="row row-multicol-computer">
+                                <div class="row row-multicol-computer">
                                     <div class="form-field col-lg-6 col-md-6">
                                         <label for="esim-input-amount">{% trans %} home-borrower_simulator-amount-field-title {% endtrans %}
-                                            <span class="c-t3">{% trans %} home-borrower_simulator-amount-field-addition {% endtrans %}</span></label>
+                                            <span class="c-t3">{% trans %} home-borrower_simulator-amount-field-addition {% endtrans %}</span>
+                                        </label>
                                         <input id="esim-input-amount" type="number" step="any" name="esim[amount]" value=""
                                                placeholder="{% trans %} home-borrower_simulator-amount-field-placeholder {% endtrans %}"
                                                class="input-field"
@@ -128,21 +132,21 @@
                                     <div class="form-field col-lg-6 col-md-6">
                                         <label for="esim-input-reason">{% trans %} home-borrower_simulator-borrowing-motif-title {% endtrans %}</label>
                                         <select id="esim-input-reason" name="esim[reason]" class="input-field" data-formvalidation-input data-formvalidation-required="true">
-                                            <option value="0">{% trans %} home-borrower_simulator-borrowing-motif-select {% endtrans %}</option>
+                                            <option value="">{% trans %} home-borrower_simulator-borrowing-motif-select {% endtrans %}</option>
                                             {% for id, motive in borrowingMotives %}
                                                 <option value="{{ id }}">{{ motive }}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
                                 </div>
-                <div class="row row-multicol-computer">
+                                <div class="row row-multicol-computer">
                                     <div class="form-field col-lg-12 col-md-12">
                                         <label>{% trans %} home-borrower_simulator-borrowing-period-title {% endtrans %}</label>
                                         <div class="custom-input-duration" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="duration">
                                             {% for period in loanPeriods %}
                                                 <label>
                                                     <input type="radio" id="esim-input-duration-{{ period }}" name="esim[duration]" value="{{ period }}">
-                                                    <div class="label">{{ period }}</div>
+                                                    <span class="label">{{ period }}</span>
                                                 </label>
                                             {% endfor %}
                                         </div><!-- /.custom-input-duration -->
@@ -156,11 +160,11 @@
                                 <div class="form-validation-notifications"></div>
                                 <div class="row">
                                     <div class="col-lg-12 col-md-12">
-                                        <p data-bottower-motive>{% trans %} home-borrower_simulator-step-2-text-for-motive {% endtrans %}</p>
+                                        <p data-borrower-motive>{% trans %} home-borrower_simulator-step-2-text-for-motive {% endtrans %}</p>
                                         <p>{% trans %} home-borrower_simulator-step-2-text-fill-field {% endtrans %}</p>
                                     </div>
                                 </div>
-                <div class="row row-multicol-computer">
+                                <div class="row row-multicol-computer">
                                     <div class="form-field col-lg-6 col-md-6">
                                         <label for="esim-input-siren">{% trans %} home-borrower_simulator-siren-field-label {% endtrans %}</label>
                                         <input type="text" id="esim-input-siren" name="esim[siren]" value="" class="input-field" data-formvalidation-input
@@ -183,11 +187,11 @@
                                         <dl class="row emprunter-sim-estimate-numbers">
                                             <dt class="col-lg-6 col-md-6 col-sm-3 col-xs-4">{% trans %} home-borrower_simulator-footer-mensuality-label {% endtrans %}</dt>
                                             <dd class="col-lg-6 col-md-6 col-sm-5 col-xs-4">
-                                                <strong>{% trans with { '%monthly_repayment%' : projects|length } %} home-borrower_simulator-footer-monthly-repayment-with-value {% endtrans %} </strong>
+                                                <strong>{% trans with {'%monthly_repayment%' : '<span class="ui-esim-monthly-output"></span>&nbsp;€'} %} home-borrower_simulator-footer-monthly-repayment-with-value {% endtrans %}</strong>
                                             </dd>
                                             <dt class="col-lg-6 col-md-6 col-sm-3 col-xs-4">{% trans %} home-borrower_simulator-footer-rate-label {% endtrans %}</dt>
                                             <dd class="col-lg-6 col-md-6 col-sm-5 col-xs-4">
-                                                <span class="ui-esim-interest-output">7,4</span>%
+                                                <span class="ui-esim-interest-output"></span>&nbsp;%
                                             </dd>
                                         </dl>
                                         &nbsp;
@@ -197,14 +201,15 @@
                                     </div>
                                     <div class="col-lg-3 col-md-3">
                                         <a href="#esim2" role="tab" data-toggle="tab" class="btn-continue btn-alternate btn-size-full" id="submit-step-1">
-                                            {% trans %} home-borrower_simulator-footer-continue-button {% endtrans %}</a>
+                                            {% trans %} home-borrower_simulator-footer-continue-button {% endtrans %}
+                                        </a>
                                         <button class="btn-submit btn-alternate btn-size-full">
-                                            {% trans %} home-borrower_simulator-footer-validate-button {% endtrans %}</button>
+                                            {% trans %} home-borrower_simulator-footer-validate-button {% endtrans %}
+                                        </button>
                                     </div>
                                 </div>
                             </div><!-- /.emprunter-sim-pane-inner -->
                         </div><!-- /.emprunter-sim-estimate -->
-
                     </div><!-- /.tab-content -->
                 </form><!-- /.emprunter-sim -->
 

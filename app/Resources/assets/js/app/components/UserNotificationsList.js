@@ -26,7 +26,7 @@ var USERNOTIFICATIONS_LANG_LEGACY = require('../../../lang/UserNotifications.lan
 if (window.USERNOTIFICATIONS_LANG) {
   __ = new Dictionary(window.USERNOTIFICATIONS_LANG)
   // @debug
-  console.log('UserNotificationsList: using window.USERNOTIFICATIONS_LANG for Dictionary')
+  // console.log('UserNotificationsList: using window.USERNOTIFICATIONS_LANG for Dictionary')
 
 // -- Support new legacy dictionary language format for fallbacks, e.g. `exampleTranslationKeyName`
 } else {
