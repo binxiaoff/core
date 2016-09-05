@@ -10,6 +10,8 @@ error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT & ~E_NOTICE);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
+setlocale(LC_TIME, 'fr_FR.utf8');
+
 if (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) {
     $currentCookieParams = session_get_cookie_params();
 
