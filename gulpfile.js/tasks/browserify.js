@@ -34,7 +34,7 @@ var browserifyTask =  function(watchMode) {
         .pipe(buffer())
         .pipe(gulpIf(!global.production, sourcemaps.init({loadMaps: true})))
         // .pipe(gulpIf(!global.production, uglify()))
-        .pipe(gulpIf(!global.production, sourcemaps.write('./')))
+        .pipe(gulpIf(!global.production, sourcemaps.write('./', {charset: 'latin1'})))
         .pipe(gulp.dest(path.join(config.root.dest, bundleConfig.dest)))
         .on('end', function() {bundleLogger.end(bundleConfig.outputName)})
         .pipe(browserSync.reload({
