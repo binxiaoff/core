@@ -4,6 +4,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Psr\Log\LoggerInterface;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use PhpXmlRpc\Client;
+use PhpXmlRpc\Request;
+use PhpXmlRpc\Value;
 
 class ProjectManager
 {
@@ -43,7 +46,10 @@ class ProjectManager
     /** @var  ProjectRateSettingsManager */
     private $projectRateSettingsManager;
 
-    public function __construct(EntityManager $oEntityManager, BidManager $oBidManager, LoanManager $oLoanManager, NotificationManager $oNotificationManager, AutoBidSettingsManager $oAutoBidSettingsManager, MailerManager $oMailerManager, LenderManager $oLenderManager, ProjectRateSettingsManager $projectRateSettingsManager)
+    /** @var string */
+    private $universignUrl;
+
+    public function __construct(EntityManager $oEntityManager, BidManager $oBidManager, LoanManager $oLoanManager, NotificationManager $oNotificationManager, AutoBidSettingsManager $oAutoBidSettingsManager, MailerManager $oMailerManager, LenderManager $oLenderManager, ProjectRateSettingsManager $projectRateSettingsManager, $universignUrl)
     {
         $this->oEntityManager             = $oEntityManager;
         $this->oBidManager                = $oBidManager;
@@ -53,6 +59,7 @@ class ProjectManager
         $this->oMailerManager             = $oMailerManager;
         $this->oLenderManager             = $oLenderManager;
         $this->projectRateSettingsManager = $projectRateSettingsManager;
+        $this->universignUrl              = $universignUrl;
 
         $this->oFicelle    = Loader::loadLib('ficelle');
         $this->oDate       = Loader::loadLib('dates');
@@ -863,11 +870,34 @@ class ProjectManager
         /** @var \projects_pouvoir $proxy */
         $proxy = $this->oEntityManager->getRepository('projects_pouvoir');
 
-        $mandate->get($project->id_project, 'id_project');
-        $mandate->status = \clients_mandats::STATUS_CANCELED;
-        $mandate->update();
-        $proxy->get($project->id_project, 'id_project');
-        $proxy->status = \projects_pouvoir::STATUS_CANCELLED;
-        $proxy->update();
+        $client = new Client($this->universignUrl);
+
+        if ($mandate->get($project->id_project, 'id_project')) {
+            $mandate->status = \clients_mandats::STATUS_CANCELED;
+            $mandate->update();
+
+            $request          = new Request('requester.cancelTransaction', array(new Value($mandate->id_universign, "string")));
+            $universignReturn = $client->send($request);
+
+            if ($universignReturn->faultCode()) {
+                $this->oLogger->info('Mandate cancellation failed. Reason : ' . $universignReturn->faultString() . ' (project ' . $mandate->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project));
+            } else {
+                $this->oLogger->info('Mandate canceled (project ' . $mandate->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project));
+            }
+        }
+
+        if ($proxy->get($project->id_project, 'id_project')) {
+            $proxy->status = \projects_pouvoir::STATUS_CANCELLED;
+            $proxy->update();
+
+            $request          = new Request('requester.cancelTransaction', array(new Value($proxy->id_universign, "string")));
+            $universignReturn = $client->send($request);
+
+            if ($universignReturn->faultCode()) {
+                $this->oLogger->info('Proxy cancellation failed. Reason : ' . $universignReturn->faultString() . ' (project ' . $proxy->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project));
+            } else {
+                $this->oLogger->info('Proxy canceled (project ' . $proxy->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project));
+            }
+        }
     }
 }
