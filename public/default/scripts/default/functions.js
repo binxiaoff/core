@@ -185,22 +185,20 @@
         });
 
         // ProgressBar
-        $(window).load(function () {
-            if ($('.progressBar').length) {
-                $('.progressBar').each(function () {
-                    var per = $(this).data('percent');
-                    progress(per, $(this));
-                });
-            }
-            function progress(percent, $element) {
-                var progressBarWidth = percent * $element.width() / 100;
-                $element.find('div').animate({width: progressBarWidth}, 1200, function () {
-                    var leftP = $(this).width();
+        if ($('.progressBar').length) {
+            $('.progressBar').each(function () {
+                var per = $(this).data('percent');
+                progress(per, $(this));
+            });
+        }
+        function progress(percent, $element) {
+            var progressBarWidth = percent * $element.width() / 100;
+            $element.find('div').animate({width: progressBarWidth}, 1200, function () {
+                var leftP = $(this).width();
 
-                    $(this).find('span').html(percent.toString().replace('.', ',') + "%&nbsp;").css('left', leftP);
-                })
-            }
-        });
+                $(this).find('span').html(percent.toString().replace('.', ',') + "%&nbsp;").css('left', leftP);
+            })
+        }
 
         $('.euro-field').each(function () {
             $(this).before('<span class="euro-sign">&euro;</span>')
