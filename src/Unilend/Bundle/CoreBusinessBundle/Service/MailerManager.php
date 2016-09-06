@@ -1715,8 +1715,8 @@ class MailerManager
                             $tax = $this->oEntityManager->getRepository('tax');
                             $oLenderRepayment->get($oTransaction->id_echeancier);
 
-                            $fRepaymentCapital              = bcdiv($oLenderRepayment->capital, 100, 2);
-                            $fRepaymentInterestsTaxIncluded = bcdiv($oLenderRepayment->interets, 100, 2);
+                            $fRepaymentCapital              = bcdiv($oLenderRepayment->capital_rembourse, 100, 2);
+                            $fRepaymentInterestsTaxIncluded = bcdiv($oLenderRepayment->interets_rembourses, 100, 2);
                             if (false == empty($oLenderRepayment->id_echeancier)) {
                                 $fRepaymentTax = bcdiv($tax->getAmountByRepaymentId($oLenderRepayment->id_echeancier), 100, 2);
                             } else {

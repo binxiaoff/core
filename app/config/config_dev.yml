@@ -37,7 +37,7 @@ monolog:
             channels: console
         console_handler:
             type: group
-            members: [file_console, console_console]
+            members: [console_console]
         file_console:
             type: rotating_file
             path: "%kernel.logs_dir%/console.%kernel.environment%.log"

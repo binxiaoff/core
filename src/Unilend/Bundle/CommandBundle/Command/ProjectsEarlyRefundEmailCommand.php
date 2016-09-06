@@ -109,7 +109,7 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
                 $client->get($lender->id_client_owner, 'id_client');
 
                 if ($client->status == 1) {
-                    $lenderRemainingCapital = $borrowerTransaction->sum('type_transaction = ' . \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT .' AND id_client = ' . $client->id_client . ' AND id_loan = ' . $projectLender['id_loan_remb'] . ' AND id_project = ' . $project->id_project);
+                    $lenderRemainingCapital = $borrowerTransaction->sum('type_transaction = ' . \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT .' AND id_client = ' . $client->id_client . ' AND id_loan_remb = ' . $projectLender['id_loan'] . ' AND id_project = ' . $project->id_project);
 
                     $notification->type       = \notifications::TYPE_REPAYMENT;
                     $notification->id_lender  = $projectLender['id_lender'];
