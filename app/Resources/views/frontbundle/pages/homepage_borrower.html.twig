@@ -1,12 +1,11 @@
-{# Homepage Emprunter #}
 {% extends 'layouts/_layout.html.twig' %}
+
 {% import 'partials/modules/_promo-battenberg.macros.twig' as promoBattenberg %}
 
 {% set page = {
     title: 'Emprunter',
     permalink: route('emprunter')
 } %}
-
 
 {% block siteContent %}
     <article id="homeemp" class="page">
@@ -46,7 +45,7 @@
                     <div class="col-lg-4 col-md-4">
                         <div class="promo">
                             <div class="promo-image">
-                                {{ svgimage('#promo-projects', '', 190, 190, 'none') | raw }}
+                                {{ svgimage('#promo-projects', '', 190, 190, 'none')|raw }}
                             </div>
                             <h3 class="round-number">1</h3>
                             <p>{% trans %} home-borrower_borrowing-step-1-text {% endtrans %}</p>
@@ -56,7 +55,7 @@
                     <div class="col-lg-4 col-md-4">
                         <div class="promo">
                             <div class="promo-image">
-                                {{ svgimage('#promo-money', '', 190, 190, 'none') | raw }}
+                                {{ svgimage('#promo-money', '', 190, 190, 'none')|raw }}
                             </div>
                             <h3 class="round-number">2</h3>
                             <p>{% trans %} home-borrower_borrowing-step-2-text {% endtrans %}</p>
@@ -66,7 +65,7 @@
                     <div class="col-lg-4 col-md-4">
                         <div class="promo">
                             <div class="promo-image">
-                                {{ svgimage('#promo-people', '', 190, 190, 'none') | raw }}
+                                {{ svgimage('#promo-people', '', 190, 190, 'none')|raw }}
                             </div>
                             <h3 class="round-number">3</h3>
                             <p>{% trans %} home-borrower_borrowing-step-3-text {% endtrans %}</p>
@@ -76,7 +75,7 @@
                 <div class="row page-section-footer">
                     <div class="btn-toolbar">
                         <a href="{{ route('search') }}" class="btn-default ui-open-site-search">{% trans %} home-borrower_question-button {% endtrans %}</a>
-                        <a href="{{ path('lp-depot-de-dossier') }}" class="btn-alternate">{% trans %} home-borrower_submit-project-button {% endtrans %}</a>
+                        <a href="#homeemp-section-esim" class="btn-alternate">{% trans %} home-borrower_submit-project-button {% endtrans %}</a>
                     </div>
                 </div><!-- /.page-section-footer -->
             </div><!-- /.site-wrap -->
@@ -85,7 +84,6 @@
         <section id="homeemp-section-testimonials" class="page-section">
             <div class="site-wrap">
                 <h1 class="h2">{% trans %} home-borrower_testimonial-section-title {% endtrans %}</h1>
-
                 {% set BattenberglabelCtaButton %}{% trans %} home-borrower_submit-project-button {% endtrans %}{% endset %}
                 {{ promoBattenberg.render({
                     classColor: 'p2',
@@ -94,7 +92,6 @@
                     urlCtaButton: path('lp-depot-de-dossier'),
                     people: testimonialPeople
                 }) }}
-
             </div><!-- /.site-wrap -->
         </section><!-- /.page-section -->
 
@@ -212,7 +209,6 @@
                         </div><!-- /.emprunter-sim-estimate -->
                     </div><!-- /.tab-content -->
                 </form><!-- /.emprunter-sim -->
-
             </div><!-- /.site-wrap -->
         </section><!-- /.page-section -->
 
@@ -223,8 +219,8 @@
                     <div class="col-lg-4 col-md-4">
                         <div class="promo">
                             <div class="promo-image">
-                                    {{ svgimage('#promo-piggybank', '', 190, 190, 'none')  | raw }}
-                                    <img src="{{ siteurlmedia('promos/promo-piggybank-190x190.png') }}" alt="">
+                                {{ svgimage('#promo-piggybank', '', 190, 190, 'none')|raw }}
+                                <img src="{{ siteurlmedia('promos/promo-piggybank-190x190.png') }}" alt="">
                             </div>
                             {% set piggybankValue = getStatistic('percentageSuccessfullyFinancedProjects')|round|localizednumber %}
                             <h3 class="promo-highlight">
@@ -237,8 +233,8 @@
                     <div class="col-lg-4 col-md-4">
                         <div class="promo">
                             <div class="promo-image">
-                                    {{ svgimage('#promo-calendarweek', '', 190, 190, 'none')  | raw }}
-                                    <img src="{{ siteurlmedia('promos/promo-calendar-190x190.png') }}" alt="">
+                                {{ svgimage('#promo-calendarweek', '', 190, 190, 'none')|raw }}
+                                <img src="{{ siteurlmedia('promos/promo-calendar-190x190.png') }}" alt="">
                             </div>
                             {% set calendarweekValue = getStatistic('averageFundingTime') %}
                             <h3 class="promo-highlight">
@@ -251,8 +247,8 @@
                     <div class="col-lg-4 col-md-4">
                         <div class="promo">
                             <div class="promo-image">
-                                    {{ svgimage('#promo-verified', '', 190, 190, 'none')  | raw }}
-                                    <img src="{{ siteurlmedia('promos/promo-certificate-190x190.png') }}" alt="">
+                                {{ svgimage('#promo-verified', '', 190, 190, 'none')|raw }}
+                                <img src="{{ siteurlmedia('promos/promo-certificate-190x190.png') }}" alt="">
                             </div>
                             <h3 class="promo-highlight"><span>0</span><sup>&nbsp;</sup></h3>
                             <p>{% trans %} home-borrower_why-borrow-stats-verified-text {% endtrans %}</p>
@@ -261,7 +257,7 @@
                 </div>
                 <div class="row page-section-footer">
                     <div class="btn-toolbar">
-                        <a href="{{ path('project_request_start') }}" class="btn-alternate">{% trans %} home-borrower_borrow-button-below-why-borrow-facts {% endtrans %}</a>
+                        <a href="#homeemp-section-esim" class="btn-alternate">{% trans %} home-borrower_borrow-button-below-why-borrow-facts {% endtrans %}</a>
                     </div><!-- /.btn-toolbar -->
                     <p>
                         <a href="{{ path('home_lender') }}" class="link">{% trans %} home-borrower_lend-button-below-why-borrow-facts {% endtrans %}</a>
@@ -272,5 +268,4 @@
     </article><!-- /.page -->
 
     {{ render_esi(controller('UnilendFrontBundle:Main:footerReviews')) }}
-
 {% endblock %}
