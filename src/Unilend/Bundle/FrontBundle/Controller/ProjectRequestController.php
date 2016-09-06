@@ -14,6 +14,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\RouteProvider;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
+use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 use Unilend\core\Loader;
 use Unilend\librairies\Altares;
 
@@ -213,6 +214,7 @@ class ProjectRequestController extends Controller
         $this->project->ca_declara_client                    = 0;
         $this->project->resultat_exploitation_declara_client = 0;
         $this->project->fonds_propres_declara_client         = 0;
+        $this->project->status                               = \projects_status::COMPLETUDE_ETAPE_2;
         $this->project->create();
 
         return $this->start(\projects_status::COMPLETUDE_ETAPE_2);
@@ -354,9 +356,9 @@ class ProjectRequestController extends Controller
         $tree->get(['id_tree' => $settings->value]);
         $template['terms_of_sale_link'] = $this->generateUrl($tree->slug);
 
-        /** @var \project_need $projectNeeds */
-        $projectNeeds = $entityManager->getRepository('project_need');
-        $template['project_needs'] = $projectNeeds->getTree();
+        /** @var TranslationManager $translationManager */
+        $translationManager = $this->get('unilend.service.translation_manager');
+        $template['borrowing_motives']  = $translationManager->getTranslatedBorrowingMotiveList();
 
         $settings->get('Durée des prêts autorisées', 'type');
         $template['loan_periods'] = explode(',', $settings->value);
@@ -389,7 +391,7 @@ class ProjectRequestController extends Controller
                 'project' => [
                     'duration'    => isset($values['project']['duration']) ? $values['project']['duration'] : $this->project->period,
                     'description' => isset($values['project']['description']) ? $values['project']['description'] : $this->project->comments,
-                    'need'        => isset($values['project']['need']) ? $values['project']['need'] : $this->project->id_project_need
+                    'motive'      => isset($values['project']['motive']) ? $values['project']['motive'] : $this->project->id_borrowing_motive
                 ]
             ]
         ];
@@ -460,8 +462,8 @@ class ProjectRequestController extends Controller
         if (empty($request->request->get('project')['duration']) || false === in_array($request->request->get('project')['duration'], $loanPeriods)) {
             $errors['project']['duration'] = true;
         }
-        if (empty($request->request->get('project')['need'])) {
-            $errors['project']['need'] = true;
+        if (empty($request->request->get('project')['motive'])) {
+            $errors['project']['motive'] = true;
         }
         if (empty($request->request->get('project')['description'])) {
             $errors['project']['description'] = true;
@@ -588,9 +590,9 @@ class ProjectRequestController extends Controller
             }
         }
 
-        $this->project->period          = $request->request->get('project')['duration'];
-        $this->project->comments        = $request->request->get('project')['description'];
-        $this->project->id_project_need = $request->request->get('project')['need'];
+        $this->project->period              = $request->request->get('project')['duration'];
+        $this->project->comments            = $request->request->get('project')['description'];
+        $this->project->id_borrowing_motive = $request->request->get('project')['motive'];
         $this->project->update();
 
         return $this->redirectStatus(self::PAGE_ROUTE_FINANCE, \projects_status::COMPLETUDE_ETAPE_3);
