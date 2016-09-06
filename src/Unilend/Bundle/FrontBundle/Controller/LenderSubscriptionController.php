@@ -1029,6 +1029,31 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
+     * @Route("/figaro/", name="figaro_landing_page")
+     * @Method("GET")
+     * @return Response
+     */
+    public function figaroLandingPageAction()
+    {
+        return $this->render('pages/lender_subscription/figaro.html.twig', []);
+    }
+
+    /**
+     * @Route("/capital/", name="capital_landing_page")
+     * @Method("GET")
+     * @return Response
+     */
+    public function capitalLandingPageAction()
+    {
+        $xml     = new \SimpleXMLElement(file_get_contents('http://www.capital.fr/wrapper-unilend.xml'));
+        $content = explode('<!--CONTENT_ZONE-->', (string) $xml->content);
+
+        $header = str_replace(array('<!--TITLE_ZONE_HEAD-->', '<!--TITLE_ZONE-->'), array('Financement Participatif  : Prêtez aux entreprises françaises & Recevez des intérêts chaque mois', 'Financement participatif'), $content[0]);
+        $footer = str_replace('<!--XITI_ZONE-->', 'Unilend-accueil', $content[1]);
+        return $this->render('pages/lender_subscription/capital.html.twig', ['header' => $header, 'footer' => $footer]);
+    }
+
+    /**
      * @Route("devenir-preteur-lp-form", name="lender_landing_page_form_only")
      * @Method("GET")
      * @return Response

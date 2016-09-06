@@ -859,21 +859,6 @@ class rootController extends bootstrap
         die;
     }
 
-    public function _capital()
-    {
-        $this->autoFireHeader = false;
-        $this->autoFireDebug  = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-
-        $oXml    = new SimpleXMLElement(file_get_contents('http://www.capital.fr/wrapper-unilend.xml'));
-        $content = explode('<!--CONTENT_ZONE-->', (string)$oXml->content);
-
-        $this->haut = str_replace(array('<!--TITLE_ZONE_HEAD-->', '<!--TITLE_ZONE-->'), array('Financement Participatif  : Prêtez aux entreprises françaises & Recevez des intérêts chaque mois', 'Financement participatif'), $content[0]);
-        $this->bas  = str_replace('<!--XITI_ZONE-->', 'Unilend-accueil', $content[1]);
-
-    }
-
     public function _challenges()
     {
         $this->autoFireHeader = false;
@@ -942,60 +927,6 @@ class rootController extends bootstrap
     }
 
     public function _lexpress_entreprise()
-    {
-        $this->autoFireHeader = false;
-        $this->autoFireDebug  = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-
-        $this->projects                = $this->loadData('projects');
-        $this->clients                 = $this->loadData('clients');
-        $this->clients_adresses        = $this->loadData('clients_adresses');
-        $this->companies               = $this->loadData('companies');
-        $this->projects_status_history = $this->loadData('projects_status_history');
-        $this->projects                = $this->loadData('projects');
-
-        $this->lng['landing-page'] = $this->ln->selectFront('landing-page', $this->language, $this->App);
-
-        $this->settings->get('Somme à emprunter min', 'type');
-        $this->sommeMin = $this->settings->value;
-
-        $this->settings->get('Somme à emprunter max', 'type');
-        $this->sommeMax = $this->settings->value;
-
-        // Si on a une session d'ouverte on redirige
-        if (isset($_SESSION['client'])) {
-            header('Location:' . $this->lurl);
-            die;
-        }
-
-        // page projet tri
-        // 1 : terminé bientot
-        // 2 : nouveauté
-        //$this->tabOrdreProject[....] <--- dans le bootstrap pour etre accessible partout (page default et ajax)
-
-        $this->ordreProject = 1;
-        $this->type         = 0;
-
-        $aElementsProjects = $this->projects->getProjectsStatusAndCount([\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT], $this->tabOrdreProject[$this->ordreProject], 0, 6);
-
-        // Liste des projets en funding and nombre des projets en funding
-        $this->lProjetsFunding = $aElementsProjects['lProjetsFunding'];
-        $this->nbProjects      = $aElementsProjects['nbProjects'];
-
-        $this->le_id_tree = 282;
-        $this->le_slug    = $this->tree->getSlug($this->le_id_tree, $this->language);
-
-        // Recuperation du contenu de la page
-        $contenu = $this->tree_elements->select('id_tree = "' . $this->le_id_tree . '" AND id_langue = "' . $this->language . '"');
-        foreach ($contenu as $elt) {
-            $this->elements->get($elt['id_element']);
-            $this->content[$this->elements->slug]    = $elt['value'];
-            $this->complement[$this->elements->slug] = $elt['complement'];
-        }
-    }
-
-    public function _figaro()
     {
         $this->autoFireHeader = false;
         $this->autoFireDebug  = false;
