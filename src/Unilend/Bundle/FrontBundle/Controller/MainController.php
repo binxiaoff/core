@@ -674,7 +674,7 @@ class MainController extends Controller
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function lenderFaq()
+    public function lenderFaqAction()
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
@@ -691,7 +691,7 @@ class MainController extends Controller
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function borrowerFaq()
+    public function borrowerFaqAction()
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');

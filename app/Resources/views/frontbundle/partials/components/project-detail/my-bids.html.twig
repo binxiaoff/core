@@ -24,7 +24,7 @@
                         <tr class="my-offers-bid-row">
                             <td class="table-myoffers-item-id">{{ lenderBid['ordre'] }}</td>
                             <td class="table-myoffers-item-interest">{{ lenderBid['rate']|localizednumberwithprecision(1) }}&nbsp;%</td>
-                            <td class="table-myoffers-item-amount">{{ (lenderBid['amount'] / 100)|localizednumberwithprecision(0)}}&nbsp;€</td>
+                            <td class="table-myoffers-item-amount">{{ (lenderBid['amount'] / 100)|localizednumber }}&nbsp;€</td>
                             <td class="table-myoffers-item-view">
                                 <a href="javascript:;" data-original-title="{% trans %} project-detail_lender-offer-detail-link {% endtrans %}" class="ui-has-tooltip" data-related-bid-rate="{{ lenderBid['rate']|__num(1) }}" data-related-bid-id="{{ lenderBid['ordre'] }}"><span class="icon fa-eye-u32"><span class="sr-only">View your offer</span></span></a>
                             </td>
@@ -49,7 +49,7 @@
                         <tr class="my-offers-bid-row">
                             <td class="table-myoffers-item-id">{{ lenderBid['ordre'] }}</td>
                             <td class="table-myoffers-item-interest">{{ lenderBid['rate']|localizednumberwithprecision(1)  }}&nbsp;%</td>
-                            <td class="table-myoffers-item-amount">{{ (lenderBid['amount'] / 100)|localizednumberwithprecision(0)  }}&nbsp;€</td>
+                            <td class="table-myoffers-item-amount">{{ (lenderBid['amount'] / 100)|localizednumber }}&nbsp;€</td>
                             <td class="table-myoffers-item-view">
                                 <a href="javascript:;" data-original-title="{% trans %} project-detail_lender-offer-detail-link {% endtrans %}" class="ui-has-tooltip" data-related-bid-rate="{{ lenderBid['rate']|__num(1) }}" data-related-bid-id="{{ lenderBid['ordre'] }}"><span class="icon fa-eye-u32"><span class="sr-only">View your offer</span></span></a>
                             </td>

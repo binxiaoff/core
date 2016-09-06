@@ -10,7 +10,6 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
@@ -21,8 +20,8 @@ use Unilend\librairies\Altares;
 
 class ProjectRequestController extends Controller
 {
-    const PAGE_ROUTE_STEP_2   = 'project_request_contact';
-    const PAGE_ROUTE_STEP_3   = 'project_request_finance';
+    const PAGE_ROUTE_CONTACT  = 'project_request_contact';
+    const PAGE_ROUTE_FINANCE  = 'project_request_finance';
     const PAGE_ROUTE_PROSPECT = 'project_request_prospect';
     const PAGE_ROUTE_FILES    = 'project_request_files';
     const PAGE_ROUTE_PARTNER  = 'project_request_partner';
@@ -224,7 +223,7 @@ class ProjectRequestController extends Controller
 
             mail($alertEmail, '[ALERTE] ERREUR ALTARES 2', 'Date ' . date('Y-m-d H:i:s') . '' . $exception->getMessage());
 
-            return $this->redirectStatus(self::PAGE_ROUTE_STEP_2, \projects_status::COMPLETUDE_ETAPE_2);
+            return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, \projects_status::COMPLETUDE_ETAPE_2);
         }
 
         if (false === empty($result->exception)) {
@@ -235,7 +234,7 @@ class ProjectRequestController extends Controller
 
             mail($alertEmail, '[ALERTE] ERREUR ALTARES 1', 'Date ' . date('Y-m-d H:i:s') . 'SIREN : ' . $siren . ' | ' . $result->exception->code . ' | ' . $result->exception->description . ' | ' . $result->exception->erreur);
 
-            return $this->redirectStatus(self::PAGE_ROUTE_STEP_2, \projects_status::COMPLETUDE_ETAPE_2);
+            return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, \projects_status::COMPLETUDE_ETAPE_2);
         }
 
         if (14 === $sirenLength) {
@@ -267,7 +266,7 @@ class ProjectRequestController extends Controller
                     return $this->redirectStatus(self::PAGE_ROUTE_PROSPECT, \projects_status::PAS_3_BILANS);
                 }
 
-                return $this->redirectStatus(self::PAGE_ROUTE_STEP_2, \projects_status::COMPLETUDE_ETAPE_2);
+                return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, \projects_status::COMPLETUDE_ETAPE_2);
             case 'Non':
             default:
                 $this->project->update();
@@ -291,7 +290,7 @@ class ProjectRequestController extends Controller
     public function contactAction($hash, Request $request)
     {
         $template = [];
-        $response = $this->checkProjectHash(self::PAGE_ROUTE_STEP_2, $hash, $request);
+        $response = $this->checkProjectHash(self::PAGE_ROUTE_CONTACT, $hash, $request);
 
         if ($response instanceof Response) {
             return $response;
@@ -321,7 +320,7 @@ class ProjectRequestController extends Controller
 
         /** @var \project_need $projectNeeds */
         $projectNeeds = $entityManager->getRepository('project_need');
-        $template['project_needs'] = array_column($projectNeeds->select(null, 'label ASC'), 'label', 'id_project_need');
+        $template['project_needs'] = $projectNeeds->getTree();
 
         $settings->get('Durée des prêts autorisées', 'type');
         $template['loan_periods'] = explode(',', $settings->value);
@@ -360,10 +359,11 @@ class ProjectRequestController extends Controller
         ];
 
         $template['project'] = [
-            'company_name' => $this->company->name,
-            'siren'        => $this->company->siren,
-            'amount'       => $this->project->amount,
-            'hash'         => $this->project->hash
+            'company_name'           => $this->company->name,
+            'siren'                  => $this->company->siren,
+            'amount'                 => $this->project->amount,
+            'averageFundingDuration' => $this->getAverageFundingDuration(),
+            'hash'                   => $this->project->hash
         ];
 
         $request->getSession()->remove('projectRequest');
@@ -381,7 +381,7 @@ class ProjectRequestController extends Controller
      */
     public function contactFormAction($hash, Request $request)
     {
-        $response = $this->checkProjectHash(self::PAGE_ROUTE_STEP_2, $hash, $request);
+        $response = $this->checkProjectHash(self::PAGE_ROUTE_CONTACT, $hash, $request);
 
         if ($response instanceof Response) {
             return $response;
@@ -462,7 +462,7 @@ class ProjectRequestController extends Controller
                 'errors'  => $errors
             ]);
 
-            return $this->redirectToRoute(self::PAGE_ROUTE_STEP_2, ['hash' => $this->project->hash]);
+            return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $this->project->hash]);
         }
 
         /** @var \ficelle $ficelle */
@@ -557,7 +557,7 @@ class ProjectRequestController extends Controller
         $this->project->id_project_need = $request->request->get('project')['need'];
         $this->project->update();
 
-        return $this->redirectStatus(self::PAGE_ROUTE_STEP_3, \projects_status::COMPLETUDE_ETAPE_3);
+        return $this->redirectStatus(self::PAGE_ROUTE_FINANCE, \projects_status::COMPLETUDE_ETAPE_3);
     }
 
     /**
@@ -571,7 +571,7 @@ class ProjectRequestController extends Controller
     public function financeAction($hash, Request $request)
     {
         $template = [];
-        $response = $this->checkProjectHash(self::PAGE_ROUTE_STEP_3, $hash, $request);
+        $response = $this->checkProjectHash(self::PAGE_ROUTE_FINANCE, $hash, $request);
 
         if ($response instanceof Response) {
             return $response;
@@ -640,7 +640,10 @@ class ProjectRequestController extends Controller
         ];
 
         $template['project'] = [
-            'hash' => $this->project->hash
+            'amount'                   => $this->project->amount,
+            'averageFundingDuration'   => $this->getAverageFundingDuration(),
+            'monthlyPaymentBoundaries' => $this->getMonthlyPaymentBoundaries(),
+            'hash'                     => $this->project->hash
         ];
 
         $request->getSession()->remove('projectRequest');
@@ -658,7 +661,7 @@ class ProjectRequestController extends Controller
      */
     public function financeFormAction($hash, Request $request)
     {
-        $response = $this->checkProjectHash(self::PAGE_ROUTE_STEP_3, $hash, $request);
+        $response = $this->checkProjectHash(self::PAGE_ROUTE_FINANCE, $hash, $request);
 
         if ($response instanceof Response) {
             return $response;
@@ -695,7 +698,7 @@ class ProjectRequestController extends Controller
                 'errors'  => $errors
             ]);
 
-            return $this->redirectToRoute(self::PAGE_ROUTE_STEP_3, ['hash' => $this->project->hash]);
+            return $this->redirectToRoute(self::PAGE_ROUTE_FINANCE, ['hash' => $this->project->hash]);
         }
 
         if ('true' === $request->request->get('extra_files')) {
@@ -1129,7 +1132,10 @@ class ProjectRequestController extends Controller
 
         $template = [
             'project' => [
-                'hash' => $this->project->hash
+                'amount'                   => $this->project->amount,
+                'averageFundingDuration'   => $this->getAverageFundingDuration(),
+                'monthlyPaymentBoundaries' => $this->getMonthlyPaymentBoundaries(),
+                'hash'                     => $this->project->hash
             ]
         ];
 
@@ -1320,6 +1326,52 @@ class ProjectRequestController extends Controller
         return $this->render('pages/project_request/emails.html.twig');
     }
 
+    /**
+     * @return int
+     */
+    private function getAverageFundingDuration()
+    {
+        /** @var \settings $settings */
+        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
+        $settings->get('Durée moyenne financement', 'type');
+
+        $projectAverageFundingDuration = 15;
+        foreach (json_decode($settings->value) as $averageFundingDuration) {
+            if ($this->project->amount >= $averageFundingDuration->min && $this->project->amount <= $averageFundingDuration->max) {
+                $projectAverageFundingDuration = round($averageFundingDuration->heures / 24);
+            }
+        }
+
+        return $projectAverageFundingDuration;
+    }
+
+    /**
+     * @return int[]
+     */
+    private function getMonthlyPaymentBoundaries()
+    {
+        $financialCalculation = new \PHPExcel_Calculation_Financial();
+
+        /** @var \settings $settings */
+        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
+        $settings->get('Tri par taux intervalles', 'type');
+        $ratesIntervals      = explode(';', $settings->value);
+        $minimumRateInterval = explode('-', $ratesIntervals[0]);
+        $maximumRateInterval = explode('-', end($ratesIntervals));
+
+        // @todo change
+        $settings->get('TVA', 'type');
+        $vatRate = (float) $settings->value;
+
+        $settings->get('Commission remboursement', 'type');
+        $commission = ($financialCalculation->PMT($settings->value / 12, $this->project->period, - $this->project->amount) - $financialCalculation->PMT(0, $this->project->period, - $this->project->amount)) * (1 + $vatRate);
+
+        return [
+            'minimum' => round($financialCalculation->PMT($minimumRateInterval[0] / 100 / 12, $this->project->period, - $this->project->amount) + $commission),
+            'maximum' => round($financialCalculation->PMT($maximumRateInterval[1] / 100 / 12, $this->project->period, - $this->project->amount) + $commission)
+        ];
+    }
+
     private function sendSubscriptionConfirmationEmail()
     {
         /** @var EntityManager $entityManager */
@@ -1472,8 +1524,8 @@ class ProjectRequestController extends Controller
                 break;
             case \projects_status::DEMANDE_SIMULATEUR:
             case \projects_status::COMPLETUDE_ETAPE_2:
-                if ($route !== self::PAGE_ROUTE_STEP_2 && empty($request->getSession()->get('partnerProjectRequest'))) {
-                    return $this->redirectToRoute(self::PAGE_ROUTE_STEP_2, ['hash' => $hash]);
+                if ($route !== self::PAGE_ROUTE_CONTACT && empty($request->getSession()->get('partnerProjectRequest'))) {
+                    return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $hash]);
                 } elseif ($route !== self::PAGE_ROUTE_PARTNER && false === empty($request->getSession()->get('partnerProjectRequest'))) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_PARTNER, ['hash' => $hash]);
                 }
@@ -1481,8 +1533,8 @@ class ProjectRequestController extends Controller
             case \projects_status::COMPLETUDE_ETAPE_3:
                 if ($this->project->process_fast == 1 && false === in_array($route, [self::PAGE_ROUTE_END, self::PAGE_ROUTE_FILES])) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_FILES, ['hash' => $hash]);
-                } elseif ($this->project->process_fast == 0 && $route !== self::PAGE_ROUTE_STEP_3) {
-                    return $this->redirectToRoute(self::PAGE_ROUTE_STEP_3, ['hash' => $hash]);
+                } elseif ($this->project->process_fast == 0 && $route !== self::PAGE_ROUTE_FINANCE) {
+                    return $this->redirectToRoute(self::PAGE_ROUTE_FINANCE, ['hash' => $hash]);
                 }
                 break;
             case \projects_status::A_TRAITER:

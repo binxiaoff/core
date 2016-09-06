@@ -898,7 +898,7 @@ y: 46
                                     {% if item.data is iterable %}
                                         <td class="table-stats-unilend-item-label">{{ item.label|raw }}</td>
                                         {% for j, dataItem in item.data %}
-                                            <td class="table-stats-unilend-item-value">{{ dataItem|localizednumberwithprecision(0)|nbsp|raw }}</td>
+                                            <td class="table-stats-unilend-item-value">{{ dataItem|localizednumber|nbsp|raw }}</td>
                                         {% endfor %}
                                     {% else %}
                                         <td colspan="4" class="table-stats-unilend-item-label">{{ item.label|raw }}</td>
