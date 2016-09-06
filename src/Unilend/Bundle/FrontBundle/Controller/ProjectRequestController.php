@@ -1390,6 +1390,8 @@ class ProjectRequestController extends Controller
 
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var \settings $settings */
+        $settings = $entityManager->getRepository('settings');
 
         /** @var \project_period $projectPeriod */
         $projectPeriod = $entityManager->getRepository('project_period');
@@ -1397,13 +1399,12 @@ class ProjectRequestController extends Controller
 
         /** @var \project_rate_settings $projectRateSettings */
         $projectRateSettings = $entityManager->getRepository('project_rate_settings');
-        $projectRateSettings->getSettings(null, $projectPeriod->id_period);
-        var_dump($projectRateSettings);die;
+        $rateSettings = $projectRateSettings->getSettings(null, $projectPeriod->id_period);
 
-        $minimumRate = explode('-', $ratesIntervals[0]);
-        $maximumRate = explode('-', end($ratesIntervals));
+        $minimumRate = min(array_column($rateSettings, 'rate_min'));
+        $maximumRate = max(array_column($rateSettings, 'rate_max'));
 
-        // @todo change
+        // @todo change DEV-255
         $settings->get('TVA', 'type');
         $vatRate = (float) $settings->value;
 
@@ -1411,8 +1412,8 @@ class ProjectRequestController extends Controller
         $commission = ($financialCalculation->PMT($settings->value / 12, $this->project->period, - $this->project->amount) - $financialCalculation->PMT(0, $this->project->period, - $this->project->amount)) * (1 + $vatRate);
 
         return [
-            'minimum' => round($financialCalculation->PMT($minimumRate[0] / 100 / 12, $this->project->period, - $this->project->amount) + $commission),
-            'maximum' => round($financialCalculation->PMT($maximumRate[1] / 100 / 12, $this->project->period, - $this->project->amount) + $commission)
+            'minimum' => round($financialCalculation->PMT($minimumRate / 100 / 12, $this->project->period, - $this->project->amount) + $commission),
+            'maximum' => round($financialCalculation->PMT($maximumRate / 100 / 12, $this->project->period, - $this->project->amount) + $commission)
         ];
     }
 
