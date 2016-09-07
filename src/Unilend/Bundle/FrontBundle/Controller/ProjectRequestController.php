@@ -71,7 +71,7 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        return $this->redirectToRoute(RouteProvider::ROUTE_PROJECT_REQUEST_LANDING_PAGE);
+        return $this->redirectToRoute('home_borrower');
     }
 
     /**
@@ -1547,12 +1547,9 @@ class ProjectRequestController extends Controller
         $entityManager = $this->get('unilend.service.entity_manager');
 
         $this->project = $entityManager->getRepository('projects');
-        $this->project->get($hash, 'hash');
 
-        if (empty($this->project->id_project) && $route === self::PAGE_ROUTE_SIMULATOR_START) {
+        if (false === $this->project->get($hash, 'hash')) {
             return $this->redirectToRoute('home_borrower');
-        } elseif (empty($this->project->id_project) && $route !== self::PAGE_ROUTE_SIMULATOR_START) {
-            return $this->redirectToRoute(RouteProvider::ROUTE_PROJECT_REQUEST_LANDING_PAGE);
         }
 
         $this->client  = $entityManager->getRepository('clients');
