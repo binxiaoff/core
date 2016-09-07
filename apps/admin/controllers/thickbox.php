@@ -103,16 +103,17 @@ class thickboxController extends bootstrap
         switch ($this->params[1]) {
             case \projects_status::PROBLEME:
                 $this->bAskEmail         = true;
-                $this->bCustomEmail      = false;
+                $this->bCustomEmail      = true;
                 $this->bCustomSite       = true;
                 $this->bDecisionDate     = false;
                 $this->bReceiver         = false;
                 $this->bAskEmailBorrower = true;
 
                 /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
-                $translationManager      = $this->get('unilend.service.translation_manager');
-                $aProjectTexts           = $translationManager->getAllTranslationsForSection('projet');
-                $this->sInfoStatusChange = trim($aProjectTexts['info-passage-statut-probleme']);
+                $translationManager         = $this->get('unilend.service.translation_manager');
+                $aProjectTexts              = $translationManager->getAllTranslationsForSection('projet');
+                $this->sInfoStatusChange    = trim($aProjectTexts['info-passage-statut-probleme']);
+                $this->mailInfoStatusChange = trim($aProjectTexts['mail-info-passage-statut-probleme']);
 
                 break;
             case \projects_status::PROBLEME_J_X:

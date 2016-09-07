@@ -216,7 +216,7 @@
                                                 <dt id="esim-label-duration">{% trans %} project-request_simulator-panel-estimated-funding-time-label {% endtrans %}</dt>
                                                 <dd id="esim-output-duration">{% transchoice project.averageFundingDuration with {'%averageFundingDuration%' : project.averageFundingDuration} %} project-request_simulator-panel-estimated-funding-time-value {% endtranschoice %}</dd>
                                                 <dt id="esim-label-monthly">{% trans %} project-request_simulator-panel-estimated-monthly-repayment-label {% endtrans %}</dt>
-                                                <dd id="esim-output-monthly">{{ project.monthlyPaymentBoundaries.minimum|localizednumber }} / {{ project.monthlyPaymentBoundaries.maximum|localizednumber }}&nbsp;€</dd>
+                                                <dd id="esim-output-monthly">{% trans with {'%minimum%' : project.monthlyPaymentBoundaries.minimum|localizednumber, '%maximum%' : project.monthlyPaymentBoundaries.maximum|localizednumber} %} project-request_simulator-panel-estimated-monthly-repayment-value {% endtrans %}</dd>
                                             </dl>
                                         </div>
                                     </div><!-- /.emprunter-sim -->

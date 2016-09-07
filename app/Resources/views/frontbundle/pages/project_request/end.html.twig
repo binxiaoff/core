@@ -73,6 +73,8 @@
                                     <div class="panel">
                                         <h3 class="h3">{{ 'project-request_end-page-title'|trans|raw }}</h3>
 
+                                        <p>{{ message|raw }}</p>
+
                                         {% if addMoreFiles %}
                                             <p><a href="{{ path('project_request_files', {'hash' : project.hash}) }}" class="link">{% trans %} project-request_end-page-add-other-files-link {% endtrans %}</a></p>
                                         {% endif %}

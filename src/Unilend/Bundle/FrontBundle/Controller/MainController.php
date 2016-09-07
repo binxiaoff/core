@@ -236,7 +236,7 @@ class MainController extends Controller
         $session = $request->getSession();
         $session->set('esim/project_id', $project->id_project);
 
-        return $this->redirectToRoute('project_request_contact', ['hash' => $project->hash]);
+        return $this->redirectToRoute('project_request_simulator_start', ['hash' => $project->hash]);
     }
 
     /**

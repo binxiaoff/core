@@ -3,7 +3,7 @@
 
 {% set page = {
     title: 'Inscription / Connexion',
-    permalink: route('user/access')
+    permalink: path('login')
 } %}
 
 {% block siteContent %}
@@ -24,7 +24,7 @@
                                 <div class="panel panel-connect">
                                     {% if error is not empty %}
                                         <div id="form-connect-notifications">
-                                            {{ "connect-subscribe-page_login-box-error-message-#{ error.message }" | trans }}
+                                            {{ "connect-subscribe-page_login-box-error-message-#{ error.message }"|trans }}
                                         </div>
                                     {% endif %}
 
@@ -105,7 +105,7 @@
                                             <p><a href="{{ route('emprunter') }}" class="link">{% trans %} connect-subscribe-page_subscribe-box-borrower-more-link {% endtrans %}</a></p>
                                         </div><!-- /.panel-inner -->
                                         <div class="btn-controls">
-                                            <a href="{{ path('lp-depot-de-dossier') }}" class="btn-alternate">{% trans %} connect-subscribe-page_subscribe-box-borrower-button {% endtrans %}</a>
+                                            <a href="{{ path('home_borrower') }}#homeemp-section-esim" class="btn-alternate">{% trans %} connect-subscribe-page_subscribe-box-borrower-button {% endtrans %}</a>
                                         </div>
                                     </div><!-- /.panel -->
                                 </div>

@@ -326,6 +326,6 @@ class ProjectDisplayManager
     {
         /** @var \projects $projects */
         $projects  = $this->entityManager->getRepository('projects');
-        return $projects->countSelectProjectsByStatus(implode(',', self::$projectsStatus), ' AND p.display = ' . \projects::DISPLAY_PROJECT_ON);
+        return $projects->countSelectProjectsByStatus(implode(',', self::$projectsStatus), ' AND display = ' . \projects::DISPLAY_PROJECT_ON);
     }
 }

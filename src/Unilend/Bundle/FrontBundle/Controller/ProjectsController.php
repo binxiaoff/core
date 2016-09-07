@@ -31,7 +31,6 @@ class ProjectsController extends Controller
      * @return Response
      */
     public function projectsListAction($page, $sortType, $sortDirection)
-
     {
         /** @var Translator $translator */
         $translator = $this->get('translator');
@@ -89,7 +88,7 @@ class ProjectsController extends Controller
         /** @var \projects $projects */
         $projects = $this->get('unilend.service.entity_manager')->getRepository('projects');
 
-        $template['projectsInFunding'] = $projects->countSelectProjectsByStatus(\projects_status::EN_FUNDING, ' AND p.display = ' . \projects::DISPLAY_PROJECT_ON);
+        $template['projectsInFunding'] = $projects->countSelectProjectsByStatus(\projects_status::EN_FUNDING, ' AND display = ' . \projects::DISPLAY_PROJECT_ON);
         $template['pagination']        = $this->pagination($page, $limit);
         $template['showPagination']    = true;
         $template['showSortable']      = true;
@@ -244,7 +243,7 @@ class ProjectsController extends Controller
             'bids'                => isset($template['project']['bids']) && $template['project']['status'] == \projects_status::EN_FUNDING,
             'myBids'              => isset($template['project']['lender']) && $template['project']['lender']['bids']['count'] > 0,
             'finance'             => $isFullyConnectedUser,
-            'history'             => $isFullyConnectedUser && ($template['project']['status'] == \projects_status::FUNDE || $template['project']['status'] >= \projects_status::REMBOURSEMENT),
+            'history'             => isset($template['project']['lender']['loans']['myLoanOnProject']['nbValid']) && $template['project']['lender']['loans']['myLoanOnProject']['nbValid'] > 0,
             'canBid'              => $isFullyConnectedUser && $user instanceof UserLender && $user->hasAcceptedCurrentTerms(),
             'warningLending'      => true,
             'warningTaxDeduction' => $template['project']['startDate'] >= '2016-01-01'

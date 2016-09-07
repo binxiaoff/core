@@ -15,6 +15,7 @@ class RouteProvider implements RouteProviderInterface
     const ROUTE_PROJECT_REQUEST_LANDING_PAGE = 'lp-depot-de-dossier';
     const ROUTE_LENDER_FAQ                   = 'faq-preteur';
     const ROUTE_BORROWER_FAQ                 = 'faq-emprunteur';
+    const ROUTE_OUR_ETHICS                   = 'charte-de-deontologie';
 
     /** @var EntityManager */
     private $entityManager;

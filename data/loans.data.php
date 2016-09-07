@@ -372,11 +372,12 @@ class loans extends loans_crud
         }
 
         if ($projectId) {
-            $sQuery = 'SELECT period FROM projects WHERE id_project = :projectId';
+            $sQuery = 'SELECT period FROM projects WHERE id_project = :projectId Limit 1';
 
             try {
-                $result = $this->bdd->executeQuery($sQuery, array('projectId' => $projectId), array('projectId' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
-                    ->fetchColumn(0);
+                $statement = $this->bdd->executeCacheQuery($sQuery, array('projectId' => $projectId), array('projectId' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)));
+                $result = $statement->fetchAll(PDO::FETCH_COLUMN);
+                $statement->closeCursor();
 
                 if (empty($result)) {
                     return false;
@@ -384,7 +385,7 @@ class loans extends loans_crud
             } catch (\Doctrine\DBAL\DBALException $ex) {
                 return false;
             }
-            return (int)$result;
+            return (int)array_shift($result);
         }
         return false;
     }

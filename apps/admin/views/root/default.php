@@ -1,28 +1,22 @@
 <script type="text/javascript">
-	<?
-    if(isset($_SESSION['freeow']))
-    {
-    ?>
-	$(document).ready(function(){
-		var title, message, opts, container;
-		title = "<?=$_SESSION['freeow']['title']?>";
-		message = "<?=$_SESSION['freeow']['message']?>";
-		opts = {};
-		opts.classes = ['smokey'];
-		$('#freeow-tr').freeow(title, message, opts);
-	});
-	<?
-    }
-    ?>
+    <?php if (isset($_SESSION['freeow'])) : ?>
+    $(document).ready(function () {
+        var title, message, opts, container;
+        title = "<?=$_SESSION['freeow']['title']?>";
+        message = "<?=$_SESSION['freeow']['message']?>";
+        opts = {};
+        opts.classes = ['smokey'];
+        $('#freeow-tr').freeow(title, message, opts);
+        <?php unset($_SESSION['freeow']); ?>
+    });
+    <?php endif; ?>
 </script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
 	<br />
     <h1><?=count($this->lProjectsNok)?> incidents de remboursement :</h1>
     <?php
-	if(count($this->lProjectsNok) > 0)
-	{
-	?>
+	if (count($this->lProjectsNok) > 0) : ?>
     	<table class="tablesorter">
         	<thead>
                 <tr>
@@ -56,21 +50,12 @@
             ?>
             </tbody>
         </table>
-	<?
-    }
-    else
-    {
-    ?>
+	<?php else : ?>
         <p>Il n'y a aucune incidence de remboursement pour le moment.</p>
-    <?
-    }
-    ?>
+    <?php endif; ?>
     <br /><br />
     <h1>Dossiers</h1>
-    <?
-	if(count($this->lStatus) > 0)
-	{
-	?>
+    <?php if (count($this->lStatus) > 0) : ?>
     	<table class="tablesorter">
         	<thead>
                 <tr>
@@ -96,13 +81,7 @@
             ?>
             </tbody>
         </table>
-	<?
-    }
-    else
-    {
-    ?>
+	<?php else : ?>
         <p>Il n'y a aucun statut pour le moment.</p>
-    <?
-    }
-    ?>
+    <?php endif; ?>
 </div>

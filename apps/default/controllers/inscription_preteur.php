@@ -56,6 +56,12 @@ class inscription_preteurController extends bootstrap
         $this->conseil_externe = $this->ficelle->explodeStr2array($this->settings->value);
 
         $this->checkSession();
+        if (false === empty($this->clients->id_client)) {
+            $this->addDataLayer('ID_Preteur', $this->clients->id_client);
+        } elseif (false === empty($_SESSION['LP_id_unique'])) {
+            $this->addDataLayer('ID_Preteur', $_SESSION['LP_id_unique']);
+        }
+
         //variables used in the views only
         $this->modif = false;
         $this->emprunteurCreatePreteur = false;
@@ -189,6 +195,11 @@ class inscription_preteurController extends bootstrap
         $this->hash_client             = '';
 
         $this->checkSession();
+        if (false === empty($this->clients->id_client)) {
+            $this->addDataLayer('ID_Preteur', $this->clients->id_client);
+        } elseif (false === empty($_SESSION['LP_id_unique'])) {
+            $this->addDataLayer('ID_Preteur', $_SESSION['LP_id_unique']);
+        }
 
         if (isset($_SESSION['forms']['step-2']['error'])) {
                 $this->error_rib = $_SESSION['forms']['step-2']['error']['error_rib'];
@@ -298,7 +309,12 @@ class inscription_preteurController extends bootstrap
                 $this->emprunteurCreatePreteur = true;
             }
         }
-        //////////////////////////////////
+
+        if (false === empty($this->clients->id_client)) {
+            $this->addDataLayer('ID_Preteur', $this->clients->id_client);
+        } elseif (false === empty($_SESSION['LP_id_unique'])) {
+            $this->addDataLayer('ID_Preteur', $_SESSION['LP_id_unique']);
+        }
 
         if ($this->emprunteurCreatePreteur == true) {
             $conditionOk = true;

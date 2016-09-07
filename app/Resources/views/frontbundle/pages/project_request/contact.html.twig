@@ -360,23 +360,19 @@
                                             <h3 class="h3">{% trans %} project-request_step-1-project-details-title {% endtrans %}</h3>
 
                                             <div class="row">
-                                                <div class="form-field col-lg-12 col-md-12{% if form.errors.project.need is defined %} ui-formvalidation-error{% endif %}">
-                                                    <label for="form-project-create-need">
-                                                        {% trans %} project-request_project-need-label {% endtrans %}
+                                                <div class="form-field col-lg-12 col-md-12{% if form.errors.project.motive is defined %} ui-formvalidation-error{% endif %}">
+                                                    <label for="form-project-create-motive">
+                                                        {% trans %} project-request_project-motive-label {% endtrans %}
                                                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
                                                     <div class="input-group">
-                                                        <select id="form-project-create-need" name="project[need]" class="input-field" data-formvalidation-input data-formvalidation-required="true">
-                                                            <option value="">{% trans %} project-request_project-need-placeholder {% endtrans %}</option>
-                                                            {% for id_need_parent, need_parent in project_needs %}
-                                                                <optgroup label="{{ need_parent.label }}">
-                                                                    {% for id_need, need in need_parent.children %}
-                                                                        <option value="{{ id_need }}"{% if id_need == form.values.project.need %} selected{% endif %}>{{ need.label }}</option>
-                                                                    {% endfor %}
-                                                                </optgroup>
+                                                        <select id="form-project-create-motive" name="project[motive]" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                                                            <option value="">{% trans %} project-request_project-motive-placeholder {% endtrans %}</option>
+                                                            {% for id_motive, borrowing_motive in borrowing_motives %}
+                                                                <option value="{{ id_motive }}"{% if id_motive == form.values.project.motive %} selected{% endif %}>{{ borrowing_motive }}</option>
                                                             {% endfor %}
                                                         </select>
-                                                        {% if form.errors.project.need is defined %}
+                                                        {% if form.errors.project.motive is defined %}
                                                             <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required-select {% endtrans %}</li></ul>
                                                         {% endif %}
                                                     </div>

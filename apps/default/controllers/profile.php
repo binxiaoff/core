@@ -268,23 +268,6 @@ class profileController extends bootstrap
                 $this->etranger = 2;
             }
 
-            $adresse_fiscal    = $this->clients_adresses->adresse_fiscal;
-            $ville_fiscal      = $this->clients_adresses->ville_fiscal;
-            $cp_fiscal         = $this->clients_adresses->cp_fiscal;
-            $id_pays_fiscal    = $this->clients_adresses->id_pays_fiscal;
-            $adresse1          = $this->clients_adresses->adresse1;
-            $ville             = $this->clients_adresses->ville;
-            $cp                = $this->clients_adresses->cp;
-            $id_pays           = $this->clients_adresses->id_pays;
-            $civilite          = $this->clients->civilite;
-            $nom_usage         = $this->clients->nom_usage;
-            $email             = $this->clients->email;
-            $telephone         = $this->clients->telephone;
-            $id_pays_naissance = $this->clients->id_pays_naissance;
-            $ville_naissance   = $this->clients->ville_naissance;
-            $id_nationalite    = $this->clients->id_nationalite;
-            $naissance         = $this->clients->naissance;
-
             $this->form_ok = true;
             $this->reponse_email = '';
 
@@ -293,7 +276,6 @@ class profileController extends bootstrap
 
             $this->clients->email             = $_POST['email'];
             $this->clients->telephone         = str_replace(' ', '', $_POST['phone']);
-
 
             if ($this->etranger > 0) {
                 if (isset($_POST['check_etranger']) && $_POST['check_etranger'] == false) {
@@ -321,7 +303,6 @@ class profileController extends bootstrap
                 $this->form_ok = false;
             }
 
-
             if ($this->clients_adresses->meme_adresse_fiscal == 0) {
                 if (! isset($_POST['adress2']) || $_POST['adress2'] == $this->lng['etape1']['adresse']) {
                     $this->form_ok = false;
@@ -334,24 +315,16 @@ class profileController extends bootstrap
                 }
             }
             /////////////////////// PARTIE BANQUE /////////////////////////////
-            $bRibUpdated = false;
             $fichier_rib = isset($this->attachments[attachment_type::RIB]['id']) ? $this->attachments[attachment_type::RIB]['id'] : null;
 
             if (isset($_FILES['rib']) && $_FILES['rib']['name'] != '') {
-                $fichier_rib = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
-                if (is_numeric($fichier_rib)) {
-                    $bRibUpdated = true;
-                }
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
             }
-            $bic_old  = $this->lenders_accounts->bic;
-            $iban_old = $this->lenders_accounts->iban;
-
             $this->lenders_accounts->bic  = trim(strtoupper($_POST['bic']));
             $this->lenders_accounts->iban = '';
             for ($i = 1; $i <= 7; $i++) {
                 $this->lenders_accounts->iban .= trim(strtoupper($_POST['iban-' . $i]));
             }
-            $origine_des_fonds_old = $this->lenders_accounts->origine_des_fonds;
 
             $this->lenders_accounts->origine_des_fonds = $_POST['origine_des_fonds'];
             if ($_POST['preciser'] != $this->lng['etape2']['autre-preciser'] && $_POST['origine_des_fonds'] == 1000000) {
@@ -383,20 +356,28 @@ class profileController extends bootstrap
                 $this->error_rib = true;
             }
             if ($this->form_ok == true) {
-                $bDocumentFiscalUpdated              = false;
-                $bCniPasseportUpdated                = false;
-                $bCniPasseporVersotUpdated           = false;
-                $bJustificatifDomicileUpdated        = false;
-                $bAttestationHebergementTiersUpdated = false;
-                $bCniPassportTiersHebergeantIUpdated = false;
-                $bAutreUpdated                       = false;
-
-
-                if (isset($_FILES['autre1']) && $_FILES['autre1']['name'] != '') {
-                    $fichier_autre = $this->uploadAttachment($this->lenders_accounts->id_lender_account, \attachment_type::AUTRE1);
-                    if (is_numeric($fichier_autre)) {
-                        $bAutreUpdated = true;
+                if ($this->etranger == 1 || $this->etranger == 2) {
+                    if (isset($_FILES['document_fiscal']) && $_FILES['document_fiscal']['name'] != '') {
+                        $this->uploadAttachment($this->lenders_accounts->id_lender_account, \attachment_type::JUSTIFICATIF_FISCAL);
                     }
+                }
+                if (isset($_FILES['cni_passeport']) && $_FILES['cni_passeport']['name'] != '') {
+                    $this->uploadAttachment($this->lenders_accounts->id_lender_account, \attachment_type::CNI_PASSPORTE);
+                }
+                if (isset($_FILES['cni_passeport_verso']) && $_FILES['cni_passeport_verso']['name'] != '') {
+                    $this->uploadAttachment($this->lenders_accounts->id_lender_account, \attachment_type::CNI_PASSPORTE_VERSO);
+                }
+                if (isset($_FILES['justificatif_domicile']) && $_FILES['justificatif_domicile']['name'] != '') {
+                    $this->uploadAttachment($this->lenders_accounts->id_lender_account, \attachment_type::JUSTIFICATIF_DOMICILE);
+                }
+                if (isset($_FILES['attestation_hebergement_tiers']) && $_FILES['attestation_hebergement_tiers']['name'] != '') {
+                    $this->uploadAttachment($this->lenders_accounts->id_lender_account, \attachment_type::ATTESTATION_HEBERGEMENT_TIERS);
+                }
+                if (isset($_FILES['cni_passport_tiers_hebergeant']) && $_FILES['cni_passport_tiers_hebergeant']['name'] != '') {
+                    $this->uploadAttachment($this->lenders_accounts->id_lender_account, \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT);
+                }
+                if (isset($_FILES['autre1']) && $_FILES['autre1']['name'] != '') {
+                    $this->uploadAttachment($this->lenders_accounts->id_lender_account, \attachment_type::AUTRE1);
                 }
                 $this->clients->id_langue = 'fr';
                 if ($this->reponse_email != '') {
@@ -408,8 +389,6 @@ class profileController extends bootstrap
                 $this->clients_adresses->update();
                 $this->lenders_accounts->update();
                 $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
-
-
 
                 $_SESSION['reponse_profile_perso'] = $this->lng['profile']['titre-1'] . ' ' . $this->lng['profile']['sauvegardees'];
                 header('Location: ' . $this->lurl . '/profile/particulier/#info_perso');
@@ -696,12 +675,6 @@ class profileController extends bootstrap
             $this->email_temp = $this->clients->email;
             $this->form_ok = true;
 
-            $name    = $this->companies->name;
-            $forme   = $this->companies->forme;
-            $capital = $this->companies->capital;
-            $siret   = $this->companies->siret;
-            $phone   = $this->companies->phone;
-
             $this->companies->name    = $_POST['raison_sociale_inscription'];
             $this->companies->forme   = $_POST['forme_juridique_inscription'];
             $this->companies->capital = str_replace(' ', '', $_POST['capital_social_inscription']);
@@ -714,14 +687,6 @@ class profileController extends bootstrap
                 $this->companies->status_adresse_correspondance = '0';
             }
 
-            $adresse_fiscal            = $this->companies->adresse1;
-            $ville_fiscal              = $this->companies->city;
-            $cp_fiscal                 = $this->companies->zip;
-            $pays_fiscal               = $this->companies->id_pays;
-            $adresse1                  = $this->clients_adresses->adresse1;
-            $ville                     = $this->clients_adresses->ville;
-            $cp                        = $this->clients_adresses->cp;
-            $id_pays                   = $this->clients_adresses->id_pays;
             $this->companies->adresse1 = $_POST['adresse_inscriptionE'];
             $this->companies->city     = $_POST['ville_inscriptionE'];
             $this->companies->zip      = $_POST['postalE'];
@@ -741,27 +706,11 @@ class profileController extends bootstrap
 
             $this->companies->status_client = $_POST['enterprise'];
 
-            $civilite  = $this->clients->civilite;
-            $nom       = $this->clients->nom;
-            $prenom    = $this->clients->prenom;
-            $fonction  = $this->clients->fonction;
-            $telephone = $this->clients->telephone;
-
             $this->clients->civilite  = $_POST['genre1'];
             $this->clients->nom       = $this->ficelle->majNom($_POST['nom_inscription']);
             $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom_inscription']);
             $this->clients->fonction  = $_POST['fonction_inscription'];
             $this->clients->telephone = str_replace(' ', '', $_POST['phone_new_inscription']);
-
-            $civilite_dirigeant = $this->companies->civilite_dirigeant;
-            $nom_dirigeant      = $this->companies->nom_dirigeant;
-            $prenom_dirigeant   = $this->companies->prenom_dirigeant;
-            $fonction_dirigeant = $this->companies->fonction_dirigeant;
-            $email_dirigeant    = $this->companies->email_dirigeant;
-            $phone_dirigeant    = $this->companies->phone_dirigeant;
-
-            $status_conseil_externe_entreprise   = $this->companies->status_conseil_externe_entreprise;
-            $preciser_conseil_externe_entreprise = $this->companies->preciser_conseil_externe_entreprise;
 
             if ($this->companies->status_client == \companies::CLIENT_STATUS_DELEGATION_OF_POWER || $this->companies->status_client == \companies::CLIENT_STATUS_EXTERNAL_CONSULTANT) {
                 $this->companies->civilite_dirigeant = $_POST['genre2'];
@@ -888,59 +837,28 @@ class profileController extends bootstrap
             }
 
             $this->error_fichier       = false;
-            $bCniDirigeantUpdated      = false;
-            $bKbisUpdated              = false;
-            $bRibUdated                = false;
-            $bCniPasseportVersoUpdated = false;
-            $bDelegationPouvoirUpdated = false;
 
-            $fichier_cni_dirigeant = isset($this->attachments[attachment_type::CNI_PASSPORTE_DIRIGEANT]['id']) ? $this->attachments[attachment_type::CNI_PASSPORTE_DIRIGEANT]['id'] : null;
             if (isset($_FILES['cni_passeport_dirigeant']) && $_FILES['cni_passeport_dirigeant']['name'] != '') {
-                $fichier_cni_dirigeant = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_DIRIGEANT);
-                if (is_numeric($fichier_cni_dirigeant)) {
-                    $bCniDirigeantUpdated = true;
-                }
+                 $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_DIRIGEANT);
             }
-            $fichier_kbis = isset($this->attachments[attachment_type::KBIS]['id']) ? $this->attachments[attachment_type::KBIS]['id'] : null;
             if (isset($_FILES['extrait_kbis']) && $_FILES['extrait_kbis']['name'] != '') {
-                $fichier_kbis = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::KBIS);
-                if (is_numeric($fichier_kbis)) {
-                    $bKbisUpdated = true;
-                }
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::KBIS);
             }
-            $fichier_rib = isset($this->attachments[attachment_type::RIB]['id']) ? $this->attachments[attachment_type::RIB]['id'] : null;
             if (isset($_FILES['rib']) && $_FILES['rib']['name'] != '') {
-                $fichier_rib = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
-                if (is_numeric($fichier_rib)) {
-                    $bRibUdated = true;
-                }
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
             }
-            $fichier_cni_passeport_verso = isset($this->attachments[attachment_type::CNI_PASSPORTE_VERSO]['id']) ? $this->attachments[attachment_type::CNI_PASSPORTE_VERSO]['id'] : null;
             if (isset($_FILES['cni_passeport_verso']) && $_FILES['cni_passeport_verso']['name'] != '') {
-                $fichier_cni_passeport_verso = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO);
-                if (is_numeric($fichier_cni_passeport_verso)) {
-                    $bCniPasseportVersoUpdated = true;
-                }
-
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO);
             }
-            $fichier_delegation_pouvoir = isset($this->attachments[attachment_type::DELEGATION_POUVOIR]['id']) ? $this->attachments[attachment_type::DELEGATION_POUVOIR]['id'] : null;
             if (isset($_FILES['delegation_pouvoir']) && $_FILES['delegation_pouvoir']['name'] != '') {
-                $fichier_delegation_pouvoir = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DELEGATION_POUVOIR);
-                if (is_numeric($fichier_delegation_pouvoir)) {
-                    $bDelegationPouvoirUpdated = true;
-                }
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DELEGATION_POUVOIR);
             }
-
-            $bic_old  = $this->lenders_accounts->bic;
-            $iban_old = $this->lenders_accounts->iban;
 
             $this->lenders_accounts->bic  = trim(strtoupper($_POST['bic']));
             $this->lenders_accounts->iban = '';
             for ($i = 1; $i <= 7; $i++) {
                 $this->lenders_accounts->iban .= trim(strtoupper($_POST['iban-' . $i]));
             }
-
-            $origine_des_fonds_old = $this->lenders_accounts->origine_des_fonds;
 
             $this->lenders_accounts->origine_des_fonds = $_POST['origine_des_fonds'];
             if ($_POST['preciser'] != $this->lng['etape2']['autre-preciser'] && $_POST['origine_des_fonds'] == 1000000) {
@@ -975,166 +893,6 @@ class profileController extends bootstrap
                 $this->lenders_accounts->update();
                 $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
 
-                $dateDepartControlPays = strtotime('2014-07-31 18:00:00');
-                if (
-                    $adresse_fiscal != $this->companies->adresse1 ||
-                    $ville_fiscal != $this->companies->city ||
-                    $cp_fiscal != $this->companies->zip ||
-                    $pays_fiscal != $this->companies->id_pays && strtotime($this->clients->added) >= $dateDepartControlPays ||
-                    $name != $this->companies->name ||
-                    $forme != $this->companies->forme ||
-                    $capital != $this->companies->capital ||
-                    $siret != $this->companies->siret ||
-                    $nom != $this->clients->nom ||
-                    $prenom != $this->clients->prenom ||
-                    $nom_dirigeant != $this->companies->nom_dirigeant ||
-                    $prenom_dirigeant != $this->companies->prenom_dirigeant ||
-                    $status_conseil_externe_entreprise != $this->companies->status_conseil_externe_entreprise ||
-                    $preciser_conseil_externe_entreprise != $this->companies->preciser_conseil_externe_entreprise ||
-                    $origine_des_fonds_old != $this->lenders_accounts->origine_des_fonds ||
-                    $bic_old != $this->lenders_accounts->bic ||
-                    $iban_old != $this->lenders_accounts->iban ||
-                    $bCniDirigeantUpdated == true ||
-                    $bKbisUpdated == true ||
-                    $bRibUdated == true ||
-                    $bCniPasseportVersoUpdated == true ||
-                    $bDelegationPouvoirUpdated == true
-                ) {
-                    $contenu = '<ul>';
-                    if ($name != $this->companies->name) {
-                        $contenu .= '<li>Raison sociale</li>';
-                    }
-                    if ($forme != $this->companies->forme) {
-                        $contenu .= '<li>Forme juridique</li>';
-                    }
-                    if ($capital != $this->companies->capital) {
-                        $contenu .= '<li>Capital social</li>';
-                    }
-                    if ($siret != $this->companies->siret) {
-                        $contenu .= '<li>SIRET</li>';
-                    }
-                    if ($phone != $this->companies->phone) {
-                        $contenu .= '<li>Téléphone entreprise</li>';
-                    }
-                    if ($adresse_fiscal != $this->companies->adresse1) {
-                        $contenu .= '<li>Adresse fiscale</li>';
-                    }
-                    if ($ville_fiscal != $this->companies->city) {
-                        $contenu .= '<li>Ville fiscale</li>';
-                    }
-                    if ($cp_fiscal != $this->companies->zip) {
-                        $contenu .= '<li>CP fiscal</li>';
-                    }
-                    if ($pays_fiscal != $this->companies->id_pays && strtotime($this->clients->added) >= $dateDepartControlPays) {
-                        $contenu .= '<li>Pays fiscal</li>';
-                    }
-                    if ($adresse1 != $this->clients_adresses->adresse1) {
-                        $contenu .= '<li>Adresse</li>';
-                    }
-                    if ($ville != $this->clients_adresses->ville) {
-                        $contenu .= '<li>Ville</li>';
-                    }
-                    if ($cp != $this->clients_adresses->cp) {
-                        $contenu .= '<li>CP</li>';
-                    }
-                    if ($id_pays != $this->clients_adresses->id_pays && strtotime($this->clients->added) >= $dateDepartControlPays) {
-                        $contenu .= '<li>Pays</li>';
-                    }
-                    if ($civilite != $this->clients->civilite) {
-                        $contenu .= '<li>Civilite</li>';
-                    }
-                    if ($nom != $this->clients->nom) {
-                        $contenu .= '<li>Nom</li>';
-                    }
-                    if ($prenom != $this->clients->prenom) {
-                        $contenu .= '<li>Prenom</li>';
-                    }
-                    if ($fonction != $this->clients->fonction) {
-                        $contenu .= '<li>Fonction</li>';
-                    }
-                    if ($telephone != $this->clients->telephone) {
-                        $contenu .= '<li>Telephone</li>';
-                    }
-                    if ($civilite_dirigeant != $this->companies->civilite_dirigeant) {
-                        $contenu .= '<li>Civilité dirigeant</li>';
-                    }
-                    if ($nom_dirigeant != $this->companies->nom_dirigeant) {
-                        $contenu .= '<li>Nom dirigeant</li>';
-                    }
-                    if ($prenom_dirigeant != $this->companies->prenom_dirigeant) {
-                        $contenu .= '<li>Prenom dirigeant</li>';
-                    }
-                    if ($fonction_dirigeant != $this->companies->fonction_dirigeant) {
-                        $contenu .= '<li>Fonction dirigeant</li>';
-                    }
-                    if ($email_dirigeant != $this->companies->email_dirigeant) {
-                        $contenu .= '<li>Email dirigeant</li>';
-                    }
-                    if ($phone_dirigeant != $this->companies->phone_dirigeant) {
-                        $contenu .= '<li>Telephone dirigeant</li>';
-                    }
-                    if ($status_conseil_externe_entreprise != $this->companies->status_conseil_externe_entreprise) {
-                        $contenu .= '<li>Conseil externe</li>';
-                    }
-                    if ($preciser_conseil_externe_entreprise != $this->companies->preciser_conseil_externe_entreprise) {
-                        $contenu .= '<li>Precision conseil externe</li>';
-                    }
-                    if ($origine_des_fonds_old != $this->lenders_accounts->origine_des_fonds) {
-                        $contenu .= '<li>Origine des fonds</li>';
-                    }
-                    if ($bic_old != $this->lenders_accounts->bic) {
-                        $contenu .= '<li>BIC</li>';
-                    }
-                    if ($iban_old != $this->lenders_accounts->iban) {
-                        $contenu .= '<li>IBAN</li>';
-                    }
-                    if ($bCniDirigeantUpdated == true) {
-                        $contenu .= '<li>Fichier cni passeport dirigent</li>';
-                    }
-                    if ($bKbisUpdated == true) {
-                        $contenu .= '<li>Fichier extrait kbis</li>';
-                    }
-                    if ($bRibUdated == true) {
-                        $contenu .= '<li>Fichier RIB</li>';
-                    }
-                    if ($bCniPasseportVersoUpdated == true) {
-                        $contenu .= '<li>Fichier cni passeport verso</li>';
-                    }
-                    if ($bDelegationPouvoirUpdated == true) {
-                        $contenu .= '<li>Fichier delegation de pouvoir</li>';
-                    }
-                    $contenu .= '</ul>';
-
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $oClientManager */
-                    $oClientManager = $this->get('unilend.service.client_manager');
-                    $oClientManager->changeClientStatusTriggeredByClientAction($this->clients->id_client, $contenu);
-
-                    /** @var \settings $oSettings */
-                    $oSettings = $this->loadData('settings');
-                    $oSettings->get('Adresse notification modification preteur', 'type');
-                    $destinataire = $oSettings->value;
-
-                    $varsMail = array(
-                        '$surl'         => $this->surl,
-                        '$url'          => $this->lurl,
-                        '$id_preteur'   => $this->clients->id_client,
-                        '$nom'          => $this->clients->nom,
-                        '$prenom'       => $this->clients->prenom,
-                        '$montant'      => $this->solde . ' euros',
-                        '$date'         => date('d') . ' ' . $this->dates->tableauMois[$this->language][date('n')] . ' ' . date('Y'),
-                        '$heure_minute' => date('H:i'),
-                        '$email'        => $this->clients->email,
-                        '$lien'         => $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account
-                    );
-
-                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-modification-preteurs', $varsMail, false);
-                    $message->setTo($destinataire);
-                    $mailer = $this->get('mailer');
-                    $mailer->send($message);
-
-                    $this->sendAccountModificationEmail($this->clients);
-                }
                 if ($this->reponse_email != '') {
                     $_SESSION['reponse_email'] = $this->reponse_email;
                 }

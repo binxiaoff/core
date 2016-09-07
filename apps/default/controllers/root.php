@@ -108,7 +108,7 @@ class rootController extends bootstrap
             // Recuperation du contenu de la page
             $oCachePool = $this->get('memcache.default');
 
-            $oCachedItem  = $oCachePool->getItem('Home_Tree_Childs_Elements_' . $this->tree->id_tree . '_' . $this->language);
+            $oCachedItem = $oCachePool->getItem('Home_Tree_Childs_Elements_' . $this->tree->id_tree . '_' . $this->language);
             if (false === $oCachedItem->isHit()) {
                 $this->content          = array();
                 $this->complement       = array();
@@ -139,10 +139,10 @@ class rootController extends bootstrap
                 );
 
                 $oCachedItem->set($aElements)
-                            ->expiresAfter(3600);
+                    ->expiresAfter(3600);
                 $oCachePool->save($oCachedItem);
             } else {
-                $aElements    = $oCachedItem->get();
+                $aElements = $oCachedItem->get();
             }
 
             $this->content          = $aElements['content'];
@@ -159,7 +159,7 @@ class rootController extends bootstrap
             }
 
             // Recuperation des positions des blocs
-            $oCachedItem  = $oCachePool->getItem('Home_Blocs_Elements_' . $this->tree->id_tree . '_' . $this->language);
+            $oCachedItem = $oCachePool->getItem('Home_Blocs_Elements_' . $this->tree->id_tree . '_' . $this->language);
 
             if (false === $oCachedItem->isHit()) {
                 $this->bloc_content    = array();
@@ -183,10 +183,10 @@ class rootController extends bootstrap
                 );
 
                 $oCachedItem->set($aElements)
-                            ->expiresAfter(3600);
+                    ->expiresAfter(3600);
                 $oCachePool->save($oCachedItem);
             } else {
-                $aElements    = $oCachedItem->get();
+                $aElements = $oCachedItem->get();
             }
 
             $this->bloc_content    = $aElements['bloc_content'];
@@ -210,61 +210,6 @@ class rootController extends bootstrap
                     $this->setHeader('header_account');
                 }
             }
-
-            //////////////////////////////
-            // DEBUT TEMPLATE LESXPRESS //
-            //////////////////////////////
-            // landing page restriction pour pas aller sur d'autres pages
-            if ($this->lurl == 'http://lexpress.unilend.fr') {
-                if ($this->tree->id_template != 18 && $this->tree->id_template != 20 && $this->tree->id_template != 21) {
-                    header('Location: ' . $this->surl);
-                    die;
-                }
-            }
-
-            // landing page restriction pour pas aller sur d'autres pages
-            if ($this->lurl == 'http://pret-entreprise.votreargent.lexpress.fr') {
-                if ($this->tree->id_template != 18 && $this->tree->id_template != 20 && $this->tree->id_template != 21) {
-                    header('Location: ' . $this->surl);
-                    die;
-                }
-            }
-
-            // landing page restriction pour pas aller sur d'autres pages
-            if ($this->lurl == 'http://emprunt-entreprise.lentreprise.lexpress.fr') {
-                if ($this->tree->id_template != 18 && $this->tree->id_template != 20 && $this->tree->id_template != 21) {
-                    header('Location: ' . $this->surl);
-                    die;
-                }
-            }
-
-            if ($this->tree->id_template == 15) {
-                $_SESSION['lexpress']['id_template'] = $this->tree->id_template;
-                $_SESSION['lexpress']['header']      = $this->content['header'];
-                $_SESSION['lexpress']['footer']      = $this->content['footer'];
-
-                header('Location:' . $this->lurl);
-                die;
-            }
-            ////////////////////////////
-            // FIN TEMPLATE LESXPRESS //
-            ////////////////////////////
-
-            //////////////////////////////
-            // DEBUT TEMPLATE LESXPRESS Votre argent //
-            //////////////////////////////
-            if ($this->tree->id_template == 19) {
-                $_SESSION['lexpress']['id_template'] = $this->tree->id_template;
-                $_SESSION['lexpress']['header']      = $this->content['header-277'];
-                $_SESSION['lexpress']['footer']      = $this->content['footer-278'];
-
-                header('Location:' . $this->lurl);
-                die;
-
-            }
-            ////////////////////////////
-            // FIN TEMPLATE LESXPRESS Votre argent //
-            ////////////////////////////
 
             $this->ordreProject = 1;
 
@@ -309,38 +254,20 @@ class rootController extends bootstrap
                 // on signal que c'est une page du fo
                 $this->page              = 'projets_fo';
                 $_SESSION['page_projet'] = $this->page;
-
-                // restriction pour capital
-                if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr'
-                    || $this->lurl == 'http://partenaire.unilend.challenges.fr'
-                    || $this->lurl == 'http://financementparticipatifpme.lefigaro.fr'
-                    || $this->lurl == 'http://financementparticipatifpme.lefigaro.fr'
-                ) {
-                    $this->autoFireHeader = true;
-                    $this->autoFireDebug  = false;
-                    $this->autoFireHead   = true;
-                    $this->autoFireFooter = false;
-                }
             }
 
             if ($paramSlug === 'validation-virement') {
                 $this->page = 'alimentation';
             }
 
-            // restriction pour capital
             if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr' && $this->tree->id_template != 14) {
                 header('Location: http://prets-entreprises-unilend.capital.fr/capital/');
-                die;
-            } elseif ($this->lurl == 'http://partenaire.unilend.challenges.fr' && $this->tree->id_template != 14) {
-                header('Location: http://partenaire.unilend.challenges.fr/challenges/');
-                die;
-            } elseif ($this->lurl == 'http://financementparticipatifpme.lefigaro.fr' && $this->tree->id_template != 14) {
-                header('Location: http://financementparticipatifpme.lefigaro.fr/figaro/');
                 die;
             } elseif ($this->lurl == 'http://financementparticipatifpme.lefigaro.fr' && $this->tree->id_template != 14) {
                 header('Location: http://financementparticipatifpme.lefigaro.fr/figaro/');
                 die;
             }
+
             //////////////////////////
             // FIN TEMPLATE PROJETS //
             //////////////////////////
@@ -507,84 +434,6 @@ class rootController extends bootstrap
             // FIN TEMPLATE LANDING PAGE DEPOT DE DOSSIER //
             ////////////////////////////////////////////////
 
-            ////////////////////////////////////////////
-            // TEMPLATE LANDING PAGE DEPOT DE DOSSIER l'express //
-            ////////////////////////////////////////////
-
-            // On bloque l'affichage du header/head/footer sur la landing-page
-            // Récup de l'id de page
-
-            $this->settings = $this->loadData('settings');
-            $this->settings->get('id_template_landing_page_depot_de_dossier_lexpress', 'type');
-            $this->id_template_landing_page = $this->settings->value;
-
-            if ($this->tree->id_template == $this->id_template_landing_page) {
-                $this->autoFireHeader = false;
-                $this->autoFireDebug  = false;
-                $this->autoFireHead   = false;
-                $this->autoFireFooter = false;
-
-                $content = file_get_contents('http://lentreprise.lexpress.fr/partenariat/touchvibes/arche.html');
-                $content = str_replace('<!-- partner_code_end -->', '', $content);
-                $content = explode('<!-- partner_code_start -->', $content);
-
-                $this->haut = $content[0];
-                $this->bas  = $content[1];
-
-            }
-            ////////////////////////////////////////////////
-            // FIN TEMPLATE LANDING PAGE DEPOT DE DOSSIER //
-            ////////////////////////////////////////////////
-
-            ////////////////////////////////////////////
-            // TEMPLATE Landing-page-inscription-preteurs-lexpress //
-            ////////////////////////////////////////////
-
-            // On bloque l'affichage du header/head/footer sur la landing-page
-            // Récup de l'id de page
-
-            $this->id_template_landing_page = 20; // Landing-page-inscription-preteurs-lexpress
-
-            if ($this->tree->id_template == $this->id_template_landing_page) {
-                $this->autoFireHeader = false;
-                $this->autoFireDebug  = false;
-                $this->autoFireHead   = false;
-                $this->autoFireFooter = false;
-
-                $content = file_get_contents('http://votreargent.lexpress.fr/partenaires/unilend/arche.html');
-                $content = str_replace('<!-- partner_code_end -->', '', $content);
-                $content = explode('<!-- partner_code_start -->', $content);
-
-                $this->haut = $content[0];
-                $this->bas  = $content[1];
-                $content    = explode('</main>', $this->bas);
-                $this->bas  = $content[1];
-
-            }
-
-            $this->id_template_landing_page = 21; // Landing-page-inscription-preteurs-bienenue-lexpress
-
-            if ($this->tree->id_template == $this->id_template_landing_page) {
-                $this->autoFireHeader = false;
-                $this->autoFireDebug  = false;
-                $this->autoFireHead   = false;
-                $this->autoFireFooter = false;
-
-                $content = file_get_contents('http://votreargent.lexpress.fr/partenaires/unilend/arche.html');
-                $content = str_replace('<!-- partner_code_end -->', '', $content);
-                $content = explode('<!-- partner_code_start -->', $content);
-
-                $this->haut = $content[0];
-                $this->bas  = $content[1];
-                $content    = explode('</main>', $this->bas);
-                $this->bas  = $content[1];
-
-            }
-            ////////////////////////////////////////////////
-            // FIN TEMPLATE LANDING PAGE DEPOT DE DOSSIER //
-            ////////////////////////////////////////////////
-
-            // Chargemement du tempalte
             if ($this->templates->slug == '' || $this->tree->id_template == 7) {
                 //header("HTTP/1.0 404 Not Found");
                 header($_SERVER["SERVER_PROTOCOL"] . " 404 Not Found");
@@ -933,24 +782,8 @@ class rootController extends bootstrap
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
 
-        $this->projects                = $this->loadData('projects');
-        $this->clients                 = $this->loadData('clients');
-        $this->clients_adresses        = $this->loadData('clients_adresses');
-        $this->companies               = $this->loadData('companies');
-        $this->projects_status_history = $this->loadData('projects_status_history');
-        $this->projects                = $this->loadData('projects');
-
-        $this->lng['landing-page'] = $this->ln->selectFront('landing-page', $this->language, $this->App);
-
-        $this->settings->get('Somme à emprunter min', 'type');
-        $this->sommeMin = $this->settings->value;
-
-        $this->settings->get('Somme à emprunter max', 'type');
-        $this->sommeMax = $this->settings->value;
-
-        // Si on a une session d'ouverte on redirige
         if (isset($_SESSION['client'])) {
-            header('Location:' . $this->lurl);
+            header('Location: ' . $this->furl);
             die;
         }
 

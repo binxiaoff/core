@@ -245,8 +245,9 @@ class bids extends bids_crud
             ORDER BY b.rate DESC';
 
         try {
-            $result = $this->bdd->executeQuery($sQuery, array('funded' => \projects_status::FUNDE, 'fundingKo' => \projects_status::FUNDING_KO), array('funded' => \PDO::PARAM_INT, 'fundingKo' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
-                ->fetchAll(PDO::FETCH_ASSOC);
+            $statement = $this->bdd->executeQuery($sQuery, array('funded' => \projects_status::FUNDE, 'fundingKo' => \projects_status::FUNDING_KO), array('funded' => \PDO::PARAM_INT, 'fundingKo' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)));
+            $result    = $statement->fetchAll(PDO::FETCH_ASSOC);
+            $statement->closeCursor();
         } catch (\Doctrine\DBAL\DBALException $ex) {
             return false;
         }
@@ -424,4 +425,31 @@ class bids extends bids_crud
         return $this->bdd->executeQuery($sql, $bind, $type)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+
+    /**
+     * @param \lenders_accounts $lender
+     * @param DateTime|null $dateTimeStart
+     * @param DateTime|null $dateTimeEnd
+     * @return array
+     */
+    public function getBidsByLenderAndDates(\lenders_accounts $lender, $dateTimeStart = null, $dateTimeEnd = null)
+    {
+        $sql = '
+            SELECT  b.id_project, b.id_bid, la.id_client_owner, b.added, (CASE b.STATUS WHEN 0 THEN "En cours" WHEN 1 THEN "OK" WHEN 2 THEN "KO" END) AS status, ROUND((b.amount / 100), 0) AS amount, REPLACE (b.rate, ".", ",") AS rate
+            FROM bids b
+            INNER JOIN lenders_accounts la ON la.id_lender_account = b.id_lender_account
+            WHERE b.id_lender_account = :idLenderAccount';
+
+        if ($dateTimeStart && $dateTimeEnd) {
+            $sql .= ' AND (b.added BETWEEN :dateStart AND :dateEnd)';
+        }
+
+        $paramValues = array('idLenderAccount' => $lender->id_lender_account, 'dateStart' => $dateTimeStart, 'dateEnd' => $dateTimeEnd);
+        $paramTypes  = array('idLenderAccount' => \PDO::PARAM_INT, 'dateStart' => 'datetime', 'dateEnd' => 'datetime');
+
+        $statement = $this->bdd->executeQuery($sql, $paramValues, $paramTypes);
+        $result    = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+        return $result;
+    }
 }

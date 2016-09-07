@@ -84,9 +84,9 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                         $rembNet = $e['rembNet'];
                         $etat    = $e['etat'];
 
-                        $Total_rembNet += $rembNet;
-                        $Total_etat += $etat;
-                        $nb_pret_remb = ($nb_pret_remb + 1);
+                        $Total_rembNet = bcadd($rembNet, $Total_rembNet, 2);
+                        $Total_etat    = bcadd($etat, $Total_etat, 2);
+                        $nb_pret_remb  = ($nb_pret_remb + 1);
 
                         $lenders->get($e['id_lender'], 'id_lender_account');
 

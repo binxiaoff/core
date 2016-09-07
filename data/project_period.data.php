@@ -83,11 +83,16 @@ class project_period extends project_period_crud
 
     public function getDurations($periodId)
     {
+        $aDuration = [];
+
         $sQuery = 'SELECT min, max FROM project_period WHERE id_period = :periodId';
         try {
-            $aDuration = $this->bdd->executeQuery($sQuery, array('periodId' => $periodId), array('periodId' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
-                ->fetch(PDO::FETCH_ASSOC);
-
+            $statement = $this->bdd->executeQuery($sQuery, array('periodId' => $periodId), array('periodId' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)));
+            $aDurations = $statement->fetchall(PDO::FETCH_ASSOC);
+            $statement->closeCursor();
+            if (false === empty($aDurations)) {
+                $aDuration = array_shift($aDurations);
+            }
         } catch (\Doctrine\DBAL\DBALException $exception) {
             $aDuration = array();
         }
