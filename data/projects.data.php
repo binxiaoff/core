@@ -451,7 +451,7 @@ class projects extends projects_crud
     public function getProjectsStatusAndCount(array $sListStatus, array $tabOrderProject, $iStart, $iLimit)
     {
         $aProjects   = $this->selectProjectsByStatus($sListStatus, ' AND p.display = 0', $tabOrderProject, $iStart, $iLimit);
-        $anbProjects = $this->countSelectProjectsByStatus(implode(',', $sListStatus) . ',' . \projects_status::PRET_REFUSE, ' AND p.display = 0', true);
+        $anbProjects = $this->countSelectProjectsByStatus(implode(',', $sListStatus) . ',' . \projects_status::PRET_REFUSE, ' AND display = 0', true);
         $aElements   = array(
             'lProjectsFunding' => $aProjects,
             'nbProjects'       => $anbProjects

@@ -131,23 +131,23 @@
                                     {% if project.lender.bids is defined and project.lender.bids.count > 0 %}
                                         {% if project.lender.bids.accepted is not empty %}
                                             <div class="project-single-useroffers-accepted">
-                                                {{ project.lender.bids.accepted|length|__num(0)|nbsp }} {% transchoice project.lender.bids.accepted|length %} project-detail_accepted-bids-label {% endtranschoice %}
+                                                {{ project.lender.bids.accepted|length|localizednumber }} {% transchoice project.lender.bids.accepted|length %} project-detail_accepted-bids-label {% endtranschoice %}
                                             </div>
                                         {% endif %}
                                         {% if project.lender.bids.inprogress is not empty %}
                                             <div class="project-single-useroffers-inprogress">
-                                                {{ project.lender.bids.inprogress|length|__num(0)|nbsp }} {% transchoice project.lender.bids.inprogress|length %} project-detail_pending-bids-label {% endtranschoice %}
+                                                {{ project.lender.bids.inprogress|length|localizednumber }} {% transchoice project.lender.bids.inprogress|length %} project-detail_pending-bids-label {% endtranschoice %}
                                             </div>
                                         {% endif %}
                                         {% if project.lender.bids.rejected is not empty %}
                                             <div class="project-single-useroffers-rejected">
-                                            {{ project.lender.bids.rejected|length|__num(0)|nbsp }} {% transchoice project.lender.bids.rejected|length %} project-detail_rejected-bids-label {% endtranschoice %}
+                                            {{ project.lender.bids.rejected|length|localizednumber }} {% transchoice project.lender.bids.rejected|length %} project-detail_rejected-bids-label {% endtranschoice %}
                                             </div>
                                         {% endif %}
                                     {% endif %}
 
                                     <div class="project-single-offers-total">
-                                        {% trans with {'%totalLenders%' : '<strong>' ~ project.totalLenders|__num(0)|nbsp ~ '</strong>'} %} project-detail_offres-total-label {% endtrans %}
+                                        {% trans with {'%totalLenders%' : '<strong>' ~ project.totalLenders|localizednumber ~ '</strong>'} %} project-detail_offres-total-label {% endtrans %}
                                     </div>
                                 </div><!-- /.project-single-offers -->
 
@@ -198,7 +198,7 @@
                     </div><!-- /.project-single-menu-title -->
                     <div class="project-single-menu-col project-single-menu-period">
                         <span class="icon fa-clock-u32"></span>
-                        <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|escape('html_attr') }}">&hellip;</span>
+                        <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|escape('html_attr') }}"></span>
                     </div><!-- /.project-single-menu-period -->
                     <div class="project-single-menu-col project-single-menu-top">
                         <a href="#top" class="btn-nav-top"><span class="sr-only">Back to top</span></a>
@@ -283,11 +283,11 @@
                             <div id="history" data-watchscroll-nav>
                                 <section id="project-section-info" class="page-section">
                                     <h3 class="h3">{% trans %} project-detail_project-history-title {% endtrans %}</h3>
-                                    <p>{% trans with {'%amountUserLoan%' : project.lender.loans.myLoanOnProject.solde|__num(0)} %} project-detail_project-presentation-repayment-info {% endtrans %}</p>
+                                    <p>{% trans with {'%amountUserLoan%' : project.lender.loans.myLoanOnProject.solde|localizednumber} %} project-detail_project-presentation-repayment-info {% endtrans %}</p>
                                     <p>
                                         {% trans with {
-                                            '%amountAlreadyPaidBack%' : project.lender.loans.amountAlreadyPaidBack|__num(2),
-                                            '%remainingToBeRepaid%' : project.lender.loans.remainingToBeRepaid|__num(2),
+                                            '%amountAlreadyPaidBack%' : project.lender.loans.amountAlreadyPaidBack|localizednumber,
+                                            '%remainingToBeRepaid%' : project.lender.loans.remainingToBeRepaid|localizednumber,
                                             '%remainingMonths%' : project.lender.loans.remainingMonths
                                         } %} project-detail_project-presentation-repayment-info-detail {% endtrans %}
                                     </p>
@@ -302,7 +302,7 @@
                                                     {% if history.site_content is not empty %}
                                                         {{ history.content|nl2br }}
                                                         {% if history.failure == 1 %}
-                                                            {% trans with {'%percentageRecovered%' : project.lender.loans.percentageRecovered|__num(1) } %} project-detail_project-presentation-repayment-info-recovery {% endtrans %}
+                                                            {% trans with {'%percentageRecovered%' : project.lender.loans.percentageRecovered|localizednumberwithprecision(1) } %} project-detail_project-presentation-repayment-info-recovery {% endtrans %}
                                                         {% endif %}
                                                     {% endif %}
                                                 </p>

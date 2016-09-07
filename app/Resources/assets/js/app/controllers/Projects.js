@@ -21,7 +21,7 @@ $doc.on('ready', function () {
   }
 
   // Clicking on a project list item should take a user to the single project details page
-  $doc.on(Utility.clickEvent, '.project-list-item', function (event) {
+  $doc.on('click', '.project-list-item', function (event) {
     var $target = $(event.target)
     var href = $target.closest('.project-list-item').find('.project-list-item-title a').first().attr('href')
 
@@ -257,7 +257,7 @@ $doc.on('ready', function () {
     window.watchWindow.watch(window, offsetProjectSingleInfo)
     offsetProjectSingleInfo()
   }
-  
+
   $doc.on('UI:updateWindow', function () {
     // Update the position of the project-single-menu top offset
     if (!$html.is('.ui-project-single-menu-fixed') && typeof projectSingleNavOffsetTop !== 'undefined') {
