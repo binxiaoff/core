@@ -145,8 +145,8 @@ class projects extends projects_crud
         $sSqlCount = '
             SELECT COUNT(*)
             FROM projects p
-            LEFT JOIN companies co ON (p.id_company = co.id_company)
-            WHERE ' . implode(' AND ', $where);
+            LEFT JOIN companies co ON (p.id_company = co.id_company)';
+        $sSqlCount .= 0 < count($where) ? ' WHERE ' . implode(' AND ', $where) : '';
 
         $rResult        = $this->bdd->query($sSqlCount);
         $iCountProjects = (int) $this->bdd->result($rResult, 0, 0);
@@ -159,9 +159,9 @@ class projects extends projects_crud
                 ps.label
             FROM projects p
             LEFT JOIN companies co ON (p.id_company = co.id_company)
-            LEFT JOIN projects_status ps on ps.status = p.status
-            WHERE ' . implode(' AND ', $where) . '
-            ORDER BY p.added DESC
+            LEFT JOIN projects_status ps on ps.status = p.status';
+        $sql .= 0 < count($where) ? ' WHERE ' . implode(' AND ', $where) : '';
+        $sql .= ' ORDER BY p.added DESC
             ' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);

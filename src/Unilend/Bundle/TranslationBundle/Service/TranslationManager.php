@@ -182,7 +182,9 @@ class TranslationManager
         $aTranslatedMotives  = array();
 
         foreach ($aBorrowingMotives as $aMotive) {
-            $aTranslatedMotives[$aMotive['id_motive']] = $aMotiveTranslations['motive-' . $aMotive['id_motive']];
+            if (false === empty($aMotiveTranslations['motive-' . $aMotive['id_motive']])) {
+                $aTranslatedMotives[$aMotive['id_motive']] = $aMotiveTranslations['motive-' . $aMotive['id_motive']];
+            }
         }
 
         return $aTranslatedMotives;
