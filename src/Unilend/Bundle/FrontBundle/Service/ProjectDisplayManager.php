@@ -148,6 +148,13 @@ class ProjectDisplayManager
         $projectData   = $this->getBaseData((array) $project);
         $alreadyFunded = $bids->getSoldeBid($project->id_project);
 
+        /** @var \project_rate_settings $projectRateSettings */
+        $projectRateSettings = $this->entityManager->getRepository('project_rate_settings');
+        $projectRateSettings->get($this->projectManager->getProjectRateRange($project));
+
+        $projectData['minRate'] = $projectRateSettings->rate_min;
+        $projectData['maxRate'] = $projectRateSettings->rate_max;
+
         if ($alreadyFunded >= $project->amount) {
             $projectData['costFunded']    = $project->amount;
             $projectData['costRemaining'] = 0;
@@ -157,7 +164,7 @@ class ProjectDisplayManager
             $projectData['costFunded']    = $alreadyFunded;
             $projectData['costRemaining'] = $project->amount - $alreadyFunded;
             $projectData['percentFunded'] = $alreadyFunded / $project->amount * 100;
-            $projectData['maxValidRate']  = \bids::BID_RATE_MAX;
+            $projectData['maxValidRate']  = $projectRateSettings->rate_max;
         }
 
         $now        = new \DateTime('NOW');
@@ -180,10 +187,12 @@ class ProjectDisplayManager
         }
 
         if (\projects_status::EN_FUNDING == $projectData['status']) {
-            $rateSummary = [];
-            $bidsSummary = $this->projectManager->getBidsSummary($project);
+            $rateSummary     = [];
+            $bidsSummary     = $this->projectManager->getBidsSummary($project);
+            $bidsCount       = array_sum(array_column($bidsSummary, 'bidsCount'));
+            $bidsTotalAmount = array_sum(array_column($bidsSummary, 'totalAmount'));
 
-            foreach (range(\bids::BID_RATE_MAX, \bids::BID_RATE_MIN, 0.1) as $rate) {
+            foreach (range($projectRateSettings->rate_max, $projectRateSettings->rate_min, 0.1) as $rate) {
                 $rate = (string) $rate; // Fix an issue with float array keys
                 $rateSummary[$rate] = [
                     'rate'              => $rate,
@@ -197,7 +206,7 @@ class ProjectDisplayManager
 
             $projectData['bids'] = [
                 'summary'         => $rateSummary,
-                'averageAmount'   => round(array_sum(array_column($bidsSummary, 'totalAmount')) / array_sum(array_column($bidsSummary, 'bidsCount')), 2),
+                'averageAmount'   => $bidsCount > 0 ? round($bidsTotalAmount / $bidsCount, 2) : 0,
                 'activeBidsCount' => array_sum(array_column($bidsSummary, 'activeBidsCount'))
             ];
         } else {

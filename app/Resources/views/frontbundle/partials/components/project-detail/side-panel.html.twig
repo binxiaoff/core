@@ -75,7 +75,7 @@
                         </p>
                     {% endif %}
 
-                    {% if project.maxValidRate > constant('\\bids::BID_RATE_MIN') %}
+                    {% if project.maxValidRate > project.minRate %}
                         <form action="{{ path('place_bid', {'projectId' : project.projectId}) }}" method="post" class="project-single-form project-single-form-invest" data-bid-confirmation>
                             <div class="form-field">
                                 <label>
@@ -89,7 +89,7 @@
                                     <span class="sr-only">{% trans %} project-detail_side-bar-bids-rate-label {% endtrans %}</span>
                                     <select data-popup-rate name="invest[interest]" class="input-field">
                                         <option value="">{% trans %} project-detail_side-bar-bids-rate-placeholder {% endtrans %}</option>
-                                        {% for rate in range(project.maxValidRate - 0.1, constant('\\bids::BID_RATE_MIN'), 0.1) %}
+                                        {% for rate in range(project.maxValidRate - 0.1, project.minRate, 0.1) %}
                                             <option value="{{ rate }}">{{ rate|localizednumberwithprecision(1) }} %</option>
                                         {% endfor %}
                                     </select>
@@ -102,7 +102,7 @@
                             <div class="field-help">
                                 <p>
                                     {% trans with {
-                                        '%rateMin%' : constant('\\bids::BID_RATE_MIN')|localizednumber,
+                                        '%rateMin%' : project.minRate|localizednumber,
                                         '%rateMax%' : (project.maxValidRate - 0.1)|localizednumber
                                     }|raw %} project-detail_side-bar-bids-help-text {% endtrans %}
                                 </p>

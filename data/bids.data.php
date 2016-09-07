@@ -35,9 +35,6 @@ class bids extends bids_crud
 
     const CACHE_KEY_PROJECT_BIDS = 'bids-projet';
 
-    const BID_RATE_MIN = 4.0;
-    const BID_RATE_MAX = 10.0;
-
     public function __construct($bdd, $params = '')
     {
         parent::bids($bdd, $params);

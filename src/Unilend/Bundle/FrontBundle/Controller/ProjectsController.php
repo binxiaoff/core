@@ -339,10 +339,6 @@ class ProjectsController extends Controller
             /** @var \bids $bids */
             $bids = $entityManager->getRepository('bids');
 
-            /** @var \projects_status $projectStatus */
-            $projectStatus = $entityManager->getRepository('projects_status');
-            $projectStatus->getLastStatut($project->id_project);
-
             $now        = new \DateTime('NOW');
             $projectEnd = new \DateTime($project->date_retrait_full);
 
@@ -351,7 +347,16 @@ class ProjectsController extends Controller
                 return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
 
+            /** @var \project_rate_settings $projectRateSettings */
+            $projectRateSettings = $entityManager->getRepository('project_rate_settings');
+            $projectRateSettings->get($this->get('unilend.service.project_manager')->getProjectRateRange($project));
+
+            $projectData['minRate'] = $projectRateSettings->rate_min;
+            $projectData['maxRate'] = $projectRateSettings->rate_max;
+
             $maxCurrentRate = $bids->getProjectMaxRate($project);
+            $maxRate        = $projectRateSettings->rate_max;
+            $minRate        = $projectRateSettings->rate_min;
             $totalBids      = $bids->getSoldeBid($project->id_project);
             $bidAmount      = $post['amount'];
             $rate           = $post['interest'];
@@ -366,12 +371,12 @@ class ProjectsController extends Controller
                 return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
 
-            if (empty($rate) || $rate < \bids::BID_RATE_MIN || $rate > \bids::BID_RATE_MAX || $totalBids >= $project->amount && $rate >= $maxCurrentRate) {
+            if (empty($rate) || $rate < $minRate || $rate > $maxRate || $totalBids >= $project->amount && $rate >= $maxCurrentRate) {
                 $request->getSession()->set('bidResult', ['error' => true, 'message' => $translations['side-bar-bids-invalid-rate']]);
                 return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
 
-            if ($projectStatus->status != \projects_status::EN_FUNDING) {
+            if ($project->status != \projects_status::EN_FUNDING) {
                 $request->getSession()->set('bidResult', ['error' => true, 'message' => $translations['side-bar-bids-invalid-project-status']]);
                 return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
@@ -721,15 +726,11 @@ class ProjectsController extends Controller
         $project = $entityManager->getRepository('projects');
 
         if ($project->get($projectId, 'id_project')) {
-            /** @var \projects_status $projectsStatus */
-            $projectsStatus = $entityManager->getRepository('projects_status');
-            $projectsStatus->getLastStatut($project->id_project);
-
             /** @var TranslationManager $translationManager */
             $translationManager = $this->get('unilend.service.translation_manager');
             $translations = $translationManager->getAllTranslationsForSection('preteur-projets'); //TODO replace by new translations once they are done
 
-            if ($projectsStatus->status == \projects_status::EN_FUNDING) {
+            if ($project->status == \projects_status::EN_FUNDING) {
                 ob_start();
                 echo "\xEF\xBB\xBF";
                 echo '"N°";"' . $translations['taux-dinteret'] . '";"' . $translations['montant'] . '";"' . $translations['statuts'] . '"' . PHP_EOL;
