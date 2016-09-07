@@ -26,7 +26,7 @@
                                         <th class="table-income-item-name">&nbsp;</th>
                                         {% for financeData in finance %}
                                             <th class="table-income-item-year">
-                                                {{ financeData.closingDate | date('d/m/Y') }}<br>
+                                                {{ financeData.closingDate|date('d/m/Y') }}<br>
                                                 {% transchoice financeData.monthDuration with {'%monthDuration%' : financeData.monthDuration} %} project-detail_balance-sheet-duration {% endtranschoice %}
                                             </th>
                                         {% endfor %}
@@ -35,12 +35,12 @@
                                 <tbody>
                                     {% for column in financeColumns.balanceSheet %}
                                         <tr class="table-item">
-                                            <td class="table-income-item-name">{{ "project-detail_finance-column-#{ column }" | trans }}</td>
+                                            <td class="table-income-item-name">{{ "project-detail_finance-column-#{ column }"|trans }}</td>
                                             {% for balanceSheet in finance %}
                                                 <td class="table-income-item-year">
-                                                    <span class="amount">{{ balanceSheet.balanceSheet[column][0] | __num(0) | nbsp | raw }}&nbsp;€</span>
+                                                    <span class="amount">{{ balanceSheet.balanceSheet[column][0]|localizednumber }}&nbsp;€</span>
                                                     {% if balanceSheet.balanceSheet[column][1] is defined %}
-                                                        <span class="diff">{{ balanceSheet.balanceSheet[column][1] | __num(1) }}&nbsp;%</span>
+                                                        <span class="diff">{{ balanceSheet.balanceSheet[column][1]|localizednumberwithprecision(1) }}&nbsp;%</span>
                                                     {% endif %}
                                                 </td>
                                             {% endfor %}
@@ -64,13 +64,13 @@
                                     }
                                 },
                                 "title": {"text": ""},
-                                "xAxis": {"categories": [{% for financeData in finance %}"{{ financeData.closingDate | date('d/m/Y') }}"{% if not loop.last %},{% endif %}{% endfor %}]},
+                                "xAxis": {"categories": [{% for financeData in finance|reverse %}"{{ financeData.closingDate|date('d/m/Y') }}"{% if not loop.last %},{% endif %}{% endfor %}]},
                                 "yAxis": {"title": {"text": "Montant (en €)"}, "units": "€"},
                                 "series": [
                                     {% for column in financeColumns.balanceSheet %}
                                         {
-                                            "name": "{{ "project-detail_finance-column-#{ column }" | trans | raw }}",
-                                            "data": [{% for balanceSheet in finance %}{{ balanceSheet.balanceSheet[column][0] }}{% if not loop.last %},{% endif %}{% endfor %}]
+                                            "name": "{{ "project-detail_finance-column-#{ column }"|trans|raw }}",
+                                            "data": [{% for balanceSheet in finance|reverse %}{{ balanceSheet.balanceSheet[column][0] }}{% if not loop.last %},{% endif %}{% endfor %}]
                                         }{% if not loop.last %},{% endif %}
                                     {% endfor %}
                                 ]
@@ -79,7 +79,7 @@
                     {% endspaceless %}{% endset %}
 
                     <div id="income-graph" role="tabpanel" class="tab-pane">
-                        <div class="chart" data-chartview='{{ incomeChart | raw | escape('html_attr') }}'></div>
+                        <div class="chart" data-chartview='{{ incomeChart|raw|escape('html_attr') }}'></div>
                     </div>
                 </div><!-- /.section-tabs-content -->
             </div><!-- /tabs -->
@@ -118,7 +118,7 @@
                                         <th class="table-income-item-name">&nbsp;</th>
                                         {% for financeData in finance %}
                                             <th class="table-income-item-year">
-                                                {{ financeData.closingDate | date('d/m/Y') }}<br>
+                                                {{ financeData.closingDate|date('d/m/Y') }}<br>
                                                 {% transchoice financeData.monthDuration with {'%monthDuration%' : financeData.monthDuration} %} project-detail_balance-sheet-duration {% endtranschoice %}
                                             </th>
                                         {% endfor %}
@@ -132,24 +132,24 @@
                                     {% for column in financeColumns.assets %}
                                         {% if column == 'total' %}
                                             <tr class="table-item-total">
-                                                <td class="table-income-item-name">{{ "project-detail_finance-assets-total" | trans }}</td>
+                                                <td class="table-income-item-name">{{ "project-detail_finance-assets-total"|trans }}</td>
                                                 {% for balanceSheet in finance %}
                                                     <td class="table-income-item-year">
-                                                        <span class="amount">{{ balanceSheet.assets[column][0] | __num(0) | nbsp | raw }}&nbsp;€</span>
+                                                        <span class="amount">{{ balanceSheet.assets[column][0]|localizednumber }}&nbsp;€</span>
                                                         {% if balanceSheet.assets[column][1] is defined %}
-                                                            <span class="diff">{{ balanceSheet.assets[column][1] | __num(1) }}&nbsp;%</span>
+                                                            <span class="diff">{{ balanceSheet.assets[column][1]|localizednumberwithprecision(1) }}&nbsp;%</span>
                                                         {% endif %}
                                                     </td>
                                                 {% endfor %}
                                             </tr><!-- /.table-item -->
                                         {% else %}
                                             <tr class="table-item">
-                                                <td class="table-income-item-name">{{ "project-detail_finance-column-#{ column }" | trans }}</td>
+                                                <td class="table-income-item-name">{{ "project-detail_finance-column-#{ column }"|trans }}</td>
                                                 {% for balanceSheet in finance %}
                                                     <td class="table-income-item-year">
-                                                        <span class="amount">{{ balanceSheet.assets[column][0] | __num(0) | nbsp | raw }}&nbsp;€</span>
+                                                        <span class="amount">{{ balanceSheet.assets[column][0]|localizednumber }}&nbsp;€</span>
                                                         {% if balanceSheet.assets[column][1] is defined %}
-                                                            <span class="diff">{{ balanceSheet.assets[column][1] | __num(1) }}&nbsp;%</span>
+                                                            <span class="diff">{{ balanceSheet.assets[column][1]|localizednumberwithprecision(1) }}&nbsp;%</span>
                                                         {% endif %}
                                                     </td>
                                                 {% endfor %}
@@ -164,24 +164,24 @@
                                     {% for column in financeColumns.debts %}
                                         {% if column == 'total' %}
                                             <tr class="table-item-total">
-                                                <td class="table-income-item-name">{{ "project-detail_finance-debts-total" | trans }}</td>
+                                                <td class="table-income-item-name">{{ "project-detail_finance-debts-total"|trans }}</td>
                                                 {% for balanceSheet in finance %}
                                                     <td class="table-income-item-year">
-                                                        <span class="amount">{{ balanceSheet.debts[column][0] | __num(0) | nbsp | raw }}&nbsp;€</span>
+                                                        <span class="amount">{{ balanceSheet.debts[column][0]|localizednumber }}&nbsp;€</span>
                                                         {% if balanceSheet.debts[column][1] is defined %}
-                                                            <span class="diff">{{ balanceSheet.debts[column][1] | __num(1) }}&nbsp;%</span>
+                                                            <span class="diff">{{ balanceSheet.debts[column][1]|localizednumberwithprecision(1) }}&nbsp;%</span>
                                                         {% endif %}
                                                     </td>
                                                 {% endfor %}
                                             </tr><!-- /.table-item -->
                                         {% else %}
                                             <tr class="table-item">
-                                                <td class="table-income-item-name">{{ "project-detail_finance-column-#{ column }" | trans }}</td>
+                                                <td class="table-income-item-name">{{ "project-detail_finance-column-#{ column }"|trans }}</td>
                                                 {% for balanceSheet in finance %}
                                                     <td class="table-income-item-year">
-                                                        <span class="amount">{{ balanceSheet.debts[column][0] | __num(0) | nbsp | raw }}&nbsp;€</span>
+                                                        <span class="amount">{{ balanceSheet.debts[column][0]|localizednumber }}&nbsp;€</span>
                                                         {% if balanceSheet.debts[column][1] is defined %}
-                                                            <span class="diff">{{ balanceSheet.debts[column][1] | __num(1) }}&nbsp;%</span>
+                                                            <span class="diff">{{ balanceSheet.debts[column][1]|localizednumberwithprecision(1) }}&nbsp;%</span>
                                                         {% endif %}
                                                     </td>
                                                 {% endfor %}
@@ -228,14 +228,14 @@
                                             }
                                         },
                                         "title": {"text": ""},
-                                        "xAxis": {"categories": [{% for financeData in finance %}"{{ financeData.closingDate | date('d/m/Y') }}"{% if not loop.last %},{% endif %}{% endfor %}]},
+                                        "xAxis": {"categories": [{% for financeData in finance|reverse %}"{{ financeData.closingDate|date('d/m/Y') }}"{% if not loop.last %},{% endif %}{% endfor %}]},
                                         "yAxis": {"title": {"text": "Montant (en €)"}, "units": "€"},
                                         "legend": {"symbolRadius": 10},
                                         "series": [
                                             {% for column in financeColumns.assets %}
                                                 {
-                                                    "name": "{% if column == 'total' %}{{ 'project-detail_finance-assets-total' | trans | raw }}{% else %}{{ "project-detail_finance-column-#{ column }" | trans | raw }}{% endif %}",
-                                                    "data": [{% for balanceSheet in finance %}{{ balanceSheet.assets[column][0] }}{% if not loop.last %},{% endif %}{% endfor %}]
+                                                    "name": "{% if column == 'total' %}{{ 'project-detail_finance-assets-total'|trans|raw }}{% else %}{{ "project-detail_finance-column-#{ column }"|trans|raw }}{% endif %}",
+                                                    "data": [{% for balanceSheet in finance|reverse %}{{ balanceSheet.assets[column][0] }}{% if not loop.last %},{% endif %}{% endfor %}]
                                                 }{% if not loop.last %},{% endif %}
                                             {% endfor %}
                                         ]
@@ -261,13 +261,13 @@
                                             }
                                         },
                                         "title": {"text": ""},
-                                        "xAxis": {"categories": [{% for financeData in finance %}"{{ financeData.closingDate | date('d/m/Y') }}"{% if not loop.last %},{% endif %}{% endfor %}]},
+                                        "xAxis": {"categories": [{% for financeData in finance %}"{{ financeData.closingDate|date('d/m/Y') }}"{% if not loop.last %},{% endif %}{% endfor %}]},
                                         "yAxis": {"title": {"text": "Montant (en €)"}, "units": "€"},
                                         "legend": {"symbolRadius": 10},
                                         "series": [
                                             {% for column in financeColumns.debts %}
                                                 {
-                                                    "name": "{% if column == 'total' %}{{ 'project-detail_finance-debts-total' | trans | raw }}{% else %}{{ "project-detail_finance-column-#{ column }" | trans | raw }}{% endif %}",
+                                                    "name": "{% if column == 'total' %}{{ 'project-detail_finance-debts-total'|trans|raw }}{% else %}{{ "project-detail_finance-column-#{ column }"|trans|raw }}{% endif %}",
                                                     "data": [{% for balanceSheet in finance %}{{ balanceSheet.debts[column][0] }}{% if not loop.last %},{% endif %}{% endfor %}]
                                                 }{% if not loop.last %},{% endif %}
                                             {% endfor %}
@@ -278,10 +278,10 @@
 
                             <div class="tab-content">
                                 <div id="balance-graph-active" role="tabpanel" class="tab-pane active">
-                                    <div class="chart" data-chartview='{{ projectOwnerBalanceAssets | raw | escape('html_attr') }}'></div>
+                                    <div class="chart" data-chartview='{{ projectOwnerBalanceAssets|raw|escape('html_attr') }}'></div>
                                 </div><!-- /.tab-pane -->
                                 <div id="balance-graph-passive" role="tabpanel" class="tab-pane">
-                                    <div class="chart" data-chartview='{{ projectOwnerBalanceDebts | raw | escape('html_attr') }}'></div>
+                                    <div class="chart" data-chartview='{{ projectOwnerBalanceDebts|raw|escape('html_attr') }}'></div>
                                 </div><!-- /.tab-pane -->
                             </div>
                         </div><!-- /.nested-tabs -->
