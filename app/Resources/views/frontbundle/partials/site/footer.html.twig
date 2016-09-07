@@ -42,7 +42,7 @@
                         <a href="{{ route('legal') }}">{% trans %} footer_small-mandatory-menu-legal-notice {% endtrans %}</a> |
                         <a href="{{ route('cgu') }}">{% trans %} footer_small-mandatory-menu-terms {% endtrans %}</a> |
                         <a href="{{ route('securite') }}">{% trans %} footer_small-mandatory-menu-security {% endtrans %}</a> |
-                        <a href="{{ route('sitemap') }}">{% trans %} footer_small-mandatory-menu-sitemap {% endtrans %}</a>
+                        <a href="{{ path('sitemap') }}">{% trans %} footer_small-mandatory-menu-sitemap {% endtrans %}</a>
                     </div>
                     <p class="site-copyright">{% trans %} footer_copyright-all-rights {% endtrans %}</p>
                 {% endblock %}
@@ -63,7 +63,7 @@
                 <h1>{% trans %} site-general_warning-no-javascript-title {% endtrans %}</h1>
                 <p>{% trans %} site-general_warning-no-javascript-text {% endtrans %}</p>
                 <div class="btn-toolbar">
-                    <a href="{{ route('/') }}" class="btn-default">{% trans %} site-general_reload-website {% endtrans %}</a>
+                    <a href="{{ path('home') }}" class="btn-default">{% trans %} site-general_reload-website {% endtrans %}</a>
                 </div>
             </div>
         </div>
@@ -76,7 +76,7 @@
             <h1>{% trans %} site-general_warning-unsupported-browser-title {% endtrans %}</h1>
             <p>{% trans %} site-general_warning-unsupported-browser-text {% endtrans %}</p>
             <div class="btn-toolbar">
-                <a href="{{ route('/') }}" class="btn-default">{% trans %} site-general_warning-unsupported-browser-confirmation {% endtrans %}</a>
+                <a href="{{ path('home') }}" class="btn-default">{% trans %} site-general_warning-unsupported-browser-confirmation {% endtrans %}</a>
                 <a href="http://www.browsehappy.com/" target="_blank" class="btn-default">{% trans %} site-general_warning-unsupported-browser-new-browser {% endtrans %}</a>
             </div>
         </div>
