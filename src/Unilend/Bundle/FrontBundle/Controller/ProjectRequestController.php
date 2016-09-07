@@ -801,6 +801,13 @@ class ProjectRequestController extends Controller
             $this->project->update();
         }
 
+        $productManager = $this->get('unilend.service.product_manager');
+        $products = $productManager->findEligibleProducts($this->project);
+        if (count($products) === 1 && isset($products[0]) && $products[0] instanceof \product) {
+            $this->project->id_product = $products[0]->id_product;
+            $this->project->update();
+        }
+
         if ($values['dl'] < 0) {
             return $this->redirectStatus(self::PAGE_ROUTE_PROSPECT, \projects_status::NOTE_EXTERNE_FAIBLE, 'Fonds propres négatifs');
         }

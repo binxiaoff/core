@@ -129,5 +129,14 @@
             <argument>%desk_user%</argument>
             <argument>%desk_password%</argument>
         </service>
+
+        <service id="unilend.service.product_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProductManager">
+            <argument type="service" id="unilend.service.entity_manager" />
+            <argument type="service" id="unilend.service.product_validator" />
+        </service>
+
+        <service id="unilend.service.product_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\ProductValidator">
+            <argument type="service" id="unilend.service.entity_manager" />
+        </service>
     </services>
 </container>
