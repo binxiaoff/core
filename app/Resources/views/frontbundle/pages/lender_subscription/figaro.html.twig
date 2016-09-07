@@ -1,89 +1,203 @@
-{# Projects Index #}
-{% extends 'layouts/_layout.html.twig' %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" lang="fr">
+<head>
+    <!-- !!! NE PAS OUBLIER DE MODIFIER TITLE - DESCRIPTION - KEYWORDS -->
+    <title>Financement Participatif  : Prêtez aux entreprises françaises & Recevez des intérêts chaque mois</title>
+    <link rel="shortcut icon" type="image/x-icon" href="http://www.lefigaro.fr/icones/favicon.ico" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="title" content="Financement Participatif  : Prêtez aux entreprises françaises & Recevez des intérêts chaque mois" />
+    <meta name="description" content="" />
+    <meta name="keywords" content="" />
 
-{% block siteHeader %}
-{% endblock %}
+    <link rel="stylesheet" href="http://www.lefigaro.fr/css/styles.css" type="text/css" />
+    <script src="http://www.lefigaro.fr/components/ffw_base.js.php?version=2&id=165" type="text/javascript"></script>
+    <script type="text/javascript" src="http://www.lefigaro.fr/__templates/header-footer/components/header.js"></script>
 
-{% block siteContent %}
-    <article id="devenir-preteur" class="page page-lp">
-        <div class="hero-wrap">
-            <div class="page-content">
+    <link rel="stylesheet" href="{{ asset('js/vendor/videojs/video-js.min.css', 'gulp') }}" />
+    <link rel="stylesheet" href="{{ asset('js/vendor/swiper/css/swiper.min.css', 'gulp') }}" />
+    <link rel="stylesheet" href="{{ asset('js/vendor/fancybox/css/jquery.fancybox.css', 'gulp') }}" />
+    <link rel="stylesheet" href="{{ asset('js/vendor/jquery-ui/themes/base/minified/jquery-ui.min.css', 'gulp') }}" />
+    <link rel="stylesheet" href="{{ asset('fonts/style.css', 'gulp') }}" />
+    <link rel="stylesheet" href="{{ asset('css/main.css', 'gulp') }}" />
+
+</head>
+<body>
+<!-- Header NoScript --><noscript><div id="headerNoJS"><h1><a href="http://www.lefigaro.fr/">LeFigaro.fr</a></h1><ul><li><a href="http://www.lefigaro.fr/">Actualite</a></li><li><a href="http://www.lefigaro.fr/economie/">Economie</a></li><li><a href="http://www.lefigaro.fr/culture/">Culture</a></li><li><a href="http://madame.lefigaro.fr/">Madame</a></li><li><a href="http://www.lefigaro.fr/sport/">Sport</a></li><li><a href="http://www.lefigaro.fr/services/">Services</a></li></ul></div></noscript><!-- /Header NoScript -->
+
+<!-- HEADER - AJOUT KLE --><script type="text/javascript">ffw_displayHeader();</script><!-- /HEADER -->
+
+<!-- Header -->
+<div class="size1200" width="100%">
+
+    <div id="Content">
+        <!-- Contenu de la page du Partenaire -->
+        <!-- ################## -->
+        {% block siteHeader %}
+            {% embed 'partials/site/header.html.twig' %}
+                {% block siteHeaderMobileMenuOpen %} {% endblock %}
+                {% block siteHeaderNav %} {% endblock %}
+                {% block siteHeaderControls %}
+                    <div class="site-header-message hide-xs hide-sm small c-t2">{% trans %} lender-landing-page_site-header-title {% endtrans %}</div>
+                {% endblock %}
+            {% endembed %}
+        {% endblock %}
+
+        <article id="devenir-preteur" class="page page-lp" style="padding: 0px;">
+            <div class="hero-wrap">
+                <div class="page-content">
+                    <div class="site-wrap">
+                        <div class="row row-multi-col-computer">
+                            <div class="col-lg-6 col-md-6">
+                                <h2 class="h3">{% trans %} lender-landing-page_text-section-title {% endtrans %}</h2>
+
+                                <div class="block-copy-lp">
+                                    <p>{% trans %} lender-landing-page_text-section-text {% endtrans %}</p>
+
+                                    <p class="small">{% trans %} lender-landing-page_stats-section-IRR-text {% endtrans %}
+                                        <span class="c-p1">{{ getStatistic('unilendIRR')|localizednumber }}%</span><br/>
+                                        {% trans %} lender-landing-page_stats-section-amount-borrowed {% endtrans %}
+                                        <span class="c-p1">{{ getStatistic('amountBorrowedInMillions')|localizednumber }}M€</span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="push-lg-1 col-lg-5 push-md-1 col-md-5">
+                                {% include 'pages/lender_subscription/partials/landing_page_form.html.twig' %}
+                            </div>
+                        </div>
+
+                        <div class="promos row">
+                            <div class="promo col-lg-4 col-md-4">
+                                <div class="promo-image">
+                                    {{ svgimage('#promo-clock', '', 190, 190, 'none')|raw }}
+                                </div>
+                                <h3 class="round-number">1</h3>
+
+                                <p>{% trans %} lender-landing-page_promo-section-step-1-text {% endtrans %}</p>
+                            </div><!-- /.promo -->
+
+                            <div class="promo col-lg-4 col-md-4">
+                                <div class="promo-image">
+                                    {{ svgimage('#promo-pagestack', '', 190, 190, 'none')|raw }}
+                                </div>
+                                <h3 class="round-number">2</h3>
+
+                                <p>{% trans %} lender-landing-page_promo-section-step-2-text {% endtrans %}</p>
+                            </div><!-- /.promo -->
+
+                            <div class="promo col-lg-4 col-md-4">
+                                <div class="promo-image">
+                                    {{ svgimage('#promo-money', '', 190, 190, 'none')|raw }}
+                                </div>
+                                <h3 class="round-number">3</h3>
+
+                                <p>{% trans %} lender-landing-page_promo-section-step-3-text {% endtrans %}</p>
+                            </div><!-- /.promo -->
+                        </div><!-- /.promos -->
+
+                    </div><!-- /.site-wrap -->
+                </div><!-- /.page-content -->
+
+                {# include 'partials/components/list-socialmedia.twig' #}
+            </div><!-- /.hero-wrap -->
+
+            <div class="site-wrap block-copy-lp-footer">
+                <div class="row row-multi-col-computer">
+                    <div class="col-info col-lg-8 col-md-8">
+                        <div class="readable-wrap">
+                            <p>{% trans %} lender-landing-page_footer-warning {% endtrans %}</p>
+                        </div>
+                    </div>
+                    <div class="col-conditions col-lg-4 col-md-4">
+                        <p>*
+                            <a href="#dialog-conditions-content" class="fancybox-html">{% trans %} lender-landing-page_welcome-offer-conditions-title {% endtrans %}</a>
+                        </p>
+                    </div>
+                </div>
+            </div><!-- /.block-copy-lp-footer -->
+
+            {# Hidden text until made visible through the fancybox #}
+            <div class="hide-accessible">
+
+                <div id="dialog-conditions-content" class="dialog-content readable-wrap text-align-center">
+                    <h3>{% trans %} lender-landing-page_welcome-offer-conditions-title {% endtrans %} </h3>
+                    {% trans %} lender-landing-page_welcome-offer-conditions-text {% endtrans %}
+                </div><!-- /#dialog-conditions-content -->
+
+            </div><!-- /.hide-accessible -->
+
+        </article><!-- /.page -->
+        {% block siteFooter %}
+            <footer class="site-footer">
                 <div class="site-wrap">
-                    <div class="row row-multi-col-computer">
-                        <div class="col-lg-6 col-md-6">
-                            <h2 class="h3">{% trans %} lender-landing-page_text-section-title {% endtrans %}</h2>
-                            <div class="block-copy-lp">
-                                <p>{% trans %} lender-landing-page_text-section-text {% endtrans %}</p>
-                                <p class="small">{% trans %} lender-landing-page_stats-section-IRR-text {% endtrans %}
-                                    <span class="c-p1">{{ getStatistic('unilendIRR')|localizednumber }}%</span><br/>
-                                    {% trans %} lender-landing-page_stats-section-amount-borrowed {% endtrans %}
-                                    <span class="c-p1">{{ getStatistic('amountBorrowedInMillions')|localizednumber }}M€</span>
+                    {% block siteFooterNav %} {% endblock %}
+                    <div class="row">
+                        <div class="col-sub-left col-lg-4 col-md-4">
+                            {% block siteFooterSubLeft %}&nbsp;{% endblock %}
+                        </div>
+                        <div class="col-sub-center col-lg-4 col-md-4">
+                            {% block siteFooterSubCenter %}
+                                <ul class="list-awards">
+                                    {% for partner in partners %}
+                                        <li>
+                                            <img src="{{ uploadedImage(partner.src) }}" alt="{{ partner.alt }}"/>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                                <div class="site-tagline">{% trans %} footer_site-tagline {% endtrans %}</div>
+                                <p class="site-copyright">{% trans %} footer_copyright-all-rights {% endtrans %}-
+                                    <a href="{{ route('legal') }}">{% trans %} footer_small-mandatory-menu-legal-notice {% endtrans %}</a>
                                 </p>
-                            </div>
+                            {% endblock %}
                         </div>
-
-                        <div class="push-lg-1 col-lg-5 push-md-1 col-md-5">
-                            {% include 'pages/lender_subscription/partials/landing_page_form.html.twig' %}
+                        <div class="col-sub-right col-lg-4 col-md-4">
+                            {% block siteFooterSubRight %}&nbsp;{% endblock %}
                         </div>
                     </div>
-
-                    <div class="promos row">
-                        <div class="promo col-lg-4 col-md-4">
-                            <div class="promo-image">
-                                {{ svgimage('#promo-clock', '', 190, 190, 'none')|raw }}
-                            </div>
-                            <h3 class="round-number">1</h3>
-                            <p>{% trans %} lender-landing-page_promo-section-step-1-text {% endtrans %}</p>
-                        </div><!-- /.promo -->
-
-                        <div class="promo col-lg-4 col-md-4">
-                            <div class="promo-image">
-                                {{ svgimage('#promo-pagestack', '', 190, 190, 'none')|raw }}
-                            </div>
-                            <h3 class="round-number">2</h3>
-                            <p>{% trans %} lender-landing-page_promo-section-step-2-text {% endtrans %}</p>
-                        </div><!-- /.promo -->
-
-                        <div class="promo col-lg-4 col-md-4">
-                            <div class="promo-image">
-                                {{ svgimage('#promo-money', '', 190, 190, 'none')|raw }}
-                            </div>
-                            <h3 class="round-number">3</h3>
-                            <p>{% trans %} lender-landing-page_promo-section-step-3-text {% endtrans %}</p>
-                        </div><!-- /.promo -->
-                    </div><!-- /.promos -->
-
                 </div><!-- /.site-wrap -->
-            </div><!-- /.page-content -->
+            </footer><!-- /.site-footer -->
 
-            {# include 'partials/components/list-socialmedia.twig' #}
-        </div><!-- /.hero-wrap -->
+            {% block siteWarnings %}
+                <!-- Site Warning: No JS enabled -->
+                <noscript>
+                    <div class="site-warning">
+                        <div class="site-wrap">
+                            <h1>{% trans %} site-general_warning-no-javascript-title {% endtrans %}</h1>
+                            <p>{% trans %} site-general_warning-no-javascript-text {% endtrans %}</p>
+                            <div class="btn-toolbar">
+                                <a href="{{ route('/') }}" class="btn-default">{% trans %} site-general_reload-website {% endtrans %}</a>
+                            </div>
+                        </div>
+                    </div>
+                </noscript>
 
-        <div class="site-wrap block-copy-lp-footer">
-            <div class="row row-multi-col-computer">
-                <div class="col-info col-lg-8 col-md-8">
-                    <div class="readable-wrap">
-                        <p>{% trans %} lender-landing-page_footer-warning {% endtrans %}</p>
+                <!-- Site Warning: Unsupported IE -->
+                <!--[if lt IE 9]>
+                <div class="site-warning">
+                    <div class="site-wrap">
+                        <h1>{% trans %} site-general_warning-unsupported-browser-title {% endtrans %}</h1>
+                        <p>{% trans %} site-general_warning-unsupported-browser-text {% endtrans %}</p>
+                        <div class="btn-toolbar">
+                            <a href="{{ route('/') }}" class="btn-default">{% trans %} site-general_warning-unsupported-browser-confirmation {% endtrans %}</a>
+                            <a href="http://www.browsehappy.com/" target="_blank" class="btn-default">{% trans %} site-general_warning-unsupported-browser-new-browser {% endtrans %}</a>
+                        </div>
                     </div>
                 </div>
-                <div class="col-conditions col-lg-4 col-md-4">
-                    <p>* <a href="#dialog-conditions-content" class="fancybox-html">{% trans %} lender-landing-page_welcome-offer-conditions-title {% endtrans %}</a></p>
-                </div>
-            </div>
-        </div><!-- /.block-copy-lp-footer -->
+                <![endif]-->
+            {% endblock %}
+        {% endblock %}
 
-        {# Hidden text until made visible through the fancybox #}
-        <div class="hide-accessible">
 
-            <div id="dialog-conditions-content" class="dialog-content readable-wrap text-align-center">
-                <h3>{% trans %} lender-landing-page_welcome-offer-conditions-title {% endtrans %} </h3>
-                {% trans %} lender-landing-page_welcome-offer-conditions-text {% endtrans %}
-            </div><!-- /#dialog-conditions-content -->
+        <!-- ################## -->
+        <!-- /Contenu de la page du Partenaire -->
+    </div>
+    <div class="clear">.</div>
+</div>
+<!-- Footer --><script type="text/javascript">ffw_displayFooter();</script><!-- /Footer -->
 
-        </div><!-- /.hide-accessible -->
-
-    </article><!-- /.page -->
-{% endblock %}
-
-{% block siteFooter %}
-{% endblock %}
+<!-- Stat  -->
+<script type="text/javascript">ffw_addStat();</script>
+<noscript><img width="1" height="1" alt="" src="http://www.lefigaro.fr/components/for_stat.php?id=165" /></noscript>
+<!-- /Stat -->
+</body>
+</html>

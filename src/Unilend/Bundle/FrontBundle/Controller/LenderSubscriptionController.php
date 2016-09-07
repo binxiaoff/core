@@ -1035,7 +1035,25 @@ class LenderSubscriptionController extends Controller
      */
     public function figaroLandingPageAction()
     {
-        return $this->render('pages/lender_subscription/figaro.html.twig', []);
+        /** @var \blocs $block */
+        $block = $client = $this->get('unilend.service.entity_manager')->getRepository('blocs');
+        /** @var \blocs_elements $blockElement */
+        $blockElement = $client = $this->get('unilend.service.entity_manager')->getRepository('blocs_elements');
+        /** @var \elements $elements */
+        $elements = $client = $this->get('unilend.service.entity_manager')->getRepository('elements');
+
+        $partners = [];
+        if ($block->get('partenaires', 'slug')) {
+            $elementsId = array_column($elements->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'ordre ASC'), 'id_element');
+            foreach ($blockElement->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'FIELD(id_element, ' . implode(', ', $elementsId) . ') ASC') as $element) {
+                $partners[] = [
+                    'alt' => $element['complement'],
+                    'src' => $element['value']
+                ];
+            }
+        }
+
+        return $this->render('pages/lender_subscription/figaro.html.twig', ['partners' => $partners]);
     }
 
     /**
@@ -1045,12 +1063,30 @@ class LenderSubscriptionController extends Controller
      */
     public function capitalLandingPageAction()
     {
+        /** @var \blocs $block */
+        $block = $client = $this->get('unilend.service.entity_manager')->getRepository('blocs');
+        /** @var \blocs_elements $blockElement */
+        $blockElement = $client = $this->get('unilend.service.entity_manager')->getRepository('blocs_elements');
+        /** @var \elements $elements */
+        $elements = $client = $this->get('unilend.service.entity_manager')->getRepository('elements');
+
+        $partners = [];
+        if ($block->get('partenaires', 'slug')) {
+            $elementsId = array_column($elements->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'ordre ASC'), 'id_element');
+            foreach ($blockElement->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'FIELD(id_element, ' . implode(', ', $elementsId) . ') ASC') as $element) {
+                $partners[] = [
+                    'alt' => $element['complement'],
+                    'src' => $element['value']
+                ];
+            }
+        }
+
         $xml     = new \SimpleXMLElement(file_get_contents('http://www.capital.fr/wrapper-unilend.xml'));
         $content = explode('<!--CONTENT_ZONE-->', (string) $xml->content);
 
         $header = str_replace(array('<!--TITLE_ZONE_HEAD-->', '<!--TITLE_ZONE-->'), array('Financement Participatif  : Prêtez aux entreprises françaises & Recevez des intérêts chaque mois', 'Financement participatif'), $content[0]);
         $footer = str_replace('<!--XITI_ZONE-->', 'Unilend-accueil', $content[1]);
-        return $this->render('pages/lender_subscription/capital.html.twig', ['header' => $header, 'footer' => $footer]);
+        return $this->render('pages/lender_subscription/capital.html.twig', ['header' => $header, 'footer' => $footer, 'partners' => $partners]);
     }
 
     /**
