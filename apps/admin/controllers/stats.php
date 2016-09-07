@@ -1248,13 +1248,14 @@ class statsController extends bootstrap
     public function _autobid_statistic()
     {
         $oProject = $this->loadData('projects');
+        $this->aProjectList = array();
+
         if (isset($_POST['date_from'], $_POST['date_to']) && false === empty($_POST['date_from']) && false === empty($_POST['date_to'])) {
             $aProjectList = $oProject->getAutoBidProjectStatistic(
                 \DateTime::createFromFormat('d/m/Y H:i:s', $_POST['date_from'] . ' 00:00:00'),
                 \DateTime::createFromFormat('d/m/Y H:i:s', $_POST['date_to'] . ' 23:59:59')
             );
 
-            $this->aProjectList = array();
             foreach ($aProjectList as $aProject) {
                 $fRisk                = constant('\projects::RISK_' . trim($aProject['risk']));
                 $this->aProjectList[] = array(

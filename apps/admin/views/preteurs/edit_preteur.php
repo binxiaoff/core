@@ -374,13 +374,13 @@
                 <td style="padding: 0 0 10px 0;">
                     <table>
                         <tr>
-                            <td><input type="text" name="iban1" id="iban1" class="input_court" value="<?= $this->iban1 ?>"/></td>
-                            <td><input type="text" name="iban2" id="iban2" class="input_court" value="<?= $this->iban2 ?>"/></td>
-                            <td><input type="text" name="iban3" id="iban3" class="input_court" value="<?= $this->iban3 ?>"/></td>
-                            <td><input type="text" name="iban4" id="iban4" class="input_court" value="<?= $this->iban4 ?>"/></td>
-                            <td><input type="text" name="iban5" id="iban5" class="input_court" value="<?= $this->iban5 ?>"/></td>
-                            <td><input type="text" name="iban6" id="iban6" class="input_court" value="<?= $this->iban6 ?>"/></td>
-                            <td><input type="text" name="iban7" id="iban7" class="input_court" value="<?= $this->iban7 ?>"/></td>
+                            <td><input type="text" name="iban1" id="iban1" class="input_court" value="<?= (false === empty($this->iban1)) ? $this->iban1 : '' ?>"/></td>
+                            <td><input type="text" name="iban2" id="iban2" class="input_court" value="<?= (false === empty($this->iban2)) ? $this->iban2 : '' ?>"/></td>
+                            <td><input type="text" name="iban3" id="iban3" class="input_court" value="<?= (false === empty($this->iban3)) ? $this->iban3 : '' ?>"/></td>
+                            <td><input type="text" name="iban4" id="iban4" class="input_court" value="<?= (false === empty($this->iban4)) ? $this->iban4 : '' ?>"/></td>
+                            <td><input type="text" name="iban5" id="iban5" class="input_court" value="<?= (false === empty($this->iban5)) ? $this->iban5 : '' ?>"/></td>
+                            <td><input type="text" name="iban6" id="iban6" class="input_court" value="<?= (false === empty($this->iban6)) ? $this->iban6 : '' ?>"/></td>
+                            <td><input type="text" name="iban7" id="iban7" class="input_court" value="<?= (false === empty($this->iban7)) ? $this->iban7 : '' ?>"/></td>
                         </tr>
                         <tr>
                             <td colspan="5">
