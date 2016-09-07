@@ -1,10 +1,10 @@
-{# Homepage Acquisition #}
 {% extends 'layouts/_layout.html.twig' %}
+
 {% import 'partials/modules/_promo-battenberg.macros.twig' as promoBattenberg %}
 
 {% set page = {
     title: 'Home',
-    permalink: route('/')
+    permalink: path('home')
 } %}
 
 {% block siteContent %}
@@ -178,7 +178,7 @@
                                         {% trans %} site-general_unilend-advatanges-borrow-description {% endtrans %}
                                     </ul>
                                 </div><!-- /.card-text -->
-                                <a href="{{ path('lp-depot-de-dossier') }}" class="btn-alternate btn-shape-md">{% trans %} site-general_unilend-advantages-borrower-test-button {% endtrans %}</a>
+                                <a href="{{ path('home_borrower') }}#homeemp-section-esim" class="btn-alternate btn-shape-md">{% trans %} site-general_unilend-advantages-borrower-test-button {% endtrans %}</a>
                             </div><!-- /.card -->
                         </div>
                     </div><!-- .row -->
@@ -220,7 +220,7 @@
                 </div>
                 <div class="row page-section-footer">
                     <div class="btn-toolbar">
-                        <a href="{{ route('about/our-ethics') }}" class="btn-primary">{% trans %} site-general_ethics-section-read-all-button {% endtrans %}</a>
+                        <a href="{{ constant('Unilend\\Bundle\\FrontBundle\\Service\\RouteProvider::ROUTE_OUR_ETHICS') }}" class="btn-primary">{% trans %} site-general_ethics-section-read-all-button {% endtrans %}</a>
                     </div><!-- /.btn-toolbar -->
                 </div>
             </div><!-- /.site-wrap -->
