@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: binxiao
- * Date: 06/09/2016
- * Time: 16:40
- */
-
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 
@@ -60,7 +53,7 @@ class ProductValidator
     public function isProjectEligibleForNeed(\projects $project, \product $product)
     {
         $eligibleNeeds = array_column($this->getProductAttributesByType($product, \product_attribute_type::ELIGIBLE_NEED), 'attribute_value');
-var_dump($eligibleNeeds);
+
         if (false === empty($eligibleNeeds)) {
             return in_array($project->id_project_need, $eligibleNeeds);
         }
