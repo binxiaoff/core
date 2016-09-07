@@ -1053,7 +1053,7 @@ class LenderSubscriptionController extends Controller
             }
         }
 
-        return $this->render('pages/lender_subscription/figaro.html.twig', ['partners' => $partners]);
+        return $this->render('pages/lender_subscription/partners/figaro.html.twig', ['partners' => $partners]);
     }
 
     /**
@@ -1086,7 +1086,7 @@ class LenderSubscriptionController extends Controller
 
         $header = str_replace(array('<!--TITLE_ZONE_HEAD-->', '<!--TITLE_ZONE-->'), array('Financement Participatif  : Prêtez aux entreprises françaises & Recevez des intérêts chaque mois', 'Financement participatif'), $content[0]);
         $footer = str_replace('<!--XITI_ZONE-->', 'Unilend-accueil', $content[1]);
-        return $this->render('pages/lender_subscription/capital.html.twig', ['header' => $header, 'footer' => $footer, 'partners' => $partners]);
+        return $this->render('pages/lender_subscription/partners/capital.html.twig', ['header' => $header, 'footer' => $footer, 'partners' => $partners]);
     }
 
     /**
@@ -1100,7 +1100,8 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("/devenir-preteur-lp", name="lender_landing_page_form")
+     * Scheme and host are absolute to make partners LPs work
+     * @Route("/devenir-preteur-lp", schemes="https", host="%url.host_default%", name="lender_landing_page_form")
      * @Method("POST")
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
