@@ -770,7 +770,6 @@ class ProjectManager
             $oProject->status_solde = 1;
             $oProject->update();
 
-            $this->oMailerManager->sendFundedToBorrower($oProject);
             $this->oMailerManager->sendFundedToStaff($oProject);
         }
     }

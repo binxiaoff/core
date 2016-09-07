@@ -60,8 +60,7 @@
                         $endDateTime = new \DateTime($aProject['date_retrait_full']);
                     }
                     $endDate             = strftime('%d %B', $endDateTime->getTimestamp());
-                    $endTime             = $endDateTime->format('H\h');
-                    $aProject['daterest'] = str_replace(['[#date#]', '[#time#]'], [$endDate, $endTime], $this->lng['preteur-projets']['termine']);
+                    $aProject['daterest'] = str_replace('[#date#]', $endDate, $this->lng['preteur-projets']['termine']);
                 }
                 ?>
 
@@ -100,7 +99,7 @@
             </td>
             <td>
                 <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>">
-                    <strong id="val<?= $aProject['id_project'] ?>"<?php if ($aProject['status'] >= \projects_status::FUNDE) :?> class="project_ended"<?php endif; ?>><?= $aProject['daterest'] ?></strong>
+                    <span id="val<?= $aProject['id_project'] ?>"<?php if ($aProject['status'] >= \projects_status::FUNDE) :?> class="project_ended"<?php endif; ?>><?= $aProject['daterest'] ?></span>
                 </a>
             </td>
             <td>

@@ -21,7 +21,11 @@
             <?= $this->pays_fiscal ?>
         <?php } ?>
         <br/><br/>
-        n° de bon caisse : <?= $this->oLoans->id_loan ?>
+        <?php if ($this->oLoans->id_type_contract == \loans::TYPE_CONTRACT_IFP) : ?>
+            n° contrat de prêt : <?= $this->oLoans->id_loan ?>
+        <?php else : ?>
+            n° de bon caisse : <?= $this->oLoans->id_loan ?>
+        <?php endif; ?>
     </div>
     <div class="mandataire_du_creancier">
         <?= $this->mandataires_var ?>
@@ -48,7 +52,12 @@
         <div class="case2">
         </div>
         <div class="case3">
-            Bon de caisse à ordre, émis le <?= date('d/m/Y', strtotime($this->oLoans->added)) ?>, échéance au <?= $this->lastEcheance ?>, d’un montant de <?= $this->ficelle->formatNumber(($this->oLoans->amount / 100)) ?>€ assorti d’un taux d’intérêt annuel de <?= $this->ficelle->formatNumber($this->oLoans->rate, 1) ?>%, amortissable mensuellement.
+            <?php if ($this->oLoans->id_type_contract == \loans::TYPE_CONTRACT_IFP) : ?>
+                Contrat de prêt émis le <?= date('d/m/Y', strtotime($this->oLoans->added)) ?>, échéance au <?= $this->lastEcheance ?>, d’un montant de <?= $this->ficelle->formatNumber(($this->oLoans->amount / 100)) ?>€ assorti d’un taux d’intérêt annuel de <?= $this->ficelle->formatNumber($this->oLoans->rate, 1) ?>%, amortissable mensuellement.
+            <?php else : ?>
+                Bon de caisse à ordre, émis le <?= date('d/m/Y', strtotime($this->oLoans->added)) ?>, échéance au <?= $this->lastEcheance ?>, d’un montant de <?= $this->ficelle->formatNumber(($this->oLoans->amount / 100)) ?>€ assorti d’un taux d’intérêt annuel de <?= $this->ficelle->formatNumber($this->oLoans->rate, 1) ?>%, amortissable mensuellement.
+            <?php endif; ?>
+
         </div>
         <div class="case4">
             <?= $this->ficelle->formatNumber($this->echoir) ?>
