@@ -59,8 +59,14 @@
                         {% include 'partials/components/dashboard-panel-notifications.twig' %}
                     {% endblock %}
                 </div><!-- /.col-menu -->
+
+                {% if 'common-lender_general-message-lender-account'|trans != 'common-lender_general-message-lender-account' %}
+                    {% set noMessage = false %}
+                {% else %}
+                    {% set noMessage = true %}
+                {% endif %}
                 <div class="col-content dashboard-content">
-                    <div class="message-info">
+                    <div class="message-info" {% if noMessage == true %}style="display: none;"{% endif %}>
                         <p>{% trans %} common-lender_general-message-lender-account {% endtrans %} </p>
                         <a href="javascript:;" class="btn-close ui-dismiss"><span class="sr-only">Dismiss message</span></a>
                     </div>
