@@ -287,13 +287,13 @@ class loans extends loans_crud
             FROM loans l
             LEFT JOIN projects p ON l.id_project = p.id_project
             LEFT JOIN companies c ON p.id_company = c.id_company
-            LEFT JOIN projects_last_status_history plsh ON p.id_project = plsh.id_project
+            LEFT JOIN (SELECT id_project, MAX(id_project_status_history) AS id_project_status_history FROM projects_status_history GROUP BY id_project) plsh ON p.id_project = plsh.id_project
             LEFT JOIN projects_status_history psh ON plsh.id_project_status_history = psh.id_project_status_history
             LEFT JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
             WHERE id_lender = ' . $iLenderAccountId . '
                 AND l.status = 0
                 ' . (null === $iYear ? '' : 'AND YEAR(l.added) = "' . $iYear . '"') . '
-                ' . (null === $iProjectStatus ? '' : 'AND ps.status = ' . $iProjectStatus) . '
+                ' . (null === $iProjectStatus ? '' : 'AND p.status = ' . $iProjectStatus) . '
             GROUP BY l.id_project
             ORDER BY ' . (null === $sOrder ? 'l.added DESC' : $sOrder)
         );
