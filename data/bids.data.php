@@ -236,9 +236,9 @@ class bids extends bids_crud
             FROM bids b
             INNER JOIN accepted_bids ab ON ab.id_bid = b.id_bid
             INNER JOIN projects p ON p.id_project = b.id_project
-            WHERE p.status >= :funded 
-                AND p.status != :fundingKo 
-            GROUP BY b.rate 
+            WHERE p.status >= :funded
+                AND p.status != :fundingKo
+            GROUP BY b.rate
             ORDER BY b.rate DESC';
 
         try {
@@ -290,16 +290,16 @@ class bids extends bids_crud
 
         if ($iProjectId) {
             $sQuery = '
-                SELECT 
-                    rate, 
+                SELECT
+                    rate,
                     COUNT(*) AS bidsCount,
                     SUM(IF(status = 0, 1, 0)) AS activeBidsCount,
                     SUM(ROUND(amount / 100, 2)) AS totalAmount,
-                    SUM(IF(status = 0, ROUND(amount / 100, 2), 0)) AS activeTotalAmount, 
+                    SUM(IF(status = 0, ROUND(amount / 100, 2), 0)) AS activeTotalAmount,
                     IF(SUM(amount) > 0, ROUND(SUM(IF(status = 2, 0, ROUND(amount / 100, 2))) / SUM(ROUND(amount / 100, 2)) * 100, 1), 100) AS activePercentage
                 FROM bids
                 WHERE id_project = ' . $iProjectId . '
-                GROUP BY rate 
+                GROUP BY rate
                 ORDER BY rate DESC';
             $rQuery = $this->bdd->query($sQuery);
             while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
