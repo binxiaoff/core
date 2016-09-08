@@ -154,7 +154,7 @@
                         <input type="submit" class="btn-primary btn-size-full" value="{% trans %} project-detail_side-bar-login-submit-button {% endtrans %}">
                         <input type="hidden" name="_target_path" value="{{ path(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')) }}">
                         <p>
-                            <a href="{{ path('lender_subscription_personal_information') }}"><span class="icon fa-angle-right"></span>{% trans %} project-detail_side-bar-login-subscription-link {% endtrans %}</a>
+                            <a href="{{ path('lender_subscription_personal_information') }}"><span class="icon fa-angle-right"></span> {% trans %} project-detail_side-bar-login-subscription-link {% endtrans %}</a>
                         </p>
                     </div><!-- /.btn-toolbar -->
                 </form><!-- /.project-single-form-access -->

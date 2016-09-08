@@ -164,10 +164,10 @@
                     </div><!-- /.project-single-header-inner -->
                 </div><!-- /.project-single-header-position -->
                 {% if project.navigation.previousProject is defined and project.navigation.previousProject is not empty %}
-                <a href="{{ path('project_detail', {'projectSlug' : project.navigation.previousProject.slug}) }}" class="btn-nav-previous" title="{{ project.navigation.previousProject.title }}" data-toggle="tooltip" data-placement="right"><span class="sr-only">{% trans %} project-detail_next-project-label {% endtrans %}</span></a>
+                    <a href="{{ path('project_detail', {'projectSlug' : project.navigation.previousProject.slug}) }}" class="btn-nav-previous" title="{{ project.navigation.previousProject.title }}" data-toggle="tooltip" data-placement="right"><span class="sr-only">{% trans %} project-detail_next-project-label {% endtrans %}</span></a>
                 {%  endif %}
-                {% if project.navigation.nextProject is defined %}
-                <a href="{{ path('project_detail', {'projectSlug' : project.navigation.nextProject.slug}) }}" class="btn-nav-next" title="{{ project.navigation.nextProject.title }}" data-toggle="tooltip" data-placement="left"><span class="sr-only">{% trans %} project-detail_previous-project-label {% endtrans %}</span></a>
+                {% if project.navigation.nextProject is defined and project.navigation.nextProject is not empty %}
+                    <a href="{{ path('project_detail', {'projectSlug' : project.navigation.nextProject.slug}) }}" class="btn-nav-next" title="{{ project.navigation.nextProject.title }}" data-toggle="tooltip" data-placement="left"><span class="sr-only">{% trans %} project-detail_previous-project-label {% endtrans %}</span></a>
                 {%  endif %}
             </div><!-- /.project-single-header -->
 
@@ -197,8 +197,12 @@
                         <span class="rating rating-{{ classRating }}"><span class="sr-only">{% trans with {'%risk%' : project.risk|convertRisk }%} project-detail_unilend-rating-wording-label {% endtrans %}</span></span>
                     </div><!-- /.project-single-menu-title -->
                     <div class="project-single-menu-col project-single-menu-period">
-                        <span class="icon fa-clock-u32"></span>
-                        <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|escape('html_attr') }}"></span>
+                        {% if project.finished %}
+                            {% trans %} project-detail_project-status-finished {% endtrans %}
+                        {% else %}
+                            <span class="icon fa-clock-u32"></span>
+                            <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|escape('html_attr') }}"></span>
+                        {% endif %}
                     </div><!-- /.project-single-menu-period -->
                     <div class="project-single-menu-col project-single-menu-top">
                         <a href="#top" class="btn-nav-top"><span class="sr-only">Back to top</span></a>
