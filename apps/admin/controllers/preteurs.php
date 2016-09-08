@@ -1445,6 +1445,7 @@ class preteursController extends bootstrap
         /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
         $translationManager = $this->get('unilend.service.translation_manager');
         $this->lng['autobid']      = $translationManager->getAllTranslationsForSection('autobid');
+        $this->lng['autolend'] = $translationManager->getAllTranslationsForSection('autolend');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
         $oAutoBidSettingsManager   = $this->get('unilend.service.autobid_settings_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $oClientManager */
@@ -1458,12 +1459,14 @@ class preteursController extends bootstrap
         $this->fAverageRateUnilend = round($this->projects->getAvgRate(), 1);
         $this->bIsBetaTester       = $oClientManager->isBetaTester($this->clients);
 
-        $this->aAutoBidSettings = array();
+        $this->settings->get('date-premier-projet-tunnel-de-taux', 'type');
+        $startingDate = $this->settings->value;
+        $this->aAutoBidSettings = [];
         /** @var autobid $autobid */
         $autobid          = $this->loadData('autobid');
         $aAutoBidSettings = $autobid->getSettings($this->lenders_accounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
         foreach ($aAutoBidSettings as $aSetting) {
-            $aSetting['AverageRateUnilend']                                          = $this->projects->getAvgRate($aSetting['evaluation'], $aSetting['min'], $aSetting['max']);
+            $aSetting['AverageRateUnilend']                                          = $this->projects->getAvgRate($aSetting['evaluation'], $aSetting['period_min'], $aSetting['period_max'], $startingDate);
             $this->aAutoBidSettings[$aSetting['id_period']][$aSetting['evaluation']] = $aSetting;
         }
     }
