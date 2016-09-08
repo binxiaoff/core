@@ -556,7 +556,6 @@
     content: $fa-facebook-f;// '\f09a'; // facebook
     display: inline-block;
     font-family: $ff-icon;
-    // font-size: 21px;
   }
 }
 
@@ -585,7 +584,34 @@
     content: $fa-twitter;// '\f099'; // twitter
     display: inline-block;
     font-family: $ff-icon;
-    // font-size: 21px;
+  }
+}
+
+// LinkedIn
+.btn-linkedin {
+  @include button-sharing;
+  @include link-states(
+    $link: (
+      background-color: #55acee,
+      border-color: #55acee,
+      color: $c-white
+    ),
+    $hover: (
+      background-color: darken(#55acee, 10%),
+      border-color: darken(#55acee, 10%),
+      color: $c-white
+    ),
+    $active: (
+      background-color: $c-black,
+      border-color: $c-black,
+      color: $c-white
+    )
+  );
+
+  &:before {
+    content: $fa-linkedin;// '\f0e1'; // linkedin
+    display: inline-block;
+    font-family: $ff-icon;
   }
 }
 

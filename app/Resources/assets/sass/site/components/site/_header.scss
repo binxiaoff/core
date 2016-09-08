@@ -554,10 +554,6 @@
         font-size: 16px;
         transition: color .2s;
 
-        @include input-placeholder {
-          color: transparent;
-        }
-
         &:hover {
           color: transparent;
         }
@@ -586,10 +582,6 @@
           padding-right: 0;
           color: $c-t1;
 
-          @include input-placeholder {
-            color: $c-t1;
-          }
-
           &:hover {
             color: $c-t1;
           }
@@ -611,7 +603,7 @@
       &:before {
         content: $fa-lock-u;
         font-size: 22px;
-        line-height: 0em;
+        line-height: 0;
         margin-right: 12px;
       }
 
@@ -785,10 +777,6 @@
           color: $c-t1;
           line-height: $height-fixed-menu;
 
-          @include input-placeholder {
-            color: $c-t1;
-          }
-
           &:hover {
             color: $c-t1;
           }
@@ -902,10 +890,6 @@
         padding-left: $height-btn;
         color: $c-t1;
 
-        @include input-placeholder {
-          color: $c-t1;
-        }
-
         &:hover {
           color: $c-t1;
         }
@@ -969,10 +953,6 @@
         padding-left: $height-input-lg;
         color: $c-t1;
         font-size: 18px;
-
-        @include input-placeholder {
-          color: $c-t1;
-        }
 
         &:hover {
           color: $c-t1;
