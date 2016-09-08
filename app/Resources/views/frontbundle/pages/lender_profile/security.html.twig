@@ -25,7 +25,7 @@ classNames: 'user-preter-profile'
                             {% if app.session.flashBag.has('securityIdentificationErrors') %}
                                 <div class="message-error">
                                     {% for error in app.session.flashBag.get('securityIdentificationErrors') %}
-                                        <span>{{ error }}</span>
+                                        <p>{{ error }}</p>
                                     {% endfor %}
                                 </div>
                             {% endif %}
@@ -127,7 +127,7 @@ classNames: 'user-preter-profile'
                             {% if app.session.flashBag.has('securityPasswordErrors') %}
                                 <div class="message-error">
                                     {% for error in app.session.flashBag.get('securityPasswordErrors') %}
-                                        <span>{{ error }}</span>
+                                        <p>{{ error }}</p>
                                     {% endfor %}
                                 </div>
                             {% endif %}
@@ -213,7 +213,7 @@ classNames: 'user-preter-profile'
                             {% if app.session.flashBag.has('securitySecretQuestionErrors') %}
                                 <div class="message-error">
                                     {% for error in app.session.flashBag.get('securitySecretQuestionErrors') %}
-                                        <span>{{ error }}</span>
+                                        <p>{{ error }}</p>
                                     {% endfor %}
                                 </div>
                             {% endif %}

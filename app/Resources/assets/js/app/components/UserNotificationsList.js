@@ -146,7 +146,7 @@ UserNotificationsList.prototype.render = function () {
   }
 
   // @debug
-  console.log('UserNotificationsList.render', self.$elem[0])
+  //console.log('UserNotificationsList.render', self.$elem[0])
 
   // Place notifications into the list
   notificationsHTML = Templating.replace(self.templates.list, {
