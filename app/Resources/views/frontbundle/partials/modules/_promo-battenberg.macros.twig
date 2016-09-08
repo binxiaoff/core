@@ -1,8 +1,6 @@
 {# Promo Battenburg Macros #}
 {#% import 'partials/modules/_promo-battenberg.macros.twig' as promoBattenberg %#}
 
-
-
 {# Renders a battenberg promo #}
 {# @macro render #}
 {# @param {Object} options An object containing options to customise the output with #}
@@ -11,15 +9,7 @@
 
   {# Default settings #}
   {% set settings = {
-  classColor: 'p1',
-  animate: true,
-
-  showCtaButton: true,
-  classCtaButton: 'btn-color-primary',
-  urlCtaButton: route(''),
-  labelCtaButton: 'Find out more',
-  alignCtaButton: 'right',
-
+      classColor: 'p1',
   } %}
 
   {# Override default settings with options #}
@@ -27,26 +17,11 @@
       {% set settings = settings|merge(options) %}
   {% endif %}
 
-<div class="promo-battenberg"{% if settings.animate %} data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible"{% endif %}>
-
+<div class="promo-battenberg" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
     {% for i, person in settings.people %}
         {{ promoBattenberg.renderPerson(person, i, settings) }}
     {% endfor %}
-
-    {% if settings.showCtaButton %}
-    <div class="row{% if settings.animate %} ui-animate-fade-in{% endif %}">
-        {% if settings.alignCtaButton == 'right' %}
-        <div class="col-lg-5 push-lg-6 col-md-5 push-md-6">
-            {% else %}
-            <div class="col-lg-5 push-lg-1 col-md-5 push-md-1">
-                {% endif %}
-                <a href="{{ settings.urlCtaButton }}" class="btn-cta {{ settings.classCtaButton }}"><span class="icon fa-angle-right"></span> {{ settings.labelCtaButton }}
-                </a>
-            </div>
-        </div>
-        {% endif %}
-
-    </div><!-- /.promo-battenberg -->
+</div><!-- /.promo-battenberg -->
 {% endmacro %}
 
 {# Render a person within the promo #}
@@ -88,18 +63,18 @@
             <div class="promo-image promo-{{ classColor }}" style="background-image: url('{{ siteurlmedia('promos/' ~ person.image) }}')">
                 &nbsp;
                 <a href="{{ person.urlCta }}" class="promo-image-cta">
-                    <div><span class="link">devenir {{ person.type }}</span></div>
+                    <div><span class="link">{{ ('site-general_testimonial-section-overlay-link-' ~ person.type)|trans }}</span></div>
                 </a>
             </div><!-- /.promo-image -->
         </div>
         <div class="{{ classColumnsSlide }} vertical-align-content">
-            <div class="promo-slide promo-{{ classColor }} {{ classPosition }}{% if settings.animate %} {{ classAnimatePosition }}"{% endif %}>
-                <p class="quote">{{ person.quote | raw }}</p>
+            <div class="promo-slide promo-{{ classColor }} {{ classPosition }} {{ classAnimatePosition }}">
+                <p class="quote">{{ person.quote|raw }}</p>
                 {% if person.name is not empty %}
-    <p class="source"><cite>{{ person.name }}{% if person.vocation is defined %}, {{ person.vocation }}{% endif %}{% if person.location is not empty %} &mdash; {{ person.location }}{% endif %}</cite></p>
+                    <p class="source"><cite>{{ person.name }}{% if person.vocation is defined %}, {{ person.vocation }}{% endif %}{% if person.location is not empty %} &mdash; {{ person.location }}{% endif %}</cite></p>
                 {% endif %}
                 <div class="promo-links">
-                    {% if person.urlTestimonial is not empty %}<a href="{{ person.urlTestimonial | raw }}" class="link">
+                    {% if person.urlTestimonial is not empty %}<a href="{{ person.urlTestimonial|raw }}" class="link">
                         {% trans %} site-general_testimonial-section-link-lender-title {% endtrans %}</a>{% endif %}
                     {% if person.urlProject is not empty %}<a href="{{ person.urlProject }}" class="link">{% trans %} site-general_testimonial-section-link-borrower-title {% endtrans %}</a>{% endif %}
                 </div>

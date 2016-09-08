@@ -84,14 +84,17 @@
         <section id="homeemp-section-testimonials" class="page-section">
             <div class="site-wrap">
                 <h1 class="h2">{% trans %} home-borrower_testimonial-section-title {% endtrans %}</h1>
-                {% set BattenberglabelCtaButton %}{% trans %} home-borrower_submit-project-button {% endtrans %}{% endset %}
-                {{ promoBattenberg.render({
-                    classColor: 'p2',
-                    classCtaButton: 'btn-color-alternate',
-                    labelCtaButton: BattenberglabelCtaButton,
-                    urlCtaButton: path('home_borrower') ~ '#homeemp-section-esim',
-                    people: testimonialPeople
-                }) }}
+
+                {{ promoBattenberg.render({classColor: 'p2', people: testimonialPeople}) }}
+
+                <div class="row page-section">
+                    <div class="btn-toolbar">
+                        <a href="{{ path('home_borrower') }}#homeemp-section-esim" class="btn-alternate">
+                            <span class="icon fa-angle-right"></span>
+                            {% trans %} home-borrower_submit-project-button {% endtrans %}
+                        </a>
+                    </div>
+                </div>
             </div><!-- /.site-wrap -->
         </section><!-- /.page-section -->
 

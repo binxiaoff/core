@@ -221,13 +221,13 @@
     $link: (
       width: $size-btn-media,
       height: $size-btn-media,
-      line-height: $size-btn-media,
+      line-height: $size-btn-media + 6,
       margin: ($size-btn-media-hover - $size-btn-media) * .5
     ),
     $hover: (
       width: $size-btn-media-hover,
       height: $size-btn-media-hover,
-      line-height: $size-btn-media-hover,
+      line-height: $size-btn-media-hover + 6,
       margin: 0
     )
   );
@@ -243,13 +243,13 @@
       $link: (
         width: $size-btn-media-md,
         height: $size-btn-media-md,
-        line-height: $size-btn-media-md,
+        line-height: $size-btn-media-md + 6,
         margin: ($size-btn-media-md-hover - $size-btn-media-md) * .5
       ),
       $hover: (
         width: $size-btn-media-md-hover,
         height: $size-btn-media-md-hover,
-        line-height: $size-btn-media-md-hover,
+        line-height: $size-btn-media-md-hover + 6,
         margin: 0
       )
     );
