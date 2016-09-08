@@ -452,24 +452,26 @@ class clients extends clients_crud
         $sql = '
             SELECT
                 c.*,
-                (SELECT cs.status FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) as status_client,
-                (SELECT cs.label FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) as label_status,
-                (SELECT csh.added FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) as added_status,
-                (SELECT csh.id_client_status_history FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) as id_client_status_history,
+                cs.status AS status_client,
+                cs.label AS label_status,
+                csh.added AS added_status,
+                clsh.id_client_status_history,
                 l.id_company_owner as id_company,
                 l.type_transfert as type_transfert,
                 l.motif as motif,
                 l.fonds,
                 l.id_lender_account as id_lender
             FROM clients c
-            LEFT JOIN lenders_accounts l ON c.id_client = l.id_client_owner
+            INNER JOIN (SELECT id_client, MAX(id_client_status_history) AS id_client_status_history FROM clients_status_history GROUP BY id_client) clsh ON c.id_client = clsh.id_client
+            INNER JOIN clients_status_history csh ON clsh.id_client_status_history = csh.id_client_status_history
+            INNER JOIN clients_status cs ON csh.id_client_status = cs.id_client_status
+            INNER JOIN lenders_accounts l ON c.id_client = l.id_client_owner
             ' . $where . $status . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
 
-
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;

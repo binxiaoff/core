@@ -86,20 +86,6 @@ class preteursController extends bootstrap
         } else {
             $this->lPreteurs = $this->clients->searchPreteurs('', '', '', '', '', null, '', '0', '300');
         }
-
-        //preteur sans mouvement
-        $aTransactionTypes = array(
-            \transactions_types::TYPE_LENDER_SUBSCRIPTION,
-            \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
-            \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
-            \transactions_types::TYPE_LENDER_REPAYMENT,
-            \transactions_types::TYPE_LENDER_WITHDRAWAL,
-            \transactions_types::TYPE_DIRECT_DEBIT,
-            \transactions_types::TYPE_LENDER_REGULATION
-        );
-        $this->z = count($this->clients->selectPreteursByStatus(\clients_status::VALIDATED, 'c.status = 1 AND status_inscription_preteur = 1 AND (SELECT COUNT(t.id_transaction) FROM transactions t WHERE t.type_transaction IN (' . implode(',', $aTransactionTypes) . ') AND t.status = 1 AND t.etat = 1 AND t.id_client = c.id_client) < 1'));
-        $this->y = $this->clients->counter('clients.status = 0 AND clients.status_inscription_preteur = 1 AND EXISTS (SELECT * FROM lenders_accounts WHERE clients.id_client = lenders_accounts.id_client_owner)');
-        $this->x = $this->clients->counter('clients.status_inscription_preteur = 1 AND EXISTS (SELECT * FROM lenders_accounts WHERE clients.id_client = lenders_accounts.id_client_owner)');
     }
 
     public function _search()
@@ -431,7 +417,7 @@ class preteursController extends bootstrap
                     \clients_status::CLOSED_LENDER_REQUEST,
                     \clients_status::CLOSED_BY_UNILEND
                 );
-                $checkEmailExistant    = $this->clients->selectPreteursByStatus(implode(',', $aLenderStatusForQuery), 'email = "' . $_POST['email'] . '" AND id_client != ' . $this->clients->id_client);
+                $checkEmailExistant    = $this->clients->selectPreteursByStatus(implode(',', $aLenderStatusForQuery), 'email = "' . $_POST['email'] . '" AND c.id_client != ' . $this->clients->id_client);
                 if (count($checkEmailExistant) > 0) {
                     $les_id_client_email_exist = '';
                     foreach ($checkEmailExistant as $checkEmailEx) {
@@ -736,7 +722,7 @@ class preteursController extends bootstrap
                     \clients_status::MODIFICATION,
                     \clients_status::VALIDATED,
                 );
-                $checkEmailExistant = $this->clients->selectPreteursByStatus(implode(',', $aLenderStatusForQuery), 'email = "' . $_POST['email_e'] . '" AND id_client != ' . $this->clients->id_client);
+                $checkEmailExistant = $this->clients->selectPreteursByStatus(implode(',', $aLenderStatusForQuery), 'email = "' . $_POST['email_e'] . '" AND c.id_client != ' . $this->clients->id_client);
                 if (count($checkEmailExistant) > 0) {
                     $les_id_client_email_exist = '';
                     foreach ($checkEmailExistant as $checkEmailEx) {
