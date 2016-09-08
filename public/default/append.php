@@ -1,6 +1,6 @@
 <?php
 
-if (! $nocache) {
+if ($cached) {
     $cont = ob_get_contents();
     ob_end_clean();
 
