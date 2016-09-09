@@ -95,8 +95,7 @@
                             </div>
                             {% set valueProjects = ('site-general_unilend-stats-projects-value'|trans != 'site-general_unilend-stats-projects-value') ? getStatistic('numberOfFinancedProjects') : 'site-general_unilend-stats-projects-value'|trans %}
                             <h3 class="promo-highlight">
-                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ valueProjects }}" data-total-time="3000" data-round-float="round"
-                                      data-tween-count="easeOutCirc"></span>
+                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ valueProjects }}" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">{{ valueProjects|localizednumber }}</span>
                             </h3>
                             <p>{% trans %} site-general_unilend-stats-projects-description {% endtrans %}</p>
                         </div><!-- /.promo -->
@@ -109,7 +108,7 @@
                             </div>
                             {% set valueMoney = ('site-general_unilend-stats-money-value'|trans != 'site-general_unilend-stats-money-value') ? getStatistic('amountBorrowedInMillions') : 'site-general_unilend-stats-money-value'|trans %}
                             <h3 class="promo-highlight">
-                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ valueMoney }}" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">{{ valueMoney }}</span>
+                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ valueMoney }}" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">{{ valueMoney|localizednumber }}</span>
                                 {% trans %} site-general_unilend-stats-money-value {% endtrans %}
                             </h3>
                             <p>{% trans %} site-general_unilend-stats-money-description {% endtrans %}</p>
@@ -123,8 +122,7 @@
                             </div>
                             {% set valuePeople = ('site-general_unilend-stats-people-value'|trans != 'site-general_unilend-stats-people-value') ? getStatistic('numberOfLendersInCommunity')|localizednumber : 'site-general_unilend-stats-people-value'|trans %}
                             <h3 class="promo-highlight">
-                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ valuePeople }}" data-total-time="3000" data-round-float="round"
-                                      data-tween-count="easeOutCirc">{{ valuePeople }}</span>
+                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ valuePeople }}" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">{{ valuePeople|localizednumber }}</span>
                             </h3>
                             <p>{% trans %} site-general_unilend-stats-people-description {% endtrans %}</p>
                         </div><!-- /.promo -->

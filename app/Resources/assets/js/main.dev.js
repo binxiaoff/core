@@ -724,14 +724,15 @@ $(document).ready(function ($) {
    */
   $doc
     // Step 1
-    .on('FormValidation:validate:error', '#esim1', function () {
+    .on('FormValidation:validate:error', '#esim1', function (event) {
       // Hide the continue button
       $('.emprunter-sim').removeClass('ui-emprunter-sim-estimate-show')
+      event.stopPropagation()
     })
-    .on('click', '#submit-step-1', function () {
-      var period = $("input[id^='esim-input-duration-']:checked").val(),
-          amount = $("#esim-input-amount").val(),
-          motiveId = $("#esim-input-reason > option:selected").val()
+    .on('shown.bs.tab', '[href="#esim2"]', function () {
+      var period = $("input[id^='esim-input-duration-']:checked").val()
+      var amount = $("#esim-input-amount").val()
+      var motiveId = $("#esim-input-reason > option:selected").val()
 
       if (! $(".form-validation-notifications .message-error").length) {
         $.ajax({
@@ -760,7 +761,7 @@ $(document).ready(function ($) {
             }
             else {
               var text = $('p[data-borrower-motive]').html()
-                  text = text.replace(/\.$/g, '')
+              text = text.replace(/\.$/g, '')
 
               $('p[data-borrower-motive]')
                 .show()
