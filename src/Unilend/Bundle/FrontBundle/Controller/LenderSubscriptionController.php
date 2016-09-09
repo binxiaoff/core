@@ -44,6 +44,16 @@ class LenderSubscriptionController extends Controller
         $template['countries']     = $locationManager->getCountries();
         $template['nationalities'] = $locationManager->getNationalities();
 
+        /** @var \tree $tree */
+        $tree = $this->get('unilend.service.entity_manager')->getRepository('tree');
+        $settings->get('Lien conditions generales inscription preteur societe', 'type');
+        $tree->get(['id_tree' => $settings->value]);
+        $template['termsOfUseLegalEntity'] = $this->generateUrl($tree->slug);
+
+        $settings->get('Lien conditions generales inscription preteur particulier', 'type');
+        $tree->get(['id_tree' => $settings->value]);
+        $template['termsOfUsePerson'] = $this->generateUrl($tree->slug);
+
         $formData = $request->getSession()->get('subscriptionPersonalInformationFormData', []);
         $request->getSession()->remove('subscriptionPersonalInformationFormData');
 
@@ -63,7 +73,7 @@ class LenderSubscriptionController extends Controller
             'fiscal_address_city'              => isset($formData['fiscal_address_city']) ? $formData['fiscal_address_city'] : '',
             'fiscal_address_country'           => isset($formData['fiscal_address_country']) ? $formData['fiscal_address_country'] : \pays_v2::COUNTRY_FRANCE,
             'client_mobile'                    => isset($formData['client_mobile']) ? $formData['client_mobile'] : '',
-            'same_postal_address'              => isset($formData['same_postal_address']) ? true : isset($formData['postal_address_street']) ? false : true,
+            'same_postal_address'              => isset($formData['same_postal_address']) ? true : (empty($formData['postal_address_street'])) ? true : false,
             'postal_address_street'            => isset($formData['postal_address_street']) ? $formData['postal_address_street'] : '',
             'postal_address_zip'               => isset($formData['postal_address_zip']) ? $formData['postal_address_zip'] : '',
             'postal_address_city'              => isset($formData['postal_address_city']) ? $formData['postal_address_city'] : '',
@@ -1105,7 +1115,7 @@ class LenderSubscriptionController extends Controller
     private function checkProgressAndRedirect(\clients &$client, $requestPathInfo, $clientHash = null)
     {
         if (false === empty($client->id_client) || (false === is_null($clientHash) && $client->get($clientHash, 'hash'))) {
-            if (\clients::STATUS_ONLINE == $client->status && $client->etape_inscription_preteur >= 1 && $client->etape_inscription_preteur < 3) {
+            if (\clients::STATUS_ONLINE == $client->status && $client->etape_inscription_preteur >= 1 && $client->etape_inscription_preteur <= 3) {
                 $redirectRoute = $this->getSubscriptionStepRedirectRoute($client->etape_inscription_preteur,$client->hash);
                 if ($requestPathInfo !== $redirectRoute) {
                     return $this->redirect($redirectRoute);
@@ -1144,10 +1154,8 @@ class LenderSubscriptionController extends Controller
                 $redirectRoute = $this->generateUrl('lender_subscription_documents', ['clientHash' => $clientHash]);
                 break;
             case 2 :
-                $redirectRoute = $this->generateUrl('lender_subscription_money_deposit', ['clientHash' => $clientHash]);
-                break;
             case 3 :
-                $redirectRoute = $this->generateUrl('login');
+                $redirectRoute = $this->generateUrl('lender_subscription_money_deposit', ['clientHash' => $clientHash]);
                 break;
             default :
                 $redirectRoute = $this->generateUrl('project_list');

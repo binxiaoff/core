@@ -393,9 +393,8 @@
             <div class="form-field form-field-single-checkbox">
                 <label>
                     <input type="checkbox" name="terms_of_use" value="true" data-formvalidation-input data-formvalidation-required="true">
-                    <span class="label">
-                        {% trans %} lender-subscription_terms-of-use-acceptance {% endtrans %} <span class="field-required">* <span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
-                    </span>
+                        <span class="label">{% trans with {'%tosStart%' : '<a href="' ~ termsOfUseLegalEntity ~ '" target="_blank">', '%tosEnd%' : '</a>'} %} lender-subscription_terms-of-use-acceptance {% endtrans %}
+                            <span class="field-required">* <span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></span>
                 </label>
             </div><!-- /.form-field -->
         </div>
