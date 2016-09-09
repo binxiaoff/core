@@ -2,8 +2,9 @@
 var $ = require('jquery')
 
 var LoginTimer = function() {
-    if($('[data-countdown]').length) {
-        $('#form-connect-notifications').show();
+    var $timer = $('[data-countdown]')
+    if($timer.length) {
+        $('#form-connect-notifications-timer').show();
         $('[data-captcha-related]').hide();
     }
 }

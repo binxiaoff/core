@@ -150,13 +150,11 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
 
         if ($user instanceof UserInterface && in_array('ROLE_LENDER', $user->getRoles())) {
             if ($user->getSubscriptionStep() < 3) {
-                //TODO uncomment once route created
-                //return new RedirectResponse($this->router->generate('lender_subscription'));
+                return new RedirectResponse($this->router->generate('lender_subscription'));
             }
 
             if (in_array($user->getClientStatus(), [\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER])) {
-                //TODO uncomment once route created
-                //return new RedirectResponse($this->router->generate('lender_completeness'));
+                return new RedirectResponse($this->router->generate('lender_completeness'));
             }
 
             if (false === $user->hasAcceptedCurrentTerms()) {
@@ -190,6 +188,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      */
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
+
         if ($exception instanceof LockedException || $exception instanceof DisabledException || $exception instanceof AccountExpiredException) {
             $customException = new CustomUserMessageAuthenticationException('closed-account');
             $request->getSession()->set(Security::AUTHENTICATION_ERROR, $customException);
@@ -200,7 +199,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
 
             /** @var \login_log $loginLog */
             $loginLog        = $this->entityManager->getRepository('login_log');
-            $iPreviousTries  = $loginLog->counter('IP = "' . $_SERVER["REMOTE_ADDR"] . '" AND date_action >= "' . $oNowMinusTenMinutes->format('Y-m-d H:i:s') . '" AND statut = 0');
+            $iPreviousTries  = $loginLog->counter('IP = "' . $request->server->get('REMOTE_ADDR') . '" AND date_action >= "' . $oNowMinusTenMinutes->format('Y-m-d H:i:s') . '" AND statut = 0');
             $iWaitingPeriod  = 0;
             $iPreviousResult = 1;
 
@@ -217,6 +216,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
                 'displayCaptcha'       => ($iPreviousTries > 5) ? true : false
             ];
 
+            $request->getSession()->set(Security::AUTHENTICATION_ERROR, $exception);
             $request->getSession()->set('captchaInformation', $aCaptchaInformation);
         }
 
