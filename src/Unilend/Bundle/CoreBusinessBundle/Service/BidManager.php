@@ -1,6 +1,7 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\core\Loader;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
@@ -35,12 +36,16 @@ class BidManager
     /** @var EntityManager */
     private $oEntityManager;
 
-    public function __construct(EntityManager $oEntityManager, NotificationManager $oNotificationManager, AutoBidSettingsManager $oAutoBidSettingsManager, LenderManager $oLenderManager)
+    /** @var ProductManager */
+    private $productManager;
+
+    public function __construct(EntityManager $oEntityManager, NotificationManager $oNotificationManager, AutoBidSettingsManager $oAutoBidSettingsManager, LenderManager $oLenderManager, ProductManager $productManager)
     {
         $this->oEntityManager          = $oEntityManager;
         $this->oNotificationManager    = $oNotificationManager;
         $this->oAutoBidSettingsManager = $oAutoBidSettingsManager;
         $this->oLenderManager          = $oLenderManager;
+        $this->productManager          = $productManager;
 
         $this->oDate    = Loader::loadLib('dates');
         $this->oFicelle = Loader::loadLib('ficelle');
@@ -147,6 +152,13 @@ class BidManager
         if (false === $this->oLenderManager->canBid($oLenderAccount)) {
             if($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->warning('lender cannot bid', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]);
+            }
+            return false;
+        }
+
+        if (false === $this->productManager->isBidEligible($oBid, $project)) {
+            if($this->oLogger instanceof LoggerInterface) {
+                $this->oLogger->warning('The Bid is not eligible for the project', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]);
             }
             return false;
         }

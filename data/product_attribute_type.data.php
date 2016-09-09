@@ -27,13 +27,13 @@
 // **************************************************************************************************** //
 class product_attribute_type extends product_attribute_type_crud
 {
-    const ELIGIBLE_LENDER_NATIONALITY = 'eligible_lender_nationality';
-    const ELIGIBLE_BORROWER_COMPANY_COUNTRY = 'eligible_borrower_company_country';
-    const TARGET_COUNTRY = 'target_country';
-    const ELIGIBLE_BORROWER_COMPANY_TYPE = 'eligible_borrower_company_type';
-    const ELIGIBLE_NEED = 'eligible_need';
-    const MIN_LOAN_DURATION_IN_MONTH = 'min_loan_duration_in_month';
-    const MAX_LOAN_DURATION_IN_MONTH = 'max_loan_duration_in_month';
+    const ELIGIBLE_LENDER_NATIONALITY = 'product_eligible_lender_nationality';
+    const ELIGIBLE_BORROWER_COMPANY_COUNTRY = 'product_eligible_borrower_company_country';
+    const TARGET_COUNTRY = 'product_target_country';
+    const ELIGIBLE_BORROWER_COMPANY_TYPE = 'product_eligible_borrower_company_type';
+    const ELIGIBLE_NEED = 'product_eligible_need';
+    const MIN_LOAN_DURATION_IN_MONTH = 'product_min_loan_duration_in_month';
+    const MAX_LOAN_DURATION_IN_MONTH = 'product_max_loan_duration_in_month';
 
     public function __construct($bdd, $params = '')
     {
