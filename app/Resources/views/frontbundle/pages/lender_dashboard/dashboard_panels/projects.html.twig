@@ -21,24 +21,21 @@
                             <span class="rating rating-{{ project.risk|convertRisk|split('.')|join('-') }}"><span class="sr-only">Rated {{ project.risk }} out of 5</span></span>
                         </div>
                         <div class="project-interest">{{ project.average_rate|localizednumber|nbsp }}%</div>
-                        <div class="project-period">{% transchoice project.days_left with {'%daysCount%': project.days_left} %} lender-dashboard_project-remaining-days-before-closure {% endtranschoice %}</div>
+                        <div class="project-period">
+                            {% if project.finished %}
+                                {{ 'lender-dashboard_project-status-finished'|trans }}
+                            {% elseif project.days_left <= 2 %}
+                                <span class="ui-has-timecount" data-timecount-to="{{ project.end_date|escape('html_attr') }}"></span>
+                            {% else %}
+                                {% trans with {'%remainingDays%' : project.days_left} %} project-list_remaining-days {% endtrans %}
+                            {% endif %}
+                        </div>
                         {% set styledCount = {'%count%': '<span class="value">' ~ project.bid_count ~ '</span>'} %}
                         <div class="project-offers">{% transchoice project.bid_count with styledCount %} lender-dashboard_projects-list-panel-number-of-offers {% endtranschoice %}</div>
-
-                        {#@todo use correct link into project detais page#}
-
-                        <a href="#todo" class="project-hotspot">&nbsp;</a>
+                        <a href="{{ path('project_detail', {'projectSlug' : project.slug}) }}" class="project-hotspot">&nbsp;</a>
                     </li>
                 {% endfor %}
             </ul>
         {% endif %}
     {% endblock %}
-    {% if ongoingProjects|length > 0 %}
-        {% block panelFooter %}
-
-            {#@todo use correct link into lenders offers list detais page#}
-
-            <a href="#todo" class="link">{% trans %} lender-dashboard_see-all-my-offers-in-progress {% endtrans %}</a>
-        {% endblock %}
-    {% endif %}
 {% endembed %}

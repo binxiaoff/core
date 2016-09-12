@@ -1,6 +1,8 @@
 {# Panel - User Level #}
 {% embed 'partials/components/dashboard-panel.html.twig' %}
     {% block panelAttributes %}id="userlevel"{% endblock %}
+    {% block panelContentAttributes %}style="height: 630px;"{% endblock %}
+    {% block panelFooterAttributes %}style="height: 63px;"{% endblock %}
     {% block panelClassNames %}dashboard-panel dashboard-userlevel ui-draggable {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %} col-lg-6 col-md-6 col-sm-8 col-xs-4{% endblock %}
     {% block panelTitle %}{{ "lender-dashboard_panel-title-#{ panelId }" | trans }}{% endblock %}
     {% block panelControls %}
@@ -25,7 +27,7 @@
                 <span class="label">{% trans %} lender-dashboard_portfolio-performance-panel-diversification-level {% endtrans %}</span>
                 <span class="value">{{ "lender-dashboard_level-#{ lenderDetails.level }"|trans }}</span>
             </h3>
-            <p class="primary">{% transchoice lenderDetails.number_of_companies with {'%borrowerCount%' : lenderDetails.number_of_companies } %} lender-dashboard_portfolio-performance-panel-diversification-message {% endtranschoice %}</p>
+            <p class="primary" style="border-style: solid; border-color: #B20066; border-width: 2px;">{% transchoice lenderDetails.number_of_companies with {'%borrowerCount%' : lenderDetails.number_of_companies } %} lender-dashboard_portfolio-performance-panel-diversification-message {% endtranschoice %}</p>
             <p class="secondary">{% trans %} lender-dashboard_portfolio-performance-panel-internal-performance {% endtrans %} {{ lenderDetails.unilend_irr }}%</p>
         </div>
     {% endblock %}

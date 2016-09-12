@@ -162,7 +162,11 @@
                 <li role="presentation">
                     <a href="#{{ panelId }}" class="dashboard-panel-toggle{% if panelInfo.hidden == true %} ui-dashboard-panel-hidden{% endif %}" data-toggle="ui">
                       {% if panelId == 'mywallet' %}
-                        {% transchoice lenderDetails.numberOfLoans with {'%offersCount%' : lenderDetails.numberOfLoans} %} lender-dashboard_panel-title-mywallet {% endtranschoice %}
+                            {% if lenderDetails.numberOfLoans == lenderDetails.numberOfBorrowers %}
+                                {% transchoice lenderDetails.numberOfLoans with {'%offersCount%' : lenderDetails.numberOfLoans|localizednumber} %} lender-dashboard_panel-title-mywallet-x-loan-x-project {% endtranschoice %}
+                            {% else %}
+                                {% transchoice lenderDetails.numberOfBorrowers with {'%offersCount%' : lenderDetails.numberOfLoans|localizednumber, '%borrowerCount%' : lenderDetails.numberOfBorrowers|localizednumber} %} lender-dashboard_panel-title-mywallet-x-loan-y-project {% endtranschoice %}
+                            {% endif %}
                       {% else %}
                         {{ "lender-dashboard_panel-title-#{ panelId }" | trans }}
                       {% endif %}

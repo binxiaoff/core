@@ -321,6 +321,13 @@ Highcharts.wrap(Highcharts.Legend.prototype, 'positionItem', function (proceed, 
   }
 })
 
+Highcharts.setOptions({
+    lang: {
+        decimalPoint: ',',
+        thousandsSep: ' '
+    }
+});
+
 /*
  * ChartView
  * @class

@@ -150,7 +150,7 @@ class LenderAccountDisplayManager
      */
     private function getLoansAllocationByCompanyRegion($lenderId)
     {
-        $cachedItem = $this->cachePool->getItem(__FUNCTION__);
+        $cachedItem = $this->cachePool->getItem(__FUNCTION__ . $lenderId);
 
         if (false === $cachedItem->isHit()) {
             /** @var \lenders_accounts $lendersAccounts */
@@ -175,7 +175,7 @@ class LenderAccountDisplayManager
      */
     private function getLoansAllocationByCompanySector($lenderId)
     {
-        $cachedItem = $this->cachePool->getItem(__FUNCTION__);
+        $cachedItem = $this->cachePool->getItem(__FUNCTION__ . $lenderId);
 
         if (false === $cachedItem->isHit()) {
             /** @var \projects $projects */
