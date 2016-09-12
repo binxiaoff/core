@@ -27,6 +27,9 @@
 // **************************************************************************************************** //
 class underlying_contract extends underlying_contract_crud
 {
+    const CONTRACT_IFP = 'ifp';
+    const CONTRACT_BDC = 'bon_de_caisse';
+
     public function __construct($bdd, $params = '')
     {
         parent::underlying_contract($bdd, $params);

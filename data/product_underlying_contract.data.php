@@ -69,4 +69,38 @@ class product_underlying_contract extends product_underlying_contract_crud
         $result = $this->bdd->query('SELECT * FROM product_underlying_contract WHERE 1 = 1 ' . $list);
         return ($this->bdd->fetch_assoc($result) > 0);
     }
+
+    public function getUnderlyingContractsByProduct($productId = null)
+    {
+        if (null === $productId) {
+            $productId = $this->id_product;
+        }
+
+        $queryBuilder = $this->bdd->createQueryBuilder();
+
+        $queryBuilder->select('uc.*')
+            ->from('product_underlying_contract', 'puc')
+            ->innerJoin('puc', 'underlying_contract', 'uc', 'puc.id_contract = uc.id_contract')
+            ->where('puc.id_product = :id_product')
+            ->setParameter('id_product', $productId);
+
+        return $queryBuilder->execute()->fetchAll();
+    }
+
+    public function getContractAttrByProduct($productId = null)
+    {
+        if (null === $productId) {
+            $productId = $this->id_product;
+        }
+
+        $queryBuilder = $this->bdd->createQueryBuilder();
+
+        $queryBuilder->select('uc.*')
+                     ->from('product_underlying_contract', 'puc')
+                     ->innerJoin('puc', 'underlying_contract', 'uc', 'puc.id_contract = uc.id_contract')
+                     ->where('puc.id_product = :id_product')
+                     ->setParameter('id_product', $productId);
+
+        return $queryBuilder->execute()->fetchAll();
+    }
 }

@@ -2,6 +2,8 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Psr\Log\LoggerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
@@ -43,8 +45,24 @@ class ProjectManager
     /** @var  ProjectRateSettingsManager */
     private $projectRateSettingsManager;
 
-    public function __construct(EntityManager $oEntityManager, BidManager $oBidManager, LoanManager $oLoanManager, NotificationManager $oNotificationManager, AutoBidSettingsManager $oAutoBidSettingsManager, MailerManager $oMailerManager, LenderManager $oLenderManager, ProjectRateSettingsManager $projectRateSettingsManager)
-    {
+    /** @var ProductManager */
+    private $productManager;
+
+    /** @var ContractAttributeManager */
+    private $contractAttributeManager;
+
+    public function __construct(
+        EntityManager $oEntityManager,
+        BidManager $oBidManager,
+        LoanManager $oLoanManager,
+        NotificationManager $oNotificationManager,
+        AutoBidSettingsManager $oAutoBidSettingsManager,
+        MailerManager $oMailerManager,
+        LenderManager $oLenderManager,
+        ProjectRateSettingsManager $projectRateSettingsManager,
+        ProductManager $productManager,
+        ContractAttributeManager $contractAttributeManager
+    ) {
         $this->oEntityManager             = $oEntityManager;
         $this->oBidManager                = $oBidManager;
         $this->oLoanManager               = $oLoanManager;
@@ -53,6 +71,8 @@ class ProjectManager
         $this->oMailerManager             = $oMailerManager;
         $this->oLenderManager             = $oLenderManager;
         $this->projectRateSettingsManager = $projectRateSettingsManager;
+        $this->productManager             = $productManager;
+        $this->contractAttributeManager   = $contractAttributeManager;
 
         $this->oFicelle    = Loader::loadLib('ficelle');
         $this->oDate       = Loader::loadLib('dates');
@@ -301,16 +321,50 @@ class ProjectManager
                 $this->oLogger->info($iTreatedBitNb . '/' . $iBidNbTotal . ' bids treated (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
             }
         }
+        $contractTypes = array_column($this->productManager->getProjectAvailableContractTypes($oProject), 'label');
+        if(in_array(\underlying_contract::CONTRACT_IFP, $contractTypes) && in_array(\underlying_contract::CONTRACT_BDC, $contractTypes)) {
+            $this->buildLoanIFPAndBDC($oProject);
+        }
+    }
 
-        $aLenderList = $oBid->getLenders($oProject->id_project, array(\bids::STATUS_BID_ACCEPTED));
+    private function buildLoanIFPAndBDC($project)
+    {
+        /** @var \bids $bid */
+        $bid = $this->oEntityManager->getRepository('bids');
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
+        /** @var \loans $loan */
+        $loan = $this->oEntityManager->getRepository('loans');
+        /** @var \underlying_contract $contract */
+        $contract = $this->oEntityManager->getRepository('underlying_contract');
+
+        $aLenderList = $bid->getLenders($project->id_project, array(\bids::STATUS_BID_ACCEPTED));
+
+        if (false === $contract->get(\underlying_contract::CONTRACT_IFP, 'label')) {
+            throw new \InvalidArgumentException('The contract ' . \underlying_contract::CONTRACT_IFP . 'does not exist.');
+        }
+        $IFPContractId = $contract->id_contract;
+
+        $contractAttrVars = $this->contractAttributeManager->getContractAttributesByType($contract, \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
+        if (empty($contractAttrVars) || false === isset($contractAttrVars[0]) || false === is_numeric($contractAttrVars[0])) {
+            throw new \UnexpectedValueException('The IFP contract max amount is not set');
+        } else {
+            $IFPLoanAmountMax = $contractAttrVars[0];
+        }
+
+        if (false === $contract->get(\underlying_contract::CONTRACT_BDC, 'label')) {
+            throw new \InvalidArgumentException('The contract ' . \underlying_contract::CONTRACT_BDC . 'does not exist.');
+        }
+        $BDCContractId = $contract->id_contract;
+
         foreach ($aLenderList as $aLender) {
             $iLenderId   = $aLender['id_lender_account'];
-            $aLenderBids = $oBid->select(
-                'id_lender_account = ' . $iLenderId . ' AND id_project = ' . $oProject->id_project . ' AND status = ' . \bids::STATUS_BID_ACCEPTED,
+            $aLenderBids = $bid->select(
+                'id_lender_account = ' . $iLenderId . ' AND id_project = ' . $project->id_project . ' AND status = ' . \bids::STATUS_BID_ACCEPTED,
                 'rate DESC'
             );
 
-            if ($oLenderAccount->isNaturalPerson($iLenderId)) {
+            if ($lenderAccount->isNaturalPerson($iLenderId)) {
                 $fLoansLenderSum = 0;
                 $fInterests      = 0;
                 $bIFPContract    = true;
@@ -319,7 +373,7 @@ class ProjectManager
                 foreach ($aLenderBids as $iIndex => $aBid) {
                     $fBidAmount = $aBid['amount'] / 100;
 
-                    if (true === $bIFPContract && ($fLoansLenderSum + $fBidAmount) <= \loans::IFP_AMOUNT_MAX) {
+                    if (true === $bIFPContract && bccomp(bcadd($fLoansLenderSum, $fBidAmount, 2), $IFPLoanAmountMax, 2) <= 0) {
                         $fInterests += $aBid['rate'] * $fBidAmount;
                         $fLoansLenderSum += $fBidAmount;
                         $aBidIFP[] = array(
@@ -327,18 +381,18 @@ class ProjectManager
                             'amount' => $fBidAmount
                         );
                     } else {
-                        // Greater than \loans::IFP_AMOUNT_MAX ? create BDC loan, split it if needed.
+                        // Greater than IFP max amount ? create BDC loan, split it if needed.
                         $bIFPContract = false;
-                        $fDiff        = $fLoansLenderSum + $fBidAmount - \loans::IFP_AMOUNT_MAX;
+                        $fDiff        = bcsub(bcadd($fLoansLenderSum, $fBidAmount, 2), $IFPLoanAmountMax, 2);
 
-                        $oLoan->unsetData();
-                        $oLoan->addAcceptedBid($aBid['id_bid'], $fDiff);
-                        $oLoan->id_lender        = $iLenderId;
-                        $oLoan->id_project       = $oProject->id_project;
-                        $oLoan->amount           = $fDiff * 100;
-                        $oLoan->rate             = $aBid['rate'];
-                        $oLoan->id_type_contract = \loans::TYPE_CONTRACT_BDC;
-                        $this->oLoanManager->create($oLoan);
+                        $loan->unsetData();
+                        $loan->addAcceptedBid($aBid['id_bid'], $fDiff);
+                        $loan->id_lender        = $iLenderId;
+                        $loan->id_project       = $project->id_project;
+                        $loan->amount           = $fDiff * 100;
+                        $loan->rate             = $aBid['rate'];
+                        $loan->id_type_contract = $BDCContractId;
+                        $this->oLoanManager->create($loan);
 
                         $fRest = $fBidAmount - $fDiff;
                         if (0 < $fRest) {
@@ -348,31 +402,31 @@ class ProjectManager
                                 'amount' => $fRest
                             );
                         }
-                        $fLoansLenderSum = \loans::IFP_AMOUNT_MAX;
+                        $fLoansLenderSum = $IFPLoanAmountMax;
                     }
                 }
 
                 // Create IFP loan from the grouped bids
-                $oLoan->unsetData();
+                $loan->unsetData();
                 foreach ($aBidIFP as $aAcceptedBid) {
-                    $oLoan->addAcceptedBid($aAcceptedBid['bid_id'], $aAcceptedBid['amount']);
+                    $loan->addAcceptedBid($aAcceptedBid['bid_id'], $aAcceptedBid['amount']);
                 }
-                $oLoan->id_lender        = $iLenderId;
-                $oLoan->id_project       = $oProject->id_project;
-                $oLoan->amount           = $fLoansLenderSum * 100;
-                $oLoan->rate             = round($fInterests / $fLoansLenderSum, 2);
-                $oLoan->id_type_contract = \loans::TYPE_CONTRACT_IFP;
-                $this->oLoanManager->create($oLoan);
+                $loan->id_lender        = $iLenderId;
+                $loan->id_project       = $project->id_project;
+                $loan->amount           = $fLoansLenderSum * 100;
+                $loan->rate             = round($fInterests / $fLoansLenderSum, 2);
+                $loan->id_type_contract = $IFPContractId;
+                $this->oLoanManager->create($loan);
             } else {
                 foreach ($aLenderBids as $aBid) {
-                    $oLoan->unsetData();
-                    $oLoan->addAcceptedBid($aBid['id_bid'], $aBid['amount'] / 100);
-                    $oLoan->id_lender        = $iLenderId;
-                    $oLoan->id_project       = $oProject->id_project;
-                    $oLoan->amount           = $aBid['amount'];
-                    $oLoan->rate             = $aBid['rate'];
-                    $oLoan->id_type_contract = \loans::TYPE_CONTRACT_BDC;
-                    $this->oLoanManager->create($oLoan);
+                    $loan->unsetData();
+                    $loan->addAcceptedBid($aBid['id_bid'], $aBid['amount'] / 100);
+                    $loan->id_lender        = $iLenderId;
+                    $loan->id_project       = $project->id_project;
+                    $loan->amount           = $aBid['amount'];
+                    $loan->rate             = $aBid['rate'];
+                    $loan->id_type_contract = $BDCContractId;
+                    $this->oLoanManager->create($loan);
                 }
             }
         }
@@ -405,7 +459,22 @@ class ProjectManager
         }
     }
 
-    public function createRepaymentSchedule(\projects $oProject)
+    public function createRepaymentSchedule(\projects $project)
+    {
+        $product = $this->productManager->getAssociatedProduct($project);
+        /** @var \repayment_type $repaymentType */
+        $repaymentType = $this->oEntityManager->getRepository('repayment_type');
+        $repaymentType->get($product->id_repayment_type);
+
+        switch ($repaymentType->label) {
+            case \repayment_type::REPAYMENT_TYPE_AMORTIZATION :
+                return $this->createAmortizationRepaymentSchedule($project);
+            default :
+                throw new \Exception('Unknown repayment schedule type ' . $repaymentType->label);
+        }
+    }
+
+    private function createAmortizationRepaymentSchedule(\projects $oProject)
     {
         ini_set('max_execution_time', 300);
         ini_set('memory_limit', '512M');
@@ -422,6 +491,17 @@ class ProjectManager
         $oClientAdresse = $this->oEntityManager->getRepository('clients_adresses');
         /** @var \clients $oClient */
         $oClient = $this->oEntityManager->getRepository('clients');
+        /** @var \underlying_contract $contract */
+        $contract = $this->oEntityManager->getRepository('underlying_contract');
+
+        if (false === $contract->get(\underlying_contract::CONTRACT_BDC, 'label')) {
+            throw new \InvalidArgumentException('The contract ' . \underlying_contract::CONTRACT_BDC . 'does not exist.');
+        }
+        $BDCContractId = $contract->id_contract;
+        if (false === $contract->get(\underlying_contract::CONTRACT_IFP, 'label')) {
+            throw new \InvalidArgumentException('The contract ' . \underlying_contract::CONTRACT_IFP . 'does not exist.');
+        }
+        $IFPContractId = $contract->id_contract;
 
         $oSettings->get('Commission remboursement', 'type');
         $commission = $oSettings->value;
@@ -506,10 +586,10 @@ class ProjectManager
                             $montant_prelevements_sociaux         = 0;
 
                             switch ($oLoan->id_type_contract) {
-                                case \loans::TYPE_CONTRACT_BDC:
+                                case $BDCContractId:
                                     $montant_retenues_source = round($retenues_source * $e['interest'], 2);
                                     break;
-                                case \loans::TYPE_CONTRACT_IFP:
+                                case $IFPContractId:
                                     $montant_retenues_source = 0;
                                     break;
                                 default:
@@ -545,10 +625,10 @@ class ProjectManager
                         $montant_prelevements_sociaux         = 0;
 
                         switch ($oLoan->id_type_contract) {
-                            case \loans::TYPE_CONTRACT_BDC:
+                            case $BDCContractId:
                                 $montant_retenues_source = round($retenues_source * $e['interest'], 2);
                                 break;
-                            case \loans::TYPE_CONTRACT_IFP:
+                            case $IFPContractId:
                                 $montant_retenues_source = 0;
                                 break;
                             default:
@@ -595,7 +675,22 @@ class ProjectManager
         }
     }
 
-    public function createPaymentSchedule(\projects $oProject)
+    public function createPaymentSchedule(\projects $project)
+    {
+        $product = $this->productManager->getAssociatedProduct($project);
+        /** @var \repayment_type $repaymentType */
+        $repaymentType = $this->oEntityManager->getRepository('repayment_type');
+        $repaymentType->get($product->id_repayment_type);
+
+        switch ($repaymentType->label) {
+            case \repayment_type::REPAYMENT_TYPE_AMORTIZATION :
+                return $this->createAmortizationPaymentSchedule($project);
+            default :
+                throw new \Exception('Unknown repayment schedule type ' . $repaymentType->label);
+        }
+    }
+
+    public function createAmortizationPaymentSchedule(\projects $oProject)
     {
         ini_set('memory_limit', '512M');
 

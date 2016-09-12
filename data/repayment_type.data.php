@@ -27,6 +27,8 @@
 // **************************************************************************************************** //
 class repayment_type extends repayment_type_crud
 {
+    const REPAYMENT_TYPE_AMORTIZATION = 'amortization_schedule';
+
     public function __construct($bdd, $params = '')
     {
         parent::repayment_type($bdd, $params);

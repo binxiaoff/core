@@ -1,8 +1,21 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product;
 
-class BidValidator extends Validator
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+
+class BidValidator
 {
+    /** @var ProductAttributeManager */
+    private $productAttributeManager;
+    /** @var EntityManager */
+    private $entityManager;
+
+    public function __construct(ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    {
+        $this->productAttributeManager = $productAttributeManager;
+        $this->entityManager = $entityManager;
+    }
+
     public function isEligible(\bids $bid, \product $product)
     {
         foreach ($this->getAttributeTypeToCheck() as $attributeTypeToCheck) {
@@ -62,7 +75,7 @@ class BidValidator extends Validator
      */
     private function isEligibleForNationality(\bids $bid, \product $product)
     {
-        $eligibleNationality = $this->getProductAttributesByType($product, \product_attribute_type::ELIGIBLE_LENDER_NATIONALITY);
+        $eligibleNationality = $this->productAttributeManager->getProductAttributesByType($product, \product_attribute_type::ELIGIBLE_LENDER_NATIONALITY);
 
         if (empty($eligibleNationality)) {
             return true;
@@ -80,7 +93,7 @@ class BidValidator extends Validator
      */
     private function isEligibleForLenderType(\bids $bid, \product $product)
     {
-        $attrVars = $this->getContractAttributesByType($product, \underlying_contract_attribute_type::ELIGIBLE_LENDER_TYPE);
+        $attrVars = $this->productAttributeManager->getProductContractAttributesByType($product, \underlying_contract_attribute_type::ELIGIBLE_LENDER_TYPE);
 
         if (empty($attrVars)) {
             return true; // No limitation found!
@@ -102,8 +115,10 @@ class BidValidator extends Validator
     private function isEligibleForMaxTotalAmount(\bids $bid, \product $product)
     {
         $totalAmount = $bid->getBidsEncours($bid->id_project, $bid->id_lender_account)['solde'];
+        $bidAmount   = bcdiv($bid->amount, 100, 2);
+        $totalAmount = bcadd($totalAmount, $bidAmount, 2);
 
-        $attrVars    = $this->getContractAttributesByType($product, \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
+        $attrVars    = $this->productAttributeManager->getProductContractAttributesByType($product, \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
 
         if (empty($attrVars)) {
             return true; // No limitation found!

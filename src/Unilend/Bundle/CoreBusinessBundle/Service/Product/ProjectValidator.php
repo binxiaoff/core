@@ -1,8 +1,20 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product;
 
-class ProjectValidator extends Validator
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+
+class ProjectValidator
 {
+    /** @var ProductAttributeManager */
+    private $productAttributeManager;
+    /** @var EntityManager */
+    private $entityManager;
+
+    public function __construct(ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    {
+        $this->productAttributeManager = $productAttributeManager;
+        $this->entityManager = $entityManager;
+    }
 
     /**
      * @param \projects $projects
@@ -62,7 +74,7 @@ class ProjectValidator extends Validator
      */
     private function isEligibleForMinDuration(\projects $project, \product $product)
     {
-        $minDuration = $this->getProductAttributesByType($product, \product_attribute_type::MIN_LOAN_DURATION_IN_MONTH);
+        $minDuration = $this->productAttributeManager->getProductAttributesByType($product, \product_attribute_type::MIN_LOAN_DURATION_IN_MONTH);
 
         if(empty($minDuration)) {
             return true;
@@ -79,7 +91,7 @@ class ProjectValidator extends Validator
      */
     private function isEligibleForMaxDuration(\projects $project, \product $product)
     {
-        $maxDuration = $this->getProductAttributesByType($product, \product_attribute_type::MAX_LOAN_DURATION_IN_MONTH);
+        $maxDuration = $this->productAttributeManager->getProductAttributesByType($product, \product_attribute_type::MAX_LOAN_DURATION_IN_MONTH);
 
         if(empty($maxDuration)) {
             return true;
@@ -96,7 +108,7 @@ class ProjectValidator extends Validator
      */
     private function isEligibleForNeed(\projects $project, \product $product)
     {
-        $eligibleNeeds = $this->getProductAttributesByType($product, \product_attribute_type::ELIGIBLE_NEED);
+        $eligibleNeeds = $this->productAttributeManager->getProductAttributesByType($product, \product_attribute_type::ELIGIBLE_NEED);
         if (empty($eligibleNeeds)) {
             return true;
         }
@@ -106,7 +118,7 @@ class ProjectValidator extends Validator
 
     private function isEligibleForCompanyType(\projects $project, \product $product)
     {
-        $eligibleTypes = $this->getProductAttributesByType($product, \product_attribute_type::ELIGIBLE_BORROWER_COMPANY_TYPE);
+        $eligibleTypes = $this->productAttributeManager->getProductAttributesByType($product, \product_attribute_type::ELIGIBLE_BORROWER_COMPANY_TYPE);
         if (false === empty($eligibleTypes)) {
             // todo: need to define a list of available company type.
         }
@@ -116,7 +128,7 @@ class ProjectValidator extends Validator
 
     private function isEligibleForMaxContractDuration(\projects $project, \product $product)
     {
-        $attrVars = $this->getContractAttributesByType($product, \underlying_contract_attribute_type::MAX_LOAN_DURATION_IN_MONTH);
+        $attrVars = $this->productAttributeManager->getProductContractAttributesByType($product, \underlying_contract_attribute_type::MAX_LOAN_DURATION_IN_MONTH);
         foreach($attrVars as $contractVars) {
             if ($contractVars[0] < $project->period) {
                 return false;

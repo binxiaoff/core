@@ -28,8 +28,6 @@
 
 class loans extends loans_crud
 {
-    const IFP_AMOUNT_MAX = 1000;
-
     const TYPE_CONTRACT_BDC = 1;
     const TYPE_CONTRACT_IFP = 2;
 
