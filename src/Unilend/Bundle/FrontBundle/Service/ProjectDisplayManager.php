@@ -6,13 +6,13 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class ProjectDisplayManager
 {
-    /** @var  EntityManager */
+    /** @var EntityManager */
     private $entityManager;
-    /** @var  ProjectManager */
+    /** @var ProjectManager */
     private $projectManager;
-    /** @var  LenderAccountDisplayManager */
+    /** @var LenderAccountDisplayManager */
     private $lenderAccountDisplayManager;
-    /** @var  array */
+    /** @var array */
     private static $projectsStatus = [
         \projects_status::EN_FUNDING,
         \projects_status::FUNDE,
@@ -123,7 +123,8 @@ class ProjectDisplayManager
             'status'               => $project['status'],
             'finished'             => ($project['status'] > \projects_status::EN_FUNDING || $end < $now),
             'averageRate'          => round($projects->getAverageInterestRate(), 1),
-            'totalLenders'         => (\projects_status::EN_FUNDING == $project['status']) ? $bids->countLendersOnProject($project['id_project']) : $loans->getNbPreteurs($project['id_project'])
+            'totalLenders'         => (\projects_status::EN_FUNDING == $project['status']) ? $bids->countLendersOnProject($project['id_project']) : $loans->getNbPreteurs($project['id_project']),
+            'fundingDuration'      => (\projects_status::EN_FUNDING > $project['status']) ? '' : $this->getFundingDurationTranslation($projects)
         ];
 
         $daysLeft = $now->diff($end);
@@ -157,12 +158,10 @@ class ProjectDisplayManager
 
         if ($alreadyFunded >= $project->amount) {
             $projectData['costFunded']    = $project->amount;
-            $projectData['costRemaining'] = 0;
             $projectData['percentFunded'] = 100;
             $projectData['maxValidRate']  = $bids->getProjectMaxRate($project);
         } else {
             $projectData['costFunded']    = $alreadyFunded;
-            $projectData['costRemaining'] = $project->amount - $alreadyFunded;
             $projectData['percentFunded'] = $alreadyFunded / $project->amount * 100;
             $projectData['maxValidRate']  = $projectRateSettings->rate_max;
         }
@@ -186,7 +185,7 @@ class ProjectDisplayManager
             $projectData['dateLastRepayment'] = date('d/m/Y', strtotime($lastStatusHistory['added']));
         }
 
-        if (\projects_status::EN_FUNDING == $projectData['status']) {
+        if (\projects_status::EN_FUNDING <= $projectData['status']) {
             $rateSummary     = [];
             $bidsSummary     = $this->projectManager->getBidsSummary($project);
             $bidsCount       = array_sum(array_column($bidsSummary, 'bidsCount'));
@@ -209,8 +208,6 @@ class ProjectDisplayManager
                 'averageAmount'   => $bidsCount > 0 ? round($bidsTotalAmount / $bidsCount, 2) : 0,
                 'activeBidsCount' => array_sum(array_column($bidsSummary, 'activeBidsCount'))
             ];
-        } else {
-            $projectData['fundingStatistics'] = $this->getProjectFundingStatistic($project);
         }
 
         return $projectData;
@@ -316,19 +313,43 @@ class ProjectDisplayManager
         return $finance;
     }
 
-    public function getProjectFundingStatistic(\projects $project)
+    public function getFundingDurationTranslation(\projects $project)
     {
-        /** @var \loans $loans */
-        $loans = $this->entityManager->getRepository('loans');
-
         $startFundingPeriod = ($project->date_publication_full != '0000-00-00 00:00:00') ? new \DateTime($project->date_publication_full) : new \DateTime($project->date_publication . ' 00:00:00');
-        $endFundingPeriod   = ($project->date_retrait_full != '0000-00-00 00:00:00') ? new \DateTime($project->date_retrait_full) : new \DateTime($project->date_fin);
+        $endFundingPeriod   = ($project->date_retrait_full != '0000-00-00 00:00:00') ? new \DateTime($project->date_retrait_full) : new \DateTime($project->date_retrait);
+        $duration           = $startFundingPeriod->diff($endFundingPeriod);
+        $translation        = '';
+        $x                  = 0;
+        $y                  = 0;
 
-        $fundingStatistics['fundingTime']  = $startFundingPeriod->diff($endFundingPeriod);
-        $fundingStatistics['NumberLender'] = $loans->getNbPreteurs($project->id_project);
-        $fundingStatistics['AvgRate']      = round($project->getAverageInterestRate(), 1);
+        switch (true) {
+            case $duration->d > 0:
+                $x           = $duration->d;
+                $y           = $duration->h;
+                $translation = 'day-hour';
+                break;
+            case $duration->h > 0:
+                $x           = $duration->h;
+                $y           = $duration->i;
+                $translation = 'hour-minute';
+                break;
+            case $duration->i > 0:
+                $x           = $duration->i;
+                $y           = $duration->s;
+                $translation = 'minute-second';
+                break;
+            case $duration->s > 0:
+                $x           = $duration->i;
+                $y           = $duration->s;
+                $translation = 'second';
+                break;
+        }
 
-        return $fundingStatistics;
+        return [
+            'translation' => $translation,
+            'choice'      => (int) (($x >= 2 ? '1' : '0') . ($y >= 2 ? '1' : '0')),
+            'values'      => ['%x%' => $x, '%y%' => $y]
+        ];
     }
 
     public function getTotalNumberOfDisplayedProjects()

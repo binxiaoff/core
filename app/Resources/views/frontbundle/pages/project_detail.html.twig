@@ -35,7 +35,7 @@
                             categoryId: project.company.sectorId,
                             latLng: [project.company.latitude, project.company.longitude],
                             title: project.title,
-                            description: '<div style="font-style: italic;">' ~ project.company.city ~ ', ' ~ project.company.zip ~ '</div><div class="rating rating-' ~ classRating ~ '"><span class="sr-only">Rated ' ~ project.risk ~ ' out of 5</span></span></div>',
+                    description: '<div style="font-style: italic;">' ~ project.company.city ~ ', ' ~ project.company.zip ~ '</div><div class="rating rating-' ~ classRating ~ '"><span class="sr-only">' ~ ('project-detail_rating-legend'|trans({'%rating%' : classRating})) ~ '</span></span></div>',
                             status: (project.finished ? 'expired' : 'active'),
                             offerStatus: mapviewOfferStatus|default(''),
                             groupName: mapviewGroup|default('all')
@@ -84,12 +84,14 @@
 
                             <div class="col-lg-4 col-md-4 hide-xs">
                                 <div class="project-single-rating">
-                                    <div class="label">{% trans %} project-detail_unilend-rating-label {% endtrans %}</div>
-                                    <span class="rating rating-{{ classRating }}">
-                                        <span class="sr-only">
-                                            {% trans with {'%risk%' : project.risk|convertRisk} %} project-detail_unilend-rating-wording-label {% endtrans %}
+                                    <div class="label"><a href="{{ path(constant('Unilend\\Bundle\\FrontBundle\\Service\\RouteProvider::ROUTE_UNILEND_RATING')) }}">{% trans %} project-detail_unilend-rating-label {% endtrans %}</a></div>
+                                    <a href="{{ path(constant('Unilend\\Bundle\\FrontBundle\\Service\\RouteProvider::ROUTE_UNILEND_RATING')) }}">
+                                        <span class="rating rating-{{ classRating }}">
+                                            <span class="sr-only">
+                                                {% trans with {'%risk%' : project.risk|convertRisk} %} project-detail_unilend-rating-wording-label {% endtrans %}
+                                            </span>
                                         </span>
-                                    </span>
+                                    </a>
                                 </div><!-- /.project-single-rating -->
                             </div>
                         </div>
@@ -121,10 +123,14 @@
                                             <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|escape('html_attr') }}"></span>
                                         {% endif %}
                                     </div>
-                                    <div class="project-single-period-expires">{% trans with {
+
+                                    <div class="project-single-period-expires">
+                                        {% trans with {
                                             '%date%' : project.endDate|localizeddate('full', 'none', app.request.locale),
-                                            '%time%' : project.endDate|localizeddate('none', 'short', app.request.locale)
+                                            '%hours%' : project.endDate|date('H'),
+                                            '%minutes%' : project.endDate|date('i')
                                         } %} project-detail_project-end-label {% endtrans %}
+                                    </div>
                                 </div><!-- /.project-single-period -->
 
                                 <div class="project-single-offers">
@@ -155,8 +161,9 @@
                                 <div class="show-xs">
                                     <div class="project-single-rating">
                                         <div class="label">{% trans %} project-detail_unilend-rating-label {% endtrans %}</div>
-                                        <span class="rating rating-{{ classRating }}"><span class="sr-only">
-                                                {% trans with {'%risk%' : project.risk|convertRisk} %} project-detail_unilend-rating-wording-label {% endtrans %}</span></span>
+                                        <span class="rating rating-{{ classRating }}">
+                                            <span class="sr-only">{% trans with {'%risk%' : project.risk|convertRisk} %} project-detail_unilend-rating-wording-label {% endtrans %}</span>
+                                        </span>
                                     </div><!-- /.project-single-rating -->
                                 </div><!-- /.show-xs -->
                             </div>
@@ -180,14 +187,14 @@
             <div class="project-single-menu-inner">
                 <nav class="project-single-nav">
                     <ul class="nav nav-anchors">
+                        {% if conditions.history %}
+                            <li role="presentation"><a href="#history">{% trans %} project-detail_project-history-title {% endtrans %}</a></li>
+                        {% endif %}
                         {% if conditions.bids %}
                             <li role="presentation"><a href="#offers">{% trans %} project-detail_presentation-title-offers {% endtrans %}</a></li>
                         {% endif %}
                         <li role="presentation"><a href="#presentation">{% trans %} project-detail_presentation-title-presentation {% endtrans %}</a></li>
                         <li role="presentation"><a href="#finance">{% trans %} project-detail_presentation-title-financial-accounts {% endtrans %}</a></li>
-                        {% if conditions.history %}
-                            <li role="presentation"><a href="#history">{% trans %} project-detail_project-history-title {% endtrans %}</a></li>
-                        {% endif %}
                     </ul>
                 </nav><!-- /.project-single-nav -->
 
@@ -217,16 +224,50 @@
                     <div class="col-lg-8 col-md-8">
                         <nav class="project-single-nav">
                             <ul class="nav nav-anchors">
+                                {% if conditions.history %}
+                                    <li role="presentation"><a href="#history">{% trans %} project-detail_project-history-title {% endtrans %}</a></li>
+                                {% endif %}
                                 {% if conditions.bids %}
                                     <li role="presentation"><a href="#offers">{% trans %} project-detail_presentation-title-offers {% endtrans %}</a></li>
                                 {% endif %}
                                 <li role="presentation"><a href="#presentation">{% trans %} project-detail_presentation-title-presentation {% endtrans %}</a></li>
                                 <li role="presentation"><a href="#finance">{% trans %} project-detail_presentation-title-financial-accounts {% endtrans %}</a></li>
-                                {% if conditions.history %}
-                                    <li role="presentation"><a href="#history">{% trans %} project-detail_project-history-title {% endtrans %}</a></li>
-                                {% endif %}
                             </ul>
                         </nav><!-- /.project-single-nav -->
+
+                        {% if conditions.history %}
+                            <div id="history" data-watchscroll-nav>
+                                <section id="project-section-info" class="page-section">
+                                    <h3 class="h3">{% trans %} project-detail_project-history-title {% endtrans %}</h3>
+                                    <p>{% trans with {'%amountUserLoan%' : project.lender.loans.myLoanOnProject.solde|localizednumber} %} project-detail_project-presentation-repayment-info {% endtrans %}</p>
+                                    <p>
+                                        {% trans with {
+                                            '%amountAlreadyPaidBack%' : project.lender.loans.amountAlreadyPaidBack|localizednumber,
+                                            '%remainingToBeRepaid%' : project.lender.loans.remainingToBeRepaid|localizednumber,
+                                            '%remainingMonths%' : project.lender.loans.remainingMonths
+                                        } %} project-detail_project-presentation-repayment-info-detail {% endtrans %}
+                                    </p>
+
+                                    {% if project.lender.loans.amountAlreadyPaidBack > 0 %}
+                                        {% for history in project.statusHistory %}
+                                            {% if 'project-presentation-repayment-info-project-status-#{history.status}'|trans != 'project-presentation-repayment-info-project-status-#{history.status}' %}
+                                                <p>
+                                                    {{ history.added|date(d/m/Y) }}
+                                                    {{ 'project-presentation-repayment-info-project-status-#{history.status}'|trans }}
+                                                    <br/>
+                                                    {% if history.site_content is not empty %}
+                                                        {{ history.content|nl2br }}
+                                                        {% if history.failure == 1 %}
+                                                            {% trans with {'%percentageRecovered%' : project.lender.loans.percentageRecovered|localizednumberwithprecision(1) } %} project-detail_project-presentation-repayment-info-recovery {% endtrans %}
+                                                        {% endif %}
+                                                    {% endif %}
+                                                </p>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                </section><!-- /.page-section -->
+                            </div>
+                        {% endif %}
 
                         {% if conditions.bids %}
                             <div id="offers" data-watchscroll-nav>
@@ -276,46 +317,13 @@
                             {% endif %}
 
                             {% if conditions.warningTaxDeduction %}
-                                <div class="message-alert">
+                                <div class="message-info">
                                     <p>{% trans %} project-detail_fiscal-information {% endtrans %}</p>
                                     <a href="{{ route('fiscalite') }}" class="link">{% trans %} project-detail_learn-more-link-under-warnings {% endtrans %}</a>
                                 </div>
                             {% endif %}
                         </section><!-- /.page-section -->
 
-                        {% if conditions.history %}
-                            <div id="history" data-watchscroll-nav>
-                                <section id="project-section-info" class="page-section">
-                                    <h3 class="h3">{% trans %} project-detail_project-history-title {% endtrans %}</h3>
-                                    <p>{% trans with {'%amountUserLoan%' : project.lender.loans.myLoanOnProject.solde|localizednumber} %} project-detail_project-presentation-repayment-info {% endtrans %}</p>
-                                    <p>
-                                        {% trans with {
-                                            '%amountAlreadyPaidBack%' : project.lender.loans.amountAlreadyPaidBack|localizednumber,
-                                            '%remainingToBeRepaid%' : project.lender.loans.remainingToBeRepaid|localizednumber,
-                                            '%remainingMonths%' : project.lender.loans.remainingMonths
-                                        } %} project-detail_project-presentation-repayment-info-detail {% endtrans %}
-                                    </p>
-
-                                    {% if project.lender.loans.amountAlreadyPaidBack > 0 %}
-                                        {% for history in project.statusHistory %}
-                                            {% if 'project-presentation-repayment-info-project-status-#{history.status}'|trans != 'project-presentation-repayment-info-project-status-#{history.status}' %}
-                                                <p>
-                                                {{ history.added|date(d/m/Y) }}
-                                                    {{ 'project-presentation-repayment-info-project-status-#{history.status}'|trans }}
-                                                    <br/>
-                                                    {% if history.site_content is not empty %}
-                                                        {{ history.content|nl2br }}
-                                                        {% if history.failure == 1 %}
-                                                            {% trans with {'%percentageRecovered%' : project.lender.loans.percentageRecovered|localizednumberwithprecision(1) } %} project-detail_project-presentation-repayment-info-recovery {% endtrans %}
-                                                        {% endif %}
-                                                    {% endif %}
-                                                </p>
-                                            {% endif %}
-                                        {% endfor %}
-                                    {% endif %}
-                                </section><!-- /.page-section -->
-                            </div>
-                        {% endif %}
                         <div class="project-single-info-position-end"></div>
                     </div><!-- /.col -->
                 </div><!-- /.row -->

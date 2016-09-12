@@ -11,9 +11,7 @@
             </ul>
         </div><!-- /.project-list-nav -->
         <div class="project-list-content tab-content">
-
             <div id="project-list-view" role="tabpanel" class="tab-pane active">
-
                 <div class="project-list-filters">
                     <div class="project-list-item-category project-list-filter{% if sortType == 'sector' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
                         {% if showSortable %}
@@ -123,7 +121,10 @@
                             </div>
                             <div class="project-list-item-period">
                                 {% if project.finished %}
-                                    {{ "project-list_project-finished"|trans({'%date%': project.endDate|localizeddate('medium', 'none', app.request.locale)})|raw}}
+                                    {% trans with {
+                                        '%fundingDuration%' : ('project-list_funding-duration-' ~ project.fundingDuration.translation)|transchoice(project.fundingDuration.choice, project.fundingDuration.values),
+                                        '%date%' : project.endDate|localizeddate('medium', 'none', app.request.locale)}
+                                    %} project-list_project-finished {% endtrans %}
                                 {% elseif project.daysLeft <= 2 %}
                                     <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|escape('html_attr') }}"></span>
                                 {% else %}
