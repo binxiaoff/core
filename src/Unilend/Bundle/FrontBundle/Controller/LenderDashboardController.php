@@ -79,7 +79,8 @@ class LenderDashboardController extends Controller
 
         foreach ($ongoingProjects as $iKey => $aProject) {
             $project->get($aProject['id_project']);
-            $projectStats = $this->get('unilend.frontbundle.service.project_display_manager')->getProjectFundingStatistic($project);
+            $projectStats = $this->get('unilend.frontbundle.service.project_display_manager')->getFundingDuration($project);
+
             if (0 < $bid->counter('id_project = ' . $aProject['id_project'] . ' AND id_lender_account = ' . $lender->id_lender_account)) {
                 $ongoingBidsByProject[$iKey]                 = [
                     'title'            => $aProject['title'],
