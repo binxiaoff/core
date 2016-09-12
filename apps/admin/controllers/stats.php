@@ -514,7 +514,18 @@ class statsController extends bootstrap
 
         $this->settings->get('EQ-Retenue à la source', 'type');
         $this->retenuesource = $this->settings->value;
-        $this->lPre = $this->clients->selectPreteursByStatus('20,30,40,50,60', '(SELECT count(*) from loans where status = 0 AND id_lender = l.id_lender_account) >= 1');
+        $this->lPre = $this->clients->selectPreteursByStatus(
+            '20, 30, 40, 50, 60',
+            '(
+                SELECT COUNT(*) 
+                FROM transactions 
+                WHERE status = 1 
+                    AND etat = 1 
+                    AND type_transaction IN (' . implode(', ', [\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT]) . ') 
+                    AND id_client = c.id_client
+                    AND added BETWEEN "' . date('Y') . '-01-01" AND "' . (date('Y') + 1) . '-01-01" 
+            ) >= 1'
+        );
     }
 
     public function _requete_beneficiaires_csv()
@@ -534,7 +545,18 @@ class statsController extends bootstrap
 
         $this->settings->get('EQ-Retenue à la source', 'type');
         $this->retenuesource = $this->settings->value;
-        $this->lPre = $this->clients->selectPreteursByStatus('20,30,40,50,60', '(SELECT count(*) from loans where status = 0 AND id_lender = l.id_lender_account) >= 1');
+        $this->lPre = $this->clients->selectPreteursByStatus(
+            '20, 30, 40, 50, 60',
+            '(
+                SELECT COUNT(*) 
+                FROM transactions 
+                WHERE status = 1 
+                    AND etat = 1 
+                    AND type_transaction IN (' . implode(', ', [\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT]) . ') 
+                    AND id_client = c.id_client
+                    AND added BETWEEN "' . date('Y') . '-01-01" AND "' . (date('Y') + 1) . '-01-01" 
+            ) >= 1'
+        );
 
         $aData = array();
         foreach ($this->lPre as $e) {
