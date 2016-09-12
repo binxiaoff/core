@@ -1369,4 +1369,33 @@ class LenderSubscriptionController extends Controller
         $mailer = $this->get('mailer');
         $mailer->send($message);
     }
+
+    /**
+     * @Route("/inscription_preteur/ajax/check-city", name="lender_subscription_ajax_check_city")
+     * @Method("GET")
+     */
+    public function checkCityAction(Request $request)
+    {
+        if ($request->isXMLHttpRequest()) {
+            $get = $request->query->all();
+
+            if (false === empty($get['country']) && \pays_v2::COUNTRY_FRANCE != $get['country']) {
+                return $this->json(['status' => true]);
+            }
+
+            if (empty($get['zip'])) {
+                $get['zip'] = null;
+            }
+
+            if (false === empty($get['city'])) {
+                /** @var LocationManager $locationManager */
+                $locationManager = $this->get('unilend.service.location_manager');
+                return $this->json(['status' => $locationManager->checkFrenchCity($get['city'], $get['zip'])]);
+            }
+
+            return $this->json(['status' => false]);
+        }
+
+        return new Response('not an ajax request');
+    }
 }

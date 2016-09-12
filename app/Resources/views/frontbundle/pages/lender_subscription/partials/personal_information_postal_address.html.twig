@@ -4,10 +4,13 @@
 {% endif %}
 
 <fieldset id="form-lender-{{ idClientType }}-fieldset-postal-address"
-          class="form-lender-fieldset-postal-address panel collapse{% if formData.same_postal_address == true %} in" {% endif %}
+          class="form-lender-fieldset-postal-address panel collapse{% if formData.same_postal_address == true %} in{% endif %}"
           {% if formData.same_postal_address == true %} aria-expanded="true" {% else %} aria-expanded="false" style="height : 0;" {% endif %}>
 
     <h3 class="h3">{% trans %} lender-subscription_address-form-postal-address-title {% endtrans %}</h3>
+    <div id="form-preter-{{ idClientType }}-address-autocomplete-error" class="ui-formvalidation-notifications address-autocomplete-error" style="display: none;">
+        <div class="message-error">{% trans %}lender-subscription_fiscal-address-autocomplete-error{% endtrans %}</div>
+    </div>
 
     <div class="row">
         <div class="form-field">
