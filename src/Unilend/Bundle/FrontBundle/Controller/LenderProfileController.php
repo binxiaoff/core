@@ -25,10 +25,11 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class LenderProfileController extends Controller
 {
     /**
+     * @Route("/profile/info-perso", name="lender_profile_personal_information")
      * @Route("/profile", name="lender_profile")
      * @Security("has_role('ROLE_LENDER')")
      */
-    public function lenderProfileAction(Request $request)
+    public function personalInformationAction(Request $request)
     {
         /** @var array $templateData */
         $templateData = [];
@@ -43,11 +44,71 @@ class LenderProfileController extends Controller
         $templateData['lenderAccount'] = $lenderAccount->select('id_lender_account = ' . $lenderAccount->id_lender_account)[0];
 
         $this->addPersonalInformationDataToTemplate($templateData, $request, $client, $lenderAccount, $settings);
+
+        return $this->render('pages/lender_profile/personal_information.html.twig', $templateData);
+    }
+
+    /**
+     * @Route("/profile/info-fiscal", name="lender_profile_fiscal_information")
+     * @Security("has_role('ROLE_LENDER')")
+     */
+    public function fiscalInformationAction()
+    {
+        /** @var array $templateData */
+        $templateData = [];
+        /** @var \clients $client */
+        $client = $this->getClient();
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount = $this->getLenderAccount();
+
+        $templateData['client']        = $client->select('id_client = ' . $client->id_client)[0];
+        $templateData['lenderAccount'] = $lenderAccount->select('id_lender_account = ' . $lenderAccount->id_lender_account)[0];
+
         $this->addFiscalInformationTemplateData($templateData, $client, $lenderAccount);
+
+        return $this->render('pages/lender_profile/fiscal_information.html.twig', $templateData);
+    }
+
+    /**
+     * @Route("/profile/securite", name="lender_profile_security")
+     * @Security("has_role('ROLE_LENDER')")
+     */
+    public function securityAction(Request $request)
+    {
+        /** @var array $templateData */
+        $templateData = [];
+        /** @var \clients $client */
+        $client = $this->getClient();
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount = $this->getLenderAccount();
+
+        $templateData['client']        = $client->select('id_client = ' . $client->id_client)[0];
+        $templateData['lenderAccount'] = $lenderAccount->select('id_lender_account = ' . $lenderAccount->id_lender_account)[0];
+
         $this->addFormDataForSecurity($templateData, $request, $client);
+
+        return $this->render('pages/lender_profile/security.html.twig', $templateData);
+    }
+
+    /**
+     * @Route("/profile/alertes", name="lender_profile_notifications")
+     * @Security("has_role('ROLE_LENDER')")
+     */
+    public function notificationsAction()
+    {
+        /** @var array $templateData */
+        $templateData = [];
+        /** @var \clients $client */
+        $client = $this->getClient();
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount = $this->getLenderAccount();
+
+        $templateData['client']        = $client->select('id_client = ' . $client->id_client)[0];
+        $templateData['lenderAccount'] = $lenderAccount->select('id_lender_account = ' . $lenderAccount->id_lender_account)[0];
+
         $this->addNotificationSettingsTemplate($templateData, $client);
 
-        return $this->render('pages/lender_profile/lender_info.html.twig', $templateData);
+        return $this->render('pages/lender_profile/notifications.html.twig', $templateData);
     }
 
     private function addNotificationSettingsTemplate(&$templateData, \clients $client)
@@ -431,7 +492,7 @@ class LenderProfileController extends Controller
         }
 
         $this->saveClientActionHistory($client, serialize(['id_client' => $client->id_client, 'post' => $request->request->all(), 'files' => $_FILES]));
-        return $this->redirectToRoute('lender_profile');
+        return $this->redirectToRoute('lender_profile_personal_information');
     }
 
     /**
@@ -623,7 +684,7 @@ class LenderProfileController extends Controller
         }
 
         $this->saveClientActionHistory($client, serialize(['id_client' => $client->id_client, 'post' => $request->request->all(), 'files' => $_FILES]));
-        return $this->redirectToRoute('lender_profile');
+        return $this->redirectToRoute('lender_profile_personal_information');
     }
 
     /**
@@ -746,7 +807,7 @@ class LenderProfileController extends Controller
         }
 
         $this->saveClientActionHistory($client, serialize(['id_client' => $client->id_client, 'post' => $request->request->all(), 'files' => $_FILES]));
-        return $this->redirectToRoute('lender_profile');
+        return $this->redirectToRoute('lender_profile_personal_information');
     }
 
     /**
@@ -820,7 +881,7 @@ class LenderProfileController extends Controller
             }
         }
         $this->saveClientActionHistory($client, serialize(['id_client' => $client->id_client, 'post' => $request->request->all()]));
-        return $this->redirectToRoute('lender_profile');
+        return $this->redirectToRoute('lender_profile_personal_information');
     }
 
     /**
@@ -869,7 +930,7 @@ class LenderProfileController extends Controller
         }
 
         $this->saveClientActionHistory($client, serialize(['id_client' => $client->id_client, 'post' => $request->request->all()]));
-        return $this->redirectToRoute('lender_profile');
+        return $this->redirectToRoute('lender_profile_personal_information');
     }
 
     /**
@@ -1131,7 +1192,7 @@ class LenderProfileController extends Controller
             $this->addFlash('bankInfoUpdateError', $translator->trans('lender-profile_fiscal-tab-bank-info-update-ko'));
         }
 
-        return $this->redirectToRoute('lender_profile');
+        return $this->redirectToRoute('lender_profile_fiscal_information');
     }
 
     /**
@@ -1216,7 +1277,7 @@ class LenderProfileController extends Controller
         }
 
         $this->saveClientActionHistory($client, serialize(['id_client' => $client->id_client, 'post' => $request->request->all()]));
-        return $this->redirectToRoute('lender_profile');
+        return $this->redirectToRoute('lender_profile_security');
     }
 
     /**
@@ -1267,10 +1328,10 @@ class LenderProfileController extends Controller
             $this->addFlash('securityPasswordErrors', $translator->trans('lender-profile_security-password-section-error-missing-former-password'));
         }
         if (empty($post['client_new_password'])) {
-            $this->addFlash('securityPasswordErrors', $translator->trans('common-validators_missing-new-password'));
+            $this->addFlash('securityPasswordErrors', $translator->trans('common-validator_missing-new-password'));
         }
         if (empty($post['client_new_password_confirmation'])) {
-            $this->addFlash('securityPasswordErrors', $translator->trans('common-validators_missing-new-password-confirmation'));
+            $this->addFlash('securityPasswordErrors', $translator->trans('common-validator_missing-new-password-confirmation'));
         }
 
         if (false === empty($post['client_former_password']) && false === empty($post['client_new_password']) && false === empty($post['client_new_password_confirmation'])) {
@@ -1278,10 +1339,10 @@ class LenderProfileController extends Controller
                 $this->addFlash('securityPasswordErrors', $translator->trans('lender-profile_security-password-section-error-wrong-former-password'));
             }
             if ($post['client_new_password'] !== $post['client_new_password_confirmation']) {
-                $this->addFlash('securityPasswordErrors', $translator->trans('common-validators_password-not-equal'));
+                $this->addFlash('securityPasswordErrors', $translator->trans('common-validator_password-not-equal'));
             }
             if (false === $ficelle->password_fo($post['client_new_password'], 6)) {
-                $this->addFlash('securityPasswordErrors', $translator->trans('common-validators_password-invalid'));
+                $this->addFlash('securityPasswordErrors', $translator->trans('common-validator_password-invalid'));
             }
         }
 
@@ -1296,7 +1357,7 @@ class LenderProfileController extends Controller
         $clientHistoryActions = $this->get('unilend.service.entity_manager')->getRepository('clients_history_actions');
         $clientHistoryActions->histo(7, 'change mdp', $client->id_client, serialize(['id_client' => $client->id_client, 'newmdp' => md5($post['client_new_password'])]));
 
-        return $this->redirectToRoute('lender_profile');
+        return $this->redirectToRoute('lender_profile_security');
     }
 
     /**
@@ -1341,7 +1402,7 @@ class LenderProfileController extends Controller
             'response'  => isset($post['client_secret_answer']) ? md5($post['client_secret_answer']) : ''
         ]));
 
-        return $this->redirectToRoute('lender_profile');
+        return $this->redirectToRoute('lender_profile_security');
     }
 
     /**
@@ -1443,5 +1504,31 @@ class LenderProfileController extends Controller
         $company->get($clientId, 'id_client_owner');
 
         return $company;
+    }
+
+    /**
+     * @Route("/profile/ajax/password", name="lender_profile_ajax_password")
+     * @Method("POST")
+     */
+    public function checkPassWordComplexityAction(Request $request)
+    {
+        if ($request->isXMLHttpRequest()) {
+            /** @var \ficelle $ficelle */
+            $ficelle = Loader::loadLib('ficelle');
+            /** @var TranslatorInterface $translator */
+            $translator = $this->get('translator');
+            if ($ficelle->password_fo($request->request->get('client_password'), 6)) {
+                return new JsonResponse([
+                    'status' => true
+                ]);
+            } else {
+                return new JsonResponse([
+                    'status' => false,
+                    'error' => $translator->trans('common-validator_password-invalid')
+                ]);
+            }
+        }
+
+        return new Response('not an ajax request');
     }
 }

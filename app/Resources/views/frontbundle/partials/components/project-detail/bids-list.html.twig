@@ -44,17 +44,17 @@
                                 {% if rateSummary.bidsCount > 0 %}
                                     <tr class="bids-row {% if rateSummary.activePercentage == 0 %} rejected-row {% endif %}" data-bid-rate="{{ rateSummary.rate }}">
                                         <td>
-                                            <span class="bid-rate-cta">{{ rateSummary.rate|__num(1) }}&nbsp;%</span>
+                                            <span class="bid-rate-cta">{{ rateSummary.rate|localizednumberwithprecision(1) }}&nbsp;%</span>
                                             <span class="icon-cta icon fa-caret-r-u32"></span>
                                             <span class="icon-cta icon fa-caret-d-u32"></span>
                                         </td>
-                                        <td>{{ rateSummary.totalAmount|__num(0)|nbsp|raw }}&nbsp;€</td>
-                                        <td>{{ rateSummary.bidsCount|__num(0)|nbsp|raw }}</td>
+                                        <td>{{ rateSummary.totalAmount|localizednumber }}&nbsp;€</td>
+                                        <td>{{ rateSummary.bidsCount|localizednumber }}</td>
                                         <td>
-                                            <span class="c-p1 {% if rateSummary.activePercentage == 0 %} all-rejected {% endif %}">
+                                            <span class="c-p1{% if rateSummary.activePercentage == 0 %} all-rejected {% endif %}">
                                                 <span class="icon icon-rejected fa-refused-u32"></span>
                                                 <span class="icon icon-accepted fa-check-u32"></span>
-                                                <span>{{ rateSummary.activePercentage }}&nbsp;%</span>
+                                                <span>{{ rateSummary.activePercentage|localizednumber }}&nbsp;%</span>
                                             </span>
                                         </td>
                                     </tr>
@@ -79,30 +79,15 @@
                         },
                         "title": {
                             "margin": 20,
-                            "text": "{% transchoice project.bids.activeBidsCount with {'%activeBidsCount%' : project.bids.activeBidsCount} %} project-detail_all-bids-graph-title {% endtranschoice %}",
+                            "text": "{% transchoice project.bids.activeBidsCount with {'%activeBidsCount%' : project.bids.activeBidsCount|localizednumber} %} project-detail_all-bids-graph-title {% endtranschoice %}",
                             "align": "left",
                             "style": {"fontSize": "16px"}
-                        },
-                        "subtitle": {
-                            "margin": 10,
-                            "useHTML": true,
-                            "text": "<span class='chart-key-icon' style='background: white; border: solid 3px #5FC5D1; width: 12px; height: 12px; line-height: 12px;'></span> {% trans %} project-detail_all-bids-graph-subtitle-legend {% endtrans %}",
-                            "align": "right",
-                            "style": {"color": "#5FC5D1", "fontSize": "14px"}
                         },
                         "tooltip": {
                             "valueSuffix": " €"
                         },
                         "xAxis": {
-                            "categories": [{% for rate, rateSummary in project.bids.graph.summary %}"{{ rate }}%"{% if not loop.last %},{% endif %}{% endfor %}],
-                            "plotBands": [{
-                                "from": 8,
-                                "to": 12.5,
-                                "borderWidth": 0,
-                                "color": "rgba(255, 255, 255, .5)",
-                                "zIndex": 1
-                            }],
-                            "plotLines": [{"color": "#999999", "dashStyle": "ShortDot", "value": {{ project.bids.graph.maxNotNullIndex + 1 }}, "width": 1}]
+                            "categories": [{% for rate, rateSummary in project.bids.graph.summary %}"{{ rate }}%"{% if not loop.last %},{% endif %}{% endfor %}]
                         },
                         "yAxis": {"title": {"text": "{% trans %} project-detail_all-bids-graph-y-axis-legend {% endtrans %}"}},
                         "plotOptions": {

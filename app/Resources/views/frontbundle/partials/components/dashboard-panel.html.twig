@@ -12,10 +12,10 @@
       </div>
     {% endblock %}
   </header>
-  <div class="dashboard-panel-content">
+  <div class="dashboard-panel-content" {% block panelContentAttributes %}{% endblock %}>
     {% block panelContent %}{% endblock %}
   </div><!-- /.dashboard-panel-content -->
-  <footer class="dashboard-panel-footer">
+  <footer class="dashboard-panel-footer" {% block panelFooterAttributes %}{% endblock %}>
     {% block panelFooter %}{% endblock %}
   </footer><!-- /.dashboard-panel-footer -->
 </article><!-- /.dashboard-panel -->

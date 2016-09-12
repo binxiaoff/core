@@ -30,7 +30,7 @@
                 <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
                     <li>
                         <label>
-                            <input type="radio" name="client_type" value="person"{% if formData.client_type == 'person' or formData.client_type is empty %} checked{% endif %} />
+                            <input type="radio" name="client_type" value="person"{% if formData.client_type == 'person' or formData.client_type is empty %} checked{% endif %}/>
                             {% trans %} lender-subscription_identity-client-type-person-label {% endtrans %}
                         </label>
                     </li>
@@ -72,7 +72,7 @@
         <div class="row row-multi-col-computer">
             <div class="form-field col-lg-6 col-md-6">
                 <label for="form-lender-person-name">
-                    {% trans %} common_name {% endtrans %}
+                    {% trans %} common_birth-name {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <input id="form-lender-person-name" type="text" name="client_name" value="{{ formData.client_name }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
@@ -104,6 +104,9 @@
 
     <fieldset class="panel">
         <h3 class="h3">{% trans %} lender-subscription_address-form-title {% endtrans %}</h3>
+        <div id="form-preter-person-fiscal-address-autocomplete-error" class="ui-formvalidation-notifications address-autocomplete-error" style="display: none;">
+                <div class="message-error">{% trans %}lender-subscription_fiscal-address-autocomplete-error{% endtrans %}</div>
+        </div>
 
         <div class="row">
             <div class="form-field">
@@ -193,7 +196,7 @@
             <div class="form-field form-field-single-checkbox">
                 <label>
                     <input type="checkbox" name="same_postal_address" value="true"
-                           class="toggle-correspondence-address"{% if formData.same_postal_address == true %} checked{% endif %}>
+                           class="toggle-correspondence-address"{% if formData.same_postal_address == true or formData.same_postal_address is not empty %} checked{% endif %}>
                     <span class="label">{% trans %} lender-subscription_address-form-same-postal-address-checkbox {% endtrans %}</span>
                 </label>
             </div><!-- /.form-field -->
@@ -206,6 +209,10 @@
         <h3 class="h3">{% trans %} lender-subscription_civil-state-section-title {% endtrans %}</h3>
         <div class="message-info">
             <p>{% trans %} lender-subscription_mandatory-french-bank-account-message {% endtrans %}</p>
+        </div>
+
+        <div id="form-preter-person-birth-place-autocomplete-error" class="ui-formvalidation-notifications birth-place-autocomplete-error" style="display: none;">
+            <div class="message-error">{% trans %}lender-subscription_birth-place-autocomplete-error{% endtrans %}</div>
         </div>
 
         <div class="row row-multi-col-computer">
@@ -250,6 +257,8 @@
             </div><!-- /.form-field -->
         </div>
 
+        <div class="message-alert" id="error-message-selected-nationality-other" style="display: none;">{% trans %}lender-subscription_error-message-selected-nationality-other'{% endtrans %}</div>
+
         <div class="row row-multi-col-computer">
             <div class="form-field col-lg-6 col-md-6">
                 <label for="form-lender-person-birth-country">{% trans %} common_birth-country {% endtrans %}
@@ -289,7 +298,7 @@
             <div class="form-field form-field-single-checkbox">
                 <label>
                     <input type="checkbox" name="terms_of_use" value="true" data-formvalidation-input data-formvalidation-required="true">
-                    <span class="label">{% trans %} lender-subscription_terms-of-use-acceptance {% endtrans %}
+                    <span class="label">{% trans with {'%tosStart%' : '<a href="' ~ termsOfUsePerson ~ '" target="_blank">', '%tosEnd%' : '</a>'} %} lender-subscription_terms-of-use-acceptance {% endtrans %}
                         <span class="field-required">* <span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}
                             </span>
                         </span>

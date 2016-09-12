@@ -9,22 +9,29 @@
     {% block panelContent %}
         <div class="autolend">
             <div class="field-help">
-                <div class="hide-xs hide-sm">Rendez-vous sur
-                    <a href="{#@todo put the correct route name to autolend settings here#}">votre espace Autolend</a> pour configurer les offres
+                <div class="hide-xs hide-sm">
+                    {% trans with {'%autolendPath%': path('autolend')} %} lender-dashboard_my-offers-panel-goto-autolend-settings {% endtrans %}
                 </div>
             </div><!-- /.field-help -->
         </div><!-- /.autolend -->
         <div class="message">
             <p>{% transchoice ongoingBids with {'%count%': ongoingBids} %} lender-dashboard_my-offers-panel-offers-in-progress-number {% endtranschoice %}</p>
         </div><!-- /.message -->
-        {% if ongoingProjects|length > 0 %}
+        {% if ongoingBids|length > 0 %}
             <ul class="list-myoffers">
-                {# Placeholder #}
                 {% for project in ongoingProjects %}
                     <li class="myoffer">
                         <div class="myoffer-project-name">{{ project.title }}</div>
                         <div class="myoffer-project-cost">{{ project.amount|localizednumber }}&nbsp;€</div>
-                        <div class="myoffer-project-period">{% transchoice project.days_left with {'%daysCount%': project.days_left} %} lender-dashboard_project-remaining-days-before-closure {% endtranschoice %}</div>
+                        <div class="myoffer-project-period">
+                            {% if project.finished %}
+                                {{ 'lender-dashboard_project-status-finished'|trans }}
+                            {% elseif project.days_left <= 2 %}
+                                <span class="ui-has-timecount" data-timecount-to="{{ project.end_date|escape('html_attr') }}"></span>
+                            {% else %}
+                                {% trans with {'%remainingDays%' : project.days_left} %} project-list_remaining-days {% endtrans %}
+                            {% endif %}
+                        </div>
                         {% for bid in project.aPendingBids %}
                             <div class="myoffer-amount">
                                 {% set transParams = {
@@ -40,12 +47,4 @@
             </ul><!-- /.list-myoffers -->
         {% endif %}
     {% endblock %}
-    {% if ongoingProjects|length > 0 %}
-        {% block panelFooter %}
-
-            {#@todo use correct link into lenders offers list detais page#}
-
-            <a href="#todo" class="link">{% trans %} lender-dashboard_see-all-my-offers-in-progress {% endtrans %}</a>
-        {% endblock %}
-    {% endif %}
 {% endembed %}

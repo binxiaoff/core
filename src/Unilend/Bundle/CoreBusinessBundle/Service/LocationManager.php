@@ -232,4 +232,17 @@ class LocationManager
 
         return $this->getPercentageByRegion($countByRegion);
     }
+
+    public function checkFrenchCity($city, $zip = null)
+    {
+        /** @var \villes $cities */
+        $cities = $this->entityManager->getRepository('villes');
+
+        if (is_null($zip)) {
+            return $cities->exist(str_replace(array(' ', '-'), '', $city), 'REPLACE(REPLACE(ville, " ", ""), "-", "")');
+        } else {
+            return $cities->get($zip . '" AND ville = "' . $city, 'cp');
+        }
+    }
+
 }

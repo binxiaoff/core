@@ -275,7 +275,7 @@ class ProjectsController extends Controller
         }
 
         if (
-            $project->status >= \projects_status::EN_FUNDING
+            $project->status >= \projects_status::A_FUNDER
             && (
                 $project->display == \projects::DISPLAY_PROJECT_ON
                 || $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') && 28002 == $project->id_project
@@ -486,7 +486,6 @@ class ProjectsController extends Controller
         $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
 
         if (false === $project->get($projectId, 'id_project')
-            || $project->status != 0
             || $project->display != \projects::DISPLAY_PROJECT_ON
             || false === $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
             || false === $this->get('security.authorization_checker')->isGranted('ROLE_LENDER')
@@ -590,7 +589,6 @@ class ProjectsController extends Controller
         $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
 
         if (false === $project->get($projectId, 'id_project')
-            || $project->status != 0
             || $project->display != \projects::DISPLAY_PROJECT_ON
             || false === $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
             || false === $this->get('security.authorization_checker')->isGranted('ROLE_LENDER')

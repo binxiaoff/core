@@ -111,7 +111,7 @@
                                 {{ svgimage('#promo-saving', '', 190, 190, 'none') | raw }}
                             </div>
                             <h3 class="promo-highlight">
-                                <span class="ui-text-count" data-start-count="0" data-end-count="100" data-total-time="3000" data-round-float="ceil" data-tween-count="easeOutQuint"></span>
+                                <span class="ui-text-count" data-start-count="0" data-end-count="100" data-total-time="3000" data-tween-count="easeOutQuint">100</span>
                                 <sup>%</sup>
                             </h3>
                             <p>{% trans %} home-lender_unilend-stats-saving-text {% endtrans %}</p>
@@ -124,7 +124,7 @@
                                 {{ svgimage('#promo-linechart', '', 190, 190, 'none') | raw }}
                             </div>
                             <h3 class="promo-highlight">
-                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ getStatistic('unilendIRR')|round(1, 'floor')|localizednumber }}" data-total-time="3000" data-tween-count="easeOutQuint"></span>
+                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ getStatistic('unilendIRR')|round(1, 'floor') }}" data-total-time="3000" data-limit-decimal="1" data-tween-count="easeOutQuint">{{ getStatistic('unilendIRR')|round(1, 'floor')|localizednumber }}</span>
                                 <sup>%</sup>
                             </h3>
                             <p>{% trans %} home-lender_unilend-stats-linechart-text {% endtrans %}</p>
@@ -137,7 +137,7 @@
                                 {{ svgimage('#promo-piggybank', '', 190, 190, 'none') | raw }}
                             </div>
                             <h3 class="promo-highlight">
-                               <span class="ui-text-count" data-start-count="0" data-end-count="20" data-total-time="3000" data-round-float="ceil" data-tween-count="easeOutQuint"></span>
+                               <span class="ui-text-count" data-start-count="0" data-end-count="20" data-total-time="3000" data-tween-count="easeOutQuint">20</span>
                                 <sup>€</sup>
                             </h3>
                             <p>{% trans %} home-lender_unilend-stats-piggybank-text {% endtrans %}</p>

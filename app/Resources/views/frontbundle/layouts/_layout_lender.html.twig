@@ -40,12 +40,14 @@
                                         <span class="label">{% trans %} lender-dashboard-navigation_profile-link {% endtrans %}</span>
                                     </a>
                                 </li>
-                                {#<li role="presentation" class="dashboard-nav-autolend {% if app.request.attributes.get('_route') == 'autolend' %}active{% else %}complete{% endif %}">#}
-                                    {#<a href="{{ path('autolend') }}">#}
-                                        {#<span class="icon fa-autolend-u"></span>#}
-                                        {#<span class="label">{% trans %} lender-dashboard-navigation_autolend-link {% endtrans %}</span>#}
-                                    {#</a>#}
-                                {#</li>#}
+                                {% if app.user.getClientStatus() == constant('\\clients_status::VALIDATED') %}
+                                <li role="presentation" class="dashboard-nav-autolend {% if app.request.attributes.get('_route') == 'autolend' %}active{% else %}complete{% endif %}">
+                                    <a href="{{ path('autolend') }}">
+                                        <span class="icon fa-autolend-u"></span>
+                                        <span class="label">{% trans %} lender-dashboard-navigation_autolend-link {% endtrans %}</span>
+                                    </a>
+                                </li>
+                                {%  endif %}
                                 <li role="presentation" class="dashboard-nav-notifications {% if app.request.attributes.get('_route') == 'user/preter/notifications' %}active{% else %}complete{% endif %}">
                                     <a href="{{ route('user/preter/notifications') }}"><span class="icon fa-bell-u"></span><span class="label">Notifications</span></a>
                                 </li>
@@ -57,11 +59,15 @@
                         {% include 'partials/components/dashboard-panel-notifications.twig' %}
                     {% endblock %}
                 </div><!-- /.col-menu -->
+
+                {% if 'common-lender_general-message-lender-account'|trans != 'common-lender_general-message-lender-account' %}
+                    {% set noMessage = false %}
+                {% else %}
+                    {% set noMessage = true %}
+                {% endif %}
                 <div class="col-content dashboard-content">
-                    <div class="message-info">
-                        <p>Ici pourra venir un message qu'on souhaite afficher pour tout les preteurs. </p>
-                        {#<p>82% de vos offres Autolend ne sont pas acceptées. Unilend vous conseille de modifier vos paramètres Autolend pour augmenter votre TRI.</p>#}
-                        {#<a href="#autolend-table-config" class="link ui-reveal">Modifier mes paramètres Autolend</a>#}
+                    <div class="message-info" {% if noMessage == true %}style="display: none;"{% endif %}>
+                        <p>{% trans %} common-lender_general-message-lender-account {% endtrans %} </p>
                         <a href="javascript:;" class="btn-close ui-dismiss"><span class="sr-only">Dismiss message</span></a>
                     </div>
                     {% block dashboardContent %} {% endblock %}

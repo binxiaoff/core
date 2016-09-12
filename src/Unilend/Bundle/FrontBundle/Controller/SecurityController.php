@@ -31,9 +31,8 @@ class SecurityController extends Controller
             'error'          => $error
         ];
 
-        if (false === is_null($request->getSession()->get('captchaInformation'))) {
-            $pageData['captchaInformation'] = $request->getSession()->get('captchaInformation');
-        }
+        $pageData['captchaInformation'] = $request->getSession()->get('captchaInformation', []);
+        $request->getSession()->remove('captchaInformation');
 
         return $this->render('pages/login.html.twig',$pageData);
     }

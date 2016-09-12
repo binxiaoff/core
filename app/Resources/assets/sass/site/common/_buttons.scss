@@ -221,13 +221,13 @@
     $link: (
       width: $size-btn-media,
       height: $size-btn-media,
-      line-height: $size-btn-media,
+      line-height: $size-btn-media + 6,
       margin: ($size-btn-media-hover - $size-btn-media) * .5
     ),
     $hover: (
       width: $size-btn-media-hover,
       height: $size-btn-media-hover,
-      line-height: $size-btn-media-hover,
+      line-height: $size-btn-media-hover + 6,
       margin: 0
     )
   );
@@ -243,13 +243,13 @@
       $link: (
         width: $size-btn-media-md,
         height: $size-btn-media-md,
-        line-height: $size-btn-media-md,
+        line-height: $size-btn-media-md + 6,
         margin: ($size-btn-media-md-hover - $size-btn-media-md) * .5
       ),
       $hover: (
         width: $size-btn-media-md-hover,
         height: $size-btn-media-md-hover,
-        line-height: $size-btn-media-md-hover,
+        line-height: $size-btn-media-md-hover + 6,
         margin: 0
       )
     );
@@ -556,7 +556,6 @@
     content: $fa-facebook-f;// '\f09a'; // facebook
     display: inline-block;
     font-family: $ff-icon;
-    // font-size: 21px;
   }
 }
 
@@ -585,7 +584,34 @@
     content: $fa-twitter;// '\f099'; // twitter
     display: inline-block;
     font-family: $ff-icon;
-    // font-size: 21px;
+  }
+}
+
+// LinkedIn
+.btn-linkedin {
+  @include button-sharing;
+  @include link-states(
+    $link: (
+      background-color: #55acee,
+      border-color: #55acee,
+      color: $c-white
+    ),
+    $hover: (
+      background-color: darken(#55acee, 10%),
+      border-color: darken(#55acee, 10%),
+      color: $c-white
+    ),
+    $active: (
+      background-color: $c-black,
+      border-color: $c-black,
+      color: $c-white
+    )
+  );
+
+  &:before {
+    content: $fa-linkedin;// '\f0e1'; // linkedin
+    display: inline-block;
+    font-family: $ff-icon;
   }
 }
 

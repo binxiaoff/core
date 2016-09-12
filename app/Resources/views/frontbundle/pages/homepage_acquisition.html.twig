@@ -61,7 +61,7 @@
                 <div class="video-hero-cta">
                     <div class="btn-media-wrapper">
                         <a href="https://www.youtube.com/watch?v=Fmtz6vI65GY" class="btn-media fancybox-media fancybox-embed-videojs">
-                            <span class="icon fa-play"><span class="sr-only">Play</span></span>
+                            <span class="icon fa-play"><span class="sr-only">{% trans %} site-general_video-play-button-label {% endtrans %}</span></span>
                         </a>
                     </div>
                     <h5 class="c-p1"><span class="ui-preter-name">Julie</span> {% trans %} site-general_testimonial-section-video-text {% endtrans %}&nbsp;<span
@@ -95,8 +95,7 @@
                             </div>
                             {% set valueProjects = ('site-general_unilend-stats-projects-value'|trans != 'site-general_unilend-stats-projects-value') ? getStatistic('numberOfFinancedProjects') : 'site-general_unilend-stats-projects-value'|trans %}
                             <h3 class="promo-highlight">
-                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ valueProjects }}" data-total-time="3000" data-round-float="round"
-                                      data-tween-count="easeOutCirc"></span>
+                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ valueProjects }}" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">{{ valueProjects|localizednumber }}</span>
                             </h3>
                             <p>{% trans %} site-general_unilend-stats-projects-description {% endtrans %}</p>
                         </div><!-- /.promo -->
@@ -109,7 +108,7 @@
                             </div>
                             {% set valueMoney = ('site-general_unilend-stats-money-value'|trans != 'site-general_unilend-stats-money-value') ? getStatistic('amountBorrowedInMillions') : 'site-general_unilend-stats-money-value'|trans %}
                             <h3 class="promo-highlight">
-                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ valueMoney }}" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">{{ valueMoney }}</span>
+                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ valueMoney }}" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">{{ valueMoney|localizednumber }}</span>
                                 {% trans %} site-general_unilend-stats-money-value {% endtrans %}
                             </h3>
                             <p>{% trans %} site-general_unilend-stats-money-description {% endtrans %}</p>
@@ -123,8 +122,7 @@
                             </div>
                             {% set valuePeople = ('site-general_unilend-stats-people-value'|trans != 'site-general_unilend-stats-people-value') ? getStatistic('numberOfLendersInCommunity')|localizednumber : 'site-general_unilend-stats-people-value'|trans %}
                             <h3 class="promo-highlight">
-                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ valuePeople }}" data-total-time="3000" data-round-float="round"
-                                      data-tween-count="easeOutCirc">{{ valuePeople }}</span>
+                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ valuePeople }}" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">{{ valuePeople|localizednumber }}</span>
                             </h3>
                             <p>{% trans %} site-general_unilend-stats-people-description {% endtrans %}</p>
                         </div><!-- /.promo -->
@@ -137,15 +135,16 @@
             <div class="site-wrap">
                 <h1 class="h2">{% trans %} site-general_testimonial-section-title {% endtrans %}</h1>
 
-                {% set BattenberglabelCtaButton %}
-                    {% transchoice projects|length with {'%numberProjects%' : projects|length} %} project-list_title-ongoing-projects  {% endtranschoice %}
-                {% endset %}
-                {{ promoBattenberg.render({
-                    classCtaButton: 'btn-color-primary',
-                    labelCtaButton: BattenberglabelCtaButton,
-                    urlCtaButton: path('projects_list'),
-                    people: testimonialPeople
-                }) }}
+                {{ promoBattenberg.render({people: testimonialPeople}) }}
+
+                <div class="row page-section">
+                    <div class="btn-toolbar">
+                        <a href="{{ path('projects_list') }}" class="btn-primary">
+                            <span class="icon fa-angle-right"></span>
+                            {% transchoice projects|length with {'%numberProjects%' : projects|length} %} project-list_title-ongoing-projects {% endtranschoice %}
+                        </a>
+                    </div>
+                </div>
             </div><!-- /.site-wrap -->
         </section><!-- /.page-section -->
 
