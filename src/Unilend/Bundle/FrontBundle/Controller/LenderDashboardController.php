@@ -89,7 +89,7 @@ class LenderDashboardController extends Controller
                     'days_left'        => $aProject['daysLeft'],
                     'finished'         => ($aProject['status'] > \projects_status::EN_FUNDING || (new \DateTime($aProject['date_retrait_full'])) < (new \DateTime('NOW'))),
                     'end_date'         => $aProject['date_retrait_full'],
-                    'funding_duration' => $projectStats['fundingTime']->days
+                    'funding_duration' => $projectStats->days
                 ];
                 $ongoingBidsByProject[$iKey]['aPendingBids'] = $bid->getBidsByStatus(\bids::STATUS_BID_PENDING, $aProject['id_project'], $lender->id_lender_account);
             }
@@ -107,7 +107,7 @@ class LenderDashboardController extends Controller
                     'bid_count'        => count($bid->getBidsByStatus(\bids::STATUS_BID_PENDING, $aProject['id_project'])),
                     'finished'         => ($aProject['status'] > \projects_status::EN_FUNDING || (new \DateTime($aProject['date_retrait_full'])) < (new \DateTime('NOW'))),
                     'end_date'         => $aProject['date_retrait_full'],
-                    'funding_duration' => $projectStats['fundingTime']->days
+                    'funding_duration' => $projectStats->days
                 ];
             }
         }
