@@ -5,6 +5,8 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class ProjectValidator
 {
+    use Checker\ProjectChecker;
+
     /** @var ProductAttributeManager */
     private $productAttributeManager;
     /** @var EntityManager */
@@ -27,19 +29,16 @@ class ProjectValidator
         foreach ($this->getAttributeTypeToCheck() as $attributeTypeToCheck) {
             switch ($attributeTypeToCheck) {
                 case \product_attribute_type::MIN_LOAN_DURATION_IN_MONTH :
-                    $eligibility = $this->isEligibleForMinDuration($projects, $product);
+                    $eligibility = $this->isProductEligibleForMinDuration($projects, $product, $this->productAttributeManager);
                     break;
                 case \product_attribute_type::MAX_LOAN_DURATION_IN_MONTH :
-                    $eligibility = $this->isEligibleForMaxDuration($projects, $product);
-                    break;
-                case \product_attribute_type::ELIGIBLE_BORROWER_COMPANY_TYPE :
-                    $eligibility = $this->isEligibleForCompanyType($projects, $product);
+                    $eligibility = $this->isProductEligibleForMaxDuration($projects, $product, $this->productAttributeManager);
                     break;
                 case \product_attribute_type::ELIGIBLE_NEED :
-                    $eligibility = $this->isEligibleForNeed($projects, $product);
+                    $eligibility = $this->isProductEligibleForNeed($projects, $product, $this->productAttributeManager);
                     break;
                 case \underlying_contract_attribute_type::MAX_LOAN_DURATION_IN_MONTH :
-                    $eligibility = $this->isEligibleForMaxContractDuration($projects, $product);
+                    $eligibility = $this->isProductEligibleForMaxContractDuration($projects, $product, $this->productAttributeManager);
                     break;
                 default :
                     $eligibility = false;
@@ -56,85 +55,10 @@ class ProjectValidator
     private function getAttributeTypeToCheck()
     {
         return [
-            //\product_attribute_type::ELIGIBLE_BORROWER_COMPANY_COUNTRY,
-            //\product_attribute_type::TARGET_COUNTRY,
-            \product_attribute_type::ELIGIBLE_BORROWER_COMPANY_TYPE,
             \product_attribute_type::ELIGIBLE_NEED,
             \product_attribute_type::MIN_LOAN_DURATION_IN_MONTH,
             \product_attribute_type::MAX_LOAN_DURATION_IN_MONTH,
             \underlying_contract_attribute_type::MAX_LOAN_DURATION_IN_MONTH
         ];
-    }
-
-    /**
-     * @param \projects $project
-     * @param \product  $product
-     *
-     * @return bool
-     */
-    private function isEligibleForMinDuration(\projects $project, \product $product)
-    {
-        $minDuration = $this->productAttributeManager->getProductAttributesByType($product, \product_attribute_type::MIN_LOAN_DURATION_IN_MONTH);
-
-        if(empty($minDuration)) {
-            return true;
-        }
-
-        return $project->period >= $minDuration[0];
-    }
-
-    /**
-     * @param \projects $project
-     * @param \product  $product
-     *
-     * @return bool
-     */
-    private function isEligibleForMaxDuration(\projects $project, \product $product)
-    {
-        $maxDuration = $this->productAttributeManager->getProductAttributesByType($product, \product_attribute_type::MAX_LOAN_DURATION_IN_MONTH);
-
-        if(empty($maxDuration)) {
-            return true;
-        }
-
-        return $project->period <= $maxDuration[0];
-    }
-
-    /**
-     * @param \projects $project
-     * @param \product  $product
-     *
-     * @return bool
-     */
-    private function isEligibleForNeed(\projects $project, \product $product)
-    {
-        $eligibleNeeds = $this->productAttributeManager->getProductAttributesByType($product, \product_attribute_type::ELIGIBLE_NEED);
-        if (empty($eligibleNeeds)) {
-            return true;
-        }
-
-        return in_array($project->id_project_need, $eligibleNeeds);
-    }
-
-    private function isEligibleForCompanyType(\projects $project, \product $product)
-    {
-        $eligibleTypes = $this->productAttributeManager->getProductAttributesByType($product, \product_attribute_type::ELIGIBLE_BORROWER_COMPANY_TYPE);
-        if (false === empty($eligibleTypes)) {
-            // todo: need to define a list of available company type.
-        }
-
-        return true;
-    }
-
-    private function isEligibleForMaxContractDuration(\projects $project, \product $product)
-    {
-        $attrVars = $this->productAttributeManager->getProductContractAttributesByType($product, \underlying_contract_attribute_type::MAX_LOAN_DURATION_IN_MONTH);
-        foreach($attrVars as $contractVars) {
-            if ($contractVars[0] < $project->period) {
-                return false;
-            }
-        }
-
-        return true;
     }
 }
