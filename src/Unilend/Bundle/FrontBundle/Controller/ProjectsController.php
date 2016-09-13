@@ -4,12 +4,14 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 use Cache\Adapter\Memcache\MemcacheCachePool;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\Translator;
+use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
@@ -288,6 +290,58 @@ class ProjectsController extends Controller
     }
 
     /**
+     * @Route("/projects/monthly_repayment", name="estimate_monthly_repayment")
+     * @Method({"POST"})
+     */
+    public function estimateMonthlyRepaymentAction(Request $request)
+
+    {
+        if (false === $request->isXMLHttpRequest()) {
+            return new Response('not an ajax request');
+        }
+
+        if (
+            empty($request->request->get('amount'))
+            || empty($request->request->get('duration'))
+            || empty($request->request->get('rate'))
+        ) {
+            return new JsonResponse([
+                'error'   => true,
+                'message' => 'Missing parameters'
+            ]);
+        }
+
+        $amount   = $request->request->get('amount');
+        $duration = $request->request->get('duration');
+        $rate     = $request->request->get('rate');
+
+        if (
+            (int) $amount != $amount
+            || (int) $duration != $duration
+            || false === is_numeric($rate)
+        ) {
+            return new JsonResponse([
+                'error'   => true,
+                'message' => 'Wrong parameter value'
+            ]);
+        }
+
+        $repayment = \repayment::getRepaymentSchedule($amount, $duration, $rate / 100)[1]['repayment'];
+
+        /** @var TranslatorInterface $translator */
+        $translator = $this->get('translator');
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => $translator->trans(
+                'project-detail_monthly-repayment-estimation',
+                ['%amount%' => $ficelle->formatNumber($repayment)]
+            )
+        ]);
+    }
+    /**
      * @Route("/projects/bid/{projectId}", requirements={"projectId" = "^\d+$"}, name="place_bid")
      * @Method({"POST"})
      */
@@ -416,65 +470,65 @@ class ProjectsController extends Controller
      */
     public function bidsListAction($projectId, $rate, Request $request)
     {
-        if ($request->isXMLHttpRequest()) {
-            /** @var EntityManager $entityManager */
-            $entityManager = $this->get('unilend.service.entity_manager');
-            /** @var MemcacheCachePool $oCachePool */
-            $oCachePool  = $this->get('memcache.default');
-            $oCachedItem = $oCachePool->getItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $projectId . '_' . $rate);
-
-            $template = [];
-
-            if (true === $oCachedItem->isHit()) {
-                $template['bids'] = $oCachedItem->get();
-            } else {
-                /** @var \bids $bidEntity */
-                $bidEntity = $entityManager->getRepository('bids');
-
-                $bids = $bidEntity->select('id_project = ' . $projectId . ' AND rate LIKE ' . $rate, 'ordre ASC');
-                $template['bids'] = [];
-
-                foreach ($bids as $bid) {
-                    $template['bids'][] = [
-                        'id'           => (int) $bid['ordre'],
-                        'rate'         => (float) $bid['rate'],
-                        'amount'       => $bid['amount'] / 100,
-                        'status'       => (int) $bid['status'],
-                        'lenderId'     => (int) $bid['id_lender_account'],
-                        'userInvolved' => false,
-                        'autobid'      => $bid['id_autobid'] > 0
-                    ];
-                }
-
-                $oCachedItem->set($template['bids'])->expiresAfter(300);
-                $oCachePool->save($oCachedItem);
-            }
-
-            /** @var BaseUser $user */
-            $user = $this->getUser();
-
-            $template['canSeeAutobid'] = false;
-
-            if ($user instanceof UserLender) {
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
-                $autoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
-                /** @var \lenders_accounts $lenderAccount */
-                $lenderAccount = $entityManager->getRepository('lenders_accounts');
-                $lenderAccount->get($user->getClientId(), 'id_client_owner');
-
-                $template['canSeeAutobid'] = $autoBidSettingsManager->isQualified($lenderAccount);
-
-                array_walk($template['bids'], function(&$bid) use ($lenderAccount) {
-                    if ($bid['lenderId'] == $lenderAccount->id_lender_account) {
-                        $bid['userInvolved'] = true;
-                    }
-                });
-            }
-
-            return $this->render('partials/components/project-detail/bids-list-detail.html.twig', $template);
+        if (false === $request->isXMLHttpRequest()) {
+            return new Response('not an ajax request');
         }
 
-        return new Response('not an ajax request');
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var MemcacheCachePool $oCachePool */
+        $oCachePool  = $this->get('memcache.default');
+        $oCachedItem = $oCachePool->getItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $projectId . '_' . $rate);
+
+        $template = [];
+
+        if (true === $oCachedItem->isHit()) {
+            $template['bids'] = $oCachedItem->get();
+        } else {
+            /** @var \bids $bidEntity */
+            $bidEntity = $entityManager->getRepository('bids');
+
+            $bids = $bidEntity->select('id_project = ' . $projectId . ' AND rate LIKE ' . $rate, 'ordre ASC');
+            $template['bids'] = [];
+
+            foreach ($bids as $bid) {
+                $template['bids'][] = [
+                    'id'           => (int) $bid['ordre'],
+                    'rate'         => (float) $bid['rate'],
+                    'amount'       => $bid['amount'] / 100,
+                    'status'       => (int) $bid['status'],
+                    'lenderId'     => (int) $bid['id_lender_account'],
+                    'userInvolved' => false,
+                    'autobid'      => $bid['id_autobid'] > 0
+                ];
+            }
+
+            $oCachedItem->set($template['bids'])->expiresAfter(300);
+            $oCachePool->save($oCachedItem);
+        }
+
+        /** @var BaseUser $user */
+        $user = $this->getUser();
+
+        $template['canSeeAutobid'] = false;
+
+        if ($user instanceof UserLender) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+            $autoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
+            /** @var \lenders_accounts $lenderAccount */
+            $lenderAccount = $entityManager->getRepository('lenders_accounts');
+            $lenderAccount->get($user->getClientId(), 'id_client_owner');
+
+            $template['canSeeAutobid'] = $autoBidSettingsManager->isQualified($lenderAccount);
+
+            array_walk($template['bids'], function(&$bid) use ($lenderAccount) {
+                if ($bid['lenderId'] == $lenderAccount->id_lender_account) {
+                    $bid['userInvolved'] = true;
+                }
+            });
+        }
+
+        return $this->render('partials/components/project-detail/bids-list-detail.html.twig', $template);
     }
 
     /**

@@ -70,7 +70,8 @@
                                     {% for column in financeColumns.balanceSheet %}
                                         {
                                             "name": "{{ "project-detail_finance-column-#{ column }"|trans|raw }}",
-                                            "data": [{% for balanceSheet in finance|reverse %}{{ balanceSheet.balanceSheet[column][0] }}{% if not loop.last %},{% endif %}{% endfor %}]
+                                            "data": [{% for balanceSheet in finance|reverse %}{{ balanceSheet.balanceSheet[column][0] }}{% if not loop.last %},{% endif %}{% endfor %}],
+                                            "visible": {% if column in ['resultat-exploitation', 'resultat-brut-exploitation'] %}true{% else %}false{% endif %}
                                         }{% if not loop.last %},{% endif %}
                                     {% endfor %}
                                 ]
@@ -235,7 +236,7 @@
                                             {% for column in financeColumns.assets %}
                                                 {
                                                     "name": "{% if column == 'total' %}{{ 'project-detail_finance-assets-total'|trans|raw }}{% else %}{{ "project-detail_finance-column-#{ column }"|trans|raw }}{% endif %}",
-                                                    "data": [{% for balanceSheet in finance|reverse %}{{ balanceSheet.assets[column][0] }}{% if not loop.last %},{% endif %}{% endfor %}]
+                                                    "data": [{% for balanceSheet in finance|reverse %}{{ balanceSheet.assets[column][0] }}{% if not loop.last %},{% endif %}{% endfor %}]{% if column == 'total' %},"visible": false{% endif %}
                                                 }{% if not loop.last %},{% endif %}
                                             {% endfor %}
                                         ]
@@ -268,7 +269,7 @@
                                             {% for column in financeColumns.debts %}
                                                 {
                                                     "name": "{% if column == 'total' %}{{ 'project-detail_finance-debts-total'|trans|raw }}{% else %}{{ "project-detail_finance-column-#{ column }"|trans|raw }}{% endif %}",
-                                                    "data": [{% for balanceSheet in finance %}{{ balanceSheet.debts[column][0] }}{% if not loop.last %},{% endif %}{% endfor %}]
+                                                    "data": [{% for balanceSheet in finance %}{{ balanceSheet.debts[column][0] }}{% if not loop.last %},{% endif %}{% endfor %}]{% if column == 'total' %},"visible": false{% endif %}
                                                 }{% if not loop.last %},{% endif %}
                                             {% endfor %}
                                         ]
