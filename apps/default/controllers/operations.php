@@ -3,6 +3,11 @@
 class operationsController extends bootstrap
 {
     const LAST_OPERATION_DATE = '2013-01-01';
+    /**
+     * This is a fictive transaction type,
+     * it will be used only in indexage_vos_operaitons in order to get single repayment line with total of capital and interests repayment amount
+     */
+    const TYPE_REPAYMENT_TRANSACTION = 5;
 
     public function initialize()
     {
@@ -36,11 +41,14 @@ class operationsController extends bootstrap
         $this->projects_status         = $this->loadData('projects_status');
         $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
         $this->ifu                     = $this->loadData('ifu');
+        $this->taxCountry              = $this->loadData('pays_v2');
+        $this->clients_adresses        = $this->loadData('clients_adresses');
 
         $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
         $this->lng['preteur-operations-pdf']            = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
         $this->lng['preteur-operations-detail']         = $this->ln->selectFront('preteur-operations-detail', $this->language, $this->App);
         $this->lng['profile']                           = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
+        $this->lng['etape1']                            = $this->ln->selectFront('inscription-preteur-etape-1', $this->language, $this->App);
 
         // conf par defaut pour la date (1M)
         $date_debut_time = mktime(0, 0, 0, date('m') - 1, date('d'), date('Y'));
@@ -60,6 +68,18 @@ class operationsController extends bootstrap
         $this->lProjectsLoans = $this->indexage_vos_operations->get_liste_libelle_projet('id_client = ' . $this->clients->id_client . ' AND DATE(date_operation) >= "' . $this->date_debut . '" AND DATE(date_operation) <= "' . $this->date_fin . '"');
         $this->lLoans         = $this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND YEAR(added) = ' . date('Y') . ' AND status = 0', 'added DESC');
         $this->liste_docs     = $this->ifu->select('id_client =' . $this->clients->id_client . ' AND statut = 1', 'annee ASC');
+        $this->clients_adresses->get($this->clients->id_client, 'id_client');
+
+        $this->fiscalAddress['address'] = (false === empty($this->clients_adresses->adresse_fiscal)) ? $this->clients_adresses->adresse_fiscal : $this->clients_adresses->adresse1 . ' ' . $this->clients_adresses->adresse2 . ' ' . $this->clients_adresses->adresse3;
+        $this->fiscalAddress['zipCode'] = (false === empty($this->clients_adresses->cp_fiscal)) ? $this->clients_adresses->cp_fiscal : $this->clients_adresses->cp;
+        $this->fiscalAddress['city']    = (false === empty($this->clients_adresses->ville_fiscal)) ? $this->clients_adresses->ville_fiscal : $this->clients_adresses->ville;
+
+        if (false === empty($this->clientAadresse->id_pays_fiscal)) {
+            $this->taxCountry->get($this->clients_adresses->id_pays_fiscal, 'id_pays');
+        } else {
+            $this->taxCountry->get($this->clients_adresses->id_pays, 'id_pays');
+        }
+        $this->fiscalAddress['country'] = $this->taxCountry->fr;
 
         unset($_SESSION['filtre_vos_operations']);
         unset($_SESSION['id_last_action']);
@@ -79,6 +99,59 @@ class operationsController extends bootstrap
         $this->aFilterStatuses = $this->projects_status->select('status >= ' . \projects_status::REMBOURSEMENT, 'status ASC');
         $this->aLoansYears     = array_count_values(array_column($this->lSumLoans, 'loan_year'));
         krsort($this->aLoansYears);
+
+        /** @var \lender_tax_exemption $lenderTaxExemption */
+        $lenderTaxExemption = $this->loadData('lender_tax_exemption');
+
+        $this->currentYear             = date('Y', time());
+        $this->lastYear                = $this->currentYear - 1;
+        $this->nextYear                = $this->currentYear + 1;
+        $this->lng['lender-dashboard'] = $this->ln->selectFront('lender-dashboard', $this->language, $this->App);
+        $taxExemptionDateRange         = $lenderTaxExemption->getTaxExemptionDateRange();
+        $this->taxExemptionHistory     = $this->getExemptionHistory($lenderTaxExemption, $this->lenders_accounts->id_lender_account);
+        try {
+            $lenderInfo = $this->lenders_accounts->getLenderTypeAndFiscalResidence($this->lenders_accounts->id_lender_account);
+            if (false === empty($lenderInfo)) {
+                $this->eligible = 'fr' === $lenderInfo['fiscal_address'] && 'person' === $lenderInfo['client_type'];
+            } else {
+                return;
+            }
+        } catch (\Exception $exception) {
+            /** @var \Psr\Log\LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->info('Could not get lender info to check tax exemption eligibility. (id_lender=' . $this->lenders_accounts->id_lender_account . ') Error message: ' .
+                $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $this->lenders_accounts->id_lender_account]);
+            return;
+        }
+
+        if (false === $this->eligible) {
+            return;
+        }
+
+        if (date('Y-m-d H:i:s') < $taxExemptionDateRange['taxExemptionRequestStartDate']->format('Y-m-d 00:00:00')
+            && date('Y-m-d H:i:s') >= $taxExemptionDateRange['taxExemptionRequestLimitDate']->format('Y-m-d 23:59:59')
+        ) {
+            $this->afterDeadline = true;
+        }
+
+        if (false === empty($this->taxExemptionHistory)) {
+            $yearList = array_column($this->taxExemptionHistory, 'year');
+
+            if (true === in_array($this->nextYear, $yearList)) {
+                $this->nextTaxExemptionRequestDone = true;
+            } else {
+                $this->nextTaxExemptionRequestDone = false;
+            }
+
+            if (true === in_array($this->lastYear, $yearList)) {
+                $this->exemptedLastYear = true;
+            } else {
+                $this->exemptedLastYear = false;
+            }
+            $this->taxExemptionRequestLimitDate = strftime('%d %B %Y', $taxExemptionDateRange['taxExemptionRequestLimitDate']->getTimestamp());
+        } else {
+            $this->exemptedLastYear = false;
+        }
     }
 
     public function _loans()
@@ -134,9 +207,9 @@ class operationsController extends bootstrap
             $oActiveSheet->setCellValue('F' . ($iRowIndex + 2), $this->dates->formatDate($aProjectLoans['debut'], 'd/m/Y'));
             $oActiveSheet->setCellValue('G' . ($iRowIndex + 2), $this->dates->formatDate($aProjectLoans['next_echeance'], 'd/m/Y'));
             $oActiveSheet->setCellValue('H' . ($iRowIndex + 2), $this->dates->formatDate($aProjectLoans['fin'], 'd/m/Y'));
-            $oActiveSheet->setCellValue('I' . ($iRowIndex + 2), (string) round($this->echeanciers->sum('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 1', 'capital'), 2));
-            $oActiveSheet->setCellValue('J' . ($iRowIndex + 2), round($this->echeanciers->sum('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 1', 'interets'), 2));
-            $oActiveSheet->setCellValue('K' . ($iRowIndex + 2), round($this->echeanciers->sum('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 0', 'capital'), 2));
+            $oActiveSheet->setCellValue('I' . ($iRowIndex + 2), $this->echeanciers->getRepaidCapital(array('id_lender' => $this->lenders_accounts->id_lender_account, 'id_project' => $aProjectLoans['id_project'])));
+            $oActiveSheet->setCellValue('J' . ($iRowIndex + 2), $this->echeanciers->getRepaidInterests(array('id_lender' => $this->lenders_accounts->id_lender_account, 'id_project' => $aProjectLoans['id_project'])));
+            $oActiveSheet->setCellValue('K' . ($iRowIndex + 2), $this->echeanciers->getOwedCapital(array('id_lender' => $this->lenders_accounts->id_lender_account, 'id_project' => $aProjectLoans['id_project'])));
 
             $sRisk = isset($aProjectLoans['risk']) ? $aProjectLoans['risk'] : '';
             $sNote = $this->getProjectNote($sRisk);
@@ -189,6 +262,8 @@ class operationsController extends bootstrap
     private function commonLoans()
     {
         $this->echeanciers = $this->loadData('echeanciers');
+        //Used in views
+        $this->tax = $this->loadData('tax');
 
         $this->sOrderField     = isset($_POST['type']) ? $_POST['type'] : 'start';
         $this->sOrderDirection = isset($_POST['order']) && 'asc' === $_POST['order'] ? 'ASC' : 'DESC';
@@ -224,7 +299,7 @@ class operationsController extends bootstrap
                 break;
             case 'repayment':
                 $this->sOrderField = 'repayment';
-                $sOrderBy          = 'mensuel ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
+                $sOrderBy          = 'last_perceived_repayment ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
                 break;
             case 'start':
             default:
@@ -290,11 +365,6 @@ class operationsController extends bootstrap
         $this->hideDecoration();
     }
 
-    public function _histo_transac()
-    {
-        $this->hideDecoration();
-    }
-
     public function _doc_fiscaux()
     {
         $this->hideDecoration();
@@ -312,7 +382,13 @@ class operationsController extends bootstrap
         $this->projects                          = $this->loadData('projects');
         $this->companies                         = $this->loadData('companies');
         $this->clients                           = $this->loadData('clients');
-        $this->echeanciers_recouvrements_prorata = $this->loadData('echeanciers_recouvrements_prorata');
+
+        /** @var \tax $oTax */
+        $oTax = $this->loadData('tax');
+        /** @var \tax_type $oTaxTyp */
+        $oTaxTyp = $this->loadData('tax_type');
+        /** @var \tax_type $aTaxType */
+        $aTaxType = $oTaxTyp->select('id_tax_type !=' . \tax_type::TYPE_VAT);
 
         $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
         $this->lng['preteur-operations-pdf']            = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
@@ -383,36 +459,41 @@ class operationsController extends bootstrap
         $this->date_debut = date('Y-m-d', $date_debut_time);
         $this->date_fin   = date('Y-m-d', $date_fin_time);
 
-        $array_type_transactions = array(
-            1  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            2  => array(
-                1 => $this->lng['preteur-operations-vos-operations']['offre-en-cours'],
-                2 => $this->lng['preteur-operations-vos-operations']['offre-rejetee'],
-                3 => $this->lng['preteur-operations-vos-operations']['offre-acceptee']
-            ),
-            3  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            4  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            5  => array(
-                1 => $this->lng['preteur-operations-vos-operations']['remboursement'],
-                2 => $this->lng['preteur-operations-vos-operations']['recouvrement']
-            ),
-            7  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            8  => $this->lng['preteur-operations-vos-operations']['retrait-dargents'],
-            16 => $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'],
-            17 => $this->lng['preteur-operations-vos-operations']['retrait-offre'],
-            19 => $this->lng['preteur-operations-vos-operations']['gain-filleul'],
-            20 => $this->lng['preteur-operations-vos-operations']['gain-parrain'],
-            22 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe'],
-            23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur']
-        );
 
         $array_type_transactions_liste_deroulante = array(
-            1 => '1,2,3,4,5,7,8,16,17,19,20,23,26',
-            2 => '3,4,7,8',
-            3 => '3,4,7',
-            4 => '8',
-            5 => '2',
-            6 => '5,23,26'
+            1 => array(
+                \transactions_types::TYPE_LENDER_SUBSCRIPTION,
+                \transactions_types::TYPE_LENDER_LOAN,
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+                self::TYPE_REPAYMENT_TRANSACTION,
+                \transactions_types::TYPE_DIRECT_DEBIT,
+                \transactions_types::TYPE_LENDER_WITHDRAWAL,
+                \transactions_types::TYPE_WELCOME_OFFER,
+                \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION,
+                \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD,
+                \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD,
+                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
+                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
+            ),
+            2 => array(
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+                \transactions_types::TYPE_DIRECT_DEBIT,
+                \transactions_types::TYPE_LENDER_WITHDRAWAL
+            ),
+            3 => array(
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+                \transactions_types::TYPE_DIRECT_DEBIT
+            ),
+            4 => array(\transactions_types::TYPE_LENDER_WITHDRAWAL),
+            5 => array(\transactions_types::TYPE_LENDER_LOAN),
+            6 => array(
+                self::TYPE_REPAYMENT_TRANSACTION,
+                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
+                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
+            )
         );
 
         if (isset($post_tri_type_transac)) {
@@ -468,20 +549,15 @@ class operationsController extends bootstrap
                 $order = 'date_operation DESC, id_transaction DESC';
             }
         }
+
         $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
+        $this->lTrans                  = $this->indexage_vos_operations->select('type_transaction IN (' . implode(', ', $tri_type_transac) . ') AND id_client = ' . $this->clients->id_client . ' AND DATE(date_operation) >= "' . $this->date_debut . '" AND DATE(date_operation) <= "' . $this->date_fin . '"' . $tri_project, $order);
 
-        $this->lTrans = $this->indexage_vos_operations->select('type_transaction IN (' . $tri_type_transac . ') AND id_client = ' . $this->clients->id_client . ' AND DATE(date_operation) >= "' . $this->date_debut . '" AND DATE(date_operation) <= "' . $this->date_fin . '"' . $tri_project, $order);
+        header('Content-type: application/vnd.ms-excel; charset=utf-8');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('content-disposition: attachment;filename=' . $this->bdd->generateSlug('operations_' . date('Y-m-d')) . '.xls');
 
-        header("Content-type: application/vnd.ms-excel; charset=utf-8");
-        header("Expires: 0");
-        header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-        header("content-disposition: attachment;filename=" . $this->bdd->generateSlug('operations_' . date('Y-m-d')) . ".xls");
-        // si exoneré à la date de la transact on change le libelle
-        $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['prelevements-fiscaux-et-sociaux'];
-        // on check si il s'agit d'une PM ou PP
-        if ($this->clients->type != 1 && $this->clients->type != 3) {
-            $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['retenues-a-la-source'];
-        }
         ?>
         <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8"/>
         <table border=1>
@@ -494,25 +570,29 @@ class operationsController extends bootstrap
                 <th><?= $this->lng['preteur-operations-pdf']['montant-de-loperation'] ?></th>
                 <th><?= $this->lng['preteur-operations-vos-operations']['capital-rembourse'] ?></th>
                 <th><?= $this->lng['preteur-operations-vos-operations']['interets-recus'] ?></th>
-                <th>Pr&eacute;l&egrave;vements obligatoires</th>
-                <th>Retenue &agrave; la source</th>
-                <th>CSG</th>
-                <th>Pr&eacute;l&egrave;vements sociaux</th>
-                <th>Contributions additionnelles</th>
-                <th>Pr&eacute;l&egrave;vements solidarit&eacute;</th>
-                <th>CRDS</th>
-                <?php /* Recouvrement
-                <th>Commission HT</th>
-                <th>Commission TVA</th>
-                <th>Commission TTC</th> */ ?>
+                <?php
+                foreach ($aTaxType as $aType) {
+                    echo '<th>' . $aType['name'] . '</th>';
+                }
+                ?>
                 <th><?= $this->lng['preteur-operations-pdf']['solde-de-votre-compte'] ?></th>
                 <td></td>
             </tr>
             <?php
-            $asterix_on = false;
+
+            $asterix_on    = false;
+            $aTranslations = array(
+                \transactions_types::TYPE_LENDER_SUBSCRIPTION          => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT    => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
+                \transactions_types::TYPE_LENDER_WITHDRAWAL            => $this->lng['preteur-operations-vos-operations']['retrait-dargents'],
+                \transactions_types::TYPE_WELCOME_OFFER                => $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'],
+                \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION   => $this->lng['preteur-operations-vos-operations']['retrait-offre'],
+                \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD => $this->lng['preteur-operations-vos-operations']['gain-filleul'],
+                \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD   => $this->lng['preteur-operations-vos-operations']['gain-parrain']
+            );
+
             foreach ($this->lTrans as $t) {
-                $t['libelle_operation'] = $t['libelle_operation'];
-                $t['libelle_projet']    = $t['libelle_projet'];
                 if ($t['montant_operation'] > 0) {
                     $couleur = ' style="color:#40b34f;"';
                 } else {
@@ -520,38 +600,19 @@ class operationsController extends bootstrap
                 }
 
                 $sProjectId = $t['id_projet'] == 0 ? '' : $t['id_projet'];
+                $solde      = $t['solde'];
 
-                $solde = $t['solde'];
-                // remb
-                if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
+                if (in_array($t['type_transaction'], array(self::TYPE_REPAYMENT_TRANSACTION, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
                     $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
 
-                    $retenuesfiscals = $this->echeanciers->prelevements_obligatoires + $this->echeanciers->retenues_source + $this->echeanciers->csg + $this->echeanciers->prelevements_sociaux + $this->echeanciers->contributions_additionnelles + $this->echeanciers->prelevements_solidarite + $this->echeanciers->crds;
+                    foreach ($aTaxType as $aType) {
+                        $aTax[$aType['id_tax_type']]['amount'] = 0;
+                    }
 
-                    if ($t['type_transaction'] != \transactions_types::TYPE_LENDER_REPAYMENT) {
-                        $this->echeanciers->prelevements_obligatoires    = 0;
-                        $this->echeanciers->retenues_source              = 0;
-                        $this->echeanciers->interets                     = 0;
-                        $this->echeanciers->retenues_source              = 0;
-                        $this->echeanciers->csg                          = 0;
-                        $this->echeanciers->prelevements_sociaux         = 0;
-                        $this->echeanciers->contributions_additionnelles = 0;
-                        $this->echeanciers->prelevements_solidarite      = 0;
-                        $this->echeanciers->crds                         = 0;
-                        $this->echeanciers->capital                      = $t['montant_operation'];
-                    } elseif ($t['type_transaction'] == \transactions_types::TYPE_LENDER_REPAYMENT && $t['recouvrement'] == 1 && $this->echeanciers_recouvrements_prorata->get($t['id_transaction'], 'id_transaction')) {
-                        $retenuesfiscals = $this->echeanciers_recouvrements_prorata->prelevements_obligatoires + $this->echeanciers_recouvrements_prorata->retenues_source + $this->echeanciers_recouvrements_prorata->csg + $this->echeanciers_recouvrements_prorata->prelevements_sociaux + $this->echeanciers_recouvrements_prorata->contributions_additionnelles + $this->echeanciers_recouvrements_prorata->prelevements_solidarite + $this->echeanciers_recouvrements_prorata->crds;
-
-                        $this->echeanciers->prelevements_obligatoires    = $this->echeanciers_recouvrements_prorata->prelevements_obligatoires;
-                        $this->echeanciers->retenues_source              = $this->echeanciers_recouvrements_prorata->retenues_source;
-                        $this->echeanciers->interets                     = $this->echeanciers_recouvrements_prorata->interets;
-                        $this->echeanciers->retenues_source              = $this->echeanciers_recouvrements_prorata->retenues_source;
-                        $this->echeanciers->csg                          = $this->echeanciers_recouvrements_prorata->csg;
-                        $this->echeanciers->prelevements_sociaux         = $this->echeanciers_recouvrements_prorata->prelevements_sociaux;
-                        $this->echeanciers->contributions_additionnelles = $this->echeanciers_recouvrements_prorata->contributions_additionnelles;
-                        $this->echeanciers->prelevements_solidarite      = $this->echeanciers_recouvrements_prorata->prelevements_solidarite;
-                        $this->echeanciers->crds                         = $this->echeanciers_recouvrements_prorata->crds;
-                        $this->echeanciers->capital                      = $this->echeanciers_recouvrements_prorata->capital;
+                    if (self::TYPE_REPAYMENT_TRANSACTION != $t['type_transaction']) {
+                        $this->echeanciers->capital = $t['montant_operation'];
+                    } else {
+                        $aTax = $oTax->getTaxListByRepaymentId($t['id_echeancier']);
                     }
                     ?>
                     <tr>
@@ -563,51 +624,20 @@ class operationsController extends bootstrap
                         <td<?= $couleur ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?></td>
                         <td><?= $this->ficelle->formatNumber(($this->echeanciers->capital / 100)) ?></td>
                         <td><?= $this->ficelle->formatNumber(($this->echeanciers->interets / 100)) ?></td>
-                        <td><?= $this->ficelle->formatNumber($this->echeanciers->prelevements_obligatoires) ?></td>
-                        <td><?= $this->ficelle->formatNumber($this->echeanciers->retenues_source) ?></td>
-                        <td><?= $this->ficelle->formatNumber($this->echeanciers->csg) ?></td>
-                        <td><?= $this->ficelle->formatNumber($this->echeanciers->prelevements_sociaux) ?></td>
-                        <td><?= $this->ficelle->formatNumber($this->echeanciers->contributions_additionnelles) ?></td>
-                        <td><?= $this->ficelle->formatNumber($this->echeanciers->prelevements_solidarite) ?></td>
-                        <td><?= $this->ficelle->formatNumber($this->echeanciers->crds) ?></td>
-                        <?php /* Recouvrement
-                        <td><?= $this->ficelle->formatNumber($t['commission_ht'] / 100) ?></td>
-                        <td><?= $this->ficelle->formatNumber($t['commission_tva'] / 100) ?></td>
-                        <td><?= $this->ficelle->formatNumber($t['commission_ttc'] / 100) ?></td> */ ?>
+                        <?php
+                            foreach ($aTaxType as $aType) {
+                                echo '<td>' . $this->ficelle->formatNumber($aTax[$aType['id_tax_type']]['amount'] / 100) . '</td>';
+                            }
+                        ?>
                         <td><?= $this->ficelle->formatNumber($solde / 100) ?></td>
                         <td></td>
                     </tr>
-                    <?
-                } elseif (in_array($t['type_transaction'], array(8, 1, 3, 4, 16, 17, 19, 20))) {
+                    <?php
+                } elseif (in_array($t['type_transaction'], array_keys($aTranslations))) {
                     // Récupération de la traduction et non plus du libelle dans l'indexation (si changement on est ko)
-                    switch ($t['type_transaction']) {
-                        case 8:
-                            $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['retrait-dargents'];
-                            break;
-                        case 1:
-                            $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['depot-de-fonds'];
-                            break;
-                        case 3:
-                            $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['depot-de-fonds'];
-                            break;
-                        case 4:
-                            $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['depot-de-fonds'];
-                            break;
-                        case 16:
-                            $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'];
-                            break;
-                        case 17:
-                            $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['retrait-offre'];
-                            break;
-                        case 19:
-                            $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['gain-filleul'];
-                            break;
-                        case 20:
-                            $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['gain-parrain'];
-                            break;
-                    }
-                    $type = "";
-                    if ($t['type_transaction'] == 8 && $t['montant'] > 0) {
+                    $t['libelle_operation'] = $aTranslations[$t['type_transaction']];
+
+                    if ($t['type_transaction'] == \transactions_types::TYPE_LENDER_WITHDRAWAL && $t['montant'] > 0) {
                         $type = "Annulation retrait des fonds - compte bancaire clos";
                     } else {
                         $type = $t['libelle_operation'];
@@ -629,21 +659,16 @@ class operationsController extends bootstrap
                         <td></td>
                         <td></td>
                         <td></td>
-                        <?php /* Recouvrement
-                        <td></td>
-                        <td></td>
-                        <td></td> */ ?>
                         <td><?= $this->ficelle->formatNumber($solde / 100) ?></td>
                         <td></td>
                     </tr>
-                    <?
-
-                } elseif (in_array($t['type_transaction'], array(2))) {//offres en cours
+                    <?php
+                } elseif ($t['type_transaction'] == \transactions_types::TYPE_LENDER_LOAN) {
                     $bdc = $t['bdc'];
                     if ($t['bdc'] == 0) {
                         $bdc = "";
                     }
-                    //asterix pour les offres acceptees
+
                     $asterix       = "";
                     $offre_accepte = false;
                     if ($t['libelle_operation'] == $this->lng['preteur-operations-vos-operations']['offre-acceptee']) {
@@ -668,10 +693,6 @@ class operationsController extends bootstrap
                         <td></td>
                         <td></td>
                         <td></td>
-                        <?php /* Recouvrement
-                        <td></td>
-                        <td></td>
-                        <td></td> */ ?>
                         <td><?= $this->ficelle->formatNumber($t['solde'] / 100) ?></td>
                         <td><?= $asterix ?></td>
                     </tr>
@@ -710,8 +731,11 @@ class operationsController extends bootstrap
 
     private function indexation_client(\clients $clients)
     {
+        /** @var \lender_tax_exemption $oTaxExemption */
+        $oTaxExemption = $this->loadData('lender_tax_exemption');
+        /** @var \tax $oTax */
+        $oTax = $this->loadData('tax');
         $this->echeanciers                       = $this->loadData('echeanciers');
-        $this->echeanciers_recouvrements_prorata = $this->loadData('echeanciers_recouvrements_prorata');
         $this->indexage_vos_operations           = $this->loadData('indexage_vos_operations');
         $this->transactions                      = $this->loadData('transactions');
 
@@ -719,35 +743,27 @@ class operationsController extends bootstrap
         $this->lng['preteur-operations-pdf']            = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
         $this->lng['preteur-operations']                = $this->ln->selectFront('preteur-operations', $this->language, $this->App);
 
-        $this->settings->get('Recouvrement - commission ht', 'type');
-        $commission_ht = $this->settings->value;
-
-        $this->settings->get('TVA', 'type');
-        $tva = $this->settings->value;
-
         $array_type_transactions = array(
-            1  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            2  => array(
+            \transactions_types::TYPE_LENDER_SUBSCRIPTION            => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
+            \transactions_types::TYPE_LENDER_LOAN                    => array(
                 1 => $this->lng['preteur-operations-vos-operations']['offre-en-cours'],
                 2 => $this->lng['preteur-operations-vos-operations']['offre-rejetee'],
                 3 => $this->lng['preteur-operations-vos-operations']['offre-acceptee']
             ),
-            3  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            4  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            5  => array(
-                1 => $this->lng['preteur-operations-vos-operations']['remboursement'],
-                2 => $this->lng['preteur-operations-vos-operations']['recouvrement']
-            ),
-            7  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            8  => $this->lng['preteur-operations-vos-operations']['retrait-dargents'],
-            16 => $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'],
-            17 => $this->lng['preteur-operations-vos-operations']['retrait-offre'],
-            19 => $this->lng['preteur-operations-vos-operations']['gain-filleul'],
-            20 => $this->lng['preteur-operations-vos-operations']['gain-parrain'],
-            22 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe'],
-            23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur'],
-            26 => $this->lng['preteur-operations-vos-operations']['remboursement-recouvrement-preteur']
+            \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT      => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
+            \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT    => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
+            \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL       => $this->lng['preteur-operations-vos-operations']['remboursement'],
+            \transactions_types::TYPE_DIRECT_DEBIT                   => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
+            \transactions_types::TYPE_LENDER_WITHDRAWAL              => $this->lng['preteur-operations-vos-operations']['retrait-dargents'],
+            \transactions_types::TYPE_WELCOME_OFFER                  => $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'],
+            \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION     => $this->lng['preteur-operations-vos-operations']['retrait-offre'],
+            \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD   => $this->lng['preteur-operations-vos-operations']['gain-filleul'],
+            \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD     => $this->lng['preteur-operations-vos-operations']['gain-parrain'],
+            \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe'],
+            \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT   => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur'],
+            \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT      => $this->lng['preteur-operations-vos-operations']['remboursement-recouvrement-preteur']
         );
+
         $sLastOperation = $this->indexage_vos_operations->getLastOperationDate($clients->id_client);
 
         if (empty($sLastOperation)) {
@@ -760,35 +776,14 @@ class operationsController extends bootstrap
 
         foreach ($this->lTrans as $t) {
             if (0 == $this->indexage_vos_operations->counter('id_transaction = ' . $t['id_transaction'] . ' AND libelle_operation = "' . $t['type_transaction_alpha'] . '"')) {
-                $retenuesfiscals = 0.0;
-                $capital         = 0.0;
-                $interets        = 0.0;
 
-                if ($this->echeanciers->get($t['id_echeancier'], 'id_echeancier')) {
-                    $retenuesfiscals = $this->echeanciers->prelevements_obligatoires + $this->echeanciers->retenues_source + $this->echeanciers->csg + $this->echeanciers->prelevements_sociaux + $this->echeanciers->contributions_additionnelles + $this->echeanciers->prelevements_solidarite + $this->echeanciers->crds;
-                    $capital         = $this->echeanciers->capital;
-                    $interets        = $this->echeanciers->interets;
-                }
-
-                // si c'est un recouvrement on remplace les données
-                if ($t['type_transaction'] == 5 && $t['recouvrement'] == 1 && $this->echeanciers_recouvrements_prorata->get($t['id_transaction'], 'id_transaction')) {
-                    $retenuesfiscals = $this->echeanciers_recouvrements_prorata->prelevements_obligatoires + $this->echeanciers_recouvrements_prorata->retenues_source + $this->echeanciers_recouvrements_prorata->csg + $this->echeanciers_recouvrements_prorata->prelevements_sociaux + $this->echeanciers_recouvrements_prorata->contributions_additionnelles + $this->echeanciers_recouvrements_prorata->prelevements_solidarite + $this->echeanciers_recouvrements_prorata->crds;
-                    $capital         = $this->echeanciers_recouvrements_prorata->capital;
-                    $interets        = $this->echeanciers_recouvrements_prorata->interets;
-                }
-
-                // si exoneré à la date de la transact on change le libelle
-                $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['prelevements-fiscaux-et-sociaux'];
-                // on check si il s'agit d'une PM ou PP
-                if ($clients->type == 1 or $clients->type == 3) {
-                    // Si le client est exoneré on doit modifier le libelle de prelevement
-                    // on doit checker si le client est exonéré
-                    $this->lenders_imposition_history = $this->loadData('lenders_imposition_history');
-                    $exoneration                      = $this->lenders_imposition_history->is_exonere_at_date($this->lenders_accounts->id_lender_account, $t['date_transaction']);
-                    if ($exoneration) {
+                if ($clients->type == \clients::TYPE_PERSON || $clients->type == \clients::TYPE_PERSON_FOREIGNER) {
+                    if ($oTaxExemption->counter('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND year = "' . substr($t['date_transaction'], 0, 4) . '"') > 0) {
                         $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['cotisations-sociales'];
+                    } else {
+                        $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['prelevements-fiscaux-et-sociaux'];
                     }
-                } else {// PM
+                } else {
                     $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['retenues-a-la-source'];
                 }
 
@@ -796,41 +791,48 @@ class operationsController extends bootstrap
                 $this->indexage_vos_operations->id_transaction      = $t['id_transaction'];
                 $this->indexage_vos_operations->id_echeancier       = $t['id_echeancier'];
                 $this->indexage_vos_operations->id_projet           = $t['le_id_project'];
-                $this->indexage_vos_operations->type_transaction    = $t['type_transaction'];
-                $this->indexage_vos_operations->recouvrement        = $t['recouvrement'];
+                $this->indexage_vos_operations->type_transaction    = (\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL == $t['type_transaction']) ? self::TYPE_REPAYMENT_TRANSACTION : $t['type_transaction'];
                 $this->indexage_vos_operations->libelle_operation   = $t['type_transaction_alpha'];
                 $this->indexage_vos_operations->bdc                 = $t['bdc'];
                 $this->indexage_vos_operations->libelle_projet      = $t['title'];
                 $this->indexage_vos_operations->date_operation      = $t['date_tri'];
-                $this->indexage_vos_operations->solde               = $t['solde'] * 100;
-                $this->indexage_vos_operations->montant_operation   = $t['amount_operation'];
+                $this->indexage_vos_operations->solde               = bcmul($t['solde'], 100);
                 $this->indexage_vos_operations->libelle_prelevement = $libelle_prelevements;
-                $this->indexage_vos_operations->montant_prelevement = $retenuesfiscals * 100;
+                $this->indexage_vos_operations->montant_prelevement = $oTax->getAmountByRepaymentId($t['id_echeancier']);
+                $this->indexage_vos_operations->montant_operation   = $t['amount_operation'] + $this->indexage_vos_operations->montant_prelevement;
 
-                if ($t['type_transaction'] == 23) {
-                    $this->indexage_vos_operations->montant_capital = $t['montant'];
-                    $this->indexage_vos_operations->montant_interet = 0;
-                } else {
-                    $this->indexage_vos_operations->montant_capital = $capital;
-                    $this->indexage_vos_operations->montant_interet = $interets;
+                $capital   = 0.0;
+                $interests = 0.0;
+
+                if (false === empty($t['id_echeancier'])) {
+                    $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
+                    $capital   = $this->echeanciers->capital;
+                    $interests = $this->echeanciers->interets;
                 }
-
-
-                if ($t['type_transaction'] == 5 && $t['recouvrement'] == 1) {
-                    $taux_com         = $commission_ht;
-                    $taux_tva         = $tva;
-                    $montant          = $capital / 100 + $interets / 100;
-                    $montant_avec_com = round($montant / (1 - $taux_com * (1 + $taux_tva)), 2);
-                    $com_ht           = round($montant_avec_com * $taux_com, 2);
-                    $com_tva          = round($com_ht * $taux_tva, 2);
-                    $com_ttc          = round($com_ht + $com_tva, 2);
-
-                    $this->indexage_vos_operations->commission_ht  = $com_ht * 100;
-                    $this->indexage_vos_operations->commission_tva = $com_tva * 100;
-                    $this->indexage_vos_operations->commission_ttc = $com_ttc * 100;
-                }
+                $this->indexage_vos_operations->montant_capital = $capital;
+                $this->indexage_vos_operations->montant_interet = $interests;
                 $this->indexage_vos_operations->create();
             }
         }
+    }
+
+    /**
+     * @param \lender_tax_exemption $lenderTaxExemption
+     * @param int $lenderId
+     * @param string|null $year
+     * @return array
+     */
+    private function getExemptionHistory(\lender_tax_exemption $lenderTaxExemption, $lenderId, $year = null)
+    {
+
+        try {
+            $result = $lenderTaxExemption->getLenderExemptionHistory($lenderId, $year);
+        } catch (Exception $exception) {
+            /** @var \Psr\Log\LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->error('Could not get lender exemption history (id_lender = ' . $lenderId . ') Exception message : ' . $exception->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lenderId));
+            $result = [];
+        }
+        return $result;
     }
 }

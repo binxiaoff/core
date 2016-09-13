@@ -362,7 +362,6 @@ class devboxController extends bootstrap
                 $oTransaction->etat             = transactions::STATUS_VALID;
                 $oTransaction->ip_client        = $_SERVER['REMOTE_ADDR'];
                 $oTransaction->type_transaction = transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT;
-                $oTransaction->transaction      = transactions::VIRTUAL;
                 $oTransaction->create();
 
                 $oWalletLine->id_lender                = $oLender->id_lender_account;

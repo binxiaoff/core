@@ -40,11 +40,8 @@ class wallets_lines extends wallets_lines_crud
     const PHYSICAL = 1;
     const VIRTUAL  = 2;
 
-    const DISPLAY_IN_FO = 0;
-    const HIDE_IN_FO = 1;
-
     // The field is not used. We put always 1
-    const STATUS_VALID    = 1;
+    const STATUS_VALID = 1;
 
     public function __construct($bdd, $params = '')
     {

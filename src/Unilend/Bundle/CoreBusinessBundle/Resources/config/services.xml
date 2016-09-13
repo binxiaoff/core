@@ -101,6 +101,7 @@
             <argument>%kernel.root_dir%/dataloader/conf</argument>
             <argument type="service" id="logger"/>
         </service>
+
         <service id="unilend.service.statistics_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service.irr_manager"/>
@@ -128,6 +129,10 @@
             <argument type="service" id="unilend.service.entity_manager" />
             <argument>%desk_user%</argument>
             <argument>%desk_password%</argument>
+        </service>
+
+        <service id="unilend.service.tax_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\TaxManager">
+            <argument type="service" id="unilend.service.entity_manager"/>
         </service>
     </services>
 </container>
