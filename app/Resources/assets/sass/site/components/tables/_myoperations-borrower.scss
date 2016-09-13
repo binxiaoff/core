@@ -3,18 +3,20 @@
 //
 #user-borrower-dashboard .table {
   th {
-    font-size:11px;
-    text-transform:uppercase;
-    padding-left:2px;
-    padding-right:2px;
-    text-align:center;
+    font-size: 11px;
+    text-transform: uppercase;
+    padding-left: 2px;
+    padding-right: 2px;
+    text-align: center;
+    margin: 20px 0;
   }
-  margin:20px 0;
+
   td {
-    font-size:15px;
+    font-size: 15px;
   }
+
   .center {
-    text-align:center;
+    text-align: center;
   }
 }
 
@@ -27,52 +29,57 @@
     }
   }
 }
+
 #user-emprunteur-operations #form-filters-operations {
-  margin-bottom:70px;
+  margin-bottom: 70px;
 }
 
 #user-emprunteur-operations .cell-right {
-  text-align:right;
+  text-align: right;
 }
 
 #user-emprunteur-operations .export {
-  color:#2cbaa4;
+  color: $c-teal;
 }
 
-.grey-label {
-  color:#9f9d9f;
+#user-borrower-projects {
+  th, td {
+    @include devices('sm', 'laptop', 'lg') {
+      padding: 10px 15px;
+    }
+  }
 }
 
 .table-myoperations-borrower-item-operation {
-  width:50%;
+  width: 50%;
 }
 
 .table-myoperations-borrower-item-projet {
-  width:10%;
-  text-align:right;
+  width: 10%;
+  text-align: right;
 }
 
 .table-myoperations-borrower-item-date {
-  width:20%;
-  text-align:right;
+  width: 20%;
+  text-align: right;
 }
 
 .table-myoperations-borrower-item-amount {
-  width:10%;
-  text-align:right;
+  width: 10%;
+  text-align: right;
 }
 
 td.table-myoperations-borrower-item-amount {
-  color:#2cbaa4;
+  color: $c-teal;
 }
 
 .below-null {
-  color:#f8524e!important;
+  color: $c-rejected !important;
 }
 
 .table-myoperations-borrower-item-detail {
-  width:10%;
-  text-align:center;
+  width: 10%;
+  text-align: center;
 }
 
 .table-myoperations-prefunding,
@@ -82,7 +89,7 @@ td.table-myoperations-borrower-item-amount {
 
   th {
     text-align: left;
-    font-size: 12px;
+    font-size: 11px;
   }
 
   td {
@@ -92,116 +99,99 @@ td.table-myoperations-borrower-item-amount {
 
 .table-myoperations-prefunding {
   .table-borrower-file {
-    width:10%;
+    width: 9%;
   }
 
   .table-borrower-nature {
-    width:30%;
+    width: 42%;
   }
 
   .table-borrower-amount {
-    width:10%;
+    width: 11%;
   }
 
   .table-borrower-status {
-    width:16%;
+    width: 22%;
   }
 
   .table-borrower-autolend {
-    width:15%;
+    width: 11%;
   }
 
   .table-borrower-upload {
-    width:11%;
+    width: 5%;
   }
 
-  .min{
-    text-transform:none;
-    font-size:9px;
+  .min {
+    text-transform: none;
+    font-size: 9px;
   }
-
 }
 
 .table-myoperations-funding {
-  table-layout:fixed;
-
-  th {
-    text-align:left;
-    font-size:12px;
-  }
-
-  td {
-    font-size:12px;
-  }
-
   .table-borrower-file {
-    width:10%;
+    width: 9%;
   }
 
   .table-borrower-nature {
-    width:20%;
+    width: 37%;
   }
 
   .table-borrower-amount {
-    width:12%;
+    width: 11%;
   }
 
   .table-borrower-ending-date {
-    width:12%;
+    width: 11%;
   }
 
   .table-borrower-funding-rate {
-    width:12%;
+    width: 11%;
   }
 
   .table-borrower-average-rate {
-    width:10%;
+    width: 11%;
   }
 
-  .table-borrower-stop {
-    width:10%;
+  .table-borrower-buttons {
+    width: 5%;
   }
-
-  .table-borrower-link-to {
-    width:10%;
-  }
-
 }
 
 .table-myoperations-postfunding {
   .table-borrower-file {
-    width:10%;
+    width: 9%;
   }
 
   .table-borrower-nature {
-    width:15%;
+    width: 20%;
   }
 
   .table-borrower-amount {
-    width:10%;
+    width: 11%;
   }
 
   .table-borrower-ending-date {
-    width:10%;
+    width: 11%;
   }
 
   .table-borrower-monthly {
-    width:10%;
+    width: 11%;
   }
 
   .table-borrower-average-rate {
-    width:10%;
+    width: 11%;
   }
 
   .table-borrower-crd {
-    width:10%;
+    width: 11%;
   }
 
   .table-borrower-date {
-    width:10%;
+    width: 11%;
   }
 
   .table-borrower-button {
-    width:10%;
+    width: 5%;
   }
 }

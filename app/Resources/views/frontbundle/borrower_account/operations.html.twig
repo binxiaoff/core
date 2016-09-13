@@ -44,7 +44,7 @@
 
                                         <div class="row input-fields">
                                             <div class="col-lg-3 col-md-3 col-sm-4">
-                                                <label for="filter-duration" class="grey-label">{{ 'borrower-operation_range'|trans }}</label>
+                                                <label for="filter-duration" class="c-t3">{{ 'borrower-operation_range'|trans }}</label>
                                                 <div class="row">
                                                     <select id="filter-duration" name="filter[slide]" class="input-field">
                                                         <option value="1">{% transchoice 1 with {'%count%' : 1} %} common_month {% endtranschoice %}</option>
@@ -55,7 +55,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-3 col-md-3 col-sm-4">
-                                                <label for="filter-year" class="grey-label">{{ 'borrower-operation_year'|trans }}</label>
+                                                <label for="filter-year" class="c-t3">{{ 'borrower-operation_year'|trans }}</label>
                                                 <div class="row">
                                                     <select id="filter-year" name="filter[year]" class="input-field">
                                                         {% for year in "now"|date("Y")..2013 %}
@@ -65,7 +65,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-3 col-md-3 col-sm-4">
-                                                <label for="filter-start" class="grey-label">{{ 'borrower-operation_customized-date'|trans }}</label>
+                                                <label for="filter-start" class="c-t3">{{ 'borrower-operation_customized-date'|trans }}</label>
                                                 <div class="row">
                                                     <div class="input-group set-right">
                                                         <input type="text" id="filter-start" name="filter[start]" value="{{ default_filter_date.start }}" placeholder="{{ 'borrower-operation_select-start-date-placeholder'|trans }}" class="input-field ui-has-datepicker" />
@@ -98,7 +98,7 @@
 
                                         <div class="row input-fields">
                                             <div class="col-lg-3 col-md-3 col-sm-4">
-                                                <label for="fiter-type" class="grey-label">{{ 'borrower-operation_filter-by-operation'|trans }}</label>
+                                                <label for="fiter-type" class="c-t3">{{ 'borrower-operation_filter-by-operation'|trans }}</label>
                                                 <div class="row">
                                                     <select id="fiter-type" name="filter[op]" class="input-field">
                                                         <option value="all">{{ 'borrower-operation_all-the-operations'|trans }}</option>
@@ -114,7 +114,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-3 col-md-3 col-sm-4">
-                                                <label for="filter-project" class="grey-label">{{ 'borrower-operation_filter-by-project'|trans }}</label>
+                                                <label for="filter-project" class="c-t3">{{ 'borrower-operation_filter-by-project'|trans }}</label>
                                                 <div class="row">
                                                     <select id="filter-project" name="filter[project]" class="input-field">
                                                         <option value="all">{{ 'borrower-operation_all-the-projects'|trans }}</option>
