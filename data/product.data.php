@@ -27,6 +27,9 @@
 // **************************************************************************************************** //
 class product extends product_crud
 {
+    const STATUS_DISABLED = 0;
+    const STATUS_ACTIVE = 1;
+
     public function __construct($bdd, $params = '')
     {
         parent::product($bdd, $params);

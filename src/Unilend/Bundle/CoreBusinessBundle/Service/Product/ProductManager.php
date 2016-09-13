@@ -21,10 +21,11 @@ class ProductManager
 
     /**
      * @param \projects $project
+     * @param bool      $includeInactiveProduct
      *
      * @return \product[]
      */
-    public function findEligibleProducts(\projects $project)
+    public function findEligibleProducts(\projects $project, $includeInactiveProduct = false)
     {
         /** @var \product $product */
         $product = $this->entityManager->getRepository('product');
@@ -32,7 +33,7 @@ class ProductManager
 
         foreach ($product->select() as $oneProduct) {
             $product->get($oneProduct['id_product']);
-            if ($this->projectValidator->isEligible($project, $product)) {
+            if (($includeInactiveProduct || $product->status == \product::STATUS_ACTIVE) && $this->projectValidator->isEligible($project, $product)) {
                 $eligibleProducts[] = $product;
             }
         }
