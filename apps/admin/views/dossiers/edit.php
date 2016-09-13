@@ -434,6 +434,22 @@
                 </table>
                 <br><br>
 
+                <h2>Produit</h2>
+                <table class="form" style="width: 538px;">
+                    <th><label for="assigned_product">Produit associé* :</label></th>
+                    <td>
+                        <select name="assigned_product" id="assigned_product" class="select" <?php if ($this->bReadonlyRiskNote) : ?>disabled<?php endif; ?> style="width:160px;background-color:#AAACAC;">
+                            <option value=""></option>
+                        <?php foreach ($this->eligibleProduct as $product) : ?>
+                            <option value="<?= $product->id_product ?>" <?= $this->projects->id_product == $product->id_product ? 'selected' : '' ?>>
+                                <?= $this->translator->trans('product_label_' . $product->label) ?>
+                            </option>
+                        <?php endforeach; ?>
+                        </select>
+                    </td>
+                </table>
+                <br><br>
+
                 <?php if ($this->projects->status == \projects_status::REMBOURSEMENT) : ?>
                     <h2>Remboursement anticipé / Information</h2>
                     <table class="form" style="width: 538px; border: 1px solid #B10366;">

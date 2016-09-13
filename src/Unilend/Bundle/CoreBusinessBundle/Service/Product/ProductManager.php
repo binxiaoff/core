@@ -14,9 +14,9 @@ class ProductManager
 
     public function __construct(EntityManager $entityManager, ProjectValidator $projectValidator, BidValidator $bidValidator)
     {
-        $this->entityManager = $entityManager;
+        $this->entityManager    = $entityManager;
         $this->projectValidator = $projectValidator;
-        $this->bidValidator = $bidValidator;
+        $this->bidValidator     = $bidValidator;
     }
 
     /**
@@ -28,12 +28,16 @@ class ProductManager
     public function findEligibleProducts(\projects $project, $includeInactiveProduct = false)
     {
         /** @var \product $product */
-        $product = $this->entityManager->getRepository('product');
+        $product          = $this->entityManager->getRepository('product');
         $eligibleProducts = [];
 
         foreach ($product->select() as $oneProduct) {
             $product->get($oneProduct['id_product']);
-            if (($includeInactiveProduct || $product->status == \product::STATUS_ACTIVE) && $this->projectValidator->isEligible($project, $product)) {
+
+            if ($product->status != \product::STATUS_DISABLED
+                && ($includeInactiveProduct || $product->status == \product::STATUS_ACTIVE)
+                && $this->projectValidator->isEligible($project, $product)
+            ) {
                 $eligibleProducts[] = $product;
             }
         }

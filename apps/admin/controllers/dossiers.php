@@ -295,6 +295,11 @@ class dossiersController extends bootstrap
                 }
             }
 
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager $productManager */
+            $productManager        = $this->get('unilend.service_product.product_manager');
+            $this->eligibleProduct = $productManager->findEligibleProducts($this->projects, true);
+            $this->translator      = $this->get('translator');
+
             if (isset($_POST['last_annual_accounts'])) {
                 $this->projects->id_dernier_bilan = $_POST['last_annual_accounts'];
                 $this->projects->update();
@@ -581,8 +586,9 @@ class dossiersController extends bootstrap
                     $this->projects->id_borrowing_motive = $_POST['motive'];
 
                     if (false === $this->bReadonlyRiskNote) {
-                        $this->projects->period = $_POST['duree'];
-                        $this->projects->amount = str_replace([' ', ','], ['', '.'], $_POST['montant']);
+                        $this->projects->id_product = $_POST['assigned_product'];
+                        $this->projects->period     = $_POST['duree'];
+                        $this->projects->amount     = str_replace([' ', ','], ['', '.'], $_POST['montant']);
                     }
 
                     if ($this->projects->status <= \projects_status::A_FUNDER) {
@@ -613,7 +619,15 @@ class dossiersController extends bootstrap
 
                     $this->projects->update();
 
+                    if (empty($this->projects->id_product) && $this->projects->status >= projects_status::ATTENTE_ANALYSTE) {
+                        $_SESSION['freeow']['title']   = 'Sauvegarde du résumé';
+                        $_SESSION['freeow']['message'] = 'Aucun produit a été associé au projet';
+                        header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                        die;
+                    }
+
                     if ($_POST['status'] != $_POST['current_status'] && $this->projects->status != $_POST['status']) {
+
                         if ($_POST['status'] == \projects_status::PREP_FUNDING) {
                             $aProjects       = $this->projects->select('id_company = ' . $this->projects->id_company);
                             $aExistingStatus = array();
