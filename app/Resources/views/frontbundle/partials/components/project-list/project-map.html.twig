@@ -53,7 +53,7 @@
                         {% endif %}
                     </div>
                     <div class="project-offers">
-                        <strong>{{ project.bidsCount }}</strong> {% transchoice project.bidsCount %}project-list_offer-label{% endtranschoice %}
+                        <strong>{{ project.bidsCount|localizednumber }}</strong> {% transchoice project.bidsCount %}project-list_offer-label{% endtranschoice %}
                         {% if project.lender is defined and project.lender.bids.count > 0 %}
                             <div class="project-useroffers{% if project.lender.bids.autobid.count > 0 %} ui-has-tooltip{% endif %}"{% if project.lender.bids.autobid.count > 0 %} data-toggle="tooltip" data-html="true" title="{% transchoice project.lender.bids.autobid.count with {'%currentUserOffersAutolend%' : project.lender.bids.autobid.count} %} project-list_autolend-tooltip {% endtranschoice %} <span class='icon fa-autolend-u32 c-p1'></span>"{% endif %}>
                                 {% if project.lender.bids.accepted is not empty %}

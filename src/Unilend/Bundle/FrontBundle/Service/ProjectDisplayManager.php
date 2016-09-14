@@ -240,9 +240,9 @@ class ProjectDisplayManager
                 'debts'         => [],
             ];
 
-            $finance[$balanceSheet['id_bilan']]['balanceSheet']['ca']                          = [$balanceSheet['ca']];
-            $finance[$balanceSheet['id_bilan']]['balanceSheet']['resultat-brute-exploitation'] = [$balanceSheet['resultat_brute_exploitation']];
-            $finance[$balanceSheet['id_bilan']]['balanceSheet']['resultat-exploitation']       = [$balanceSheet['resultat_exploitation']];
+            $finance[$balanceSheet['id_bilan']]['balanceSheet']['ca']                         = [$balanceSheet['ca']];
+            $finance[$balanceSheet['id_bilan']]['balanceSheet']['resultat-brut-exploitation'] = [$balanceSheet['resultat_brute_exploitation']];
+            $finance[$balanceSheet['id_bilan']]['balanceSheet']['resultat-exploitation']      = [$balanceSheet['resultat_exploitation']];
 
             if (false === $isBeforeRiskProject) {
                 $finance[$balanceSheet['id_bilan']]['balanceSheet']['resultat-financier']      = [$balanceSheet['resultat_financier']];

@@ -88,7 +88,7 @@
                                             </p>
                                         </div>
                                         <label class="col-lg-5 col-md-5 push-lg-1 push-md-1">
-                                            <select data-popup-rate id="bid-interest" name="invest[interest]" class="input-field">
+                                            <select id="bid-interest" name="invest[interest]" class="input-field" data-popup-rate >
                                                 <option value="">{% trans %} project-detail_side-bar-bids-rate-placeholder {% endtrans %}</option>
                                                 {% for rate in range(project.maxValidRate - 0.1, project.minRate, 0.1) %}
                                                     <option value="{{ rate }}">{{ rate|localizednumberwithprecision(1) }} %</option>
@@ -116,7 +116,7 @@
                                         <div class="col-lg-5 col-md-5 push-lg-1 push-md-1">
                                             <div class="input-group set-right">
                                                 <div class="btn-group"><span class="icon fa-euro"></span></div>
-                                                <input id="bid-amount" data-popup-amount type="text" name="invest[amount]" value="" placeholder="{% trans %} project-detail_side-bar-bids-amount-placeholder {% endtrans %}" class="input-field">
+                                                <input id="bid-amount" type="text" name="invest[amount]" value="" placeholder="{% trans %} project-detail_side-bar-bids-amount-placeholder {% endtrans %}" class="input-field" data-popup-amount >
                                             </div>
                                         </div>
                                     </div>
@@ -125,6 +125,7 @@
                             <div class="btn-toolbar">
                                 <button type="submit" class="btn-primary btn-size-full cursor">{% trans %} project-detail_side-bar-bids-submit-button {% endtrans %}</button>
                                 <input type="hidden" name="invest[bidToken]" value="{{ bidToken }}">
+                                <input type="hidden" id="bid-duration" value="{{ project.duration }}">
                             </div><!-- /.btn-toolbar -->
                             <div class="field-help">&nbsp;</div>
                         </form><!-- /.project-single-form-invest -->
@@ -161,7 +162,8 @@
                                    placeholder="{% trans %} common_password {% endtrans %}"
                                    value="" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                         </div><!-- /.input-group -->
-                        <ul class="ui-formvalidation-messages"></ul>
+                    </div><!-- /.form-field -->
+                    <div class="form-field">
                         <div class="field-help">
                             <a href="#dialog-conditions-content" class="fancybox-html">
                                 {% trans %} connect-subscribe-page_login-box-password-forgotten-link {% endtrans %}

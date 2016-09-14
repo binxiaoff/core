@@ -11,7 +11,6 @@ var $html = $('html')
 var $body = $('body')
 
 $doc.on('ready', function () {
-
   // IE9 adjustments for displaying project-list-item in the project-list
   if (Utility.isIE(9)) {
     // Specific fixes for IE
@@ -265,4 +264,50 @@ $doc.on('ready', function () {
     }
   })
 
+  /*
+   * Project Single monthly repayment estimation
+   */
+  var monthlyRepaymentTimeout
+
+  function estimateMonthlyRepayment () {
+    var amount = $('#bid-amount').val()
+    var duration = $('#bid-duration').val()
+    var rate = $('#bid-interest option:selected').val()
+
+    // @trigger elem `Spinner:showLoading`
+    $('#bid-amount').trigger('Spinner:showLoading')
+
+    if (amount && duration && rate) {
+      $.ajax({
+        url: '/projects/monthly_repayment',
+        method: 'POST',
+        data: {
+          amount: amount,
+          duration: duration,
+          rate: rate
+        },
+        success: function (data) {
+          if (data.success && data.message) {
+            var messageContent = $('<p>').addClass('c-t2').html(data.message)
+            var messageHolder = $('form.project-single-form-invest .btn-toolbar').next('.field-help')
+            messageHolder.html(messageContent)
+          } else if (data.error && data.message) {
+            console.log(data.message)
+          } else {
+            console.log('Unknown state')
+          }
+        },
+        error: function () {
+          console.log('Unable to estimation monthly repayments')
+        }
+      });
+    }
+  }
+
+  $doc.on('change keyup', '#bid-amount, #bid-interest', function () {
+    if (monthlyRepaymentTimeout) {
+      clearTimeout(monthlyRepaymentTimeout)
+    }
+    monthlyRepaymentTimeout = setTimeout(estimateMonthlyRepayment, 250);
+  })
 })

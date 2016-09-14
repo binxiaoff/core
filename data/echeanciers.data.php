@@ -978,7 +978,7 @@ class echeanciers extends echeanciers_crud
         $sDate = $oDate->format('Y-m-d');
 
         $sQuery = '
-           SELECT id_project,
+            SELECT id_project,
               ordre,
               COUNT(*) AS nb_repayment,
               COUNT(CASE status WHEN 1 THEN 1 ELSE NULL END) AS nb_repayment_paid
