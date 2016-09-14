@@ -16,16 +16,13 @@ class StatisticsManager
     private $cachePool;
     /** @var LocationManager */
     private $locationManager;
-    /** @var  TranslationManager */
-    private $translationManager;
 
-    public function __construct(EntityManager $entityManager, IRRManager $IRRManager,MemcacheCachePool $cachePool, LocationManager $locationManager, TranslationManager $translationManager)
+    public function __construct(EntityManager $entityManager, IRRManager $IRRManager,MemcacheCachePool $cachePool, LocationManager $locationManager)
     {
         $this->entityManager      = $entityManager;
         $this->IRRManager         = $IRRManager;
         $this->cachePool          = $cachePool;
         $this->locationManager    = $locationManager;
-        $this->translationManager = $translationManager;
     }
 
     /**
