@@ -24,24 +24,18 @@
     }
 
     .swiper-slide:nth-of-type(1) {
-      background-image: image-url('promos/homeacq-video-hero-1682x700-1.jpg');
-
       @include devices('xs') {
         background-position: left center;
       }
     }
 
     .swiper-slide:nth-of-type(2) {
-      background-image: image-url('promos/homeacq-video-hero-1682x700-2.jpg');
-
       @include devices('xs') {
         background-position: left center;
       }
     }
 
     .swiper-slide:nth-of-type(3) {
-      background-image: image-url('promos/homeacq-video-hero-1682x700-3.jpg');
-
       @include devices('xs') {
         background-position: left center;
       }

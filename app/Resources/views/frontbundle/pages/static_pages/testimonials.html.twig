@@ -1,0 +1,50 @@
+<section class="page-section">
+    <div class="site-wrap">
+
+        {% for index, person in testimonialPeople %}
+            {% if index % 2 == 1 %}
+                {% set classRow = 'row reverse' %}
+            {% elseif index % 2 == 0 %}
+                {% set classRow = 'row' %}
+            {% endif %}
+
+            <div class="promo-{{ person.type }} {{ classRow }}" id="testimonial-{{ person.name }}">
+                <div class="col-lg-6 col-md-6">
+                    <header class="block-header">
+                        <h1 class="h4">{{ person.testimonial_page_title }}</h1>
+                    </header>
+
+                    <aside class="block-testimonial promo-p2">
+                        <div class="block-testimonial-video promo-p2">
+                            <video id="video-{{ person.id_client }}" class="video-js" width="600px" height="400px"
+                                   controls preload="none" poster="{{ completeTestimonialUrl(person.battenberg_image, 'image') }}"
+                                   data-setup='{ "aspectRatio":"600:400", "inactivityTimeout": 0 }'>
+                                <source src="{{ completeTestimonialUrl(person.video, 'video') }}" type='video/mp4'/>
+                                <p class="vjs-no-js">
+                                    To view this video please enable JavaScript, and consider upgrading to a web browser that
+                                    <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
+                                </p>
+                            </video>
+                        </div>
+                        <div class="block-testimonial-quote promo-p2">
+                            <div class="quote promo-p2">
+                                <p>&quot;{{ person.quote }}&quot;</p>
+                            </div>
+                            <div class="credit promo-p2">
+                                <cite class="credit promo-p2">{{ person.name }}, {{ person.location }}</cite>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+                <div class="col-lg-6 col-md-6">
+                    <div class="block-text">
+                        {{ person.long_testimonial }}
+                    </div>
+                    <div class="btn-toolbar">
+                        <a href="{{ path('home_borrower') }}#homeemp-section-esim" class="btn-alternate"><span class="icon fa-angle-right"></span>Présenter un projet</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div><!-- /.site-wrap -->
+</section><!-- /.page-section -->
