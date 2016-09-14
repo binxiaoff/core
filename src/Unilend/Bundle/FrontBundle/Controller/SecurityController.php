@@ -10,8 +10,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
+use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\FrontBundle\Security\BCryptPasswordEncoder;
 use Unilend\core\Loader;
 
 class SecurityController extends Controller
@@ -234,5 +236,44 @@ class SecurityController extends Controller
         $message->setTo($client->email);
         $mailer = $this->get('mailer');
         $mailer->send($message);
+    }
+
+    /**
+     * @Route("/security/ajax/password", name="security_ajax_password")
+     * @Method("POST")
+     */
+    public function checkPassWordComplexityAction(Request $request)
+    {
+        if ($request->isXMLHttpRequest()) {
+            /** @var TranslatorInterface $translator */
+            $translator = $this->get('translator');
+
+            if ($this->checkPasswordComplexity($request->request->get('client_password'))) {
+                return new JsonResponse([
+                    'status' => true
+                ]);
+            } else {
+                return new JsonResponse([
+                    'status' => false,
+                    'error' => $translator->trans('common-validator_password-invalid')
+                ]);
+            }
+        }
+
+        return new Response('not an ajax request');
+    }
+
+    private function checkPasswordComplexity($password)
+    {
+        /** @var BCryptPasswordEncoder $securityPasswordEncoder */
+        $securityPasswordEncoder = $this->get('unilend.frontbundle.security.password_encoder');
+
+        try {
+            $securityPasswordEncoder->encodePassword($password, '');
+        } catch (BadCredentialsException $exception) {
+            return false;
+        }
+
+        return true;
     }
 }

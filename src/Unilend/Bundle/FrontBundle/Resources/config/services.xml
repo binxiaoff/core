@@ -16,6 +16,10 @@
             <argument type="service" id="unilend.service.location_manager" />
         </service>
 
+        <service id="unilend.frontbundle.security.password_encoder" class="Unilend\Bundle\FrontBundle\Security\BCryptPasswordEncoder">
+            <argument>%security.bcrypt.cost%</argument>
+        </service>
+
         <service id="unilend.frontbundle.service.testimonial_manager" class="Unilend\Bundle\FrontBundle\Service\TestimonialManager">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="memcache.default" />

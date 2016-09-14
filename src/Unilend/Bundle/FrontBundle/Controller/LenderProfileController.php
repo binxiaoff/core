@@ -1505,30 +1505,4 @@ class LenderProfileController extends Controller
 
         return $company;
     }
-
-    /**
-     * @Route("/profile/ajax/password", name="lender_profile_ajax_password")
-     * @Method("POST")
-     */
-    public function checkPassWordComplexityAction(Request $request)
-    {
-        if ($request->isXMLHttpRequest()) {
-            /** @var \ficelle $ficelle */
-            $ficelle = Loader::loadLib('ficelle');
-            /** @var TranslatorInterface $translator */
-            $translator = $this->get('translator');
-            if ($ficelle->password_fo($request->request->get('client_password'), 6)) {
-                return new JsonResponse([
-                    'status' => true
-                ]);
-            } else {
-                return new JsonResponse([
-                    'status' => false,
-                    'error' => $translator->trans('common-validator_password-invalid')
-                ]);
-            }
-        }
-
-        return new Response('not an ajax request');
-    }
 }
