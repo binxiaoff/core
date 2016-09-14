@@ -14,14 +14,14 @@
             <th>Status</th>
             <?php
             switch ( $this->product->status) {
-                case \product::STATUS_DISABLED_FO:
-                    $status = 'Desactivé FO';
+                case \product::STATUS_OFFLINE:
+                    $status = 'Desactivé FO (indisponible FO mais disponible BO)';
                     break;
-                case \product::STATUS_ACTIVE:
+                case \product::STATUS_ONLINE:
                     $status = 'Activé';
                     break;
-                case \product::STATUS_DISABLED:
-                    $status = 'Desactivé total';
+                case \product::STATUS_ARCHIVED:
+                    $status = 'Archivé (indisponible FO et BO)';
                     break;
             }
             ?>

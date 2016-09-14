@@ -69,7 +69,7 @@ trait ProjectChecker
     {
         $attrVars = $productAttributeManager->getProductContractAttributesByType($product, \underlying_contract_attribute_type::MAX_LOAN_DURATION_IN_MONTH);
         foreach($attrVars as $contractVars) {
-            if ($contractVars[0] < $project->period) {
+            if (isset($contractVars[0]) && $contractVars[0] < $project->period) {
                 return false;
             }
         }

@@ -122,10 +122,43 @@ class dossiersController extends bootstrap
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
         $oProjectManager = $this->get('unilend.service.project_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager $productManager */
+        $productManager = $this->get('unilend.service_product.product_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager $productAttrManager */
+        $productAttrManager = $this->get('unilend.service_product.product_attribute_manager');
+        /** @var \Symfony\Component\Translation\Translator translator */
+        $this->translator = $this->get('translator');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             $this->settings->get('Durée des prêts autorisées', 'type');
             $this->dureePossible = explode(',', $this->settings->value);
+
+            $product = $productManager->getAssociatedProduct($this->projects);
+
+            if ($product instanceof \product) {
+                $durationContractMaxAttr = $productAttrManager->getProductContractAttributesByType($product, \underlying_contract_attribute_type::MAX_LOAN_DURATION_IN_MONTH);
+                $durationContractMax     = null;
+                foreach ($durationContractMaxAttr as $contractVars) {
+                    if (isset($contractVars[0])) {
+                        $durationContractMax = $durationContractMax === null || $durationContractMax > $contractVars[0] ? $contractVars[0] : $durationContractMax;
+                    }
+                }
+
+                $durationMaxAttr = $productAttrManager->getProductAttributesByType($product, product_attribute_type::MAX_LOAN_DURATION_IN_MONTH);
+                $durationMax     = empty($durationMaxAttr) ? null : $durationMaxAttr[0];
+
+                $durationMinAttr = $productAttrManager->getProductAttributesByType($product, product_attribute_type::MIN_LOAN_DURATION_IN_MONTH);
+                $durationMin     = empty($durationMinAttr) ? null : $durationMinAttr[0];
+
+                foreach ($this->dureePossible as $index => $duration) {
+                    if (is_numeric($durationMax) && $duration > $durationMax
+                        || is_numeric($durationContractMax) && $duration > $durationContractMax
+                        || is_numeric($durationMin) && $duration < $durationMin
+                    ) {
+                        unset($this->dureePossible[$index]);
+                    }
+                }
+            }
 
             if (false === in_array($this->projects->period, array(0, 1000000)) && false === in_array($this->projects->period, $this->dureePossible)) {
                 array_push($this->dureePossible, $this->projects->period);
@@ -295,10 +328,7 @@ class dossiersController extends bootstrap
                 }
             }
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager $productManager */
-            $productManager        = $this->get('unilend.service_product.product_manager');
             $this->eligibleProduct = $productManager->findEligibleProducts($this->projects, true);
-            $this->translator      = $this->get('translator');
 
             if (isset($_POST['last_annual_accounts'])) {
                 $this->projects->id_dernier_bilan = $_POST['last_annual_accounts'];
@@ -826,10 +856,17 @@ class dossiersController extends bootstrap
                     }
                 }
             }
+            if ($product instanceof \product) {
+                $eligibleNeeds = $productAttrManager->getProductAttributesByType($product, \product_attribute_type::ELIGIBLE_NEED);
+            } else {
+                $eligibleNeeds = [];
+            }
 
             /** @var \project_need $oProjectNeed */
             $oProjectNeed = $this->loadData('project_need');
-            $this->aNeeds = $oProjectNeed->getTree();
+            $needs        = $oProjectNeed->getTree();
+            $this->filterEligibleNeeds($needs, $eligibleNeeds);
+            $this->aNeeds = $needs;
 
             if (in_array($this->projects->status, [\projects_status::REJETE, \projects_status::REJET_ANALYSTE, \projects_status::REJET_COMITE])) {
                 /** @var \projects_status_history_details $oProjectsStatusHistoryDetails */
@@ -2902,5 +2939,28 @@ class dossiersController extends bootstrap
         }
 
         echo json_encode($aNames);
+    }
+
+    private function filterEligibleNeeds(&$needsTree, $eligibleNeeds)
+    {
+        if (false === empty($eligibleNeeds)) {
+            foreach ($needsTree as $index => &$need) {
+                if (in_array($need['id_project_need'], $eligibleNeeds)) {
+                    continue;
+                }
+
+                if (isset($need['children'])) {
+                    $this->filterEligibleNeeds($need['children'], $eligibleNeeds);
+                } else {
+                    if (false === in_array($need['id_project_need'], $eligibleNeeds)) {
+                        unset($needsTree[$index]);
+                    }
+                }
+                if (empty($need['children'])) {
+                    unset($needsTree[$index]);
+                }
+
+            }
+        }
     }
 }

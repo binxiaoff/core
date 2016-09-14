@@ -22,14 +22,14 @@
             <tr<?=($i%2 == 1?'':' class="odd"')?>>
                 <?php
                     switch ($product['status']) {
-                        case \product::STATUS_DISABLED_FO:
-                            $status = 'Desactivé FO';
+                        case \product::STATUS_OFFLINE:
+                            $status = 'Desactivé FO (indisponible FO mais disponible BO)';
                             break;
-                        case \product::STATUS_ACTIVE:
+                        case \product::STATUS_ONLINE:
                             $status = 'Activé';
                             break;
-                        case \product::STATUS_DISABLED:
-                            continue;
+                        case \product::STATUS_ARCHIVED:
+                            $status = 'Archivé (indisponible FO et BO)';
                             break;
                     }
                 ?>
