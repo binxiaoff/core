@@ -419,7 +419,7 @@ class espace_emprunteurController extends bootstrap
         $aPayment     = $oPaymentSchedule->getLastOrder($iProjectId);
         $iPaymentOrder = (isset($aPayment)) ? $aPayment['ordre'] + 1 : 1;
 
-        return $oPaymentSchedule->getRemainingCapital($iProjectId, $iPaymentOrder);
+        return $oPaymentSchedule->getRemainingCapitalAtDue($iProjectId, $iPaymentOrder);
     }
 
     private function contactEmailClient()

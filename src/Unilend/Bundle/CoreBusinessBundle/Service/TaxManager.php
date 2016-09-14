@@ -6,11 +6,12 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class TaxManager
 {
-    /** @var  EntityManager */
+    /** @var EntityManager */
     private $entityManager;
 
     /**
      * TaxManager constructor.
+     *
      * @param EntityManager $entityManager
      */
     public function __construct(EntityManager $entityManager)
@@ -28,16 +29,14 @@ class TaxManager
         switch ($transaction->type_transaction) {
             case \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS:
                 return $this->taxLenderRepaymentInterests($transaction);
-                break;
             case \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL:
                 return 0;
-                break;
         }
     }
 
     /**
      * @param \transactions $transaction
-     * @param array $taxesTypes
+     * @param array         $taxesTypes
      * @return int
      */
     private function applyTaxes(\transactions &$transaction, array $taxesTypes)
@@ -47,27 +46,28 @@ class TaxManager
         /** @var \tax_type $taxType */
         $taxType = $this->entityManager->getRepository('tax_type');
 
-        $taxes           = array();
-        $iTotalTaxAmount = 0;
+        $taxes          = [];
+        $totalTaxAmount = 0;
 
         foreach ($taxesTypes as $taxTypeId) {
             $taxType->get($taxTypeId);
-            $iTaxAmount = round($transaction->montant * $taxType->rate / 100);
-            $iTotalTaxAmount += $iTaxAmount;
+            $taxAmount = round($transaction->montant * $taxType->rate / 100);
+            $totalTaxAmount += $taxAmount;
 
-            $taxes[] = array(
+            $taxes[] = [
                 'id_tax_type'    => $taxTypeId,
                 'id_transaction' => $transaction->id_transaction,
-                'amount'         => $iTaxAmount,
+                'amount'         => $taxAmount,
                 'added'          => date('Y-m-d H:i:s'),
                 'updated'        => date('Y-m-d H:i:s'),
-            );
+            ];
         }
-        $transaction->montant -= $iTotalTaxAmount;
+
+        $transaction->montant -= $totalTaxAmount;
         $transaction->update();
         $tax->multiInsert($taxes);
 
-        return $iTotalTaxAmount;
+        return $totalTaxAmount;
     }
 
     /**
@@ -125,9 +125,9 @@ class TaxManager
             $taxExemption = $this->entityManager->getRepository('lender_tax_exemption');
 
             if ($taxExemption->get($lender->id_lender_account . '" AND year = "' . substr($transaction->added, 0, 4) . '" AND iso_country = "FR', 'id_lender')) { // @todo i18n
-                return $this->applyTaxes($transaction, array(\tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS, \tax_type::TYPE_CRDS, \tax_type::TYPE_CSG, \tax_type::TYPE_SOLIDARITY_DEDUCTIONS, \tax_type::TYPE_SOCIAL_DEDUCTIONS));
+                return $this->applyTaxes($transaction, [\tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS, \tax_type::TYPE_CRDS, \tax_type::TYPE_CSG, \tax_type::TYPE_SOLIDARITY_DEDUCTIONS, \tax_type::TYPE_SOCIAL_DEDUCTIONS]);
             } else {
-                return $this->applyTaxes($transaction, array(\tax_type::TYPE_INCOME_TAX, \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS, \tax_type::TYPE_CRDS, \tax_type::TYPE_CSG, \tax_type::TYPE_SOLIDARITY_DEDUCTIONS, \tax_type::TYPE_SOCIAL_DEDUCTIONS));
+                return $this->applyTaxes($transaction, [\tax_type::TYPE_INCOME_TAX, \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS, \tax_type::TYPE_CRDS, \tax_type::TYPE_CSG, \tax_type::TYPE_SOLIDARITY_DEDUCTIONS, \tax_type::TYPE_SOCIAL_DEDUCTIONS]);
             }
         } else {
             /** @var \echeanciers $repayment */
@@ -145,7 +145,7 @@ class TaxManager
             }
 
             if ($loan->id_type_contract == \loans::TYPE_CONTRACT_BDC) {
-                return $this->applyTaxes($transaction, array(\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE));
+                return $this->applyTaxes($transaction, [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE]);
             }
         }
     }
@@ -156,6 +156,6 @@ class TaxManager
      */
     private function taxLegalEntityLenderRepaymentInterests(\transactions $transaction)
     {
-        return $this->applyTaxes($transaction, array(\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE));
+        return $this->applyTaxes($transaction, [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE]);
     }
 }

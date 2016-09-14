@@ -275,15 +275,14 @@ class LenderOperationsController extends Controller
         /** @var TranslationManager $translationManager */
         $translationManager = $this->get('unilend.service.translation_manager');
 
-        $this->transactions                      = $entityManager->getRepository('transactions');
-        $this->wallets_lines                     = $entityManager->getRepository('wallets_lines');
-        $this->bids                              = $entityManager->getRepository('bids');
-        $this->loans                             = $entityManager->getRepository('loans');
-        $this->echeanciers                       = $entityManager->getRepository('echeanciers');
-        $this->projects                          = $entityManager->getRepository('projects');
-        $this->companies                         = $entityManager->getRepository('companies');
-        $this->clients                           = $entityManager->getRepository('clients');
-        $this->echeanciers_recouvrements_prorata = $entityManager->getRepository('echeanciers_recouvrements_prorata');
+        $this->transactions  = $entityManager->getRepository('transactions');
+        $this->wallets_lines = $entityManager->getRepository('wallets_lines');
+        $this->bids          = $entityManager->getRepository('bids');
+        $this->loans         = $entityManager->getRepository('loans');
+        $this->echeanciers   = $entityManager->getRepository('echeanciers');
+        $this->projects      = $entityManager->getRepository('projects');
+        $this->companies     = $entityManager->getRepository('companies');
+        $this->clients       = $entityManager->getRepository('clients');
 
         $this->ficelle = Loader::loadLib('ficelle');
 
@@ -453,13 +452,10 @@ class LenderOperationsController extends Controller
             }
 
             $sProjectId = $t['id_projet'] == 0 ? '' : $t['id_projet'];
+            $solde      = $t['solde'];
 
-            $solde = $t['solde'];
-            // remb
             if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
                 $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
-
-                $retenuesfiscals = $this->echeanciers->prelevements_obligatoires + $this->echeanciers->retenues_source + $this->echeanciers->csg + $this->echeanciers->prelevements_sociaux + $this->echeanciers->contributions_additionnelles + $this->echeanciers->prelevements_solidarite + $this->echeanciers->crds;
 
                 if ($t['type_transaction'] != \transactions_types::TYPE_LENDER_REPAYMENT) {
                     $this->echeanciers->prelevements_obligatoires    = 0;
@@ -472,20 +468,8 @@ class LenderOperationsController extends Controller
                     $this->echeanciers->prelevements_solidarite      = 0;
                     $this->echeanciers->crds                         = 0;
                     $this->echeanciers->capital                      = $t['montant_operation'];
-                } elseif ($t['type_transaction'] == \transactions_types::TYPE_LENDER_REPAYMENT && $t['recouvrement'] == 1 && $this->echeanciers_recouvrements_prorata->get($t['id_transaction'], 'id_transaction')) {
-                    $retenuesfiscals = $this->echeanciers_recouvrements_prorata->prelevements_obligatoires + $this->echeanciers_recouvrements_prorata->retenues_source + $this->echeanciers_recouvrements_prorata->csg + $this->echeanciers_recouvrements_prorata->prelevements_sociaux + $this->echeanciers_recouvrements_prorata->contributions_additionnelles + $this->echeanciers_recouvrements_prorata->prelevements_solidarite + $this->echeanciers_recouvrements_prorata->crds;
-
-                    $this->echeanciers->prelevements_obligatoires    = $this->echeanciers_recouvrements_prorata->prelevements_obligatoires;
-                    $this->echeanciers->retenues_source              = $this->echeanciers_recouvrements_prorata->retenues_source;
-                    $this->echeanciers->interets                     = $this->echeanciers_recouvrements_prorata->interets;
-                    $this->echeanciers->retenues_source              = $this->echeanciers_recouvrements_prorata->retenues_source;
-                    $this->echeanciers->csg                          = $this->echeanciers_recouvrements_prorata->csg;
-                    $this->echeanciers->prelevements_sociaux         = $this->echeanciers_recouvrements_prorata->prelevements_sociaux;
-                    $this->echeanciers->contributions_additionnelles = $this->echeanciers_recouvrements_prorata->contributions_additionnelles;
-                    $this->echeanciers->prelevements_solidarite      = $this->echeanciers_recouvrements_prorata->prelevements_solidarite;
-                    $this->echeanciers->crds                         = $this->echeanciers_recouvrements_prorata->crds;
-                    $this->echeanciers->capital                      = $this->echeanciers_recouvrements_prorata->capital;
                 }
+
                 $content .= '
                     <tr>
                         <td>' . $t['libelle_operation'] . '</td>
@@ -732,8 +716,6 @@ class LenderOperationsController extends Controller
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \echeanciers $repaymentSchedule */
         $repaymentSchedule = $entityManager->getRepository('echeanciers');
-        /** @var \echeanciers_recouvrements_prorata $recoveryRepayment */
-        $recoveryRepayment = $entityManager->getRepository('echeanciers_recouvrements_prorata');
         /** @var \transactions $transaction */
         $transaction = $entityManager->getRepository('transactions');
         /** @var \settings $settings */
@@ -746,10 +728,6 @@ class LenderOperationsController extends Controller
         $translationManager = $this->get('unilend.service.translation_manager');
 
         $client->get($this->getUser()->getClientId());
-        $settings->get('Recouvrement - commission ht', 'type');
-        $commission_ht = $settings->value;
-        $settings->get('TVA', 'type');
-        $tva = $settings->value;
 
         $array_type_transactions = [
             1  => $translationManager->selectTranslation('lender-operations', 'operation-label-money-deposit'),
@@ -797,13 +775,6 @@ class LenderOperationsController extends Controller
                     $interets        = $repaymentSchedule->interets;
                 }
 
-                // si c'est un recouvrement on remplace les données
-                if ($t['type_transaction'] == 5 && $t['recouvrement'] == 1 && $recoveryRepayment->get($t['id_transaction'], 'id_transaction')) {
-                    $retenuesfiscals = $recoveryRepayment->prelevements_obligatoires + $recoveryRepayment->retenues_source + $recoveryRepayment->csg + $recoveryRepayment->prelevements_sociaux + $recoveryRepayment->contributions_additionnelles + $recoveryRepayment->prelevements_solidarite + $recoveryRepayment->crds;
-                    $capital         = $recoveryRepayment->capital;
-                    $interets        = $recoveryRepayment->interets;
-                }
-
                 // si exoneré à la date de la transact on change le libelle
                 $libelle_prelevements = $translationManager->selectTranslation('lender-operations', 'tax-and-social-deductions');
                 // on check si il s'agit d'une PM ou PP
@@ -842,20 +813,6 @@ class LenderOperationsController extends Controller
                     $lenderOperationsIndex->montant_interet = $interets;
                 }
 
-
-                if ($t['type_transaction'] == 5 && $t['recouvrement'] == 1) {
-                    $taux_com         = $commission_ht;
-                    $taux_tva         = $tva;
-                    $montant          = $capital / 100 + $interets / 100;
-                    $montant_avec_com = round($montant / (1 - $taux_com * (1 + $taux_tva)), 2);
-                    $com_ht           = round($montant_avec_com * $taux_com, 2);
-                    $com_tva          = round($com_ht * $taux_tva, 2);
-                    $com_ttc          = round($com_ht + $com_tva, 2);
-
-                    $lenderOperationsIndex->commission_ht  = $com_ht * 100;
-                    $lenderOperationsIndex->commission_tva = $com_tva * 100;
-                    $lenderOperationsIndex->commission_ttc = $com_ttc * 100;
-                }
                 $lenderOperationsIndex->create();
             }
         }

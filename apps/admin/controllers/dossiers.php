@@ -1020,7 +1020,7 @@ class dossiersController extends bootstrap
             $aReplacements['CRD'] = $this->ficelle->formatNumber($oLenderRepaymentSchedule->getOwedCapital(array('id_project' => $this->projects->id_project)));
 
             if (\projects_status::RECOUVREMENT == $iStatus) {
-                $aReplacements['mensualites_impayees'] = $this->ficelle->formatNumber($oLenderRepaymentSchedule->getNonPaidRepaymentAmount($this->projects->id_project, date('Y-m-d H:i:s')));
+                $aReplacements['mensualites_impayees'] = $this->ficelle->formatNumber($oLenderRepaymentSchedule->getUnpaidAmountAtDate($this->projects->id_project, new \DateTime('NOW')));
             }
         }
 
@@ -2334,7 +2334,7 @@ class dossiersController extends bootstrap
         }
 
         $this->montant_restant_du_emprunteur = $this->echeanciers_emprunteur->reste_a_payer_ra($id_project, $iOrderEarlyRefund);
-        $this->montant_restant_du_preteur    = $this->echeanciers->getRemainingCapital($id_project, $iOrderEarlyRefund);
+        $this->montant_restant_du_preteur    = $this->echeanciers->getRemainingCapitalAtDue($id_project, $iOrderEarlyRefund);
         $resultat_num                        = bcsub($this->montant_restant_du_preteur, $this->montant_restant_du_emprunteur, 2);
 
         $this->ordre_echeance_ra = $iOrderEarlyRefund;
@@ -2492,8 +2492,10 @@ class dossiersController extends bootstrap
         $oSettings->get('Commission remboursement', 'type');
         $owedCapitalCommission = $oSettings->value;
 
-        $oSettings->get('TVA', 'type');
-        $vatRate = (float) $oSettings->value;
+        /** @var \tax_type $taxType */
+        $taxType = $this->loadData('tax_type');
+        $taxType->get(\tax_type::TYPE_VAT);
+        $vatRate = $taxType->rate / 100;
 
         $varMail = array(
             'surl'                 => $this->surl,

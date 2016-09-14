@@ -89,8 +89,6 @@ class LenderWalletController extends Controller
         $clientNotification = $entityManager->getRepository('clients_gestion_notifications');
         /** @var \clients_gestion_mails_notif $clientMailNotification */
         $clientMailNotification = $entityManager->getRepository('clients_gestion_mails_notif');
-        /** @var \clients_adresses $clientAddress */
-        $clientAddress = $entityManager->getRepository('clients_adresses');
         /** @var LoggerInterface $logger */
         $logger = $this->get('logger');
 
@@ -138,8 +136,6 @@ class LenderWalletController extends Controller
                 /** @var \ficelle $ficelle */
                 $ficelle = Loader::loadLib('ficelle');
 
-                $clientAddress->get($client->id_client, 'id_client');
-
                 $transaction->id_client        = $client->id_client;
                 $transaction->montant          = '-' . ($montant * 100);
                 $transaction->id_langue        = 'fr';
@@ -147,22 +143,7 @@ class LenderWalletController extends Controller
                 $transaction->status           = '1'; // on met en mode reglé pour ne plus avoir la somme sur le compte
                 $transaction->etat             = '1';
                 $transaction->ip_client        = $request->server->get('REMOTE_ADDR');
-                $transaction->civilite_fac     = $client->civilite;
-                $transaction->nom_fac          = $client->nom;
-                $transaction->prenom_fac       = $client->prenom;
-
-                if ($client->type == 2) {
-                    /** @var \companies $company */
-                    $company = $entityManager->getRepository('companies');
-
-                    $transaction->societe_fac = $company->name;
-                }
-                $transaction->adresse1_fac     = $clientAddress->adresse1;
-                $transaction->cp_fac           = $clientAddress->cp;
-                $transaction->ville_fac        = $clientAddress->ville;
-                $transaction->id_pays_fac      = $clientAddress->id_pays;
                 $transaction->type_transaction = \transactions_types::TYPE_LENDER_WITHDRAWAL; // on signal que c'est un retrait
-                $transaction->transaction      = 1; // transaction physique
                 $transaction->create();
 
                 $walletLine->id_lender                = $lender->id_lender_account;
@@ -298,8 +279,6 @@ class LenderWalletController extends Controller
         $client = $entityManager->getRepository('clients');
         /** @var \transactions $transaction */
         $transaction = $entityManager->getRepository('transactions');
-        /** @var \clients_adresses $clientAddress */
-        $clientAddress = $entityManager->getRepository('clients_adresses');
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
         /** @var LoggerInterface $logger */
@@ -323,21 +302,7 @@ class LenderWalletController extends Controller
             $transaction->status           = \transactions::STATUS_PENDING;
             $transaction->etat             = '0';
             $transaction->ip_client        = $request->server->get('REMOTE_ADDR');
-            $transaction->civilite_fac     = $client->civilite;
-            $transaction->nom_fac          = $client->nom;
-            $transaction->prenom_fac       = $client->prenom;
-            if ($client->type == 2) {
-                /** @var \companies $company */
-                $company = $entityManager->getRepository('companies');
-                $transaction->societe_fac = $company->name;
-            }
-            $clientAddress->get($client->id_client, 'id_client');
-            $transaction->adresse1_fac     = $clientAddress->adresse1;
-            $transaction->cp_fac           = $clientAddress->cp;
-            $transaction->ville_fac        = $clientAddress->ville;
-            $transaction->id_pays_fac      = $clientAddress->id_pays;
             $transaction->type_transaction = \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT;
-            $transaction->transaction      = \transactions::PHYSICAL;
             $transaction->create();
 
             $paylineParameter = [];

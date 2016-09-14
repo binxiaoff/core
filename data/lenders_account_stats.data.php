@@ -23,7 +23,7 @@ class lenders_account_stats extends lenders_account_stats_crud
      * @param $iLendersAccountId
      * @return array
      */
-    public function getValuesForIRRUsingProjectsLastStatusHistoryMaterialized($iLendersAccountId)
+    public function getValuesForIRR($iLendersAccountId)
     {
         $aValuesIRR      = array();
         $aDatesTimeStamp = array();
@@ -152,7 +152,7 @@ class lenders_account_stats extends lenders_account_stats_crud
         return $fLossRate;
     }
 
-    public function getLendersWithLatePaymentsForIRRUsingProjectsLastStatusHistoryMaterialized()
+    public function getLendersWithLatePaymentsForIRR()
     {
         $sQuery =   '
             SELECT e.id_lender

@@ -1406,9 +1406,10 @@ class ProjectRequestController extends Controller
         $minimumRate = min(array_column($rateSettings, 'rate_min'));
         $maximumRate = max(array_column($rateSettings, 'rate_max'));
 
-        // @todo change DEV-255
-        $settings->get('TVA', 'type');
-        $vatRate = (float) $settings->value;
+        /** @var \tax_type $taxType */
+        $taxType = $entityManager->getRepository('tax_type');
+        $taxType->get(\tax_type::TYPE_VAT);
+        $vatRate = $taxType->rate / 100;
 
         $settings->get('Commission remboursement', 'type');
         $commission = ($financialCalculation->PMT($settings->value / 12, $this->project->period, - $this->project->amount) - $financialCalculation->PMT(0, $this->project->period, - $this->project->amount)) * (1 + $vatRate);

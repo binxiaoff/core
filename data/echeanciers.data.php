@@ -115,25 +115,27 @@ class echeanciers extends echeanciers_crud
         return $this->getPartialSum('capital - capital_rembourse', $selector, array(self::STATUS_PENDING, self::STATUS_PARTIALLY_REPAID));
     }
 
-    public function getNonPaidRepaymentAmount($projectId, $endDate)
+    /**
+     * @param array $selector
+     * @return string
+     */
+    public function getOwedInterests(array $selector)
     {
-        return $this->getNonPaidAmountAtDate($projectId, $endDate, 'e.capital - e.capital_rembourse + e.interets - e.interets_rembourses');
+        return $this->getPartialSum('interets - interets_rembourses', $selector, array(self::STATUS_PENDING, self::STATUS_PARTIALLY_REPAID));
     }
 
     /**
-     * @param int $projectId
-     * @param string $endDate
-     * @param string $amountType
+     * @param int       $projectId
+     * @param \DateTime $endDate
      * @return string
-     * @throws Exception
      */
-    private function getNonPaidAmountAtDate($projectId, $endDate, $amountType)
+    public function getUnpaidAmountAtDate($projectId, \DateTime $endDate)
     {
         $bind     = [
             'id_project'       => $projectId,
             'loan_status'      => \loans::STATUS_ACCEPTED,
             'repayment_status' => array(self::STATUS_PENDING, self::STATUS_PARTIALLY_REPAID),
-            'date_echeance'    => $endDate
+            'date_echeance'    => $endDate->format('Y-m-d H:i:s')
         ];
         $bindType = [
             'id_project'       => \PDO::PARAM_INT,
@@ -142,7 +144,7 @@ class echeanciers extends echeanciers_crud
             'date_echeance'    => \PDO::PARAM_STR
         ];
         $query    = '
-            SELECT SUM(' . $amountType . ')
+            SELECT SUM(e.capital - e.capital_rembourse + e.interets - e.interets_rembourses)
             FROM echeanciers e
             INNER JOIN loans l ON e.id_loan = l.id_loan
             WHERE l.status = :loan_status
@@ -155,17 +157,17 @@ class echeanciers extends echeanciers_crud
 
     /**
      * @param int $projectId
-     * @param string $ordre
+     * @param int $due
      * @return string
      * @throws Exception
      */
-    public function getRemainingCapital($projectId, $ordre)
+    public function getRemainingCapitalAtDue($projectId, $due)
     {
         $bind     = [
             'id_project'       => $projectId,
             'loan_status'      => \loans::STATUS_ACCEPTED,
             'repayment_status' => array(self::STATUS_PENDING, self::STATUS_PARTIALLY_REPAID),
-            'ordre'            => $ordre
+            'ordre'            => $due
         ];
         $bindType = [
             'id_project'       => \PDO::PARAM_INT,
@@ -478,6 +480,7 @@ class echeanciers extends echeanciers_crud
             FROM echeanciers
             WHERE id_project = :id_project GROUP BY ordre';
 
+        $res    = [];
         $result = $this->bdd->executeQuery($sql, array('id_project' => $projectId), array('id_project' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::SHORT_TIME, md5(__METHOD__)))->fetchAll(\PDO::FETCH_ASSOC);
         foreach ($result as $key => $aRow) {
             $res[$aRow['ordre']] = array(
@@ -499,7 +502,7 @@ class echeanciers extends echeanciers_crud
         $sql = '
             SELECT
               IFNULL(ROUND(SUM(e.capital - e.capital_rembourse) / 100, 2), 0) AS capital,
-              IFNULL(ROUND(SUM(e.interets - e.interets_rembourse) / 100, 2), 0) AS interests,
+              IFNULL(ROUND(SUM(e.interets - e.interets_rembourses) / 100, 2), 0) AS interests,
               COUNT(DISTINCT(e.id_project)) AS projects
             FROM echeanciers e
             LEFT JOIN echeanciers unpaid ON unpaid.id_echeancier = e.id_echeancier AND unpaid.status = ' . self::STATUS_PENDING . ' AND DATEDIFF(NOW(), unpaid.date_echeance) > 180
@@ -938,32 +941,38 @@ class echeanciers extends echeanciers_crud
     }
 
     /**
-     * @param int $clientId
-     * @param int $annee
-     * @param array $projects_en_remboursement
+     * @param int   $clientId
+     * @param int   $year
+     * @param array $projectIds
      * @return string
      */
-    public function getLenderOwedCapital($clientId, $annee, array $projects_en_remboursement)
+    public function getLenderOwedCapital($clientId, $year, array $projectIds)
     {
-        $sql = "
-            SELECT SUM(capital)
+        $sql = '
+            SELECT SUM(capital - capital_rembourse)
             FROM echeanciers
             INNER JOIN lenders_accounts ON lenders_accounts.id_lender_account = echeanciers.id_lender
-            WHERE (date_echeance_reel >= '$annee-01-01 00:00:00' OR echeanciers.status = 0)
-                AND id_project IN(" . implode(',', $projects_en_remboursement) . ")
-                AND lenders_accounts.id_client_owner = " . $clientId;
+            WHERE (date_echeance_reel >= "' . $year . '-01-01" OR echeanciers.status IN (' . self::STATUS_PENDING . ', ' . self::STATUS_PARTIALLY_REPAID . '))
+                AND id_project IN (' . implode(',', $projectIds) . ')
+                AND lenders_accounts.id_client_owner = ' . $clientId;
         return bcdiv($this->bdd->executeQuery($sql)->fetchColumn(0), 100, 2);
     }
 
     public function getTotalRepaidCapital()
     {
-        $query = 'SELECT SUM(capital) FROM echeanciers WHERE status = 1';
+        $query = '
+            SELECT SUM(capital_rembourse)
+            FROM echeanciers
+            WHERE status IN (' . self::STATUS_REPAID . ', ' . self::STATUS_PARTIALLY_REPAID . ')';
         return bcdiv($this->bdd->executeQuery($query)->fetchColumn(0), 100, 2);
     }
 
     public function getTotalRepaidInterests()
     {
-        $query = 'SELECT SUM(interets) FROM echeanciers WHERE status = 1';
+        $query = '
+            SELECT SUM(interets_rembourses)
+            FROM echeanciers
+            WHERE status IN (' . self::STATUS_REPAID . ', ' . self::STATUS_PARTIALLY_REPAID . ')';
         return bcdiv($this->bdd->executeQuery($query)->fetchColumn(0), 100, 2);
     }
 
@@ -998,10 +1007,9 @@ class echeanciers extends echeanciers_crud
     /**
      * Returns capital, interests and tax sum amounts grouped by month, quarter and year for a given lender and project
      * @param int $lenderId
-     * @param int|null $projectId
      * @return array
      */
-    public function getRepaymentAmountDetailsByPeriod($lenderId, $projectId = null)
+    public function getDetailsByPeriod($lenderId)
     {
         $params['id_lender'] = $lenderId;
         $binds['id_lender']  = \PDO::PARAM_INT;
@@ -1010,19 +1018,12 @@ class echeanciers extends echeanciers_crud
                 LEFT(e.date_echeance, 7) AS month,
                 QUARTER(e.date_echeance) AS quarter,
                 YEAR(e.date_echeance) AS year,
-                ROUND(SUM(e.capital) / 100, 2) AS capital,
-                ROUND(SUM(e.interets) / 100, 2) AS interests,
-                ROUND(SUM(e.prelevements_obligatoires + e.retenues_source + e.csg + e.prelevements_sociaux + e.contributions_additionnelles + e.prelevements_solidarite + e.crds), 2) AS tax
+                SUM(ROUND(e.capital / 100, 2)) AS capital,
+                SUM(ROUND(e.interets / 100, 2)) AS rawInterests,
+                SUM(IFNULL((SELECT SUM(ROUND(tax.amount / 100, 2)) FROM tax WHERE id_transaction = t.id_transaction), 0)) AS taxes
             FROM echeanciers e
-            WHERE e.id_lender = :id_lender';
-
-        if (false === empty($projectId)) {
-            $sql .= ' AND e.id_project = :id_project';
-            $params['id_project'] = $projectId;
-            $binds['id_project']  = \PDO::PARAM_INT;
-        }
-
-        $sql .= '
+            LEFT JOIN transactions t ON e.id_echeancier = t.id_echeancier AND t.type_transaction = 28
+            WHERE e.id_lender = :id_lender
             GROUP BY year, quarter, month
             ORDER BY year, quarter, month ASC';
 
@@ -1030,9 +1031,10 @@ class echeanciers extends echeanciers_crud
         $statement = $this->bdd->executeQuery($sql, $params, $binds);
         $data      = [];
         while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
-            $row['capital'] = floatval($row['capital']);
-            $row['interests'] = floatval($row['interests']);
-            $row['tax'] = floatval($row['tax']);
+            $row['capital']      = (float) $row['capital'];
+            $row['rawInterests'] = (float) $row['rawInterests'];
+            $row['netInterests'] = (float) ($row['rawInterests'] - $row['taxes']);
+            $row['taxes']        = (float) $row['taxes'];
             $data[] = $row;
         }
         return $data;

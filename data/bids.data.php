@@ -387,22 +387,21 @@ class bids extends bids_crud
     {
         $sql = '
             SELECT
-            id_bid
-            ,id_lender_account
-            ,id_project
-            ,id_autobid
-            ,id_lender_wallet_line
-            ,amount
-            ,rate
-            ,ordre
-            ,status
-            ,checked
-            ,added
-            ,updated
-            ,ROUND(amount / 100) as amount_euro
+                id_bid,
+                id_lender_account,
+                id_project,
+                id_autobid,
+                id_lender_wallet_line,
+                amount,
+                rate,
+                ordre,
+                status,
+                checked,
+                added,
+                updated,
+                ROUND(amount / 100) as amount_euro
             FROM bids
-            WHERE status = :status
-        ';
+            WHERE status = :status';
 
         if (false === empty($projectId)) {
             $sql .= ' AND id_project = :id_project ';
@@ -415,13 +414,13 @@ class bids extends bids_crud
             $bind['id_lender'] = $lenderId;
             $type['id_lender'] = \PDO::PARAM_INT;
         }
+
         $sql .= ' ORDER BY id_bid DESC';
         $bind['status'] = $bidStatus;
         $type['status'] = \PDO::PARAM_INT;
 
         return $this->bdd->executeQuery($sql, $bind, $type)->fetchAll(\PDO::FETCH_ASSOC);
     }
-
 
     /**
      * @param \lenders_accounts $lender

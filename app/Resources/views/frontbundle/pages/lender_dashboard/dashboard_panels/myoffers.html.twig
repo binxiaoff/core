@@ -35,10 +35,9 @@
                         {% for bid in project.aPendingBids %}
                             <div class="myoffer-amount">
                                 {% set transParams = {
-                                        '%amount%' : '<span class="amount">' ~ bid.amount_euro|localizednumber|nbsp ~ '€</span>',
-                                        '%rate%' : '<span class="interest">' ~ bid.rate|localizednumber|nbsp ~ '%</span>'
-                                    }
-                                %}
+                                    '%amount%' : '<span class="amount">' ~ bid.amount|localizedcurrency('EUR') ~ '</span>',
+                                    '%rate%' : '<span class="interest">' ~ bid.rate|localizednumber ~ '&nbsp;%</span>'
+                                } %}
                                 {% if bid.id_autobid != 0 %}<span class="icon fa-autolend-u"></span> Autolend: {% endif %} {% trans with transParams %} lender-dashboard_my-offers-panel-bid-amount-and-rate {% endtrans %}
                             </div>
                         {% endfor %}
