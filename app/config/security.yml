@@ -2,7 +2,6 @@ security:
     encoders:
         Unilend\Bundle\FrontBundle\Security\User\BaseUser:
             id: unilend.frontbundle.security.password_encoder
-            cost: %security.bcrypt.cost%
         md5:
             algorithm: md5
             encode_as_base64: false
