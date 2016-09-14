@@ -426,11 +426,13 @@ class StatisticsManager
         $dataForTreeMap = [];
 
         foreach ($countByCategory as $category => $count) {
-            $dataForTreeMap[] = [
-                'name' => $translations[$category],
-                'value' => (int)$count,
-                'svgIconId' => '#category-sm-' . $category
-            ];
+            if (isset($translations[$category])) {
+                $dataForTreeMap[] = [
+                    'name'      => $translations[$category],
+                    'value'     => (int) $count,
+                    'svgIconId' => '#category-sm-' . $category
+                ];
+            }
         }
 
         return $dataForTreeMap;
