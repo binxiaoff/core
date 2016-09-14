@@ -27,6 +27,9 @@
 // **************************************************************************************************** //
 class testimonial extends testimonial_crud
 {
+    const TESTIMONIAL_ONLINE = 1;
+    const TESTIMONIAL_OFFLINE = 0;
+
     public function __construct($bdd, $params = '')
     {
         parent::testimonial($bdd, $params);
@@ -66,39 +69,4 @@ class testimonial extends testimonial_crud
         return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `testimonial` WHERE ' . $field . ' = "' . $id . '"')) > 0;
     }
 
-    public function getActiveBattenbergTestimonials()
-    {
-        $sQuery = 'SELECT * FROM testimonial WHERE battenberg = 1 AND status = 1';
-        $oStatement = $this->bdd->executeQuery($sQuery);
-        $aVideoTestimonials = array();
-        while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
-            $aVideoTestimonials[] = $aRow;
-        }
-
-        return $aVideoTestimonials;
-    }
-
-    public function getVideoHeroes($sClientType)
-    {
-        $sQuery = 'SELECT * FROM testimonial WHERE video_hero = 1 AND status = 1 AND type = ?';
-        $oStatement = $this->bdd->executeQuery($sQuery, array($sClientType));
-        $aVideoHeroes = array();
-        while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
-            $aVideoHeroes[] = $aRow;
-        }
-
-        return $aVideoHeroes;
-    }
-
-    public function getActiveTestimonials()
-    {
-        $sQuery = 'SELECT * FROM testimonial WHERE status = 1';
-        $oStatement = $this->bdd->executeQuery($sQuery);
-        $aActiveTestimonials = array();
-        while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
-            $aActiveTestimonials[] = $aRow;
-        }
-
-        return $aActiveTestimonials;
-    }
 }

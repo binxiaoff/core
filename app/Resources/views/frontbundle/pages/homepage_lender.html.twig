@@ -11,12 +11,10 @@
 
         <section id="homepre-video-hero" class="cta-video-hero" aria-hidden="true" data-set-device-height="xs">
             <div class="video-hero-wrapper">
-                <div class="video-hero">
+                <div class="video-hero" style="background-image: url('{{ completeTestimonialUrl(featureLender.feature_image, 'image') }}')">
                     <div class="caption caption-align-left">
-                        <div class="caption-name">{{ videoHeroes.Lenders.0.name }} </div>
-                        <div class="caption-info">{{ videoHeroes.Lenders.0.age }}</div>
-                        <div class="caption-links">
-                            <a href="{{ route('preter/testimonials') }}" class="link">{% trans %} site-general_testimonial-section-link-to-testimonial-title {% endtrans %}</a></div>
+                        <div class="caption-name">{{ featureLender.name }}, {{ featureLender.projects }}</div>
+                        <div class="caption-info">{{ featureLender.info }}</div>
                     </div><!-- /.caption -->
                 </div><!-- /.video-hero -->
 
@@ -26,7 +24,7 @@
                             <span class="icon fa-play"><span class="sr-only">Play</span></span>
                         </a>
                     </div>
-                    <h3>{% trans %} home-lender_testimonial-section-video-slogan {% endtrans %}</h3>
+                    <h3>{{ featureLender.video_caption }}</h3>
                 </div><!-- /.video-hero-cta -->
 
                 {% include 'partials/components/list-socialmedia.html.twig' %}

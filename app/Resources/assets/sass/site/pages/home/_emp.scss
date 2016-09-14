@@ -7,7 +7,6 @@
   // Video Hero
   #homeemp-video-hero.cta-video-hero {
     .video-hero-wrapper .video-hero {
-      background-image: image-url('promos/homeemp-video-hero-1690x1070.jpg');
       background-position: center top;
 
       @include devices('xs') {
