@@ -21,8 +21,13 @@
   .table-myoperations-item-project {
     width: 25%;
 
-    .text-crop {
-      max-width: 150px;
+    a {
+      display: block;
+      width: 100%;
+      height: 1.2em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
 
@@ -85,6 +90,8 @@
     }
 
     .table-myoperations-item-type {
+      position: relative;
+
       &:after {
         content: $fa-angle-d-u; // Angle down
         display: inline-block;
@@ -100,10 +107,15 @@
         transform: rotate(0deg);
         transform-origin: center center;
         transition: transform .2s;
+
+        position: absolute;
+        right: 0;
+        top: 50%;
+        margin-top: $fs-base * -0.5;
       }
     }
 
-    &#{$js-operation-details-open} {
+    &#{$js-details-open} {
       background-color: $c-bg3;
 
       .table-myoperations-item-type:after {

@@ -159,7 +159,11 @@ Dictionary.prototype.setDefaultLang = function (lang) {
 // @returns {Boolean}
 Dictionary.prototype.supportsLang = function (lang) {
   var self = this
-  return self.dictionary.hasOwnProperty(lang)
+  if (self.dictionary) {
+    return self.dictionary.hasOwnProperty(lang)
+  } else {
+    return true
+  }
 }
 
 // Add separation characters to number (thousand and decimal), e.g. 1000000.123 => 1,000,000.123

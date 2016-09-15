@@ -134,71 +134,134 @@
                 </thead>
                 <tbody data-sortable-content>
                 {% for i, loan in lenderLoans %}
-                    <tr class="table-myloans-item {{ 'ui-loan-status-' ~ loan.status_color }}"
-                        data-sortable-status="{{ loan.project_status }}"
+
+                    {#{{ dump(loan) }}#}
+
+                    {# @TODO Remove below when new loan structure has been implemented into PHP controller #}
+                    {# New loan structure `loan` var should be injected into `data-details` as JSON object #}
+
+                    {# Process loan document details due to fragmented loan model #}
+                    {% set loans = [] %}
+                    {% set countBonds = 0 %}
+                    {% set countContracts = 0 %}
+
+                    {# Single loan has documents property... #}
+                    {% if loan.documents is defined %}
+                        {% set newDocs = [] %}
+                        {% for x, doc in loan.documents %}
+                            {% set newDoc = {
+                                url: doc.url,
+                                type: doc.docType,
+                                label: doc.docTypeName
+                            } %}
+                            {% if newDoc.type == 'bond' %}
+                                {% set countBonds = countBonds + 1 %}
+                            {% elseif newDoc.type == 'contract' %}
+                                {% set countContracts = countContracts + 1 %}
+                            {% endif %}
+                            {% set newDocs = newDocs|merge([newDoc]) %}
+                        {% endfor %}
+                        {% set loans = loans|merge([{
+                            rate: loan.rate,
+                            amount: loan.amount,
+                            documents: newDocs
+                        }]) %}
+                    {% endif %}
+
+                    {# Multiple loans has loan_details property with nested documents property #}
+                    {% if loan.loan_details is defined %}
+                        {% for w, loanDetails in loan.loan_details if loanDetails.documents is defined %}
+                            {% set newDocs = [] %}
+                            {% for x, doc in loanDetails.documents %}
+                                {% set newDoc = {
+                                    url: doc.url,
+                                    type: doc.docType,
+                                    label: doc.docTypeName
+                                } %}
+                                {% if newDoc.type == 'bond' %}
+                                    {% set countBonds = countBonds + 1 %}
+                                {% elseif newDoc.type == 'contract' %}
+                                    {% set countContracts = countContracts + 1 %}
+                                {% endif %}
+                                {% set newDocs = newDocs|merge([newDoc]) %}
+                            {% endfor %}
+                            {% set loans = loans|merge([{
+                                rate: loanDetails.rate,
+                                amount: loanDetails.amount,
+                                documents: newDocs
+                            }]) %}
+                        {% endfor %}
+                    {% endif %}
+
+                    {# Set the loan details as JSON for rendering client-side when details are visible #}
+                    {% set loan = {
+                        id: loan.id_project,
+                        url: "http://example.com",
+                        name: loan.title,
+                        rate: loan.rate,
+                        risk: loan.risk|convertRisk,
+                        amount: loan.amount,
+                        start_date: loan.debut,
+                        end_date: loan.fin,
+                        next_payment_date: loan.next_echeance,
+                        monthly: loan.mensuel,
+                        duration: loan.project_duration,
+                        status: loan.status_color,
+                        loans: loans,
+                        count: {
+                            bond: countBonds,
+                            contract: countContracts,
+                            declaration: 0
+                        }
+                    } %}
+
+                    <tr id="loan-{{ loan.id }}" class="table-myloans-item {{ 'ui-loan-status-' ~ loan.status }}"
+                        data-sortable-status="{{ loan.status }}"
                         data-sortable-project="{{ loan.name|escape('html_attr') }}"
-                        data-sortable-rating="{{ loan.risk|convertRisk }}"
+                        data-sortable-rating="{{ loan.risk }}"
                         data-sortable-amount="{{ loan.amount }}"
                         data-sortable-interest="{{ loan.rate }}"
-                        data-sortable-monthly="{{ loan.mensuel }}"
-                        data-sortable-next="{{ loan.next_echeance|date('U') }}"
-                        data-sortable-duration="{{ loan.project_duration }}">
+                        data-sortable-monthly="{{ loan.monthly }}"
+                        data-sortable-next="{{ loan.next_payment_date|date('U') }}"
+                        data-sortable-duration="{{ loan.duration }}"
+                            {% if loan.loans|length > 1 %} data-details='{{ loan|json_encode|escape('html_attr') }}' {% endif %}>
                         <td class="table-myloans-item-project">
-                            {#@todo add link to project detail#}
-                            <div class="text-crop"><a href="{{ path('project_detail', {'projectSlug' : loan.slug}) }}" target="_blank">{{ loan.name }}</a></div>
+                            <a href="{{ loan.url }}" target="_blank">{{ loan.name }}</a>
                         </td>
                         <td class="table-myloans-item-rating">
-                            <span class="rating rating-{{ loan.risk|convertRisk|split('.')|join('-') }}"><span class="sr-only">Rated {{ loan.risk }} out of 5</span></span>
+                            <span class="rating rating-{{ loan.risk|split('.')|join('-') }}"><span class="sr-only">Rated {{ loan.risk }} out of 5</span></span>
                         </td>
                         <td class="table-myloans-item-amount">
-                            {{ loan.amount|__num(1) }}€
+                            {{ loan.amount|nbsp|__num(2) }}€
                         </td>
                         <td class="table-myloans-item-interest">
-                            {{ loan.rate|__num(1)|nbsp }}<sup>%</sup>
+                            {{ loan.rate|__num(1) }}%
                         </td>
                         <td class="table-myloans-item-monthly">
-                            {{ loan.mensuel|__num(2) }}€
+                            {{ loan.monthly|__num(2) }}€
                         </td>
                         <td class="table-myloans-item-next">
-                            {{ loan.next_echeance|date('d/m/y') }}
+                            {{ loan.next_payment_date|date('d/m/y') }}
                         </td>
                         <td class="table-myloans-item-duration">
-                            <span class="ui-has-tooltip" title="{{ 'lender-operations_from'|trans|capitalize }} {{ loan.debut|date('d/m/Y') }} {{ 'lender-operations_to'|trans }} {{ loan.fin|date('d/m/Y') }}" data-toggle="tooltip">{% trans with { '%count%' : loan.project_duration} %} lender-operations_month {% endtrans %}</span>
+                            <span class="ui-has-tooltip" title="{{ 'lender-operations_from'|trans|capitalize }} {{ loan.start_date|date('d/m/Y') }} {{ 'lender-operations_to'|trans }} {{ loan.end_date|date('d/m/Y') }}" data-toggle="tooltip">{% trans with { '%count%' : loan.duration} %} lender-operations_month {% endtrans %}</span>
                         </td>
                         <td class="table-myloans-item-documents">
-                            {% if loan.documents is defined %}
-                                {% for j, doc in loan.documents %}
-                                    <a href="{{ doc.url }}" class="loan-doc loan-doc-{{ doc.docType }}"
-                                       title="{{ doc.docTypeName }}"
-                                       data-toggle="tooltip">
+                            {# Multiple #}
+                            {% if loan.loans|length > 1 %}
+                                {% for docType, totalCount in loan.count if totalCount > 0 %}
+                                    <a href="javascript:;" class="loan-doc loan-doc-{{ docType }}">
+                                        {{ general.pip(totalCount, false) }}
                                     </a>
+                                {% endfor %}
+                            {# Single #}
+                            {% else %}
+                                {% for i, doc in loan.loans[0].documents %}
+                                    <a href="{{ doc.url }}" title="{{ doc.label|escape('html_attr') }}" class="loan-doc loan-doc-{{ doc.type }}" data-toggle="tooltip"><span class="sr-only">{{ doc.label }}</span></a>
                                 {% endfor %}
                             {% endif %}
                         </td>
                     </tr>
-                    {% if loan.nb_loan > 1 %}
-                        {% for loanDetails in loan.loan_details %}
-                            <tr>
-                                <td colspan="2"></td>
-                                <td class="table-myloans-item-amount">
-                                    {{ loanDetails.amount/100|__num(2) }}€
-                                </td>
-                                <td class="table-myloans-item-interest">
-                                    {{ loanDetails.rate|__num(1)|nbsp }}<sup>%</sup>
-                                </td>
-                                <td colspan="3">
-                                </td>
-                                <td class="table-myloans-item-documents">
-                                    {% for k, doc in loanDetails.documents %}
-                                        <a href="{{ doc.url }}" class="loan-doc loan-doc-{{ doc.docType }}"
-                                           title="{{ doc.docTypeName }}"
-                                           data-toggle="tooltip">
-                                        </a>
-                                    {% endfor %}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    {% endif %}
                 {% endfor %}
                 </tbody>
             </table><!-- /.table-myloans -->

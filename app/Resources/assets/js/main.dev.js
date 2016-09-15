@@ -109,7 +109,9 @@ $(document).ready(function ($) {
   // TWBS setup
   // $.support.transition = false
   // Bootstrap Tooltips
-  $('.ui-has-tooltip, [data-toggle="tooltip"]').tooltip()
+  $body.tooltip({
+    selector: '.ui-has-tooltip, [data-toggle="tooltip"]'
+  })
 
   /*
    * jQuery UI Date Picker
@@ -1059,112 +1061,6 @@ $(document).ready(function ($) {
       $headerLabel.addClass('hide')
       $panel.collapse('show')
     }
-  })
-
-  /*
-   * User Preter Operations
-   */
-  // Show/hide details
-  $doc.on(Utility.clickEvent, '.table-myoperations-item[data-details]', function (event) {
-    var $item = $(this)
-    var $table = $item.parents('tbody').first()
-    var $details = $table.find('.table-myoperations-details[data-parent="' + $item.attr('id') + '"]')
-    event.preventDefault()
-
-    // Hide details
-    if ($item.is('.ui-operation-details-open')) {
-      if ($details.length > 0) {
-        $details.slideUp(200, function () {
-          $item.removeClass('ui-operation-details-open')
-        })
-      } else {
-        $item.removeClass('ui-operation-details-open')
-      }
-
-    // Show details
-    } else {
-      if ($details.length === 0) {
-        // Get the details
-        var details = Utility.convertStringToJson($item.attr('data-details'))
-        var detailsItemsHtml = '';
-
-        // Build the list of items
-        $.each(details.items, function (i, item) {
-          // @todo may need to programmatically change the currency here
-          // @note this relies on the backend to supply the correcly translated text for labels
-          var classItem = (item.value >= 0 ? 'ui-value-positive' : 'ui-value-negative')
-          detailsItemsHtml += '<dt>' + item.label + '</dt><dd><span class="' + classItem + '">' + __.formatNumber(item.value, 2, true) + '€</span></dd>'
-        })
-
-        // Build element and add to DOM
-        $details = $('<tr class="table-myoperations-details" data-parent="' + $item.attr('id') + '" style="display: none;"><td colspan="2">' + details.label + '</td><td colspan="3">' + detailsItemsHtml + '</td><td>&nbsp;</td></tr>')
-        $item.after($details)
-      }
-
-      // Show
-      $item.addClass('ui-operation-details-open')
-      $details.slideDown(200)
-    }
-  })
-
-  /*
-   * User Borrower Operations
-   */
-  // Show/hide details
-  $doc.on(Utility.clickEvent, '#user-emprunteur-operations .table-myoperations-item[data-details]', function (event) {
-    var $item = $(this)
-    var $table = $item.parents('tbody').first()
-    var $details = $table.find('.table-myoperations-details[data-parent="' + $item.attr('id') + '"]')
-    event.preventDefault()
-
-    // Hide details
-    if ($item.is('.ui-operation-details-open')) {
-      if ($details.length > 0) {
-        $details.slideUp(200, function () {
-          $item.removeClass('ui-operation-details-open')
-        })
-      } else {
-        $item.removeClass('ui-operation-details-open')
-      }
-
-      // Show details
-    } else {
-      if ($details.length === 0) {
-        // Get the details
-        var details = Utility.convertStringToJson($item.attr('data-details'))
-        var detailsItemsHtml = '';
-
-        // Build the list of items
-        $.each(details.items, function (i, item) {
-          // @todo may need to programmatically change the currency here
-          // @note this relies on the backend to supply the correcly translated text for labels
-          var classItem = (item.value >= 0 ? 'ui-value-positive' : 'ui-value-negative')
-          detailsItemsHtml += '<dt><span class="cell-right" style="width:30%;display:block;">' + item.label + '</span></dt>' + '<dd><span class="' + classItem + '">' + __.formatNumber(item.value, 2, true) + '€</span></dd>'
-        })
-
-        // Build element and add to DOM
-        $details = $('<tr class="table-myoperations-details" data-parent="'
-            + $item.attr('id') + '" style="display: none;"><td colspan="4">' + detailsItemsHtml + '</td><td>&nbsp;</td></tr>')
-        $item.after($details)
-      }
-
-      // Show
-      $item.addClass('ui-operation-details-open')
-      $details.slideDown(200)
-    }
-  })
-
-
-  // Remove details before sorting
-  $doc.on('Sortable:sort:before', 'table.table-myoperations', function (event, elemSortable, columnName, direction) {
-    var $table = $(this)
-    var $details = $table.find('.table-myoperations-details')
-
-    // Find any details rows and remove them before the sorting occurs
-    if ($details.length > 0) $details.remove()
-
-    // Find any items which are "open" and remove the class
-    $table.find('.ui-operation-details-open').removeClass('ui-operation-details-open')
   })
 
   /*
