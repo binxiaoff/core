@@ -38,7 +38,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
         $company = $entityManager->getRepository('companies');
         /** @var \settings $settings */
         $settings = $entityManager->getRepository('settings');
-        /** @var |transactions $transaction */
+        /** @var \transactions $transaction */
         $transaction = $entityManager->getRepository('transactions');
 
         $settings->get('Virement - BIC', 'type');
