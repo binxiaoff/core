@@ -48,9 +48,6 @@
                                     </a>
                                 </li>
                                 {%  endif %}
-                                <li role="presentation" class="dashboard-nav-notifications {% if app.request.attributes.get('_route') == 'user/preter/notifications' %}active{% else %}complete{% endif %}">
-                                    <a href="{{ route('user/preter/notifications') }}"><span class="icon fa-bell-u"></span><span class="label">Notifications</span></a>
-                                </li>
                             </ul>
                         {% endblock %}
                     </nav>
@@ -60,18 +57,15 @@
                     {% endblock %}
                 </div><!-- /.col-menu -->
 
-                {% if 'common-lender_general-message-lender-account'|trans != 'common-lender_general-message-lender-account' %}
-                    {% set noMessage = false %}
-                {% else %}
-                    {% set noMessage = true %}
-                {% endif %}
                 <div class="col-content dashboard-content">
-                    <div class="row dashboard-tabs">
-                        <div class="message-info " {% if noMessage == true %}style="display: none;"{% endif %}>
-                            <p>{% trans %} common-lender_general-message-lender-account {% endtrans %} </p>
-                            <a href="javascript:;" class="btn-close ui-dismiss"><span class="sr-only">Dismiss message</span></a>
+                    {% if 'common-lender_general-message-lender-account'|trans|trim is not empty %}
+                        <div class="row dashboard-tabs">
+                            <div class="message-info">
+                                <p>{% trans %} common-lender_general-message-lender-account {% endtrans %} </p>
+                                <a href="javascript:;" class="btn-close ui-dismiss"><span class="sr-only">{% trans %} common-lender_general-message-dismiss-button {% endtrans %}</span></a>
+                            </div>
                         </div>
-                    </div>
+                    {% endif %}
                     {% block dashboardContent %} {% endblock %}
                 </div><!-- /.col-content -->
             </div><!-- /.site-wrap -->
