@@ -140,11 +140,10 @@
                         data-sortable-rating="{{ loan.risk|convertRisk }}"
                         data-sortable-amount="{{ loan.amount }}"
                         data-sortable-interest="{{ loan.rate }}"
-                        data-sortable-monthly="{{ loan.mensuel }}"
+                        data-sortable-monthly="{{ loan.last_perceived_repayment }}"
                         data-sortable-next="{{ loan.next_echeance|date('U') }}"
                         data-sortable-duration="{{ loan.project_duration }}">
                         <td class="table-myloans-item-project">
-                            {#@todo add link to project detail#}
                             <div class="text-crop"><a href="{{ path('project_detail', {'projectSlug' : loan.slug}) }}" target="_blank">{{ loan.name }}</a></div>
                         </td>
                         <td class="table-myloans-item-rating">
@@ -157,7 +156,7 @@
                             {{ loan.rate|__num(1)|nbsp }}<sup>%</sup>
                         </td>
                         <td class="table-myloans-item-monthly">
-                            {{ loan.mensuel|__num(2) }}€
+                            {{ loan.last_perceived_repayment|__num(2) }}€
                         </td>
                         <td class="table-myloans-item-next">
                             {{ loan.next_echeance|date('d/m/y') }}

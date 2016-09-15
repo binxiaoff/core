@@ -79,10 +79,9 @@ class LenderAccountDisplayManager
         /** @var \echeanciers $repaymentSchedule */
         $repaymentSchedule = $this->entityManager->getRepository('echeanciers');
 
-        $loanInfo = [];
-
-        $loanInfo['amountAlreadyPaidBack'] = $repaymentSchedule->sumARembByProject($lenderAccount->id_lender_account, $projectId . ' AND status_ra = 0') + $repaymentSchedule->sumARembByProjectCapital($lenderAccount->id_lender_account, $projectId . ' AND status_ra = 1');
-        $loanInfo['remainingToBeRepaid']   = $repaymentSchedule->getSumRestanteARembByProject($lenderAccount->id_lender_account, $projectId);
+        $loanInfo                          = [];
+        $loanInfo['amountAlreadyPaidBack'] = $repaymentSchedule->getRepaidAmount(['id_lender' => $lenderAccount->id_lender_account, 'id_project' => $projectId]);
+        $loanInfo['remainingToBeRepaid']   = $repaymentSchedule->getOwedAmount(['id_lender' => $lenderAccount->id_lender_account, 'id_project' => $projectId]);
         $loanInfo['remainingMonths']       = $repaymentSchedule->counterPeriodRestantes($lenderAccount->id_lender_account, $projectId);
         $loanInfo['myLoanOnProject']       = $loans->getBidsValid($projectId, $lenderAccount->id_lender_account);
         $loanInfo['myAverageLoanRate']     = round($loans->getAvgLoansPreteur($projectId, $lenderAccount->id_lender_account), 2);

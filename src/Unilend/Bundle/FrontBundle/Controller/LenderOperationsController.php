@@ -65,7 +65,7 @@ class LenderOperationsController extends Controller
             [
                 'lenderOperations'       => $lenderOperations,
                 'projectsFundedByLender' => $projectsFundedByLender,
-                'detailedOperations'     => [\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT],
+                'detailedOperations'     => [\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT],
                 'loansStatusFilter'      => $projectStatus->select('status >= ' . \projects_status::REMBOURSEMENT, 'status ASC'),
                 'loansYears'             => $loanYears,
                 'lenderLoans'            => $loans['lenderLoans'],
@@ -251,7 +251,7 @@ class LenderOperationsController extends Controller
                 'target'   => 'operations',
                 'template' => $this->render(':frontbundle/pages/lender_operations:my_operations.html.twig',
                     [
-                        'detailedOperations'     => [\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT],
+                        'detailedOperations'     => [\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT],
                         'projectsFundedByLender' => $projectsFundedByLender,
                         'lenderOperations'       => $lenderOperations,
                         'repayedCapitalLabel'    => $translationManager->selectTranslation('lender-operations', 'repayed-capital-amount'),
@@ -454,10 +454,10 @@ class LenderOperationsController extends Controller
             $sProjectId = $t['id_projet'] == 0 ? '' : $t['id_projet'];
             $solde      = $t['solde'];
 
-            if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
+            if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
                 $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
 
-                if ($t['type_transaction'] != \transactions_types::TYPE_LENDER_REPAYMENT) {
+                if ($t['type_transaction'] != \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL) {
                     $this->echeanciers->prelevements_obligatoires    = 0;
                     $this->echeanciers->retenues_source              = 0;
                     $this->echeanciers->interets                     = 0;
@@ -646,9 +646,9 @@ class LenderOperationsController extends Controller
             $oActiveSheet->setCellValue('F' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['debut'])));
             $oActiveSheet->setCellValue('G' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['next_echeance'])));
             $oActiveSheet->setCellValue('H' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['fin'])));
-            $oActiveSheet->setCellValue('I' . ($iRowIndex + 2), (string) round($repaymentSchedule->sum('id_lender = ' . $lender->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 1', 'capital'), 2));
-            $oActiveSheet->setCellValue('J' . ($iRowIndex + 2), round($repaymentSchedule->sum('id_lender = ' . $lender->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 1', 'interets'), 2));
-            $oActiveSheet->setCellValue('K' . ($iRowIndex + 2), round($repaymentSchedule->sum('id_lender = ' . $lender->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 0', 'capital'), 2));
+            $oActiveSheet->setCellValue('I' . ($iRowIndex + 2), $repaymentSchedule->getRepaidCapital(['id_lender' => $lender->id_lender_account, 'id_project' => $aProjectLoans['id_project']]));
+            $oActiveSheet->setCellValue('J' . ($iRowIndex + 2), $repaymentSchedule->getRepaidInterests(['id_lender' => $lender->id_lender_account, 'id_project' => $aProjectLoans['id_project']]));
+            $oActiveSheet->setCellValue('K' . ($iRowIndex + 2), $repaymentSchedule->getOwedCapital(['id_lender' => $lender->id_lender_account, 'id_project' => $aProjectLoans['id_project']]));
 
             $sRisk = isset($aProjectLoans['risk']) ? $aProjectLoans['risk'] : '';
             $sNote = $this->getProjectNote($sRisk);
@@ -718,8 +718,6 @@ class LenderOperationsController extends Controller
         $repaymentSchedule = $entityManager->getRepository('echeanciers');
         /** @var \transactions $transaction */
         $transaction = $entityManager->getRepository('transactions');
-        /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
         /** @var \clients $client */
         $client = $entityManager->getRepository('clients');
         /** @var \lenders_imposition_history $lenderTaxHistory */
@@ -729,29 +727,26 @@ class LenderOperationsController extends Controller
 
         $client->get($this->getUser()->getClientId());
 
-        $array_type_transactions = [
-            1  => $translationManager->selectTranslation('lender-operations', 'operation-label-money-deposit'),
-            2  => [
+        $array_type_transactions = array(
+            \transactions_types::TYPE_LENDER_SUBSCRIPTION            => $translationManager->selectTranslation('lender-operations', 'operation-label-money-deposit'),
+            \transactions_types::TYPE_LENDER_LOAN                    => array(
                 1 => $translationManager->selectTranslation('lender-operations', 'operation-label-current-offer'),
                 2 => $translationManager->selectTranslation('lender-operations', 'operation-label-rejected-offer'),
                 3 => $translationManager->selectTranslation('lender-operations', 'operation-label-accepted-offer')
-            ],
-            3  => $translationManager->selectTranslation('lender-operations', 'operation-label-money-deposit'),
-            4  => $translationManager->selectTranslation('lender-operations', 'operation-label-money-deposit'),
-            5  => [
-                1 => $translationManager->selectTranslation('lender-operations', 'operation-label-refund'),
-                2 => $translationManager->selectTranslation('lender-operations', 'operation-label-recovery')
-            ],
-            7  => $translationManager->selectTranslation('lender-operations', 'operation-label-money-deposit'),
-            8  => $translationManager->selectTranslation('lender-operations', 'operation-label-money-withdrawal'),
-            16 => $translationManager->selectTranslation('lender-operations', 'operation-label-welcome-offer'),
-            17 => $translationManager->selectTranslation('lender-operations', 'operation-label-welcome-offer-withdrawal'),
-            19 => $translationManager->selectTranslation('lender-operations', 'operation-label-godson-gain'),
-            20 => $translationManager->selectTranslation('lender-operations', 'operation-label-godfather-gain'),
-            22 => $translationManager->selectTranslation('lender-operations', 'operation-label-anticipated-repayment'),
-            23 => $translationManager->selectTranslation('lender-operations', 'operation-label-anticipated-repayment'),
-            26 => $translationManager->selectTranslation('lender-operations', 'operation-label-lender-recovery')
-        ];
+            ),
+            \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT      => $translationManager->selectTranslation('lender-operations', 'operation-label-money-deposit'),
+            \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT    => $translationManager->selectTranslation('lender-operations', 'operation-label-money-deposit'),
+            \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL       => $translationManager->selectTranslation('lender-operations', 'operation-label-refund'),
+            \transactions_types::TYPE_DIRECT_DEBIT                   => $translationManager->selectTranslation('lender-operations', 'operation-label-money-deposit'),
+            \transactions_types::TYPE_LENDER_WITHDRAWAL              => $translationManager->selectTranslation('lender-operations', 'operation-label-money-withdrawal'),
+            \transactions_types::TYPE_WELCOME_OFFER                  => $translationManager->selectTranslation('lender-operations', 'operation-label-welcome-offer'),
+            \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION     => $translationManager->selectTranslation('lender-operations', 'operation-label-welcome-offer-withdrawal'),
+            \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD   => $translationManager->selectTranslation('lender-operations', 'operation-label-godson-gain'),
+            \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD     => $translationManager->selectTranslation('lender-operations', 'operation-label-godfather-gain'),
+            \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT => $translationManager->selectTranslation('lender-operations', 'operation-label-anticipated-repayment'),
+            \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT   => $translationManager->selectTranslation('lender-operations', 'operation-label-anticipated-repayment'),
+            \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT      => $translationManager->selectTranslation('lender-operations', 'operation-label-lender-recovery')
+        );
 
         $sLastOperation = $lenderOperationsIndex->getLastOperationDate($this->getUser()->getClientId());
 

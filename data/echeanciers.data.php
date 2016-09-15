@@ -557,12 +557,6 @@ class echeanciers extends echeanciers_crud
         return $PremiereEcheance[0]['date_echeance_emprunteur'];
     }
 
-    public function getDateDerniereEcheance($projectId)
-    {
-        $result = $this->bdd->query('SELECT MAX(date_echeance_emprunteur) FROM echeanciers WHERE id_project = ' . $projectId);
-        return $this->bdd->result($result);
-    }
-
     public function getDateDerniereEcheancePreteur($projectId)
     {
         $result = $this->bdd->query('SELECT MAX(date_echeance) FROM echeanciers WHERE id_project = ' . $projectId);
