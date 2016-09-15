@@ -1,15 +1,11 @@
-
-
-
-
 <script type="text/javascript">
 	$(document).ready(function(){
-		$(".tablesorter").tablesorter({headers:{3:{sorter: false}}});	
+		$(".tablesorter").tablesorter({headers:{3:{sorter: false}}});
 		<?
 		if($this->nb_lignes != '')
 		{
 		?>
-			$(".tablesorter").tablesorterPager({container: $("#pager"),positionFixed: false,size: <?=$this->nb_lignes?>});		
+			$(".tablesorter").tablesorterPager({container: $("#pager"),positionFixed: false,size: <?=$this->nb_lignes?>});
 		<?
 		}
 		?>
@@ -37,10 +33,10 @@
         <li>Tous les échéanciers du projet</li>
     </ul>
 	<h1>Tous les échéanciers du projet</h1>
-    
-    <form method="post" name="from_param_id_projet" id="from_param_id_projet" enctype="multipart/form-data" action="" target="_parent">          
+
+    <form method="post" name="from_param_id_projet" id="from_param_id_projet" enctype="multipart/form-data" action="" target="_parent">
         <fieldset>
-            <table class="formColor">                
+            <table class="formColor">
                 <tr>
                     <th><label for="id_projet">Id projet :</label></th>
                     <td><input type="text" name="id_projet" id="id_projet" class="input_large" /></td>

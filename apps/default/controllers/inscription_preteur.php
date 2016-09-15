@@ -237,7 +237,7 @@ class inscription_preteurController extends bootstrap
                 $this->validStep2LegalEntity();
             }
         } else {
-            header('location:' . $this->lurl . '/inscription_preteur/etape1/');
+            header('Location: ' . $this->lurl . '/inscription_preteur/etape1/');
             die;
         }
     }
@@ -333,7 +333,6 @@ class inscription_preteurController extends bootstrap
 
             $this->hash_client = $this->clients->hash;
 
-            // Motif virement
             $this->motif = $this->clients->getLenderPattern($this->clients->id_client);
 
             $_SESSION['motif'] = $this->motif;
@@ -353,7 +352,6 @@ class inscription_preteurController extends bootstrap
                 $this->cle           = substr($iban, 25, 2);
             }
 
-            // paiement CB
             if (isset($_POST['send_form_preteur_cb'])) {
                 $amount = $this->ficelle->cleanFormatedNumber($_POST['amount']);
 
@@ -368,22 +366,11 @@ class inscription_preteurController extends bootstrap
                     $this->transactions->montant          = $amount;
                     $this->transactions->id_langue        = 'fr';
                     $this->transactions->date_transaction = date('Y-m-d h:i:s');
-                    $this->transactions->status           = '0';
-                    $this->transactions->etat             = '0';
+                    $this->transactions->status           = 0;
+                    $this->transactions->etat             = 0;
                     $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                    $this->transactions->civilite_fac     = $this->clients->civilite;
-                    $this->transactions->nom_fac          = $this->clients->nom;
-                    $this->transactions->prenom_fac       = $this->clients->prenom;
-                    if ($this->clients->type == 2) {
-                        $this->transactions->societe_fac = $this->companies->name;
-                    }
-                    $this->transactions->adresse1_fac     = $this->clients_adresses->adresse1;
-                    $this->transactions->cp_fac           = $this->clients_adresses->cp;
-                    $this->transactions->ville_fac        = $this->clients_adresses->ville;
-                    $this->transactions->id_pays_fac      = $this->clients_adresses->id_pays;
-                    $this->transactions->type_transaction = 1; // on signal que c'est un solde pour l'inscription
-                    $this->transactions->transaction      = 1; // transaction physique
-                    $this->transactions->id_transaction   = $this->transactions->create();
+                    $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_SUBSCRIPTION;
+                    $this->transactions->create();
 
                     $array                    = array();
                     $payline                  = new paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
@@ -391,28 +378,21 @@ class inscription_preteurController extends bootstrap
                     $payline->cancelURL       = $this->lurl . '/inscription_preteur/payment/' . $this->clients->hash . '/';
                     $payline->notificationURL = NOTIFICATION_URL;
 
-                    // PAYMENT
-                    $array['payment']['amount']   = $amount;
-                    $array['payment']['currency'] = ORDER_CURRENCY;
-                    $array['payment']['action']   = PAYMENT_ACTION;
-                    $array['payment']['mode']     = PAYMENT_MODE;
+                    $array['payment']['amount']         = $amount;
+                    $array['payment']['currency']       = ORDER_CURRENCY;
+                    $array['payment']['action']         = PAYMENT_ACTION;
+                    $array['payment']['mode']           = PAYMENT_MODE;
+                    $array['payment']['contractNumber'] = CONTRACT_NUMBER;
 
-                    // ORDER
                     $array['order']['ref']      = $this->transactions->id_transaction;
                     $array['order']['amount']   = $amount;
                     $array['order']['currency'] = ORDER_CURRENCY;
 
-                    // CONTRACT NUMBERS
-                    $array['payment']['contractNumber'] = CONTRACT_NUMBER;
-                    $contracts                          = explode(";", CONTRACT_NUMBER_LIST);
-                    $array['contracts']                 = $contracts;
-                    $secondContracts                    = explode(";", SECOND_CONTRACT_NUMBER_LIST);
-                    $array['secondContracts']           = $secondContracts;
+                    $array['contracts']       = explode(';', CONTRACT_NUMBER_LIST);
+                    $array['secondContracts'] = explode(';', SECOND_CONTRACT_NUMBER_LIST);
 
-                    // EXECUTE
                     $result = $payline->doWebPayment($array);
 
-                    // On enregistre le tableau retourné
                     $this->transactions->get($this->transactions->id_transaction, 'id_transaction');
                     $this->transactions->serialize_payline = serialize($result);
                     $this->transactions->update();
@@ -420,27 +400,22 @@ class inscription_preteurController extends bootstrap
                     // si on retourne quelque chose
                     if (isset($result)) {
                         if ($result['result']['code'] == '00000') {
-                            header("location:" . $result['redirectURL']);
-                            exit();
-                        } // Si erreur on envoie sur mon mail
-                        elseif (isset($result)) {
-                            header('location:' . $this->lurl . '/inscription_preteur/erreur/' . $this->clients->hash);
+                            header('Location: ' . $result['redirectURL']);
+                            die;
+                        } elseif (isset($result)) {
+                            header('Location: ' . $this->lurl . '/inscription_preteur/erreur/' . $this->clients->hash);
                             die;
                         }
                     }
                 }
-
             } elseif (isset($_POST['send_form_preteur_virement'])) {// Virement
                 $this->clients->etape_inscription_preteur = 3; // etape 3 ok
 
-                // type de versement virement
                 $this->lenders_accounts->fonds          = 0;
                 $this->lenders_accounts->motif          = $this->motif;
                 $this->lenders_accounts->type_transfert = 1;
-                // on enregistre les infos
                 $this->lenders_accounts->update();
 
-                // Enregistrement
                 $this->clients->update();
 
                 /** @var \settings $oSettings */
@@ -453,7 +428,6 @@ class inscription_preteurController extends bootstrap
                 $oSettings->get('Twitter', 'type');
                 $lien_tw = $oSettings->value;
 
-                // Variables du mailing
                 $varMail = array(
                     'surl'           => $this->surl,
                     'url'            => $this->lurl,
@@ -478,7 +452,6 @@ class inscription_preteurController extends bootstrap
             header('Location: ' . $this->lurl . '/inscription_preteur/etape1');
             die;
         }
-
     }
 
     public function _payment()
@@ -512,17 +485,15 @@ class inscription_preteurController extends bootstrap
             $array   = array();
             $payline = new paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
 
-            // GET TOKEN
             if (isset($_POST['token'])) {
                 $array['token'] = $_POST['token'];
             } elseif (isset($_GET['token'])) {
                 $array['token'] = $_GET['token'];
             } else {
-                header('location:' . $this->lurl . '/inscription_preteur/etape3/' . $this->clients->hash);
+                header('Location: ' . $this->lurl . '/inscription_preteur/etape3/' . $this->clients->hash);
                 die;
             }
 
-            // VERSION
             if (isset($_POST['version'])) {
                 $array['version'] = $_POST['version'];
             } else {
@@ -548,12 +519,11 @@ class inscription_preteurController extends bootstrap
                         $this->transactions->montant          = $response['payment']['amount'];
                         $this->transactions->id_langue        = 'fr';
                         $this->transactions->date_transaction = date('Y-m-d h:i:s');
-                        $this->transactions->status           = '1';
-                        $this->transactions->etat             = '1';
+                        $this->transactions->status           = 1;
+                        $this->transactions->etat             = 1;
                         $this->transactions->type_paiement    = ($response['extendedCard']['type'] == 'VISA' ? '0' : ($response['extendedCard']['type'] == 'MASTERCARD' ? '3' : ''));
                         $this->transactions->update();
 
-                        // On enrgistre la transaction dans le wallet
                         $this->wallets_lines->id_lender                = $this->lenders_accounts->id_lender_account;
                         $this->wallets_lines->type_financial_operation = 10; // Inscription preteur
                         $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
@@ -562,14 +532,12 @@ class inscription_preteurController extends bootstrap
                         $this->wallets_lines->amount                   = $response['payment']['amount'];
                         $this->wallets_lines->id_wallet_line           = $this->wallets_lines->create();
 
-                        // Transaction physique donc on enregistre aussi dans la bank lines
                         $this->bank_lines->id_wallet_line    = $this->wallets_lines->id_wallet_line;
                         $this->bank_lines->id_lender_account = $this->lenders_accounts->id_lender_account;
                         $this->bank_lines->status            = 1;
                         $this->bank_lines->amount            = $response['payment']['amount'];
                         $this->bank_lines->create();
 
-                        // Historique client
                         $this->clients_history->id_client = $this->clients->id_client;
                         $this->clients_history->status    = 2; // statut creation compte preteur
                         $this->clients_history->create();
@@ -607,7 +575,6 @@ class inscription_preteurController extends bootstrap
                         $oSettings->get('Twitter', 'type');
                         $lien_tw = $oSettings->value;
 
-                        // Variables du mailing
                         $varMail = array(
                             'surl'           => $this->surl,
                             'url'            => $this->lurl,
@@ -628,32 +595,29 @@ class inscription_preteurController extends bootstrap
                         $this->clients->etape_inscription_preteur = 3;
                         $this->clients->update();
 
-                        // connection au compte
+                        // connexion au compte
                         // mise en session
                         $client             = $this->clients->select('id_client = ' . $this->clients->id_client);
                         $_SESSION['auth']   = true;
                         $_SESSION['token']  = md5(md5(time() . $this->clients->securityKey));
                         $_SESSION['client'] = $client[0];
-                        // fin mise en session
-                        header('location:' . $this->lurl . '/inscription_preteur/confirmation/' . $this->clients->hash . '/cb/' . $this->transactions->id_transaction);
+                        header('Location: ' . $this->lurl . '/inscription_preteur/confirmation/' . $this->clients->hash . '/cb/' . $this->transactions->id_transaction);
                         die;
-                    } else { // si infos pas good
-                        header('location:' . $this->lurl . '/inscription_preteur/etape3/' . $this->clients->hash);
+                    } else {
+                        header('Location: ' . $this->lurl . '/inscription_preteur/etape3/' . $this->clients->hash);
                         die;
                     }
-                } // Paiement annulé
-                elseif ($response['result']['code'] == '02319') {
+                } elseif ($response['result']['code'] == '02319') { // Paiement annulé
                     $this->transactions->get($response['order']['ref'], 'id_transaction');
                     $this->transactions->id_backpayline = $this->backpayline->id_backpayline;
                     $this->transactions->statut         = '0';
                     $this->transactions->etat           = '3';
                     $this->transactions->update();
 
-                    header('location:' . $this->lurl . '/inscription_preteur/etape3/' . $this->clients->hash);
+                    header('Location: ' . $this->lurl . '/inscription_preteur/etape3/' . $this->clients->hash);
                     die;
-                } // Si erreur
-                else {
-                    header('location:' . $this->lurl . '/inscription_preteur/erreur/' . $this->clients->hash);
+                } else {
+                    header('Location: ' . $this->lurl . '/inscription_preteur/erreur/' . $this->clients->hash);
                     die;
                 }
             }
@@ -668,18 +632,17 @@ class inscription_preteurController extends bootstrap
             $this->page_preteur = 3;
 
             if (isset($this->params[1]) && $this->params[1] == 'v') {
-                header('location:' . $this->lurl . '/' . $this->tree->getSlug(16, $this->language) . '/' . $this->params[0]);
+                header('Location: ' . $this->lurl . '/' . $this->tree->getSlug(16, $this->language) . '/' . $this->params[0]);
             } elseif (isset($this->params[1]) && $this->params[1] == 'cb') {
                 // on rajoute l'id transaction en params 2
-                header('location:' . $this->lurl . '/' . $this->tree->getSlug(130, $this->language) . '/' . $this->params[0] . '/' . $this->params[2] . '/');
+                header('Location: ' . $this->lurl . '/' . $this->tree->getSlug(130, $this->language) . '/' . $this->params[0] . '/' . $this->params[2] . '/');
             } else {
-                header('location:' . $this->lurl . '/inscription_preteur/etape1/');
-                die;
+                header('Location: ' . $this->lurl . '/inscription_preteur/etape1/');
             }
         } else {
-            header('location:' . $this->lurl . '/inscription_preteur/etape1/');
-            die;
+            header('Location: ' . $this->lurl . '/inscription_preteur/etape1/');
         }
+        die;
     }
 
     public function _template()
@@ -721,13 +684,8 @@ class inscription_preteurController extends bootstrap
 
     public function _contact_form()
     {
-        // On masque les Head, header et footer originaux plus le debug
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
-        //Recuperation des element de traductions
         $this->lng['contact'] = $this->ln->selectFront('contact', $this->language, $this->App);
 
         if (isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
@@ -757,20 +715,16 @@ class inscription_preteurController extends bootstrap
 
     public function _print()
     {
-        // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
-
         $this->autoFireFooter = false;
         $this->autoFireDebug  = false;
 
-        // CSS
         $this->unLoadCss('default/custom-theme/jquery-ui-1.10.3.custom');
         $this->unLoadCss('default/colorbox');
         $this->unLoadCss('default/jquery.c2selectbox');
         $this->loadCss('default/preteurs/new-style');
         $this->loadCss('default/preteurs/print');
 
-        // JS
         $this->unLoadJs('default/functions');
         $this->unLoadJs('default/bootstrap-tooltip');
         $this->unLoadJs('default/jquery.carouFredSel-6.2.1-packed');
@@ -782,7 +736,6 @@ class inscription_preteurController extends bootstrap
         $this->unLoadJs('default/highcharts.src');
         $this->unLoadJs('default/main');
         $this->unLoadJs('default/ajax');
-
 
         $this->page_preteur = 3;
 
@@ -1397,7 +1350,7 @@ class inscription_preteurController extends bootstrap
                     $this->acceptations_legal_docs->create();
                 }
             }
-            header('location:' . $this->lurl . '/inscription_preteur/etape2/' . $this->clients->hash);
+            header('Location: ' . $this->lurl . '/inscription_preteur/etape2/' . $this->clients->hash);
             die;
         }
     }
@@ -1491,7 +1444,7 @@ class inscription_preteurController extends bootstrap
                 $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST));
                 $this->clients_history_actions->histo(18, 'edition inscription etape 2 particulier', $this->clients->id_client, $serialize);
             }
-            header('location:' . $this->lurl . '/inscription_preteur/etape3/' . $this->clients->hash);
+            header('Location: ' . $this->lurl . '/inscription_preteur/etape3/' . $this->clients->hash);
             die;
         } else {
             $_SESSION['forms']['step-2']['error']['error_rib']                     = isset($this->error_rib) ? $this->error_rib : false ;
@@ -1580,7 +1533,7 @@ class inscription_preteurController extends bootstrap
             if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 1') <= 0) {
                 $this->clients_status_history->addStatus(\users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED, $this->clients->id_client);
             }
-            header('location:' . $this->lurl . '/inscription_preteur/etape3/' . $this->clients->hash);
+            header('Location: ' . $this->lurl . '/inscription_preteur/etape3/' . $this->clients->hash);
             die;
         }
     }

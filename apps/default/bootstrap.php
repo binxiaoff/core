@@ -61,6 +61,7 @@ class bootstrap extends Controller
         $this->projects                = $this->loadData('projects');
         $this->lenders_accounts        = $this->loadData('lenders_accounts');
         $this->projects_status         = $this->loadData('projects_status');
+        $this->loadData('transactions_types'); // Loaded for class constants
 
         $this->ficelle = $this->loadLib('ficelle');
         $this->photos  = $this->loadLib('photos', array($this->spath, $this->surl));

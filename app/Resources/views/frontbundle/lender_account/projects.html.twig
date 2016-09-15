@@ -1,5 +1,4 @@
-{# User / Preter / Projects #}
-{% extends 'layouts/_dashboard.twig' %}
+{% extends 'layouts/_layout_lender.html.twig' %}
 
 {% set page = {
   id: 'user-preter-projects',
@@ -8,10 +7,6 @@
   classNames: 'user-preter-projects'
 } %}
 
-{# See config/twig.json for the data value of `userProfile` #}
-
 {% block dashboardContent %}
-
   {% include 'partials/components/project-list/project-list.html.twig' %}
-
 {% endblock %}

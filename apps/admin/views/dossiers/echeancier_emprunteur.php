@@ -84,7 +84,7 @@
                 $i = 1;
                 $capRestant = $this->capital;
                 foreach ($this->lRemb as $r) {
-                    $montantEmprunteur = $this->echeanciers->getMontantRembEmprunteur($r['montant'], $r['commission'], $r['tva']);
+                    $montantEmprunteur = round($r['montant'] + $r['commission'] + $r['tva'], 2);
 
                     $capRestant -= $r['capital'];
 

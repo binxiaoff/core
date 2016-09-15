@@ -196,7 +196,7 @@
                     {# Set the loan details as JSON for rendering client-side when details are visible #}
                     {% set loan = {
                         id: loan.id_project,
-                        url: "http://example.com",
+                        url: path('project_detail', {'projectSlug' : loan.slug}),
                         name: loan.title,
                         rate: loan.rate,
                         risk: loan.risk|convertRisk,

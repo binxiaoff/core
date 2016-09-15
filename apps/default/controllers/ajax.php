@@ -22,21 +22,6 @@ class ajaxController extends bootstrap
         $_SESSION['modification'] = $this->params[0];
     }
 
-    public function _session_etape2_lender()
-    {
-        $this->autoFireView = false;
-
-        unset($_SESSION['inscription_etape2']);
-
-        $_SESSION['inscription_etape2']['bic'] = str_replace(' ', '', $_POST['bic']);
-        for ($i = 1; $i <= 7; $i++) {
-            $_SESSION['inscription_etape2']['iban'] .= str_replace(' ', '', $_POST['iban' . $i]);
-        }
-        $_SESSION['inscription_etape2']['origine_des_fonds'] = $_POST['origine_des_fonds'];
-        $_SESSION['inscription_etape2']['cni_passeport']     = $_POST['cni_passeport'];
-        $_SESSION['inscription_etape2']['preciser']          = $_POST['preciser'];
-    }
-
     public function _checkPostCode()
     {
         $this->autoFireView = false;
@@ -279,52 +264,6 @@ class ajaxController extends bootstrap
         }
     }
 
-    public function _load_finances()
-    {
-        $this->autoFireView = true;
-
-        if (isset($_POST['year']) && isset($_POST['id_lender'])) {
-            $this->lenders_accounts = $this->loadData('lenders_accounts');
-            $this->companies        = $this->loadData('companies');
-            $this->loans            = $this->loadData('loans');
-            $this->projects         = $this->loadData('projects');
-            $this->echeanciers      = $this->loadData('echeanciers');
-            $this->projects_status  = $this->loadData('projects_status');
-
-            $this->lng['profile'] = $this->ln->selectFront('preteur-profile', 'fr_FR', $this->App);
-
-            $year = $_POST['year'];
-
-            $this->lLoans = $this->loans->select('id_lender = ' . $_POST['id_lender'] . ' AND YEAR(added) = ' . $year . ' AND status = 0', 'added DESC');
-        }
-    }
-
-    public function _load_transac()
-    {
-        $this->autoFireView = true;
-
-        $this->lng['profile'] = $this->ln->selectFront('preteur-profile', 'fr_FR', $this->App);
-
-        if (isset($_POST['year']) && isset($_POST['id_client'])) {
-            $this->clients      = $this->loadData('clients');
-            $this->transactions = $this->loadData('transactions');
-            $this->echeanciers  = $this->loadData('echeanciers');
-            $this->projects     = $this->loadData('projects');
-            $this->companies    = $this->loadData('companies');
-
-            $this->lng['profile'] = $this->ln->selectFront('preteur-profile', 'fr_FR', $this->App);
-
-            // Offre de bienvenue motif
-            $this->settings->get('Offre de bienvenue motif', 'type');
-            $this->motif_offre_bienvenue = $this->settings->value;
-
-            $year = $_POST['year'];
-
-            $this->lTrans     = $this->transactions->select('type_transaction IN (1,3,4,5,7,8,16,17) AND status = 1 AND etat = 1 AND display = 0 AND id_client = ' . $_POST['id_client'] . ' AND YEAR(date_transaction) = ' . $year, 'added DESC');
-            $this->lesStatuts = array(1 => $this->lng['profile']['versement-initial'], 3 => $this->lng['profile']['alimentation-cb'], 4 => $this->lng['profile']['alimentation-virement'], 5 => $this->lng['profile']['remboursement'], 7 => $this->lng['profile']['alimentation-prelevement'], 8 => $this->lng['profile']['retrait'], 16 => $this->motif_offre_bienvenue, 17 => 'Retrait offre de bienvenue');
-        }
-    }
-
     // page alimentation / transferer des fonds (retrait d'argent)
     public function _transfert()
     {
@@ -392,27 +331,14 @@ class ajaxController extends bootstrap
             if ($verif == 'ok') {
                 $this->motif = $this->clients->getLenderPattern($this->clients->id_client);
 
-                // on effectue une demande de virement
-                // on retire la somme dur les transactions, bank_line et wallet
                 $this->transactions->id_client        = $this->clients->id_client;
-                $this->transactions->montant          = '-' . ($montant * 100);
+                $this->transactions->montant          = - $montant * 100;
                 $this->transactions->id_langue        = 'fr';
                 $this->transactions->date_transaction = date('Y-m-d H:i:s');
-                $this->transactions->status           = '1'; // on met en mode reglé pour ne plus avoir la somme sur le compte
-                $this->transactions->etat             = '1';
+                $this->transactions->status           = 1;
+                $this->transactions->etat             = 1;
                 $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                $this->transactions->civilite_fac     = $this->clients->civilite;
-                $this->transactions->nom_fac          = $this->clients->nom;
-                $this->transactions->prenom_fac       = $this->clients->prenom;
-                if ($this->clients->type == 2) {
-                    $this->transactions->societe_fac = $this->companies->name;
-                }
-                $this->transactions->adresse1_fac     = $this->clients_adresses->adresse1;
-                $this->transactions->cp_fac           = $this->clients_adresses->cp;
-                $this->transactions->ville_fac        = $this->clients_adresses->ville;
-                $this->transactions->id_pays_fac      = $this->clients_adresses->id_pays;
-                $this->transactions->type_transaction = 8; // on signal que c'est un retrait
-                $this->transactions->transaction      = 1; // transaction physique
+                $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_WITHDRAWAL;
                 $this->transactions->create();
 
                 $this->wallets_lines->id_lender                = $this->lenders_accounts->id_lender_account;
@@ -420,7 +346,7 @@ class ajaxController extends bootstrap
                 $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
                 $this->wallets_lines->status                   = 1;
                 $this->wallets_lines->type                     = 1;
-                $this->wallets_lines->amount                   = '-' . ($montant * 100);
+                $this->wallets_lines->amount                   = - $montant * 100;
                 $this->wallets_lines->create();
 
                 // Transaction physique donc on enregistre aussi dans la bank lines
@@ -494,7 +420,7 @@ class ajaxController extends bootstrap
                 $loans   = $this->loadData('loans');
 
                 // on recup la somme versé a l'inscription si y en a 1
-                $transac->get($this->clients->id_client, 'type_transaction = 1 AND status = 1 AND etat = 1 AND transaction = 1 AND id_client');
+                $transac->get($this->clients->id_client, 'type_transaction = ' . \transactions_types::TYPE_LENDER_SUBSCRIPTION . ' AND status = 1 AND etat = 1 AND id_client');
 
                 $varMail = array(
                     '$surl'                          => $this->surl,
@@ -721,9 +647,10 @@ class ajaxController extends bootstrap
 
             $this->echeanciers      = $this->loadData('echeanciers');
             $this->lenders_accounts = $this->loadData('lenders_accounts');
+            /** @var tax $tax */
+            $tax = $this->loadData('tax');
             $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
 
-            ///////////// Partie vos remboursements mensuel ////////
             $this->anneeCreationCompte = date('Y', strtotime($this->clients->added));
 
             if ($_POST['duree'] == 'mois') {
@@ -747,10 +674,8 @@ class ajaxController extends bootstrap
 
                 // On parcourt toutes les années de la creation du compte a aujourd'hui
                 for ($annee = $this->anneeCreationCompte; $annee <= date('Y'); $annee++) {
-                    // Revenus mensuel
-                    $tabSumRembParMois[$annee]             = $this->echeanciers->getSumRembByMonthsCapital($this->lenders_accounts->id_lender_account, $annee); // captial remboursé / mois
-                    $tabSumIntbParMois[$annee]             = $this->echeanciers->getSumIntByMonths($this->lenders_accounts->id_lender_account . ' AND status_ra = 0 ', $annee); // intérets brut / mois
-                    $tabSumRevenuesfiscalesParMois[$annee] = $this->echeanciers->getSumRevenuesFiscalesByMonths($this->lenders_accounts->id_lender_account . ' AND status_ra = 0 ', $annee); // revenues fiscales / mois
+                    $tabSumParMois[$annee]                 = $this->echeanciers->getMonthlyScheduleByYear(array('id_lender' => $this->lenders_accounts->id_lender_account), $annee); // captial remboursé / mois
+                    $tabSumRevenuesfiscalesParMois[$annee] = $tax->getTaxByMounth($this->lenders_accounts->id_lender_account, $annee); // revenues fiscales / mois
 
                     for ($i = 1; $i <= 12; $i++) {
                         $a                                            = $i;
@@ -802,10 +727,8 @@ class ajaxController extends bootstrap
                 // On parcourt toutes les années de la creation du compte a aujourd'hui
                 $nbSlides = 0;
                 for ($annee = $this->anneeCreationCompte; $annee <= date('Y'); $annee++) {
-                    // Revenus mensuel
-                    $tabSumRembParMois[$annee]             = $this->echeanciers->getSumRembByMonthsCapital($this->lenders_accounts->id_lender_account, $annee); // captial remboursé / mois
-                    $tabSumIntbParMois[$annee]             = $this->echeanciers->getSumIntByMonths($this->lenders_accounts->id_lender_account . ' AND status_ra = 0 ', $annee); // intérets brut / mois
-                    $tabSumRevenuesfiscalesParMois[$annee] = $this->echeanciers->getSumRevenuesFiscalesByMonths($this->lenders_accounts->id_lender_account . ' AND status_ra = 0 ', $annee); // revenues fiscales / mois
+                    $tabSumParMois[$annee]                 = $this->echeanciers->getMonthlyScheduleByYear(array('id_lender' => $this->lenders_accounts->id_lender_account), $annee); // captial remboursé / mois
+                    $tabSumRevenuesfiscalesParMois[$annee] = $tax->getTaxByMounth($this->lenders_accounts->id_lender_account, $annee); // revenues fiscales / mois
 
                     // on fait le tour sur l'année
                     for ($i = 1; $i <= 12; $i++) {
@@ -858,22 +781,18 @@ class ajaxController extends bootstrap
                     $this->ordre[$position] = $p;
                     $position++;
                 }
-            } // annee
-            else {
-                // debut et fin
+            } else { // annee
                 $this->debut = $this->anneeCreationCompte;
                 $this->fin   = date('Y');
 
-                // on organise
-                $i = 1;
-                $a = 0;
+                $i       = 1;
+                $a       = 0;
                 $arraynb = array();
                 for ($c = $this->debut; $c <= $this->fin; $c++) {
                     if ($a >= 3) {
                         $a = 0;
                         $i++;
                     }
-                    // on recup un tableau organisé
                     $this->tab[$c] = $i;
                     $arraynb[$i] = isset($arraynb[$i]) ? $arraynb[$i] + 1 : 1;
 
@@ -902,9 +821,9 @@ class ajaxController extends bootstrap
                     $a++;
                 }
 
-                $this->sumRembParAn   = $this->echeanciers->getSumRembByYearCapital($this->lenders_accounts->id_lender_account, $this->debut, $this->fin);
-                $this->sumIntParAn    = $this->echeanciers->getSumIntByYear($this->lenders_accounts->id_lender_account . ' AND status_ra = 0 ', $this->debut, $this->fin);
-                $this->sumFiscalParAn = $this->echeanciers->getSumRevenuesFiscalesByYear($this->lenders_accounts->id_lender_account . ' AND status_ra = 0 ', $this->debut, $this->fin);
+                $this->sumRembParAn   = $this->echeanciers->getRepaidCapitalInDateRange($this->lenders_accounts->id_lender_account, $this->debut . '-01-01 00:00:00', $this->fin . '-12-31 23:59:59');
+                $this->sumIntParAn    = $this->echeanciers->getRepaidInterestsInDateRange($this->lenders_accounts->id_lender_account, $this->debut . '-01-01 00:00:00', $this->fin . '-12-31 23:59:59');
+                $this->sumFiscalParAn = $tax->getTaxByYear($this->lenders_accounts->id_lender_account, $this->debut, $this->fin);
             }
         }
     }
@@ -985,54 +904,49 @@ class ajaxController extends bootstrap
         $_SESSION['filtre_vos_operations']['id_client']        = $this->clients->id_client;
 
         //////////// DEBUT PARTIE DATES //////////////
-        //echo $_SESSION['id_last_action'];
         // tri debut/fin
         if (isset($_POST['id_last_action']) && in_array($_POST['id_last_action'], array('debut', 'fin'))) {
             $debutTemp       = explode('/', $_POST['debut']);
             $finTemp         = explode('/', $_POST['fin']);
-            $date_debut_time = strtotime($debutTemp[2] . '-' . $debutTemp[1] . '-' . $debutTemp[0] . ' 00:00:00');    // date debut
-            $date_fin_time   = strtotime($finTemp[2] . '-' . $finTemp[1] . '-' . $finTemp[0] . ' 00:00:00');            // date fin
+            $date_debut_time = strtotime($debutTemp[2] . '-' . $debutTemp[1] . '-' . $debutTemp[0] . ' 00:00:00');
+            $date_fin_time   = strtotime($finTemp[2] . '-' . $finTemp[1] . '-' . $finTemp[0] . ' 00:00:00');
 
             $_SESSION['id_last_action'] = $_POST['id_last_action'];
         } elseif (isset($_POST['id_last_action']) && $_POST['id_last_action'] == 'nbMois') {
             $nbMois          = $_POST['nbMois'];
-            $date_debut_time = mktime(0, 0, 0, date("m") - $nbMois, date("d"), date('Y')); // date debut
-            $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));    // date fin
+            $date_debut_time = mktime(0, 0, 0, date("m") - $nbMois, date("d"), date('Y'));
+            $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));
 
             $_SESSION['id_last_action'] = $_POST['id_last_action'];
         } elseif (isset($_POST['id_last_action']) && $_POST['id_last_action'] == 'annee') {
-            $year = $_POST['annee'];
-
-            $date_debut_time = mktime(0, 0, 0, 1, 1, $year);    // date debut
+            $year            = $_POST['annee'];
+            $date_debut_time = mktime(0, 0, 0, 1, 1, $year);
 
             if (date('Y') == $year) {
                 $date_fin_time = mktime(0, 0, 0, date('m'), date('d'), $year);
-            } // date fin
-            else {
+            } else {
                 $date_fin_time = mktime(0, 0, 0, 12, 31, $year);
-            } // date fin
+            }
 
             $_SESSION['id_last_action'] = $_POST['id_last_action'];
-        } // si on a une session
-        elseif (isset($_SESSION['id_last_action'])) {
+        } elseif (isset($_SESSION['id_last_action'])) {
             if (in_array($_SESSION['id_last_action'], array('debut', 'fin'))) {
                 $debutTemp       = explode('/', $_POST['debut']);
                 $finTemp         = explode('/', $_POST['fin']);
-                $date_debut_time = strtotime($debutTemp[2] . '-' . $debutTemp[1] . '-' . $debutTemp[0] . ' 00:00:00');    // date debut
-                $date_fin_time   = strtotime($finTemp[2] . '-' . $finTemp[1] . '-' . $finTemp[0] . ' 00:00:00');            // date fin
+                $date_debut_time = strtotime($debutTemp[2] . '-' . $debutTemp[1] . '-' . $debutTemp[0] . ' 00:00:00');
+                $date_fin_time   = strtotime($finTemp[2] . '-' . $finTemp[1] . '-' . $finTemp[0] . ' 00:00:00');
             } elseif ($_SESSION['id_last_action'] == 'nbMois') {
                 $nbMois          = $_POST['nbMois'];
-                $date_debut_time = mktime(0, 0, 0, date("m") - $nbMois, date("d"), date('Y')); // date debut
-                $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));    // date fin
+                $date_debut_time = mktime(0, 0, 0, date("m") - $nbMois, date("d"), date('Y'));
+                $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));
             } elseif ($_SESSION['id_last_action'] == 'annee') {
                 $year            = $_POST['annee'];
                 $date_debut_time = mktime(0, 0, 0, 1, 1, $year);    // date debut
                 $date_fin_time   = mktime(0, 0, 0, 12, 31, $year); // date fin
             }
-        } // Par defaut (on se base sur le 1M)
-        else {
-            $date_debut_time = mktime(0, 0, 0, date("m") - 1, date("d"), date('Y')); // date debut
-            $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));    // date fin
+        } else {
+            $date_debut_time = mktime(0, 0, 0, date("m") - 1, date("d"), date('Y'));
+            $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));
         }
 
         $this->date_debut         = date('Y-m-d', $date_debut_time);
@@ -1040,46 +954,52 @@ class ajaxController extends bootstrap
         $this->date_debut_display = date('d/m/Y', $date_debut_time);
         $this->date_fin_display   = date('d/m/Y', $date_fin_time);
 
-        $array_type_transactions = array(
-            1  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            2  => array(
-                1 => $this->lng['preteur-operations-vos-operations']['offre-en-cours'],
-                2 => $this->lng['preteur-operations-vos-operations']['offre-rejetee'],
-                3 => $this->lng['preteur-operations-vos-operations']['offre-acceptee']
-            ),
-            3  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            4  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            5  => array(1 => $this->lng['preteur-operations-vos-operations']['remboursement'], 2 => $this->lng['preteur-operations-vos-operations']['recouvrement']),
-            7  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            8  => $this->lng['preteur-operations-vos-operations']['retrait-dargents'],
-            16 => $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'],
-            17 => $this->lng['preteur-operations-vos-operations']['retrait-offre'],
-            19 => $this->lng['preteur-operations-vos-operations']['gain-filleul'],
-            20 => $this->lng['preteur-operations-vos-operations']['gain-parrain'],
-            22 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe'],
-            23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur'],
-            26 => $this->lng['preteur-operations-vos-operations']['remboursement-recouvrement-preteur']
-        );
-
-        ////////// DEBUT PARTIE TRI TYPE TRANSAC /////////////
         $array_type_transactions_liste_deroulante = array(
-            1 => '1,2,3,4,5,7,8,16,17,19,20,23,26',
-            2 => '3,4,7,8',
-            3 => '3,4,7',
-            4 => '8',
-            5 => '2',
-            6 => '5,23,26'
+            1 => array(
+                \transactions_types::TYPE_LENDER_SUBSCRIPTION,
+                \transactions_types::TYPE_LENDER_LOAN,
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+                5,
+                \transactions_types::TYPE_DIRECT_DEBIT,
+                \transactions_types::TYPE_LENDER_WITHDRAWAL,
+                \transactions_types::TYPE_WELCOME_OFFER,
+                \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION,
+                \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD,
+                \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD,
+                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
+                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
+            ),
+            2 => array(
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+                \transactions_types::TYPE_DIRECT_DEBIT,
+                \transactions_types::TYPE_LENDER_WITHDRAWAL
+            ),
+            3 => array(
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+                \transactions_types::TYPE_DIRECT_DEBIT
+            ),
+            4 => array(\transactions_types::TYPE_LENDER_WITHDRAWAL),
+            5 => array(\transactions_types::TYPE_LENDER_LOAN),
+            6 => array(
+                5,
+                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
+                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
+            )
         );
 
         if (isset($_POST['tri_type_transac'])) {
             $tri_type_transac = $array_type_transactions_liste_deroulante[$_POST['tri_type_transac']];
+        } else {
+            $tri_type_transac = $array_type_transactions_liste_deroulante[1];
         }
 
         if (isset($_POST['tri_projects'])) {
             if (in_array($_POST['tri_projects'], array(0, 1))) {
                 $tri_project = '';
             } else {
-                //$tri_project = ' HAVING le_id_project = '.$_POST['tri_projects'];
                 $tri_project = ' AND id_projet = ' . $_POST['tri_projects'];
             }
         }
@@ -1125,25 +1045,22 @@ class ajaxController extends bootstrap
         }
 
         $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
-        $this->lTrans                  = $this->indexage_vos_operations->select('type_transaction IN (' . $tri_type_transac . ') AND id_client = ' . $this->clients->id_client . ' AND LEFT(date_operation,10) >= "' . $this->date_debut . '" AND LEFT(date_operation,10) <= "' . $this->date_fin . '"' . $tri_project, $order);
-        $this->lProjectsLoans          = $this->indexage_vos_operations->get_liste_libelle_projet('type_transaction IN (' . $tri_type_transac . ') AND id_client = ' . $this->clients->id_client . ' AND LEFT(date_operation,10) >= "' . $this->date_debut . '" AND LEFT(date_operation,10) <= "' . $this->date_fin . '"');
+        $this->lTrans                  = $this->indexage_vos_operations->select('type_transaction IN (' . implode(', ', $tri_type_transac) . ') AND id_client = ' . $this->clients->id_client . ' AND LEFT(date_operation,10) >= "' . $this->date_debut . '" AND LEFT(date_operation,10) <= "' . $this->date_fin . '"' . $tri_project, $order);
+        $this->lProjectsLoans          = $this->indexage_vos_operations->get_liste_libelle_projet('type_transaction IN (' . implode(', ', $tri_type_transac) . ') AND id_client = ' . $this->clients->id_client . ' AND LEFT(date_operation,10) >= "' . $this->date_debut . '" AND LEFT(date_operation,10) <= "' . $this->date_fin . '"');
     }
 
     public function _acceptCookies()
     {
+        $this->autoFireView = false;
+
         $accept_cookies = $this->loadData('accept_cookies');
         $accept_cookies->ip                = $_SERVER['REMOTE_ADDR'];
         $accept_cookies->id_client         = $this->clients->id_client;
         $accept_cookies->id_accept_cookies = $accept_cookies->create();
 
-        $expire = 365 * 24 * 3600; // on définit la durée du cookie, 1 an
-        setcookie("acceptCookies", $accept_cookies->id_accept_cookies, time() + $expire, '/');  // on l'envoi
+        setcookie('acceptCookies', $accept_cookies->id_accept_cookies, time() + 365 * 24 * 3600, '/');
 
-        $create = true;
-
-        echo json_encode(array('reponse' => $create));
-
-        die;
+        echo json_encode(array('reponse' => true));
     }
 
     public function _operations_emprunteur()

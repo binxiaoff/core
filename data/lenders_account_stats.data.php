@@ -23,7 +23,7 @@ class lenders_account_stats extends lenders_account_stats_crud
      * @param $iLendersAccountId
      * @return array
      */
-    public function getValuesForIRRUsingProjectsLastStatusHistoryMaterialized($iLendersAccountId)
+    public function getValuesForIRR($iLendersAccountId)
     {
         $aValuesIRR      = array();
         $aDatesTimeStamp = array();
@@ -43,7 +43,7 @@ class lenders_account_stats extends lenders_account_stats_crud
 
             SELECT
                 e.date_echeance_reel AS date,
-                CASE WHEN e.status_ra = 1 THEN e.capital ELSE e.capital + e.interets END AS montant
+                CASE WHEN e.status_ra = 1 THEN e.capital_rembourse ELSE e.capital_rembourse + e.interets_rembourses END AS montant
             FROM echeanciers e
             WHERE
                 e.id_lender = ' . $iLendersAccountId . '
@@ -152,7 +152,7 @@ class lenders_account_stats extends lenders_account_stats_crud
         return $fLossRate;
     }
 
-    public function getLendersWithLatePaymentsForIRRUsingProjectsLastStatusHistoryMaterialized()
+    public function getLendersWithLatePaymentsForIRR()
     {
         $sQuery =   '
             SELECT e.id_lender

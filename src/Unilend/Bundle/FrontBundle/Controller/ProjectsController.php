@@ -2,15 +2,16 @@
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
-use Symfony\Component\Translation\Translator;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
@@ -26,15 +27,42 @@ class ProjectsController extends Controller
 {
     /**
      * @Route("/projets-a-financer/{page}/{sortType}/{sortDirection}", defaults={"page" = "1", "sortType" = "end", "sortDirection" = "desc"}, name="projects_list")
+     * @Template("pages/projects.html.twig")
      *
      * @param int    $page
      * @param string $sortType
      * @param string $sortDirection
-     * @return Response
+     * @return array
      */
     public function projectsListAction($page, $sortType, $sortDirection)
     {
-        /** @var Translator $translator */
+        return $this->getProjectsList($page, $sortType, $sortDirection);
+    }
+
+    /**
+     * @Route("/projects/{page}/{sortType}/{sortDirection}", defaults={"page" = "1", "sortType" = "end", "sortDirection" = "desc"}, name="lender_projects")
+     * @Template("lender_account/projects.html.twig")
+     * @Security("has_role('ROLE_LENDER')")
+     *
+     * @param int    $page
+     * @param string $sortType
+     * @param string $sortDirection
+     * @return array
+     */
+    public function lenderProjectsAction($page, $sortType, $sortDirection)
+    {
+        return $this->getProjectsList($page, $sortType, $sortDirection);
+    }
+
+    /**
+     * @param int    $page
+     * @param string $sortType
+     * @param string $sortDirection
+     * @return array
+     */
+    private function getProjectsList($page, $sortType, $sortDirection)
+    {
+        /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
         /** @var ProjectDisplayManager $projectDisplayManager */
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
@@ -98,7 +126,7 @@ class ProjectsController extends Controller
         $template['sortType']          = strtolower($sortType);
         $template['sortDirection']     = strtolower($sortDirection);
 
-        return $this->render('pages/projects.html.twig', $template);
+        return $template;
     }
 
     private function pagination($page, $limit)
@@ -220,7 +248,7 @@ class ProjectsController extends Controller
         $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower);
 
         if (false === $isFullyConnectedUser) {
-            /** @var Translator $translator */
+            /** @var TranslatorInterface $translator */
             $translator = $this->get('translator');
             /** @var EntityManager $entityManager */
             $entityManager = $this->get('unilend.service.entity_manager');

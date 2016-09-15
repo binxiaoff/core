@@ -25,11 +25,11 @@
 //  Coupable : CM
 //
 // **************************************************************************************************** //
-class --classe-- extends --classe--_crud
+class lender_repayment extends lender_repayment_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::--table--($bdd, $params);
+        parent::lender_repayment($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -37,12 +37,15 @@ class --classe-- extends --classe--_crud
         if ($where != '') {
             $where = ' WHERE ' . $where;
         }
+
         if ($order != '') {
             $order = ' ORDER BY ' . $order;
         }
 
+        $sql = 'SELECT * FROM lender_repayment' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+
         $result   = array();
-        $resultat = $this->bdd->query('SELECT * FROM --table--' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : '')));
+        $resultat = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
@@ -55,18 +58,11 @@ class --classe-- extends --classe--_crud
             $where = ' WHERE ' . $where;
         }
 
-        $result = $this->bdd->query('SELECT COUNT(*) FROM --table-- ' . $where);
-        return (int) $this->bdd->result($result);
+        return (int) $this->bdd->result($this->bdd->query('SELECT COUNT(*) FROM lender_repayment' . $where));
     }
 
-    public function exist($list_field_value)
+    public function exist($id, $field = 'id_lender_repayment')
     {
-        $list = '';
-        foreach ($list_field_value as $champ => $valeur) {
-            $list .= ' AND ' . $champ . ' = "' . $valeur . '" ';
-        }
-
-        $result = $this->bdd->query('SELECT * FROM --table-- WHERE 1 = 1' . $list);
-        return ($this->bdd->fetch_assoc($result) > 0);
+        return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM lender_repayment WHERE ' . $field . ' = "' . $id . '"')) > 0;
     }
 }

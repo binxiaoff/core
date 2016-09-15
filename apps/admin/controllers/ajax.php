@@ -620,11 +620,15 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        $lender         = $this->loadData('lenders_accounts');
-        $preteur        = $this->loadData('clients');
-        $bids           = $this->loadData('bids');
-        $transactions   = $this->loadData('transactions');
-        $wallets_lines  = $this->loadData('wallets_lines');
+        /** @var \lenders_accounts $lender */
+        $lender = $this->loadData('lenders_accounts');
+        /** @var \bids $bids */
+        $bids = $this->loadData('bids');
+        /** @var \transactions $transactions */
+        $transactions = $this->loadData('transactions');
+        /** @var \wallets_lines $wallets_lines */
+        $wallets_lines = $this->loadData('wallets_lines');
+        /** @var \projects projects */
         $this->projects = $this->loadData('projects');
 
         if (isset($_POST['id_lender'], $_POST['id_bid']) && $bids->get($_POST['id_bid'], 'id_bid') && $lender->get($_POST['id_lender'], 'id_lender_account')) {
@@ -632,20 +636,17 @@ class ajaxController extends bootstrap
             $this->users_history->histo(4, 'Bid en cours delete', $_SESSION['user']['id_user'], $serialize);
 
             $wallets_lines->get($bids->id_lender_wallet_line, 'id_wallet_line');
-            $transactions->get($wallets_lines->id_transaction, 'id_transaction');
 
-            $transactions->delete($transactions->id_transaction, 'id_transaction');
+            $transactions->delete($wallets_lines->id_transaction, 'id_transaction');
             $wallets_lines->delete($wallets_lines->id_wallet_line, 'id_wallet_line');
             $bids->delete($bids->id_bid, 'id_bid');
 
-            // on recharge l'affichage
             $this->lBids = $bids->select('id_lender_account = ' . $_POST['id_lender'] . ' AND status = 0', 'added DESC');
         }
     }
 
     public function _loadMouvTransac()
     {
-
         $this->autoFireView = true;
 
         $this->transactions = $this->loadData('transactions');
@@ -655,25 +656,24 @@ class ajaxController extends bootstrap
         $this->companies    = $this->loadData('companies');
 
         if (isset($_POST['year'], $_POST['id_client']) && $this->clients->get($_POST['id_client'], 'id_client')) {
-
             /** @var TranslationManager $translationManager */
             $translationManager   = $this->get('unilend.service.translation_manager');
             $this->lng['profile'] = $translationManager->getAllTranslationsForSection('preteur-profile');
 
-            $year = $_POST['year'];
-
-            $this->lTrans     = $this->transactions->select('type_transaction IN (1,3,4,5,7,8,14,16,17) AND status = 1 AND etat = 1 AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . $year, 'added DESC');
             $this->lesStatuts = array(
-                1  => $this->lng['profile']['versement-initial'],
-                3  => $this->lng['profile']['alimentation-cb'],
-                4  => $this->lng['profile']['alimentation-virement'],
-                5  => 'Remboursement',
-                7  => $this->lng['profile']['alimentation-prelevement'],
-                8  => $this->lng['profile']['retrait'],
-                14 => 'Régularisation prêteur',
-                16 => 'Offre de bienvenue',
-                17 => 'Retrait offre de bienvenue'
+                \transactions_types::TYPE_LENDER_SUBSCRIPTION         => $this->lng['profile']['versement-initial'],
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT   => $this->lng['profile']['alimentation-cb'],
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT => $this->lng['profile']['alimentation-virement'],
+                \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL    => 'Remboursement de capital',
+                \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS  => 'Remboursement d\'intérêts',
+                \transactions_types::TYPE_DIRECT_DEBIT                => $this->lng['profile']['alimentation-prelevement'],
+                \transactions_types::TYPE_LENDER_WITHDRAWAL           => $this->lng['profile']['retrait'],
+                \transactions_types::TYPE_LENDER_REGULATION           => 'Régularisation prêteur',
+                \transactions_types::TYPE_WELCOME_OFFER               => 'Offre de bienvenue',
+                \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION  => 'Retrait offre de bienvenue'
             );
+
+            $this->lTrans = $this->transactions->select('type_transaction IN (' . implode(', ', array_keys($this->lesStatuts)) . ') AND status = 1 AND etat = 1 AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . $_POST['year'], 'added DESC');
         }
     }
 
@@ -884,9 +884,6 @@ class ajaxController extends bootstrap
         }
     }
 
-    /**
-     *
-     */
     public function _valid_rejete_etape6()
     {
         $this->autoFireView = false;
@@ -979,6 +976,7 @@ class ajaxController extends bootstrap
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
                 $oProjectManager = $this->get('unilend.service.project_manager');
+
                 if ($_POST['status'] == 1) {
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::COMITE, $this->projects);
                 } elseif ($_POST['status'] == 2) {
@@ -1550,46 +1548,6 @@ class ajaxController extends bootstrap
             echo "none";
         }
         die;
-    }
-
-    public function _recouvrement()
-    {
-        $this->projects                = $this->loadData('projects');
-        $this->projects_status_history = $this->loadData('projects_status_history');
-        $this->echeanciers             = $this->loadData('echeanciers');
-        $this->receptions              = $this->loadData('receptions');
-
-        if (isset($_POST['id_reception']) && $this->receptions->get($_POST['id_reception'], 'type = 1 AND type_remb = 3 AND id_reception')) {
-            $this->projects->get($this->receptions->id_project, 'id_project');
-
-            $retour = $_POST['date'];
-            if ($retour != false) {
-                $retour = explode('/',$retour);
-                $retour = $retour[2].'-'.$retour[1].'-'.$retour[0];
-                $this->lastDateRecouvrement = date('d/m/Y', strtotime($retour));
-                $this->lastFormatSql = date('Y-m-d', strtotime($retour));
-                $_SESSION['DER'] = $this->lastFormatSql;
-            } else {
-                $this->lastDateRecouvrement = date('d/m/Y');
-                $this->lastFormatSql = date('Y-m-d');
-                $_SESSION['DER'] = $this->lastFormatSql;
-            }
-
-            $this->CapitalEchu      = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) <= "' . $this->lastFormatSql . '"', 'capital');
-            $this->InteretsEchu     = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) <= "' . $this->lastFormatSql . '"', 'interets');
-            $this->CapitalRestantDu = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) > "' . $this->lastFormatSql . '"', 'capital');
-            $lastEcheanceImpaye     = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) <=  "' . $this->lastFormatSql . '"', 'date_echeance DESC', 0, 1);
-            $dateLastEcheanceImpaye = date('Y-m-d', strtotime($lastEcheanceImpaye[0]['date_echeance']));
-            $echeanceMoisDER        = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND ordre = ' . ($lastEcheanceImpaye[0]['ordre'] + 1), 'date_echeance DESC', 0, 1);
-            $interetsMoisDER        = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND ordre = ' . ($lastEcheanceImpaye[0]['ordre'] + 1), 'interets');
-            $nbJourMoisDER          = date('t', strtotime($echeanceMoisDER[0]['date_echeance']));
-            $diff                   = $this->dates->nbJours($dateLastEcheanceImpaye, $this->lastFormatSql);
-            $this->interetsCourus   = round(($diff / $nbJourMoisDER) * $interetsMoisDER, 2);
-            $this->montantRecouvre  = $this->receptions->sum('type_remb = 3 AND type = 1 AND remb = 1 AND id_project = ' . $this->projects->id_project);
-            $this->montantRecouvre  = $this->montantRecouvre / 100;
-        } else {
-            die;
-        }
     }
 
     public function _get_cities()

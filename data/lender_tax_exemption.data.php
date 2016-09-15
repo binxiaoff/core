@@ -25,11 +25,11 @@
 //  Coupable : CM
 //
 // **************************************************************************************************** //
-class --classe-- extends --classe--_crud
+class lender_tax_exemption extends lender_tax_exemption_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::--table--($bdd, $params);
+        parent::lender_tax_exemption($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -37,12 +37,15 @@ class --classe-- extends --classe--_crud
         if ($where != '') {
             $where = ' WHERE ' . $where;
         }
+
         if ($order != '') {
             $order = ' ORDER BY ' . $order;
         }
 
+        $sql = 'SELECT * FROM `lender_tax_exemption`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+
         $result   = array();
-        $resultat = $this->bdd->query('SELECT * FROM --table--' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : '')));
+        $resultat = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
@@ -55,18 +58,51 @@ class --classe-- extends --classe--_crud
             $where = ' WHERE ' . $where;
         }
 
-        $result = $this->bdd->query('SELECT COUNT(*) FROM --table-- ' . $where);
-        return (int) $this->bdd->result($result);
+        $result = $this->bdd->query('SELECT COUNT(*) FROM `lender_tax_exemption` ' . $where);
+        return (int) $this->bdd->result($result, 0, 0);
     }
 
-    public function exist($list_field_value)
+    public function exist($id, $field = 'id_lender_tax_exemption')
     {
-        $list = '';
-        foreach ($list_field_value as $champ => $valeur) {
-            $list .= ' AND ' . $champ . ' = "' . $valeur . '" ';
-        }
-
-        $result = $this->bdd->query('SELECT * FROM --table-- WHERE 1 = 1' . $list);
+        $result = $this->bdd->query('SELECT * FROM `lender_tax_exemption` WHERE ' . $field . ' = "' . $id . '"');
         return ($this->bdd->fetch_assoc($result) > 0);
+    }
+
+    /**
+     * @param int $lenderId
+     * @param string|null $year
+     * @return array
+     * @throws \Exception
+     */
+    public function getLenderExemptionHistory($lenderId, $year = null)
+    {
+        $bind = ['id_lender' => $lenderId];
+        $type = ['id_lender' => \PDO::PARAM_INT];
+        $sql  = '
+            SELECT
+              lte.*
+            FROM
+              lender_tax_exemption lte
+            WHERE lte.id_lender = :id_lender
+        ';
+        if (false === is_null($year)) {
+            $sql .= ' AND lte.year = :year';
+            $bind['year'] = $year;
+            $type['year'] = \PDO::PARAM_STR;
+        }
+        return $this->bdd->executeQuery($sql, $bind, $type)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @return array
+     */
+    public function getTaxExemptionDateRange()
+    {
+        $settings = \Unilend\core\Loader::loadData('settings');
+        $settings->get('taxExemptionRequestLimitDate', 'type');
+        $dateRange['taxExemptionRequestLimitDate'] = \DateTime::createFromFormat('Y-m-d', date('Y') . '-' . $settings->value);
+        $settings->get('taxExemptionRequestStartDate', 'type');
+        $dateRange['taxExemptionRequestStartDate'] = \DateTime::createFromFormat('Y-m-d', date('Y') . '-' . $settings->value);
+        return $dateRange;
     }
 }
