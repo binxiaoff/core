@@ -39,7 +39,7 @@ class LenderOperationsController extends Controller
         $lender->get($this->getUser()->getClientId(), 'id_client_owner');
         $this->lenderOperationIndexing($lenderOperationsIndex, $lender);
 
-        $lenderOperations       = $lenderOperationsIndex->select('id_client= ' . $this->getUser()->getClientId() . ' AND DATE(date_operation) >= "' . date('Y-m-d', strtotime('-1 month')) . '" AND DATE(date_operation) <= "' . date('Y-m-d') . '"', 'date_operation DESC, id_projet DESC');
+        $lenderOperations       = $lenderOperationsIndex->getLenderOperations([], $this->getUser()->getClientId(), date('Y-m-d', strtotime('-1 month')), date('Y-m-d'));
         $projectsFundedByLender = $lenderOperationsIndex->get_liste_libelle_projet('id_client = ' . $this->getUser()->getClientId() . ' AND DATE(date_operation) >= "' . date('Y-m-d', strtotime('-1 month')) . '" AND DATE(date_operation) <= "' . date('Y-m-d') . '"');
 
         unset($_SESSION['filtre_vos_operations']);
@@ -56,23 +56,23 @@ class LenderOperationsController extends Controller
         $_SESSION['filtre_vos_operations']['type']             = '';
         $_SESSION['filtre_vos_operations']['id_client']        = $this->getUser()->getClientId();
 
-        $loans     = $this->commonLoans($request, $lender);
-        $loanYears = array_count_values(array_column($loans['lenderLoans'], 'loan_year'));
-        ksort($loanYears);
+        $loans = $this->commonLoans($request, $lender);
 
         return $this->render(
-            ':frontbundle/pages/lender_operations:index_layout.html.twig',
+            '/pages/lender_operations/layout.html.twig',
             [
+                'clientId'               => $lender->id_client_owner,
+                'hash'                   => $this->getUser()->getHash(),
                 'lenderOperations'       => $lenderOperations,
                 'projectsFundedByLender' => $projectsFundedByLender,
                 'detailedOperations'     => [\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT],
                 'loansStatusFilter'      => $projectStatus->select('status >= ' . \projects_status::REMBOURSEMENT, 'status ASC'),
-                'loansYears'             => $loanYears,
+                'firstLoanYear'          => $entityManager->getRepository('loans')->getFirstLoanYear($lender->id_lender_account),
                 'lenderLoans'            => $loans['lenderLoans'],
                 'loanStatus'             => $loans['loanStatus'],
                 'seriesData'             => $loans['seriesData'],
-                'repayedCapitalLabel'    => $translationManager->selectTranslation('lender-operations', 'repayed-capital-amount'),
-                'repayedInterestLabel'   => $translationManager->selectTranslation('lender-operations', 'repayed-interest-amount'),
+                'repaidCapitalLabel'     => $translationManager->selectTranslation('lender-operations', 'operations-table-repaid-capital-amount-collapse-details'),
+                'repaidInterestsLabel'   => $translationManager->selectTranslation('lender-operations', 'operations-table-repaid-interests-amount-collapse-details'),
                 'currentFilters'         => $request->request->all()
             ]
         );
@@ -98,10 +98,12 @@ class LenderOperationsController extends Controller
         return $this->json(
             [
                 'target'   => 'loans',
-                'template' => $this->render(':frontbundle/pages/lender_operations:my_loans.html.twig',
+                'template' => $this->render('/pages/lender_operations/my_loans.html.twig',
                     [
+                        'clientId'          => $lender->id_client_owner,
+                        'hash'              => $this->getUser()->getHash(),
                         'loansStatusFilter' => $projectStatus->select('status >= ' . \projects_status::REMBOURSEMENT, 'status ASC'),
-                        'loansYears'        => $loanYears,
+                        'firstLoanYear'     => $this->get('unilend.service.entity_manager')->getRepository('loans')->getFirstLoanYear($lender->id_lender_account),
                         'lenderLoans'       => $loans['lenderLoans'],
                         'loanStatus'        => $loans['loanStatus'],
                         'seriesData'        => $loans['seriesData'],
@@ -239,7 +241,7 @@ class LenderOperationsController extends Controller
         /** @var \indexage_vos_operations $lenderOperationsIndex */
         $lenderOperationsIndex = $entityManager->getRepository('indexage_vos_operations');
 
-        $lenderOperations       = $lenderOperationsIndex->select('type_transaction IN (' . $tri_type_transac . ') AND id_client = ' . $this->getUser()->getClientId() . ' AND LEFT(date_operation,10) >= "' . date('Y-m-d', $date_debut_time) . '" AND LEFT(date_operation,10) <= "' . date('Y-m-d', $date_fin_time) . '"' . $tri_project, $order);
+        $lenderOperations       = $lenderOperationsIndex->getLenderOperations(explode(',', $tri_type_transac), $this->getUser()->getClientId(), date('Y-m-d', $date_debut_time), date('Y-m-d', $date_fin_time), $tri_project, $order);
         $projectsFundedByLender = $lenderOperationsIndex->get_liste_libelle_projet('type_transaction IN (' . $tri_type_transac . ') AND id_client = ' . $this->getUser()->getClientId() . ' AND LEFT(date_operation,10) >= "' . date('Y-m-d', $date_debut_time) . '" AND LEFT(date_operation,10) <= "' . date('Y-m-d', $date_fin_time) . '"');
 
         $filters                    = $request->request->all();
@@ -249,13 +251,15 @@ class LenderOperationsController extends Controller
         return $this->json(
             [
                 'target'   => 'operations',
-                'template' => $this->render(':frontbundle/pages/lender_operations:my_operations.html.twig',
+                'template' => $this->render('/pages/lender_operations/my_operations.html.twig',
                     [
-                        'detailedOperations'     => [\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT],
+                        'clientId'               => $this->getUser()->getClientId(),
+                        'hash'                   => $this->getUser()->getHash(),
+                        'detailedOperations'     => [\transactions_types::TYPE_LENDER_REPAYMENT],
                         'projectsFundedByLender' => $projectsFundedByLender,
                         'lenderOperations'       => $lenderOperations,
-                        'repayedCapitalLabel'    => $translationManager->selectTranslation('lender-operations', 'repayed-capital-amount'),
-                        'repayedInterestLabel'   => $translationManager->selectTranslation('lender-operations', 'repayed-interest-amount'),
+                        'repaidCapitalLabel'     => $translationManager->selectTranslation('lender-operations', 'operations-table-repaid-capital-amount-collapse-details'),
+                        'repaidInterestsLabel'   => $translationManager->selectTranslation('lender-operations', 'operations-table-repaid-interests-amount-collapse-details'),
                         'currentFilters'         => $request->request->all()
                     ])->getContent()
             ]
@@ -310,7 +314,7 @@ class LenderOperationsController extends Controller
 
         } elseif (isset($post_id_last_action) && $post_id_last_action == 'slide') {// NB mois
             $nbMois          = $post_nbMois;
-            $date_debut_time = mktime(0, 0, 0, date("m") - $nbMois, 1, date('Y')); // date start
+            $date_debut_time = mktime(0, 0, 0, date("m") - $nbMois, date("d"), date('Y')); // date start
             $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));    // date end
             // On sauvegarde la derniere action
             $_SESSION['id_last_action'] = $post_id_last_action;
@@ -328,7 +332,7 @@ class LenderOperationsController extends Controller
                 $date_fin_time   = strtotime($finTemp[2] . '-' . $finTemp[1] . '-' . $finTemp[0] . ' 00:00:00');            // date end
             } elseif ($_SESSION['id_last_action'] == 'slide') {
                 $nbMois          = $post_nbMois;
-                $date_debut_time = mktime(0, 0, 0, date("m") - $nbMois, 1, date('Y')); // date start
+                $date_debut_time = mktime(0, 0, 0, date("m") - $nbMois, date("d"), date('Y')); // date start
                 $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));    // date end
             } elseif ($_SESSION['id_last_action'] == 'year') {
                 $year            = $post_annee;
@@ -369,7 +373,7 @@ class LenderOperationsController extends Controller
             if (in_array($post_tri_projects, array(0, 1))) {
                 $tri_project = '';
             } else {
-                $tri_project = ' AND le_id_project = ' . $post_tri_projects;
+                $tri_project = ' AND id_projet = ' . $post_tri_projects;
             }
         }
 
@@ -412,10 +416,10 @@ class LenderOperationsController extends Controller
                 $order = 'date_operation DESC, id_transaction DESC';
             }
         }
-        $this->indexage_vos_operations = $entityManager->getRepository('indexage_vos_operations');
+        /** @var \indexage_vos_operations $lenderIndexedOperations */
+        $lenderIndexedOperations = $entityManager->getRepository('indexage_vos_operations');
 
-        $this->lTrans = $this->indexage_vos_operations->select('type_transaction IN (' . $tri_type_transac . ') AND id_client = ' . $this->clients->id_client . ' AND DATE(date_operation) >= "' . $this->date_debut . '" AND DATE(date_operation) <= "' . $this->date_fin . '"' . $tri_project, $order);
-
+        $operations = $lenderIndexedOperations->getLenderOperations(explode(',', $tri_type_transac), $this->clients->id_client, $this->date_debut, $this->date_fin, $post_tri_projects, $order);
         // si exoneré à la date de la transact on change le libelle
 
         $content = '
@@ -423,13 +427,13 @@ class LenderOperationsController extends Controller
         <table border=1>
             <tr>
                 <th>' . $translationManager->selectTranslation('lender-operations', 'operation') . '</th>
-                <th>' . $translationManager->selectTranslation('lender-operations', 'contract-number') . '</th>
+                <th>' . $translationManager->selectTranslation('lender-operations', 'loans-table-contract-column') . '</th>
                 <th> ID ' . $translationManager->selectTranslation('lender-operations', 'project') . '</th>
                 <th>' . $translationManager->selectTranslation('lender-operations', 'project') . '</th>
                 <th>' . $translationManager->selectTranslation('lender-operations', 'date') . '</th>
                 <th>' . $translationManager->selectTranslation('lender-operations', 'amount') . '</th>
-                <th>' . $translationManager->selectTranslation('lender-operations', 'repayed-capital-amount') . '</th>
-                <th>' . $translationManager->selectTranslation('lender-operations', 'repayed-interest-amount') . '</th>
+                <th>' . $translationManager->selectTranslation('lender-operations', 'repaid-capital-amount') . '</th>
+                <th>' . $translationManager->selectTranslation('lender-operations', 'repaid-interests-amount') . '</th>
                 <th>Pr&eacute;l&egrave;vements obligatoires</th>
                 <th>Retenue &agrave; la source</th>
                 <th>CSG</th>
@@ -442,7 +446,7 @@ class LenderOperationsController extends Controller
             </tr>';
 
         $asterix_on = false;
-        foreach ($this->lTrans as $t) {
+        foreach ($operations as $t) {
             $t["libelle_operation"] = $t["libelle_operation"];
             $t["libelle_projet"]    = $t['libelle_projet'];
             if ($t['montant_operation'] > 0) {
@@ -452,12 +456,13 @@ class LenderOperationsController extends Controller
             }
 
             $sProjectId = $t['id_projet'] == 0 ? '' : $t['id_projet'];
-            $solde      = $t['solde'];
 
-            if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
+            $sold = $t['solde'];
+            // remb
+            if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
                 $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
 
-                if ($t['type_transaction'] != \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL) {
+                if ($t['type_transaction'] != \transactions_types::TYPE_LENDER_REPAYMENT) {
                     $this->echeanciers->prelevements_obligatoires    = 0;
                     $this->echeanciers->retenues_source              = 0;
                     $this->echeanciers->interets                     = 0;
@@ -477,9 +482,9 @@ class LenderOperationsController extends Controller
                         <td>' . $sProjectId . '</td>
                         <td>' . $t['libelle_projet'] . '</td>
                         <td>' . date('d-m-Y', strtotime($t['date_operation'])) . '</td>
-                        <td' . $couleur . '>' . $this->ficelle->formatNumber($t['montant_operation'] / 100) . '</td>
-                        <td>' . $this->ficelle->formatNumber(($this->echeanciers->capital / 100)) . '</td>
-                        <td>' . $this->ficelle->formatNumber(($this->echeanciers->interets / 100)) . '</td>
+                        <td' . $couleur . '>' . $this->ficelle->formatNumber($t['montant_operation']) . '</td>
+                        <td>' . $this->ficelle->formatNumber(bcdiv($this->echeanciers->capital, 100, 2)) . '</td>
+                        <td>' . $this->ficelle->formatNumber(bcdiv($this->echeanciers->interets, 100, 2)) . '</td>
                         <td>' . $this->ficelle->formatNumber($this->echeanciers->prelevements_obligatoires) . '</td>
                         <td>' . $this->ficelle->formatNumber($this->echeanciers->retenues_source) . '</td>
                         <td>' . $this->ficelle->formatNumber($this->echeanciers->csg) . '</td>
@@ -487,7 +492,7 @@ class LenderOperationsController extends Controller
                         <td>' . $this->ficelle->formatNumber($this->echeanciers->contributions_additionnelles) . '</td>
                         <td>' . $this->ficelle->formatNumber($this->echeanciers->prelevements_solidarite) . '</td>
                         <td>' . $this->ficelle->formatNumber($this->echeanciers->crds) . '</td>
-                        <td>' . $this->ficelle->formatNumber($solde / 100) . '</td>
+                        <td>' . $sold . '</td>
                         <td></td>
                     </tr>';
 
@@ -534,7 +539,7 @@ class LenderOperationsController extends Controller
                         <td>' . $sProjectId . '</td>
                         <td></td>
                         <td>' . date('d-m-Y', strtotime($t['date_operation'])) . '</td>
-                        <td' . $couleur . '>' . $this->ficelle->formatNumber($t['montant_operation'] / 100) . '</td>
+                        <td' . $couleur . '>' . $this->ficelle->formatNumber($t['montant_operation']) . '</td>
                         <td></td>
                         <td></td>
                         <td></td>
@@ -544,16 +549,13 @@ class LenderOperationsController extends Controller
                         <td></td>
                         <td></td>
                         <td></td> 
-                        <td>' . $this->ficelle->formatNumber($solde / 100) . '</td>
+                        <td>' . $sold . '</td>
                         <td></td>
                     </tr>
                     ';
 
             } elseif (in_array($t['type_transaction'], array(2))) {//offres en cours
-                $bdc = $t['bdc'];
-                if ($t['bdc'] == 0) {
-                    $bdc = "";
-                }
+
                 //asterix pour les offres acceptees
                 $asterix       = "";
                 $offre_accepte = false;
@@ -565,11 +567,11 @@ class LenderOperationsController extends Controller
                 $content .= '
                     <tr>
                         <td>' . $t['libelle_operation'] . '</td>
-                        <td>' . $bdc . '</td>
+                        <td>' . $t['bdc'] . '</td>
                         <td>' . $sProjectId . '</td>
                         <td>' . $t['libelle_projet'] . '</td>
                         <td>' . date('d-m-Y', strtotime($t['date_operation'])) . '</td>
-                        <td' . (! $offre_accepte ? $couleur : '') . '>' . $this->ficelle->formatNumber($t['montant_operation'] / 100) . '</td>
+                        <td' . (! $offre_accepte ? $couleur : '') . '>' . $this->ficelle->formatNumber($t['montant_operation']) . '</td>
                         <td></td>
                         <td></td>
                         <td></td>
@@ -579,7 +581,7 @@ class LenderOperationsController extends Controller
                         <td></td>
                         <td></td>
                         <td></td>
-                        <td>' . $this->ficelle->formatNumber($t['solde'] / 100) . '</td>
+                        <td>' . $sold . '</td>
                         <td>' . $asterix . '</td>
                     </tr>
                    ';
@@ -590,7 +592,7 @@ class LenderOperationsController extends Controller
 
         if ($asterix_on) {
             $content .= '
-            <div>* ' . $translationManager->selectTranslation('lender-operations', 'accepted-offer-specific-mention') . '</div>';
+            <div>* ' . $translationManager->selectTranslation('lender-operations', 'csv-export-asterisk-accepted-offer-specific-mention') . '</div>';
 
         }
         return new Response($content, Response::HTTP_OK, [
@@ -614,7 +616,7 @@ class LenderOperationsController extends Controller
         $lender->get($this->getUser()->getClientId(), 'id_client_owner');
         /** @var \echeanciers $repaymentSchedule */
         $repaymentSchedule = $this->get('unilend.service.entity_manager')->getRepository('echeanciers');
-        $loans = $this->commonLoans($request, $lender);
+        $loans             = $this->commonLoans($request, $lender);
 
         \PHPExcel_Settings::setCacheStorageMethod(
             \PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
@@ -641,7 +643,7 @@ class LenderOperationsController extends Controller
             $oActiveSheet->setCellValue('A' . ($iRowIndex + 2), $aProjectLoans['title']);
             $oActiveSheet->setCellValue('B' . ($iRowIndex + 2), $aProjectLoans['id_project']);
             $oActiveSheet->setCellValue('C' . ($iRowIndex + 2), $aProjectLoans['amount']);
-            $oActiveSheet->setCellValue('D' . ($iRowIndex + 2), $this->get('unilend.service.translation_manager')->selectTranslation('lender-operations','project-status-filter-' . $aProjectLoans['project_status']));
+            $oActiveSheet->setCellValue('D' . ($iRowIndex + 2), $this->get('unilend.service.translation_manager')->selectTranslation('lender-operations', 'project-status-label-' . $aProjectLoans['project_status']));
             $oActiveSheet->setCellValue('E' . ($iRowIndex + 2), round($aProjectLoans['rate'], 1));
             $oActiveSheet->setCellValue('F' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['debut'])));
             $oActiveSheet->setCellValue('G' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['next_echeance'])));
@@ -771,7 +773,7 @@ class LenderOperationsController extends Controller
                 }
 
                 // si exoneré à la date de la transact on change le libelle
-                $libelle_prelevements = $translationManager->selectTranslation('lender-operations', 'tax-and-social-deductions');
+                $libelle_prelevements = $translationManager->selectTranslation('lender-operations', 'tax-and-social-deductions-label');
                 // on check si il s'agit d'une PM ou PP
                 if ($client->type == 1 or $client->type == 3) {
                     // Si le client est exoneré on doit modifier le libelle de prelevement
@@ -779,7 +781,7 @@ class LenderOperationsController extends Controller
                     $exoneration = $lenderTaxHistory->is_exonere_at_date($lender->id_lender_account, $t['date_transaction']);
 
                     if ($exoneration) {
-                        $libelle_prelevements = $translationManager->selectTranslation('lender-operations', 'social-deductions');
+                        $libelle_prelevements = $translationManager->selectTranslation('lender-operations', 'social-deductions-label');
                     }
                 } else {// PM
                     $libelle_prelevements = $translationManager->selectTranslation('lender-operations', 'deductions-at-source');
@@ -820,8 +822,6 @@ class LenderOperationsController extends Controller
      */
     private function commonLoans(Request $request, \lenders_accounts $lender)
     {
-        /** @var TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translation_manager');
         /** @var \loans $loanEntity */
         $loanEntity = $this->get('unilend.service.entity_manager')->getRepository('loans');
         /** @var \projects $project */
@@ -882,9 +882,18 @@ class LenderOperationsController extends Controller
             'default'               => 0,
             'refund-finished'       => 0,
         ];
+        /** @var UserLender $user */
+        $user = $this->getUser();
 
         foreach ($lenderLoans as $iLoandIndex => $aProjectLoans) {
-            $lenderLoans[$iLoandIndex]['project_duration'] = (new \DateTime($aProjectLoans['debut']))->diff((new \DateTime($aProjectLoans['fin'])))->y * 12;
+            /** @var \DateTime $startDateTime */
+            $startDateTime = new \DateTime(date('Y-m-d'));
+            /** @var \DateTime $endDateTime */
+            $endDateTime = new \DateTime($aProjectLoans['fin']);
+            /** @var \DateInterval $remainingDuration */
+            $remainingDuration = $startDateTime->diff($endDateTime);
+
+            $lenderLoans[$iLoandIndex]['project_remaining_duration'] = $remainingDuration->y * 12 + $remainingDuration->m;
             switch ($aProjectLoans['project_status']) {
                 case \projects_status::PROBLEME:
                 case \projects_status::PROBLEME_J_X:
@@ -923,21 +932,8 @@ class LenderOperationsController extends Controller
                     break;
             }
 
-            /** @var UserLender $user */
-            $user = $this->getUser();
-
-            /**
-             * "documents": [{
-             * "docType": "contract",
-             * "docTypeName": "Contrat de prét",
-             * "name": "contract-de-pret.pdf",
-             * "url": "http://placehold.it/600x600.png",
-             * "size": 123456789
-             * }]
-             */
             if ($aProjectLoans['nb_loan'] == 1) {
-                // @todo getContractType
-                $contractType = (1 == $aProjectLoans['id_type_contract']) ? 'bondsCount' : 'contractsCount';
+                $contractType                           = (1 == $aProjectLoans['id_type_contract']) ? 'bondsCount' : 'contractsCount';
                 $lenderLoans[$iLoandIndex]['contracts'] = [
                     $contractType => 1
                 ];
@@ -954,12 +950,11 @@ class LenderOperationsController extends Controller
                 $lenderLoans[$iLoandIndex]['loan_details'] = [];
 
                 foreach ($loans as $loan) {
-                    $contractType = (1 == $loan['id_type_contract']) ? 'bondsCount' : 'contractsCount';
+                    $contractType                                          = (1 == $loan['id_type_contract']) ? 'bondsCount' : 'contractsCount';
                     $lenderLoans[$iLoandIndex]['contracts'][$contractType] = isset($lenderLoans[$iLoandIndex]['contracts'][$contractType]) ? $lenderLoans[$iLoandIndex]['contracts'][$contractType] + 1 : 1;
-                    $lenderLoans[$iLoandIndex]['loan_details'][] = [
-                        'rate'      => $loan['rate'],
-                        'amount'    => round($loan['amount'] / 100, 2),
-                        'monthly'   => rand(20, 150),
+                    $lenderLoans[$iLoandIndex]['loan_details'][]           = [
+                        'rate'      => round($loan['rate'], 1),
+                        'amount'    => bcdiv($loan['amount'], 100),
                         'documents' => $this->getDocumentDetail(
                             $aProjectLoans['project_status'],
                             $user->getHash(),
@@ -984,7 +979,7 @@ class LenderOperationsController extends Controller
         $seriesData  = [];
         foreach ($loanStatus as $status => $count) {
             $seriesData[] = [
-                'name'         => str_replace('%count%', $count, $translationManager->selectTranslation('lender-operations', 'loan-status-' . $status)),
+                'name'         => $this->get('translator')->transChoice('lender-operations_loans-chart-legend-loan-status-' . $status, $count, ['%count%' => $count]),// '%count%', $count, $translationManager->selectTranslation('lender-operations', 'loan-status-' . $status)),
                 'y'            => $count,
                 'showInLegend' => true,
                 'color'        => $chartColors[$status]
@@ -1011,14 +1006,14 @@ class LenderOperationsController extends Controller
             $documents[] = [
                 'url'         => $this->get('assets.packages')->getUrl('') . '/pdf/contrat/' . $hash . '/' . $loanId,
                 'docTypeName' => $translationManager->selectTranslation('lender-operations', 'contract-type-' . $docTypeId),
-                'docType'     => (1 == $docTypeId) ? 'bond' : 'contract'
+                'docType'     => 'bond'
             ];
         }
 
         if (in_array($projectId, $projectsInDept)) {
             $documents[] = [
-                'url'         => $this->get('assets.packages')->getUrl('') . '/pdf/contrat/' . $hash . '/' . $loanId,
-                'docTypeName' => $translationManager->selectTranslation('lender-operations', 'declaration-of-debt'),
+                'url'         => $this->get('assets.packages')->getUrl('') . '/pdf/declaration_de_creances/' . $hash . '/' . $loanId,
+                'docTypeName' => $translationManager->selectTranslation('lender-operations', 'loans-table-declaration-of-debt-doc-tooltip'),
                 'docType'     => 'contract'
             ];
         }

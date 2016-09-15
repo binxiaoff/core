@@ -1008,21 +1008,52 @@ class pdfController extends bootstrap
 
     public function _loans()
     {
+        if (false === isset($this->params[0])) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
+
+        /** @var \clients $oClients */
+        $oClients = $this->loadData('clients');
+
+        // hack the symfony guard token
+        $session = $this->get('session');
+
+        /** @var \Symfony\Component\Security\Guard\Token\PostAuthenticationGuardToken $token */
+        $token =  unserialize($session->get('_security_default'));
+        if (!$token instanceof \Symfony\Component\Security\Guard\Token\PostAuthenticationGuardToken) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
+        /** @var \Unilend\Bundle\FrontBundle\Security\User\UserLender $user */
+        $user = $token->getUser();
+        if (!$user instanceof \Unilend\Bundle\FrontBundle\Security\User\UserLender) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
+
+        if (false === $oClients->get($this->params[0], 'hash') || $user->getClientId() !== $oClients->id_client) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
+
         $sPath          = '/tmp/' . uniqid() . '/';
         $sNamePdfClient = 'vos_prets_' . date('Y-m-d_H:i:s') . '.pdf';
 
         $this->lng['preteur-operations-detail'] = $this->ln->selectFront('preteur-operations-detail', $this->language, $this->App);
         $this->lng['preteur-operations-pdf']    = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
 
-        $this->GenerateLoansHtml();
+        $this->GenerateLoansHtml($oClients->id_client);
         $this->WritePdf($sPath . $sNamePdfClient, 'operations');
         $this->ReadPdf($sPath . $sNamePdfClient, $sNamePdfClient);
     }
 
-    private function GenerateLoansHtml()
+    private function GenerateLoansHtml($clientId)
     {
         $this->echeanciers = $this->loadData('echeanciers');
         $this->loans       = $this->loadData('loans');
+        $this->lenders_accounts = $this->loadData('lenders_accounts');
+        $this->lenders_accounts->get($clientId, 'id_client_owner');
 
         $this->aProjectsInDebt = $this->projects->getProjectsInDebt();
         $this->lSumLoans       = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account, 'debut DESC, p.title ASC');
@@ -1111,7 +1142,7 @@ class pdfController extends bootstrap
         $this->clients_adresses->get($post_id_client, 'id_client');
         $this->oLendersAccounts->get($post_id_client, 'id_client_owner');
 
-        if (isset($post_id_last_action) && in_array($post_id_last_action, array('debut', 'fin'))) {
+        if (isset($post_id_last_action) && in_array($post_id_last_action, array('start', 'end'))) {
 
             $debutTemp = explode('/', $post_debut);
             $finTemp   = explode('/', $post_fin);
@@ -1122,7 +1153,7 @@ class pdfController extends bootstrap
             // On sauvegarde la derniere action
             $_SESSION['id_last_action'] = $post_id_last_action;
 
-        } elseif (isset($post_id_last_action) && $post_id_last_action == 'nbMois') {
+        } elseif (isset($post_id_last_action) && $post_id_last_action == 'slide') {
             $nbMois = $post_nbMois;
 
             $date_debut_time = mktime(0, 0, 0, date("m") - $nbMois, date("d"), date('Y'));
@@ -1130,7 +1161,7 @@ class pdfController extends bootstrap
 
             // On sauvegarde la derniere action
             $_SESSION['id_last_action'] = $post_id_last_action;
-        } elseif (isset($post_id_last_action) && $post_id_last_action == 'annee') {
+        } elseif (isset($post_id_last_action) && $post_id_last_action == 'year') {
 
             $year = $post_annee;
 
@@ -1145,31 +1176,31 @@ class pdfController extends bootstrap
             // On sauvegarde la derniere action
             $_SESSION['id_last_action'] = $post_id_last_action;
 
-        } // si on a une session
-        elseif (isset($post_id_last_action)) {
-
-            if ($post_debut != "" && $post_fin != "") {
-                //echo 'toto';
-                $debutTemp = explode('/', $post_debut);
-                $finTemp   = explode('/', $post_fin);
-
-                $date_debut_time = strtotime($debutTemp[2] . '-' . $debutTemp[1] . '-' . $debutTemp[0] . ' 00:00:00');
-                $date_fin_time   = strtotime($finTemp[2] . '-' . $finTemp[1] . '-' . $finTemp[0] . ' 00:00:00');
-            } elseif ($post_id_last_action == 'nbMois') {
-                $nbMois = $post_nbMois;
-
-                $date_debut_time = mktime(0, 0, 0, date("m") - $nbMois, date("d"), date('Y'));
-                $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));
-            } elseif ($post_id_last_action == 'annee') {
-                $year = $post_annee;
-
-                $date_debut_time = mktime(0, 0, 0, 1, 1, $year);
-                $date_fin_time   = mktime(0, 0, 0, 12, 31, $year);
+        } elseif (isset($_SESSION['id_last_action'])) {// si on a une session
+            if (in_array($_SESSION['id_last_action'], array('start', 'end'))) {
+                $debutTemp       = explode('/', $post_debut);
+                $finTemp         = explode('/', $post_fin);
+                $date_debut_time = strtotime($debutTemp[2] . '-' . $debutTemp[1] . '-' . $debutTemp[0] . ' 00:00:00');    // date start
+                $date_fin_time   = strtotime($finTemp[2] . '-' . $finTemp[1] . '-' . $finTemp[0] . ' 00:00:00');            // date end
+            } elseif ($_SESSION['id_last_action'] == 'slide') {
+                $nbMois          = $post_nbMois;
+                $date_debut_time = mktime(0, 0, 0, date("m") - $nbMois, date("d"), date('Y')); // date start
+                $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));    // date end
+            } elseif ($_SESSION['id_last_action'] == 'year') {
+                $year            = $post_annee;
+                $date_debut_time = mktime(0, 0, 0, 1, 1, $year);    // date start
+                $date_fin_time   = mktime(0, 0, 0, 12, 31, $year); // date end
             }
-        } // Par defaut (on se base sur le 1M)
-        else {
-            $date_debut_time = mktime(0, 0, 0, date("m") - 1, date("d"), date('Y'));
-            $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));
+        } else {// Par defaut (on se base sur le 1M)
+            if (isset($post_debut) && isset($post_fin)) {
+                $debutTemp       = explode('/', $post_debut);
+                $finTemp         = explode('/', $post_fin);
+                $date_debut_time = strtotime($debutTemp[2] . '-' . $debutTemp[1] . '-' . $debutTemp[0] . ' 00:00:00');    // date start
+                $date_fin_time   = strtotime($finTemp[2] . '-' . $finTemp[1] . '-' . $finTemp[0] . ' 00:00:00');            // date end
+            } else {
+                $date_debut_time = mktime(0, 0, 0, date("m") - 1, date("d"), date('Y')); // date start
+                $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));    // date end
+            }
         }
 
         $this->date_debut = date('Y-m-d', $date_debut_time);

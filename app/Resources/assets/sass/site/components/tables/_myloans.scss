@@ -223,3 +223,18 @@
 .loan-doc-bond {
   background-image: image-url('dashboard/file-bond-28x38.png');
 }
+
+.table-myloans * {
+
+  tbody {
+    font-size: 15px;
+  }
+
+  span.label {
+    overflow: visible;
+  }
+}
+
+#form-filters-loans {
+  input {font-size: 15px;}
+}
