@@ -72,6 +72,7 @@ class LenderDashboardController extends Controller
                 }
             }
         }
+
         $ongoingBidsByProject = [];
         $newPublishedProjects = [];
 
@@ -258,14 +259,14 @@ class LenderDashboardController extends Controller
         /** @var \user_preferences $userPreferences */
         $userPreferences = $this->get('unilend.service.entity_manager')->getRepository('user_preferences');
 
-        $pageName           = 'lender_dashboard';
+        $pageName            = 'lender_dashboard';
         $userPreferencesData = [
-            'myaccount'   => ['order' => 0, 'id' => 'myaccount', 'hidden' => false],
-            'userlevel'   => ['order' => 1, 'id' => 'userlevel', 'hidden' => false],
-            'mywallet'    => ['order' => 2, 'id' => 'mywallet', 'hidden' => false],
-            'myoffers'    => ['order' => 3, 'id' => 'myoffers', 'hidden' => false],
-            'projects'    => ['order' => 4, 'id' => 'projects', 'hidden' => false],
-            'myrembourse' => ['order' => 5, 'id' => 'myrembourse', 'hidden' => false],
+            'account'    => ['order' => 0, 'id' => 'account', 'hidden' => false],
+            'user-level' => ['order' => 1, 'id' => 'user-level', 'hidden' => false],
+            'wallet'     => ['order' => 2, 'id' => 'wallet', 'hidden' => false],
+            'offers'     => ['order' => 3, 'id' => 'offers', 'hidden' => false],
+            'projects'   => ['order' => 4, 'id' => 'projects', 'hidden' => false],
+            'repayments' => ['order' => 5, 'id' => 'repayments', 'hidden' => false],
         ];
 
         try {

@@ -236,8 +236,8 @@
 %}
 {# Panel - My Remboursements #}
 {% embed 'partials/components/dashboard-panel.html.twig' %}
-    {% block panelAttributes %}id="myrembourse"{% endblock %}
-    {% block panelClassNames %}dashboard-panel dashboard-myrembourse ui-draggable {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %} col-lg-12 col-md-12 col-sm-8 col-xs-4{% endblock %}
+    {% block panelAttributes %}id="repayments"{% endblock %}
+    {% block panelClassNames %}dashboard-panel dashboard-myrembourse ui-draggable{% if panelInfo.hidden == true %} ui-dashboard-panel-hidden{% endif %} col-lg-12 col-md-12 col-sm-8 col-xs-4{% endblock %}
     {% block panelTitle %}{{ 'lender-dashboard-repayments_title'|trans }}{% endblock %}
     {% block panelControls %}
         <span class="ui-draggable-handle"></span>
