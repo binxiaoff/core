@@ -18,6 +18,7 @@ use Symfony\Component\Translation\Translator;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
@@ -652,7 +653,13 @@ class MainController extends Controller
         $tree = $entityManager->getRepository('tree');
         $tree->get(['slug' => 'statistiques']);
 
-        $response = $this->render('pages/static_pages/statistics.html.twig');
+        $template = [
+            'data' => [
+                'projectCountForCategoryTreeMap' => $this->getProjectCountForCategoryTreeMap()
+            ]
+        ];
+
+        $response = $this->render('pages/static_pages/statistics.html.twig', $template);
 
         $finalElements = [
             'contenu'      => $response->getContent(),
@@ -815,4 +822,24 @@ class MainController extends Controller
 
         return $this->renderCmsNav($tree, $finalElements, $entityManager, 'apropos-statistiques');
     }
+
+    public function getProjectCountForCategoryTreeMap()
+    {
+        /** @var StatisticsManager $statisticsManager */
+        $statisticsManager = $this->get('unilend.service.statistics_manager');
+        $countByCategory = $statisticsManager->getProjectCountByCategory();
+
+        /** @var TranslatorInterface $translator */
+        $translator = $this->get('translator');
+        $dataForTreeMap = [];
+
+        foreach ($countByCategory as $category => $count) {
+            $dataForTreeMap[] = [
+                'name'      => $translator->trans('company-sector_sector-' . $category),
+                'value'     => (int) $count,
+                'svgIconId' => '#category-sm-' . $category
+            ];
+        }
+    }
+
 }

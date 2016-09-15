@@ -26,7 +26,10 @@ framework:
     session:
         gc_maxlifetime: 3600
     esi: { enabled: true }
-    form: ~
+    csrf_protection: true
+    form:
+        csrf_protection:
+            field_name: _csrf
 
 cmf_routing:
     chain:
