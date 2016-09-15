@@ -134,7 +134,7 @@ $doc.on('ready', function () {
         pwdTimer = setTimeout(function () {
             // Talk to AJAX
             $.ajax({
-                url: '/inscription_preteur/ajax/password',
+                url: '/security/ajax/password',
                 method: 'post',
                 data: {
                     client_password: $elem.val()

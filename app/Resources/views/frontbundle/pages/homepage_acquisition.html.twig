@@ -17,14 +17,14 @@ permalink: path('home')
                                  style="background-image: url('{{ completeTestimonialUrl(combination.image, 'image') }}')">
                                 <div class="video-hero-image">&nbsp;</div>
                                 <div class="caption caption-align-left">
-                                    <div class="caption-name">{{ combination.lender.name }}, {{ combination.lender.age }}</div>
+                                    <div class="caption-name">{{ combination.lender.name }}, {{ combination.lender.projects }}</div>
                                     <div class="caption-info">{{ combination.lender.info }}</div>
                                 </div><!-- /.caption -->
                                 <div class="caption caption-align-right">
                                     <div class="caption-name">{{ combination.borrower.name }}, {{ combination.borrower.location }}</div>
-                                    <div class="caption-info">{{ combination.borrower.amount|localizednumber }} € {{ combination.borrower.objective }}</div>
+                                    <div class="caption-info">{{ combination.borrower.info }}</div>
                                     <div class="caption-links">
-                                        <a href="{{ path('testimonials') }}#testimonial-{{ combination.borrower.name }} }}" class="link">Voir son témoignage</a>
+                                        <a href="{{ path('testimonials') }}#testimonial-{{ combination.borrower.name }} }}" class="link">{{ 'home-borrower_link-to-testimonial-on-video'|trans }}</a>
                                     </div>
                                 </div><!-- /.caption -->
                             </div>
@@ -120,8 +120,10 @@ permalink: path('home')
                         {# Set class color based on person type #}
                         {% if person.type == 'lender' %}
                             {% set classColor = 'p1' %}
+                            {% set description = person.name ~' , ' ~ person.projects %}
                         {% elseif person.type == 'borrower' %}
                             {% set classColor = 'p2' %}
+                            {% set description = person.name ~' , ' ~ person.location %}
                         {% endif %}
 
                         {% if index % 2 == 1 %}
@@ -153,11 +155,9 @@ permalink: path('home')
                             <div class="{{ classColumnsSlide }} vertical-align-content">
                                 <div class="promo-slide promo-{{ classColor }} {{ classPosition }} {{ classAnimatePosition }}">
                                     <p class="quote">{{ person.quote|raw }}</p>
-                                    {% if person.name is not empty %}
-                                        <p class="source"><cite>{{ person.name }}{% if person.location is not empty %} &mdash; {{ person.location }}{% endif %}</cite></p>
-                                    {% endif %}
-                                    {% if person.type == 'borrower' %}
+                                        <p class="source"><cite>{{ description }}</cite></p>
 
+                                    {% if person.type == 'borrower' %}
                                     <div class="promo-links">
                                         <a href="{{ path('testimonials') }}#testimonial-{{ person.name }}" class="link">{% trans %} site-general_testimonial-section-link-lender-title {% endtrans %}</a>
                                         {% if person.project.slug is not empty %}

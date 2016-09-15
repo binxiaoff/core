@@ -1295,32 +1295,6 @@ class LenderSubscriptionController extends Controller
         return new Response('not an ajax request');
     }
 
-    /**
-     * @Route("/inscription_preteur/ajax/password", name="lender_subscription_ajax_password")
-     * @Method("POST")
-     */
-    public function checkPassWordComplexityAction(Request $request)
-    {
-        if ($request->isXMLHttpRequest()) {
-            /** @var \ficelle $ficelle */
-            $ficelle = Loader::loadLib('ficelle');
-            /** @var TranslatorInterface $translator */
-            $translator = $this->get('translator');
-            if ($ficelle->password_fo($request->request->get('client_password'), 6)) {
-                return new JsonResponse([
-                    'status' => true
-                ]);
-            } else {
-                return new JsonResponse([
-                    'status' => false,
-                    'error' => $translator->trans('common-validator_password-invalid')
-                ]);
-            }
-        }
-
-        return new Response('not an ajax request');
-    }
-
     private function sendFinalizedSubscriptionConfirmationEmail(\clients $client)
     {
         /** @var \settings $settings */

@@ -109,7 +109,6 @@
             <argument type="service" id="unilend.service.irr_manager"/>
             <argument type="service" id="memcache.default" />
             <argument type="service" id="unilend.service.location_manager" />
-            <argument type="service" id="unilend.service.translation_manager" />
         </service>
 
         <service id="unilend.service.welcome_offer_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager">

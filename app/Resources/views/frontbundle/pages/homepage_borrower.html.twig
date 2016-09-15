@@ -13,7 +13,7 @@
                 <div class="video-hero" style="background-image: url('{{ completeTestimonialUrl(featureBorrower.feature_image, 'image') }}')">
                     <div class="caption caption-align-left">
                         <div class="caption-name">{{ featureBorrower.name }}, {{ featureBorrower.location }}</div>
-                        <div class="caption-info">{{ featureBorrower.amount|localizednumber}} € {{ featureBorrower.objective }}</div>
+                        <div class="caption-info">{{ featureBorrower.info }}</div>
                         <div class="caption-links">
                             <a href="{{ path('testimonials') }}" class="link">{{ 'home-borrower_link-to-testimonial-on-video'|trans }}</a></div>
                     </div><!-- /.caption -->
@@ -109,9 +109,7 @@
                             <div class="col-lg-6 col-md-6 vertical-align-content">
                                 <div class="promo-slide promo-p2 {{ classPosition }} {{ classAnimatePosition }}">
                                     <p class="quote">{{ person.quote|raw }}</p>
-                                    {% if person.name is not empty %}
-                                        <p class="source"><cite>{{ person.name }}{% if person.location is not empty %} &mdash; {{ person.location }}{% endif %}</cite></p>
-                                    {% endif %}
+                                        <p class="source"><cite>{{ person.name }}&mdash;{{ person.location }}</cite></p>
                                     <div class="promo-links">
                                         <a href="{{ path('testimonials') }}#testimonial-{{ person.name }}" class="link">{% trans %} site-general_testimonial-section-link-lender-title {% endtrans %}</a>
                                         {% if person.project.slug is not empty %}
