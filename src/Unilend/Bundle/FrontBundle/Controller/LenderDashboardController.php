@@ -224,7 +224,7 @@ class LenderDashboardController extends Controller
                             $panelPreferences->update();
                         }
                     } else {
-                        $panelPreferences->id_lender   = $this->getUser()->getClientId();
+                        $panelPreferences->id_lender   = $lenderAccount->id_lender_account;
                         $panelPreferences->page_name   = $pageName;
                         $panelPreferences->panel_name  = $panel['id'];
                         $panelPreferences->panel_order = $panel['order'];
