@@ -23,8 +23,8 @@
                                         <span class="icon fa-money-u32"></span>
                                         <span class="label">{% trans %} lender-dashboard-navigation_wallet-link {% endtrans %}</span></a>
                                 </li>
-                                <li role="presentation" class="dashboard-nav-projects {% if app.request.attributes.get('_route') == 'user/preter/projects' %}active{% else %}complete{% endif %}">
-                                    <a href="{{ route('user/preter/projects') }}">
+                                <li role="presentation" class="dashboard-nav-projects {% if app.request.attributes.get('_route') == 'lender_projects' %}active{% else %}complete{% endif %}">
+                                    <a href="{{ path('lender_projects') }}">
                                         <span class="icon fa-project-u"></span>
                                         <span class="label">{% trans %} lender-dashboard-navigation_projects-link {% endtrans %}</span></a>
                                 </li>
