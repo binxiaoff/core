@@ -175,7 +175,7 @@
         </ul>
     </div>
 
-    <section class="dashboard-panels-content" data-dashboardpanels data-dashboardpanels-ajaxurl="{{ path('save_user_preferences') }}" data-movable-content>
+    <section class="dashboard-panels-content" data-dashboardpanels data-dashboardpanels-ajaxurl="{{ path('save_panel_preferences') }}" data-movable-content>
         {% for panelId, panelInfo in dashboardPanels %}
             {% include('pages/lender_dashboard/dashboard_panels/' ~ panelId ~ '.html.twig') %}
         {% endfor %}
