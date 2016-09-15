@@ -810,6 +810,6 @@ class BorrowerAccountController extends Controller
         $aPayment      = $repaymentSchedule->getLastOrder($projectId);
         $iPaymentOrder = (isset($aPayment)) ? $aPayment['ordre'] + 1 : 1;
 
-        return $repaymentSchedule->reste_a_payer_ra($projectId, $iPaymentOrder);
+        return $repaymentSchedule->getRemainingCapitalAtDue($projectId, $iPaymentOrder);
     }
 }

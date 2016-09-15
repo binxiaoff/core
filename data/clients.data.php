@@ -395,48 +395,6 @@ class clients extends clients_crud
         return $result;
     }
 
-    public function selectPreteurs($dateMoins1Mois)
-    {
-        $sql = '
-        SELECT
-            c.id_client,
-           la.id_lender_account,
-           c.type,
-           la.exonere,
-           la.debut_exoneration,
-           la.fin_exoneration,
-           e.id_project,
-           e.id_loan,
-           e.ordre,
-           e.montant,
-           e.capital,
-           e.interets,
-           e.prelevements_obligatoires,
-           e.retenues_source,
-           e.csg,
-           e.prelevements_sociaux,
-           e.contributions_additionnelles,
-           e.prelevements_solidarite,
-           e.crds,
-           e.date_echeance,
-           e.date_echeance_reel,
-           e.status,
-           e.date_echeance_emprunteur,
-           e.date_echeance_emprunteur_reel
-        FROM echeanciers e
-        LEFT JOIN lenders_accounts la  ON la.id_lender_account = e.id_lender
-        LEFT JOIN clients c ON c.id_client = la.id_client_owner
-        WHERE LEFT(e.date_echeance_reel,7) = "' . $dateMoins1Mois . '" AND e.status = 1 ORDER BY e.date_echeance ASC';
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
-
-    // presteurs by status
     public function selectPreteursByStatus($status = '', $where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
@@ -719,20 +677,19 @@ class clients extends clients_crud
     private function getBorrowerOperationTransferFinancing($iClientId, $aProjects, $sStartDate, $sEndDate)
     {
         $aDataForBorrowerOperations = array();
-        $sql = 'SELECT
-                    montant/100 AS montant,
-                    DATE(date_transaction) AS date,
-                    id_project,
-                    "virement" AS type
-                FROM
-                    `transactions`
-                WHERE
-                    `id_project` IN (' . implode(',', $aProjects) . ')
-                    AND id_client = ' . $iClientId . '
-                    AND date_transaction BETWEEN ' . $sStartDate . 'AND ' . $sEndDate . '
-                    AND `type_transaction` = 9
-                GROUP BY
-                    id_project';
+        $sql = '
+            SELECT
+                montant / 100 AS montant,
+                DATE(date_transaction) AS date,
+                id_project,
+                "virement" AS type
+            FROM transactions
+            WHERE
+                id_project IN (' . implode(',', $aProjects) . ')
+                AND id_client = ' . $iClientId . '
+                AND date_transaction BETWEEN ' . $sStartDate . 'AND ' . $sEndDate . '
+                AND type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . '
+            GROUP BY id_project';
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($result)) {
@@ -744,26 +701,23 @@ class clients extends clients_crud
     private function getBorrowerOperationMonthlyDueAndCommission($aProjects, $sStartDate, $sEndDate, $iType = null)
     {
         $aDataForBorrowerOperations = array();
-        $sql = 'SELECT
-                    `id_project`,
-                    SUM(montant + commission + tva)/100 AS montant,
-                    -`commission`/100 AS commission,
-                    -`tva`/100 AS tva,
-                    DATE(date_echeance_emprunteur_reel) AS date
-                FROM
-                    `echeanciers_emprunteur`
-                WHERE
-                    `id_project` IN (' . implode(',', $aProjects) . ')
-                    AND DATE(`date_echeance_emprunteur_reel`) BETWEEN ' . $sStartDate . ' AND ' . $sEndDate . '
-                    AND `status_emprunteur` = 1
-                    AND `status_ra` = 0
-                GROUP BY
-                    `id_project`,
-                    DATE(`date_echeance_emprunteur_reel`)';
+        $sql = '
+            SELECT
+                id_project,
+                SUM(montant + commission + tva) / 100 AS montant,
+                -commission / 100 AS commission,
+                -tva / 100 AS tva,
+                DATE(date_echeance_emprunteur_reel) AS date
+            FROM echeanciers_emprunteur
+            WHERE
+                id_project IN (' . implode(',', $aProjects) . ')
+                AND DATE(date_echeance_emprunteur_reel) BETWEEN ' . $sStartDate . ' AND ' . $sEndDate . '
+                AND status_emprunteur = 1
+                AND status_ra = 0
+            GROUP BY id_project, DATE(date_echeance_emprunteur_reel)';
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($result)) {
-
             if ($iType === self::PRLV_MENSUALITE || $iType === null ) {
                 $aDataForBorrowerOperations[] = array(
                     'id_project' => $record['id_project'],
@@ -877,7 +831,7 @@ class clients extends clients_crud
                     WHERE
                         `id_project` IN (' . implode(',', $aProjects) . ')
                         AND `date` BETWEEN ' . $sStartDate . ' AND ' . $sEndDate. '
-                        AND type_commission = 1';
+                        AND type_commission = ' . \factures::TYPE_COMMISSION_FINANCEMENT;
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($result)) {

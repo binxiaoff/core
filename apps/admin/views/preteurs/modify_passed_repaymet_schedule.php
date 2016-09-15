@@ -26,8 +26,6 @@
                 <th>Montant</th>
                 <th>Capital</th>
                 <th>Intérêt</th>
-                <th>Commission</th>
-                <th>TVA</th>
                 <th>Prelevement obligatoire</th>
                 <th>Retenues source</th>
                 <th>CSG</th>
@@ -76,26 +74,6 @@
                             </strong>
                         <?php else : ?>
                             <?= $aRepaymentSchedule['interets'] ?>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <?php if (0 != $iDiffMontant = $aRepaymentSchedule['commission'] - $aRepaymentSchedule['commission_old']) : ?>
-                            <strong class="red">
-                                <?= $aRepaymentSchedule['commission'] ?>
-                                (<?= $aRepaymentSchedule['commission_old'] ?>)
-                            </strong>
-                        <?php else : ?>
-                            <?= $aRepaymentSchedule['commission'] ?>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <?php if (0 != $iDiffMontant = $aRepaymentSchedule['tva'] - $aRepaymentSchedule['tva_old']) : ?>
-                            <strong class="red">
-                                <?= $aRepaymentSchedule['tva'] ?>
-                                (<?= $aRepaymentSchedule['tva_old'] ?>)
-                            </strong>
-                        <?php else : ?>
-                            <?= $aRepaymentSchedule['tva'] ?>
                         <?php endif; ?>
                     </td>
                     <td>
@@ -189,8 +167,6 @@
                 <th>Montant</th>
                 <th>Capital</th>
                 <th>Intérêt</th>
-                <th>Commission</th>
-                <th>TVA</th>
                 <th>Prelevement obligatoire</th>
                 <th>Retenues source</th>
                 <th>CSG</th>
@@ -214,8 +190,6 @@
                     <td><?= $aRepaymentSchedule['montant'] ?></td>
                     <td><?= $aRepaymentSchedule['capital'] ?></td>
                     <td><?= $aRepaymentSchedule['interets'] ?></td>
-                    <td><?= $aRepaymentSchedule['commission'] ?></td>
-                    <td><?= $aRepaymentSchedule['tva'] ?></td>
                     <td><?= $aRepaymentSchedule['prelevements_obligatoires'] ?></td>
                     <td><?= $aRepaymentSchedule['retenues_source'] ?></td>
                     <td><?= $aRepaymentSchedule['csg'] ?></td>
@@ -224,14 +198,10 @@
                     <td><?= $aRepaymentSchedule['prelevements_solidarite'] ?></td>
                     <td><?= $aRepaymentSchedule['crds'] ?></td>
                 </tr>
-                <?php
-            endforeach;
-            ?>
+            <?php endforeach; ?>
             </tbody>
         </table><br><br><br>
-        <?php
-    endif;
-    ?>
+    <?php endif; ?>
     <?php if (isset($this->aTemplateVariables['aChanges']) && count($this->aTemplateVariables['aChanges']) > 0) : ?>
         <h2>Movements</h2>
         <table class="tablesorter">

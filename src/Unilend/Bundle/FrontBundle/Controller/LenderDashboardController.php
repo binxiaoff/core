@@ -22,16 +22,14 @@ class LenderDashboardController extends Controller
      */
     public function indexAction()
     {
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \lenders_account_stats $oLenderAccountStats */
         $oLenderAccountStats = $entityManager->getRepository('lenders_account_stats');
         /** @var \loans $loan */
         $loan = $entityManager->getRepository('loans');
-        /** @var \echeanciers $echeancier */
-        $echeancier = $entityManager->getRepository('echeanciers');
+        /** @var \echeanciers $lenderRepayment */
+        $lenderRepayment = $entityManager->getRepository('echeanciers');
         /** @var \projects $project */
         $project = $entityManager->getRepository('projects');
         /** @var \companies $company */
@@ -57,20 +55,20 @@ class LenderDashboardController extends Controller
         }
 
         $ongoingBidsSum         = $bid->sumBidsEncours($lender->id_lender_account);
-        $problematicProjects    = $echeancier->getProblematicProjects($lender->id_lender_account);
-        $upcomingGrossInterests = $echeancier->getSumARemb($lender->id_lender_account, 'interets');
-        $repaidGrossInterests   = $echeancier->getSumRemb($lender->id_lender_account . ' AND status_ra = 0', 'interets');
+        $problematicProjects    = $lenderRepayment->getProblematicProjects($lender->id_lender_account);
+        $upcomingGrossInterests = $lenderRepayment->getOwedInterests(['id_lender' => $lender->id_lender_account]);
+        $repaidGrossInterests   = $lenderRepayment->getRepaidInterests(['id_lender' => $lender->id_lender_account]);
         $irr                    = 0;
 
         if ($this->getUser()->getLevel() > 0) {
             $aLastIRR = $oLenderAccountStats->getLastIRRForLender($lender->id_lender_account);
             if ($aLastIRR) {
-                $irr = $ficelle->formatNumber($aLastIRR['tri_value']);
+                $irr = $aLastIRR['tri_value'];
             } else {
                 $fLossRate = $oLenderAccountStats->getLossRate($lender->id_lender_account, $lender);
 
                 if ($fLossRate > 0) {
-                    $irr = $ficelle->formatNumber(-$fLossRate);
+                    $irr = - $fLossRate;
                 }
             }
         }
@@ -82,7 +80,7 @@ class LenderDashboardController extends Controller
             $projectStats = $this->get('unilend.frontbundle.service.project_display_manager')->getFundingDuration($project);
 
             if (0 < $bid->counter('id_project = ' . $aProject['id_project'] . ' AND id_lender_account = ' . $lender->id_lender_account)) {
-                $ongoingBidsByProject[$iKey]                 = [
+                $ongoingBidsByProject[$iKey] = [
                     'title'            => $aProject['title'],
                     'amount'           => $aProject['amount'],
                     'publication_date' => $aProject['date_publication_full'],
@@ -111,21 +109,19 @@ class LenderDashboardController extends Controller
                 ];
             }
         }
+
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\IRRManager $oIRRManager */
         $oIRRManager = $this->get('unilend.service.irr_manager');
         /** @var LenderAccountDisplayManager $lenderDisplayManager */
         $lenderDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
 
-        $aLastUnilendIRR        = $oIRRManager->getLastUnilendIRR();
-        $IRRUnilend             = $ficelle->formatNumber($aLastUnilendIRR['value']);
-        $lenderRepaymentsData   = $echeancier->getRepaymentAmountDetailsByPeriod($lender->id_lender_account);
+        $lastUnilendIRR         = $oIRRManager->getLastUnilendIRR();
+        $lenderRepaymentsData   = $lenderRepayment->getDetailsByPeriod($lender->id_lender_account);
+        $repaymentDateRange     = $lenderRepayment->getFirstAndLastRepaymentDates($lender->id_lender_account);
         $repaymentDataPerPeriod = $this->getQuarterAndYearSum($lenderRepaymentsData);
-        $repaymentDateRange     = $echeancier->getFirstAndLastRepaymentDates($lender->id_lender_account);
-
-        $monthAxisData   = $this->getMonthAxis($repaymentDateRange);
-        $quarterAxisData = $this->getQuarterAxis($lenderRepaymentsData);
-        $yearAxisData    = $this->getYearAxis($repaymentDateRange);
-
+        $monthAxisData          = $this->getMonthAxis($repaymentDateRange);
+        $quarterAxisData        = $this->getQuarterAxis($lenderRepaymentsData);
+        $yearAxisData           = $this->getYearAxis($repaymentDateRange);
 
         return $this->render(
             '/pages/lender_dashboard/lender_dashboard.html.twig',
@@ -134,7 +130,7 @@ class LenderDashboardController extends Controller
                 'lenderDetails'      => [
                     'balance'             => $balance,
                     'level'               => $this->getUser()->getLevel(),
-                    'unilend_irr'         => $IRRUnilend,
+                    'unilend_irr'         => $lastUnilendIRR['value'],
                     'irr'                 => $irr,
                     'initials'            => $this->getUser()->getInitials(),
                     'number_of_companies' => $lender->countCompaniesLenderInvestedIn($lender->id_lender_account),
@@ -152,8 +148,8 @@ class LenderDashboardController extends Controller
                     'deposited_amount'  => $wallet_line->getSumDepot($lender->id_lender_account, '10,30')
                 ],
                 'capitalDetails'     => [
-                    'repaid_capital'        => round($echeancier->getSumRemb($lender->id_lender_account, 'capital'), 2),
-                    'owed_capital'          => round($echeancier->getSumARemb($lender->id_lender_account, 'capital') - $problematicProjects['capital'], 2),
+                    'repaid_capital'        => round($lenderRepayment->getRepaidCapital(['id_lender' => $lender->id_lender_account]), 2),
+                    'owed_capital'          => round($lenderRepayment->getOwedCapital(['id_lender' => $lender->id_lender_account]) - $problematicProjects['capital'], 2),
                     'capital_in_difficulty' => round($problematicProjects['capital'], 2)
                 ],
                 'interestsDetails'   => [
@@ -171,8 +167,8 @@ class LenderDashboardController extends Controller
                 ],
                 'monthSum'           => [
                     'capital'   => array_column($lenderRepaymentsData, 'capital'),
-                    'interests' => array_column($lenderRepaymentsData, 'interests'),
-                    'tax'       => array_column($lenderRepaymentsData, 'tax'),
+                    'interests' => array_column($lenderRepaymentsData, 'netInterests'),
+                    'tax'       => array_column($lenderRepaymentsData, 'taxes'),
                 ],
                 'quarterSum'         => [
                     'capital'   => $repaymentDataPerPeriod['quarterCapital'],
@@ -263,7 +259,7 @@ class LenderDashboardController extends Controller
         $userPreferences = $this->get('unilend.service.entity_manager')->getRepository('user_preferences');
 
         $pageName           = 'lender_dashboard';
-        $defaultPreferences = [
+        $userPreferencesData = [
             'myaccount'   => ['order' => 0, 'id' => 'myaccount', 'hidden' => false],
             'userlevel'   => ['order' => 1, 'id' => 'userlevel', 'hidden' => false],
             'mywallet'    => ['order' => 2, 'id' => 'mywallet', 'hidden' => false],
@@ -276,15 +272,18 @@ class LenderDashboardController extends Controller
             $preferences = $userPreferences->getUserPreferencesByPage($this->getUser()->getClientId(), $pageName);
 
             if (false === empty($preferences)) {
+                $userPreferencesData = [];
                 foreach ($preferences as $panelName => $panel) {
-                    $userPreferencesData[$panelName] = ['id' => $panelName, 'order' => $panel['panel_order'], 'hidden' => ($panel['hidden'] == 1) ? true : false];
+                    $userPreferencesData[$panelName] = [
+                        'id'     => $panelName,
+                        'order'  => $panel['panel_order'],
+                        'hidden' => $panel['hidden'] == 1
+                    ];
                 }
-            } else {
-                $userPreferencesData = $defaultPreferences;
             }
         } catch (\Exception $exception) {
-            $userPreferencesData = $defaultPreferences;
         }
+
         return $userPreferencesData;
     }
 
@@ -408,12 +407,12 @@ class LenderDashboardController extends Controller
             }
 
             $quarterCapital[$lenderRepayment['year']][$lenderRepayment['quarter']] += $lenderRepayment['capital'];
-            $quarterInterests[$lenderRepayment['year']][$lenderRepayment['quarter']] += $lenderRepayment['interests'];
-            $quarterTax[$lenderRepayment['year']][$lenderRepayment['quarter']] += $lenderRepayment['tax'];
+            $quarterInterests[$lenderRepayment['year']][$lenderRepayment['quarter']] += $lenderRepayment['netInterests'];
+            $quarterTax[$lenderRepayment['year']][$lenderRepayment['quarter']] += $lenderRepayment['taxes'];
 
             $yearCapital[$lenderRepayment['year']] += $lenderRepayment['capital'];
-            $yearInterests[$lenderRepayment['year']] += $lenderRepayment['interests'];
-            $yearTax[$lenderRepayment['year']] += $lenderRepayment['tax'];
+            $yearInterests[$lenderRepayment['year']] += $lenderRepayment['netInterests'];
+            $yearTax[$lenderRepayment['year']] += $lenderRepayment['taxes'];
         }
 
         $capital   = [];

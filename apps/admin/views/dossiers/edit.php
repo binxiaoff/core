@@ -477,7 +477,7 @@
                         <?php else: ?>
                             <tr>
                                 <th>Virement à émettre avant le</th>
-                                <td><strong><?= (isset($this->date_next_echeance_4jouvres_avant)) ? $this->date_next_echeance_4jouvres_avant : '' ?></strong></td>
+                                <td><strong><?= (isset($this->nextRepaymentDate)) ? $this->nextRepaymentDate : '' ?></strong></td>
                             </tr>
                         <?php endif; ?>
                         <tr>

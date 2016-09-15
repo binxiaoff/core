@@ -58,7 +58,7 @@ class --classe-- extends --classe--_crud
             $where = ' WHERE ' . $where;
         }
 
-        return (int) $this->bdd->result($this->bdd->query('SELECT COUNT(*) FROM `--table--` ' . $where), 0, 0);
+        return (int) $this->bdd->result($this->bdd->query('SELECT COUNT(*) FROM `--table--`' . $where));
     }
 
     public function exist($id, $field = '--id--')

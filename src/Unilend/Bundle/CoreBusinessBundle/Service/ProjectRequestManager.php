@@ -33,12 +33,16 @@ class ProjectRequestManager
         /** @var \PHPExcel_Calculation_Financial $oFinancial */
         $oFinancial = new \PHPExcel_Calculation_Financial();
 
-        $settings->get('TVA', 'type');
-        $fVATRate = (float) $settings->value;
-        $settings->get('Commission remboursement', 'type');
+        /** @var \tax_type $taxType */
+        $taxType = $this->entityManager->getRepository('tax_type');
+        $taxType->get(\tax_type::TYPE_VAT);
+        $fVATRate = $taxType->rate / 100;
 
-        $fCommission    = ($oFinancial->PMT($settings->value / 12, $period, -$amount) - $oFinancial->PMT(0, $period, -$amount)) * (1 + $fVATRate);
-        $monthlyPayment = round($oFinancial->PMT($estimatedRate / 100 / 12, $period, -$amount) + $fCommission);
+        $settings->get('Commission remboursement', 'type');
+        $commissionRate = $settings->value;
+
+        $fCommission    = ($oFinancial->PMT($commissionRate / 12, $period, - $amount) - $oFinancial->PMT(0, $period, - $amount)) * (1 + $fVATRate);
+        $monthlyPayment = round($oFinancial->PMT($estimatedRate / 100 / 12, $period, - $amount) + $fCommission);
 
         return $monthlyPayment;
     }

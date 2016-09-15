@@ -892,21 +892,7 @@ class LenderSubscriptionController extends Controller
                 $transaction->status           = \transactions::STATUS_PENDING;
                 $transaction->etat             = 0;
                 $transaction->ip_client        = $request->server->get('REMOTE_ADDR');
-                $transaction->civilite_fac     = $client->civilite;
-                $transaction->nom_fac          = $client->nom;
-                $transaction->prenom_fac       = $client->prenom;
-                $transaction->adresse1_fac     = $clientAddresses->adresse1;
-                $transaction->cp_fac           = $clientAddresses->cp;
-                $transaction->ville_fac        = $clientAddresses->ville;
-                $transaction->id_pays_fac      = $clientAddresses->id_pays;
                 $transaction->type_transaction = \transactions_types::TYPE_LENDER_SUBSCRIPTION;
-                $transaction->transaction      = \transactions::PHYSICAL;
-
-                if (in_array($client->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])){
-                    /** @var \companies $company */
-                    $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
-                    $transaction->societe_fac = $company->name;
-                }
                 $transaction->create();
 
                 $paylineParameter = [];

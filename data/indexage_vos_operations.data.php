@@ -68,7 +68,7 @@ class indexage_vos_operations extends indexage_vos_operations_crud
         $resultat = $this->bdd->query($sql);
         $result   = array();
         while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
+            $result[$record['id_transaction']] = $record;
         }
         return $result;
     }
