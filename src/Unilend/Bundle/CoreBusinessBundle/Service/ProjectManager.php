@@ -489,17 +489,6 @@ class ProjectManager
         $oClientAdresse = $this->oEntityManager->getRepository('clients_adresses');
         /** @var \clients $oClient */
         $oClient = $this->oEntityManager->getRepository('clients');
-        /** @var \underlying_contract $contract */
-        $contract = $this->oEntityManager->getRepository('underlying_contract');
-
-        if (false === $contract->get(\underlying_contract::CONTRACT_BDC, 'label')) {
-            throw new \InvalidArgumentException('The contract ' . \underlying_contract::CONTRACT_BDC . 'does not exist.');
-        }
-        $BDCContractId = $contract->id_contract;
-        if (false === $contract->get(\underlying_contract::CONTRACT_IFP, 'label')) {
-            throw new \InvalidArgumentException('The contract ' . \underlying_contract::CONTRACT_IFP . 'does not exist.');
-        }
-        $IFPContractId = $contract->id_contract;
 
         if ($oProject->status == \projects_status::FUNDE) {
             $lLoans = $oLoan->select('id_project = ' . $oProject->id_project);
