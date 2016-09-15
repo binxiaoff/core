@@ -1,0 +1,80 @@
+{% extends 'layouts/_layout.html.twig' %}
+
+{% block siteHeader %}
+    {% include 'partials/site/connected_header_lender.html.twig' %}
+{% endblock %}
+
+{% block siteContent %}
+    <article{% if page.id is not empty %} id="{{ page.id }}"{% endif %} class="dashboard{% if page.classNames is not empty %} {{ page.classNames }}{% endif %}">
+        <div class="dashboard-inner">
+            <div class="site-wrap">
+                <div class="col-menu">
+                    <nav class="dashboard-nav">
+                        {% block dashboardNav %}
+                            <ul>
+                                <li role="presentation" class="dashboard-nav-dashboard {% if app.request.attributes.get('_route') == 'lender_dashboard' %}active{% else %}complete{% endif %}">
+                                    <a href="{{ path('lender_dashboard') }}">
+                                        <span class="icon fa-dashboard-u"></span>
+                                        <span class="label">{% trans %} lender-dashboard-navigation_dashboard-link {% endtrans %}</span>
+                                    </a>
+                                </li>
+                                <li role="presentation" class="dashboard-nav-balance {% if app.request.attributes.get('_route') == 'lender_wallet' %}active{% else %}complete{% endif %}">
+                                    <a href="{{ path('lender_wallet') }}">
+                                        <span class="icon fa-money-u32"></span>
+                                        <span class="label">{% trans %} lender-dashboard-navigation_wallet-link {% endtrans %}</span></a>
+                                </li>
+                                <li role="presentation" class="dashboard-nav-projects {% if app.request.attributes.get('_route') == 'user/preter/projects' %}active{% else %}complete{% endif %}">
+                                    <a href="{{ route('user/preter/projects') }}">
+                                        <span class="icon fa-project-u"></span>
+                                        <span class="label">{% trans %} lender-dashboard-navigation_projects-link {% endtrans %}</span></a>
+                                </li>
+                                <li role="presentation" class="dashboard-nav-operations {% if app.request.attributes.get('_route') == 'lender_operations' %}active{% else %}complete{% endif %}">
+                                    <a href="{{ path('lender_operations') }}">
+                                        <span class="icon fa-operations-u"></span>
+                                        <span class="label">{% trans %} lender-dashboard-navigation_operations-link {% endtrans %}</span>
+                                    </a>
+                                </li>
+                                <li role="presentation" class="dashboard-nav-profile {% if app.request.attributes.get('_route') == 'lender_profile' %}active{% else %}complete{% endif %}">
+                                    <a href="{{ path('lender_profile') }}">
+                                        <span class="icon fa-profile-u"></span>
+                                        <span class="label">{% trans %} lender-dashboard-navigation_profile-link {% endtrans %}</span>
+                                    </a>
+                                </li>
+                                {% if app.user.getClientStatus() == constant('\\clients_status::VALIDATED') %}
+                                <li role="presentation" class="dashboard-nav-autolend {% if app.request.attributes.get('_route') == 'autolend' %}active{% else %}complete{% endif %}">
+                                    <a href="{{ path('autolend') }}">
+                                        <span class="icon fa-autolend-u"></span>
+                                        <span class="label">{% trans %} lender-dashboard-navigation_autolend-link {% endtrans %}</span>
+                                    </a>
+                                </li>
+                                {%  endif %}
+                                <li role="presentation" class="dashboard-nav-notifications {% if app.request.attributes.get('_route') == 'user/preter/notifications' %}active{% else %}complete{% endif %}">
+                                    <a href="{{ route('user/preter/notifications') }}"><span class="icon fa-bell-u"></span><span class="label">Notifications</span></a>
+                                </li>
+                            </ul>
+                        {% endblock %}
+                    </nav>
+
+                    {% block dashboardNotifications %}
+                        {% include 'partials/components/dashboard-panel-notifications.twig' %}
+                    {% endblock %}
+                </div><!-- /.col-menu -->
+
+                {% if 'common-lender_general-message-lender-account'|trans != 'common-lender_general-message-lender-account' %}
+                    {% set noMessage = false %}
+                {% else %}
+                    {% set noMessage = true %}
+                {% endif %}
+                <div class="col-content dashboard-content">
+                    <div class="row dashboard-tabs">
+                        <div class="message-info " {% if noMessage == true %}style="display: none;"{% endif %}>
+                            <p>{% trans %} common-lender_general-message-lender-account {% endtrans %} </p>
+                            <a href="javascript:;" class="btn-close ui-dismiss"><span class="sr-only">Dismiss message</span></a>
+                        </div>
+                    </div>
+                    {% block dashboardContent %} {% endblock %}
+                </div><!-- /.col-content -->
+            </div><!-- /.site-wrap -->
+        </div><!-- /.dashboard-inner -->
+    </article><!-- /.dashboard -->
+{% endblock %}

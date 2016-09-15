@@ -25,17 +25,13 @@ class LenderAccountDisplayManager
         $this->cachePool          = $cachePool;
     }
 
-    public function getActivityForProject(\lenders_accounts $lenderAccount, $projectId)
+    public function getActivityForProject(\lenders_accounts $lenderAccount, $projectId, $projectStatus)
     {
-        /** @var \projects_status $projectStatus */
-        $projectStatus = $this->entityManager->getRepository('projects_status');
-        $projectStatus->getLastStatut($projectId);
-
         $lenderActivity = [
             'bids' => $this->getBidsForProject($projectId, $lenderAccount)
         ];
 
-        if ($projectStatus->status >= \projects_status::FUNDE) {
+        if ($projectStatus >= \projects_status::FUNDE) {
             $lenderActivity['loans'] = $this->getLoansForProject($projectId, $lenderAccount);
         }
 
@@ -154,7 +150,7 @@ class LenderAccountDisplayManager
      */
     private function getLoansAllocationByCompanyRegion($lenderId)
     {
-        $cachedItem = $this->cachePool->getItem(__FUNCTION__);
+        $cachedItem = $this->cachePool->getItem(__FUNCTION__ . $lenderId);
 
         if (false === $cachedItem->isHit()) {
             /** @var \lenders_accounts $lendersAccounts */
@@ -179,7 +175,7 @@ class LenderAccountDisplayManager
      */
     private function getLoansAllocationByCompanySector($lenderId)
     {
-        $cachedItem = $this->cachePool->getItem(__FUNCTION__);
+        $cachedItem = $this->cachePool->getItem(__FUNCTION__ . $lenderId);
 
         if (false === $cachedItem->isHit()) {
             /** @var \projects $projects */

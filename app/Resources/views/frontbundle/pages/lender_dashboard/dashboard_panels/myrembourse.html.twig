@@ -1,14 +1,14 @@
 {% set seriesLegend = {
     'capital': {
-        name: "lender-dashboard_repaid-capital"|trans,
+        name: "lender-dashboard_repaid-capital"|trans ~ ' ',
         color: '#1A87DA'
     },
     'interests': {
-        name: "lender-dashboard_received-interests"|trans,
+        name: "lender-dashboard_received-interests"|trans ~ ' ',
         color: '#EF980B'
     },
     'tax': {
-        name: "lender-dashboard_tax-levies"|trans,
+        name: "lender-dashboard_tax-levies"|trans ~ '* ',
         color: '#F76965'
     }}
 %}
@@ -79,7 +79,10 @@
                 name: seriesLegend.tax.name,
                 data: yearSum.tax,
                 color: seriesLegend.tax.color
-            }]
+            }],
+            tooltip: {
+                valueSuffix: ' €'
+            }
         }
     }
 %}
@@ -150,7 +153,10 @@
                 name: seriesLegend.tax.name,
                 data: quarterSum.tax,
                 color: seriesLegend.tax.color,
-            }]
+            }],
+            tooltip: {
+                valueSuffix: ' €'
+            }
         }
     }
 %}
@@ -221,7 +227,10 @@
                 name: seriesLegend.tax.name,
                 data: monthSum.tax,
                 color: seriesLegend.tax.color,
-            }]
+            }],
+            tooltip: {
+                valueSuffix: ' €'
+            }
         }
     }
 %}
@@ -234,6 +243,7 @@
         <span class="ui-draggable-handle"></span>
     {% endblock %}
     {% block panelContent %}
+        {% if monthSum.capital|length > 0 %}
         <div class="dashboard-panel-chart">
             <div class="tabs nested-tabs">
                 <div class="tab-navigation">
@@ -262,6 +272,8 @@
                 </div><!-- /.tab-content -->
             </div><!-- /.nested-tabs -->
         </div><!-- /.dashboard-panel-chart -->
+        <div class="field-help">{{ 'lender-dashboard_depending-on-tax-exemption-status' | trans }}</div>
+        {% endif %}
     {% endblock %}
     {% block panelFooter %}
         <a href="{{ path('lender_operations') }}" class="link">{% trans %} lender-dashboard_see-my-operations-details {% endtrans %}</a>

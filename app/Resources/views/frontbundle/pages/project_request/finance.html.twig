@@ -202,29 +202,26 @@
                                 </div><!-- /.form-project-create-content -->
                             </div><!-- /.col-form -->
 
-                            {#<div class="col-sim col-lg-4 col-md-4">#}
-                                {#<div class="hide-xs hide-sm">#}
-                                    {#<div class="emprunter-sim-mini ui-has-sticky" data-sticky-bufferbottom="156">#}
-                                        {#<header class="emprunter-sim-mini-header">#}
-                                            {#<h4 class="emprunter-sim-mini-title">{% trans %} project-request_simulator-panel-title {% endtrans %}</h4>#}
-                                            {#<p>{% trans %} project-request_simulator-panel-message {% endtrans %}</p>#}
-                                        {#</header>#}
-                                        {#<div class="emprunter-sim-mini-content" style="display: none">#}
-                                            {#<dl class="list-2col">#}
-                                                {#<dt id="esim-label-amount">{% trans %} project-request_simulator-panel-amount-label {% endtrans %}</dt>#}
-                                                {#<dd id="esim-output-amount">€</dd>#}
-                                                {#<dt id="esim-label-duration">{% trans %} project-request_simulator-panel-estimated-funding-time-label {% endtrans %}</dt>#}
-                                                {#<dd id="esim-output-duration">2 jours</dd>#}
-                                                {#<dt id="esim-label-monthly" style="display: none">{% trans %} project-request_simulator-panel-estimated-monthly-repayment-label {% endtrans %}</dt>#}
-                                                {#<dd id="esim-output-monthly" style="display: none">2&nbsp;887 / 3&nbsp;285€</dd>#}
-                                            {#</dl>#}
-                                        {#</div>#}
-                                        {#<footer class="emprunter-sim-mini-footer" style="display: none">#}
-                                            {#<p class="instructions">{% trans %} project-request_simulator-panel-message-duirng-step-1 {% endtrans %}</p>#}
-                                        {#</footer>#}
-                                    {#</div><!-- /.emprunter-sim -->#}
-                                {#</div><!-- /.hide-responsive -->#}
-                            {#</div><!-- /.col-sim -->#}
+                            <div class="col-sim col-lg-4 col-md-4">
+                                <div class="hide-xs hide-sm">
+                                    <div class="emprunter-sim-mini ui-has-sticky" data-sticky-bufferbottom="156">
+                                        <header class="emprunter-sim-mini-header">
+                                            <h4 class="emprunter-sim-mini-title">{% trans %} project-request_simulator-panel-title {% endtrans %}</h4>
+                                            <p>{% trans %} project-request_simulator-panel-message {% endtrans %}</p>
+                                        </header>
+                                        <div class="emprunter-sim-mini-content">
+                                            <dl class="list-2col">
+                                                <dt id="esim-label-amount">{% trans %} project-request_simulator-panel-amount-label {% endtrans %}</dt>
+                                                <dd id="esim-output-amount">{{ project.amount|localizednumber }}&nbsp;€</dd>
+                                                <dt id="esim-label-duration">{% trans %} project-request_simulator-panel-estimated-funding-time-label {% endtrans %}</dt>
+                                                <dd id="esim-output-duration">{% transchoice project.averageFundingDuration with {'%averageFundingDuration%' : project.averageFundingDuration} %} project-request_simulator-panel-estimated-funding-time-value {% endtranschoice %}</dd>
+                                                <dt id="esim-label-monthly">{% trans %} project-request_simulator-panel-estimated-monthly-repayment-label {% endtrans %}</dt>
+                                                <dd id="esim-output-monthly">{% trans with {'%minimum%' : project.monthlyPaymentBoundaries.minimum|localizednumber, '%maximum%' : project.monthlyPaymentBoundaries.maximum|localizednumber} %} project-request_simulator-panel-estimated-monthly-repayment-value {% endtrans %}</dd>
+                                            </dl>
+                                        </div>
+                                    </div><!-- /.emprunter-sim -->
+                                </div><!-- /.hide-responsive -->
+                            </div><!-- /.col-sim -->
                         </div><!-- /.row -->
                     </form><!-- /.form-project-create -->
                 </div><!-- /.site-wrap -->

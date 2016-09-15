@@ -16,7 +16,12 @@ $doc
     return false
   })
 
-  // Because this modal is auto-instantiated, I'm just going to bind to element's events to set onconfirm and oncancel actions
+  .ready(function () {
+    $('#form-tos').load('/cgv-popup', function() {
+      $.fancybox.update()
+    });
+  })
+  // Because this modal is auto-instantiated, I'm just going to bind to element's events to set onconfirm actions
   .on('Modal:initialised', '#modal-tos', function (event, elemModal) {
 
     // Fired when user confirms they have accepted the new Terms of Service...
@@ -33,8 +38,7 @@ $doc
         method: $('#form-tos').attr('method'),
         global: false,
         data: {
-          terms: 'true',
-          id_legal_doc: $('#modal-tos input[name="id_legal_doc"]').val()
+          terms: $('#modal-tos input[name="terms"]').is(':checked')
         },
 
         // Event: received server response
@@ -63,62 +67,6 @@ $doc
           $.fancybox.hideLoading()
         }
       })
-
-      return deferredResult
-    }
-
-    // Fired when user does not accept the new Terms of Service...
-    elemModal.settings.oncancel = function () {
-      var deferredResult = $.Deferred()
-
-      // Confirm if user really wants to do this...
-      if (confirm('By not accepting the updated terms of service you will not be able to use Unilend. Do you really want to continue?')) {
-
-        // Show loading spinner via Fancybox
-        $.fancybox.showLoading()
-
-        // Perform AJAX request to the server
-        $.ajax({
-          // Setup AJAX
-          url: $('#form-tos').attr('action'),
-          method: $('#form-tos').attr('method'),
-          global: false,
-          data: {
-            terms: 'false',
-            id_legal_doc: $('#modal-tos input[name="id_legal_doc"]').val()
-          },
-
-          // Event: received server response
-          success: function (data, textStatus, xhr) {
-            // @todo get translated output messages from server AJAX response
-            // Success
-            if (data) {
-              // @todo figure out what to do here
-              // @note maybe log out the user?
-              deferredResult.reject(0)
-              window.location = '/logout'
-
-            // Connection error
-            } else {
-              alert('An error occurred when connecting to the server. Please try again!')
-              deferredResult.reject(1)
-            }
-          },
-
-          // Event: server error
-          error: function (textStatus, error, xhr) {
-            alert('An error occurred when connecting to the server. Please try again!')
-            deferredResult.reject(1)
-          },
-
-          // Event: always fired after any resolve/reject
-          complete: function () {
-            // Hide loading spinner
-            $.fancybox.hideLoading()
-          }
-        })
-      }
-
       return deferredResult
     }
   })

@@ -12,7 +12,10 @@
   },
   "scripts": {
     "gulp": "gulp",
+    "gulp:watch": "gulp watch",
     "gulp:dev": "gulp",
+    "gulp:demo": "gulp",
+    "gulp:preprod": "gulp",
     "gulp:prod": "gulp production",
     "dev": "npm install && gulp"
   },
@@ -84,6 +87,7 @@
     "jquery": "2.2.1",
     "jquery-ui": "1.10.5",
     "loadjson": "1.1.2",
+    "lodash": "4.6.1",
     "lolex": "1.4.0",
     "mocha": "2.4.5",
     "modernizr": "3.3.1",

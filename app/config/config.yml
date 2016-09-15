@@ -163,3 +163,8 @@ services:
         class: Unilend\Bundle\FrontBundle\Twig\IntlExtension
         tags:
             - { name: twig.extension }
+
+google_tag_manager:
+    enabled: true
+    id: "%gtm_token%"
+    autoAppend: false

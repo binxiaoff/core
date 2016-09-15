@@ -47,7 +47,7 @@ class photos
     }
 
     /**
-     * Reisze image avec une largeur max et une hauteur max
+     * Resize image avec une largeur max et une hauteur max
      * @param string $format Type de l'image
      */
     public function resizeImageWH($format = '')

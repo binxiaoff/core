@@ -103,16 +103,17 @@ class thickboxController extends bootstrap
         switch ($this->params[1]) {
             case \projects_status::PROBLEME:
                 $this->bAskEmail         = true;
-                $this->bCustomEmail      = false;
+                $this->bCustomEmail      = true;
                 $this->bCustomSite       = true;
                 $this->bDecisionDate     = false;
                 $this->bReceiver         = false;
                 $this->bAskEmailBorrower = true;
 
                 /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
-                $translationManager      = $this->get('unilend.service.translation_manager');
-                $aProjectTexts           = $translationManager->getAllTranslationsForSection('projet');
-                $this->sInfoStatusChange = trim($aProjectTexts['info-passage-statut-probleme']);
+                $translationManager         = $this->get('unilend.service.translation_manager');
+                $aProjectTexts              = $translationManager->getAllTranslationsForSection('projet');
+                $this->sInfoStatusChange    = trim($aProjectTexts['info-passage-statut-probleme']);
+                $this->mailInfoStatusChange = trim($aProjectTexts['mail-info-passage-statut-probleme']);
 
                 break;
             case \projects_status::PROBLEME_J_X:
@@ -166,11 +167,12 @@ class thickboxController extends bootstrap
         }
 
         if (in_array($this->params[1], array(\projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE))) {
-            $oProjectsLastStatusHistory = $this->loadData('projects_last_status_history');
-            $oProjectsLastStatusHistory->get($this->params[0], 'id_project');
+            /** @var \projects_status_history $oProjectsStatusHistory */
+            $oProjectsStatusHistory = $this->loadData('projects_status_history');
+            $oProjectsStatusHistory->loadLastProjectHistory($this->params[0]);
 
             $oProjectsStatusHistoryDetails = $this->loadData('projects_status_history_details');
-            $oProjectsStatusHistoryDetails->get($oProjectsLastStatusHistory->id_project_status_history, 'id_project_status_history');
+            $oProjectsStatusHistoryDetails->get($oProjectsStatusHistory->id_project_status_history, 'id_project_status_history');
 
             $this->sPreviousReceiver = $oProjectsStatusHistoryDetails->receiver;
         }

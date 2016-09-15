@@ -2,6 +2,50 @@
 
 class bootstrap extends Controller
 {
+    /** @var \dates */
+    protected $dates;
+    /** @var \ficelle */
+    protected $ficelle;
+    /** @var \upload */
+    protected $upload;
+    /** @var \photos */
+    protected $photos;
+    /** @var \translations */
+    protected $ln;
+    /** @var \settings */
+    protected $settings;
+    /** @var \tree_elements */
+    protected $tree_elements;
+    /** @var \blocs */
+    protected $blocs;
+    /** @var \blocs_elements */
+    protected $blocs_elements;
+    /** @var \elements */
+    protected $elements;
+    /** @var \tree */
+    protected $tree;
+    /** @var \users */
+    protected $users;
+    /** @var \users_zones */
+    protected $users_zones;
+    /** @var \users_history */
+    protected $users_history;
+    /** @var \mail_templates */
+    protected $mail_template;
+    /** @var \projects */
+    protected $projects;
+    /** @var \clients */
+    protected $clients;
+    /** @var \companies */
+    protected $companies;
+    /** @var \bids */
+    protected $bids;
+    /** @var \loans */
+    protected $loans;
+    /** @var \lenders_accounts */
+    protected $lenders_accounts;
+    /** @var \echeanciers */
+    protected $echeanciers;
 
     public function initialize()
     {
@@ -171,7 +215,7 @@ class bootstrap extends Controller
             && $this->current_function != 'logout'
             && $this->current_controller != 'thickbox'
             && $this->current_controller != 'ajax'
-            && !empty($_SESSION['user']['id_user'])
+            && false === empty($_SESSION['user']['id_user'])
         ) {
             $ilya3mois             = mktime(0, 0, 0, date('m') - 3, date('d'), date('Y'));
             $tab_date_pass         = explode(' ', $_SESSION['user']['password_edited']);
@@ -183,7 +227,7 @@ class bootstrap extends Controller
                 $_SESSION['freeow']['title']   = 'Modification de votre mot de passe';
                 $_SESSION['freeow']['message'] = 'Votre mot de passe doit &ecirc;tre mis &agrave; jour afin de conserver un niveau de s&eacute;curit&eacute; optimal!';
 
-                header('Location:' . $this->lurl . '/edit_password/' . $_SESSION['user']['id_user']);
+                header('Location:' . $this->lurl . '/edit_password/');
                 die;
             }
         }

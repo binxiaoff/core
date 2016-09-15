@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -10,18 +11,21 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
+use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
+use Unilend\Bundle\FrontBundle\Service\PaylineManager;
+use Unilend\Bundle\FrontBundle\Service\SourceManager;
 use Unilend\core\Loader;
 
 class LenderSubscriptionController extends Controller
 {
     /**
-     * @Route("inscription_preteur/etape1", name="lender_subscription_contact")
+     * @Route("inscription_preteur/etape1", name="lender_subscription_personal_information")
      */
-    public function contactAction(Request $request)
+    public function personalInformationAction(Request $request)
     {
         /** @var \clients $client */
         $client   = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $response = $this->checkProgressAndRedirect($client);
+        $response = $this->checkProgressAndRedirect($client, $request->getUri());
 
         if (false === $response instanceof \clients){
             return $response;
@@ -40,25 +44,36 @@ class LenderSubscriptionController extends Controller
         $template['countries']     = $locationManager->getCountries();
         $template['nationalities'] = $locationManager->getNationalities();
 
-        $formData = $request->getSession()->get('subscriptionStep1FormData', []);
-        $request->getSession()->remove('subscriptionStep1FormData');
+        /** @var \tree $tree */
+        $tree = $this->get('unilend.service.entity_manager')->getRepository('tree');
+        $settings->get('Lien conditions generales inscription preteur societe', 'type');
+        $tree->get(['id_tree' => $settings->value]);
+        $template['termsOfUseLegalEntity'] = $this->generateUrl($tree->slug);
+
+        $settings->get('Lien conditions generales inscription preteur particulier', 'type');
+        $tree->get(['id_tree' => $settings->value]);
+        $template['termsOfUsePerson'] = $this->generateUrl($tree->slug);
+
+        $formData = $request->getSession()->get('subscriptionPersonalInformationFormData', []);
+        $request->getSession()->remove('subscriptionPersonalInformationFormData');
 
         $landingPageData = $this->get('session')->get('landingPageData', []);
         $this->get('session')->remove('landingPageData');
 
         $template['formData'] = [
             'client_form_of_address'           => isset($formData['client_form_of_address']) ? $formData['client_form_of_address'] : '',
-            'client_name'                      => isset($formData['client_name']) ? $formData['client_name'] : (isset($landingPageData['prospect_name']) ? $landingPageData['prospect_name']: ''),
-            'client_first_name'                => isset($formData['client_first_name']) ? $formData['client_first_name'] : (isset($landingPageData['prospect_first_name'])? $landingPageData['prospect_first_name']: ''),
+            'client_name'                      => isset($formData['client_name']) ? $formData['client_name'] : (isset($landingPageData['prospect_name']) ? $landingPageData['prospect_name'] : ''),
+            'client_first_name'                => isset($formData['client_first_name']) ? $formData['client_first_name'] : (isset($landingPageData['prospect_first_name']) ? $landingPageData['prospect_first_name'] : ''),
             'client_used_name'                 => isset($formData['client_used_name']) ? $formData['client_used_name'] : '',
-            'client_email'                     => isset($formData['client_email']) ? $formData['client_email'] : (isset($landingPageData['prospect_email'])? $landingPageData['prospect_email']: ''),
+            'client_email'                     => isset($formData['client_email']) ? $formData['client_email'] : (isset($landingPageData['prospect_email']) ? $landingPageData['prospect_email'] : ''),
             'client_secret_question'           => isset($formData['client_secret_question']) ? $formData['client_secret_question'] : '',
+            'client_secret_answer'             => isset($formData['client_secret_answer']) ? $formData['client_secret_answer'] : '',
             'fiscal_address_street'            => isset($formData['fiscal_address_street']) ? $formData['fiscal_address_street'] : '',
             'fiscal_address_zip'               => isset($formData['fiscal_address_zip']) ? $formData['fiscal_address_zip'] : '',
             'fiscal_address_city'              => isset($formData['fiscal_address_city']) ? $formData['fiscal_address_city'] : '',
             'fiscal_address_country'           => isset($formData['fiscal_address_country']) ? $formData['fiscal_address_country'] : \pays_v2::COUNTRY_FRANCE,
             'client_mobile'                    => isset($formData['client_mobile']) ? $formData['client_mobile'] : '',
-            'same_postal_address'              => isset($formData['same_postal_address']) ? $formData['same_postal_address'] : '',
+            'same_postal_address'              => isset($formData['same_postal_address']) ? true : (empty($formData['postal_address_street'])) ? true : false,
             'postal_address_street'            => isset($formData['postal_address_street']) ? $formData['postal_address_street'] : '',
             'postal_address_zip'               => isset($formData['postal_address_zip']) ? $formData['postal_address_zip'] : '',
             'postal_address_city'              => isset($formData['postal_address_city']) ? $formData['postal_address_city'] : '',
@@ -89,20 +104,19 @@ class LenderSubscriptionController extends Controller
             'company_director_email'           => isset($formData['company_director_email']) ? $formData['company_director_email'] : ''
         ];
 
-        return $this->render('pages/lender_subscription/contact.html.twig', $template);
+        return $this->render('pages/lender_subscription/personal_information.html.twig', $template);
     }
 
     /**
-     * @Route("inscription_preteur/etape1/person", name="lender_subscription_contact_person_form")
+     * @Route("inscription_preteur/etape1/person", name="lender_subscription_personal_information_person_form")
      * @Method("POST")
      */
-    public function contactPersonFormAction(Request $request)
+    public function personalInformationPersonFormAction(Request $request)
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $response = $this->checkProgressAndRedirect($client);
-
-        if (false === $response instanceof \clients) {
+        $response = $this->checkProgressAndRedirect($client, $request->getPathInfo());
+        if (false === $response instanceof \clients){
             return $response;
         }
 
@@ -117,41 +131,41 @@ class LenderSubscriptionController extends Controller
         $post = $request->request->all();
 
         if (false === $dates->ageplus18($post['client_year_of_birth'] . '-' . $post['client_month_of_birth'] . '-' . $post['client_day_of_birth'])) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-age'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-age'));
         }
         if (empty($post['client_form_of_address'])) {
-            $this->addFlash('Step1Errors', $translator->trans('lender-subscription_step-1-identity-missing-form-of-address'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-identity-missing-form-of-address'));
         }
         if (empty($post['client_name'])) {
-            $this->addFlash('Step1Errors', $translator->trans('common-validator_last-name-empty'));
+            $this->addFlash('personalInformationErrors', $translator->trans('common-validator_last-name-empty'));
         }
         if (empty($post['client_first_name'])) {
-            $this->addFlash('Step1Errors', $translator->trans('lender-subscription_step-1-error-identity-missing-first-name'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-identity-missing-first-name'));
         }
         if (empty($post['client_no_us_person'])) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-us-person'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-us-person'));
         }
         if (empty($post['terms_of_use'])) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-terms-of-use'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-terms-of-use'));
         }
         if (false === isset($post['client_mobile']) || false === is_numeric(str_replace([' ', '.'], '', $post['client_mobile']))) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-wrong-mobile-format'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-wrong-mobile-format'));
         }
         if (empty($post['fiscal_address_street'])) {
-            $this->addFlash('Step1Errors', $translator->trans('lender-subscription_step-1-error-fiscal-address-missing'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-fiscal-address-missing'));
         }
         if (empty($post['fiscal_address_city'])) {
-            $this->addFlash('Step1Errors', $translator->trans('lender-subscription_step-1-error-fiscal-address-city-missing'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-fiscal-address-city-missing'));
         }
         if (empty($post['fiscal_address_zip'])) {
-            $this->addFlash('Step1Errors', $translator->trans('lender-subscription_step-1-error-fiscal-address-zip-missing'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-fiscal-address-zip-missing'));
         } else {
             /** @var \villes $cities */
             $cities = $this->get('unilend.service.entity_manager')->getRepository('villes');
             if (isset($post['fiscal_address_country']) && \pays_v2::COUNTRY_FRANCE == $post['fiscal_address_country']) {
                 //for France, check post code here.
                 if (false === $cities->exist($post['fiscal_address_zip'], 'cp')) {
-                    $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-fiscal-address-wrong-zip'));
+                    $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-fiscal-address-wrong-zip'));
                 }
             }
             unset($cities);
@@ -169,29 +183,34 @@ class LenderSubscriptionController extends Controller
         $nationalities = $this->get('unilend.service.entity_manager')->getRepository('nationalites_v2');
         /** @var string $inseePlaceOfBirth */
         $inseePlaceOfBirth = '';
+        /** @var string $placeOfBirth */
+        $placeOfBirth = '';
 
         if (false === isset($post['client_nationality']) || false === $nationalities->get($post['client_nationality'], 'id_nationalite')) {
             $bCountryCheckOk = false;
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-wrong-nationality'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-wrong-nationality'));
         }
         if (false === isset($post['client_country_of_birth']) || false === $countries->get($post['client_country_of_birth'], 'id_pays')) {
             $bCountryCheckOk = false;
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-wrong-birth-country'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-wrong-birth-country'));
         }
-        if (false === isset($post['client_place_of_birth']) || \pays_v2::COUNTRY_FRANCE == $countries->id_pays && false === $cities->getByName($post['client_place_of_birth'], 'ville')) {
+        if (false === isset($post['client_place_of_birth'])
+            || \pays_v2::COUNTRY_FRANCE == $countries->id_pays && false === isset($post['client_insee_place_of_birth'])) {
             $bCountryCheckOk = false;
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-wrong-birth-place'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-wrong-birth-place'));
         }
 
         if ($bCountryCheckOk) {
-            if (\pays_v2::COUNTRY_FRANCE == $post['client_country_of_birth']) {
-                $inseePlaceOfBirth = empty($post['client_insee_place_of_birth']) ? $cities->insee : $post['client_insee_place_of_birth'];
+            if (\pays_v2::COUNTRY_FRANCE == $post['client_country_of_birth'] ) {
+                $inseePlaceOfBirth = (false === empty($post['client_insee_place_of_birth']) && $cities->get($post['client_insee_place_of_birth'], 'insee')) ? $cities->insee : $post['client_place_of_birth'];
+                $placeOfBirth = $cities->ville;
                 unset($cities);
             } else {
                 /** @var \insee_pays $inseeCountries */
                 $inseeCountries = $this->get('unilend.service.entity_manager')->getRepository('insee_pays');
                 if ($countries->get($post['client_country_of_birth']) && $inseeCountries->getByCountryIso(trim($countries->iso))) {
                     $inseePlaceOfBirth = $inseeCountries->COG;
+                    $placeOfBirth =  $post['client_place_of_birth'];
                 }
                 unset($countries, $inseeCountries);
             }
@@ -199,15 +218,21 @@ class LenderSubscriptionController extends Controller
 
         $this->checkSecuritySectionPost($post);
 
-        if ($this->get('session')->getFlashBag()->has('step1Errors')) {
-            $request->getSession()->set('subscriptionStep1FormData', $post);
-            return $this->redirectToRoute('lender_subscription_contact');
+        if ($this->get('session')->getFlashBag()->has('personalInformationErrors')) {
+            $request->getSession()->set('subscriptionPersonalInformationFormData', $post);
+            return $this->redirectToRoute('lender_subscription_personal_information');
         } else {
             /** @var \lenders_accounts $lenderAccount */
             $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
             /** @var \clients_adresses $clientAddress */
             $clientAddress = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
+            /** @var SourceManager $sourceManager */
+            $sourceManager = $this->get('unilend.frontbundle.service.source_manager');
 
+            $client->source                     = $sourceManager->getSource(SourceManager::SOURCE1);
+            $client->source2                    = $sourceManager->getSource(SourceManager::SOURCE2);
+            $client->source3                    = $sourceManager->getSource(SourceManager::SOURCE3);
+            $client->slug_origine               = $sourceManager->getSource(SourceManager::ENTRY_SLUG);
             $client->civilite                   = $post['client_form_of_address'];
             $client->nom                        = $ficelle->majNom($post['client_name']);
             $client->nom_usage                  = isset($post['client_used_name']) ? $ficelle->majNom($post['client_used_name']) : '';
@@ -215,9 +240,10 @@ class LenderSubscriptionController extends Controller
             $client->email                      = $post['client_email'];
             $client->secrete_question           = $post['client_secret_question'];
             $client->secrete_reponse            = md5($post['client_secret_answer']);
+            // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
             $client->password                   = password_hash($post['client_password'], PASSWORD_DEFAULT);
             $client->mobile                     = str_replace([' ', '.'], '', $post['client_mobile']);
-            $client->ville_naissance            = $post['client_place_of_birth'];
+            $client->ville_naissance            = $placeOfBirth;
             $client->insee_birth                = $inseePlaceOfBirth;
             $client->id_pays_naissance          = $post['client_country_of_birth'];
             $client->id_nationalite             = $post['client_nationality'];
@@ -229,6 +255,9 @@ class LenderSubscriptionController extends Controller
             $client->status_inscription_preteur = 1;
             $client->etape_inscription_preteur  = 1;
             $client->create();
+
+            $request->getSession()->set(DataLayerCollector::SESSION_KEY_CLIENT_EMAIL, $client->email);
+            $request->getSession()->set(DataLayerCollector::SESSION_KEY_LENDER_CLIENT_ID, $client->id_client);
 
             $clientAddress->adresse_fiscal      = $post['fiscal_address_street'];
             $clientAddress->ville_fiscal        = $post['fiscal_address_city'];
@@ -247,21 +276,21 @@ class LenderSubscriptionController extends Controller
             $lenderAccount->create();
 
             $this->saveClientHistoryAction($client, $post);
-            $this->sendSubscriptionConfirmationEmail($client);
+            $this->sendSubscriptionStartConfirmationEmail($client);
 
             return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $client->hash]);
         }
     }
 
     /**
-     * @Route("inscription_preteur/etape1/entity", name="lender_subscription_contact_legal_entity_form")
+     * @Route("inscription_preteur/etape1/entity", name="lender_subscription_personal_information_legal_entity_form")
      * @Method("POST")
      */
-    public function contactLegalEntityFormAction(Request $request)
+    public function personalInformationLegalEntityFormAction(Request $request)
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $response = $this->checkProgressAndRedirect($client);
+        $response = $this->checkProgressAndRedirect($client, $request->getPathInfo());
         if (false === $response instanceof \clients){
             return $response;
         }
@@ -272,81 +301,81 @@ class LenderSubscriptionController extends Controller
         $post = $request->request->all();
 
         if (empty($post['company_name'])) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-identity-missing-company-name'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-identity-missing-company-name'));
         }
         if (empty($post['company_legal_form'])) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-identity-missing-legal-form'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-identity-missing-legal-form'));
         }
         if (empty($post['company_social_capital'])) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-identity-missing-social-capital'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-identity-missing-social-capital'));
         }
         if (empty($post['company_siren'])) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-identity-missing-siren'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-identity-missing-siren'));
         }
         if (empty($post['company_phone']) || (strlen($post['company_phone']) < 9 || strlen($post['company_phone']) > 14)) {
-            $this->addFlash('step1Errors', $translator->trans('common-validator_phone-number-invalid'));
+            $this->addFlash('personalInformationErrors', $translator->trans('common-validator_phone-number-invalid'));
         }
         if (empty($post['client_form_of_address'])) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-identity-missing-form-of-address'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-identity-missing-form-of-address'));
         }
         if (empty($post['client_name'])) {
-            $this->addFlash('step1Errors', $translator->trans('common-validator_last-name-empty'));
+            $this->addFlash('personalInformationErrors', $translator->trans('common-validator_last-name-empty'));
         }
         if (empty($post['client_first_name'])) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-identity-missing-first-name'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-identity-missing-first-name'));
         }
         if (empty($post['client_position'])) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-identity-client-position'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-identity-client-position'));
         }
         if (empty($post['client_mobile']) || strlen($post['client_mobile']) < 9 || strlen($post['client_mobile']) > 14) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-wrong-mobile-format'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-wrong-mobile-format'));
         }
         if (empty($post['company_client_status'])) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-identity-company-client-status-missing'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-identity-company-client-status-missing'));
         } else {
             if ($post['company_client_status'] == \companies::CLIENT_STATUS_DELEGATION_OF_POWER || $post['company_client_status'] == \companies::CLIENT_STATUS_EXTERNAL_CONSULTANT) {
                 if (empty($post['company_director_form_of_address'])) {
-                    $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-company-director-form-of-address-missing'));
+                    $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-company-director-form-of-address-missing'));
                 }
                 if (empty($post['company_director_name'])) {
-                    $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-company-director-name-missing'));
+                    $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-company-director-name-missing'));
                 }
                 if (empty($post['company_director_first_name'])) {
-                    $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-company-director-first-name-missing'));
+                    $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-company-director-first-name-missing'));
                 }
                 if (empty($post['company_director_position'])) {
-                    $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-company-director-position-missing'));
+                    $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-company-director-position-missing'));
                 }
                 if (empty($post['company_director_email']) || (isset($post['company_director_email']) && false == filter_var($post['company_director_email'], FILTER_VALIDATE_EMAIL))) {
-                    $this->addFlash('step1Errors', $translator->trans('common_email-missing'));
+                    $this->addFlash('personalInformationErrors', $translator->trans('common_email-missing'));
                 }
                 if (empty($post['company_director_phone']) || strlen($post['company_director_phone']) < 9 || strlen($post['company_director_phone']) > 14) {
-                    $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-company-director-phone-missing'));
+                    $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-company-director-phone-missing'));
                 }
                 if ($post['company_client_status'] == \companies::CLIENT_STATUS_EXTERNAL_CONSULTANT) {
                     if (empty($post['company_external_counsel'])) {
-                        $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-company-external-counsel-error-message'));
+                        $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-company-external-counsel-error-message'));
                         if (3 == $post['company_external_counsel'] && empty($post['company_external_counsel_other'])) {
-                            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-identity-company-missing-external-counsel-other'));
+                            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-identity-company-missing-external-counsel-other'));
                         }
                     }
                 }
             }
         }
         if (empty($post['fiscal_address_street'])) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-fiscal-address-missing'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-fiscal-address-missing'));
         }
         if (empty($post['fiscal_address_city'])) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-fiscal-address-city-missing'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-fiscal-address-city-missing'));
         }
         if (empty($post['fiscal_address_zip'])) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-fiscal-address-zip-missing'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-fiscal-address-zip-missing'));
         } else {
             /** @var \villes $cities */
             $cities = $this->get('unilend.service.entity_manager')->getRepository('villes');
             if (isset($post['fiscal_address_country']) && \pays_v2::COUNTRY_FRANCE == $post['fiscal_address_country']) {
                 if (false === $cities->exist($post['fiscal_address_zip'], 'cp')) {
-                    $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-fiscal-address-wrong-zip'));
+                    $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-fiscal-address-wrong-zip'));
                 }
             }
             unset($cities);
@@ -358,12 +387,12 @@ class LenderSubscriptionController extends Controller
         $this->checkSecuritySectionPost($post);
 
         if (empty($post['terms_of_use'])) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-terms-of-use'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-terms-of-use'));
         }
 
-        if ($this->get('session')->getFlashBag()->has('step1Errors')) {
-            $request->getSession()->set('subscriptionStep1FormData', $post);
-            return $this->redirectToRoute('lender_subscription_contact');
+        if ($this->get('session')->getFlashBag()->has('personalInformationErrors')) {
+            $request->getSession()->set('subscriptionPersonalInformationFormData', $post);
+            return $this->redirectToRoute('lender_subscription_personal_information');
         } else {
             /** @var \companies $company */
             $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
@@ -372,8 +401,14 @@ class LenderSubscriptionController extends Controller
             /** @var \lenders_accounts $lenderAccount */
             $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
             /** @var \ficelle $ficelle */
-            $ficelle = Loader::loadLib('ficelle');
+            $ficelle       = Loader::loadLib('ficelle');
+            /** @var SourceManager $sourceManager */
+            $sourceManager = $this->get('unilend.frontbundle.service.source_manager');
 
+            $client->source                     = $sourceManager->getSource(SourceManager::SOURCE1);
+            $client->source2                    = $sourceManager->getSource(SourceManager::SOURCE2);
+            $client->source3                    = $sourceManager->getSource(SourceManager::SOURCE3);
+            $client->slug_origine               = $sourceManager->getSource(SourceManager::ENTRY_SLUG);
             $client->civilite                   = $post['client_form_of_address'];
             $client->nom                        = $ficelle->majNom($post['client_name']);
             $client->prenom                     = $ficelle->majNom($post['client_first_name']);
@@ -387,12 +422,16 @@ class LenderSubscriptionController extends Controller
             $client->slug                       = $ficelle->generateSlug($client->prenom . '-' . $client->nom);
             $client->secrete_question           = $post['client_secret_question'];
             $client->secrete_reponse            = md5($post['client_secret_answer']);
+            // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
             $client->password                   = password_hash($post['client_password'], PASSWORD_DEFAULT);
             $client->status                     = \clients::STATUS_ONLINE;
             $client->status_inscription_preteur = 1;
             $client->etape_inscription_preteur  = 1;
             $client->type                       = (\pays_v2::COUNTRY_FRANCE == $post['fiscal_address_country']) ? \clients::TYPE_LEGAL_ENTITY : \clients::TYPE_LEGAL_ENTITY_FOREIGNER;
             $client->create();
+
+            $request->getSession()->set(DataLayerCollector::SESSION_KEY_CLIENT_EMAIL, $client->email);
+            $request->getSession()->set(DataLayerCollector::SESSION_KEY_LENDER_CLIENT_ID, $client->id_client);
 
             $company->id_client_owner               = $client->id_client;
             $company->name                          = $post['company_name'];
@@ -436,7 +475,7 @@ class LenderSubscriptionController extends Controller
 
             $this->saveTermsOfUse($client, 'legal_entity');
             $this->saveClientHistoryAction($client, $post);
-            $this->sendSubscriptionConfirmationEmail($client);
+            $this->sendSubscriptionStartConfirmationEmail($client);
 
             return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $client->hash]);
         }
@@ -445,7 +484,7 @@ class LenderSubscriptionController extends Controller
     /**
      * @param \clients $client
      */
-    private function sendSubscriptionConfirmationEmail(\clients $client)
+    private function sendSubscriptionStartConfirmationEmail(\clients $client)
     {
         /** @var \settings $settings */
         $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
@@ -454,7 +493,7 @@ class LenderSubscriptionController extends Controller
         $settings->get('Twitter', 'type');
         $lien_tw = $settings->value;
 
-        $varMail = array(
+        $varMail = [
             'surl'           => $this->get('assets.packages')->getUrl(''),
             'url'            => $this->get('assets.packages')->getUrl(''),
             'prenom'         => $client->prenom,
@@ -463,7 +502,7 @@ class LenderSubscriptionController extends Controller
             'lien_fb'        => $lien_fb,
             'lien_tw'        => $lien_tw,
             'annee'          => date('Y')
-        );
+        ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur', $varMail);
@@ -477,37 +516,43 @@ class LenderSubscriptionController extends Controller
      */
     private function checkSecuritySectionPost($post)
     {
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
 
         if ((false === isset($post['client_email']) && false !== filter_var($post['client_email'], FILTER_VALIDATE_EMAIL)) || $post['client_email'] != $post['client_email_confirmation']) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-identity-wrong-email'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-identity-wrong-email'));
         }
 
         if ($client->existEmail($post['client_email'])) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-existing-email'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-existing-email'));
         }
 
         if (empty($post['client_password'])) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-identity-missing-password'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-identity-missing-password'));
         }
 
         if (empty($post['client_password_confirmation'])) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-identity-missing-password-confirmation'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-identity-missing-password-confirmation'));
         }
 
         if (isset($post['client_password']) && isset($post['client_password_confirmation']) && $post['client_password'] != $post['client_password_confirmation']) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-passwords-dont-match'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-passwords-dont-match'));
+        }
+
+        if (false === empty($post['client_password']) && false === $ficelle->password_fo($post['client_password'], 6)) {
+            $this->addFlash('personalInformationErrors', $translator->trans('common-validator_password-invalid'));
         }
 
         if (empty($post['client_secret_question'])) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-secret-qestion-missing'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-secret-qestion-missing'));
         }
 
         if (empty($post['client_secret_answer'])) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-secret-answer-missing'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-secret-answer-missing'));
         }
     }
 
@@ -520,16 +565,16 @@ class LenderSubscriptionController extends Controller
         $translator = $this->get('translator');
 
         if (false === isset($post['postal_address_street'])) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-missing-postal-address'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-missing-postal-address'));
         }
         if (false === isset($post['postal_address_city'])) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-missing-postal-address-city'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-missing-postal-address-city'));
         }
         if (false === isset($post['postal_address_zip'])) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-missing-postal-address-zip'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-missing-postal-address-zip'));
         }
         if (false === isset($post['postal_address_country'])) {
-            $this->addFlash('step1Errors', $translator->trans('lender-subscription_step-1-error-missing-postal-address-country'));
+            $this->addFlash('personalInformationErrors', $translator->trans('lender-subscription_personal-information-error-missing-postal-address-country'));
         }
     }
 
@@ -561,11 +606,12 @@ class LenderSubscriptionController extends Controller
      * @Route("inscription_preteur/etape2/{clientHash}", name="lender_subscription_documents")
      * @Method("GET")
      */
-    public function step2Action($clientHash, Request $request)
+    public function documentsAction($clientHash, Request $request)
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $response = $this->checkProgressAndRedirect($client, $clientHash);
+        $response = $this->checkProgressAndRedirect($client, $request->getPathInfo(), $clientHash);
+
         if (false === $response instanceof \clients){
             return $response;
         }
@@ -603,7 +649,7 @@ class LenderSubscriptionController extends Controller
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $response = $this->checkProgressAndRedirect($client, $clientHash);
+        $response = $this->checkProgressAndRedirect($client, $request->getPathInfo(), $clientHash);
         if (false === $response instanceof \clients){
             return $response;
         }
@@ -622,22 +668,22 @@ class LenderSubscriptionController extends Controller
         $post = $request->request->all();
 
         if (empty($post['bic']) || (isset($post['bic']) && false === $ficelle->swift_validate(trim($post['bic'])))) {
-            $this->addFlash('step2Errors', $translator->trans('lender-subscription_step-2-bic-error-message'));
+            $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-bic-error-message'));
         }
 
         if (empty($post['iban']) || false == $ficelle->isIBAN($post['iban'])) {
-            $this->addFlash('step2Errors', $translator->trans('lender-subscription_step-2-iban-error-message'));
+            $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-iban-error-message'));
         } elseif (strtoupper(substr($post['iban'], 0, 2)) !== 'FR') {
-            $this->addFlash('step2Errors', $translator->trans('lender-subscription_step-2-iban-not-french-error-message'));
+            $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-iban-not-french-error-message'));
         }
 
         if (isset($_FILES['rib']) && $_FILES['rib']['name'] != '') {
             $attachmentIdRib = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::RIB, 'rib');
             if (false === is_numeric($attachmentIdRib)) {
-                $this->addFlash('step2Errors', $translator->trans('lender-subscription_step-2-upload-files-error-message'));
+                $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-upload-files-error-message'));
             }
         } else {
-            $this->addFlash('step2Errors', $translator->trans('lender-subscription_step-2-missing-rib'));
+            $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-missing-rib'));
         }
 
         if (in_array($client->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) {
@@ -649,13 +695,14 @@ class LenderSubscriptionController extends Controller
             $this->validateAttachmentsLegalEntity($lenderAccount, $company, $translator);
         }
 
-        if ($this->get('session')->getFlashBag()->has('step2Errors')) {
+        if ($this->get('session')->getFlashBag()->has('documentsErrors')) {
             $request->getSession()->set('subscriptionStep2FormData', $post);
             return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $client->hash]);
         } else {
             $lenderAccount->bic           = trim(strtoupper($post['bic']));
             $lenderAccount->iban          = trim(strtoupper(str_replace(' ', '', $post['iban'])));
             $lenderAccount->cni_passeport = 1;
+            $lenderAccount->motif        = $client->getLenderPattern($client->id_client);
             $lenderAccount->update();
 
             $client->etape_inscription_preteur = 2;
@@ -665,6 +712,7 @@ class LenderSubscriptionController extends Controller
             $clientStatusHistory = $this->get('unilend.service.entity_manager')->getRepository('clients_status_history');
             $clientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED, $client->id_client);
             $this->saveClientHistoryAction($client, $post);
+            $this->sendFinalizedSubscriptionConfirmationEmail($client);
 
             return $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->hash]);
         }
@@ -672,98 +720,98 @@ class LenderSubscriptionController extends Controller
 
     private function validateAttachmentsPerson($post, \lenders_accounts $lenderAccount, \clients_adresses $clientAddress, TranslatorInterface $translator)
     {
-        $uploadErrorMessage = $translator->trans('lender-subscription_step-2-upload-files-error-message');
+        $uploadErrorMessage = $translator->trans('lender-subscription_documents-upload-files-error-message');
 
         if (isset($_FILES['id_recto']) && $_FILES['id_recto']['name'] != '') {
             $attachmentIdRecto = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE, 'id_recto');
             if (false === is_numeric($attachmentIdRecto)) {
-                $this->addFlash('step2Errors', $uploadErrorMessage);
+                $this->addFlash('documentsErrors', $uploadErrorMessage);
             }
         } else {
-            $this->addFlash('step2Errors', $translator->trans('lender-subscription_step-2-person-missing-id'));
+            $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-person-missing-id'));
         }
 
         if (isset($_FILES['id_verso']) && $_FILES['id_verso']['name'] != '') {
             $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE_VERSO, 'id_verso');
             if (false === is_numeric($attachmentIdVerso)) {
-                $this->addFlash('step2Errors', $uploadErrorMessage);
+                $this->addFlash('documentsErrors', $uploadErrorMessage);
             }
         }
 
         if ($clientAddress->id_pays_fiscal > \pays_v2::COUNTRY_FRANCE) {
             if (isset($_FILES['tax-certificate']) && $_FILES['tax-certificate']['name'] != '') {
                 if (false === is_numeric($this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::JUSTIFICATIF_FISCAL, 'tax-certificate'))) {
-                    $this->addFlash('step2Errors', $uploadErrorMessage);
+                    $this->addFlash('documentsErrors', $uploadErrorMessage);
                 }
             } else {
-                $this->addFlash('step2Errors', $translator->trans('lender-subscription_step-2-person-missing-tax-certificate'));
+                $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-person-missing-tax-certificate'));
             }
         }
 
         if (isset($_FILES['housing-certificate']) && $_FILES['housing-certificate']['name'] != '') {
             if (false === is_numeric($this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::JUSTIFICATIF_DOMICILE, 'housing-certificate'))) {
-                $this->addFlash('step2Errors', $uploadErrorMessage);
+                $this->addFlash('documentsErrors', $uploadErrorMessage);
             }
         } else {
-            $this->addFlash('step2Errors', $translator->trans('lender-subscription_step-2-person-missing-housing-certificate'));
+            $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-person-missing-housing-certificate'));
         }
 
         if (isset($post['housed_by_third_person']) && true == $post['housed_by_third_person']){
             if (isset($_FILES['housed-by-third-person-declaration']) && $_FILES['housed-by-third-person-declaration']['name'] != ''){
                 if (false === is_numeric($this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::ATTESTATION_HEBERGEMENT_TIERS, 'housed-by-third-person-declaration'))) {
-                    $this->addFlash('step2Errors', $uploadErrorMessage);
+                    $this->addFlash('documentsErrors', $uploadErrorMessage);
                 }
             } else {
-                $this->addFlash('step2Errors', $translator->trans('lender-subscription_step-2-person-missing-housed-by-third-person-declaration'));
+                $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-person-missing-housed-by-third-person-declaration'));
             }
 
             if (isset($_FILES['id-third-person-housing']) && $_FILES['housed-by-third-person-declaration']['name'] != ''){
                 if (false === is_numeric($this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT, 'id-third-person-housing'))) {
-                    $this->addFlash('step2Errors', $uploadErrorMessage);
+                    $this->addFlash('documentsErrors', $uploadErrorMessage);
                 }
             } else {
-                $this->addFlash('step2Errors', $translator->trans('lender-subscription_step-2-person-missing-id-third-person-housing'));
+                $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-person-missing-id-third-person-housing'));
             }
         }
     }
 
     private function validateAttachmentsLegalEntity(\lenders_accounts $lenderAccount, \companies $company, TranslatorInterface $translator)
     {
-        $uploadErrorMessage = $translator->trans('lender-subscription_step-2-upload-files-error-message');
+        $uploadErrorMessage = $translator->trans('lender-subscription_documents-upload-files-error-message');
 
         if (isset($_FILES['id_recto']) && $_FILES['id_recto']['name'] != '') {
             $attachmentIdRecto = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE_DIRIGEANT, 'id_recto');
             if (false === is_numeric($attachmentIdRecto)) {
-                $this->addFlash('step2Errors', $uploadErrorMessage);
+                $this->addFlash('documentsErrors', $uploadErrorMessage);
             }
         } else {
-            $this->addFlash('step2Errors', $translator->trans('lender-subscription_step-2-legal-entity-missing-director-id'));
+            $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-legal-entity-missing-director-id'));
         }
 
         if (isset($_FILES['id_verso']) && $_FILES['id_verso']['name'] != '') {
             $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::CNI_PASSPORTE_VERSO, 'id_verso');
             if (false === is_numeric($attachmentIdVerso)) {
-                $this->addFlash('step2Errors', $uploadErrorMessage);
+                $this->addFlash('documentsErrors', $uploadErrorMessage);
             }
         }
 
         if (isset($_FILES['company-registration']) && $_FILES['company-registration']['name'] != '') {
             $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::KBIS, 'company-registration');
             if (false === is_numeric($attachmentIdVerso)) {
-                $this->addFlash('step2Errors', $uploadErrorMessage);
+                $this->addFlash('documentsErrors', $uploadErrorMessage);
             }
         } else {
-            $this->addFlash('step2Errors', $translator->trans('lender-subscription_step-2-legal-entity-missing-company-registration'));
+            $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-legal-entity-missing-company-registration'));
         }
 
         if ($company->status_client > \companies::CLIENT_STATUS_MANAGER) {
             if (isset($_FILES['delegation-of-authority']) && $_FILES['delegation-of-authority']['name'] != '') {
                 $attachmentIdVerso = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::DELEGATION_POUVOIR, 'delegation-of-authority');
                 if (false === is_numeric($attachmentIdVerso)) {
-                    $this->addFlash('step2Errors', $uploadErrorMessage);
+                    $this->addFlash('documentsErrors', $uploadErrorMessage);
                 }
             } else {
-                $this->addFlash('step2Errors', $translator->trans('lender-subscription_step-2-legal-entity-missing-delegation-of-authority'));
+                $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-legal-entity-missing-delegation-of-authority'));
             }
         }
     }
@@ -772,15 +820,20 @@ class LenderSubscriptionController extends Controller
      * @Route("inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit")
      * @Method("GET")
      */
-    public function moneyDepositAction($clientHash)
+    public function moneyDepositAction($clientHash, Request $request)
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $this->checkProgressAndRedirect($client, $clientHash);
-
+        $response = $this->checkProgressAndRedirect($client, $request->getPathInfo(), $clientHash);
+        if (false === $response instanceof \clients){
+            return $response;
+        }
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
         $lenderAccount->get($client->id_client, 'id_client_owner');
+
+        $client->etape_inscription_preteur = 3;
+        $client->update();
 
         $template = [
             'client'           => $client->select('id_client = ' . $client->id_client)[0],
@@ -794,7 +847,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("inscription_preteur/add-money/{clientHash}", name="lender_subscription_money_deposit_form")
+     * @Route("inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit_form")
      * @Method("POST")
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
@@ -802,25 +855,159 @@ class LenderSubscriptionController extends Controller
     {
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $response = $this->checkProgressAndRedirect($client, $clientHash);
+        $response = $this->checkProgressAndRedirect($client, $request->getPathInfo(), $clientHash);
         if (false === $response instanceof \clients){
             return $response;
         }
 
+        /** @var LoggerInterface $logger */
+        $logger = $this->get('logger');
+
         $post = $request->request->all();
         $this->get('session')->set('subscriptionStep3WalletData', $post);
 
-        if (isset($post['amount'])){
+        if (isset($post['amount']) && $post['clientId'] == $client->id_client) {
             /** @var \ficelle $ficelle */
             $ficelle = Loader::loadLib('ficelle');
-            $amount = $ficelle->cleanFormatedNumber($post['amount']);
+            $amount  = $ficelle->cleanFormatedNumber($post['amount']);
 
-            //call oayline as dies walletController, redirect URL same, with parameter,
-            //add parameter to the function that treats payline return so it redirects to the right place
-            //implement success message in view
+            if (is_numeric($amount) && $amount >= LenderWalletController::MIN_DEPOSIT_AMOUNT && $amount <= LenderWalletController::MAX_DEPOSIT_AMOUNT) {
+                $amount = (number_format($amount, 2, '.', '') * 100);
+                /** @var \lenders_accounts $lenderAccount */
+                $lenderAccount                 = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
+                $lenderAccount->fonds          = $amount;
+                $lenderAccount->type_transfert = \lenders_accounts::MONEY_TRANSFER_TYPE_CARD;
+                $lenderAccount->update();
+
+                /** @var \clients_adresses $clientAddresses */
+                $clientAddresses = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
+                $clientAddresses->get($client->id_client, 'id_client');
+
+                /** @var \transactions $transaction */
+                $transaction                   = $this->get('unilend.service.entity_manager')->getRepository('transactions');
+                $transaction->id_client        = $client->id_client;
+                $transaction->montant          = $amount;
+                $transaction->id_langue        = 'fr';
+                $transaction->date_transaction = date('Y-m-d h:i:s');
+                $transaction->status           = \transactions::STATUS_PENDING;
+                $transaction->etat             = 0;
+                $transaction->ip_client        = $request->server->get('REMOTE_ADDR');
+                $transaction->civilite_fac     = $client->civilite;
+                $transaction->nom_fac          = $client->nom;
+                $transaction->prenom_fac       = $client->prenom;
+                $transaction->adresse1_fac     = $clientAddresses->adresse1;
+                $transaction->cp_fac           = $clientAddresses->cp;
+                $transaction->ville_fac        = $clientAddresses->ville;
+                $transaction->id_pays_fac      = $clientAddresses->id_pays;
+                $transaction->type_transaction = \transactions_types::TYPE_LENDER_SUBSCRIPTION;
+                $transaction->transaction      = \transactions::PHYSICAL;
+
+                if (in_array($client->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])){
+                    /** @var \companies $company */
+                    $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
+                    $transaction->societe_fac = $company->name;
+                }
+                $transaction->create();
+
+                $paylineParameter = [];
+                require_once $this->getParameter('path.payline') . 'include.php';
+                /** @var \paylineSDK $payline */
+                $payline                  = new \paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
+                $payline->returnURL       = $this->get('assets.packages')->getUrl('') . $this->generateUrl('lender_subscription_money_transfer', ['hash' => $client->hash]);
+                $payline->cancelURL       = $payline->returnURL;
+                $payline->notificationURL = NOTIFICATION_URL;
+
+                $paylineParameter['payment']['amount']   = $amount;
+                $paylineParameter['payment']['currency'] = ORDER_CURRENCY;
+                $paylineParameter['payment']['action']   = PAYMENT_ACTION;
+                $paylineParameter['payment']['mode']     = PAYMENT_MODE;
+
+                $paylineParameter['order']['ref']      = $transaction->id_transaction;
+                $paylineParameter['order']['amount']   = $amount;
+                $paylineParameter['order']['currency'] = ORDER_CURRENCY;
+
+                $paylineParameter['payment']['contractNumber'] = CONTRACT_NUMBER;
+                $contracts                                     = explode(";", CONTRACT_NUMBER_LIST);
+                $paylineParameter['contracts']                 = $contracts;
+                $secondContracts                               = explode(";", SECOND_CONTRACT_NUMBER_LIST);
+                $paylineParameter['secondContracts']           = $secondContracts;
+
+                $logger->info('Calling Payline::doWebPayment: return URL=' . $payline->returnURL . ' Transmetted data: ' . json_encode($paylineParameter), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
+
+                $result = $payline->doWebPayment($paylineParameter);
+                $logger->info('Payline response : ' . json_encode(['$result']), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
+
+                $transaction->get($transaction->id_transaction, 'id_transaction');
+                $transaction->serialize_payline = serialize($result);
+                $transaction->update();
+
+                if (isset($result)) {
+                    if ($result['result']['code'] == '00000') {
+                        return $this->redirect($result['redirectURL']);
+                    } elseif (isset($result)) {
+                        mail('alertesit@unilend.fr', 'unilend erreur payline', 'alimentation preteur (client : ' . $client->id_client . ') | ERROR : ' . $result['result']['code'] . ' ' . $result['result']['longMessage']);
+                    }
+                }
+            }
         }
 
         return $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->hash]);
+    }
+
+    /**
+     * @Route("inscription_preteur/payment", name="lender_subscription_money_transfer")
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     */
+    public function paymentAction(Request $request)
+    {
+        require_once $this->getParameter('path.payline') . 'include.php';
+
+        /** @var \clients $client */
+        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        /** @var LoggerInterface $logger */
+        $logger = $this->get('logger');
+        /** @var TranslatorInterface $translator */
+        $translator = $this->get('translator');;
+
+        if ($client->get($request->query->get('hash'), 'hash')) {
+            $paylineParameter = [];
+            /** @var \paylineSDK $payline */
+            $payline = new \paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
+            $paylineParameter['token'] = $request->request->get('token', $request->query->get('token'));
+
+            if (true === empty($paylineParameter['token'])) {
+                $logger->error('Payline token not found, id_client=' . $client->id_client, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
+                return $this->redirectToRoute('lender_wallet', ['depositResult' => true]);
+            }
+
+            $paylineParameter['version'] = $request->request->get('version', '3');
+            $response                    = $payline->getWebPaymentDetails($paylineParameter);
+            $partnerId                   = $request->getSession()->get('id_partenaire', '');
+
+            if (false === empty($response)) {
+                /** @var PaylineManager $paylineManager */
+                $paylineManager = $this->get('unilend.frontbundle.service.payline_manager');
+                $paylineManager->setLogger($logger);
+
+                if ($paylineManager->handlePaylineReturn($client, $response, $paylineParameter, $partnerId, PaylineManager::PAYMENT_LOCATION_LENDER_SUBSCRIPTION)) {
+
+                    /** @var \clients_history $clientHistory */
+                    $clientHistory            = $this->get('unilend.service.entity_manager')->getRepository('clients_history');
+                    $clientHistory->id_client = $client->id_client;
+                    $clientHistory->status    = \clients_history::STATUS_ACTION_ACCOUNT_CREATION;
+                    $clientHistory->create();
+
+                    $this->sendInternalMoneyTransferNotification($client, $response);
+                    $this->addFlash('moneyTransferSuccess', $translator->trans('lender-subscription_money-transfer-success-message', [
+                        '%depositAmount%' => bcdiv($response['payment']['amount'], 100, 2)]));
+                    $this->redirectToRoute('lender_subscription_money_deposit', [ 'clientHash' => $client->hash,
+                    ]);
+                }
+                $this->addFlash('moneyTransferError', $translator->trans('lender-subscription_money-transfer-error-message'));
+                return $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->hash]);
+            }
+        }
+        return $this->redirectToRoute('lender_subscription_money_deposit');
     }
 
 
@@ -892,7 +1079,7 @@ class LenderSubscriptionController extends Controller
         }
 
         if (false === empty($post['prospect_email']) && $clients->existEmail($post['prospect_email']) && $clients->get($post['prospect_email'], 'email')){
-            $response = $this->checkProgressAndRedirect($clients);
+            $response = $this->checkProgressAndRedirect($clients, $request->getPathInfo());
             if (false === $response instanceof \clients){
                 return $response;
             }
@@ -900,14 +1087,20 @@ class LenderSubscriptionController extends Controller
 
         if (false === $this->get('session')->getFlashBag()->has('landingPageErrors')) {
             if (false === $prospect->exist($post['prospect_email'], 'email')) {
-                //TODO set source in prospect
+                /** @var SourceManager $sourceManager */
+                $sourceManager          = $this->get('unilend.frontbundle.service.source_manager');
+
+                $prospect->source       = $sourceManager->getSource(SourceManager::SOURCE1);
+                $prospect->source2      = $sourceManager->getSource(SourceManager::SOURCE2);
+                $prospect->source3      = $sourceManager->getSource(SourceManager::SOURCE3);
+                $prospect->slug_origine = $sourceManager->getSource(SourceManager::ENTRY_SLUG);
                 $prospect->nom          = $post['prospect_name'];
                 $prospect->prenom       = $post['prospect_first_name'];
                 $prospect->email        = $post['prospect_email'];
                 $prospect->id_langue    = 'fr';
                 $prospect->create();
             }
-            return $this->redirectToRoute('lender_subscription_contact');
+            return $this->redirectToRoute('lender_subscription_personal_information');
         } else {
             return $this->redirectToRoute('lender_landing_page');
         }
@@ -915,31 +1108,60 @@ class LenderSubscriptionController extends Controller
 
     /**
      * @param \clients $client
+     * @param string $requestPathInfo
      * @param string|null $clientHash
      * @return \clients|\Symfony\Component\HttpFoundation\RedirectResponse
      */
-    private function checkProgressAndRedirect(\clients &$client, $clientHash = null)
+    private function checkProgressAndRedirect(\clients &$client, $requestPathInfo, $clientHash = null)
     {
-        if (false === empty($client->id_client) || (false === is_null($clientHash) && false === $client->get($clientHash, 'hash'))) {
-            if (\clients::STATUS_ONLINE == $client->status && $client->etape_inscription_preteur < 3) {
-                return $this->redirectToRoute('lender_subscription_step_' . ($client->etape_inscription_preteur + 1), ['clientHash' => $client->hash]);
+        if (false === empty($client->id_client) || (false === is_null($clientHash) && $client->get($clientHash, 'hash'))) {
+            if (\clients::STATUS_ONLINE == $client->status && $client->etape_inscription_preteur >= 1 && $client->etape_inscription_preteur <= 3) {
+                $redirectRoute = $this->getSubscriptionStepRedirectRoute($client->etape_inscription_preteur,$client->hash);
+                if ($requestPathInfo !== $redirectRoute) {
+                    return $this->redirect($redirectRoute);
+                }
             } else {
                 return $this->redirectToRoute('login');
             }
         }
 
-        if (
-            $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
-            && (
-                $this->get('security.authorization_checker')->isGranted('ROLE_BORROWER')
-                || ($this->get('security.authorization_checker')->isGranted('ROLE_LENDER') && $this->getUser()->getSubscriptionStep() >= 3)
-                || (false === is_null($clientHash) && $client->id_client != $this->getUser()->getClientId())
-            )
-        ) {
-            return $this->redirectToRoute('projects_list');
+        if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')) {
+
+            if ($this->get('security.authorization_checker')->isGranted('ROLE_BORROWER')) {
+                return $this->redirectToRoute('projects_list');
+            }
+
+            if ($this->get('security.authorization_checker')->isGranted('ROLE_LENDER')) {
+                if (false === is_null($clientHash) && $client->get($clientHash, 'hash') && $client->id_client != $this->getUser()->getClientId()) {
+                    return $this->redirectToRoute('projects_list');
+                } else {
+                    $client->get($this->getUser()->getClientId());
+                    $redirectRoute = $this->getSubscriptionStepRedirectRoute($client->etape_inscription_preteur, $client->hash);
+                    if ($requestPathInfo !== $redirectRoute) {
+                        return $this->redirect($redirectRoute);
+                    }
+                }
+            }
         }
 
         return $client;
+    }
+
+    private function getSubscriptionStepRedirectRoute($alreadyCompletedStep, $clientHash = null)
+    {
+        switch($alreadyCompletedStep){
+            case 1 :
+                $redirectRoute = $this->generateUrl('lender_subscription_documents', ['clientHash' => $clientHash]);
+                break;
+            case 2 :
+            case 3 :
+                $redirectRoute = $this->generateUrl('lender_subscription_money_deposit', ['clientHash' => $clientHash]);
+                break;
+            default :
+                $redirectRoute = $this->generateUrl('project_list');
+        }
+
+        return $redirectRoute;
     }
 
     /**
@@ -1057,6 +1279,8 @@ class LenderSubscriptionController extends Controller
         if ($request->isXMLHttpRequest()) {
             /** @var \dates $dates */
             $dates = Loader::loadLib('dates');
+            /** @var TranslatorInterface $translator */
+            $translator = $this->get('translator');
             if ($dates->ageplus18($request->request->get('year_of_birth') . '-' . $request->request->get('month_of_birth') . '-' . $request->request->get('day_of_birth'))) {
                 return new JsonResponse([
                     'status' => true
@@ -1064,35 +1288,86 @@ class LenderSubscriptionController extends Controller
             } else {
                 return new JsonResponse([
                     'status' => false,
-                    // @todo translated output
-                    'error'  => 'Vous devez avoir plus de 18 ans'
+                    'error'  => $translator->trans('lender-subscription_personal-information-error-age')
                 ]);
             }
         }
         return new Response('not an ajax request');
     }
 
+    private function sendFinalizedSubscriptionConfirmationEmail(\clients $client)
+    {
+        /** @var \settings $settings */
+        $settings =  $this->get('unilend.service.entity_manager')->getRepository('settings');
+        $settings->get('Facebook', 'type');
+        $lien_fb = $settings->value;
+        $settings->get('Twitter', 'type');
+        $lien_tw = $settings->value;
+
+        $varMail = array(
+            'surl'        => $this->get('assets.packages')->getUrl(''),
+            'url'         => $this->get('assets.packages')->getUrl(''),
+            'prenom'         => $client->prenom,
+            'email_p'        => $client->email,
+            'motif_virement' => $client->getLenderPattern($client->id_client),
+            'lien_fb'        => $lien_fb,
+            'lien_tw'        => $lien_tw
+        );
+
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur-etape-3', $varMail);
+        $message->setTo($client->email);
+        $mailer = $this->get('mailer');
+        $mailer->send($message);
+    }
+
+    private function sendInternalMoneyTransferNotification(\clients $client, $response)
+    {
+        /** @var \settings $settings */
+        $settings =  $this->get('unilend.service.entity_manager')->getRepository('settings');
+        $settings->get('Adresse notification nouveau versement preteur', 'type');
+        $destinataire = $settings->value;
+
+        $varMail = array(
+            'surl'        => $this->get('assets.packages')->getUrl(''),
+            'url'         => $this->get('assets.packages')->getUrl(''),
+            '$id_preteur' => $client->id_client,
+            '$nom'        => $client->nom,
+            '$prenom'     => $client->prenom,
+            '$montant'    => bcdiv($response['payment']['amount'], 100, 2)
+        );
+
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-nouveau-versement-dun-preteur', $varMail, false);
+        $message->setTo($destinataire);
+        $mailer = $this->get('mailer');
+        $mailer->send($message);
+    }
+
     /**
-     * @Route("/inscription_preteur/ajax/password", name="lender_subscription_ajax_password")
-     * @Method("POST")
+     * @Route("/inscription_preteur/ajax/check-city", name="lender_subscription_ajax_check_city")
+     * @Method("GET")
      */
-    public function checkPassWordComplexityAction(Request $request)
+    public function checkCityAction(Request $request)
     {
         if ($request->isXMLHttpRequest()) {
-            /** @var \ficelle $ficelle */
-            $ficelle = Loader::loadLib('ficelle');
+            $get = $request->query->all();
 
-            if ($ficelle->password_fo($request->request->get('client_password'), 6)) {
-                return new JsonResponse([
-                    'status' => true
-                ]);
-            } else {
-                return new JsonResponse([
-                    'status' => false,
-                    // @todo translated output
-                    'error' => 'Assurez-vous que votre mot de passe comporte au moins 6 caractères'
-                ]);
+            if (false === empty($get['country']) && \pays_v2::COUNTRY_FRANCE != $get['country']) {
+                return $this->json(['status' => true]);
             }
+
+            if (empty($get['zip'])) {
+                $get['zip'] = null;
+            }
+
+            if (false === empty($get['city'])) {
+                /** @var LocationManager $locationManager */
+                $locationManager = $this->get('unilend.service.location_manager');
+                return $this->json(['status' => $locationManager->checkFrenchCity($get['city'], $get['zip'])]);
+            }
+
+            return $this->json(['status' => false]);
         }
 
         return new Response('not an ajax request');

@@ -74,7 +74,7 @@ if ($bProcessForm) {
     if (
         empty($_SESSION['forms']['depot-de-dossier']['values']['siren'])
         || $_SESSION['forms']['depot-de-dossier']['values']['siren'] != (int) $_SESSION['forms']['depot-de-dossier']['values']['siren']
-        || strlen($_SESSION['forms']['depot-de-dossier']['values']['siren']) !== 9
+        || (strlen($_SESSION['forms']['depot-de-dossier']['values']['siren']) !== 9 && strlen($_SESSION['forms']['depot-de-dossier']['values']['siren']) !== 14)
     ) {
         $_SESSION['forms']['depot-de-dossier']['response']        = $this->lng['landing-page']['champs-obligatoires'];
         $_SESSION['forms']['depot-de-dossier']['errors']['siren'] = true;
@@ -103,5 +103,5 @@ if ($bProcessForm) {
 $this->ordreProject = 1;
 $this->type = 0;
 
-$this->lProjetsFunding = $this->projects->selectProjectsByStatus([\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT], ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], 0, 6);
-$this->nbProjects      = $this->projects->countSelectProjectsByStatus(implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT)), ' AND p.status = 0 AND p.display = 0');
+$this->lProjetsFunding = $this->projects->selectProjectsByStatus([\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT], ' AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], 0, 6);
+$this->nbProjects      = $this->projects->countSelectProjectsByStatus(implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT)), ' AND p.display = 0');

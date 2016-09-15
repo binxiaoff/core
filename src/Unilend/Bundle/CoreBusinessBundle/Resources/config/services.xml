@@ -26,6 +26,8 @@
         <service id="unilend.service.client_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ClientManager">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service.client_settings_manager"/>
+            <argument type="service" id="security.token_storage"/>
+            <argument type="service" id="request_stack"/>
         </service>
 
         <service id="unilend.service.lender_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LenderManager">
@@ -104,7 +106,6 @@
             <argument type="service" id="unilend.service.irr_manager"/>
             <argument type="service" id="memcache.default" />
             <argument type="service" id="unilend.service.location_manager" />
-            <argument type="service" id="unilend.service.translation_manager" />
         </service>
 
         <service id="unilend.service.welcome_offer_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager">

@@ -11,12 +11,10 @@
 
         <section id="homepre-video-hero" class="cta-video-hero" aria-hidden="true" data-set-device-height="xs">
             <div class="video-hero-wrapper">
-                <div class="video-hero">
+                <div class="video-hero" style="background-image: url('{{ completeTestimonialUrl(featureLender.feature_image, 'image') }}')">
                     <div class="caption caption-align-left">
-                        <div class="caption-name">{{ videoHeroes.Lenders.0.name }} </div>
-                        <div class="caption-info">{{ videoHeroes.Lenders.0.age }}</div>
-                        <div class="caption-links">
-                            <a href="{{ route('preter/testimonials') }}" class="link">{% trans %} site-general_testimonial-section-link-to-testimonial-title {% endtrans %}</a></div>
+                        <div class="caption-name">{{ featureLender.name }}, {{ featureLender.projects }}</div>
+                        <div class="caption-info">{{ featureLender.info }}</div>
                     </div><!-- /.caption -->
                 </div><!-- /.video-hero -->
 
@@ -26,13 +24,13 @@
                             <span class="icon fa-play"><span class="sr-only">Play</span></span>
                         </a>
                     </div>
-                    <h3>{% trans %} home-lender_testimonial-section-video-slogan {% endtrans %}</h3>
+                    <h3>{{ featureLender.video_caption }}</h3>
                 </div><!-- /.video-hero-cta -->
 
                 {% include 'partials/components/list-socialmedia.html.twig' %}
 
                 <div class="btn-toolbar">
-                    <a href="#homepre-section-steps" class="btn-cta btn-color-primary">
+                    <a href="{{ path('lender_subscription_personal_information') }}" class="btn-cta btn-color-primary">
                         <span class="icon fa-angle-right"></span>
                         {% trans %} site-general_button-under-video-lender {% endtrans %}
                     </a>
@@ -77,7 +75,7 @@
                 <div class="row">
                     <div class="btn-toolbar">
                         <a href="{{ route('preter/help') }}" class="btn-default ui-open-site-search">{% trans %} home-lender_question-button {% endtrans %}</a>
-                        <a href="{{ path('lender_subscription_contact') }}" class="btn-primary">{% trans %} home-lender_create-account-button {% endtrans %}</a>
+                        <a href="{{ path('lender_subscription_personal_information') }}" class="btn-primary">{% trans %} home-lender_create-account-button {% endtrans %}</a>
                     </div><!-- /.btn-toolbar -->
                     {% if showWelcomeOffer == true %}
                         <div class="stamp" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
@@ -111,7 +109,7 @@
                                 {{ svgimage('#promo-saving', '', 190, 190, 'none') | raw }}
                             </div>
                             <h3 class="promo-highlight">
-                                <span class="ui-text-count" data-start-count="0" data-end-count="100" data-total-time="3000" data-round-float="ceil" data-tween-count="easeOutQuint"></span>
+                                <span class="ui-text-count" data-start-count="0" data-end-count="100" data-total-time="3000" data-tween-count="easeOutQuint">100</span>
                                 <sup>%</sup>
                             </h3>
                             <p>{% trans %} home-lender_unilend-stats-saving-text {% endtrans %}</p>
@@ -124,7 +122,7 @@
                                 {{ svgimage('#promo-linechart', '', 190, 190, 'none') | raw }}
                             </div>
                             <h3 class="promo-highlight">
-                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ getStatistic('unilendIRR')|round(1, 'floor')|localizednumber }}" data-total-time="3000" data-tween-count="easeOutQuint"></span>
+                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ getStatistic('unilendIRR')|round(1, 'floor') }}" data-total-time="3000" data-limit-decimal="1" data-tween-count="easeOutQuint">{{ getStatistic('unilendIRR')|round(1, 'floor')|localizednumber }}</span>
                                 <sup>%</sup>
                             </h3>
                             <p>{% trans %} home-lender_unilend-stats-linechart-text {% endtrans %}</p>
@@ -137,7 +135,7 @@
                                 {{ svgimage('#promo-piggybank', '', 190, 190, 'none') | raw }}
                             </div>
                             <h3 class="promo-highlight">
-                               <span class="ui-text-count" data-start-count="0" data-end-count="20" data-total-time="3000" data-round-float="ceil" data-tween-count="easeOutQuint"></span>
+                               <span class="ui-text-count" data-start-count="0" data-end-count="20" data-total-time="3000" data-tween-count="easeOutQuint">20</span>
                                 <sup>€</sup>
                             </h3>
                             <p>{% trans %} home-lender_unilend-stats-piggybank-text {% endtrans %}</p>
@@ -147,9 +145,9 @@
 
                 <div class="row page-section-footer">
                     <div class="btn-toolbar">
-                        <a href="#" class="btn-primary">{% trans %} home-lender_lending-button-below-unilend-facts {% endtrans %}</a>
+                        <a href="{{ path('lender_subscription_personal_information') }}" class="btn-primary">{% trans %} home-lender_lending-button-below-unilend-facts {% endtrans %}</a>
                     </div>
-                    <p><a href="#" class="link c-p2">{% trans %} home-lender_borrow-link-below-unilend-facts {% endtrans %}</a></p>
+                    <p><a href="{{ path('home_borrower') }}" class="link c-p2">{% trans %} home-lender_borrow-link-below-unilend-facts {% endtrans %}</a></p>
                 </div>
             </div><!-- /.site-wrap -->
         </section><!-- /.promos -->

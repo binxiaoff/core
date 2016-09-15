@@ -2,13 +2,13 @@
     <h3 class="h3">{% trans %} lender_subscription_section-name-id-documents {% endtrans %}</h3>
 
     <div class="message-info">
-        <p>{% trans %} lender-subscription_step-2-accepted-attachment-formats {% endtrans %}</p>
+        <p>{% trans %} lender-subscription_documents-accepted-attachment-formats {% endtrans %}</p>
     </div><!-- /.message-info -->
 
     <div class="row">
         <div class="form-field">
             <label>
-                {% trans %} lender-subscription_step-2-legal-entity-identity-attachments-title {% endtrans %}
+                {% trans %} lender-subscription_documents-legal-entity-identity-attachments-title {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
 
@@ -19,7 +19,7 @@
                      data-fileattach
                      data-fileattach-inputname="company-registration"
                      data-fileattach-maxfiles="1"
-                     data-fileattach-emptyfilelabel="{% trans %} lender-subscription_step-2-legal-entity-company-registration {% endtrans %}">
+                     data-fileattach-emptyfilelabel="{% trans %} lender-subscription_documents-legal-entity-company-registration {% endtrans %}">
                 </div><!-- /.ui-fileattach -->
             </div><!-- /.form-field -->
 
@@ -29,7 +29,7 @@
                      data-fileattach
                      data-fileattach-inputname="delegation-of-authority"
                      data-fileattach-maxfiles="1"
-                     data-fileattach-emptyfilelabel="{% trans %} lender-subscription_step-2-legal-entity-delegation-of-authority {% endtrans %}">
+                     data-fileattach-emptyfilelabel="{% trans %} lender-subscription_documents-legal-entity-delegation-of-authority {% endtrans %}">
                 </div><!-- /.ui-fileattach -->
             </div><!-- /.form-field -->
             {% endif %}
@@ -39,7 +39,7 @@
                      data-fileattach data-fileattach-inputname="id_recto"
                      data-fileattach-maxfiles="1"
                      data-formvalidation-input data-formvalidation-required='input[type="file"][name="id_recto"]'
-                     data-fileattach-emptyfilelabel="{% trans %} lender-subscription_step-2-legal-entity-director-ID-recto {% endtrans %}">
+                     data-fileattach-emptyfilelabel="{% trans %} lender-subscription_documents-legal-entity-director-ID-recto {% endtrans %}">
                 </div><!-- /.ui-fileattach -->
             </div><!-- /.form-field -->
 
@@ -47,7 +47,7 @@
                 <div class="custom-input-file" id="form-lender-subscription-info-file-director-cni-2"
                      data-fileattach data-fileattach-inputname="id_verso"
                      data-fileattach-maxfiles="1"
-                     data-fileattach-emptyfilelabel="{% trans %} lender-subscription_step-2-legal-entity-director-ID-verso {% endtrans %}">
+                     data-fileattach-emptyfilelabel="{% trans %} lender-subscription_documents-legal-entity-director-ID-verso {% endtrans %}">
                 </div><!-- /.ui-fileattach -->
             </div><!-- /.form-field -->
         </div>
@@ -56,7 +56,7 @@
     <div class="row">
         <div class="form-field">
             <label for="form-preter-fichier-identity">
-                {% trans %} lender-subscription_step-2-rib {% endtrans %}
+                {% trans %} lender-subscription_documents-rib {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
 
@@ -70,7 +70,7 @@
             <ul class="ui-formvalidation-messages"></ul>
 
             <div class="field-help">
-                <p>{% trans %} lender-subscription_step-2-rib-info {% endtrans %}</p>
+                <p>{% trans %} lender-subscription_documents-rib-info {% endtrans %}</p>
             </div>
         </div><!-- /.form-field -->
     </div>

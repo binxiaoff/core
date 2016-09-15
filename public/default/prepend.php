@@ -12,9 +12,11 @@ if (strlen($currentController) <= 1) {
     $currentController = $exp[1];
 }
 
-$noCacheControllers = array('ajax', 'cron', 'crongeckoboard', 'pdf', 'LP_inscription_preteurs', '2015', 'Lp-2015-web', 'Lp-offre-bienvenue-web', 'bienvenue', 'inscription_preteur');
+$noCacheControllers = array('ajax', 'cron', 'crongeckoboard', 'pdf', 'LP_inscription_preteurs', '2015', 'Lp-2015-web', 'Lp-offre-bienvenue-web', 'bienvenue', 'inscription_preteur', 'lp-depot-de-dossier');
 
 if (in_array($currentController, $noCacheControllers)) {
+    $nocache = true;
+} else if (0 === strcmp($exp[1], 'projects') && isset($exp[2]) && 0 === strcmp($exp[2], 'bidsExport')) {
     $nocache = true;
 }
 

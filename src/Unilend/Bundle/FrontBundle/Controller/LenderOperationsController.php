@@ -881,7 +881,7 @@ class LenderOperationsController extends Controller
         switch ($orderField) {
             case 'status':
                 $orderField = 'status';
-                $sOrderBy   = 'project_status ' . $orderDirection . ', debut DESC, p.title ASC';
+                $sOrderBy   = 'p.status ' . $orderDirection . ', debut DESC, p.title ASC';
                 break;
             case 'title':
                 $orderField = 'title';

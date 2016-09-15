@@ -48,7 +48,7 @@
                                         <div class="row reverse btn-controls tab-footer">
                                             <div class="col-submit col-lg-7 col-md-7">
                                                 <button class="btn-primary">
-                                                    {% trans %} lender-subscription_step-2-submit-button {% endtrans %}
+                                                    {% trans %} lender-subscription_documents-submit-button {% endtrans %}
                                                     <span class="icon fa-angle-right"></span>
                                                 </button>
                                             </div>
@@ -62,9 +62,9 @@
                                             </div>
                                             <h3 class="promo-highlight">
                                                 <span class="ui-text-count" data-start-count="0" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc"
-                                                      data-end-count="{{ 'lender-subscription_step-2-statistics-section-saving-value'|trans }}" ></span><sup>%</sup>
+                                                      data-end-count="{{ 'lender-subscription_documents-statistics-section-saving-value'|trans }}" ></span><sup>%</sup>
                                             </h3>
-                                            <p>{% trans %} lender-subscription_step-2-statistics-section-saving-text {% endtrans %}</p>
+                                            <p>{% trans %} lender-subscription_documents-statistics-section-saving-text {% endtrans %}</p>
                                         </div><!-- /.promo -->
 
                                         <div class="promo">
@@ -72,10 +72,10 @@
                                                 {{ svgimage('#promo-linechart2', '', 190, 190, 'none') | raw }}
                                             </div>
                                             <h3 class="promo-highlight">
-                                                {% if 'lender-subscription_step-2-statistics-section-linechart-value'|trans != 'lender-subscription_step-2-statistics-section-linechart-value' %}
+                                                {% if 'lender-subscription_documents-statistics-section-linechart-value'|trans != 'lender-subscription_documents-statistics-section-linechart-value' %}
                                                     {% set valueLineChart = getStatistic('unilendIRR')|round(2, 'floor') %}
                                                 {% else %}
-                                                    {% set valueLineChart = 'lender-subscription_step-2-statistics-section-linechart-value'|trans %}
+                                                    {% set valueLineChart = 'lender-subscription_documents-statistics-section-linechart-value'|trans %}
                                                 {% endif %}
                                                 <span class="ui-text-count" data-start-count="0"
                                                       data-end-count="{{ valueLineChart }}"
@@ -84,15 +84,15 @@
                                                       data-tween-count="easeOutQuint"></span>
                                                 <sup>%</sup>
                                             </h3>
-                                            <p>{% trans %} lender-subscription_step-2-statistics-section-linechart-text {% endtrans %}</p>
+                                            <p>{% trans %} lender-subscription_documents-statistics-section-linechart-text {% endtrans %}</p>
                                         </div><!-- /.promo -->
 
                                         <div class="promo">
                                             <div class="promo-image">
                                                 {{ svgimage('#promo-pagestack', '', 190, 190, 'none') | raw }}
                                             </div>
-                                            <h3 class="promo-highlight">{% trans %} lender-subscription_step-2-statistics-section-pagestack-value {% endtrans %}</h3>
-                                            <p>{% trans %} lender-subscription_step-2-statistics-section-pagestack-text {% endtrans %}</p>
+                                            <h3 class="promo-highlight">{% trans %} lender-subscription_documents-statistics-section-pagestack-value {% endtrans %}</h3>
+                                            <p>{% trans %} lender-subscription_documents-statistics-section-pagestack-text {% endtrans %}</p>
                                         </div><!-- /.promo -->
                                     </div>
                                 </div><!-- /.row -->

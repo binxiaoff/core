@@ -4,6 +4,7 @@ namespace Unilend\Bundle\FrontBundle\Security;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Security\Core\Encoder\EncoderAwareInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
 use Symfony\Component\Security\Core\Exception\AccountExpiredException;
 use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
@@ -16,6 +17,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Guard\Authenticator\AbstractFormLoginAuthenticator;
+use Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
@@ -30,12 +32,19 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     private $router;
     /** @var EntityManager */
     private $entityManager;
+    /** @var NotificationManager */
+    private $notificationManager;
 
-    public function __construct(UserPasswordEncoder $securityPasswordEncoder, RouterInterface $router, EntityManager $entityManager)
-    {
+    public function __construct(
+        UserPasswordEncoder $securityPasswordEncoder,
+        RouterInterface $router,
+        EntityManager $entityManager,
+        NotificationManager $notificationManager
+    ) {
         $this->securityPasswordEncoder = $securityPasswordEncoder;
         $this->router                  = $router;
         $this->entityManager           = $entityManager;
+        $this->notificationManager     = $notificationManager;
     }
 
     protected function getDefaultSuccessRedirectUrl(Request $request, UserInterface $user)
@@ -47,7 +56,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         }
 
         if (in_array('ROLE_LENDER', $user->getRoles())) {
-            return $this->router->generate('lender_profile');
+            return $this->router->generate('lender_dashboard');
         }
 
         if (in_array('ROLE_BORROWER', $user->getRoles())) {
@@ -128,23 +137,24 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $user = $token->getUser();
         $request->getSession()->remove('captchaInformation');
 
-        if (password_needs_rehash($user->getPassword(), PASSWORD_BCRYPT)) {
-            /** @var \clients $client */
-            $client = $this->entityManager->getRepository('clients');
-            $client->get($user->getClientId());
-            $client->password = password_hash($this->getCredentials($request)['password'], PASSWORD_BCRYPT);
+        /** @var \clients $client */
+        $client = $this->entityManager->getRepository('clients');
+        $client->get($user->getClientId());
+
+        // Update the password encoder if it's legacy
+        if ($user instanceof EncoderAwareInterface && (null !== $encoderName = $user->getEncoderName())) {
+            $user->useDefaultEncoder(); // force to use the default password encoder
+            $client->password = $this->securityPasswordEncoder->encodePassword($user, $this->getCredentials($request)['password']);
             $client->update();
         }
 
         if ($user instanceof UserInterface && in_array('ROLE_LENDER', $user->getRoles())) {
             if ($user->getSubscriptionStep() < 3) {
-                //TODO uncomment once route created
-                //return new RedirectResponse($this->router->generate('lender_subscription'));
+                return new RedirectResponse($this->router->generate('lender_subscription'));
             }
 
             if (in_array($user->getClientStatus(), [\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER])) {
-                //TODO uncomment once route created
-                //return new RedirectResponse($this->router->generate('lender_completeness'));
+                return new RedirectResponse($this->router->generate('lender_completeness'));
             }
 
             if (false === $user->hasAcceptedCurrentTerms()) {
@@ -154,8 +164,20 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
 
         $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
 
-        if (!$targetPath) {
+        if (! $targetPath) {
             $targetPath = $this->getDefaultSuccessRedirectUrl($request, $user);
+        }
+
+        $client->saveLogin(new \DateTime('NOW'), $user->getUsername());
+
+        /** @var \clients_history $clientHistory */
+        $clientHistory = $this->entityManager->getRepository('clients_history');
+        $clientHistory->logClientAction($client, \clients_history::STATUS_ACTION_LOGIN);
+
+        /** @var \clients_gestion_notifications $clientNotificationSettings */
+        $clientNotificationSettings = $this->entityManager->getRepository('clients_gestion_notifications');
+        if (false === $clientNotificationSettings->select('id_client = ' . $user->getClientId())) {
+            $this->notificationManager->generateDefaultNotificationSettings($client);
         }
 
         return new RedirectResponse($targetPath);
@@ -166,6 +188,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      */
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
+
         if ($exception instanceof LockedException || $exception instanceof DisabledException || $exception instanceof AccountExpiredException) {
             $customException = new CustomUserMessageAuthenticationException('closed-account');
             $request->getSession()->set(Security::AUTHENTICATION_ERROR, $customException);
@@ -176,7 +199,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
 
             /** @var \login_log $loginLog */
             $loginLog        = $this->entityManager->getRepository('login_log');
-            $iPreviousTries  = $loginLog->counter('IP = "' . $_SERVER["REMOTE_ADDR"] . '" AND date_action >= "' . $oNowMinusTenMinutes->format('Y-m-d H:i:s') . '" AND statut = 0');
+            $iPreviousTries  = $loginLog->counter('IP = "' . $request->server->get('REMOTE_ADDR') . '" AND date_action >= "' . $oNowMinusTenMinutes->format('Y-m-d H:i:s') . '" AND statut = 0');
             $iWaitingPeriod  = 0;
             $iPreviousResult = 1;
 
@@ -193,8 +216,20 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
                 'displayCaptcha'       => ($iPreviousTries > 5) ? true : false
             ];
 
+            $request->getSession()->set(Security::AUTHENTICATION_ERROR, $exception);
             $request->getSession()->set('captchaInformation', $aCaptchaInformation);
         }
+
+        $credentials = $this->getCredentials($request);
+        /** @var \login_log $loginLog */
+        $loginLog = $this->entityManager->getRepository('login_log');
+
+        $loginLog->pseudo      = $credentials['username'];
+        $loginLog->IP          = $request->getClientIp();
+        $loginLog->date_action = date('Y-m-d H:i:s');
+        $loginLog->statut      = 0;
+        $loginLog->retour      = $exception->getMessage();
+        $loginLog->create();
 
         return new RedirectResponse($this->getLoginUrl());
     }

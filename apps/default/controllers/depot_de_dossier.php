@@ -28,7 +28,6 @@ class depot_de_dossierController extends bootstrap
         $this->companies_bilans              = $this->loadData('companies_bilans');
         $this->companies_actif_passif        = $this->loadData('companies_actif_passif');
         $this->projects                      = $this->loadData('projects');
-        $this->projects_status               = $this->loadData('projects_status');
         $this->projects_status_history       = $this->loadData('projects_status_history');
         $this->clients                       = $this->loadData('clients');
         $this->clients_adresses              = $this->loadData('clients_adresses');
@@ -77,7 +76,14 @@ class depot_de_dossierController extends bootstrap
         $this->lng['landing-page'] = $this->ln->selectFront('landing-page', $this->language, $this->App);
 
         $iAmount = $_SESSION['forms']['depot-de-dossier']['values']['montant'];
-        $iSIREN  = $_SESSION['forms']['depot-de-dossier']['values']['siren'];
+
+        $siret = '';
+        if (strlen($_SESSION['forms']['depot-de-dossier']['values']['siren']) === 9) {
+            $siren = $_SESSION['forms']['depot-de-dossier']['values']['siren'];
+        } else {
+            $siret = $_SESSION['forms']['depot-de-dossier']['values']['siren'];
+            $siren = substr($siret, 0, 9);
+        }
 
         $_SESSION['forms']['depot-de-dossier']['email'] = isset($_SESSION['forms']['depot-de-dossier']['values']['email']) && $this->ficelle->isEmail($_SESSION['forms']['depot-de-dossier']['values']['email']) ? $_SESSION['forms']['depot-de-dossier']['values']['email'] : '';
 
@@ -109,7 +115,7 @@ class depot_de_dossierController extends bootstrap
         $this->clients_adresses->create();
 
         $this->companies->id_client_owner               = $this->clients->id_client;
-        $this->companies->siren                         = $iSIREN;
+        $this->companies->siren                         = $siren;
         $this->companies->status_adresse_correspondance = '1';
         $this->companies->email_dirigeant               = $_SESSION['forms']['depot-de-dossier']['email'];
         $this->companies->create();
@@ -119,6 +125,7 @@ class depot_de_dossierController extends bootstrap
         $this->projects->ca_declara_client                    = 0;
         $this->projects->resultat_exploitation_declara_client = 0;
         $this->projects->fonds_propres_declara_client         = 0;
+        $this->projects->status                               = \projects_status::DEMANDE_SIMULATEUR;
         $this->projects->create();
 
         $this->settings->get('Altares email alertes', 'type');
@@ -129,24 +136,34 @@ class depot_de_dossierController extends bootstrap
 
         try {
             $oAltares = new Altares();
-            $oResult  = $oAltares->getEligibility($iSIREN);
+            $oResult  = $oAltares->getEligibility($siren);
         } catch (\Exception $oException) {
-            $oLogger->error('Calling Altares::getEligibility() using SIREN ' . $iSIREN . ' - Exception message: ' . $oException->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $iSIREN));
+            $oLogger->error('Calling Altares::getEligibility() using SIREN ' . $siren . ' - Exception message: ' . $oException->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren));
 
             mail($sAlertEmail, '[ALERTE] ERREUR ALTARES 2', 'Date ' . date('Y-m-d H:i:s') . '' . $oException->getMessage());
             $this->redirect(self::PAGE_NAME_STEP_2, \projects_status::COMPLETUDE_ETAPE_2);
         }
-
         if (false === empty($oResult->exception)) {
             $oLogger->error('Altares error code: ' . $oResult->exception->code . ' - Altares error description: ' . $oResult->exception->description . ' - Altares error: ' . $oResult->exception->erreur, array('class' => __CLASS__, 'function' => __FUNCTION__));
 
-            mail($sAlertEmail, '[ALERTE] ERREUR ALTARES 1', 'Date ' . date('Y-m-d H:i:s') . 'SIREN : ' . $iSIREN . ' | ' . $oResult->exception->code . ' | ' . $oResult->exception->description . ' | ' . $oResult->exception->erreur);
+            mail($sAlertEmail, '[ALERTE] ERREUR ALTARES 1', 'Date ' . date('Y-m-d H:i:s') . 'SIREN : ' . $siren . ' | ' . $oResult->exception->code . ' | ' . $oResult->exception->description . ' | ' . $oResult->exception->erreur);
             $this->redirect(self::PAGE_NAME_STEP_2, \projects_status::COMPLETUDE_ETAPE_2);
         }
 
         $this->projects->retour_altares = $oResult->myInfo->codeRetour;
 
         $oAltares->setCompanyData($this->companies, $oResult->myInfo);
+
+        if (false === empty($siret) && $oResult->myInfo->motif != 'SIREN inconnu') {
+            /** @var LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->info('Client ' . $this->clients->id_client . ' entered a SIRET value (' . $siret . ')', array('class' => __CLASS__, 'function' => __FUNCTION__));
+        }
+
+        // @todo Revert when TMA-749 is resolved
+        if (is_numeric($this->companies->name) || 0 === strcasecmp($this->companies->name, 'Monsieur') || 0 === strcasecmp($this->companies->name, 'Madame')) {
+            $oLogger->error('Wrong company name - altares return : ' . serialize($oResult), array('class' => __CLASS__, 'function' => __FUNCTION__));
+        }
 
         switch ($oResult->myInfo->eligibility) {
             case 'Oui':
@@ -187,6 +204,9 @@ class depot_de_dossierController extends bootstrap
         $this->bDisplayTouchvibes = true;
 
         $this->checkProjectHash(self::PAGE_NAME_STEP_2);
+        if (false === empty($this->clients->id_client)) {
+            $this->addDataLayer('ID_Emprunteur', $this->clients->id_client);
+        }
 
         $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-etape-2'];
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-etape-2'];
@@ -390,6 +410,9 @@ class depot_de_dossierController extends bootstrap
         $this->page = 'depot_dossier_3';
 
         $this->checkProjectHash(self::PAGE_NAME_STEP_3);
+        if (false === empty($this->clients->id_client)) {
+            $this->addDataLayer('ID_Emprunteur', $this->clients->id_client);
+        }
 
         $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-etape-3'];
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-etape-3'];
@@ -520,6 +543,9 @@ class depot_de_dossierController extends bootstrap
         $this->page = 'depot_dossier_partenaire';
 
         $this->checkProjectHash(self::PAGE_NAME_PARTNER);
+        if (false === empty($this->clients->id_client)) {
+            $this->addDataLayer('ID_Emprunteur', $this->clients->id_client);
+        }
 
         $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-etape-2'];
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-etape-2'];
@@ -670,6 +696,9 @@ class depot_de_dossierController extends bootstrap
         $this->page = 'depot_dossier_prospect';
 
         $this->checkProjectHash(self::PAGE_NAME_PROSPECT);
+        if (false === empty($this->clients->id_client)) {
+            $this->addDataLayer('ID_Emprunteur', $this->clients->id_client);
+        }
 
         $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-prospect'];
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-prospect'];
@@ -752,6 +781,9 @@ class depot_de_dossierController extends bootstrap
         $this->page = 'depot_dossier_fichiers';
 
         $this->checkProjectHash(self::PAGE_NAME_FILES);
+        if (false === empty($this->clients->id_client)) {
+            $this->addDataLayer('ID_Emprunteur', $this->clients->id_client);
+        }
 
         $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-fichiers'];
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-fichiers'];
@@ -766,9 +798,7 @@ class depot_de_dossierController extends bootstrap
         $this->sYearLessTwo   = date('Y') - 2;
         $this->sYearLessThree = date('Y') - 3;
 
-        $this->projects_last_status_history = $this->loadData('projects_last_status_history');
-        $this->projects_last_status_history->get($this->projects->id_project, 'id_project');
-        $this->projects_status_history->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history');
+        $this->projects_status_history->loadLastProjectHistory($this->projects->id_project);
 
         if (false === empty($this->projects_status_history->content)) {
             $oDOMElement = new DOMDocument();
@@ -806,6 +836,9 @@ class depot_de_dossierController extends bootstrap
         $this->page = 'depot_dossier_fin';
 
         $this->checkProjectHash(self::PAGE_NAME_END);
+        if (false === empty($this->clients->id_client)) {
+            $this->addDataLayer('ID_Emprunteur', $this->clients->id_client);
+        }
 
         $this->lng['depot-de-dossier-fin'] = $this->ln->selectFront('depot-de-dossier-fin', $this->language, $this->App);
 
@@ -817,7 +850,7 @@ class depot_de_dossierController extends bootstrap
         $this->sMessage        = $this->lng['depot-de-dossier-fin']['contenu-non-eligible'];
         $this->bDisplayTouchvibes = false;
 
-        switch ($this->projects_status->status) {
+        switch ($this->projects->status) {
             case \projects_status::ABANDON:
                 $this->sMessage = $this->lng['depot-de-dossier-fin']['abandon'];
                 break;
@@ -906,6 +939,9 @@ class depot_de_dossierController extends bootstrap
         $this->page = 'depot_dossier_emails';
 
         $this->checkProjectHash(self::PAGE_NAME_EMAILS);
+        if (false === empty($this->clients->id_client)) {
+            $this->addDataLayer('ID_Emprunteur', $this->clients->id_client);
+        }
 
         $this->projects->stop_relances = 1;
         $this->projects->update();
@@ -1023,13 +1059,11 @@ class depot_de_dossierController extends bootstrap
             $this->companies_prescripteur->get($this->prescripteurs->id_entite, 'id_company');
         }
 
-        $this->projects_status->getLastStatut($this->projects->id_project);
-
         if (self::PAGE_NAME_EMAILS === $sPage) {
             return;
         }
 
-        switch ($this->projects_status->status) {
+        switch ($this->projects->status) {
             case \projects_status::PAS_3_BILANS:
             case \projects_status::NOTE_EXTERNE_FAIBLE:
                 if (false === in_array($sPage, array(self::PAGE_NAME_END, self::PAGE_NAME_PROSPECT))) {
@@ -1080,7 +1114,7 @@ class depot_de_dossierController extends bootstrap
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
         $oProjectManager = $this->get('unilend.service.project_manager');
 
-        if (false === is_null($iProjectStatus) && $this->projects_status->status != $iProjectStatus) {
+        if (false === is_null($iProjectStatus) && $this->projects->status != $iProjectStatus) {
             $oProjectManager->addProjectStatus(\users::USER_ID_FRONT, $iProjectStatus, $this->projects, 0, $sRejectionMessage);
         }
 

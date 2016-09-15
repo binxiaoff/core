@@ -69,14 +69,8 @@ if (false === ($civilite = filter_input(INPUT_GET, 'civilite', FILTER_SANITIZE_S
     $civilite = '';
 }
 
-if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
-    $page         = 'lexpress';
-    $slug_origine = 'Lp-2015-web_lexpress';
-} else {
-    $page         = '';
-    $slug_origine = 'Lp-2015-web';
-}
-
+$page         = '';
+$slug_origine = 'Lp-2015-web';
 ?>
 <div id="form" class="alone">
     <section class="wrapper">

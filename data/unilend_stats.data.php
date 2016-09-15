@@ -69,198 +69,155 @@ class unilend_stats extends unilend_stats_crud
     }
 
     /**
-     * @param bool $bUseProjectLastStatusMaterialized
      * @return array
      */
-    public function getDataForUnilendIRRUsingProjectsLastStatusMaterialized()
+    public function getDataForUnilendIRR()
     {
-
-        $sQuery =   'SELECT
-                        montant - `montant_unilend` AS montant,
-                        date_transaction AS date
-                    FROM
-                        `transactions`
+        $sQuery =   '
+            SELECT
+                montant - montant_unilend AS montant,
+                date_transaction AS date
+            FROM transactions
+            WHERE type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . '
+        
+        UNION ALL
+        
+            SELECT
+                CASE WHEN ee.status_ra = 1 THEN ee.capital ELSE ee.capital + ee.interets END AS montant,
+                (
+                    SELECT CASE WHEN e.status = 1 THEN e.date_echeance_reel ELSE e.date_echeance END
+                    FROM echeanciers e
                     WHERE
-                        `type_transaction` = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . '
-                    UNION ALL
-                    SELECT
-                        CASE WHEN ee.status_ra = 1 THEN ee.capital ELSE ee.capital + ee.interets END AS montant,
-                        (
-                            SELECT
-                                CASE WHEN e.status = 1 THEN e.date_echeance_reel ELSE e.date_echeance END
-                            FROM
-                                echeanciers e
-                            WHERE
-                                e.ordre = ee.ordre
-                                AND ee.id_project = e.id_project
-                            LIMIT
-                                1
-                        ) AS date
-                    FROM
-                        echeanciers_emprunteur ee
-                        INNER JOIN projects_last_status_history_materialized plshm ON ee.id_project = plshm.id_project
-                        INNER JOIN projects_status_history psh ON plshm.id_project_status_history = psh.id_project_status_history
-                        INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                        e.ordre = ee.ordre
+                        AND ee.id_project = e.id_project
+                    LIMIT 1
+                ) AS date
+            FROM echeanciers_emprunteur ee
+            WHERE
+                (
+                    SELECT e2.status
+                    FROM echeanciers e2
                     WHERE
-                        (
-                            SELECT
-                                e2.status
-                            FROM
-                                echeanciers e2
-                            WHERE
-                                e2.ordre = ee.ordre
-                                AND ee.id_project = e2.id_project
-                            LIMIT
-                                1
-                        ) = 1
-                    UNION ALL
-                    SELECT
-                        ee.capital + ee.interets AS montant,
-                        (
-                            SELECT
-                                e.date_echeance
-                            FROM
-                                echeanciers e
-                            WHERE
-                                e.ordre = ee.ordre
-                                AND ee.id_project = e.id_project
-                            LIMIT
-                                1
-                        ) AS date
-                    FROM
-                        echeanciers_emprunteur ee
-                        INNER JOIN projects_last_status_history_materialized plshm ON ee.id_project = plshm.id_project
-                        INNER JOIN projects_status_history psh ON plshm.id_project_status_history = psh.id_project_status_history
-                        INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                        e2.ordre = ee.ordre
+                        AND ee.id_project = e2.id_project
+                    LIMIT 1
+                ) = 1
+        
+        UNION ALL
+        
+            SELECT
+                ee.capital + ee.interets AS montant,
+                (
+                    SELECT e.date_echeance
+                    FROM echeanciers e
                     WHERE
-                        (
-                            SELECT
-                                e2.status
-                            FROM
-                                echeanciers e2
-                            WHERE
-                                e2.ordre = ee.ordre
-                                AND ee.id_project = e2.id_project
-                            LIMIT
-                                1
-                        ) = 0
-                        AND ps.status = ' . \projects_status::REMBOURSEMENT . '
-                        AND ee.id_project > 0
-                    UNION ALL
-                    SELECT
-                        CASE WHEN ee.date_echeance_emprunteur < NOW() THEN "0" ELSE ee.capital + ee.interets END AS montant,
-                        (
-                            SELECT
-                                e.date_echeance
-                            FROM
-                                echeanciers e
-                            WHERE
-                                e.ordre = ee.ordre
-                                AND ee.id_project = e.id_project
-                            LIMIT
-                                1
-                        ) AS date
-                    FROM
-                        echeanciers_emprunteur ee
-                        INNER JOIN projects_last_status_history_materialized plshm ON ee.id_project = plshm.id_project
-                        INNER JOIN projects_status_history psh ON plshm.id_project_status_history = psh.id_project_status_history
-                        INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                        e.ordre = ee.ordre
+                        AND ee.id_project = e.id_project
+                    LIMIT 1
+                ) AS date
+            FROM echeanciers_emprunteur ee
+            INNER JOIN projects p ON ee.id_project = p.id_project
+            WHERE
+                (
+                    SELECT e2.status
+                    FROM echeanciers e2
                     WHERE
-                        (
-                            SELECT
-                                e2.status
-                            FROM
-                                echeanciers e2
-                            WHERE
-                                e2.ordre = ee.ordre
-                                AND ee.id_project = e2.id_project
-                            LIMIT
-                                1
-                        ) = 0
-                        AND ps.status IN (' . implode(',', array(\projects_status::PROBLEME, \projects_status::PROBLEME_J_X)) . ')
-                        AND ee.id_project > 0
-                    UNION ALL
-                    SELECT
-                        CASE WHEN ee.date_echeance_emprunteur < NOW() THEN "0" ELSE CASE WHEN DATEDIFF (
-                            NOW(),
-                            (
-                                SELECT
-                                    psh2.added
-                                FROM
-                                    projects_status_history psh2
-                                    INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
-                                WHERE
-                                    ps2.status = '. \projects_status::PROBLEME . '
-                                    AND psh2.id_project = ee.id_project
-                                ORDER BY
-                                    psh2.added DESC
-                                LIMIT
-                                    1
-                            )
-                        ) > 180 THEN "0" ELSE ee.capital + ee.interets END END AS montant,
-                        (
-                            SELECT
-                                e.date_echeance
-                            FROM
-                                echeanciers e
-                            WHERE
-                                e.ordre = ee.ordre
-                                AND ee.id_project = e.id_project
-                            LIMIT
-                                1
-                        ) AS date
-                    FROM
-                        echeanciers_emprunteur ee
-                        INNER JOIN projects_last_status_history_materialized plshm ON ee.id_project = plshm.id_project
-                        INNER JOIN projects_status_history psh ON plshm.id_project_status_history = psh.id_project_status_history
-                        INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                        e2.ordre = ee.ordre
+                        AND ee.id_project = e2.id_project
+                    LIMIT 1
+                ) = 0
+                AND p.status = ' . \projects_status::REMBOURSEMENT . '
+                AND ee.id_project > 0
+        
+        UNION ALL
+        
+            SELECT
+                CASE WHEN ee.date_echeance_emprunteur < NOW() THEN "0" ELSE ee.capital + ee.interets END AS montant,
+                (
+                    SELECT e.date_echeance
+                    FROM echeanciers e
                     WHERE
-                        (
-                            SELECT
-                                e2.status
-                            FROM
-                                echeanciers e2
-                            WHERE
-                                e2.ordre = ee.ordre
-                                AND ee.id_project = e2.id_project
-                            LIMIT
-                                1
-                        ) = 0
-                        AND ps.status = ' . \projects_status::RECOUVREMENT . '
-                        AND ee.id_project > 0
-                    UNION ALL
-                    SELECT
-                        0 AS montant,
-                        (
-                            SELECT
-                                e.date_echeance
-                            FROM
-                                echeanciers e
-                            WHERE
-                                e.ordre = ee.ordre
-                                AND ee.id_project = e.id_project
-                            LIMIT
-                                1
-                        ) AS date
-                    FROM
-                        echeanciers_emprunteur ee
-                        INNER JOIN projects_last_status_history_materialized plshm ON ee.id_project = plshm.id_project
-                        INNER JOIN projects_status_history psh ON plshm.id_project_status_history = psh.id_project_status_history
-                        INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                        e.ordre = ee.ordre
+                        AND ee.id_project = e.id_project
+                    LIMIT 1
+                ) AS date
+            FROM echeanciers_emprunteur ee
+            INNER JOIN projects p ON ee.id_project = p.id_project
+            WHERE
+                (
+                    SELECT e2.status
+                    FROM echeanciers e2
                     WHERE
-                        (
-                            SELECT
-                                e2.status
-                            FROM
-                                echeanciers e2
-                            WHERE
-                                e2.ordre = ee.ordre
-                                AND ee.id_project = e2.id_project
-                            LIMIT
-                                1
-                        ) = 0
-                        AND ps.status IN (' . implode(',', array(\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT)) . ')
-                        AND ee.id_project > 0';
+                        e2.ordre = ee.ordre
+                        AND ee.id_project = e2.id_project
+                    LIMIT 1
+                ) = 0
+                AND p.status IN (' . implode(',', [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X]) . ')
+                AND ee.id_project > 0
+        
+        UNION ALL
+        
+            SELECT
+                CASE WHEN ee.date_echeance_emprunteur < NOW() THEN "0" ELSE CASE WHEN DATEDIFF (
+                    NOW(),
+                    (
+                        SELECT psh2.added
+                        FROM projects_status_history psh2
+                        INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                        WHERE
+                            ps2.status = ' . \projects_status::PROBLEME . '
+                            AND psh2.id_project = ee.id_project
+                        ORDER BY psh2.added DESC
+                        LIMIT 1
+                    )
+                ) > 180 THEN "0" ELSE ee.capital + ee.interets END END AS montant,
+                (
+                    SELECT e.date_echeance
+                    FROM echeanciers e
+                    WHERE
+                        e.ordre = ee.ordre
+                        AND ee.id_project = e.id_project
+                    LIMIT 1
+                ) AS date
+            FROM echeanciers_emprunteur ee
+            INNER JOIN projects p ON ee.id_project = p.id_project
+            WHERE
+                (
+                    SELECT e2.status
+                    FROM echeanciers e2
+                    WHERE
+                        e2.ordre = ee.ordre
+                        AND ee.id_project = e2.id_project
+                    LIMIT 1
+                ) = 0
+                AND p.status = ' . \projects_status::RECOUVREMENT . '
+                AND ee.id_project > 0
+        
+        UNION ALL
+        
+            SELECT
+                0 AS montant,
+                (
+                    SELECT e.date_echeance
+                    FROM echeanciers e
+                    WHERE
+                        e.ordre = ee.ordre
+                        AND ee.id_project = e.id_project
+                    LIMIT 1
+                ) AS date
+            FROM echeanciers_emprunteur ee
+            INNER JOIN projects p ON ee.id_project = p.id_project
+            WHERE
+                (
+                    SELECT e2.status
+                    FROM echeanciers e2
+                    WHERE
+                        e2.ordre = ee.ordre
+                        AND ee.id_project = e2.id_project
+                    LIMIT 1
+                ) = 0
+                AND p.status IN (' . implode(',', [\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT]) . ')
+                AND ee.id_project > 0';
 
         $aValuesIRR = array();
         $oQuery  = $this->bdd->query($sQuery);
@@ -270,5 +227,4 @@ class unilend_stats extends unilend_stats_crud
 
         return $aValuesIRR;
     }
-
 }

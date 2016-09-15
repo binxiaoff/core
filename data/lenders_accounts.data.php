@@ -31,6 +31,10 @@ class lenders_accounts extends lenders_accounts_crud
     const LENDER_STATUS_ONLINE  = 1;
     const LENDER_STATUS_OFFLINE = 0;
 
+    const MONEY_TRANSFER_TYPE_BANK_TRANSFER = 1;
+    const MONEY_TRANSFER_TYPE_CARD          = 2;
+
+
     public function __construct($bdd, $params = '')
     {
         parent::lenders_accounts($bdd, $params);
@@ -198,34 +202,6 @@ class lenders_accounts extends lenders_accounts_crud
         return $result;
     }
 
-    /**
-     * @param null $lenderId
-     * @return bool
-     */
-    public function isFrenchResident($lenderId = null)
-    {
-        $bResult = false;
-
-        if (null === $lenderId) {
-            $lenderId = $this->id_lender_account;
-        }
-
-        if ($lenderId) {
-            $sQuery = "SELECT resident_etranger, MAX(added) FROM `lenders_imposition_history` WHERE id_lender = :lenderId";
-            try {
-                $result = $this->bdd->executeQuery($sQuery, array('lenderId' => $lenderId), array('lenderId' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
-                    ->fetch(PDO::FETCH_ASSOC);
-
-                if (empty($result) || '0' === $result['resident_etranger']) {
-                    $bResult = true;
-                }
-            } catch (\Doctrine\DBAL\DBALException $ex) {
-                return null;
-            }
-        }
-        return $bResult;
-    }
-
     public function isNaturalPerson($lenderId = null)
     {
         $bResult = false;
@@ -237,8 +213,9 @@ class lenders_accounts extends lenders_accounts_crud
         if ($lenderId) {
             $sQuery = "SELECT c.type FROM lenders_accounts la INNER JOIN clients c ON c.id_client =  la.id_client_owner WHERE la.id_lender_account = :lenderId";
             try {
-                $result = $this->bdd->executeQuery($sQuery, array('lenderId' => $lenderId), array(), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
-                    ->fetchAll(PDO::FETCH_ASSOC);
+                $statement = $this->bdd->executeQuery($sQuery, array('lenderId' => $lenderId), array(), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)));
+                $result    = $statement->fetchAll(PDO::FETCH_ASSOC);
+                $statement->closeCursor();
 
                 if (isset($result[0]['type']) && in_array($result[0]['type'], array(1, 3))) {
                     $bResult = true;
@@ -269,17 +246,13 @@ class lenders_accounts extends lenders_accounts_crud
 
     public function sumLoansOfProjectsInRepayment($iLendersAccountId)
     {
-        $sql = 'SELECT
-                    SUM(l.amount)
-                FROM
-                    `loans` l
-                    INNER JOIN projects_last_status_history plsh ON l.id_project = plsh.id_project
-                    INNER JOIN projects_status_history psh ON plsh.id_project_status_history = psh.id_project_status_history
-                    INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                WHERE
-                    l.status = "0"
-                    AND ps.status >= ' . \projects_status::REMBOURSEMENT . '
-                    AND l.id_lender = ' . $iLendersAccountId;
+        $sql = '
+            SELECT SUM(l.amount)
+            FROM loans l
+            INNER JOIN projects p ON l.id_project = p.id_project
+            WHERE l.status = "0"
+                AND p.status >= ' . \projects_status::REMBOURSEMENT . '
+                AND l.id_lender = ' . $iLendersAccountId;
 
         $result = $this->bdd->query($sql);
         return (int)($this->bdd->result($result, 0, 0) / 100);
@@ -395,8 +368,8 @@ class lenders_accounts extends lenders_accounts_crud
     public function countLendersByClientType($aClientType, $bOnlyActive = false)
     {
         $clientStatus = $bOnlyActive ? ' INNER JOIN clients_status_history csh ON (csh.id_client = c.id_client AND csh.id_client_status = 6)' : '';
-        $type         = ['idLender' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY, 'clientStatus' => \PDO::PARAM_INT];
-        $bind         = ['idLender' => $aClientType, 'clientStatus' => \clients::STATUS_ONLINE];
+        $type         = ['clientTypes' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY, 'clientStatus' => \PDO::PARAM_INT];
+        $bind         = ['clientTypes' => $aClientType, 'clientStatus' => \clients::STATUS_ONLINE];
 
         $query    = 'SELECT COUNT(DISTINCT(c.id_client))
                         FROM clients c

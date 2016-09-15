@@ -11,7 +11,7 @@
             <div class="hero-wrap">
                 <div class="site-wrap">
                     <h2 class="page-title">
-                        {{ 'projects-listing_page-title'|transchoice(projectsInFunding, {'%numberProjects%' : projectsInFunding|localizednumber , '%numberFinancedProjects%' : getStatistic('numberOfFinancedProjects')|localizednumber , '%numberActiveLenders%' : getStatistic('numberOfActiveLenders')|localizednumber})|nbsp|raw }}
+                        {{ 'projects-listing_page-title'|transchoice(projectsInFunding, {'%numberProjects%' : projectsInFunding|localizednumber , '%numberFinancedProjects%' : getStatistic('numberOfFinancedProjects')|localizednumber , '%numberActiveLenders%' : getStatistic('numberOfActiveLenders')|localizednumber})|raw }}
                     </h2>
                 </div><!-- /.site-wrap -->
 
@@ -27,7 +27,7 @@
                 <div class="row page-section-footer">
                     {% if not is_granted('IS_AUTHENTICATED_FULLY') %}
                         <div class="btn-toolbar">
-                            <a href="{{ path('lender_subscription_contact') }}" class="btn-primary">{% trans %} projects-listing_become-lender-button {% endtrans %}</a>
+                            <a href="{{ path('lender_subscription_personal_information') }}" class="btn-primary">{% trans %} projects-listing_become-lender-button {% endtrans %}</a>
                         </div>
                     {% endif %}
                     <p>

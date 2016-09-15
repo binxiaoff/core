@@ -122,8 +122,8 @@ class LenderManager
             }
             if (bccomp($setting['rate_min'], $projectMaxRate[$setting['id_period']][$setting['evaluation']], 1) > 0) {
                 $badSettings[] = [
-                    'period_min'       => $setting['min'],
-                    'period_max'       => $setting['max'],
+                    'period_min'       => $setting['period_min'],
+                    'period_max'       => $setting['period_max'],
                     'evaluation'       => $setting['evaluation'],
                     'rate_min_autobid' => $setting['rate_min'],
                     'rate_max_project' => $projectMaxRate[$setting['id_period']][$setting['evaluation']],

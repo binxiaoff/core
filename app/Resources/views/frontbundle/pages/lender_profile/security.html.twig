@@ -1,0 +1,275 @@
+{% extends 'layouts/_layout_lender.html.twig' %}
+
+{% set page = {
+id: 'user-preter-profile',
+title: 'Prêteur / Profil',
+permalink: route('user/preter/profile'),
+classNames: 'user-preter-profile'
+} %}
+
+
+{% block dashboardContent %}
+    <div class="dashboard-tabs tabs">
+
+        {% include('pages/lender_profile/partials/tab_navigation.html.twig') %}
+
+        <div class="dashboard-tabs-content tab-content">
+            <div id="profile-info" role="tabpanel" class="dashboard-tab-pane tab-pane active">
+
+                {# IDENTIFICATION #}
+                <article id="panel-identification" class="panel">
+
+                    <header class="panel-header">
+                        <h3>{% trans %} lender-profile_security-identification-section-title {% endtrans %}</h3>
+                        <div id="form-profile-info-notifications">
+                            {% if app.session.flashBag.has('securityIdentificationErrors') %}
+                                <div class="message-error">
+                                    {% for error in app.session.flashBag.get('securityIdentificationErrors') %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {% if app.session.flashBag.has('securityIdentificationSuccess') %}
+                                <div class="message-success">
+                                    {% for message in app.session.flashBag.get('securityIdentificationSuccess') %}
+                                        <span>{{ message }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </header><!-- .panel-header -->
+
+                    <section id="profile-security-identification-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                        <section id="profile-security-identification-view" role="tabpanel" class="profile-security-identification-view collapse in">
+
+                            <button data-target="#profile-security-identification-edit" role="button" data-toggle="collapse" data-parent="#profile-security-identification-section" class="btn-edit" aria-controls="#profile-security-identification-edit" aria-expanded="false">
+                                <span class="icon fa-pencil-u32"></span>
+                                <span class="label">{% trans %} lender-profile_security-identity-section-modify-button {% endtrans %}</span>
+                            </button>
+
+                            <dl class="list-2col">
+                                <dt>{% trans %} common_email {% endtrans %}</dt>
+                                <dd id="profile-security-identification-email-output">{{ client.email }}</dd>
+                                <dt>{% trans %} common_mobile-phone {% endtrans %}</dt>
+                                <dd id="profile-security-identification-mobile-output">{{ client.mobile }}</dd>
+                                <dt>{% trans %} common_landline {% endtrans %}</dt>
+                                <dd id="profile-security-identification-telephone-output">{{ client.telephone }}</dd>
+                            </dl>
+
+                        </section><!-- /#profile-security-identification-view -->
+
+                        <section id="profile-security-identification-edit" role="tabpanel" class="profile-security-identification-view collapse">
+                            <form id="form-profile-security-identification-edit" action="{{ path('profile_security_submit_identification') }}" method="post" class="form-security form-profile-security-identification-edit"
+                                  data-formvalidation
+                                  data-formvalidation-notificationselem="#form-profile-security-identification-notifications">
+                                <div id="form-profile-security-identification-notifications"></div>
+
+                                <div class="row row-multi-col-computer">
+                                    <div class="form-field col-lg-6 col-md-6">
+                                        <label for="form-profile-security-identification-email">{% trans %} common_email {% endtrans %}
+                                            <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                                        <div class="input-group">
+                                            <input id="form-profile-security-identification-email" type="email" name="client_email" value="{{ formData.security.client_email }}" class="input-field"
+                                                   data-formvalidation-input
+                                                   data-formvalidation-required="true"/>
+                                        </div>
+                                    </div><!-- /.form-field -->
+                                    <div class="form-field col-lg-6 col-md-6">
+                                        <label for="form-profile-security-identification-email-conf">{% trans %} common_email-confirmation {% endtrans %}
+                                            <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                                        <div class="input-group">
+                                            <input id="form-profile-security-identification-email-conf" type="email" name="client_email_confirmation"
+                                                   value="{{ formData.security.client_email_confirmation }}" class="input-field"
+                                                   data-formvalidation-input
+                                                   data-formvalidation-required="true"
+                                                   data-formvalidation-samevalueas="#form-profile-security-identification-email"/>
+                                        </div>
+                                    </div><!-- /.form-field -->
+                                </div>
+
+                                <div class="row row-multi-col-computer">
+                                    <div class="form-field col-lg-6 col-md-6">
+                                        <label for="form-profile-security-identification-mobile">{% trans %} common_mobile-phone {% endtrans %}
+                                            <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                                        <div class="input-group">
+                                            <input id="form-profile-security-identification-mobile" type="text" name="client_mobile" value="{{ formData.security.client_mobile }}" class="input-field"
+                                                   data-formvalidation-input
+                                                   data-formvalidation-required="true"
+                                                   data-formvalidation-type="telephone"/>
+                                        </div>
+                                    </div><!-- /.form-field -->
+                                    {# Not sure why they want the fixed telephone here and not in the address #}
+                                    <div class="form-field col-lg-6 col-md-6">
+                                        <label for="form-profile-security-identification-telephone">{% trans %} common_landline {% endtrans %}</label>
+                                        <div class="input-group">
+                                            <input id="form-profile-security-identification-telephone" type="text" name="client_landline" value="{{ formData.security.client_landline }}" class="input-field"
+                                                   data-formvalidation-input
+                                                   data-formvalidation-type="telephone"/>
+                                        </div>
+                                    </div><!-- /.form-field -->
+                                </div>
+
+                                <div class="btn-controls">
+                                    <button class="btn-primary">{% trans %} lender-profile_security-identity-section-submit-button {% endtrans %}</button>
+                                    <button type="reset" role="button" data-toggle="collapse" data-target="#profile-security-identification-view" data-parent="#profile-security-identification-section" class="btn-default">{% trans %} lender-profile_security-identity-section-cancel-button {% endtrans %}</button>
+                                </div><!-- /.btn-controls -->
+                            </form><!-- /.form-security-identification-edit -->
+                        </section><!-- /#profile-security-identification-edit -->
+
+                    </section><!-- /.ui-toggle-group -->
+                </article><!-- /.panel -->
+
+                {# PASSWORD #}
+                <article id="panel-password" class="panel">
+                    <header class="panel-header">
+                        <h3>{% trans %} lender-profile_security-password-section-title {% endtrans %}</h3>
+                        <div id="form-profile-security-password-notifications">
+                            {% if app.session.flashBag.has('securityPasswordErrors') %}
+                                <div class="message-error">
+                                    {% for error in app.session.flashBag.get('securityPasswordErrors') %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {% if app.session.flashBag.has('securityPasswordSuccess') %}
+                                <div class="message-success">
+                                    {% for message in app.session.flashBag.get('securityPasswordSuccess') %}
+                                        <span>{{ message }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </header><!-- .panel-header -->
+
+                    <section id="profile-security-password-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                        <section id="profile-security-password-view" role="tabpanel" class="profile-security-password-view collapse in">
+
+                            <button data-target="#profile-security-password-edit" role="button" data-toggle="collapse" data-parent="#profile-security-password-section" class="btn-edit">
+                                <span class="icon fa-pencil-u32"></span>
+                                <span class="label">{% trans %} lender-profile_security-password-section-modify-button {% endtrans %}</span>
+                            </button>
+
+                            <dl class="list-2col">
+                                <dt>{% trans %} common_password {% endtrans %}</dt>
+                                <dd>{% trans %} lender-profile_security-password-section-hidden-pwd-placeholder {% endtrans %}</dd>
+                            </dl>
+
+                        </section><!-- /#profile-security-password-view -->
+
+                        <section id="profile-security-password-edit" role="tabpanel" class="profile-security-password-view collapse">
+                            <form id="form-profile-security-password-edit" action="{{ path('profile_security_submit_password') }}" method="post" class="form-security form-profile-security-password-edit"
+                                  data-formvalidation
+                                  data-formvalidation-notificationselem="#form-profile-security-password-notifications">
+                                <div class="row row-multi-col-computer">
+                                    <div class="form-field col-lg-6 col-md-6">
+                                        <label for="form-profile-security-password-passe">{% trans %} lender-profile_security-password-section-former-password-field-label {% endtrans %}
+                                            <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                                        <div class="input-group">
+                                            <input id="form-profile-security-password-passe" type="password" name="client_former_password" value="" class="input-field"
+                                                   data-formvalidation-input
+                                                   data-formvalidation-required="true"/>
+                                        </div><!-- /.input-group -->
+                                        <ul class="ui-formvalidation-messages"></ul>
+                                    </div><!-- /.form-field -->
+                                </div>
+
+                                <div class="row row-multi-col-computer">
+                                    <div class="form-field col-lg-6 col-md-6">
+                                        <label for="form-profile-security-password-passe-new">{% trans %} lender-profile_security-password-section-new-password-field-label {% endtrans %}
+                                            <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                                        <input id="form-profile-security-password-passe-new" type="password" name="client_new_password" value="" class="input-field"
+                                               data-passwordcheck
+                                               data-formvalidation-input
+                                               data-formvalidation-required="true"
+                                               data-formvalidation-minlength="6"/>
+                                    </div><!-- /.form-field -->
+                                    <div class="form-field col-lg-6 col-md-6">
+                                        <label for="form-profile-security-password-passe-new-conf">{% trans %} lender-profile_security-password-section-new-password-confirmation-field-label {% endtrans %}
+                                            <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                                        <div class="input-group">
+                                            <input id="form-profile-security-password-passe-new-conf" type="password" name="client_new_password_confirmation" value="" class="input-field"
+                                                   data-formvalidation-input
+                                                   data-formvalidation-required="true"
+                                                   data-formvalidation-samevalueas="#form-profile-security-password-passe-new"/>
+                                        </div>
+                                    </div><!-- /.form-field -->
+                                </div>
+
+                                <div class="btn-controls">
+                                    <button class="btn-primary">{% trans %} lender-profile_security-password-section-submit-form-button {% endtrans %}</button>
+                                    <button type="reset" role="button" data-toggle="collapse" data-target="#profile-security-password-view" data-parent="#profile-security-password-section" class="btn-default" aria-controls="#profile-security-password-view" aria-expanded="true">{% trans %} lender-profile_security-password-section-cancel-form-button {% endtrans %}</button>
+                                </div><!-- /.btn-controls -->
+                            </form><!-- /.form-security-password-edit -->
+                        </section><!-- /#profile-security-password-edit -->
+
+                    </section><!-- /.ui-toggle-group -->
+                </article><!-- /.panel -->
+
+                {# SECURITY QUESTION #}
+                <article id="panel-question" class="panel">
+                    <header class="panel-header">
+                        <h3>{% trans %} lender-profile_security-secret-question-section-title {% endtrans %}</h3>
+                        <div id="form-profile-security-question-notifications">
+                            {% if app.session.flashBag.has('securitySecretQuestionErrors') %}
+                                <div class="message-error">
+                                    {% for error in app.session.flashBag.get('securitySecretQuestionErrors') %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {% if app.session.flashBag.has('securitySecretQuestionSuccess') %}
+                                <div class="message-success">
+                                    {% for message in app.session.flashBag.get('securitySecretQuestionSuccess') %}
+                                        <span>{{ message }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </header><!-- .panel-header -->
+                    <p>{% trans %} lender-profile_security-secret-question-section-text {% endtrans %}</p>
+                    <section id="profile-security-question-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                        <section id="profile-security-question-view" role="tabpanel" class="profile-security-question-view collapse in">
+
+                            <button href="#profile-security-question-edit" role="button" data-toggle="collapse" data-parent="#profile-security-question-section" class="btn-edit">
+                                <span class="icon fa-pencil-u32"></span>
+                                <span class="label">{% trans %} lender-profile_security-secret-question-section-modify-button {% endtrans %}</span>
+                            </button>
+
+                        </section><!-- /#profile-security-question-view -->
+
+                        <section id="profile-security-question-edit" role="tabpanel" class="profile-security-question-view collapse">
+                            <form id="form-profile-security-question-edit" action="{{ path('profile_security_submit_secret_question') }}" method="post"
+                                  class="form-security form-profile-security-question-edit"
+                                  data-formvalidation
+                                  data-formvalidation-notificationselem="#form-profile-security-question-notifications">
+                                <div id="form-profile-security-question-notifications"></div>
+
+                                <div class="row">
+                                    <div class="form-field">
+                                        <label for="form-profile-security-question-q">{% trans %} common_security-question {% endtrans %}
+                                            <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                                        <input type="text" name="client_secret_question" id="form-profile-security-question" value="{{ formData.security.client_secret_question }}" required="required" class="input-field">
+                                    </div><!-- /.form-field -->
+                                </div>
+
+                                <div class="row">
+                                    <div class="form-field">
+                                        <label for="form-profile-security-question-a">{% trans %} common_security-answer {% endtrans %}
+                                            <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                                        <input type="text" id="form-profile-security-question-a" name="client_secret_answer" value="{{ formData.security.client_secret_answer }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                    </div><!-- /.form-field -->
+                                </div>
+
+                                <div class="btn-controls">
+                                    <button class="btn-primary">{% trans %} lender-profile_security-secret-question-section-submit-button {% endtrans %}</button>
+                                    <button type="reset" role="button" data-toggle="collapse" data-target="#profile-security-question-view" data-parent="#profile-security-question-section" class="btn-default" aria-controls="#profile-security-question-view" aria-expanded="true">{% trans %} lender-profile_security-secret-question-section-cancel-button {% endtrans %}</button>
+                                </div><!-- /.btn-controls -->
+                            </form><!-- /.form-security-question-edit -->
+                        </section><!-- /#profile-security-question-edit -->
+
+                    </section><!-- /.ui-toggle-group -->
+                </article><!-- /.panel -->
+            </div><!-- /#profile-info.dashboard-tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </div><!-- /.dashboard-tabs -->
+{% endblock %}

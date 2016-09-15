@@ -89,7 +89,7 @@
         </section>
         <aside class="signup right">
             <h2>{{ cms.right_block_title }}</h2>
-            <form action="{{ url('project_request_start') }}" method="post" id="depot_de_dossier" name="depot_de_dossier">
+            <form action="{{ url('project_request_landing_page_start') }}" method="post" id="depot_de_dossier" name="depot_de_dossier">
                 {% if form.message is not empty %}
                     <div class="form-row error" style="display:inline;">{{ form.message }}</div>
                 {% endif %}

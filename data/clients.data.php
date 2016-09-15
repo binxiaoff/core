@@ -115,7 +115,7 @@ class clients extends clients_crud
                     $_SESSION['client']['password'] = $client['password'];
                 }
 
-                $this->saveLogin(new \DateTime('NOW'), $client['email'], $client['password']);
+                $this->saveLogin(new \DateTime('NOW'), $client['email']);
                 return true;
             }
             return false;
@@ -125,16 +125,15 @@ class clients extends clients_crud
     /**
      * @param DateTime $dateLogin
      * @param string   $email
-     * @param string   $hashedPassword
      */
-    public function saveLogin(\DateTime $dateLogin, $email, $hashedPassword)
+    public function saveLogin(\DateTime $dateLogin, $email)
     {
-        $aBind = array('lastLogin' => $dateLogin->format('Y-m-d H:i:s'), 'email' => $email, 'password' => $hashedPassword);
-        $aType = array('lastLogin' => \PDO::PARAM_STR, 'email' => \PDO::PARAM_STR, 'password' => \PDO::PARAM_STR);
+        $aBind = array('lastLogin' => $dateLogin->format('Y-m-d H:i:s'), 'email' => $email);
+        $aType = array('lastLogin' => \PDO::PARAM_STR, 'email' => \PDO::PARAM_STR);
 
         $sQuery =  '
             UPDATE clients
-            SET lastlogin = :lastLogin, password = :password
+            SET lastlogin = :lastLogin
             WHERE email = :email AND status = 1';
         $this->bdd->executeUpdate($sQuery, $aBind, $aType);
     }
@@ -453,24 +452,26 @@ class clients extends clients_crud
         $sql = '
             SELECT
                 c.*,
-                (SELECT cs.status FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) as status_client,
-                (SELECT cs.label FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) as label_status,
-                (SELECT csh.added FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) as added_status,
-                (SELECT csh.id_client_status_history FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) as id_client_status_history,
+                cs.status AS status_client,
+                cs.label AS label_status,
+                csh.added AS added_status,
+                clsh.id_client_status_history,
                 l.id_company_owner as id_company,
                 l.type_transfert as type_transfert,
                 l.motif as motif,
                 l.fonds,
                 l.id_lender_account as id_lender
             FROM clients c
-            LEFT JOIN lenders_accounts l ON c.id_client = l.id_client_owner
+            INNER JOIN (SELECT id_client, MAX(id_client_status_history) AS id_client_status_history FROM clients_status_history GROUP BY id_client) clsh ON c.id_client = clsh.id_client
+            INNER JOIN clients_status_history csh ON clsh.id_client_status_history = csh.id_client_status_history
+            INNER JOIN clients_status cs ON csh.id_client_status = cs.id_client_status
+            INNER JOIN lenders_accounts l ON c.id_client = l.id_client_owner
             ' . $where . $status . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
 
-
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -1044,34 +1045,30 @@ class clients extends clients_crud
      */
     public function getBorrowersContactDetailsAndSource(\DateTime $oStartDate, \DateTime $oEndDate, $bGroupBySiren)
     {
-        $sGroupBy    = ($bGroupBySiren) ? 'GROUP BY com.siren ' : '';
-        $sCountSiren = ($bGroupBySiren) ? 'count(com.siren) AS "countSiren", ' : '';
+        $sGroupBy    = $bGroupBySiren ? 'GROUP BY com.siren ' : '';
+        $sCountSiren = $bGroupBySiren ? 'COUNT(com.siren) AS countSiren, ' : '';
 
-        $sQuery = 'SELECT
-                        p.id_project,'
-                        . $sCountSiren . '
-                        com.siren,
-                        c.nom,
-                        c.prenom,
-                        c.email,
-                        c.mobile,
-                        c.telephone,
-                        c.source,
-                        c.source2,
-                        c.added,
-                        ps.label
-                    FROM
-                        projects p
-                        INNER JOIN companies com ON p.id_company = com.id_company
-                        INNER JOIN clients c ON com.id_client_owner = c.id_client
-                        INNER JOIN projects_last_status_history plsh ON p.id_project = plsh.id_project
-                        INNER JOIN projects_status_history psh ON plsh.id_project_status_history = psh.id_project_status_history
-                        INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                    WHERE
-                        DATE(p.added) BETWEEN "'. $oStartDate->format('Y-m-d') . '"
-                        AND "'. $oEndDate->format('Y-m-d') . '" '
-                    . $sGroupBy . '
-                    ORDER BY com.siren DESC, c.added DESC';
+        $sQuery = '
+            SELECT
+                p.id_project,'
+                . $sCountSiren . '
+                com.siren,
+                c.nom,
+                c.prenom,
+                c.email,
+                c.mobile,
+                c.telephone,
+                c.source,
+                c.source2,
+                c.added,
+                ps.label
+            FROM projects p
+            INNER JOIN companies com ON p.id_company = com.id_company
+            INNER JOIN clients c ON com.id_client_owner = c.id_client
+            INNER JOIN projects_status ps ON p.status = ps.status
+            WHERE DATE(p.added) BETWEEN "'. $oStartDate->format('Y-m-d') . '" AND "'. $oEndDate->format('Y-m-d') . '" '
+            . $sGroupBy . '
+            ORDER BY com.siren DESC, c.added DESC';
 
         $rQuery = $this->bdd->query($sQuery);
         $aResult = array();

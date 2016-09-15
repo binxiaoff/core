@@ -181,14 +181,10 @@ class ProjectManager
      */
     public function autoBid(\projects $oProject)
     {
-        /** @var \projects_status $oProjectStatus */
-        $oProjectStatus = $this->oEntityManager->getRepository('projects_status');
-        if ($oProjectStatus->getLastStatut($oProject->id_project)) {
-            if ($oProjectStatus->status == \projects_status::A_FUNDER) {
-                $this->bidAllAutoBid($oProject);
-            } elseif ($oProjectStatus->status == \projects_status::EN_FUNDING) {
-                $this->reBidAutoBid($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE, true);
-            }
+        if ($oProject->status == \projects_status::A_FUNDER) {
+            $this->bidAllAutoBid($oProject);
+        } elseif ($oProject->status == \projects_status::EN_FUNDING) {
+            $this->reBidAutoBid($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE, true);
         }
     }
 
@@ -418,8 +414,6 @@ class ProjectManager
         $oSettings = $this->oEntityManager->getRepository('settings');
         /** @var \loans $oLoan */
         $oLoan = $this->oEntityManager->getRepository('loans');
-        /** @var \projects_status $oProjectStatus */
-        $oProjectStatus = $this->oEntityManager->getRepository('projects_status');
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         /** @var \echeanciers $oRepaymentSchedule */
@@ -456,10 +450,8 @@ class ProjectManager
         $oSettings->get('EQ-Retenue à la source', 'type');
         $retenues_source = $oSettings->value;
 
-        $oProjectStatus->getLastStatut($oProject->id_project);
-
         // Si le projet est bien en funde on créer les echeances
-        if ($oProjectStatus->status == \projects_status::FUNDE) {
+        if ($oProject->status == \projects_status::FUNDE) {
             $lLoans = $oLoan->select('id_project = ' . $oProject->id_project);
 
             $iLoanNbTotal   = count($lLoans);
@@ -673,7 +665,7 @@ class ProjectManager
         return $oEndDate;
     }
 
-    public function addProjectStatus($iUserId, $iProjectStatus, \projects $oProject, $iReminderNumber = 0, $sContent = '')
+    public function addProjectStatus($iUserId, $iProjectStatus, \projects &$oProject, $iReminderNumber = 0, $sContent = '')
     {
         /** @var \projects_status_history $oProjectsStatusHistory */
         $oProjectsStatusHistory = $this->oEntityManager->getRepository('projects_status_history');
@@ -692,15 +684,18 @@ class ProjectManager
         $oProjectsStatusHistory->content           = $sContent;
         $oProjectsStatusHistory->create();
 
-        $this->projectStatusUpdateTrigger($oProjectStatus, $oProject);
+        $oProject->status = $iProjectStatus;
+        $oProject->update();
+
+        $this->projectStatusUpdateTrigger($iProjectStatus, $oProject);
     }
 
-    private function projectStatusUpdateTrigger(\projects_status $oProjectStatus, \projects $oProject)
+    private function projectStatusUpdateTrigger($iProjectStatus, \projects $oProject)
     {
         /** @var \settings $oSettings */
         $oSettings = $this->oEntityManager->getRepository('settings');
 
-        switch ($oProjectStatus->status) {
+        switch ($iProjectStatus) {
             case \projects_status::A_TRAITER:
                 $oSettings->get('Adresse notification inscription emprunteur', 'type');
                 $this->oMailerManager->sendProjectNotificationToStaff('notification-depot-de-dossier', $oProject, trim($oSettings->value));
@@ -775,7 +770,6 @@ class ProjectManager
             $oProject->status_solde = 1;
             $oProject->update();
 
-            $this->oMailerManager->sendFundedToBorrower($oProject);
             $this->oMailerManager->sendFundedToStaff($oProject);
         }
     }
@@ -828,7 +822,7 @@ class ProjectManager
         return (int) $settings->value;
     }
 
-    public function setProjectRateRange(\projects $project)
+    public function getProjectRateRange(\projects $project)
     {
         if (empty($project->period)) {
             throw new \Exception('project period not set.');
@@ -850,8 +844,7 @@ class ProjectManager
                 throw new \Exception('No settings found for the project.');
             }
             if (count($rateSettings) === 1) {
-                $project->id_rate = $rateSettings[0]['id_rate'];
-                $project->update();
+                return $rateSettings[0]['id_rate'];
             } else {
                 throw new \Exception('More than one settings found for the project.');
             }

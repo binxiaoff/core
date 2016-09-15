@@ -12,11 +12,13 @@
 
                 <div class="form-controls">
                     <select name="tx_p" id="tx_pM" class="select custom-select">
-                        <?php foreach (range($this->rateRange['rate_max'], $this->rateRange['rate_min'], -0.1) as $fRate) { ?>
-                            <?php if ($this->soldeBid < $this->projects->amount || round($fRate, 1) < round($this->txLenderMax, 1)) { ?>
+                        <?php $adjustment = ($this->soldeBid < $this->projects->amount) ? 0 : 0.1 ?>
+                        <option value="<?= $this->txLenderMax - $adjustment ?>"><?= $this->ficelle->formatNumber($this->txLenderMax - $adjustment, 1) ?>&nbsp;%</option>
+                        <?php foreach (range($this->rateRange['rate_max'], $this->rateRange['rate_min'], -0.1) as $index => $fRate) :?>
+                            <?php if ($this->soldeBid < $this->projects->amount || round($fRate, 1) < round($this->txLenderMax, 1)) : ?>
                                 <option value="<?= $fRate ?>"><?= $this->ficelle->formatNumber($fRate, 1) ?>&nbsp;%</option>
-                            <?php } ?>
-                        <?php } ?>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
                     </select>
                 </div>
             </div>

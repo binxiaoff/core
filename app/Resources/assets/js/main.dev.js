@@ -56,19 +56,17 @@ var FormValidation = require('FormValidation')
 var DashboardPanel = require('DashboardPanel')
 var DashboardPanels = require('DashboardPanels')
 var CacheForm = require('CacheForm')
-var AutolendTable = require('AutolendTable')
 var NavDropdownMenu = require('NavDropdownMenu')
 var MapView = require('MapView')
 var ChartView = require('ChartView')
 var Sticky = require('Sticky')
 var Spinner = require('./app/components/Spinner')
 var Modal = require('./app/components/Modal')
-// var ModalTOS = require('./app/components/ModalTOS')
+var ModalTOS = require('./app/components/ModalTOS')
 var CookieCheck = require('./app/components/Cookies')
 var LoginTimer = require('./app/components/LoginTimer')
 var LoginCaptcha = require('./app/components/LoginCaptcha')
 var SimpleCountDown = require('./app/components/SimpleCountDown')
-var BorrowerEsimForm = require('./app/components/BorrowerEsimForm')
 var BidConfirmation = require('./app/components/BidConfirmation')
 var BidsDetail = require('./app/components/BidsDetail')
 
@@ -82,6 +80,7 @@ require('./app/controllers/LenderOperations')
 require('./app/controllers/LenderProfile')
 require('./app/controllers/Projects')
 require('./app/controllers/ProjectRequest')
+require('./app/controllers/Autolend')
 
 // @debug
 // CacheData.clearAll()
@@ -725,26 +724,60 @@ $(document).ready(function ($) {
    */
   $doc
     // Step 1
-    .on('FormValidation:validate:error', '#esim1', function () {
+    .on('FormValidation:validate:error', '#esim1', function (event) {
       // Hide the continue button
       $('.emprunter-sim').removeClass('ui-emprunter-sim-estimate-show')
+      event.stopPropagation()
     })
-    .on('FormValidation:validate:success', '#esim1', function () {
-      // Show the continue button
-      $('.emprunter-sim').addClass('ui-emprunter-sim-estimate-show')
+    .on('shown.bs.tab', '[href="#esim2"]', function () {
+      var period = $("input[id^='esim-input-duration-']:checked").val()
+      var amount = $("#esim-input-amount").val()
+      var motiveId = $("#esim-input-reason > option:selected").val()
+
+      if (! $(".form-validation-notifications .message-error").length) {
+        $.ajax({
+          type: 'POST',
+          url: '/simulateur-projet-etape1',
+          data: {
+            period: period,
+            amount: amount,
+            motiveId: motiveId
+          },
+          success: function(response) {
+            // Show the continue button
+            $('.emprunter-sim').addClass('ui-emprunter-sim-estimate-show')
+
+            $(".ui-esim-output-cost").prepend(response.amount);
+            $('.ui-esim-output-duration').prepend(response.period)
+            $('.ui-esim-monthly-output').html(response.estimatedMonthlyRepayment)
+            $('.ui-esim-interest-output').html(response.estimatedRate)
+
+            if (!response.motiveSentenceComplementToBeDisplayed) {
+              $('p[data-borrower-motive]').show()
+              while ($('.ui-esim-output-duration')[0].nextSibling != null) {
+                $('.ui-esim-output-duration')[0].nextSibling.remove()
+              }
+              $('#esim2 > fieldset > div:nth-child(2) > div > p:nth-child(1)').append('.')
+            }
+            else {
+              var text = $('p[data-borrower-motive]').html()
+              text = text.replace(/\.$/g, '')
+
+              $('p[data-borrower-motive]')
+                .show()
+                .html(text + response.translationComplement + '.')
+            }
+          },
+          error: function() {
+            console.log("error retrieving data");
+          }
+        });
+
+        $('a[href*="esim1"]')
+          .removeAttr("href data-toggle aria-expanded")
+          .attr("nohref", "nohref")
+      }
     })
-    .on('change', 'form.emprunter-sim', function (event) {
-      // console.log(event.type, event.target)
-    })
-    // Step 2
-    // .on('FormValidation:validate:error', '#esim2', function () {
-    //   // Hide the submit button
-    //   $('.emprunter-sim').removeClass('ui-emprunter-sim-step-2')
-    // })
-    // .on('FormValidation:validate:success', '#esim2', function () {
-    //   // Show the submit button
-    //   $('.emprunter-sim').removeClass('ui-emprunter-sim-step-1').addClass('ui-emprunter-sim-step-2')
-    // })
 
   /*
    * Smooth scrolling to point on screen or specific element
@@ -917,211 +950,6 @@ $(document).ready(function ($) {
 
     // Add one to prompt the user
     addFormExtraFile()
-  }
-
-  // Esim
-  // @note the following is a guide on how it could be done
-  //       I'm not devving it next to you guys so I dunno what your thinking is
-  var $projectEsim = $('.form-project-create .emprunter-sim-mini')
-  var esimEstimate = {
-    step: 0,
-    amount: '10 000€',
-    duration: '2 jours',
-    monthly: '2 887 / 3 285€'
-  }
-
-  // Step 0: reset everything
-  function setEsimStep0 () {
-    // @debug
-    // console.log('setEsimStep0')
-
-    esimEstimate.step = 0
-
-    // Ensure visible!
-    $projectEsim.show()
-
-    // Reset the outputs
-    $projectEsim.find('#esim-output-amount').text('')
-    $projectEsim.find('#esim-output-duration').text('')
-    $projectEsim.find('#esim-output-monthly').text('')
-
-    // Show the content & footer (displays a message about step 2)
-    $projectEsim.find('.emprunter-sim-mini-content, footer').hide()
-  }
-
-  // Step 1a: Changed form values instigate AJAX
-  function setEsimStep1a () {
-    // @debug
-    // console.log('setEsimStep1a')
-
-    esimEstimate.step = 1
-
-    // Ensure visible!
-    $projectEsim.show()
-
-    // Set the outputs
-    $projectEsim.find('#esim-output-amount').text('...')
-    $projectEsim.find('#esim-output-duration').text('...')
-
-    // Hide the footer
-    $projectEsim.find('footer').hide()
-
-    // Show the content (what a person can expect to see from ajax)
-    $projectEsim.find('.emprunter-sim-mini-content').show()
-    $projectEsim.find('.emprunter-sim-mini-header > p').hide()
-
-    // @todo Do whatever AJAX you need to get and show the esimEstimate
-    //       monthly value using the setEsimValues1b function, e.g.
-    // var simData = {
-    //   amount: $('#form-project-create-amount').val(),
-    //   duration: $('#form-project-create-duration').val()
-    // }
-    // if (simData.amount && simData.duration) {
-    //   $.ajax( ??? ).then(function (data) {
-    //     esimEstimate = data
-    //     setEsimStep1b()
-    //   })
-    // }
-
-    // @debug
-    setTimeout(function () {
-      setEsimStep1b()
-    }, 1000)
-  }
-
-  // Step 1b: AJAX then populated into sim
-  function setEsimStep1b () {
-    // Don't do anything if it isn't visible (not visible for xs/sm breakpoints)
-    if (!$projectEsim.is(':visible')) return
-
-    // @debug
-    // console.log('setEsimStep1b')
-
-    esimEstimate.step = 1.1
-
-    // Ensure visible!
-    $projectEsim.show()
-
-    // Set the outputs
-    $projectEsim.find('#esim-output-amount').text(esimEstimate.amount)
-    $projectEsim.find('#esim-output-duration').text(esimEstimate.duration)
-
-    // Show the content & footer (displays a message about step 2)
-    $projectEsim.find('.emprunter-sim-mini-content, footer').show()
-    $projectEsim.find('.emprunter-sim-mini-header > p').hide()
-  }
-
-  function setEsimStep2a () {
-    // Don't do anything if it isn't visible (not visible for xs/sm breakpoints)
-    if (!$projectEsim.is(':visible')) return
-
-    // @debug
-    // console.log('setEsimStep2a')
-
-    esimEstimate.step = 2
-
-    // Ensure visible!
-    $projectEsim.show()
-
-    // Set the outputs
-    $projectEsim.find('#esim-output-monthly').text('...')
-
-    // Hide the footer
-    $projectEsim.find('footer').hide()
-
-    // Hide the monthly fields
-    $projectEsim.find('.emprunter-sim-mini-content, #esim-label-monthly, #esim-output-monthly').show()
-
-    // @todo Do whatever AJAX you need to get the esimEstimate
-    //       monthly value using the setEsimValues2b function, e.g.
-    // var simData = {
-    //   amount: $('#form-project-create-amount').val(),
-    //   duration: $('#form-project-create-duration').val()
-    // }
-    // if (simData.amount && simData.duration) {
-    //   $.ajax( ??? ).then(function (data) {
-    //     esimEstimate = data
-    //     setEsimStep2b()
-    //   })
-    // }
-
-    // @debug
-    setTimeout(function () {
-      setEsimStep2b()
-    }, 1000)
-  }
-
-  function setEsimStep2b () {
-    // Don't do anything if it isn't visible (not visible for xs/sm breakpoints)
-    if (!$projectEsim.is(':visible')) return
-
-    // @debug
-    // console.log('setEsimStep2b')
-
-    esimEstimate.step = 2.1
-
-    // Ensure visible!
-    $projectEsim.show()
-
-    // Set the outputs
-    $projectEsim.find('#esim-output-monthly').text(esimEstimate.monthly)
-
-    // Hide the footer
-    $projectEsim.find('footer').hide()
-
-    // Show the monthly fields
-    $projectEsim.find('.emprunter-sim-mini-content, #esim-label-monthly, #esim-output-monthly').show()
-  }
-
-  function setEsimStep3 () {
-    // Don't do anything if it isn't visible (not visible for xs/sm breakpoints)
-    if (!$projectEsim.is(':visible')) return
-
-    // @debug
-    // console.log('setEsimStep3')
-
-    esimEstimate.step = 3
-
-    // Ensure hidden!
-    $projectEsim.hide()
-  }
-
-  if ($projectEsim.length > 0) {
-    setEsimStep0()
-
-    // Tie into the tab events to show/fire esim stuff
-    $doc.on(Utility.clickEvent + ' show.bs.tab', '.form-project-create [data-toggle="tab"], .form-project-create [role="tab"]', function (event) {
-      var $tab = $(this)
-      var tabId = $tab.attr('href') || $tab.attr('data-target') || '#' + $tab.attr('id')
-
-      // Don't do anything if it isn't visible (not visible for xs/sm breakpoints)
-      if ($projectEsim.is(':visible')) {
-        if (tabId === '#form-project-create-1') {
-          setEsimStep1a()
-
-        } else if (tabId === '#form-project-create-2') {
-          if (esimEstimate.step < 1.1) {
-            setEsimStep1a()
-            event.stopPropagation()
-            event.preventDefault()
-            return false
-          }
-          setEsimStep2a()
-
-        } else if (tabId === '#form-project-create-3') {
-          setEsimStep3()
-        }
-      }
-    })
-
-    // Change value which fires setEsimStep1b
-    $doc
-      .on('change', '#form-project-create-amount, #form-project-create-duration', function (event) {
-        // @debug
-        setTimeout(function () {
-          setEsimStep1b()
-        }, 1000)
-      })
   }
 
   /*

@@ -1546,8 +1546,7 @@ class tree extends tree_crud
                   p.title AS title,
                   (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.id_project_status_history DESC LIMIT 1) AS status
                 FROM projects p
-                WHERE p.status = 0
-                  AND p.display = 0
+                WHERE p.display = 0
                   AND p.title LIKE "%' . $search . '%"
                 HAVING status >= ' . \projects_status::EN_FUNDING . '
                 ORDER BY p.title ASC';

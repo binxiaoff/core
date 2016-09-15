@@ -118,7 +118,7 @@ class IRRManager
         /** @var \unilend_stats $oUnilendStats */
         $oUnilendStats = $this->oEntityManager->getRepository('unilend_stats');
         $fStartSQL  = microtime(true);
-        $aValuesIRR = $oUnilendStats->getDataForUnilendIRRUsingProjectsLastStatusMaterialized();
+        $aValuesIRR = $oUnilendStats->getDataForUnilendIRR();
         $this->oLogger->info('Unilend IRR calculation - SQL Time : ' . (round(microtime(true) - $fStartSQL, 2)) . ' for ' . count($aValuesIRR). ' lines ');
 
         $fStartXIRR = microtime(true);

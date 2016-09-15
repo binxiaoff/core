@@ -16,25 +16,7 @@ var Templating = require('Templating')
 
 // Dictionary
 var Dictionary = require('Dictionary')
-var MAPVIEW_LANG_LEGACY = {
-  "en": {
-    "groupLabelActive": "Active",
-    "groupLabelExpired": "Expired"
-  },
-  "fr": {
-    "groupLabelActive": "En cours",
-    "groupLabelExpired": "Terminés"
-  }
-}
-if (window.MAPVIEW_LANG) {
-  var __ = new Dictionary(window.MAPVIEW_LANG)
-} else {
-  var __ = new Dictionary(MAPVIEW_LANG_LEGACY, {
-    legacyMode: true
-  })
-  // @debug
-  console.log('MapView: using MAPVIEW_LANG_LEGACY for Dictionary. Please ensure window.MAPVIEW_LANG is correctly set.')
-}
+var __ = new Dictionary(window.MAPVIEW_LANG)
 
 // Other depencendies
 // See: https://github.com/mapbox/mapbox.js/#usage-with-browserify
@@ -115,7 +97,7 @@ var MapView = function (elem, options) {
     // Specify cluster groups to put markers into. Default is `active` and `expired`
     groups: [{
       name: 'active',
-      label: __.__('Active', 'groupLabelActive'),
+      label: __.__('Active', 'group-label-active'),
       showFilter: true,
       visible: true,
 
@@ -141,7 +123,7 @@ var MapView = function (elem, options) {
       }
     },{
       name: 'expired',
-      label: __.__('Expired', 'groupLabelExpired'),
+      label: __.__('Expired', 'group-label-expired'),
       showFilter: true,
       visible: true,
 

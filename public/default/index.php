@@ -13,6 +13,8 @@ error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT & ~E_NOTICE);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
+setlocale(LC_TIME, 'fr_FR.utf8');
+
 if (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) {
     $currentCookieParams = session_get_cookie_params();
 
@@ -32,17 +34,16 @@ header('X-Server: ' . exec('hostname'));
 
 require __DIR__ . '/prepend.php';
 
-$oKernel = new AppKernel('prod', false);
+$kernel = new AppKernel('prod', false);
+$request  = Request::createFromGlobals();
 
 try {
-    Request::enableHttpMethodParameterOverride();
-    $request  = Request::createFromGlobals();
-    $response = $oKernel->handle($request);
+    $response = $kernel->handle($request);
     $response->send();
-    $oKernel->terminate($request, $response);
+    $kernel->terminate($request, $response);
 } catch (NotFoundHttpException $exception) {
-    $oKernel->boot();
-    $oDispatcher = new \Unilend\core\Dispatcher($oKernel, 'default', $config);
+    $kernel->boot();
+    $dispatcher = new \Unilend\core\Dispatcher($kernel, 'default', $config);
 }
 
 require __DIR__ . '/append.php';

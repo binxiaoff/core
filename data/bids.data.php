@@ -35,9 +35,6 @@ class bids extends bids_crud
 
     const CACHE_KEY_PROJECT_BIDS = 'bids-projet';
 
-    const BID_RATE_MIN = 4.0;
-    const BID_RATE_MAX = 10.0;
-
     public function __construct($bdd, $params = '')
     {
         parent::bids($bdd, $params);
@@ -234,18 +231,20 @@ class bids extends bids_crud
 
     public function getAcceptationPossibilityRounded()
     {
-        $sQuery = 'SELECT b.rate, count(DISTINCT b.id_bid) as count_bid
-                        FROM bids b
-                        INNER JOIN accepted_bids ab ON ab.id_bid = b.id_bid
-                        INNER JOIN projects p ON p.id_project = b.id_project
-                        INNER JOIN projects_last_status_history plsh ON plsh.id_project = p.id_project
-                        INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
-                        INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
-                        WHERE ps.status >= :funded
-                        AND ps.status != :fundingKo GROUP BY b.rate ORDER BY b.rate DESC';
+        $sQuery = '
+            SELECT b.rate, COUNT(DISTINCT b.id_bid) AS count_bid
+            FROM bids b
+            INNER JOIN accepted_bids ab ON ab.id_bid = b.id_bid
+            INNER JOIN projects p ON p.id_project = b.id_project
+            WHERE p.status >= :funded
+                AND p.status != :fundingKo
+            GROUP BY b.rate
+            ORDER BY b.rate DESC';
+
         try {
-            $result = $this->bdd->executeQuery($sQuery, array('funded' => \projects_status::FUNDE, 'fundingKo' => \projects_status::FUNDING_KO), array('funded' => \PDO::PARAM_INT, 'fundingKo' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
-                ->fetchAll(PDO::FETCH_ASSOC);
+            $statement = $this->bdd->executeQuery($sQuery, array('funded' => \projects_status::FUNDE, 'fundingKo' => \projects_status::FUNDING_KO), array('funded' => \PDO::PARAM_INT, 'fundingKo' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)));
+            $result    = $statement->fetchAll(PDO::FETCH_ASSOC);
+            $statement->closeCursor();
         } catch (\Doctrine\DBAL\DBALException $ex) {
             return false;
         }
@@ -291,16 +290,16 @@ class bids extends bids_crud
 
         if ($iProjectId) {
             $sQuery = '
-                SELECT 
-                    rate, 
+                SELECT
+                    rate,
                     COUNT(*) AS bidsCount,
                     SUM(IF(status = 0, 1, 0)) AS activeBidsCount,
                     SUM(ROUND(amount / 100, 2)) AS totalAmount,
-                    SUM(IF(status = 0, ROUND(amount / 100, 2), 0)) AS activeTotalAmount, 
+                    SUM(IF(status = 0, ROUND(amount / 100, 2), 0)) AS activeTotalAmount,
                     IF(SUM(amount) > 0, ROUND(SUM(IF(status = 2, 0, ROUND(amount / 100, 2))) / SUM(ROUND(amount / 100, 2)) * 100, 1), 100) AS activePercentage
                 FROM bids
                 WHERE id_project = ' . $iProjectId . '
-                GROUP BY rate 
+                GROUP BY rate
                 ORDER BY rate DESC';
             $rQuery = $this->bdd->query($sQuery);
             while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
@@ -423,4 +422,31 @@ class bids extends bids_crud
         return $this->bdd->executeQuery($sql, $bind, $type)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+
+    /**
+     * @param \lenders_accounts $lender
+     * @param DateTime|null $dateTimeStart
+     * @param DateTime|null $dateTimeEnd
+     * @return array
+     */
+    public function getBidsByLenderAndDates(\lenders_accounts $lender, $dateTimeStart = null, $dateTimeEnd = null)
+    {
+        $sql = '
+            SELECT  b.id_project, b.id_bid, la.id_client_owner, b.added, (CASE b.STATUS WHEN 0 THEN "En cours" WHEN 1 THEN "OK" WHEN 2 THEN "KO" END) AS status, ROUND((b.amount / 100), 0) AS amount, REPLACE (b.rate, ".", ",") AS rate
+            FROM bids b
+            INNER JOIN lenders_accounts la ON la.id_lender_account = b.id_lender_account
+            WHERE b.id_lender_account = :idLenderAccount';
+
+        if ($dateTimeStart && $dateTimeEnd) {
+            $sql .= ' AND (b.added BETWEEN :dateStart AND :dateEnd)';
+        }
+
+        $paramValues = array('idLenderAccount' => $lender->id_lender_account, 'dateStart' => $dateTimeStart, 'dateEnd' => $dateTimeEnd);
+        $paramTypes  = array('idLenderAccount' => \PDO::PARAM_INT, 'dateStart' => 'datetime', 'dateEnd' => 'datetime');
+
+        $statement = $this->bdd->executeQuery($sql, $paramValues, $paramTypes);
+        $result    = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+        return $result;
+    }
 }

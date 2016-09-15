@@ -1,10 +1,8 @@
-{# Homepage Acquisition #}
 {% extends 'layouts/_layout.html.twig' %}
-{% import 'partials/modules/_promo-battenberg.macros.twig' as promoBattenberg %}
 
 {% set page = {
-    title: 'Home',
-    permalink: route('/')
+title: 'Home',
+permalink: path('home')
 } %}
 
 {% block siteContent %}
@@ -13,59 +11,38 @@
             <div class="video-hero-wrapper">
                 <div id="homeacq-video-hero-swiper" class="video-hero-slideshow swiper-container" data-swiper-autoplay="5000" data-swiper-speed="500">
                     <div class="swiper-wrapper">
-                        <div class="video-hero swiper-slide" data-preter-name="{{ videoHeroes.Lenders.0.name }}" data-emprunter-name="{{ videoHeroes.Borrowers.0.name }}">
-                            <div class="video-hero-image">&nbsp;</div>
-                            <div class="caption caption-align-left">
-                                <div class="caption-name">{{ videoHeroes.Lenders.0.name }} &mdash; {{ videoHeroes.Lenders.0.age }}</div>
-                                <div class="caption-info">{{ videoHeroes.Lenders.0.info | raw}}</div>
-                                <div class="caption-links"><a href="{{ videoHeroes.Lenders.0.urlTestimonial }}" class="link">{% trans %} site-general_testimonial-section-link-to-testimonial-title {% endtrans %}</a></div>
-                            </div><!-- /.caption -->
-                            <div class="caption caption-align-right">
-                                <div class="caption-name">{{ videoHeroes.Borrowers.0.name }} &mdash; {{ videoHeroes.Borrowers.0.age }}</div>
-                                <div class="caption-info">{{ videoHeroes.Borrowers.0.info | raw}}</div>
-                                <div class="caption-links">
-                                    <a href="{{ videoHeroes.Borrowers.0.urlTestimonial }}" class="link">{% trans %} site-general_testimonial-section-link-to-testimonial-title {% endtrans %}</a></div>
-                            </div><!-- /.caption -->
-                        </div>
-                        <div class="video-hero swiper-slide" data-preter-name="{{ videoHeroes.Lenders.1.name }}" data-emprunter-name="{{ videoHeroes.Borrowers.1.name }}">
-                            <div class="video-hero-image">&nbsp;</div>
-                            <div class="caption caption-align-left">
-                                <div class="caption-name">{{ videoHeroes.Lenders.1.name }} &mdash; {{ videoHeroes.Lenders.1.age }}</div>
-                                <div class="caption-info">{{ videoHeroes.Lenders.1.info | raw}}</div>
-                                <div class="caption-links"><a href="{{ videoHeroes.Lenders.1.urlTestimonial }}" class="link">{% trans %} site-general_testimonial-section-link-to-testimonial-title {% endtrans %}</a></div>
-                            </div><!-- /.caption -->
-                            <div class="caption caption-align-right">
-                                <div class="caption-name">{{ videoHeroes.Borrowers.1.name }} &mdash; {{ videoHeroes.Borrowers.1.age }}</div>
-                                <div class="caption-info">{{ videoHeroes.Borrowers.1.info | raw}}</div>
-                                <div class="caption-links"><a href="{{ videoHeroes.Borrowers.1.urlTestimonial }}" class="link">{% trans %} site-general_testimonial-section-link-to-testimonial-title {% endtrans %}</a></div>
-                            </div><!-- /.caption -->
-                        </div>
-                        <div class="video-hero swiper-slide" data-preter-name="{{ videoHeroes.Lenders.2.name }}" data-emprunter-name="{{ videoHeroes.Borrowers.2.name }}">
-                            <div class="video-hero-image">&nbsp;</div>
-                            <div class="caption caption-align-left">
-                                <div class="caption-name">{{ videoHeroes.Lenders.2.name }} &mdash; {{ videoHeroes.Borrowers.1.age }}</div>
-                                <div class="caption-info">{{ videoHeroes.Lenders.2.info | raw}}</div>
-                                <div class="caption-links"><a href="{{ videoHeroes.Lenders.2.urlTestimonial }}" class="link">{% trans %} site-general_testimonial-section-link-to-testimonial-title {% endtrans %}</a></div>
-                            </div><!-- /.caption -->
-                            <div class="caption caption-align-right">
-                                <div class="caption-name">{{ videoHeroes.Borrowers.2.name }} &mdash; {{ videoHeroes.Borrowers.1.age }}</div>
-                                <div class="caption-info">{{ videoHeroes.Borrowers.2.info | raw}}</div>
-                                <div class="caption-links"><a href="{{ videoHeroes.Borrowers.2.urlTestimonial }}" class="link">{% trans %} site-general_testimonial-section-link-to-testimonial-title {% endtrans %}</a></div>
-                            </div><!-- /.caption -->
-                        </div>
+
+                        {% for combination in sliderTestimonials %}
+                            <div class="video-hero swiper-slide" data-preter-name="{{ combination.lender.name }}" data-emprunter-name="{{ combination.borrower.name }}"
+                                 style="background-image: url('{{ completeTestimonialUrl(combination.image, 'image') }}')">
+                                <div class="video-hero-image">&nbsp;</div>
+                                <div class="caption caption-align-left">
+                                    <div class="caption-name">{{ combination.lender.name }}, {{ combination.lender.projects }}</div>
+                                    <div class="caption-info">{{ combination.lender.info }}</div>
+                                </div><!-- /.caption -->
+                                <div class="caption caption-align-right">
+                                    <div class="caption-name">{{ combination.borrower.name }}, {{ combination.borrower.location }}</div>
+                                    <div class="caption-info">{{ combination.borrower.info }}</div>
+                                    <div class="caption-links">
+                                        <a href="{{ path('testimonials') }}#testimonial-{{ combination.borrower.name }} }}" class="link">{{ 'home-borrower_link-to-testimonial-on-video'|trans }}</a>
+                                    </div>
+                                </div><!-- /.caption -->
+                            </div>
+                        {% endfor %}
                     </div>
-                    <!-- <div class="swiper-button-prev"></div>
-                    <div class="swiper-button-next"></div> -->
                 </div>
 
                 <div class="video-hero-cta">
                     <div class="btn-media-wrapper">
                         <a href="https://www.youtube.com/watch?v=Fmtz6vI65GY" class="btn-media fancybox-media fancybox-embed-videojs">
-                            <span class="icon fa-play"><span class="sr-only">Play</span></span>
+                            <span class="icon fa-play"><span class="sr-only">{% trans %} site-general_video-play-button-label {% endtrans %}</span></span>
                         </a>
                     </div>
-                    <h5 class="c-p1"><span class="ui-preter-name">Julie</span> {% trans %} site-general_testimonial-section-video-text {% endtrans %}&nbsp;<span
-                                class="ui-emprunter-name c-p2">Didier</span></h5>
+                    <h5 class="c-p1">
+                        <span class="ui-preter-name">{{ sliderTestimonials.P1_E1.lender.name }}</span>
+                        {% trans %} site-general_testimonial-section-video-text {% endtrans %}&nbsp;
+                        <span class="ui-emprunter-name c-p2">{{ sliderTestimonials.P1_E1.borrower.name }}</span>
+                    </h5>
                     <h3>{% trans %} site-general_testimonial-section-video-slogan {% endtrans %}</h3>
                 </div><!-- /.video-hero-cta -->
 
@@ -73,11 +50,11 @@
 
                 <div class="btn-toolbar row">
                     <div class="col-lg-6 col-md-6">
-                        <a href="{{ path('home', {'type' : 'lender'}) }}" class="btn-cta btn-color-primary text-align-right"><span class="icon fa-angle-right"></span>
+                        <a href="{{ path('home_lender') }}" class="btn-cta btn-color-primary text-align-right"><span class="icon fa-angle-right"></span>
                             {% trans %} site-general_button-under-video-lender {% endtrans %}</a>
                     </div>
                     <div class="col-lg-6 col-md-6">
-                        <a href="{{ path('home', {'type' : 'borrower'}) }}" class="btn-cta btn-color-alternate text-align-left"><span class="icon fa-angle-right"></span>
+                        <a href="{{ path('home_borrower') }}" class="btn-cta btn-color-alternate text-align-left"><span class="icon fa-angle-right"></span>
                             {% trans %} site-general_button-under-video-borrower {% endtrans %}</a>
                     </div>
                 </div><!-- /.btn-toolbar.row -->
@@ -95,8 +72,7 @@
                             </div>
                             {% set valueProjects = ('site-general_unilend-stats-projects-value'|trans != 'site-general_unilend-stats-projects-value') ? getStatistic('numberOfFinancedProjects') : 'site-general_unilend-stats-projects-value'|trans %}
                             <h3 class="promo-highlight">
-                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ valueProjects }}" data-total-time="3000" data-round-float="round"
-                                      data-tween-count="easeOutCirc"></span>
+                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ valueProjects }}" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">{{ valueProjects|localizednumber }}</span>
                             </h3>
                             <p>{% trans %} site-general_unilend-stats-projects-description {% endtrans %}</p>
                         </div><!-- /.promo -->
@@ -109,7 +85,7 @@
                             </div>
                             {% set valueMoney = ('site-general_unilend-stats-money-value'|trans != 'site-general_unilend-stats-money-value') ? getStatistic('amountBorrowedInMillions') : 'site-general_unilend-stats-money-value'|trans %}
                             <h3 class="promo-highlight">
-                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ valueMoney }}" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">{{ valueMoney }}</span>
+                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ valueMoney }}" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">{{ valueMoney|localizednumber }}</span>
                                 {% trans %} site-general_unilend-stats-money-value {% endtrans %}
                             </h3>
                             <p>{% trans %} site-general_unilend-stats-money-description {% endtrans %}</p>
@@ -123,8 +99,7 @@
                             </div>
                             {% set valuePeople = ('site-general_unilend-stats-people-value'|trans != 'site-general_unilend-stats-people-value') ? getStatistic('numberOfLendersInCommunity')|localizednumber : 'site-general_unilend-stats-people-value'|trans %}
                             <h3 class="promo-highlight">
-                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ valuePeople }}" data-total-time="3000" data-round-float="round"
-                                      data-tween-count="easeOutCirc">{{ valuePeople }}</span>
+                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ valuePeople }}" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">{{ valuePeople|localizednumber }}</span>
                             </h3>
                             <p>{% trans %} site-general_unilend-stats-people-description {% endtrans %}</p>
                         </div><!-- /.promo -->
@@ -137,15 +112,81 @@
             <div class="site-wrap">
                 <h1 class="h2">{% trans %} site-general_testimonial-section-title {% endtrans %}</h1>
 
-                {% set BattenberglabelCtaButton %}
-                    {% transchoice projects|length with {'%numberProjects%' : projects|length} %} project-list_title-ongoing-projects  {% endtranschoice %}
-                {% endset %}
-                {{ promoBattenberg.render({
-                    classCtaButton: 'btn-color-primary',
-                    labelCtaButton: BattenberglabelCtaButton,
-                    urlCtaButton: path('projects_list'),
-                    people: testimonialPeople
-                }) }}
+                {% set borrowerIndex = 0 %}
+                {% set lenderIndex = 0 %}
+                <div class="promo-battenberg" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
+                    {% for index, person in testimonialPeople %}
+
+                        {# Set class color based on person type #}
+                        {% if person.type == 'lender' %}
+                            {% set classColor = 'p1' %}
+                            {% set description = person.name ~' , ' ~ person.projects %}
+                        {% elseif person.type == 'borrower' %}
+                            {% set classColor = 'p2' %}
+                            {% set description = person.name ~' , ' ~ person.location %}
+                        {% endif %}
+
+                        {% if index % 2 == 1 %}
+                            {% set classPosition = 'promo-align-right' %}
+                            {% set classAnimatePosition = 'ui-animate-from-left' %}
+                            {% set classRow = 'row reverse' %}
+                            {% set classColumnsImage = 'col-lg-5 pull-lg-1 col-md-5 pull-md-1' %}
+                            {% set classColumnsSlide = 'col-lg-6 col-md-6' %}
+                        {% elseif index % 2 == 0 %}
+                            {% set classPosition = 'promo-align-left' %}
+                            {% set classAnimatePosition = 'ui-animate-from-right' %}
+                            {% set classRow = 'row' %}
+                            {% set classColumnsImage = 'col-lg-5 push-lg-1 col-md-5 push-md-1' %}
+                            {% set classColumnsSlide = 'col-lg-6 col-md-6' %}
+                        {% endif %}
+
+                        {#As there should only be 2 battenbergs visible, I hid all others, to avoid users asking all the time why there are so many, please feel free to change that when you're doing DEV-869 #}
+                        <div class="promo-{{ person.type }} {{ classRow }}" {% if (person.type =='borrower' and borrowerIndex > 0) or (person.type == 'lender' and lenderIndex > 0) %} style="display: none;"{% endif %}>
+                            <div class="{{ classColumnsImage }}">
+                                <div class="promo-image promo-{{ classColor }}" style="background-image: url('{{ completeTestimonialUrl(person.battenberg_image, 'image') }}')">
+                                    &nbsp;
+                                    {% if person.type == 'borrower' %}
+                                    <a href="{{ path('home_borrower') }}#homeemp-section-esim" class="promo-image-cta">
+                                        <div><span class="link">{{ "site-general_testimonial-section-overlay-link-#{person.type}"|trans }}</span></div>
+                                    </a>
+                                    {% endif %}
+                                </div><!-- /.promo-image -->
+                            </div>
+                            <div class="{{ classColumnsSlide }} vertical-align-content">
+                                <div class="promo-slide promo-{{ classColor }} {{ classPosition }} {{ classAnimatePosition }}">
+                                    <p class="quote">{{ person.quote|raw }}</p>
+                                        <p class="source"><cite>{{ description }}</cite></p>
+
+                                    {% if person.type == 'borrower' %}
+                                    <div class="promo-links">
+                                        <a href="{{ path('testimonials') }}#testimonial-{{ person.name }}" class="link">{% trans %} site-general_testimonial-section-link-lender-title {% endtrans %}</a>
+                                        {% if person.project.slug is not empty %}
+                                            <a href="{{ path('project_detail', {'projectSlug' : person.project.slug}) }}" class="link">
+                                                {% trans %} site-general_testimonial-section-link-borrower-title {% endtrans %}
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                </div><!-- /.promo-slide -->
+                            </div>
+                        </div><!-- /.promo-emprunter -->
+                        {# Set class color based on person type #}
+                        {% if person.type == 'lender' %}
+                            {% set lenderIndex =+ 1 %}
+                        {% elseif person.type == 'borrower' %}
+                            {% set borrowerIndex =+ 1 %}
+                        {% endif %}
+                    {% endfor %}
+                </div><!-- /.promo-battenberg -->
+
+                <div class="row page-section">
+                    <div class="btn-toolbar">
+                        <a href="{{ path('projects_list') }}" class="btn-primary">
+                            <span class="icon fa-angle-right"></span>
+                            {% transchoice projects|length with {'%numberProjects%' : projects|length} %} project-list_title-ongoing-projects {% endtranschoice %}
+                        </a>
+                    </div>
+                </div>
             </div><!-- /.site-wrap -->
         </section><!-- /.page-section -->
 
@@ -159,10 +200,10 @@
                                 <h4>{% trans with {'%numberLenders%' : getStatistic('numberOfLendersInCommunity')|localizednumber } %} site-general_unilend-advantages-join-us-title {% endtrans %}</strong></h4>
                                 <div class="card-text">
                                     <ul class="list-checked">
-                                        {% trans  %} site-general_unilend-advantages-join-us-description {% endtrans %}
+                                        {% trans %} site-general_unilend-advantages-join-us-description {% endtrans %}
                                     </ul>
                                 </div><!-- /.card-text -->
-                                <a href="{{ path('lender_subscription_contact') }}" class="btn-primary btn-shape-md">{% trans %} site-general_unilend-advantages-welcome-offer-title {% endtrans %}</a>
+                                <a href="{{ path('lender_subscription_personal_information') }}" class="btn-primary btn-shape-md">{% trans %} site-general_unilend-advantages-welcome-offer-title {% endtrans %}</a>
                                 {% if showWelcomeOffer == true %}
                                     <div class="stamp" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
                                         {% trans %} site-general_unilend-advantages-welcome-offer-description {% endtrans %}
@@ -178,7 +219,7 @@
                                         {% trans %} site-general_unilend-advatanges-borrow-description {% endtrans %}
                                     </ul>
                                 </div><!-- /.card-text -->
-                                <a href="{{ path('lp-depot-de-dossier') }}" class="btn-alternate btn-shape-md">{% trans %} site-general_unilend-advantages-borrower-test-button {% endtrans %}</a>
+                                <a href="{{ path('home_borrower') }}#homeemp-section-esim" class="btn-alternate btn-shape-md">{% trans %} site-general_unilend-advantages-borrower-test-button {% endtrans %}</a>
                             </div><!-- /.card -->
                         </div>
                     </div><!-- .row -->
@@ -193,7 +234,7 @@
                     <div class="col-lg-4 col-md-4">
                         <div class="promo">
                             <div class="promo-image">
-                                {{ svgimage('#promo-transparancy', '', 190, 190, 'none') | raw }}
+                                {{ svgimage('#promo-transparancy', '', 190, 190, 'none')|raw }}
                             </div>
                             <h3>{% trans %} site-general_ethics-section-value-transparency-title {% endtrans %}</h3>
                             <p>{% trans %} site-general_ethics-section-value-transparancy-description {% endtrans %}</p>
@@ -202,7 +243,7 @@
                     <div class="col-lg-4 col-md-4">
                         <div class="promo">
                             <div class="promo-image">
-                                {{ svgimage('#promo-balance', '', 190, 190, 'none') | raw }}
+                                {{ svgimage('#promo-balance', '', 190, 190, 'none')|raw }}
                             </div>
                             <h3>{% trans %} site-general_ethics-section-equality-title {% endtrans %}</h3>
                             <p>{% trans %} site-general_ethics-section-equality-description {% endtrans %}</p>
@@ -211,7 +252,7 @@
                     <div class="col-lg-4 col-md-4">
                         <div class="promo">
                             <div class="promo-image">
-                                {{ svgimage('#promo-protection', '', 190, 190, 'none') | raw }}
+                                {{ svgimage('#promo-protection', '', 190, 190, 'none')|raw }}
                             </div>
                             <h3>{% trans %} site-general_ethics-section-protection-title {% endtrans %}</h3>
                             <p>{% trans %} site-general_ethics-section-protection-description {% endtrans %}</p>
@@ -220,7 +261,7 @@
                 </div>
                 <div class="row page-section-footer">
                     <div class="btn-toolbar">
-                        <a href="{{ route('about/our-ethics') }}" class="btn-primary">{% trans %} site-general_ethics-section-read-all-button {% endtrans %}</a>
+                        <a href="{{ constant('Unilend\\Bundle\\FrontBundle\\Service\\RouteProvider::ROUTE_OUR_ETHICS') }}" class="btn-primary">{% trans %} site-general_ethics-section-read-all-button {% endtrans %}</a>
                     </div><!-- /.btn-toolbar -->
                 </div>
             </div><!-- /.site-wrap -->

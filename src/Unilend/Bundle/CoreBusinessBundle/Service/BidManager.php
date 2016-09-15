@@ -72,8 +72,6 @@ class BidManager
         $oWalletsLine = $this->oEntityManager->getRepository('wallets_lines');
         /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
         $oWelcomeOfferDetails = $this->oEntityManager->getRepository('offres_bienvenues_details');
-        /** @var \projects_status $projectStatus */
-        $projectStatus = $this->oEntityManager->getRepository('projects_status');
         /** @var \projects $project */
         $project = $this->oEntityManager->getRepository('projects');
 
@@ -114,12 +112,11 @@ class BidManager
             return false;
         }
 
-        $projectStatus->getLastStatut($iProjectId);
-        if (false === in_array($projectStatus->status, array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING))) {
+        if (false === in_array($project->status, array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING))) {
             if($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->warning(
                     'Project status is not valid for bidding',
-                    ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate, 'project_status' => $projectStatus->status]
+                    ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate, 'project_status' => $project->status]
                 );
             }
             return false;

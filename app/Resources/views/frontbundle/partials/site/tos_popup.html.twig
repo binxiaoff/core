@@ -1,0 +1,20 @@
+<header class="modal-header">
+    <h2 class="modal-title">{% trans %} tos-update_title {% endtrans %}</h2>
+</header><!-- /.modal-header -->
+
+<div class="modal-body">
+    <p class="c-t2">Our Terms of Service have recently updated. Please read over our new Terms of Service and indicate below whether you will continue to use Unilend.</p>
+    <hr />
+    <div class="row">{{ tosDetails|raw }}</div>
+    <hr />
+</div><!-- /.modal-body -->
+
+<footer class="modal-footer">
+    <div id="accept-tos" class="form-field form-field-single-checkbox">
+        <label>
+            <input type="checkbox" name="terms" value="true">
+            <span class="label">{% trans %} tos-update_confirm-check-box-label {% endtrans %}</span>
+        </label>
+    </div>
+    <button type="submit" class="btn-primary btn-shape-md" data-modal-doactionconfirm>{% trans %} common_form-btn-submit {% endtrans %}<span class="icon fa-angle-r"></span></button>
+</footer><!-- /.modal-footer -->

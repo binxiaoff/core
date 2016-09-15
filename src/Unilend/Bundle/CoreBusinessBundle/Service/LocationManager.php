@@ -65,7 +65,7 @@ class LocationManager
             if ($response && ($response = json_decode($response)) && false === empty($response->features)) {
                 return [
                     'latitude'  => $response->features[0]->center[1],
-                    'longitude' =>$response->features[0]->center[0]
+                    'longitude' => $response->features[0]->center[0]
                 ];
             }
         }
@@ -232,4 +232,17 @@ class LocationManager
 
         return $this->getPercentageByRegion($countByRegion);
     }
+
+    public function checkFrenchCity($city, $zip = null)
+    {
+        /** @var \villes $cities */
+        $cities = $this->entityManager->getRepository('villes');
+
+        if (is_null($zip)) {
+            return $cities->exist(str_replace(array(' ', '-'), '', $city), 'REPLACE(REPLACE(ville, " ", ""), "-", "")');
+        } else {
+            return $cities->get($zip . '" AND ville = "' . $city, 'cp');
+        }
+    }
+
 }

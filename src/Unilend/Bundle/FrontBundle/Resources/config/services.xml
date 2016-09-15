@@ -16,9 +16,13 @@
             <argument type="service" id="unilend.service.location_manager" />
         </service>
 
+        <service id="unilend.frontbundle.security.password_encoder" class="Unilend\Bundle\FrontBundle\Security\BCryptPasswordEncoder">
+            <argument>%security.bcrypt.cost%</argument>
+        </service>
+
         <service id="unilend.frontbundle.service.testimonial_manager" class="Unilend\Bundle\FrontBundle\Service\TestimonialManager">
             <argument type="service" id="unilend.service.entity_manager"/>
-            <argument type="service" id="unilend.service.translation_manager"/>
+            <argument type="service" id="memcache.default" />
         </service>
 
         <service id="unilend.frontbundle.security.user_provider" class="Unilend\Bundle\FrontBundle\Security\User\UserProvider">
@@ -32,21 +36,7 @@
             <argument type="service" id="security.password_encoder"/>
             <argument type="service" id="router" />
             <argument type="service" id="unilend.service.entity_manager" />
-        </service>
-
-        <service id="unilend.frontbundle.security_subscriber" class="Unilend\Bundle\FrontBundle\EventSubscriber\LoginSubscriber">
-            <argument type="service" id="unilend.service.entity_manager" />
             <argument type="service" id="unilend.service.notification_manager" />
-            <tag name ="kernel.event_subscriber" />
-        </service>
-
-        <service id="unilend.frontbundle.service.subscription_manager" class="Unilend\Bundle\FrontBundle\Service\SubscriptionManager">
-            <argument type="service" id="unilend.service.entity_manager" />
-        </service>
-
-        <service id="unilend.frontbundle.service.static_content_manager" class="Unilend\Bundle\FrontBundle\Service\StaticContentManager">
-            <argument type="service" id="unilend.service.entity_manager" />
-            <argument type="service" id="memcache.default" />
         </service>
 
         <service id="unilend.frontbundle.service.project_display_manager" class="Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager">
@@ -65,6 +55,29 @@
             <argument type="service" id="unilend.service.location_manager" />
             <argument type="service" id="unilend.service.translation_manager" />
             <argument type="service" id="memcache.default" />
+        </service>
+
+        <service id="unilend.frontbundle.service.source_manager" class="Unilend\Bundle\FrontBundle\Service\SourceManager">
+            <argument type="service" id="request_stack" />
+        </service>
+
+        <service id="unilend.frontbundle.service.data_layer_collector" class="Unilend\Bundle\FrontBundle\Service\DataLayerCollector">
+            <argument type="service" id="security.token_storage" />
+            <argument type="service" id="request_stack" />
+            <argument type="service" id="google_tag_manager" />
+        </service>
+
+        <service id="unilend.frontbundle.service.payline_manager" class="Unilend\Bundle\FrontBundle\Service\PaylineManager">
+            <argument type="service" id="unilend.service.entity_manager" />
+            <argument type="service" id="unilend.swiftmailer.message_provider"/>
+            <argument type="service" id="swiftmailer.mailer.default" />
+            <argument type="service" id="unilend.service.client_manager" />
+            <argument type="service" id="router" />
+            <argument type="service" id="assets.packages" />
+            <argument>%path.payline%</argument>
+            <call method="setLogger">
+                <argument type="service" id="logger" on-invalid="null"/>
+            </call>
         </service>
     </services>
 </container>

@@ -360,19 +360,19 @@
                                             <h3 class="h3">{% trans %} project-request_step-1-project-details-title {% endtrans %}</h3>
 
                                             <div class="row">
-                                                <div class="form-field col-lg-12 col-md-12{% if form.errors.project.need is defined %} ui-formvalidation-error{% endif %}">
-                                                    <label for="form-project-create-need">
-                                                        {% trans %} project-request_project-need-label {% endtrans %}
+                                                <div class="form-field col-lg-12 col-md-12{% if form.errors.project.motive is defined %} ui-formvalidation-error{% endif %}">
+                                                    <label for="form-project-create-motive">
+                                                        {% trans %} project-request_project-motive-label {% endtrans %}
                                                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
                                                     <div class="input-group">
-                                                        <select id="form-project-create-need" name="project[need]" class="input-field" data-formvalidation-input data-formvalidation-required="true">
-                                                            <option value="">{% trans %} project-request_project-need-placeholder {% endtrans %}</option>
-                                                            {% for id_need, need_label in project_needs %}
-                                                                <option value="{{ id_need }}"{% if id_need == form.values.project.need %} selected{% endif %}>{{ need_label }}</option>
+                                                        <select id="form-project-create-motive" name="project[motive]" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                                                            <option value="">{% trans %} project-request_project-motive-placeholder {% endtrans %}</option>
+                                                            {% for id_motive, borrowing_motive in borrowing_motives %}
+                                                                <option value="{{ id_motive }}"{% if id_motive == form.values.project.motive %} selected{% endif %}>{{ borrowing_motive }}</option>
                                                             {% endfor %}
                                                         </select>
-                                                        {% if form.errors.project.need is defined %}
+                                                        {% if form.errors.project.motive is defined %}
                                                             <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required-select {% endtrans %}</li></ul>
                                                         {% endif %}
                                                     </div>
@@ -419,29 +419,27 @@
                                 </div><!-- /.form-project-create-content -->
                             </div><!-- /.col-form -->
 
-                            {#<div class="col-sim col-lg-4 col-md-4">
+                            <div class="col-sim col-lg-4 col-md-4">
                                 <div class="hide-xs hide-sm">
                                     <div class="emprunter-sim-mini ui-has-sticky" data-sticky-bufferbottom="156">
                                         <header class="emprunter-sim-mini-header">
                                             <h4 class="emprunter-sim-mini-title">{% trans %} project-request_simulator-panel-title {% endtrans %}</h4>
                                             <p>{% trans %} project-request_simulator-panel-message {% endtrans %}</p>
                                         </header>
-                                        <div class="emprunter-sim-mini-content" style="display: none">
+                                        <div class="emprunter-sim-mini-content">
                                             <dl class="list-2col">
                                                 <dt id="esim-label-amount">{% trans %} project-request_simulator-panel-amount-label {% endtrans %}</dt>
-                                                <dd id="esim-output-amount">€</dd>
+                                                <dd id="esim-output-amount">{{ project.amount|localizednumber }}&nbsp;€</dd>
                                                 <dt id="esim-label-duration">{% trans %} project-request_simulator-panel-estimated-funding-time-label {% endtrans %}</dt>
-                                                <dd id="esim-output-duration"></dd>
-                                                <dt id="esim-label-monthly" style="display: none">{% trans %} project-request_simulator-panel-estimated-monthly-repayment-label {% endtrans %}</dt>
-                                                <dd id="esim-output-monthly" style="display: none"></dd>
+                                                <dd id="esim-output-duration">{% transchoice project.averageFundingDuration with {'%averageFundingDuration%' : project.averageFundingDuration} %} project-request_simulator-panel-estimated-funding-time-value {% endtranschoice %}</dd>
                                             </dl>
                                         </div>
-                                        <footer class="emprunter-sim-mini-footer" style="display: none">
+                                        <footer class="emprunter-sim-mini-footer">
                                             <p class="instructions">{% trans %} project-request_simulator-panel-message-duirng-step-1 {% endtrans %}</p>
                                         </footer>
                                     </div><!-- /.emprunter-sim -->
                                 </div><!-- /.hide-responsive -->
-                            </div><!-- /.col-sim -->#}
+                            </div><!-- /.col-sim -->
                         </div><!-- /.row -->
                     </form><!-- /.form-project-create -->
                 </div><!-- /.site-wrap -->

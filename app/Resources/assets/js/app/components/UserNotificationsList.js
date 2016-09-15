@@ -1,7 +1,7 @@
 /*
  * User Notifications Drop
  * Manages updating any HTML component which is tied to the UserNotifications component
- * 
+ *
  * @component `UserNotificationsList`
  * @ui `ui-usernotificationslist`
  * @data `data-usernotificationslist`
@@ -146,7 +146,7 @@ UserNotificationsList.prototype.render = function () {
   }
 
   // @debug
-  console.log('UserNotificationsList.render', self.$elem[0])
+  //console.log('UserNotificationsList.render', self.$elem[0])
 
   // Place notifications into the list
   notificationsHTML = Templating.replace(self.templates.list, {
@@ -157,7 +157,7 @@ UserNotificationsList.prototype.render = function () {
 
   // Replace the drop's content with the new html
   self.$elem.html(notificationsHTML)
-    
+
   // @trigger elem `UserNotificationsList:render:complete`, [elemUserNotificationsList]
   self.$elem.trigger('UserNotificationsList:render:complete', [self])
 }
@@ -245,7 +245,7 @@ $.fn.uiUserNotificationsList = function (op) {
  */
 $(document)
   // Auto-init `[data-usernotificationslist]` elements
-  .on('ready UI:visible', function () {
+  .on('ready UI:visible', function (event) {
     $(event.target).find('[data-usernotificationslist]').not('.ui-usernotificationslist').uiUserNotificationsList()
   })
 

@@ -1,19 +1,14 @@
-{# User / Preter / Dashboard #}
-{% extends 'layouts/_dashboard.html.twig' %}
-{#{% import 'partials/common/_custom-input.macros.twig' as customInput %}#}
+{% extends 'layouts/_layout_lender.html.twig' %}
 
-{# Page data #}
-{% set bodyId = '' %}
 {% set page = {
   id: 'user-preter-dashboard',
   title: 'Prêteur / Dashboard',
-  permalink: route('user/preter/dashboard'),
+  permalink: path('lender_dashboard'),
   classNames: 'user-preter-dashboard'
 } %}
 
 {% set placeholderData = {
   charts: {
-
     preterProjectsCategoriesMap: {
       type: 'preterProjectsCategoriesMap',
       loadFirst: {
@@ -165,9 +160,13 @@
         <ul class="list-inline-block">
             {% for panelId, panelInfo in dashboardPanels %}
                 <li role="presentation">
-                    <a href="#{{ panelId }}" class="dashboard-panel-toggle {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %}" data-toggle="ui">
+                    <a href="#{{ panelId }}" class="dashboard-panel-toggle{% if panelInfo.hidden == true %} ui-dashboard-panel-hidden{% endif %}" data-toggle="ui">
                       {% if panelId == 'mywallet' %}
-                        {% transchoice lenderDetails.numberOfLoans with {'%offersCount%' : lenderDetails.numberOfLoans} %} lender-dashboard_panel-title-mywallet {% endtranschoice %}
+                            {% if lenderDetails.numberOfLoans == lenderDetails.numberOfBorrowers %}
+                                {% transchoice lenderDetails.numberOfLoans with {'%offersCount%' : lenderDetails.numberOfLoans|localizednumber} %} lender-dashboard_panel-title-mywallet-x-loan-x-project {% endtranschoice %}
+                            {% else %}
+                                {% transchoice lenderDetails.numberOfBorrowers with {'%offersCount%' : lenderDetails.numberOfLoans|localizednumber, '%borrowerCount%' : lenderDetails.numberOfBorrowers|localizednumber} %} lender-dashboard_panel-title-mywallet-x-loan-y-project {% endtranschoice %}
+                            {% endif %}
                       {% else %}
                         {{ "lender-dashboard_panel-title-#{ panelId }" | trans }}
                       {% endif %}
@@ -178,7 +177,6 @@
     </div>
 
     <section class="dashboard-panels-content" data-dashboardpanels data-dashboardpanels-ajaxurl="{{ path('save_user_preferences') }}" data-movable-content>
-
         {% for panelId, panelInfo in dashboardPanels %}
             {% include('pages/lender_dashboard/dashboard_panels/' ~ panelId ~ '.html.twig') %}
         {% endfor %}

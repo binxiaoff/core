@@ -23,7 +23,8 @@ var SimpleCountDown = function(callback) {
 
 
 var endingCount = function() {
-    $('#form-connect-notifications').hide();
+    $('#form-connect-notifications-timer').hide();
+    $('#form-connect-notifications').hide()
     $('[data-captcha-related]').show();
 }
 

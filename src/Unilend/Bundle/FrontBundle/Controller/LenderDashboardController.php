@@ -52,12 +52,15 @@ class LenderDashboardController extends Controller
         $ongoingProjects = $project->selectProjectsByStatus([\projects_status::EN_FUNDING], '', [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_ASC], 0, 30);
 
         foreach ($ongoingProjects as $iKey => $aProject) {
-            $ongoingProjects[$iKey]['avgrate'] = $project->getAverageInterestRate($aProject['id_project'], $aProject['status']);
+            $project->get($aProject['id_project']);
+            $ongoingProjects[$iKey]['avgrate'] = $project->getAverageInterestRate();
         }
-        $ongoingBidsSum      = $bid->sumBidsEncours($lender->id_lender_account);
-        $problematicProjects = $echeancier->getProblematicProjects($lender->id_lender_account);
-        $netInterestsAmount  = $echeancier->getSumRemb($lender->id_lender_account . ' AND status_ra = 0', 'interets') - $echeancier->getSumRevenuesFiscalesRemb($lender->id_lender_account . ' AND status_ra = 0');
-        $irr                 = '';
+
+        $ongoingBidsSum         = $bid->sumBidsEncours($lender->id_lender_account);
+        $problematicProjects    = $echeancier->getProblematicProjects($lender->id_lender_account);
+        $upcomingGrossInterests = $echeancier->getSumARemb($lender->id_lender_account, 'interets');
+        $repaidGrossInterests   = $echeancier->getSumRemb($lender->id_lender_account . ' AND status_ra = 0', 'interets');
+        $irr                    = 0;
 
         if ($this->getUser()->getLevel() > 0) {
             $aLastIRR = $oLenderAccountStats->getLastIRRForLender($lender->id_lender_account);
@@ -67,9 +70,7 @@ class LenderDashboardController extends Controller
                 $fLossRate = $oLenderAccountStats->getLossRate($lender->id_lender_account, $lender);
 
                 if ($fLossRate > 0) {
-                    $irr = $ficelle->formatNumber(- $fLossRate);
-                } else {
-                    $irr = '';
+                    $irr = $ficelle->formatNumber(-$fLossRate);
                 }
             }
         }
@@ -77,12 +78,18 @@ class LenderDashboardController extends Controller
         $newPublishedProjects = [];
 
         foreach ($ongoingProjects as $iKey => $aProject) {
+            $project->get($aProject['id_project']);
+            $projectStats = $this->get('unilend.frontbundle.service.project_display_manager')->getFundingDuration($project);
+
             if (0 < $bid->counter('id_project = ' . $aProject['id_project'] . ' AND id_lender_account = ' . $lender->id_lender_account)) {
                 $ongoingBidsByProject[$iKey]                 = [
                     'title'            => $aProject['title'],
                     'amount'           => $aProject['amount'],
                     'publication_date' => $aProject['date_publication_full'],
                     'days_left'        => $aProject['daysLeft'],
+                    'finished'         => ($aProject['status'] > \projects_status::EN_FUNDING || (new \DateTime($aProject['date_retrait_full'])) < (new \DateTime('NOW'))),
+                    'end_date'         => $aProject['date_retrait_full'],
+                    'funding_duration' => $projectStats->days
                 ];
                 $ongoingBidsByProject[$iKey]['aPendingBids'] = $bid->getBidsByStatus(\bids::STATUS_BID_PENDING, $aProject['id_project'], $lender->id_lender_account);
             }
@@ -90,13 +97,17 @@ class LenderDashboardController extends Controller
             if ((new \DateTime($aProject['date_publication_full']))->diff(new \DateTime($this->getUser()->getLastLoginDate()))->days > 0 && $aProject['daysLeft'] >= 0) {
                 $company->get($aProject['id_company']);
                 $newPublishedProjects[] = [
-                    'title'           => $aProject['title'],
-                    'company_address' => (false === empty($company->city)) ? $company->city . ', ' : '' . $company->zip,
-                    'amount'          => $aProject['amount'],
-                    'days_left'       => $aProject['daysLeft'],
-                    'risk'            => $aProject['risk'],
-                    'average_rate'    => $aProject['avgrate'],
-                    'bid_count'       => count($bid->getBidsByStatus(\bids::STATUS_BID_PENDING, $aProject['id_project']))
+                    'title'            => $aProject['title'],
+                    'slug'             => $aProject['slug'],
+                    'company_address'  => (false === empty($company->city)) ? $company->city . ', ' : '' . $company->zip,
+                    'amount'           => $aProject['amount'],
+                    'days_left'        => $aProject['daysLeft'],
+                    'risk'             => $aProject['risk'],
+                    'average_rate'     => $aProject['avgrate'],
+                    'bid_count'        => count($bid->getBidsByStatus(\bids::STATUS_BID_PENDING, $aProject['id_project'])),
+                    'finished'         => ($aProject['status'] > \projects_status::EN_FUNDING || (new \DateTime($aProject['date_retrait_full'])) < (new \DateTime('NOW'))),
+                    'end_date'         => $aProject['date_retrait_full'],
+                    'funding_duration' => $projectStats->days
                 ];
             }
         }
@@ -105,11 +116,11 @@ class LenderDashboardController extends Controller
         /** @var LenderAccountDisplayManager $lenderDisplayManager */
         $lenderDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
 
-        $aLastUnilendIRR      = $oIRRManager->getLastUnilendIRR();
-        $IRRUnilend           = $ficelle->formatNumber($aLastUnilendIRR['value']);
-        $lenderRepaymentsData = $echeancier->getRepaymentAmountDetailsByPeriod($lender->id_lender_account);
-        $repaymentData        = $this->getQuarterAndYearSum($lenderRepaymentsData);
-        $repaymentDateRange   = $echeancier->getFirstAndLastRepaymentDates($lender->id_lender_account);
+        $aLastUnilendIRR        = $oIRRManager->getLastUnilendIRR();
+        $IRRUnilend             = $ficelle->formatNumber($aLastUnilendIRR['value']);
+        $lenderRepaymentsData   = $echeancier->getRepaymentAmountDetailsByPeriod($lender->id_lender_account);
+        $repaymentDataPerPeriod = $this->getQuarterAndYearSum($lenderRepaymentsData);
+        $repaymentDateRange     = $echeancier->getFirstAndLastRepaymentDates($lender->id_lender_account);
 
         $monthAxisData   = $this->getMonthAxis($repaymentDateRange);
         $quarterAxisData = $this->getQuarterAxis($lenderRepaymentsData);
@@ -127,8 +138,8 @@ class LenderDashboardController extends Controller
                     'irr'                 => $irr,
                     'initials'            => $this->getUser()->getInitials(),
                     'number_of_companies' => $lender->countCompaniesLenderInvestedIn($lender->id_lender_account),
-                    /**@todo Confirme that the value is correct? */
-                    'numberOfLoans'       => $loan->getProjectsCount($lender->id_lender_account)
+                    'numberOfLoans'       => $loan->getLoansCount($lender->id_lender_account),
+                    'numberOfBorrowers'   => $loan->getProjectsCount($lender->id_lender_account),
                 ],
                 'walletData'         => [
                     'by_sector' => $lenderDisplayManager->getLenderLoansAllocationByCompanySector($lender->id_lender_account),
@@ -137,8 +148,7 @@ class LenderDashboardController extends Controller
                 'amountDetails'      => [
                     'loaned_amount'     => round($loan->sumPrets($lender->id_lender_account), 2),
                     'blocked_amount'    => round($ongoingBidsSum, 2),
-                    /**@todo use calculated amount instead of of using hard-coded value */
-                    'expected_earnings' => 123.55,
+                    'expected_earnings' => round($repaidGrossInterests + $upcomingGrossInterests - $problematicProjects['interests'], 2),
                     'deposited_amount'  => $wallet_line->getSumDepot($lender->id_lender_account, '10,30')
                 ],
                 'capitalDetails'     => [
@@ -146,11 +156,10 @@ class LenderDashboardController extends Controller
                     'owed_capital'          => round($echeancier->getSumARemb($lender->id_lender_account, 'capital') - $problematicProjects['capital'], 2),
                     'capital_in_difficulty' => round($problematicProjects['capital'], 2)
                 ],
-                /** @todo Ask for interests amount : display net or not? */
                 'interestsDetails'   => [
-                    'received_interests' => round($netInterestsAmount, 2),
-                    /**@todo calculer le vrai montant des intrêts à venir à base d'echeancier ... A confirmer */
-                    'upcoming_interests' => 555
+                    'received_interests'      => round($repaidGrossInterests, 2),
+                    'upcoming_interests'      => round($upcomingGrossInterests - $problematicProjects['interests'], 2),
+                    'interests_in_difficulty' => round($problematicProjects['interests'], 2)
                 ],
                 'ongoingBids'        => $bid->counter('id_lender_account = ' . $lender->id_lender_account . ' AND status = ' . \bids::STATUS_BID_PENDING),
                 'ongoingProjects'    => $ongoingBidsByProject,
@@ -166,14 +175,14 @@ class LenderDashboardController extends Controller
                     'tax'       => array_column($lenderRepaymentsData, 'tax'),
                 ],
                 'quarterSum'         => [
-                    'capital'   => $repaymentData['quarterCapital'],
-                    'interests' => $repaymentData['quarterInterests'],
-                    'tax'       => $repaymentData['quarterTax'],
+                    'capital'   => $repaymentDataPerPeriod['quarterCapital'],
+                    'interests' => $repaymentDataPerPeriod['quarterInterests'],
+                    'tax'       => $repaymentDataPerPeriod['quarterTax'],
                 ],
                 'yearSum'            => [
-                    'capital'   => $repaymentData['yearCapital'],
-                    'interests' => $repaymentData['yearInterests'],
-                    'tax'       => $repaymentData['yearTax'],
+                    'capital'   => $repaymentDataPerPeriod['yearCapital'],
+                    'interests' => $repaymentDataPerPeriod['yearInterests'],
+                    'tax'       => $repaymentDataPerPeriod['yearTax'],
                 ],
                 'bandOrigin'         => [
                     'month'   => $monthAxisData['monthBandOrigin'],
@@ -290,13 +299,14 @@ class LenderDashboardController extends Controller
         $interval        = new \DateInterval('P1M');
         $monthAxis       = [];
         $monthBandOrigin = 0;
+        $monthNames      = $this->getMonthNames()['fullNames'];
 
         while ($firstDateTime->format('Y-m') <= $lastDateTime->format('Y-m')) {
             if ($firstDateTime->format('Y-m') == date('Y-m')) {
                 $monthBandOrigin = count($monthAxis) - 0.5;
             }
 
-            $monthAxis[] = $firstDateTime->format('M Y');
+            $monthAxis[] = $monthNames[$firstDateTime->format('n')] . ' ' . $firstDateTime->format('Y');
             $firstDateTime->add($interval);
         }
         return ['monthAxis' => $monthAxis, 'monthBandOrigin' => $monthBandOrigin];
@@ -308,7 +318,8 @@ class LenderDashboardController extends Controller
      */
     private function getQuarterAxis(array $lenderRepaymentsData)
     {
-        $quarterLabels     = [1 => 'Jan-Mar', 2 => 'Apr-Jun', 3 => 'Jul-Sep', 4 => 'Oct-Dec'];
+        $monthNames = $this->getMonthNames()['shortNames'];
+        $quarterLabels     = [1 => $monthNames[1] . '-' . $monthNames[3], 2 => $monthNames[4] . '-' . $monthNames[6], 3 => $monthNames[7] . '-' . $monthNames[9], 4 => $monthNames[10] . '-' . $monthNames[12]];
         $quarterAxis       = [];
         $quarterBandOrigin = 0;
 
@@ -323,6 +334,24 @@ class LenderDashboardController extends Controller
         }
 
         return ['quarterAxis' => $quarterAxis, 'quarterBandOrigin' => $quarterBandOrigin];
+    }
+
+    /**
+     * Returns the full and short month names
+     * @return array
+     */
+    private function getMonthNames()
+    {
+        $startDate       = new \DateTime('2016-01-01');
+        $monthCounter    = new \DateInterval('P1M');
+        $fullMonthNames  = [];
+        $shortMonthNames = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $fullMonthNames[$i]  = strftime('%B', $startDate->getTimestamp());
+            $shortMonthNames[$i] = strftime('%b', $startDate->getTimestamp());
+            $startDate->add($monthCounter);
+        }
+        return ['fullNames' => $fullMonthNames, 'shortNames' => $shortMonthNames];
     }
 
     /**

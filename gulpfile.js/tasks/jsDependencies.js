@@ -35,6 +35,7 @@ var jsDependenciesTask = function () {
     .on('error', handleErrors)
     .pipe(gulpif(!global.production, sourcemaps.init()))
     .pipe(concat('dependencies.js'))
+    .pipe(uglify())
     .pipe(gulpif(!global.production, sourcemaps.write('.')))
     .pipe(gulp.dest(paths.dest))
     .pipe(browserSync.stream())

@@ -9,9 +9,9 @@
                     <h4>{{ menu.title }}</h4>
                     <ul class="list-block">
                         {% for child in menu.children %}
-                        <li>
-                            <a href="{{ child.url }}" target="{{ child.target }}">{{ child.title }}</a>
-                        </li>
+                            <li>
+                                <a href="{{ child.url }}" target="{{ child.target }}">{{ child.title }}</a>
+                            </li>
                         {% endfor %}
                     </ul>
                 </div>
@@ -20,17 +20,21 @@
         {% endblock %}
         <div class="row">
             <div class="col-sub-left col-lg-4 col-md-4">
-            {% block siteFooterSubLeft %}
-                {% include 'partials/components/list-socialmedia.html.twig' %}
-            {% endblock %}
+                {% block siteFooterSubLeft %}
+                    <ul class="list-socialmedia">
+                        <li><a href="{{ setting('Facebook') }}" target="_blank" class="btn-facebook" title="{% trans %} common_facebook-link-title {% endtrans %}"><span class="sr-only">Facebook</span></a></li>
+                        <li><a href="{{ setting('Twitter') }}" target="_blank" class="btn-twitter" title="{% trans %} common_twitter-link-title {% endtrans %}"><span class="sr-only">Twitter</span></a></li>
+                        <li><a href="{{ setting('LinkedIn') }}" target="_blank" class="btn-linkedin" title="{% trans %} common_linkedin-link-title {% endtrans %}"><span class="sr-only">LinkedIn</span></a></li>
+                    </ul><!-- /.list-sharing -->
+                {% endblock %}
             </div>
             <div class="col-sub-center col-lg-4 col-md-4">
                 {% block siteFooterSubCenter %}
                     <ul class="list-awards">
                         {% for partner in partners %}
-                        <li>
-                            <img src="{{ uploadedImage(partner.src) }}" alt="{{ partner.alt }}"/>
-                        </li>
+                            <li>
+                                <img src="{{ uploadedImage(partner.src) }}" alt="{{ partner.alt }}" class="ui-has-tooltip" data-original-title="{{ partner.alt|e('html_attr') }}">
+                            </li>
                         {% endfor %}
                     </ul>
                     <div class="site-tagline">{% trans %} footer_site-tagline {% endtrans %}</div>
@@ -42,7 +46,7 @@
                         <a href="{{ route('legal') }}">{% trans %} footer_small-mandatory-menu-legal-notice {% endtrans %}</a> |
                         <a href="{{ route('cgu') }}">{% trans %} footer_small-mandatory-menu-terms {% endtrans %}</a> |
                         <a href="{{ route('securite') }}">{% trans %} footer_small-mandatory-menu-security {% endtrans %}</a> |
-                        <a href="{{ route('sitemap') }}">{% trans %} footer_small-mandatory-menu-sitemap {% endtrans %}</a>
+                        <a href="{{ path('sitemap') }}">{% trans %} footer_small-mandatory-menu-sitemap {% endtrans %}</a>
                     </div>
                     <p class="site-copyright">{% trans %} footer_copyright-all-rights {% endtrans %}</p>
                 {% endblock %}
@@ -63,7 +67,7 @@
                 <h1>{% trans %} site-general_warning-no-javascript-title {% endtrans %}</h1>
                 <p>{% trans %} site-general_warning-no-javascript-text {% endtrans %}</p>
                 <div class="btn-toolbar">
-                    <a href="{{ route('/') }}" class="btn-default">{% trans %} site-general_reload-website {% endtrans %}</a>
+                    <a href="{{ path('home') }}" class="btn-default">{% trans %} site-general_reload-website {% endtrans %}</a>
                 </div>
             </div>
         </div>
@@ -76,7 +80,7 @@
             <h1>{% trans %} site-general_warning-unsupported-browser-title {% endtrans %}</h1>
             <p>{% trans %} site-general_warning-unsupported-browser-text {% endtrans %}</p>
             <div class="btn-toolbar">
-                <a href="{{ route('/') }}" class="btn-default">{% trans %} site-general_warning-unsupported-browser-confirmation {% endtrans %}</a>
+                <a href="{{ path('home') }}" class="btn-default">{% trans %} site-general_warning-unsupported-browser-confirmation {% endtrans %}</a>
                 <a href="http://www.browsehappy.com/" target="_blank" class="btn-default">{% trans %} site-general_warning-unsupported-browser-new-browser {% endtrans %}</a>
             </div>
         </div>

@@ -19,6 +19,7 @@
     </ul>
     <h1>Arborescence</h1>
     <p id="masstoggler">
-        <a title="Tout r&eacute;duire">Tout r&eacute;duire</a>&nbsp;|&nbsp;<a title="Tout ouvrir">Tout ouvrir</a></p>
-    <div><?= $this->tree->getArbo(($_SESSION['user']['id_tree'] != 0 ? $_SESSION['user']['id_tree'] : 1), $this->language, 0) ?></div>
+        <a title="Tout r&eacute;duire">Tout r&eacute;duire</a>&nbsp;|&nbsp;<a title="Tout ouvrir">Tout ouvrir</a>
+    </p>
+    <div><?= $this->tree->getArbo(1, $this->language, 0) ?></div>
 </div>

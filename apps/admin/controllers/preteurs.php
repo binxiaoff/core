@@ -86,20 +86,6 @@ class preteursController extends bootstrap
         } else {
             $this->lPreteurs = $this->clients->searchPreteurs('', '', '', '', '', null, '', '0', '300');
         }
-
-        //preteur sans mouvement
-        $aTransactionTypes = array(
-            \transactions_types::TYPE_LENDER_SUBSCRIPTION,
-            \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
-            \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
-            \transactions_types::TYPE_LENDER_REPAYMENT,
-            \transactions_types::TYPE_LENDER_WITHDRAWAL,
-            \transactions_types::TYPE_DIRECT_DEBIT,
-            \transactions_types::TYPE_LENDER_REGULATION
-        );
-        $this->z = count($this->clients->selectPreteursByStatus(\clients_status::VALIDATED, 'c.status = 1 AND status_inscription_preteur = 1 AND (SELECT COUNT(t.id_transaction) FROM transactions t WHERE t.type_transaction IN (' . implode(',', $aTransactionTypes) . ') AND t.status = 1 AND t.etat = 1 AND t.id_client = c.id_client) < 1'));
-        $this->y = $this->clients->counter('clients.status = 0 AND clients.status_inscription_preteur = 1 AND EXISTS (SELECT * FROM lenders_accounts WHERE clients.id_client = lenders_accounts.id_client_owner)');
-        $this->x = $this->clients->counter('clients.status_inscription_preteur = 1 AND EXISTS (SELECT * FROM lenders_accounts WHERE clients.id_client = lenders_accounts.id_client_owner)');
     }
 
     public function _search()
@@ -431,7 +417,7 @@ class preteursController extends bootstrap
                     \clients_status::CLOSED_LENDER_REQUEST,
                     \clients_status::CLOSED_BY_UNILEND
                 );
-                $checkEmailExistant    = $this->clients->selectPreteursByStatus(implode(',', $aLenderStatusForQuery), 'email = "' . $_POST['email'] . '" AND id_client != ' . $this->clients->id_client);
+                $checkEmailExistant    = $this->clients->selectPreteursByStatus(implode(',', $aLenderStatusForQuery), 'email = "' . $_POST['email'] . '" AND c.id_client != ' . $this->clients->id_client);
                 if (count($checkEmailExistant) > 0) {
                     $les_id_client_email_exist = '';
                     foreach ($checkEmailExistant as $checkEmailEx) {
@@ -736,7 +722,7 @@ class preteursController extends bootstrap
                     \clients_status::MODIFICATION,
                     \clients_status::VALIDATED,
                 );
-                $checkEmailExistant = $this->clients->selectPreteursByStatus(implode(',', $aLenderStatusForQuery), 'email = "' . $_POST['email_e'] . '" AND id_client != ' . $this->clients->id_client);
+                $checkEmailExistant = $this->clients->selectPreteursByStatus(implode(',', $aLenderStatusForQuery), 'email = "' . $_POST['email_e'] . '" AND c.id_client != ' . $this->clients->id_client);
                 if (count($checkEmailExistant) > 0) {
                     $les_id_client_email_exist = '';
                     foreach ($checkEmailExistant as $checkEmailEx) {
@@ -1445,6 +1431,7 @@ class preteursController extends bootstrap
         /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
         $translationManager = $this->get('unilend.service.translation_manager');
         $this->lng['autobid']      = $translationManager->getAllTranslationsForSection('autobid');
+        $this->lng['autolend'] = $translationManager->getAllTranslationsForSection('autolend');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
         $oAutoBidSettingsManager   = $this->get('unilend.service.autobid_settings_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $oClientManager */
@@ -1458,12 +1445,14 @@ class preteursController extends bootstrap
         $this->fAverageRateUnilend = round($this->projects->getAvgRate(), 1);
         $this->bIsBetaTester       = $oClientManager->isBetaTester($this->clients);
 
-        $this->aAutoBidSettings = array();
+        $this->settings->get('date-premier-projet-tunnel-de-taux', 'type');
+        $startingDate = $this->settings->value;
+        $this->aAutoBidSettings = [];
         /** @var autobid $autobid */
         $autobid          = $this->loadData('autobid');
         $aAutoBidSettings = $autobid->getSettings($this->lenders_accounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
         foreach ($aAutoBidSettings as $aSetting) {
-            $aSetting['AverageRateUnilend']                                          = $this->projects->getAvgRate($aSetting['evaluation'], $aSetting['min'], $aSetting['max']);
+            $aSetting['AverageRateUnilend']                                          = $this->projects->getAvgRate($aSetting['evaluation'], $aSetting['period_min'], $aSetting['period_max'], $startingDate);
             $this->aAutoBidSettings[$aSetting['id_period']][$aSetting['evaluation']] = $aSetting;
         }
     }
@@ -2054,4 +2043,86 @@ class preteursController extends bootstrap
         }
     }
 
+    public function _bids()
+    {
+        $this->lenders_accounts = $this->loadData('lenders_accounts');
+        $this->clients          = $this->loadData('clients');
+
+        $this->lenders_accounts->get($this->params[0], 'id_lender_account');
+        $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
+
+        if (isset($_POST['send_dates'])) {
+            $_SESSION['FilterBids']['StartDate'] = $_POST['debut'];
+            $_SESSION['FilterBids']['EndDate']   = $_POST['fin'];
+
+            header('Location: ' . $this->lurl . '/preteurs/bids/' . $this->params[0]);
+            die;
+        }
+
+        if (isset($_SESSION['FilterBids'])) {
+            $dateTimeStart = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterBids']['StartDate']);
+            $dateTimeEnd   = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterBids']['EndDate']);
+
+            unset($_SESSION['FilterBids']);
+        } else {
+            $dateTimeStart = new \DateTime('NOW - 1 year');
+            $dateTimeEnd   = new \DateTime('NOW');
+        }
+
+        $this->sDisplayDateTimeStart = $dateTimeStart->format('d/m/Y');
+        $this->sDisplayDateTimeEnd   = $dateTimeEnd->format('d/m/Y');
+        $this->bidList               = [];
+
+        /** @var \bids $bids */
+        $bids = $this->loadData('bids');
+        foreach ($bids->getBidsByLenderAndDates($this->lenders_accounts, $dateTimeStart, $dateTimeEnd) as $key => $value) {
+            $this->bidList[$key] = $value;
+        }
+    }
+
+    public function _extract_bids_csv()
+    {
+        /** @var \lenders_accounts $lender */
+        $lender = $this->loadData('lenders_accounts');
+        /** @var \bids $bids */
+        $bids = $this->loadData('bids');
+
+        $lender->get($this->params[0], 'id_lender_account');
+        $lenderBids = $bids->getBidsByLenderAndDates($lender);
+
+        $this->autoFireView = false;
+        $this->hideDecoration();
+
+        $header = array('Id projet', 'Id bid', 'Client', 'Date bid', 'Statut bid', 'Montant', 'Taux');
+
+        PHPExcel_Settings::setCacheStorageMethod(
+            PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
+            array('memoryCacheSize' => '2048MB', 'cacheTime' => 1200)
+        );
+
+        $document    = new PHPExcel();
+        $activeSheet = $document->setActiveSheetIndex(0);
+
+        foreach ($header as $index => $columnName) {
+            $activeSheet->setCellValueByColumnAndRow($index, 1, $columnName);
+        }
+
+        foreach ($lenderBids as $rowIndex => $row) {
+            $colIndex = 0;
+            foreach ($row as $cellValue) {
+                $activeSheet->setCellValueByColumnAndRow($colIndex++, $rowIndex + 2, $cellValue);
+            }
+        }
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment;filename=bids_lender_' . $lender->id_lender_account . '.csv');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Expires: 0');
+
+        /** @var \PHPExcel_Writer_CSV $writer */
+        $writer = PHPExcel_IOFactory::createWriter($document, 'CSV');
+        $writer->setUseBOM(true);
+        $writer->setDelimiter(';');
+        $writer->save('php://output');
+    }
 }

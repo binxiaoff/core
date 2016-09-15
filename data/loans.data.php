@@ -155,6 +155,13 @@ class loans extends loans_crud
         return (int)($this->bdd->result($result));
     }
 
+    public function getLoansCount($id_lender)
+    {
+        $sql = 'SELECT count(DISTINCT id_loan) FROM `loans` WHERE id_lender = ' . $id_lender . ' AND status = 0';
+        $result = $this->bdd->query($sql);
+        return (int)($this->bdd->result($result));
+    }
+
     // retourne la moyenne des prets validés d'un projet
     public function getAvgLoans($id_project, $champ = 'amount')
     {
@@ -287,13 +294,13 @@ class loans extends loans_crud
             FROM loans l
             LEFT JOIN projects p ON l.id_project = p.id_project
             LEFT JOIN companies c ON p.id_company = c.id_company
-            LEFT JOIN projects_last_status_history plsh ON p.id_project = plsh.id_project
+            LEFT JOIN (SELECT id_project, MAX(id_project_status_history) AS id_project_status_history FROM projects_status_history GROUP BY id_project) plsh ON p.id_project = plsh.id_project
             LEFT JOIN projects_status_history psh ON plsh.id_project_status_history = psh.id_project_status_history
             LEFT JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
             WHERE id_lender = ' . $iLenderAccountId . '
                 AND l.status = 0
                 ' . (null === $iYear ? '' : 'AND YEAR(l.added) = "' . $iYear . '"') . '
-                ' . (null === $iProjectStatus ? '' : 'AND ps.status = ' . $iProjectStatus) . '
+                ' . (null === $iProjectStatus ? '' : 'AND p.status = ' . $iProjectStatus) . '
             GROUP BY l.id_project
             ORDER BY ' . (null === $sOrder ? 'l.added DESC' : $sOrder)
         );
@@ -372,11 +379,12 @@ class loans extends loans_crud
         }
 
         if ($projectId) {
-            $sQuery = 'SELECT period FROM projects WHERE id_project = :projectId';
+            $sQuery = 'SELECT period FROM projects WHERE id_project = :projectId Limit 1';
 
             try {
-                $result = $this->bdd->executeQuery($sQuery, array('projectId' => $projectId), array('projectId' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
-                    ->fetchColumn(0);
+                $statement = $this->bdd->executeCacheQuery($sQuery, array('projectId' => $projectId), array('projectId' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)));
+                $result = $statement->fetchAll(PDO::FETCH_COLUMN);
+                $statement->closeCursor();
 
                 if (empty($result)) {
                     return false;
@@ -384,7 +392,7 @@ class loans extends loans_crud
             } catch (\Doctrine\DBAL\DBALException $ex) {
                 return false;
             }
-            return (int)$result;
+            return (int)array_shift($result);
         }
         return false;
     }

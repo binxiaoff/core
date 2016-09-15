@@ -40,8 +40,6 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
         $prescripteur = $entityManager->getRepository('prescripteurs');
         /** @var \projects_status_history $projectStatusHistory */
         $projectStatusHistory = $entityManager->getRepository('projects_status_history');
-        /** @var \projects_last_status_history $projectLastStatusHistory */
-        $projectLastStatusHistory = $entityManager->getRepository('projects_last_status_history');
         /** @var \settings $settings */
         $settings = $entityManager->getRepository('settings');
         /** @var \projects $project */
@@ -102,8 +100,7 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                             }
 
                             if (false === empty($client->email) && 0 == $project->stop_relances) {
-                                $projectLastStatusHistory->get($project->id_project, 'id_project');
-                                $projectStatusHistory->get($projectLastStatusHistory->id_project_status_history, 'id_project_status_history');
+                                $projectStatusHistory->loadLastProjectHistory($project->id_project);
 
                                 $oSubmissionDate = new \DateTime($project->added);
 

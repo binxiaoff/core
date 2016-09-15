@@ -50,10 +50,18 @@
       }
     }
   }
+
+  p[data-borrower-motive] {
+    display: none;
+  }
 }
 
 .emprunter-sim-estimate {
-  .emprunter-sim-estimate-numbers {
+  dl {
+    display: none;
+  }
+
+  .emprunter-sim-estimate-legend {
     display: none;
   }
 
@@ -66,8 +74,16 @@
   }
 
   .ui-emprunter-sim-estimate-show & {
-    .emprunter-sim-estimate-numbers {
+    dl {
       display: block;
+    }
+
+    .emprunter-sim-estimate-legend {
+      display: block;
+    }
+
+    .spacer {
+      display: none;
     }
 
     .btn-continue {

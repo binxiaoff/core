@@ -1,8 +1,7 @@
 security:
     encoders:
-        default:
-            algorithm: bcrypt
-            cost: 10
+        Unilend\Bundle\FrontBundle\Security\User\BaseUser:
+            id: unilend.frontbundle.security.password_encoder
         md5:
             algorithm: md5
             encode_as_base64: false
@@ -23,7 +22,9 @@ security:
                     - unilend.frontbundle.security.login_authenticator
             logout:
                 path: logout
-                target: home
+                target: /
+
+    access_denied_url: /login
 
     access_control:
             - { path: ^/espace-emprunteur/securite, roles: IS_AUTHENTICATED_ANONYMOUSLY }

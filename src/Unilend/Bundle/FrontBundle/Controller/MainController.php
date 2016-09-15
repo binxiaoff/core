@@ -2,10 +2,10 @@
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\Translator;
+use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager;
@@ -23,8 +24,10 @@ use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
 use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
+use Unilend\Bundle\FrontBundle\Service\SourceManager;
 use Unilend\Bundle\FrontBundle\Service\TestimonialManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
+use Unilend\core\Loader;
 
 class MainController extends Controller
 {
@@ -36,39 +39,61 @@ class MainController extends Controller
     const SLUG_ELEMENT_NAV_IMAGE  = 'image-header';
 
     /**
-     * @Route("/home/{type}", defaults={"type" = "acquisition"}, name="home")
-     *
+     * @Route("/", name="home")
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function homeAction($type = 'acquisition')
+    public function homeAction()
     {
-        $template = [];
-
         /** @var TestimonialManager $testimonialService */
         $testimonialService = $this->get('unilend.frontbundle.service.testimonial_manager');
-        /** @var ProjectDisplayManager $projectDisplayManager */
-        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
-        /** @var ProjectManager $projectManager */
-        $projectManager = $this->get('unilend.service.project_manager');
-        /** @var WelcomeOfferManager $welcomeOfferManager */
-        $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
-        /** @var TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translation_manager');
         /** @var AuthorizationChecker $authorizationChecker */
         $authorizationChecker = $this->get('security.authorization_checker');
+        /** @var ProjectDisplayManager $projectDisplayManager */
+        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
+        /** @var WelcomeOfferManager $welcomeOfferManager */
+        $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
 
-        $template['testimonialPeople'] = $testimonialService->getActiveBattenbergTestimonials();
-        $template['videoHeroes']       = [
-            'Lenders'   => $testimonialService->getActiveVideoHeroes('preter'),
-            'Borrowers' => $testimonialService->getActiveVideoHeroes('emprunter')
-        ];
+        $template = [];
         $template['showWelcomeOffer']  = $welcomeOfferManager->displayOfferOnHome();
-        $template['loanPeriods']       = $projectManager->getPossibleProjectPeriods();
-        $template['projectAmountMax']  = $projectManager->getMaxProjectAmount();
-        $template['projectAmountMin']  = $projectManager->getMinProjectAmount();
-        $template['borrowingMotives']  = $translationManager->getTranslatedBorrowingMotiveList();
-        $template['showPagination']    = false;
-        $template['showSortable']      = false;
+        $template['testimonialPeople'] = $testimonialService->getAllBattenbergTestimonials();
+        $template['projects'] = $projectDisplayManager->getProjectsList(
+            [\projects_status::EN_FUNDING],
+            [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC]
+        );
+
+        $template['sliderTestimonials'] = $testimonialService->getSliderInformation();
+
+        if ($authorizationChecker->isGranted('ROLE_LENDER')) {
+            $this->redirectToRoute('home_lender');
+        } elseif ($authorizationChecker->isGranted('ROLE_BORROWER')) {
+            $this->redirectToRoute('home_borrower');
+        }
+
+        return $this->render('pages/homepage_acquisition.html.twig', $template);
+    }
+
+    /**
+     * @Route("/preter", name="home_lender")
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function homeLenderAction()
+    {
+        /** @var ProjectDisplayManager $projectDisplayManager */
+        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
+        /** @var AuthorizationChecker $authorizationChecker */
+        $authorizationChecker = $this->get('security.authorization_checker');
+        /** @var WelcomeOfferManager $welcomeOfferManager */
+        $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
+        /** @var TestimonialManager $testimonialService */
+        $testimonialService = $this->get('unilend.frontbundle.service.testimonial_manager');
+
+        $template                     = [];
+        $template['showWelcomeOffer'] = $welcomeOfferManager->displayOfferOnHome();
+        $template['featureLender']    = $testimonialService->getFeaturedTestimonialLender();
+        $template['showPagination']   = false;
+        $template['showSortable']     = false;
+        $template['sortType']         = strtolower(\projects::SORT_FIELD_END);
+        $template['sortDirection']    = strtolower(\projects::SORT_DIRECTION_DESC);
 
         /** @var BaseUser $user */
         $user = $this->getUser();
@@ -105,31 +130,47 @@ class MainController extends Controller
             });
         }
 
-        //TODO replace switch by cookie check
-        switch($type) {
-            case 'lender' :
-                $sTemplateToRender = 'pages/homepage_lender.html.twig';
-                break;
-            case 'borrower' :
-                $sTemplateToRender = 'pages/homepage_borrower.html.twig';
-                break;
-            case 'acquisition':
-            default:
-                $sTemplateToRender = 'pages/homepage_acquisition.html.twig';
-                break;
-        };
-
-        return $this->render($sTemplateToRender, $template);
+        return $this->render('pages/homepage_lender.html.twig', $template);
     }
 
     /**
-     * @Route("/esim-step-1", name="esim_step_1")
+     * @Route("/emprunter", name="home_borrower")
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function homeBorrowerAction()
+    {
+        /** @var ProjectManager $projectManager */
+        $projectManager = $this->get('unilend.service.project_manager');
+        /** @var TranslationManager $translationManager */
+        $translationManager = $this->get('unilend.service.translation_manager');
+        /** @var TestimonialManager $testimonialService */
+        $testimonialService = $this->get('unilend.frontbundle.service.testimonial_manager');
+        /** @var ProjectDisplayManager $projectDisplayManager */
+        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
+
+        $template = [];
+        $template['testimonialPeople'] = $testimonialService->getBorrowerBattenbergTestimonials(true);
+        $template['loanPeriods']       = $projectManager->getPossibleProjectPeriods();
+        $template['projectAmountMax']  = $projectManager->getMaxProjectAmount();
+        $template['projectAmountMin']  = $projectManager->getMinProjectAmount();
+        $template['borrowingMotives']  = $translationManager->getTranslatedBorrowingMotiveList();
+        $template['projects'] = $projectDisplayManager->getProjectsList(
+            [\projects_status::EN_FUNDING],
+            [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC]
+        );
+
+        $template['featureBorrower'] = $testimonialService->getFeaturedTestimonialBorrower();
+
+        return $this->render('pages/homepage_borrower.html.twig', $template);
+    }
+
+    /**
+     * @Route("/simulateur-projet-etape1", name="project_simulator")
      * @Method("POST")
      */
     public function projectSimulatorStepOneAction(Request $request)
     {
         if ($request->isXMLHttpRequest()) {
-
             $period   = $request->request->get('period');
             $amount   = $request->request->get('amount');
             $motiveId = $request->request->get('motiveId');
@@ -137,31 +178,33 @@ class MainController extends Controller
             /** @var ProjectRequestManager $projectRequestManager */
             $projectRequestManager = $this->get('unilend.service.project_request_manager');
             /** @var ProjectManager $projectManager */
-            $projectManager        = $this->get('unilend.service.project_manager');
-            /** @var TranslationManager $translationManager */
-            $translationManager = $this->get('unilend.service.translation_manager');
+            $projectManager = $this->get('unilend.service.project_manager');
+            /** @var TranslatorInterface $translator */
+            $translator = $this->get('translator');
+            /** @var \ficelle $ficelle */
+            $ficelle = Loader::loadLib('ficelle');
 
-            $aProjectPeriods   = $projectManager->getPossibleProjectPeriods();
-            $iProjectAmountMax = $projectManager->getMaxProjectAmount();
-            $iProjectAmountMin = $projectManager->getMinProjectAmount();
+            $projectPeriods   = $projectManager->getPossibleProjectPeriods();
+            $projectAmountMax = $projectManager->getMaxProjectAmount();
+            $projectAmountMin = $projectManager->getMinProjectAmount();
 
             if (
-                in_array($period, $aProjectPeriods)
-                && $amount >= $iProjectAmountMin
-                && $amount <= $iProjectAmountMax
+                in_array($period, $projectPeriods)
+                && $amount >= $projectAmountMin
+                && $amount <= $projectAmountMax
             ){
-                $estimatedRate                          = $projectRequestManager->getMonthlyRateEstimate();
-                $estimatedMonthlyRepayment              = $projectRequestManager->getMonthlyPaymentEstimate($amount, $period, $estimatedRate);
-                $sTranslationComplement                 = $translationManager->selectTranslation('home-borrower', 'simulator-step-2-text-segment-motive-' . $motiveId);
-                $bmotiveSentenceComplementToBeDisplayed = (\borrowing_motive::OTHER == $motiveId) ? false : true;
+                $estimatedRate                           = $projectRequestManager->getMonthlyRateEstimate();
+                $estimatedMonthlyRepayment               = $projectRequestManager->getMonthlyPaymentEstimate($amount, $period, $estimatedRate);
+                $isMotiveSentenceComplementToBeDisplayed = (false === in_array($motiveId, ['', \borrowing_motive::OTHER]));
+                $translationComplement                   = $isMotiveSentenceComplementToBeDisplayed ? $translator->trans('home-borrower_simulator-step-2-text-segment-motive-' . $motiveId) : '';
 
                 return new JsonResponse([
-                    'estimatedRate'                         => $estimatedRate,
-                    'estimatedMonthlyRepayment'             => $estimatedMonthlyRepayment,
-                    'translationComplement'                 => $sTranslationComplement,
-                    'motiveSentenceComplementToBeDisplayed' => $bmotiveSentenceComplementToBeDisplayed,
+                    'estimatedRate'                         => $ficelle->formatNumber($estimatedRate, 1),
+                    'estimatedMonthlyRepayment'             => $ficelle->formatNumber($estimatedMonthlyRepayment, 0),
+                    'amount'                                => $ficelle->formatNumber($amount, 0),
                     'period'                                => $period,
-                    'amount'                                => $amount
+                    'motiveSentenceComplementToBeDisplayed' => $isMotiveSentenceComplementToBeDisplayed,
+                    'translationComplement'                 => $translationComplement
                 ]);
             }
 
@@ -171,7 +214,7 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/esim-step-2", name="esim_step_2")
+     * @Route("/simulateur-projet", name="project_simulator_form")
      * @Method("POST")
      */
     public function projectSimulatorStepTwoAction(Request $request)
@@ -185,7 +228,7 @@ class MainController extends Controller
         $session = $request->getSession();
         $session->set('esim/project_id', $project->id_project);
 
-        return $this->redirectToRoute('project_request_contact', ['hash' => $project->hash]);
+        return $this->redirectToRoute('project_request_simulator_start', ['hash' => $project->hash]);
     }
 
     /**
@@ -279,9 +322,10 @@ class MainController extends Controller
      * @param \tree         $currentPage
      * @param array         $content
      * @param EntityManager $entityManager
+     * @param string|null   $pageId
      * @return Response
      */
-    private function renderCmsNav(\tree $currentPage, array $content, EntityManager $entityManager)
+    private function renderCmsNav(\tree $currentPage, array $content, EntityManager $entityManager, $pageId = null)
     {
         /** @var \tree $pages */
         $pages = $entityManager->getRepository('tree');
@@ -323,6 +367,7 @@ class MainController extends Controller
         ];
 
         $page = [
+            'id'          => $pageId,
             'title'       => $currentPage->meta_title,
             'description' => $currentPage->meta_description,
             'keywords'    => $currentPage->meta_keywords,
@@ -358,6 +403,13 @@ class MainController extends Controller
         $maximumAmount = $settings->value;
 
         $isPartnerFunnel = $content['tunnel-partenaire'] == 1;
+
+        if ($isPartnerFunnel) {
+            $sourceManager = $this->get('unilend.frontbundle.service.source_manager');
+            $sourceManager->setSource(SourceManager::SOURCE1, '');
+            $sourceManager->setSource(SourceManager::SOURCE2, '');
+            $sourceManager->setSource(SourceManager::SOURCE3, '');
+        }
 
         $template = [
             'cms'      => [
@@ -477,10 +529,12 @@ class MainController extends Controller
         if ($block->get('partenaires', 'slug')) {
             $elementsId = array_column($elements->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'ordre ASC'), 'id_element');
             foreach ($blockElement->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'FIELD(id_element, ' . implode(', ', $elementsId) . ') ASC') as $element) {
-                $partners[] = [
-                    'alt' => $element['complement'],
-                    'src' => $element['value']
-                ];
+                if (false === empty($element['value'])) {
+                    $partners[] = [
+                        'alt' => $element['complement'],
+                        'src' => $element['value']
+                    ];
+                }
             }
         }
 
@@ -579,7 +633,7 @@ class MainController extends Controller
         $finalElements = [
             'contenu'      => $response->getContent(),
             'complement'   => '',
-            'image-header' => 'apropos-header-1682x400.jpg?1465048259'
+            'image-header' => 'apropos-header-1682x400.jpg'
         ];
 
         return $this->renderCmsNav($tree, $finalElements, $entityManager);
@@ -603,10 +657,10 @@ class MainController extends Controller
         $finalElements = [
             'contenu'      => $response->getContent(),
             'complement'   => '',
-            'image-header' => 'apropos-header-1682x400.jpg?1465048259'
+            'image-header' => '1682x400_0005_Statistiques.jpg'
         ];
 
-        return $this->renderCmsNav($tree, $finalElements, $entityManager);
+        return $this->renderCmsNav($tree, $finalElements, $entityManager, 'apropos-statistiques');
     }
 
     /**
@@ -614,7 +668,7 @@ class MainController extends Controller
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function lenderFaq()
+    public function lenderFaqAction()
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
@@ -631,7 +685,7 @@ class MainController extends Controller
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function borrowerFaq()
+    public function borrowerFaqAction()
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
@@ -668,5 +722,97 @@ class MainController extends Controller
         $template['sections'] =  $pagesBySections;
 
         return $this->render('pages/static_pages/sitemap.html.twig', $template);
+    }
+
+    /**
+     * @Route("/cgv-popup", name="tos_popup", condition="request.isXmlHttpRequest()")
+     *
+     * @Security("has_role('ROLE_LENDER')")
+     */
+    public function lastTermsOfServiceAction(Request $request)
+    {
+        $user = $this->getUser();
+        /** @var \clients $client */
+        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        $tosDetails = '';
+        if ($client->get($user->getClientId())) {
+            if ($request->isMethod('GET')) {
+                /** @var \blocs $block */
+                $block = $this->get('unilend.service.entity_manager')->getRepository('blocs');
+                $block->get('cgv', 'slug');
+
+                $elementSlug = 'tos-new';
+                /** @var \acceptations_legal_docs $acceptationsTos */
+                $acceptationsTos = $this->get('unilend.service.entity_manager')->getRepository('acceptations_legal_docs');
+                if ($acceptationsTos->exist($client->id_client, 'id_client')) {
+                    /** @var \settings $settings */
+                    $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
+
+                    $settings->get('Date nouvelles CGV avec 2 mandats', 'type');
+                    $newTermsOfServiceDate = $settings->value;
+
+                    /** @var \lenders_accounts $lenderAccount */
+                    $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
+                    $lenderAccount->get($client->id_client, 'id_client_owner');
+
+                    /** @var \loans $loans */
+                    $loans = $this->get('unilend.service.entity_manager')->getRepository('loans');
+                    if (0 < $loans->counter('id_lender = ' . $lenderAccount->id_lender_account . ' AND added < "' . $newTermsOfServiceDate . '"')) {
+                        $elementSlug = 'tos-update-lended';
+                    } else {
+                        $elementSlug = 'tos-update';
+                    }
+                }
+                /** @var \elements $elements */
+                $elements = $this->get('unilend.service.entity_manager')->getRepository('elements');
+                if ($elements->get($elementSlug, 'slug')) {
+                    /** @var \blocs_elements $blockElement */
+                    $blockElement = $this->get('unilend.service.entity_manager')->getRepository('blocs_elements');
+
+                    if ($blockElement->get($elements->id_element, 'id_element')) {
+                        $tosDetails = $blockElement->value;
+                    } else {
+                        $this->get('logger')->error('The block element id : ' . $elements->id_element . 'doesn\'t exist');
+                    }
+                } else {
+                    $this->get('logger')->error('The element slug : ' . $elementSlug . 'doesn\'t exist');
+                }
+            } elseif ($request->isMethod('POST')) {
+                if ('true' === $request->request->get('terms')) {
+                    $clientManager = $this->get('unilend.service.client_manager');
+                    $clientManager->acceptLastTos($client);
+                }
+                return $this->json([]);
+            }
+        }
+
+        return $this->render('partials/site/tos_popup.html.twig', ['tosDetails' => $tosDetails]);
+    }
+
+    /**
+     * @Route("/temoignages", name="testimonials")
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function testimonialAction()
+    {
+        /** @var TestimonialManager $testimonialService */
+        $testimonialService = $this->get('unilend.frontbundle.service.testimonial_manager');
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var \tree $tree */
+        $tree = $entityManager->getRepository('tree');
+        $tree->get(['slug' => 'temoignages']);
+
+        $template['testimonialPeople'] = $testimonialService->getBorrowerBattenbergTestimonials(false);
+        $response = $this->render('pages/static_pages/testimonials.html.twig', $template);
+
+        $finalElements = [
+            'contenu'      => $response->getContent(),
+            'complement'   => '',
+            'image-header' => ''
+        ];
+
+        return $this->renderCmsNav($tree, $finalElements, $entityManager, 'apropos-statistiques');
     }
 }

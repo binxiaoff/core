@@ -10,8 +10,6 @@ use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
-use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
-use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
 class UserProvider implements UserProviderInterface
 {
@@ -68,9 +66,12 @@ class UserProvider implements UserProviderInterface
                 $lenderAccount->get($client->id_client, 'id_client_owner');
                 $userLevel = $this->lenderManager->getDiversificationLevel($lenderAccount);
 
+
+
                 return new UserLender(
                     $client->email,
                     $client->password,
+                    $client->email,
                     '',
                     $roles,
                     $isActive,
@@ -96,6 +97,7 @@ class UserProvider implements UserProviderInterface
                 return new UserBorrower(
                     $client->email,
                     $client->password,
+                    $client->email,
                     '',
                     $roles,
                     $isActive,

@@ -38,6 +38,14 @@
   @include devices('lg') {
     padding-top: 50px;
     padding-bottom: 120px;
+
+    .h2:first-child {
+      margin-top: 40px;
+    }
+  }
+
+  .h2:first-child {
+    margin-top: 10px;
   }
 
   // Nested sections

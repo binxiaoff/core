@@ -128,7 +128,10 @@ class echeanciers extends echeanciers_crud
     public function getProblematicProjects($iLenderId)
     {
         $rResult = $this->bdd->query('
-            SELECT ROUND(SUM(e.capital) / 100, 2) AS capital, COUNT(DISTINCT(e.id_project)) AS projects
+            SELECT 
+              ROUND(SUM(e.capital) / 100, 2) AS capital,
+              ROUND(SUM(e.interets) / 100, 2) AS interests,
+              COUNT(DISTINCT(e.id_project)) AS projects
             FROM echeanciers e
             LEFT JOIN echeanciers unpaid ON unpaid.id_echeancier = e.id_echeancier AND unpaid.status = 0 AND DATEDIFF(NOW(), unpaid.date_echeance) > 180
             INNER JOIN loans l ON l.id_lender = e.id_lender AND l.id_loan = e.id_loan
@@ -837,6 +840,7 @@ class echeanciers extends echeanciers_crud
                 id_echeancier,
                 id_lender,
                 id_project,
+                ordre,
                 id_loan,
                 montant,
                 capital,
@@ -974,7 +978,7 @@ class echeanciers extends echeanciers_crud
         $sDate = $oDate->format('Y-m-d');
 
         $sQuery = '
-           SELECT id_project,
+            SELECT id_project,
               ordre,
               COUNT(*) AS nb_repayment,
               COUNT(CASE status WHEN 1 THEN 1 ELSE NULL END) AS nb_repayment_paid

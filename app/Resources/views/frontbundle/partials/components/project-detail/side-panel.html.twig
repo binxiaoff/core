@@ -15,11 +15,6 @@
                 {% if project.status == constant('\\projects_status::EN_FUNDING') %}
                     <div class="project-single-cost-amount">
                         <div class="project-single-cost-amount-funded">{% transchoice project.costFunded with {'%costFunded%' : project.costFunded|localizednumber} %} project-detail_already-bid-amount {% endtranschoice %}</div>
-                        {% if  project.costRemaining == 0 %}
-                            <div class="project-single-cost-amount-remaining">
-                                {% transchoice project.costRemaining with {'%costRemaining%' : project.costRemaining|localizednumber|nbsp} %} project-detail_remaining-amount {% endtranschoice %}
-                            </div>
-                        {% endif %}
                     </div><!-- /.project-single-cost-amount -->
                 {% endif %}
                 </div><!-- /.project-single-cost -->
@@ -51,15 +46,13 @@
             {% elseif project.status == constant('\\projects_status::FUNDE') or project.status >= constant('\\projects_status::REMBOURSEMENT') %}
                 <p>
                     {% trans with {
-                        '%NumberLender%' : project.fundingStatistics.NumberLender|localizednumber,
-                        '%AvgRate%' : project.fundingStatistics.AvgRate|localizednumber,
-                        '%fundingDays%' : project.fundingStatistics.fundingTime.days,
-                        '%fundingMinutes%' : project.fundingStatistics.fundingTime.i,
-                        '%fundingHours%' : project.fundingStatistics.fundingTime.h
+                        '%numberLenders%' : project.totalLenders|localizednumber,
+                        '%averageRate%' : project.averageRate|localizednumber,
+                        '%fundingDuration%' : ('project-detail_funding-duration-' ~ project.fundingDuration.translation)|transchoice(project.fundingDuration.choice, project.fundingDuration.values)
                     } %} project-detail_project-funded-message-with-statistics {% endtrans %}
                 </p>
             {%  elseif project.status == constant('\\projects_status::FUNDING_KO') %}
-                <p>{% trans with { '%percentageFunded%' : project.percentFunded }%} project-detail_side-bar-funding-ko-message {% endtrans %}</p>
+                <p>{% trans with {'%percentageFunded%' : project.percentFunded} %} project-detail_side-bar-funding-ko-message {% endtrans %}</p>
             {%  elseif project.status == constant('\\projects_status::PRET_REFUSE') %}
                 <p class="h4">{% trans %} project-detail_side-bar-loan-rejected-title {% endtrans %}</p>
                 <p>{% trans %} project-detail_side-bar-loan-rejected-message {% endtrans %}</p>
@@ -75,38 +68,66 @@
                         </p>
                     {% endif %}
 
-                    {% if project.maxValidRate > constant('\\bids::BID_RATE_MIN') %}
+                    {% if project.maxValidRate > project.minRate %}
                         <form action="{{ path('place_bid', {'projectId' : project.projectId}) }}" method="post" class="project-single-form project-single-form-invest" data-bid-confirmation>
-                            <div class="form-field">
-                                <label>
-                                    <span class="sr-only">{% trans %} project-detail_side-bar-bids-amount-label {% endtrans %}</span>
-                                    <input data-popup-amount type="number" min="{{ setting('pret min') }}" step="any" name="invest[amount]" value=""
-                                           placeholder="{% trans %} project-detail_side-bar-bids-amount-placeholder {% endtrans %}" class="input-field"/>
-                                </label>
-                            </div><!-- /.form-field -->
-                            <div class="form-field">
-                                <label>
-                                    <span class="sr-only">{% trans %} project-detail_side-bar-bids-rate-label {% endtrans %}</span>
-                                    <select data-popup-rate name="invest[interest]" class="input-field">
-                                        <option value="">{% trans %} project-detail_side-bar-bids-rate-placeholder {% endtrans %}</option>
-                                        {% for rate in range(project.maxValidRate - 0.1, constant('\\bids::BID_RATE_MIN'), 0.1) %}
-                                            <option value="{{ rate }}">{{ rate|localizednumberwithprecision(1) }} %</option>
-                                        {% endfor %}
-                                    </select>
-                                </label>
-                            </div><!-- /.form-field -->
+                            <div class="row">
+                                <div class="form-field col-sm-4">
+                                    <div class="row col-sm-7">
+                                        <div class="col-lg-6 col-md-6">
+                                            <p class="text-align-right show-lg">
+                                                <label for="bid-interest">{% trans %} project-detail_side-bar-bids-rate-label {% endtrans %}</label>
+                                            </p>
+                                            <p class="text-align-right show-md">
+                                                <label for="bid-interest">{% trans %} project-detail_side-bar-bids-rate-label {% endtrans %}</label>
+                                            </p>
+                                            <p class="show-sm">
+                                                <label for="bid-interest">{% trans %} project-detail_side-bar-bids-rate-label {% endtrans %}</label>
+                                            </p>
+                                            <p class="show-xs">
+                                                <label for="bid-interest">{% trans %} project-detail_side-bar-bids-rate-label {% endtrans %}</label>
+                                            </p>
+                                        </div>
+                                        <label class="col-lg-5 col-md-5 push-lg-1 push-md-1">
+                                            <select id="bid-interest" name="invest[interest]" class="input-field" data-popup-rate >
+                                                <option value="">{% trans %} project-detail_side-bar-bids-rate-placeholder {% endtrans %}</option>
+                                                {% for rate in range(project.maxValidRate - 0.1, project.minRate, 0.1) %}
+                                                    <option value="{{ rate }}">{{ rate|localizednumberwithprecision(1) }} %</option>
+                                                {% endfor %}
+                                            </select>
+                                        </label>
+                                    </div>
+                                </div><!-- /.form-field -->
+                                <div class="form-field col-sm-4">
+                                    <div class="row col-sm-7 push-sm-1">
+                                        <div class="col-lg-6 col-md-6">
+                                            <p class="text-align-right show-lg">
+                                                <label for="bid-amount">{% trans %} project-detail_side-bar-bids-amount-label {% endtrans %}</label>
+                                            </p>
+                                            <p class="text-align-right show-md">
+                                                <label for="bid-amount">{% trans %} project-detail_side-bar-bids-amount-label {% endtrans %}</label>
+                                            </p>
+                                            <p class="show-sm">
+                                                <label for="bid-amount">{% trans %} project-detail_side-bar-bids-amount-label {% endtrans %}</label>
+                                            </p>
+                                            <p class="show-xs">
+                                                <label for="bid-amount">{% trans %} project-detail_side-bar-bids-amount-label {% endtrans %}</label>
+                                            </p>
+                                        </div>
+                                        <div class="col-lg-5 col-md-5 push-lg-1 push-md-1">
+                                            <div class="input-group set-right">
+                                                <div class="btn-group"><span class="icon fa-euro"></span></div>
+                                                <input id="bid-amount" type="text" name="invest[amount]" value="" placeholder="{% trans %} project-detail_side-bar-bids-amount-placeholder {% endtrans %}" class="input-field" data-popup-amount >
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div><!-- /.form-field -->
+                            </div>
                             <div class="btn-toolbar">
                                 <button type="submit" class="btn-primary btn-size-full cursor">{% trans %} project-detail_side-bar-bids-submit-button {% endtrans %}</button>
                                 <input type="hidden" name="invest[bidToken]" value="{{ bidToken }}">
+                                <input type="hidden" id="bid-duration" value="{{ project.duration }}">
                             </div><!-- /.btn-toolbar -->
-                            <div class="field-help">
-                                <p>
-                                    {% trans with {
-                                        '%rateMin%' : constant('\\bids::BID_RATE_MIN')|localizednumber,
-                                        '%rateMax%' : (project.maxValidRate - 0.1)|localizednumber
-                                    }|raw %} project-detail_side-bar-bids-help-text {% endtrans %}
-                                </p>
-                            </div>
+                            <div class="field-help">&nbsp;</div>
                         </form><!-- /.project-single-form-invest -->
                     {% else %}
                         <div class="field-help">
@@ -117,7 +138,7 @@
             {% else %}
                 <form action="{{ path('login-check') }}" method="post" class="project-single-form project-single-form-access" data-formvalidation>
                     <div class="form-notice">
-                        <p>{% trans %} project-detail_side-bar-login {% endtrans %}</p>
+                        {% trans %} project-detail_side-bar-login {% endtrans %}
                     </div><!-- /.form-notice -->
                     <div class="form-field">
                         <label for="form-access-email"><span class="sr-only">{% trans %} common_email {% endtrans %}</span></label>
@@ -141,21 +162,26 @@
                                    placeholder="{% trans %} common_password {% endtrans %}"
                                    value="" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                         </div><!-- /.input-group -->
-                        <ul class="ui-formvalidation-messages"></ul>
+                    </div><!-- /.form-field -->
+                    <div class="form-field">
                         <div class="field-help">
-                            <p>
-                                <a href="{{ route('user/forgotpassword') }}" class="link">{% trans %} project-detail_side-bar-login-password-forgotten {% endtrans %}</a>
-                            </p>
+                            <a href="#dialog-conditions-content" class="fancybox-html">
+                                {% trans %} connect-subscribe-page_login-box-password-forgotten-link {% endtrans %}
+                            </a>
                         </div>
                     </div><!-- /.form-field -->
                     <div class="btn-toolbar">
                         <input type="submit" class="btn-primary btn-size-full" value="{% trans %} project-detail_side-bar-login-submit-button {% endtrans %}">
                         <input type="hidden" name="_target_path" value="{{ path(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')) }}">
                         <p>
-                            <a href="{{ path('lender_subscription_contact') }}"><span class="icon fa-angle-right"></span>{% trans %} project-detail_side-bar-login-subscription-link {% endtrans %}</a>
+                            <a href="{{ path('lender_subscription_personal_information') }}"><span class="icon fa-angle-right"></span> {% trans %} project-detail_side-bar-login-subscription-link {% endtrans %}</a>
                         </p>
                     </div><!-- /.btn-toolbar -->
                 </form><!-- /.project-single-form-access -->
+                {# Hidden text until made visible through the fancybox #}
+                <div class="hide-accessible">
+                    {{ include('partials/components/popup_password_forgotten.html.twig') }}
+                </div><!-- /.hide-accessible -->
             {% endif %}
             <ul class="list-sharing">
                 <li>
