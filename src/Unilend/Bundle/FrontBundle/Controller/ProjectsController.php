@@ -40,7 +40,7 @@ class ProjectsController extends Controller
     }
 
     /**
-     * @Route("/projects/{page}/{sortType}/{sortDirection}", defaults={"page" = "1", "sortType" = "end", "sortDirection" = "desc"}, name="lender_projects")
+     * @Route("/projects/{page}/{sortType}/{sortDirection}", defaults={"page" = "1", "sortType" = "end", "sortDirection" = "desc"}, requirements={"page" = "\d+"}, name="lender_projects")
      * @Template("lender_account/projects.html.twig")
      * @Security("has_role('ROLE_LENDER')")
      *
