@@ -33,12 +33,12 @@ class ProductManager
 
         foreach ($product->select() as $oneProduct) {
             $product->get($oneProduct['id_product']);
-
             if ($product->status != \product::STATUS_ARCHIVED
                 && ($includeInactiveProduct || $product->status == \product::STATUS_ONLINE)
                 && $this->projectValidator->isEligible($project, $product)
             ) {
-                $eligibleProducts[] = $product;
+                $eligibleProduct = clone $product;
+                $eligibleProducts[] = $eligibleProduct;
             }
         }
 

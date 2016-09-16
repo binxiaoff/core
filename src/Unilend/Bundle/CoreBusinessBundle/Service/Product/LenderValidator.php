@@ -3,10 +3,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Product;
 
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
-class BidValidator
+class LenderValidator
 {
     use Checker\LenderChecker;
-    use Checker\BidChecker;
 
     /** @var ProductAttributeManager */
     private $productAttributeManager;
@@ -19,12 +18,18 @@ class BidValidator
         $this->entityManager = $entityManager;
     }
 
-    public function isEligible(\bids $bid, \product $product)
+    /**
+     * @param \lenders_accounts $lender
+     * @param \projects         $project
+     *
+     * @return bool
+     */
+    public function isEligible(\lenders_accounts $lender, \projects $project)
     {
-        /** @var \lenders_accounts $lender */
-        $lender = $this->entityManager->getRepository('lenders_accounts');
-        if (false === $lender->get($bid->id_lender_account)) {
-            throw new \InvalidArgumentException('The lender account id ' . $bid->id_lender_account . ' does not exist');
+        /** @var \product $product */
+        $product = $this->entityManager->getRepository('product');
+        if (false === $product->get($project->id_product)) {
+            throw new \InvalidArgumentException('The product id ' . $project->id_product . ' does not exist');
         }
 
         foreach ($this->getAttributeTypeToCheck() as $attributeTypeToCheck) {
@@ -36,7 +41,7 @@ class BidValidator
                     $eligibility = $this->isLenderEligibleForType($lender, $product, $this->productAttributeManager, $this->entityManager);
                     break;
                 case \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO :
-                    $eligibility = $this->isBidEligibleForMaxTotalAmount($bid, $product, $this->productAttributeManager);
+                    $eligibility = $this->isLenderEligibleForMaxTotalAmount($lender, $project, $this->productAttributeManager, $this->entityManager);
                     break;
                 default :
                     $eligibility = false;
