@@ -47,7 +47,7 @@
                         {% if project.finished %}
                             {% trans %} project-list_project-finished {% endtrans %}
                         {% elseif project.daysLeft <= 2 %}
-                            <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|escape('html_attr') }}"></span>
+                            <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|escape('html_attr') }}" data-timecount-relative="true"></span>
                         {% else %}
                             {% trans with {'%remainingDays%' : project.daysLeft} %} project-list_remaining-days {% endtrans %}
                         {% endif %}

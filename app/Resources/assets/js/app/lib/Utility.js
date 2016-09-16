@@ -667,7 +667,7 @@ var Utility = {
       // Dismiss message
       if ($item.is('.message, .message-alert, .message-info, .message-success, .message-error')) {
         // Slide the message up and remove it
-        $item.slideUp(function () {
+        $item.addClass('collapsing').slideUp(function () {
           // a11y stuff
           if (Utility.isSet($(this).attr('aria-hidden'))) {
             $(this).attr('aria-hidden', true)

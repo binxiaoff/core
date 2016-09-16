@@ -4,6 +4,7 @@
 
 var $ = require('jquery')
 var Utility = require('Utility')
+var __ = require('__')
 
 var $win = $(window)
 var $doc = $(document)
@@ -36,29 +37,40 @@ $doc.on('ready', function () {
   // Set different update/complete function for these time counters
   // @note this also includes time counters on the single project details page (project-single)
   $('.project .ui-has-timecount, .project-list-item .ui-has-timecount, .project-single .ui-has-timecount').uiTimeCount({
-    onupdate: function (timeDiff) {
-      var elemTimeCount = this
-      var outputTime
-
-      // Show relative time outside of 2 days
-      if (timeDiff.total > (3600000 * 48)) {
-        outputTime = elemTimeCount.getRelativeTime()
-
-      } else {
-        // Expired
-        if (timeDiff.total < 0) {
-          outputTime = __.__('Project expired', 'projectPeriodExpired')
-
-          // Countdown
-        } else {
-          // Custom timecode
-          outputTime = Utility.leadingZero(timeDiff.hours + (24 * timeDiff.days)) + ':' + Utility.leadingZero(timeDiff.minutes) + ':' + Utility.leadingZero(timeDiff.seconds)
-        }
-      }
-
-      // Update counter
-      elemTimeCount.$elem.text(outputTime)
-    },
+    // @note DEV-949 using relative time now always
+    // onupdate: function (timeDiff) {
+    //   var elemTimeCount = this
+    //   var outputTime
+    //
+    //   // Show relative time outside of 2 days
+    //   outputTime = elemTimeCount.getRelativeTime()
+    //
+    //   // Expired
+    //   if (timeDiff.total < 0) {
+    //     outputTime = __.__('Project expired', 'projectPeriodExpired')
+    //   }
+    //
+    //   // @debug
+    //   console.log('special project counter', timeDiff, outputTime, elemTimeCount)
+    //
+    //   // if (timeDiff.total > (3600000 * 48)) {
+    //   //   outputTime = elemTimeCount.getRelativeTime()
+    //   //
+    //   // } else {
+    //   //   // Expired
+    //   //   if (timeDiff.total < 0) {
+    //   //     outputTime = __.__('Project expired', 'projectPeriodExpired')
+    //   //
+    //   //     // Countdown
+    //   //   } else {
+    //   //     // Custom timecode
+    //   //     outputTime = Utility.leadingZero(timeDiff.hours + (24 * timeDiff.days)) + ':' + Utility.leadingZero(timeDiff.minutes) + ':' + Utility.leadingZero(timeDiff.seconds)
+    //   //   }
+    //   // }
+    //
+    //   // Update counter
+    //   elemTimeCount.$elem.text(outputTime)
+    // },
     oncomplete: function () {
       var elemTimeCount = this
 
@@ -298,7 +310,7 @@ $doc.on('ready', function () {
           }
         },
         error: function () {
-          console.log('Unable to estimation monthly repayments')
+          console.log('Unable to estimate monthly repayments')
         }
       });
     }
@@ -308,6 +320,6 @@ $doc.on('ready', function () {
     if (monthlyRepaymentTimeout) {
       clearTimeout(monthlyRepaymentTimeout)
     }
-    monthlyRepaymentTimeout = setTimeout(estimateMonthlyRepayment, 250);
+    monthlyRepaymentTimeout = setTimeout(estimateMonthlyRepayment, 250)
   })
 })
