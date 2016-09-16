@@ -141,6 +141,7 @@
             <argument type="service" id="unilend.service.entity_manager" />
             <argument type="service" id="unilend.service_product.project_validator" />
             <argument type="service" id="unilend.service_product.bid_validator" />
+            <argument type="service" id="unilend.service_product.lender_validator" />
         </service>
 
         <service id="unilend.service_product.contract_attribute_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager">
@@ -157,6 +158,11 @@
         </service>
 
         <service id="unilend.service_product.bid_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\BidValidator">
+            <argument type="service" id="unilend.service_product.product_attribute_manager" />
+            <argument type="service" id="unilend.service.entity_manager" />
+        </service>
+
+        <service id="unilend.service_product.lender_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\LenderValidator">
             <argument type="service" id="unilend.service_product.product_attribute_manager" />
             <argument type="service" id="unilend.service.entity_manager" />
         </service>

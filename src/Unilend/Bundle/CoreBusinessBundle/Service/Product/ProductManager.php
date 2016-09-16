@@ -11,12 +11,15 @@ class ProductManager
     private $projectValidator;
     /** @var BidValidator */
     private $bidValidator;
+    /** @var LenderValidator */
+    private $lenderValidator;
 
-    public function __construct(EntityManager $entityManager, ProjectValidator $projectValidator, BidValidator $bidValidator)
+    public function __construct(EntityManager $entityManager, ProjectValidator $projectValidator, BidValidator $bidValidator, LenderValidator $lenderValidator)
     {
         $this->entityManager    = $entityManager;
         $this->projectValidator = $projectValidator;
         $this->bidValidator     = $bidValidator;
+        $this->lenderValidator  = $lenderValidator;
     }
 
     /**
@@ -60,6 +63,11 @@ class ProductManager
 
         return $this->bidValidator->isEligible($bid, $product);
 
+    }
+
+    public function isLenderEligible(\lenders_accounts $lender, \projects $project)
+    {
+        return $this->lenderValidator->isEligible($lender, $project);
     }
 
     /**

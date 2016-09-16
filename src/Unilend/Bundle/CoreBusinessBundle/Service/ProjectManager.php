@@ -225,7 +225,11 @@ class ProjectManager
 
                 foreach ($aAutoBidList as $aAutoBidSetting) {
                     if ($oAutoBid->get($aAutoBidSetting['id_autobid'])) {
-                        $this->oBidManager->bidByAutoBidSettings($oAutoBid, $oProject, $rateRange['rate_max'], false);
+                        try {
+                            $this->oBidManager->bidByAutoBidSettings($oAutoBid, $oProject, $rateRange['rate_max'], false);
+                        } catch (\Exception $exception) {
+                            continue;
+                        }
                     }
                 }
             }
