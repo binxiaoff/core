@@ -29,7 +29,7 @@
                                 </button>
                                 <button type="submit" name="action" value="export" class="btn-default">
                                     <span class="icon fa-excel-u32"></span>
-                                    <span class="label">{{ 'borrower-operation_csv-export'|trans }}</span>
+                                    <span class="label">{{ 'borrower-operation_csv-export-button'|trans }}</span>
                                 </button>
                             </div>
                         </header><!-- /.panel-header -->
@@ -68,7 +68,7 @@
                                                 <label for="filter-start" class="c-t3">{{ 'borrower-operation_customized-date'|trans }}</label>
                                                 <div class="row">
                                                     <div class="input-group set-right">
-                                                        <input type="text" id="filter-start" name="filter[start]" value="{{ default_filter_date.start }}" placeholder="{{ 'borrower-operation_select-start-date-placeholder'|trans }}" class="input-field ui-has-datepicker" />
+                                                        <input type="text" id="filter-start" name="filter[start]" value="{{ default_filter_date.start }}" {#placeholder="{{ 'borrower-operation_select-start-date-placeholder'|trans }}"#} class="input-field ui-has-datepicker" />
                                                         <div class="btn-group">
                                                             <label for="filter-start"><span class="icon fa-calendar-u32 c-p1"> <span class="sr-only">{{ 'borrower-operation_select-start-date'|trans }}</span></span></label>
                                                         </div><!-- /.btn-group -->
@@ -79,7 +79,7 @@
                                                 <label>&nbsp;</label>
                                                 <div class="row">
                                                     <div class="input-group set-right">
-                                                        <input type="text" id="filter-end" name="filter[end]" value="{{ default_filter_date.end }}" placeholder="{{ 'borrower-operation_select-end-date-placeholder'|trans }}" class="input-field ui-has-datepicker"/>
+                                                        <input type="text" id="filter-end" name="filter[end]" value="{{ default_filter_date.end }}" {#placeholder="{{ 'borrower-operation_select-end-date-placeholder'|trans }}"#} class="input-field ui-has-datepicker"/>
                                                         <div class="btn-group">
                                                             <label for="filter-end"><span class="icon fa-calendar-u32 c-p1"> <span class="sr-only">{{ 'borrower-operation_select-end-date'|trans }}</span></span></label>
                                                         </div><!-- /.btn-group -->

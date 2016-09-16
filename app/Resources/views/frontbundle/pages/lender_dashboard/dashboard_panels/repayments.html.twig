@@ -1,14 +1,14 @@
 {% set seriesLegend = {
     'capital': {
-        name: "lender-dashboard_repaid-capital"|trans ~ ' ',
+        name: 'lender-dashboard-repayments_repaid-capital-legend'|trans,
         color: '#1A87DA'
     },
     'interests': {
-        name: "lender-dashboard_received-interests"|trans ~ ' ',
+        name: 'lender-dashboard-repayments_collected-net-interests-legend'|trans,
         color: '#EF980B'
     },
     'tax': {
-        name: "lender-dashboard_tax-levies"|trans ~ '* ',
+        name: 'lender-dashboard-repayments_tax-deductions-legend'|trans,
         color: '#F76965'
     }}
 %}
@@ -38,7 +38,7 @@
                     },
                     zIndex: 1,
                     label: {
-                        text: "lender-dashboard_forecasts-for-guidance"|trans,
+                        text: 'lender-dashboard-repayments_graph-title'|trans,
                         style: {
                             color: '#294347'
                         }
@@ -112,7 +112,7 @@
                     },
                     zIndex: 1,
                     label: {
-                        text: "lender-dashboard_forecasts-for-guidance"|trans,
+                        text: 'lender-dashboard-repayments_graph-title'|trans,
                         style: {
                             color: '#294347'
                         }
@@ -186,7 +186,7 @@
                     },
                     zIndex: 1,
                     label: {
-                        text: "lender-dashboard_forecasts-for-guidance"|trans,
+                        text: 'lender-dashboard-repayments_graph-title'|trans,
                         style: {
                             color: '#294347'
                         }
@@ -236,9 +236,9 @@
 %}
 {# Panel - My Remboursements #}
 {% embed 'partials/components/dashboard-panel.html.twig' %}
-    {% block panelAttributes %}id="myrembourse"{% endblock %}
-    {% block panelClassNames %}dashboard-panel dashboard-myrembourse ui-draggable {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %} col-lg-12 col-md-12 col-sm-8 col-xs-4{% endblock %}
-    {% block panelTitle %}{{ "lender-dashboard_panel-title-#{ panelId }" | trans }}{% endblock %}
+    {% block panelAttributes %}id="repayments"{% endblock %}
+    {% block panelClassNames %}dashboard-panel dashboard-myrembourse ui-draggable{% if panelInfo.hidden == true %} ui-dashboard-panel-hidden{% endif %} col-lg-12 col-md-12 col-sm-8 col-xs-4{% endblock %}
+    {% block panelTitle %}{{ 'lender-dashboard-repayments_title'|trans }}{% endblock %}
     {% block panelControls %}
         <span class="ui-draggable-handle"></span>
     {% endblock %}
@@ -249,13 +249,13 @@
                 <div class="tab-navigation">
                     <ul class="nav nav-tabs-text">
                         <li role="presentation" class="active">
-                            <a href="#myrembourse-graph-mth" role="tab" data-toggle="tab">{% transchoice 1 %} lender-dashboard_my-refunds-panel-period {% endtranschoice %}</a>
+                            <a href="#myrembourse-graph-mth" role="tab" data-toggle="tab">{% transchoice 1 %} lender-dashboard-repayments_period-tab-title {% endtranschoice %}</a>
                         </li>
                         <li role="presentation">
-                            <a href="#myrembourse-graph-3mth" role="tab" data-toggle="tab">{% transchoice 3 %} lender-dashboard_my-refunds-panel-period {% endtranschoice %}</a>
+                            <a href="#myrembourse-graph-3mth" role="tab" data-toggle="tab">{% transchoice 3 %} lender-dashboard-repayments_period-tab-title {% endtranschoice %}</a>
                         </li>
                         <li role="presentation">
-                            <a href="#myrembourse-graph-year" role="tab" data-toggle="tab">{% transchoice 12 %} lender-dashboard_my-refunds-panel-period {% endtranschoice %}</a>
+                            <a href="#myrembourse-graph-year" role="tab" data-toggle="tab">{% transchoice 12 %} lender-dashboard-repayments_period-tab-title {% endtranschoice %}</a>
                         </li>
                     </ul>
                 </div><!-- /.tab-navigation -->
@@ -272,10 +272,10 @@
                 </div><!-- /.tab-content -->
             </div><!-- /.nested-tabs -->
         </div><!-- /.dashboard-panel-chart -->
-        <div class="field-help">{{ 'lender-dashboard_depending-on-tax-exemption-status' | trans }}</div>
+        <div class="field-help">{{ 'lender-dashboard-repayments_tax-deductions-explanation'|trans }}</div>
         {% endif %}
     {% endblock %}
     {% block panelFooter %}
-        <a href="{{ path('lender_operations') }}" class="link">{% trans %} lender-dashboard_see-my-operations-details {% endtrans %}</a>
+        <a href="{{ path('lender_operations') }}" class="link">{% trans %} lender-dashboard-repayments_operations-details-link {% endtrans %}</a>
     {% endblock %}
 {% endembed %}

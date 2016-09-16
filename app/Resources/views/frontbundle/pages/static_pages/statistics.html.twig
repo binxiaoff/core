@@ -26,7 +26,7 @@
         series: [{
             type: 'treemap',
             layoutAlgorithm: 'strip',
-            data: getStatistic('projectCountForCategoryTreeMap')
+            data: data.projectCountForCategoryTreeMap
         }]
     }
 }
@@ -691,16 +691,25 @@ y: 46
                         </div>
                         <figcaption><p>{% trans %} about-us-statistics_lender-statistics-map-title {% endtrans %}</p></figcaption>
                     </figure>
+                    {# TODO margin-top: -175px;#}
                     <div class="stats-members">
-                        <img src="{{ siteurlmedia('apropos/statistiques/icons-members.png') }}" alt="">
                         <div>
                             {% set numberOfLendersInCommunity = getStatistic('numberOfLendersInCommunity') %}
-                            <span class="stats-number"><span data-textcount data-start-count="0" data-end-count="{{ numberOfLendersInCommunity }}" data-total-time="3000" data-tween-count="easeOutCirc">{{ numberOfLendersInCommunity|localizednumber }}</span></span> {% trans %} about-us-statistics_lender-statistics-members-active-not-text {% endtrans %}
+                            <h3 class="promo-highlight promo-highlight-lg">
+                                <span data-textcount data-start-count="0"
+                                      data-end-count="{{ numberOfLendersInCommunity }}" data-total-time="3000"
+                                      data-tween-count="easeOutCirc">{{ numberOfLendersInCommunity|localizednumber }}</span>
+                            </h3>
+                            {% trans %} about-us-statistics_lender-statistics-members-active-not-text {% endtrans %}
                         </div>
                         <div>
                             {% set numberOfActiveLenders = getStatistic('numberOfActiveLenders') %}
-                            <span class="stats-number"><span data-textcount data-start-count="0" data-end-count="{{ numberOfActiveLenders }}" data-total-time="3000" data-tween-count="easeOutCirc">{{ numberOfActiveLenders|localizednumber }}</span></span> {% trans %} about-us-statistics_lender-statistics-members-type-text {% endtrans %}
+                            <h3 class="promo-highlight promo-highlight-lg">
+                                <span data-textcount data-start-count="0" data-end-count="{{ numberOfActiveLenders }}" data-total-time="3000" data-tween-count="easeOutCirc">{{ numberOfActiveLenders|localizednumber }}</span>
+                            </h3>
+                            {% trans %} about-us-statistics_lender-statistics-members-type-text {% endtrans %}
                         </div>
+                        <img src="{{ siteurlmedia('apropos/statistiques/icons-members.png') }}" alt="">
                     </div>
                     {% set lendersByType = getStatistic('lendersByType') %}
                     <div class="stats-enterprises">
@@ -730,8 +739,7 @@ y: 46
                     </div><!-- /.promo -->
                     <div class="promo col-lg-4 col-md-4">
                         <h3 class="promo-highlight promo-highlight-lg">
-                            <span data-textcount data-start-count="0" data-end-count="10" data-total-time="3000" data-tween-count="easeOutCirc">TODO</span>
-                            {#TODO#}
+                            <span data-textcount data-start-count="0" data-end-count="100" data-total-time="3000" data-tween-count="easeOutCirc">100%</span>
                         </h3>
                         <p>{% trans %} about-us-statistics_lender-statistics-3-text {% endtrans %}</p>
                     </div><!-- /.promo -->

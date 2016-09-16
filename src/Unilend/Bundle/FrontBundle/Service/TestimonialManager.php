@@ -23,7 +23,7 @@ class TestimonialManager
     {
         $cachedItem = $this->cachePool->getItem('featuredTestimonialBorrower');
 
-        if (false === $cachedItem->isHit()) {
+//        if (false === $cachedItem->isHit()) {
             /** @var \testimonial $testimonial */
             $testimonial = $this->entityManager->getRepository('testimonial');
             /** @var \settings $settings */
@@ -34,16 +34,16 @@ class TestimonialManager
             $this->cachePool->save($cachedItem);
 
             return $featuredTestimonial;
-        } else {
-            return $cachedItem->get();
-        }
+//        } else {
+//            return $cachedItem->get();
+//        }
     }
 
     public function getFeaturedTestimonialLender()
     {
         $cachedItem = $this->cachePool->getItem('featuredTestimonialLender');
 
-        if (false === $cachedItem->isHit()) {
+//        if (false === $cachedItem->isHit()) {
             /** @var \testimonial $testimonial */
             $testimonial = $this->entityManager->getRepository('testimonial');
             /** @var \settings $settings */
@@ -55,9 +55,9 @@ class TestimonialManager
             $this->cachePool->save($cachedItem);
 
             return $featuredTestimonial;
-        } else {
-            return $cachedItem->get();
-        }
+//        } else {
+//            return $cachedItem->get();
+//        }
     }
 
     /**
@@ -74,36 +74,36 @@ class TestimonialManager
 
         if ($excludeFeatured) {
             $cachedItem = $this->cachePool->getItem('BorrowerBattenbergExcludingFeatured');
-            if (false === $cachedItem->isHit()) {
+//            if (false === $cachedItem->isHit()) {
                 $allTestimonials = $testimonial->select('type = "borrower" AND status = ' . \testimonial::TESTIMONIAL_ONLINE . ' AND slider_id != "' . $settings->value . '"');
                 $this->addProjectInfoToBorrowerTestimonial($allTestimonials);
                 $cachedItem->set($allTestimonials)->expiresAfter(14400);
                 $this->cachePool->save($cachedItem);
 
                 return $allTestimonials;
-            } else {
-                return $cachedItem->get();
-            }
+//            } else {
+//                return $cachedItem->get();
+//            }
 
         } else {
             $cachedItem = $this->cachePool->getItem('BorrowerBattenbergAll');
-            if (false === $cachedItem->isHit()) {
+//            if (false === $cachedItem->isHit()) {
                 $allTestimonials = $testimonial->select('type = "borrower" AND status = ' . \testimonial::TESTIMONIAL_ONLINE);
                 $this->addProjectInfoToBorrowerTestimonial($allTestimonials);
                 $cachedItem->set($allTestimonials)->expiresAfter(14400);
                 $this->cachePool->save($cachedItem);
 
                 return $allTestimonials;
-            } else {
-                return $cachedItem->get();
-            }
+//            } else {
+//                return $cachedItem->get();
+//            }
         }
     }
 
     public function getAllBattenbergTestimonials()
     {
         $cachedItem = $this->cachePool->getItem('BattenbergAll');
-        if (false === $cachedItem->isHit()) {
+//        if (false === $cachedItem->isHit()) {
             /** @var \testimonial $testimonial */
             $testimonial = $this->entityManager->getRepository('testimonial');
             $allTestimonials = $testimonial->select('status = ' . \testimonial::TESTIMONIAL_ONLINE);
@@ -112,9 +112,9 @@ class TestimonialManager
             $this->cachePool->save($cachedItem);
 
             return $allTestimonials;
-        } else {
-            return $cachedItem->get();
-        }
+//        } else {
+//            return $cachedItem->get();
+//        }
     }
 
 

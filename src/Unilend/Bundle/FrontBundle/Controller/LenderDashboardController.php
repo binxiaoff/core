@@ -72,6 +72,7 @@ class LenderDashboardController extends Controller
                 }
             }
         }
+
         $ongoingBidsByProject = [];
         $newPublishedProjects = [];
 
@@ -97,7 +98,7 @@ class LenderDashboardController extends Controller
                 $newPublishedProjects[] = [
                     'title'            => $aProject['title'],
                     'slug'             => $aProject['slug'],
-                    'company_address'  => (false === empty($company->city)) ? $company->city . ', ' : '' . $company->zip,
+                    'company_address'  => (false === empty($company->city) ? $company->city . ', ' : '') . $company->zip,
                     'amount'           => $aProject['amount'],
                     'days_left'        => $aProject['daysLeft'],
                     'risk'             => $aProject['risk'],
@@ -190,7 +191,7 @@ class LenderDashboardController extends Controller
     }
 
     /**
-     * @Route("synthese/preferences", name="save_user_preferences")
+     * @Route("synthese/preferences", name="save_panel_preferences")
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request $request
@@ -198,34 +199,37 @@ class LenderDashboardController extends Controller
      */
     public function saveUserDisplayPreferencesAction(Request $request)
     {
-        /** @var \user_preferences $userPreferences */
-        $userPreferences = $this->get('unilend.service.entity_manager')->getRepository('user_preferences');
-        $pageName        = 'lender_dashboard';
-        $postData        = $request->request->get('panels');
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var \lender_panel_preference $panelPreferences */
+        $panelPreferences = $entityManager->getRepository('lender_panel_preference');
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount = $entityManager->getRepository('lenders_accounts');
+        $lenderAccount->get($this->getUser()->getClientId(), 'id_client_owner');
+
+        $pageName = 'lender_dashboard';
+        $postData = $request->request->get('panels');
+        $result   = ['error' => 1, 'msg' => ''];
 
         if ($request->getMethod() === 'PUT') {
             try {
-                $preferences = $userPreferences->getUserPreferencesByPage($this->getUser()->getClientId(), $pageName);
+                $preferences = $panelPreferences->getLenderPreferencesByPage($lenderAccount->id_lender_account, $pageName);
 
                 foreach ($postData as $panel) {
                     if (isset($preferences[$panel['id']])) {
                         if ($preferences[$panel['id']]['hidden'] != $panel['hidden'] || $preferences[$panel['id']]['panel_order'] != $panel['order']) {
-                            $userPreferences->get($preferences[$panel['id']]['id_user_preferences']);
-                            $userPreferences->hidden      = ('true' == $panel['hidden']) ? 1 : 0;
-                            $userPreferences->panel_order = $panel['order'];
-                            $userPreferences->updated     = date('Y-m-d H:i:s');
-                            $userPreferences->update();
+                            $panelPreferences->get($preferences[$panel['id']]['id_lender_panel_preference']);
+                            $panelPreferences->hidden      = ('true' == $panel['hidden']) ? 1 : 0;
+                            $panelPreferences->panel_order = $panel['order'];
+                            $panelPreferences->update();
                         }
                     } else {
-                        $userPreferences->id_client   = $this->getUser()->getClientId();
-                        $userPreferences->page_name   = $pageName;
-                        $userPreferences->panel_name  = $panel['id'];
-                        $userPreferences->panel_order = $panel['order'];
-                        $userPreferences->hidden      = ('true' == $panel['hidden']) ? 1 : 0;
-                        $userPreferences->added       = date('Y-m-d H:i:s');
-                        $userPreferences->updated     = date('Y-m-d H:i:s');
-
-                        $userPreferences->create();
+                        $panelPreferences->id_lender   = $lenderAccount->id_lender_account;
+                        $panelPreferences->page_name   = $pageName;
+                        $panelPreferences->panel_name  = $panel['id'];
+                        $panelPreferences->panel_order = $panel['order'];
+                        $panelPreferences->hidden      = ('true' == $panel['hidden']) ? 1 : 0;
+                        $panelPreferences->create();
                     }
                 }
                 $result = ['success' => 1, 'data' => $postData, 'preferences' => $preferences];
@@ -234,11 +238,12 @@ class LenderDashboardController extends Controller
             }
         } elseif ($request->getMethod() === 'GET') {
             try {
-                $preferences = $userPreferences->getUserPreferencesByPage($this->getUser()->getClientId(), $pageName);
+                $data        = ['panels' => []];
+                $preferences = $panelPreferences->getLenderPreferencesByPage($lenderAccount->id_lender_account, $pageName);
 
                 if (false === empty($preferences)) {
                     foreach ($preferences as $panelName => $panel) {
-                        $data['panels'][] = ['id' => $panelName, 'order' => $panel['panel_order'], 'hidden' => ($panel['hidden'] == 1) ? true : false];
+                        $data['panels'][] = ['id' => $panelName, 'order' => $panel['panel_order'], 'hidden' => $panel['hidden'] == 1];
                     }
                 }
                 $result = ['success' => 1, 'data' => $data, 'preferences' => $preferences];
@@ -255,26 +260,31 @@ class LenderDashboardController extends Controller
      */
     private function getDashboardPreferences()
     {
-        /** @var \user_preferences $userPreferences */
-        $userPreferences = $this->get('unilend.service.entity_manager')->getRepository('user_preferences');
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var \lender_panel_preference $panelPreferences */
+        $panelPreferences = $entityManager->getRepository('lender_panel_preference');
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount = $entityManager->getRepository('lenders_accounts');
+        $lenderAccount->get($this->getUser()->getClientId(), 'id_client_owner');
 
-        $pageName           = 'lender_dashboard';
-        $userPreferencesData = [
-            'myaccount'   => ['order' => 0, 'id' => 'myaccount', 'hidden' => false],
-            'userlevel'   => ['order' => 1, 'id' => 'userlevel', 'hidden' => false],
-            'mywallet'    => ['order' => 2, 'id' => 'mywallet', 'hidden' => false],
-            'myoffers'    => ['order' => 3, 'id' => 'myoffers', 'hidden' => false],
-            'projects'    => ['order' => 4, 'id' => 'projects', 'hidden' => false],
-            'myrembourse' => ['order' => 5, 'id' => 'myrembourse', 'hidden' => false],
+        $pageName            = 'lender_dashboard';
+        $panelPreferencesData = [
+            'account'    => ['order' => 0, 'id' => 'account', 'hidden' => false],
+            'user-level' => ['order' => 1, 'id' => 'user-level', 'hidden' => false],
+            'wallet'     => ['order' => 2, 'id' => 'wallet', 'hidden' => false],
+            'offers'     => ['order' => 3, 'id' => 'offers', 'hidden' => false],
+            'projects'   => ['order' => 4, 'id' => 'projects', 'hidden' => false],
+            'repayments' => ['order' => 5, 'id' => 'repayments', 'hidden' => false],
         ];
 
         try {
-            $preferences = $userPreferences->getUserPreferencesByPage($this->getUser()->getClientId(), $pageName);
+            $preferences = $panelPreferences->getLenderPreferencesByPage($lenderAccount->id_lender_account, $pageName);
 
             if (false === empty($preferences)) {
-                $userPreferencesData = [];
+                $panelPreferencesData = [];
                 foreach ($preferences as $panelName => $panel) {
-                    $userPreferencesData[$panelName] = [
+                    $panelPreferencesData[$panelName] = [
                         'id'     => $panelName,
                         'order'  => $panel['panel_order'],
                         'hidden' => $panel['hidden'] == 1
@@ -284,7 +294,7 @@ class LenderDashboardController extends Controller
         } catch (\Exception $exception) {
         }
 
-        return $userPreferencesData;
+        return $panelPreferencesData;
     }
 
     /**

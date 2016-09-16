@@ -9,8 +9,11 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
+use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Service\PaylineManager;
+use Unilend\Bundle\FrontBundle\Form\LenderWithdrawalType;
 use Unilend\core\Loader;
 
 class LenderWalletController extends Controller
@@ -19,13 +22,13 @@ class LenderWalletController extends Controller
     const MIN_DEPOSIT_AMOUNT = 20;
 
     /**
-     * @Route("/alimentation", name="lender_wallet")
+     * @Route("/alimentation", name="lender_wallet_deposit")
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request $request
      * @return Response
      */
-    public function walletAction(Request $request)
+    public function walletDepositAction(Request $request)
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
@@ -49,22 +52,62 @@ class LenderWalletController extends Controller
             'depositCode'     => $request->query->get('depositCode', 0),
         ];
 
-        return $this->render(':frontbundle/pages/lender_wallet:wallet_layout.html.twig', $template);
+        return $this->render('pages/lender_wallet/deposit.html.twig', $template);
     }
 
     /**
-     * @Route("/alimentation/retrait", name="withdraw_money")
+     * @Route("/retrait", name="lender_wallet_withdrawal")
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request $request
-     * @return JsonResponse
+     * @return Response
      */
-    public function withdrawMoneyAction(Request $request)
+    public function walletWithdrawalAction(Request $request)
     {
-        if (false === $request->isXmlHttpRequest()) {
-            return $this->redirectToRoute('lender_wallet');
+
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var \clients $client */
+        $client = $entityManager->getRepository('clients');
+        /** @var \lenders_accounts $lender */
+        $lender = $entityManager->getRepository('lenders_accounts');
+        /** @var TranslatorInterface $translator */
+        $translator = $this->get('translator');
+
+        $clientData = $client->select('id_client = ' . $this->getUser()->getClientId())[0];
+        $lenderData = $lender->select('id_client_owner = ' . $clientData['id_client'])[0];
+
+        $form = $this->createForm(LenderWithdrawalType::class);
+
+        $template = [
+            'balance'         => $this->getUser()->getBalance(),
+            'client'          => $clientData,
+            'lender'          => $lenderData,
+            'lenderBankMotif' => $client->getLenderPattern($clientData['id_client']),
+            'withdrawalForm'  => $form->createView(),
+        ];
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                $post = $form->getData();
+                $this->handleWithdrawalPost($post, $request);
+            } else {
+                $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
+            }
+
+            $token = $this->get('security.csrf.token_manager');
+            $token->refreshToken(LenderWithdrawalType::CSRF_TOKEN_ID);
+
+            //Redirection is needed to refresh the token in the form which is already generated above
+            return $this->redirectToRoute('lender_wallet_withdrawal');
         }
 
+        return $this->render('pages/lender_wallet/withdrawal.html.twig', $template);
+    }
+
+    private function handleWithdrawalPost($post, $request)
+    {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \clients $client */
@@ -91,31 +134,36 @@ class LenderWalletController extends Controller
         $clientMailNotification = $entityManager->getRepository('clients_gestion_mails_notif');
         /** @var LoggerInterface $logger */
         $logger = $this->get('logger');
+        /** @var TranslatorInterface $translator */
+        $translator = $this->get('translator');
 
-        if ($client->get($this->getUser()->getClientId(), 'id_client') && false === empty($request->request->get('mdp')) && false === empty($request->request->get('montant'))) {
+        if ($client->get($this->getUser()->getClientId(), 'id_client')) {
             /** @var \clients_history_actions $clientActionHistory */
             $clientActionHistory = $entityManager->getRepository('clients_history_actions');
-            $serialize           = serialize(array('id_client' => $client->id_client, 'montant' => $request->request->get('montant'), 'mdp' => md5($request->request->get('mdp'))));
+            $serialize           = serialize(array('id_client' => $client->id_client, 'montant' => $post['amount'], 'mdp' => md5($post['password'])));
             $clientActionHistory->histo(3, 'retrait argent', $client->id_client, $serialize);
 
             $clientStatus->getLastStatut($client->id_client);
 
             if ($clientStatus->status < \clients_status::VALIDATED) {
-                $this->redirectToRoute('lender_wallet');
+                $this->redirectToRoute('lender_wallet_withdrawal');
             }
+
             $lender->get($client->id_client, 'id_client_owner');
 
-            $code    = Response::HTTP_OK;
-            $montant = str_replace(',', '.', $request->request->get('montant'));
+            $amount = str_replace(',', '.', $post['amount']);
 
-            if (md5($request->request->get('mdp')) !== $client->password && false === password_verify($request->request->get('mdp'), $client->password)) {
+            /** @var UserPasswordEncoder $securityPasswordEncoder */
+            $securityPasswordEncoder = $this->get('security.password_encoder');
+
+            if (false === $securityPasswordEncoder->isPasswordValid($this->getUser(), $post['password'])) {
                 $logger->info('Wrong password id_client=' . $client->id_client, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
-                $code = Response::HTTP_UNAUTHORIZED;
+                $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
             } else {
-                if (false === is_numeric($montant)) {
-                    $code = Response::HTTP_BAD_REQUEST;
+                if (false === is_numeric($amount)) {
+                    $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
                 } elseif (empty($lender->bic) || empty($lender->iban)) {
-                    $code = $code = Response::HTTP_INTERNAL_SERVER_ERROR;
+                    $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
                 } else {
                     $sumOffres = $welcomeOfferDetails->sum('id_client = ' . $client->id_client . ' AND status = 0', 'montant');
 
@@ -125,19 +173,18 @@ class LenderWalletController extends Controller
                         $sumOffres = 0;
                     }
 
-                    if (($montant + $sumOffres) > $this->getUser()->getBalance() || $montant <= 0) {
-                        $code = Response::HTTP_BAD_REQUEST;
+                    if (($amount + $sumOffres) > $this->getUser()->getBalance() || $amount <= 0) {
+                        $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
                     }
                 }
                 $logger->info('Wrong parameters submitted, id_client=' . $client->id_client, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
             }
 
-            if ($code === Response::HTTP_OK) {
-                /** @var \ficelle $ficelle */
-                $ficelle = Loader::loadLib('ficelle');
-
+            if ($this->get('session')->getFlashBag()->has('withdrawalErrors')) {
+                $logger->error('Wrong parameters submitted, id_client=' . $client->id_client . ' Request parameters : ' . json_encode($post), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
+            } else {
                 $transaction->id_client        = $client->id_client;
-                $transaction->montant          = '-' . ($montant * 100);
+                $transaction->montant          = '-' . ($amount * 100);
                 $transaction->id_langue        = 'fr';
                 $transaction->date_transaction = date('Y-m-d H:i:s');
                 $transaction->status           = '1'; // on met en mode reglé pour ne plus avoir la somme sur le compte
@@ -147,31 +194,30 @@ class LenderWalletController extends Controller
                 $transaction->create();
 
                 $walletLine->id_lender                = $lender->id_lender_account;
-                $walletLine->type_financial_operation = 30; // Inscription preteur
+                $walletLine->type_financial_operation = \wallets_lines::TYPE_MONEY_SUPPLY;
                 $walletLine->id_transaction           = $transaction->id_transaction;
                 $walletLine->status                   = \wallets_lines::STATUS_VALID;
                 $walletLine->type                     = 1;
-                $walletLine->amount                   = '-' . ($montant * 100);
+                $walletLine->amount                   = '-' . ($amount * 100);
                 $walletLine->create();
 
-                // Transaction physique donc on enregistre aussi dans la bank lines
                 $bankLine->id_wallet_line    = $walletLine->id_wallet_line;
                 $bankLine->id_lender_account = $lender->id_lender_account;
                 $bankLine->status            = 1;
-                $bankLine->amount            = '-' . ($montant * 100);
+                $bankLine->amount            = '-' . ($amount * 100);
                 $bankLine->create();
 
                 $bankTransfer->id_client      = $client->id_client;
                 $bankTransfer->id_transaction = $transaction->id_transaction;
-                $bankTransfer->montant        = $montant * 100;
+                $bankTransfer->montant        = $amount * 100;
                 $bankTransfer->motif          = $client->getLenderPattern($client->id_client);
-                $bankTransfer->type           = 1; // preteur
+                $bankTransfer->type           = 1;
                 $bankTransfer->status         = 0;
                 $bankTransfer->create();
 
                 $notification->type      = \notifications::TYPE_DEBIT;
                 $notification->id_lender = $lender->id_lender_account;
-                $notification->amount    = $montant * 100;
+                $notification->amount    = $amount * 100;
                 $notification->create();
 
                 $this->getUser()->setBalance($transaction->getSolde($client->id_client));
@@ -183,82 +229,19 @@ class LenderWalletController extends Controller
                 $clientMailNotification->id_transaction  = $transaction->id_transaction;
                 $clientMailNotification->create();
 
-                /** @var \settings $oSettings */
-                $oSettings = $entityManager->getRepository('settings');
-
                 if ($clientNotification->getNotif($client->id_client, 8, 'immediatement') == true) {
                     $clientMailNotification->get($clientMailNotification->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
                     $clientMailNotification->immediatement = 1;
                     $clientMailNotification->update();
-
-                    $oSettings->get('Facebook', 'type');
-                    $lien_fb = $oSettings->value;
-                    $oSettings->get('Twitter', 'type');
-                    $lien_tw = $oSettings->value;
-
-                    $varMail = array(
-                        'surl'            => $this->get('assets.packages')->getUrl(''),
-                        'url'             => $this->get('assets.packages')->getUrl(''),
-                        'prenom_p'        => $client->prenom,
-                        'fonds_retrait'   => $ficelle->formatNumber($montant),
-                        'solde_p'         => $ficelle->formatNumber($this->getUser()->getBalance()),
-                        'link_mandat'     => $this->get('assets.packages')->getUrl('') . '/images/default/mandat.jpg',
-                        'motif_virement'  => $client->getLenderPattern($client->id_client),
-                        'projets'         => $this->get('assets.packages')->getUrl('') . $this->generateUrl('home', ['type' => 'projets-a-financer']),
-                        'gestion_alertes' => $this->get('assets.packages')->getUrl('') . $this->generateUrl('lender_profile'),
-                        'lien_fb'         => $lien_fb,
-                        'lien_tw'         => $lien_tw
-                    );
-
-                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-retrait', $varMail);
-                    $message->setTo($client->email);
-                    $mailer = $this->get('mailer');
-                    $mailer->send($message);
+                    $this->sendClientWithdrawalNotification($client, $amount);
                 }
 
-                //******************************************//
-                //*** ENVOI DU MAIL NOTIFICATION RETRAIT ***//
-                //******************************************//
-                $oSettings->get('Adresse notification controle fond', 'type');
-                $destinataire = $oSettings->value;
-                /** @var \loans $loans */
-                $loans = $entityManager->getRepository('loans');
+                $this->sendInternalWithdrawalNotification($client, $transaction, $lender, $amount);
 
-                // on recup la somme versé a l'inscription si y en a 1
-                $transaction->get($client->id_client, 'type_transaction = 1 AND status = 1 AND etat = 1 AND transaction = 1 AND id_client');
-
-                $varMail = array(
-                    '$surl'                          => $this->get('assets.packages')->getUrl(''),
-                    '$url'                           => $this->get('assets.packages')->getUrl(''),
-                    '$idPreteur'                     => $client->id_client,
-                    '$nom'                           => $client->nom,
-                    '$prenom'                        => $client->prenom,
-                    '$email'                         => $client->email,
-                    '$dateinscription'               => date('d/m/Y', strtotime($client->added)),
-                    '$montantInscription'            => (false === is_null($transaction->montant)) ? $ficelle->formatNumber($transaction->montant / 100) : $ficelle->formatNumber(0),
-                    '$montantPreteDepuisInscription' => $ficelle->formatNumber($loans->sumPrets($lender->id_lender_account)),
-                    '$montantRetirePlateforme'       => $ficelle->formatNumber($montant),
-                    '$solde'                         => $ficelle->formatNumber($this->getUser()->getBalance())
-                );
-                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-retrait-de-fonds', $varMail, false);
-                $message->setTo($destinataire);
-                $mailer = $this->get('mailer');
-                $mailer->send($message);
                 $logger->debug('Withdraw money successfully done, id_client=' . $client->id_client . '. Withdraw amount='.$request->request->get('montant'), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
+                $this->addFlash('withdrawalSuccess', $translator->trans('lender-wallet_withdrawal-success-message'));
             }
-        } else {
-            $code = Response::HTTP_BAD_REQUEST;
-            $logger->error('Wrong parameters submitted, id_client=' . $client->id_client . ' Request parameters : ' . json_encode($request->request->all()), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
         }
-        return $this->json(
-            [
-                'balance' => $this->getUser()->getBalance(),
-                'message' => $this->render(':frontbundle/pages/lender_wallet:withdraw_money_result.html.twig', ['code' => $code])->getContent()
-            ],
-            $code
-        );
     }
 
     /**
@@ -271,7 +254,7 @@ class LenderWalletController extends Controller
     public function depositMoneyAction(Request $request)
     {
         if (false === $request->isXmlHttpRequest()) {
-            return $this->redirectToRoute('lender_wallet');
+            return $this->redirectToRoute('lender_wallet_deposit');
         }
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
@@ -323,9 +306,9 @@ class LenderWalletController extends Controller
             $paylineParameter['order']['currency'] = ORDER_CURRENCY;
 
             $paylineParameter['payment']['contractNumber'] = CONTRACT_NUMBER;
-            $contracts                          = explode(";", CONTRACT_NUMBER_LIST);
+            $contracts                                     = explode(";", CONTRACT_NUMBER_LIST);
             $paylineParameter['contracts']                 = $contracts;
-            $secondContracts                    = explode(";", SECOND_CONTRACT_NUMBER_LIST);
+            $secondContracts                               = explode(";", SECOND_CONTRACT_NUMBER_LIST);
             $paylineParameter['secondContracts']           = $secondContracts;
 
             $logger->info('Calling Payline::doWebPayment: return URL=' . $payline->returnURL . ' Transmetted data: ' . json_encode($paylineParameter), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
@@ -351,7 +334,7 @@ class LenderWalletController extends Controller
         }
         return $this->json(
             [
-                'message' => $this->render(':frontbundle/pages/lender_wallet:deposit_money_result.html.twig', ['code' => 0])->getContent()
+                'message' => $this->render('pages/lender_wallet/deposit_money_result.html.twig', ['code' => 0])->getContent()
             ],
             Response::HTTP_INTERNAL_SERVER_ERROR
         );
@@ -387,7 +370,7 @@ class LenderWalletController extends Controller
 
             if (true === empty($paylineParameter['token'])) {
                 $logger->error('Payline token not found, id_client=' . $client->id_client, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
-                return $this->redirectToRoute('lender_wallet', ['depositResult' => true]);
+                return $this->redirectToRoute('lender_wallet_deposit', ['depositResult' => true]);
             }
             $paylineParameter['version'] = $request->request->get('version', '3');
             $response = $payline->getWebPaymentDetails($paylineParameter);
@@ -399,13 +382,13 @@ class LenderWalletController extends Controller
                 $paylineManager->setLogger($logger);
                 if ($paylineManager->handlePaylineReturn($client, $response, $paylineParameter, $partnerId, PaylineManager::PAYMENT_LOCATION_LENDER_WALLET)) {
 
-                    $this->redirectToRoute('lender_wallet', [
+                    $this->redirectToRoute('lender_wallet_deposit', [
                         'depositResult' => true,
                         'depositCode' => Response::HTTP_OK,
                         'depositAmount' => bcdiv($response['payment']['amount'], 100, 2)
                     ]);
                 }
-                return $this->redirectToRoute('lender_wallet', ['depositResult' => true]);
+                return $this->redirectToRoute('lender_wallet_deposit', ['depositResult' => true]);
             }
         }
     }
@@ -422,5 +405,81 @@ class LenderWalletController extends Controller
     protected function redirectToRoute($route, array $parameters = array(), $status = 302)
     {
         return $this->redirect($this->generateUrl($route, $parameters), $status);
+    }
+
+    /**
+     * @param \clients $client
+     * @param $amount
+     */
+    private function sendClientWithdrawalNotification(\clients $client, $amount)
+    {
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
+        /** @var \settings $settings */
+        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
+
+        $settings->get('Facebook', 'type');
+        $lien_fb = $settings->value;
+        $settings->get('Twitter', 'type');
+        $lien_tw = $settings->value;
+
+        $varMail = [
+            'surl'            => $this->get('assets.packages')->getUrl(''),
+            'url'             => $this->get('assets.packages')->getUrl(''),
+            'prenom_p'        => $client->prenom,
+            'fonds_retrait'   => $ficelle->formatNumber($amount),
+            'solde_p'         => $ficelle->formatNumber($this->getUser()->getBalance()),
+            'link_mandat'     => $this->get('assets.packages')->getUrl('') . '/images/default/mandat.jpg',
+            'motif_virement'  => $client->getLenderPattern($client->id_client),
+            'projets'         => $this->get('assets.packages')->getUrl('') . $this->generateUrl('home', ['type' => 'projets-a-financer']),
+            'gestion_alertes' => $this->get('assets.packages')->getUrl('') . $this->generateUrl('lender_profile'),
+            'lien_fb'         => $lien_fb,
+            'lien_tw'         => $lien_tw
+        ];
+
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-retrait', $varMail);
+        $message->setTo($client->email);
+        $mailer = $this->get('mailer');
+        $mailer->send($message);
+    }
+
+    /**
+     * @param \clients $client
+     * @param \transactions $transaction
+     * @param \lenders_accounts $lender
+     * @param $amount
+     */
+    private function sendInternalWithdrawalNotification(\clients $client, \transactions $transaction, \lenders_accounts $lender, $amount)
+    {
+        /** @var \settings $settings */
+        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
+        $settings->get('Adresse notification controle fond', 'type');
+        $destinataire = $settings->value;
+        /** @var \loans $loans */
+        $loans = $this->get('unilend.service.entity_manager')->getRepository('loans');
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
+
+        $transaction->get($client->id_client, 'type_transaction = ' . \transactions_types::TYPE_LENDER_SUBSCRIPTION . ' AND status = 1 AND etat = 1 AND id_client');
+
+        $varMail = array(
+            '$surl'                          => $this->get('assets.packages')->getUrl(''),
+            '$url'                           => $this->get('assets.packages')->getUrl(''),
+            '$idPreteur'                     => $client->id_client,
+            '$nom'                           => $client->nom,
+            '$prenom'                        => $client->prenom,
+            '$email'                         => $client->email,
+            '$dateinscription'               => date('d/m/Y', strtotime($client->added)),
+            '$montantInscription'            => (false === is_null($transaction->montant)) ? $ficelle->formatNumber($transaction->montant / 100) : $ficelle->formatNumber(0),
+            '$montantPreteDepuisInscription' => $ficelle->formatNumber($loans->sumPrets($lender->id_lender_account)),
+            '$montantRetirePlateforme'       => $ficelle->formatNumber($amount),
+            '$solde'                         => $ficelle->formatNumber($this->getUser()->getBalance())
+        );
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-retrait-de-fonds', $varMail, false);
+        $message->setTo($destinataire);
+        $mailer = $this->get('mailer');
+        $mailer->send($message);
     }
 }

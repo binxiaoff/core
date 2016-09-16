@@ -6,10 +6,13 @@
   box-sizing: border-box;
   display: block;
   width: 100%;
-  min-height: 400px;
 
-  @include devices('lg') {
-    min-height: 500px;
+  &.chart-myaccount {
+    min-height: 300px;
+  }
+
+  &.chart-myremboursements {
+    min-height: 400px;
   }
 }
 
