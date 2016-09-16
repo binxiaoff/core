@@ -497,7 +497,6 @@ class LenderOperationsController extends Controller
                     </tr>';
 
             } elseif (in_array($t['type_transaction'], array(8, 1, 3, 4, 16, 17, 19, 20))) {
-
                 $array_type_transactions = [
                     1  => $translationManager->selectTranslation('lender-operations', 'operation-label-money-deposit'),
                     2  => [
@@ -521,6 +520,7 @@ class LenderOperationsController extends Controller
                     23 => $translationManager->selectTranslation('lender-operations', 'operation-label-anticipated-repayment'),
                     26 => $translationManager->selectTranslation('lender-operations', 'operation-label-lender-recovery')
                 ];
+
                 if (isset($array_type_transactions[$t['type_transaction']])) {
                     $t['libelle_operation'] = $array_type_transactions[$t['type_transaction']];
                 } else {

@@ -274,29 +274,6 @@ class echeanciers extends echeanciers_crud
 
     /**
      * @param array $selector
-     * @param int $year
-     * @return array
-     */
-    public function getMonthlyScheduleByYear(array $selector, $year)
-    {
-        $result      = array();
-        $queryResult = $this->bdd->query('
-            SELECT MONTH(date_echeance_reel) AS mois,
-                ROUND(SUM(capital) / 100, 2) AS capital,
-                ROUND(SUM(interets) / 100, 2) AS interets
-            FROM echeanciers
-            WHERE YEAR(date_echeance_reel) = ' . $year . ' AND ' . $this->implodeSelector($selector, array(' = ')) . '
-            GROUP BY mois'
-        );
-
-        while ($record = $this->bdd->fetch_assoc($queryResult)) {
-            $result[$record['mois']] = $record;
-        }
-        return $result;
-    }
-
-    /**
-     * @param array $selector
      * @return string
      */
     private function implodeSelector(array $selector)
@@ -333,17 +310,6 @@ class echeanciers extends echeanciers_crud
     public function getRepaidCapitalInDateRange($lenderId, $startDate, $endDate)
     {
         return $this->getRepaymentAmountInDateRange($lenderId, $startDate, $endDate, 'e.capital_rembourse', array(\echeanciers::STATUS_PARTIALLY_REPAID, \echeanciers::STATUS_REPAID));
-    }
-
-    /**
-     * @param int $lenderId
-     * @param int $startDate
-     * @param int $endDate
-     * @return string
-     */
-    public function getRepaidInterestsInDateRange($lenderId, $startDate, $endDate)
-    {
-        return $this->getRepaymentAmountInDateRange($lenderId, $startDate, $endDate, 'e.interets_rembourses', array(\echeanciers::STATUS_PARTIALLY_REPAID, \echeanciers::STATUS_REPAID), 0);
     }
 
     /**
@@ -800,7 +766,7 @@ class echeanciers extends echeanciers_crud
               INNER JOIN loans l ON l.id_loan = e.id_loan AND l.status = 0
               INNER JOIN lenders_accounts la ON e.id_lender = la.id_lender_account
               INNER JOIN clients c ON la.id_client_owner = c.id_client
-              INNER JOIN transactions t ON t.id_echeancier = e.id_echeancier AND t.type_transaction = 28
+              INNER JOIN transactions t ON t.id_echeancier = e.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
               ' . $taxDynamicJoin['tax_join'] . '
               LEFT JOIN lender_tax_exemption lte ON lte.id_lender = la.id_lender_account AND lte.year = YEAR(e.date_echeance_reel)
             WHERE e.status IN (' . \echeanciers::STATUS_REPAID . ', ' . \echeanciers::STATUS_PARTIALLY_REPAID . ')
@@ -1016,7 +982,7 @@ class echeanciers extends echeanciers_crud
                 SUM(ROUND(e.interets / 100, 2)) AS rawInterests,
                 SUM(IFNULL((SELECT SUM(ROUND(tax.amount / 100, 2)) FROM tax WHERE id_transaction = t.id_transaction), 0)) AS taxes
             FROM echeanciers e
-            LEFT JOIN transactions t ON e.id_echeancier = t.id_echeancier AND t.type_transaction = 28
+            LEFT JOIN transactions t ON e.id_echeancier = t.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
             WHERE e.id_lender = :id_lender
             GROUP BY year, quarter, month
             ORDER BY year, quarter, month ASC';
