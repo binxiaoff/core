@@ -38,6 +38,8 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
         $company = $entityManager->getRepository('companies');
         /** @var \settings $settings */
         $settings = $entityManager->getRepository('settings');
+        /** @var \transactions $transaction */
+        $transaction = $entityManager->getRepository('transactions');
 
         $settings->get('Virement - BIC', 'type');
         $bic = $settings->value;
@@ -66,6 +68,8 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
         $counter->type  = 1;
         $counter->ordre = $counterId;
         $counter->create();
+
+        $negativeBalanceError = [];
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>
 <Document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.03">
@@ -124,6 +128,11 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                 $recipientBic  = $company->bic;
                 $recipientName = $company->name;
             } else {
+                $balance = $transaction->getSolde($pendingBankTransfer['id_client']);
+                if ($balance < 0) {
+                    $negativeBalanceError[] = ['id_client' => $pendingBankTransfer['id_client'], 'balance' => $balance];
+                    continue;
+                }
                 $lender->get($pendingBankTransfer['id_client'], 'id_client_owner');
 
                 $recipientIban = $lender->iban;
@@ -182,6 +191,22 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
         </PmtInf>
     </CstmrCdtTrfInitn>
 </Document>';
+
+        if (false === empty($negativeBalanceError)) {
+            $settings->get('Adresse controle interne', 'type');
+            $email = $settings->value;
+
+            $details = '<ul>';
+            foreach ($negativeBalanceError as $error) {
+                $details .= '<li>' . 'id client : ' . $error['id_client'] . '; solde : ' . $error['balance'] . '</li>';
+            }
+            $details .= '<ul>';
+            $varMail = ['details' => $details];
+            $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('solde-negatif-notification', $varMail);
+            $message->setTo($email);
+            $mailer = $this->getContainer()->get('mailer');
+            $mailer->send($message);
+        }
 
         if (false === empty($pendingBankTransfers)) {
             file_put_contents($this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/virements/Unilend_Virements_' . $date . '.xml', $xml);
