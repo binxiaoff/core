@@ -120,7 +120,7 @@
                                             {% trans %} project-detail_project-status-finished {% endtrans %}
                                         {% else %}
                                             <span class="icon fa-clock-u32"></span>
-                                            <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|escape('html_attr') }}"></span>
+                                            <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|date('Y-m-d\\TH:i:s') }}"></span>
                                         {% endif %}
                                     </div>
 
@@ -208,7 +208,7 @@
                             {% trans %} project-detail_project-status-finished {% endtrans %}
                         {% else %}
                             <span class="icon fa-clock-u32"></span>
-                            <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|escape('html_attr') }}"></span>
+                            <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|date('Y-m-d\\TH:i:s') }}"></span>
                         {% endif %}
                     </div><!-- /.project-single-menu-period -->
                     <div class="project-single-menu-col project-single-menu-top">
