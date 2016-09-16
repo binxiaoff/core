@@ -129,7 +129,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                 $recipientName = $company->name;
             } else {
                 $balance = $transaction->getSolde($pendingBankTransfer['id_client']);
-                if ($balance <= 0) {
+                if ($balance < 0) {
                     $negativeBalanceError[] = ['id_client' => $pendingBankTransfer['id_client'], 'balance' => $balance];
                     continue;
                 }
