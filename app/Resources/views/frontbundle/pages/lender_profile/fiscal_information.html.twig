@@ -191,7 +191,6 @@ classNames: 'user-preter-profile'
                         </header><!-- .panel-header -->
                         <section id="profile-fiscalite-exoneration-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
                             <section id="profile-fiscalite-exoneration-view" role="tabpanel" class="profile-exoneration-view collapse in">
-
                                 {% if declarationIsPossible == true %}
                                     <a href="javascript:;" data-target="#profile-fiscalite-exoneration-edit" role="button" data-toggle="collapse" data-parent="#profile-fiscalite-exoneration-section" class="btn-edit" aria-controls="#profile-fiscalite-exoneration-edit" aria-expanded="false">
                                         <span class="icon fa-pencil-u32"></span>
@@ -202,61 +201,60 @@ classNames: 'user-preter-profile'
                                 {% for exemption in exemptions %}
                                     {% trans with {'%date%' : exemption.added|localizeddate('medium', 'none'), '%year%' : exemption.year} %}lender-profile_fiscal-information-exonerations-list-sentence{% endtrans %}
                                 {% endfor %}
-
                             </section>
 
-                        {% if declarationIsPossible == true %}
-                            <section id="profile-fiscalite-exoneration-edit" role="tabpanel" class="profile-fiscalite-exoneration-view collapse">
-                                <form id="form-profile-fiscalite-exoneration-edit" action="{{ path('profile_fiscal_information_tax_exemption') }}" method="post" class="form-fiscalite form-profile-fiscalite-exoneration-edit" enctype="multipart/form-data" data-formvalidation data-formvalidation-notificationselem="#form-profile-fiscalite-exoneration-notifications">
-                                    <h3>{% trans %}lender-profile_tax-exemption-request{% endtrans %}</h3>
+                            {% if declarationIsPossible == true %}
+                                <section id="profile-fiscalite-exoneration-edit" role="tabpanel" class="profile-fiscalite-exoneration-view collapse">
+                                    <form id="form-profile-fiscalite-exoneration-edit" action="{{ path('profile_fiscal_information_tax_exemption') }}" method="post" class="form-fiscalite form-profile-fiscalite-exoneration-edit" enctype="multipart/form-data" data-formvalidation data-formvalidation-notificationselem="#form-profile-fiscalite-exoneration-notifications">
+                                        <h3>{% trans %}lender-profile_tax-exemption-request{% endtrans %}</h3>
 
-                                    <div class="exemption-request-panel">
-                                        <div class="row">
-                                            <p class="h4">{% trans %}lender-profile_sworn-statement{% endtrans %}</p>
-                                            <span> {% trans with {'%nextYear%' : nextYear, '%taxExemptionRequestLimitDate%' : taxExemptionRequestLimitDate } %}lender-profile_tax-exemption-request-validity-notice{% endtrans %}</span>
-                                        </div>
-                                        <div class="row">
-                                            <div class="tax-exemption-details">
-                                                <p>{% trans with {'%rateOfTaxDeductionAtSource%' : rateOfTaxDeductionAtSource, '%currentYear%' : currentYear, '%lastYear%' : lastYear } %}lender-profile_tax-exemption-info{% endtrans %}</p>
-                                                <p>{% trans with {'%incomeTaxReferenceSingleAmount%' : setting('incomeTaxReferenceSingleAmount')|localizednumber } %}lender-profile_tax-exemption-info{% endtrans %}
-                                                    <br>
-                                                    {% trans with {'%incomeTaxReferenceCommonAmount%' : setting('incomeTaxReferenceCommonAmount')|localizednumber } %}lender-profile_income-tax-reference-common-amount{% endtrans %}
-                                                </p>
-                                                <p>
-                                                    <strong>{% transchoice client.civilite|length %} lender-profile_undersigned{% endtranschoice %}</strong>
-                                                </p>
-                                                <p>{{ client.nom }} {{ client.prenom }}<br>
-                                                    {{ clientAddress.adresse_fiscal }}<br>
-                                                    {{ clientAddress.cp_fiscal }}&nbsp;{{ clientAddress.ville_fiscal }}
-                                                    <br>
-                                                    {{ clientAddress.id_pays_fiscal|countryLabel }}
-                                                </p>
+                                        <div class="exemption-request-panel">
+                                            <div class="row">
+                                                <p class="h4">{% trans %}lender-profile_sworn-statement{% endtrans %}</p>
+                                                <span> {% trans with {'%nextYear%' : nextYear, '%taxExemptionRequestLimitDate%' : taxExemptionRequestLimitDate} %}lender-profile_tax-exemption-request-validity-notice{% endtrans %}</span>
                                             </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
-                                                <div>
-                                                    <input class="tax-exemption-chbx" type="checkbox" id="h-attest" value="honor-attest" name="attest">
-                                                    <label for="h-attest"><strong>{% trans %}lender-profile_attest-on-honor{% endtrans %}</strong></label>
-                                                </div>
-                                                <div>
-                                                    <input class="tax-exemption-chbx" type="checkbox" id="agree" value="agree-to-be-informed" name="agree">
-                                                    <label for="agree"><strong>{% trans %}lender-profile_agree-to-be-informed{% endtrans %}</strong></label>
-                                                </div>
-                                                <div class="message-alert">
-                                                    <p>{% trans %}lender-profile_tax-penalty-risk{% endtrans %}</p>
-                                                    <p>{% trans %}lender-profile_tax-exemption-limitation{% endtrans %}</p>
+                                            <div class="row">
+                                                <div class="tax-exemption-details">
+                                                    <p>{% trans with {'%rateOfTaxDeductionAtSource%' : rateOfTaxDeductionAtSource, '%currentYear%' : currentYear, '%lastYear%' : lastYear} %}lender-profile_tax-exemption-info{% endtrans %}</p>
+                                                    <p>
+                                                        {% trans with {'%incomeTaxReferenceSingleAmount%' : setting('incomeTaxReferenceSingleAmount')|localizednumber} %}lender-profile_income-tax-reference-single-amount{% endtrans %}<br>
+                                                        {% trans with {'%incomeTaxReferenceCommonAmount%' : setting('incomeTaxReferenceCommonAmount')|localizednumber} %}lender-profile_income-tax-reference-common-amount{% endtrans %}
+                                                    </p>
+                                                    <p>
+                                                        <strong>{% transchoice client.civilite|length %} lender-profile_undersigned{% endtranschoice %}</strong>
+                                                    </p>
+                                                    <p>
+                                                        {{ client.nom }} {{ client.prenom }}<br>
+                                                        {{ clientAddress.adresse_fiscal }}<br>
+                                                        {{ clientAddress.cp_fiscal }}&nbsp;{{ clientAddress.ville_fiscal }}<br>
+                                                        {{ clientAddress.id_pays_fiscal|countryLabel }}
+                                                    </p>
                                                 </div>
                                             </div>
+                                            <div class="row">
+                                                <div class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
+                                                    <div>
+                                                        <input class="tax-exemption-chbx" type="checkbox" id="h-attest" value="honor-attest" name="attest">
+                                                        <label for="h-attest"><strong>{% trans %}lender-profile_attest-on-honor{% endtrans %}</strong></label>
+                                                    </div>
+                                                    <div>
+                                                        <input class="tax-exemption-chbx" type="checkbox" id="agree" value="agree-to-be-informed" name="agree">
+                                                        <label for="agree"><strong>{% trans %}lender-profile_agree-to-be-informed{% endtrans %}</strong></label>
+                                                    </div>
+                                                    <div class="message-alert">
+                                                        <p>{% trans %}lender-profile_tax-penalty-risk{% endtrans %}</p>
+                                                        <p>{% trans %}lender-profile_tax-exemption-limitation{% endtrans %}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <button type="submit" class="btn-primary" name="validate-btn" id="validate-btn">{% trans %}lender-profile_tax-exemption-validate{% endtrans %}</button>
+                                                <button type="reset" role="button" data-toggle="collapse" data-target="#profile-fiscalite-exoneration-view" data-parent="#profile-fiscalite-exoneration-section" class="btn-default" aria-controls="#profile-fiscalite-exoneration-view" aria-expanded="true">{% trans %} lender-profile_fiscal-tab-cancel-iban-cahanges {% endtrans %}</button>
+                                            </div>
                                         </div>
-                                        <div class="row">
-                                            <button type="submit" class="btn-primary" name="validate-btn" id="validate-btn">{% trans %}lender-profile_tax-exemption-validate{% endtrans %}</button>
-                                            <button type="reset" role="button" data-toggle="collapse" data-target="#profile-fiscalite-exoneration-view" data-parent="#profile-fiscalite-exoneration-section" class="btn-default" aria-controls="#profile-fiscalite-exoneration-view" aria-expanded="true">{% trans %} lender-profile_fiscal-tab-cancel-iban-cahanges {% endtrans %}</button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </section>
-                        {% endif %}
+                                    </form>
+                                </section>
+                            {% endif %}
                         </section>
                     </article><!-- /#panel-exonderations.panel -->
                 {% endif %}
