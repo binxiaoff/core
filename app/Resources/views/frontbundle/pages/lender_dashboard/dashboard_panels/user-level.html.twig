@@ -1,16 +1,16 @@
 {# Panel - User Level #}
 {% embed 'partials/components/dashboard-panel.html.twig' %}
-    {% block panelAttributes %}id="userlevel"{% endblock %}
-    {% block panelContentAttributes %}style="height: 630px;"{% endblock %}
-    {% block panelFooterAttributes %}style="height: 63px;"{% endblock %}
+    {% block panelAttributes %}id="user-level"{% endblock %}
+    {% block panelContentAttributes %}style="height: 650px;"{% endblock %}
+    {% block panelFooterAttributes %}style="height: 92px;"{% endblock %}
     {% block panelClassNames %}dashboard-panel dashboard-userlevel ui-draggable {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %} col-lg-6 col-md-6 col-sm-8 col-xs-4{% endblock %}
-    {% block panelTitle %}{{ "lender-dashboard_panel-title-#{ panelId }"|trans }}{% endblock %}
+    {% block panelTitle %}{{ 'lender-dashboard-user-level_title'|trans }}{% endblock %}
     {% block panelControls %}
         <span class="ui-draggable-handle"></span>
     {% endblock %}
     {% block panelContent %}
         <div class="dashboard-panel-overview">
-            <div class="label">{% trans %} lender-dashboard_portfolio-performance-panel-your-performance-rate {% endtrans %}</div>
+            <div class="label">{% trans %} lender-dashboard-user-level_irr-title {% endtrans %}</div>
             <div class="value">{% if lenderDetails.irr > 0 %}+ {% endif %}{{ lenderDetails.irr|localizednumber }}<sup>%</sup></div>
         </div>
         <div class="dashboard-panel-chart">
@@ -24,14 +24,14 @@
         </div>
         <div class="dashboard-panel-summary">
             <h3>
-                <span class="label">{% trans %} lender-dashboard_portfolio-performance-panel-diversification-level {% endtrans %}</span>
+                <span class="label">{% trans %} lender-dashboard-user-level_diversification-level-title {% endtrans %}</span>
                 <span class="value">{{ "lender-dashboard_level-#{ lenderDetails.level }"|trans }}</span>
             </h3>
-            <p class="message">{% transchoice lenderDetails.number_of_companies with {'%borrowerCount%' : lenderDetails.number_of_companies } %} lender-dashboard_portfolio-performance-panel-diversification-message {% endtranschoice %}</p>
-            <p class="secondary">{% trans %} lender-dashboard_portfolio-performance-panel-internal-performance {% endtrans %} {{ lenderDetails.unilend_irr|localizednumber }}&nbsp;%</p>
+            <p class="message">{% transchoice lenderDetails.number_of_companies with {'%borrowerCount%' : lenderDetails.number_of_companies|localizednumber} %} lender-dashboard_portfolio-performance-panel-diversification-message {% endtranschoice %}</p>
+            <p class="secondary">{% trans with {'%unilendIRR%' : lenderDetails.unilend_irr|localizednumber} %} lender-dashboard-user-level_unilend-irr {% endtrans %}</p>
         </div>
     {% endblock %}
     {% block panelFooter %}
-       {{ 'lender-dashboard_irr-explanation-link'|trans }}
+        {{ 'lender-dashboard-user-level_irr-explanation-link'|trans|raw }}
     {% endblock %}
 {% endembed %}

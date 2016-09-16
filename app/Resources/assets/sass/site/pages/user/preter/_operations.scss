@@ -153,6 +153,7 @@
       .panel-before-table {
         @include clearfix;
         position: relative;
+        min-height: 150px;
 
         .chart {
           margin-left: 0;

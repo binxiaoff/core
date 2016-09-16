@@ -18,44 +18,43 @@
 {% endfor %}
 
 {% set walletSectorChartData = {
-        type: 'preterProjectsCategories',
-        background: 'none',
-        highcharts: {
-            chart: {
-                type: 'treemap',
-                marginTop: 0,
-                marginBottom: 0,
-                marginLeft: 0,
-                marginRight: 0,
-                spacingTop: 0,
-                spacingBottom: 0,
-                spacingLeft: 0,
-                spacingRight: 0
-            },
-            title: {
-                text: ''
-            },
-            plotOptions: {
-                treemap: {
-                    borderWidth: 2,
-                    dataLabels: {
-                        useHTML: true,
-                        zIndex: -1
-                    }
+    type: 'preterProjectsCategories',
+    background: 'none',
+    highcharts: {
+        chart: {
+            type: 'treemap',
+            marginTop: 0,
+            marginBottom: 0,
+            marginLeft: 0,
+            marginRight: 0,
+            spacingTop: 0,
+            spacingBottom: 0,
+            spacingLeft: 0,
+            spacingRight: 0
+        },
+        title: {
+            text: ''
+        },
+        plotOptions: {
+            treemap: {
+                borderWidth: 2,
+                dataLabels: {
+                    useHTML: true,
+                    zIndex: -1
                 }
-            },
-            tooltip: {
-                enabled: false,
-                useHTML: true
-            },
-            series: [{
-                type: 'treemap',
-                layoutAlgorithm: 'squarified',
-                data: sectorData
-            }]
-        }
+            }
+        },
+        tooltip: {
+            enabled: false,
+            useHTML: true
+        },
+        series: [{
+            type: 'treemap',
+            layoutAlgorithm: 'squarified',
+            data: sectorData
+        }]
     }
-%}
+} %}
 
 {% set walletAllocationChartData = {
     type: 'preterProjectsAccount',
@@ -88,21 +87,21 @@
             }
         },
         series: [{
-            name: 'lender-dashboard_portfolio-panel-my-account-allocation'|trans,
+            name: 'lender-dashboard-wallet_money-tab-grap-title'|trans,
             data: [{
-                name: 'lender-dashboard_remaining-capital-to-refund'|trans,
+                name: 'lender-dashboard-wallet_money-tab-owed-capital-legend'|trans,
                 y: capitalDetails.owed_capital,
                 color: '#1C7ED5'
             },{
-                name: 'lender-dashboard_portfolio-panel-available-balance'|trans,
+                name: 'lender-dashboard-wallet_money-tab-balance-legend'|trans,
                 y: lenderDetails.balance,
                 color: '#24D6BF'
             },{
-                name: 'lender-dashboard_portfolio-panel-blocked-balance'|trans,
+                name: 'lender-dashboard-wallet_money-tab-blocked-amount-legend'|trans,
                 y: amountDetails.blocked_amount,
                 color: '#CFA3F3'
             },{
-                name: 'lender-dashboard_portfolio-panel-risk-capital'|trans,
+                name: 'lender-dashboard-wallet_money-tab-troubled-capital-legend'|trans,
                 y: capitalDetails.capital_in_difficulty,
                 color: '#F76965'
             }]
@@ -111,17 +110,17 @@
             valueSuffix: ' €'
         }
     }
-    }
-%}
+} %}
+
 {# Panel - My Wallet #}
 {% embed 'partials/components/dashboard-panel.html.twig' %}
-    {% block panelAttributes %}id="mywallet"{% endblock %}
+    {% block panelAttributes %}id="wallet"{% endblock %}
     {% block panelClassNames %}dashboard-panel dashboard-mywallet ui-draggable {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %} col-lg-12 col-md-12 col-sm-8 col-xs-4{% endblock %}
     {% block panelTitle %}
         {% if lenderDetails.numberOfLoans == lenderDetails.numberOfBorrowers %}
-            {% transchoice lenderDetails.numberOfLoans with {'%offersCount%' : lenderDetails.numberOfLoans} %} lender-dashboard_panel-title-mywallet-x-loan-x-project {% endtranschoice %}
+            {% transchoice lenderDetails.numberOfLoans with {'%offersCount%' : lenderDetails.numberOfLoans} %} lender-dashboard-wallet_title-loans {% endtranschoice %}
         {% else %}
-            {% transchoice lenderDetails.numberOfBorrowers with {'%offersCount%' : lenderDetails.numberOfLoans, '%borrowerCount%' : lenderDetails.numberOfBorrowers} %} lender-dashboard_panel-title-mywallet-x-loan-y-project {% endtranschoice %}
+            {% transchoice lenderDetails.numberOfBorrowers with {'%offersCount%' : lenderDetails.numberOfLoans, '%borrowerCount%' : lenderDetails.numberOfBorrowers} %} lender-dashboard-wallet_title-loans-projects {% endtranschoice %}
         {% endif %}
     {% endblock %}
     {% block panelControls %}
@@ -133,17 +132,17 @@
                 <ul class="nav nav-tabs-vertical">
                     <li role="presentation" class="active">
                         <a href="#mywallet-sectors" role="tab" data-toggle="tab" data-equal-height="xs sm" data-equal-height-group="mywallet-tabs-nav">
-                            <span class="icon fa-table"></span><span class="label">{% trans %} lender-dashboard_portfolio-panel-sector-allocation {% endtrans %}</span>
+                            <span class="icon fa-table"></span><span class="label">{% trans %} lender-dashboard-wallet_sector-tab-title {% endtrans %}</span>
                         </a>
                     </li>
                     <li role="presentation">
                         <a href="#mywallet-locations" role="tab" data-toggle="tab" data-equal-height="xs sm" data-equal-height-group="mywallet-tabs-nav">
-                            <span class="icon fa-map-marker-u16"></span><span class="label">{% trans %} lender-dashboard_portfolio-panel-geo-allocation {% endtrans %}</span>
+                            <span class="icon fa-map-marker-u16"></span><span class="label">{% trans %} lender-dashboard-wallet_location-tab-title {% endtrans %}</span>
                         </a>
                     </li>
                     <li role="presentation">
                         <a href="#mywallet-account" role="tab" data-toggle="tab" data-equal-height="xs sm" data-equal-height-group="mywallet-tabs-nav">
-                            <span class="icon fa-euro"></span><span class="label">{% trans %} lender-dashboard_portfolio-panel-my-account-allocation {% endtrans %}</span>
+                            <span class="icon fa-euro"></span><span class="label">{% trans %} lender-dashboard-wallet_money-tab-title {% endtrans %}</span>
                         </a>
                     </li>
                 </ul>
@@ -155,25 +154,24 @@
                         {% for sectorDetails in walletData.by_sector %}
                         {#<div class="row" {% if loop.index > 1 %} style="display: none" {% endif %} >#}
 
-                            <div  {% if loop.index > 1 %} style="display: none" {% endif %} class="col-info col-lg-3 col-md-4 col-sm-8 col-xs-4">
+                            <div{% if loop.index > 1 %} style="display: none"{% endif %} class="col-info col-lg-3 col-md-4 col-sm-8 col-xs-4">
                                 <h2>{{ sectorDetails.name }}</h2>
-                                <p>{% trans with {'%percentage%' : sectorDetails.loanSharePercentage|localizednumber} %} lender-dashboard_portfolio-panel-allocation-percentage-per-sector {% endtrans %}</p>
+                                <p>{% trans with {'%percentage%' : sectorDetails.loanSharePercentage|localizednumber} %} lender-dashboard-wallet_sector-tab-distribution {% endtrans %}</p>
                                 <dl>
                                     <div class="dl-group">
-                                        <dt>{% trans %} lender-dashboard_loaned-amount {% endtrans %}</dt>
-                                        <dd>{{ sectorDetails.loanedAmount|localizedcurrency('EUR') }}</dd>
+                                        <dt>{% trans %} lender-dashboard-wallet_lended-amount {% endtrans %}</dt>
+                                        <dd>{{ sectorDetails.loanedAmount|localizednumber }}&nbsp;€</dd>
                                     </div>
                                     <div class="dl-group">
-                                        <dt>{% trans %} lender-dashboard_average-rate {% endtrans %}</dt>
+                                        <dt>{% trans %} lender-dashboard-wallet_average-rate {% endtrans %}</dt>
                                         <dd>{{ sectorDetails.averageRate|localizednumber }}&nbsp;%</dd>
                                     </div>
                                     <div class="dl-group">
-                                        <dt>{% trans %} lender-dashboard_enterprises-count {% endtrans %}</dt>
+                                        <dt>{% trans %} lender-dashboard-wallet_companies-count {% endtrans %}</dt>
                                         <dd>{{ sectorDetails.projectsCount|localizednumber }}</dd>
                                     </div>
                                 </dl>
                             </div><!-- /.col-info -->
-
                         {% endfor %}
                         <div class="col-graph col-lg-9 col-md-8 col-sm-8 col-xs-4">
                             <div class="chart" data-chartview="{{ walletSectorChartData|json_encode|escape('html_attr') }}"></div>
@@ -182,46 +180,44 @@
                 </div><!-- /#mywallet-sectors -->
 
                 <div id="mywallet-locations" role="tabpanel" class="tab-pane">
-                    {#{% for regionDetails in walletData.by_region %}#}
-                        <div class="row">
-                            {% for regionDetails in walletData.by_region %}
-                            <div  {% if loop.index > 1 %} style="display: none" {% endif %} class="col-info col-lg-3 col-md-4 col-sm-8 col-xs-4">
-                                <h2>{{ regionDetails.name }}</h2>
-                                <p>{% trans with {'%percentage%' : regionDetails.loanSharePercentage|localizednumber} %} lender-dashboard_portfolio-panel-allocation-percentage-per-region {% endtrans %}</p>
-                                <dl>
-                                    <div class="dl-group">
-                                        <dt>{% trans %} lender-dashboard_loaned-amount {% endtrans %}</dt>
-                                        <dd>{{ regionDetails.loanedAmount|localizednumber }}&nbsp;€</dd>
-                                    </div>
-                                    <div class="dl-group">
-                                        <dt>{% trans %} lender-dashboard_average-rate {% endtrans %}</dt>
-                                        <dd>{{ regionDetails.averageRate|localizednumber }}&nbsp;%</dd>
-                                    </div>
-                                    <div class="dl-group">
-                                        <dt>{% trans %} lender-dashboard_enterprises-count {% endtrans %}</dt>
-                                        <dd>{{ regionDetails.projectsCount|localizednumber }}</dd>
-                                    </div>
-                                </dl>
-                            </div><!-- /.col-info -->
-                            {% endfor %}
-                            <div class="col-graph col-lg-9 col-md-8 col-sm-8 col-xs-4">
-                                <div class="chart" data-chartview='{{ placeholderData.charts.preterProjectsCategoriesMap|json_encode|escape('html_attr') }}'></div>
-                            </div><!-- /.col-graph -->
-
-                        </div>
-                    {#{% endfor %}#}
+                    <div class="row">
+                        {% for regionDetails in walletData.by_region %}
+                        <div  {% if loop.index > 1 %} style="display: none" {% endif %} class="col-info col-lg-3 col-md-4 col-sm-8 col-xs-4">
+                            <h2>{{ regionDetails.name }}</h2>
+                            <p>{% trans with {'%percentage%' : regionDetails.loanSharePercentage|localizednumber} %} lender-dashboard-wallet_location-tab-distribution {% endtrans %}</p>
+                            <dl>
+                                <div class="dl-group">
+                                    <dt>{% trans %} lender-dashboard-wallet_lended-amount {% endtrans %}</dt>
+                                    <dd>{{ regionDetails.loanedAmount|localizednumber }}&nbsp;€</dd>
+                                </div>
+                                <div class="dl-group">
+                                    <dt>{% trans %} lender-dashboard-wallet_average-rate {% endtrans %}</dt>
+                                    <dd>{{ regionDetails.averageRate|localizednumber }}&nbsp;%</dd>
+                                </div>
+                                <div class="dl-group">
+                                    <dt>{% trans %} lender-dashboard-wallet_companies-count {% endtrans %}</dt>
+                                    <dd>{{ regionDetails.projectsCount|localizednumber }}</dd>
+                                </div>
+                            </dl>
+                        </div><!-- /.col-info -->
+                        {% endfor %}
+                        <div class="col-graph col-lg-9 col-md-8 col-sm-8 col-xs-4">
+                            <div class="chart" data-chartview='{{ placeholderData.charts.preterProjectsCategoriesMap|json_encode|escape('html_attr') }}'></div>
+                        </div><!-- /.col-graph -->
+                    </div>
                 </div><!-- /#mywallet-location -->
 
                 <div id="mywallet-account" role="tabpanel" class="tab-pane">
                     <div class="row">
                         <div class="col-info col-lg-3 col-md-4 col-sm-8 col-xs-4">
-                            <h2>{% trans %} lender-dashboard_portfolio-panel-deposited-money {% endtrans %}<br/> {{ amountDetails.deposited_amount|localizedcurrency('EUR') }}</h2>
+                            <h2>{% trans %} lender-dashboard-wallet_money-tab-legend {% endtrans %}<br/> {{ amountDetails.deposited_amount|localizedcurrency('EUR') }}</h2>
                             <dl>
                                 {% for i, data in walletAllocationChartData.highcharts.series[0].data %}
                                     <div class="dl-group dl-group-full">
                                         <dt>{% if data.color %}
                                             <span class="chart-key-icon" style="background: {{ data.color }}"></span>
-                                            <span class="label">{% endif %}{{ data.name }}</span></dt>
+                                            <span class="label">{% endif %}{{ data.name }}</span>
+                                        </dt>
                                         <dd>{{ data.y|localizedcurrency('EUR') }}</dd>
                                     </div>
                                 {% endfor %}

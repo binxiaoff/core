@@ -412,33 +412,4 @@ class StatisticsManager
         }
     }
 
-    //TODO @Mesbah : use it for your lender tree map
-    /**
-     * @param $countByCategory
-     * @return array
-     */
-    public function getDataForCategoryTreeMap($countByCategory)
-    {
-        $translations = $this->translationManager->getTranslatedCompanySectorList();
-        $dataForTreeMap = [];
-
-        foreach ($countByCategory as $category => $count) {
-            if (isset($translations[$category])) {
-                $dataForTreeMap[] = [
-                    'name'      => $translations[$category],
-                    'value'     => (int) $count,
-                    'svgIconId' => '#category-sm-' . $category
-                ];
-            }
-        }
-
-        return $dataForTreeMap;
-    }
-
-    public function getProjectCountForCategoryTreeMap()
-    {
-        $countByCategory = $this->getProjectCountByCategory();
-        return $this->getDataForCategoryTreeMap($countByCategory);
-    }
-
 }

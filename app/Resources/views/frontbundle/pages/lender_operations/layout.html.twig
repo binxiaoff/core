@@ -2,10 +2,10 @@
 {% import 'extensions/_general.macros.twig' as general %}
 
 {% set page = {
-    id: 'user-preter-operations',
-    title: 'Prêteur / Operations',
-    permalink: route('user/preter/operations'),
-    classNames: 'user-preter-operations'
+id: 'user-preter-operations',
+title: 'Prêteur / Operations',
+permalink: route('user/preter/operations'),
+classNames: 'user-preter-operations'
 } %}
 
 {% block dashboardContent %}
@@ -13,10 +13,10 @@
         <div class="dashboard-tabs-nav">
             <ul class="nav nav-dashboard-tabs">
                 <li role="presentation" class="active">
-                    <a href="#operations" role="tab" data-toggle="tab">{% trans %} lender-operations_my-operations {% endtrans %}</a>
+                    <a href="#operations" role="tab" data-toggle="tab">{% trans %} lender-operations_operations-tab-title {% endtrans %}</a>
                 </li>
                 <li role="presentation">
-                    <a href="#loans" role="tab" data-toggle="tab">{% trans %} lender-operations_my-loans {% endtrans %}</a>
+                    <a href="#loans" role="tab" data-toggle="tab">{% trans %} lender-operations_loans-tab-title {% endtrans %}</a>
                 </li>
             </ul>
         </div><!-- /.dashboard-tabs-nav -->
