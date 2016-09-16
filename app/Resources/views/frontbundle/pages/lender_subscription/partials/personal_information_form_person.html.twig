@@ -1,7 +1,7 @@
 {# Set this to 'person' to make included partials' JS UX functionality compatible with this form #}
 {% set idClientType = 'person' %}
 
-<form action="{{ path('lender_subscription_personal_information_person_form') }}" method="post" class="form-preter-create" data-formvalidation data-formvalidation-notificationselem="#form-preter-person-1-notifications">
+<form action="{{ path('lender_subscription_personal_information_person_form') }}" method="post" class="form-preter-create form-preter-create-info-perso" data-formvalidation data-formvalidation-notificationselem="#form-preter-person-1-notifications">
     <fieldset class="panel">
         <div class="message-info">
             <p>{% trans %} lender-subscription_person-mandatory-documents-information {% endtrans %}</p>

@@ -1,7 +1,7 @@
 {# Set this to 'legal-entity' to make included partials' JS UX functionality compatible with this form #}
 {% set idClientType = 'legal-entity' %}
 
-<form action="{{ path('lender_subscription_personal_information_legal_entity_form') }}" method="post" class="form-preter-create" data-formvalidation data-formvalidation-notificationselem="#form-preter-legal-entity-1-notifications" autocomplete="off">
+<form action="{{ path('lender_subscription_personal_information_legal_entity_form') }}" method="post" class="form-preter-create form-preter-create-info-perso" data-formvalidation data-formvalidation-notificationselem="#form-preter-legal-entity-1-notifications" autocomplete="off">
     <fieldset class="panel">
         <div class="message-info">
             <p>{% trans %} lender-subscription_legal-entity-mandatory-documents-information {% endtrans %}</p>

@@ -178,7 +178,7 @@ $doc.on('ready', function () {
     })
 
 
-    $doc.on('submit', '.form-preter-create', function (event) {
+    $doc.on('submit', '.form-preter-create-info-perso', function (event) {
         hideAutocompleteErrors()
         var formValid = true
 
