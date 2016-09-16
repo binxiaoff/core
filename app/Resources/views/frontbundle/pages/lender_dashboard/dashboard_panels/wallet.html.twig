@@ -8,11 +8,12 @@
     %}
 {% endfor %}
 
-{% set regionData = {} %}
+{% set regionData = [] %}
 {% for regionDetails in walletData.by_region %}
     {% set regionData = regionData|merge([{
+            insee: regionDetails.insee,
             name: regionDetails.name,
-            value: regionDetails.projectsCount,
+            value: regionDetails.projectsCount
         }])
     %}
 {% endfor %}
@@ -54,6 +55,49 @@
             data: sectorData
         }]
     }
+} %}
+
+{% set walletRegionChartData = {
+  type: 'preterProjectsCategoriesMap',
+  loadFirst: {
+    mapData: '/assets/js/vendor/geojson/fr-regions-all.json'
+  },
+  background: 'none',
+  highcharts: {
+    chart: {
+      type: 'map',
+      marginTop: 0,
+      marginBottom: 0,
+      marginLeft: 0,
+      marginRight: 0,
+      spacingTop: 0,
+      spacingBottom: 0,
+      spacingLeft: 0,
+      spacingRight: 0
+    },
+    title: {
+      text: ''
+    },
+    colorAxis: {
+      minColor: 'rgba(255,255,255,.2)',
+      maxColor: 'rgba(255,255,255,.6)'
+    },
+    series: [{
+      data: regionData,
+      joinBy: 'insee',
+      borderColor: 'rgba(0,0,0,.2)',
+      borderWidth: 2,
+      dataLabels: {
+        color: '#ffffff'
+      },
+      nullColor: 'rgba(0,0,0,.1)',
+      states: {
+        hover: {
+          color: 'rgba(255,255,255,.8)'
+        }
+      }
+    }]
+  }
 } %}
 
 {% set walletAllocationChartData = {
@@ -149,12 +193,10 @@
             </div><!-- /.dashboard-mywallet-nav -->
             <div class="dashboard-mywallet-content tab-content col-lg-10 col-md-9 col-sm-8 col-xs-4">
                 <div id="mywallet-sectors" role="tabpanel" class="tab-pane active">
-                    {#@todo Ask for the correct behaviour of the div (display sector details when we click on the sector icon ?? #}
                     <div class="row" >
+                        <div class="col-info col-lg-4 col-md-4 col-sm-8 col-xs-4">
                         {% for sectorDetails in walletData.by_sector %}
-                        {#<div class="row" {% if loop.index > 1 %} style="display: none" {% endif %} >#}
-
-                            <div{% if loop.index > 1 %} style="display: none"{% endif %} class="col-info col-lg-3 col-md-4 col-sm-8 col-xs-4">
+                            <div class="mywallet-sector-info" data-chartview-sector="{{ sectorDetails.svgIconId }}" {% if loop.index > 1 %} style="display: none" {% endif %}>
                                 <h2>{{ sectorDetails.name }}</h2>
                                 <p>{% trans with {'%percentage%' : sectorDetails.loanSharePercentage|localizednumber} %} lender-dashboard-wallet_sector-tab-distribution {% endtrans %}</p>
                                 <dl>
@@ -171,9 +213,10 @@
                                         <dd>{{ sectorDetails.projectsCount|localizednumber }}</dd>
                                     </div>
                                 </dl>
-                            </div><!-- /.col-info -->
+                            </div><!-- /.mywallet-sector-info -->
                         {% endfor %}
-                        <div class="col-graph col-lg-9 col-md-8 col-sm-8 col-xs-4">
+                        </div><!-- /.col-info -->
+                        <div class="col-graph col-lg-8 col-md-8 col-sm-8 col-xs-4">
                             <div class="chart" data-chartview="{{ walletSectorChartData|json_encode|escape('html_attr') }}"></div>
                         </div><!-- /.col-graph -->
                     </div>
@@ -181,35 +224,37 @@
 
                 <div id="mywallet-locations" role="tabpanel" class="tab-pane">
                     <div class="row">
+                        <div class="col-info col-lg-4 col-md-5 col-sm-8 col-xs-4">
                         {% for regionDetails in walletData.by_region %}
-                        <div  {% if loop.index > 1 %} style="display: none" {% endif %} class="col-info col-lg-3 col-md-4 col-sm-8 col-xs-4">
-                            <h2>{{ regionDetails.name }}</h2>
-                            <p>{% trans with {'%percentage%' : regionDetails.loanSharePercentage|localizednumber} %} lender-dashboard-wallet_location-tab-distribution {% endtrans %}</p>
-                            <dl>
-                                <div class="dl-group">
-                                    <dt>{% trans %} lender-dashboard-wallet_lended-amount {% endtrans %}</dt>
-                                    <dd>{{ regionDetails.loanedAmount|localizednumber }}&nbsp;€</dd>
-                                </div>
-                                <div class="dl-group">
-                                    <dt>{% trans %} lender-dashboard-wallet_average-rate {% endtrans %}</dt>
-                                    <dd>{{ regionDetails.averageRate|localizednumber }}&nbsp;%</dd>
-                                </div>
-                                <div class="dl-group">
-                                    <dt>{% trans %} lender-dashboard-wallet_companies-count {% endtrans %}</dt>
-                                    <dd>{{ regionDetails.projectsCount|localizednumber }}</dd>
-                                </div>
-                            </dl>
-                        </div><!-- /.col-info -->
+                            <div class="mywallet-region-info" data-chartview-region="{{ regionDetails.insee|escape('html_attr') }}" {% if loop.index > 1 %} style="display: none" {% endif %}>
+                                <h2>{{ regionDetails.name }}</h2>
+                                <p>{% trans with {'%percentage%' : regionDetails.loanSharePercentage|localizednumber} %} lender-dashboard_portfolio-panel-allocation-percentage-per-region {% endtrans %}</p>
+                                <dl>
+                                    <div class="dl-group">
+                                        <dt>{% trans %} lender-dashboard_loaned-amount {% endtrans %}</dt>
+                                        <dd>{{ regionDetails.loanedAmount|localizednumber }}&nbsp;€</dd>
+                                    </div>
+                                    <div class="dl-group">
+                                        <dt>{% trans %} lender-dashboard_average-rate {% endtrans %}</dt>
+                                        <dd>{{ regionDetails.averageRate|localizednumber }}&nbsp;%</dd>
+                                    </div>
+                                    <div class="dl-group">
+                                        <dt>{% trans %} lender-dashboard_enterprises-count {% endtrans %}</dt>
+                                        <dd>{{ regionDetails.projectsCount|localizednumber }}</dd>
+                                    </div>
+                                </dl>
+                            </div><!-- /.mywallet-region-info -->
                         {% endfor %}
-                        <div class="col-graph col-lg-9 col-md-8 col-sm-8 col-xs-4">
-                            <div class="chart" data-chartview='{{ placeholderData.charts.preterProjectsCategoriesMap|json_encode|escape('html_attr') }}'></div>
+                        </div><!-- /.col-info -->
+                        <div class="col-graph col-lg-8 col-md-7 col-sm-8 col-xs-4">
+                            <div class="chart" data-chartview='{{ walletRegionChartData|json_encode|escape('html_attr') }}'></div>
                         </div><!-- /.col-graph -->
                     </div>
                 </div><!-- /#mywallet-location -->
 
                 <div id="mywallet-account" role="tabpanel" class="tab-pane">
                     <div class="row">
-                        <div class="col-info col-lg-3 col-md-4 col-sm-8 col-xs-4">
+                        <div class="col-info col-lg-4 col-md-5 col-sm-8 col-xs-4">
                             <h2>{% trans %} lender-dashboard-wallet_money-tab-legend {% endtrans %}<br/> {{ amountDetails.deposited_amount|localizedcurrency('EUR') }}</h2>
                             <dl>
                                 {% for i, data in walletAllocationChartData.highcharts.series[0].data %}
@@ -223,7 +268,7 @@
                                 {% endfor %}
                             </dl>
                         </div><!-- /.col-info -->
-                        <div class="col-graph col-lg-9 col-md-8 col-sm-8 col-xs-4">
+                        <div class="col-graph col-lg-8 col-md-7 col-sm-8 col-xs-4">
                             <div class="chart" data-chartview='{{ walletAllocationChartData|json_encode|escape('html_attr') }}'></div>
                         </div><!-- /.col-graph -->
                     </div>

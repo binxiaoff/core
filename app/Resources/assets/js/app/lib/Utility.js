@@ -302,7 +302,8 @@ var Utility = {
   // @param {Mixed} input {String} representing date/time or {Date}
   // @returns {Date}
   getDate: function (input) {
-    console.log('Utility.getDate', input)
+    // @debug
+    // console.log('Utility.getDate', input)
 
     if (input instanceof Date) return input
 
@@ -340,12 +341,13 @@ var Utility = {
     var startDate = Utility.getDate(startTime)
     var endDate = Utility.getDate(endTime)
 
-    console.log('Utility.getTimeDiff', {
-      startTime: startTime,
-      endTime: endTime,
-      startDate: startDate,
-      endDate: endDate
-    })
+    // @debug
+    // console.log('Utility.getTimeDiff', {
+    //   startTime: startTime,
+    //   endTime: endTime,
+    //   startDate: startDate,
+    //   endDate: endDate
+    // })
 
     // Get the differences
     var t = endDate - startDate
