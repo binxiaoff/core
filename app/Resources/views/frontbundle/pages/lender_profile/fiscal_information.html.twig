@@ -136,7 +136,7 @@ classNames: 'user-preter-profile'
 
                 <article id="panel-reports" class="panel">
                     <header class="panel-header">
-                        <h3>{% trans %}lender-profile_fiscal-information-documents-section-title{% trans %}</h3>
+                        <h3>{% trans %}lender-profile_fiscal-information-documents-section-title{% endtrans %}</h3>
                     </header><!-- .panel-header -->
                     {% if lenderAccount.fiscal_info.documents is defined %}
                         <div class="panel-content">
@@ -260,7 +260,6 @@ classNames: 'user-preter-profile'
                         </section>
                     </article><!-- /#panel-exonderations.panel -->
                 {% endif %}
-
             </div><!-- /#profile-info.dashboard-tab-pane -->
         </div><!-- /.dashboard-tabs-content -->
     </div><!-- /.dashboard-tabs -->
