@@ -46,6 +46,59 @@
   {% endif %}
 {% endmacro %}
 
+{# Show a number pip #}
+{# If number is greater than 9, then shows a bullet point #}
+{# @macro pip #}
+{# @param {Int} number #}
+{# @param {Boolean} showMany #}
+{% macro pip(number, showMany) %}
+  {# Default showMany behaviour is true #}
+  {% set showMany = (showMany is not empty ? showMany : true) %}
+  <span class="pip{% if showMany and number > 9 %} pip-has-many{% endif %}"><span class="pip-number">{{ number }}</span></span>
+{% endmacro %}
+
+{# Output <option> elements for the days of a month #}
+{# @macro selectDayOptions #}
+{# @param {Int} defaultDay The index of the default day to have selected #}
+{% macro selectDayOptions(defaultDay) %}
+  {% for i in 1..31 %}
+  <option value="{{ i }}"{% if i == defaultDay %} selected="selected"{% endif %}>{{ i }}</option>
+  {% endfor %}
+{% endmacro %}
+
+{# Output <option> elements for the months of the year #}
+{# @macro selectMonthOptions #}
+{# @param {Int} defaultMonthIndex The index of the default month to have selected (zero-indexed) #}
+{% macro selectMonthOptions(defaultMonthIndex) %}
+  {% set months = [
+    'Janvier',
+    'Février',
+    'Mars',
+    'Avril',
+    'Mai',
+    'Juin',
+    'Juillet',
+    'Août',
+    'Septembre',
+    'Octobre',
+    'Novembre',
+    'Décembre'
+  ] %}
+  {% for i, name in months %}
+  <option value="{{ i }}"{% if i == defaultMonthIndex %} selected="selected"{% endif %}>{{ name }}</option>
+  {% endfor %}
+{% endmacro %}
+
+{# Output <option> elements representing the years #}
+{# @macro selectYearOptions #}
+{# @param {Int} defaultYear The index of the default year to have selected #}
+{% macro selectYearOptions(defaultYear, maxYear, minYear) %}
+  {% if maxYear is empty %}{% set maxYear = 2016 %}{% endif %}
+  {% if minYear is empty %}{% set minYear = 1900 %}{% endif %}
+  {% for i in maxYear..minYear %}
+  <option value="{{ i }}"{% if i == defaultYear %} selected="selected"{% endif %}>{{ i }}</option>
+  {% endfor %}
+{% endmacro %}
 {% for i, name in months %}
   <option value="{{ i }}"{% if i == defaultMonthIndex %} selected="selected"{% endif %}>{{ name }}</option>
 {% endfor %}

@@ -1,3 +1,5 @@
+{% import 'extensions/_general.macros.twig' as general %}
+
 {% set bodyClassNames = 'layout-dashboard ui-user-level-' ~ app.user.level %}
 
 <header class="site-header site-header-dashboard">
@@ -27,15 +29,13 @@
                                 </a>
                             </div><!-- /.profile-avatar -->
 
-                            <a href="{{ path('lender_profile_notifications') }}" class="profile-notifications" data-usernotificationsdrop>
+                            <a href="{{ route('user/preter/notifications') }}" class="profile-notifications" data-usernotificationsdrop>
                                 {% set notificationsUnread = 0 %}
                                 {#{% for i, item in notifications if item.status == 'unread' %}#}
                                     {#{% set notificationsUnread = notificationsUnread + 1 %}#}
                                 {#{% endfor %}#}
                                 {# TODO: check after DEV-574 if this iteration on all notification is of any use #}
-                                {% if app.user.notificationsUnread > 0 %}
-                                    <span class="pip{% if app.user.notificationsUnread > 9 %} pip-has-many{% endif %}"><span class="pip-number">{{ app.user.notificationsUnread }}</span></span>
-                                {% endif %}
+                                {% if app.user.notificationsUnread > 0 %}{{ general.pip(app.user.notificationsUnread) }}{% endif %}
                             </a><!-- /.profile-notifications -->
                             <div class="profile-name">{% trans with {'%firstName%' : app.user.firstName} %} header-connected_greeting {% endtrans %} </div>
                             <div class="profile-balance">

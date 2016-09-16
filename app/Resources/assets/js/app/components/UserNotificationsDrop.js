@@ -21,10 +21,21 @@ var Drop = require('tether-drop')
  * Dictionary
  */
 var Dictionary = require('Dictionary')
-__ = new Dictionary(window.USERNOTIFICATIONS_LANG)
+var USERNOTIFICATIONS_LANG_LEGACY = require('../../../lang/UserNotifications.lang.json')
+// -- Support new translation dictionary language format, e.g. `example-translation-key-name`
+if (window.USERNOTIFICATIONS_LANG) {
+  __ = new Dictionary(window.USERNOTIFICATIONS_LANG)
+  // @debug
+  // console.log('UserNotificationsList: using window.USERNOTIFICATIONS_LANG for Dictionary')
 
-// @debug
-// console.log('UserNotificationsList: using window.USERNOTIFICATIONS_LANG for Dictionary')
+// -- Support new legacy dictionary language format for fallbacks, e.g. `exampleTranslationKeyName`
+} else {
+  __ = new Dictionary(USERNOTIFICATIONS_LANG_LEGACY, {
+    legacyMode: true
+  })
+  // @debug
+  console.log('UserNotificationsList: using USERNOTIFICATIONS_LANG_LEGACY for Dictionary. Please ensure window.USERNOTIFICATIONS_LANG is correctly set.')
+}
 
 /*
  * UserNotificationsDrop
@@ -53,8 +64,8 @@ var UserNotificationsDrop = function (elem, options) {
   // Settings
   self.settings = Utility.inherit({
     notifications: [],
-    emptyLabel: __.__('Aucune notification', 'empty-label'),
-    markAllReadLabel: __.__('Marquer comme lu', 'mark-all-read-label'),
+    emptyLabel: __.__('user-notifications_empty-label', 'emptyLabel'),
+    markAllReadLabel: __.__('user-notifications_mark-all-read-label', 'markAllReadLabel'),
     showOnlyUnread: false, // default is false = shows all
 
     // The default options for the drop

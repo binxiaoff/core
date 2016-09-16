@@ -1,0 +1,10 @@
+{
+  "fr": {
+    "markAllReadLabel": "Marquer tout comme lu",
+    "emptyLabel": "Aucun des notifications nouveaux"
+  },
+  "en": {
+    "markAllReadLabel": "Mark all read",
+    "emptyLabel": "No unread notifications"
+  }
+}
