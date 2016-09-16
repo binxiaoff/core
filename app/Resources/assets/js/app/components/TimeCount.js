@@ -22,65 +22,6 @@ var TimeCountTimer = setInterval(function () {
   }
 }, 1000)
 
-// Decompte (adapted from old Unilend)
-function decompte(fromDate) {
-  var output = {
-    day: 0,
-    hour: 0,
-    minute: 0,
-    second: 0
-  }
-  var from = new Date(fromDate)
-  var now = new Date()
-
-  // on fait en sorte d'etre a lheure fr quelque soit le fuseau horaire
-  var diff = 1
-  if (now.dst()) {
-    diff = 2
-  }
-  var tzOffset = now.getTimezoneOffset()
-  now.setHours(now.getHours() + (tzOffset / 60 + diff))
-
-  timeTmp  = parseInt(now.getTime() / 1000, 10)
-  timeLeft = fromDate.getTime() - timeTmp
-  day      = parseInt((timeLeft / (60 * 60 * 24)), 10)
-  hour     = parseInt((timeLeft / (60 * 60) - day * 24), 10)
-  minute   = parseInt((timeLeft / 60 - day * 24 * 60 - hour * 60), 10)
-  second   = parseInt((timeLeft - day * 24 * 60 * 60 - hour * 60 * 60 - minute * 60), 10)
-
-  // on fait rien
-  // We do nothing if it's greater than 1 month
-  if (day > 30) {
-    output.day = day
-
-  // si +2j ou +1j et 23h
-  // If more than 2 days or 1 day and 23 hours...
-  } else if (day >= 1 && hour > 23 || day >= 2) {
-    output.hour = hour
-
-  // si j-2 h-1 (1j+h23)
-  // If less than 2 days and 1 hour...
-  } else if (day <= 1 && hour <= 23 && day > 0 || day === 0 && hour >= 2 || day === 0 && hour == 1 && minute > 59) {
-    var allHour = parseInt(day * 24)
-    var newHour = parseInt(hour + allHour)
-    output.hour = newHour
-
-  // If greater than (or equal to) one minute
-  } else if (minute > 1 || heure > 0 && minute >= 0) {
-    var allMinute = parseInt(hour * 60)
-    var newMinute = parseInt(minute + allMinutes)
-    output.minute = newMinute
-
-  // If less than one minute
-  } else {
-    var allSecond = parseInt(minute * 60)
-    var newSecond = parseInt(second + allSecond)
-    output.second = newSecond
-  }
-
-  return output
-}
-
 // TimeCount Class
 var TimeCount = function (elem, options) {
   var self = this
@@ -106,8 +47,8 @@ var TimeCount = function (elem, options) {
   }), options)
 
   // Set up the dates
-  if (self.settings.startDate && !(self.settings.startDate instanceof Date)) self.settings.startDate = new Date(self.settings.startDate)
-  if (self.settings.endDate && !(self.settings.endDate instanceof Date)) self.settings.endDate = new Date(self.settings.endDate)
+  if (self.settings.startDate && !(self.settings.startDate instanceof Date)) self.settings.startDate = Utility.getDate(self.settings.startDate)
+  if (self.settings.endDate && !(self.settings.endDate instanceof Date)) self.settings.endDate = Utility.getDate(self.settings.endDate)
 
   // Track
   self.track = {
@@ -167,7 +108,9 @@ TimeCount.prototype.update = function () {
   self.$elem.trigger('TimeCount:update', [self, self.track.timeDiff])
 
   // Complete if finished and a start/end date is set
-  if (self.isComplete()) self.complete()
+  if (self.isComplete()) {
+    self.complete()
+  }
 
   // @debug
   // console.log('TimeCount.update', self.$elem[0], self.settings.startDate, self.settings.endDate, self.track.countDirection)
@@ -232,11 +175,19 @@ TimeCount.prototype.outputTime = function (timeDiff) {
 }
 
 // Get a {String} relative time from a timeDiff object
-TimeCount.prototype.getRelativeTime = function (startDate, endDate) {
+// @alias for Utility.getRelativeTime method
+TimeCount.prototype.getRelativeTime = function (startDate, endDate, secondsAsUnits) {
   var self = this
   if (!startDate) startDate = self.settings.startDate
   if (!endDate) endDate = self.settings.endDate
-  var output = Utility.getRelativeTime(startDate, endDate)
+
+  // @debug
+  // console.log('TimeCount.getRelativeTime', {
+  //   startDate: startDate,
+  //   endDate: endDate
+  // })
+
+  var output = Utility.getRelativeTime(startDate, endDate, secondsAsUnits)
 
   // @note DEV-949 leaving out relative time count direction text
   // // Indicate time direction relative to the end date

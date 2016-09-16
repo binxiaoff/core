@@ -12,6 +12,51 @@ var $doc = $(document)
 var $html = $('html')
 var $body = $('body')
 
+// Default values
+var defaults = {
+  secondsAsUnits: [{
+      min: 0,
+      max: 5,
+      single: __.__('now', 'timeUnitNow'),
+      plural: __.__('now', 'timeUnitNow')
+    },{
+      min: 1,
+      max: 60,
+      single: '%d ' + __.__('second', 'timeUnitSecond'),
+      plural: '%d ' + __.__('seconds', 'timeUnitSeconds')
+    },{
+      min: 60,
+      max: 3600,
+      single: '%d ' + __.__('minute', 'timeUnitMinute'),
+      plural: '%d ' + __.__('minutes', 'timeUnitMinutes')
+    },{
+      min: 3600,
+      max: 86400,
+      single: '%d ' + __.__('hour', 'timeUnitHour'),
+      plural: '%d ' + __.__('hours', 'timeUnitHours')
+    },{
+      min: 86400,
+      max: 604800,
+      single: '%d ' + __.__('day', 'timeUnitDay'),
+      plural: '%d ' + __.__('days', 'timeUnitDays')
+    },{
+      min: 604800,
+      max: 2419200,
+      single: '%d ' + __.__('week', 'timeUnitWeek'),
+      plural: '%d ' + __.__('weeks', 'timeUnitWeeks')
+    },{
+      min: 2628000,
+      max: 31536000,
+      single: '%d ' + __.__('month', 'timeUnitMonth'),
+      plural: '%d ' + __.__('months', 'timeUnitMonths'),
+    },{
+      min: 31536000,
+      max: -1,
+      single: '%d ' + __.__('year', 'timeUnitYear'),
+      plural: '%d ' + __.__('years', 'timeUnitYears')
+    }]
+}
+
 var Utility = {
   // Click event
   clickEvent: $html.is('.has-touchevents') ? 'touchend' : 'click',
@@ -257,11 +302,29 @@ var Utility = {
   // @param {Mixed} input {String} representing date/time or {Date}
   // @returns {Date}
   getDate: function (input) {
+    console.log('Utility.getDate', input)
+
     if (input instanceof Date) return input
 
     // Parse date from string
     if (typeof input === 'string' && input !== 'now') {
-      return Date.parse(input)
+      input = input.trim()
+
+      // Ensure date has times formatted as ISO for Safari compatibility
+      if (/^\d{4}\-\d{2}\-\d{2} \d{2}\:\d{2}(?:\:\d{2}(?:\.\d{0,3})?)?$/.test(input)) {
+        input = input.replace(/^(\d{4}\-\d{2}\-\d{2}) (\d{2}\:\d{2})(?:\:\d{2}(?:\.\d{,3})?)?$/, '$1T$2:00.000')
+      }
+
+      // @debug
+      // console.log('Utility.getDate: parse string input', input, new Date(input), Date.parse(input))
+
+      return new Date(input)
+
+    // Assume unix time (in seconds)
+    } else if (typeof input === 'number') {
+      var output = new Date()
+      output.setTime(input * 1000)
+      return output
     }
 
     // Now
@@ -272,20 +335,26 @@ var Utility = {
   // @note TimeCount relies on this to output as an object
   // See: http://www.sitepoint.com/build-javascript-countdown-timer-no-dependencies/
   getTimeDiff: function (startTime, endTime) {
-    var self = this
 
     // Get the dates and the direction
-    var startDate = self.getDate(startTime)
-    var endDate = self.getDate(endTime)
+    var startDate = Utility.getDate(startTime)
+    var endDate = Utility.getDate(endTime)
+
+    console.log('Utility.getTimeDiff', {
+      startTime: startTime,
+      endTime: endTime,
+      startDate: startDate,
+      endDate: endDate
+    })
 
     // Get the differences
     var t = endDate - startDate
     var seconds = Math.floor(Math.abs(t/1000) % 60)
-    var minutes = Math.floor(Math.abs(t/(1000*60)) % 60)
-    var hours = Math.floor(Math.abs(t/(1000*60*60)) % 24)
-    var days = Math.floor(Math.abs(t/(1000*60*60*24)) % 30)
-    var months = Math.floor(Math.abs(t/(1000*60*60*24*30)) % 12)
-    var years = Math.floor(Math.abs(t/(1000*60*60*24*365)))
+    var minutes = Math.floor(Math.abs(t/(1000 * 60)) % 60)
+    var hours = Math.floor(Math.abs(t/(1000 * 60 * 60)) % 24)
+    var days = Math.floor(Math.abs(t/(1000 * 60 * 60 * 24)) % 30)
+    var months = Math.floor(Math.abs(t/(1000 * 60 * 60 * 24 * 30)) % 12)
+    var years = Math.floor(Math.abs(t/(1000 * 60 * 60 * 24 * 365)))
 
     return {
       'startDate': startDate,
@@ -304,57 +373,25 @@ var Utility = {
   // @method getRelativeTime
   // @param {Mixed} startTime {String} or {Date}
   // @param {Mixed} endTime {String} or {Date}
+  // @param {Array} secondsAsUnits Array of {Object}s representing each unit of measurement to report back with
   // @returns {String}
-  getRelativeTime: function (startTime, endTime) {
-    var self = this
-
+  getRelativeTime: function (startTime, endTime, secondsAsUnits) {
     // Reference
-    var secondsAsUnits = [{
-      min: 0,
-      max: 5,
-      single: __.__('now', 'timeUnitNow'),
-      plural: __.__('now', 'timeUnitNow')
-    },{
-      min: 1,
-      max: 60,
-      single: '%d ' + __.__('second', 'timeUnitSecond'),
-      plural: '%d ' + __.__('seconds', 'timeUnitSeconds')
-    },{
-      min: 60,
-      max: 3600,
-      single: '%d ' + __.__('minute', 'timeUnitMinute'),
-      plural: '%d ' + __.__('minutes', 'timeUnitMinutes')
-    },{
-      min: 3600,
-      max: 86400,
-      single: '%d ' + __.__('hour', 'timeUnitHour'),
-      plural: '%d ' + __.__('hours', 'timeUnitHours')
-    },{
-      min: 86400,
-      max: 604800,
-      single: '%d ' + __.__('day', 'timeUnitDay'),
-      plural: '%d ' + __.__('days', 'timeUnitDays')
-    },{
-      min: 604800,
-      max: 2419200,
-      single: '%d ' + __.__('week', 'timeUnitWeek'),
-      plural: '%d ' + __.__('weeks', 'timeUnitWeeks')
-    },{
-      min: 2628000,
-      max: 31536000,
-      single: '%d ' + __.__('month', 'timeUnitMonth'),
-      plural: '%d ' + __.__('months', 'timeUnitMonths'),
-    },{
-      min: 31536000,
-      max: -1,
-      single: '%d ' + __.__('year', 'timeUnitYear'),
-      plural: '%d ' + __.__('years', 'timeUnitYears')
-    }]
+    secondsAsUnits = secondsAsUnits || defaults.secondsAsUnits
 
     // Dates
-    var startDate = self.getDate(startTime)
-    var endDate = self.getDate(endTime)
+    var startDate = Utility.getDate(startTime)
+    var endDate = Utility.getDate(endTime)
     var diffSeconds = ((endDate.getTime() - startDate.getTime()) / 1000)
+
+    // @debug
+    // console.log('Utility.getRelativeTime', {
+    //   startTime: startTime,
+    //   startDate: startDate,
+    //   endTime: endTime,
+    //   endDate: endDate,
+    //   diffSeconds: diffSeconds
+    // })
 
     // Output
     var outputDiff = ''
@@ -378,15 +415,14 @@ var Utility = {
     }
 
     // @debug
-    // console.log('Utility.getRelativeTime', endDate.getTime() > startDate.getTime(), diffSeconds, outputDiff, output)
+    // console.log('Utility.getRelativeTime', outputDiff, output)
 
     return output
   },
 
   // Get a time code
   getTimecode: function (input) {
-    var self = this
-    var inputDate = self.getDate(input)
+    var inputDate = Utility.getDate(input)
     var timeCode = []
     timeCode.push(Utility.leadingZero(Math.abs(inputDate.getHours())))
     timeCode.push(Utility.leadingZero(Math.abs(inputDate.getMinutes())))

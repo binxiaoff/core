@@ -11,6 +11,34 @@ var $doc = $(document)
 var $html = $('html')
 var $body = $('body')
 
+// Seconds as units for projects
+var secondsAsUnits = [{
+    min: 0,
+    max: 1,
+    single: __.__('Project expired', 'projectPeriodExpired'),
+    plural: __.__('Project expired', 'projectPeriodExpired')
+  },{
+    min: 1,
+    max: 60,
+    single: '%d ' + __.__('second', 'timeUnitSecond'),
+    plural: '%d ' + __.__('seconds', 'timeUnitSeconds')
+  },{
+    min: 60,
+    max: 3600,
+    single: '%d ' + __.__('minute', 'timeUnitMinute'),
+    plural: '%d ' + __.__('minutes', 'timeUnitMinutes')
+  },{
+    min: 3600,
+    max: 172800,
+    single: '%d ' + __.__('hour', 'timeUnitHour'),
+    plural: '%d ' + __.__('hours', 'timeUnitHours')
+  },{
+    min: 172800,
+    max: -1,
+    single: '%d ' + __.__('day', 'timeUnitDay'),
+    plural: '%d ' + __.__('days', 'timeUnitDays')
+  }]
+
 $doc.on('ready', function () {
   // IE9 adjustments for displaying project-list-item in the project-list
   if (Utility.isIE(9)) {
@@ -38,57 +66,38 @@ $doc.on('ready', function () {
   // @note this also includes time counters on the single project details page (project-single)
   $('.project .ui-has-timecount, .project-list-item .ui-has-timecount, .project-single .ui-has-timecount').uiTimeCount({
     // @note DEV-949 using relative time now always
-    // onupdate: function (timeDiff) {
-    //   var elemTimeCount = this
-    //   var outputTime
-    //
-    //   // Show relative time outside of 2 days
-    //   outputTime = elemTimeCount.getRelativeTime()
-    //
-    //   // Expired
-    //   if (timeDiff.total < 0) {
-    //     outputTime = __.__('Project expired', 'projectPeriodExpired')
-    //   }
-    //
-    //   // @debug
-    //   console.log('special project counter', timeDiff, outputTime, elemTimeCount)
-    //
-    //   // if (timeDiff.total > (3600000 * 48)) {
-    //   //   outputTime = elemTimeCount.getRelativeTime()
-    //   //
-    //   // } else {
-    //   //   // Expired
-    //   //   if (timeDiff.total < 0) {
-    //   //     outputTime = __.__('Project expired', 'projectPeriodExpired')
-    //   //
-    //   //     // Countdown
-    //   //   } else {
-    //   //     // Custom timecode
-    //   //     outputTime = Utility.leadingZero(timeDiff.hours + (24 * timeDiff.days)) + ':' + Utility.leadingZero(timeDiff.minutes) + ':' + Utility.leadingZero(timeDiff.seconds)
-    //   //   }
-    //   // }
-    //
-    //   // Update counter
-    //   elemTimeCount.$elem.text(outputTime)
-    // },
+    onupdate: function (timeDiff) {
+      var elemTimeCount = this
+      var outputTime
+
+      // Expired
+      if (timeDiff.total > 0) {
+        outputTime = elemTimeCount.getRelativeTime(timeDiff.startDate, timeDiff.endDate, secondsAsUnits)
+      } else {
+        outputTime = __.__('Project expired', 'projectPeriodExpired')
+      }
+
+      // Update counter
+      elemTimeCount.$elem.text(outputTime)
+    },
     oncomplete: function () {
       var elemTimeCount = this
 
       // Project list item
       if (elemTimeCount.$elem.parents('.project-list-item').length > 0) {
         elemTimeCount.$elem.parents('.project-list-item').addClass('ui-project-expired')
-        elemTimeCount.$elem.text(__.__('Project expired', 'projectListItemPeriodExpired'))
 
         // Project Single
       } else if (elemTimeCount.$elem.parents('.project-single').length > 0) {
         elemTimeCount.$elem.parents('.project-single').addClass('ui-project-expired')
-        elemTimeCount.$elem.text(__.__('Project expired', 'projectSinglePeriodExpired'))
 
         // Project
       } else {
         elemTimeCount.$elem.parents('.project').addClass('ui-project-expired')
-        elemTimeCount.$elem.text(__.__('Project expired', 'projectListItemPeriodExpired'))
       }
+
+      // Set text to say expired/finished/terminé
+      elemTimeCount.$elem.text(__.__('Project expired', 'projectPeriodExpired'))
     }
   })
 
