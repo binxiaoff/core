@@ -247,8 +247,13 @@ class ProjectsController extends Controller
             $productManager = $this->get('unilend.service_product.product_manager');
             $template['isLenderEligible'] = $productManager->isLenderEligible($lenderAccount, $project);
             if (false === $template['isLenderEligible']) {
+                /** @var \product $product */
+                $product = $this->get('unilend.service.entity_manager')->getRepository('product');
+                $product->get($project->id_product);
+                $amountMax = $productManager->getMaxEligibleAmount($product);
                 $reasons = $productManager->getLenderValidationReasons($lenderAccount, $project);
                 $template['lenderNotEligibleReasons'] = $reasons;
+                $template['amountMax'] = $amountMax;
             }
         }
 

@@ -74,7 +74,7 @@
                     {% endif %}
                     {% if isLenderEligible is defined and isLenderEligible == false %}
                         {% for reason in lenderNotEligibleReasons %}
-                            <p>{{ ('project-detail_lender-not-eligible-reason-' ~ reason)|trans() }}</p>
+                            <p>{{ ('project-detail_lender-not-eligible-reason-' ~ reason)|trans({'%amountMax%': amountMax|localizedcurrency('EUR')}) }}</p>
                         {% endfor %}
                     {% else %}
                         {% if project.maxValidRate > project.minRate %}

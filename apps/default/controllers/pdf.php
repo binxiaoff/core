@@ -472,12 +472,14 @@ class pdfController extends bootstrap
         $product->get($this->projects->id_product);
         $template = $product->proxy_template;
 
-        $this->blocs->get($product->proxy_block_slug, 'slug');
-        $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
-        foreach ($lElements as $b_elt) {
-            $this->elements->get($b_elt['id_element']);
-            $this->bloc_pouvoir[$this->elements->slug]           = $b_elt['value'];
-            $this->bloc_pouvoirComplement[$this->elements->slug] = $b_elt['complement'];
+        if (false === empty($product->proxy_block_slug)) {
+            $this->blocs->get($product->proxy_block_slug, 'slug');
+            $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
+            foreach ($lElements as $b_elt) {
+                $this->elements->get($b_elt['id_element']);
+                $this->bloc_pouvoir[$this->elements->slug]           = $b_elt['value'];
+                $this->bloc_pouvoirComplement[$this->elements->slug] = $b_elt['complement'];
+            }
         }
 
         $this->companies_actif_passif = $this->loadData('companies_actif_passif');
