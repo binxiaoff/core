@@ -71,7 +71,8 @@ var BidConfirmation = require('./app/components/BidConfirmation')
 var BidsDetail = require('./app/components/BidsDetail')
 
 // Page controllers
-// Control page-specific behaviours
+// Manage component or page-specific behaviours
+require('./app/controllers/Swipers')
 require('./app/controllers/BorrowerOperations')
 require('./app/controllers/NewPasswordRequest')
 require('./app/controllers/LenderSubscription')
@@ -441,74 +442,6 @@ $(document).ready(function ($) {
         helpers: {
           'media': {}
         }
-      })
-    }
-  })
-
-  /*
-   * Swiper
-   */
-  $('.swiper-container').each(function (i, elem) {
-    var $elem = $(elem)
-    var swiperOptions = {
-      direction: $elem.attr('data-swiper-direction') || 'horizontal',
-      loop: $elem.attr('data-swiper-loop') === 'true',
-      effect: $elem.attr('data-swiper-effect') || 'fade',
-      speed: parseInt($elem.attr('data-swiper-speed'), 10) || 250,
-      autoplay: parseInt($elem.attr('data-swiper-autoplay'), 10) || 5000,
-      // ARIA keyboard functionality
-      a11y: $elem.attr('data-swiper-aria') === 'true'
-    }
-
-    // Fade / Crossfade
-    if (swiperOptions.effect === 'fade') {
-      swiperOptions.fade = {
-        crossFade: $elem.attr('data-swiper-crossfade') === 'true'
-      }
-    }
-
-    // Dynamically test if has pagination
-    if ($elem.find('.swiper-custom-pagination').length > 0 && $elem.find('.swiper-custom-pagination > *').length > 0) {
-      swiperOptions.paginationType = 'custom'
-    }
-
-    var elemSwiper = new Swiper(elem, swiperOptions)
-    // console.log(elemSwiper)
-
-    // Add event to hook up custom pagination to appropriate slide
-    if (swiperOptions.paginationType === 'custom') {
-      // Hook into sliderMove event to update custom pagination
-      elemSwiper.on('slideChangeStart', function () {
-        // Unactive any active pagination items
-        $elem.find('.swiper-custom-pagination li.active').removeClass('active')
-
-        // Activate the current pagination item
-        $elem.find('.swiper-custom-pagination li:eq(' + elemSwiper.activeIndex + ')').addClass('active')
-
-        // console.log('sliderMove', elemSwiper.activeIndex)
-      })
-
-      // Connect user interaction with custom pagination
-      $elem.find('.swiper-custom-pagination li').on('click', function (event) {
-        var $elem = $(this).parents('.swiper-container')
-        var $target = $(this)
-        var swiper = $elem[0].swiper
-        var newSlideIndex = $elem.find('.swiper-custom-pagination li').index($target)
-
-        event.preventDefault()
-        swiper.pauseAutoplay()
-        swiper.slideTo(newSlideIndex)
-      })
-    }
-
-    // Specific swipers
-    // -- Homepage Acquisition Video Hero
-    if ($elem.is('#homeacq-video-hero-swiper')) {
-      elemSwiper.on('slideChangeStart', function () {
-        var emprunterName = $elem.find('.swiper-slide:eq(' + elemSwiper.activeIndex + ')').attr('data-emprunter-name')
-        var preterName = $elem.find('.swiper-slide:eq(' + elemSwiper.activeIndex + ')').attr('data-preter-name')
-        if (emprunterName) $elem.parents('.cta-video-hero').find('.ui-emprunter-name').text(emprunterName)
-        if (preterName) $elem.parents('.cta-video-hero').find('.ui-preter-name').text(preterName)
       })
     }
   })

@@ -188,9 +188,12 @@ var WatchScroll = {
       return visible && $(target).is(':visible')
     }
 
-    // Check all watchScrollListeners and determines if targets can be actioned upon
+    // Check all watchScrollListeners for element and determines if targets can be actioned upon
     self.checkListeners = function () {
       var targetsVisible = []
+
+      // @trigger elem `WatchScroll:checkListeners:before` [elemWatcher]
+      self.$elem.trigger('WatchScroll:checkListeners:before', [self])
 
       // Iterate over all listeners and fire callback depending on target's state (enter/leave/visible/hidden)
       for (var x in self.listeners) {
@@ -224,6 +227,14 @@ var WatchScroll = {
           targetsVisible[x].target.wasVisible = targetsVisible[x].wasVisible
         }
       }
+
+      // @trigger elem `WatchScroll:checkListeners:complete` [elemWatcher, targetsVisible]
+      self.$elem.trigger('WatchScroll:checkListeners:complete', [self, targetsVisible])
+    }
+
+    // Alias for checkListeners
+    self.refresh = function () {
+      self.checkListeners()
     }
 
     // Check single target for state

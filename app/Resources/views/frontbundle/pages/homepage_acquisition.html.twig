@@ -64,47 +64,50 @@ permalink: path('home')
         <section id="homeacq-section-statistics" class="page-section">
             <div class="site-wrap">
                 <h1 class="h2">{% trans %} site-general_unilend-stats-title {% endtrans %}</h1>
-                <div class="row">
-                    <div class="col-lg-4 col-md-4">
-                        <div class="promo">
-                            <div class="promo-image">
-                                {{ svgimage('#promo-projects', '', 190, 190, 'none') | raw }}
-                            </div>
-                            {% set valueProjects = ('site-general_unilend-stats-projects-value'|trans != 'site-general_unilend-stats-projects-value') ? getStatistic('numberOfFinancedProjects') : 'site-general_unilend-stats-projects-value'|trans %}
-                            <h3 class="promo-highlight">
-                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ valueProjects }}" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">{{ valueProjects|localizednumber }}</span>
-                            </h3>
-                            <p>{% trans %} site-general_unilend-stats-projects-description {% endtrans %}</p>
-                        </div><!-- /.promo -->
-                    </div>
 
-                    <div class="col-lg-4 col-md-4">
-                        <div class="promo">
-                            <div class="promo-image">
-                                {{ svgimage('#promo-money', '', 190, 190, 'none') | raw }}
-                            </div>
-                            {% set valueMoney = ('site-general_unilend-stats-money-value'|trans != 'site-general_unilend-stats-money-value') ? getStatistic('amountBorrowedInMillions') : 'site-general_unilend-stats-money-value'|trans %}
-                            <h3 class="promo-highlight">
-                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ valueMoney }}" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">{{ valueMoney|localizednumber }}</span>
-                                {% trans %} site-general_unilend-stats-money-value {% endtrans %}
-                            </h3>
-                            <p>{% trans %} site-general_unilend-stats-money-description {% endtrans %}</p>
-                        </div><!-- /.promo -->
-                    </div>
+                <div class="promo-swiper swiper-container">
+                    <div class="row swiper-wrapper">
+                        <div class="col-lg-4 col-md-4 swiper-slide">
+                            <div class="promo">
+                                <div class="promo-image">
+                                    {{ svgimage('#promo-projects', '', 190, 190, 'none') | raw }}
+                                </div>
+                                {% set valueProjects = ('site-general_unilend-stats-projects-value'|trans != 'site-general_unilend-stats-projects-value') ? getStatistic('numberOfFinancedProjects') : 'site-general_unilend-stats-projects-value'|trans %}
+                                <h3 class="promo-highlight">
+                                    <span class="ui-text-count" data-start-count="0" data-end-count="{{ valueProjects }}" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">{{ valueProjects|localizednumber }}</span>
+                                </h3>
+                                <p>{% trans %} site-general_unilend-stats-projects-description {% endtrans %}</p>
+                            </div><!-- /.promo -->
+                        </div>
 
-                    <div class="col-lg-4 col-md-4">
-                        <div class="promo">
-                            <div class="promo-image">
-                                {{ svgimage('#promo-people', '', 190, 190, 'none') | raw }}
-                            </div>
-                            {% set valuePeople = ('site-general_unilend-stats-people-value'|trans != 'site-general_unilend-stats-people-value') ? getStatistic('numberOfLendersInCommunity')|localizednumber : 'site-general_unilend-stats-people-value'|trans %}
-                            <h3 class="promo-highlight">
-                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ valuePeople }}" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">{{ valuePeople|localizednumber }}</span>
-                            </h3>
-                            <p>{% trans %} site-general_unilend-stats-people-description {% endtrans %}</p>
-                        </div><!-- /.promo -->
-                    </div>
-                </div><!-- /.row -->
+                        <div class="col-lg-4 col-md-4 swiper-slide">
+                            <div class="promo">
+                                <div class="promo-image">
+                                    {{ svgimage('#promo-money', '', 190, 190, 'none') | raw }}
+                                </div>
+                                {% set valueMoney = ('site-general_unilend-stats-money-value'|trans != 'site-general_unilend-stats-money-value') ? getStatistic('amountBorrowedInMillions') : 'site-general_unilend-stats-money-value'|trans %}
+                                <h3 class="promo-highlight">
+                                    <span class="ui-text-count" data-start-count="0" data-end-count="{{ valueMoney }}" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">{{ valueMoney|localizednumber }}</span>
+                                    {% trans %} site-general_unilend-stats-money-value {% endtrans %}
+                                </h3>
+                                <p>{% trans %} site-general_unilend-stats-money-description {% endtrans %}</p>
+                            </div><!-- /.promo -->
+                        </div>
+
+                        <div class="col-lg-4 col-md-4 swiper-slide">
+                            <div class="promo">
+                                <div class="promo-image">
+                                    {{ svgimage('#promo-people', '', 190, 190, 'none') | raw }}
+                                </div>
+                                {% set valuePeople = ('site-general_unilend-stats-people-value'|trans != 'site-general_unilend-stats-people-value') ? getStatistic('numberOfLendersInCommunity')|localizednumber : 'site-general_unilend-stats-people-value'|trans %}
+                                <h3 class="promo-highlight">
+                                    <span class="ui-text-count" data-start-count="0" data-end-count="{{ valuePeople }}" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">{{ valuePeople|localizednumber }}</span>
+                                </h3>
+                                <p>{% trans %} site-general_unilend-stats-people-description {% endtrans %}</p>
+                            </div><!-- /.promo -->
+                        </div>
+                    </div><!-- /.row -->
+                </div><!-- /.promo-swiper -->
             </div><!-- /.site-wrap -->
         </section><!-- /.promos -->
 
@@ -230,35 +233,39 @@ permalink: path('home')
         <section id="homeacq-section-ethics" class="page-section">
             <div class="site-wrap">
                 <h2 class="h2">{% trans %} site-general_ethics-section-title {% endtrans %}</h2>
-                <div class="row">
-                    <div class="col-lg-4 col-md-4">
-                        <div class="promo">
-                            <div class="promo-image">
-                                {{ svgimage('#promo-transparancy', '', 190, 190, 'none')|raw }}
-                            </div>
-                            <h3>{% trans %} site-general_ethics-section-value-transparency-title {% endtrans %}</h3>
-                            <p>{% trans %} site-general_ethics-section-value-transparancy-description {% endtrans %}</p>
-                        </div><!-- /.promo -->
-                    </div>
-                    <div class="col-lg-4 col-md-4">
-                        <div class="promo">
-                            <div class="promo-image">
-                                {{ svgimage('#promo-balance', '', 190, 190, 'none')|raw }}
-                            </div>
-                            <h3>{% trans %} site-general_ethics-section-equality-title {% endtrans %}</h3>
-                            <p>{% trans %} site-general_ethics-section-equality-description {% endtrans %}</p>
+
+                <div class="promo-swiper swiper-container">
+                    <div class="row swiper-wrapper">
+                        <div class="col-lg-4 col-md-4 swiper-slide">
+                            <div class="promo">
+                                <div class="promo-image">
+                                    {{ svgimage('#promo-transparancy', '', 190, 190, 'none')|raw }}
+                                </div>
+                                <h3>{% trans %} site-general_ethics-section-value-transparency-title {% endtrans %}</h3>
+                                <p>{% trans %} site-general_ethics-section-value-transparancy-description {% endtrans %}</p>
+                            </div><!-- /.promo -->
                         </div>
-                    </div><!-- /.promo -->
-                    <div class="col-lg-4 col-md-4">
-                        <div class="promo">
-                            <div class="promo-image">
-                                {{ svgimage('#promo-protection', '', 190, 190, 'none')|raw }}
+                        <div class="col-lg-4 col-md-4 swiper-slide">
+                            <div class="promo">
+                                <div class="promo-image">
+                                    {{ svgimage('#promo-balance', '', 190, 190, 'none')|raw }}
+                                </div>
+                                <h3>{% trans %} site-general_ethics-section-equality-title {% endtrans %}</h3>
+                                <p>{% trans %} site-general_ethics-section-equality-description {% endtrans %}</p>
                             </div>
-                            <h3>{% trans %} site-general_ethics-section-protection-title {% endtrans %}</h3>
-                            <p>{% trans %} site-general_ethics-section-protection-description {% endtrans %}</p>
                         </div><!-- /.promo -->
+                        <div class="col-lg-4 col-md-4 swiper-slide">
+                            <div class="promo">
+                                <div class="promo-image">
+                                    {{ svgimage('#promo-protection', '', 190, 190, 'none')|raw }}
+                                </div>
+                                <h3>{% trans %} site-general_ethics-section-protection-title {% endtrans %}</h3>
+                                <p>{% trans %} site-general_ethics-section-protection-description {% endtrans %}</p>
+                            </div><!-- /.promo -->
+                        </div>
                     </div>
                 </div>
+
                 <div class="row page-section-footer">
                     <div class="btn-toolbar">
                         <a href="{{ constant('Unilend\\Bundle\\FrontBundle\\Service\\RouteProvider::ROUTE_OUR_ETHICS') }}" class="btn-primary">{% trans %} site-general_ethics-section-read-all-button {% endtrans %}</a>
