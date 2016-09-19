@@ -12,6 +12,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
 
 trait BidChecker
 {
+    use LenderChecker;
     /**
      * @param \bids                   $bid
      * @param \product                $product
@@ -25,19 +26,9 @@ trait BidChecker
         $bidAmount   = bcdiv($bid->amount, 100, 2);
         $totalAmount = bcadd($totalAmount, $bidAmount, 2);
 
-        $attrVars    = $productAttributeManager->getProductContractAttributesByType($product, \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
-
-        if (empty($attrVars)) {
-            return true; // No limitation found!
-        }
-
-        $maxAmountEligible = 0;
-        foreach ($attrVars as $contractAttr) {
-            if (empty($contractAttr)) {
-                return true; // No limitation found for one of the underlying contract!
-            } else {
-                $maxAmountEligible = bccomp($contractAttr[0], $maxAmountEligible, 2) === 1 ? $contractAttr[0] : $maxAmountEligible;
-            }
+        $maxAmountEligible = $this->getMaxEligibleAmount($product, $productAttributeManager);
+        if (null === $maxAmountEligible) {
+            return null;
         }
 
         return bccomp($maxAmountEligible, $totalAmount, 2) >= 0;

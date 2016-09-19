@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Component\Intl\NumberFormatter\NumberFormatter;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -246,8 +247,7 @@ class ProjectsController extends Controller
             $productManager = $this->get('unilend.service_product.product_manager');
             $template['isLenderEligible'] = $productManager->isLenderEligible($lenderAccount, $project);
             if (false === $template['isLenderEligible']) {
-                $lenderValidator = $this->get('unilend.service_product.lender_validator');
-                $reasons = $lenderValidator->getReasons($lenderAccount, $project);
+                $reasons = $productManager->getLenderValidationReasons($lenderAccount, $project);
                 $template['lenderNotEligibleReasons'] = $reasons;
             }
         }
@@ -442,20 +442,26 @@ class ProjectsController extends Controller
                 $request->getSession()->set('bidResult', ['success' => true, 'message' => $translator->trans('project-detail_side-bar-bids-bid-placed-message')]);
             } catch (\Exception $exception) {
                 if ('bids-not-eligible' === $exception->getMessage()) {
-                    $bidValidator       = $this->get('unilend.service_product.bid_validator');
                     $productAttrManager = $this->get('unilend.service_product.product_attribute_manager');
+                    $productManager     = $this->get('unilend.service_product.product_manager');
 
                     /** @var \product $product */
-                    $product            = $entityManager->getRepository('product');
+                    $product = $entityManager->getRepository('product');
                     $product->get($project->id_product);
 
-                    $reasons    = $bidValidator->getReasons($bids, $product);
+                    $amountMax = $productManager->getMaxEligibleAmount($product);
+
+                    $reasons    = $productManager->getBidValidatorReasons($bids, $product);
                     $amountRest = 0;
                     foreach ($reasons as $reason) {
                         if ($reason === \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO) {
-                            $amountRest = $bidValidator->getAmountLenderCanStillBid($lenderAccount, $project, $productAttrManager, $entityManager);
+                            $amountRest = $productManager->getAmountLenderCanStillBid($lenderAccount, $project, $productAttrManager, $entityManager);
                         }
-                        $this->addFlash('bid_not_eligible_reason', $translator->trans('project-detail_bid-not-eligible-reason-' . $reason, ['%amountRest%' => $amountRest]));
+                        $currencyFormatter = new \NumberFormatter($request->getLocale(), \NumberFormatter::CURRENCY);
+                        $amountRest = $currencyFormatter->formatCurrency($amountRest, 'EUR');
+                        $amountMax  = $currencyFormatter->formatCurrency($amountMax, 'EUR');
+
+                        $this->addFlash('bid_not_eligible_reason', $translator->trans('project-detail_bid-not-eligible-reason-' . $reason, ['%amountRest%' => $amountRest, '%amountMax%' => $amountMax]));
                     }
                 } else {
                     $request->getSession()->set('bidResult', ['error' => true, 'message' => $translator->trans('project-detail_side-bar-' . $exception->getMessage())]);

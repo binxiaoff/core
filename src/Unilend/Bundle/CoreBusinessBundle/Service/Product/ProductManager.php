@@ -139,4 +139,41 @@ class ProductManager
 
         return $durationMin;
     }
+
+    /**
+     * @param \product $product
+     *
+     * @return int|null
+     */
+    public function getMaxEligibleAmount(\product $product)
+    {
+        return $this->lenderValidator->getMaxEligibleAmount($product, $this->productAttributeManager);
+    }
+
+    /**
+     * @param \lenders_accounts $lenderAccount
+     * @param \projects         $project
+     *
+     * @return array
+     */
+    public function getLenderValidationReasons(\lenders_accounts $lenderAccount, \projects $project)
+    {
+        return $this->lenderValidator->getReasons($lenderAccount, $project);
+    }
+
+    /**
+     * @param \bids    $bid
+     * @param \product $product
+     *
+     * @return array
+     */
+    public function getBidValidatorReasons(\bids $bid, \product $product)
+    {
+        return $this->bidValidator->getReasons($bid, $product);
+    }
+
+    public function getAmountLenderCanStillBid(\lenders_accounts $lender, \projects $project)
+    {
+        return $this->lenderValidator->getAmountLenderCanStillBid($lender, $project, $this->productAttributeManager, $this->entityManager);
+    }
 }

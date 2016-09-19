@@ -5,7 +5,6 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class BidValidator
 {
-    use Checker\LenderChecker;
     use Checker\BidChecker;
 
     /** @var ProductAttributeManager */

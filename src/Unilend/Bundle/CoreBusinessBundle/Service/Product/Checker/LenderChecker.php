@@ -71,19 +71,9 @@ trait LenderChecker
 
         $totalAmount = $bid->getBidsEncours($project->id_project, $lender->id_lender_account)['solde'];
 
-        $attrVars    = $productAttributeManager->getProductContractAttributesByType($product, \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
-
-        if (empty($attrVars)) {
-            return null; // No limitation found!
-        }
-
-        $maxAmountEligible = 0;
-        foreach ($attrVars as $contractAttr) {
-            if (empty($contractAttr)) {
-                return null; // No limitation found for one of the underlying contract!
-            } else {
-                $maxAmountEligible = bccomp($contractAttr[0], $maxAmountEligible, 2) === 1 ? $contractAttr[0] : $maxAmountEligible;
-            }
+        $maxAmountEligible = $this->getMaxEligibleAmount($product, $productAttributeManager);
+        if (null === $maxAmountEligible) {
+            return null;
         }
 
         return bcsub($maxAmountEligible, $totalAmount, 2);
@@ -100,5 +90,25 @@ trait LenderChecker
     public function isLenderEligibleForMaxTotalAmount(\lenders_accounts $lender, \projects $project, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
     {
         return $this->getAmountLenderCanStillBid($lender, $project, $productAttributeManager, $entityManager) > 0;
+    }
+
+    public function getMaxEligibleAmount(\product $product, ProductAttributeManager $productAttributeManager)
+    {
+        $attrVars = $productAttributeManager->getProductContractAttributesByType($product, \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
+
+        if (empty($attrVars)) {
+            return null; // No limitation found!
+        }
+
+        $maxAmountEligible = 0;
+        foreach ($attrVars as $contractAttr) {
+            if (empty($contractAttr)) {
+                return null; // No limitation found for one of the underlying contract!
+            } else {
+                $maxAmountEligible = bccomp($contractAttr[0], $maxAmountEligible, 2) === 1 ? $contractAttr[0] : $maxAmountEligible;
+            }
+        }
+
+        return $maxAmountEligible;
     }
 }
