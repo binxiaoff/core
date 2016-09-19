@@ -65,32 +65,31 @@ $doc
   // Show the spinner when global AJAX event has started
   .on('ajaxStart', function (event) {
     var $activeElement = $(event.target.activeElement)
+    var $spinnerTarget = $body // Default is body element
+    var posX = 50
+    var posY = 50
 
-    if (Utility.checkElemAttrForValue($activeElement, 'data-has-no-spinner') != undefined) {
-      var $spinnerTarget = $body // Default is body element
-      var posX = 50
-      var posY = 50
+    // Get the specific spinner element
+    if ($activeElement.attr('data-has-spinner') && Utility.elemExists($activeElement.attr('data-has-spinner'))) {
+      $spinnerTarget = $($activeElement.attr('data-has-spinner'))
+    }
 
-      // Get the specific spinner element
-      if ($activeElement.attr('data-has-spinner') && Utility.elemExists($activeElement.attr('data-has-spinner'))) {
-        $spinnerTarget = $($activeElement.attr('data-has-spinner'))
-      }
+    // Show spinner
+    $spinnerTarget.addClass('ui-is-loading')
 
-      // @debug
-      // console.log('spinner ajaxStop', event, event.target.activeElement)
-      // console.log('spinnerTarget', $spinnerTarget)
+    // @debug
+    // console.log('spinner ajaxStart', event, event.target.activeElement)
+    // console.log('spinnerTarget', $spinnerTarget)
 
-      // Show spinner
-      $spinnerTarget.addClass('ui-is-loading')
+    // If spinner is fired on single project page
+    if ($spinnerTarget.find('#alloffers-table').length) {
+      var pixelFromLeftSide = $('#alloffers-table').width() / 2
+      pixelFromLeftSide += $('#alloffers-table').offset().left
+      posX = (pixelFromLeftSide / window.innerWidth) * 100
+    }
 
-      // If spinner is fired on single project page
-      if ($('#alloffers-table').length) {
-        var pixelFromLeftSide = $('#alloffers-table').width() / 2
-        pixelFromLeftSide += $('#alloffers-table').offset().left
-        posX = (pixelFromLeftSide / window.innerWidth) * 100
-      }
-
-      // Position the main body spinner
+    // Position the main body spinner
+    if ($spinnerTarget.is('body') || $spinnerTarget.is('.modal-spinner')) {
       $('#floatingCirclesG').css({
         top: posY + '%',
         left: posX + '%'
@@ -113,6 +112,6 @@ $doc
     // console.log('spinnerTarget', $spinnerTarget)
 
     // Hide spinner
-    $spinnerTarget.removeClass("ui-is-loading")
+    $spinnerTarget.removeClass('ui-is-loading')
   })
 

@@ -272,14 +272,14 @@ $doc.on('ready', function () {
     }
   }
 
-  // Debounce update to reduce jank
+  // Debounce update of sticky within the watchWindow to reduce jank
   if ($projectSingleInfoWrap.length > 0) {
     window.watchWindow.watch(window, offsetProjectSingleInfo)
     offsetProjectSingleInfo()
   }
 
+  // Update the position of the project-single-menu top offset
   $doc.on('UI:updateWindow', function () {
-    // Update the position of the project-single-menu top offset
     if (!$html.is('.ui-project-single-menu-fixed') && typeof projectSingleNavOffsetTop !== 'undefined') {
       updateProjectSingleNavOffsetTop()
     }
@@ -321,7 +321,7 @@ $doc.on('ready', function () {
         error: function () {
           console.log('Unable to estimate monthly repayments')
         }
-      });
+      })
     }
   }
 
