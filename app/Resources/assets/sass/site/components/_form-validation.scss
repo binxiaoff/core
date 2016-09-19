@@ -48,8 +48,9 @@
   // Form field validated successfully
   &.ui-formvalidation-success {
     .input-group:after {
-      content: $fa-check-u16;
-      color: $c-success;
+      // No form field should ever marked as "success" (only "error" on errors), so I've removed it -- @matt
+      //content: $fa-check-u16;
+      //color: $c-success;
     }
 
     // Hide the messages on success

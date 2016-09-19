@@ -520,6 +520,7 @@
 
     // Show the site-search-toggle
     .site-search-toggle {
+      box-sizing: border-box;
       display: block;
       width: $height-btn;
       height: $height-btn;
@@ -530,12 +531,18 @@
       bottom: 0;
       left: 0;
 
-      line-height: $height-btn;
+      background: $c-bg3;
+      border: solid 2px $c-bg3;
+      line-height: $height-btn - 4px; // Minus border
       text-align: center;
 
       &:before {
         content: $fa-search;
         font-family: $ff-icon;
+      }
+
+      &:hover {
+        border-color: $c-bg1;
       }
     }
 
