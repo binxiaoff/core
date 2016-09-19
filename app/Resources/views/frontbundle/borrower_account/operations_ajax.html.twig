@@ -15,16 +15,16 @@
         } %}
     {% endif %}
 
-    <tr id="operation-{{ i }}" {% if op.type == 'commission-mensuelle' %} data-details="{{ data_details|json_encode|escape('html_attr') }}" {% endif %} class="table-myoperations-item {{ classAmount }}">
-        <td class="table-myoperations-item-type">{{ ('borrower-operation_' ~ op.type)|trans }}</td>
-        <td class="table-myoperations-item-contract cell-right">{{ op.id_project }}</td>
-        <td class="table-myoperations-item-date cell-right">{{ op.date|localizeddate('short', 'none') }}</td>
-        <td class="table-myoperations-item-amount cell-right">{{ op.montant|localizedcurrency('EUR') }}</td>
-        <td class="table-myoperations-item-balance cell-right">
+    <tr id="operation-{{ i }}" {% if op.type == 'commission-mensuelle' %} data-details="{{ data_details|json_encode|escape('html_attr') }}" {% endif %} class="table-myoperations-borrower-item {{ classAmount }}">
+        <td class="table-myoperations-borrower-item-type">{{ ('borrower-operation_' ~ op.type)|trans }}</td>
+        <td class="table-myoperations-borrower-item-project">{{ op.id_project }}</td>
+        <td class="table-myoperations-borrower-item-date">{{ op.date|localizeddate('short', 'none') }}</td>
+        <td class="table-myoperations-borrower-item-amount">{{ op.montant|localizedcurrency('EUR') }}</td>
+        <td class="table-myoperations-borrower-item-detail">
             {% if op.type == 'affectation-preteurs'  %}
-                <a href="{{ path('borrower_account_export_lender_details_csv', {'type': 'e', 'projectId': op.id_project, 'repaymentOrder': op.ordre}) }}" class="export">exporter</a>
+                <a href="{{ path('borrower_account_export_lender_details_csv', {'type': 'e', 'projectId': op.id_project, 'repaymentOrder': op.ordre}) }}" class="btn-export"><span class="icon fa-excel-u16"></span><span class="sr-only">Exporter</span></a>
             {% elseif op.type == 'financement'  %}
-                <a href="{{ path('borrower_account_export_lender_details_csv', {'type': 'l', 'projectId': op.id_project}) }}" class="export">exporter</a>
+                <a href="{{ path('borrower_account_export_lender_details_csv', {'type': 'l', 'projectId': op.id_project}) }}" class="btn-export"><span class="icon fa-excel-u16"></span><span class="sr-only">Exporter</span></a>
             {% endif %}
         </td>
     </tr>

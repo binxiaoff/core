@@ -72,7 +72,7 @@ var BidsDetail = require('./app/components/BidsDetail')
 
 // Page controllers
 // Control page-specific behaviours
-require('./app/controllers/BorrowerOperation')
+require('./app/controllers/BorrowerOperations')
 require('./app/controllers/NewPasswordRequest')
 require('./app/controllers/LenderSubscription')
 require('./app/controllers/LenderWallet')

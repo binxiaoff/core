@@ -83,19 +83,41 @@ $doc.on('ready', function () {
 
           $details = $('<tr class="table-myloans-details" data-parent="' + $item.attr('id') + '"><td colspan="8"><table class="table-myloans-details-list">' + detailsItemsHtml + '</table></td></tr>')
 
-        // My operations details
+        // My operations details (lender)
         } else if ($item.is('.table-myoperations-item')) {
           // Build the list of items
           $.each(details.items, function (i, item) {
             // @todo may need to programmatically change the currency here
             // @note this relies on the backend to supply the correcly translated text for labels
             var classItem = (item.value >= 0 ? 'ui-value-positive' : 'ui-value-negative')
-            detailsItemsHtml += '<dt>' + item.label + '</dt><dd><span class="' + classItem + '">' + __.formatNumber(item.value, 2, true) + '€</span></dd>'
+            detailsItemsHtml += Templating.replace('<dt>{{ label }}</dt><dd><span class="{{ classNames }}">{{ value }}€</span></dd>', {
+              label: item.label,
+              value: __.formatNumber(item.value, 2, true),
+              classNames: classItem
+            })
           })
 
           // Build element and add to DOM
-          $details = $('<tr class="table-myoperations-details" data-parent="' + $item.attr('id') + '" style="display: none;"><td colspan="2">' + details.label + '</td><td colspan="3">' + detailsItemsHtml + '</td><td>&nbsp;</td></tr>')
+          $details = $('<tr class="table-myoperations-details" data-parent="' + $item.attr('id') + '" style="display: none;"><td colspan="2">' + details.label + '</td><td colspan="3"><dl>' + detailsItemsHtml + '</dl></td><td>&nbsp;</td></tr>')
+
+        // My operations borrower details
+        } else if ($item.is('.table-myoperations-borrower-item')) {
+          // Build the list of items
+          $.each(details.items, function (i, item) {
+            // @todo may need to programmatically change the currency here
+            // @note this relies on the backend to supply the correcly translated text for labels
+            var classItem = (item.value >= 0 ? 'ui-value-positive' : 'ui-value-negative')
+            detailsItemsHtml += Templating.replace('<dt>{{ label }}</dt><dd><span class="{{ classNames }}">{{ value }}€</span></dd>', {
+              label: item.label,
+              value: __.formatNumber(item.value, 2, true),
+              classNames: classItem
+            })
+          })
+
+          // Build element and add to DOM
+          $details = $('<tr class="table-myoperations-borrower-details" data-parent="' + $item.attr('id') + '" style="display: none;"><td>' + details.label + '</td><td colspan="3"><dl>' + detailsItemsHtml + '</dl></td><td>&nbsp;</td></tr>')
         }
+
         $item.after($details)
       }
 
