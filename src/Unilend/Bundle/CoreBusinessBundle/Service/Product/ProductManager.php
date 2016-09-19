@@ -13,13 +13,16 @@ class ProductManager
     private $bidValidator;
     /** @var LenderValidator */
     private $lenderValidator;
+    /** @var ProductAttributeManager */
+    private $productAttributeManager;
 
-    public function __construct(EntityManager $entityManager, ProjectValidator $projectValidator, BidValidator $bidValidator, LenderValidator $lenderValidator)
+    public function __construct(EntityManager $entityManager, ProjectValidator $projectValidator, BidValidator $bidValidator, LenderValidator $lenderValidator, ProductAttributeManager $productAttributeManager)
     {
         $this->entityManager    = $entityManager;
         $this->projectValidator = $projectValidator;
         $this->bidValidator     = $bidValidator;
         $this->lenderValidator  = $lenderValidator;
+        $this->productAttributeManager  = $productAttributeManager;
     }
 
     /**
@@ -48,21 +51,17 @@ class ProductManager
         return $eligibleProducts;
     }
 
-    /**
-     * @param \bids     $bid
+    /**\
+     * @param \bids $bid
      * @param \projects $project
-     *
      * @return bool
+     * @throws \Exception
      */
     public function isBidEligible(\bids $bid, \projects $project)
     {
         $product = $this->getAssociatedProduct($project);
-        if (false === $product) {
-            return true;
-        }
 
         return $this->bidValidator->isEligible($bid, $product);
-
     }
 
     public function isLenderEligible(\lenders_accounts $lender, \projects $project)
@@ -72,16 +71,12 @@ class ProductManager
 
     /**
      * @param \projects $project
-     *
-     * @return array
+     * @return mixed
+     * @throws \Exception
      */
     public function getProjectAvailableContractTypes(\projects $project)
     {
         $product = $this->getAssociatedProduct($project);
-        if (false === $product) {
-            return [];
-        }
-
         /** @var \product_underlying_contract $productContract */
         $productContract = $this->entityManager->getRepository('product_underlying_contract');
         return $productContract->getUnderlyingContractsByProduct($product->id_product);
@@ -89,22 +84,59 @@ class ProductManager
 
     /**
      * @param \projects $project
-     *
-     * @return bool|\product
+     * @return \product
+     * @throws \Exception
      */
-    public function getAssociatedProduct(\projects $project)
+    private function getAssociatedProduct(\projects $project)
     {
-        if (empty($project->id_product)) {
-            return false;
-        }
         /** @var \product $product */
         $product = $this->entityManager->getRepository('product');
-
-        if ($product->get($project->id_product)) {
-            return $product;
+        if (! $product->get($project->id_product)) {
+            throw new \Exception('Invalid product id ' . $project->id_product . ' found for project id ' . $project->id_project);
         }
 
-        return false;
+        return $product;
     }
 
+    /**
+     * @param \product $product
+     * @return mixed|null
+     */
+    public function getMaxEligibleDuration(\product $product)
+    {
+        $durationContractMaxAttr = $this->productAttributeManager->getProductContractAttributesByType($product, \underlying_contract_attribute_type::MAX_LOAN_DURATION_IN_MONTH);
+        $durationContractMax     = null;
+        foreach ($durationContractMaxAttr as $contractVars) {
+            if (isset($contractVars[0])) {
+                if ($durationContractMax === null) {
+                    $durationContractMax = $contractVars[0];
+                } else {
+                    $durationContractMax = min($durationContractMax, $contractVars[0]);
+                }
+            }
+        }
+
+        $durationProductMaxAttr = $this->productAttributeManager->getProductAttributesByType($product, \product_attribute_type::MAX_LOAN_DURATION_IN_MONTH);
+        $durationProductMax     = empty($durationProductMaxAttr) ? null : $durationProductMaxAttr[0];
+
+        if (null === $durationProductMax) {
+            return $durationContractMax;
+        } elseif (null === $durationContractMax) {
+            return $durationProductMax;
+        }
+
+        return min($durationProductMax, $durationContractMax);
+    }
+
+    /**
+     * @param \product $product
+     * @return string|null
+     */
+    public function getMinEligibleDuration(\product $product)
+    {
+        $durationMinAttr = $this->productAttributeManager->getProductAttributesByType($product, \product_attribute_type::MIN_LOAN_DURATION_IN_MONTH);
+        $durationMin     = empty($durationMinAttr) ? null : $durationMinAttr[0];
+
+        return $durationMin;
+    }
 }

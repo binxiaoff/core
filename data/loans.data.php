@@ -28,9 +28,6 @@
 
 class loans extends loans_crud
 {
-    const TYPE_CONTRACT_BDC = 1;
-    const TYPE_CONTRACT_IFP = 2;
-
     const STATUS_ACCEPTED   = 0;
     const STATUS_REJECTED   = 1;
 

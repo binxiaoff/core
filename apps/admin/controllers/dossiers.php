@@ -132,27 +132,15 @@ class dossiersController extends bootstrap
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             $this->settings->get('Durée des prêts autorisées', 'type');
             $this->dureePossible = explode(',', $this->settings->value);
+            /** @var product $product */
+            $product = $this->loadData('product');
 
-            $product = $productManager->getAssociatedProduct($this->projects);
-
-            if ($product instanceof \product) {
-                $durationContractMaxAttr = $productAttrManager->getProductContractAttributesByType($product, \underlying_contract_attribute_type::MAX_LOAN_DURATION_IN_MONTH);
-                $durationContractMax     = null;
-                foreach ($durationContractMaxAttr as $contractVars) {
-                    if (isset($contractVars[0])) {
-                        $durationContractMax = $durationContractMax === null || $durationContractMax > $contractVars[0] ? $contractVars[0] : $durationContractMax;
-                    }
-                }
-
-                $durationMaxAttr = $productAttrManager->getProductAttributesByType($product, product_attribute_type::MAX_LOAN_DURATION_IN_MONTH);
-                $durationMax     = empty($durationMaxAttr) ? null : $durationMaxAttr[0];
-
-                $durationMinAttr = $productAttrManager->getProductAttributesByType($product, product_attribute_type::MIN_LOAN_DURATION_IN_MONTH);
-                $durationMin     = empty($durationMinAttr) ? null : $durationMinAttr[0];
+            if ($product->get($this->projects->id_product)) {
+                $durationMax = $productManager->getMaxEligibleDuration($product);
+                $durationMin = $productManager->getMinEligibleDuration($product);
 
                 foreach ($this->dureePossible as $index => $duration) {
                     if (is_numeric($durationMax) && $duration > $durationMax
-                        || is_numeric($durationContractMax) && $duration > $durationContractMax
                         || is_numeric($durationMin) && $duration < $durationMin
                     ) {
                         unset($this->dureePossible[$index]);

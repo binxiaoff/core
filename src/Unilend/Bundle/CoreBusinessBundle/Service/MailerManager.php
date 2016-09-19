@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 use Unilend\core\Loader;
@@ -47,6 +48,9 @@ class MailerManager
     /** @var string */
     private $locale;
 
+    /** @var TranslatorInterface */
+    private $translator;
+
     public function __construct(
         ContainerInterface $container,
         EntityManager $oEntityManager,
@@ -56,12 +60,14 @@ class MailerManager
         Packages $assetsPackages,
         $schema,
         $frontHost,
-        $adminHost
+        $adminHost,
+        TranslatorInterface $translator
     ) {
         $this->container       = $container;
         $this->oEntityManager  = $oEntityManager;
         $this->messageProvider = $messageProvider;
         $this->mailer          = $mailer;
+        $this->translator          = $translator;
 
         $this->oSettings     = $this->oEntityManager->getRepository('settings');
         $this->oMailTemplate = $this->oEntityManager->getRepository('mail_templates');
@@ -359,6 +365,14 @@ class MailerManager
         $oAcceptedBid = $this->oEntityManager->getRepository('accepted_bids');
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
+        /** @var \underlying_contract $contract */
+        $contract = $this->oEntityManager->getRepository('underlying_contract');
+
+        $contracts     = $contract->select();
+        $contractLabel = [];
+        foreach ($contracts as $contractType) {
+            $contractLabel[$contractType['id_contract']] = $this->translator->trans('contract-type-label_' . $contractType['label']);
+        }
 
         $aLendersIds       = $oLoan->getProjectLoansByLender($oProject->id_project);
         $iNbLenders        = count($aLendersIds);
@@ -387,7 +401,8 @@ class MailerManager
                 $sStyleTD                = 'border: 1px solid; padding: 5px; text-align: center; text-decoration:none;';
 
                 if ($bLenderIsNaturalPerson) {
-                    $aLoanIFP               = $oLoan->select('id_project = ' . $oProject->id_project . ' AND id_lender = ' . $oLenderAccount->id_lender_account . ' AND id_type_contract = ' . \loans::TYPE_CONTRACT_IFP);
+                    $contract->get(\underlying_contract::CONTRACT_IFP, 'label');
+                    $aLoanIFP               = $oLoan->select('id_project = ' . $oProject->id_project . ' AND id_lender = ' . $oLenderAccount->id_lender_account . ' AND id_type_contract = ' .$contract->id_contract);
                     $iNumberOfBidsInLoanIFP = $oAcceptedBid->counter('id_loan = ' . $aLoanIFP[0]['id_loan']);
 
                     if ($iNumberOfBidsInLoanIFP > 1) {
@@ -411,17 +426,9 @@ class MailerManager
 
                 foreach ($aLoansOfLender as $aLoan) {
                     $aFirstPayment = $oPaymentSchedule->getPremiereEcheancePreteurByLoans($aLoan['id_project'], $aLoan['id_lender'], $aLoan['id_loan']);
-
-                    switch ($aLoan['id_type_contract']) {
-                        case \loans::TYPE_CONTRACT_BDC:
-                            $sContractType = 'Bon de caisse';
-                            break;
-                        case \loans::TYPE_CONTRACT_IFP:
-                            $sContractType = 'Contrat de pr&ecirc;t';
-                            break;
-                        default:
-                            $sContractType = '';
-                            break;
+                    $sContractType = '';
+                    if (isset($contractLabel[$aLoan['id_type_contract']])) {
+                        $sContractType = $contractLabel[$aLoan['id_type_contract']];
                     }
                     $sLoansDetails .= '<tr>
                                                <td style="' . $sStyleTD . '">' . $this->oFicelle->formatNumber($aLoan['amount'] / 100) . ' &euro;</td>
@@ -875,6 +882,14 @@ class MailerManager
 
             /** @var \accepted_bids $acceptedBids */
             $acceptedBids = $this->oEntityManager->getRepository('accepted_bids');
+            /** @var \underlying_contract $contract */
+            $contract = $this->oEntityManager->getRepository('underlying_contract');
+
+            $contracts     = $contract->select();
+            $contractLabel = [];
+            foreach ($contracts as $contractType) {
+                $contractLabel[$contractType['id_contract']] = $this->translator->trans('contract-type-label_' . $contractType['label']);
+            }
 
             if ($clientNotifications->getNotif($lender->id_client_owner, \notifications::TYPE_LOAN_ACCEPTED, 'immediatement') == true) {
                 $lenderLoans         = $loans->select('id_project = ' . $project->id_project . ' AND id_lender = ' . $lender->id_lender_account, 'id_type_contract DESC');
@@ -887,7 +902,8 @@ class MailerManager
                 $sStyleTD            = 'border: 1px solid; padding: 5px; text-align: center; text-decoration:none;';
 
                 if ($lender->isNaturalPerson($lender->id_lender_account)) {
-                    $aLoanIFP               = $loans->select('id_project = ' . $project->id_project . ' AND id_lender = ' . $lender->id_lender_account . ' AND id_type_contract = ' . \loans::TYPE_CONTRACT_IFP);
+                    $contract->get(\underlying_contract::CONTRACT_IFP, 'label');
+                    $aLoanIFP               = $loans->select('id_project = ' . $project->id_project . ' AND id_lender = ' . $lender->id_lender_account . ' AND id_type_contract = ' . $contract->id_contract);
                     $iNumberOfBidsInLoanIFP = $acceptedBids->counter('id_loan = ' . $aLoanIFP[0]['id_loan']);
 
                     if ($iNumberOfBidsInLoanIFP > 1) {
@@ -914,18 +930,10 @@ class MailerManager
 
                 foreach ($lenderLoans as $aLoan) {
                     $aFirstPayment = $paymentSchedule->getPremiereEcheancePreteurByLoans($aLoan['id_project'], $aLoan['id_lender'], $aLoan['id_loan']);
-                    switch ($aLoan['id_type_contract']) {
-                        case \loans::TYPE_CONTRACT_BDC:
-                            $sContractType = 'Bon de caisse';
-                            break;
-                        case \loans::TYPE_CONTRACT_IFP:
-                            $sContractType = 'Contrat de pr&ecirc;t';
-                            break;
-                        default:
-                            $sContractType = '';
-                            break;
+                    $sContractType = '';
+                    if (isset($contractLabel[$aLoan['id_type_contract']])) {
+                        $sContractType = $contractLabel[$aLoan['id_type_contract']];
                     }
-
                     $sLoansDetails .= '<tr>
                                         <td style="' . $sStyleTD . '">' . $this->oFicelle->formatNumber($aLoan['amount'] / 100) . ' &euro;</td>
                                         <td style="' . $sStyleTD . '">' . $this->oFicelle->formatNumber($aLoan['rate']) . ' %</td>
@@ -1454,6 +1462,14 @@ class MailerManager
         $translations                    = $this->oEntityManager->getRepository('textes');
         $aTranslations['email-synthese'] = $translations->selectFront('email-synthese', 'fr');
 
+        /** @var \underlying_contract $contract */
+        $contract = $this->oEntityManager->getRepository('underlying_contract');
+        $contracts     = $contract->select();
+        $contractLabel = [];
+        foreach ($contracts as $contractType) {
+            $contractLabel[$contractType['id_contract']] = $this->translator->trans('contract-type-label_' . $contractType['label']);
+        }
+
         /** @var \clients_gestion_notif_log $oNotificationsLog */
         $oNotificationsLog           = $this->oEntityManager->getRepository('clients_gestion_notif_log');
         $oNotificationsLog->id_notif = \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED;
@@ -1503,18 +1519,11 @@ class MailerManager
                         $oLoan->get($aMailNotification['id_loan']);
 
                         $iSumAcceptedLoans += $oLoan->amount / 100;
-
-                        switch ($oLoan->id_type_contract) {
-                            case \loans::TYPE_CONTRACT_BDC:
-                                $sContractType = 'Bon de caisse';
-                                break;
-                            case \loans::TYPE_CONTRACT_IFP:
-                                $sContractType = 'Contrat de pr&ecirc;t';
-                                break;
-                            default:
-                                $sContractType = '';
-                                trigger_error('Unknown contract type: ' . $oLoan->id_type_contract, E_USER_WARNING);
-                                break;
+                        $sContractType = '';
+                        if (isset($contractLabel[$oLoan->id_type_contract])) {
+                            $sContractType = $contractLabel[$oLoan->id_type_contract];
+                        } else {
+                            trigger_error('Unknown contract type: ' . $oLoan->id_type_contract, E_USER_WARNING);
                         }
 
                         $sLoansListHTML .= '

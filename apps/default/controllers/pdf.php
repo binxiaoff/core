@@ -951,6 +951,10 @@ class pdfController extends bootstrap
         $this->companiesEmpr                   = $this->loadData('companies');
         $this->projects_status_history         = $this->loadData('projects_status_history');
         $this->projects_status_history_details = $this->loadData('projects_status_history_details');
+        /** @var underlying_contract contract */
+        $this->contract                        = $this->loadData('underlying_contract');
+        /** @var \Symfony\Component\Translation\TranslatorInterface translator */
+        $this->translator                      = $this->get('translator');
 
         $this->oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
 
@@ -1011,6 +1015,8 @@ class pdfController extends bootstrap
             $this->total        = bcadd($this->echu, $this->echoir, 2);
             $lastEcheance       = $this->echeanciers->select('id_lender = ' . $this->oLendersAccounts->id_lender_account . ' AND id_loan = ' . $this->oLoans->id_loan, 'ordre DESC', 0, 1);
             $this->lastEcheance = date('d/m/Y', strtotime($lastEcheance[0]['date_echeance']));
+
+            $this->contract->get($this->oLoans->id_type_contract);
 
             $this->setDisplay('declaration_de_creances_html');
         } else {

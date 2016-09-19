@@ -465,7 +465,11 @@ class ProjectManager
 
     public function createRepaymentSchedule(\projects $project)
     {
-        $product = $this->productManager->getAssociatedProduct($project);
+        /** @var \product $product */
+        $product = $this->oEntityManager->getRepository('product');
+        if (! $product->get($project->id_product)) {
+            throw new \Exception('Invalid product id ' . $project->id_product . ' found for project id ' . $project->id_project);
+        }
         /** @var \repayment_type $repaymentType */
         $repaymentType = $this->oEntityManager->getRepository('repayment_type');
         $repaymentType->get($product->id_repayment_type);
@@ -549,7 +553,11 @@ class ProjectManager
 
     public function createPaymentSchedule(\projects $project)
     {
-        $product = $this->productManager->getAssociatedProduct($project);
+        /** @var \product $product */
+        $product = $this->oEntityManager->getRepository('product');
+        if (! $product->get($project->id_product)) {
+            throw new \Exception('Invalid product id ' . $project->id_product . ' found for project id ' . $project->id_project);
+        }
         /** @var \repayment_type $repaymentType */
         $repaymentType = $this->oEntityManager->getRepository('repayment_type');
         $repaymentType->get($product->id_repayment_type);

@@ -144,7 +144,14 @@ class TaxManager
                 throw new \Exception('Unable to load loan ' . $repayment->id_loan);
             }
 
-            if ($loan->id_type_contract == \loans::TYPE_CONTRACT_BDC) {
+            /** @var \underlying_contract $contract */
+            $contract = $this->entityManager->getRepository('underlying_contract');
+
+            if (false === $contract->get($loan->id_type_contract)) {
+                throw new \Exception('Unable to load underlying contract ' . $loan->id_type_contract);
+            }
+
+            if ($contract->label == \underlying_contract::CONTRACT_BDC) {
                 return $this->applyTaxes($transaction, [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE]);
             }
         }
