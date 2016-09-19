@@ -590,6 +590,8 @@ ChartView.prototype.render = function (data, schema) {
           break
 
         // Preter Projects Categories Map
+        case 'preterStatisticsMap':
+        case 'emprunterStatisticsMap':
         case 'preterProjectsCategoriesMap':
 
           // Never show the legend
@@ -601,7 +603,7 @@ ChartView.prototype.render = function (data, schema) {
           Utility.extendObjProp(self.settings.highcharts, 'tooltip', {
             enabled: true,
             headerFormat: '',
-            pointFormat: '{point.name}: {point.value}%'
+            pointFormat: '{point.name}: {point.value}%',
           })
 
           // Enable click actions on the series
@@ -628,7 +630,7 @@ ChartView.prototype.render = function (data, schema) {
           })
 
           // @debug
-          // console.log('init preterProjectsCategoriesMap', self.settings.highcharts)
+          console.log('init preterProjectsCategoriesMap', self.settings.highcharts)
 
           break
 
