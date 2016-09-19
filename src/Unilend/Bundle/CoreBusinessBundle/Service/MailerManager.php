@@ -1039,9 +1039,6 @@ class MailerManager
         $oMailNotification = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
         /** @var \clients_gestion_notifications $oCustomerNotificationSettings */
         $oCustomerNotificationSettings = $this->oEntityManager->getRepository('clients_gestion_notifications');
-        /** @var \translations $translations */
-        $translations                    = $this->oEntityManager->getRepository('textes');
-        $aTranslations['email-synthese'] = $translations->selectFront('email-synthese', 'fr');
 
         /** @var \clients_gestion_notif_log $oNotificationsLog */
         $oNotificationsLog           = $this->oEntityManager->getRepository('clients_gestion_notif_log');
@@ -1098,21 +1095,21 @@ class MailerManager
                         $oCustomer->get($iCustomerId);
 
                         if (1 === $iProjectsCount && 'quotidienne' === $sFrequency) {
-                            $sContent = $aTranslations['email-synthese']['contenu-synthese-nouveau-projet-du-jour-singulier'];
-                            $sObject  = $aTranslations['email-synthese']['objet-synthese-nouveau-projet-du-jour-singulier'];
-                            $sSubject = $aTranslations['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
+                            $sContent = $this->translator->trans('email-synthese_contenu-synthese-nouveau-projet-du-jour-singulier');
+                            $sObject  = $this->translator->trans('email-synthese_objet-synthese-nouveau-projet-du-jour-singulier');
+                            $sSubject = $this->translator->trans('email-synthese_sujet-nouveau-projet-du-jour-singulier');
                         } elseif (1 < $iProjectsCount && 'quotidienne' === $sFrequency) {
-                            $sContent = $aTranslations['email-synthese']['contenu-synthese-nouveau-projet-du-jour-pluriel'];
-                            $sObject  = $aTranslations['email-synthese']['objet-synthese-nouveau-projet-du-jour-pluriel'];
-                            $sSubject = $aTranslations['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
+                            $sContent = $this->translator->trans('email-synthese_contenu-synthese-nouveau-projet-du-jour-pluriel');
+                            $sObject  = $this->translator->trans('email-synthese_objet-synthese-nouveau-projet-du-jour-pluriel');
+                            $sSubject = $this->translator->trans('email-synthese_sujet-nouveau-projet-du-jour-pluriel');
                         } elseif (1 === $iProjectsCount && 'hebdomadaire' === $sFrequency) {
-                            $sContent = $aTranslations['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-singulier'];
-                            $sObject  = $aTranslations['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-singulier'];
-                            $sSubject = $aTranslations['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
+                            $sContent = $this->translator->trans('email-synthese_contenu-synthese-nouveau-projet-hebdomadaire-singulier');
+                            $sObject  = $this->translator->trans('email-synthese_objet-synthese-nouveau-projet-hebdomadaire-singulier');
+                            $sSubject = $this->translator->trans('email-synthese_sujet-nouveau-projet-hebdomadaire-singulier');
                         } elseif (1 < $iProjectsCount && 'hebdomadaire' === $sFrequency) {
-                            $sContent = $aTranslations['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-pluriel'];
-                            $sObject  = $aTranslations['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-pluriel'];
-                            $sSubject = $aTranslations['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
+                            $sContent = $this->translator->trans('email-synthese_contenu-synthese-nouveau-projet-hebdomadaire-pluriel');
+                            $sObject  = $this->translator->trans('email-synthese_objet-synthese-nouveau-projet-hebdomadaire-pluriel');
+                            $sSubject = $this->translator->trans('email-synthese_sujet-nouveau-projet-hebdomadaire-pluriel');
                         } else {
                             trigger_error('Frequency and number of projects not handled: ' . $sFrequency . ' / ' . $iProjectsCount, E_USER_WARNING);
                             continue;
@@ -1246,13 +1243,13 @@ class MailerManager
                         </tr>';
 
                     if (1 === $iPlacedBidsCount && 'quotidienne' === $sFrequency) {
-                        $sContent = $aTranslations['email-synthese']['contenu-synthese-offre-placee-quotidienne-singulier'];
-                        $sObject  = $aTranslations['email-synthese']['objet-synthese-offre-placee-quotidienne-singulier'];
-                        $sSubject = $aTranslations['email-synthese']['sujet-synthese-quotidienne-offre-placee-singulier'];
+                        $sContent = $this->translator->trans('email-synthese_contenu-synthese-offre-placee-quotidienne-singulier');
+                        $sObject  = $this->translator->trans('email-synthese_objet-synthese-offre-placee-quotidienne-singulier');
+                        $sSubject = $this->translator->trans('email-synthese_sujet-synthese-quotidienne-offre-placee-singulier');
                     } elseif (1 < $iPlacedBidsCount && 'quotidienne' === $sFrequency) {
-                        $sContent = $aTranslations['email-synthese']['contenu-synthese-offre-placee-quotidienne-pluriel'];
-                        $sObject  = $aTranslations['email-synthese']['objet-synthese-offre-placee-quotidienne-pluriel'];
-                        $sSubject = $aTranslations['email-synthese']['sujet-synthese-quotidienne-offre-placee-pluriel'];
+                        $sContent = $this->translator->trans('email-synthese_contenu-synthese-offre-placee-quotidienne-pluriel');
+                        $sObject  = $this->translator->trans('email-synthese_objet-synthese-offre-placee-quotidienne-pluriel');
+                        $sSubject = $this->translator->trans('email-synthese_sujet-synthese-quotidienne-offre-placee-pluriel');
                     } else {
                         trigger_error('Frequency and number of placed bids not handled: ' . $sFrequency . ' / ' . $iPlacedBidsCount, E_USER_WARNING);
                         continue;
@@ -1317,10 +1314,6 @@ class MailerManager
         $oMailNotification = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
         /** @var \clients_gestion_notifications $oCustomerNotificationSettings */
         $oCustomerNotificationSettings = $this->oEntityManager->getRepository('clients_gestion_notifications');
-        /** @var \translations $translations */
-        $translations                    = $this->oEntityManager->getRepository('textes');
-        $aTranslations['email-synthese'] = $translations->selectFront('email-synthese', 'fr');
-
         /** @var \clients_gestion_notif_log $oNotificationsLog */
         $oNotificationsLog           = $this->oEntityManager->getRepository('clients_gestion_notif_log');
         $oNotificationsLog->id_notif = \clients_gestion_type_notif::TYPE_BID_REJECTED;
@@ -1384,13 +1377,13 @@ class MailerManager
                         </tr>';
 
                     if (1 === $iRejectedBidsCount && 'quotidienne' === $sFrequency) {
-                        $sContent = $aTranslations['email-synthese']['contenu-synthese-offres-refusees-quotidienne-singulier'];
-                        $sObject  = $aTranslations['email-synthese']['objet-synthese-offres-refusees-quotidienne-singulier'];
-                        $sSubject = $aTranslations['email-synthese']['sujet-synthese-offres-refusees-quotidienne-singulier'];
+                        $sContent = $this->translator->trans('email-synthese_contenu-synthese-offres-refusees-quotidienne-singulier');
+                        $sObject  = $this->translator->trans('email-synthese_objet-synthese-offres-refusees-quotidienne-singulier');
+                        $sSubject = $this->translator->trans('email-synthese_sujet-synthese-offres-refusees-quotidienne-singulier');
                     } elseif (1 < $iRejectedBidsCount && 'quotidienne' === $sFrequency) {
-                        $sContent = $aTranslations['email-synthese']['contenu-synthese-offres-refusees-quotidienne-pluriel'];
-                        $sObject  = $aTranslations['email-synthese']['objet-synthese-offres-refusees-quotidienne-pluriel'];
-                        $sSubject = $aTranslations['email-synthese']['sujet-synthese-offres-refusees-quotidienne-pluriel'];
+                        $sContent = $this->translator->trans('email-synthese_contenu-synthese-offres-refusees-quotidienne-pluriel');
+                        $sObject  = $this->translator->trans('email-synthese_objet-synthese-offres-refusees-quotidienne-pluriel');
+                        $sSubject = $this->translator->trans('email-synthese_sujet-synthese-offres-refusees-quotidienne-pluriel');
                     } else {
                         trigger_error('Frequency and number of rejected bids not handled: ' . $sFrequency . ' / ' . $iRejectedBidsCount, E_USER_WARNING);
                         continue;
@@ -1457,10 +1450,6 @@ class MailerManager
         $oMailNotification = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
         /** @var \clients_gestion_notifications $oCustomerNotificationSettings */
         $oCustomerNotificationSettings = $this->oEntityManager->getRepository('clients_gestion_notifications');
-
-        /** @var \translations $translations */
-        $translations                    = $this->oEntityManager->getRepository('textes');
-        $aTranslations['email-synthese'] = $translations->selectFront('email-synthese', 'fr');
 
         /** @var \underlying_contract $contract */
         $contract = $this->oEntityManager->getRepository('underlying_contract');
@@ -1544,29 +1533,29 @@ class MailerManager
                         </tr>';
 
                     if (1 === $iAcceptedLoansCount && 'quotidienne' === $sFrequency) {
-                        $sContent = $aTranslations['email-synthese']['contenu-synthese-quotidienne-offres-acceptees-singulier'];
-                        $sObject  = $aTranslations['email-synthese']['objet-synthese-quotidienne-offres-acceptees-singulier'];
-                        $sSubject = $aTranslations['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-singulier'];
+                        $sContent = $this->translator->trans('email-synthese_contenu-synthese-quotidienne-offres-acceptees-singulier');
+                        $sObject  = $this->translator->trans('email-synthese_objet-synthese-quotidienne-offres-acceptees-singulier');
+                        $sSubject = $this->translator->trans('email-synthese_sujet-synthese-quotidienne-offres-acceptees-singulier');
                     } elseif (1 < $iAcceptedLoansCount && 'quotidienne' === $sFrequency) {
-                        $sContent = $aTranslations['email-synthese']['contenu-synthese-quotidienne-offres-acceptees-pluriel'];
-                        $sObject  = $aTranslations['email-synthese']['objet-synthese-quotidienne-offres-acceptees-pluriel'];
-                        $sSubject = $aTranslations['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-pluriel'];
+                        $sContent = $this->translator->trans('email-synthese_contenu-synthese-quotidienne-offres-acceptees-pluriel');
+                        $sObject  = $this->translator->trans('email-synthese_objet-synthese-quotidienne-offres-acceptees-pluriel');
+                        $sSubject = $this->translator->trans('email-synthese_sujet-synthese-quotidienne-offres-acceptees-pluriel');
                     } elseif (1 === $iAcceptedLoansCount && 'hebdomadaire' === $sFrequency) {
-                        $sContent = $aTranslations['email-synthese']['contenu-synthese-hebdomadaire-offres-acceptees-singulier'];
-                        $sObject  = $aTranslations['email-synthese']['objet-synthese-hebdomadaire-offres-acceptees-singulier'];
-                        $sSubject = $aTranslations['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-singulier'];
+                        $sContent = $this->translator->trans('email-synthese_contenu-synthese-hebdomadaire-offres-acceptees-singulier');
+                        $sObject  = $this->translator->trans('email-synthese_objet-synthese-hebdomadaire-offres-acceptees-singulier');
+                        $sSubject = $this->translator->trans('email-synthese_sujet-synthese-hebdomadaire-offres-acceptees-singulier');
                     } elseif (1 < $iAcceptedLoansCount && 'hebdomadaire' === $sFrequency) {
-                        $sContent = $aTranslations['email-synthese']['contenu-synthese-hebdomadaire-offres-acceptees-pluriel'];
-                        $sObject  = $aTranslations['email-synthese']['objet-synthese-hebdomadaire-offres-acceptees-pluriel'];
-                        $sSubject = $aTranslations['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-pluriel'];
+                        $sContent = $this->translator->trans('email-synthese_contenu-synthese-hebdomadaire-offres-acceptees-pluriel');
+                        $sObject  = $this->translator->trans('email-synthese_objet-synthese-hebdomadaire-offres-acceptees-pluriel');
+                        $sSubject = $this->translator->trans('email-synthese_sujet-synthese-hebdomadaire-offres-acceptees-pluriel');
                     } elseif (1 === $iAcceptedLoansCount && 'mensuelle' === $sFrequency) {
-                        $sContent = $aTranslations['email-synthese']['contenu-synthese-mensuelle-offres-acceptees-singulier'];
-                        $sObject  = $aTranslations['email-synthese']['objet-synthese-mensuelle-offres-acceptees-singulier'];
-                        $sSubject = $aTranslations['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-singulier'];
+                        $sContent = $this->translator->trans('email-synthese_contenu-synthese-mensuelle-offres-acceptees-singulier');
+                        $sObject  = $this->translator->trans('email-synthese_objet-synthese-mensuelle-offres-acceptees-singulier');
+                        $sSubject = $this->translator->trans('email-synthese_sujet-synthese-mensuelle-offres-acceptees-singulier');
                     } elseif (1 < $iAcceptedLoansCount && 'mensuelle' === $sFrequency) {
-                        $sContent = $aTranslations['email-synthese']['contenu-synthese-mensuelle-offres-acceptees-pluriel'];
-                        $sObject  = $aTranslations['email-synthese']['objet-synthese-mensuelle-offres-acceptees-pluriel'];
-                        $sSubject = $aTranslations['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-pluriel'];
+                        $sContent = $this->translator->trans('email-synthese_contenu-synthese-mensuelle-offres-acceptees-pluriel');
+                        $sObject  = $this->translator->trans('email-synthese_objet-synthese-mensuelle-offres-acceptees-pluriel');
+                        $sSubject = $this->translator->trans('email-synthese_sujet-synthese-mensuelle-offres-acceptees-pluriel');
                     } else {
                         trigger_error('Frequency and number of accepted loans not handled: ' . $sFrequency . ' / ' . $iAcceptedLoansCount, E_USER_WARNING);
                         continue;
@@ -1634,10 +1623,6 @@ class MailerManager
         $oMailNotification = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
         /** @var \clients_gestion_notifications $oCustomerNotificationSettings */
         $oCustomerNotificationSettings = $this->oEntityManager->getRepository('clients_gestion_notifications');
-
-        /** @var \translations $translations */
-        $translations                    = $this->oEntityManager->getRepository('textes');
-        $aTranslations['email-synthese'] = $translations->selectFront('email-synthese', 'fr');
 
         /** @var \clients_gestion_notif_log $oNotificationsLog */
         $oNotificationsLog           = $this->oEntityManager->getRepository('clients_gestion_notif_log');
@@ -1756,23 +1741,23 @@ class MailerManager
                         </tr>';
 
                     if (1 === $iRepaymentsCount && 'quotidienne' === $sFrequency) {
-                        $sSubject = $aTranslations['email-synthese']['sujet-synthese-quotidienne-singulier'];
-                        $sContent = $aTranslations['email-synthese']['contenu-synthese-quotidienne-singulier'];
+                        $sSubject = $this->translator->trans('email-synthese_sujet-synthese-quotidienne-singulier');
+                        $sContent = $this->translator->trans('email-synthese_contenu-synthese-quotidienne-singulier');
                     } elseif (1 < $iRepaymentsCount && 'quotidienne' === $sFrequency) {
-                        $sSubject = $aTranslations['email-synthese']['sujet-synthese-quotidienne-pluriel'];
-                        $sContent = $aTranslations['email-synthese']['contenu-synthese-quotidienne-pluriel'];
+                        $sSubject = $this->translator->trans('email-synthese_sujet-synthese-quotidienne-pluriel');
+                        $sContent = $this->translator->trans('email-synthese_contenu-synthese-quotidienne-pluriel');
                     } elseif (1 === $iRepaymentsCount && 'hebdomadaire' === $sFrequency) {
-                        $sSubject = $aTranslations['email-synthese']['sujet-synthese-hebdomadaire-singulier'];
-                        $sContent = $aTranslations['email-synthese']['contenu-synthese-quotidienne-singulier'];
+                        $sSubject = $this->translator->trans('email-synthese_sujet-synthese-hebdomadaire-singulier');
+                        $sContent = $this->translator->trans('email-synthese_contenu-synthese-quotidienne-singulier');
                     } elseif (1 < $iRepaymentsCount && 'hebdomadaire' === $sFrequency) {
-                        $sSubject = $aTranslations['email-synthese']['sujet-synthese-hebdomadaire-pluriel'];
-                        $sContent = $aTranslations['email-synthese']['contenu-synthese-hebdomadaire-pluriel'];
+                        $sSubject = $this->translator->trans('email-synthese_sujet-synthese-hebdomadaire-pluriel');
+                        $sContent = $this->translator->trans('email-synthese_contenu-synthese-hebdomadaire-pluriel');
                     } elseif (1 === $iRepaymentsCount && 'mensuelle' === $sFrequency) {
-                        $sSubject = $aTranslations['email-synthese']['sujet-synthese-mensuelle-singulier'];
-                        $sContent = $aTranslations['email-synthese']['contenu-synthese-quotidienne-singulier'];
+                        $sSubject = $this->translator->trans('email-synthese_sujet-synthese-mensuelle-singulier');
+                        $sContent = $this->translator->trans('email-synthese_contenu-synthese-quotidienne-singulier');
                     } elseif (1 < $iRepaymentsCount && 'mensuelle' === $sFrequency) {
-                        $sSubject = $aTranslations['email-synthese']['sujet-synthese-mensuelle-pluriel'];
-                        $sContent = $aTranslations['email-synthese']['contenu-synthese-mensuelle-pluriel'];
+                        $sSubject = $this->translator->trans('email-synthese_sujet-synthese-mensuelle-pluriel');
+                        $sContent = $this->translator->trans('email-synthese_contenu-synthese-mensuelle-pluriel');
                     } else {
                         trigger_error('Frequency and number of repayments not handled: ' . $sFrequency . ' / ' . $iRepaymentsCount, E_USER_WARNING);
                         continue;
