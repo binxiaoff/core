@@ -131,6 +131,7 @@ class LenderAccountDisplayManager
                 continue;
             }
             $dataForTreeMap[] = [
+                'insee'               => $row['insee_region_code'],
                 'name'                => $regions[$row['insee_region_code']],
                 'projectsCount'       => (int) $row['count'],
                 'averageRate'         => round($row['average_rate'], 2),

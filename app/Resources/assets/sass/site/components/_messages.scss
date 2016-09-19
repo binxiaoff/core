@@ -39,6 +39,7 @@
   padding: 20px;
   margin-bottom: 20px;
   position: relative;
+  overflow: hidden;
 
   background-color: $bg-color;
   color: $text-color;
@@ -83,8 +84,7 @@
 
   // Ignore min-height if collapsing
   &.collapsing {
-    min-height: 0;
-    overflow: hidden;
+    min-height: 0 !important;
   }
 }
 

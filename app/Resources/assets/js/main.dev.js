@@ -97,7 +97,7 @@ $(document).ready(function ($) {
 
   // @debug
   // window.__ = __
-  // window.Utility = Utility
+  window.Utility = Utility
   // window.CacheForm = CacheForm
 
   // Remove HTML
