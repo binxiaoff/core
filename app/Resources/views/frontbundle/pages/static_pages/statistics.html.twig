@@ -25,13 +25,119 @@
         },
         series: [{
             type: 'treemap',
-            layoutAlgorithm: 'strip',
+            layoutAlgorithm: 'squarified',
             data: data.projectCountForCategoryTreeMap
         }]
     }
 }
 %}
 {# the intended algorith was squiarfied, however we have too small values, it looks better in strip. To be changed once be have a better ratio in the categories #}
+
+{#{% set unilendAccountChart = {#}
+    {#type: 'preterProjectsOverview',#}
+    {#background: 'none',#}
+    {#highcharts: {#}
+        {#chart: {#}
+            {#type: 'pie',#}
+            {#plotBackgroundColor: null,#}
+            {#plotBorderWidth: null,#}
+            {#plotShadow: null#}
+        {#},#}
+        {#title: {#}
+            {#text: ''#}
+        {#},#}
+        {#subtitle: {#}
+            {#text: 'lender-dashboard-account_graph-subtitle'|trans,#}
+            {#color: '#999999',#}
+            {#floating: true,#}
+            {#useHTML: true,#}
+            {#verticalAlign: 'middle'#}
+        {#},#}
+        {#plotOptions: {#}
+            {#pie: {#}
+            {#borderColor: 'none',#}
+            {#borderWidth: 0,#}
+            {#showInLegend: true,#}
+            {#dataLabels: {#}
+                {#enabled: false#}
+                {#}#}
+            {#}#}
+        {#},#}
+        {#legend: {#}
+            {#symbolRadius: 10#}
+        {#},#}
+        {#series: [{#}
+            {#name: 'lender-dashboard-account_lended-amount-circle-title'|trans ~ ' ',#}
+            {#minSize: 120,#}
+            {#innerSize: '90%',#}
+            {#endAngle: 270,#}
+            {#data: [{#}
+                {#name: 'lender-dashboard-account_lended-amount-circle-legend'|trans,#}
+                {#color: '#5FC5D1',#}
+                {#y: getStatistic('amountBorrowed'),#}
+                {#value: getStatistic('amountBorrowed')|localizedcurrency('EUR'),#}
+                {#showInLegend: true,#}
+            {#}]#}
+        {#},{#}
+            {#name:  'lender-dashboard-account_capital-circle-title'|trans ~ ' ',#}
+            {#size: '66%',#}
+            {#minSize: 100,#}
+            {#innerSize: '90%',#}
+            {#endAngle: 270,#}
+            {#data: [{#}
+            {#name: 'lender-dashboard-account_capital-circle-repaid-capital-legend'|trans,#}
+            {#color: '#1B88DB',#}
+            {#y: getStatistic('totalRepaidCapital'),#}
+            {#value: getStatistic('totalRepaidCapital')|localizedcurrency('EUR'),#}
+            {#showInLegend: true,#}
+        {#},{#}
+            {#name: 'lender-dashboard-account_capital-circle-owed-capital-legend'|trans,#}
+            {#color: '#B6D4E4',#}
+            {#y: getStatistic('OwedCapital'),#}
+            {#value: getStatistic('OwedCapital')|localizedcurrency('EUR'),#}
+            {#showInLegend: true#}
+        {#},{#}
+            {#name: 'lender-dashboard-account_capital-circle-troubled-capital-legend'|trans,#}
+            {#color: '#F76965',#}
+            {#y: getStatistic('CapitalInDifficulty'),#}
+            {#value: getStatistic('CapitalInDifficulty')|localizedcurrency('EUR'),#}
+            {#showInLegend: true#}
+            {#}]#}
+        {#},{#}
+        {#name: 'lender-dashboard-account_interests-circle-title'|trans ~ ' ',#}
+            {#minSize: 80,#}
+            {#size: '33%',#}
+            {#innerSize: '90%',#}
+            {#endAngle: 330,#}
+            {#data: [{#}
+                {#name: '',#}
+                {#color: '#eeeeee',#}
+                {#dataLabels: {#}
+                {#enabled: false#}
+            {#},#}
+            {#showInLegend: false,#}
+            {#y: getStatistic('totalRepaidCapital') + getStatistic('OwedCapital') * 0.66,#}
+            {#tooltip: false#}
+        {#},{#}
+            {#name: 'lender-dashboard-account_interests-circle-collected-raw-interests-legend'|trans,#}
+            {#color: '#F2980C',#}
+            {#y: getStatistic('TotalRepaidInterests'),#}
+            {#value: getStatistic('TotalRepaidInterests')|localizedcurrency('EUR'),#}
+            {#showInLegend: true#}
+        {#},{#}
+            {#name: 'lender-dashboard-account_interests-circle-upcoming-raw-interests-legend'|trans,#}
+            {#color: '#FFCA2C',#}
+            {#y: getStatistic('upcomingInterest'),#}
+            {#value: getStatistic('upcomingInterest')|localizedcurrency('EUR'),#}
+            {#showInLegend: true#}
+            {#}]#}
+        {#}],#}
+        {#tooltip: {#}
+        {#valueSuffix: ' €'#}
+        {#}#}
+    {#}#}
+{#} %}#}
+
 
 {% set borrowersRegionData = getStatistic('BorrowersByRegion') %}
 {% for insee, borrowersRegionDetails in getStatistic('BorrowersByRegion') %}
@@ -148,95 +254,6 @@ color: '#B40066'
 }
 },
 showInLegend: false
-}]
-}
-},
-
-emprunterStatisticsCategories: {
-type: 'preterProjectsCategories',
-background: 'none',
-highcharts: {
-chart: {
-type: 'treemap',
-spacing: [0, 0, 0, 0]
-},
-title: {
-text: ''
-},
-plotOptions: {
-treemap: {
-borderColor: '#B40066',
-borderWidth: 2,
-dataLabels: {
-useHTML: true,
-zIndex: -1
-}
-}
-},
-tooltip: {
-enabled: false,
-useHTML: true
-},
-series: [{
-type: 'treemap',
-layoutAlgorithm: 'squarified',
-data: [{
-name: 'Agriculture',
-value: 10,
-svgIconId: '#category-sm-agriculture'
-},{
-name: 'Medical',
-value: 2,
-svgIconId: '#category-sm-medical'
-},{
-name: 'Other',
-value: 15,
-svgIconId: '#category-sm-autre'
-},{
-name: 'Consultation',
-value: 3,
-svgIconId: '#category-sm-consultation'
-},{
-name: 'Restauration',
-value: 15,
-svgIconId: '#category-sm-restauration'
-},{
-name: 'Media',
-value: 4,
-svgIconId: '#category-sm-media'
-},{
-name: 'Construction',
-value: 33,
-svgIconId: '#category-sm-construction'
-},{
-name: 'Communication',
-value: 16,
-svgIconId: '#category-sm-communication'
-},{
-name: 'Hotellerie',
-value: 7,
-svgIconId: '#category-sm-hotellerie'
-},{
-name: 'Health',
-value: 3,
-svgIconId: '#category-sm-health'
-},{
-name: 'Industrie',
-value: 5,
-svgIconId: '#category-sm-industrie'
-},{
-name: 'Informations Technologies',
-value: 23,
-svgIconId: '#category-sm-it'
-},{
-name: 'Transport',
-value: 12,
-svgIconId: '#category-sm-transport'
-},{
-name: 'Fashion & textile',
-value: 12,
-svgIconId: '#category-sm-textile'
-}]
 }]
 }
 },
@@ -506,7 +523,7 @@ y: 46
             </div>
             <div class="col-lg-6 col-md-6">
                 <div class="block-text">
-                    {% trans with {'%numberProjectRequests%' : getStatistic('numberOfProjectRequests'), '%percentageAcceptedRequests%' : getStatistic('percentageOfAcceptedProjects') }%} about-us-statistics_general-description-text {% endtrans %}
+                    {% trans with {'%numberProjectRequests%' : getStatistic('numberOfProjectRequests')|localizednumber, '%percentageAcceptedRequests%' : getStatistic('percentageOfAcceptedProjects')|localizednumber }%} about-us-statistics_general-description-text {% endtrans %}
                     <p>
                         <a href="{% trans %} about-us-statistics_link-under-general-description-target-url {% endtrans %}" class="link">
                             {% trans %} about-us-statistics_link-under-general-description-text {% endtrans %}
@@ -590,14 +607,14 @@ y: 46
                     </div><!-- /.promo -->
                     <div class="promo col-lg-4 col-md-4">
                         <h3 class="promo-highlight promo-highlight-lg">
-                            {% set averageLoanAmount = getStatistic('averageLoanAmount')|round %}
+                            {% set averageLoanAmount = getStatistic('averageLoanAmount')|round|localizednumber %}
                             <span data-textcount data-start-count="0" data-end-count="{{ averageLoanAmount }}" data-total-time="3000" data-tween-count="easeOutCirc">{{ averageLoanAmount|localizednumber }}</span><sup>€</sup>
                         </h3>
                         <p>{% trans %} about-us-statistics_lender-statistics-2-text {% endtrans %}</p>
                     </div><!-- /.promo -->
                     <div class="promo col-lg-4 col-md-4">
                         <h3 class="promo-highlight promo-highlight-lg">
-                            <span data-textcount data-start-count="0" data-end-count="100" data-total-time="3000" data-tween-count="easeOutCirc">100%</span>
+                            <span data-textcount data-start-count="0" data-end-count="100" data-total-time="3000" data-tween-count="easeOutCirc">100</span><sup>%</sup>
                         </h3>
                         <p>{% trans %} about-us-statistics_lender-statistics-3-text {% endtrans %}</p>
                     </div><!-- /.promo -->
@@ -652,7 +669,9 @@ y: 46
                 <div class="block-promos row">
                     <div class="promo col-lg-3 col-md-3">
                         <h3 class="promo-highlight promo-highlight-md">
-                            <span data-textcount data-start-count="0" data-end-count="10" data-total-time="3000" data-tween-count="easeOutCirc"></span><sup>TODO</sup>
+                            {% set percentageOfProjectsFundedIn24Hours = getStatistic('PercentageOfProjectsFundedIn24Hours') %}
+                            <span data-textcount data-start-count="0" data-end-count="percentageOfProjectsFundedIn24Hours" data-total-time="3000" data-tween-count="easeOutCirc">
+                                {{ percentageOfProjectsFundedIn24Hours|localizednumber }}</span><sup>%</sup>
                         </h3>
                         <p>{% trans %} about-us-statistics_borrower-statistics-1-text {% endtrans %}</p>
                     </div><!-- /.promo -->
@@ -673,7 +692,8 @@ y: 46
                     <div class="promo col-lg-3 col-md-3">
                         <h3 class="promo-highlight promo-highlight-md">
                             {% set numberOfFinancedProjects = getStatistic('numberOfFinancedProjects') %}
-                            <span data-textcount data-start-count="0" data-end-count="{{ numberOfFinancedProjects }}" data-total-time="3000" data-tween-count="easeOutCirc">{{ numberOfFinancedProjects|localizednumber }}</span>
+                            <span data-textcount data-start-count="0" data-end-count="{{ numberOfFinancedProjects }}" data-total-time="3000" data-tween-count="easeOutCirc">
+                                {{ numberOfFinancedProjects|localizednumber }}</span><sup></sup>
                         </h3>
                         <p>{% trans %} about-us-statistics_borrower-statistics-4-text {% endtrans %}</p>
                     </div><!-- /.promo -->
@@ -694,8 +714,9 @@ y: 46
                     <div class="promo-image">
                         <img src="{{ siteurlmedia('apropos/statistiques/medal-bolt.png') }}" alt=""/>
                     </div>
+                    {% set highestAmountObtainedFastest = getStatistic('highestAmountObtainedFastest') %}
                     <h3 class="promo-highlight promo-highlight-lg">
-                        <span data-textcount data-start-count="0" data-end-count="312" data-total-time="3000" data-tween-count="easeOutCirc">312</span><sup>€</sup>
+                        <span data-textcount data-start-count="0" data-end-count="{{ highestAmountObtainedFastest }}" data-total-time="3000" data-tween-count="easeOutCirc">{{ highestAmountObtainedFastest|localizednumber }}</span><sup>€</sup>
                     </h3>
                     <p>{% trans %} about-us-statistics_unilend-records-medal-bolt-text {% endtrans %}</p>
                 </div>
@@ -703,15 +724,15 @@ y: 46
                     <div class="promo-image">
                         <img src="{{ siteurlmedia('apropos/statistiques/medal-handshake.png') }}" alt=""/>
                     </div>
-                    <h3 class="promo-highlight promo-highlight-lg">2<sup>min</sup></h3>
-                    <p>{% trans %} about-us-statistics_unilend-records-medal-handshake-text {% endtrans %}</p>
+                    <h3 class="promo-highlight promo-highlight-lg">{{ getStatistic('secondsForBid')|localizednumber }}<sup>sec</sup></h3>
+                    <p>{% trans with {'%seconds%' : getStatistic('secondsForBid')|localizednumber }%} about-us-statistics_unilend-records-medal-handshake-text {% endtrans %}</p>
                 </div>
                 <div class="promo col-lg-4 col-md-4">
                     <div class="promo-image">
                         <img src="{{ siteurlmedia('apropos/statistiques/medal-clock.png') }}" alt=""/>
                     </div>
                     <h3 class="promo-highlight promo-highlight-lg">
-                        <span data-textcount data-start-count="0" data-end-count="45" data-total-time="3000" data-tween-count="easeOutCirc">45</span><sup>min</sup>
+                        <span data-textcount data-start-count="0" data-end-count="1" data-total-time="100" data-tween-count="easeOutCirc">1</span><sup>min</sup>
                     </h3>
                     <p>{% trans %} about-us-statistics_unilend-records-medal-clock-text {% endtrans %}</p>
                 </div>
@@ -729,7 +750,7 @@ y: 46
             <div class="row">
                 <h3 class="c-t1">{% trans %} about-us-statistics_unilend-performances-chart-title {% endtrans %}</h3>
                 <div class="stats-chart stats-chart-unilend">
-                    <div class="chart" data-chartview='{{ placeholderData.charts.overviewStatistics|json_encode|escape('html_attr') }}'></div>
+                    <div class="chart" data-chartview='{{ unilendAccountChart|json_encode|escape('html_attr') }}'></div>
                     <div class="stats-chart-unilend-key">
                         <div class="row">
                             {% for i, series in placeholderData.charts.overviewStatistics.highcharts.series %}

@@ -448,4 +448,19 @@ class bids extends bids_crud
 
         return $result;
     }
+
+    public function getMaxCountBidsPerDay()
+    {
+        $query = 'SELECT MAX(t.numberBids)
+                    FROM (
+                           SELECT count(id_bid) AS numberBids
+                           FROM bids
+                           GROUP BY DATE(added)) AS t';
+
+        $statement = $this->bdd->executeQuery($query);
+
+        return $statement->fetchColumn(0);
+    }
+
+
 }

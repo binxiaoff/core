@@ -823,12 +823,11 @@ class MainController extends Controller
         return $this->renderCmsNav($tree, $finalElements, $entityManager, 'apropos-statistiques');
     }
 
-    public function getProjectCountForCategoryTreeMap()
+    private function getProjectCountForCategoryTreeMap()
     {
         /** @var StatisticsManager $statisticsManager */
         $statisticsManager = $this->get('unilend.service.statistics_manager');
         $countByCategory = $statisticsManager->getProjectCountByCategory();
-
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
         $dataForTreeMap = [];
@@ -840,6 +839,6 @@ class MainController extends Controller
                 'svgIconId' => '#category-sm-' . $category
             ];
         }
+        return $dataForTreeMap;
     }
-
 }

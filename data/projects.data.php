@@ -941,14 +941,18 @@ class projects extends projects_crud
         return $statement->fetchColumn(0);
     }
 
-    public function getNumberOfUniqueProjectRequests()
+    public function getNumberOfUniqueProjectRequests($startDate)
     {
+        $bind = ['startDate' => $startDate];
+        $type = ['startDate' => \PDO::PARAM_STR];
+
         $query = 'SELECT COUNT(DISTINCT companies.siren)
                     FROM `projects`
                       INNER JOIN companies USING (id_company)
                     WHERE LENGTH(companies.siren) = 9 AND companies.siren NOT IN ("123456789", "987654321", "987456321", "123654789",
-                    "999999999", "888888888", "777777777", "666666666", "555555555", "444444444","333333333", "222222222", "111111111", "000000000")';
-        $statement = $this->bdd->executeQuery($query);
+                    "999999999", "888888888", "777777777", "666666666", "555555555", "444444444","333333333", "222222222", "111111111", "000000000") AND projects.added > :startDate';
+
+        $statement = $this->bdd->executeQuery($query, $bind, $type);
 
         return $statement->fetchColumn(0);
     }
@@ -1026,7 +1030,7 @@ class projects extends projects_crud
                 GROUP BY companies.sector';
 
         $statement = $this->bdd->executeQuery($query);
-        $categoriesCount  = array();
+        $categoriesCount  = [];
         while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
             $categoriesCount[$row['sector']] = $row['count'];
         }
@@ -1065,5 +1069,50 @@ class projects extends projects_crud
         }
         return $result;
     }
+
+    public function countProjectsFundedIn24Hours(\DateTime $startDate)
+    {
+        $bind = ['startDate' => $startDate->format('Y-m-d h:i:s')];
+        $type = ['startDate' => \PDO::PARAM_STR];
+
+        $query = 'SELECT count(projects.id_project)
+                    FROM projects
+                    WHERE MOD(HOUR(TIMEDIFF(date_publication_full, date_funded)), 24) <= 24
+                    AND date_funded >= :startDate AND status >= ' . \projects_status::FUNDE;
+
+        $statement = $this->bdd->executeQuery($query, $bind, $type);
+
+        return $statement->fetchColumn(0);
+    }
+
+    public function countProjectsFundedSince(\DateTime $startDate)
+    {
+        $bind = ['startDate' => $startDate->format('Y-m-d h:i:s')];
+        $type = ['startDate' => \PDO::PARAM_STR];
+
+        $query = 'SELECT count(projects.id_project)
+                    FROM projects
+                    WHERE date_funded >= :startDate AND status >=' . \projects_status::FUNDE;
+
+        $statement = $this->bdd->executeQuery($query, $bind, $type);
+
+        return $statement->fetchColumn(0);
+    }
+
+    public function getHighestAmountObtainedFastest()
+    {
+        $query = 'SELECT
+                      amount
+                  FROM projects
+                    WHERE date_funded != \'0000-00-00 00:00:00\'
+                    GROUP BY id_project
+                    ORDER BY SECOND(TIMEDIFF(date_funded, date_publication_full)) ASC, amount DESC
+                    LIMIT 1';
+
+        $statement = $this->bdd->executeQuery($query);
+        return $statement->fetchColumn(0);
+    }
+
+
 
 }
