@@ -33,25 +33,30 @@
 %}
 {# the intended algorith was squiarfied, however we have too small values, it looks better in strip. To be changed once be have a better ratio in the categories #}
 
-{% set borrowersRegionData = [] %}
+{% set borrowersRegionData = getStatistic('BorrowersByRegion') %}
 {% for insee, borrowersRegionDetails in getStatistic('BorrowersByRegion') %}
     {% set borrowersRegionData = borrowersRegionData|merge([{
-    insee: insee,
-    name: borrowersRegionDetails.name,
-    value: borrowersRegionDetails.percentage * 100
+        insee: borrowersRegionDetails.insee,
+        name: borrowersRegionDetails.name,
+        value: borrowersRegionDetails.percentage
     }])
     %}
 {% endfor %}
 
-{% set lendersRegionData = [] %}
+{% set lendersRegionData = getStatistic('LendersByRegion') %}
 {% for insee, lendersRegionDetails in getStatistic('LendersByRegion') %}
     {% set lendersRegionData = lendersRegionData|merge([{
-    insee: insee,
-    name: lendersRegionDetails.name,
-    value: lendersRegionDetails.percentage * 100
+        insee: lendersRegionDetails.insee,
+        name: lendersRegionDetails.name,
+        value: lendersRegionDetails.percentage
     }])
     %}
 {% endfor %}
+
+{{ dump({
+    borrowers: borrowersRegionData,
+    lenders: lendersRegionData
+}) }}
 
 {# Placeholder Data #}
 {% set placeholderData = {
@@ -59,7 +64,7 @@ charts: {
 preterStatisticsMap: {
 type: 'preterStatisticsMap',
 loadFirst: {
-mapData: ('/assets/js/vendor/geojson/fr-regions-all.json')
+mapData: '/assets/js/vendor/geojson/fr-regions-all.json'
 },
 background: 'none',
 highcharts: {
