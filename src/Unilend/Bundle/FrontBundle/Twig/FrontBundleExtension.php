@@ -67,7 +67,6 @@ class FrontBundleExtension extends \Twig_Extension
     {
         return array(
             new \Twig_SimpleFilter('nbsp', [$this, 'nbspFilter']),
-            new \Twig_SimpleFilter('__num', [$this, 'numFilter']),
             new \Twig_SimpleFilter('convertRisk', [$this, 'convertProjectRiskFilter']),
             new \Twig_SimpleFilter('completeProjectImagePath', [$this, 'projectImagePathFilter']),
             new \Twig_SimpleFilter('baseUrl', [$this, 'addBaseUrl']),
@@ -168,19 +167,6 @@ class FrontBundleExtension extends \Twig_Extension
     public function nbspFilter($sString)
     {
         return preg_replace('/[ ](?=[^>]*(?:<|$))/', '&nbsp;', $sString);
-    }
-
-    /**
-     * @param int|float $number
-     * @param int|null  $decimals
-     * @return string
-     */
-    public function numFilter($number, $decimals = null)
-    {
-        if (is_null($decimals)) {
-            $decimals = 2;
-        }
-        return number_format((float) $number, $decimals, ',', ' ');
     }
 
     public function convertProjectRiskFilter($sProjectRating)

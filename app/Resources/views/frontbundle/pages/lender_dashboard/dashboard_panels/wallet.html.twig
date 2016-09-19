@@ -13,7 +13,7 @@
     {% set regionData = regionData|merge([{
             insee: regionDetails.insee,
             name: regionDetails.name,
-            value: regionDetails.projectsCount
+            value: regionDetails.loanSharePercentage
         }])
     %}
 {% endfor %}

@@ -136,7 +136,7 @@ class LenderAccountDisplayManager
                 'projectsCount'       => (int) $row['count'],
                 'averageRate'         => round($row['average_rate'], 2),
                 'loanedAmount'        => round($row['loaned_amount'], 2),
-                'loanSharePercentage' => round($row['loaned_amount'] * 100 / array_sum(array_column($data, 'loaned_amount')), 2),
+                'loanSharePercentage' => round($row['loaned_amount'] * 100 / array_sum(array_column($data, 'loaned_amount')), 0),
             ];
         }
 

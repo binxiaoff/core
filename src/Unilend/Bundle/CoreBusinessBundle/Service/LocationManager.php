@@ -163,6 +163,7 @@ class LocationManager
      */
     private function getPercentageByRegion($countByRegion)
     {
+
         $frenchRegions = $this->getFrenchRegions();
 
         if (isset($countByRegion['0'])) {
@@ -171,21 +172,22 @@ class LocationManager
 
         $regions = [];
 
-        $total = array_sum($countByRegion);
-        foreach ($countByRegion as $inseeRegionCode => $count) {
-
-            if (array_key_exists($inseeRegionCode, $frenchRegions)) {
-                $regions[$inseeRegionCode] = [
-                    'count'      => $count,
-                    'percentage' => bcdiv($count, $total, 2)
+        $total = array_sum(array_column($countByRegion, 'count'));
+        foreach ($countByRegion as $row) {
+            if (array_key_exists($row['insee_region_code'], $frenchRegions)) {
+                $regions[$row['insee_region_code']] = [
+                    'count'      => $row['count'],
+                    'percentage' => bcdiv($row['count'], $total, 2)
                 ];
             } else {
-                $regions[$inseeRegionCode] = [
+                $regions[$row['insee_region_code']] = [
                     'count'      => 0,
                     'percentage' => 0
                 ];
             }
-            $regions[$inseeRegionCode]['name'] = $frenchRegions[$inseeRegionCode];
+            $row['insee_region_code'] = str_pad($row['insee_region_code'], 2, '0', STR_PAD_LEFT);
+
+            $regions[$row['insee_region_code']]['name'] = $frenchRegions[$row['insee_region_code']];
         }
 
         return $regions;
