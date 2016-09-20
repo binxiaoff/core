@@ -40,7 +40,7 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         $contract = $entityManager->getRepository('underlying_contract');
 
         $aResult = $this->getData('fr');
-        var_dump($aResult);
+
         if (false === empty($aResult)) {
             $exemptedInterests          = 0;
             $exemptedIncomeTax          = 0;
