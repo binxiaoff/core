@@ -116,7 +116,7 @@
                         </ul>
                         <div class="site-tagline">{% trans %} footer_site-tagline {% endtrans %}</div>
                         <p class="site-copyright">{% trans %} footer_copyright-all-rights {% endtrans %}-
-                            <a href="{{ route('legal') }}">{% trans %} footer_small-mandatory-menu-legal-notice {% endtrans %}</a>
+                            <a href="{{ path('mentions-legales') }}">{% trans %} footer_small-mandatory-menu-legal-notice {% endtrans %}</a>
                         </p>
                     {% endblock %}
                 </div>
@@ -135,7 +135,7 @@
                     <h1>{% trans %} site-general_warning-no-javascript-title {% endtrans %}</h1>
                     <p>{% trans %} site-general_warning-no-javascript-text {% endtrans %}</p>
                     <div class="btn-toolbar">
-                        <a href="{{ route('/') }}" class="btn-default">{% trans %} site-general_reload-website {% endtrans %}</a>
+                        <a href="{{ path('home') }}" class="btn-default">{% trans %} site-general_reload-website {% endtrans %}</a>
                     </div>
                 </div>
             </div>
@@ -148,7 +148,7 @@
                 <h1>{% trans %} site-general_warning-unsupported-browser-title {% endtrans %}</h1>
                 <p>{% trans %} site-general_warning-unsupported-browser-text {% endtrans %}</p>
                 <div class="btn-toolbar">
-                    <a href="{{ route('/') }}" class="btn-default">{% trans %} site-general_warning-unsupported-browser-confirmation {% endtrans %}</a>
+                    <a href="{{ path('home') }}" class="btn-default">{% trans %} site-general_warning-unsupported-browser-confirmation {% endtrans %}</a>
                     <a href="http://www.browsehappy.com/" target="_blank" class="btn-default">{% trans %} site-general_warning-unsupported-browser-new-browser {% endtrans %}</a>
                 </div>
             </div>

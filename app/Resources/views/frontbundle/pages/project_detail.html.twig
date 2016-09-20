@@ -312,14 +312,14 @@
                             {% if conditions.warningLending %}
                                 <div class="message-alert">
                                     <p>{% trans %} project-detail_non-payment-warning {% endtrans %}</p>
-                                    <a href="{{ route('preter_guide') }}" class="link">{% trans %} project-detail_learn-more-link-under-warnings {% endtrans %}</a>
+                                    <a href="{{ path('guide-du-preteur') }}" class="link">{% trans %} project-detail_learn-more-link-under-warnings {% endtrans %}</a>
                                 </div>
                             {% endif %}
 
                             {% if conditions.warningTaxDeduction %}
                                 <div class="message-info">
                                     <p>{% trans %} project-detail_fiscal-information {% endtrans %}</p>
-                                    <a href="{{ route('fiscalite') }}" class="link">{% trans %} project-detail_learn-more-link-under-warnings {% endtrans %}</a>
+                                    <a href="{{ path('fiscalite') }}" class="link">{% trans %} project-detail_learn-more-link-under-warnings {% endtrans %}</a>
                                 </div>
                             {% endif %}
                         </section><!-- /.page-section -->

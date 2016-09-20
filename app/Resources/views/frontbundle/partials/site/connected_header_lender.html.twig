@@ -27,10 +27,13 @@
                                 </a>
                             </div><!-- /.profile-avatar -->
 
-                            <a href="{{ path('lender_profile_notifications') }}" class="profile-notifications" data-usernotificationsdrop>
-                                {% if app.user.unreadNotificationsCount > 0 %}
-                                    <span class="pip{% if app.user.unreadNotificationsCount > 9 %} pip-has-many{% endif %}"><span class="pip-number">{{ app.user.unreadNotificationsCount }}</span></span>
-                                {% endif %}
+                            <a href="#" class="profile-notifications" data-usernotificationsdrop>
+                                {% set notificationsUnread = 0 %}
+                                {#{% for i, item in notifications if item.status == 'unread' %}#}
+                                    {#{% set notificationsUnread = notificationsUnread + 1 %}#}
+                                {#{% endfor %}#}
+                                {# TODO: check after DEV-574 if this iteration on all notification is of any use #}
+                                <span class="pip{% if app.user.notificationsUnread > 9 %} pip-has-many{% endif %}"><span class="pip-number">{{ app.user.notificationsUnread }}</span></span>
                             </a><!-- /.profile-notifications -->
                             <div class="profile-name">{% trans with {'%firstName%' : app.user.firstName} %} header-connected_greeting {% endtrans %} </div>
                             <div class="profile-balance">

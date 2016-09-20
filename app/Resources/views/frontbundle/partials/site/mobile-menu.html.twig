@@ -5,7 +5,7 @@
         <span class="sr-only">{% trans %} header_mobile-menu-close {% endtrans %}</span>
     </a>
 
-    <form action="{{ route('search') }}" method="get" class="site-mobile-search" role="search">
+    <form action="{{ path('search') }}" method="get" class="site-mobile-search" role="search">
         <label for="site-mobile-search-input" class="site-mobile-search-toggle" role="button"><span class="sr-only">{% trans %} site-general_search-label {% endtrans %}</span></label>
         <div class="site-mobile-search-inner">
             <div class="form-field-inline">
@@ -19,11 +19,11 @@
 
     <nav class="site-nav" role="navigation">
         <ul class="site-nav-menu">
-            <li role="presentation"><a href="{{ route('/') }}" tabindex="-1">{% trans %} header_mobile-menu-home {% endtrans %}</a></li>
-            <li role="presentation"><a href="{{ route('preter') }}" tabindex="-1">{% trans %} header_menu-item-lend {% endtrans %}</a></li>
-            <li role="presentation"><a href="{{ route('emprunter') }}" tabindex="-1">{% trans %} header_menu-item-borrow {% endtrans %}</a></li>
+            <li role="presentation"><a href="{{ path('home') }}" tabindex="-1">{% trans %} header_mobile-menu-home {% endtrans %}</a></li>
+            <li role="presentation"><a href="{{ path('pourquoi-preter') }}" tabindex="-1">{% trans %} header_menu-item-lend {% endtrans %}</a></li>
+            <li role="presentation"><a href="{{ path('pourquoi-emprunter') }}" tabindex="-1">{% trans %} header_menu-item-borrow {% endtrans %}</a></li>
             <li role="presentation"><a href="{{ path('projects_list') }}" tabindex="-1">{% trans %} header_menu-item-projects {% endtrans %}</a></li>
-            <li role="presentation"><a href="{{ route('about') }}" tabindex="-1">{% trans %} header_menu-item-about {% endtrans %}</a></li>
+            <li role="presentation"><a href="{{ path('qui-sommes-nous') }}" tabindex="-1">{% trans %} header_menu-item-about {% endtrans %}</a></li>
         </ul>
         {% include 'partials/components/list-socialmedia.html.twig' %}
     </nav><!-- /.site-nav -->

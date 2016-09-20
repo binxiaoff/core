@@ -1,8 +1,7 @@
 {% extends 'layouts/_layout.html.twig' %}
 
 {% set page = {
-    title: 'Projets',
-    permalink: route('projets')
+    title: 'Projets'
 } %}
 
 {% block siteContent %}
@@ -31,7 +30,7 @@
                         </div>
                     {% endif %}
                     <p>
-                        <a href="{{ route('emprunter') }}" class="link c-p2">{% trans %} projects-listing_become-borrower-button {% endtrans %}</a>
+                        <a href="{{ path('home_borrower') }}" class="link c-p2">{% trans %} projects-listing_become-borrower-button {% endtrans %}</a>
                     </p>
                 </div><!-- /.page-section-footer -->
             </div><!-- /.site-wrap -->
