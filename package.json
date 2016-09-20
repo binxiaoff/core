@@ -94,6 +94,7 @@
     "morgan": "1.7.0",
     "object-assign": "4.0.1",
     "open": "0.0.5",
+    "pikaday": "^1.4.0",
     "pretty-hrtime": "1.0.2",
     "raf": "3.2.0",
     "require-dir": "0.3.0",
@@ -160,7 +161,8 @@
     "UserNotificationsDrop": "./app/Resources/assets/js/app/components/UserNotificationsDrop.js",
     "highcharts/highstock.src": "./app/Resources/assets/js/vendor/highcharts/highstock.src.js",
     "highcharts/modules/treemap": "./app/Resources/assets/js/vendor/highcharts/modules/treemap.js",
-    "highcharts/modules/map": "./app/Resources/assets/js/vendor/highcharts/modules/map.js"
+    "highcharts/modules/map": "./app/Resources/assets/js/vendor/highcharts/modules/map.js",
+    "pikaday.jquery": "./node_modules/pikaday/plugins/pikaday.jquery.js"
   },
   "browserify": {
     "transform": [

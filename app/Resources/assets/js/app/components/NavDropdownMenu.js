@@ -8,6 +8,8 @@
 var $ = require('jquery')
 var Utility = require('Utility')
 
+var $doc = $(document)
+
 /*
  * Private functions
  */
@@ -81,10 +83,14 @@ function toggleNavDropdownMenu(elem) {
 /*
  * jQuery Events (effectively public functions latched to UI elements)
  */
-$(document)
+$doc
   // Show/hide dropdown menu
   .on(Utility.clickEvent, '[data-nav-dropdown-menu]', function (event) {
-    toggleNavDropdownMenu(this)
+    // Open only if interacted with active item
+    var $clickedItem = $(event.target).closest('li.active')
+    if ($clickedItem.length > 0) {
+      toggleNavDropdownMenu(this)
+    }
   })
 
   .on('focus active', '[data-nav-dropdown-menu]', function (event) {

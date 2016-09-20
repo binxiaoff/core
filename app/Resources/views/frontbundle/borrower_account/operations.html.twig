@@ -129,30 +129,32 @@
                                 </div>
                             </div>
                         </form><!-- /.form-operations-borrower-filters -->
+
+                        <div id="table-myoperations-borrower-empty" class="message-info">{% trans %} borrower-operation_no-operation-message {% endtrans %}</div>
+
                         <div class="table-scroll">
-                            <table class="table table-myoperations-borrower">
+                            <table class="table table-myoperations-borrower" style="display:none">
                                 <thead class="table-sortable-columns">
                                     <tr>
                                         <th class="table-column table-myoperations-borrower-item-type">
-                                            <span class="label">{% trans %} borrower-operation_operation {% endtrans %}</span>
+                                            <span class="label" title="{{ 'borrower-operation_operation'|trans|e('html_attr') }}" data-toggle="tooltip">{% trans %} borrower-operation_operation {% endtrans %}</span>
                                         </th>
                                         <th class="table-column table-myoperations-borrower-item-project">
-                                            <span class="label">{% trans %} borrower-operation_project {% endtrans %}</span>
+                                            <span class="label" title="{{ 'borrower-operation_project'|trans|e('html_attr') }}" data-toggle="tooltip">{% trans %} borrower-operation_project {% endtrans %}</span>
                                         </th>
                                         <th class="table-column table-myoperations-borrower-item-date">
-                                            <span class="label">{% trans %} borrower-operation_operation-date {% endtrans %}</span>
+                                            <span class="label" title="{{ 'borrower-operation_operation-date'|trans|e('html_attr') }}" data-toggle="tooltip">{% trans %} borrower-operation_operation-date {% endtrans %}</span>
                                         </th>
                                         <th class="table-column table-myoperations-borrower-item-amount">
-                                            <span class="label">{% trans %} borrower-operation_amount {% endtrans %}</span>
+                                            <span class="label" title="{{ 'borrower-operation_amount'|trans|e('html_attr') }}" data-toggle="tooltip">{% trans %} borrower-operation_amount {% endtrans %}</span>
                                         </th>
-                                        <th class="table-column table-myoperations-borrower-item-detail">
-                                            <span class="label">{% trans %} borrower-operation_detail {% endtrans %}</span>
+                                        <th class="table-column table-myoperations-borrower-item-controls">
+                                            <span class="label" title="{{ 'borrower-operation_detail'|trans|e('html_attr') }}" data-toggle="tooltip">{% trans %} borrower-operation_detail {% endtrans %}</span>
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
-                            </table><!-- /.table-myoperations -->
-                            <div class="message-info">{% trans %} borrower-operation_no-operation-message {% endtrans %}</div>
+                            </table><!-- /.table-myoperations-borrower -->
                         </div><!-- /.table-scroll -->
                     </div><!-- /.panel-content -->
                 </div><!-- /.panel -->

@@ -20,26 +20,8 @@
   }
 }
 
-#user-emprunteur-operations {
-  .table-myoperations {
-    display: none;
-
-    + .message-info {
-      display: none;
-    }
-  }
-}
-
 #user-emprunteur-operations #form-filters-operations {
   margin-bottom: 70px;
-}
-
-#user-emprunteur-operations .cell-right {
-  text-align: right;
-}
-
-#user-emprunteur-operations .export {
-  color: $c-teal;
 }
 
 #user-borrower-projects {
@@ -47,6 +29,34 @@
     @include devices('sm', 'laptop', 'lg') {
       padding: 10px 15px;
     }
+  }
+}
+
+table.table-myoperations-borrower {
+  table-layout: fixed;
+
+  .table-myoperations-borrower-item-type {
+    width: 38%;
+  }
+
+  .table-myoperations-borrower-item-project {
+    width: 12%;
+    text-align: right;
+  }
+
+  .table-myoperations-borrower-item-date {
+    width: 20%;
+    text-align: right;
+  }
+
+  .table-myoperations-borrower-item-amount {
+    width: 22%;
+    text-align: right;
+  }
+
+  .table-myoperations-borrower-item-controls {
+    width: 8%;
+    text-align: right;
   }
 }
 
@@ -108,37 +118,8 @@
   }
 }
 
-.table-myoperations-borrower-item-type {
-  width: 50%;
-}
-
-.table-myoperations-borrower-item-project {
-  width: 10%;
-  text-align: right;
-}
-
-.table-myoperations-borrower-item-date {
-  width: 20%;
-  text-align: right;
-}
-
-.table-myoperations-borrower-item-amount {
-  width: 10%;
-  text-align: right;
-}
-
-td.table-myoperations-borrower-item-amount {
-  color: $c-teal;
-  text-align: right;
-}
-
 .below-null {
   color: $c-rejected !important;
-}
-
-.table-myoperations-borrower-item-detail {
-  width: 10%;
-  text-align: right;
 }
 
 .table-myoperations-borrower-details {
