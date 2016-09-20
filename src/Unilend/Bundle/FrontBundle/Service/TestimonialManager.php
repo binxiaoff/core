@@ -4,6 +4,7 @@ namespace Unilend\Bundle\FrontBundle\Service;
 
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Cache\Adapter\Memcache\MemcacheCachePool;
+use Unilend\librairies\CacheKeys;
 
 class TestimonialManager
 {
@@ -23,7 +24,7 @@ class TestimonialManager
     {
         $cachedItem = $this->cachePool->getItem('featuredTestimonialBorrower');
 
-//        if (false === $cachedItem->isHit()) {
+        if (false === $cachedItem->isHit()) {
             /** @var \testimonial $testimonial */
             $testimonial = $this->entityManager->getRepository('testimonial');
             /** @var \settings $settings */
@@ -34,16 +35,16 @@ class TestimonialManager
             $this->cachePool->save($cachedItem);
 
             return $featuredTestimonial;
-//        } else {
-//            return $cachedItem->get();
-//        }
+        } else {
+            return $cachedItem->get();
+        }
     }
 
     public function getFeaturedTestimonialLender()
     {
         $cachedItem = $this->cachePool->getItem('featuredTestimonialLender');
 
-//        if (false === $cachedItem->isHit()) {
+        if (false === $cachedItem->isHit()) {
             /** @var \testimonial $testimonial */
             $testimonial = $this->entityManager->getRepository('testimonial');
             /** @var \settings $settings */
@@ -51,13 +52,13 @@ class TestimonialManager
             $settings->get('temoignage home preteur', 'type');
             $featuredTestimonial = $testimonial->select('slider_id = "' . $settings->value . '"')[0];
 
-            $cachedItem->set($featuredTestimonial)->expiresAfter(14400);
+            $cachedItem->set($featuredTestimonial)->expiresAfter(CacheKeys::DAY);
             $this->cachePool->save($cachedItem);
 
             return $featuredTestimonial;
-//        } else {
-//            return $cachedItem->get();
-//        }
+        } else {
+            return $cachedItem->get();
+        }
     }
 
     /**
@@ -74,47 +75,47 @@ class TestimonialManager
 
         if ($excludeFeatured) {
             $cachedItem = $this->cachePool->getItem('BorrowerBattenbergExcludingFeatured');
-//            if (false === $cachedItem->isHit()) {
+            if (false === $cachedItem->isHit()) {
                 $allTestimonials = $testimonial->select('type = "borrower" AND status = ' . \testimonial::TESTIMONIAL_ONLINE . ' AND slider_id != "' . $settings->value . '"');
                 $this->addProjectInfoToBorrowerTestimonial($allTestimonials);
-                $cachedItem->set($allTestimonials)->expiresAfter(14400);
+                $cachedItem->set($allTestimonials)->expiresAfter(CacheKeys::DAY);
                 $this->cachePool->save($cachedItem);
 
                 return $allTestimonials;
-//            } else {
-//                return $cachedItem->get();
-//            }
+            } else {
+                return $cachedItem->get();
+            }
 
         } else {
             $cachedItem = $this->cachePool->getItem('BorrowerBattenbergAll');
-//            if (false === $cachedItem->isHit()) {
+            if (false === $cachedItem->isHit()) {
                 $allTestimonials = $testimonial->select('type = "borrower" AND status = ' . \testimonial::TESTIMONIAL_ONLINE);
                 $this->addProjectInfoToBorrowerTestimonial($allTestimonials);
-                $cachedItem->set($allTestimonials)->expiresAfter(14400);
+                $cachedItem->set($allTestimonials)->expiresAfter(CacheKeys::DAY);
                 $this->cachePool->save($cachedItem);
 
                 return $allTestimonials;
-//            } else {
-//                return $cachedItem->get();
-//            }
+            } else {
+                return $cachedItem->get();
+            }
         }
     }
 
     public function getAllBattenbergTestimonials()
     {
         $cachedItem = $this->cachePool->getItem('BattenbergAll');
-//        if (false === $cachedItem->isHit()) {
+        if (false === $cachedItem->isHit()) {
             /** @var \testimonial $testimonial */
             $testimonial = $this->entityManager->getRepository('testimonial');
             $allTestimonials = $testimonial->select('status = ' . \testimonial::TESTIMONIAL_ONLINE);
             $this->addProjectInfoToBorrowerTestimonial($allTestimonials);
-            $cachedItem->set($allTestimonials)->expiresAfter(14400);
+            $cachedItem->set($allTestimonials)->expiresAfter(CacheKeys::DAY);
             $this->cachePool->save($cachedItem);
 
             return $allTestimonials;
-//        } else {
-//            return $cachedItem->get();
-//        }
+        } else {
+            return $cachedItem->get();
+        }
     }
 
 
@@ -151,10 +152,6 @@ class TestimonialManager
             ],
             'P1_E2' => ['image'    => '1682x650_0001_P1-E2.jpg',
                         'lender'   => $testimonialsByType['P1'],
-                        'borrower' => $testimonialsByType['E2']
-            ],
-            'P2_E2' => ['image'    => '1682x650_0004_P2-E2.jpg',
-                        'lender'   => $testimonialsByType['P2'],
                         'borrower' => $testimonialsByType['E2']
             ],
             'P2_E3' => ['image'    => '1682x650_0005_P2-E3.jpg',
