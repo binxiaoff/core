@@ -18,6 +18,7 @@ use Symfony\Component\Translation\Translator;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
@@ -55,15 +56,13 @@ class MainController extends Controller
 
         $template = [];
         $template['showWelcomeOffer']  = $welcomeOfferManager->displayOfferOnHome();
-        $template['testimonialPeople'] = $testimonialService->getActiveBattenbergTestimonials();
-        $template['videoHeroes']       = [
-            'Lenders'   => $testimonialService->getActiveVideoHeroes('preter'),
-            'Borrowers' => $testimonialService->getActiveVideoHeroes('emprunter')
-        ];
+        $template['testimonialPeople'] = $testimonialService->getAllBattenbergTestimonials();
         $template['projects'] = $projectDisplayManager->getProjectsList(
             [\projects_status::EN_FUNDING],
             [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC]
         );
+
+        $template['sliderTestimonials'] = $testimonialService->getSliderInformation();
 
         if ($authorizationChecker->isGranted('ROLE_LENDER')) {
             $this->redirectToRoute('home_lender');
@@ -89,17 +88,13 @@ class MainController extends Controller
         /** @var TestimonialManager $testimonialService */
         $testimonialService = $this->get('unilend.frontbundle.service.testimonial_manager');
 
-        $template = [];
-        $template['showWelcomeOffer']  = $welcomeOfferManager->displayOfferOnHome();
-        $template['testimonialPeople'] = $testimonialService->getActiveBattenbergTestimonials();
-        $template['videoHeroes']       = [
-            'Lenders'   => $testimonialService->getActiveVideoHeroes('preter'),
-            'Borrowers' => $testimonialService->getActiveVideoHeroes('emprunter')
-        ];
-        $template['showPagination']    = false;
-        $template['showSortable']      = false;
-        $template['sortType']          = strtolower(\projects::SORT_FIELD_END);
-        $template['sortDirection']     = strtolower(\projects::SORT_DIRECTION_DESC);
+        $template                     = [];
+        $template['showWelcomeOffer'] = $welcomeOfferManager->displayOfferOnHome();
+        $template['featureLender']    = $testimonialService->getFeaturedTestimonialLender();
+        $template['showPagination']   = false;
+        $template['showSortable']     = false;
+        $template['sortType']         = strtolower(\projects::SORT_FIELD_END);
+        $template['sortDirection']    = strtolower(\projects::SORT_DIRECTION_DESC);
 
         /** @var BaseUser $user */
         $user = $this->getUser();
@@ -155,11 +150,7 @@ class MainController extends Controller
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
 
         $template = [];
-        $template['testimonialPeople'] = $testimonialService->getActiveBattenbergTestimonials();
-        $template['videoHeroes']       = [
-            'Lenders'   => $testimonialService->getActiveVideoHeroes('preter'),
-            'Borrowers' => $testimonialService->getActiveVideoHeroes('emprunter')
-        ];
+        $template['testimonialPeople'] = $testimonialService->getBorrowerBattenbergTestimonials(true);
         $template['loanPeriods']       = $projectManager->getPossibleProjectPeriods();
         $template['projectAmountMax']  = $projectManager->getMaxProjectAmount();
         $template['projectAmountMin']  = $projectManager->getMinProjectAmount();
@@ -168,6 +159,8 @@ class MainController extends Controller
             [\projects_status::EN_FUNDING],
             [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC]
         );
+
+        $template['featureBorrower'] = $testimonialService->getFeaturedTestimonialBorrower();
 
         return $this->render('pages/homepage_borrower.html.twig', $template);
     }
@@ -537,10 +530,12 @@ class MainController extends Controller
         if ($block->get('partenaires', 'slug')) {
             $elementsId = array_column($elements->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'ordre ASC'), 'id_element');
             foreach ($blockElement->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'FIELD(id_element, ' . implode(', ', $elementsId) . ') ASC') as $element) {
-                $partners[] = [
-                    'alt' => $element['complement'],
-                    'src' => $element['value']
-                ];
+                if (false === empty($element['value'])) {
+                    $partners[] = [
+                        'alt' => $element['complement'],
+                        'src' => $element['value']
+                    ];
+                }
             }
         }
 
@@ -658,12 +653,18 @@ class MainController extends Controller
         $tree = $entityManager->getRepository('tree');
         $tree->get(['slug' => 'statistiques']);
 
-        $response = $this->render('pages/static_pages/statistics.html.twig');
+        $template = [
+            'data' => [
+                'projectCountForCategoryTreeMap' => $this->getProjectCountForCategoryTreeMap()
+            ]
+        ];
+
+        $response = $this->render('pages/static_pages/statistics.html.twig', $template);
 
         $finalElements = [
             'contenu'      => $response->getContent(),
             'complement'   => '',
-            'image-header' => 'apropos-header-1682x400.jpg'
+            'image-header' => '1682x400_0005_Statistiques.jpg'
         ];
 
         return $this->renderCmsNav($tree, $finalElements, $entityManager, 'apropos-statistiques');
@@ -793,5 +794,51 @@ class MainController extends Controller
         }
 
         return $this->render('partials/site/tos_popup.html.twig', ['tosDetails' => $tosDetails]);
+    }
+
+    /**
+     * @Route("/temoignages", name="testimonials")
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function testimonialAction()
+    {
+        /** @var TestimonialManager $testimonialService */
+        $testimonialService = $this->get('unilend.frontbundle.service.testimonial_manager');
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var \tree $tree */
+        $tree = $entityManager->getRepository('tree');
+        $tree->get(['slug' => 'temoignages']);
+
+        $template['testimonialPeople'] = $testimonialService->getBorrowerBattenbergTestimonials(false);
+        $response = $this->render('pages/static_pages/testimonials.html.twig', $template);
+
+        $finalElements = [
+            'contenu'      => $response->getContent(),
+            'complement'   => '',
+            'image-header' => ''
+        ];
+
+        return $this->renderCmsNav($tree, $finalElements, $entityManager, 'apropos-statistiques');
+    }
+
+    private function getProjectCountForCategoryTreeMap()
+    {
+        /** @var StatisticsManager $statisticsManager */
+        $statisticsManager = $this->get('unilend.service.statistics_manager');
+        $countByCategory = $statisticsManager->getProjectCountByCategory();
+        /** @var TranslatorInterface $translator */
+        $translator = $this->get('translator');
+        $dataForTreeMap = [];
+
+        foreach ($countByCategory as $category => $count) {
+            $dataForTreeMap[] = [
+                'name'      => $translator->trans('company-sector_sector-' . $category),
+                'value'     => (int) $count,
+                'svgIconId' => '#category-sm-' . $category
+            ];
+        }
+        return $dataForTreeMap;
     }
 }

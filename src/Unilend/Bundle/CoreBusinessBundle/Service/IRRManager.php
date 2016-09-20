@@ -95,7 +95,7 @@ class IRRManager
         $oLendersAccountStats = $this->oEntityManager->getRepository('lenders_account_stats');
 
         $fStartSQL  = microtime(true);
-        $aValuesIRR = $oLendersAccountStats->getValuesForIRRUsingProjectsLastStatusHistoryMaterialized($iLenderId);
+        $aValuesIRR = $oLendersAccountStats->getValuesForIRR($iLenderId);
 
         $this->oLogger->info('Calculate IRR for lender ' . $iLenderId . ' - SQL Time : ' . (round(microtime(true) - $fStartSQL, 2)) . ' for ' . count($aValuesIRR). ' lines ');
 
@@ -151,7 +151,7 @@ class IRRManager
         );
 
         $iCountProjectStatusChanges    = $oProjectStatusHistory->countProjectStatusChangesOnDate($sDate, $aProjectStatusTriggeringChange);
-        $iCountLendersWithLatePayments = $oLendersAccountsStats->getLendersWithLatePaymentsForIRRUsingProjectsLastStatusHistoryMaterialized();
+        $iCountLendersWithLatePayments = $oLendersAccountsStats->getLendersWithLatePaymentsForIRR();
         return count($iCountProjectStatusChanges) > 0 || count($iCountLendersWithLatePayments) > 0 ;
     }
 

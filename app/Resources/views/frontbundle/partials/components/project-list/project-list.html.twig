@@ -11,13 +11,11 @@
             </ul>
         </div><!-- /.project-list-nav -->
         <div class="project-list-content tab-content">
-
             <div id="project-list-view" role="tabpanel" class="tab-pane active">
-
                 <div class="project-list-filters">
                     <div class="project-list-item-category project-list-filter{% if sortType == 'sector' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
                         {% if showSortable %}
-                            <a href="/projets-a-financer/{{ currentPage }}/sector/{% if sortDirection == 'desc' %}asc{% else %}desc{% endif %}">
+                            <a href="{{ path(app.request.attributes.get('_route'), {'page' : currentPage, 'sortType' : 'sector'}) }}/{% if sortDirection == 'desc' %}asc{% else %}desc{% endif %}">
                                 <span class="label">{% trans %} project-list_table-title-category {% endtrans %}</span>
                                 <span class="project-list-filter-order"></span>
                             </a>
@@ -27,7 +25,7 @@
                     </div><!-- /.project-list-filter -->
                     <div class="project-list-item-info project-list-filter{% if sortType == 'amount' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
                         {% if showSortable %}
-                            <a href="/projets-a-financer/{{ currentPage }}/amount/{% if sortDirection == 'desc' %}asc{% else %}desc{% endif %}">
+                            <a href="{{ path(app.request.attributes.get('_route'), {'page' : currentPage, 'sortType' : 'amount'}) }}/{% if sortDirection == 'desc' %}asc{% else %}desc{% endif %}">
                                 <span class="label">{% trans %} project-list_table-title-amount {% endtrans %}</span>
                                 <span class="project-list-filter-order"></span>
                             </a>
@@ -37,7 +35,7 @@
                     </div><!-- /.project-list-filter -->
                     <div class="project-list-item-stats project-list-filter{% if sortType == 'rate' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
                         {% if showSortable %}
-                            <a href="/projets-a-financer/{{ currentPage }}/rate/{% if sortDirection == 'desc' %}asc{% else %}desc{% endif %}">
+                            <a href="{{ path(app.request.attributes.get('_route'), {'page' : currentPage, 'sortType' : 'rate'}) }}/{% if sortDirection == 'desc' %}asc{% else %}desc{% endif %}">
                                 <span class="label">{% trans %} project-list_table-title-average-rate {% endtrans %}</span>
                                 <span class="project-list-filter-order"></span>
                             </a>
@@ -47,7 +45,7 @@
                     </div><!-- /.project-list-filter -->
                     <div class="project-list-item-rating project-list-filter{% if sortType == 'risk' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
                         {% if showSortable %}
-                            <a href="/projets-a-financer/{{ currentPage }}/risk/{% if sortDirection == 'desc' %}asc{% else %}desc{% endif %}">
+                            <a href="{{ path(app.request.attributes.get('_route'), {'page' : currentPage, 'sortType' : 'risk'}) }}/{% if sortDirection == 'desc' %}asc{% else %}desc{% endif %}">
                                 <span class="label">{% trans %} project-list_table-title-risk {% endtrans %}</span>
                                 <span class="project-list-filter-order"></span>
                             </a>
@@ -57,7 +55,7 @@
                     </div><!-- /.project-list-filter -->
                     <div class="project-list-item-period project-list-filter{% if sortType == 'end' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
                         {% if showSortable %}
-                            <a href="/projets-a-financer/{{ currentPage }}/end/{% if sortDirection == 'desc' %}asc{% else %}desc{% endif %}">
+                            <a href="{{ path(app.request.attributes.get('_route'), {'page' : currentPage, 'sortType' : 'end'}) }}/{% if sortDirection == 'desc' %}asc{% else %}desc{% endif %}">
                                 <span class="label">{% trans %} project-list_table-title-remaining-time {% endtrans %}</span>
                                 <span class="project-list-filter-order"></span>
                             </a>
@@ -123,9 +121,12 @@
                             </div>
                             <div class="project-list-item-period">
                                 {% if project.finished %}
-                                    {{ "project-list_project-finished"|trans({'%date%': project.endDate|localizeddate('medium', 'none', app.request.locale)})|raw}}
+                                    {% trans with {
+                                        '%fundingDuration%' : ('project-list_funding-duration-' ~ project.fundingDuration.translation)|transchoice(project.fundingDuration.choice, project.fundingDuration.values),
+                                        '%date%' : project.endDate|localizeddate('medium', 'none', app.request.locale)}
+                                    %} project-list_project-finished {% endtrans %}
                                 {% elseif project.daysLeft <= 2 %}
-                                    <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|escape('html_attr') }}"></span>
+                                    <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|date('Y-m-d\\TH:i:s')|escape('html_attr') }}" data-timecount-relative="true"></span>
                                 {% else %}
                                     {% trans with {'%remainingDays%' : project.daysLeft} %} project-list_remaining-days {% endtrans %}
                                 {% endif %}

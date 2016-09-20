@@ -31,8 +31,6 @@
         <h1>Gestion des prêteurs</h1>
     <?php endif; ?>
 
-    <h2><?= $this->x ?> prêteurs au total (dont : <?= $this->y ?> "hors ligne" et <?= $this->z ?> "sans mouvement")</h2>
-
     <?php if (count($this->lPreteurs) > 0): ?>
         <table class="tablesorter">
             <thead>

@@ -35,9 +35,6 @@ class bids extends bids_crud
 
     const CACHE_KEY_PROJECT_BIDS = 'bids-projet';
 
-    const BID_RATE_MIN = 4.0;
-    const BID_RATE_MAX = 10.0;
-
     public function __construct($bdd, $params = '')
     {
         parent::bids($bdd, $params);
@@ -239,9 +236,9 @@ class bids extends bids_crud
             FROM bids b
             INNER JOIN accepted_bids ab ON ab.id_bid = b.id_bid
             INNER JOIN projects p ON p.id_project = b.id_project
-            WHERE p.status >= :funded 
-                AND p.status != :fundingKo 
-            GROUP BY b.rate 
+            WHERE p.status >= :funded
+                AND p.status != :fundingKo
+            GROUP BY b.rate
             ORDER BY b.rate DESC';
 
         try {
@@ -293,16 +290,16 @@ class bids extends bids_crud
 
         if ($iProjectId) {
             $sQuery = '
-                SELECT 
-                    rate, 
+                SELECT
+                    rate,
                     COUNT(*) AS bidsCount,
                     SUM(IF(status = 0, 1, 0)) AS activeBidsCount,
                     SUM(ROUND(amount / 100, 2)) AS totalAmount,
-                    SUM(IF(status = 0, ROUND(amount / 100, 2), 0)) AS activeTotalAmount, 
+                    SUM(IF(status = 0, ROUND(amount / 100, 2), 0)) AS activeTotalAmount,
                     IF(SUM(amount) > 0, ROUND(SUM(IF(status = 2, 0, ROUND(amount / 100, 2))) / SUM(ROUND(amount / 100, 2)) * 100, 1), 100) AS activePercentage
                 FROM bids
                 WHERE id_project = ' . $iProjectId . '
-                GROUP BY rate 
+                GROUP BY rate
                 ORDER BY rate DESC';
             $rQuery = $this->bdd->query($sQuery);
             while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
@@ -390,22 +387,21 @@ class bids extends bids_crud
     {
         $sql = '
             SELECT
-            id_bid
-            ,id_lender_account
-            ,id_project
-            ,id_autobid
-            ,id_lender_wallet_line
-            ,amount
-            ,rate
-            ,ordre
-            ,status
-            ,checked
-            ,added
-            ,updated
-            ,ROUND(amount / 100) as amount_euro
+                id_bid,
+                id_lender_account,
+                id_project,
+                id_autobid,
+                id_lender_wallet_line,
+                amount,
+                rate,
+                ordre,
+                status,
+                checked,
+                added,
+                updated,
+                ROUND(amount / 100) as amount_euro
             FROM bids
-            WHERE status = :status
-        ';
+            WHERE status = :status';
 
         if (false === empty($projectId)) {
             $sql .= ' AND id_project = :id_project ';
@@ -418,13 +414,13 @@ class bids extends bids_crud
             $bind['id_lender'] = $lenderId;
             $type['id_lender'] = \PDO::PARAM_INT;
         }
+
         $sql .= ' ORDER BY id_bid DESC';
         $bind['status'] = $bidStatus;
         $type['status'] = \PDO::PARAM_INT;
 
         return $this->bdd->executeQuery($sql, $bind, $type)->fetchAll(\PDO::FETCH_ASSOC);
     }
-
 
     /**
      * @param \lenders_accounts $lender
@@ -452,4 +448,19 @@ class bids extends bids_crud
 
         return $result;
     }
+
+    public function getMaxCountBidsPerDay()
+    {
+        $query = 'SELECT MAX(t.numberBids)
+                    FROM (
+                           SELECT count(id_bid) AS numberBids
+                           FROM bids
+                           GROUP BY DATE(added)) AS t';
+
+        $statement = $this->bdd->executeQuery($query);
+
+        return $statement->fetchColumn(0);
+    }
+
+
 }

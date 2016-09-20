@@ -155,16 +155,19 @@
 } %}
 
 {% block dashboardContent %}
-
     <div class="dashboard-panels-nav">
         <ul class="list-inline-block">
             {% for panelId, panelInfo in dashboardPanels %}
                 <li role="presentation">
                     <a href="#{{ panelId }}" class="dashboard-panel-toggle{% if panelInfo.hidden == true %} ui-dashboard-panel-hidden{% endif %}" data-toggle="ui">
-                      {% if panelId == 'mywallet' %}
-                        {% transchoice lenderDetails.numberOfLoans with {'%offersCount%' : lenderDetails.numberOfLoans} %} lender-dashboard_panel-title-mywallet {% endtranschoice %}
+                      {% if panelId == 'wallet' %}
+                            {% if lenderDetails.numberOfLoans == lenderDetails.numberOfBorrowers %}
+                                {% transchoice lenderDetails.numberOfLoans with {'%offersCount%' : lenderDetails.numberOfLoans|localizednumber} %} lender-dashboard-wallet_title-loans {% endtranschoice %}
+                            {% else %}
+                                {% transchoice lenderDetails.numberOfBorrowers with {'%offersCount%' : lenderDetails.numberOfLoans|localizednumber, '%borrowerCount%' : lenderDetails.numberOfBorrowers|localizednumber} %} lender-dashboard-wallet_title-loans-projects {% endtranschoice %}
+                            {% endif %}
                       {% else %}
-                        {{ "lender-dashboard_panel-title-#{ panelId }" | trans }}
+                        {{ "lender-dashboard-#{ panelId }_title"|trans }}
                       {% endif %}
                     </a>
                 </li>
@@ -172,11 +175,9 @@
         </ul>
     </div>
 
-    <section class="dashboard-panels-content" data-dashboardpanels data-dashboardpanels-ajaxurl="{{ path('save_user_preferences') }}" data-movable-content>
+    <section class="dashboard-panels-content" data-dashboardpanels data-dashboardpanels-ajaxurl="{{ path('save_panel_preferences') }}" data-movable-content>
         {% for panelId, panelInfo in dashboardPanels %}
             {% include('pages/lender_dashboard/dashboard_panels/' ~ panelId ~ '.html.twig') %}
         {% endfor %}
-
     </section>
-
 {% endblock %}

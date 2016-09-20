@@ -7,6 +7,9 @@
     <?php } ?>
     <div class="shell">
         <div class="section-c dashboard clearfix">
+            <?php if (false === empty($this->eligible) && true === empty($this->afterDeadline) && true === empty($this->nextTaxExemptionRequestDone)): ?>
+                <?= $this->fireView('../blocs/taxExemption') ?>
+            <?php endif; ?>
             <div class="page-title clearfix">
                 <h1 class="left"><?= $this->lng['preteur-synthese']['votre-tableau-de-bord'] ?></h1>
                 <strong class="right">au <?= $this->dates->formatDateComplete(date('Y-m-d H:i:s')) ?> à <?= date('H\hi') ?></strong>

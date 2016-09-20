@@ -22,16 +22,14 @@ class LenderDashboardController extends Controller
      */
     public function indexAction()
     {
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \lenders_account_stats $oLenderAccountStats */
         $oLenderAccountStats = $entityManager->getRepository('lenders_account_stats');
         /** @var \loans $loan */
         $loan = $entityManager->getRepository('loans');
-        /** @var \echeanciers $echeancier */
-        $echeancier = $entityManager->getRepository('echeanciers');
+        /** @var \echeanciers $lenderRepayment */
+        $lenderRepayment = $entityManager->getRepository('echeanciers');
         /** @var \projects $project */
         $project = $entityManager->getRepository('projects');
         /** @var \companies $company */
@@ -56,35 +54,41 @@ class LenderDashboardController extends Controller
             $ongoingProjects[$iKey]['avgrate'] = $project->getAverageInterestRate();
         }
 
-        $ongoingBidsSum      = $bid->sumBidsEncours($lender->id_lender_account);
-        $problematicProjects = $echeancier->getProblematicProjects($lender->id_lender_account);
-        $netInterestsAmount  = $echeancier->getSumRemb($lender->id_lender_account . ' AND status_ra = 0', 'interets') - $echeancier->getSumRevenuesFiscalesRemb($lender->id_lender_account . ' AND status_ra = 0');
-        $irr                 = '';
+        $ongoingBidsSum         = $bid->sumBidsEncours($lender->id_lender_account);
+        $problematicProjects    = $lenderRepayment->getProblematicProjects($lender->id_lender_account);
+        $upcomingGrossInterests = $lenderRepayment->getOwedInterests(['id_lender' => $lender->id_lender_account]);
+        $repaidGrossInterests   = $lenderRepayment->getRepaidInterests(['id_lender' => $lender->id_lender_account]);
+        $irr                    = 0;
 
         if ($this->getUser()->getLevel() > 0) {
             $aLastIRR = $oLenderAccountStats->getLastIRRForLender($lender->id_lender_account);
             if ($aLastIRR) {
-                $irr = $ficelle->formatNumber($aLastIRR['tri_value']);
+                $irr = $aLastIRR['tri_value'];
             } else {
                 $fLossRate = $oLenderAccountStats->getLossRate($lender->id_lender_account, $lender);
 
                 if ($fLossRate > 0) {
-                    $irr = $ficelle->formatNumber(- $fLossRate);
-                } else {
-                    $irr = '';
+                    $irr = - $fLossRate;
                 }
             }
         }
+
         $ongoingBidsByProject = [];
         $newPublishedProjects = [];
 
         foreach ($ongoingProjects as $iKey => $aProject) {
+            $project->get($aProject['id_project']);
+            $projectStats = $this->get('unilend.frontbundle.service.project_display_manager')->getFundingDuration($project);
+
             if (0 < $bid->counter('id_project = ' . $aProject['id_project'] . ' AND id_lender_account = ' . $lender->id_lender_account)) {
-                $ongoingBidsByProject[$iKey]                 = [
+                $ongoingBidsByProject[$iKey] = [
                     'title'            => $aProject['title'],
                     'amount'           => $aProject['amount'],
                     'publication_date' => $aProject['date_publication_full'],
                     'days_left'        => $aProject['daysLeft'],
+                    'finished'         => ($aProject['status'] > \projects_status::EN_FUNDING || (new \DateTime($aProject['date_retrait_full'])) < (new \DateTime('NOW'))),
+                    'end_date'         => $aProject['date_retrait_full'],
+                    'funding_duration' => $projectStats->days
                 ];
                 $ongoingBidsByProject[$iKey]['aPendingBids'] = $bid->getBidsByStatus(\bids::STATUS_BID_PENDING, $aProject['id_project'], $lender->id_lender_account);
             }
@@ -92,31 +96,33 @@ class LenderDashboardController extends Controller
             if ((new \DateTime($aProject['date_publication_full']))->diff(new \DateTime($this->getUser()->getLastLoginDate()))->days > 0 && $aProject['daysLeft'] >= 0) {
                 $company->get($aProject['id_company']);
                 $newPublishedProjects[] = [
-                    'title'           => $aProject['title'],
-                    'company_address' => (false === empty($company->city)) ? $company->city . ', ' : '' . $company->zip,
-                    'amount'          => $aProject['amount'],
-                    'days_left'       => $aProject['daysLeft'],
-                    'risk'            => $aProject['risk'],
-                    'average_rate'    => $aProject['avgrate'],
-                    'bid_count'       => count($bid->getBidsByStatus(\bids::STATUS_BID_PENDING, $aProject['id_project']))
+                    'title'            => $aProject['title'],
+                    'slug'             => $aProject['slug'],
+                    'company_address'  => (false === empty($company->city) ? $company->city . ', ' : '') . $company->zip,
+                    'amount'           => $aProject['amount'],
+                    'days_left'        => $aProject['daysLeft'],
+                    'risk'             => $aProject['risk'],
+                    'average_rate'     => $aProject['avgrate'],
+                    'bid_count'        => count($bid->getBidsByStatus(\bids::STATUS_BID_PENDING, $aProject['id_project'])),
+                    'finished'         => ($aProject['status'] > \projects_status::EN_FUNDING || (new \DateTime($aProject['date_retrait_full'])) < (new \DateTime('NOW'))),
+                    'end_date'         => $aProject['date_retrait_full'],
+                    'funding_duration' => $projectStats->days
                 ];
             }
         }
+
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\IRRManager $oIRRManager */
         $oIRRManager = $this->get('unilend.service.irr_manager');
         /** @var LenderAccountDisplayManager $lenderDisplayManager */
         $lenderDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
 
-        $aLastUnilendIRR      = $oIRRManager->getLastUnilendIRR();
-        $IRRUnilend           = $ficelle->formatNumber($aLastUnilendIRR['value']);
-        $lenderRepaymentsData = $echeancier->getRepaymentAmountDetailsByPeriod($lender->id_lender_account);
-        $repaymentData        = $this->getQuarterAndYearSum($lenderRepaymentsData);
-        $repaymentDateRange   = $echeancier->getFirstAndLastRepaymentDates($lender->id_lender_account);
-
-        $monthAxisData   = $this->getMonthAxis($repaymentDateRange);
-        $quarterAxisData = $this->getQuarterAxis($lenderRepaymentsData);
-        $yearAxisData    = $this->getYearAxis($repaymentDateRange);
-
+        $lastUnilendIRR         = $oIRRManager->getLastUnilendIRR();
+        $lenderRepaymentsData   = $lenderRepayment->getDetailsByPeriod($lender->id_lender_account);
+        $repaymentDateRange     = $lenderRepayment->getFirstAndLastRepaymentDates($lender->id_lender_account);
+        $repaymentDataPerPeriod = $this->getQuarterAndYearSum($lenderRepaymentsData);
+        $monthAxisData          = $this->getMonthAxis($repaymentDateRange);
+        $quarterAxisData        = $this->getQuarterAxis($lenderRepaymentsData);
+        $yearAxisData           = $this->getYearAxis($repaymentDateRange);
 
         return $this->render(
             '/pages/lender_dashboard/lender_dashboard.html.twig',
@@ -125,12 +131,12 @@ class LenderDashboardController extends Controller
                 'lenderDetails'      => [
                     'balance'             => $balance,
                     'level'               => $this->getUser()->getLevel(),
-                    'unilend_irr'         => $IRRUnilend,
+                    'unilend_irr'         => $lastUnilendIRR['value'],
                     'irr'                 => $irr,
                     'initials'            => $this->getUser()->getInitials(),
                     'number_of_companies' => $lender->countCompaniesLenderInvestedIn($lender->id_lender_account),
-                    /**@todo Confirme that the value is correct? */
-                    'numberOfLoans'       => $loan->getProjectsCount($lender->id_lender_account)
+                    'numberOfLoans'       => $loan->getLoansCount($lender->id_lender_account),
+                    'numberOfBorrowers'   => $loan->getProjectsCount($lender->id_lender_account),
                 ],
                 'walletData'         => [
                     'by_sector' => $lenderDisplayManager->getLenderLoansAllocationByCompanySector($lender->id_lender_account),
@@ -139,20 +145,18 @@ class LenderDashboardController extends Controller
                 'amountDetails'      => [
                     'loaned_amount'     => round($loan->sumPrets($lender->id_lender_account), 2),
                     'blocked_amount'    => round($ongoingBidsSum, 2),
-                    /**@todo use calculated amount instead of of using hard-coded value */
-                    'expected_earnings' => 123.55,
+                    'expected_earnings' => round($repaidGrossInterests + $upcomingGrossInterests - $problematicProjects['interests'], 2),
                     'deposited_amount'  => $wallet_line->getSumDepot($lender->id_lender_account, '10,30')
                 ],
                 'capitalDetails'     => [
-                    'repaid_capital'        => round($echeancier->getSumRemb($lender->id_lender_account, 'capital'), 2),
-                    'owed_capital'          => round($echeancier->getSumARemb($lender->id_lender_account, 'capital') - $problematicProjects['capital'], 2),
+                    'repaid_capital'        => round($lenderRepayment->getRepaidCapital(['id_lender' => $lender->id_lender_account]), 2),
+                    'owed_capital'          => round($lenderRepayment->getOwedCapital(['id_lender' => $lender->id_lender_account]) - $problematicProjects['capital'], 2),
                     'capital_in_difficulty' => round($problematicProjects['capital'], 2)
                 ],
-                /** @todo Ask for interests amount : display net or not? */
                 'interestsDetails'   => [
-                    'received_interests' => round($netInterestsAmount, 2),
-                    /**@todo calculer le vrai montant des intrêts à venir à base d'echeancier ... A confirmer */
-                    'upcoming_interests' => 555
+                    'received_interests'      => round($repaidGrossInterests, 2),
+                    'upcoming_interests'      => round($upcomingGrossInterests - $problematicProjects['interests'], 2),
+                    'interests_in_difficulty' => round($problematicProjects['interests'], 2)
                 ],
                 'ongoingBids'        => $bid->counter('id_lender_account = ' . $lender->id_lender_account . ' AND status = ' . \bids::STATUS_BID_PENDING),
                 'ongoingProjects'    => $ongoingBidsByProject,
@@ -164,18 +168,18 @@ class LenderDashboardController extends Controller
                 ],
                 'monthSum'           => [
                     'capital'   => array_column($lenderRepaymentsData, 'capital'),
-                    'interests' => array_column($lenderRepaymentsData, 'interests'),
-                    'tax'       => array_column($lenderRepaymentsData, 'tax'),
+                    'interests' => array_column($lenderRepaymentsData, 'netInterests'),
+                    'tax'       => array_column($lenderRepaymentsData, 'taxes'),
                 ],
                 'quarterSum'         => [
-                    'capital'   => $repaymentData['quarterCapital'],
-                    'interests' => $repaymentData['quarterInterests'],
-                    'tax'       => $repaymentData['quarterTax'],
+                    'capital'   => $repaymentDataPerPeriod['quarterCapital'],
+                    'interests' => $repaymentDataPerPeriod['quarterInterests'],
+                    'tax'       => $repaymentDataPerPeriod['quarterTax'],
                 ],
                 'yearSum'            => [
-                    'capital'   => $repaymentData['yearCapital'],
-                    'interests' => $repaymentData['yearInterests'],
-                    'tax'       => $repaymentData['yearTax'],
+                    'capital'   => $repaymentDataPerPeriod['yearCapital'],
+                    'interests' => $repaymentDataPerPeriod['yearInterests'],
+                    'tax'       => $repaymentDataPerPeriod['yearTax'],
                 ],
                 'bandOrigin'         => [
                     'month'   => $monthAxisData['monthBandOrigin'],
@@ -187,7 +191,7 @@ class LenderDashboardController extends Controller
     }
 
     /**
-     * @Route("synthese/preferences", name="save_user_preferences")
+     * @Route("synthese/preferences", name="save_panel_preferences")
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request $request
@@ -195,34 +199,37 @@ class LenderDashboardController extends Controller
      */
     public function saveUserDisplayPreferencesAction(Request $request)
     {
-        /** @var \user_preferences $userPreferences */
-        $userPreferences = $this->get('unilend.service.entity_manager')->getRepository('user_preferences');
-        $pageName        = 'lender_dashboard';
-        $postData        = $request->request->get('panels');
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var \lender_panel_preference $panelPreferences */
+        $panelPreferences = $entityManager->getRepository('lender_panel_preference');
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount = $entityManager->getRepository('lenders_accounts');
+        $lenderAccount->get($this->getUser()->getClientId(), 'id_client_owner');
+
+        $pageName = 'lender_dashboard';
+        $postData = $request->request->get('panels');
+        $result   = ['error' => 1, 'msg' => ''];
 
         if ($request->getMethod() === 'PUT') {
             try {
-                $preferences = $userPreferences->getUserPreferencesByPage($this->getUser()->getClientId(), $pageName);
+                $preferences = $panelPreferences->getLenderPreferencesByPage($lenderAccount->id_lender_account, $pageName);
 
                 foreach ($postData as $panel) {
                     if (isset($preferences[$panel['id']])) {
                         if ($preferences[$panel['id']]['hidden'] != $panel['hidden'] || $preferences[$panel['id']]['panel_order'] != $panel['order']) {
-                            $userPreferences->get($preferences[$panel['id']]['id_user_preferences']);
-                            $userPreferences->hidden      = ('true' == $panel['hidden']) ? 1 : 0;
-                            $userPreferences->panel_order = $panel['order'];
-                            $userPreferences->updated     = date('Y-m-d H:i:s');
-                            $userPreferences->update();
+                            $panelPreferences->get($preferences[$panel['id']]['id_lender_panel_preference']);
+                            $panelPreferences->hidden      = ('true' == $panel['hidden']) ? 1 : 0;
+                            $panelPreferences->panel_order = $panel['order'];
+                            $panelPreferences->update();
                         }
                     } else {
-                        $userPreferences->id_client   = $this->getUser()->getClientId();
-                        $userPreferences->page_name   = $pageName;
-                        $userPreferences->panel_name  = $panel['id'];
-                        $userPreferences->panel_order = $panel['order'];
-                        $userPreferences->hidden      = ('true' == $panel['hidden']) ? 1 : 0;
-                        $userPreferences->added       = date('Y-m-d H:i:s');
-                        $userPreferences->updated     = date('Y-m-d H:i:s');
-
-                        $userPreferences->create();
+                        $panelPreferences->id_lender   = $lenderAccount->id_lender_account;
+                        $panelPreferences->page_name   = $pageName;
+                        $panelPreferences->panel_name  = $panel['id'];
+                        $panelPreferences->panel_order = $panel['order'];
+                        $panelPreferences->hidden      = ('true' == $panel['hidden']) ? 1 : 0;
+                        $panelPreferences->create();
                     }
                 }
                 $result = ['success' => 1, 'data' => $postData, 'preferences' => $preferences];
@@ -231,11 +238,12 @@ class LenderDashboardController extends Controller
             }
         } elseif ($request->getMethod() === 'GET') {
             try {
-                $preferences = $userPreferences->getUserPreferencesByPage($this->getUser()->getClientId(), $pageName);
+                $data        = ['panels' => []];
+                $preferences = $panelPreferences->getLenderPreferencesByPage($lenderAccount->id_lender_account, $pageName);
 
                 if (false === empty($preferences)) {
                     foreach ($preferences as $panelName => $panel) {
-                        $data['panels'][] = ['id' => $panelName, 'order' => $panel['panel_order'], 'hidden' => ($panel['hidden'] == 1) ? true : false];
+                        $data['panels'][] = ['id' => $panelName, 'order' => $panel['panel_order'], 'hidden' => $panel['hidden'] == 1];
                     }
                 }
                 $result = ['success' => 1, 'data' => $data, 'preferences' => $preferences];
@@ -252,33 +260,41 @@ class LenderDashboardController extends Controller
      */
     private function getDashboardPreferences()
     {
-        /** @var \user_preferences $userPreferences */
-        $userPreferences = $this->get('unilend.service.entity_manager')->getRepository('user_preferences');
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var \lender_panel_preference $panelPreferences */
+        $panelPreferences = $entityManager->getRepository('lender_panel_preference');
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount = $entityManager->getRepository('lenders_accounts');
+        $lenderAccount->get($this->getUser()->getClientId(), 'id_client_owner');
 
-        $pageName           = 'lender_dashboard';
-        $defaultPreferences = [
-            'myaccount'   => ['order' => 0, 'id' => 'myaccount', 'hidden' => false],
-            'userlevel'   => ['order' => 1, 'id' => 'userlevel', 'hidden' => false],
-            'mywallet'    => ['order' => 2, 'id' => 'mywallet', 'hidden' => false],
-            'myoffers'    => ['order' => 3, 'id' => 'myoffers', 'hidden' => false],
-            'projects'    => ['order' => 4, 'id' => 'projects', 'hidden' => false],
-            'myrembourse' => ['order' => 5, 'id' => 'myrembourse', 'hidden' => false],
+        $pageName            = 'lender_dashboard';
+        $panelPreferencesData = [
+            'account'    => ['order' => 0, 'id' => 'account', 'hidden' => false],
+            'user-level' => ['order' => 1, 'id' => 'user-level', 'hidden' => false],
+            'wallet'     => ['order' => 2, 'id' => 'wallet', 'hidden' => false],
+            'offers'     => ['order' => 3, 'id' => 'offers', 'hidden' => false],
+            'projects'   => ['order' => 4, 'id' => 'projects', 'hidden' => false],
+            'repayments' => ['order' => 5, 'id' => 'repayments', 'hidden' => false],
         ];
 
         try {
-            $preferences = $userPreferences->getUserPreferencesByPage($this->getUser()->getClientId(), $pageName);
+            $preferences = $panelPreferences->getLenderPreferencesByPage($lenderAccount->id_lender_account, $pageName);
 
             if (false === empty($preferences)) {
+                $panelPreferencesData = [];
                 foreach ($preferences as $panelName => $panel) {
-                    $userPreferencesData[$panelName] = ['id' => $panelName, 'order' => $panel['panel_order'], 'hidden' => ($panel['hidden'] == 1) ? true : false];
+                    $panelPreferencesData[$panelName] = [
+                        'id'     => $panelName,
+                        'order'  => $panel['panel_order'],
+                        'hidden' => $panel['hidden'] == 1
+                    ];
                 }
-            } else {
-                $userPreferencesData = $defaultPreferences;
             }
         } catch (\Exception $exception) {
-            $userPreferencesData = $defaultPreferences;
         }
-        return $userPreferencesData;
+
+        return $panelPreferencesData;
     }
 
     /**
@@ -292,13 +308,14 @@ class LenderDashboardController extends Controller
         $interval        = new \DateInterval('P1M');
         $monthAxis       = [];
         $monthBandOrigin = 0;
+        $monthNames      = $this->getMonthNames()['fullNames'];
 
         while ($firstDateTime->format('Y-m') <= $lastDateTime->format('Y-m')) {
             if ($firstDateTime->format('Y-m') == date('Y-m')) {
                 $monthBandOrigin = count($monthAxis) - 0.5;
             }
 
-            $monthAxis[] = $firstDateTime->format('M Y');
+            $monthAxis[] = $monthNames[$firstDateTime->format('n')] . ' ' . $firstDateTime->format('Y');
             $firstDateTime->add($interval);
         }
         return ['monthAxis' => $monthAxis, 'monthBandOrigin' => $monthBandOrigin];
@@ -310,7 +327,8 @@ class LenderDashboardController extends Controller
      */
     private function getQuarterAxis(array $lenderRepaymentsData)
     {
-        $quarterLabels     = [1 => 'Jan-Mar', 2 => 'Apr-Jun', 3 => 'Jul-Sep', 4 => 'Oct-Dec'];
+        $monthNames = $this->getMonthNames()['shortNames'];
+        $quarterLabels     = [1 => $monthNames[1] . '-' . $monthNames[3], 2 => $monthNames[4] . '-' . $monthNames[6], 3 => $monthNames[7] . '-' . $monthNames[9], 4 => $monthNames[10] . '-' . $monthNames[12]];
         $quarterAxis       = [];
         $quarterBandOrigin = 0;
 
@@ -325,6 +343,24 @@ class LenderDashboardController extends Controller
         }
 
         return ['quarterAxis' => $quarterAxis, 'quarterBandOrigin' => $quarterBandOrigin];
+    }
+
+    /**
+     * Returns the full and short month names
+     * @return array
+     */
+    private function getMonthNames()
+    {
+        $startDate       = new \DateTime('2016-01-01');
+        $monthCounter    = new \DateInterval('P1M');
+        $fullMonthNames  = [];
+        $shortMonthNames = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $fullMonthNames[$i]  = strftime('%B', $startDate->getTimestamp());
+            $shortMonthNames[$i] = strftime('%b', $startDate->getTimestamp());
+            $startDate->add($monthCounter);
+        }
+        return ['fullNames' => $fullMonthNames, 'shortNames' => $shortMonthNames];
     }
 
     /**
@@ -381,12 +417,12 @@ class LenderDashboardController extends Controller
             }
 
             $quarterCapital[$lenderRepayment['year']][$lenderRepayment['quarter']] += $lenderRepayment['capital'];
-            $quarterInterests[$lenderRepayment['year']][$lenderRepayment['quarter']] += $lenderRepayment['interests'];
-            $quarterTax[$lenderRepayment['year']][$lenderRepayment['quarter']] += $lenderRepayment['tax'];
+            $quarterInterests[$lenderRepayment['year']][$lenderRepayment['quarter']] += $lenderRepayment['netInterests'];
+            $quarterTax[$lenderRepayment['year']][$lenderRepayment['quarter']] += $lenderRepayment['taxes'];
 
             $yearCapital[$lenderRepayment['year']] += $lenderRepayment['capital'];
-            $yearInterests[$lenderRepayment['year']] += $lenderRepayment['interests'];
-            $yearTax[$lenderRepayment['year']] += $lenderRepayment['tax'];
+            $yearInterests[$lenderRepayment['year']] += $lenderRepayment['netInterests'];
+            $yearTax[$lenderRepayment['year']] += $lenderRepayment['taxes'];
         }
 
         $capital   = [];

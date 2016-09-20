@@ -2,14 +2,17 @@
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
-use Symfony\Component\Translation\Translator;
+use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
@@ -24,15 +27,42 @@ class ProjectsController extends Controller
 {
     /**
      * @Route("/projets-a-financer/{page}/{sortType}/{sortDirection}", defaults={"page" = "1", "sortType" = "end", "sortDirection" = "desc"}, name="projects_list")
+     * @Template("pages/projects.html.twig")
      *
      * @param int    $page
      * @param string $sortType
      * @param string $sortDirection
-     * @return Response
+     * @return array
      */
     public function projectsListAction($page, $sortType, $sortDirection)
     {
-        /** @var Translator $translator */
+        return $this->getProjectsList($page, $sortType, $sortDirection);
+    }
+
+    /**
+     * @Route("/projects/{page}/{sortType}/{sortDirection}", defaults={"page" = "1", "sortType" = "end", "sortDirection" = "desc"}, requirements={"page" = "\d+"}, name="lender_projects")
+     * @Template("lender_account/projects.html.twig")
+     * @Security("has_role('ROLE_LENDER')")
+     *
+     * @param int    $page
+     * @param string $sortType
+     * @param string $sortDirection
+     * @return array
+     */
+    public function lenderProjectsAction($page, $sortType, $sortDirection)
+    {
+        return $this->getProjectsList($page, $sortType, $sortDirection);
+    }
+
+    /**
+     * @param int    $page
+     * @param string $sortType
+     * @param string $sortDirection
+     * @return array
+     */
+    private function getProjectsList($page, $sortType, $sortDirection)
+    {
+        /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
         /** @var ProjectDisplayManager $projectDisplayManager */
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
@@ -96,7 +126,7 @@ class ProjectsController extends Controller
         $template['sortType']          = strtolower($sortType);
         $template['sortDirection']     = strtolower($sortDirection);
 
-        return $this->render('pages/projects.html.twig', $template);
+        return $template;
     }
 
     private function pagination($page, $limit)
@@ -218,7 +248,7 @@ class ProjectsController extends Controller
         $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower);
 
         if (false === $isFullyConnectedUser) {
-            /** @var Translator $translator */
+            /** @var TranslatorInterface $translator */
             $translator = $this->get('translator');
             /** @var EntityManager $entityManager */
             $entityManager = $this->get('unilend.service.entity_manager');
@@ -275,7 +305,7 @@ class ProjectsController extends Controller
         }
 
         if (
-            $project->status >= \projects_status::EN_FUNDING
+            $project->status >= \projects_status::A_FUNDER
             && (
                 $project->display == \projects::DISPLAY_PROJECT_ON
                 || $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') && 28002 == $project->id_project
@@ -287,6 +317,58 @@ class ProjectsController extends Controller
         throw $this->createNotFoundException();
     }
 
+    /**
+     * @Route("/projects/monthly_repayment", name="estimate_monthly_repayment")
+     * @Method({"POST"})
+     */
+    public function estimateMonthlyRepaymentAction(Request $request)
+
+    {
+        if (false === $request->isXMLHttpRequest()) {
+            return new Response('not an ajax request');
+        }
+
+        if (
+            empty($request->request->get('amount'))
+            || empty($request->request->get('duration'))
+            || empty($request->request->get('rate'))
+        ) {
+            return new JsonResponse([
+                'error'   => true,
+                'message' => 'Missing parameters'
+            ]);
+        }
+
+        $amount   = $request->request->get('amount');
+        $duration = $request->request->get('duration');
+        $rate     = $request->request->get('rate');
+
+        if (
+            (int) $amount != $amount
+            || (int) $duration != $duration
+            || false === is_numeric($rate)
+        ) {
+            return new JsonResponse([
+                'error'   => true,
+                'message' => 'Wrong parameter value'
+            ]);
+        }
+
+        $repayment = \repayment::getRepaymentSchedule($amount, $duration, $rate / 100)[1]['repayment'];
+
+        /** @var TranslatorInterface $translator */
+        $translator = $this->get('translator');
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => $translator->trans(
+                'project-detail_monthly-repayment-estimation',
+                ['%amount%' => $ficelle->formatNumber($repayment)]
+            )
+        ]);
+    }
     /**
      * @Route("/projects/bid/{projectId}", requirements={"projectId" = "^\d+$"}, name="place_bid")
      * @Method({"POST"})
@@ -339,10 +421,6 @@ class ProjectsController extends Controller
             /** @var \bids $bids */
             $bids = $entityManager->getRepository('bids');
 
-            /** @var \projects_status $projectStatus */
-            $projectStatus = $entityManager->getRepository('projects_status');
-            $projectStatus->getLastStatut($project->id_project);
-
             $now        = new \DateTime('NOW');
             $projectEnd = new \DateTime($project->date_retrait_full);
 
@@ -351,7 +429,16 @@ class ProjectsController extends Controller
                 return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
 
+            /** @var \project_rate_settings $projectRateSettings */
+            $projectRateSettings = $entityManager->getRepository('project_rate_settings');
+            $projectRateSettings->get($this->get('unilend.service.project_manager')->getProjectRateRange($project));
+
+            $projectData['minRate'] = $projectRateSettings->rate_min;
+            $projectData['maxRate'] = $projectRateSettings->rate_max;
+
             $maxCurrentRate = $bids->getProjectMaxRate($project);
+            $maxRate        = $projectRateSettings->rate_max;
+            $minRate        = $projectRateSettings->rate_min;
             $totalBids      = $bids->getSoldeBid($project->id_project);
             $bidAmount      = $post['amount'];
             $rate           = $post['interest'];
@@ -366,12 +453,12 @@ class ProjectsController extends Controller
                 return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
 
-            if (empty($rate) || $rate < \bids::BID_RATE_MIN || $rate > \bids::BID_RATE_MAX || $totalBids >= $project->amount && $rate >= $maxCurrentRate) {
+            if (empty($rate) || $rate < $minRate || $rate > $maxRate || $totalBids >= $project->amount && $rate >= $maxCurrentRate) {
                 $request->getSession()->set('bidResult', ['error' => true, 'message' => $translations['side-bar-bids-invalid-rate']]);
                 return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
 
-            if ($projectStatus->status != \projects_status::EN_FUNDING) {
+            if ($project->status != \projects_status::EN_FUNDING) {
                 $request->getSession()->set('bidResult', ['error' => true, 'message' => $translations['side-bar-bids-invalid-project-status']]);
                 return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
@@ -411,65 +498,65 @@ class ProjectsController extends Controller
      */
     public function bidsListAction($projectId, $rate, Request $request)
     {
-        if ($request->isXMLHttpRequest()) {
-            /** @var EntityManager $entityManager */
-            $entityManager = $this->get('unilend.service.entity_manager');
-            /** @var MemcacheCachePool $oCachePool */
-            $oCachePool  = $this->get('memcache.default');
-            $oCachedItem = $oCachePool->getItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $projectId . '_' . $rate);
-
-            $template = [];
-
-            if (true === $oCachedItem->isHit()) {
-                $template['bids'] = $oCachedItem->get();
-            } else {
-                /** @var \bids $bidEntity */
-                $bidEntity = $entityManager->getRepository('bids');
-
-                $bids = $bidEntity->select('id_project = ' . $projectId . ' AND rate LIKE ' . $rate, 'ordre ASC');
-                $template['bids'] = [];
-
-                foreach ($bids as $bid) {
-                    $template['bids'][] = [
-                        'id'           => (int) $bid['ordre'],
-                        'rate'         => (float) $bid['rate'],
-                        'amount'       => $bid['amount'] / 100,
-                        'status'       => (int) $bid['status'],
-                        'lenderId'     => (int) $bid['id_lender_account'],
-                        'userInvolved' => false,
-                        'autobid'      => $bid['id_autobid'] > 0
-                    ];
-                }
-
-                $oCachedItem->set($template['bids'])->expiresAfter(300);
-                $oCachePool->save($oCachedItem);
-            }
-
-            /** @var BaseUser $user */
-            $user = $this->getUser();
-
-            $template['canSeeAutobid'] = false;
-
-            if ($user instanceof UserLender) {
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
-                $autoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
-                /** @var \lenders_accounts $lenderAccount */
-                $lenderAccount = $entityManager->getRepository('lenders_accounts');
-                $lenderAccount->get($user->getClientId(), 'id_client_owner');
-
-                $template['canSeeAutobid'] = $autoBidSettingsManager->isQualified($lenderAccount);
-
-                array_walk($template['bids'], function(&$bid) use ($lenderAccount) {
-                    if ($bid['lenderId'] == $lenderAccount->id_lender_account) {
-                        $bid['userInvolved'] = true;
-                    }
-                });
-            }
-
-            return $this->render('partials/components/project-detail/bids-list-detail.html.twig', $template);
+        if (false === $request->isXMLHttpRequest()) {
+            return new Response('not an ajax request');
         }
 
-        return new Response('not an ajax request');
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var MemcacheCachePool $oCachePool */
+        $oCachePool  = $this->get('memcache.default');
+        $oCachedItem = $oCachePool->getItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $projectId . '_' . $rate);
+
+        $template = [];
+
+        if (true === $oCachedItem->isHit()) {
+            $template['bids'] = $oCachedItem->get();
+        } else {
+            /** @var \bids $bidEntity */
+            $bidEntity = $entityManager->getRepository('bids');
+
+            $bids = $bidEntity->select('id_project = ' . $projectId . ' AND rate LIKE ' . $rate, 'ordre ASC');
+            $template['bids'] = [];
+
+            foreach ($bids as $bid) {
+                $template['bids'][] = [
+                    'id'           => (int) $bid['ordre'],
+                    'rate'         => (float) $bid['rate'],
+                    'amount'       => $bid['amount'] / 100,
+                    'status'       => (int) $bid['status'],
+                    'lenderId'     => (int) $bid['id_lender_account'],
+                    'userInvolved' => false,
+                    'autobid'      => $bid['id_autobid'] > 0
+                ];
+            }
+
+            $oCachedItem->set($template['bids'])->expiresAfter(300);
+            $oCachePool->save($oCachedItem);
+        }
+
+        /** @var BaseUser $user */
+        $user = $this->getUser();
+
+        $template['canSeeAutobid'] = false;
+
+        if ($user instanceof UserLender) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+            $autoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
+            /** @var \lenders_accounts $lenderAccount */
+            $lenderAccount = $entityManager->getRepository('lenders_accounts');
+            $lenderAccount->get($user->getClientId(), 'id_client_owner');
+
+            $template['canSeeAutobid'] = $autoBidSettingsManager->isQualified($lenderAccount);
+
+            array_walk($template['bids'], function(&$bid) use ($lenderAccount) {
+                if ($bid['lenderId'] == $lenderAccount->id_lender_account) {
+                    $bid['userInvolved'] = true;
+                }
+            });
+        }
+
+        return $this->render('partials/components/project-detail/bids-list-detail.html.twig', $template);
     }
 
     /**
@@ -481,7 +568,6 @@ class ProjectsController extends Controller
         $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
 
         if (false === $project->get($projectId, 'id_project')
-            || $project->status != 0
             || $project->display != \projects::DISPLAY_PROJECT_ON
             || false === $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
             || false === $this->get('security.authorization_checker')->isGranted('ROLE_LENDER')
@@ -585,7 +671,6 @@ class ProjectsController extends Controller
         $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
 
         if (false === $project->get($projectId, 'id_project')
-            || $project->status != 0
             || $project->display != \projects::DISPLAY_PROJECT_ON
             || false === $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
             || false === $this->get('security.authorization_checker')->isGranted('ROLE_LENDER')
@@ -721,15 +806,11 @@ class ProjectsController extends Controller
         $project = $entityManager->getRepository('projects');
 
         if ($project->get($projectId, 'id_project')) {
-            /** @var \projects_status $projectsStatus */
-            $projectsStatus = $entityManager->getRepository('projects_status');
-            $projectsStatus->getLastStatut($project->id_project);
-
             /** @var TranslationManager $translationManager */
             $translationManager = $this->get('unilend.service.translation_manager');
             $translations = $translationManager->getAllTranslationsForSection('preteur-projets'); //TODO replace by new translations once they are done
 
-            if ($projectsStatus->status == \projects_status::EN_FUNDING) {
+            if ($project->status == \projects_status::EN_FUNDING) {
                 ob_start();
                 echo "\xEF\xBB\xBF";
                 echo '"N°";"' . $translations['taux-dinteret'] . '";"' . $translations['montant'] . '";"' . $translations['statuts'] . '"' . PHP_EOL;

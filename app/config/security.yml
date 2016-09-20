@@ -1,6 +1,7 @@
 security:
     encoders:
-        Unilend\Bundle\FrontBundle\Security\User\BaseUser: bcrypt
+        Unilend\Bundle\FrontBundle\Security\User\BaseUser:
+            id: unilend.frontbundle.security.password_encoder
         md5:
             algorithm: md5
             encode_as_base64: false

@@ -79,10 +79,9 @@ class LenderAccountDisplayManager
         /** @var \echeanciers $repaymentSchedule */
         $repaymentSchedule = $this->entityManager->getRepository('echeanciers');
 
-        $loanInfo = [];
-
-        $loanInfo['amountAlreadyPaidBack'] = $repaymentSchedule->sumARembByProject($lenderAccount->id_lender_account, $projectId . ' AND status_ra = 0') + $repaymentSchedule->sumARembByProjectCapital($lenderAccount->id_lender_account, $projectId . ' AND status_ra = 1');
-        $loanInfo['remainingToBeRepaid']   = $repaymentSchedule->getSumRestanteARembByProject($lenderAccount->id_lender_account, $projectId);
+        $loanInfo                          = [];
+        $loanInfo['amountAlreadyPaidBack'] = $repaymentSchedule->getRepaidAmount(['id_lender' => $lenderAccount->id_lender_account, 'id_project' => $projectId]);
+        $loanInfo['remainingToBeRepaid']   = $repaymentSchedule->getOwedAmount(['id_lender' => $lenderAccount->id_lender_account, 'id_project' => $projectId]);
         $loanInfo['remainingMonths']       = $repaymentSchedule->counterPeriodRestantes($lenderAccount->id_lender_account, $projectId);
         $loanInfo['myLoanOnProject']       = $loans->getBidsValid($projectId, $lenderAccount->id_lender_account);
         $loanInfo['myAverageLoanRate']     = round($loans->getAvgLoansPreteur($projectId, $lenderAccount->id_lender_account), 2);
@@ -132,11 +131,12 @@ class LenderAccountDisplayManager
                 continue;
             }
             $dataForTreeMap[] = [
+                'insee'               => $row['insee_region_code'],
                 'name'                => $regions[$row['insee_region_code']],
                 'projectsCount'       => (int) $row['count'],
                 'averageRate'         => round($row['average_rate'], 2),
                 'loanedAmount'        => round($row['loaned_amount'], 2),
-                'loanSharePercentage' => round($row['loaned_amount'] * 100 / array_sum(array_column($data, 'loaned_amount')), 2),
+                'loanSharePercentage' => round($row['loaned_amount'] * 100 / array_sum(array_column($data, 'loaned_amount')), 0),
             ];
         }
 
@@ -150,7 +150,7 @@ class LenderAccountDisplayManager
      */
     private function getLoansAllocationByCompanyRegion($lenderId)
     {
-        $cachedItem = $this->cachePool->getItem(__FUNCTION__);
+        $cachedItem = $this->cachePool->getItem(__FUNCTION__ . $lenderId);
 
         if (false === $cachedItem->isHit()) {
             /** @var \lenders_accounts $lendersAccounts */
@@ -175,7 +175,7 @@ class LenderAccountDisplayManager
      */
     private function getLoansAllocationByCompanySector($lenderId)
     {
-        $cachedItem = $this->cachePool->getItem(__FUNCTION__);
+        $cachedItem = $this->cachePool->getItem(__FUNCTION__ . $lenderId);
 
         if (false === $cachedItem->isHit()) {
             /** @var \projects $projects */

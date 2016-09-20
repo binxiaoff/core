@@ -1,5 +1,3 @@
-{% import 'extensions/_general.macros.twig' as general %}
-
 {% set bodyClassNames = 'layout-dashboard ui-user-level-' ~ app.user.level %}
 
 <header class="site-header site-header-dashboard">
@@ -18,7 +16,7 @@
             <div class="site-controls">
                 {% block siteHeaderControls %}
                     <div class="site-user">
-                        <a href="{{ path('lender_wallet') }}" class="site-user-balance">
+                        <a href="{{ path('lender_wallet_deposit') }}" class="site-user-balance">
                             <span class="label">{% trans %} header-connected_add-money-link {% endtrans %}</span>
                         </a><!-- /.site-user-balance -->
 

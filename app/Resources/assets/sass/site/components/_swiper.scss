@@ -7,3 +7,46 @@
 .swiper-slide {
   background-color: transparent;
 }
+
+.swiper-container,
+.swiper-wrapper {
+  position: relative;
+}
+
+.swiper-nav-custom {
+  display: none;
+
+  .btn-nav-left,
+  .btn-nav-right,
+  .btn-nav-back,
+  .btn-nav-next {
+    position: absolute;
+    top: 50%;
+    z-index: $depth-tooltip - 100;
+
+    background: transparent;
+    border-color: transparent;
+    color: $c-t3;
+
+    &:hover,
+    &:focus,
+    &:active {
+      color: $c-t1;
+    }
+  }
+
+  .btn-nav-left,
+  .btn-nav-back {
+    left: 0;
+  }
+
+  .btn-nav-right,
+  .btn-nav-next {
+    right: 0;
+  }
+
+  // Slides are displayed 1 by 1 in mobile breakpoints, otherwise they're displayed in groups of three
+  @include devices('mobile') {
+    display: block;
+  }
+}

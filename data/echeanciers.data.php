@@ -28,6 +28,10 @@
 
 class echeanciers extends echeanciers_crud
 {
+    const STATUS_PENDING          = 0;
+    const STATUS_REPAID           = 1;
+    const STATUS_PARTIALLY_REPAID = 2;
+
     public function __construct($bdd, $params = '')
     {
         parent::echeanciers($bdd, $params);
@@ -41,7 +45,7 @@ class echeanciers extends echeanciers_crud
         if ($order != '') {
             $order = ' ORDER BY ' . $order;
         }
-        $sql = 'SELECT * FROM `echeanciers`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+        $sql      = 'SELECT * FROM echeanciers' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
         $resultat = $this->bdd->query($sql);
         $result   = array();
         while ($record = $this->bdd->fetch_array($resultat)) {
@@ -56,899 +60,484 @@ class echeanciers extends echeanciers_crud
             $where = ' WHERE ' . $where;
         }
 
-        $result = $this->bdd->query('SELECT COUNT(*) FROM `echeanciers` ' . $where);
-        return (int) $this->bdd->result($result, 0, 0);
+        $result = $this->bdd->query('SELECT COUNT(*) FROM echeanciers' . $where);
+        return (int) $this->bdd->result($result);
     }
 
     public function exist($id, $field = 'id_echeancier')
     {
-        $sql    = 'SELECT * FROM `echeanciers` WHERE ' . $field . '="' . $id . '"';
-        $result = $this->bdd->query($sql);
+        $result = $this->bdd->query('SELECT * FROM echeanciers WHERE ' . $field . ' = "' . $id . '"');
         return ($this->bdd->fetch_array($result) > 0);
     }
 
-    // retourne la sum total d'un emprunt
-    public function getSum($id_loan, $champ = 'montant')
+    /**
+     * @param array $selector
+     * @return string
+     */
+    public function getTotalAmount(array $selector)
     {
-        $sql = 'SELECT SUM(' . $champ . ') FROM `echeanciers` WHERE id_loan = ' . $id_loan;
-
-        $result = $this->bdd->query($sql);
-        $sum    = (int) ($this->bdd->result($result, 0, 0));
-        return ($sum / 100);
+        return $this->getPartialSum('capital + interets', $selector);
     }
 
-    // retourne la sum total d'un emprunt
-    public function sum($where, $champ = 'montant')
+    /**
+     * @param array $selector
+     * @return string
+     */
+    public function getTotalInterests(array $selector)
     {
-        $sql = 'SELECT SUM(' . $champ . ') FROM `echeanciers` WHERE ' . $where;
-
-        $result = $this->bdd->query($sql);
-        $sum    = (int) ($this->bdd->result($result, 0, 0));
-        return ($sum / 100);
+        return $this->getPartialSum('interets', $selector);
     }
 
-    // retourne la sum total d'un emprunt par année
-    public function getSumByAnnee($id_loan)
+    /**
+     * @param array $selector
+     * @return string
+     */
+    public function getTotalCapital(array $selector)
     {
-        $sql = 'SELECT SUM(montant) as montant,SUM(capital) as capital, SUM(interets) as interets, LEFT(date_echeance,4) as annee FROM `echeanciers` WHERE id_loan = ' . $id_loan . ' GROUP BY LEFT(date_echeance,4)';
+        return $this->getPartialSum('capital', $selector);
+    }
 
-        $resultat = $this->bdd->query($sql);
-        $result = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
+    /**
+     * @param array $selector
+     * @return string
+     */
+    public function getOwedAmount(array $selector)
+    {
+        return $this->getPartialSum('capital - capital_rembourse + interets - interets_rembourses', $selector, array(self::STATUS_PENDING, self::STATUS_PARTIALLY_REPAID));
+    }
+
+    /**
+     * @param array $selector
+     * @return string
+     */
+    public function getOwedCapital(array $selector)
+    {
+        return $this->getPartialSum('capital - capital_rembourse', $selector, array(self::STATUS_PENDING, self::STATUS_PARTIALLY_REPAID));
+    }
+
+    /**
+     * @param array $selector
+     * @return string
+     */
+    public function getOwedInterests(array $selector)
+    {
+        return $this->getPartialSum('interets - interets_rembourses', $selector, array(self::STATUS_PENDING, self::STATUS_PARTIALLY_REPAID));
+    }
+
+    /**
+     * @param int       $projectId
+     * @param \DateTime $endDate
+     * @return string
+     */
+    public function getUnpaidAmountAtDate($projectId, \DateTime $endDate)
+    {
+        $bind     = [
+            'id_project'       => $projectId,
+            'loan_status'      => \loans::STATUS_ACCEPTED,
+            'repayment_status' => array(self::STATUS_PENDING, self::STATUS_PARTIALLY_REPAID),
+            'date_echeance'    => $endDate->format('Y-m-d H:i:s')
+        ];
+        $bindType = [
+            'id_project'       => \PDO::PARAM_INT,
+            'loan_status'      => \PDO::PARAM_INT,
+            'repayment_status' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'date_echeance'    => \PDO::PARAM_STR
+        ];
+        $query    = '
+            SELECT SUM(e.capital - e.capital_rembourse + e.interets - e.interets_rembourses)
+            FROM echeanciers e
+            INNER JOIN loans l ON e.id_loan = l.id_loan
+            WHERE l.status = :loan_status
+              AND e.id_project = :id_project
+              AND e.status IN (:repayment_status)
+              AND e.date_echeance < :date_echeance';
+        return bcdiv($this->bdd->executeQuery($query, $bind, $bindType)
+            ->fetchColumn(0), 100, 2);
+    }
+
+    /**
+     * @param int $projectId
+     * @param int $due
+     * @return string
+     * @throws Exception
+     */
+    public function getRemainingCapitalAtDue($projectId, $due)
+    {
+        $bind     = [
+            'id_project'       => $projectId,
+            'loan_status'      => \loans::STATUS_ACCEPTED,
+            'repayment_status' => array(self::STATUS_PENDING, self::STATUS_PARTIALLY_REPAID),
+            'ordre'            => $due
+        ];
+        $bindType = [
+            'id_project'       => \PDO::PARAM_INT,
+            'loan_status'      => \PDO::PARAM_INT,
+            'repayment_status' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'ordre'            => \PDO::PARAM_INT
+        ];
+        $query    = '
+            SELECT SUM(e.capital - e.capital_rembourse)
+            FROM echeanciers e
+            INNER JOIN loans l ON e.id_loan = l.id_loan
+            WHERE l.status = :loan_status
+              AND e.id_project = :id_project
+              AND e.status IN (:repayment_status)
+              AND e.ordre >= :ordre';
+        return bcdiv($this->bdd->executeQuery($query, $bind, $bindType)
+            ->fetchColumn(0), 100, 2);
+    }
+
+    /**
+     * @param array $selector
+     * @return string
+     */
+    public function getRepaidAmount(array $selector)
+    {
+        return bcadd($this->getRepaidCapital($selector), $this->getRepaidInterests($selector), 2);
+    }
+
+    /**
+     * @param array $selector
+     * @return string
+     */
+    public function getRepaidCapital(array $selector)
+    {
+        return $this->getPartialSum('capital_rembourse', $selector, array(self::STATUS_REPAID, self::STATUS_PARTIALLY_REPAID));
+    }
+
+    /**
+     * @param array $selector
+     * @return string
+     */
+    public function getEarlyRepaidCapital(array $selector)
+    {
+        return $this->getPartialSum('capital_rembourse', $selector, array(self::STATUS_REPAID, self::STATUS_PARTIALLY_REPAID), 1);
+    }
+
+    /**
+     * @param array $selector
+     * @return string
+     */
+    public function getRepaidInterests(array $selector)
+    {
+        return $this->getPartialSum('interets_rembourses', $selector, array(self::STATUS_REPAID, self::STATUS_PARTIALLY_REPAID), 0);
+    }
+
+    /**
+     * @param string $amountType
+     * @param array $selector
+     * @param array $status
+     * @param int|null $earlyRepaymentStatus
+     * @return string
+     */
+    private function getPartialSum($amountType, array $selector, array $status = array(), $earlyRepaymentStatus = null)
+    {
+        $query = '
+            SELECT SUM(e.' . $amountType . ')
+            FROM echeanciers e
+            INNER JOIN loans l ON e.id_loan = l.id_loan
+            WHERE l.status = ' . \loans::STATUS_ACCEPTED . ' AND e.' . $this->implodeSelector($selector);
+
+        if (false === empty($status)) {
+            $query .= ' AND e.status IN (' . implode(', ', $status) . ')';
+        }
+
+        if (null !== $earlyRepaymentStatus) {
+            $query .= ' AND e.status_ra = ' . $earlyRepaymentStatus;
+        }
+
+        $result = $this->bdd->query($query);
+        return bcdiv($this->bdd->result($result), 100, 2);
+    }
+
+    /**
+     * @param array $selector
+     * @return array
+     */
+    public function getYearlySchedule(array $selector)
+    {
+        $result      = array();
+        $queryResult = $this->bdd->query('
+            SELECT YEAR(date_echeance) AS annee,
+                SUM(capital) AS capital,
+                SUM(interets) AS interets
+            FROM echeanciers
+            WHERE ' . $this->implodeSelector($selector) . '
+            GROUP BY annee'
+        );
+
+        while ($record = $this->bdd->fetch_assoc($queryResult)) {
+            $result[$record['annee']] = $record;
         }
         return $result;
     }
 
-    // retourne la somme des echeances deja remboursé d'un preteur
-    public function getSumRemb($id_lender, $champ = 'montant')
+    /**
+     * @param array $selector
+     * @return string
+     */
+    private function implodeSelector(array $selector)
     {
-        $sql = 'SELECT SUM(' . $champ . ') FROM `echeanciers` WHERE status = 1 AND id_lender = ' . $id_lender;
+        return implode(' AND e.', array_map(
+            function ($key, $value) {
+                return $key . ' = ' . $value;
+            },
+            array_keys($selector),
+            $selector
+        ));
+    }
+
+    /**
+     * number of remaining periods
+     * @param int $id_lender
+     * @param int $id_project
+     * @return int
+     */
+    public function counterPeriodRestantes($id_lender, $id_project)
+    {
+        $sql = 'SELECT count(DISTINCT(ordre)) FROM `echeanciers` WHERE id_lender = ' . $id_lender . ' AND id_project = ' . $id_project . ' AND status = ' . self::STATUS_PENDING;
 
         $result = $this->bdd->query($sql);
-        $sum    = (int) ($this->bdd->result($result, 0, 0));
-        return ($sum / 100);
+        return (int) $this->bdd->result($result);
     }
 
-    // retourne la somme des echeances a rembourser d'un preteur
-    // sur les prêts acceptés.
-    public function getSumARemb($id_lender, $champ = 'montant')
+    /**
+     * @param int $lenderId
+     * @param int $startDate
+     * @param int $endDate
+     * @return string
+     */
+    public function getRepaidCapitalInDateRange($lenderId, $startDate, $endDate)
     {
-        $result = $this->bdd->query("
-            SELECT SUM(e.$champ)
-            FROM echeanciers e
-            INNER JOIN loans l ON l.id_lender = e.id_lender AND l.id_loan = e.id_loan
-            WHERE e.status = 0
-                AND e.id_lender = $id_lender
-                AND l.status = 0"
-        );
-        return (int) $this->bdd->result($result, 0, 0) / 100;
+        return $this->getRepaymentAmountInDateRange($lenderId, $startDate, $endDate, 'e.capital_rembourse', array(\echeanciers::STATUS_PARTIALLY_REPAID, \echeanciers::STATUS_REPAID));
     }
 
-    public function getProblematicProjects($iLenderId)
+    /**
+     * @param int $lenderId
+     * @param string $startDate
+     * @param string $endDate
+     * @param int $loanId
+     * @return string
+     */
+    public function getRepaidAmountInDateRange($lenderId, $startDate, $endDate, $loanId = null)
     {
-        $rResult = $this->bdd->query('
-            SELECT ROUND(SUM(e.capital) / 100, 2) AS capital, COUNT(DISTINCT(e.id_project)) AS projects
+        return $this->getRepaymentAmountInDateRange($lenderId, $startDate, $endDate, 'e.capital_rembourse + e.interets_rembourses', array(\echeanciers::STATUS_PARTIALLY_REPAID, \echeanciers::STATUS_REPAID), null, $loanId);
+    }
+
+    /**
+     * @param int $lenderId
+     * @param string $startDate
+     * @param string $endDate
+     * @return string
+     */
+    public function getNextRepaymentAmountInDateRange($lenderId, $startDate, $endDate)
+    {
+        return $this->getRepaymentAmountInDateRange($lenderId, $startDate, $endDate, 'e.capital + e.interets', array(\echeanciers::STATUS_PENDING));
+    }
+
+    /**
+     * @param int $lenderId
+     * @param int $loanId
+     * @return string
+     * @throws Exception
+     */
+    public function getTotalComingCapital($lenderId, $loanId)
+    {
+        $bind     = [
+            'id_lender'        => $lenderId,
+            'loan_status'      => \loans::STATUS_ACCEPTED,
+            'id_loan'          => $loanId,
+            'repayment_status' => \echeanciers::STATUS_PENDING,
+            'date_echeance'    => date('Y-m-d')
+        ];
+        $bindType = [
+            'id_lender'        => \PDO::PARAM_INT,
+            'loan_status'      => \PDO::PARAM_INT,
+            'id_loan'          => \PDO::PARAM_INT,
+            'repayment_status' => \PDO::PARAM_INT,
+            'date_echeance'    => \PDO::PARAM_STR
+        ];
+        $query    = '
+            SELECT SUM(e.capital)
             FROM echeanciers e
-            LEFT JOIN echeanciers unpaid ON unpaid.id_echeancier = e.id_echeancier AND unpaid.status = 0 AND DATEDIFF(NOW(), unpaid.date_echeance) > 180
+            INNER JOIN loans l ON e.id_loan = l.id_loan
+            WHERE l.status = :loan_status
+              AND e.id_lender = :id_lender
+              AND e.id_loan = :id_loan
+              AND e.status = :repayment_status
+              AND date(e.date_echeance) > :date_echeance';
+        return bcdiv($this->bdd->executeQuery($query, $bind, $bindType)
+            ->fetchColumn(0), 100, 2);
+    }
+
+    /**
+     * @param int $lenderId
+     * @param int $startDate
+     * @param string $endDate
+     * @param string $amountType
+     * @param array $repaymentStatus
+     * @param int|null $earlyRepayment
+     * @param int|null $loanId
+     * @return string
+     * @throws Exception
+     */
+    private function getRepaymentAmountInDateRange($lenderId, $startDate, $endDate, $amountType, $repaymentStatus, $earlyRepayment = null, $loanId = null)
+    {
+        $bind     = [
+            'loan_status'      => \loans::STATUS_ACCEPTED,
+            'start_date'       => $startDate,
+            'end_date'         => $endDate,
+            'repayment_status' => $repaymentStatus
+        ];
+
+        $bindType = [
+            'loan_status'      => \PDO::PARAM_INT,
+            'start_date'       => \PDO::PARAM_STR,
+            'end_date'         => \PDO::PARAM_STR,
+            'repayment_status' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY
+        ];
+
+        if (in_array(\echeanciers::STATUS_PENDING, $repaymentStatus)) {
+            $date = 'date_echeance';
+        } else {
+            $date = 'date_echeance_reel';
+        }
+
+        $query = '
+            SELECT SUM(' . $amountType . ')
+            FROM echeanciers e
+            INNER JOIN loans l ON e.id_loan = l.id_loan
+            WHERE l.status = :loan_status
+              AND e.' . $date . ' BETWEEN :start_date AND :end_date
+              AND e.status IN (:repayment_status) ';
+
+        if (false === is_null($earlyRepayment)) {
+            $bind['status_ra']     = $earlyRepayment;
+            $bindType['status_ra'] = \PDO::PARAM_INT;
+            $query .= ' AND e.status_ra = :status_ra ';
+        }
+        if (false === is_null($loanId)) {
+            $bind['id_loan']     = $loanId;
+            $bindType['id_loan'] = \PDO::PARAM_INT;
+            $query .= ' AND l.id_loan = :id_loan ';
+        }
+        if (false === is_null($lenderId)) {
+            $bind['id_lender']     = $lenderId;
+            $bindType['id_lender'] = \PDO::PARAM_INT;
+            $query .= ' AND e.id_lender = :id_lender ';
+        }
+
+        return bcdiv($this->bdd->executeQuery($query, $bind, $bindType, new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::MEDIUM_TIME, md5(__METHOD__)))
+            ->fetchColumn(0), 100, 2);
+    }
+
+    /**
+     * @param int $projectId
+     * @return array
+     */
+    public function getMonthlyScheduleByProject($projectId)
+    {
+        $sql = '
+            SELECT ordre,
+                SUM(montant) AS montant,
+                SUM(capital) AS capital,
+                SUM(interets) AS interets,
+                status_emprunteur
+            FROM echeanciers
+            WHERE id_project = :id_project GROUP BY ordre';
+
+        $res    = [];
+        $result = $this->bdd->executeQuery($sql, array('id_project' => $projectId), array('id_project' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::SHORT_TIME, md5(__METHOD__)))->fetchAll(\PDO::FETCH_ASSOC);
+        foreach ($result as $key => $aRow) {
+            $res[$aRow['ordre']] = array(
+                'montant'           => bcdiv($aRow['montant'], 100, 2),
+                'capital'           => bcdiv($aRow['capital'], 100, 2),
+                'interets'          => bcdiv($aRow['interets'], 100, 2),
+                'status_emprunteur' => $aRow['status_emprunteur']
+            );
+        }
+        return $res;
+    }
+
+    /**
+     * @param int $lenderId
+     * @return array
+     */
+    public function getProblematicProjects($lenderId)
+    {
+        $sql = '
+            SELECT
+              IFNULL(ROUND(SUM(e.capital - e.capital_rembourse) / 100, 2), 0) AS capital,
+              IFNULL(ROUND(SUM(e.interets - e.interets_rembourses) / 100, 2), 0) AS interests,
+              COUNT(DISTINCT(e.id_project)) AS projects
+            FROM echeanciers e
+            LEFT JOIN echeanciers unpaid ON unpaid.id_echeancier = e.id_echeancier AND unpaid.status = ' . self::STATUS_PENDING . ' AND DATEDIFF(NOW(), unpaid.date_echeance) > 180
             INNER JOIN loans l ON l.id_lender = e.id_lender AND l.id_loan = e.id_loan
-            WHERE e.id_lender = ' . $iLenderId . '
-                AND e.status = 0
+            WHERE e.id_lender = :id_lender
+                AND e.status IN(' . self::STATUS_PENDING . ', ' . self::STATUS_PARTIALLY_REPAID . ')
                 AND l.status = 0
                 AND (
                     (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = e.id_project ORDER BY psh.id_project_status_history DESC LIMIT 1) >= ' . \projects_status::PROCEDURE_SAUVEGARDE . '
                     OR unpaid.date_echeance IS NOT NULL
-                )'
-        );
-        return $this->bdd->fetch_assoc($rResult);
+                )';
+        return $this->bdd->executeQuery($sql, array('id_lender' => $lenderId))->fetch(\PDO::FETCH_ASSOC);
     }
 
-    // retourne la somme des revenues fiscale des echeances deja remboursés d'un preteur
-    public function getSumRevenuesFiscalesRemb($id_lender)
-    {
-        $sql = 'SELECT SUM(prelevements_obligatoires) as prelevements_obligatoires,SUM(retenues_source) as retenues_source,SUM(csg) as csg,SUM(prelevements_sociaux) as prelevements_sociaux,SUM(contributions_additionnelles) as contributions_additionnelles,SUM(prelevements_solidarite) as prelevements_solidarite,SUM(crds) as crds FROM `echeanciers` WHERE status = 1 AND id_lender = ' . $id_lender;
-
-        $retenues = 0;
-        $resultat = $this->bdd->query($sql);
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $retenues += $record['prelevements_obligatoires'] + $record['retenues_source'] + $record['csg'] + $record['prelevements_sociaux'] + $record['contributions_additionnelles'] + $record['prelevements_solidarite'] + $record['crds'];
-        }
-        return $retenues;
-    }
-
-    // retourne la somme des revenues fiscale des echeances deja remboursés d'un preteur
-    public function getSumRevenuesFiscalesARemb($id_lender)
-    {
-        $sql = 'SELECT SUM(prelevements_obligatoires) as prelevements_obligatoires,SUM(retenues_source) as retenues_source,SUM(csg) as csg,SUM(prelevements_sociaux) as prelevements_sociaux,SUM(contributions_additionnelles) as contributions_additionnelles,SUM(prelevements_solidarite) as prelevements_solidarite,SUM(crds) as crds FROM `echeanciers` WHERE status = 0 AND id_lender = ' . $id_lender;
-
-        $retenues = 0;
-        $resultat = $this->bdd->query($sql);
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $retenues += $record['prelevements_obligatoires'] + $record['retenues_source'] + $record['csg'] + $record['prelevements_sociaux'] + $record['contributions_additionnelles'] + $record['prelevements_solidarite'] + $record['crds'];
-        }
-        return $retenues;
-    }
-
-    public function getSumRembV2($id_lender)
-    {
-        $sql = 'SELECT SUM(montant) as montant,SUM(interets) as interets,SUM(prelevements_obligatoires) as prelevements_obligatoires,SUM(retenues_source) as retenues_source,SUM(csg) as csg,SUM(prelevements_sociaux) as prelevements_sociaux,SUM(contributions_additionnelles) as contributions_additionnelles,SUM(prelevements_solidarite) as prelevements_solidarite,SUM(crds) as crds FROM `echeanciers` WHERE status = 1 AND id_lender = ' . $id_lender;
-
-        $resultat = $this->bdd->query($sql);
-        $montant  = 0;
-        $interets = 0;
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $retenues = $record['prelevements_obligatoires'] + $record['retenues_source'] + $record['csg'] + $record['prelevements_sociaux'] + $record['contributions_additionnelles'] + $record['prelevements_solidarite'] + $record['crds'];
-
-            $lemontant = ($record['montant'] / 100);
-            $linterets = ($record['interets'] / 100);
-
-            $montant += ($lemontant - $retenues);
-            $interets += ($linterets - $retenues);
-        }
-        return array('montant' => $montant, 'interets' => $interets);
-    }
-
-    // retourne la somme des echeances deja remboursé d'une enchere
-    public function getSumRembByloan($id_loan, $champ = 'montant')
-    {
-        $sql = 'SELECT SUM(' . $champ . ') FROM `echeanciers` WHERE status = 1 AND id_loan = ' . $id_loan;
-
-        $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0) / 100);
-    }
-
-    // retourne la somme des echeances deja remboursé
-    public function getTotalSumRembByMonth($month, $year)
-    {
-        $sql = 'SELECT SUM(capital) FROM `echeanciers` WHERE MONTH(date_echeance_emprunteur) = ' . $month . ' AND YEAR(date_echeance_emprunteur) = ' . $year . ' AND status_emprunteur = 0';
-
-        $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0) / 100);
-    }
-
-    // retourne la somme des echeances deja remboursé d'un preteur par projet
-    public function getSumArembByProject($id_lender, $id_project, $champ = 'montant')
-    {
-        $sql = 'SELECT SUM(' . $champ . ') as montant, ordre FROM `echeanciers` WHERE id_lender = ' . $id_lender . ' AND id_project = ' . $id_project . ' GROUP BY ordre';
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[$record['ordre']] = $record['montant'];
-        }
-        return $result;
-    }
-
-    // remboursé capital seulement (add 17/07/2015)
-    public function sumARembByProjectCapital($id_lender, $id_project = '')
-    {
-        if ($id_project != '') {
-            $id_project = ' AND id_project = ' . $id_project;
-        }
-        $sql = 'SELECT SUM(capital) FROM `echeanciers` WHERE status = 1 AND id_lender = ' . $id_lender . $id_project;
-
-        $result = $this->bdd->query($sql);
-        $sum    = (int) ($this->bdd->result($result, 0, 0));
-        return ($sum / 100);
-    }
-
-    // retourne la somme total a rembourser a un preteur
-    public function getSumRestanteARembByProject($id_lender, $id_project = '')
-    {
-        if ($id_project != '') {
-            $id_project = ' AND id_project = ' . $id_project;
-        }
-        $sql = 'SELECT SUM(montant) FROM `echeanciers` WHERE status = 0 AND id_lender = ' . $id_lender . $id_project;
-
-        $result = $this->bdd->query($sql);
-        $sum    = (int) ($this->bdd->result($result, 0, 0));
-        return ($sum / 100);
-    }
-
-    // retourne la somme total a rembourser a un preteur
-    public function getSumRestanteARembByProject_capital($where = "")
-    {
-        $sql = 'SELECT SUM(capital) FROM `echeanciers` WHERE 1=1 ' . $where;
-
-        $result = $this->bdd->query($sql);
-        $sum    = (int) ($this->bdd->result($result, 0, 0));
-        return ($sum / 100);
-    }
-
-    // remboursé
-    public function sumARembByProject($id_lender, $id_project = '')
-    {
-        if ($id_project != '') {
-            $id_project = ' AND id_project = ' . $id_project;
-        }
-        $sql = 'SELECT SUM(montant) FROM `echeanciers` WHERE status = 1 AND id_lender = ' . $id_lender . $id_project;
-
-        $result = $this->bdd->query($sql);
-        $sum    = (int) ($this->bdd->result($result, 0, 0));
-        return ($sum / 100);
-    }
-
-
-    // Nb period restantes
-    public function counterPeriodRestantes($id_lender, $id_project)
-    {
-        $sql = 'SELECT count(DISTINCT(ordre)) FROM `echeanciers` WHERE id_lender = ' . $id_lender . ' AND id_project = ' . $id_project . ' AND status = 0';
-
-        $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
-    }
-
-    // retourne la sommes des remb du prochain mois d'un preteur
-    public function getNextRemb($id_lender)
-    {
-        $laDate = mktime(0, 0, 0, date("m") + 1, date("d"), date("Y"));
-        $laDate = date('Y-m', $laDate);
-
-        $sql = 'SELECT SUM(montant) FROM `echeanciers` WHERE status = 0 AND id_lender = ' . $id_lender . ' AND LEFT(date_echeance,7) = "' . $laDate . '"';
-
-        $result = $this->bdd->query($sql);
-        $sum    = ($this->bdd->result($result, 0, 0));
-        if ($sum == 0) {
-            $sum = 0;
-        } else {
-            $sum = ($sum / 100);
-        }
-        return $sum;
-    }
-
-    // Retourne les sommes remboursées chaque mois d'un preteur sur une année
-    public function getSumRembByMonths($id_lender, $year)
-    {
-        $sql = 'SELECT SUM(montant) AS montant, LEFT(date_echeance_reel,7) AS date FROM echeanciers WHERE YEAR(date_echeance_reel) = ' . $year . ' AND id_lender = ' . $id_lender . ' AND status = 1 GROUP BY LEFT(date_echeance_reel,7)';
-        $req = $this->bdd->query($sql);
-        $res = array();
-        while ($rec = $this->bdd->fetch_array($req)) {
-            $d          = explode('-', $rec['date']);
-            $res[$d[1]] = ($rec['montant'] > 0 ? ($rec['montant'] / 100) : 0);
-        }
-        return $res;
-    }
-
-    // Retourne les sommes remboursées chaque mois d'un preteur sur une année (capital)
-    public function getSumRembByMonthsCapital($id_lender, $year)
-    {
-        $sql = 'SELECT SUM(capital) AS capital, LEFT(date_echeance_reel,7) AS date FROM echeanciers WHERE YEAR(date_echeance_reel) = ' . $year . ' AND id_lender = ' . $id_lender . ' AND status = 1 GROUP BY LEFT(date_echeance_reel,7)';
-        $req = $this->bdd->query($sql);
-        $res = array();
-        while ($rec = $this->bdd->fetch_array($req)) {
-            $d          = explode('-', $rec['date']);
-            $res[$d[1]] = ($rec['capital'] > 0 ? ($rec['capital'] / 100) : 0);
-        }
-        return $res;
-    }
-
-    // Retourne la somme des interets par mois d'un preteur
-    public function getSumIntByMonths($id_lender, $year)
-    {
-        $sql = 'SELECT SUM(interets) AS interets, LEFT(date_echeance_reel,7) AS date FROM echeanciers WHERE YEAR(date_echeance_reel) = ' . $year . ' AND id_lender = ' . $id_lender . ' AND status = 1 GROUP BY LEFT(date_echeance_reel,7)';
-        $req = $this->bdd->query($sql);
-        $res = array();
-        while ($rec = $this->bdd->fetch_array($req)) {
-            $d          = explode('-', $rec['date']);
-            $res[$d[1]] = ($rec['interets'] > 0 ? ($rec['interets'] / 100) : 0);
-        }
-        return $res;
-    }
-
-    // modif date_echeance_reel par date_echeance 02/09/2014
-    public function getSumRevenuesFiscalesByMonths($id_lender, $year)
-    {
-        $sql = 'SELECT
-        SUM(prelevements_obligatoires) as prelevements_obligatoires,
-        SUM(retenues_source) as retenues_source,
-        SUM(csg) as csg,
-        SUM(prelevements_sociaux) as prelevements_sociaux,
-        SUM(contributions_additionnelles) as contributions_additionnelles,
-        SUM(prelevements_solidarite) as prelevements_solidarite,
-        SUM(crds) as crds,
-        LEFT(date_echeance_reel,7) AS date
-        FROM `echeanciers`
-        WHERE status = 1
-        AND id_lender = ' . $id_lender . '
-        AND YEAR(date_echeance_reel) = ' . $year . '
-        GROUP BY LEFT(date_echeance_reel,7)';
-
-        $res    = array();
-        $result = $this->bdd->query($sql);
-        while ($record = $this->bdd->fetch_array($result)) {
-            $d          = explode('-', $record['date']);
-            $retenues   = $record['prelevements_obligatoires'] + $record['retenues_source'] + $record['csg'] + $record['prelevements_sociaux'] + $record['contributions_additionnelles'] + $record['prelevements_solidarite'] + $record['crds'];
-            $res[$d[1]] = $retenues;
-        }
-        return $res;
-    }
-
-    // Retourne les sommes remboursées chaque annee d'un preteur(capital)
-    public function getSumRembByYearCapital($id_lender, $debut, $fin)
-    {
-        $sql = 'SELECT SUM(capital) AS capital, YEAR(date_echeance_reel) AS date FROM echeanciers WHERE YEAR(date_echeance_reel) >= ' . $debut . ' AND YEAR(date_echeance_reel) <= ' . $fin . ' AND id_lender = ' . $id_lender . ' AND status = 1 GROUP BY YEAR(date_echeance_reel)';
-        $req = $this->bdd->query($sql);
-        $res = array();
-        while ($rec = $this->bdd->fetch_array($req)) {
-            $res[$rec['date']] = ($rec['capital'] > 0 ? ($rec['capital'] / 100) : 0);
-        }
-
-        for ($i = $debut; $i <= $fin; $i++) {
-            $resultat[$i] = number_format((false === empty($res[$i]) ? $res[$i] : 0), 2, '.', '');
-        }
-
-        return $resultat;
-    }
-
-    // Retourne la somme des interets par annee d'un preteur
-    public function getSumIntByYear($id_lender, $debut, $fin)
-    {
-        $sql = 'SELECT SUM(interets) AS interets, YEAR(date_echeance_reel) AS date FROM echeanciers WHERE YEAR(date_echeance_reel) >= ' . $debut . ' AND YEAR(date_echeance_reel) <= ' . $fin . ' AND id_lender = ' . $id_lender . ' AND status = 1 GROUP BY YEAR(date_echeance_reel)';
-        $req = $this->bdd->query($sql);
-        $res = array();
-        while ($rec = $this->bdd->fetch_array($req)) {
-            $res[$rec['date']] = ($rec['interets'] > 0 ? ($rec['interets'] / 100) : 0);
-        }
-
-        for ($i = $debut; $i <= $fin; $i++) {
-            $resultat[$i] = number_format((false === empty($res[$i]) ? $res[$i] : 0), 2, '.', '');
-        }
-
-        return $resultat;
-    }
-
-    // prelevements fiscaux chaque annee 02/09/2014
-    public function getSumRevenuesFiscalesByYear($id_lender, $debut, $fin)
-    {
-        $sql = 'SELECT
-        SUM(prelevements_obligatoires) as prelevements_obligatoires,
-        SUM(retenues_source) as retenues_source,
-        SUM(csg) as csg,
-        SUM(prelevements_sociaux) as prelevements_sociaux,
-        SUM(contributions_additionnelles) as contributions_additionnelles,
-        SUM(prelevements_solidarite) as prelevements_solidarite,
-        SUM(crds) as crds,
-        YEAR(date_echeance_reel) AS date
-        FROM `echeanciers`
-        WHERE status = 1
-        AND id_lender = ' . $id_lender . '
-        AND YEAR(date_echeance_reel) >= ' . $debut . ' AND YEAR(date_echeance_reel) <= ' . $fin . '
-        GROUP BY YEAR(date_echeance_reel)';
-
-        $result = $this->bdd->query($sql);
-        $res    = array();
-        while ($record = $this->bdd->fetch_array($result)) {
-            $retenues             = $record['prelevements_obligatoires'] + $record['retenues_source'] + $record['csg'] + $record['prelevements_sociaux'] + $record['contributions_additionnelles'] + $record['prelevements_solidarite'] + $record['crds'];
-            $res[$record['date']] = $retenues;
-        }
-        for ($i = $debut; $i <= $fin; $i++) {
-            $resultat[$i] = number_format((false === empty($res[$i]) ? $res[$i] : 0), 2, '.', '');
-        }
-
-        return $resultat;
-    }
-
-    // listes des echeance (goupe par lender et par date)
-    public function getEcheancesProject($id_project)
-    {
-        $sql      = 'SELECT ordre, id_lender, status_emprunteur,status,id_project, SUM(montant) AS montant, SUM(capital) AS capital, SUM(interets) AS interets, SUM(commission) AS commission, SUM(tva) AS tva, LEFT(date_echeance_emprunteur,16) as date_echeance_emprunteur, LEFT(date_echeance,16) as date_echeance FROM echeanciers GROUP BY id_lender,ordre having id_project = ' . $id_project . ' order by date_echeance';
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
-
-
-    // Retourne un tableau avec les sommes des echeances par mois d'un projet
-    public function getSumRembEmpruntByMonths($id_project = '', $ordre = '', $status_emprunteur = '', $month = '', $year = '', $order = '')
-    {
-        if ($id_project != '') {
-            $id_project = ' AND id_project = ' . $id_project;
-        }
-        if ($ordre != '') {
-            $ordre = ' AND ordre = ' . $ordre;
-        }
-        if ($status_emprunteur != '') {
-            $status_emprunteur = ' AND status_emprunteur = ' . $status_emprunteur;
-        }
-
-        if ($month != '') {
-            $month = ' AND MONTH(added) = ' . $month;
-        }
-        if ($year != '') {
-            $year = ' AND YEAR(added) = ' . $year;
-        }
-        if ($order != '') {
-            $order = ' ORDER BY ' . $order;
-        }
-
-        $sql = 'SELECT ordre, status_emprunteur,id_project,id_echeancier, SUM(montant) AS montant, SUM(capital) AS capital, SUM(interets) AS interets, SUM(commission) AS commission, SUM(tva) AS tva, LEFT(date_echeance_emprunteur,16) as date_echeance_emprunteur, LEFT(date_echeance,16) as date_echeance, status_emprunteur FROM echeanciers WHERE 1 = 1 ' . $id_project . $ordre . $status_emprunteur . $month . $year . ' GROUP BY ordre ' . $order;
-        $req = $this->bdd->query($sql);
-        $res = array();
-        while ($rec = $this->bdd->fetch_array($req)) {
-            $res[$rec['ordre']]['ordre']                    = $rec['ordre'];
-            $res[$rec['ordre']]['id_project']               = $rec['id_project'];
-            $res[$rec['ordre']]['status_emprunteur']        = $rec['status_emprunteur'];
-            $res[$rec['ordre']]['montant']                  = $rec['montant'] / 100;
-            $res[$rec['ordre']]['capital']                  = $rec['capital'] / 100;
-            $res[$rec['ordre']]['interets']                 = $rec['interets'] / 100;
-            $res[$rec['ordre']]['commission']               = $rec['commission'] / 100;
-            $res[$rec['ordre']]['tva']                      = $rec['tva'] / 100;
-            $res[$rec['ordre']]['date_echeance_emprunteur'] = $rec['date_echeance_emprunteur'];
-            $res[$rec['ordre']]['date_echeance']            = $rec['date_echeance'];
-        }
-        return $res;
-    }
-
-    // mise a jour des statuts emprunteur pour les remb d'un projet
-    // id_project : projet
-    // $ordre : periode de remb
-    public function updateStatusEmprunteur($id_project, $ordre, $annuler = '')
+    /**
+     * @param int $projectId
+     * @param int $ordre
+     * @param string $annuler
+     */
+    public function updateStatusEmprunteur($projectId, $ordre, $annuler = '')
     {
         if ($annuler != '') {
-            $sql = 'UPDATE echeanciers SET status_emprunteur = 0, date_echeance_emprunteur_reel = "0000-00-00 00:00:00", updated = "' . date('Y-m-d H:i:s') . '" WHERE id_project = ' . $id_project . ' AND ordre = ' . $ordre;
+            $sql = 'UPDATE echeanciers SET status_emprunteur = 0, date_echeance_emprunteur_reel = "0000-00-00 00:00:00", updated = "' . date('Y-m-d H:i:s') . '" WHERE id_project = ' . $projectId . ' AND ordre = ' . $ordre;
         } else {
-            $sql = 'UPDATE echeanciers SET status_emprunteur = 1, date_echeance_emprunteur_reel = "' . date('Y-m-d H:i:s') . '", updated = "' . date('Y-m-d H:i:s') . '" WHERE id_project = ' . $id_project . ' AND ordre = ' . $ordre;
+            $sql = 'UPDATE echeanciers SET status_emprunteur = 1, date_echeance_emprunteur_reel = "' . date('Y-m-d H:i:s') . '", updated = "' . date('Y-m-d H:i:s') . '" WHERE id_project = ' . $projectId . ' AND ordre = ' . $ordre;
         }
 
         $this->bdd->query($sql);
     }
 
-    // Montant que l'emprunteur doit rembourser
-    public function getMontantRembEmprunteur($montant, $commission, $tva)
-    {
-        return round($montant + $tva + $commission, 2);
-    }
-
-    // somme du remb d'un emprunteur sur son projet
-    public function getRembTotalEmprunteur($id_project, $tva = '')
-    {
-        $lRemb = $this->getSumRembEmpruntByMonths($id_project);
-        $total = 0;
-
-
-        foreach ($lRemb as $key => $r) {
-            // On recup le montant a remb par l'emprunteur
-            $total += $this->getMontantRembEmprunteur($r['montant'], $r['commission'], $r['tva']);
-
-        }
-        return $total;
-    }
-
     // premiere echance emprunteur
-    public function getPremiereEcheancePreteur($id_project, $id_lender)
+    public function getPremiereEcheancePreteur($projectId, $id_lender)
     {
         // premiere echeance
-        $PremiereEcheance = $this->select('ordre = 1 AND id_project = ' . $id_project . ' AND id_lender = ' . $id_lender, '', 0, 1);
+        $PremiereEcheance = $this->select('ordre = 1 AND id_project = ' . $projectId . ' AND id_lender = ' . $id_lender, '', 0, 1);
         return $PremiereEcheance[0];
     }
 
     // on recup la premiere echeance d'un pret d'un preteur
-    public function getPremiereEcheancePreteurByLoans($id_project, $id_lender, $id_loan)
+    public function getPremiereEcheancePreteurByLoans($projectId, $id_lender, $id_loan)
     {
         // premiere echeance
-        $PremiereEcheance = $this->select('ordre = 1 AND id_project = ' . $id_project . ' AND id_lender = ' . $id_lender . ' AND id_loan = ' . $id_loan, '', 0, 1);
+        $PremiereEcheance = $this->select('ordre = 1 AND id_project = ' . $projectId . ' AND id_lender = ' . $id_lender . ' AND id_loan = ' . $id_loan, '', 0, 1);
         return $PremiereEcheance[0];
     }
 
     // premiere echance emprunteur
-    public function getDatePremiereEcheance($id_project)
+    public function getDatePremiereEcheance($projectId)
     {
         // premiere echeance
-        $PremiereEcheance = $this->select('ordre = 1 AND id_project = ' . $id_project, '', 0, 1);
+        $PremiereEcheance = $this->select('ordre = 1 AND id_project = ' . $projectId, '', 0, 1);
         return $PremiereEcheance[0]['date_echeance_emprunteur'];
     }
 
-    public function getDateDerniereEcheance($id_project)
+    public function getDateDerniereEcheancePreteur($projectId)
     {
-        $result = $this->bdd->query('SELECT MAX(date_echeance_emprunteur) FROM echeanciers WHERE id_project = ' . $id_project);
+        $result = $this->bdd->query('SELECT MAX(date_echeance) FROM echeanciers WHERE id_project = ' . $projectId);
         return $this->bdd->result($result);
     }
 
-    public function getDateDerniereEcheancePreteur($id_project)
+    public function onMetAjourLesDatesEcheances($projectId, $ordre, $date_echeance, $date_echeance_emprunteur)
     {
-        $result = $this->bdd->query('SELECT MAX(date_echeance) FROM echeanciers WHERE id_project = ' . $id_project);
-        return $this->bdd->result($result);
-    }
-
-    // retourne la sommes des remb du prochain mois d'un emprunteur
-    public function getNextRembEmprunteur($id_project)
-    {
-        $sql = 'SELECT DISTINCT(ordre) FROM `echeanciers` WHERE status_emprunteur = 0 AND id_project = ' . $id_project . ' ORDER BY ordre LIMIT 0,1';
-
-        $result = $this->bdd->query($sql);
-        $ordre  = (int) ($this->bdd->result($result, 0, 0));
-
-        $Remb = $this->getSumRembEmpruntByMonths($id_project, $ordre);
-
-        $montantRembEmprunteur = $this->getMontantRembEmprunteur($Remb[$ordre]['montant'], $Remb[$ordre]['commission'], $Remb[$ordre]['tva']);
-
-        $retourne['date_echeance_emprunteur'] = $Remb[$ordre]['date_echeance_emprunteur'];
-        $retourne['montant']                  = $montantRembEmprunteur;
-        return $retourne;
-    }
-
-    // retourne la sum des echeance d'une journée
-    // $date : yyyy-mm-dd
-    public function getEcheanceByDay($date, $val = 'montant', $statutEmprunteur = '0')
-    {
-        $sql = 'SELECT SUM(' . $val . ') FROM `echeanciers` WHERE status_emprunteur = ' . $statutEmprunteur . ' AND LEFT(date_echeance_emprunteur,10) = "' . $date . '" GROUP BY  LEFT(date_echeance_emprunteur,10)';
-
-        $result  = $this->bdd->query($sql);
-        $montant = ($this->bdd->result($result, 0, 0));
-        return $montant;
-    }
-
-    public function getEcheanceByDayAll($date, $statut = '0')
-    {
-        $sql = '
-            SELECT
-                SUM(montant) AS montant,
-                SUM(capital) AS capital,
-                SUM(interets) AS interets,
-                SUM(commission) AS commission,
-                SUM(tva) AS tva,
-                ROUND(SUM(prelevements_obligatoires), 2) AS prelevements_obligatoires,
-                ROUND(SUM(retenues_source), 2) AS retenues_source,
-                ROUND(SUM(csg), 2) AS csg,
-                ROUND(SUM(prelevements_sociaux), 2) AS prelevements_sociaux,
-                ROUND(SUM(contributions_additionnelles), 2) AS contributions_additionnelles,
-                ROUND(SUM(prelevements_solidarite), 2) AS prelevements_solidarite,
-                ROUND(SUM(crds), 2) AS crds
-            FROM echeanciers
-            WHERE status = ' . $statut . ' AND DATE(date_echeance_reel) = "' . $date . '"
-            GROUP BY DATE(date_echeance_reel)';
-
-        $result   = array();
-        $resultat = $this->bdd->query($sql);
-        while ($record = $this->bdd->fetch_assoc($resultat)) {
-            $result[] = $record;
-        }
-        return isset($result[0])
-            ? $result[0]
-            : array_fill_keys(array('montant', 'capital', 'interets', 'commission', 'tva', 'prelevements_obligatoires', 'retenues_source', 'csg', 'prelevements_sociaux', 'contributions_additionnelles', 'prelevements_solidarite', 'crds'), 0);
-    }
-
-    public function getEcheanceBetweenDates_exonere_mais_pas_dans_les_dates($date1, $date2)
-    {
-        $anneemois = explode('-', $date1);
-        $anneemois = $anneemois[0] . '-' . $anneemois[1];
-
-        $sql = '
-            SELECT
-                l.id_type_contract,
-                SUM(montant) AS montant,
-                SUM(capital) AS capital,
-                SUM(interets) AS interets,
-                SUM(commission) AS commission,
-                SUM(tva) AS tva,
-                ROUND(SUM(prelevements_obligatoires), 2) AS prelevements_obligatoires,
-                ROUND(SUM(retenues_source), 2) AS retenues_source,
-                ROUND(SUM(csg), 2) AS csg,
-                ROUND(SUM(prelevements_sociaux), 2) AS prelevements_sociaux,
-                ROUND(SUM(contributions_additionnelles), 2) AS contributions_additionnelles,
-                ROUND(SUM(prelevements_solidarite), 2) AS prelevements_solidarite,
-                ROUND(SUM(crds), 2) AS crds
-            FROM echeanciers e
-            LEFT JOIN loans l ON l.id_loan = e.id_loan
-            LEFT JOIN lenders_accounts la ON e.id_lender = la.id_lender_account
-            LEFT JOIN clients c ON la.id_client_owner = c.id_client
-            WHERE e.status = 1
-                AND e.status_ra = 0
-                AND c.type IN (1, 3)
-                AND la.exonere = 1
-                AND "' . $anneemois . '" NOT BETWEEN LEFT(la.debut_exoneration, 7) AND LEFT(la.fin_exoneration, 7)
-                AND DATE(date_echeance_reel) BETWEEN "' . $date1 . '" AND "' . $date2 . '"
-            GROUP BY l.id_type_contract';
-
-        $aReturn  = array();
-        $aResults = $this->bdd->query($sql);
-
-        while ($aResult = $this->bdd->fetch_assoc($aResults)) {
-            $aReturn[$aResult['id_type_contract']] = $aResult;
-        }
-
-        return $aReturn;
-    }
-
-
-    public function getEcheanceBetweenDatesEtranger($date1, $date2)
-    {
-        $sql = '
-            SELECT
-                l.id_type_contract,
-                SUM(montant) AS montant,
-                SUM(capital) AS capital,
-                SUM(interets) AS interets,
-                SUM(commission) AS commission,
-                SUM(tva) AS tva,
-                ROUND(SUM(prelevements_obligatoires), 2) AS prelevements_obligatoires,
-                ROUND(SUM(retenues_source), 2) AS retenues_source,
-                ROUND(SUM(csg), 2) AS csg,
-                ROUND(SUM(prelevements_sociaux), 2) AS prelevements_sociaux,
-                ROUND(SUM(contributions_additionnelles), 2) AS contributions_additionnelles,
-                ROUND(SUM(prelevements_solidarite), 2) AS prelevements_solidarite,
-                ROUND(SUM(crds), 2) AS crds
-            FROM echeanciers e
-            LEFT JOIN loans l ON l.id_loan = e.id_loan
-            LEFT JOIN lenders_accounts la ON e.id_lender = la.id_lender_account
-            LEFT JOIN clients c ON la.id_client_owner = c.id_client
-            WHERE e.status = 1
-                AND e.status_ra = 0
-                AND c.type IN (1, 3)
-                AND (SELECT resident_etranger FROM lenders_imposition_history lih WHERE lih.id_lender = la.id_lender_account AND lih.added <= e.date_echeance_reel ORDER BY added DESC LIMIT 1) > 0
-                AND DATE(date_echeance_reel) BETWEEN "' . $date1 . '" AND "' . $date2 . '"
-            GROUP BY l.id_type_contract';
-
-        $aReturn  = array();
-        $aResults = $this->bdd->query($sql);
-
-        while ($aResult = $this->bdd->fetch_assoc($aResults)) {
-            $aReturn[$aResult['id_type_contract']] = $aResult;
-        }
-
-        return $aReturn;
-    }
-
-    public function getEcheanceBetweenDates($date1, $date2, $exonere = '', $morale = '')
-    {
-        $anneemois = explode('-', $date1);
-        $anneemois = $anneemois[0] . '-' . $anneemois[1];
-
-        if (is_array($morale)) {
-            $morale = implode(',', $morale);
-        }
-
-        $sql = '
-            SELECT
-                l.id_type_contract,
-                SUM(montant) AS montant,
-                SUM(capital) AS capital,
-                SUM(interets) AS interets,
-                SUM(commission) AS commission,
-                SUM(tva) AS tva,
-                ROUND(SUM(prelevements_obligatoires), 2) AS prelevements_obligatoires,
-                ROUND(SUM(retenues_source), 2) AS retenues_source,
-                ROUND(SUM(csg), 2) AS csg,
-                ROUND(SUM(prelevements_sociaux), 2) AS prelevements_sociaux,
-                ROUND(SUM(contributions_additionnelles), 2) AS contributions_additionnelles,
-                ROUND(SUM(prelevements_solidarite), 2) AS prelevements_solidarite,
-                ROUND(SUM(crds), 2) AS crds
-            FROM echeanciers e
-            LEFT JOIN loans l ON l.id_loan = e.id_loan
-            LEFT JOIN lenders_accounts la ON e.id_lender = la.id_lender_account
-            LEFT JOIN clients c ON la.id_client_owner = c.id_client
-            WHERE e.status = 1
-                AND e.status_ra = 0
-                ' . ($morale != '' ? ' AND c.type IN (' . $morale . ')' : '');
-
-        if ($exonere != '') {
-            if ($exonere == '1') {
-                $sql .= '
-                     AND la.exonere = 1
-                     AND "' . $anneemois . '" BETWEEN LEFT(la.debut_exoneration, 7) AND LEFT(la.fin_exoneration, 7)';
-            } else {
-                $sql .= ' AND la.exonere = ' . $exonere;
-            }
-        }
-
-        $sql .= '
-                AND DATE(date_echeance_reel) BETWEEN "' . $date1 . '" AND "' . $date2 . '"
-            GROUP BY l.id_type_contract';
-
-        $aReturn  = array();
-        $aResults = $this->bdd->query($sql);
-
-        while ($aResult = $this->bdd->fetch_assoc($aResults)) {
-            $aReturn[$aResult['id_type_contract']] = $aResult;
-        }
-
-        return $aReturn;
-    }
-
-    public function onMetAjourTVA($taux)
-    {
-        $sql = 'UPDATE echeanciers SET tva = ROUND(commission * ' . $taux . ') WHERE status_emprunteur = 0';
+        $sql = 'UPDATE echeanciers SET date_echeance = "' . $date_echeance . '", date_echeance_emprunteur = "' . $date_echeance_emprunteur . '", updated = "' . date('Y-m-d H:i:s') . '" WHERE status_emprunteur = 0 AND id_project = "' . $projectId . '" AND ordre = "' . $ordre . '" ';
         $this->bdd->query($sql);
-    }
-
-    public function onMetAjourLesDatesEcheances($id_project, $ordre, $date_echeance, $date_echeance_emprunteur)
-    {
-        $sql = 'UPDATE echeanciers SET date_echeance = "' . $date_echeance . '", date_echeance_emprunteur = "' . $date_echeance_emprunteur . '", updated = "' . date('Y-m-d H:i:s') . '" WHERE status_emprunteur = 0 AND id_project = "' . $id_project . '" AND ordre = "' . $ordre . '" ';
-        $this->bdd->query($sql);
-    }
-
-    // mise à jour remb exoneration preteur
-    public function update_prelevements_obligatoires($id_lender, $exonere, $prelevements_obligatoires = '', $debut = '', $fin = '')
-    {
-        if ($exonere == 1) {
-
-            if ($debut != '' && $fin != '') {
-                $debutfin = ' AND LEFT(date_echeance,10) >= "' . $debut . '" AND LEFT(date_echeance,10) <= "' . $fin . '"';
-            } else {
-                $debutfin = '';
-            }
-
-            $sql = 'UPDATE echeanciers SET prelevements_obligatoires = 0, updated = "' . date('Y-m-d H:i:s') . '" WHERE id_lender = ' . $id_lender . ' AND status = 0 ' . $debutfin;
-        } elseif ($exonere == 0 && $prelevements_obligatoires != '') {
-            $sql = 'UPDATE echeanciers SET prelevements_obligatoires = ROUND((interets/100) * ' . $prelevements_obligatoires . ',2), updated = "' . date('Y-m-d H:i:s') . '" WHERE id_lender = ' . $id_lender . ' AND status = 0';
-        }
-        $this->bdd->query($sql);
-    }
-
-    // Mise à jour impositions etranger ou non
-    public function update_imposition_etranger($id_lender, $etranger, $tabImpo = array(), $exonere, $debut = '', $fin = '')
-    {
-        // 0 : fr/fr
-        // 1 : fr/resident etranger
-        // 2 : no fr/resident etranger
-
-        if ($etranger > 0) {
-            $sql = '
-                UPDATE echeanciers e
-                INNER JOIN loans l ON e.id_loan = l.id_loan
-                SET
-                    e.prelevements_obligatoires = 0,
-                    e.retenues_source = IF(l.id_type_contract = ' . \loans::TYPE_CONTRACT_BDC . ', ROUND(e.interets / 100 * ' . $tabImpo['retenues_source'] . ', 2), 0),
-                    e.csg = 0,
-                    e.prelevements_sociaux = 0,
-                    e.contributions_additionnelles = 0,
-                    e.prelevements_solidarite = 0,
-                    e.crds = 0,
-                    e.updated = "' . date('Y-m-d H:i:s') . '"
-                WHERE e.status = 0 AND l.id_lender = ' . $id_lender;
-
-            $this->bdd->query($sql);
-        } else {
-            $sql = '
-            UPDATE echeanciers SET
-                prelevements_obligatoires = ROUND(interets / 100 * ' . $tabImpo['prelevements_obligatoires'] . ', 2),
-                retenues_source = 0,
-                csg = ROUND(interets / 100 * ' . $tabImpo['csg'] . ', 2),
-                prelevements_sociaux = ROUND(interets / 100 * ' . $tabImpo['prelevements_sociaux'] . ', 2),
-                contributions_additionnelles = ROUND(interets / 100 * ' . $tabImpo['contributions_additionnelles'] . ', 2),
-                prelevements_solidarite = ROUND(interets / 100 * ' . $tabImpo['prelevements_solidarite'] . ', 2),
-                crds = ROUND(interets / 100 * ' . $tabImpo['crds'] . ', 2),
-                updated = "' . date('Y-m-d H:i:s') . '"
-            WHERE id_lender = ' . $id_lender . ' AND status = 0';
-
-            $this->bdd->query($sql);
-
-            if ($debut != '' && $fin != '' && $exonere == 1) {
-                $this->update_prelevements_obligatoires($id_lender, $exonere, $tabImpo['prelevements_obligatoires'], $debut, $fin);
-            }
-        }
-    }
-
-    // Utilisé dans le cron remb auto
-    public function selectEcheances_a_remb($where = '', $order = '', $start = '', $nb = '')
-    {
-        if ($where != '') {
-            $where = ' WHERE ' . $where;
-        }
-        if ($order != '') {
-            $order = ' ORDER BY ' . $order;
-        }
-
-        $sql = '
-            SELECT
-                id_echeancier,
-                id_lender,
-                id_project,
-                ordre,
-                id_loan,
-                montant,
-                capital,
-                interets,
-                ROUND(((ROUND((montant/100),2)) - prelevements_obligatoires - retenues_source - csg - prelevements_sociaux - contributions_additionnelles - prelevements_solidarite - crds),2) AS rembNet,
-                ROUND((prelevements_obligatoires + retenues_source + csg + prelevements_sociaux + contributions_additionnelles + prelevements_solidarite + crds),2) AS etat,
-                status_email_remb,
-                status
-            FROM `echeanciers`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
-
-    public function requete_revenus($id_project)
-    {
-        $sql = '
-            SELECT
-                e.id_lender,
-                le.id_client_owner,
-                le.id_company_owner,
-                e.capital,
-                e.interets,
-                e.retenues_source,
-                e.prelevements_obligatoires,
-                (SELECT lih.resident_etranger FROM lenders_imposition_history lih WHERE lih.added <= e.date_echeance_reel AND lih.id_lender = e.id_lender ORDER BY lih.added DESC LIMIT 1) as resident,
-                e.date_echeance_reel
-            FROM echeanciers e
-            LEFT JOIN lenders_accounts le ON le.id_lender_account = e.id_lender
-            WHERE e.status = 1 AND e.id_project = ' . $id_project . '
-            ORDER BY e.date_echeance';
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
-
-    // Utilisé dans le cron remb auto
-    public function selectfirstEcheanceByproject($date)
-    {
-
-        $sql = '
-        SELECT
-            e.id_project,
-            e.ordre,
-            e.date_echeance,
-            e.status,
-            e.date_echeance_emprunteur,
-            e.status_emprunteur,
-            (SELECT ROUND(SUM(ee.montant+ee.commission+ee.tva)/100,2) FROM echeanciers_emprunteur ee WHERE e.id_project = ee.id_project AND e.ordre = ee.ordre) as montant_emprunteur
-        FROM echeanciers e
-        WHERE LEFT(e.date_echeance,10) = "' . $date . '" AND status_emprunteur = 0
-        GROUP BY e.id_project
-        ORDER BY e.ordre';
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
-
-    // debug
-    public function requeteGetecheancePrelevement()
-    {
-        $sql = "SELECT
-                la.id_client_owner as id_client,
-                la.id_lender_account,
-                la.updated,
-                la.debut_exoneration,
-                la.fin_exoneration,
-                e.id_echeancier,
-                e.date_echeance,
-                e.date_echeance_reel,
-                e.status,
-                e.interets,
-                e.prelevements_obligatoires,
-                e.id_project
-            FROM lenders_accounts la
-            LEFT JOIN echeanciers e ON e.id_lender = la.id_lender_account
-            WHERE DATE(la.updated) >= '2014-11-28'
-                AND la.exonere = 1
-                AND la.debut_exoneration >= '2014-11-28'
-                AND e.status = 1
-                AND DATE(e.updated) >= '2014-11-28'
-                AND la.debut_exoneration = '2015-01-01'
-                AND DATE(e.date_echeance_reel) >= '2014-12-01'
-            ORDER BY e.date_echeance_reel";
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
     }
 
     // Utilisé dans cron check remb preteurs (27/04/2015)
     public function selectEcheanciersByprojetEtOrdre()
     {
-        $laDate = mktime(0, 0, 0, date("m"), date("d"), date("Y"));
-        $laDate = date('Y-m-d', $laDate);
-
         $sql = '
             SELECT id_project,
                 ordre,
@@ -958,8 +547,8 @@ class echeanciers extends echeanciers_crud
                 DATE(date_echeance_emprunteur_reel) AS date_echeance_emprunteur_reel,
                 status_emprunteur
             FROM echeanciers
-            WHERE DATE(date_echeance) = "' . $laDate . '"
-                AND status = 0
+            WHERE DATE(date_echeance) = "' . date('Y-m-d') . '"
+                AND status = ' . self::STATUS_PENDING . '
             GROUP BY id_project, ordre';
 
         $resultat = $this->bdd->query($sql);
@@ -975,16 +564,16 @@ class echeanciers extends echeanciers_crud
         $sDate = $oDate->format('Y-m-d');
 
         $sQuery = '
-           SELECT id_project,
+            SELECT id_project,
               ordre,
               COUNT(*) AS nb_repayment,
-              COUNT(CASE status WHEN 1 THEN 1 ELSE NULL END) AS nb_repayment_paid
+              COUNT(CASE status WHEN ' . self::STATUS_REPAID . ' THEN 1 ELSE NULL END) AS nb_repayment_paid
             FROM echeanciers
             WHERE DATE(date_echeance) =  "' . $sDate . '"
             GROUP BY id_project, ordre';
 
-        $rQuery = $this->bdd->query($sQuery);
-        $aResult   = array();
+        $rQuery  = $this->bdd->query($sQuery);
+        $aResult = array();
         while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
             $aResult[] = $aRow;
         }
@@ -992,24 +581,10 @@ class echeanciers extends echeanciers_crud
     }
 
     // retourne la somme total a rembourser pour un projet
-    public function getSumRestanteARembByProject_only($id_project = '', $date_debut = "")
-    {
-        $sql = '
-            SELECT SUM(capital) FROM `echeanciers`
-            WHERE status = 0
-                AND DATE(date_echeance) > "' . $date_debut . '"
-                AND id_project = ' . $id_project;
-
-        $result = $this->bdd->query($sql);
-        return $this->bdd->result($result, 0, 0) / 100;
-    }
-
-
-    // retourne la somme total a rembourser pour un projet
-    public function get_liste_preteur_on_project($id_project = '')
+    public function get_liste_preteur_on_project($projectId = '')
     {
         $sql = 'SELECT * FROM `echeanciers`
-                      WHERE id_project = ' . $id_project . '
+                      WHERE id_project = ' . $projectId . '
                       GROUP BY id_loan';
 
         $resultat = $this->bdd->query($sql);
@@ -1020,46 +595,11 @@ class echeanciers extends echeanciers_crud
         return $result;
     }
 
-     // retourne la somme total a rembourser pour un projet
-    public function reste_a_payer_ra($id_project = '', $ordre = '')
-    {
-        $sql = 'SELECT SUM(capital) FROM `echeanciers`
-                        WHERE status = 0
-                        AND ordre >= "' . $ordre . '"
-                        AND id_project = ' . $id_project;
-
-        $result = $this->bdd->query($sql);
-        $sum    = (int) ($this->bdd->result($result, 0, 0));
-        return ($sum / 100);
-    }
-
-    // retourne la somme des echeances deja remboursé d'une enchere
-    public function getSumRembByloan_remb_ra($id_loan, $champ = 'montant')
-    {
-        $sql = 'SELECT SUM(' . $champ . ') FROM `echeanciers` WHERE status = 1 AND id_loan = ' . $id_loan . ' AND status_ra = 0';
-
-        $result = $this->bdd->query($sql);
-        $sum    = (int) ($this->bdd->result($result, 0, 0));
-        return ($sum / 100);
-    }
-
-    public function getSumByLoan($iLoanId, $sField, $aConditions = array())
-    {
-        $sql = 'SELECT SUM(' . $sField . ') FROM `echeanciers` WHERE id_loan = ' . $iLoanId;
-
-        foreach($aConditions as $sName => $mValue) {
-            $sql .= ' AND ' . $sName . '=' . '\'' . $mValue . '\'';
-        }
-        $result = $this->bdd->query($sql);
-        $sum    = (int)($this->bdd->result($result, 0, 0));
-        return ($sum / 100);
-    }
-
     public function getLastOrder($iProjectID, $sDate = 'NOW()', $sInterval = 3)
     {
         $resultat = $this->bdd->query('
             SELECT *
-            FROM `echeanciers`
+            FROM echeanciers
             WHERE id_project = ' . $iProjectID . '
                 AND DATE_ADD(date_echeance, INTERVAL ' . $sInterval . ' DAY) > ' . $sDate . '
                 AND id_lender = (SELECT id_lender FROM echeanciers where id_project = ' . $iProjectID . ' LIMIT 1)
@@ -1067,37 +607,332 @@ class echeanciers extends echeanciers_crud
             ORDER BY ordre ASC
             LIMIT 1'
         );
-        $result = $this->bdd->fetch_assoc($resultat);
 
-        return $result;
+        return $this->bdd->fetch_assoc($resultat);
     }
 
     /**
-     * @param int $clientId
-     * @param int $annee
-     * @param array $projects_en_remboursement
+     * @param int $iLoanId
+     * @param int $iAnticipatedRepaymentStatus
+     * @param string $sOrder
+     * @return array
+     */
+    public function getRepaymentWithTaxDetails($iLoanId, $iAnticipatedRepaymentStatus = 0, $sOrder = 'e.ordre ASC')
+    {
+        $sql = '
+            SELECT e.*, SUM(IFNULL(tax.amount, 0)) AS tax
+            FROM echeanciers e
+                LEFT JOIN transactions t ON e.id_echeancier = t.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
+                LEFT JOIN tax ON t.id_transaction = tax.id_transaction
+            WHERE e.id_loan = ' . $iLoanId . ' AND e.status_ra = ' . $iAnticipatedRepaymentStatus . '
+            GROUP BY e.id_echeancier
+            ORDER BY ' . $sOrder;
+
+        $result  = $this->bdd->query($sql);
+        $aReturn = array();
+        while ($record = $this->bdd->fetch_assoc($result)) {
+            $aReturn[] = $record;
+        }
+        return $aReturn;
+    }
+
+    /**
+     * @param DateTime $date
+     * @return array|null
+     * @throws Exception
+     */
+    public function getTaxState($date)
+    {
+        $sql = '
+            SELECT
+              c.id_client,
+              e.id_lender,
+              c.type,
+              IFNULL(
+                  (
+                    SELECT p.iso
+                    FROM lenders_imposition_history lih
+                      JOIN pays_v2 p ON p.id_pays = lih.id_pays
+                    WHERE lih.added <= e.date_echeance_reel
+                          AND lih.id_lender = e.id_lender
+                    ORDER BY lih.added DESC
+                    LIMIT 1
+                  ), "FR"
+              )   AS iso_pays,
+              /*if the lender is FR resident and it is a physical person then it is not taxed at source : taxed_at_source = 0*/
+              CASE
+                  IFNULL((SELECT resident_etranger
+                     FROM lenders_imposition_history lih
+                     WHERE lih.id_lender = la.id_lender_account AND lih.added <= e.date_echeance_reel
+                     ORDER BY added DESC
+                     LIMIT 1
+                  ), 0) = 0 AND 1 = c.type
+                  WHEN TRUE
+                    THEN 0
+                  ELSE 1
+              END AS taxed_at_source,
+              CASE
+                  WHEN lte.year IS NULL THEN
+                      0
+                  ELSE
+                      1
+              END AS exonere,
+              (SELECT group_concat(lte.year SEPARATOR ", ")
+               FROM lender_tax_exemption lte
+               WHERE lte.id_lender = la.id_lender_account) AS annees_exoneration,
+              e.id_project,
+              e.id_loan,
+              l.id_type_contract,
+              e.ordre,
+              REPLACE(e.montant, ".", ","),
+              REPLACE(e.capital_rembourse, ".", ","),
+              REPLACE(e.interets_rembourses, ".", ","),
+              REPLACE(ROUND(prelevements_obligatoires.amount / 100, 2), ".", ","),
+              REPLACE(ROUND(retenues_source.amount / 100, 2), ".", ","),
+              REPLACE(ROUND(csg.amount / 100, 2), ".", ","),
+              REPLACE(ROUND(prelevements_sociaux.amount / 100, 2), ".", ","),
+              REPLACE(ROUND(contributions_additionnelles.amount / 100, 2), ".", ","),
+              REPLACE(ROUND(prelevements_solidarite.amount / 100, 2), ".", ","),
+              REPLACE(ROUND(crds.amount / 100, 2), ".", ","),
+              e.date_echeance,
+              e.date_echeance_reel,
+              e.status,
+              e.date_echeance_emprunteur,
+              e.date_echeance_emprunteur_reel
+            FROM echeanciers e
+              INNER JOIN loans l ON l.id_loan = e.id_loan
+              INNER JOIN lenders_accounts la ON la.id_lender_account = e.id_lender
+              INNER JOIN clients c ON c.id_client = la.id_client_owner
+              LEFT JOIN lender_tax_exemption lte ON lte.id_lender = e.id_lender AND lte.year = YEAR(e.date_echeance_reel)
+              INNER JOIN transactions t ON t.id_echeancier = e.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
+              LEFT JOIN tax prelevements_obligatoires ON prelevements_obligatoires.id_transaction = t.id_transaction AND prelevements_obligatoires.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX . '
+              LEFT JOIN tax retenues_source ON retenues_source.id_transaction = t.id_transaction AND retenues_source.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE . '
+              LEFT JOIN tax csg ON csg.id_transaction = t.id_transaction AND csg.id_tax_type = ' . \tax_type::TYPE_CSG . '
+              LEFT JOIN tax prelevements_sociaux ON prelevements_sociaux.id_transaction = t.id_transaction AND prelevements_sociaux.id_tax_type = ' . \tax_type::TYPE_SOCIAL_DEDUCTIONS . '
+              LEFT JOIN tax contributions_additionnelles ON contributions_additionnelles.id_transaction = t.id_transaction AND contributions_additionnelles.id_tax_type = ' . \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS . '
+              LEFT JOIN tax prelevements_solidarite ON prelevements_solidarite.id_transaction = t.id_transaction AND prelevements_solidarite.id_tax_type = ' . \tax_type::TYPE_SOLIDARITY_DEDUCTIONS . '
+              LEFT JOIN tax crds ON crds.id_transaction = t.id_transaction AND crds.id_tax_type = ' . \tax_type::TYPE_CRDS . '
+            WHERE DATE(e.date_echeance_reel) = :date
+                AND e.status IN (' . \echeanciers::STATUS_REPAID . ', ' . \echeanciers::STATUS_PARTIALLY_REPAID . ')
+                AND e.status_ra = 0
+            ORDER BY e.date_echeance ASC';
+
+        return $this->bdd->executeQuery($sql, ['date' => $date->format('Y-m-d')], ['date' => \PDO::PARAM_STR])->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @param DateTime $startDate
+     * @param DateTime $endDate
+     * @param array $taxType
+     * @return array
+     * @throws Exception
+     */
+    public function getFiscalState(\DateTime $startDate, \DateTime $endDate, array $taxType)
+    {
+        $taxDynamicJoin = $this->getDynamicTaxJoins($taxType);
+        $aBind          = [
+            'start_date' => $startDate->format('Y-m-d'),
+            'end_date'   => $endDate->format('Y-m-d'),
+        ];
+        $aType          = [
+            'start_date' => \PDO::PARAM_STR,
+            'end_date'   => \PDO::PARAM_STR,
+        ];
+
+        $sql = '
+            SELECT
+                l.id_type_contract,
+                CASE c.type
+                    WHEN ' . \clients::TYPE_LEGAL_ENTITY . ' THEN "legal_entity"
+                    WHEN ' . \clients::TYPE_PERSON . ' OR ' . \clients::TYPE_PERSON_FOREIGNER . ' THEN "person"
+                END AS client_type,
+                CASE IFNULL(
+                    (SELECT resident_etranger
+                        FROM lenders_imposition_history lih
+                        WHERE lih.id_lender = la.id_lender_account AND lih.added <= e.date_echeance_reel
+                        ORDER BY added DESC
+                        LIMIT 1), 0
+                    )
+                    WHEN 0 THEN "fr"
+                    ELSE "ww"
+                END AS fiscal_residence,
+                CASE lte.id_lender
+                    WHEN e.id_lender THEN "non_taxable"
+                    ELSE "taxable"
+                END AS exemption_status,
+                ' . $taxDynamicJoin['tax_columns'] . '
+                SUM(ROUND(e.interets_rembourses / 100, 2)) AS interests
+            FROM echeanciers e
+              INNER JOIN loans l ON l.id_loan = e.id_loan AND l.status = 0
+              INNER JOIN lenders_accounts la ON e.id_lender = la.id_lender_account
+              INNER JOIN clients c ON la.id_client_owner = c.id_client
+              INNER JOIN transactions t ON t.id_echeancier = e.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
+              ' . $taxDynamicJoin['tax_join'] . '
+              LEFT JOIN lender_tax_exemption lte ON lte.id_lender = la.id_lender_account AND lte.year = YEAR(e.date_echeance_reel)
+            WHERE e.status IN (' . \echeanciers::STATUS_REPAID . ', ' . \echeanciers::STATUS_PARTIALLY_REPAID . ')
+                AND e.status_ra = 0
+                AND DATE(e.date_echeance_reel) BETWEEN :start_date AND :end_date
+            GROUP BY l.id_type_contract, client_type, fiscal_residence, exemption_status';
+
+        return $this->bdd->executeQuery($sql, $aBind, $aType, new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::LONG_TIME, md5(__METHOD__)))->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @param array $taxType
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     * @param array $clientType
+     * @return array
+     */
+    public function getRepaymentForNonExemptedInDateRange(array $taxType, \DateTime $startDate, \DateTime $endDate, array $clientType)
+    {
+        return $this->getRepaymentsBetweenDate($taxType, $startDate, $endDate, $clientType, 0);
+    }
+
+    /**
+     * @param array $taxType
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     * @param array $clientType
+     * @return array
+     */
+    public function getRepaymentForExemptedInDateRange(array $taxType, \DateTime $startDate, \DateTime $endDate, array $clientType)
+    {
+        return $this->getRepaymentsBetweenDate($taxType, $startDate, $endDate, $clientType, 1);
+    }
+
+    /**
+     * @param array $taxType
+     * @param DateTime $startDate
+     * @param DateTime $endDate
+     * @return array
+     */
+    public function getForeignersRepaymentsInDateRange(array $taxType, \DateTime $startDate, \DateTime $endDate)
+    {
+        return $this->getRepaymentsBetweenDate($taxType, $startDate, $endDate, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER], 2, true);
+    }
+
+    /**
+     * @param array $taxType
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     * @param array $clientType
+     * @param int $exempted
+     * @param boolean $foreigner
+     * @return array
+     * @throws Exception
+     */
+    private function getRepaymentsBetweenDate(array $taxType, \DateTime $startDate, \DateTime $endDate, array $clientType, $exempted, $foreigner = false)
+    {
+        $taxDynamicJoin  = $this->getDynamicTaxJoins($taxType);
+        $aBind           = [
+            'start_date'  => $startDate->format('Y-m-d 00:00:00'),
+            'end_date'    => $endDate->format('Y-m-d 23:59:59'),
+            'client_type' => $clientType
+        ];
+        $aType           = [
+            'start_date'  => \PDO::PARAM_STR,
+            'end_date'    => \PDO::PARAM_STR,
+            'client_type' => \Unilend\Bridge\Doctrine\DBAL\Connection::PARAM_INT_ARRAY
+        ];
+
+        $sExemptionWhere = '';
+
+        switch ($exempted) {
+            case 0:
+                $taxExemptionJoin = ' LEFT JOIN lender_tax_exemption lte ON lte.id_lender = la.id_lender_account AND lte.year = YEAR(e.date_echeance_reel) ';
+                $sExemptionWhere  = 'AND lte.id_lender IS NULL';
+                break;
+            case 1:
+                $taxExemptionJoin = ' INNER JOIN lender_tax_exemption lte ON lte.id_lender = la.id_lender_account AND lte.year = YEAR(e.date_echeance_reel) ';
+                break;
+            default:
+                $taxExemptionJoin = ' LEFT JOIN lender_tax_exemption lte ON lte.id_lender = la.id_lender_account ';
+                break;
+        }
+
+        if (true === $foreigner) {
+            $sForeignerWhere = '
+            AND (SELECT resident_etranger FROM lenders_imposition_history lih WHERE lih.id_lender = la.id_lender_account AND lih.added <= e.date_echeance_reel ORDER BY added DESC LIMIT 1) > 0 ';
+        } else {
+            $sForeignerWhere = '';
+        }
+
+        $sql = '
+        SELECT
+            l.id_type_contract,
+            SUM(e.montant) AS montant,
+            SUM(e.capital_rembourse) AS capital,
+            ' . $taxDynamicJoin['tax_columns'] . '
+            SUM(e.interets_rembourses) AS interets
+        FROM echeanciers e
+            INNER JOIN loans l ON l.id_loan = e.id_loan AND l.status = ' . \loans::STATUS_ACCEPTED . '
+            INNER JOIN lenders_accounts la ON e.id_lender = la.id_lender_account
+            INNER JOIN clients c ON la.id_client_owner = c.id_client
+            INNER JOIN transactions t ON t.id_echeancier = e.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS
+            . $taxDynamicJoin['tax_join']
+            . $taxExemptionJoin . '
+        WHERE e.status IN (' . \echeanciers::STATUS_REPAID . ', ' . \echeanciers::STATUS_PARTIALLY_REPAID . ')
+            AND e.status_ra = 0
+            AND c.type IN (:client_type) '
+            . $sExemptionWhere . $sForeignerWhere . '
+            AND DATE(date_echeance_reel) BETWEEN :start_date AND :end_date
+            GROUP BY l.id_type_contract';
+
+        return $this->bdd->executeQuery($sql, $aBind, $aType, new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::LONG_TIME, md5(__METHOD__)))->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @param array $taxType array of id_tax_type to use in the query
+     * @return array
+     */
+    private function getDynamicTaxJoins(array $taxType)
+    {
+        $taxColumns = '';
+        $taxJoin    = '';
+
+        foreach ($taxType as $row) {
+            $taxName = 'tax_' . $row['id_tax_type'];
+            $taxColumns .= ' ROUND(SUM(' . $taxName . '.amount) / 100, 2) AS ' . $taxName . ', ';
+            $taxJoin    .= ' LEFT JOIN tax ' . $taxName . ' ON ' . $taxName . '.id_transaction = t.id_transaction AND ' . $taxName . '.id_tax_type = ' . $row['id_tax_type'];
+        }
+
+        return ['tax_join' => $taxJoin, 'tax_columns' => $taxColumns];
+    }
+
+    /**
+     * @param int   $clientId
+     * @param int   $year
+     * @param array $projectIds
      * @return string
      */
-    public function getLenderOwedCapital($clientId, $annee, array $projects_en_remboursement)
+    public function getLenderOwedCapital($clientId, $year, array $projectIds)
     {
-        $sql = "SELECT sum(capital)
-                FROM `echeanciers`
-                INNER JOIN `lenders_accounts` ON lenders_accounts.id_lender_account = echeanciers.id_lender
-                WHERE (date_echeance_reel >= '$annee-01-01 00:00:00' OR echeanciers.status = 0)
-                 AND id_project IN(" . implode(',', $projects_en_remboursement) . ")
-                 AND lenders_accounts.id_client_owner = " . $clientId;
+        $sql = '
+            SELECT SUM(capital - capital_rembourse)
+            FROM echeanciers
+            INNER JOIN lenders_accounts ON lenders_accounts.id_lender_account = echeanciers.id_lender
+            WHERE (date_echeance_reel >= "' . $year . '-01-01" OR echeanciers.status IN (' . self::STATUS_PENDING . ', ' . self::STATUS_PARTIALLY_REPAID . '))
+                AND id_project IN (' . implode(',', $projectIds) . ')
+                AND lenders_accounts.id_client_owner = ' . $clientId;
         return bcdiv($this->bdd->executeQuery($sql)->fetchColumn(0), 100, 2);
     }
 
     public function getTotalRepaidCapital()
     {
-        $query = 'SELECT SUM(capital) FROM echeanciers WHERE status = 1';
+        $query = '
+            SELECT SUM(capital_rembourse)
+            FROM echeanciers
+            WHERE status IN (' . self::STATUS_REPAID . ', ' . self::STATUS_PARTIALLY_REPAID . ')';
         return bcdiv($this->bdd->executeQuery($query)->fetchColumn(0), 100, 2);
     }
 
     public function getTotalRepaidInterests()
     {
-        $query = 'SELECT SUM(interets) FROM echeanciers WHERE status = 1';
+        $query = '
+            SELECT SUM(interets_rembourses)
+            FROM echeanciers
+            WHERE status IN (' . self::STATUS_REPAID . ', ' . self::STATUS_PARTIALLY_REPAID . ')';
         return bcdiv($this->bdd->executeQuery($query)->fetchColumn(0), 100, 2);
     }
 
@@ -1111,18 +946,18 @@ class echeanciers extends echeanciers_crud
         $params['id_lender'] = $lenderId;
         $binds['id_lender']  = \PDO::PARAM_INT;
         $sql                 = '
-        SELECT
-          DATE(MIN(e.date_echeance)) AS first_repayment_date,
-          Date(MAX(e.date_echeance)) AS last_repayment_date
-        FROM echeanciers e
-        WHERE e.id_lender = :id_lender
-        ';
+            SELECT
+              DATE(MIN(e.date_echeance)) AS first_repayment_date,
+              Date(MAX(e.date_echeance)) AS last_repayment_date
+            FROM echeanciers e
+            WHERE e.id_lender = :id_lender';
 
         if (false === empty($iProjectId)) {
             $sql .= ' AND e.id_project = :id_project';
             $params['id_project'] = $projectId;
             $binds['id_project']  = \PDO::PARAM_INT;
         }
+
         /** @var \Doctrine\DBAL\Statement $statement */
         $statement = $this->bdd->executeQuery($sql, $params, $binds);
 
@@ -1132,41 +967,34 @@ class echeanciers extends echeanciers_crud
     /**
      * Returns capital, interests and tax sum amounts grouped by month, quarter and year for a given lender and project
      * @param int $lenderId
-     * @param int|null $projectId
      * @return array
      */
-    public function getRepaymentAmountDetailsByPeriod($lenderId, $projectId = null)
+    public function getDetailsByPeriod($lenderId)
     {
         $params['id_lender'] = $lenderId;
         $binds['id_lender']  = \PDO::PARAM_INT;
         $sql                 = '
-        SELECT
-            LEFT(e.date_echeance, 7) AS month,
-            QUARTER(e.date_echeance) AS quarter,
-            YEAR(e.date_echeance) AS year,
-            ROUND(SUM(e.capital) / 100, 2) AS capital,
-            ROUND(SUM(e.interets) / 100, 2) AS interests,
-            ROUND(SUM(e.prelevements_obligatoires + e.retenues_source + e.csg + e.prelevements_sociaux + e.contributions_additionnelles + e.prelevements_solidarite + e.crds), 2) AS tax
-        FROM echeanciers e
-        WHERE e.id_lender = :id_lender
-        ';
-
-        if (false === empty($projectId)) {
-            $sql .= ' AND e.id_project = :id_project';
-            $params['id_project'] = $projectId;
-            $binds['id_project']  = \PDO::PARAM_INT;
-        }
-        $sql .= '
+            SELECT
+                LEFT(e.date_echeance, 7) AS month,
+                QUARTER(e.date_echeance) AS quarter,
+                YEAR(e.date_echeance) AS year,
+                SUM(ROUND(e.capital / 100, 2)) AS capital,
+                SUM(ROUND(e.interets / 100, 2)) AS rawInterests,
+                SUM(IFNULL((SELECT SUM(ROUND(tax.amount / 100, 2)) FROM tax WHERE id_transaction = t.id_transaction), 0)) AS taxes
+            FROM echeanciers e
+            LEFT JOIN transactions t ON e.id_echeancier = t.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
+            WHERE e.id_lender = :id_lender
             GROUP BY year, quarter, month
-            ORDER BY year, quarter, month ASC
-        ';
+            ORDER BY year, quarter, month ASC';
+
         /** @var \Doctrine\DBAL\Statement $statement */
         $statement = $this->bdd->executeQuery($sql, $params, $binds);
-        $data = [];
+        $data      = [];
         while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
-            $row['capital'] = floatval($row['capital']);
-            $row['interests'] = floatval($row['interests']);
-            $row['tax'] = floatval($row['tax']);
+            $row['capital']      = (float) $row['capital'];
+            $row['rawInterests'] = (float) $row['rawInterests'];
+            $row['netInterests'] = (float) ($row['rawInterests'] - $row['taxes']);
+            $row['taxes']        = (float) $row['taxes'];
             $data[] = $row;
         }
         return $data;

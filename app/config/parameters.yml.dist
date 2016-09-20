@@ -49,3 +49,5 @@ parameters:
     cms:                            iZicom
 
     mapbox.token:                   pk.eyJ1IjoidW5pbGVuZCIsImEiOiJjaXJiczA4ejQwMDVvaWZsdzdmMmpnOGRtIn0._IBtG2TUy17m7S6jwVBrcg
+
+    security.bcrypt.cost:           13

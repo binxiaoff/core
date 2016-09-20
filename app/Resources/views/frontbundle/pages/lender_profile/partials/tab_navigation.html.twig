@@ -1,0 +1,18 @@
+{% spaceless %}
+<div class="dashboard-tabs-nav">
+        <ul class="nav nav-dashboard-tabs" data-nav-dropdown-menu="mobile">
+            <li role="presentation" class="{% if app.request.attributes.get('_route') == 'lender_profile' or app.request.attributes.get('_route') == 'lender_profile_personal_information' %}active{% endif %}">
+                <a href="{{ path('lender_profile_personal_information') }}" >{% trans %} lender-profile_tab-title-1 {% endtrans %}</a>
+            </li>
+            <li role="presentation" class="{% if app.request.attributes.get('_route') == 'lender_profile_fiscal_information' %}active{% endif %}">
+                <a href="{{ path('lender_profile_fiscal_information') }}" >{% trans %} lender-profile_tab-title-2 {% endtrans %}</a>
+            </li>
+            <li role="presentation" class="{% if app.request.attributes.get('_route') == 'lender_profile_security' %}active{% endif %}">
+                <a href="{{ path('lender_profile_security') }}" >{% trans %} lender-profile_tab-title-3 {% endtrans %}</a>
+            </li>
+            <li role="presentation" class="{% if app.request.attributes.get('_route') == 'lender_profile_notifications' %}active{% endif %}">
+                <a href="{{ path('lender_profile_notifications') }}" >{% trans %} lender-profile_tab-title-4 {% endtrans %}</a>
+            </li>
+        </ul>
+    </div><!-- /.dashboard-nav-content -->
+{% endspaceless %}

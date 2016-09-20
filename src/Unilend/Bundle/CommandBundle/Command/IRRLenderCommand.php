@@ -41,7 +41,7 @@ EOF
         $logger = $this->getContainer()->get('monolog.logger.console');
         $oIRRManager->setLogger($logger);
 
-        $aLendersWithLatePayments = $oLendersAccountsStats->getLendersWithLatePaymentsForIRRUsingProjectsLastStatusHistoryMaterialized();
+        $aLendersWithLatePayments = $oLendersAccountsStats->getLendersWithLatePaymentsForIRR();
         $oLenderManager->addLendersToLendersAccountsStatQueue($aLendersWithLatePayments);
 
         $iAmountOfLenderAccounts = $input->getArgument('quantity');

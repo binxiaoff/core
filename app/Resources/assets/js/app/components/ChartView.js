@@ -9,6 +9,7 @@
 var $ = require('jquery')
 var Utility = require('Utility')
 var ElementAttrsObject = require('ElementAttrsObject')
+var __ = require('__')
 // var Promise = require('bluebird')
 
 // Any other dependencies
@@ -321,6 +322,14 @@ Highcharts.wrap(Highcharts.Legend.prototype, 'positionItem', function (proceed, 
   }
 })
 
+// Highcharts localisation
+Highcharts.setOptions({
+  lang: {
+    decimalPoint: __.__(',', 'numberDecimal'),
+    thousandsSep: __.__(' ', 'numberMilli')
+  }
+})
+
 /*
  * ChartView
  * @class
@@ -419,14 +428,17 @@ ChartView.prototype.init = function () {
       queue.push($.getJSON(url).then(function (data) {
         self.settings[i] = data
         // @debug
-        // console.log('ChartView.init Success: loaded ' + url + ' into `self.settings.' + i + '`')
+        // console.log('ChartView.init Success: loaded ' + url + ' into `elemChartView.settings.' + i + '`', self)
+
         return {
           name: i,
           url: url,
           status: 'success'
         }
       }).fail(function (err) {
-        console.log('ChartView.init Error: could not load "' + url + '" before rendering the chart')
+        // @debug
+        console.warn('ChartView.init Error: could not load "' + url + '" before rendering the chart', err)
+
         return {
           name: i,
           url: url,
@@ -499,6 +511,11 @@ ChartView.prototype.render = function (data, schema) {
       Utility.setObjProp(self.settings.highcharts, 'series[0].mapData', self.settings.mapGeoJson)
     }
 
+    // Use other mapData
+    if (typeof self.settings.mapData !== 'undefined') {
+      Utility.setObjProp(self.settings.highcharts, 'series[0].mapData', self.settings.mapData)
+    }
+
     // Modifications by chart type
     if (typeof self.settings.type !== 'undefined') {
       switch(self.settings.type) {
@@ -552,10 +569,83 @@ ChartView.prototype.render = function (data, schema) {
               return '<div class="chartview-svg-label" style="width: ' + maxSize + 'px; height: ' + maxSize + 'px;">' + svgCategory + '&nbsp;</div>'
             }
           })
+
+          // Enable click events to show the corresponding sector information in the view
+          Utility.setObjProp(self.settings.highcharts, 'plotOptions.treemap.events.click', function (event) {
+            var series = this
+
+            // @debug
+            // console.log('clicked sector in treemap chart', series, event.point)
+
+            // Hide all the other sector info
+            $('[data-chartview-sector]').not('[data-chartview-sector="' + event.point.svgIconId + '"]').hide()
+
+            // Show this sector's info
+            $('[data-chartview-sector="' + event.point.svgIconId + '"]').show()
+          })
+
+          // @debug
+          // console.log('init preterProjectsCategories treemap', self.settings.highcharts)
+
           break
 
         // Preter Projects Categories Map
+        case 'preterStatisticsMap':
+        case 'emprunterStatisticsMap':
         case 'preterProjectsCategoriesMap':
+
+          // Never show the legend
+          self.settings.highcharts.legend = {
+            enabled: false
+          }
+
+          // Default tooltip formatting
+          Utility.extendObjProp(self.settings.highcharts, 'tooltip', {
+            enabled: true,
+            headerFormat: '',
+            pointFormat: '{point.name}: {point.value}%',
+          })
+
+          // Enable click actions on the series
+          Utility.setObjProp(self.settings.highcharts, 'plotOptions.map.events.click', function (event) {
+            var series = this
+
+            // Hide all the other sector info
+            $('[data-chartview-region]').not('[data-chartview-region="' + event.point.insee + '"]').hide()
+
+            // Show this sector's info
+            $('[data-chartview-region="' + event.point.insee + '"]').show()
+          })
+
+          // Format the display of data labels
+          Utility.extendObjProp(self.settings.highcharts, 'plotOptions.map.dataLabels', {
+            enabled: true,
+            formatter: function () {
+              return (this.point.value ? this.point.value + '%' : '')
+            },
+            style: {
+              textShadow: '0 2px 2px rgba(0,0,0,.2), 0 2px 2px rgba(0,0,0,.2), 0 2px 2px rgba(0,0,0,.2)',
+              fontSize: '16px'
+            }
+          })
+
+          // @debug
+          console.log('init preterProjectsCategoriesMap', self.settings.highcharts)
+
+          break
+
+        // Preter Projects Account Pie
+        case 'preterProjectsAccount':
+
+          // Change the tooltip display
+          Utility.extendObjProp(self.settings.highcharts, 'plotOptions.pie.tooltip', {
+            headerFormat: '',
+            pointFormat: '<span style="color:{point.color}">\u25CF</span> {point.name}: <b>{point.y}</b><br/>'
+          })
+
+          // @debug
+          // console.log('init preterProjectsAccount', self.settings.highcharts)
+
           break
 
         // Preter Projects Overview Custom Donut Chart
@@ -606,6 +696,9 @@ ChartView.prototype.render = function (data, schema) {
           Utility.setObjProp(self.settings.highcharts, 'legend', {
             enabled: false
           })
+
+          // @debug
+          console.log('init preterProjectsOverview', self.settings.highcharts)
 
           break
 

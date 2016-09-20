@@ -61,6 +61,10 @@
     display: none;
   }
 
+  .emprunter-sim-estimate-legend {
+    display: none;
+  }
+
   .btn-continue {
     display: block;
   }
@@ -72,6 +76,14 @@
   .ui-emprunter-sim-estimate-show & {
     dl {
       display: block;
+    }
+
+    .emprunter-sim-estimate-legend {
+      display: block;
+    }
+
+    .spacer {
+      display: none;
     }
 
     .btn-continue {

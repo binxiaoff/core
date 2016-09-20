@@ -1,6 +1,5 @@
 {# Projects Index #}
 {% extends 'layouts/_layout.html.twig' %}
-{% import 'extensions/_general.macros.twig' as general %}
 
 {% set page = {
     title: 'Devenir Prêteur',
@@ -53,9 +52,13 @@
                                                     <div class="form-field col-lg-7 col-md-7">
                                                         <label for="form-preter-amount">{% trans %} lender-subscription_step-3-money-transfer-amount-field-label {% endtrans %}</label>
                                                         <div class="input-group set-right">
-                                                            <input type="number" name="amount" value=""
+                                                            <input type="text" name="amount" value=""
                                                                    placeholder="{% trans with {'%amountMin%' : minDepositAmount, '%amountMax%' : maxDepositAmount } %} lender-subscription_step-3-money-transfer-amount-field-placeholder {% endtrans %}"
-                                                                   class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                                                                   class="input-field"
+                                                                   data-formvalidation-input
+                                                                   data-formvalidation-minvalue="{{minDepositAmount}}"
+                                                                   data-formvalidation-maxvalue="{{maxDepositAmount}}"
+                                                                   data-formvalidation-required="true">
                                                             <input type="hidden" name="clientId" value="{{ client.id_client }}">
                                                             <div class="btn-group">
                                                                 <span>€</span>

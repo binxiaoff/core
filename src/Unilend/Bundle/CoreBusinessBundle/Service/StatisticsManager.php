@@ -3,11 +3,15 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
+use Symfony\Component\Validator\Constraints\Date;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
 class StatisticsManager
 {
+    const HISTORIC_NUMBER_OF_SIREN = 26205;
+    const VALUE_DATE_HISTORIC_NUMBER_OF_SIREN = '2016-08-31 00:00:00';
+
     /** @var  EntityManager */
     private $entityManager;
     /** @var  IRRManager */
@@ -16,16 +20,13 @@ class StatisticsManager
     private $cachePool;
     /** @var LocationManager */
     private $locationManager;
-    /** @var  TranslationManager */
-    private $translationManager;
 
-    public function __construct(EntityManager $entityManager, IRRManager $IRRManager,MemcacheCachePool $cachePool, LocationManager $locationManager, TranslationManager $translationManager)
+    public function __construct(EntityManager $entityManager, IRRManager $IRRManager,MemcacheCachePool $cachePool, LocationManager $locationManager)
     {
         $this->entityManager      = $entityManager;
         $this->IRRManager         = $IRRManager;
         $this->cachePool          = $cachePool;
         $this->locationManager    = $locationManager;
-        $this->translationManager = $translationManager;
     }
 
     /**
@@ -113,9 +114,6 @@ class StatisticsManager
     {
         return bcdiv($this->getAmountBorrowed(), 1000000, 0);
     }
-
-
-
 
     public function getUnilendIRR()
     {
@@ -244,29 +242,33 @@ class StatisticsManager
         }
     }
 
+    /**
+     * Siren count has first started in an excel spreadsheet. For that reason DB data will always be inconsistent with previously announced data.
+     * For that reason it has been decided to start counting only from a given date and adding this count to the historic value
+     */
     public function getNumberOfProjectRequests()
     {
         $cachedItem = $this->cachePool->getItem('numberOfProjectRequests');
 
-        if (false === $cachedItem->isHit()) {
+        //if (false === $cachedItem->isHit()) {
             /** @var \projects $projects */
-            $projects = $this->entityManager->getRepository('projects');;
+            $projects = $this->entityManager->getRepository('projects');
             /** @var int $numberOfProjectRequests */
-            $numberOfProjectRequests = $projects->getNumberOfUniqueProjectRequests();
+            $numberOfProjectRequests = self::HISTORIC_NUMBER_OF_SIREN + $projects->getNumberOfUniqueProjectRequests(self::VALUE_DATE_HISTORIC_NUMBER_OF_SIREN);
             $cachedItem->set($numberOfProjectRequests)->expiresAfter(86400);
             $this->cachePool->save($cachedItem);
 
             return $numberOfProjectRequests;
-        } else {
-            return $cachedItem->get();
-        }
+//        } else {
+//            return $cachedItem->get();
+//        }
     }
 
     public function getPercentageOfAcceptedProjects()
     {
         $cachedItem = $this->cachePool->getItem('percentageOfAcceptedProjects');
 
-        if (false === $cachedItem->isHit()) {
+//        if (false === $cachedItem->isHit()) {
             $numberOfRequests = $this->getNumberOfProjectRequests();
             /** @var \projects_status_history $projectStatusHistory */
             $projectStatusHistory = $this->entityManager->getRepository('projects_status_history');
@@ -278,9 +280,9 @@ class StatisticsManager
             $this->cachePool->save($cachedItem);
 
             return $percentageOfAcceptedProjects;
-        } else {
-            return $cachedItem->get();
-        }
+//        } else {
+//            return $cachedItem->get();
+//        }
     }
 
     public function getAverageLenderIRR()
@@ -415,31 +417,100 @@ class StatisticsManager
         }
     }
 
-    //TODO @Mesbah : use it for your lender tree map
     /**
-     * @param $countByCategory
-     * @return array
+     * Stat  is voluntarily only on the last 3 months
      */
-    public function getDataForCategoryTreeMap($countByCategory)
+    public function getNumberOfProjectsFundedIn24Hours()
     {
-        $translations = $this->translationManager->getTranslatedCompanySectorList();
-        $dataForTreeMap = [];
+        $cachedItem = $this->cachePool->getItem('numberOfProjectsFundedIn24Hours');
 
-        foreach ($countByCategory as $category => $count) {
-            $dataForTreeMap[] = [
-                'name' => $translations[$category],
-                'value' => (int)$count,
-                'svgIconId' => '#category-sm-' . $category
-            ];
+        if (false === $cachedItem->isHit()) {
+            $startDate = new \DateTime('NOW - 3 MONTHS');
+            /** @var \projects $projects */
+            $projects = $this->entityManager->getRepository('projects');
+            $count24hFunding = $projects->countProjectsFundedIn24Hours($startDate);
+            $cachedItem->set($count24hFunding )->expiresAfter(3600);
+
+            return $count24hFunding;
         }
-
-        return $dataForTreeMap;
+        else {
+            return $cachedItem->get();
+        }
     }
 
-    public function getProjectCountForCategoryTreeMap()
+    /**
+     * Stat  is voluntarily only on the last 3 months
+     */
+    public function getPercentageOfProjectsFundedIn24Hours()
     {
-        $countByCategory = $this->getProjectCountByCategory();
-        return $this->getDataForCategoryTreeMap($countByCategory);
+        $cachedItem = $this->cachePool->getItem('percentageOfProjectsFundedIn24Hours');
+
+        if (false === $cachedItem->isHit()) {
+            $startDate = new \DateTime('NOW - 3 MONTHS');
+            /** @var \projects $projects */
+            $projects = $this->entityManager->getRepository('projects');
+            $countAllProjects = $projects->countProjectsFundedSince($startDate);
+            $count24hFunding = $this->getNumberOfProjectsFundedIn24Hours();
+            $percentageFunded24h = bcdiv($count24hFunding, $countAllProjects, 0);
+            $cachedItem->set($percentageFunded24h)->expiresAfter(3600);
+
+            return $percentageFunded24h;
+        }
+        else {
+            return $cachedItem->get();
+        }
+    }
+
+    public function getSecondsForBid()
+    {
+        $cachedItem = $this->cachePool->getItem('secondsForBid');
+
+        if (false === $cachedItem->isHit()) {
+            /** @var \bids $bids */
+            $bids               = $this->entityManager->getRepository('bids');
+            $maxCountBidsPerDay = $bids->getMaxCountBidsPerDay();
+            $secondsPerDay      = 24 * 60 * 60;
+            $secondsForBid      = bcdiv($secondsPerDay, $maxCountBidsPerDay, 0);
+            $cachedItem->set($secondsForBid)->expiresAfter(3600);
+
+            return $secondsForBid;
+        } else {
+            return $cachedItem->get();
+        }
+    }
+
+    public function getHighestAmountObtainedFastest()
+    {
+        /** @var \projects $projects */
+        $projects = $this->entityManager->getRepository('projects');
+        $recordAmount = $projects->getHighestAmountObtainedFastest();
+
+        return $recordAmount;
+    }
+
+    public function getOwedCapital()
+    {
+        $cachedItem = $this->cachePool->getItem('UnilendStatsOwedCapital');
+        return $cachedItem->get();
+    }
+
+
+    public function getProblematicProjects()
+    {
+        $cachedItem = $this->cachePool->getItem('UnilendStatsProblematicProjects');
+        return $cachedItem->get();
+    }
+
+    public function getCapitalInDifficulty()
+    {
+        $problematicProjects    = $this->getProblematicProjects();
+        return round($problematicProjects['capital'], 2);
+    }
+
+    public function getUpcomingInterest()
+    {
+        $cachedItem = $this->cachePool->getItem('UnilendStatsUpcomingInterest');
+        return $cachedItem->get();
     }
 
 }

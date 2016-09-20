@@ -18,5 +18,9 @@
             <argument type="service" id="security.token_storage" />
             <argument>%kernel.default_locale%</argument>
         </service>
+
+        <service id="unilend.form.lender_withdrawal" class="Unilend\Bundle\FrontBundle\Form\LenderWithdrawalType">
+            <tag name="form.type" />
+        </service>
     </services>
 </container>

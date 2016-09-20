@@ -48,31 +48,31 @@ class FrontBundleExtension extends \Twig_Extension
     public function getFunctions()
     {
         return array(
-            new \Twig_SimpleFunction('setting', array($this, 'settingFunction')),
-            new \Twig_SimpleFunction('route', array($this, 'routeFunction')),
-            new \Twig_SimpleFunction('svgimage', array($this, 'svgImageFunction')),
-            new \Twig_SimpleFunction('__', array($this, 'temporaryTranslateFunction')),
-            new \Twig_SimpleFunction('siteurlmedia', array($this, 'completeUrlMediaFunction')),
-            new \Twig_SimpleFunction('getCategories', array($this, 'getCategoriesForSvg')),
-            new \Twig_SimpleFunction('uploadedImage', array($this, 'uploadedImageFunction')),
-            new \Twig_SimpleFunction('getMonths', array($this, 'getMonths')),
-            new \Twig_SimpleFunction('photo', array($this, 'photo')),
-            new \Twig_SimpleFunction('dictionary', array($this, 'dictionary')),
-            new \Twig_SimpleFunction('getStatistic', array($this, 'getStatisticFunction')),
+            new \Twig_SimpleFunction('setting', [$this, 'settingFunction']),
+            new \Twig_SimpleFunction('route', [$this, 'routeFunction']),
+            new \Twig_SimpleFunction('svgimage', [$this, 'svgImageFunction']),
+            new \Twig_SimpleFunction('__', [$this, 'temporaryTranslateFunction']),
+            new \Twig_SimpleFunction('siteurlmedia', [$this, 'completeUrlMediaFunction']),
+            new \Twig_SimpleFunction('getCategories', [$this, 'getCategoriesForSvg']),
+            new \Twig_SimpleFunction('uploadedImage', [$this, 'uploadedImageFunction']),
+            new \Twig_SimpleFunction('getMonths', [$this, 'getMonths']),
+            new \Twig_SimpleFunction('photo', [$this, 'photo']),
+            new \Twig_SimpleFunction('dictionary', [$this, 'dictionary']),
+            new \Twig_SimpleFunction('getStatistic', [$this, 'getStatisticFunction']),
+            new \Twig_SimpleFunction('completeTestimonialUrl', [$this, 'completeTestimonialPath'])
         );
     }
 
     public function getFilters()
     {
         return array(
-            new \Twig_SimpleFilter('nbsp', array($this, 'nbspFilter')),
-            new \Twig_SimpleFilter('__num', array($this, 'numFilter')),
-            new \Twig_SimpleFilter('convertRisk', array($this, 'convertProjectRiskFilter')),
-            new \Twig_SimpleFilter('completeProjectImagePath', array($this, 'projectImagePathFilter')),
-            new \Twig_SimpleFilter('baseUrl', array($this, 'addBaseUrl')),
-            new \Twig_SimpleFilter('countryLabel', array($this, 'getCountry')),
-            new \Twig_SimpleFilter('nationalityLabel', array($this, 'getNationality')),
-            new \Twig_SimpleFilter('json_decode', array($this, 'jsonDecode'))
+            new \Twig_SimpleFilter('nbsp', [$this, 'nbspFilter']),
+            new \Twig_SimpleFilter('convertRisk', [$this, 'convertProjectRiskFilter']),
+            new \Twig_SimpleFilter('completeProjectImagePath', [$this, 'projectImagePathFilter']),
+            new \Twig_SimpleFilter('baseUrl', [$this, 'addBaseUrl']),
+            new \Twig_SimpleFilter('countryLabel', [$this, 'getCountry']),
+            new \Twig_SimpleFilter('nationalityLabel', [$this, 'getNationality']),
+            new \Twig_SimpleFilter('json_decode', [$this, 'jsonDecode'])
         );
     }
 
@@ -169,19 +169,6 @@ class FrontBundleExtension extends \Twig_Extension
         return preg_replace('/[ ](?=[^>]*(?:<|$))/', '&nbsp;', $sString);
     }
 
-    /**
-     * @param int|float $number
-     * @param int|null  $decimals
-     * @return string
-     */
-    public function numFilter($number, $decimals = null)
-    {
-        if (is_null($decimals)) {
-            $decimals = 2;
-        }
-        return number_format((float) $number, $decimals, ',', ' ');
-    }
-
     public function convertProjectRiskFilter($sProjectRating)
     {
         return constant('\projects::RISK_' . $sProjectRating);
@@ -245,5 +232,10 @@ class FrontBundleExtension extends \Twig_Extension
     public function dictionary($section)
     {
         return $this->translationManager->getAllTranslationsForSection($section);
+    }
+
+    public function completeTestimonialPath($name, $type)
+    {
+        return $this->packages->getUrl('/var/testimonials/' . $type . '/' . $name);
     }
 }

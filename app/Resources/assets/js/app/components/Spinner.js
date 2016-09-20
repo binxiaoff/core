@@ -64,7 +64,6 @@ $doc
 
   // Show the spinner when global AJAX event has started
   .on('ajaxStart', function (event) {
-    var spinnerTargetSelector
     var $activeElement = $(event.target.activeElement)
     var $spinnerTarget = $body // Default is body element
     var posX = 50
@@ -75,27 +74,29 @@ $doc
       $spinnerTarget = $($activeElement.attr('data-has-spinner'))
     }
 
-    // @debug
-    // console.log('spinner ajaxStop', event, event.target.activeElement)
-    // console.log('spinnerTarget', $spinnerTarget)
-
     // Show spinner
     $spinnerTarget.addClass('ui-is-loading')
 
+    // @debug
+    // console.log('spinner ajaxStart', event, event.target.activeElement)
+    // console.log('spinnerTarget', $spinnerTarget)
+
     // If spinner is fired on single project page
-    if ($('#alloffers-table').length) {
+    if ($spinnerTarget.find('#alloffers-table').length) {
       var pixelFromLeftSide = $('#alloffers-table').width() / 2
       pixelFromLeftSide += $('#alloffers-table').offset().left
       posX = (pixelFromLeftSide / window.innerWidth) * 100
     }
 
     // Position the main body spinner
-    $('#floatingCirclesG').css({
-      top: posY + '%',
-      left: posX + '%'
-    })
+    if ($spinnerTarget.is('body') || $spinnerTarget.is('.modal-spinner')) {
+      $('#floatingCirclesG').css({
+        top: posY + '%',
+        left: posX + '%'
+      })
+    }
   })
-    
+
   // Hide the spinner when global AJAX event has stopped
   .on('ajaxStop', function (event) {
     var $activeElement = $(event.target.activeElement)
@@ -111,6 +112,6 @@ $doc
     // console.log('spinnerTarget', $spinnerTarget)
 
     // Hide spinner
-    $spinnerTarget.removeClass("ui-is-loading")
+    $spinnerTarget.removeClass('ui-is-loading')
   })
 

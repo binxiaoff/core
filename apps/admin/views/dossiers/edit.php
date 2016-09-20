@@ -204,10 +204,12 @@
             <div class="gauche">
                 <h2>Identité</h2>
                 <table class="form" style="width: 580px;">
+                    <?php if ($this->projects->status >= \projects_status::A_FUNDER) : ?>
                     <tr>
                         <th>Lien projet :</th>
-                        <td><?= $this->furl . '/projects/detail/' . $this->projects->slug ?></td>
+                        <td><a href="<?= $this->furl ?>/projects/detail/<?= $this->projects->slug ?>" target="_blank"><?= $this->furl ?>/projects/detail/<?= $this->projects->slug ?></a></td>
                     </tr>
+                    <?php endif; ?>
                     <tr>
                         <th>Date de la demande :</th>
                         <td><?= $this->dates->formatDate($this->projects->added, 'd/m/Y') ?></td>
@@ -459,7 +461,7 @@
                         <?php else: ?>
                             <tr>
                                 <th>Virement à émettre avant le</th>
-                                <td><strong><?= (isset($this->date_next_echeance_4jouvres_avant)) ? $this->date_next_echeance_4jouvres_avant : '' ?></strong></td>
+                                <td><strong><?= (isset($this->nextRepaymentDate)) ? $this->nextRepaymentDate : '' ?></strong></td>
                             </tr>
                         <?php endif; ?>
                         <tr>

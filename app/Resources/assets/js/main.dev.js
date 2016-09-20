@@ -56,7 +56,6 @@ var FormValidation = require('FormValidation')
 var DashboardPanel = require('DashboardPanel')
 var DashboardPanels = require('DashboardPanels')
 var CacheForm = require('CacheForm')
-var AutolendTable = require('AutolendTable')
 var NavDropdownMenu = require('NavDropdownMenu')
 var MapView = require('MapView')
 var ChartView = require('ChartView')
@@ -72,8 +71,9 @@ var BidConfirmation = require('./app/components/BidConfirmation')
 var BidsDetail = require('./app/components/BidsDetail')
 
 // Page controllers
-// Control page-specific behaviours
-require('./app/controllers/BorrowerOperation')
+// Manage component or page-specific behaviours
+require('./app/controllers/Swipers')
+require('./app/controllers/BorrowerOperations')
 require('./app/controllers/NewPasswordRequest')
 require('./app/controllers/LenderSubscription')
 require('./app/controllers/LenderWallet')
@@ -81,6 +81,7 @@ require('./app/controllers/LenderOperations')
 require('./app/controllers/LenderProfile')
 require('./app/controllers/Projects')
 require('./app/controllers/ProjectRequest')
+require('./app/controllers/Autolend')
 
 // @debug
 // CacheData.clearAll()
@@ -97,7 +98,7 @@ $(document).ready(function ($) {
 
   // @debug
   // window.__ = __
-  // window.Utility = Utility
+  window.Utility = Utility
   // window.CacheForm = CacheForm
 
   // Remove HTML
@@ -109,7 +110,9 @@ $(document).ready(function ($) {
   // TWBS setup
   // $.support.transition = false
   // Bootstrap Tooltips
-  $('.ui-has-tooltip, [data-toggle="tooltip"]').tooltip()
+  $body.tooltip({
+    selector: '.ui-has-tooltip, [data-toggle="tooltip"]'
+  })
 
   /*
    * jQuery UI Date Picker
@@ -444,74 +447,6 @@ $(document).ready(function ($) {
   })
 
   /*
-   * Swiper
-   */
-  $('.swiper-container').each(function (i, elem) {
-    var $elem = $(elem)
-    var swiperOptions = {
-      direction: $elem.attr('data-swiper-direction') || 'horizontal',
-      loop: $elem.attr('data-swiper-loop') === 'true',
-      effect: $elem.attr('data-swiper-effect') || 'fade',
-      speed: parseInt($elem.attr('data-swiper-speed'), 10) || 250,
-      autoplay: parseInt($elem.attr('data-swiper-autoplay'), 10) || 5000,
-      // ARIA keyboard functionality
-      a11y: $elem.attr('data-swiper-aria') === 'true'
-    }
-
-    // Fade / Crossfade
-    if (swiperOptions.effect === 'fade') {
-      swiperOptions.fade = {
-        crossFade: $elem.attr('data-swiper-crossfade') === 'true'
-      }
-    }
-
-    // Dynamically test if has pagination
-    if ($elem.find('.swiper-custom-pagination').length > 0 && $elem.find('.swiper-custom-pagination > *').length > 0) {
-      swiperOptions.paginationType = 'custom'
-    }
-
-    var elemSwiper = new Swiper(elem, swiperOptions)
-    // console.log(elemSwiper)
-
-    // Add event to hook up custom pagination to appropriate slide
-    if (swiperOptions.paginationType === 'custom') {
-      // Hook into sliderMove event to update custom pagination
-      elemSwiper.on('slideChangeStart', function () {
-        // Unactive any active pagination items
-        $elem.find('.swiper-custom-pagination li.active').removeClass('active')
-
-        // Activate the current pagination item
-        $elem.find('.swiper-custom-pagination li:eq(' + elemSwiper.activeIndex + ')').addClass('active')
-
-        // console.log('sliderMove', elemSwiper.activeIndex)
-      })
-
-      // Connect user interaction with custom pagination
-      $elem.find('.swiper-custom-pagination li').on('click', function (event) {
-        var $elem = $(this).parents('.swiper-container')
-        var $target = $(this)
-        var swiper = $elem[0].swiper
-        var newSlideIndex = $elem.find('.swiper-custom-pagination li').index($target)
-
-        event.preventDefault()
-        swiper.pauseAutoplay()
-        swiper.slideTo(newSlideIndex)
-      })
-    }
-
-    // Specific swipers
-    // -- Homepage Acquisition Video Hero
-    if ($elem.is('#homeacq-video-hero-swiper')) {
-      elemSwiper.on('slideChangeStart', function () {
-        var emprunterName = $elem.find('.swiper-slide:eq(' + elemSwiper.activeIndex + ')').attr('data-emprunter-name')
-        var preterName = $elem.find('.swiper-slide:eq(' + elemSwiper.activeIndex + ')').attr('data-preter-name')
-        if (emprunterName) $elem.parents('.cta-video-hero').find('.ui-emprunter-name').text(emprunterName)
-        if (preterName) $elem.parents('.cta-video-hero').find('.ui-preter-name').text(preterName)
-      })
-    }
-  })
-
-  /*
    * Text Counters
    */
   // @note `.ui-text-count` is the old class, adding auto invocation here for backwards compatibility
@@ -724,14 +659,15 @@ $(document).ready(function ($) {
    */
   $doc
     // Step 1
-    .on('FormValidation:validate:error', '#esim1', function () {
+    .on('FormValidation:validate:error', '#esim1', function (event) {
       // Hide the continue button
       $('.emprunter-sim').removeClass('ui-emprunter-sim-estimate-show')
+      event.stopPropagation()
     })
-    .on('click', '#submit-step-1', function () {
-      var period = $("input[id^='esim-input-duration-']:checked").val(),
-          amount = $("#esim-input-amount").val(),
-          motiveId = $("#esim-input-reason > option:selected").val()
+    .on('shown.bs.tab', '[href="#esim2"]', function () {
+      var period = $("input[id^='esim-input-duration-']:checked").val()
+      var amount = $("#esim-input-amount").val()
+      var motiveId = $("#esim-input-reason > option:selected").val()
 
       if (! $(".form-validation-notifications .message-error").length) {
         $.ajax({
@@ -760,7 +696,7 @@ $(document).ready(function ($) {
             }
             else {
               var text = $('p[data-borrower-motive]').html()
-                  text = text.replace(/\.$/g, '')
+              text = text.replace(/\.$/g, '')
 
               $('p[data-borrower-motive]')
                 .show()
@@ -1058,112 +994,6 @@ $(document).ready(function ($) {
       $headerLabel.addClass('hide')
       $panel.collapse('show')
     }
-  })
-
-  /*
-   * User Preter Operations
-   */
-  // Show/hide details
-  $doc.on(Utility.clickEvent, '.table-myoperations-item[data-details]', function (event) {
-    var $item = $(this)
-    var $table = $item.parents('tbody').first()
-    var $details = $table.find('.table-myoperations-details[data-parent="' + $item.attr('id') + '"]')
-    event.preventDefault()
-
-    // Hide details
-    if ($item.is('.ui-operation-details-open')) {
-      if ($details.length > 0) {
-        $details.slideUp(200, function () {
-          $item.removeClass('ui-operation-details-open')
-        })
-      } else {
-        $item.removeClass('ui-operation-details-open')
-      }
-
-    // Show details
-    } else {
-      if ($details.length === 0) {
-        // Get the details
-        var details = Utility.convertStringToJson($item.attr('data-details'))
-        var detailsItemsHtml = '';
-
-        // Build the list of items
-        $.each(details.items, function (i, item) {
-          // @todo may need to programmatically change the currency here
-          // @note this relies on the backend to supply the correcly translated text for labels
-          var classItem = (item.value >= 0 ? 'ui-value-positive' : 'ui-value-negative')
-          detailsItemsHtml += '<dt>' + item.label + '</dt><dd><span class="' + classItem + '">' + __.formatNumber(item.value, 2, true) + '€</span></dd>'
-        })
-
-        // Build element and add to DOM
-        $details = $('<tr class="table-myoperations-details" data-parent="' + $item.attr('id') + '" style="display: none;"><td colspan="2">' + details.label + '</td><td colspan="3">' + detailsItemsHtml + '</td><td>&nbsp;</td></tr>')
-        $item.after($details)
-      }
-
-      // Show
-      $item.addClass('ui-operation-details-open')
-      $details.slideDown(200)
-    }
-  })
-
-  /*
-   * User Borrower Operations
-   */
-  // Show/hide details
-  $doc.on(Utility.clickEvent, '#user-emprunteur-operations .table-myoperations-item[data-details]', function (event) {
-    var $item = $(this)
-    var $table = $item.parents('tbody').first()
-    var $details = $table.find('.table-myoperations-details[data-parent="' + $item.attr('id') + '"]')
-    event.preventDefault()
-
-    // Hide details
-    if ($item.is('.ui-operation-details-open')) {
-      if ($details.length > 0) {
-        $details.slideUp(200, function () {
-          $item.removeClass('ui-operation-details-open')
-        })
-      } else {
-        $item.removeClass('ui-operation-details-open')
-      }
-
-      // Show details
-    } else {
-      if ($details.length === 0) {
-        // Get the details
-        var details = Utility.convertStringToJson($item.attr('data-details'))
-        var detailsItemsHtml = '';
-
-        // Build the list of items
-        $.each(details.items, function (i, item) {
-          // @todo may need to programmatically change the currency here
-          // @note this relies on the backend to supply the correcly translated text for labels
-          var classItem = (item.value >= 0 ? 'ui-value-positive' : 'ui-value-negative')
-          detailsItemsHtml += '<dt><span class="cell-right" style="width:30%;display:block;">' + item.label + '</span></dt>' + '<dd><span class="' + classItem + '">' + __.formatNumber(item.value, 2, true) + '€</span></dd>'
-        })
-
-        // Build element and add to DOM
-        $details = $('<tr class="table-myoperations-details" data-parent="'
-            + $item.attr('id') + '" style="display: none;"><td colspan="4">' + detailsItemsHtml + '</td><td>&nbsp;</td></tr>')
-        $item.after($details)
-      }
-
-      // Show
-      $item.addClass('ui-operation-details-open')
-      $details.slideDown(200)
-    }
-  })
-
-
-  // Remove details before sorting
-  $doc.on('Sortable:sort:before', 'table.table-myoperations', function (event, elemSortable, columnName, direction) {
-    var $table = $(this)
-    var $details = $table.find('.table-myoperations-details')
-
-    // Find any details rows and remove them before the sorting occurs
-    if ($details.length > 0) $details.remove()
-
-    // Find any items which are "open" and remove the class
-    $table.find('.ui-operation-details-open').removeClass('ui-operation-details-open')
   })
 
   /*

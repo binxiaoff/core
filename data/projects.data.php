@@ -145,8 +145,8 @@ class projects extends projects_crud
         $sSqlCount = '
             SELECT COUNT(*)
             FROM projects p
-            LEFT JOIN companies co ON (p.id_company = co.id_company)
-            WHERE ' . implode(' AND ', $where);
+            LEFT JOIN companies co ON (p.id_company = co.id_company)';
+        $sSqlCount .= 0 < count($where) ? ' WHERE ' . implode(' AND ', $where) : '';
 
         $rResult        = $this->bdd->query($sSqlCount);
         $iCountProjects = (int) $this->bdd->result($rResult, 0, 0);
@@ -159,9 +159,9 @@ class projects extends projects_crud
                 ps.label
             FROM projects p
             LEFT JOIN companies co ON (p.id_company = co.id_company)
-            LEFT JOIN projects_status ps on ps.status = p.status
-            WHERE ' . implode(' AND ', $where) . '
-            ORDER BY p.added DESC
+            LEFT JOIN projects_status ps on ps.status = p.status';
+        $sql .= 0 < count($where) ? ' WHERE ' . implode(' AND ', $where) : '';
+        $sql .= ' ORDER BY p.added DESC
             ' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
@@ -693,31 +693,39 @@ class projects extends projects_crud
         return $aProjects;
     }
 
-    public function getAvgRate($sRisk = null, $sDurationMin = null, $sDurationMax = null)
+    public function getAvgRate($risk = null, $durationMin = null, $durationMax = null, $startingDate = null)
     {
-        $sWhereRisk        = '';
-        $sWhereDurationMin = '';
-        $sWhereDurationMax = '';
-        $aBind             = array();
-        $aType             = array();
+        $whereRisk        = '';
+        $whereDurationMin = '';
+        $whereDurationMax = '';
+        $wherePublished    = '';
+        $bind             = [];
+        $type             = [];
 
-        if (null !== $sRisk) {
-            $sWhereRisk    = ' AND p.risk = :risk ';
-            $aBind['risk'] = $sRisk;
-            $aType['risk'] = \PDO::PARAM_STR;
+        if (null !== $risk) {
+            $whereRisk    = ' AND p.risk = :risk ';
+            $bind['risk'] = $risk;
+            $type['risk'] = \PDO::PARAM_STR;
         }
 
-        if (null !== $sDurationMin) {
-            $aBind['p_min']    = $sDurationMin;
-            $aType['p_min']    = \PDO::PARAM_INT;
-            $sWhereDurationMin = ' AND p.period >= :p_min';
+        if (null !== $durationMin) {
+            $bind['p_min']    = $durationMin;
+            $type['p_min']    = \PDO::PARAM_INT;
+            $whereDurationMin = ' AND p.period >= :p_min';
         }
 
-        if (null !== $sDurationMax) {
-            $aBind['p_max']    = $sDurationMax;
-            $aType['p_max']    = \PDO::PARAM_INT;
-            $sWhereDurationMax = ' AND p.period <= :p_max';
+        if (null !== $durationMax) {
+            $bind['p_max']    = $durationMax;
+            $type['p_max']    = \PDO::PARAM_INT;
+            $whereDurationMax = ' AND p.period <= :p_max';
         }
+
+        if (null !== $startingDate) {
+            $bind['starting_date']    = $startingDate;
+            $type['starting_date']    = \PDO::PARAM_STR;
+            $wherePublished = ' AND DATE(p.date_publication_full) >=  :starting_date';
+        }
+
         $sQuery = 'SELECT avg(t1.weighted_rate_by_project)
                         FROM (
                           SELECT SUM(t.amount * t.rate) / SUM(t.amount) as weighted_rate_by_project
@@ -726,13 +734,13 @@ class projects extends projects_crud
                             FROM loans l
                               INNER JOIN projects p ON p.id_project = l.id_project
                             WHERE p.status >= ' . \projects_status::FUNDE . '
-                            AND p.status != ' . \projects_status::FUNDING_KO . $sWhereRisk . $sWhereDurationMin . $sWhereDurationMax . '
+                            AND p.status != ' . \projects_status::FUNDING_KO . $whereRisk . $whereDurationMin . $whereDurationMax . $wherePublished . '
                           ) t
                           GROUP BY t.id_project
                         ) t1
                         ';
         try {
-            $statement = $this->bdd->executeQuery($sQuery, $aBind, $aType, new \Doctrine\DBAL\Cache\QueryCacheProfile(1800, md5(__METHOD__)));
+            $statement = $this->bdd->executeQuery($sQuery, $bind, $type, new \Doctrine\DBAL\Cache\QueryCacheProfile(1800, md5(__METHOD__)));
             $result = $statement->fetchAll(PDO::FETCH_COLUMN);
             $statement->closeCursor();
             if (empty($result)) {
@@ -879,7 +887,7 @@ class projects extends projects_crud
                 INNER JOIN projects p ON (b.id_project = p.id_project)
                 INNER JOIN projects_status_history psh ON p.id_project = psh.id_project
                 INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                WHERE b.status = ' . \bids::STATUS_BID_REJECTED . ' AND ps.status = ' . \projects_status::FUNDE . ' AND p.date_retrait > "2014-04-01" 
+                WHERE b.status = ' . \bids::STATUS_BID_REJECTED . ' AND ps.status = ' . \projects_status::FUNDE . ' AND p.date_retrait > "2014-04-01"
             ) AS t';
 
         $oStatement = $this->bdd->executeQuery($sQuery);
@@ -933,14 +941,18 @@ class projects extends projects_crud
         return $statement->fetchColumn(0);
     }
 
-    public function getNumberOfUniqueProjectRequests()
+    public function getNumberOfUniqueProjectRequests($startDate)
     {
+        $bind = ['startDate' => $startDate];
+        $type = ['startDate' => \PDO::PARAM_STR];
+
         $query = 'SELECT COUNT(DISTINCT companies.siren)
                     FROM `projects`
                       INNER JOIN companies USING (id_company)
                     WHERE LENGTH(companies.siren) = 9 AND companies.siren NOT IN ("123456789", "987654321", "987456321", "123654789",
-                    "999999999", "888888888", "777777777", "666666666", "555555555", "444444444","333333333", "222222222", "111111111", "000000000")';
-        $statement = $this->bdd->executeQuery($query);
+                    "999999999", "888888888", "777777777", "666666666", "555555555", "444444444","333333333", "222222222", "111111111", "000000000") AND projects.added > :startDate';
+
+        $statement = $this->bdd->executeQuery($query, $bind, $type);
 
         return $statement->fetchColumn(0);
     }
@@ -1018,7 +1030,7 @@ class projects extends projects_crud
                 GROUP BY companies.sector';
 
         $statement = $this->bdd->executeQuery($query);
-        $categoriesCount  = array();
+        $categoriesCount  = [];
         while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
             $categoriesCount[$row['sector']] = $row['count'];
         }
@@ -1057,5 +1069,50 @@ class projects extends projects_crud
         }
         return $result;
     }
+
+    public function countProjectsFundedIn24Hours(\DateTime $startDate)
+    {
+        $bind = ['startDate' => $startDate->format('Y-m-d h:i:s')];
+        $type = ['startDate' => \PDO::PARAM_STR];
+
+        $query = 'SELECT count(projects.id_project)
+                    FROM projects
+                    WHERE MOD(HOUR(TIMEDIFF(date_publication_full, date_funded)), 24) <= 24
+                    AND date_funded >= :startDate AND status >= ' . \projects_status::FUNDE;
+
+        $statement = $this->bdd->executeQuery($query, $bind, $type);
+
+        return $statement->fetchColumn(0);
+    }
+
+    public function countProjectsFundedSince(\DateTime $startDate)
+    {
+        $bind = ['startDate' => $startDate->format('Y-m-d h:i:s')];
+        $type = ['startDate' => \PDO::PARAM_STR];
+
+        $query = 'SELECT count(projects.id_project)
+                    FROM projects
+                    WHERE date_funded >= :startDate AND status >=' . \projects_status::FUNDE;
+
+        $statement = $this->bdd->executeQuery($query, $bind, $type);
+
+        return $statement->fetchColumn(0);
+    }
+
+    public function getHighestAmountObtainedFastest()
+    {
+        $query = 'SELECT
+                      amount
+                  FROM projects
+                    WHERE date_funded != \'0000-00-00 00:00:00\'
+                    GROUP BY id_project
+                    ORDER BY SECOND(TIMEDIFF(date_funded, date_publication_full)) ASC, amount DESC
+                    LIMIT 1';
+
+        $statement = $this->bdd->executeQuery($query);
+        return $statement->fetchColumn(0);
+    }
+
+
 
 }

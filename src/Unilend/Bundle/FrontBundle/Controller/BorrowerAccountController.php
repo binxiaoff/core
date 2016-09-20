@@ -118,7 +118,7 @@ class BorrowerAccountController extends Controller
             if (false === $error) {
                 $company = $this->getCompany();
 
-                /** @var \companies $project */
+                /** @var \projects $project */
                 $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
                 $project->id_company                           = $company->id_company;
                 $project->amount                               = str_replace(array(',', ' '), array('.', ''), $formData['amount']);
@@ -127,6 +127,7 @@ class BorrowerAccountController extends Controller
                 $project->fonds_propres_declara_client         = 0;
                 $project->comments                             = $formData['message'];
                 $project->period                               = $formData['duration'];
+                $project->status                               = \projects_status::A_TRAITER;
                 $project->create();
 
                 $projectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::A_TRAITER, $project);
@@ -809,6 +810,6 @@ class BorrowerAccountController extends Controller
         $aPayment      = $repaymentSchedule->getLastOrder($projectId);
         $iPaymentOrder = (isset($aPayment)) ? $aPayment['ordre'] + 1 : 1;
 
-        return $repaymentSchedule->reste_a_payer_ra($projectId, $iPaymentOrder);
+        return $repaymentSchedule->getRemainingCapitalAtDue($projectId, $iPaymentOrder);
     }
 }

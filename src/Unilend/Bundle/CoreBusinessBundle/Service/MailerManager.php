@@ -854,7 +854,7 @@ class MailerManager
         $companies = $this->oEntityManager->getRepository('companies');
         $companies->get($project->id_company, 'id_company');
 
-        /** @var \clients_gestion_notifications $clients_gestion_notifications */
+        /** @var \clients_gestion_notifications $clientNotifications */
         $clientNotifications = $this->oEntityManager->getRepository('clients_gestion_notifications');
 
         /** @var \lenders_accounts $lender */
@@ -878,7 +878,7 @@ class MailerManager
 
             if ($clientNotifications->getNotif($lender->id_client_owner, \notifications::TYPE_LOAN_ACCEPTED, 'immediatement') == true) {
                 $lenderLoans         = $loans->select('id_project = ' . $project->id_project . ' AND id_lender = ' . $lender->id_lender_account, 'id_type_contract DESC');
-                $iSumMonthlyPayments = $paymentSchedule->sum('id_lender = ' . $lender->id_lender_account . ' AND id_project = ' . $project->id_project . ' AND ordre = 1', 'montant');
+                $iSumMonthlyPayments = bcmul($paymentSchedule->getTotalAmount(array('id_lender' => $lender->id_lender_account, 'id_project' => $project->id_project, 'ordre' => 1)), 100);
                 $aFirstPayment       = $paymentSchedule->getPremiereEcheancePreteur($project->id_project, $lender->id_lender_account);
                 $sDateFirstPayment   = $aFirstPayment['date_echeance'];
                 $sLoansDetails       = '';
@@ -934,6 +934,7 @@ class MailerManager
                                         <td style="' . $sStyleTD . '">' . $sContractType . '</td></tr>';
 
                     if ($clientNotifications->getNotif($lender->id_client_owner, 4, 'immediatement') == true) {
+                        /** @var \clients_gestion_mails_notif $clientMailNotifications */
                         $clientMailNotifications = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
                         $clientMailNotifications->get($aLoan['id_loan'], 'id_client = ' . $lender->id_client_owner . ' AND id_loan');
                         $clientMailNotifications->immediatement = 1;
@@ -1658,6 +1659,10 @@ class MailerManager
                 $aCustomerMailNotifications[$aMailNotifications['id_client']][] = $aMailNotifications;
             }
 
+            if ($this->oLogger instanceof LoggerInterface) {
+                $this->oLogger->debug('Customer IDs in mail notifications: ' . json_encode(array_keys($aCustomerMailNotifications)) , array('class' => __CLASS__, 'function' => __FUNCTION__));
+            }
+
             foreach ($aCustomerMailNotifications as $iCustomerId => $aMailNotifications) {
                 try {
                     $oCustomer->get($iCustomerId);
@@ -1700,16 +1705,21 @@ class MailerManager
                                 Important : le remboursement de <span style='color: #b20066;'>" . $this->oFicelle->formatNumber($oTransaction->montant / 100) . "&nbsp;&euro;</span> correspond au remboursement total du capital restant d&ucirc; de votre pr&egrave;t &agrave; <span style='color: #b20066;'>" . htmlentities($oCompanies->name) . "</span>.
                                 Comme le pr&eacute;voient les r&egrave;gles d'Unilend, <span style='color: #b20066;'>" . htmlentities($oCompanies->name) . "</span> a choisi de rembourser son emprunt par anticipation sans frais.
                                 <br/><br/>
-                                Depuis l'origine, il vous a vers&eacute; <span style='color: #b20066;'>" . $this->oFicelle->formatNumber($oLenderRepayment->getSumRembByloan_remb_ra($oTransaction->id_loan_remb,
-                                    'interets')) . "&nbsp;&euro;</span> d'int&eacute;r&ecirc;ts soit un taux d'int&eacute;r&ecirc;t annualis&eacute; moyen de <span style='color: #b20066;'>" . $this->oFicelle->formatNumber($oLoan->getWeightedAverageInterestRateForLender($oLender->id_lender_account,
+                                Depuis l'origine, il vous a vers&eacute; <span style='color: #b20066;'>" . $this->oFicelle->formatNumber($oLenderRepayment->getRepaidInterests(['id_loan' => $oTransaction->id_loan_remb])) . "&nbsp;&euro;</span> d'int&eacute;r&ecirc;ts soit un taux d'int&eacute;r&ecirc;t annualis&eacute; moyen de <span style='color: #b20066;'>" . $this->oFicelle->formatNumber($oLoan->getWeightedAverageInterestRateForLender($oLender->id_lender_account,
                                     $oProject->id_project), 1) . " %.</span><br/><br/> ";
                         } else {
+                            /** @var \tax $tax */
+                            $tax = $this->oEntityManager->getRepository('tax');
                             $oLenderRepayment->get($oTransaction->id_echeancier);
 
-                            $fRepaymentCapital              = $oLenderRepayment->capital / 100;
-                            $fRepaymentInterestsTaxIncluded = $oLenderRepayment->interets / 100;
-                            $fRepaymentTax                  = $oLenderRepayment->prelevements_obligatoires + $oLenderRepayment->retenues_source + $oLenderRepayment->csg + $oLenderRepayment->prelevements_sociaux + $oLenderRepayment->contributions_additionnelles + $oLenderRepayment->prelevements_solidarite + $oLenderRepayment->crds;
-                            $fRepaymentAmount               = $fRepaymentCapital + $fRepaymentInterestsTaxIncluded - $fRepaymentTax;
+                            $fRepaymentCapital              = bcdiv($oLenderRepayment->capital_rembourse, 100, 2);
+                            $fRepaymentInterestsTaxIncluded = bcdiv($oLenderRepayment->interets_rembourses, 100, 2);
+                            if (false == empty($oLenderRepayment->id_echeancier)) {
+                                $fRepaymentTax = bcdiv($tax->getAmountByRepaymentId($oLenderRepayment->id_echeancier), 100, 2);
+                            } else {
+                                $fRepaymentTax = 0;
+                            }
+                            $fRepaymentAmount = bcsub(bcadd($fRepaymentCapital, $fRepaymentInterestsTaxIncluded, 2), $fRepaymentTax, 2);
                         }
 
                         $fTotalAmount += $fRepaymentAmount;

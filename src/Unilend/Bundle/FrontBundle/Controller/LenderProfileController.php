@@ -4,6 +4,7 @@
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 
+use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -25,10 +26,11 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class LenderProfileController extends Controller
 {
     /**
+     * @Route("/profile/info-perso", name="lender_profile_personal_information")
      * @Route("/profile", name="lender_profile")
      * @Security("has_role('ROLE_LENDER')")
      */
-    public function lenderProfileAction(Request $request)
+    public function personalInformationAction(Request $request)
     {
         /** @var array $templateData */
         $templateData = [];
@@ -43,11 +45,71 @@ class LenderProfileController extends Controller
         $templateData['lenderAccount'] = $lenderAccount->select('id_lender_account = ' . $lenderAccount->id_lender_account)[0];
 
         $this->addPersonalInformationDataToTemplate($templateData, $request, $client, $lenderAccount, $settings);
+
+        return $this->render('pages/lender_profile/personal_information.html.twig', $templateData);
+    }
+
+    /**
+     * @Route("/profile/info-fiscal", name="lender_profile_fiscal_information")
+     * @Security("has_role('ROLE_LENDER')")
+     */
+    public function fiscalInformationAction()
+    {
+        /** @var array $templateData */
+        $templateData = [];
+        /** @var \clients $client */
+        $client = $this->getClient();
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount = $this->getLenderAccount();
+
+        $templateData['client']        = $client->select('id_client = ' . $client->id_client)[0];
+        $templateData['lenderAccount'] = $lenderAccount->select('id_lender_account = ' . $lenderAccount->id_lender_account)[0];
+
         $this->addFiscalInformationTemplateData($templateData, $client, $lenderAccount);
+
+        return $this->render('pages/lender_profile/fiscal_information.html.twig', $templateData);
+    }
+
+    /**
+     * @Route("/profile/securite", name="lender_profile_security")
+     * @Security("has_role('ROLE_LENDER')")
+     */
+    public function securityAction(Request $request)
+    {
+        /** @var array $templateData */
+        $templateData = [];
+        /** @var \clients $client */
+        $client = $this->getClient();
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount = $this->getLenderAccount();
+
+        $templateData['client']        = $client->select('id_client = ' . $client->id_client)[0];
+        $templateData['lenderAccount'] = $lenderAccount->select('id_lender_account = ' . $lenderAccount->id_lender_account)[0];
+
         $this->addFormDataForSecurity($templateData, $request, $client);
+
+        return $this->render('pages/lender_profile/security.html.twig', $templateData);
+    }
+
+    /**
+     * @Route("/profile/alertes", name="lender_profile_notifications")
+     * @Security("has_role('ROLE_LENDER')")
+     */
+    public function notificationsAction()
+    {
+        /** @var array $templateData */
+        $templateData = [];
+        /** @var \clients $client */
+        $client = $this->getClient();
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount = $this->getLenderAccount();
+
+        $templateData['client']        = $client->select('id_client = ' . $client->id_client)[0];
+        $templateData['lenderAccount'] = $lenderAccount->select('id_lender_account = ' . $lenderAccount->id_lender_account)[0];
+
         $this->addNotificationSettingsTemplate($templateData, $client);
 
-        return $this->render('pages/lender_profile/lender_info.html.twig', $templateData);
+        return $this->render('pages/lender_profile/notifications.html.twig', $templateData);
     }
 
     private function addNotificationSettingsTemplate(&$templateData, \clients $client)
@@ -349,6 +411,25 @@ class LenderProfileController extends Controller
             'rib'         => isset($attachment[\attachment_type::RIB]) ? $attachment[\attachment_type::RIB] : [],
             'fundsOrigin' => $this->getFundsOrigin($client->type)
         ];
+
+        if (in_array($client->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) {
+            /** @var \clients_adresses $clientAddress */
+            $clientAddress = $this->getClientAddress();
+            /** @var \lender_tax_exemption $lenderTaxExemption */
+            $lenderTaxExemption = $this->get('unilend.service.entity_manager')->getRepository('lender_tax_exemption');
+            /** @var \tax_type $taxType */
+            $taxType = $this->get('unilend.service.entity_manager')->getRepository('tax_type');
+            $taxType->get(\tax_type::TYPE_INCOME_TAX);
+            $templateData['clientAddress'] = $clientAddress->select('id_client = ' . $client->id_client)[0];
+            $templateData['currentYear'] = date('Y', time());
+            $templateData['lastYear']    = $templateData['currentYear'] - 1;
+            $templateData['nextYear']    = $templateData['currentYear'] + 1;
+            $templateData['taxExemptionRequestLimitDate'] = strftime('%d %B %Y', $lenderTaxExemption->getTaxExemptionDateRange()['taxExemptionRequestLimitDate']->getTimestamp());
+            $templateData['rateOfTaxDeductionAtSource'] = $taxType->rate;
+            $templateData['exemptions'] = $this->getExemptionHistory($lenderTaxExemption, $lenderAccount);
+            $this->addExonerationByDateToTemplate($lenderTaxExemption, $lenderAccount, $templateData);
+            $templateData['isEligible'] = $this->checkIfTaxExemptionIsPossible($lenderAccount);
+        }
     }
 
     /**
@@ -377,7 +458,7 @@ class LenderProfileController extends Controller
             }
 
             if ($client->nom_usage != $post['used_name']) {
-                $client->nom_usage = $ficelle->majNom($_POST['used_name']);
+                $client->nom_usage = $ficelle->majNom($post['used_name']);
             }
 
             if (isset($_FILES['id_recto']) && $_FILES['id_recto']['name'] != '') {
@@ -431,7 +512,7 @@ class LenderProfileController extends Controller
         }
 
         $this->saveClientActionHistory($client, serialize(['id_client' => $client->id_client, 'post' => $request->request->all(), 'files' => $_FILES]));
-        return $this->redirectToRoute('lender_profile');
+        return $this->redirectToRoute('lender_profile_personal_information');
     }
 
     /**
@@ -623,7 +704,7 @@ class LenderProfileController extends Controller
         }
 
         $this->saveClientActionHistory($client, serialize(['id_client' => $client->id_client, 'post' => $request->request->all(), 'files' => $_FILES]));
-        return $this->redirectToRoute('lender_profile');
+        return $this->redirectToRoute('lender_profile_personal_information');
     }
 
     /**
@@ -746,7 +827,7 @@ class LenderProfileController extends Controller
         }
 
         $this->saveClientActionHistory($client, serialize(['id_client' => $client->id_client, 'post' => $request->request->all(), 'files' => $_FILES]));
-        return $this->redirectToRoute('lender_profile');
+        return $this->redirectToRoute('lender_profile_personal_information');
     }
 
     /**
@@ -820,7 +901,7 @@ class LenderProfileController extends Controller
             }
         }
         $this->saveClientActionHistory($client, serialize(['id_client' => $client->id_client, 'post' => $request->request->all()]));
-        return $this->redirectToRoute('lender_profile');
+        return $this->redirectToRoute('lender_profile_personal_information');
     }
 
     /**
@@ -869,7 +950,7 @@ class LenderProfileController extends Controller
         }
 
         $this->saveClientActionHistory($client, serialize(['id_client' => $client->id_client, 'post' => $request->request->all()]));
-        return $this->redirectToRoute('lender_profile');
+        return $this->redirectToRoute('lender_profile_personal_information');
     }
 
     /**
@@ -1131,7 +1212,7 @@ class LenderProfileController extends Controller
             $this->addFlash('bankInfoUpdateError', $translator->trans('lender-profile_fiscal-tab-bank-info-update-ko'));
         }
 
-        return $this->redirectToRoute('lender_profile');
+        return $this->redirectToRoute('lender_profile_fiscal_information');
     }
 
     /**
@@ -1216,7 +1297,7 @@ class LenderProfileController extends Controller
         }
 
         $this->saveClientActionHistory($client, serialize(['id_client' => $client->id_client, 'post' => $request->request->all()]));
-        return $this->redirectToRoute('lender_profile');
+        return $this->redirectToRoute('lender_profile_security');
     }
 
     /**
@@ -1267,10 +1348,10 @@ class LenderProfileController extends Controller
             $this->addFlash('securityPasswordErrors', $translator->trans('lender-profile_security-password-section-error-missing-former-password'));
         }
         if (empty($post['client_new_password'])) {
-            $this->addFlash('securityPasswordErrors', $translator->trans('common-validators_missing-new-password'));
+            $this->addFlash('securityPasswordErrors', $translator->trans('common-validator_missing-new-password'));
         }
         if (empty($post['client_new_password_confirmation'])) {
-            $this->addFlash('securityPasswordErrors', $translator->trans('common-validators_missing-new-password-confirmation'));
+            $this->addFlash('securityPasswordErrors', $translator->trans('common-validator_missing-new-password-confirmation'));
         }
 
         if (false === empty($post['client_former_password']) && false === empty($post['client_new_password']) && false === empty($post['client_new_password_confirmation'])) {
@@ -1278,10 +1359,10 @@ class LenderProfileController extends Controller
                 $this->addFlash('securityPasswordErrors', $translator->trans('lender-profile_security-password-section-error-wrong-former-password'));
             }
             if ($post['client_new_password'] !== $post['client_new_password_confirmation']) {
-                $this->addFlash('securityPasswordErrors', $translator->trans('common-validators_password-not-equal'));
+                $this->addFlash('securityPasswordErrors', $translator->trans('common-validator_password-not-equal'));
             }
             if (false === $ficelle->password_fo($post['client_new_password'], 6)) {
-                $this->addFlash('securityPasswordErrors', $translator->trans('common-validators_password-invalid'));
+                $this->addFlash('securityPasswordErrors', $translator->trans('common-validator_password-invalid'));
             }
         }
 
@@ -1296,7 +1377,7 @@ class LenderProfileController extends Controller
         $clientHistoryActions = $this->get('unilend.service.entity_manager')->getRepository('clients_history_actions');
         $clientHistoryActions->histo(7, 'change mdp', $client->id_client, serialize(['id_client' => $client->id_client, 'newmdp' => md5($post['client_new_password'])]));
 
-        return $this->redirectToRoute('lender_profile');
+        return $this->redirectToRoute('lender_profile_security');
     }
 
     /**
@@ -1341,7 +1422,7 @@ class LenderProfileController extends Controller
             'response'  => isset($post['client_secret_answer']) ? md5($post['client_secret_answer']) : ''
         ]));
 
-        return $this->redirectToRoute('lender_profile');
+        return $this->redirectToRoute('lender_profile_security');
     }
 
     /**
@@ -1444,4 +1525,136 @@ class LenderProfileController extends Controller
 
         return $company;
     }
+
+    /**
+     * @param Request $request
+     * @Route("/profile/request-tax-exemption", name="profile_fiscal_information_tax_exemption")
+     * @Method("POST")
+     * @Security("has_role('ROLE_LENDER')")
+     *
+     * @return Response
+     */
+    public function requestTaxExemptionAction(Request $request)
+    {
+        /** @var TranslatorInterface $translator */
+        $translator = $this->get('translator');
+        /** @var LoggerInterface $logger */
+        $logger = $this->get('logger');
+        /** @var \lenders_accounts $lender */
+        $lender = $this->getLenderAccount();
+        /** @var \lender_tax_exemption $lenderTaxExemption */
+        $lenderTaxExemption = $this->get('unilend.service.entity_manager')->getRepository('lender_tax_exemption');
+        $year               = date('Y') + 1;
+
+        $post = $request->request->all();
+
+
+        try {
+            $taxExemptionDateRange = $lenderTaxExemption->getTaxExemptionDateRange();
+
+            if (date('Y-m-d H:i:s') >= $taxExemptionDateRange['taxExemptionRequestStartDate']->format('Y-m-d 00:00:00')
+                && date('Y-m-d H:i:s') <= $taxExemptionDateRange['taxExemptionRequestLimitDate']->format('Y-m-d 23:59:59')
+                && true === empty($lenderTaxExemption->getLenderExemptionHistory($lender->id_lender_account, $year))
+            ) {
+
+                if (true === isset($post['agree']) && true === isset($post['attest'])
+                    && 'agree-to-be-informed' === $post['agree'] && 'honor-attest' === $post['attest']
+                ) {
+                    $lenderTaxExemption->id_lender   = $lender->id_lender_account;
+                    $lenderTaxExemption->iso_country = 'FR';
+                    $lenderTaxExemption->year        = $year;
+                    $lenderTaxExemption->create();
+
+                    if (false === empty($lenderTaxExemption->id_lender_tax_exemption)) {
+                        $this->addFlash('exonerationSuccess', $translator->trans('lender-profile_fiscal-information-exoneration-validation-success'));
+                        $logger->info('The lender (id_lender=' . $lender->id_lender_account . ') requested to be exempted for the year: ' . $year,
+                            ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lender->id_lender_account]);
+                    } else {
+                        $this->addFlash('exonerationError', $translator->trans('lender-profile_fiscal-information-exoneration-validation-error'));
+                        $logger->info('The tax exemption request was not processed for the lender: (id_lender=' . $lender->id_lender_account . ') for the year: ' . $year,
+                            ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lender->id_lender_account]);
+                    }
+                }
+            } else {
+                $this->addFlash('exonerationError', $translator->trans('lender-profile_fiscal-information-exoneration-validation-error'));
+                $logger->info('The tax exemption request was not processed for the lender: (id_lender=' . $lender->id_lender_account . ') for the year: ' . $year .
+                    '. Lender already exempted',
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lender->id_lender_account]);
+            }
+        } catch (Exception $exception) {
+            $this->addFlash('exonerationError', $translator->trans('lender-profile_fiscal-information-exoneration-validation-error'));
+            $logger->error('Could not register lender tax exemption request for the lender: (id_lender=' . $lender->id_lender_account . ') for the year: ' . $year .
+                ' Exception message : ' . $exception->getMessage(),
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lender->id_lender_account]);
+        }
+
+        return $this->redirectToRoute('lender_profile_fiscal_information');
+    }
+
+
+    private function checkIfTaxExemptionIsPossible(\lenders_accounts $lenderAccount)
+    {
+        try {
+            $lenderInfo = $lenderAccount->getLenderTypeAndFiscalResidence($lenderAccount->id_lender_account);
+            if (false === empty($lenderInfo)) {
+                $isEligible = 'fr' === $lenderInfo['fiscal_address'] && 'person' === $lenderInfo['client_type'];
+            } else {
+                $isEligible = false;
+            }
+        } catch (\Exception $exception) {
+            /** @var \Psr\Log\LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->info('Could not get lender info to check tax exemption eligibility. (id_lender=' . $lenderAccount->id_lender_account . ') Error message: ' .
+                $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lenderAccount->id_lender_account]);
+            $isEligible = false;
+        }
+
+        return $isEligible;
+    }
+
+    /**
+     * @param \lender_tax_exemption $lenderTaxExemption
+     * @param int $lenderId
+     * @param string|null $year
+     * @return array
+     */
+    private function getExemptionHistory(\lender_tax_exemption $lenderTaxExemption, \lenders_accounts $lenderAccount, $year = null)
+    {
+        try {
+            $result = $lenderTaxExemption->getLenderExemptionHistory($lenderAccount->id_lender_account, $year);
+        } catch (Exception $exception) {
+            /** @var \Psr\Log\LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->error('Could not get lender exemption history (id_lender = ' . $lenderAccount->id_lender_account . ') Exception message : ' . $exception->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lenderAccount->id_lender_account));
+            $result = [];
+        }
+        return $result;
+    }
+
+    private function addExonerationByDateToTemplate(\lender_tax_exemption $lenderTaxExemption, \lenders_accounts $lenderAccount, &$template)
+    {
+        $currentYear             = date('Y', time());
+        $lastYear                = $currentYear - 1;
+        $nextYear                = $currentYear + 1;
+        $taxExemptionDateRange   = $lenderTaxExemption->getTaxExemptionDateRange();
+
+        $template['afterDeadline'] = (
+            date('Y-m-d H:i:s') < $taxExemptionDateRange['taxExemptionRequestStartDate']->format('Y-m-d 00:00:00')
+            && date('Y-m-d H:i:s') >= $taxExemptionDateRange['taxExemptionRequestLimitDate']->format('Y-m-d 23:59:59'));
+
+        $taxExemptionHistory = $this->getExemptionHistory($lenderTaxExemption, $lenderAccount);
+
+        if (false === empty($this->taxExemptionHistory)) {
+            $yearList = array_column($taxExemptionHistory, 'year');
+
+            $template['nextTaxExemptionRequestDone']  = in_array($nextYear, $yearList);
+            $template['exemptedLastYear'] = in_array($lastYear, $yearList);
+            $template['taxExemptionRequestLimitDate'] = strftime('%d %B %Y', $taxExemptionDateRange['taxExemptionRequestLimitDate']->getTimestamp());
+        } else {
+            $template['exemptedLastYear'] = false;
+            $template['nextTaxExemptionRequestDone']  = false;
+            $template['taxExemptionRequestLimitDate'] = false;
+        }
+    }
+
 }

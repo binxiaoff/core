@@ -5,6 +5,7 @@
 .cta-video-hero {
   @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0);
   min-height: 400px;
+  max-height: 700px;
 
   .video-hero-wrapper {
     @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0, $padding-md: 0, $padding-lg: 0);

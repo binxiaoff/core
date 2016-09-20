@@ -1,7 +1,5 @@
 {% extends 'layouts/_layout.html.twig' %}
 
-{% import 'partials/modules/_promo-battenberg.macros.twig' as promoBattenberg %}
-
 {% set page = {
     title: 'Emprunter',
     permalink: route('emprunter')
@@ -12,28 +10,28 @@
 
         <section id="homeemp-video-hero" class="cta-video-hero" aria-hidden="true" data-set-device-height="xs">
             <div class="video-hero-wrapper">
-                <div class="video-hero">
+                <div class="video-hero" style="background-image: url('{{ completeTestimonialUrl(featureBorrower.feature_image, 'image') }}')">
                     <div class="caption caption-align-left">
-                        <div class="caption-name">Didier &mdash; 43 ans</div>
-                        <div class="caption-info">10&nbsp;000€ empruntés, une entreprise relancée</div>
+                        <div class="caption-name">{{ featureBorrower.name }}, {{ featureBorrower.location }}</div>
+                        <div class="caption-info">{{ featureBorrower.info }}</div>
                         <div class="caption-links">
-                            <a href="{{ route('emprunter/testimonials') }}" class="link">Voir son témoignage</a></div>
+                            <a href="{{ path('testimonials') }}" class="link">{{ 'home-borrower_link-to-testimonial-on-video'|trans }}</a></div>
                     </div><!-- /.caption -->
                 </div><!-- /.video-hero -->
 
                 <div class="video-hero-cta">
                     <div class="btn-media-wrapper">
-                        <a href="https://www.youtube.com/watch?v=Fmtz6vI65GY" class="btn-media fancybox-media fancybox-embed-videojs">
+                        <a href="{{  completeTestimonialUrl(featureBorrower.video, 'video') }}" class="btn-media fancybox-media fancybox-embed-videojs">
                             <span class="icon fa-play"><span class="sr-only">Play</span></span>
                         </a>
                     </div>
-                    <h3>Didier a pu financier sa boulangerie en moins de 3 semaines</h3>
+                    <h3>{{ featureBorrower.video_caption }}</h3>
                 </div><!-- /.video-hero-cta -->
 
                 {% include 'partials/components/list-socialmedia.html.twig' %}
 
                 <div class="btn-toolbar">
-                    <a href="#homeemp-section-process" class="btn-cta btn-color-alternate"><span class="icon fa-angle-right"></span> Emprunter auprès des particuliers</a>
+                    <a href="#homeemp-section-process" class="btn-cta btn-color-alternate"><span class="icon fa-angle-right"></span> {{ 'home-borrower_link-below-video-text'|trans }}</a>
                 </div>
             </div><!-- /.video-hero-wrapper -->
         </section><!-- /.cta-video-hero -->
@@ -84,14 +82,56 @@
         <section id="homeemp-section-testimonials" class="page-section">
             <div class="site-wrap">
                 <h1 class="h2">{% trans %} home-borrower_testimonial-section-title {% endtrans %}</h1>
-                {% set BattenberglabelCtaButton %}{% trans %} home-borrower_submit-project-button {% endtrans %}{% endset %}
-                {{ promoBattenberg.render({
-                    classColor: 'p2',
-                    classCtaButton: 'btn-color-alternate',
-                    labelCtaButton: BattenberglabelCtaButton,
-                    urlCtaButton: path('home_borrower') ~ '#homeemp-section-esim',
-                    people: testimonialPeople
-                }) }}
+
+                <div class="promo-battenberg" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
+                    {% for i, person in testimonialPeople %}
+                        {% if i % 2 == 1 %}
+                            {% set classPosition = 'promo-align-right' %}
+                            {% set classAnimatePosition = 'ui-animate-from-left' %}
+                            {% set classRow = 'row reverse' %}
+                            {% set classColumnsImage = 'col-lg-5 pull-lg-1 col-md-5 pull-md-1' %}
+                        {% elseif i % 2 == 0 %}
+                            {% set classPosition = 'promo-align-left' %}
+                            {% set classAnimatePosition = 'ui-animate-from-right' %}
+                            {% set classRow = 'row' %}
+                            {% set classColumnsImage = 'col-lg-5 push-lg-1 col-md-5 push-md-1' %}
+                        {% endif %}
+
+                            <div class="promo-borrower {{ classRow }}">
+                            <div class="{{ classColumnsImage }}">
+                                <div class="promo-image promo-p2" style="background-image: url('{{ completeTestimonialUrl(person.battenberg_image, 'image') }}')">
+                                    &nbsp;
+                                    <a href="{{ path('home_borrower') }}#homeemp-section-esim" class="promo-image-cta">
+                                        <div><span class="link">{{ "site-general_testimonial-section-overlay-link-#{person.type}"|trans }}</span></div>
+                                    </a>
+                                </div><!-- /.promo-image -->
+                            </div>
+                            <div class="col-lg-6 col-md-6 vertical-align-content">
+                                <div class="promo-slide promo-p2 {{ classPosition }} {{ classAnimatePosition }}">
+                                    <p class="quote">{{ person.quote|raw }}</p>
+                                        <p class="source"><cite>{{ person.name }}&mdash;{{ person.location }}</cite></p>
+                                    <div class="promo-links">
+                                        <a href="{{ path('testimonials') }}#testimonial-{{ person.name }}" class="link">{% trans %} site-general_testimonial-section-link-lender-title {% endtrans %}</a>
+                                        {% if person.project.slug is not empty %}
+                                            <a href="{{ path('project_detail', {'projectSlug' : person.project.slug}) }}" class="link">
+                                                {% trans %} site-general_testimonial-section-link-borrower-title {% endtrans %}
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div><!-- /.promo-slide -->
+                            </div>
+                        </div><!-- /.promo-emprunter -->
+                    {% endfor %}
+                </div><!-- /.promo-battenberg -->
+
+                <div class="row page-section">
+                    <div class="btn-toolbar">
+                        <a href="{{ path('home_borrower') }}#homeemp-section-esim" class="btn-alternate">
+                            <span class="icon fa-angle-right"></span>
+                            {% trans %} home-borrower_submit-project-button {% endtrans %}
+                        </a>
+                    </div>
+                </div>
             </div><!-- /.site-wrap -->
         </section><!-- /.page-section -->
 
@@ -103,7 +143,7 @@
                     <div class="emprunter-sim-nav">
                         <ul class="nav nav-steps" role="tablist">
                             <li role="presentation" class="active">
-                                <a href="#esim1" role="tab" data-toggle="tab">{% trans %} home-borrower_simulator-step-1 {% endtrans %}</a>
+                                <a role="tab">{% trans %} home-borrower_simulator-step-1 {% endtrans %}</a>
                             </li>
                             <li role="presentation">
                                 <a href="#esim2" role="tab" data-toggle="tab">{% trans %} home-borrower_simulator-step-2 {% endtrans %}</a>
@@ -191,13 +231,14 @@
                                                 <span class="ui-esim-interest-output"></span>&nbsp;%
                                             </dd>
                                         </dl>
-                                        &nbsp;
+                                        <span class="spacer">&nbsp;</span>
                                     </div>
                                     <div class="col-lg-4 col-md-4">
-                                        <p class="small">{% trans %} home-borrower_simulator-footer-estimation-explanation {% endtrans %}</p>
+                                        <p class="small emprunter-sim-estimate-legend">{% trans %} home-borrower_simulator-footer-estimation-explanation {% endtrans %}</p>
+                                        <span class="spacer">&nbsp;</span>
                                     </div>
                                     <div class="col-lg-3 col-md-3">
-                                        <a href="#esim2" role="tab" data-toggle="tab" class="btn-continue btn-alternate btn-size-full" id="submit-step-1">
+                                        <a href="#esim2" role="tab" data-toggle="tab" class="btn-continue btn-alternate btn-size-full">
                                             {% trans %} home-borrower_simulator-footer-continue-button {% endtrans %}
                                         </a>
                                         <button class="btn-submit btn-alternate btn-size-full">
@@ -215,46 +256,48 @@
         <section id="homeemp-section-whyborrow" class="page-section">
             <div class="site-wrap">
                 <h2 class="h2">{% trans %} home-borrower_why-borrow-stats-title {% endtrans %}</h2>
-                <div class="row">
-                    <div class="col-lg-4 col-md-4">
-                        <div class="promo">
-                            <div class="promo-image">
-                                {{ svgimage('#promo-piggybank', '', 190, 190, 'none')|raw }}
-                                <img src="{{ siteurlmedia('promos/promo-piggybank-190x190.png') }}" alt="">
-                            </div>
-                            {% set piggybankValue = getStatistic('percentageSuccessfullyFinancedProjects')|round|localizednumber %}
-                            <h3 class="promo-highlight">
-                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ piggybankValue }}" data-total-time="3000" data-round-float="ceil"
-                                      data-tween-count="easeOutCirc">&nbsp;</span><sup>%</sup>
-                            </h3>
-                            <p>{% trans with {'%financedProjects%' : piggybankValue } %} home-borrower_why-borrow-stats-piggybank-text {% endtrans %}</p>
-                        </div><!-- /.promo -->
-                    </div>
-                    <div class="col-lg-4 col-md-4">
-                        <div class="promo">
-                            <div class="promo-image">
-                                {{ svgimage('#promo-calendarweek', '', 190, 190, 'none')|raw }}
-                                <img src="{{ siteurlmedia('promos/promo-calendar-190x190.png') }}" alt="">
-                            </div>
-                            {% set calendarweekValue = getStatistic('averageFundingTime') %}
-                            <h3 class="promo-highlight">
-                                <span class="ui-text-count" data-start-count="0" data-end-count="{{ calendarweekValue.days }}" data-total-time="3000" data-round-float="ceil"
-                                      data-tween-count="easeOutCirc">&nbsp;</span><sup>&nbsp;</sup>
-                            </h3>
-                            <p>{% trans with { '%avgFundingTime%' : calendarweekValue.days } %} home-borrower_why-borrow-stats-calendarweek-text {% endtrans %}</p>
+
+                <div class="promo-swiper swiper-container">
+                    <div class="row swiper-wrapper">
+                        <div class="col-lg-4 col-md-4 swiper-slide">
+                            <div class="promo">
+                                <div class="promo-image">
+                                    {{ svgimage('#promo-piggybank', '', 190, 190, 'none')|raw }}
+                                    <img src="{{ siteurlmedia('promos/promo-piggybank-190x190.png') }}" alt="">
+                                </div>
+                                {% set piggybankValue = getStatistic('percentageSuccessfullyFinancedProjects')|round|localizednumber %}
+                                <h3 class="promo-highlight">
+                                    <span class="ui-text-count" data-start-count="0" data-end-count="{{ piggybankValue }}" data-total-time="3000" data-round-float="ceil" data-tween-count="easeOutCirc">{{ piggybankValue }}</span><sup>%</sup>
+                                </h3>
+                                <p>{% trans with {'%financedProjects%' : piggybankValue } %} home-borrower_why-borrow-stats-piggybank-text {% endtrans %}</p>
+                            </div><!-- /.promo -->
                         </div>
-                    </div><!-- /.promo -->
-                    <div class="col-lg-4 col-md-4">
-                        <div class="promo">
-                            <div class="promo-image">
-                                {{ svgimage('#promo-verified', '', 190, 190, 'none')|raw }}
-                                <img src="{{ siteurlmedia('promos/promo-certificate-190x190.png') }}" alt="">
+                        <div class="col-lg-4 col-md-4 swiper-slide">
+                            <div class="promo">
+                                <div class="promo-image">
+                                    {{ svgimage('#promo-calendarweek', '', 190, 190, 'none')|raw }}
+                                    <img src="{{ siteurlmedia('promos/promo-calendar-190x190.png') }}" alt="">
+                                </div>
+                                {% set calendarweekValue = getStatistic('averageFundingTime') %}
+                                <h3 class="promo-highlight">
+                                    <span class="ui-text-count" data-start-count="0" data-end-count="{{ calendarweekValue.days }}" data-total-time="3000" data-round-float="ceil" data-tween-count="easeOutCirc">{{ calendarweekValue.days }}</span>
+                                </h3>
+                                <p>{% trans with {'%avgFundingTime%' : calendarweekValue.days} %} home-borrower_why-borrow-stats-calendarweek-text {% endtrans %}</p>
                             </div>
-                            <h3 class="promo-highlight"><span>0</span><sup>&nbsp;</sup></h3>
-                            <p>{% trans %} home-borrower_why-borrow-stats-verified-text {% endtrans %}</p>
                         </div><!-- /.promo -->
+                        <div class="col-lg-4 col-md-4 swiper-slide">
+                            <div class="promo">
+                                <div class="promo-image">
+                                    {{ svgimage('#promo-verified', '', 190, 190, 'none')|raw }}
+                                    <img src="{{ siteurlmedia('promos/promo-certificate-190x190.png') }}" alt="">
+                                </div>
+                                <h3 class="promo-highlight"><span>0</span><sup>&nbsp;</sup></h3>
+                                <p>{% trans %} home-borrower_why-borrow-stats-verified-text {% endtrans %}</p>
+                            </div><!-- /.promo -->
+                        </div>
                     </div>
-                </div>
+                </div><!-- /.promo-slider -->
+
                 <div class="row page-section-footer">
                     <div class="btn-toolbar">
                         <a href="#homeemp-section-esim" class="btn-alternate">{% trans %} home-borrower_borrow-button-below-why-borrow-facts {% endtrans %}</a>

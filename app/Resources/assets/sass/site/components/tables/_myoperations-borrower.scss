@@ -3,18 +3,20 @@
 //
 #user-borrower-dashboard .table {
   th {
-    font-size:11px;
-    text-transform:uppercase;
-    padding-left:2px;
-    padding-right:2px;
-    text-align:center;
+    font-size: 11px;
+    text-transform: uppercase;
+    padding-left: 2px;
+    padding-right: 2px;
+    text-align: center;
+    margin: 20px 0;
   }
-  margin:20px 0;
+
   td {
-    font-size:15px;
+    font-size: 15px;
   }
+
   .center {
-    text-align:center;
+    text-align: center;
   }
 }
 
@@ -27,62 +29,166 @@
     }
   }
 }
+
 #user-emprunteur-operations #form-filters-operations {
-  margin-bottom:70px;
+  margin-bottom: 70px;
 }
 
 #user-emprunteur-operations .cell-right {
-  text-align:right;
+  text-align: right;
 }
 
 #user-emprunteur-operations .export {
-  color:#2cbaa4;
+  color: $c-teal;
 }
 
-.grey-label {
-  color:#9f9d9f;
+#user-borrower-projects {
+  th, td {
+    @include devices('sm', 'laptop', 'lg') {
+      padding: 10px 15px;
+    }
+  }
 }
 
-.table-myoperations-borrower-item-operation {
-  width:50%;
+.table-myoperations-borrower-item {
+  // Amount
+  &.ui-amount-positive {
+    .table-myoperations-borrower-item-amount {
+      color: $c-teal;
+    }
+  }
+
+  &.ui-amount-negative {
+    .table-myoperations-borrower-item-amount {
+      color: $c-error;
+    }
+  }
+
+  // Has details
+  &[data-details] {
+    cursor: pointer;
+
+    &:hover {
+      background-color: $c-bg3;
+    }
+
+    .table-myoperations-borrower-item-type {
+      position: relative;
+
+      &:after {
+        content: $fa-angle-d-u; // Angle down
+        display: inline-block;
+        width: $fs-base;
+        height: $fs-base;
+        margin-left: 5px;
+        color: $c-t3;
+        font-family: $ff-icon;
+        font-size: inherit;
+        line-height: $fs-base;
+        text-align: center;
+        vertical-align: middle;
+        transform: rotate(0deg);
+        transform-origin: center center;
+        transition: transform .2s;
+
+        position: absolute;
+        right: 0;
+        top: 50%;
+        margin-top: $fs-base * -0.5;
+      }
+    }
+
+    &#{$js-details-open} {
+      background-color: $c-bg3;
+
+      .table-myoperations-borrower-item-type:after {
+        transform: rotate(-180deg);
+      }
+    }
+  }
 }
 
-.table-myoperations-borrower-item-projet {
-  width:10%;
-  text-align:right;
+.table-myoperations-borrower-item-type {
+  width: 50%;
+}
+
+.table-myoperations-borrower-item-project {
+  width: 10%;
+  text-align: right;
 }
 
 .table-myoperations-borrower-item-date {
-  width:20%;
-  text-align:right;
+  width: 20%;
+  text-align: right;
 }
 
 .table-myoperations-borrower-item-amount {
-  width:10%;
-  text-align:right;
+  width: 10%;
+  text-align: right;
 }
 
 td.table-myoperations-borrower-item-amount {
-  color:#2cbaa4;
+  color: $c-teal;
+  text-align: right;
 }
 
 .below-null {
-  color:#f8524e!important;
+  color: $c-rejected !important;
 }
 
 .table-myoperations-borrower-item-detail {
-  width:10%;
-  text-align:center;
+  width: 10%;
+  text-align: right;
 }
 
-.table-myoperations-prefunding,
-.table-myoperations-funding,
-.table-myoperations-postfunding {
+.table-myoperations-borrower-details {
+  vertical-align: top;
+
+  td {
+    padding-top: 0;
+    padding-bottom: 10px;
+    background-color: $c-bg3;
+    color: $c-t2;
+    line-height: 1.3em;
+    vertical-align: top;
+
+    @include devices('laptop', 'lg') {
+      padding-bottom: 20px;
+    }
+  }
+
+  dl {
+    @include clearfix;
+    display: block;
+  }
+
+  dt {
+    display: block;
+    width: 70%;
+    margin-bottom: 3px;
+    float: left;
+    clear: left;
+    text-align: left;
+  }
+
+  dd {
+    display: block;
+    width: 30%;
+    margin-bottom: 3px;
+    float: left;
+    clear: right;
+    text-align: right;
+  }
+}
+
+.table-myoperations-borrower-prefunding,
+.table-myoperations-borrower-funding,
+.table-myoperations-borrower-postfunding {
   table-layout: fixed;
 
   th {
     text-align: left;
-    font-size: 12px;
+    font-size: 11px;
   }
 
   td {
@@ -90,118 +196,101 @@ td.table-myoperations-borrower-item-amount {
   }
 }
 
-.table-myoperations-prefunding {
+.table-myoperations-borrower-prefunding {
   .table-borrower-file {
-    width:10%;
+    width: 9%;
   }
 
   .table-borrower-nature {
-    width:30%;
+    width: 42%;
   }
 
   .table-borrower-amount {
-    width:10%;
+    width: 11%;
   }
 
   .table-borrower-status {
-    width:16%;
+    width: 22%;
   }
 
   .table-borrower-autolend {
-    width:15%;
+    width: 11%;
   }
 
   .table-borrower-upload {
-    width:11%;
+    width: 5%;
   }
 
-  .min{
-    text-transform:none;
-    font-size:9px;
+  .min {
+    text-transform: none;
+    font-size: 9px;
   }
-
 }
 
-.table-myoperations-funding {
-  table-layout:fixed;
-
-  th {
-    text-align:left;
-    font-size:12px;
-  }
-
-  td {
-    font-size:12px;
-  }
-
+.table-myoperations-borrower-funding {
   .table-borrower-file {
-    width:10%;
+    width: 9%;
   }
 
   .table-borrower-nature {
-    width:20%;
+    width: 37%;
   }
 
   .table-borrower-amount {
-    width:12%;
+    width: 11%;
   }
 
   .table-borrower-ending-date {
-    width:12%;
+    width: 11%;
   }
 
   .table-borrower-funding-rate {
-    width:12%;
+    width: 11%;
   }
 
   .table-borrower-average-rate {
-    width:10%;
+    width: 11%;
   }
 
-  .table-borrower-stop {
-    width:10%;
+  .table-borrower-buttons {
+    width: 5%;
   }
-
-  .table-borrower-link-to {
-    width:10%;
-  }
-
 }
 
-.table-myoperations-postfunding {
+.table-myoperations-borrower-postfunding {
   .table-borrower-file {
-    width:10%;
+    width: 9%;
   }
 
   .table-borrower-nature {
-    width:15%;
+    width: 20%;
   }
 
   .table-borrower-amount {
-    width:10%;
+    width: 11%;
   }
 
   .table-borrower-ending-date {
-    width:10%;
+    width: 11%;
   }
 
   .table-borrower-monthly {
-    width:10%;
+    width: 11%;
   }
 
   .table-borrower-average-rate {
-    width:10%;
+    width: 11%;
   }
 
   .table-borrower-crd {
-    width:10%;
+    width: 11%;
   }
 
   .table-borrower-date {
-    width:10%;
+    width: 11%;
   }
 
   .table-borrower-button {
-    width:10%;
+    width: 5%;
   }
 }

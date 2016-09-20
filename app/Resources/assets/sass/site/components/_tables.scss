@@ -27,6 +27,7 @@ table {
 }
 
 tr {
+  box-sizing: border-box;
   display: table-row;
   padding: 0;
   margin: 0;

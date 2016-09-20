@@ -47,8 +47,8 @@ var TimeCount = function (elem, options) {
   }), options)
 
   // Set up the dates
-  if (self.settings.startDate && !(self.settings.startDate instanceof Date)) self.settings.startDate = new Date(self.settings.startDate)
-  if (self.settings.endDate && !(self.settings.endDate instanceof Date)) self.settings.endDate = new Date(self.settings.endDate)
+  if (self.settings.startDate && !(self.settings.startDate instanceof Date)) self.settings.startDate = Utility.getDate(self.settings.startDate)
+  if (self.settings.endDate && !(self.settings.endDate instanceof Date)) self.settings.endDate = Utility.getDate(self.settings.endDate)
 
   // Track
   self.track = {
@@ -108,7 +108,9 @@ TimeCount.prototype.update = function () {
   self.$elem.trigger('TimeCount:update', [self, self.track.timeDiff])
 
   // Complete if finished and a start/end date is set
-  if (self.isComplete()) self.complete()
+  if (self.isComplete()) {
+    self.complete()
+  }
 
   // @debug
   // console.log('TimeCount.update', self.$elem[0], self.settings.startDate, self.settings.endDate, self.track.countDirection)
@@ -173,23 +175,32 @@ TimeCount.prototype.outputTime = function (timeDiff) {
 }
 
 // Get a {String} relative time from a timeDiff object
-TimeCount.prototype.getRelativeTime = function (startDate, endDate) {
+// @alias for Utility.getRelativeTime method
+TimeCount.prototype.getRelativeTime = function (startDate, endDate, secondsAsUnits) {
   var self = this
   if (!startDate) startDate = self.settings.startDate
   if (!endDate) endDate = self.settings.endDate
-  var output = Utility.getRelativeTime(startDate, endDate)
 
-  // Indicate time direction relative to the end date
-  if (startDate || endDate) {
-    // End is in the past
-    if (new Date() > (startDate || endDate)) {
-      output = sprintf(__.__('%s ago', 'timeCountAgo'), output)
+  // @debug
+  // console.log('TimeCount.getRelativeTime', {
+  //   startDate: startDate,
+  //   endDate: endDate
+  // })
 
-    // End is in the future
-    } else {
-      output = sprintf(__.__('%s remaining', 'timeCountRemaining'), output)
-    }
-  }
+  var output = Utility.getRelativeTime(startDate, endDate, secondsAsUnits)
+
+  // @note DEV-949 leaving out relative time count direction text
+  // // Indicate time direction relative to the end date
+  // if (startDate || endDate) {
+  //   // End is in the past
+  //   if (new Date() > (startDate || endDate)) {
+  //     output = sprintf(__.__('%s ago', 'timeCountAgo'), output)
+  //
+  //   // End is in the future
+  //   } else {
+  //     output = sprintf(__.__('%s remaining', 'timeCountRemaining'), output)
+  //   }
+  // }
 
   return output
 }

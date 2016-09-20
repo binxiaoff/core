@@ -21,35 +21,23 @@
       img {
         display: none;
       }
-    }
-
-    .swiper-slide:nth-of-type(1) {
-      background-image: image-url('promos/homeacq-video-hero-1682x700-1.jpg');
 
       @include devices('xs') {
-        background-position: left center;
-      }
-    }
-
-    .swiper-slide:nth-of-type(2) {
-      background-image: image-url('promos/homeacq-video-hero-1682x700-2.jpg');
-
-      @include devices('xs') {
-        background-position: left center;
-      }
-    }
-
-    .swiper-slide:nth-of-type(3) {
-      background-image: image-url('promos/homeacq-video-hero-1682x700-3.jpg');
-
-      @include devices('xs') {
-        background-position: left center;
+        background-position: 18.5% center;
       }
     }
 
     .video-hero-cta {
+      box-sizing: border-box;
+
       @include devices('xs', 'sm') {
-        margin-top: -($size-btn-media-hover * .75);
+        margin-top: 0;
+        top: auto;
+        bottom: 0;
+        padding-bottom: 50px;
+
+        @include background-image(-svg(linear-gradient("to top", $c-bg3 0%, fade-out($c-bg3, 1) 100%)));
+        // margin-top: -($size-btn-media-hover * .75);
       }
 
       @include devices('md') {

@@ -460,7 +460,7 @@
   .site-title,
   &.site-header-dashboard .site-title {
     display: block;
-    padding: 50px 20px 0 0;
+    padding: 48px 20px 0 0;
   }
 
   // Site logo
@@ -520,6 +520,7 @@
 
     // Show the site-search-toggle
     .site-search-toggle {
+      box-sizing: border-box;
       display: block;
       width: $height-btn;
       height: $height-btn;
@@ -530,12 +531,18 @@
       bottom: 0;
       left: 0;
 
-      line-height: $height-btn;
+      background: $c-bg3;
+      border: solid 2px $c-bg3;
+      line-height: $height-btn - 4px; // Minus border
       text-align: center;
 
       &:before {
         content: $fa-search;
         font-family: $ff-icon;
+      }
+
+      &:hover {
+        border-color: $c-bg1;
       }
     }
 
@@ -553,10 +560,6 @@
         color: transparent; // Hidden when not visible
         font-size: 16px;
         transition: color .2s;
-
-        @include input-placeholder {
-          color: transparent;
-        }
 
         &:hover {
           color: transparent;
@@ -586,10 +589,6 @@
           padding-right: 0;
           color: $c-t1;
 
-          @include input-placeholder {
-            color: $c-t1;
-          }
-
           &:hover {
             color: $c-t1;
           }
@@ -611,7 +610,7 @@
       &:before {
         content: $fa-lock-u;
         font-size: 22px;
-        line-height: 0em;
+        line-height: 0;
         margin-right: 12px;
       }
 
@@ -785,10 +784,6 @@
           color: $c-t1;
           line-height: $height-fixed-menu;
 
-          @include input-placeholder {
-            color: $c-t1;
-          }
-
           &:hover {
             color: $c-t1;
           }
@@ -902,10 +897,6 @@
         padding-left: $height-btn;
         color: $c-t1;
 
-        @include input-placeholder {
-          color: $c-t1;
-        }
-
         &:hover {
           color: $c-t1;
         }
@@ -950,7 +941,7 @@
 
   .site-nav-menu {
     a {
-      padding: 72px 1em 25px;
+      padding: 60px 1em 25px;
       font-size: 20px;
     }
   }
@@ -969,10 +960,6 @@
         padding-left: $height-input-lg;
         color: $c-t1;
         font-size: 18px;
-
-        @include input-placeholder {
-          color: $c-t1;
-        }
 
         &:hover {
           color: $c-t1;

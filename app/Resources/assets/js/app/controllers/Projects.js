@@ -4,14 +4,42 @@
 
 var $ = require('jquery')
 var Utility = require('Utility')
+var __ = require('__')
 
 var $win = $(window)
 var $doc = $(document)
 var $html = $('html')
 var $body = $('body')
 
-$doc.on('ready', function () {
+// Seconds as units for projects
+var secondsAsUnits = [{
+    min: 0,
+    max: 1,
+    single: __.__('Project expired', 'projectPeriodExpired'),
+    plural: __.__('Project expired', 'projectPeriodExpired')
+  },{
+    min: 1,
+    max: 60,
+    single: '%d ' + __.__('second', 'timeUnitSecond'),
+    plural: '%d ' + __.__('seconds', 'timeUnitSeconds')
+  },{
+    min: 60,
+    max: 3600,
+    single: '%d ' + __.__('minute', 'timeUnitMinute'),
+    plural: '%d ' + __.__('minutes', 'timeUnitMinutes')
+  },{
+    min: 3600,
+    max: 172800,
+    single: '%d ' + __.__('hour', 'timeUnitHour'),
+    plural: '%d ' + __.__('hours', 'timeUnitHours')
+  },{
+    min: 172800,
+    max: -1,
+    single: '%d ' + __.__('day', 'timeUnitDay'),
+    plural: '%d ' + __.__('days', 'timeUnitDays')
+  }]
 
+$doc.on('ready', function () {
   // IE9 adjustments for displaying project-list-item in the project-list
   if (Utility.isIE(9)) {
     // Specific fixes for IE
@@ -37,24 +65,16 @@ $doc.on('ready', function () {
   // Set different update/complete function for these time counters
   // @note this also includes time counters on the single project details page (project-single)
   $('.project .ui-has-timecount, .project-list-item .ui-has-timecount, .project-single .ui-has-timecount').uiTimeCount({
+    // @note DEV-949 using relative time now always
     onupdate: function (timeDiff) {
       var elemTimeCount = this
       var outputTime
 
-      // Show relative time outside of 2 days
-      if (timeDiff.total > (3600000 * 48)) {
-        outputTime = elemTimeCount.getRelativeTime()
-
+      // Expired
+      if (timeDiff.total > 0) {
+        outputTime = elemTimeCount.getRelativeTime(timeDiff.startDate, timeDiff.endDate, secondsAsUnits)
       } else {
-        // Expired
-        if (timeDiff.total < 0) {
-          outputTime = __.__('Project expired', 'projectPeriodExpired')
-
-          // Countdown
-        } else {
-          // Custom timecode
-          outputTime = Utility.leadingZero(timeDiff.hours + (24 * timeDiff.days)) + ':' + Utility.leadingZero(timeDiff.minutes) + ':' + Utility.leadingZero(timeDiff.seconds)
-        }
+        outputTime = __.__('Project expired', 'projectPeriodExpired')
       }
 
       // Update counter
@@ -66,18 +86,18 @@ $doc.on('ready', function () {
       // Project list item
       if (elemTimeCount.$elem.parents('.project-list-item').length > 0) {
         elemTimeCount.$elem.parents('.project-list-item').addClass('ui-project-expired')
-        elemTimeCount.$elem.text(__.__('Project expired', 'projectListItemPeriodExpired'))
 
         // Project Single
       } else if (elemTimeCount.$elem.parents('.project-single').length > 0) {
         elemTimeCount.$elem.parents('.project-single').addClass('ui-project-expired')
-        elemTimeCount.$elem.text(__.__('Project expired', 'projectSinglePeriodExpired'))
 
         // Project
       } else {
         elemTimeCount.$elem.parents('.project').addClass('ui-project-expired')
-        elemTimeCount.$elem.text(__.__('Project expired', 'projectListItemPeriodExpired'))
       }
+
+      // Set text to say expired/finished/terminé
+      elemTimeCount.$elem.text(__.__('Project expired', 'projectPeriodExpired'))
     }
   })
 
@@ -252,17 +272,63 @@ $doc.on('ready', function () {
     }
   }
 
-  // Debounce update to reduce jank
+  // Debounce update of sticky within the watchWindow to reduce jank
   if ($projectSingleInfoWrap.length > 0) {
     window.watchWindow.watch(window, offsetProjectSingleInfo)
     offsetProjectSingleInfo()
   }
 
+  // Update the position of the project-single-menu top offset
   $doc.on('UI:updateWindow', function () {
-    // Update the position of the project-single-menu top offset
     if (!$html.is('.ui-project-single-menu-fixed') && typeof projectSingleNavOffsetTop !== 'undefined') {
       updateProjectSingleNavOffsetTop()
     }
   })
 
+  /*
+   * Project Single monthly repayment estimation
+   */
+  var monthlyRepaymentTimeout
+
+  function estimateMonthlyRepayment () {
+    var amount = $('#bid-amount').val()
+    var duration = $('#bid-duration').val()
+    var rate = $('#bid-interest option:selected').val()
+
+    // @trigger elem `Spinner:showLoading`
+    $('#bid-amount').trigger('Spinner:showLoading')
+
+    if (amount && duration && rate) {
+      $.ajax({
+        url: '/projects/monthly_repayment',
+        method: 'POST',
+        data: {
+          amount: amount,
+          duration: duration,
+          rate: rate
+        },
+        success: function (data) {
+          if (data.success && data.message) {
+            var messageContent = $('<p>').addClass('c-t2').html(data.message)
+            var messageHolder = $('form.project-single-form-invest .btn-toolbar').next('.field-help')
+            messageHolder.html(messageContent)
+          } else if (data.error && data.message) {
+            console.log(data.message)
+          } else {
+            console.log('Unknown state')
+          }
+        },
+        error: function () {
+          console.log('Unable to estimate monthly repayments')
+        }
+      })
+    }
+  }
+
+  $doc.on('change keyup', '#bid-amount, #bid-interest', function () {
+    if (monthlyRepaymentTimeout) {
+      clearTimeout(monthlyRepaymentTimeout)
+    }
+    monthlyRepaymentTimeout = setTimeout(estimateMonthlyRepayment, 250)
+  })
 })
