@@ -53,18 +53,18 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
       vertical-align: middle;
 
       @include link-states(
-              $link: (
-                      color: $c-t2,
-                      text-decoration: none
-              ),
-              $hover: (
-                      color: $c-t1,
-                      text-decoration: none
-              ),
-              $active: (
-                      color: $c-t1,
-                      text-decoration: none
-              )
+          $link: (
+            color: $c-t2,
+            text-decoration: none
+          ),
+          $hover: (
+            color: $c-t1,
+            text-decoration: none
+          ),
+          $active: (
+            color: $c-t1,
+            text-decoration: none
+          )
       );
 
       &.btn-close {

@@ -4,6 +4,7 @@
 
 @mixin notification {
   padding: 20px;
+  overflow: hidden;
 
   .notification-header {
     position: relative;

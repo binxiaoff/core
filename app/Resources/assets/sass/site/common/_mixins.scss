@@ -88,6 +88,14 @@
   @include hide-accessible;
 }
 
+@mixin remove-hide-accessible {
+  position: initial !important;
+  height: inherit;
+  width: inherit;
+  overflow: inherit;
+  clip: inherit;
+}
+
 // Adds styles by extending the class with a list of properties
 @mixin add-styles($list) {
   @each $style, $value in $list {

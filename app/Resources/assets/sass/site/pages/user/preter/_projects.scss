@@ -43,7 +43,7 @@
     }
 
     @include devices('md', 'lg') {
-      margin-left: 20px;
+      margin-left: 0;// 20px;
       margin-right: 0;
     }
   }

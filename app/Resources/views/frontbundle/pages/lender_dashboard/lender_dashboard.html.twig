@@ -7,153 +7,6 @@
   classNames: 'user-preter-dashboard'
 } %}
 
-{% set placeholderData = {
-  charts: {
-    preterProjectsCategoriesMap: {
-      type: 'preterProjectsCategoriesMap',
-      loadFirst: {
-        mapGeoJson: '/assets/js/vendor/geojson/fr-all.geo.json'
-      },
-      background: 'none',
-      highcharts: {
-        chart: {
-          type: 'map',
-          marginTop: 0,
-          marginBottom: 0,
-          marginLeft: 0,
-          marginRight: 0,
-          spacingTop: 0,
-          spacingBottom: 0,
-          spacingLeft: 0,
-          spacingRight: 0
-        },
-        title: {
-          text: ''
-        },
-        mapNavigation: {
-          enabled: false
-        },
-        legend: {
-          enabled: false
-        },
-        tooltip: {
-          enabled: true,
-          headerFormat: '',
-          pointFormat: '{point.name}: {point.value}%'
-        },
-        colorAxis: {
-          minColor: 'rgba(255,255,255,.2)',
-          maxColor: 'rgba(255,255,255,1)'
-        },
-        series: [{
-          data: [{
-            "hc-key": "fr-t",
-            "value": 0
-          },{
-            "hc-key": "fr-h",
-            "value": 1
-          },{
-            "hc-key": "fr-e",
-            "value": 2
-          },{
-            "hc-key": "fr-r",
-            "value": 3
-          },{
-            "hc-key": "fr-u",
-            "value": 4
-          },{
-            "hc-key": "fr-n",
-            "value": 5
-          },{
-            "hc-key": "fr-p",
-            "value": 6
-          },{
-            "hc-key": "fr-o",
-            "value": 7
-          },{
-            "hc-key": "fr-v",
-            "value": 8
-          },{
-            "hc-key": "fr-s",
-            "value": 9
-          },{
-            "hc-key": "fr-g",
-            "value": 10
-          },{
-            "hc-key": "fr-k",
-            "value": 11
-          },{
-            "hc-key": "fr-a",
-            "value": 12
-          },{
-            "hc-key": "fr-c",
-            "value": 13
-          },{
-            "hc-key": "fr-f",
-            "value": 14
-          },{
-            "hc-key": "fr-l",
-            "value": 15
-          },{
-            "hc-key": "fr-d",
-            "value": 16
-          },{
-            "hc-key": "fr-b",
-            "value": 17
-          },{
-            "hc-key": "fr-i",
-            "value": 18
-          },{
-            "hc-key": "fr-q",
-            "value": 19
-          },{
-            "hc-key": "fr-j",
-            "value": 20
-          },{
-            "hc-key": "fr-m",
-            "value": 21
-          },{
-            "hc-key": "fr-re",
-            "value": 22
-          },{
-            "hc-key": "fr-yt",
-            "value": 23
-          },{
-            "hc-key": "fr-gf",
-            "value": 24
-          },{
-            "hc-key": "fr-mq",
-            "value": 25
-          },{
-            "hc-key": "fr-gp",
-            "value": 26
-          }],
-          joinBy: 'hc-key',
-          color: 'rgba(255,255,255,.2)',
-          borderColor: 'rgba(0,0,0,.2)',
-          borderWidth: 2,
-          showInLegend: false,
-          dataLabels: {
-            enabled: true,
-            format: '{point.value}%',
-            color: '#ffffff',
-            style: {
-              textShadow: '0 2px 2px rgba(0,0,0,.2), 0 2px 2px rgba(0,0,0,.2), 0 2px 2px rgba(0,0,0,.2)',
-              fontSize: '16px'
-            }
-          },
-          states: {
-            hover: {
-              color: 'rgba(255,255,255,.8)'
-            }
-          },
-          showInLegend: false
-        }]
-      }
-    }
-  }
-} %}
-
 {% block dashboardContent %}
     <div class="dashboard-panels-nav">
         <ul class="list-inline-block">
@@ -173,9 +26,10 @@
                 </li>
             {% endfor %}
         </ul>
+        <span id="dashboard-panels-saving" class="ui-is-spinner"></span>
     </div>
 
-    <section class="dashboard-panels-content" data-dashboardpanels data-dashboardpanels-ajaxurl="{{ path('save_panel_preferences') }}" data-movable-content>
+    <section class="dashboard-panels-content" data-dashboardpanels data-dashboardpanels-ajaxurl="{{ path('save_panel_preferences') }}" data-has-spinner="#dashboard-panels-saving" data-movable-content>
         {% for panelId, panelInfo in dashboardPanels %}
             {% include('pages/lender_dashboard/dashboard_panels/' ~ panelId ~ '.html.twig') %}
         {% endfor %}

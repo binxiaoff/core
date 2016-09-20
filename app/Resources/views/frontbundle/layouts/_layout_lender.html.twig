@@ -58,14 +58,15 @@
                 </div><!-- /.col-menu -->
 
                 <div class="col-content dashboard-content">
-                    {% if 'common-lender_general-message-lender-account'|trans|trim is not empty %}
-                        <div class="row dashboard-tabs">
+                    <div class="dashboard-messages">
+                        {% if 'common-lender_general-message-lender-account'|trans|trim is not empty %}
                             <div class="message-info">
                                 <p>{% trans %} common-lender_general-message-lender-account {% endtrans %} </p>
                                 <a href="javascript:;" class="btn-close ui-dismiss"><span class="sr-only">{% trans %} common-lender_general-message-dismiss-button {% endtrans %}</span></a>
                             </div>
-                        </div>
-                    {% endif %}
+                        {% endif %}
+                    </div>
+
                     {% block dashboardContent %} {% endblock %}
                 </div><!-- /.col-content -->
             </div><!-- /.site-wrap -->

@@ -4,14 +4,71 @@
 // development. It needs refactoring, so if you see this message I haven't had the
 // time to do it yet! --Matt
 
+// Compact dashboard header balance
+@mixin compact-site-user-balance {
+  display: block;
+  width: $height-site-header;
+  height: $height-site-header;
+  float: left;
+
+  background-image: url('../images/dashboard/icon-balance-41x34.png');
+  background-repeat: no-repeat;
+  background-position: center center;
+  font-size: $fs-base;
+  line-height: $height-site-header;
+  text-align: center;
+  vertical-align: middle;
+
+  .label {
+    display: none;
+  }
+}
+
+@mixin full-site-user-balance {
+  box-sizing: border-box;
+  display: block;
+  width: auto;
+  padding: 10px 30px 10px 50px;
+  float: left;
+
+  background-image: url('../images/dashboard/icon-balance-41x34.png');
+  background-repeat: no-repeat;
+  background-position: left center;
+  font-size: $fs-base;
+  line-height: 1.3em;
+  text-align: left;
+  vertical-align: middle;
+
+  .label {
+    display: inline;
+  }
+
+  @include devices('tablet-l') {
+    padding-right: 0;
+
+    .label {
+      display: none;
+    }
+  }
+}
+
+@mixin fixed-site-user-balance {
+  @include full-site-user-balance;
+
+  display: inline-block;
+  height: $height-fixed-menu;
+  margin: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  line-height: $height-fixed-menu;
+}
+
 @mixin site-logo-mobile {
-  $image-path: 'logo/logo-and-type-unilend-132x25-purple.png';
-  $image: get-image-url($image-path);
   $width: 135px;
   $height: 25px;
 
   background-color: transparent;
-  background-image: image-url($image-path);
+  background-image: url('../images/logo/logo-and-type-unilend-132x25-purple.png');
   background-repeat: no-repeat;
   background-position: left top;
   width: $width;
@@ -19,15 +76,12 @@
   line-height: $height;
 
   @include retina {
-    $image-path: 'logo/logo-and-type-unilend-132x25-purple@2x.png';
-    background-image: image-url($image-path);
-    @include background-size(contain);
+    background-image: url('../images/logo/logo-and-type-unilend-132x25-purple@2x.png');
+    background-size: contain;
   }
 }
 
 @mixin site-logo-full {
-  $image-path: 'logo/logo-and-type-unilend-209x44-purple.png';
-  $image: get-image-url($image-path);
   $width: 209px;
   $height: 44px;
 
@@ -37,7 +91,7 @@
   overflow: hidden;
 
   background-color: transparent;
-  background-image: image-url($image-path);
+  background-image: url('../images/logo/logo-and-type-unilend-209x44-purple.png');
   background-repeat: no-repeat;
   background-position: left top;
   line-height: $height;
@@ -46,41 +100,35 @@
   vertical-align: top;
 
   @include retina {
-    $image-path: 'logo/logo-and-type-unilend-209x44-purple@2x.png';
-    background-image: image-url($image-path);
-    @include background-size(contain);
+    background-image: url('../images/logo/logo-and-type-unilend-209x44-purple@2x.png');
+    background-size: contain;
   }
 
   @include devices('lg') {
-    $image-path: 'logo/logo-and-type-unilend-245x52-purple.png';
-    $image: get-image-url($image-path);
     $width: 245px;
     $height: 52px;
 
-    background-image: image-url($image-path);
+    background-image: url('../images/logo/logo-and-type-unilend-245x52-purple.png');
     width: $width;
     height: $height;
     line-height: $height;
 
     @include retina {
-      $image-path: 'logo/logo-and-type-unilend-245x52-purple@2x.png';
-      background-image: image-url($image-path);
-      @include background-size(contain);
+      background-image: url('../images/logo/logo-and-type-unilend-245x52-purple@2x.png');
+      background-size: contain;
     }
   }
 }
 
 @mixin site-logo-fixed {
-  $image-path: 'logo/logo-unilend-65x65-white.png';
-  $image: get-image-url($image-path);
   $width: 65px;
   $height: 65px;
 
   width: $width;
-  height: $width;
+  height: $height;
 
   background-color: transparent;
-  background-image: image-url($image-path);
+  background-image: url('../images/logo/logo-unilend-65x65-white.png');
   background-repeat: no-repeat;
   background-position: left top;
   text-align: left;
@@ -88,9 +136,8 @@
   vertical-align: top;
 
   @include retina {
-    $image-path: 'logo/logo-unilend-65x65-white@2x.png';
-    background-image: image-url($image-path);
-    @include background-size(contain);
+    background-image: url('../images/logo/logo-unilend-65x65-white@2x.png');
+    background-size: contain;
   }
 }
 
@@ -129,7 +176,7 @@
 
     // Background image is linear gradient
     background-image: -svg(linear-gradient(to right, $c-p1, $c-p2));
-    @include background-size(cover);
+    background-size: cover;
   }
 
   // Updated site wrapping
@@ -276,11 +323,6 @@
       }
     }
 
-    .site-user-balance {
-      background-image: url('../images/dashboard/icon-balance-41x34.png');
-      background-repeat: no-repeat;
-    }
-
     .site-user-profile {
       position: relative;
 
@@ -341,20 +383,7 @@
     @include devices('xs', 'sm') {
       // Dashboard header balance
       .site-user-balance {
-        display: block;
-        width: $height-site-header;
-        height: $height-site-header;
-        float: left;
-
-        background-position: center center;
-        font-size: $fs-h3;
-        line-height: $height-site-header;
-        text-align: center;
-        vertical-align: middle;
-
-        .label {
-          @include hide-accessible;
-        }
+        @include compact-site-user-balance;
       }
 
       // Dashboard header profile
@@ -621,22 +650,16 @@
 
     // Dashboard header balance
     .site-user-balance {
-      box-sizing: border-box;
-      display: block;
-      padding: 10px 30px 10px 50px;
-      float: left;
-
-      background-position: left center;
-      line-height: 1.3em;
-      text-align: left;
-      vertical-align: middle;
+      // @include full-site-user-balance;
+      // Default to compact, only show full on fixed menu
+      @include compact-site-user-balance;
     }
 
     // Dashboard header profile
     .site-user-profile {
       box-sizing: border-box;
       display: block;
-      width: 300px;
+      width: 250px;
       padding: 14px 50px 14px 20px;
       margin-left: 20px;
       margin-top: -28px;
@@ -644,6 +667,7 @@
       float: left;
       position: relative;
 
+      background: $c-bg4;
       border: solid 2px $c-bg2;
       border-radius: 4px;
       line-height: 1.3em;
@@ -680,7 +704,7 @@
 
       .profile-name {
         display: block;
-        max-width: 200px;
+        width: 100%;
         height: 1.3em;
         margin-bottom: 5px;
         overflow: hidden;
@@ -697,6 +721,11 @@
         font-size: $fs-base * .8;
         font-style: italic;
         line-height: 1em;
+
+        a {
+          color: $c-t1;
+          text-decoration: none !important;
+        }
 
         .value {
           color: $c-teal;
@@ -810,12 +839,7 @@
 
       // Dashboard header balance
       .site-user-balance {
-        display: inline-block;
-        height: $height-fixed-menu;
-        margin: 0;
-        padding-top: 0;
-        padding-bottom: 0;
-        line-height: $height-fixed-menu;
+        @include fixed-site-user-balance;
       }
 
       // Dashboard header profile
@@ -1028,5 +1052,12 @@
 @include devices('desktop') {
   .site-header {
     @include site-header-full-lg;
+  }
+}
+
+// Special modification to hide the site-user-balance element when width is in specific range
+@include media($width-tablet-l, $width-tablet-l + 50px) {
+  .site-user-balance {
+    display: none !important;
   }
 }
