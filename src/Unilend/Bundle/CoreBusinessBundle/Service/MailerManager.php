@@ -1073,7 +1073,7 @@ class MailerManager
                         $oProject->get($aMailNotification['id_project']);
 
                         /** @var \projects_status $oProjectStatus */
-                        $oProjectStatus = $this->loadData('projects_status');
+                        $oProjectStatus = $this->oEntityManager->getRepository('projects_status');
                         $oProjectStatus->getLastStatut($oProject->id_project);
 
                         if (\projects_status::EN_FUNDING == $oProjectStatus->status) {
@@ -1849,7 +1849,7 @@ class MailerManager
         $message->setTo(trim($user->email));
 
         /** @var \settings $settings */
-        $settings = Loader::loadData('settings');
+        $settings = $this->oEntityManager->getRepository('settings');
         $settings->get('alias_tracking_log', 'type');
 
         if (false === empty($settings->value)) {

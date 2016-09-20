@@ -1212,7 +1212,7 @@ class pdfController extends bootstrap
             if (in_array($post_tri_projects, array(0, 1))) {
                 $tri_project = '';
             } else {
-                $tri_project = ' AND le_id_project = ' . $post_tri_projects;
+                $tri_project = ' AND id_projet = ' . $post_tri_projects;
             }
         }
 

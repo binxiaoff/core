@@ -506,7 +506,7 @@ class operationsController extends bootstrap
             if (in_array($post_tri_projects, array(0, 1))) {
                 $tri_project = '';
             } else {
-                $tri_project = ' AND le_id_project = ' . $post_tri_projects;
+                $tri_project = ' AND id_projet = ' . $post_tri_projects;
             }
         }
 
@@ -603,15 +603,12 @@ class operationsController extends bootstrap
                 $solde      = $t['solde'];
 
                 if (in_array($t['type_transaction'], array(self::TYPE_REPAYMENT_TRANSACTION, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
-                    $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
 
                     foreach ($aTaxType as $aType) {
                         $aTax[$aType['id_tax_type']]['amount'] = 0;
                     }
 
-                    if (self::TYPE_REPAYMENT_TRANSACTION != $t['type_transaction']) {
-                        $this->echeanciers->capital = $t['montant_operation'];
-                    } else {
+                    if (self::TYPE_REPAYMENT_TRANSACTION == $t['type_transaction']) {
                         $aTax = $oTax->getTaxListByRepaymentId($t['id_echeancier']);
                     }
                     ?>
@@ -622,11 +619,19 @@ class operationsController extends bootstrap
                         <td><?= $t['libelle_projet'] ?></td>
                         <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
                         <td<?= $couleur ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?></td>
-                        <td><?= $this->ficelle->formatNumber(($this->echeanciers->capital / 100)) ?></td>
-                        <td><?= $this->ficelle->formatNumber(($this->echeanciers->interets / 100)) ?></td>
+                        <td><?= $this->ficelle->formatNumber(($t['montant_capital'] / 100)) ?></td>
+                        <td><?= $this->ficelle->formatNumber(($t['montant_interet'] / 100)) ?></td>
+
                         <?php
                             foreach ($aTaxType as $aType) {
-                                echo '<td>' . $this->ficelle->formatNumber($aTax[$aType['id_tax_type']]['amount'] / 100) . '</td>';
+                                echo '<td>';
+
+                                if(isset($aTax[$aType['id_tax_type']])) {
+                                    echo $this->ficelle->formatNumber($aTax[$aType['id_tax_type']]['amount'] / 100, 2);
+                                } else {
+                                    echo '0';
+                                }
+                                echo '</td>';
                             }
                         ?>
                         <td><?= $this->ficelle->formatNumber($solde / 100) ?></td>
@@ -637,7 +642,7 @@ class operationsController extends bootstrap
                     // Récupération de la traduction et non plus du libelle dans l'indexation (si changement on est ko)
                     $t['libelle_operation'] = $aTranslations[$t['type_transaction']];
 
-                    if ($t['type_transaction'] == \transactions_types::TYPE_LENDER_WITHDRAWAL && $t['montant'] > 0) {
+                    if ($t['type_transaction'] == \transactions_types::TYPE_LENDER_WITHDRAWAL && $t['montant_operation'] > 0) {
                         $type = "Annulation retrait des fonds - compte bancaire clos";
                     } else {
                         $type = $t['libelle_operation'];
@@ -752,14 +757,12 @@ class operationsController extends bootstrap
             ),
             \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT      => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
             \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT    => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL       => $this->lng['preteur-operations-vos-operations']['remboursement'],
             \transactions_types::TYPE_DIRECT_DEBIT                   => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
             \transactions_types::TYPE_LENDER_WITHDRAWAL              => $this->lng['preteur-operations-vos-operations']['retrait-dargents'],
             \transactions_types::TYPE_WELCOME_OFFER                  => $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'],
             \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION     => $this->lng['preteur-operations-vos-operations']['retrait-offre'],
             \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD   => $this->lng['preteur-operations-vos-operations']['gain-filleul'],
             \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD     => $this->lng['preteur-operations-vos-operations']['gain-parrain'],
-            \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe'],
             \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT   => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur'],
             \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT      => $this->lng['preteur-operations-vos-operations']['remboursement-recouvrement-preteur']
         );
@@ -772,45 +775,41 @@ class operationsController extends bootstrap
             $date_debut_a_indexer = substr($sLastOperation, 0, 10);
         }
 
-        $this->lTrans = $this->transactions->selectTransactionsOp($array_type_transactions, $date_debut_a_indexer, $clients->id_client);
+        $this->lTrans = $this->transactions->getOperationsForIndexing($array_type_transactions, $date_debut_a_indexer, $clients->id_client);
 
         foreach ($this->lTrans as $t) {
             if (0 == $this->indexage_vos_operations->counter('id_transaction = ' . $t['id_transaction'] . ' AND libelle_operation = "' . $t['type_transaction_alpha'] . '"')) {
 
                 if ($clients->type == \clients::TYPE_PERSON || $clients->type == \clients::TYPE_PERSON_FOREIGNER) {
                     if ($oTaxExemption->counter('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND year = "' . substr($t['date_transaction'], 0, 4) . '"') > 0) {
-                        $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['cotisations-sociales'];
+                        $deductionsLabel = $this->lng['preteur-operations-vos-operations']['cotisations-sociales'];
                     } else {
-                        $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['prelevements-fiscaux-et-sociaux'];
+                        $deductionsLabel = $this->lng['preteur-operations-vos-operations']['prelevements-fiscaux-et-sociaux'];
                     }
                 } else {
-                    $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['retenues-a-la-source'];
+                    $deductionsLabel = $this->lng['preteur-operations-vos-operations']['retenues-a-la-source'];
                 }
 
                 $this->indexage_vos_operations->id_client           = $t['id_client'];
                 $this->indexage_vos_operations->id_transaction      = $t['id_transaction'];
                 $this->indexage_vos_operations->id_echeancier       = $t['id_echeancier'];
-                $this->indexage_vos_operations->id_projet           = $t['le_id_project'];
-                $this->indexage_vos_operations->type_transaction    = (\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL == $t['type_transaction']) ? self::TYPE_REPAYMENT_TRANSACTION : $t['type_transaction'];
+                $this->indexage_vos_operations->id_projet           = $t['id_project'];
+                $this->indexage_vos_operations->type_transaction    = $t['type_transaction'];
                 $this->indexage_vos_operations->libelle_operation   = $t['type_transaction_alpha'];
                 $this->indexage_vos_operations->bdc                 = $t['bdc'];
                 $this->indexage_vos_operations->libelle_projet      = $t['title'];
                 $this->indexage_vos_operations->date_operation      = $t['date_tri'];
                 $this->indexage_vos_operations->solde               = bcmul($t['solde'], 100);
-                $this->indexage_vos_operations->libelle_prelevement = $libelle_prelevements;
-                $this->indexage_vos_operations->montant_prelevement = $oTax->getAmountByRepaymentId($t['id_echeancier']);
-                $this->indexage_vos_operations->montant_operation   = $t['amount_operation'] + $this->indexage_vos_operations->montant_prelevement;
+                $this->indexage_vos_operations->libelle_prelevement = $deductionsLabel;
+                $this->indexage_vos_operations->montant_prelevement = $t['tax_amount'];
 
-                $capital   = 0.0;
-                $interests = 0.0;
-
-                if (false === empty($t['id_echeancier'])) {
-                    $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
-                    $capital   = $this->echeanciers->capital;
-                    $interests = $this->echeanciers->interets;
+                if (self::TYPE_REPAYMENT_TRANSACTION == $t['type_transaction']) {
+                    $this->indexage_vos_operations->montant_operation = $t['capital'] + $t['interests'] + $t['tax_amount'];
+                } else {
+                    $this->indexage_vos_operations->montant_operation = $t['amount_operation'];
                 }
-                $this->indexage_vos_operations->montant_capital = $capital;
-                $this->indexage_vos_operations->montant_interet = $interests;
+                $this->indexage_vos_operations->montant_capital = $t['capital'];
+                $this->indexage_vos_operations->montant_interet = $t['interests'];
                 $this->indexage_vos_operations->create();
             }
         }
