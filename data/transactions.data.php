@@ -289,7 +289,8 @@ class transactions extends transactions_crud
             0 AS amount_operation,
             IFNULL((SELECT SUM(amount) FROM tax WHERE id_transaction IN (SELECT id_transaction FROM transactions WHERE id_echeancier = t.id_echeancier)), 0) AS tax_amount
           FROM transactions t
-            INNER JOIN projects p ON p.id_project = t.id_project
+            INNER JOIN echeanciers e ON e.id_echeancier = t.id_echeancier
+            INNER JOIN projects p ON p.id_project = e.id_project
             LEFT JOIN transactions interests ON t.id_echeancier = interests.id_echeancier AND interests.type_transaction = 28
           WHERE t.date_transaction >= "' . $lastIndexedOperationDate . '"
                 AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . '
