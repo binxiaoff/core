@@ -36,7 +36,8 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         $ficelle = Loader::loadLib('ficelle');
         /** @var array $taxRate */
         $taxRate = $taxType->getTaxRateByCountry('fr', [1]);
-
+        /** @var \underlying_contract $contract */
+        $contract = $entityManager->getRepository('underlying_contract');
 
         $aResult = $this->getData('fr');
 
@@ -51,13 +52,14 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
             $incomeTaxIFP               = 0;
 
             foreach ($aResult as $row) {
+                $contract->get($row['id_type_contract']);
                 if ('person' == $row['client_type'] && 'fr' == $row['fiscal_residence'] && 'taxable' == $row['exemption_status']) {
-                    switch ($row['id_type_contract']) {
-                        case \loans::TYPE_CONTRACT_BDC:
+                    switch ($contract->label) {
+                        case \underlying_contract::CONTRACT_BDC:
                             $interestsBDC = $row['interests'];
                             $incomeTaxBDC = $row['tax_' . \tax_type::TYPE_INCOME_TAX];
                             break;
-                        case \loans::TYPE_CONTRACT_IFP:
+                        case \underlying_contract::CONTRACT_IFP:
                             $interestsIFP = $row['interests'];
                             $incomeTaxIFP = $row['tax_' . \tax_type::TYPE_INCOME_TAX];
                             break;
@@ -72,7 +74,7 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
                 if ((('person' == $row['client_type'] && 'ww' == $row['fiscal_residence']) || 'legal_entity' == $row['client_type'])) {
                     $deductionAtSourceInterests = bcadd($deductionAtSourceInterests, $row['interests'], 2);
 
-                    if (\loans::TYPE_CONTRACT_BDC == $row['id_type_contract']) {
+                    if (\underlying_contract::CONTRACT_BDC == $contract->label) {
                         $deductionAtSourceTax = bcadd($deductionAtSourceTax, $row['tax_' . \tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE], 2);
                     }
                 }
@@ -228,7 +230,7 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
             return $echeanciers->getFiscalState(new \DateTime('first day of last month'), new \DateTime('last day of last month'), $tax_type->getTaxDetailsByCountry($country, [\tax_type::TYPE_VAT]));
         } catch (\Exception $exception) {
             /** @var LoggerInterface $logger */
-            $logger = $this->getContainer()->get('monolog.logger.consol');
+            $logger = $this->getContainer()->get('monolog.logger.console');
             $logger->error('Could not get the fiscal state data : ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__]);
             return [];
         }

@@ -467,12 +467,19 @@ class pdfController extends bootstrap
         // Once proxy has been generated, do not update repayment schedule anymore
         $this->updateRepaymentSchedules();
 
-        $this->blocs->get('pouvoir', 'slug');
-        $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
-        foreach ($lElements as $b_elt) {
-            $this->elements->get($b_elt['id_element']);
-            $this->bloc_pouvoir[$this->elements->slug]           = $b_elt['value'];
-            $this->bloc_pouvoirComplement[$this->elements->slug] = $b_elt['complement'];
+        /** @var product $product */
+        $product = $this->loadData('product');
+        $product->get($this->projects->id_product);
+        $template = $product->proxy_template;
+
+        if (false === empty($product->proxy_block_slug)) {
+            $this->blocs->get($product->proxy_block_slug, 'slug');
+            $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
+            foreach ($lElements as $b_elt) {
+                $this->elements->get($b_elt['id_element']);
+                $this->bloc_pouvoir[$this->elements->slug]           = $b_elt['value'];
+                $this->bloc_pouvoirComplement[$this->elements->slug] = $b_elt['complement'];
+            }
         }
 
         $this->companies_actif_passif = $this->loadData('companies_actif_passif');
@@ -481,11 +488,19 @@ class pdfController extends bootstrap
         $this->oEcheanciersEmprunteur = $this->loadData('echeanciers_emprunteur');
         $this->oLendersAccounts       = $this->loadData('lenders_accounts');
         $this->oLoans                 = $this->loadData('loans');
+        /** @var underlying_contract $contract */
+        $contract                     = $this->loadData('underlying_contract');
+
+        $contract->get(\underlying_contract::CONTRACT_BDC, 'label');
+        $BDCContractId = $contract->id_contract;
+
+        $contract->get(\underlying_contract::CONTRACT_IFP, 'label');
+        $IFPContractId = $contract->id_contract;
 
         $this->montantPrete     = $this->projects->amount;
         $this->taux             = $this->projects->getAverageInterestRate();
-        $this->nbLoansBDC       = $this->oLoans->counter('id_type_contract = ' . \loans::TYPE_CONTRACT_BDC . ' AND id_project = ' . $this->projects->id_project);
-        $this->nbLoansIFP       = $this->oLoans->counter('id_type_contract = ' . \loans::TYPE_CONTRACT_IFP . ' AND id_project = ' . $this->projects->id_project);
+        $this->nbLoansBDC       = $this->oLoans->counter('id_type_contract = ' . $BDCContractId . ' AND id_project = ' . $this->projects->id_project);
+        $this->nbLoansIFP       = $this->oLoans->counter('id_type_contract = ' . $IFPContractId . ' AND id_project = ' . $this->projects->id_project);
         $this->lRemb            = $this->oEcheanciersEmprunteur->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
         $this->rembByMonth      = bcdiv($this->lRemb[0]['montant'] + $this->lRemb[0]['commission'] + $this->lRemb[0]['tva'], 100, 2);
         $this->dateLastEcheance = $this->echeanciers->getDateDerniereEcheancePreteur($this->projects->id_project);
@@ -503,7 +518,7 @@ class pdfController extends bootstrap
         $this->dateRemb         = date('d/m/Y');
         $this->dateDernierBilan = date('d/m/Y', strtotime($this->companies_bilans->cloture_exercice_fiscal)); // @todo Intl
 
-        $this->setDisplay('pouvoir_html');
+        $this->setDisplay($template);
     }
 
     public function _contrat()
@@ -581,6 +596,8 @@ class pdfController extends bootstrap
         $this->oLoans                  = $oLoans;
         $this->clients                 = $oClients;
         $this->projects                = $oProjects;
+        /** @var underlying_contract $contract */
+        $contract                      = $this->loadData('underlying_contract');
 
         $this->clients_adresses->get($oClients->id_client, 'id_client');
         $this->companiesEmprunteur->get($oProjects->id_company, 'id_company');
@@ -642,13 +659,10 @@ class pdfController extends bootstrap
         $this->fCommissionProject   = $fProjectCommisionRate * $oLoans->amount / 100 / (1 + $fVat);
         $this->fInterestTotal       = $this->echeanciers->getTotalInterests(array('id_loan' => $oLoans->id_loan));
 
-        if (\loans::TYPE_CONTRACT_BDC == $oLoans->id_type_contract) {
-            $this->blocs->get('pdf-contrat', 'slug');
-            $sTemplate = 'contrat_html';
-        } else {
-            $this->blocs->get('pdf-contrat-ifp', 'slug');
-            $sTemplate = 'contrat_ifp_html';
-        }
+        $contract->get($oLoans->id_type_contract);
+
+        $this->blocs->get($contract->block_slug, 'slug');
+        $sTemplate = $contract->document_template;
 
         $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
         foreach ($lElements as $b_elt) {
@@ -939,6 +953,10 @@ class pdfController extends bootstrap
         $this->companiesEmpr                   = $this->loadData('companies');
         $this->projects_status_history         = $this->loadData('projects_status_history');
         $this->projects_status_history_details = $this->loadData('projects_status_history_details');
+        /** @var underlying_contract contract */
+        $this->contract                        = $this->loadData('underlying_contract');
+        /** @var \Symfony\Component\Translation\TranslatorInterface translator */
+        $this->translator                      = $this->get('translator');
 
         $this->oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
 
@@ -999,6 +1017,8 @@ class pdfController extends bootstrap
             $this->total        = bcadd($this->echu, $this->echoir, 2);
             $lastEcheance       = $this->echeanciers->select('id_lender = ' . $this->oLendersAccounts->id_lender_account . ' AND id_loan = ' . $this->oLoans->id_loan, 'ordre DESC', 0, 1);
             $this->lastEcheance = date('d/m/Y', strtotime($lastEcheance[0]['date_echeance']));
+
+            $this->contract->get($this->oLoans->id_type_contract);
 
             $this->setDisplay('declaration_de_creances_html');
         } else {

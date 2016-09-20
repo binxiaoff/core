@@ -28,7 +28,7 @@
         <service id="unilend.frontbundle.security.user_provider" class="Unilend\Bundle\FrontBundle\Security\User\UserProvider">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service.client_manager"/>
-            <argument type="service" id="unilend.service.notification_manager"/>
+            <argument type="service" id="unilend.frontbundle.notification_display_manager"/>
             <argument type="service" id="unilend.service.lender_manager"/>
         </service>
 
@@ -78,6 +78,13 @@
             <call method="setLogger">
                 <argument type="service" id="logger" on-invalid="null"/>
             </call>
+        </service>
+
+        <service id="unilend.frontbundle.notification_display_manager" class="Unilend\Bundle\FrontBundle\Service\NotificationDisplayManager">
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="unilend.service.autobid_settings_manager"/>
+            <argument type="service" id="translator"/>
+            <argument type="service" id="router" />
         </service>
     </services>
 </container>

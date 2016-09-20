@@ -3,9 +3,8 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
-use Symfony\Component\Validator\Constraints\Date;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
-use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
+use Unilend\librairies\CacheKeys;
 
 class StatisticsManager
 {
@@ -40,14 +39,14 @@ class StatisticsManager
 
     public function getNumberOfLendersInCommunity()
     {
-        $cachedItem = $this->cachePool->getItem('numberOfLendersInCommunity');
+        $cachedItem = $this->cachePool->getItem(CacheKeys::LENDERS_IN_COMMUNITY);
 
         if (false === $cachedItem->isHit()) {
             /** @var \lenders_accounts $lenders */
             $lenders = $this->entityManager->getRepository('lenders_accounts');
             /** @var int $numberOfLendersInCommunity */
             $numberOfLendersInCommunity = $lenders->countLenders();
-            $cachedItem->set($numberOfLendersInCommunity)->expiresAfter(86400);
+            $cachedItem->set($numberOfLendersInCommunity)->expiresAfter(CacheKeys::DAY);
             $this->cachePool->save($cachedItem);
 
             return $numberOfLendersInCommunity;
@@ -58,14 +57,14 @@ class StatisticsManager
 
     public function getNumberOfActiveLenders()
     {
-        $cachedItem = $this->cachePool->getItem('numberOfActiveLenders');
+        $cachedItem = $this->cachePool->getItem(CacheKeys::ACTIVE_LENDERS);
 
         if (false === $cachedItem->isHit()) {
             /** @var \lenders_accounts $lenders */
             $lenders = $this->entityManager->getRepository('lenders_accounts');
             /** @var int $numberOfActiveLenders */
             $numberOfActiveLenders = $lenders->countLenders(true);
-            $cachedItem->set($numberOfActiveLenders)->expiresAfter(86400);
+            $cachedItem->set($numberOfActiveLenders)->expiresAfter(CacheKeys::DAY);
             $this->cachePool->save($cachedItem);
 
             return $numberOfActiveLenders;
@@ -76,14 +75,14 @@ class StatisticsManager
 
     public function getNumberOfFinancedProjects()
     {
-        $cachedItem = $this->cachePool->getItem('numberOfFinancedProjects');
+        $cachedItem = $this->cachePool->getItem(CacheKeys::FINANCED_PROJECTS);
 
         if (false === $cachedItem->isHit()) {
             /** @var \projects $projects */
             $projects = $this->entityManager->getRepository('projects');
             /** @var int $numberOfProjects */
             $numberOfProjects = $projects->countSelectProjectsByStatus(implode(',', \projects_status::$afterRepayment));
-            $cachedItem->set($numberOfProjects)->expiresAfter(3600);
+            $cachedItem->set($numberOfProjects)->expiresAfter(CacheKeys::LONG_TIME);
             $this->cachePool->save($cachedItem);
 
             return $numberOfProjects;
@@ -94,14 +93,14 @@ class StatisticsManager
 
     public function getAmountBorrowed()
     {
-        $cachedItem = $this->cachePool->getItem('amountBorrowed');
+        $cachedItem = $this->cachePool->getItem(CacheKeys::AMOUNT_BORRWED);
 
         if (false === $cachedItem->isHit()) {
             /** @var \transactions $transactions */
             $transactions    = $this->entityManager->getRepository('transactions');
             /** @var int $amountBorrowed */
             $amountBorrowed = bcdiv($transactions->sum('type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, 'montant_unilend-montant'), 100);
-            $cachedItem->set($amountBorrowed)->expiresAfter(3600);
+            $cachedItem->set($amountBorrowed)->expiresAfter(CacheKeys::LONG_TIME);
             $this->cachePool->save($cachedItem);
 
             return $amountBorrowed;
@@ -117,12 +116,12 @@ class StatisticsManager
 
     public function getUnilendIRR()
     {
-        $cachedItem = $this->cachePool->getItem('unilendIRR');
+        $cachedItem = $this->cachePool->getItem(CacheKeys::UNILEND_IRR);
 
         if (false === $cachedItem->isHit()) {
             /** @var array $lastUnilendIRR */
             $lastUnilendIRR = $this->IRRManager->getLastUnilendIRR();
-            $cachedItem->set($lastUnilendIRR['value'])->expiresAfter(86400);
+            $cachedItem->set($lastUnilendIRR['value'])->expiresAfter(CacheKeys::DAY);
             $this->cachePool->save($cachedItem);
 
             return $lastUnilendIRR['value'];
@@ -133,7 +132,7 @@ class StatisticsManager
 
     public function getPercentageSuccessfullyFinancedProjects()
     {
-        $cachedItem = $this->cachePool->getItem('percentageSuccessfullyFinancedProjects');
+        $cachedItem = $this->cachePool->getItem(CacheKeys::PERCENT_FULLY_FINANCED_PROJECTS);
 
         if (false === $cachedItem->isHit()) {
             /** @var \projects_status_history $projectStatusHistory */
@@ -142,7 +141,7 @@ class StatisticsManager
             $countByStatus = $projectStatusHistory->countProjectsHavingHadStatus([\projects_status::EN_FUNDING, \projects_status::FUNDE]);
             /** @var string $percentageSuccessfullyFunded */
             $percentageSuccessfullyFunded = bcmul(bcdiv($countByStatus[\projects_status::FUNDE], $countByStatus[\projects_status::EN_FUNDING], 4), 100);
-            $cachedItem->set($percentageSuccessfullyFunded)->expiresAfter(3600);
+            $cachedItem->set($percentageSuccessfullyFunded)->expiresAfter(CacheKeys::LONG_TIME);
             $this->cachePool->save($cachedItem);
 
             return $percentageSuccessfullyFunded;
@@ -153,7 +152,7 @@ class StatisticsManager
 
     public function getAverageFundingTime()
     {
-        $cachedItem = $this->cachePool->getItem('averageFundingTime');
+        $cachedItem = $this->cachePool->getItem(CacheKeys::AVG_FUNDING_TIME);
 
         if (false === $cachedItem->isHit()) {
             /** @var \projects $projects */
@@ -161,7 +160,7 @@ class StatisticsManager
             /** @var array $averageFundingTime */
             $averageFundingTime = $projects->getAverageFundingTime();
 
-            $cachedItem->set($averageFundingTime)->expiresAfter(3600);
+            $cachedItem->set($averageFundingTime)->expiresAfter(CacheKeys::LONG_TIME);
             $this->cachePool->save($cachedItem);
 
             return $averageFundingTime;
@@ -172,14 +171,14 @@ class StatisticsManager
 
     public function getAverageInterestRateForLenders()
     {
-        $cachedItem = $this->cachePool->getItem('averageInterestRateForLenders');
+        $cachedItem = $this->cachePool->getItem(CacheKeys::AVG_INTEREST_RATE_LENDERS);
 
         if (false === $cachedItem->isHit()) {
             /** @var \projects $projects */
             $projects = $this->entityManager->getRepository('projects');
             /** @var int $averageRate */
             $averageRate = $projects->getGlobalAverageRateOfFundedProjects(PHP_INT_MAX);
-            $cachedItem->set($averageRate)->expiresAfter(3600);
+            $cachedItem->set($averageRate)->expiresAfter(CacheKeys::LONG_TIME);
             $this->cachePool->save($cachedItem);
 
             return $averageRate;
@@ -190,14 +189,14 @@ class StatisticsManager
 
     public function getAverageNumberOfLenders()
     {
-        $cachedItem = $this->cachePool->getItem('averageNumberOfLenders');
+        $cachedItem = $this->cachePool->getItem(CacheKeys::AVG_LENDER_ON_PROJECT);
 
         if (false === $cachedItem->isHit()) {
             /** @var \projects $projects */
             $projects = $this->entityManager->getRepository('projects');
             /** @var int $averageNumberOfLenders */
             $averageNumberOfLenders = $projects->getAverageNumberOfLendersForProject();
-            $cachedItem->set($averageNumberOfLenders)->expiresAfter(86400);
+            $cachedItem->set($averageNumberOfLenders)->expiresAfter(CacheKeys::DAY);
             $this->cachePool->save($cachedItem);
 
             return $averageNumberOfLenders;
@@ -208,14 +207,14 @@ class StatisticsManager
 
     public function getAverageProjectAmount()
     {
-        $cachedItem = $this->cachePool->getItem('averageProjectAmount');
+        $cachedItem = $this->cachePool->getItem(CacheKeys::AVG_PROJECT_AMOUNT);
 
         if (false === $cachedItem->isHit()) {
             /** @var \projects $projects */
             $projects = $this->entityManager->getRepository('projects');
             /** @var int $averageProjectAmount */
             $averageProjectAmount = $projects->getAverageAmount();
-            $cachedItem->set($averageProjectAmount)->expiresAfter(86400);
+            $cachedItem->set($averageProjectAmount)->expiresAfter(CacheKeys::DAY);
             $this->cachePool->save($cachedItem);
 
             return $averageProjectAmount;
@@ -226,14 +225,14 @@ class StatisticsManager
 
     public function getAverageLoanAmount()
     {
-        $cachedItem = $this->cachePool->getItem('averageLoanAmount');
+        $cachedItem = $this->cachePool->getItem(CacheKeys::AVG_LOAN_AMOUNT);
 
         if (false === $cachedItem->isHit()) {
             /** @var \loans $loans */
             $loans = $this->entityManager->getRepository('loans');
             /** @var int $averageLoanAmount */
             $averageLoanAmount = $loans->getAverageLoanAmount();
-            $cachedItem->set($averageLoanAmount)->expiresAfter(86400);
+            $cachedItem->set($averageLoanAmount)->expiresAfter(CacheKeys::DAY);
             $this->cachePool->save($cachedItem);
 
             return $averageLoanAmount;
@@ -248,14 +247,14 @@ class StatisticsManager
      */
     public function getNumberOfProjectRequests()
     {
-        $cachedItem = $this->cachePool->getItem('numberOfProjectRequests');
+        $cachedItem = $this->cachePool->getItem(CacheKeys::NUMBER_PROJECT_REQUESTS);
 
         //if (false === $cachedItem->isHit()) {
             /** @var \projects $projects */
             $projects = $this->entityManager->getRepository('projects');
             /** @var int $numberOfProjectRequests */
             $numberOfProjectRequests = self::HISTORIC_NUMBER_OF_SIREN + $projects->getNumberOfUniqueProjectRequests(self::VALUE_DATE_HISTORIC_NUMBER_OF_SIREN);
-            $cachedItem->set($numberOfProjectRequests)->expiresAfter(86400);
+            $cachedItem->set($numberOfProjectRequests)->expiresAfter(CacheKeys::DAY);
             $this->cachePool->save($cachedItem);
 
             return $numberOfProjectRequests;
@@ -266,7 +265,7 @@ class StatisticsManager
 
     public function getPercentageOfAcceptedProjects()
     {
-        $cachedItem = $this->cachePool->getItem('percentageOfAcceptedProjects');
+        $cachedItem = $this->cachePool->getItem(CacheKeys::PERCENT_ACCEPTED_PROJECTS);
 
 //        if (false === $cachedItem->isHit()) {
             $numberOfRequests = $this->getNumberOfProjectRequests();
@@ -276,7 +275,7 @@ class StatisticsManager
             $countByStatus = $projectStatusHistory->countProjectsHavingHadStatus([\projects_status::EN_FUNDING]);
             /** @var string $percentageOfAcceptedProjects */
             $percentageOfAcceptedProjects = bcdiv($countByStatus[\projects_status::EN_FUNDING], $numberOfRequests, 2);
-            $cachedItem->set($percentageOfAcceptedProjects)->expiresAfter(86400);
+            $cachedItem->set($percentageOfAcceptedProjects)->expiresAfter(CacheKeys::DAY);
             $this->cachePool->save($cachedItem);
 
             return $percentageOfAcceptedProjects;
@@ -287,13 +286,13 @@ class StatisticsManager
 
     public function getAverageLenderIRR()
     {
-        $cachedItem = $this->cachePool->getItem('averageLenderIRR');
+        $cachedItem = $this->cachePool->getItem(CacheKeys::AVG_LENDER_IRR);
 
         if (false === $cachedItem->isHit()) {
             /** @var \lenders_account_stats $lendersAccountsStats */
             $lendersAccountsStats = $this->entityManager->getRepository('lenders_accounts_stats');
             $averageLenderIRR = $lendersAccountsStats->getAverageIRRofAllLenders();
-            $cachedItem->set($averageLenderIRR)->expiresAfter(86400);
+            $cachedItem->set($averageLenderIRR)->expiresAfter(CacheKeys::DAY);
             $this->cachePool->save($cachedItem);
 
             return $averageLenderIRR;
@@ -304,7 +303,7 @@ class StatisticsManager
 
     public function getLendersByType()
     {
-        $cachedItem = $this->cachePool->getItem('lendersByType');
+        $cachedItem = $this->cachePool->getItem(CacheKeys::LENDERS_BY_TYPE);
 
         if (false === $cachedItem->isHit()) {
             /** @var \lenders_accounts $lenders */
@@ -327,7 +326,7 @@ class StatisticsManager
                 ]
             ];
 
-            $cachedItem->set($lendersByType)->expiresAfter(86400);
+            $cachedItem->set($lendersByType)->expiresAfter(CacheKeys::DAY);
             $this->cachePool->save($cachedItem);
 
             return $lendersByType;
@@ -338,11 +337,11 @@ class StatisticsManager
 
     public function getLendersByRegion()
     {
-        $cachedItem = $this->cachePool->getItem('lendersByRegion');
+        $cachedItem = $this->cachePool->getItem(CacheKeys::LENDERS_BY_REGION);
 
         if (false === $cachedItem->isHit()) {
             $lendersByRegion = $this->locationManager->getLendersByRegion();
-            $cachedItem->set($lendersByRegion)->expiresAfter(86400);
+            $cachedItem->set($lendersByRegion)->expiresAfter(CacheKeys::DAY);
             $this->cachePool->save($cachedItem);
 
             return $lendersByRegion;
@@ -353,11 +352,11 @@ class StatisticsManager
 
     public function getBorrowersByRegion()
     {
-        $cachedItem = $this->cachePool->getItem('projectsByRegion');
+        $cachedItem = $this->cachePool->getItem(CacheKeys::PROJECTS_BY_REGION);
 
         if (false === $cachedItem->isHit()) {
             $projectsByRegion = $this->locationManager->getProjectsByRegion();
-            $cachedItem->set($projectsByRegion)->expiresAfter(86400);
+            $cachedItem->set($projectsByRegion)->expiresAfter(CacheKeys::DAY);
             $this->cachePool->save($cachedItem);
 
             return $projectsByRegion;
@@ -368,13 +367,13 @@ class StatisticsManager
 
     public function getTotalRepaidCapital()
     {
-        $cachedItem = $this->cachePool->getItem('totalRepaidCapital');
+        $cachedItem = $this->cachePool->getItem(CacheKeys::TOTAL_REPAID_CAPITAL);
 
         if (false === $cachedItem->isHit()) {
             /** @var \echeanciers $paymentSchedule */
             $paymentSchedule = $this->entityManager->getRepository('echeanciers');
             $repaidCapital = $paymentSchedule->getTotalRepaidCapital();
-            $cachedItem->set($repaidCapital)->expiresAfter(86400);
+            $cachedItem->set($repaidCapital)->expiresAfter(CacheKeys::DAY);
             $this->cachePool->save($cachedItem);
 
             return $repaidCapital;
@@ -385,13 +384,13 @@ class StatisticsManager
 
     public function getTotalRepaidInterests()
     {
-        $cachedItem = $this->cachePool->getItem('totalRepaidInterests');
+        $cachedItem = $this->cachePool->getItem(CacheKeys::TOTAL_REPAID_INTERST);
 
         if (false === $cachedItem->isHit()) {
             /** @var \echeanciers $paymentSchedule */
             $paymentSchedule = $this->entityManager->getRepository('echeanciers');
             $repaidInterests = $paymentSchedule->getTotalRepaidInterests();
-            $cachedItem->set($repaidInterests)->expiresAfter(86400);
+            $cachedItem->set($repaidInterests)->expiresAfter(CacheKeys::DAY);
             $this->cachePool->save($cachedItem);
 
             return $repaidInterests;
@@ -402,13 +401,13 @@ class StatisticsManager
 
     public function getProjectCountByCategory()
     {
-        $cachedItem = $this->cachePool->getItem('projectCountByCategory');
+        $cachedItem = $this->cachePool->getItem(CacheKeys::PROJECTS_BY_CATEGORY);
 
         if (false === $cachedItem->isHit()) {
             /** @var \projects $projects */
             $projects = $this->entityManager->getRepository('projects');
             $projectsCountByCategory = $projects->countProjectsByCategory();
-            $cachedItem->set($projectsCountByCategory)->expiresAfter(86400);
+            $cachedItem->set($projectsCountByCategory)->expiresAfter(CacheKeys::DAY);
             $this->cachePool->save($cachedItem);
 
             return $projectsCountByCategory;
@@ -422,14 +421,14 @@ class StatisticsManager
      */
     public function getNumberOfProjectsFundedIn24Hours()
     {
-        $cachedItem = $this->cachePool->getItem('numberOfProjectsFundedIn24Hours');
+        $cachedItem = $this->cachePool->getItem(CacheKeys::PROJECTS_FUNDED_IN_24_HOURS);
 
         if (false === $cachedItem->isHit()) {
             $startDate = new \DateTime('NOW - 3 MONTHS');
             /** @var \projects $projects */
             $projects = $this->entityManager->getRepository('projects');
             $count24hFunding = $projects->countProjectsFundedIn24Hours($startDate);
-            $cachedItem->set($count24hFunding )->expiresAfter(3600);
+            $cachedItem->set($count24hFunding )->expiresAfter(CacheKeys::LONG_TIME);
 
             return $count24hFunding;
         }
@@ -443,7 +442,7 @@ class StatisticsManager
      */
     public function getPercentageOfProjectsFundedIn24Hours()
     {
-        $cachedItem = $this->cachePool->getItem('percentageOfProjectsFundedIn24Hours');
+        $cachedItem = $this->cachePool->getItem(CacheKeys::PERCENT_PROJECTS_FUNDED_IN_24_HOURS);
 
         if (false === $cachedItem->isHit()) {
             $startDate = new \DateTime('NOW - 3 MONTHS');
@@ -452,7 +451,7 @@ class StatisticsManager
             $countAllProjects = $projects->countProjectsFundedSince($startDate);
             $count24hFunding = $this->getNumberOfProjectsFundedIn24Hours();
             $percentageFunded24h = bcdiv($count24hFunding, $countAllProjects, 0);
-            $cachedItem->set($percentageFunded24h)->expiresAfter(3600);
+            $cachedItem->set($percentageFunded24h)->expiresAfter(CacheKeys::DAY);
 
             return $percentageFunded24h;
         }
@@ -463,7 +462,7 @@ class StatisticsManager
 
     public function getSecondsForBid()
     {
-        $cachedItem = $this->cachePool->getItem('secondsForBid');
+        $cachedItem = $this->cachePool->getItem(CacheKeys::BID_EVERY_X_SECOND);
 
         if (false === $cachedItem->isHit()) {
             /** @var \bids $bids */
@@ -471,7 +470,7 @@ class StatisticsManager
             $maxCountBidsPerDay = $bids->getMaxCountBidsPerDay();
             $secondsPerDay      = 24 * 60 * 60;
             $secondsForBid      = bcdiv($secondsPerDay, $maxCountBidsPerDay, 0);
-            $cachedItem->set($secondsForBid)->expiresAfter(3600);
+            $cachedItem->set($secondsForBid)->expiresAfter(CacheKeys::LONG_TIME);
 
             return $secondsForBid;
         } else {
@@ -481,12 +480,21 @@ class StatisticsManager
 
     public function getHighestAmountObtainedFastest()
     {
-        /** @var \projects $projects */
-        $projects = $this->entityManager->getRepository('projects');
-        $recordAmount = $projects->getHighestAmountObtainedFastest();
+        $cachedItem = $this->cachePool->getItem(CacheKeys::AMOUNT_FINANCED_HIGHEST_FASTEST);
 
-        return $recordAmount;
+        if (false === $cachedItem->isHit()) {
+            /** @var \projects $projects */
+            $projects = $this->entityManager->getRepository('projects');
+            $recordAmount = $projects->getHighestAmountObtainedFastest();
+            $cachedItem->set($recordAmount)->expiresAfter(CacheKeys::LONG_TIME);
+            return $recordAmount;
+        } else {
+            return $cachedItem->get();
+        }
+
     }
+
+    /** STATS FOR THE REGULATORY TABLE AND GRAPH */
 
     public function getOwedCapital()
     {
@@ -511,6 +519,30 @@ class StatisticsManager
     {
         $cachedItem = $this->cachePool->getItem('UnilendStatsUpcomingInterest');
         return $cachedItem->get();
+    }
+
+    public function getRegulatoryData()
+    {
+        $data = [
+            '2013-2014' => [
+                'borrowedCapital' => '',
+                'repaidCapital' => '',
+                'repaidInterest' => '',
+                'owedCapital' => [
+                    'total' => '',
+                    'withoutProlematicProjects' => '',
+                    'problematicProjects' => '',
+                    'latePayments' => [
+                        'moreThan180Days' => '',
+                        'lessThan180days' => '',
+                    ],
+                ],
+
+
+
+
+            ],
+        ];
     }
 
 }

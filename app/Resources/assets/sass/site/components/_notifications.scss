@@ -151,6 +151,7 @@
   .notifications-drop-controls {
     font-size: $fs-base * .8;
     text-align: center;
+    border-bottom: solid 1px $c-grey-l3;
 
     a,
     a:link,
