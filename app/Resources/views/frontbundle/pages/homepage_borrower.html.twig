@@ -1,8 +1,7 @@
 {% extends 'layouts/_layout.html.twig' %}
 
 {% set page = {
-    title: 'Emprunter',
-    permalink: route('emprunter')
+    title: 'Emprunter'
 } %}
 
 {% block siteContent %}
@@ -72,7 +71,7 @@
                 </div><!-- /.row -->
                 <div class="row page-section-footer">
                     <div class="btn-toolbar">
-                        <a href="{{ route('search') }}" class="btn-default ui-open-site-search">{% trans %} home-borrower_question-button {% endtrans %}</a>
+                        <a href="{{ path('search') }}" class="btn-default ui-open-site-search">{% trans %} home-borrower_question-button {% endtrans %}</a>
                         <a href="#homeemp-section-esim" class="btn-alternate">{% trans %} home-borrower_submit-project-button {% endtrans %}</a>
                     </div>
                 </div><!-- /.page-section-footer -->

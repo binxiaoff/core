@@ -5,7 +5,6 @@
 {% set page = {
   id: "apropos-chartededeontologie",
   title: "Charte de déontologie",
-  permalink: route('apropos/chartededeontologie'),
   classNames: "page-single-apropos"
 } %}
 
@@ -14,10 +13,10 @@
 <nav class="page-navigation">
   <div class="site-wrap">
     <ul data-nav-dropdown-menu="mobile">{#
-      #}<li role="presentation"><a href="{{ route('apropos/quisommesnous') }}">Qui sommes-nous&nbsp;?</a></li>{#
-      #}<li role="presentation"><a href="{{ route('apropos/commentcamarche') }}">Comment ça marche&nbsp;?</a></li>{#
-      #}<li role="presentation" class="active"><a href="{{ route('apropos/chartdedeontologie') }}">Charte de déontologie</a></li>{#
-      #}<li role="presentation"><a href="{{ route('apropos/statistiques') }}">Statistiques</a></li>{#
+      #}<li role="presentation"><a href="{{ path('qui-sommes-nous') }}">Qui sommes-nous&nbsp;?</a></li>{#
+      #}<li role="presentation"><a href="{{ path('comment-ca-marche') }}">Comment ça marche&nbsp;?</a></li>{#
+      #}<li role="presentation" class="active"><a href="{{ path('charte-de-deontologie') }}">Charte de déontologie</a></li>{#
+      #}<li role="presentation"><a href="{{ path('statistiques') }}">Statistiques</a></li>{#
     #}</ul>
   </div><!-- /.site-wrap -->
 </nav><!-- /.page-navigation -->
@@ -48,7 +47,7 @@
 {% block pageFooter %}
 <footer class="page-footer">
   <div  class="page-navigate-next-page">
-    <a href="{{ route('apropos/statistiques') }}">
+    <a href="{{ path('statistiques') }}">
       <div class="site-wrap">
         <div class="label">
           <div class="small">Lire la suite</div>
