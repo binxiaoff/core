@@ -18,4 +18,15 @@ class CacheKeys
     const LIST_PROJECTS = 'List_Counter_Projects';
     const AVG_RATE_PROJECTS = 'projects_getAvgRate';
     const BID_ACCEPTATION_POSSIBILITY = 'bids_getAcceptationPossibilityRounded';
+
+    /**
+     * constant for product
+     */
+    const PRODUCT_ATTRIBUTE_BY_TYPE = 'product_attribute_by_type';
+    const PRODUCT_CONTRACT_ATTRIBUTE_BY_TYPE = 'product_contract_attribute_by_type';
+
+    /**
+     * constant for underlying contract
+     */
+    const CONTRACT_ATTRIBUTE_BY_TYPE = 'contract_attribute_by_type';
 }

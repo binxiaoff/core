@@ -65,6 +65,7 @@ class BidManager
      * @param bool  $bSendNotification
      *
      * @return bool
+     * @throws \Exception
      */
     public function bid(\bids $oBid, $bSendNotification = true)
     {
@@ -255,7 +256,7 @@ class BidManager
      * @param float     $fRate
      * @param bool      $bSendNotification
      */
-    public function bidByAutoBidSettings(\autobid $oAutoBid, \projects $oProject, $fRate, $bSendNotification)
+    public function bidByAutoBidSettings(\autobid $oAutoBid, \projects $oProject, $fRate, $bSendNotification = true)
     {
         if ($oAutoBid->rate_min <= $fRate) {
             /** @var \bids $oBid */
@@ -278,7 +279,7 @@ class BidManager
      * @param \bids $oBid
      * @param bool  $bSendNotification
      */
-    public function reject(\bids $oBid, $bSendNotification)
+    public function reject(\bids $oBid, $bSendNotification = true)
     {
         if ($oBid->status == \bids::STATUS_BID_PENDING || $oBid->status == \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY) {
             $oTransaction = $this->creditRejectedBid($oBid, $oBid->amount / 100);
@@ -314,7 +315,7 @@ class BidManager
      * @param int    $iMode
      * @param bool   $bSendNotification
      */
-    public function reBidAutoBidOrReject(\bids $oBid, $currentRate, $iMode, $bSendNotification)
+    public function reBidAutoBidOrReject(\bids $oBid, $currentRate, $iMode, $bSendNotification = true)
     {
         /** @var \autobid $oAutoBid */
         $oAutoBid = $this->oEntityManager->getRepository('autobid');

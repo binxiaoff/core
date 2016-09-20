@@ -328,6 +328,8 @@ class ProjectManager
         $contractTypes = array_column($this->productManager->getProjectAvailableContractTypes($oProject), 'label');
         if(in_array(\underlying_contract::CONTRACT_IFP, $contractTypes) && in_array(\underlying_contract::CONTRACT_BDC, $contractTypes)) {
             $this->buildLoanIFPAndBDC($oProject);
+        } elseif (in_array(\underlying_contract::CONTRACT_IFP, $contractTypes)) {
+            $this->buildLoanIFP($oProject);
         }
     }
 
@@ -431,6 +433,79 @@ class ProjectManager
                     $loan->rate             = $aBid['rate'];
                     $loan->id_type_contract = $BDCContractId;
                     $this->oLoanManager->create($loan);
+                }
+            }
+        }
+    }
+
+    private function buildLoanIFP($project)
+    {
+        /** @var \bids $bid */
+        $bid = $this->oEntityManager->getRepository('bids');
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
+        /** @var \loans $loan */
+        $loan = $this->oEntityManager->getRepository('loans');
+        /** @var \underlying_contract $contract */
+        $contract = $this->oEntityManager->getRepository('underlying_contract');
+
+        $aLenderList = $bid->getLenders($project->id_project, array(\bids::STATUS_BID_ACCEPTED));
+
+        if (false === $contract->get(\underlying_contract::CONTRACT_IFP, 'label')) {
+            throw new \InvalidArgumentException('The contract ' . \underlying_contract::CONTRACT_IFP . 'does not exist.');
+        }
+        $IFPContractId = $contract->id_contract;
+
+        $contractAttrVars = $this->contractAttributeManager->getContractAttributesByType($contract, \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
+        if (empty($contractAttrVars) || false === isset($contractAttrVars[0]) || false === is_numeric($contractAttrVars[0])) {
+            throw new \UnexpectedValueException('The IFP contract max amount is not set');
+        } else {
+            $IFPLoanAmountMax = $contractAttrVars[0];
+        }
+
+        foreach ($aLenderList as $aLender) {
+            $iLenderId   = $aLender['id_lender_account'];
+            $aLenderBids = $bid->select(
+                'id_lender_account = ' . $iLenderId . ' AND id_project = ' . $project->id_project . ' AND status = ' . \bids::STATUS_BID_ACCEPTED,
+                'rate DESC'
+            );
+
+            if ($lenderAccount->isNaturalPerson($iLenderId)) {
+                $fLoansLenderSum = 0;
+                $fInterests      = 0;
+                $aBidIFP         = array();
+
+                foreach ($aLenderBids as $iIndex => $aBid) {
+                    $fBidAmount = $aBid['amount'] / 100;
+
+                    if (bccomp(bcadd($fLoansLenderSum, $fBidAmount, 2), $IFPLoanAmountMax, 2) <= 0) {
+                        $fInterests += $aBid['rate'] * $fBidAmount;
+                        $fLoansLenderSum += $fBidAmount;
+                        $aBidIFP[] = array(
+                            'bid_id' => $aBid['id_bid'],
+                            'amount' => $fBidAmount
+                        );
+                    } else {
+                        $bid->get($aBid['id_bid']);
+                        $this->oBidManager->reject($bid);
+                    }
+                }
+
+                // Create IFP loan from the grouped bids
+                $loan->unsetData();
+                foreach ($aBidIFP as $aAcceptedBid) {
+                    $loan->addAcceptedBid($aAcceptedBid['bid_id'], $aAcceptedBid['amount']);
+                }
+                $loan->id_lender        = $iLenderId;
+                $loan->id_project       = $project->id_project;
+                $loan->amount           = $fLoansLenderSum * 100;
+                $loan->rate             = round($fInterests / $fLoansLenderSum, 2);
+                $loan->id_type_contract = $IFPContractId;
+                $this->oLoanManager->create($loan);
+            } else {
+                foreach ($aLenderBids as $aBid) {
+                    $bid->get($aBid['id_bid']);
+                    $this->oBidManager->reject($bid);
                 }
             }
         }
@@ -585,7 +660,7 @@ class ProjectManager
         $fCommissionRate = $oSettings->value;
 
         /** @var \tax_type $taxType */
-        $taxType = $this->loadData('tax_type');
+        $taxType = $this->oEntityManager->getRepository('tax_type');
 
         $taxRate = $taxType->getTaxRateByCountry('fr');
         $fVAT    = $taxRate[\tax_type::TYPE_VAT] / 100;
