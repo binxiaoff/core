@@ -33,7 +33,9 @@
                                     {#{% set notificationsUnread = notificationsUnread + 1 %}#}
                                 {#{% endfor %}#}
                                 {# TODO: check after DEV-574 if this iteration on all notification is of any use #}
-                                {% if app.user.notificationsUnread > 0 %}{{ general.pip(app.user.notificationsUnread) }}{% endif %}
+                                {% if app.user.notificationsUnread > 0 %}
+                                    <span class="pip {% if app.user.notificationsUnread > 9 %} pip-has-many {% endif %}">{{ app.user.notificationsUnread }}</span>
+                                {% endif %}
                             </a><!-- /.profile-notifications -->
                             <div class="profile-name">{% trans with {'%firstName%' : app.user.firstName} %} header-connected_greeting {% endtrans %} </div>
                             <div class="profile-balance">
