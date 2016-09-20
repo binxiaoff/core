@@ -1,8 +1,7 @@
 {% extends 'layouts/_layout.html.twig' %}
 
 {% set page = {
-    title: 'Déposer un projet',
-    permalink: path('project_request_emails', {'hash' : project.hash})
+    title: 'Déposer un projet'
 } %}
 
 {% block siteContent %}
@@ -51,7 +50,7 @@
                                         <p>{{ 'project-request_stop-email-content'|trans|raw }}</p>
 
                                         <div class="btn-toolbar">
-                                            <a href="{{ route('search') }}" class="btn-default ui-open-site-search">{{ 'project-request_end-page-question-button'|trans|raw }}</a>
+                                            <a href="#" class="btn-default ui-open-site-search">{{ 'project-request_end-page-question-button'|trans|raw }}</a>
                                             <a href="{{ path('home') }}" class="btn-primary">{{ 'project-request_end-page-go-home-button'|trans|raw }}</a>
                                         </div><!-- /.btn-toolbar -->
                                     </div><!-- /.panel -->

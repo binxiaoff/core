@@ -270,7 +270,7 @@
                             {% if loan.loans|length > 1 %}
                                 {% for docType, totalCount in loan.count if totalCount > 0 %}
                                     <a href="javascript:;" class="loan-doc loan-doc-{{ docType }}">
-                                        <span class="pip">{{ totalCount }}</span>
+                                        <span class="pip"><span class="pip-number">{{ totalCount }}</span></span>
                                     </a>
                                 {% endfor %}
                             {# Single #}

@@ -1,10 +1,10 @@
 <?php
 namespace Unilend\Bundle\FrontBundle\Service;
 
+use Psr\Cache\CacheItemPoolInterface;
+use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
-use Cache\Adapter\Memcache\MemcacheCachePool;
-use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
 class LenderAccountDisplayManager
 {
@@ -12,16 +12,16 @@ class LenderAccountDisplayManager
     private $entityManager;
     /** @var  LocationManager */
     private $locationManager;
-    /** @var  TranslationManager */
-    private $translationManager;
-    /** @var MemcacheCachePool */
+    /** @var TranslatorInterface  */
+    private $translator;
+    /** @var CacheItemPoolInterface */
     private $cachePool;
 
-    public function __construct(EntityManager $entityManager, LocationManager $locationManager, TranslationManager $translationManager, MemcacheCachePool $cachePool)
+    public function __construct(EntityManager $entityManager, LocationManager $locationManager, TranslatorInterface $translator, CacheItemPoolInterface $cachePool)
     {
         $this->entityManager      = $entityManager;
         $this->locationManager    = $locationManager;
-        $this->translationManager = $translationManager;
+        $this->translator         = $translator;
         $this->cachePool          = $cachePool;
     }
 
@@ -97,18 +97,17 @@ class LenderAccountDisplayManager
      */
     public function getLenderLoansAllocationByCompanySector($lenderId)
     {
-        $translations   = $this->translationManager->getTranslatedCompanySectorList();
         $dataForTreeMap = [];
         $data           = $this->getLoansAllocationByCompanySector($lenderId);
 
-        foreach ($data as $category => $row) {
+        foreach ($data as $row) {
             $dataForTreeMap[] = [
-                'name'                => $translations[$category],
+                'name'                => $this->translator->trans('company-sector_sector-' . $row['sector']),
                 'projectsCount'       => (int) $row['count'],
                 'averageRate'         => round($row['average_rate'], 2),
                 'loanedAmount'        => round($row['loaned_amount'], 2),
                 'loanSharePercentage' => round($row['loaned_amount'] * 100 / array_sum(array_column($data, 'loaned_amount')), 2),
-                'svgIconId'           => '#category-sm-' . $category
+                'svgIconId'           => '#category-sm-' . $row['sector']
             ];
         }
 
