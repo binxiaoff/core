@@ -88,6 +88,9 @@ require('./app/controllers/Autolend')
 // @debug
 // CacheData.clearAll()
 
+// Watch window for scroll actions (triggers events on elements to show if visible/hidden for navigation, animation, etc.)
+var watchWindow = window.watchWindow = new WatchScroll.Watcher(window)
+
 //
 $(document).ready(function ($) {
   // Main vars/elements
@@ -494,7 +497,7 @@ $(document).ready(function ($) {
    * This aims to batch all window scroll operations in one place.
    */
   // Attach WatchScroll instance to watch the window's scrolling
-  window.watchWindow = new WatchScroll.Watcher(window)
+  watchWindow
     // Fix site nav
     .watch(window, 'scrollTop>50', function () {
       if (!$html.is('.ui-site-header-fixed')) {

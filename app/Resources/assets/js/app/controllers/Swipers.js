@@ -36,7 +36,6 @@ $doc.ready(function () {
       swiperOptions.autoplay = false
       swiperOptions.effect = 'slide'
       swiperOptions.slidesPerView = 3
-      // swiperOptions.grabCursor = true
       swiperOptions.breakpoints = {
         800: {
           slidesPerView: 1
@@ -52,6 +51,15 @@ $doc.ready(function () {
       }
     }
 
+    // Extra breakpoint options if promo-swiper
+    if ($elem.is('.promo-battenberg-lender, .promo-battenberg-borrower')) {
+      swiperOptions.noSwiping = true
+      swiperOptions.onlyExternal = true
+      swiperOptions.loop = true
+      swiperOptions.autoplay = 7000
+      swiperOptions.effect = 'fade'
+    }
+
     // Fade / Crossfade in Swiper compatible format
     if (swiperOptions.effect === 'fade') {
       swiperOptions.fade = {
@@ -65,7 +73,9 @@ $doc.ready(function () {
     }
 
     // Events
-    // -- Transition end
+    swiperOptions.runCallbacksOnInit = true
+
+    // -- slideChangeEnd
     swiperOptions.onSlideChangeEnd = function (swiper) {
       // Instigate or trigger any items within the slide now it's in view
       $(swiper.slides[swiper.activeIndex]).trigger('UI:visible')
@@ -78,10 +88,16 @@ $doc.ready(function () {
     }
 
     // The element's swiper instance
-    var elemSwiper = new Swiper(elem, swiperOptions)
+    var elemSwiper = new Swiper(elem, $.extend({}, swiperOptions))
 
     // @debug
-    // console.log(elem, elemSwiper)
+    console.log({
+      elem: elem,
+      swiper: elemSwiper,
+      swiperOptions: swiperOptions,
+      isPromoSwiper: $elem.is('.promo-swiper'),
+      isBattenberg: $elem.is('.promo-battenberg')
+    })
 
     // Add event to hook up custom pagination to appropriate slide
     if (swiperOptions.paginationType === 'custom') {

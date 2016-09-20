@@ -3,6 +3,7 @@
 // @description Named after the cake!
 
 .promo-battenberg {
+  @include clearfix;
 
   .row {
     text-align: center;
@@ -12,6 +13,25 @@
     }
   }
 
+  // Swiper
+  .promo-battenberg-preter.swiper-container,
+  .promo-battenberg-emprunter.swiper-container,
+  .promo-battenberg-lender.swiper-container,
+  .promo-battenberg-borrower.swiper-container {
+    @include devices('xs') {
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    @include devices('sm') {
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  // Text content
   .promo-slide {
     box-sizing: border-box;
     padding: 30px;
@@ -45,6 +65,7 @@
     }
   }
 
+  // Image content
   .promo-image {
     box-sizing: border-box;
 
@@ -128,30 +149,6 @@
     line-height: 1.3em;
   }
 
-  // .btn-cta {
-  //   @include button;
-  //   @include button-shape-huge;
-  //   @include button-color-default;
-  //   width: 100%;
-  //   text-align: center;
-
-  //   &.bg-p1 {
-  //     @include button-color-primary;
-  //   }
-
-  //   &.bg-p2 {
-  //     @include button-color-alternate;
-  //   }
-
-  //   &.align-right {
-  //     text-align: right;
-  //   }
-
-  //   &.align-left {
-  //     text-align: left;
-  //   }
-  // }
-
   .btn-cta {
     @include button;
     @include button-shape-md;
@@ -170,34 +167,51 @@
   }
 
   @include devices('xs') {
+    .promo-borrower,
+    .promo-lender,
     .promo-emprunter,
     .promo-preter {
-      max-width: 400px;
+      //max-width: 400px;
       margin-left: auto;
       margin-right: auto;
       margin-bottom: 20px;
     }
 
+    .col-image,
+    .promo-image {
+      width: 100%;
+    }
+
+    .col-text,
     .promo-slide {
+      width: 100%;
       height: auto;
+      min-height: 200px;
     }
   }
 
   @include devices('sm') {
+    .promo-borrower,
+    .promo-lender,
     .promo-emprunter,
     .promo-preter {
-      max-width: 500px;
+      //max-width: 500px;
       margin-left: auto;
       margin-right: auto;
       margin-bottom: 30px;
     }
 
+    .col-image,
     .promo-image {
+      width: 100%;
       height: 300px;
     }
 
+    .col-text,
     .promo-slide {
+      width: 100%;
       height: auto;
+      min-height: 200px;
     }
   }
 
@@ -211,6 +225,8 @@
       font-size: 16px;
     }
 
+    .col-image,
+    .col-text,
     .promo-slide,
     .promo-image {
       height: 300px;
@@ -231,6 +247,8 @@
       font-size: 18px;
     }
 
+    .col-image,
+    .col-text,
     .promo-slide,
     .promo-image {
       height: 400px;
@@ -247,7 +265,8 @@
         opacity: 0;
       }
 
-      &.ui-is-visible {
+      &.ui-is-visible,
+      .ui-is-visible {
         .ui-animate-from-left {
           // opacity: 1;
           animation: 1s ease-out .3s 1 slideanimateleft;
