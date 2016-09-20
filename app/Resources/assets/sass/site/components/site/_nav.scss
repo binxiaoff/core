@@ -2,6 +2,13 @@
 // Unilend Site Nav
 //
 
-.site-nav-menu a {
-  outline: none;
+.site-nav .site-nav-menu {
+  a {
+    outline: none;
+
+    @include devices('tablet-l') {
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+  }
 }

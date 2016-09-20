@@ -59,7 +59,7 @@ var defaults = {
 
 var Utility = {
   // Click event
-  clickEvent: $html.is('.has-touchevents') ? 'touchend' : 'click',
+  clickEvent: 'click', //$html.is('.has-touchevents') ? 'touchend' : 'click',
 
   // Transition end event
   transitionEndEvent: 'transitionend webkitTransitionEnd oTransitionEnd otransitionend',

@@ -117,69 +117,85 @@ permalink: path('home')
 
                 {% set borrowerIndex = 0 %}
                 {% set lenderIndex = 0 %}
-                <div class="promo-battenberg" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
-                    {% for index, person in testimonialPeople %}
+                <div class="promo-battenberg" {# data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible" #}>
+                {% set lastPersonType = '' %}
+                {% for index, person in testimonialPeople %}
 
-                        {# Set class color based on person type #}
-                        {% if person.type == 'lender' %}
-                            {% set classColor = 'p1' %}
-                            {% set description = person.name ~' , ' ~ person.projects %}
-                        {% elseif person.type == 'borrower' %}
-                            {% set classColor = 'p2' %}
-                            {% set description = person.name ~' , ' ~ person.location %}
+                    {# Split into two separate swipers #}
+                    {% if lastPersonType != person.type %}
+                        {% if lastPersonType != '' %}
+                            </div><!-- /.swiper-wrapper -->
+                        </div><!-- /.swiper-container -->
                         {% endif %}
+                        <div class="promo-battenberg-{{ person.type }} swiper-container">
+                            <div class="swiper-wrapper">
+                    {% endif %}
 
-                        {% if index % 2 == 1 %}
-                            {% set classPosition = 'promo-align-right' %}
-                            {% set classAnimatePosition = 'ui-animate-from-left' %}
-                            {% set classRow = 'row reverse' %}
-                            {% set classColumnsImage = 'col-lg-5 pull-lg-1 col-md-5 pull-md-1' %}
-                            {% set classColumnsSlide = 'col-lg-6 col-md-6' %}
-                        {% elseif index % 2 == 0 %}
-                            {% set classPosition = 'promo-align-left' %}
-                            {% set classAnimatePosition = 'ui-animate-from-right' %}
-                            {% set classRow = 'row' %}
-                            {% set classColumnsImage = 'col-lg-5 push-lg-1 col-md-5 push-md-1' %}
-                            {% set classColumnsSlide = 'col-lg-6 col-md-6' %}
-                        {% endif %}
+                    {# Set class color based on person type #}
+                    {% if person.type == 'lender' %}
+                        {% set classColor = 'p1' %}
+                        {% set description = person.name ~' , ' ~ person.projects %}
+                    {% elseif person.type == 'borrower' %}
+                        {% set classColor = 'p2' %}
+                        {% set description = person.name ~' , ' ~ person.location %}
+                    {% endif %}
 
-                        {#As there should only be 2 battenbergs visible, I hid all others, to avoid users asking all the time why there are so many, please feel free to change that when you're doing DEV-869 #}
-                        <div class="promo-{{ person.type }} {{ classRow }}" {% if (person.type =='borrower' and borrowerIndex > 0) or (person.type == 'lender' and lenderIndex > 0) %} style="display: none;"{% endif %}>
-                            <div class="{{ classColumnsImage }}">
-                                <div class="promo-image promo-{{ classColor }}" style="background-image: url('{{ completeTestimonialUrl(person.battenberg_image, 'image') }}')">
-                                    &nbsp;
-                                    {% if person.type == 'borrower' %}
-                                    <a href="{{ path('home_borrower') }}#homeemp-section-esim" class="promo-image-cta">
-                                        <div><span class="link">{{ "site-general_testimonial-section-overlay-link-#{person.type}"|trans }}</span></div>
-                                    </a>
+                    {#{% if index % 2 == 1 %}#}
+                    {% if person.type == 'lender' %}
+                        {% set classPosition = 'promo-align-right' %}
+                        {% set classAnimatePosition = 'ui-animate-from-left' %}
+                        {% set classRow = 'row reverse' %}
+                        {% set classColumnsImage = 'col-lg-5 pull-lg-1 col-md-5 pull-md-1' %}
+                        {% set classColumnsSlide = 'col-lg-6 col-md-6' %}
+                    {# {% elseif index % 2 == 0 %} #}
+                    {% elseif person.type == 'borrower' %}
+                        {% set classPosition = 'promo-align-left' %}
+                        {% set classAnimatePosition = 'ui-animate-from-right' %}
+                        {% set classRow = 'row' %}
+                        {% set classColumnsImage = 'col-lg-5 push-lg-1 col-md-5 push-md-1' %}
+                        {% set classColumnsSlide = 'col-lg-6 col-md-6' %}
+                    {% endif %}
+
+                    <div class="promo-{{ person.type }} {{ classRow }} swiper-slide">
+                        <div class="col-image {{ classColumnsImage }}">
+                            <div class="promo-image promo-{{ classColor }}" style="background-image: url('{{ completeTestimonialUrl(person.battenberg_image, 'image') }}')">
+                                &nbsp;
+                                {% if person.type == 'borrower' %}
+                                <a href="{{ path('home_borrower') }}#homeemp-section-esim" class="promo-image-cta">
+                                    <div><span class="link">{{ "site-general_testimonial-section-overlay-link-#{person.type}"|trans }}</span></div>
+                                </a>
+                                {% endif %}
+                            </div><!-- /.promo-image -->
+                        </div>
+                        <div class="col-text {{ classColumnsSlide }} vertical-align-content">
+                            <div class="promo-slide promo-{{ classColor }} {{ classPosition }}">
+                                <p class="quote">{{ person.quote|raw }}</p>
+                                <p class="source"><cite>{{ description }}</cite></p>
+
+                                {% if person.type == 'borrower' %}
+                                <div class="promo-links">
+                                    <a href="{{ path('testimonials') }}#testimonial-{{ person.name }}" class="link">{% trans %} site-general_testimonial-section-link-lender-title {% endtrans %}</a>
+                                    {% if person.project.slug is not empty %}
+                                        <a href="{{ path('project_detail', {'projectSlug' : person.project.slug}) }}" class="link">
+                                            {% trans %} site-general_testimonial-section-link-borrower-title {% endtrans %}
+                                        </a>
                                     {% endif %}
-                                </div><!-- /.promo-image -->
-                            </div>
-                            <div class="{{ classColumnsSlide }} vertical-align-content">
-                                <div class="promo-slide promo-{{ classColor }} {{ classPosition }} {{ classAnimatePosition }}">
-                                    <p class="quote">{{ person.quote|raw }}</p>
-                                        <p class="source"><cite>{{ description }}</cite></p>
+                                </div>
+                                {% endif %}
+                            </div><!-- /.promo-slide -->
+                        </div>
+                    </div><!-- /.swiper-slide -->
 
-                                    {% if person.type == 'borrower' %}
-                                    <div class="promo-links">
-                                        <a href="{{ path('testimonials') }}#testimonial-{{ person.name }}" class="link">{% trans %} site-general_testimonial-section-link-lender-title {% endtrans %}</a>
-                                        {% if person.project.slug is not empty %}
-                                            <a href="{{ path('project_detail', {'projectSlug' : person.project.slug}) }}" class="link">
-                                                {% trans %} site-general_testimonial-section-link-borrower-title {% endtrans %}
-                                            </a>
-                                        {% endif %}
-                                    </div>
-                                    {% endif %}
-                                </div><!-- /.promo-slide -->
-                            </div>
-                        </div><!-- /.promo-emprunter -->
-                        {# Set class color based on person type #}
-                        {% if person.type == 'lender' %}
-                            {% set lenderIndex =+ 1 %}
-                        {% elseif person.type == 'borrower' %}
-                            {% set borrowerIndex =+ 1 %}
-                        {% endif %}
-                    {% endfor %}
+                    {# Set class color based on person type #}
+                    {% if person.type == 'lender' %}
+                        {% set lenderIndex =+ 1 %}
+                    {% elseif person.type == 'borrower' %}
+                        {% set borrowerIndex =+ 1 %}
+                    {% endif %}
+                    {% set lastPersonType = person.type %}
+                {% endfor %}
+                        </div><!-- /.swiper-wrapper -->
+                    </div><!-- /.swiper-container -->
                 </div><!-- /.promo-battenberg -->
 
                 <div class="row page-section">

@@ -34,7 +34,7 @@
                             </a><!-- /.profile-notifications -->
                             <div class="profile-name">{% trans with {'%firstName%' : app.user.firstName} %} header-connected_greeting {% endtrans %} </div>
                             <div class="profile-balance">
-                                {% trans with {'%balance%' : app.user.balance|default(0)|localizedcurrency('EUR')} %} header-connected_balance {% endtrans %}
+                                <a href="{{ path('lender_wallet_deposit') }}">{% trans with {'%balance%' : app.user.balance|default(0)|localizedcurrency('EUR')} %} header-connected_balance {% endtrans %}</a>
                             </div><!-- /.profile-balance -->
                             <a href="{{ path('logout') }}" class="profile-logout link"><span class="label">{% trans %} header-connected_logout {% endtrans %}</span></a>
                         </div><!-- /.site-user-profile -->

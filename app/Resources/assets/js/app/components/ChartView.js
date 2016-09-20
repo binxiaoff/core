@@ -425,7 +425,11 @@ ChartView.prototype.init = function () {
 
     // Build the queue
     $.each(self.settings.loadFirst, function (i, url) {
-      queue.push($.getJSON(url).then(function (data) {
+      queue.push($.ajax({
+        url: url,
+        global: false,
+        dataType: 'json'
+      }).then(function (data) {
         self.settings[i] = data
         // @debug
         // console.log('ChartView.init Success: loaded ' + url + ' into `elemChartView.settings.' + i + '`', self)
@@ -630,7 +634,7 @@ ChartView.prototype.render = function (data, schema) {
           })
 
           // @debug
-          console.log('init preterProjectsCategoriesMap', self.settings.highcharts)
+          // console.log('init preterProjectsCategoriesMap', self.settings.highcharts)
 
           break
 
@@ -698,7 +702,7 @@ ChartView.prototype.render = function (data, schema) {
           })
 
           // @debug
-          console.log('init preterProjectsOverview', self.settings.highcharts)
+          // console.log('init preterProjectsOverview', self.settings.highcharts)
 
           break
 

@@ -4,12 +4,15 @@
 
 @mixin dashboard-nav-mobile {
   display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 
   position: fixed;
-  bottom: 0;
   left: 0;
   top: auto;
   right: 0;
+  bottom: 0;
   z-index: $depth-site-header;
 
   background-color: $c-bg3;
@@ -25,7 +28,7 @@
 
       > a {
         display: block;
-        padding: 25px;
+        padding: 25px 0px;
         font-size: 26px;
         line-height: 1em;
         text-align: center;
@@ -148,6 +151,7 @@
 
   background: $c-white;
   border-bottom: solid 2px $c-bg2;
+  overflow: hidden;
 }
 
 // Site header modifications on dashboard layouts
@@ -251,7 +255,9 @@
     }
 
     .col-content {
-      width: 82%;
+      width: 84%;
+      padding-left: 20px;
+      //padding-right: 20px;
       margin-right: -40px;
     }
   }
@@ -260,10 +266,6 @@
   @include devices('lg') {
     .col-menu {
       width: 16%;
-    }
-
-    .col-content {
-      width: 84%;
     }
   }
 }
@@ -278,18 +280,46 @@
   }
 }
 
+.dashboard-messages {
+  margin-bottom: 20px;
+
+  > :first-child {
+    margin-top: 0;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+}
+
 .dashboard-panels-nav {
+  margin-bottom: -10px;
   position: relative;
+  clear: both;
+  overflow: hidden;
 
   li {
     float: left;
+  }
+
+  .ui-is-spinner {
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+}
+
+.dashboard-panels-content {
+  @include devices('md', 'lg') {
+    margin-left: -20px;
+    margin-right: -20px;
   }
 }
 
 .dashboard-panel-toggle {
   display: none;
   padding: 10px 20px;
-  margin: 0 0 10px 20px;
+  margin: 0 20px 10px 0;
 
   @include link-states(
     $link: (
@@ -340,10 +370,6 @@
 .dashboard-tabs {
   color: $c-t1;
   margin: 0;
-
-  @include devices('md', 'lg') {
-    margin-left: 20px;
-  }
 }
 
 .dashboard-tabs-nav {

@@ -17,9 +17,10 @@ var Clipboard = require('clipboard')
 var Tether = require('tether')
 var Drop = require('tether-drop')
 var SortableJS = require('sortablejs')
+var Pikaday = require('pikaday')
 
 // UI stuff
-require('jquery-ui')
+// require('jquery-ui')
 // @note due to browserify and global jQuery object, I can't require these like normal :(
 // require('jquery-ui/draggable')
 // require('jquery-ui/sortable')
@@ -31,6 +32,7 @@ require('bs.transition')
 require('bs.tab')
 require('bs.tooltip')
 require('bs.collapse')
+require('pikaday.jquery')
 
 // Lib
 var Utility = require('Utility')
@@ -86,6 +88,9 @@ require('./app/controllers/Autolend')
 // @debug
 // CacheData.clearAll()
 
+// Watch window for scroll actions (triggers events on elements to show if visible/hidden for navigation, animation, etc.)
+var watchWindow = window.watchWindow = new WatchScroll.Watcher(window)
+
 //
 $(document).ready(function ($) {
   // Main vars/elements
@@ -98,7 +103,7 @@ $(document).ready(function ($) {
 
   // @debug
   // window.__ = __
-  window.Utility = Utility
+  // window.Utility = Utility
   // window.CacheForm = CacheForm
 
   // Remove HTML
@@ -120,57 +125,88 @@ $(document).ready(function ($) {
   // Set FR language in datepicker
   // @note For supporting other languages, see: https://github.com/jquery/jquery-ui/blob/master/ui/i18n/
   // @note I've inlined the language code since we are using browserify to compile code as it's a pain to do this kind of stuff in the Twig files
-  if (/^fr/i.test($('html').attr('lang'))) {
-    $.datepicker.regional.fr = {
-      closeText: "Fermer",
-      prevText: "Précédent",
-      nextText: "Suivant",
-      currentText: "Aujourd'hui",
-      monthNames: ["janvier", "février", "mars", "avril", "mai", "juin",
-        "juillet", "août", "septembre", "octobre", "novembre", "décembre"],
-      monthNamesShort: ["janv.", "févr.", "mars", "avr.", "mai", "juin",
-        "juil.", "août", "sept.", "oct.", "nov.", "déc."],
-      dayNames: ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"],
-      dayNamesShort: ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."],
-      dayNamesMin: ["D", "L", "M", "M", "J", "V", "S"],
-      weekHeader: "Sem.",
-      dateFormat: "dd/mm/yy",
-      firstDay: 1,
-      isRTL: false,
-      showMonthAfterYear: false,
-      yearSuffix: ""
-    }
-    $.datepicker.setDefaults($.datepicker.regional.fr)
-
-  // Italian
-  } else if (/^it/i.test($('html').attr('lang'))) {
-    datepicker.regional.it = {
-      closeText: "Chiudi",
-      prevText: "&#x3C;Prec",
-      nextText: "Succ&#x3E;",
-      currentText: "Oggi",
-      monthNames: [ "Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno",
-        "Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre" ],
-      monthNamesShort: [ "Gen","Feb","Mar","Apr","Mag","Giu",
-        "Lug","Ago","Set","Ott","Nov","Dic" ],
-      dayNames: [ "Domenica","Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato" ],
-      dayNamesShort: [ "Dom","Lun","Mar","Mer","Gio","Ven","Sab" ],
-      dayNamesMin: [ "Do","Lu","Ma","Me","Gi","Ve","Sa" ],
-      weekHeader: "Sm",
-      dateFormat: "dd/mm/yy",
-      firstDay: 1,
-      isRTL: false,
-      showMonthAfterYear: false,
-      yearSuffix: ""
-    }
-    $.datepicker.setDefaults($.datepicker.regional.it)
-  }
+  // if (/^fr/i.test($('html').attr('lang'))) {
+  //   $.datepicker.regional.fr = {
+  //     closeText: "Fermer",
+  //     prevText: "Précédent",
+  //     nextText: "Suivant",
+  //     currentText: "Aujourd'hui",
+  //     monthNames: ["janvier", "février", "mars", "avril", "mai", "juin",
+  //       "juillet", "août", "septembre", "octobre", "novembre", "décembre"],
+  //     monthNamesShort: ["janv.", "févr.", "mars", "avr.", "mai", "juin",
+  //       "juil.", "août", "sept.", "oct.", "nov.", "déc."],
+  //     dayNames: ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"],
+  //     dayNamesShort: ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."],
+  //     dayNamesMin: ["D", "L", "M", "M", "J", "V", "S"],
+  //     weekHeader: "Sem.",
+  //     dateFormat: "dd/mm/yy",
+  //     firstDay: 1,
+  //     isRTL: false,
+  //     showMonthAfterYear: false,
+  //     yearSuffix: ""
+  //   }
+  //   $.datepicker.setDefaults($.datepicker.regional.fr)
+  //
+  // // Italian
+  // } else if (/^it/i.test($('html').attr('lang'))) {
+  //   datepicker.regional.it = {
+  //     closeText: "Chiudi",
+  //     prevText: "&#x3C;Prec",
+  //     nextText: "Succ&#x3E;",
+  //     currentText: "Oggi",
+  //     monthNames: [ "Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno",
+  //       "Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre" ],
+  //     monthNamesShort: [ "Gen","Feb","Mar","Apr","Mag","Giu",
+  //       "Lug","Ago","Set","Ott","Nov","Dic" ],
+  //     dayNames: [ "Domenica","Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato" ],
+  //     dayNamesShort: [ "Dom","Lun","Mar","Mer","Gio","Ven","Sab" ],
+  //     dayNamesMin: [ "Do","Lu","Ma","Me","Gi","Ve","Sa" ],
+  //     weekHeader: "Sm",
+  //     dateFormat: "dd/mm/yy",
+  //     firstDay: 1,
+  //     isRTL: false,
+  //     showMonthAfterYear: false,
+  //     yearSuffix: ""
+  //   }
+  //   $.datepicker.setDefaults($.datepicker.regional.it)
+  // }
 
   // Initialise any datepicker inputs
-  $('.ui-has-datepicker, [data-ui-datepicker]').datepicker({
-    firstDay: 1,
-    format: 'dd/mm/yy'
-  })
+  // $('.ui-has-datepicker, [data-ui-datepicker]').datepicker({
+  //   firstDay: 1,
+  //   format: 'dd/mm/yy'
+  // })
+  var pikadayOptions = {
+    format: 'DD/MM/YYYY'
+  }
+
+  // Language settings for datepicker
+  var pikadayI18n = {
+    fr: {
+      previousMonth : 'Précédent Mois',
+      nextMonth     : 'Suivant Mois',
+      months        : ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'],
+      weekdays      : ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'],
+      weekdaysShort : ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
+    },
+    it: {
+      previousMonth : 'Prec',
+      nextMonth     : 'Succ',
+      months        : ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'],
+      weekdays      : ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'],
+      weekdaysShort : ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab']
+    }
+  }
+  // Use french language
+  if (/^fr/i.test($('html').attr('lang'))) {
+    pikadayOptions.i18n = pikadayI18n.fr
+  // Use italian language
+  } else if (/^it/i.test($('html').attr('lang'))) {
+    pikadayOptions.i18n = pikadayI18n.it
+  }
+
+  // Instantiate datepickers
+  $('.ui-has-datepicker, [data-ui-datepicker]').pikaday(pikadayOptions)
 
   // VideoJS
   // Running a modified version to customise the placement of items in the control bar
@@ -461,7 +497,7 @@ $(document).ready(function ($) {
    * This aims to batch all window scroll operations in one place.
    */
   // Attach WatchScroll instance to watch the window's scrolling
-  window.watchWindow = new WatchScroll.Watcher(window)
+  watchWindow
     // Fix site nav
     .watch(window, 'scrollTop>50', function () {
       if (!$html.is('.ui-site-header-fixed')) {

@@ -7,9 +7,15 @@
   width: 100%;
   margin-bottom: 20px;
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
 
   > table {
     margin-bottom: 0;
+
+    // Ensure tables have a minimum width
+    @include devices('xs', 'sm') {
+      min-width: 600px;
+    }
   }
 
   #{$js-sortable-responsivefilters} {
@@ -17,6 +23,11 @@
     padding: 8px 8px 0;
     margin-bottom: 0;
   }
+
+  // Safari bug shows
+  //@include devices('xs', 'sm') {
+  //  overflow: auto;
+  //}
 }
 
 // Base table
@@ -24,6 +35,7 @@ table {
   display: table;
   width: 100%;
   box-sizing: border-box;
+  table-layout: fixed;
 }
 
 tr {
@@ -43,6 +55,19 @@ th {
   letter-spacing: 2px;
   line-height: 1em;
   text-transform: uppercase;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  .label {
+    //display: block;
+    //width: 100%;
+    //height: 1.2em;
+    //white-space: nowrap;
+    //overflow: hidden;
+    //text-overflow: ellipsis;
+  }
 
   @include devices('sm', 'laptop', 'lg') {
     font-size: 13px;
