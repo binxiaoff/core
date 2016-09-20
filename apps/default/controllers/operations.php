@@ -400,8 +400,6 @@ class operationsController extends bootstrap
         $post_tri_type_transac = $_SESSION['filtre_vos_operations']['tri_type_transac'];
         $post_tri_projects     = $_SESSION['filtre_vos_operations']['tri_projects'];
         $post_id_last_action   = $_SESSION['filtre_vos_operations']['id_last_action'];
-        $post_order            = $_SESSION['filtre_vos_operations']['order'];
-        $post_type             = $_SESSION['filtre_vos_operations']['type'];
         $post_id_client        = $_SESSION['filtre_vos_operations']['id_client'];
 
         $this->clients->get($post_id_client, 'id_client');
@@ -458,7 +456,6 @@ class operationsController extends bootstrap
 
         $this->date_debut = date('Y-m-d', $date_debut_time);
         $this->date_fin   = date('Y-m-d', $date_fin_time);
-
 
         $array_type_transactions_liste_deroulante = array(
             1 => array(
@@ -626,7 +623,7 @@ class operationsController extends bootstrap
                             foreach ($aTaxType as $aType) {
                                 echo '<td>';
 
-                                if(isset($aTax[$aType['id_tax_type']])) {
+                                if (isset($aTax[$aType['id_tax_type']])) {
                                     echo $this->ficelle->formatNumber($aTax[$aType['id_tax_type']]['amount'] / 100, 2);
                                 } else {
                                     echo '0';
@@ -799,17 +796,17 @@ class operationsController extends bootstrap
                 $this->indexage_vos_operations->bdc                 = $t['bdc'];
                 $this->indexage_vos_operations->libelle_projet      = $t['title'];
                 $this->indexage_vos_operations->date_operation      = $t['date_tri'];
-                $this->indexage_vos_operations->solde               = bcmul($t['solde'], 100);
+                $this->indexage_vos_operations->solde               = $t['solde'];
                 $this->indexage_vos_operations->libelle_prelevement = $deductionsLabel;
                 $this->indexage_vos_operations->montant_prelevement = $t['tax_amount'];
 
                 if (self::TYPE_REPAYMENT_TRANSACTION == $t['type_transaction']) {
-                    $this->indexage_vos_operations->montant_operation = $t['capital'] + $t['interests'] + $t['tax_amount'];
+                    $this->indexage_vos_operations->montant_operation = $t['capital'] + $t['interests'];
                 } else {
                     $this->indexage_vos_operations->montant_operation = $t['amount_operation'];
                 }
                 $this->indexage_vos_operations->montant_capital = $t['capital'];
-                $this->indexage_vos_operations->montant_interet = $t['interests'];
+                $this->indexage_vos_operations->montant_interet = $t['interests'] + $t['tax_amount'];
                 $this->indexage_vos_operations->create();
             }
         }
