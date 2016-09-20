@@ -3,8 +3,7 @@
 
 {% set page = {
 id: 'page-sitemap',
-title: 'Plan du site',
-permalink: path('plan-du-site')
+title: 'Plan du site'
 } %}
 
 {% block extendPageHeader %}
@@ -19,8 +18,8 @@ permalink: path('plan-du-site')
 
 {% block pageContentBody %}
     <section class="page-section">
-        <h2 class="link"><a href="{{ route('/') }}">Home</a></h2>
-        <h2 class="link"><a href="{{ route('projects_list') }}">Projets</a></h2>
+        <h2 class="link"><a href="{{ path('home') }}">Home</a></h2>
+        <h2 class="link"><a href="{{ path('projects_list') }}">Projets</a></h2>
 
         {% for section in sections %}
         <h2 class="link">{{ section.title }}</h2>
