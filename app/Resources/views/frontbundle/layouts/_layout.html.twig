@@ -180,86 +180,31 @@
     {% endif %}
 </div>
 
-{# Placeholder data for notifications #}
-{# partials/components/dashboard-panel-notifications.twig will need to reference this object as well #}
-{% set placeholderNotifications = [{
-    id: 8,
-    type: 'project-added',
-    title: 'Nouveau projet',
-    datetime: 'now'|date_modify('-1 minute')|date('j F, H:i'),
-    content: 'Created a new project.',
-    image: svgimage('#notification-project-added', 'Nouveau projet', 100, 100, 'none'),
-    status: 'unread'
-},{
-    id: 7,
-    type: 'offer-rejected',
-    title: 'Offre refusée',
-    datetime: 'now'|date_modify('-5 minutes')|date('j F, H:i'),
-    content: 'Votre offre de prêt de 45€ au taux de 9,4% à Garage Toniol a été refusée.',
-    image: svgimage('#notification-offer-rejected', 'Offre refusée', 100, 100, 'none'),
-    status: 'unread'
-},{
-    id: 6,
-    type: 'remboursement',
-    title: 'Remboursement',
-    datetime: 'now'|date_modify('-2 hours')|date('j F, H:i'),
-    content: 'Vous avez reçu un remboursement de 12,35€ de Garage Toniol.',
-    image: svgimage('#notification-remboursement', 'Remboursement', 100, 100, 'none'),
-    status: 'unread'
-},{
-    id: 5,
-    type: 'offer-accepted',
-    title: 'Remboursement',
-    datetime: 'now'|date_modify('-3 days')|date('j F, H:i'),
-    content: 'Vous avez reçu un remboursement de 12,35€ de Garage Toniol.',
-    image: svgimage('#notification-offer-accepted', 'Offre acceptée', 100, 100, 'none'),
-    status: 'unread'
-},{
-    id: 4,
-    type: 'account',
-    title: 'Solde bas',
-    datetime: 'now'|date_modify('-4 days')|date('j F, H:i'),
-    content: '',
-    image: svgimage('#notification-account-lowbalance', 'Solde bas', 100, 100, 'none'),
-    status: 'read'
-},{
-    id: 3,
-    type: 'remboursement',
-    title: 'Remboursement',
-    datetime: 'now'|date_modify('-5 days 8 hours 35 minutes')|date('j F, H:i'),
-    content: 'Vous avez reçu un remboursement de 12,35€ de Garage Toniol.',
-    image: svgimage('#notification-remboursement', 'Remboursement', 100, 100, 'none'),
-    status: 'read'
-},{
-    id: 2,
-    type: 'remboursement',
-    title: 'Remboursement',
-    datetime: 'now'|date_modify('-5 days 15 hours 20 minutes')|date('j F, H:i'),
-    content: 'Vous avez reçu un remboursement de 12,35€ de Garage Toniol.',
-    image: svgimage('#notification-remboursement', 'Remboursement', 100, 100, 'none'),
-    status: 'read'
-},{
-    id: 1,
-    type: 'project-added',
-    title: 'Nouveau projet',
-    datetime: 'now'|date_modify('-6.5 days')|date('j F, H:i'),
-    content: 'Created a new project.',
-    image: svgimage('#notification-project-added', 'Nouveau projet', 100, 100, 'none'),
-    status: 'read'
-}] %}
 <script type="text/javascript">
-    // User notifications
-    {# Put in the notifications as a JSON object here, then other JS components can reference as a single source rather than dotted throughout multiple files #}
-    var USERNOTIFICATIONS = JSON.parse('{{ placeholderNotifications|json_encode|escape('js')|raw }}');
+    {% set notifications = [] %}
+    {% if app.user.notifications is defined %}
+        {% for notification in app.user.notifications %}
+            {% set notifications = notifications|merge([{
+                id: notification.id,
+                type: notification.type,
+                title: notification.title,
+                datetime: notification.datetime|localizeddate('medium', 'short'),
+                content: notification.content,
+                image: svgimage('#notification-' ~ notification.image, notification.title, 100, 100, 'none'),
+                status: notification.status
+            }]) %}
+        {% endfor %}
+    {% endif %}
 
-    // Translations for JS modules
-    var UTILITY_LANG = JSON.parse('{{ dictionary('utility')|json_encode|escape('js')|raw }}');
-    var AUTOCOMPLETE_LANG = JSON.parse('{{ dictionary('auto-complete')|json_encode|escape('js')|raw }}');
-    var FORMVALIDATION_LANG = JSON.parse('{{ dictionary('form-validation')|json_encode|escape('js')|raw }}');
-    var PASSWORDCHECK_LANG = JSON.parse('{{ dictionary('password-check')|json_encode|escape('js')|raw }}');
-    var SORTABLE_LANG = JSON.parse('{{ dictionary('sortable')|json_encode|escape('js')|raw }}');
-    var FILEATTACH_LANG = JSON.parse('{{ dictionary('file-attach')|json_encode|escape('js')|raw }}');
-    var USERNOTIFICATIONS_LANG = JSON.parse('{{ dictionary('user-notifications')|json_encode|escape('js')|raw }}');
+    var USERNOTIFICATIONS = JSON.parse('{{ notifications|json_encode|escape('js')|raw }}')
+
+    var UTILITY_LANG = JSON.parse('{{ dictionary('utility')|json_encode|escape('js')|raw }}')
+    var AUTOCOMPLETE_LANG = JSON.parse('{{ dictionary('auto-complete')|json_encode|escape('js')|raw }}')
+    var FORMVALIDATION_LANG = JSON.parse('{{ dictionary('form-validation')|json_encode|escape('js')|raw }}')
+    var PASSWORDCHECK_LANG = JSON.parse('{{ dictionary('password-check')|json_encode|escape('js')|raw }}')
+    var SORTABLE_LANG = JSON.parse('{{ dictionary('sortable')|json_encode|escape('js')|raw }}')
+    var FILEATTACH_LANG = JSON.parse('{{ dictionary('file-attach')|json_encode|escape('js')|raw }}')
+    var USERNOTIFICATIONS_LANG = JSON.parse('{{ dictionary('lender-notifications')|json_encode|escape('js')|raw }}')
     var MAPVIEW_LANG = JSON.parse('{{ dictionary('mapview')|json_encode|escape('js')|raw }}')
 </script>
 

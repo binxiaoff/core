@@ -13,14 +13,32 @@ class UserLender extends BaseUser
     private $clientStatus;
     /** @var bool $hasAcceptedCurrentTerms */
     private $hasAcceptedCurrentTerms;
-    /** @var int $notificationsUnread */
-    private $notificationsUnread;
+    /** @var array $notifications */
+    private $notifications;
     /** @var int */
     private $subscriptionStep;
     /** @var int */
     private $level;
 
-    public function __construct($username, $password, $email, $salt, array $roles, $isActive, $clientId, $hash, $balance, $initials, $firstName, $clientStatus, $hasAcceptedCurrentTerms, $notificationsUnread, $subscriptionStep, $level, $lastLoginDate = null)
+    public function __construct(
+        $username,
+        $password,
+        $email,
+        $salt,
+        array $roles,
+        $isActive,
+        $clientId,
+        $hash,
+        $balance,
+        $initials,
+        $firstName,
+        $clientStatus,
+        $hasAcceptedCurrentTerms,
+        array $notifications,
+        $subscriptionStep,
+        $level,
+        $lastLoginDate = null
+    )
     {
         parent::__construct($username, $password, $email, $salt, $roles, $isActive, $clientId, $hash, $lastLoginDate);
 
@@ -29,7 +47,7 @@ class UserLender extends BaseUser
         $this->firstName               = $firstName;
         $this->clientStatus            = $clientStatus;
         $this->hasAcceptedCurrentTerms = $hasAcceptedCurrentTerms;
-        $this->notificationsUnread     = $notificationsUnread;
+        $this->notifications           = $notifications;
         $this->subscriptionStep        = $subscriptionStep;
         $this->level                   = $level;
     }
@@ -59,9 +77,14 @@ class UserLender extends BaseUser
         return $this->hasAcceptedCurrentTerms;
     }
 
-    public function getNotificationsUnread()
+    public function getNotifications()
     {
-        return $this->notificationsUnread;
+        return $this->notifications;
+    }
+
+    public function getUnreadNotificationsCount()
+    {
+        return array_count_values(array_column($this->notifications, 'status'))['unread'];
     }
 
     public function getSubscriptionStep()

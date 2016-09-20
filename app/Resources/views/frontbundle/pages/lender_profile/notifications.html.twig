@@ -1,16 +1,14 @@
 {% extends 'layouts/_layout_lender.html.twig' %}
 
 {% set page = {
-id: 'user-preter-profile',
-title: 'Prêteur / Profil',
-permalink: route('user/preter/profile'),
-classNames: 'user-preter-profile'
+    id: 'user-preter-profile',
+    title: 'Prêteur / Profil',
+    permalink: route('user/preter/profile'),
+    classNames: 'user-preter-profile'
 } %}
-
 
 {% block dashboardContent %}
     <div class="dashboard-tabs tabs">
-
         {% include('pages/lender_profile/partials/tab_navigation.html.twig') %}
 
         <div class="dashboard-tabs-content tab-content">
@@ -28,9 +26,9 @@ classNames: 'user-preter-profile'
                                     <li>
                                         <label class="custom-input-switch" id="label-alert-{{ type }}-{{ key }}">
                                             <input type="checkbox" {% if isActived %}checked="checked"{% endif %} value="true" name="{{ type }}-{{ key }}" id="input-alert-{{ type }}-{{ key }}">
-                    <span class="label">
-                        <span class="sr-only">Switch off/on</span>
-                    </span>
+                                            <span class="label">
+                                                <span class="sr-only">Switch off/on</span>
+                                            </span>
                                         </label>
                                         <label for="input-alert-{{ type }}-{{ key }}">{{ "notification-settings_alart-#{ key }"|trans }}</label>
                                     </li>

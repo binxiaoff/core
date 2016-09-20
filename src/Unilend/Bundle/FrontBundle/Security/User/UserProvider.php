@@ -8,29 +8,29 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\FrontBundle\Service\NotificationDisplayManager;
 
 class UserProvider implements UserProviderInterface
 {
-    /** @var  EntityManager */
+    /** @var EntityManager */
     private $entityManager;
-    /** @var  ClientManager */
+    /** @var ClientManager */
     private $clientManager;
-    /** @var  NotificationManager */
-    private $notificationManager;
-    /** @var  LenderManager */
+    /** @var NotificationDisplayManager */
+    private $notificationDisplayManager;
+    /** @var LenderManager */
     private $lenderManager;
 
     /**
      * @inheritDoc
      */
-    public function __construct(EntityManager $entityManager, ClientManager $clientManager, NotificationManager $notificationManager, LenderManager $lenderManager)
+    public function __construct(EntityManager $entityManager, ClientManager $clientManager, NotificationDisplayManager $notificationDisplayManager, LenderManager $lenderManager)
     {
-        $this->entityManager       = $entityManager;
-        $this->clientManager       = $clientManager;
-        $this->notificationManager = $notificationManager;
-        $this->lenderManager       = $lenderManager;
+        $this->entityManager              = $entityManager;
+        $this->clientManager              = $clientManager;
+        $this->notificationDisplayManager = $notificationDisplayManager;
+        $this->lenderManager              = $lenderManager;
     }
 
     /**
@@ -58,15 +58,13 @@ class UserProvider implements UserProviderInterface
 
 
             if ($this->clientManager->isLender($client)) {
+                $lenderAccount->get($client->id_client, 'id_client_owner');
+
                 $roles[]                 = 'ROLE_LENDER';
                 $clientStatus            = $this->clientManager->getCurrentClientStatus($client);
                 $hasAcceptedCurrentTerms = $this->clientManager->hasAcceptedCurrentTerms($client);
-                $notificationsUnread     = $this->notificationManager->countUnreadNotificationsForClient($client);
-
-                $lenderAccount->get($client->id_client, 'id_client_owner');
-                $userLevel = $this->lenderManager->getDiversificationLevel($lenderAccount);
-
-
+                $notifications           = $this->notificationDisplayManager->getLenderNotifications($lenderAccount);
+                $userLevel               = $this->lenderManager->getDiversificationLevel($lenderAccount);
 
                 return new UserLender(
                     $client->email,
@@ -82,7 +80,7 @@ class UserProvider implements UserProviderInterface
                     $client->prenom,
                     $clientStatus,
                     $hasAcceptedCurrentTerms,
-                    $notificationsUnread,
+                    $notifications,
                     $client->etape_inscription_preteur,
                     $userLevel,
                     $lastLoginDate

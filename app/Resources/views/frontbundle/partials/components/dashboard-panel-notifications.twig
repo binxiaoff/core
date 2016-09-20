@@ -1,75 +1,5 @@
 {# Dashboard Panel Notifications #}
-{% import 'partials/modules/_list-notifications.macros.twig' as listNotifications %}
 
-{# Notifications #}
-{# This will need to reference the same notifications array as specified in _layout.html.twig #}
-{% set placeholderNotifications = [{
-  id: 8,
-  type: 'project-added',
-  title: 'Nouveau projet',
-  datetime: 'now'|date_modify('-1 minute')|date('j F, H:i'),
-  content: 'Created a new project.',
-  image: svgimage('#notification-project-added', 'Nouveau projet', 100, 100, 'none'),
-  status: 'unread'
-},{
-  id: 7,
-  type: 'offer-rejected',
-  title: 'Offre refusée',
-  datetime: 'now'|date_modify('-5 minutes')|date('j F, H:i'),
-  content: 'Votre offre de prêt de 45€ au taux de 9,4% à Garage Toniol a été refusée.',
-  image: svgimage('#notification-offer-rejected', 'Offre refusée', 100, 100, 'none'),
-  status: 'unread'
-},{
-  id: 6,
-  type: 'remboursement',
-  title: 'Remboursement',
-  datetime: 'now'|date_modify('-2 hours')|date('j F, H:i'),
-  content: 'Vous avez reçu un remboursement de 12,35€ de Garage Toniol.',
-  image: svgimage('#notification-remboursement', 'Remboursement', 100, 100, 'none'),
-  status: 'unread'
-},{
-  id: 5,
-  type: 'offer-accepted',
-  title: 'Remboursement',
-  datetime: 'now'|date_modify('-3 days')|date('j F, H:i'),
-  content: 'Vous avez reçu un remboursement de 12,35€ de Garage Toniol.',
-  image: svgimage('#notification-offer-accepted', 'Offre acceptée', 100, 100, 'none'),
-  status: 'unread'
-},{
-  id: 4,
-  type: 'account',
-  title: 'Solde bas',
-  datetime: 'now'|date_modify('-4 days')|date('j F, H:i'),
-  content: '',
-  image: svgimage('#notification-account-lowbalance', 'Solde bas', 100, 100, 'none'),
-  status: 'read'
-},{
-  id: 3,
-  type: 'remboursement',
-  title: 'Remboursement',
-  datetime: 'now'|date_modify('-5 days 8 hours 35 minutes')|date('j F, H:i'),
-  content: 'Vous avez reçu un remboursement de 12,35€ de Garage Toniol.',
-  image: svgimage('#notification-remboursement', 'Remboursement', 100, 100, 'none'),
-  status: 'read'
-},{
-  id: 2,
-  type: 'remboursement',
-  title: 'Remboursement',
-  datetime: 'now'|date_modify('-5 days 15 hours 20 minutes')|date('j F, H:i'),
-  content: 'Vous avez reçu un remboursement de 12,35€ de Garage Toniol.',
-  image: svgimage('#notification-remboursement', 'Remboursement', 100, 100, 'none'),
-  status: 'read'
-},{
-  id: 1,
-  type: 'project-added',
-  title: 'Nouveau projet',
-  datetime: 'now'|date_modify('-6.5 days')|date('j F, H:i'),
-  content: 'Created a new project.',
-  image: svgimage('#notification-project-added', 'Nouveau projet', 100, 100, 'none'),
-  status: 'read'
-}] %}
-
-{# Inherit from dashboard-panel component #}
 {% embed 'partials/components/dashboard-panel.html.twig' %}
   {# Panel classes #}
   {% block panelClassNames %}dashboard-panel-alt dashboard-notifications{% endblock %}
@@ -88,19 +18,37 @@
   {# Panel content #}
   {% block panelContent %}
 
-    {# @note I'd recommend only showing up to 15 notifications, because any more than that and a user's gonna be overloaded with too much info #}
-    {% include 'partials/components/list-notifications.html.twig' with {'settings': {
-        id: 'profile-notifications'
-    }, 'items': placeholderNotifications|slice(0, 20)} %}
-
+    <div id="profile-notifications" data-usernotificationslist>
+      <ul class="list-notifications">
+        {% for notification in app.user.notifications %}
+            <li class="notification notification-type-{{ notification.type|default('message')|escape('html_attr') }} ui-notification-status-{{ notification.status }}" data-notification-id="{{ notification.id|default(notification.datetime|date('U'))|escape('html_attr') }}">
+                <header class="notification-header">
+                    <h5 class="notification-datetime">{{ notification.datetime|localizeddate('medium', 'short') }}</h5>
+                    <h4 class="notification-title">{{ notification.title|raw }}</h4>
+                    <div class="notification-image">
+                        <span class="svg-icon-wrap">{{ svgimage('#notification-' ~ notification.image, notification.title, 100, 100, 'none')|raw }}</span>
+                    </div>
+                </header>
+                <div class="notification-content">
+                    <p>{{ notification.content|raw|nl2br }}</p>
+                </div>
+            </li><!-- /.notification -->
+        {% else %}
+          <li class="notification notification-type-empty">
+            <div class="notification-content">
+              <p>{% trans %} lender-notifications_empty-label {% endtrans %}</p>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
   {% endblock %}
 
   {# Panel footer #}
   {% block panelFooter %}
     {# @todo only show the "View more" button if there are more notifications than can be displayed on the side here #}
-    {% if placeholderNotifications|length > 20 %}
+    {% if app.user.notifications|length > 20 %}
         <a href="{{ route('user/preter/notifications') }}">Voir plus</a>
     {% endif %}
   {% endblock %}
-
 {% endembed %}

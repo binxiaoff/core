@@ -68,7 +68,7 @@ class notifications extends notifications_crud
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -88,6 +88,6 @@ class notifications extends notifications_crud
     {
         $sql    = 'SELECT * FROM `notifications` WHERE ' . $field . ' = "' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result) > 0);
+        return ($this->bdd->fetch_assoc($result) > 0);
     }
 }
