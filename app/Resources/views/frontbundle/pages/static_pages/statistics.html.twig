@@ -750,7 +750,7 @@ y: 46
             <div class="row">
                 <h3 class="c-t1">{% trans %} about-us-statistics_unilend-performances-chart-title {% endtrans %}</h3>
                 <div class="stats-chart stats-chart-unilend">
-                    <div class="chart" data-chartview='{{ unilendAccountChart|json_encode|escape('html_attr') }}'></div>
+                    <div class="chart" data-chartview='{{ placeholderData.charts.overviewStatistics|json_encode|escape('html_attr') }}'></div>
                     <div class="stats-chart-unilend-key">
                         <div class="row">
                             {% for i, series in placeholderData.charts.overviewStatistics.highcharts.series %}
