@@ -102,6 +102,17 @@ $pd-font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !default;
   background-color: $pd-title-bg;
 }
 
+.pika-label:after {
+  font-size: .75em;
+  padding: 0.25em;
+  content: '▼';
+  opacity: 0.4;
+}
+
+.pika-label:hover:after {
+  opacity: 1;
+}
+
 .pika-prev,
 .pika-next {
   display: block;
