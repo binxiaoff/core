@@ -122,10 +122,31 @@ class dossiersController extends bootstrap
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
         $oProjectManager = $this->get('unilend.service.project_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager $productManager */
+        $productManager = $this->get('unilend.service_product.product_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager $productAttrManager */
+        $productAttrManager = $this->get('unilend.service_product.product_attribute_manager');
+        /** @var \Symfony\Component\Translation\Translator translator */
+        $this->translator = $this->get('translator');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             $this->settings->get('Durée des prêts autorisées', 'type');
             $this->dureePossible = explode(',', $this->settings->value);
+            /** @var product $product */
+            $product = $this->loadData('product');
+
+            if ($product->get($this->projects->id_product)) {
+                $durationMax = $productManager->getMaxEligibleDuration($product);
+                $durationMin = $productManager->getMinEligibleDuration($product);
+
+                foreach ($this->dureePossible as $index => $duration) {
+                    if (is_numeric($durationMax) && $duration > $durationMax
+                        || is_numeric($durationMin) && $duration < $durationMin
+                    ) {
+                        unset($this->dureePossible[$index]);
+                    }
+                }
+            }
 
             if (false === in_array($this->projects->period, array(0, 1000000)) && false === in_array($this->projects->period, $this->dureePossible)) {
                 array_push($this->dureePossible, $this->projects->period);
@@ -296,6 +317,8 @@ class dossiersController extends bootstrap
                     $this->rate_max = $rateRange['rate_max'];
                 }
             }
+
+            $this->eligibleProduct = $productManager->findEligibleProducts($this->projects, true);
 
             if (isset($_POST['last_annual_accounts'])) {
                 $this->projects->id_dernier_bilan = $_POST['last_annual_accounts'];
@@ -582,8 +605,9 @@ class dossiersController extends bootstrap
                     $this->projects->id_borrowing_motive = $_POST['motive'];
 
                     if (false === $this->bReadonlyRiskNote) {
-                        $this->projects->period = $_POST['duree'];
-                        $this->projects->amount = str_replace([' ', ','], ['', '.'], $_POST['montant']);
+                        $this->projects->id_product = $_POST['assigned_product'];
+                        $this->projects->period     = $_POST['duree'];
+                        $this->projects->amount     = str_replace([' ', ','], ['', '.'], $_POST['montant']);
                     }
 
                     if ($this->projects->status <= \projects_status::A_FUNDER) {
@@ -614,7 +638,15 @@ class dossiersController extends bootstrap
 
                     $this->projects->update();
 
+                    if (empty($this->projects->id_product) && $this->projects->status >= projects_status::ATTENTE_ANALYSTE) {
+                        $_SESSION['freeow']['title']   = 'Sauvegarde du résumé';
+                        $_SESSION['freeow']['message'] = 'Aucun produit a été associé au projet';
+                        header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                        die;
+                    }
+
                     if ($_POST['status'] != $_POST['current_status'] && $this->projects->status != $_POST['status']) {
+
                         if ($_POST['status'] == \projects_status::PREP_FUNDING) {
                             $aProjects       = $this->projects->select('id_company = ' . $this->projects->id_company);
                             $aExistingStatus = array();
@@ -813,10 +845,17 @@ class dossiersController extends bootstrap
                     }
                 }
             }
+            if ($product instanceof \product) {
+                $eligibleNeeds = $productAttrManager->getProductAttributesByType($product, \product_attribute_type::ELIGIBLE_NEED);
+            } else {
+                $eligibleNeeds = [];
+            }
 
             /** @var \project_need $oProjectNeed */
             $oProjectNeed = $this->loadData('project_need');
-            $this->aNeeds = $oProjectNeed->getTree();
+            $needs        = $oProjectNeed->getTree();
+            $this->filterEligibleNeeds($needs, $eligibleNeeds);
+            $this->aNeeds = $needs;
 
             if (in_array($this->projects->status, [\projects_status::REJETE, \projects_status::REJET_ANALYSTE, \projects_status::REJET_COMITE])) {
                 /** @var \projects_status_history_details $oProjectsStatusHistoryDetails */
@@ -2922,5 +2961,28 @@ class dossiersController extends bootstrap
         }
 
         echo json_encode($aNames);
+    }
+
+    private function filterEligibleNeeds(&$needsTree, $eligibleNeeds)
+    {
+        if (false === empty($eligibleNeeds)) {
+            foreach ($needsTree as $index => &$need) {
+                if (in_array($need['id_project_need'], $eligibleNeeds)) {
+                    continue;
+                }
+
+                if (isset($need['children'])) {
+                    $this->filterEligibleNeeds($need['children'], $eligibleNeeds);
+                } else {
+                    if (false === in_array($need['id_project_need'], $eligibleNeeds)) {
+                        unset($needsTree[$index]);
+                    }
+                }
+                if (empty($need['children'])) {
+                    unset($needsTree[$index]);
+                }
+
+            }
+        }
     }
 }

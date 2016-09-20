@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Component\Intl\NumberFormatter\NumberFormatter;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -227,7 +228,6 @@ class ProjectsController extends Controller
         if (
             $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY')
             && $authorizationChecker->isGranted('ROLE_LENDER')
-            && $user instanceof UserLender
         ) {
             $request->getSession()->set('bidToken', $template['bidToken']);
 
@@ -242,6 +242,18 @@ class ProjectsController extends Controller
             if (false === empty($request->getSession()->get('bidResult'))) {
                 $template['lender']['bidResult'] = $request->getSession()->get('bidResult');
                 $request->getSession()->remove('bidResult');
+            }
+
+            $productManager = $this->get('unilend.service_product.product_manager');
+            $template['isLenderEligible'] = $productManager->isLenderEligible($lenderAccount, $project);
+            if (false === $template['isLenderEligible']) {
+                /** @var \product $product */
+                $product = $this->get('unilend.service.entity_manager')->getRepository('product');
+                $product->get($project->id_product);
+                $amountMax = $productManager->getMaxEligibleAmount($product);
+                $reasons = $productManager->getLenderValidationReasons($lenderAccount, $project);
+                $template['lenderNotEligibleReasons'] = $reasons;
+                $template['amountMax'] = $amountMax;
             }
         }
 
@@ -381,11 +393,7 @@ class ProjectsController extends Controller
         ) {
             /** @var EntityManager $entityManager */
             $entityManager = $this->get('unilend.service.entity_manager');
-
-            /** @var TranslationManager $translationManager */
-            $translationManager = $this->get('unilend.service.translation_manager');
-            $translations       = $translationManager->getAllTranslationsForSection('project-detail');
-
+            $translator    = $this->get('translator');
             /** @var \projects $project */
             $project = $entityManager->getRepository('projects');
 
@@ -396,12 +404,10 @@ class ProjectsController extends Controller
             /** @var UserLender $user */
             $user = $this->getUser();
 
-            if (
-                $user === null
-                || false === ($user instanceof UserLender)
+            if (false === ($user instanceof UserLender)
                 || $user->getClientStatus() < \clients_status::VALIDATED
             ) {
-                $request->getSession()->set('bidResult', ['error' => true, 'message' => $translations['side-bar-bids-user-logged-out']]);
+                $request->getSession()->set('bidResult', ['error' => true, 'message' => $translator->trans('project-detail_side-bar-bids-user-logged-out')]);
                 return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
 
@@ -413,63 +419,18 @@ class ProjectsController extends Controller
             $lenderAccount = $entityManager->getRepository('lenders_accounts');
             $lenderAccount->get($user->getClientId(), 'id_client_owner');
 
-            /** @var \settings $settings */
-            $settings = $entityManager->getRepository('settings');
-            $settings->get('pret min', 'type');
-            $bidMinAmount = $settings->value;
-
-            /** @var \bids $bids */
-            $bids = $entityManager->getRepository('bids');
-
-            $now        = new \DateTime('NOW');
-            $projectEnd = new \DateTime($project->date_retrait_full);
-
-            if ($now >= $projectEnd) {
-                $request->getSession()->set('bidResult', ['error' => true, 'message' => $translations['side-bar-bids-project-finished-message']]);
-                return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
-            }
-
-            /** @var \project_rate_settings $projectRateSettings */
-            $projectRateSettings = $entityManager->getRepository('project_rate_settings');
-            $projectRateSettings->get($this->get('unilend.service.project_manager')->getProjectRateRange($project));
-
-            $projectData['minRate'] = $projectRateSettings->rate_min;
-            $projectData['maxRate'] = $projectRateSettings->rate_max;
-
-            $maxCurrentRate = $bids->getProjectMaxRate($project);
-            $maxRate        = $projectRateSettings->rate_max;
-            $minRate        = $projectRateSettings->rate_min;
-            $totalBids      = $bids->getSoldeBid($project->id_project);
-            $bidAmount      = $post['amount'];
-            $rate           = $post['interest'];
-
-            if ($bidAmount != (int) $bidAmount || $bidAmount < $bidMinAmount || $bidAmount >= $project->amount) {
-                $request->getSession()->set('bidResult', ['error' => true, 'message' => $translations['side-bar-bids-invalid-amount']]);
-                return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
-            }
-
-            if ($user->getBalance() < $bidAmount) {
-                $request->getSession()->set('bidResult', ['error' => true, 'message' => $translations['side-bar-bids-low-balance']]);
-                return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
-            }
-
-            if (empty($rate) || $rate < $minRate || $rate > $maxRate || $totalBids >= $project->amount && $rate >= $maxCurrentRate) {
-                $request->getSession()->set('bidResult', ['error' => true, 'message' => $translations['side-bar-bids-invalid-rate']]);
-                return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
-            }
-
-            if ($project->status != \projects_status::EN_FUNDING) {
-                $request->getSession()->set('bidResult', ['error' => true, 'message' => $translations['side-bar-bids-invalid-project-status']]);
-                return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
-            }
+            $bidAmount = $post['amount'];
+            $rate      = $post['interest'];
 
             if ($request->getSession()->get('bidToken') !== $post['bidToken']) {
-                $request->getSession()->set('bidResult', ['error' => true, 'message' => $translations['side-bar-bids-invalid-security-token']]);
+                $request->getSession()->set('bidResult', ['error' => true, 'message' => $translator->trans('project-detail_side-bar-bids-invalid-security-token')]);
                 return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
 
             $request->getSession()->remove('bidToken');
 
+            /** @var \bids $bids */
+            $bids = $entityManager->getRepository('bids');
             $bids->unsetData();
             $bids->id_lender_account = $lenderAccount->id_lender_account;
             $bids->id_project        = $project->id_project;
@@ -478,13 +439,39 @@ class ProjectsController extends Controller
 
             /** @var BidManager $bidManager */
             $bidManager = $this->get('unilend.service.bid_manager');
-            $bidManager->bid($bids);
+            try {
+                $bidManager->bid($bids);
+                /** @var MemcacheCachePool $oCachePool */
+                $oCachePool = $this->get('memcache.default');
+                $oCachePool->deleteItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $project->id_project);
+                $request->getSession()->set('bidResult', ['success' => true, 'message' => $translator->trans('project-detail_side-bar-bids-bid-placed-message')]);
+            } catch (\Exception $exception) {
+                if ('bids-not-eligible' === $exception->getMessage()) {
+                    $productAttrManager = $this->get('unilend.service_product.product_attribute_manager');
+                    $productManager     = $this->get('unilend.service_product.product_manager');
 
-            /** @var MemcacheCachePool $oCachePool */
-            $oCachePool = $this->get('memcache.default');
-            $oCachePool->deleteItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $project->id_project);
+                    /** @var \product $product */
+                    $product = $entityManager->getRepository('product');
+                    $product->get($project->id_product);
 
-            $request->getSession()->set('bidResult', ['success' => true, 'message' => $translations['side-bar-bids-bid-placed-message']]);
+                    $amountMax = $productManager->getMaxEligibleAmount($product);
+
+                    $reasons    = $productManager->getBidValidatorReasons($bids, $product);
+                    $amountRest = 0;
+                    foreach ($reasons as $reason) {
+                        if ($reason === \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO) {
+                            $amountRest = $productManager->getAmountLenderCanStillBid($lenderAccount, $project, $productAttrManager, $entityManager);
+                        }
+                        $currencyFormatter = new \NumberFormatter($request->getLocale(), \NumberFormatter::CURRENCY);
+                        $amountRest = $currencyFormatter->formatCurrency($amountRest, 'EUR');
+                        $amountMax  = $currencyFormatter->formatCurrency($amountMax, 'EUR');
+
+                        $this->addFlash('bid_not_eligible_reason', $translator->trans('project-detail_bid-not-eligible-reason-' . $reason, ['%amountRest%' => $amountRest, '%amountMax%' => $amountMax]));
+                    }
+                } else {
+                    $request->getSession()->set('bidResult', ['error' => true, 'message' => $translator->trans('project-detail_side-bar-' . $exception->getMessage())]);
+                }
+            }
 
             return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
         }

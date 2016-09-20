@@ -90,9 +90,9 @@
                         <th><?=constant('\projects::RISK_' . $evaluation)?>*</th>
                     <?php endforeach; ?>
                 </tr>
-            <?php foreach ($this->aAutoBidSettings as $iPeriodId => $aPeriodSettings) : ?>
+            <?php foreach ($this->aAutoBidSettings as $aPeriodSettings) : ?>
                 <tr>
-                    <th scope="row"><?= $this->lng['autolend']['expert-settings-project-period-' . $iPeriodId] ?></th>
+                    <th scope="row"><?= $this->translator->trans('autolend_autobid-period-' . array_values($aPeriodSettings)[0]['id_period'], ['%min%' => array_values($aPeriodSettings)[0]['period_min'], '%max%' => array_values($aPeriodSettings)[0]['period_max']]); ?></th>
                     <?php foreach ($aPeriodSettings as $aSetting) : ?>
                         <td class="<?= (\autobid::STATUS_INACTIVE == $aSetting['status']) ? 'param-off' : '' ?>
                         <?= ($aSetting['rate_min'] <= round($aSetting['AverageRateUnilend'], 1) || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
@@ -140,6 +140,10 @@
             </thead>
             <tbody>
             <?php foreach ($this->lSumLoans as $iLoanIndex => $aProjectLoans): ?>
+                <?php
+                $this->contract->get($aProjectLoans['id_type_contract']);
+                $contractLabel = $this->translator->trans('contract-type-label_' . $this->contract->label);
+                ?>
                 <tr class="<?= $iLoanIndex % 2 ? '' : 'odd' ?>">
                     <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?>><?= $aProjectLoans['id_project'] ?></td>
                     <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?>><h5><a href="/dossiers/edit/<?= $aProjectLoans['id_project'] ?>"><?= $aProjectLoans['name'] ?></a></h5></td>
@@ -158,17 +162,7 @@
                         <?php if ($aProjectLoans['nb_loan'] == 1): ?>
                             <?php if ($aProjectLoans['project_status'] >= \projects_status::REMBOURSEMENT): ?>
                                 <a href="<?= $this->furl ?>/pdf/contrat/<?= $this->clients->hash ?>/<?= $aProjectLoans['id_loan_if_one_loan'] ?>">
-                                    <?php switch($aProjectLoans['id_type_contract']) {
-                                        case \loans::TYPE_CONTRACT_IFP:
-                                            echo 'Contrat IFP';
-                                            break;
-                                        case \loans::TYPE_CONTRACT_BDC:
-                                            echo 'Bon de Caisse';
-                                            break;
-                                        default :
-                                            trigger_error('Type de contrat inconnue', E_USER_NOTICE);
-                                            break;
-                                    } ?>
+                                    <?= $contractLabel ?>
                                 </a>
                             <?php endif; ?>
                             <?php if (in_array($aProjectLoans['id_project'], $this->aProjectsInDebt)): ?>
@@ -194,7 +188,7 @@
                             <td>
                                 <?php if ($aProjectLoans['project_status'] >= \projects_status::REMBOURSEMENT): ?>
                                     <a href="<?= $this->furl ?>/pdf/contrat/<?= $this->clients->hash ?>/<?= $aLoan['id_loan'] ?>">
-                                        <?= ($aLoan['id_type_contract'] == \loans::TYPE_CONTRACT_IFP) ? 'Contrat IFP' : 'Bon de Caisse' ?>
+                                        <?= $contractLabel ?>
                                     </a>
                                 <?php endif; ?>
                                 <?php if (in_array($aProjectLoans['id_project'], $this->aProjectsInDebt)): ?>

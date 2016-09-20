@@ -67,72 +67,82 @@
                             {{ lender.bidResult.message }}
                         </p>
                     {% endif %}
-
-                    {% if project.maxValidRate > project.minRate %}
-                        <form action="{{ path('place_bid', {'projectId' : project.projectId}) }}" method="post" class="project-single-form project-single-form-invest" data-bid-confirmation>
-                            <div class="row">
-                                <div class="form-field col-sm-4">
-                                    <div class="row col-sm-7">
-                                        <div class="col-lg-6 col-md-6">
-                                            <p class="text-align-right show-lg">
-                                                <label for="bid-interest">{% trans %} project-detail_side-bar-bids-rate-label {% endtrans %}</label>
-                                            </p>
-                                            <p class="text-align-right show-md">
-                                                <label for="bid-interest">{% trans %} project-detail_side-bar-bids-rate-label {% endtrans %}</label>
-                                            </p>
-                                            <p class="show-sm">
-                                                <label for="bid-interest">{% trans %} project-detail_side-bar-bids-rate-label {% endtrans %}</label>
-                                            </p>
-                                            <p class="show-xs">
-                                                <label for="bid-interest">{% trans %} project-detail_side-bar-bids-rate-label {% endtrans %}</label>
-                                            </p>
+                    {% if app.session.flashBag.has('bid_not_eligible_reason') %}
+                        {% for reason in app.session.flashBag.get('bid_not_eligible_reason') %}
+                            <p class="c-error">{{ reason }}</p>
+                        {% endfor %}
+                    {% endif %}
+                    {% if isLenderEligible is defined and isLenderEligible == false %}
+                        {% for reason in lenderNotEligibleReasons %}
+                            <p>{{ ('project-detail_lender-not-eligible-reason-' ~ reason)|trans({'%amountMax%': amountMax|localizedcurrency('EUR')}) }}</p>
+                        {% endfor %}
+                    {% else %}
+                        {% if project.maxValidRate > project.minRate %}
+                            <form action="{{ path('place_bid', {'projectId' : project.projectId}) }}" method="post" class="project-single-form project-single-form-invest" data-bid-confirmation>
+                                <div class="row">
+                                    <div class="form-field col-sm-4">
+                                        <div class="row col-sm-7">
+                                            <div class="col-lg-6 col-md-6">
+                                                <p class="text-align-right show-lg">
+                                                    <label for="bid-interest">{% trans %} project-detail_side-bar-bids-rate-label {% endtrans %}</label>
+                                                </p>
+                                                <p class="text-align-right show-md">
+                                                    <label for="bid-interest">{% trans %} project-detail_side-bar-bids-rate-label {% endtrans %}</label>
+                                                </p>
+                                                <p class="show-sm">
+                                                    <label for="bid-interest">{% trans %} project-detail_side-bar-bids-rate-label {% endtrans %}</label>
+                                                </p>
+                                                <p class="show-xs">
+                                                    <label for="bid-interest">{% trans %} project-detail_side-bar-bids-rate-label {% endtrans %}</label>
+                                                </p>
+                                            </div>
+                                            <label class="col-lg-5 col-md-5 push-lg-1 push-md-1">
+                                                <select id="bid-interest" name="invest[interest]" class="input-field" data-popup-rate >
+                                                    <option value="">{% trans %} project-detail_side-bar-bids-rate-placeholder {% endtrans %}</option>
+                                                    {% for rate in range(project.maxValidRate - 0.1, project.minRate, 0.1) %}
+                                                        <option value="{{ rate }}">{{ rate|localizednumberwithprecision(1) }} %</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </label>
                                         </div>
-                                        <label class="col-lg-5 col-md-5 push-lg-1 push-md-1">
-                                            <select id="bid-interest" name="invest[interest]" class="input-field" data-popup-rate >
-                                                <option value="">{% trans %} project-detail_side-bar-bids-rate-placeholder {% endtrans %}</option>
-                                                {% for rate in range(project.maxValidRate - 0.1, project.minRate, 0.1) %}
-                                                    <option value="{{ rate }}">{{ rate|localizednumberwithprecision(1) }} %</option>
-                                                {% endfor %}
-                                            </select>
-                                        </label>
-                                    </div>
-                                </div><!-- /.form-field -->
-                                <div class="form-field col-sm-4">
-                                    <div class="row col-sm-7 push-sm-1">
-                                        <div class="col-lg-6 col-md-6">
-                                            <p class="text-align-right show-lg">
-                                                <label for="bid-amount">{% trans %} project-detail_side-bar-bids-amount-label {% endtrans %}</label>
-                                            </p>
-                                            <p class="text-align-right show-md">
-                                                <label for="bid-amount">{% trans %} project-detail_side-bar-bids-amount-label {% endtrans %}</label>
-                                            </p>
-                                            <p class="show-sm">
-                                                <label for="bid-amount">{% trans %} project-detail_side-bar-bids-amount-label {% endtrans %}</label>
-                                            </p>
-                                            <p class="show-xs">
-                                                <label for="bid-amount">{% trans %} project-detail_side-bar-bids-amount-label {% endtrans %}</label>
-                                            </p>
-                                        </div>
-                                        <div class="col-lg-5 col-md-5 push-lg-1 push-md-1">
-                                            <div class="input-group set-right">
-                                                <div class="btn-group"><span class="icon fa-euro"></span></div>
-                                                <input id="bid-amount" type="text" name="invest[amount]" value="" placeholder="{% trans %} project-detail_side-bar-bids-amount-placeholder {% endtrans %}" class="input-field" data-popup-amount >
+                                    </div><!-- /.form-field -->
+                                    <div class="form-field col-sm-4">
+                                        <div class="row col-sm-7 push-sm-1">
+                                            <div class="col-lg-6 col-md-6">
+                                                <p class="text-align-right show-lg">
+                                                    <label for="bid-amount">{% trans %} project-detail_side-bar-bids-amount-label {% endtrans %}</label>
+                                                </p>
+                                                <p class="text-align-right show-md">
+                                                    <label for="bid-amount">{% trans %} project-detail_side-bar-bids-amount-label {% endtrans %}</label>
+                                                </p>
+                                                <p class="show-sm">
+                                                    <label for="bid-amount">{% trans %} project-detail_side-bar-bids-amount-label {% endtrans %}</label>
+                                                </p>
+                                                <p class="show-xs">
+                                                    <label for="bid-amount">{% trans %} project-detail_side-bar-bids-amount-label {% endtrans %}</label>
+                                                </p>
+                                            </div>
+                                            <div class="col-lg-5 col-md-5 push-lg-1 push-md-1">
+                                                <div class="input-group set-right">
+                                                    <div class="btn-group"><span class="icon fa-euro"></span></div>
+                                                    <input id="bid-amount" type="text" name="invest[amount]" value="" placeholder="{% trans %} project-detail_side-bar-bids-amount-placeholder {% endtrans %}" class="input-field" data-popup-amount >
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </div><!-- /.form-field -->
+                                    </div><!-- /.form-field -->
+                                </div>
+                                <div class="btn-toolbar">
+                                    <button type="submit" class="btn-primary btn-size-full cursor">{% trans %} project-detail_side-bar-bids-submit-button {% endtrans %}</button>
+                                    <input type="hidden" name="invest[bidToken]" value="{{ bidToken }}">
+                                    <input type="hidden" id="bid-duration" value="{{ project.duration }}">
+                                </div><!-- /.btn-toolbar -->
+                                <div class="field-help">&nbsp;</div>
+                            </form><!-- /.project-single-form-invest -->
+                        {% else %}
+                            <div class="field-help">
+                                <p>{% trans %} project-detail_low-boundary-rate-alert {% endtrans %}</p>
                             </div>
-                            <div class="btn-toolbar">
-                                <button type="submit" class="btn-primary btn-size-full cursor">{% trans %} project-detail_side-bar-bids-submit-button {% endtrans %}</button>
-                                <input type="hidden" name="invest[bidToken]" value="{{ bidToken }}">
-                                <input type="hidden" id="bid-duration" value="{{ project.duration }}">
-                            </div><!-- /.btn-toolbar -->
-                            <div class="field-help">&nbsp;</div>
-                        </form><!-- /.project-single-form-invest -->
-                    {% else %}
-                        <div class="field-help">
-                            <p>{% trans %} project-detail_low-boundary-rate-alert {% endtrans %}</p>
-                        </div>
+                        {% endif %}
                     {% endif %}
                 {% endif %}
             {% else %}

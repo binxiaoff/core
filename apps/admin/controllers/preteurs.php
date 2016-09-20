@@ -1354,6 +1354,10 @@ class preteursController extends bootstrap
         $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
         $this->echeanciers             = $this->loadData('echeanciers');
         $this->tax                     = $this->loadData('tax');
+        /** @var underlying_contract contract */
+        $this->contract                = $this->loadData('underlying_contract');
+        /** @var \Symfony\Component\Translation\TranslatorInterface translator */
+        $this->translator              = $this->get('translator');
 
         $this->lenders_accounts->get($this->params[0], 'id_lender_account');
         $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');

@@ -48,17 +48,6 @@ class LoanManager
             $oAcceptedBid->create();
 
             if ($oAcceptedBid->id_accepted_bid > 0 && $this->oLogger instanceof LoggerInterface) {
-                switch ($oLoan->id_type_contract) {
-                    case \loans::TYPE_CONTRACT_BDC:
-                        $sType = 'BDC';
-                        break;
-                    case \loans::TYPE_CONTRACT_IFP:
-                        $sType = 'IFP';
-                        break;
-                    default:
-                        $sType = 'UNKNOWN';
-                        break;
-                }
                 $this->oLogger->info(
                     'Loan ' . $oLoan->id_loan . ' generated from bid ' . $aAcceptedBid['bid_id'] . ' with amount ' . $aAcceptedBid['amount'],
                     array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oLoan->id_project, 'id_loan' => $oLoan->id_loan, 'id_bid' => $aAcceptedBid['bid_id'])
