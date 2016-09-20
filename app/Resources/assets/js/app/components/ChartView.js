@@ -566,7 +566,7 @@ ChartView.prototype.render = function (data, schema) {
 
               // Generate the SVG category image
               var svgCategory = Utility.svgImage(svgIconId, this.key, maxSize, maxSize)
-              return '<div class="chartview-svg-label" style="width: ' + maxSize + 'px; height: ' + maxSize + 'px;">' + svgCategory + '&nbsp;</div>'
+              return '<div class="chartview-svg-label" style="width: ' + maxSize + 'px; height: ' + maxSize + 'px;" data-chartview-sector-toggle="' + this.point.svgIconId + '">' + svgCategory + '&nbsp;</div>'
             }
           })
 
@@ -797,4 +797,16 @@ $(document)
   // Ensure refresh of chartview if item is visible/updated
   .on('UI:visible UI:update', function (event) {
     $(event.target).find('[data-chartview], .ui-chartview').uiChartView('refresh')
+  })
+
+  // Click a data label that corresponds to a sector
+  .on(Utility.clickEvent, '[data-chartview-sector-toggle]', function (event) {
+    var svgIconId =  $(this).attr('data-chartview-sector-toggle')
+    event.preventDefault()
+
+    // Hide all the other sector info
+    $('[data-chartview-sector]').not('[data-chartview-sector="' + svgIconId + '"]').hide()
+
+    // Show this sector's info
+    $('[data-chartview-sector="' + svgIconId + '"]').show()
   })
