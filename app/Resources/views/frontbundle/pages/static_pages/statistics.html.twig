@@ -31,6 +31,197 @@
     }
 }
 %}
+
+{% set preterStatisticsMap = {
+type: 'preterStatisticsMap',
+loadFirst: {
+mapData: '/assets/js/vendor/geojson/fr-regions-all.json'
+},
+background: 'none',
+highcharts: {
+chart: {
+type: 'map'
+},
+title: {
+text: ''
+},
+mapNavigation: {
+enabled: false
+},
+legend: {
+enabled: false
+},
+tooltip: {
+enabled: true,
+headerFormat: '',
+pointFormat: '{point.name}: {point.value}%'
+},
+colorAxis: {
+minColor: 'rgba(180,0,102,.1)',
+maxColor: 'rgba(180,0,102,.8)'
+},
+series: [{
+data: getStatistic('LendersByRegion'),
+joinBy: 'insee',
+color: 'rgba(180,0,102,.2)',
+borderColor: '#ffffff',
+borderWidth: 2,
+showInLegend: false,
+dataLabels: {
+enabled: false
+},
+states: {
+hover: {
+color: '#B40066'
+}
+},
+showInLegend: false
+}]
+}
+} %}
+
+{% set emprunterStatisticsMap = {
+type: 'emprunterStatisticsMap',
+loadFirst: {
+mapData: '/assets/js/vendor/geojson/fr-regions-all.json'
+},
+background: 'none',
+highcharts: {
+chart: {
+type: 'map'
+},
+title: {
+text: ''
+},
+mapNavigation: {
+enabled: false
+},
+legend: {
+enabled: false
+},
+tooltip: {
+enabled: true,
+headerFormat: '',
+pointFormat: '{point.name}: {point.value}%'
+},
+colorAxis: {
+minColor: 'rgba(180,0,102,.1)',
+maxColor: 'rgba(180,0,102,.8)'
+},
+series: [{
+data: getStatistic('BorrowersByRegion'),
+joinBy: 'insee',
+color: 'rgba(180,0,102,.2)',
+borderColor: '#ffffff',
+borderWidth: 2,
+showInLegend: false,
+dataLabels: {
+enabled: false
+},
+states: {
+hover: {
+color: '#B40066'
+}
+},
+showInLegend: false
+}]
+}
+}
+%}
+
+{% set overviewStatistics = {
+type: 'preterProjectsOverview',
+background: 'none',
+highcharts: {
+chart: {
+type: 'pie',
+height: 300,
+plotBackgroundColor: null,
+plotBorderWidth: null,
+plotShadow: null,
+spacingTop: 0,
+spacingBottom: 0
+},
+title: {
+text: ''
+},
+subtitle: {
+text: 'TRI positif au-delà de ce seuil',
+color: '#999999',
+floating: true,
+useHTML: true,
+verticalAlign: 'middle'
+},
+plotOptions: {
+pie: {
+borderColor: 'none',
+borderWidth: 0,
+showInLegend: true,
+dataLabels: {
+enabled: false
+}
+}
+},
+legend: {
+symbolRadius: 10
+},
+series: [{
+name: 'Montant',
+minSize: 120,
+innerSize: '90%',
+endAngle: 270,
+data: [{
+name: 'Montant Prêté',
+color: '#5FC5D1',
+y: 252
+}]
+},{
+name: 'Capital',
+size: '66%',
+minSize: 100,
+innerSize: '90%',
+endAngle: 270,
+data: [{
+name: 'Capital remboursé',
+color: '#1B88DB',
+y: 52
+},{
+name: 'Capital en attente',
+color: '#B6D4E4',
+y: 200
+},{
+name: 'Capital en difficulté',
+color: '#F76965',
+y: 5
+}]
+},{
+name: 'Intérêts',
+minSize: 80,
+size: '33%',
+innerSize: '90%',
+endAngle: 330,
+data: [{
+name: '',
+color: '#eeeeee',
+dataLabels: {
+enabled: false
+},
+showInLegend: false,
+y: 225,
+tooltip: false
+},{
+name: 'Intérêts reçus',
+color: '#F2980C',
+y: 18
+},{
+name: 'Intérêts à recevoir',
+color: '#FFCA2C',
+y: 46
+}]
+}]
+}
+} %}
+
 {# the intended algorith was squiarfied, however we have too small values, it looks better in strip. To be changed once be have a better ratio in the categories #}
 
 {#{% set unilendAccountChart = {#}
@@ -139,200 +330,7 @@
 {#} %}#}
 
 
-{# Placeholder Data #}
-{% set placeholderData = {
-charts: {
-preterStatisticsMap: {
-type: 'preterStatisticsMap',
-loadFirst: {
-mapData: '/assets/js/vendor/geojson/fr-regions-all.json'
-},
-background: 'none',
-highcharts: {
-chart: {
-type: 'map'
-},
-title: {
-text: ''
-},
-mapNavigation: {
-enabled: false
-},
-legend: {
-enabled: false
-},
-tooltip: {
-enabled: true,
-headerFormat: '',
-pointFormat: '{point.name}: {point.value}%'
-},
-colorAxis: {
-minColor: 'rgba(180,0,102,.1)',
-maxColor: 'rgba(180,0,102,.8)'
-},
-series: [{
-data: getStatistic('LendersByRegion'),
-joinBy: 'insee',
-color: 'rgba(180,0,102,.2)',
-borderColor: '#ffffff',
-borderWidth: 2,
-showInLegend: false,
-dataLabels: {
-enabled: false
-},
-states: {
-hover: {
-color: '#B40066'
-}
-},
-showInLegend: false
-}]
-}
-},
-
-emprunterStatisticsMap: {
-type: 'emprunterStatisticsMap',
-loadFirst: {
-mapData: '/assets/js/vendor/geojson/fr-regions-all.json'
-},
-background: 'none',
-highcharts: {
-chart: {
-type: 'map'
-},
-title: {
-text: ''
-},
-mapNavigation: {
-enabled: false
-},
-legend: {
-enabled: false
-},
-tooltip: {
-enabled: true,
-headerFormat: '',
-pointFormat: '{point.name}: {point.value}%'
-},
-colorAxis: {
-minColor: 'rgba(180,0,102,.1)',
-maxColor: 'rgba(180,0,102,.8)'
-},
-series: [{
-data: getStatistic('BorrowersByRegion'),
-joinBy: 'insee',
-color: 'rgba(180,0,102,.2)',
-borderColor: '#ffffff',
-borderWidth: 2,
-showInLegend: false,
-dataLabels: {
-enabled: false
-},
-states: {
-hover: {
-color: '#B40066'
-}
-},
-showInLegend: false
-}]
-}
-},
-
-overviewStatistics: {
-type: 'preterProjectsOverview',
-background: 'none',
-highcharts: {
-chart: {
-type: 'pie',
-height: 300,
-plotBackgroundColor: null,
-plotBorderWidth: null,
-plotShadow: null,
-spacingTop: 0,
-spacingBottom: 0
-},
-title: {
-text: ''
-},
-subtitle: {
-text: 'TRI positif au-delà de ce seuil',
-color: '#999999',
-floating: true,
-useHTML: true,
-verticalAlign: 'middle'
-},
-plotOptions: {
-pie: {
-borderColor: 'none',
-borderWidth: 0,
-showInLegend: true,
-dataLabels: {
-enabled: false
-}
-}
-},
-legend: {
-symbolRadius: 10
-},
-series: [{
-name: 'Montant',
-minSize: 120,
-innerSize: '90%',
-endAngle: 270,
-data: [{
-name: 'Montant Prêté',
-color: '#5FC5D1',
-y: 252
-}]
-},{
-name: 'Capital',
-size: '66%',
-minSize: 100,
-innerSize: '90%',
-endAngle: 270,
-data: [{
-name: 'Capital remboursé',
-color: '#1B88DB',
-y: 52
-},{
-name: 'Capital en attente',
-color: '#B6D4E4',
-y: 200
-},{
-name: 'Capital en difficulté',
-color: '#F76965',
-y: 5
-}]
-},{
-name: 'Intérêts',
-minSize: 80,
-size: '33%',
-innerSize: '90%',
-endAngle: 330,
-data: [{
-name: '',
-color: '#eeeeee',
-dataLabels: {
-enabled: false
-},
-showInLegend: false,
-y: 225,
-tooltip: false
-},{
-name: 'Intérêts reçus',
-color: '#F2980C',
-y: 18
-},{
-name: 'Intérêts à recevoir',
-color: '#FFCA2C',
-y: 46
-}]
-}]
-}
-}
-},
-
-"stats": {
+{% set stats = {
 "gross": [{
 "label": "Capital emprunté",
 "data": {
@@ -490,7 +488,6 @@ y: 46
 "label": "Taux incident CMF R548-3°b) 1er tiret (nombre contrats de prêts sous staut IFP)",
 "data": "0%"
 }]
-}
 } %}
 
 <section id="section-intro" class="page-section">
@@ -540,7 +537,7 @@ y: 46
                 </div><!-- /.promos -->
                 <div class="stats-charts row">
                     <figure class="stats-chart stats-map">
-                        <div class="chart" data-chartview='{{ placeholderData.charts.preterStatisticsMap|json_encode|escape('html_attr') }}'>
+                        <div class="chart" data-chartview='{{ preterStatisticsMap|json_encode|escape('html_attr') }}'>
                             {# @todo Chart #}
                             {# <img src="{{ siteurlmedia('apropos/statistiques/map-fr-repartition.png') }}" alt="" /> #}
                         </div>
@@ -635,7 +632,7 @@ y: 46
                 <div class="stats-charts row">
                     <div class="col-lg-6 col-md-6">
                         <figure class="stats-chart stats-map">
-                            <div class="chart" data-chartview='{{ placeholderData.charts.emprunterStatisticsMap|json_encode|escape('html_attr') }}'></div>
+                            <div class="chart" data-chartview='{{ emprunterStatisticsMap|json_encode|escape('html_attr') }}'></div>
                             <figcaption><p>{% trans %} about-us-statistics_borrower-statistics-region-map-title {% endtrans %}</p></figcaption>
                         </figure>
                     </div>
@@ -730,10 +727,10 @@ y: 46
             <div class="row">
                 <h3 class="c-t1">{% trans %} about-us-statistics_unilend-performances-chart-title {% endtrans %}</h3>
                 <div class="stats-chart stats-chart-unilend">
-                    <div class="chart" data-chartview='{{ placeholderData.charts.overviewStatistics|json_encode|escape('html_attr') }}'></div>
+                    <div class="chart" data-chartview='{{ overviewStatistics|json_encode|escape('html_attr') }}'></div>
                     <div class="stats-chart-unilend-key">
                         <div class="row">
-                            {% for i, series in placeholderData.charts.overviewStatistics.highcharts.series %}
+                            {% for i, series in overviewStatistics.highcharts.series %}
                                 {% for j, dataItem in series.data if dataItem.showInLegend is defined and dataItem.showInLegend != false %}
                                     <div class="chart-key col-lg-4 col-md-4 col-sm-4 col-xs-2">
                                         <div class="icon" style="background-color: {{ dataItem.color|default(series.color) }}"></div>
@@ -760,7 +757,7 @@ y: 46
                             </tr>
                         </thead>
                         <tbody>
-                            {% for i, item in placeholderData.stats.gross %}
+                            {% for i, item in stats.gross %}
                                 <tr>
                                     {% if item.data is iterable %}
                                         <td class="table-stats-unilend-item-label">{{ item.label|raw }}</td>
