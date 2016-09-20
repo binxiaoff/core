@@ -180,10 +180,8 @@ class LocationManager
                 if ($row['insee_region_code'] != 0) {
                     $region = array(
                         'name' => $frenchRegions[$row['insee_region_code']],
-//                    'insee' => (string) str_pad($row['insee_region_code'], 2, '0', STR_PAD_LEFT),
                         'insee' => $row['insee_region_code'],
-                        'count' => (int)$row['count'],
-                        'percentage' => (float)bcdiv($row['count'], $total, 2) * 100
+                        'value' => (float)bcdiv($row['count'], $total, 2) * 100
                     );
                     $regions[] = $region;
                 }
@@ -192,8 +190,7 @@ class LocationManager
                     $region = array(
                         'name' => $frenchRegions[$insee],
                         'insee' => (string)$insee,
-                        'count' => (int)$row,
-                        'percentage' => (float)bcdiv($row, $total, 2) * 100
+                        'value' => (float)bcdiv($row, $total, 2) * 100
                     );
                     $regions[] = $region;
                 }
