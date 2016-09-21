@@ -121,7 +121,7 @@ title: 'Contact'
                         <label for="contact-message-email">{% trans %}common_email{% endtrans %}
                             <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                         </label>
-                        <input type="text" id="contact-message-email" name="message[email]" value="{{ formData.email|default('') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                        <input type="email" id="contact-message-email" name="message[email]" value="{{ formData.email|default('') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true">
                     </div><!-- /.form-field -->
                 </div>
                 <div class="col-lg-4 col-md-4 col-sm-4">

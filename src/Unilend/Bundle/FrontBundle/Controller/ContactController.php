@@ -121,7 +121,7 @@ class ContactController extends Controller
             $this->addFlash('contactErrors', $translator->trans('common-validator_first-name-empty'));
         }
 
-        if (empty($post['email']) || false == filter_var($post['email'])) {
+        if (empty($post['email']) || false == filter_var($post['email'], FILTER_VALIDATE_EMAIL)) {
             $this->addFlash('contactErrors', $translator->trans('common-validator_email-address-invalid'));
         }
 
