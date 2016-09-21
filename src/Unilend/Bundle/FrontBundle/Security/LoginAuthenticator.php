@@ -149,8 +149,8 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         }
 
         if ($user instanceof UserInterface && in_array('ROLE_LENDER', $user->getRoles())) {
-            if ($user->getSubscriptionStep() < 3) {
-                return new RedirectResponse($this->router->generate('lender_subscription'));
+            if ($client->etape_inscription_preteur < 3) {
+                return new RedirectResponse($this->router->generate('lender_subscription_documents', ['clientHash' => $client->hash]));
             }
 
             if (in_array($user->getClientStatus(), [\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER])) {

@@ -84,7 +84,11 @@ class UserLender extends BaseUser
 
     public function getUnreadNotificationsCount()
     {
-        return array_count_values(array_column($this->notifications, 'status'))['unread'];
+        if (in_array('unread', array_column($this->notifications, 'status'))) {
+            return array_count_values(array_column($this->notifications, 'status'))['unread'];
+        }
+
+        return 0;
     }
 
     public function getSubscriptionStep()
