@@ -89,7 +89,8 @@ trait LenderChecker
      */
     public function isLenderEligibleForMaxTotalAmount(\lenders_accounts $lender, \projects $project, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
     {
-        return $this->getAmountLenderCanStillBid($lender, $project, $productAttributeManager, $entityManager) > 0;
+        $amountRest = $this->getAmountLenderCanStillBid($lender, $project, $productAttributeManager, $entityManager);
+        return $amountRest === null || $amountRest > 0;
     }
 
     public function getMaxEligibleAmount(\product $product, ProductAttributeManager $productAttributeManager)
