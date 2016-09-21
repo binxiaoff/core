@@ -139,94 +139,13 @@
                 </thead>
                 <tbody data-sortable-content>
                 {% for i, loan in lenderLoans %}
-
-                    {#{{ dump(loan) }}#}
-
-                    {# @TODO Remove below when new loan structure has been implemented into PHP controller #}
-                    {# New loan structure `loan` var should be injected into `data-details` as JSON object #}
-
-                    {# Process loan document details due to fragmented loan model #}
-                    {% set loans = [] %}
-                    {% set countBonds = 0 %}
-                    {% set countContracts = 0 %}
-
-                    {# Single loan has documents property... #}
-                    {% if loan.documents is defined %}
-                        {% set newDocs = [] %}
-                        {% for x, doc in loan.documents %}
-                            {% set newDoc = {
-                                url: doc.url,
-                                type: doc.docType,
-                                label: doc.docTypeName
-                            } %}
-                            {% if newDoc.type == 'bond' %}
-                                {% set countBonds = countBonds + 1 %}
-                            {% elseif newDoc.type == 'contract' %}
-                                {% set countContracts = countContracts + 1 %}
-                            {% endif %}
-                            {% set newDocs = newDocs|merge([newDoc]) %}
-                        {% endfor %}
-                        {% set loans = loans|merge([{
-                            rate: loan.rate,
-                            amount: loan.amount,
-                            documents: newDocs
-                        }]) %}
-                    {% endif %}
-
-                    {# Multiple loans has loan_details property with nested documents property #}
-                    {% if loan.loan_details is defined %}
-                        {% for w, loanDetails in loan.loan_details if loanDetails.documents is defined %}
-                            {% set newDocs = [] %}
-                            {% for x, doc in loanDetails.documents %}
-                                {% set newDoc = {
-                                    url: doc.url,
-                                    type: doc.docType,
-                                    label: doc.docTypeName
-                                } %}
-                                {% if newDoc.type == 'bond' %}
-                                    {% set countBonds = countBonds + 1 %}
-                                {% elseif newDoc.type == 'contract' %}
-                                    {% set countContracts = countContracts + 1 %}
-                                {% endif %}
-                                {% set newDocs = newDocs|merge([newDoc]) %}
-                            {% endfor %}
-                            {% set loans = loans|merge([{
-                                rate: loanDetails.rate,
-                                amount: loanDetails.amount,
-                                documents: newDocs
-                            }]) %}
-                        {% endfor %}
-                    {% endif %}
-
-                    {# Set the loan details as JSON for rendering client-side when details are visible #}
-                    {% set loan = {
-                        id: loan.id_project,
-                        url: path('project_detail', {'projectSlug' : loan.slug}),
-                        name: loan.title,
-                        rate: loan.rate,
-                        risk: loan.risk|convertRisk,
-                        amount: loan.amount,
-                        start_date: loan.debut,
-                        end_date: loan.fin,
-                        next_payment_date: loan.next_echeance,
-                        monthly: loan.mensuel,
-                        duration: loan.project_duration,
-                        status: loan.status_color,
-                        loans: loans,
-                        count: {
-                            bond: countBonds,
-                            contract: countContracts,
-                            declaration: 0
-                        }
-                    } %}
-
                     <tr id="loan-{{ loan.id }}" class="table-myloans-item {{ 'ui-loan-status-' ~ loan.status }}"
                         data-sortable-status="{{ loan.status }}"
                         data-sortable-project="{{ loan.name|escape('html_attr') }}"
-                        data-sortable-rating="{{ loan.risk }}"
+                        data-sortable-rating="{{ loan.risk|convertRisk }}"
                         data-sortable-amount="{{ loan.amount }}"
                         data-sortable-interest="{{ loan.rate }}"
-                        data-sortable-monthly="{{ loan.monthly }}"
+                        data-sortable-monthly="{{ loan.last_perceived_repayment }}"
                         data-sortable-next="{{ loan.next_payment_date|date('U') }}"
                         data-sortable-duration="{{ loan.duration }}"
                             {% if loan.loans|length > 1 %} data-details='{{ loan|json_encode|escape('html_attr') }}' {% endif %}>
@@ -234,7 +153,7 @@
                             <a href="{{ loan.url }}" target="_blank">{{ loan.name }}</a>
                         </td>
                         <td class="table-myloans-item-rating">
-                            <span class="rating rating-{{ loan.risk|split('.')|join('-') }}"><span class="sr-only">Rated {{ loan.risk }} out of 5</span></span>
+                            <span class="rating rating-{{ loan.risk|convertRisk|split('.')|join('-') }}"><span class="sr-only">{% trans with {'%risk%': loan.risk|convertRisk} %} lender-operations_unilend-rating-wording-label {% endtrans %}</span></span>
                         </td>
                         <td class="table-myloans-item-amount">
                             {{ loan.amount|localizednumber }}&nbsp;€
@@ -246,23 +165,21 @@
                             {% if loan.project_status == constant('\\projects_status::REMBOURSEMENT_ANTICIPE') or loan.project_status == constant('\\projects_status::REMBOURSE') %}
                                 &nbsp;
                             {% else %}
-                                {{ loan.mensuel|localizedcurrency('EUR') }}
+                                {{ loan.last_perceived_repayment|localizedcurrency('EUR') }}
                             {% endif %}
                         </td>
                         <td class="table-myloans-item-next">
-                            {{ loan.next_payment_date|date('d/m/y') }}
                             {% if loan.project_status == constant('\\projects_status::REMBOURSEMENT_ANTICIPE') or loan.project_status == constant('\\projects_status::REMBOURSE') %}
-                                {% trans with {'%date%': loan.debut|date('d/m/Y')} %} lender-operations_loans-table-project-status-label-repayment-finished-on-date {% endtrans %}
+                                {% trans with {'%date%': loan.status_change|date('d/m/Y')} %} lender-operations_loans-table-project-status-label-repayment-finished-on-date {% endtrans %}
                             {% else %}
-                                {{ loan.next_echeance|date('d/m/y') }}
+                                {{ loan.next_payment_date|date('d/m/y') }}
                             {% endif %}
                         </td>
                         <td class="table-myloans-item-duration">
-                            <span class="ui-has-tooltip" title="{{ 'lender-operations_from'|trans|capitalize }} {{ loan.start_date|date('d/m/Y') }} {{ 'lender-operations_to'|trans }} {{ loan.end_date|date('d/m/Y') }}" data-toggle="tooltip">{% trans with { '%count%' : loan.duration} %} lender-operations_month {% endtrans %}</span>
                             {% if loan.project_status == constant('\\projects_status::REMBOURSEMENT_ANTICIPE') or loan.project_status == constant('\\projects_status::REMBOURSE') %}
                                 &nbsp;
                             {% else %}
-                                <span class="ui-has-tooltip" title="{% trans with {'%startDate%': loan.debut|date('d/m/Y'), '%endDate%': loan.fin|date('d/m/Y')} %} lender-operations_remaining-duration-tooltip {% endtrans %}" data-toggle="tooltip">{% trans with { '%count%' : loan.project_remaining_duration} %} lender-operations_loans-table-project-remaining-month {% endtrans %}</span>
+                                <span class="ui-has-tooltip" title="{% trans with {'%startDate%': loan.start_date|date('d/m/Y'), '%endDate%': loan.end_date|date('d/m/Y')} %} lender-operations_remaining-duration-tooltip {% endtrans %}" data-toggle="tooltip">{% trans with { '%count%' : loan.duration} %} lender-operations_loans-table-project-remaining-month {% endtrans %}</span>
                             {% endif %}
                         </td>
                         <td class="table-myloans-item-documents">
@@ -281,29 +198,6 @@
                             {% endif %}
                         </td>
                     </tr>
-                    {#{% if loan.nb_loan > 1 %}
-                        {% for loanDetails in loan.loan_details %}
-                            <tr>
-                                <td colspan="2"></td>
-                                <td class="table-myloans-item-amount">
-                                    {{ loanDetails.amount|localizednumber }}&nbsp;€
-                                </td>
-                                <td class="table-myloans-item-interest">
-                                    {{ loanDetails.rate|localizednumber }}&nbsp;<sup>%</sup>
-                                </td>
-                                <td colspan="3">
-                                </td>
-                                <td class="table-myloans-item-documents">
-                                    {% for k, doc in loanDetails.documents %}
-                                        <a href="{{ doc.url }}" class="loan-doc loan-doc-{{ doc.docType }}"
-                                           title="{{ doc.docTypeName }}"
-                                           data-toggle="tooltip">
-                                        </a>
-                                    {% endfor %}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    {% endif %}#}
                 {% endfor %}
                 </tbody>
             </table><!-- /.table-myloans -->

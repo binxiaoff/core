@@ -208,9 +208,9 @@
     </tr>
     <tr>
         <th colspan="2" class="pdfSolde"><?= $this->lng['preteur-operations-pdf']['solde-de-votre-compte'] ?></th>
-        <td style="font-size: 17px;font-weight:bold;"><?= str_replace('[#DATE#]', date('d-m-Y',strtotime($this->date_fin)), $this->lng['preteur-operations-pdf']['date-recap']) ?></td>
+        <td style="font-size: 17px;font-weight:bold;"></td>
         <td></td>
-        <td style="font-size: 17px;font-weight:bold;"><?= str_replace('[#TOTAL#]', $this->ficelle->formatNumber($soldetotal), $this->lng['preteur-operations-pdf']['solde-recap']) ?></td>
+        <td style="font-size: 17px;font-weight:bold;"></td>
     </tr>
 </table>
 

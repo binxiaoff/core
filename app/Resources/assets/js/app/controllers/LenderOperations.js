@@ -26,6 +26,12 @@ $doc.on('ready', function () {
         // Data has object with props target and template
         // After adding the template, need to trigger that it's visible for any other components to auto-initialise
         $('article#' + data.target).html(data.template).trigger('UI:visible')
+      },
+      complete: function () {
+        $('.ui-has-datepicker, [data-ui-datepicker]').datepicker({
+          firstDay: 1,
+          format: 'dd/mm/yy'
+        })
       }
     })
   })

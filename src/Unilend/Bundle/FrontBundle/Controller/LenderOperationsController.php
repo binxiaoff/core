@@ -4,6 +4,8 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Bundle\FrameworkBundle\Translation\Translator;
+use Symfony\Component\CssSelector\XPath\TranslatorInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,6 +18,11 @@ use Unilend\core\Loader;
 class LenderOperationsController extends Controller
 {
     const LAST_OPERATION_DATE = '2013-01-01';
+    /**
+     * This is a fictive transaction type,
+     * it will be used only in indexage_vos_operaitons in order to get single repayment line with total of capital and interests repayment amount
+     */
+    const TYPE_REPAYMENT_TRANSACTION = 5;
 
     /**
      * @param Request $request
@@ -35,8 +42,11 @@ class LenderOperationsController extends Controller
         $lender = $entityManager->getRepository('lenders_accounts');
         /** @var TranslationManager $translationManager */
         $translationManager = $this->get('unilend.service.translation_manager');
+        /** @var \clients $client */
+        $client = $entityManager->getRepository('clients');
 
-        $lender->get($this->getUser()->getClientId(), 'id_client_owner');
+        $client->get($this->getUser()->getClientId());
+        $lender->get($client->id_client, 'id_client_owner');
         $this->lenderOperationIndexing($lenderOperationsIndex, $lender);
 
         $lenderOperations       = $lenderOperationsIndex->getLenderOperations([], $this->getUser()->getClientId(), date('Y-m-d', strtotime('-1 month')), date('Y-m-d'));
@@ -54,7 +64,7 @@ class LenderOperationsController extends Controller
         $_SESSION['filtre_vos_operations']['id_last_action']   = 'operation';
         $_SESSION['filtre_vos_operations']['order']            = '';
         $_SESSION['filtre_vos_operations']['type']             = '';
-        $_SESSION['filtre_vos_operations']['id_client']        = $this->getUser()->getClientId();
+        $_SESSION['filtre_vos_operations']['id_client']        = $client->id_client;
 
         $loans = $this->commonLoans($request, $lender);
 
@@ -65,7 +75,7 @@ class LenderOperationsController extends Controller
                 'hash'                   => $this->getUser()->getHash(),
                 'lenderOperations'       => $lenderOperations,
                 'projectsFundedByLender' => $projectsFundedByLender,
-                'detailedOperations'     => [\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT],
+                'detailedOperations'     => [self::TYPE_REPAYMENT_TRANSACTION],
                 'loansStatusFilter'      => $projectStatus->select('status >= ' . \projects_status::REMBOURSEMENT, 'status ASC'),
                 'firstLoanYear'          => $entityManager->getRepository('loans')->getFirstLoanYear($lender->id_lender_account),
                 'lenderLoans'            => $loans['lenderLoans'],
@@ -92,9 +102,8 @@ class LenderOperationsController extends Controller
         $projectStatus = $this->get('unilend.service.entity_manager')->getRepository('projects_status');
 
         $lender->get($this->getUser()->getClientId(), 'id_client_owner');
-        $loans     = $this->commonLoans($request, $lender);
-        $loanYears = array_count_values(array_column($loans['lenderLoans'], 'loan_year'));
-        ksort($loanYears);
+        $loans = $this->commonLoans($request, $lender);
+
         return $this->json(
             [
                 'target'   => 'loans',
@@ -186,15 +195,42 @@ class LenderOperationsController extends Controller
         }
 
         $array_type_transactions_liste_deroulante = array(
-            1 => '1,2,3,4,5,7,8,16,17,19,20,23,26',
-            2 => '3,4,7,8',
-            3 => '3,4,7',
-            4 => '8',
-            5 => '2',
-            6 => '5,23,26'
+            1 => array(
+                \transactions_types::TYPE_LENDER_SUBSCRIPTION,
+                \transactions_types::TYPE_LENDER_LOAN,
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+                self::TYPE_REPAYMENT_TRANSACTION,
+                \transactions_types::TYPE_DIRECT_DEBIT,
+                \transactions_types::TYPE_LENDER_WITHDRAWAL,
+                \transactions_types::TYPE_WELCOME_OFFER,
+                \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION,
+                \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD,
+                \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD,
+                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
+                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
+            ),
+            2 => array(
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+                \transactions_types::TYPE_DIRECT_DEBIT,
+                \transactions_types::TYPE_LENDER_WITHDRAWAL
+            ),
+            3 => array(
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+                \transactions_types::TYPE_DIRECT_DEBIT
+            ),
+            4 => array(\transactions_types::TYPE_LENDER_WITHDRAWAL),
+            5 => array(\transactions_types::TYPE_LENDER_LOAN),
+            6 => array(
+                self::TYPE_REPAYMENT_TRANSACTION,
+                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
+                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
+            )
         );
 
-        $tri_type_transac = $array_type_transactions_liste_deroulante[$request->request->get('filter')['operation']];
+        $tri_type_transac = $array_type_transactions_liste_deroulante[$request->request->get('filter', 1)['operation']];
 
         if (false === empty($request->request->get('filter')['project'])) {
             $tri_project = ' AND id_projet = ' . $request->request->get('filter')['project'];
@@ -241,8 +277,8 @@ class LenderOperationsController extends Controller
         /** @var \indexage_vos_operations $lenderOperationsIndex */
         $lenderOperationsIndex = $entityManager->getRepository('indexage_vos_operations');
 
-        $lenderOperations       = $lenderOperationsIndex->getLenderOperations(explode(',', $tri_type_transac), $this->getUser()->getClientId(), date('Y-m-d', $date_debut_time), date('Y-m-d', $date_fin_time), $tri_project, $order);
-        $projectsFundedByLender = $lenderOperationsIndex->get_liste_libelle_projet('type_transaction IN (' . $tri_type_transac . ') AND id_client = ' . $this->getUser()->getClientId() . ' AND LEFT(date_operation,10) >= "' . date('Y-m-d', $date_debut_time) . '" AND LEFT(date_operation,10) <= "' . date('Y-m-d', $date_fin_time) . '"');
+        $lenderOperations       = $lenderOperationsIndex->getLenderOperations($tri_type_transac, $this->getUser()->getClientId(), date('Y-m-d', $date_debut_time), date('Y-m-d', $date_fin_time), $tri_project, $order);
+        $projectsFundedByLender = $lenderOperationsIndex->get_liste_libelle_projet('type_transaction IN (' . implode(',', $tri_type_transac) . ') AND id_client = ' . $this->getUser()->getClientId() . ' AND LEFT(date_operation,10) >= "' . date('Y-m-d', $date_debut_time) . '" AND LEFT(date_operation,10) <= "' . date('Y-m-d', $date_fin_time) . '"');
 
         $filters                    = $request->request->all();
         $filters['filter']['start'] = date('d/m/Y', $date_debut_time);
@@ -255,7 +291,7 @@ class LenderOperationsController extends Controller
                     [
                         'clientId'               => $this->getUser()->getClientId(),
                         'hash'                   => $this->getUser()->getHash(),
-                        'detailedOperations'     => [\transactions_types::TYPE_LENDER_REPAYMENT],
+                        'detailedOperations'     => [self::TYPE_REPAYMENT_TRANSACTION],
                         'projectsFundedByLender' => $projectsFundedByLender,
                         'lenderOperations'       => $lenderOperations,
                         'repaidCapitalLabel'     => $translationManager->selectTranslation('lender-operations', 'operations-table-repaid-capital-amount-collapse-details'),
@@ -287,6 +323,13 @@ class LenderOperationsController extends Controller
         $this->projects      = $entityManager->getRepository('projects');
         $this->companies     = $entityManager->getRepository('companies');
         $this->clients       = $entityManager->getRepository('clients');
+
+        /** @var \tax $oTax */
+        $oTax = $entityManager->getRepository('tax');
+        /** @var \tax_type $oTaxTyp */
+        $oTaxTyp = $entityManager->getRepository('tax_type');
+        /** @var \tax_type $aTaxType */
+        $aTaxType = $oTaxTyp->select('id_tax_type !=' . \tax_type::TYPE_VAT);
 
         $this->ficelle = Loader::loadLib('ficelle');
 
@@ -355,12 +398,39 @@ class LenderOperationsController extends Controller
         $this->date_fin   = date('Y-m-d', $date_fin_time);
 
         $array_type_transactions_liste_deroulante = array(
-            1 => '1,2,3,4,5,7,8,16,17,19,20,23,26',
-            2 => '3,4,7,8',
-            3 => '3,4,7',
-            4 => '8',
-            5 => '2',
-            6 => '5,23,26'
+            1 => array(
+                \transactions_types::TYPE_LENDER_SUBSCRIPTION,
+                \transactions_types::TYPE_LENDER_LOAN,
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+                self::TYPE_REPAYMENT_TRANSACTION,
+                \transactions_types::TYPE_DIRECT_DEBIT,
+                \transactions_types::TYPE_LENDER_WITHDRAWAL,
+                \transactions_types::TYPE_WELCOME_OFFER,
+                \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION,
+                \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD,
+                \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD,
+                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
+                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
+            ),
+            2 => array(
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+                \transactions_types::TYPE_DIRECT_DEBIT,
+                \transactions_types::TYPE_LENDER_WITHDRAWAL
+            ),
+            3 => array(
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+                \transactions_types::TYPE_DIRECT_DEBIT
+            ),
+            4 => array(\transactions_types::TYPE_LENDER_WITHDRAWAL),
+            5 => array(\transactions_types::TYPE_LENDER_LOAN),
+            6 => array(
+                self::TYPE_REPAYMENT_TRANSACTION,
+                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
+                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
+            )
         );
 
         if (isset($post_tri_type_transac)) {
@@ -419,7 +489,7 @@ class LenderOperationsController extends Controller
         /** @var \indexage_vos_operations $lenderIndexedOperations */
         $lenderIndexedOperations = $entityManager->getRepository('indexage_vos_operations');
 
-        $operations = $lenderIndexedOperations->getLenderOperations(explode(',', $tri_type_transac), $this->clients->id_client, $this->date_debut, $this->date_fin, $post_tri_projects, $order);
+        $operations = $lenderIndexedOperations->getLenderOperations($tri_type_transac, $this->clients->id_client, $this->date_debut, $this->date_fin, $post_tri_projects, $order);
         // si exoneré à la date de la transact on change le libelle
 
         $content = '
@@ -433,22 +503,27 @@ class LenderOperationsController extends Controller
                 <th>' . $translationManager->selectTranslation('lender-operations', 'date') . '</th>
                 <th>' . $translationManager->selectTranslation('lender-operations', 'amount') . '</th>
                 <th>' . $translationManager->selectTranslation('lender-operations', 'repaid-capital-amount') . '</th>
-                <th>' . $translationManager->selectTranslation('lender-operations', 'repaid-interests-amount') . '</th>
-                <th>Pr&eacute;l&egrave;vements obligatoires</th>
-                <th>Retenue &agrave; la source</th>
-                <th>CSG</th>
-                <th>Pr&eacute;l&egrave;vements sociaux</th>
-                <th>Contributions additionnelles</th>
-                <th>Pr&eacute;l&egrave;vements solidarit&eacute;</th>
-                <th>CRDS</th>
-                <th>' . $translationManager->selectTranslation('lender-operations', 'account-balance') . '</th>
+                <th>' . $translationManager->selectTranslation('lender-operations', 'repaid-interests-amount') . '</th>';
+        foreach ($aTaxType as $aType) {
+            $content .= '<th>' . $aType['name'] . '</th>';
+        }
+        $content .= '<th>' . $translationManager->selectTranslation('lender-operations', 'account-balance') . '</th>
                 <td></td>
             </tr>';
-
-        $asterix_on = false;
+        /** @var TranslatorInterface $translator */
+        $translator    = $this->get('translator');
+        $asterix_on    = false;
+        $aTranslations = array(
+            \transactions_types::TYPE_LENDER_SUBSCRIPTION          => $translator->trans('preteur-operations-vos-operations_depot-de-fonds'),
+            \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT    => $translator->trans('preteur-operations-vos-operations_depot-de-fonds'),
+            \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT  => $translator->trans('preteur-operations-vos-operations_depot-de-fonds'),
+            \transactions_types::TYPE_LENDER_WITHDRAWAL            => $translator->trans('preteur-operations-vos-operations_retrait-dargents'),
+            \transactions_types::TYPE_WELCOME_OFFER                => $translator->trans('preteur-operations-vos-operations_offre-de-bienvenue'),
+            \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION   => $translator->trans('preteur-operations-vos-operations_retrait-offre'),
+            \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD => $translator->trans('preteur-operations-vos-operations_gain-filleul'),
+            \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD   => $translator->trans('preteur-operations-vos-operations_gain-parrain')
+        );
         foreach ($operations as $t) {
-            $t["libelle_operation"] = $t["libelle_operation"];
-            $t["libelle_projet"]    = $t['libelle_projet'];
             if ($t['montant_operation'] > 0) {
                 $couleur = ' style="color:#40b34f;"';
             } else {
@@ -456,23 +531,16 @@ class LenderOperationsController extends Controller
             }
 
             $sProjectId = $t['id_projet'] == 0 ? '' : $t['id_projet'];
-
-            $sold = $t['solde'];
+            $sold       = $t['solde'];
             // remb
-            if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
-                $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
+            if (in_array($t['type_transaction'], array(self::TYPE_REPAYMENT_TRANSACTION, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
 
-                if ($t['type_transaction'] != \transactions_types::TYPE_LENDER_REPAYMENT) {
-                    $this->echeanciers->prelevements_obligatoires    = 0;
-                    $this->echeanciers->retenues_source              = 0;
-                    $this->echeanciers->interets                     = 0;
-                    $this->echeanciers->retenues_source              = 0;
-                    $this->echeanciers->csg                          = 0;
-                    $this->echeanciers->prelevements_sociaux         = 0;
-                    $this->echeanciers->contributions_additionnelles = 0;
-                    $this->echeanciers->prelevements_solidarite      = 0;
-                    $this->echeanciers->crds                         = 0;
-                    $this->echeanciers->capital                      = $t['montant_operation'];
+                foreach ($aTaxType as $aType) {
+                    $aTax[$aType['id_tax_type']]['amount'] = 0;
+                }
+
+                if (self::TYPE_REPAYMENT_TRANSACTION != $t['type_transaction']) {
+                    $aTax = $oTax->getTaxListByRepaymentId($t['id_echeancier']);
                 }
 
                 $content .= '
@@ -483,20 +551,25 @@ class LenderOperationsController extends Controller
                         <td>' . $t['libelle_projet'] . '</td>
                         <td>' . date('d-m-Y', strtotime($t['date_operation'])) . '</td>
                         <td' . $couleur . '>' . $this->ficelle->formatNumber($t['montant_operation']) . '</td>
-                        <td>' . $this->ficelle->formatNumber(bcdiv($this->echeanciers->capital, 100, 2)) . '</td>
-                        <td>' . $this->ficelle->formatNumber(bcdiv($this->echeanciers->interets, 100, 2)) . '</td>
-                        <td>' . $this->ficelle->formatNumber($this->echeanciers->prelevements_obligatoires) . '</td>
-                        <td>' . $this->ficelle->formatNumber($this->echeanciers->retenues_source) . '</td>
-                        <td>' . $this->ficelle->formatNumber($this->echeanciers->csg) . '</td>
-                        <td>' . $this->ficelle->formatNumber($this->echeanciers->prelevements_sociaux) . '</td>
-                        <td>' . $this->ficelle->formatNumber($this->echeanciers->contributions_additionnelles) . '</td>
-                        <td>' . $this->ficelle->formatNumber($this->echeanciers->prelevements_solidarite) . '</td>
-                        <td>' . $this->ficelle->formatNumber($this->echeanciers->crds) . '</td>
-                        <td>' . $sold . '</td>
+                        <td>' . $this->ficelle->formatNumber(bcdiv($t['montant_capital'], 100, 2)) . '</td>
+                        <td>' . $this->ficelle->formatNumber(bcdiv($t['montant_interet'], 100, 2)) . '</td>';
+                foreach ($aTaxType as $aType) {
+                    $content .= '<td>';
+
+                    if (isset($aTax[$aType['id_tax_type']])) {
+                        $content .= $this->ficelle->formatNumber($aTax[$aType['id_tax_type']]['amount'] / 100, 2);
+                    } else {
+                        $content .= '0';
+                    }
+                    $content .= '</td>';
+                }
+                $content .= '
+                        <td>' . $this->ficelle->formatNumber(bcdiv($sold, 100, 2)) . '</td>
                         <td></td>
                     </tr>';
 
-            } elseif (in_array($t['type_transaction'], array(8, 1, 3, 4, 16, 17, 19, 20))) {
+            } elseif (in_array($t['type_transaction'], array_keys($aTranslations))) {
+
                 $array_type_transactions = [
                     1  => $translationManager->selectTranslation('lender-operations', 'operation-label-money-deposit'),
                     2  => [
@@ -527,7 +600,7 @@ class LenderOperationsController extends Controller
                     $t['libelle_operation'] = '';
                 }
 
-                if ($t['type_transaction'] == 8 && $t['montant_operation'] > 0) {
+                if ($t['type_transaction'] == \transactions_types::TYPE_LENDER_WITHDRAWAL && $t['montant'] > 0) {
                     $type = "Annulation retrait des fonds - compte bancaire clos";
                 } else {
                     $type = $t['libelle_operation'];
@@ -539,7 +612,7 @@ class LenderOperationsController extends Controller
                         <td>' . $sProjectId . '</td>
                         <td></td>
                         <td>' . date('d-m-Y', strtotime($t['date_operation'])) . '</td>
-                        <td' . $couleur . '>' . $this->ficelle->formatNumber($t['montant_operation']) . '</td>
+                        <td' . $couleur . '>' . $this->ficelle->formatNumber($t['montant_operation'] / 100) . '</td>
                         <td></td>
                         <td></td>
                         <td></td>
@@ -549,12 +622,12 @@ class LenderOperationsController extends Controller
                         <td></td>
                         <td></td>
                         <td></td> 
-                        <td>' . $sold . '</td>
+                        <td>' . $this->ficelle->formatNumber(bcdiv($sold, 100, 2)) . '</td>
                         <td></td>
                     </tr>
                     ';
 
-            } elseif (in_array($t['type_transaction'], array(2))) {//offres en cours
+            } elseif ($t['type_transaction'] == \transactions_types::TYPE_LENDER_LOAN) { // ongoing Offer
 
                 //asterix pour les offres acceptees
                 $asterix       = "";
@@ -581,7 +654,7 @@ class LenderOperationsController extends Controller
                         <td></td>
                         <td></td>
                         <td></td>
-                        <td>' . $sold . '</td>
+                        <td>' . $this->ficelle->formatNumber($sold / 100) . '</td>
                         <td>' . $asterix . '</td>
                     </tr>
                    ';
@@ -640,17 +713,17 @@ class LenderOperationsController extends Controller
         $oActiveSheet->setCellValue('L1', 'Note');
 
         foreach ($loans['lenderLoans'] as $iRowIndex => $aProjectLoans) {
-            $oActiveSheet->setCellValue('A' . ($iRowIndex + 2), $aProjectLoans['title']);
-            $oActiveSheet->setCellValue('B' . ($iRowIndex + 2), $aProjectLoans['id_project']);
+            $oActiveSheet->setCellValue('A' . ($iRowIndex + 2), $aProjectLoans['name']);
+            $oActiveSheet->setCellValue('B' . ($iRowIndex + 2), $aProjectLoans['id']);
             $oActiveSheet->setCellValue('C' . ($iRowIndex + 2), $aProjectLoans['amount']);
             $oActiveSheet->setCellValue('D' . ($iRowIndex + 2), $this->get('unilend.service.translation_manager')->selectTranslation('lender-operations', 'project-status-label-' . $aProjectLoans['project_status']));
             $oActiveSheet->setCellValue('E' . ($iRowIndex + 2), round($aProjectLoans['rate'], 1));
-            $oActiveSheet->setCellValue('F' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['debut'])));
-            $oActiveSheet->setCellValue('G' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['next_echeance'])));
-            $oActiveSheet->setCellValue('H' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['fin'])));
-            $oActiveSheet->setCellValue('I' . ($iRowIndex + 2), $repaymentSchedule->getRepaidCapital(['id_lender' => $lender->id_lender_account, 'id_project' => $aProjectLoans['id_project']]));
-            $oActiveSheet->setCellValue('J' . ($iRowIndex + 2), $repaymentSchedule->getRepaidInterests(['id_lender' => $lender->id_lender_account, 'id_project' => $aProjectLoans['id_project']]));
-            $oActiveSheet->setCellValue('K' . ($iRowIndex + 2), $repaymentSchedule->getOwedCapital(['id_lender' => $lender->id_lender_account, 'id_project' => $aProjectLoans['id_project']]));
+            $oActiveSheet->setCellValue('F' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['start_date'])));
+            $oActiveSheet->setCellValue('G' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['next_payment_date'])));
+            $oActiveSheet->setCellValue('H' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['end_date'])));
+            $oActiveSheet->setCellValue('I' . ($iRowIndex + 2), $repaymentSchedule->getRepaidCapital(['id_lender' => $lender->id_lender_account, 'id_project' => $aProjectLoans['id']]));
+            $oActiveSheet->setCellValue('J' . ($iRowIndex + 2), $repaymentSchedule->getRepaidInterests(['id_lender' => $lender->id_lender_account, 'id_project' => $aProjectLoans['id']]));
+            $oActiveSheet->setCellValue('K' . ($iRowIndex + 2), $repaymentSchedule->getOwedCapital(['id_lender' => $lender->id_lender_account, 'id_project' => $aProjectLoans['id']]));
 
             $sRisk = isset($aProjectLoans['risk']) ? $aProjectLoans['risk'] : '';
             $sNote = $this->getProjectNote($sRisk);
@@ -722,10 +795,11 @@ class LenderOperationsController extends Controller
         $transaction = $entityManager->getRepository('transactions');
         /** @var \clients $client */
         $client = $entityManager->getRepository('clients');
-        /** @var \lenders_imposition_history $lenderTaxHistory */
-        $lenderTaxHistory = $entityManager->getRepository('lenders_imposition_history');
         /** @var TranslationManager $translationManager */
         $translationManager = $this->get('unilend.service.translation_manager');
+
+        /** @var \lender_tax_exemption $taxExemption */
+        $taxExemption = $entityManager->getRepository('lender_tax_exemption');
 
         $client->get($this->getUser()->getClientId());
 
@@ -738,14 +812,12 @@ class LenderOperationsController extends Controller
             ),
             \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT      => $translationManager->selectTranslation('lender-operations', 'operation-label-money-deposit'),
             \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT    => $translationManager->selectTranslation('lender-operations', 'operation-label-money-deposit'),
-            \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL       => $translationManager->selectTranslation('lender-operations', 'operation-label-refund'),
             \transactions_types::TYPE_DIRECT_DEBIT                   => $translationManager->selectTranslation('lender-operations', 'operation-label-money-deposit'),
             \transactions_types::TYPE_LENDER_WITHDRAWAL              => $translationManager->selectTranslation('lender-operations', 'operation-label-money-withdrawal'),
             \transactions_types::TYPE_WELCOME_OFFER                  => $translationManager->selectTranslation('lender-operations', 'operation-label-welcome-offer'),
             \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION     => $translationManager->selectTranslation('lender-operations', 'operation-label-welcome-offer-withdrawal'),
             \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD   => $translationManager->selectTranslation('lender-operations', 'operation-label-godson-gain'),
             \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD     => $translationManager->selectTranslation('lender-operations', 'operation-label-godfather-gain'),
-            \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT => $translationManager->selectTranslation('lender-operations', 'operation-label-anticipated-repayment'),
             \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT   => $translationManager->selectTranslation('lender-operations', 'operation-label-anticipated-repayment'),
             \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT      => $translationManager->selectTranslation('lender-operations', 'operation-label-lender-recovery')
         );
@@ -758,58 +830,40 @@ class LenderOperationsController extends Controller
             $date_debut_a_indexer = substr($sLastOperation, 0, 10);
         }
 
-        $operations = $transaction->selectTransactionsOp($array_type_transactions, $date_debut_a_indexer, $this->getUser()->getClientId());
+        $operations = $transaction->getOperationsForIndexing($array_type_transactions, $date_debut_a_indexer, $this->getUser()->getClientId());
 
         foreach ($operations as $t) {
             if (0 == $lenderOperationsIndex->counter('id_transaction = ' . $t['id_transaction'] . ' AND libelle_operation = "' . $t['type_transaction_alpha'] . '"')) {
-                $retenuesfiscals = 0.0;
-                $capital         = 0.0;
-                $interets        = 0.0;
 
-                if ($repaymentSchedule->get($t['id_echeancier'], 'id_echeancier')) {
-                    $retenuesfiscals = $repaymentSchedule->prelevements_obligatoires + $repaymentSchedule->retenues_source + $repaymentSchedule->csg + $repaymentSchedule->prelevements_sociaux + $repaymentSchedule->contributions_additionnelles + $repaymentSchedule->prelevements_solidarite + $repaymentSchedule->crds;
-                    $capital         = $repaymentSchedule->capital;
-                    $interets        = $repaymentSchedule->interets;
-                }
-
-                // si exoneré à la date de la transact on change le libelle
                 $libelle_prelevements = $translationManager->selectTranslation('lender-operations', 'tax-and-social-deductions-label');
-                // on check si il s'agit d'une PM ou PP
-                if ($client->type == 1 or $client->type == 3) {
-                    // Si le client est exoneré on doit modifier le libelle de prelevement
-                    // on doit checker si le client est exonéré
-                    $exoneration = $lenderTaxHistory->is_exonere_at_date($lender->id_lender_account, $t['date_transaction']);
-
-                    if ($exoneration) {
+                if ($client->type == \clients::TYPE_PERSON || $client->type == \clients::TYPE_PERSON_FOREIGNER) {
+                    if ($taxExemption->counter('id_lender = ' . $lender->id_lender_account . ' AND year = "' . substr($t['date_transaction'], 0, 4) . '"') > 0) {
                         $libelle_prelevements = $translationManager->selectTranslation('lender-operations', 'social-deductions-label');
                     }
-                } else {// PM
-                    $libelle_prelevements = $translationManager->selectTranslation('lender-operations', 'deductions-at-source');
+                } else {
+                    $libelle_prelevements = $this->get('translator')->trans('preteur-operations-vos-operations_retenues-a-la-source');
                 }
 
                 $lenderOperationsIndex->id_client           = $t['id_client'];
                 $lenderOperationsIndex->id_transaction      = $t['id_transaction'];
                 $lenderOperationsIndex->id_echeancier       = $t['id_echeancier'];
-                $lenderOperationsIndex->id_projet           = $t['le_id_project'];
+                $lenderOperationsIndex->id_projet           = $t['id_project'];
                 $lenderOperationsIndex->type_transaction    = $t['type_transaction'];
-                $lenderOperationsIndex->recouvrement        = $t['recouvrement'];
                 $lenderOperationsIndex->libelle_operation   = $t['type_transaction_alpha'];
                 $lenderOperationsIndex->bdc                 = $t['bdc'];
                 $lenderOperationsIndex->libelle_projet      = $t['title'];
                 $lenderOperationsIndex->date_operation      = $t['date_tri'];
-                $lenderOperationsIndex->solde               = $t['solde'] * 100;
-                $lenderOperationsIndex->montant_operation   = $t['amount_operation'];
+                $lenderOperationsIndex->solde               = $t['solde'];
                 $lenderOperationsIndex->libelle_prelevement = $libelle_prelevements;
-                $lenderOperationsIndex->montant_prelevement = $retenuesfiscals * 100;
+                $lenderOperationsIndex->montant_prelevement = $t['tax_amount'];
 
-                if ($t['type_transaction'] == 23) {
-                    $lenderOperationsIndex->montant_capital = $t['montant'];
-                    $lenderOperationsIndex->montant_interet = 0;
+                if (self::TYPE_REPAYMENT_TRANSACTION == $t['type_transaction']) {
+                    $lenderOperationsIndex->montant_operation = $t['capital'] + $t['interests'];
                 } else {
-                    $lenderOperationsIndex->montant_capital = $capital;
-                    $lenderOperationsIndex->montant_interet = $interets;
+                    $lenderOperationsIndex->montant_operation = $t['amount_operation'];
                 }
-
+                $lenderOperationsIndex->montant_capital = $t['capital'];
+                $lenderOperationsIndex->montant_interet = $t['interests'] + $t['tax_amount'];
                 $lenderOperationsIndex->create();
             }
         }
@@ -861,7 +915,7 @@ class LenderOperationsController extends Controller
                 break;
             case 'repayment':
                 $orderField = 'repayment';
-                $sOrderBy   = 'mensuel ' . $orderDirection . ', debut DESC, p.title ASC';
+                $sOrderBy   = 'last_perceived_repayment ' . $orderDirection . ', debut DESC, p.title ASC';
                 break;
             case 'start':
             default:
@@ -884,8 +938,10 @@ class LenderOperationsController extends Controller
         ];
         /** @var UserLender $user */
         $user = $this->getUser();
+        $lenderProjectLoans = [];
 
-        foreach ($lenderLoans as $iLoandIndex => $aProjectLoans) {
+        foreach ($lenderLoans as $loanIndex => $aProjectLoans) {
+            $loanData = [];
             /** @var \DateTime $startDateTime */
             $startDateTime = new \DateTime(date('Y-m-d'));
             /** @var \DateTime $endDateTime */
@@ -893,79 +949,120 @@ class LenderOperationsController extends Controller
             /** @var \DateInterval $remainingDuration */
             $remainingDuration = $startDateTime->diff($endDateTime);
 
-            $lenderLoans[$iLoandIndex]['project_remaining_duration'] = $remainingDuration->y * 12 + $remainingDuration->m;
+            $loanData['id']                       = $aProjectLoans['id_project'];
+            $loanData['url']                      = $this->generateUrl('project_detail', ['projectSlug' => $aProjectLoans['slug']]);
+            $loanData['name']                     = $aProjectLoans['title'];
+            $loanData['rate']                     = round($aProjectLoans['rate'], 1);
+            $loanData['risk']                     = $aProjectLoans['risk'];
+            $loanData['amount']                   = round($aProjectLoans['amount']);
+            $loanData['start_date']               = $aProjectLoans['debut'];
+            $loanData['end_date']                 = $aProjectLoans['fin'];
+            $loanData['next_payment_date']        = $aProjectLoans['next_echeance'];
+            $loanData['last_perceived_repayment'] = $aProjectLoans['last_perceived_repayment'];
+            $loanData['duration']                 = $remainingDuration->y * 12 + $remainingDuration->m;
+            $loanData['status_change']            = $aProjectLoans['status_change'];
+            $loanData['project_status']            = $aProjectLoans['project_status'];
+
+            $lenderLoans[$loanIndex]['project_remaining_duration'] = $remainingDuration->y * 12 + $remainingDuration->m;
+
             switch ($aProjectLoans['project_status']) {
                 case \projects_status::PROBLEME:
                 case \projects_status::PROBLEME_J_X:
-                    $lenderLoans[$iLoandIndex]['status_color'] = 'late';
-                    $lenderLoans[$iLoandIndex]['color']        = '#5FC4D0';
+                    $lenderLoans[$loanIndex]['status_color'] = 'late';
+                    $loanData['status']                      = 'late';
+
+                    $lenderLoans[$loanIndex]['color'] = '#5FC4D0';
                     ++$loanStatus['late-repayment'];
                     break;
                 case \projects_status::RECOUVREMENT:
-                    $lenderLoans[$iLoandIndex]['status_color'] = 'completing';
-                    $lenderLoans[$iLoandIndex]['color']        = '#FFCA2C';
+                    $lenderLoans[$loanIndex]['status_color'] = 'completing';
+                    $loanData['status']                      = 'completing';
+                    $lenderLoans[$loanIndex]['color']        = '#FFCA2C';
                     ++$loanStatus['recovery'];
                     break;
                 case \projects_status::PROCEDURE_SAUVEGARDE:
                 case \projects_status::REDRESSEMENT_JUDICIAIRE:
                 case \projects_status::LIQUIDATION_JUDICIAIRE:
-                    $lenderLoans[$iLoandIndex]['status_color'] = 'problem';
-                    $lenderLoans[$iLoandIndex]['color']        = '#F2980C';
+                    $lenderLoans[$loanIndex]['status_color'] = 'problem';
+                    $loanData['status']                      = 'problem';
+                    $lenderLoans[$loanIndex]['color']        = '#F2980C';
                     ++$loanStatus['collective-proceeding'];
                     break;
                 case \projects_status::DEFAUT:
-                    $lenderLoans[$iLoandIndex]['status_color'] = 'defaulted';
-                    $lenderLoans[$iLoandIndex]['color']        = '#F76965';
+                    $lenderLoans[$loanIndex]['status_color'] = 'defaulted';
+                    $loanData['status']                      = 'defaulted';
+                    $lenderLoans[$loanIndex]['color']        = '#F76965';
                     ++$loanStatus['default'];
                     break;
                 case \projects_status::REMBOURSE:
                 case \projects_status::REMBOURSEMENT_ANTICIPE:
-                    $lenderLoans[$iLoandIndex]['status_color'] = 'completed';
-                    $lenderLoans[$iLoandIndex]['color']        = '#1B88DB';
+                    $lenderLoans[$loanIndex]['status_color'] = 'completed';
+                    $loanData['status']                      = 'completed';
+                    $lenderLoans[$loanIndex]['color']        = '#1B88DB';
                     ++$loanStatus['refund-finished'];
                     break;
                 case \projects_status::REMBOURSEMENT:
                 default:
-                    $lenderLoans[$iLoandIndex]['status_color'] = 'inprogress';
-                    $lenderLoans[$iLoandIndex]['color']        = '#428890';
+                    $lenderLoans[$loanIndex]['status_color'] = 'inprogress';
+                    $loanData['status']                      = 'inprogress';
+                    $lenderLoans[$loanIndex]['color']        = '#428890';
                     ++$loanStatus['no-problem'];
                     break;
             }
 
             if ($aProjectLoans['nb_loan'] == 1) {
-                $contractType                           = (1 == $aProjectLoans['id_type_contract']) ? 'bondsCount' : 'contractsCount';
-                $lenderLoans[$iLoandIndex]['contracts'] = [
-                    $contractType => 1
+                $loanData['count'] = [
+                    'bond'        => 0,
+                    'contract'    => 0,
+                    'declaration' => 0
                 ];
-                $lenderLoans[$iLoandIndex]['documents'] = $this->getDocumentDetail(
-                    $aProjectLoans['project_status'],
-                    $user->getHash(),
-                    $aProjectLoans['id_loan_if_one_loan'],
-                    $aProjectLoans['id_type_contract'],
-                    $projectsInDept,
-                    $aProjectLoans['id_project']);
-            } else {
-                $loans                                     = $loanEntity->select('id_lender = ' . $lender->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project']);
-                $lenderLoans[$iLoandIndex]['contracts']    = [];
-                $lenderLoans[$iLoandIndex]['loan_details'] = [];
+                (1 == $aProjectLoans['id_type_contract']) ? $loanData['count']['bond']++ : $loanData['count']['contract']++;
 
-                foreach ($loans as $loan) {
-                    $contractType                                          = (1 == $loan['id_type_contract']) ? 'bondsCount' : 'contractsCount';
-                    $lenderLoans[$iLoandIndex]['contracts'][$contractType] = isset($lenderLoans[$iLoandIndex]['contracts'][$contractType]) ? $lenderLoans[$iLoandIndex]['contracts'][$contractType] + 1 : 1;
-                    $lenderLoans[$iLoandIndex]['loan_details'][]           = [
-                        'rate'      => round($loan['rate'], 1),
-                        'amount'    => bcdiv($loan['amount'], 100),
+                $loans[0] = [
+                    'rate'      => round($aProjectLoans['rate'], 1),
+                    'amount'    => round($aProjectLoans['amount']),
+                    'documents' => $this->getDocumentDetail(
+                        $aProjectLoans['project_status'],
+                        $user->getHash(),
+                        $aProjectLoans['id_loan_if_one_loan'],
+                        $aProjectLoans['id_type_contract'],
+                        $projectsInDept,
+                        $aProjectLoans['id_project'],
+                        $loanData['count']['declaration']
+                    )
+                ];
+            } else {
+                $projectLoans                            = $loanEntity->select('id_lender = ' . $lender->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project']);
+                $lenderLoans[$loanIndex]['contracts']    = [];
+                $lenderLoans[$loanIndex]['loan_details'] = [];
+
+                $loanData['count'] = [
+                    'bond'        => 0,
+                    'contract'    => 0,
+                    'declaration' => 0
+                ];
+
+                foreach ($projectLoans as $partialLoan) {
+                    (1 == $partialLoan['id_type_contract']) ? $loanData['count']['bond']++ : $loanData['count']['contract']++;
+
+                    $loans[] = [
+                        'rate'      => round($partialLoan['rate'], 1),
+                        'amount'    => bcdiv($partialLoan['amount'], 100, 0),
                         'documents' => $this->getDocumentDetail(
                             $aProjectLoans['project_status'],
                             $user->getHash(),
-                            $loan['id_loan'],
-                            $loan['id_type_contract'],
+                            $partialLoan['id_loan'],
+                            $partialLoan['id_type_contract'],
                             $projectsInDept,
-                            $aProjectLoans['id_project']
+                            $aProjectLoans['id_project'],
+                            $loanData['count']['declaration']
                         )
                     ];
                 }
             }
+            $loanData['loans']    = $loans;
+            $lenderProjectLoans[] = $loanData;
+            unset($loans, $loanData);
         }
 
         $chartColors = [
@@ -985,7 +1082,7 @@ class LenderOperationsController extends Controller
                 'color'        => $chartColors[$status]
             ];
         }
-        return ['lenderLoans' => $lenderLoans, 'loanStatus' => $loanStatus, 'seriesData' => $seriesData];
+        return ['lenderLoans' => $lenderProjectLoans, 'loanStatus' => $loanStatus, 'seriesData' => $seriesData];
     }
 
     /**
@@ -995,28 +1092,136 @@ class LenderOperationsController extends Controller
      * @param int $docTypeId
      * @param array $projectsInDept
      * @param int $projectId
+     * @param $nbDeclarations
      * @return array
      */
-    private function getDocumentDetail($projectStatus, $hash, $loanId, $docTypeId, array $projectsInDept, $projectId)
+    private function getDocumentDetail($projectStatus, $hash, $loanId, $docTypeId, array $projectsInDept, $projectId, &$nbDeclarations = 0)
     {
         /** @var TranslationManager $translationManager */
         $translationManager = $this->get('unilend.service.translation_manager');
         $documents          = [];
         if ($projectStatus >= \projects_status::REMBOURSEMENT) {
             $documents[] = [
-                'url'         => $this->get('assets.packages')->getUrl('') . '/pdf/contrat/' . $hash . '/' . $loanId,
-                'docTypeName' => $translationManager->selectTranslation('lender-operations', 'contract-type-' . $docTypeId),
-                'docType'     => 'bond'
+                'url'   => $this->get('assets.packages')->getUrl('') . '/pdf/contrat/' . $hash . '/' . $loanId,
+                'label' => $translationManager->selectTranslation('lender-operations', 'contract-type-' . $docTypeId),
+                'type'  => 'bond'
             ];
         }
 
         if (in_array($projectId, $projectsInDept)) {
+            $nbDeclarations++;
             $documents[] = [
                 'url'         => $this->get('assets.packages')->getUrl('') . '/pdf/declaration_de_creances/' . $hash . '/' . $loanId,
-                'docTypeName' => $translationManager->selectTranslation('lender-operations', 'loans-table-declaration-of-debt-doc-tooltip'),
-                'docType'     => 'contract'
+                'label' => $translationManager->selectTranslation('lender-operations', 'loans-table-declaration-of-debt-doc-tooltip'),
+                'type'     => 'contract'
             ];
         }
         return $documents;
+    }
+
+    /**
+     * @param \lender_tax_exemption $lenderTaxExemption
+     * @param int $lenderId
+     * @param string|null $year
+     * @return array
+     */
+    private function getExemptionHistory(\lender_tax_exemption $lenderTaxExemption, $lenderId, $year = null)
+    {
+
+        try {
+            $result = $lenderTaxExemption->getLenderExemptionHistory($lenderId, $year);
+        } catch (Exception $exception) {
+            /** @var \Psr\Log\LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->error('Could not get lender exemption history (id_lender = ' . $lenderId . ') Exception message : ' . $exception->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lenderId));
+            $result = [];
+        }
+        return $result;
+    }
+
+    private function getFiscalAddress(\clients $client, EntityManager $entityManager)
+    {
+        /** @var \pays_v2 $taxCountry */
+        $taxCountry = $entityManager->getRepository('pays_v2');
+        /** @var \clients_adresses $clientAddress */
+        $clientAddress = $entityManager->getRepository('clients_adresses');
+        /** @var \companies $company */
+        $company = $entityManager->getRepository('companies');
+
+        if ($client->type === \clients::TYPE_LEGAL_ENTITY) {
+            $company->get($client->id_client, 'id_client_owner');
+            $this->fiscalAddress['address'] = $company->adresse1 . ' ' . $company->adresse2;
+            $this->fiscalAddress['zipCode'] = $company->zip;
+            $this->fiscalAddress['city']    = $company->city;
+        } else {
+            $clientAddress->get($client->id_client, 'id_client');
+            $this->fiscalAddress['address'] = (false === empty($clientAddress->adresse_fiscal)) ? $clientAddress->adresse_fiscal : $clientAddress->adresse1 . ' ' . $clientAddress->adresse2 . ' ' . $clientAddress->adresse3;
+            $this->fiscalAddress['zipCode'] = (false === empty($clientAddress->cp_fiscal)) ? $clientAddress->cp_fiscal : $clientAddress->cp;
+            $this->fiscalAddress['city']    = (false === empty($clientAddress->ville_fiscal)) ? $clientAddress->ville_fiscal : $clientAddress->ville;
+        }
+
+        if (false === empty($this->clientAadresse->id_pays_fiscal)) {
+            $taxCountry->get($clientAddress->id_pays_fiscal, 'id_pays');
+        } else {
+            $taxCountry->get($clientAddress->id_pays, 'id_pays');
+        }
+        $this->fiscalAddress['country'] = $taxCountry->fr;
+    }
+
+    private function getTaxExemption(EntityManager $entityManager, \lenders_accounts $lender)
+    {
+        /** @var \lender_tax_exemption $lenderTaxExemption */
+        $lenderTaxExemption = $entityManager->getRepository('lender_tax_exemption');
+
+        $this->currentYear = date('Y', time());
+        $this->lastYear    = $this->currentYear - 1;
+        $this->nextYear    = $this->currentYear + 1;
+
+        $taxExemptionDateRange     = $lenderTaxExemption->getTaxExemptionDateRange();
+        $this->taxExemptionHistory = $this->getExemptionHistory($lenderTaxExemption, $lender->id_lender_account);
+        try {
+            $lenderInfo = $lender->getLenderTypeAndFiscalResidence($lender->id_lender_account);
+            if (false === empty($lenderInfo)) {
+                $this->eligible = 'fr' === $lenderInfo['fiscal_address'] && 'person' === $lenderInfo['client_type'];
+            } else {
+                return;
+            }
+        } catch (\Exception $exception) {
+            /** @var \Psr\Log\LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->info('Could not get lender info to check tax exemption eligibility. (id_lender=' . $lender->id_lender_account . ') Error message: ' .
+                $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lender->id_lender_account]);
+            return;
+        }
+
+        if (false === $this->eligible) {
+            return;
+        }
+
+        if (date('Y-m-d H:i:s') < $taxExemptionDateRange['taxExemptionRequestStartDate']->format('Y-m-d 00:00:00')
+            && date('Y-m-d H:i:s') >= $taxExemptionDateRange['taxExemptionRequestLimitDate']->format('Y-m-d 23:59:59')
+        ) {
+            $this->afterDeadline = true;
+        }
+
+        if (false === empty($this->taxExemptionHistory)) {
+            $yearList = array_column($this->taxExemptionHistory, 'year');
+
+            if (true === in_array($this->nextYear, $yearList)) {
+                $this->nextTaxExemptionRequestDone = true;
+            } else {
+                $this->nextTaxExemptionRequestDone = false;
+            }
+
+            if (true === in_array($this->lastYear, $yearList)) {
+                $this->exemptedLastYear = true;
+            } else {
+                $this->exemptedLastYear = false;
+            }
+            $this->taxExemptionRequestLimitDate = strftime('%d %B %Y', $taxExemptionDateRange['taxExemptionRequestLimitDate']->getTimestamp());
+        } else {
+            $this->exemptedLastYear = false;
+        }
+        return ['exemptedLastYear' => $this->exemptedLastYear];
     }
 }
