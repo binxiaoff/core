@@ -195,11 +195,11 @@ select.input-field {
     text-align: center;
     vertical-align: middle;
 
-    &:nth-of-type(0n+1) {
+    &:first-child {
       left: 0;
     }
 
-    &:nth-last-of-type(0n+1) {
+    &:last-child {
       right: 0;
     }
   }

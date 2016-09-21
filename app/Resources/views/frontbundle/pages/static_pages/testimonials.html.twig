@@ -15,7 +15,14 @@
                     </header>
 
                     <aside class="block-testimonial promo-p2">
-                        <div class="block-testimonial-video promo-p2">
+                        <div class="block-testimonial-video promo-p2" style="background-image: url({{ completeTestimonialUrl(person.battenberg_image, 'image') }})">
+                            <a href="{{ completeTestimonialUrl(person.video, 'video') }}" class="fancybox-media fancybox-embed-videojs">
+                                <img src="{{ completeTestimonialUrl(person.battenberg_image, 'image') }}" alt="" />
+                                <span class="btn-media-wrapper-absolute">
+                                    <span class="btn-media"><span class="icon fa-play"></span></span>
+                                </span>
+                            </a>
+                            {# DEV-961 use a link to fire up the image now
                             <video id="video-{{ person.id_client }}" class="video-js" width="600px" height="400px"
                                    controls preload="none" poster="{{ completeTestimonialUrl(person.battenberg_image, 'image') }}"
                                    data-setup='{ "aspectRatio":"1920:1080", "inactivityTimeout": 0 }'>
@@ -25,6 +32,7 @@
                                     <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
                                 </p>
                             </video>
+                            #}
                         </div>
                         <div class="block-testimonial-quote promo-p2">
                             <div class="quote promo-p2">

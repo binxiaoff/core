@@ -167,6 +167,30 @@
     margin-bottom: $width-site-margin-md;
   }
 
+  .block-testimonial-video {
+    position: relative;
+    min-height: 200px;
+
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+
+    > a {
+      display: block;
+      position: relative;
+
+      .btn-media-wrapper {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+      }
+    }
+
+    img {
+      visibility: hidden;
+    }
+  }
+
   .block-testimonial-quote {
     padding: 30px;
 
