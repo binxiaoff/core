@@ -214,7 +214,7 @@ class LocationManager
             '03' => 'Guyane',
             '11' => 'Île-de-France',
             '04' => 'La Réunion',
-            '76' => 'Languedoc-Roussillon-Midi-Pyrénées',
+            '76' => 'Occitanie',
             '02' => 'Martinique',
             '06' => 'Mayotte',
             '32' => 'Nord-Pas-de-Calais-Picardie',

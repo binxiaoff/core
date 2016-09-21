@@ -20,6 +20,7 @@
             }
         },
         tooltip: {
+            backgroundColor: "rgba(255,255,255,1)",
             useHTML: true
         },
         series: [{
@@ -32,193 +33,192 @@
 %}
 
 {% set preterStatisticsMap = {
-type: 'preterStatisticsMap',
-loadFirst: {
-mapData: '/assets/js/vendor/geojson/fr-regions-all.json'
-},
-background: 'none',
-highcharts: {
-chart: {
-type: 'map'
-},
-title: {
-text: ''
-},
-mapNavigation: {
-enabled: false
-},
-legend: {
-enabled: false
-},
-tooltip: {
-enabled: true,
-headerFormat: '',
-pointFormat: '{point.name}: {point.value}%'
-},
-colorAxis: {
-minColor: 'rgba(180,0,102,.1)',
-maxColor: 'rgba(180,0,102,.8)'
-},
-series: [{
-data: getStatistic('LendersByRegion'),
-joinBy: 'insee',
-color: 'rgba(180,0,102,.2)',
-borderColor: '#ffffff',
-borderWidth: 2,
-showInLegend: false,
-dataLabels: {
-enabled: false
-},
-states: {
-hover: {
-color: '#B40066'
-}
-},
-showInLegend: false
-}]
-}
+    type: 'preterStatisticsMap',
+    loadFirst: {
+        mapData: '/assets/js/vendor/geojson/fr-regions-all.json'
+    },
+    background: 'none',
+    highcharts: {
+        chart: {
+            type: 'map'
+        },
+        title: {
+            text: ''
+        },
+        mapNavigation: {
+            enabled: false
+        },
+        legend: {
+            enabled: false
+        },
+        tooltip: {
+            enabled: true,
+            headerFormat: '',
+            pointFormat: '{point.name}: {point.value}%'
+        },
+        colorAxis: {
+            minColor: 'rgba(180,0,102,.1)',
+            maxColor: 'rgba(180,0,102,.8)'
+        },
+        series: [{
+            data: getStatistic('LendersByRegion'),
+            joinBy: 'insee',
+            color: 'rgba(180,0,102,.2)',
+            borderColor: '#ffffff',
+            borderWidth: 2,
+            showInLegend: false,
+            dataLabels: {
+                enabled: false
+            },
+            states: {
+                hover: {
+                    color: '#B40066'
+                }
+            },
+            showInLegend: false
+        }]
+    }
 } %}
 
 {% set emprunterStatisticsMap = {
-type: 'emprunterStatisticsMap',
-loadFirst: {
-mapData: '/assets/js/vendor/geojson/fr-regions-all.json'
-},
-background: 'none',
-highcharts: {
-chart: {
-type: 'map'
-},
-title: {
-text: ''
-},
-mapNavigation: {
-enabled: false
-},
-legend: {
-enabled: false
-},
-tooltip: {
-enabled: true,
-headerFormat: '',
-pointFormat: '{point.name}: {point.value}%'
-},
-colorAxis: {
-minColor: 'rgba(180,0,102,.1)',
-maxColor: 'rgba(180,0,102,.8)'
-},
-series: [{
-data: getStatistic('BorrowersByRegion'),
-joinBy: 'insee',
-color: 'rgba(180,0,102,.2)',
-borderColor: '#ffffff',
-borderWidth: 2,
-showInLegend: false,
-dataLabels: {
-enabled: false
-},
-states: {
-hover: {
-color: '#B40066'
-}
-},
-showInLegend: false
-}]
-}
-}
-%}
+    type: 'emprunterStatisticsMap',
+    loadFirst: {
+        mapData: '/assets/js/vendor/geojson/fr-regions-all.json'
+    },
+    background: 'none',
+    highcharts: {
+        chart: {
+            type: 'map'
+        },
+        title: {
+            text: ''
+        },
+        mapNavigation: {
+            enabled: false
+        },
+        legend: {
+            enabled: false
+        },
+        tooltip: {
+            enabled: true,
+            headerFormat: '',
+            pointFormat: '{point.name}: {point.value}%'
+        },
+        colorAxis: {
+            minColor: 'rgba(180,0,102,.1)',
+            maxColor: 'rgba(180,0,102,.8)'
+        },
+        series: [{
+            data: getStatistic('BorrowersByRegion'),
+            joinBy: 'insee',
+            color: 'rgba(180,0,102,.2)',
+            borderColor: '#ffffff',
+            borderWidth: 2,
+            showInLegend: false,
+            dataLabels: {
+                enabled: false
+            },
+            states: {
+                hover: {
+                    color: '#B40066'
+                }
+            },
+            showInLegend: false
+        }]
+    }
+} %}
 
 {% set overviewStatistics = {
-type: 'preterProjectsOverview',
-background: 'none',
-highcharts: {
-chart: {
-type: 'pie',
-height: 300,
-plotBackgroundColor: null,
-plotBorderWidth: null,
-plotShadow: null,
-spacingTop: 0,
-spacingBottom: 0
-},
-title: {
-text: ''
-},
-subtitle: {
-text: 'TRI positif au-delà de ce seuil',
-color: '#999999',
-floating: true,
-useHTML: true,
-verticalAlign: 'middle'
-},
-plotOptions: {
-pie: {
-borderColor: 'none',
-borderWidth: 0,
-showInLegend: true,
-dataLabels: {
-enabled: false
-}
-}
-},
-legend: {
-symbolRadius: 10
-},
-series: [{
-name: 'Montant',
-minSize: 120,
-innerSize: '90%',
-endAngle: 270,
-data: [{
-name: 'Montant Prêté',
-color: '#5FC5D1',
-y: 252
-}]
-},{
-name: 'Capital',
-size: '66%',
-minSize: 100,
-innerSize: '90%',
-endAngle: 270,
-data: [{
-name: 'Capital remboursé',
-color: '#1B88DB',
-y: 52
-},{
-name: 'Capital en attente',
-color: '#B6D4E4',
-y: 200
-},{
-name: 'Capital en difficulté',
-color: '#F76965',
-y: 5
-}]
-},{
-name: 'Intérêts',
-minSize: 80,
-size: '33%',
-innerSize: '90%',
-endAngle: 330,
-data: [{
-name: '',
-color: '#eeeeee',
-dataLabels: {
-enabled: false
-},
-showInLegend: false,
-y: 225,
-tooltip: false
-},{
-name: 'Intérêts reçus',
-color: '#F2980C',
-y: 18
-},{
-name: 'Intérêts à recevoir',
-color: '#FFCA2C',
-y: 46
-}]
-}]
-}
+    type: 'preterProjectsOverview',
+    background: 'none',
+    highcharts: {
+    chart: {
+    type: 'pie',
+    height: 300,
+    plotBackgroundColor: null,
+    plotBorderWidth: null,
+    plotShadow: null,
+    spacingTop: 0,
+    spacingBottom: 0
+    },
+    title: {
+    text: ''
+    },
+    subtitle: {
+    text: 'TRI positif au-delà de ce seuil',
+    color: '#999999',
+    floating: true,
+    useHTML: true,
+    verticalAlign: 'middle'
+    },
+    plotOptions: {
+    pie: {
+    borderColor: 'none',
+    borderWidth: 0,
+    showInLegend: true,
+    dataLabels: {
+    enabled: false
+    }
+    }
+    },
+    legend: {
+    symbolRadius: 10
+    },
+    series: [{
+        name: 'Montant',
+        minSize: 120,
+        innerSize: '90%',
+        endAngle: 270,
+        data: [{
+            name: 'Montant Prêté',
+            color: '#5FC5D1',
+            y: 252
+        }]
+    },{
+        name: 'Capital',
+        size: '66%',
+        minSize: 100,
+        innerSize: '90%',
+        endAngle: 270,
+        data: [{
+            name: 'Capital remboursé',
+            color: '#1B88DB',
+            y: 52
+        },{
+            name: 'Capital en attente',
+            color: '#B6D4E4',
+            y: 200
+        },{
+            name: 'Capital en difficulté',
+            color: '#F76965',
+            y: 5
+        }]
+        },{
+            name: 'Intérêts',
+            minSize: 80,
+            size: '33%',
+            innerSize: '90%',
+            endAngle: 330,
+            data: [{
+                name: '',
+                color: '#eeeeee',
+                dataLabels: {
+                    enabled: false
+                },
+                showInLegend: false,
+                y: 225,
+                tooltip: false
+                },{
+                    name: 'Intérêts reçus',
+                    color: '#F2980C',
+                    y: 18
+                },{
+                    name: 'Intérêts à recevoir',
+                    color: '#FFCA2C',
+                    y: 46
+            }]
+        }]
+    }
 } %}
 
 {# the intended algorith was squiarfied, however we have too small values, it looks better in strip. To be changed once be have a better ratio in the categories #}
