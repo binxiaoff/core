@@ -544,6 +544,22 @@ ChartView.prototype.render = function (data, schema) {
           // Only enable white color
           Utility.setObjProp(self.settings.highcharts, 'colors', [COLORS.white])
 
+          // Ensure tooltip are displayed over top datalabels
+          Utility.extendObjProp(self.settings.highcharts, 'tooltip', {
+            useHTML: true,
+            // Remove the styles, as these are applied to an SVG shape displayed under the tooltip, not the HTML tooltip itself
+            shadow: false,
+            backgroundColor: null,
+            borderColor: null,
+            borderWidth: 0,
+            borderRadius: 0,
+            shape: 'square',
+            style: {
+              backgroundColor: COLORS.white,
+              borderRadius: '8px'
+            }
+          })
+
           // Format the labels to show the icons
           Utility.extendObjProp(self.settings.highcharts, 'series[0].dataLabels', {
             useHTML: true,
@@ -571,10 +587,13 @@ ChartView.prototype.render = function (data, schema) {
               // Generate the SVG category image
               var svgCategory = Utility.svgImage(svgIconId, this.key, maxSize, maxSize)
               return '<div class="chartview-svg-label" style="width: ' + maxSize + 'px; height: ' + maxSize + 'px;" data-chartview-sector-toggle="' + this.point.svgIconId + '">' + svgCategory + '&nbsp;</div>'
+            },
+            style: {
+              zIndex: 0
             }
           })
 
-          // Enable click events to show the corresponding sector information in the view
+          // Enable click events on to show the corresponding sector information in the view
           Utility.setObjProp(self.settings.highcharts, 'plotOptions.treemap.events.click', function (event) {
             var series = this
 
@@ -723,6 +742,9 @@ ChartView.prototype.render = function (data, schema) {
       self.chart = new Highcharts.Chart(self.settings.highcharts)
     }
 
+    // @debug
+    console.log('highcharts instantiated', self.chart)
+
     // Apply the type as a class
     self.$elem.addClass('ui-chartview-type-' + self.settings.type)
   }
@@ -803,7 +825,7 @@ $(document)
     $(event.target).find('[data-chartview], .ui-chartview').uiChartView('refresh')
   })
 
-  // Click a data label that corresponds to a sector
+  // Click a data label that corresponds to a category/sector
   .on(Utility.clickEvent, '[data-chartview-sector-toggle]', function (event) {
     var svgIconId =  $(this).attr('data-chartview-sector-toggle')
     event.preventDefault()

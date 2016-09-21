@@ -69,12 +69,16 @@
   }
 
   // Some Highcharts styles fixes
+  .highcharts-container {
+    z-index: inherit !important;
+  }
+
   .highcharts-tooltip {
-    z-index: 10 !important;
+    z-index: $depth-tooltip !important;
   }
 
   .highcharts-data-labels {
-    z-index: 0;
+    z-index: inherit !important;
   }
 }
 
@@ -113,8 +117,16 @@
     margin-left: -120px !important;
     margin-top: -120px !important;
   }
+}
 
+.ui-chartview.ui-chartview-type-preterProjectsCategories {
   .highcharts-tooltip {
-    z-index: $depth-tooltip !important;
+    > span {
+      padding: 8px;
+      background-color: $c-white;
+      color: $c-t1;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px fade-out($c-black, .5);
+    }
   }
 }
