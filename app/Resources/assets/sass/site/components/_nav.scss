@@ -505,20 +505,20 @@
       // opacity: 0;
       // transition: opacity .2s;
 
-      @include link-states(
-        $link: (
-          color: $c-t2,
-          text-decoration: none
-        ),
-        $hover: (
-          color: $c-t2,
-          text-decoration: none
-        ),
-        $active: (
-          color: $c-t2,
-          text-decoration: none
-        )
-      );
+      //@include link-states(
+      //  $link: (
+      //    color: $c-t2,
+      //    text-decoration: none
+      //  ),
+      //  $hover: (
+      //    color: $c-t2,
+      //    text-decoration: none
+      //  ),
+      //  $active: (
+      //    color: $c-t2,
+      //    text-decoration: none
+      //  )
+      //);
     }
 
     // Active progress tab
@@ -555,7 +555,7 @@
   // }
 
   @include devices('xs', 'sm') {
-    > li > a {
+    > li > span {
       padding-left: 10px;
       padding-right: 10px;
       text-align: center;

@@ -19,6 +19,13 @@
     .site-wrap {
       height: auto !important;
     }
+
+    // Remove the vertical alignment psuedo monkey
+    @include devices('xs', 'sm') {
+      .site-wrap:before {
+        display: none;
+      }
+    }
   }
 
   > .hero-wrap {
@@ -51,14 +58,6 @@
           }
         }
       }
-    }
-  }
-
-  // Hide the progress numbers on this page (because the design said so)
-  .tabs .nav-progress > li > a {
-    span,
-    &:before {
-      opacity: 0 !important;
     }
   }
 
