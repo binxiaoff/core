@@ -1134,6 +1134,8 @@ class dossiersController extends bootstrap
         $aLenderLoans = $this->loans->getProjectLoansByLender($this->projects->id_project);
 
         if (is_array($aLenderLoans)) {
+            $aNextRepayment = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND date_echeance > "' . date('Y-m-d') . '"', 'date_echeance ASC', 0, 1);
+
             foreach ($aLenderLoans as $aLoans) {
                 $this->lenders_accounts->get($aLoans['id_lender'], 'id_lender_account');
                 $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
@@ -1165,8 +1167,6 @@ class dossiersController extends bootstrap
                     $this->clients_gestion_mails_notif->id_loan         = 0;
                     $this->clients_gestion_mails_notif->immediatement   = 1;
                     $this->clients_gestion_mails_notif->create();
-
-                    $aNextRepayment = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND date_echeance > "' . date('Y-m-d') . '"', 'date_echeance ASC', 0, 1);
 
                     $aReplacements = $aCommonReplacements + array(
                             'prenom_p'                    => $this->clients->prenom,
