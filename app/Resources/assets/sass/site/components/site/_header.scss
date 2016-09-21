@@ -160,6 +160,7 @@
   right: 0;
   z-index: $depth-site-header; // Fancybox overlay is 8010
 
+  backface-visibility: hidden;
   background-color: $c-white;
   background-clip: padding-box;
   text-align: center;
@@ -750,6 +751,7 @@
     top: 0;
     right: 0;
 
+    backface-visibility: hidden;
     border-bottom: solid 2px fade-out($c-bg1, .5);
 
     .show-fixed {

@@ -10,11 +10,21 @@ title: 'Contact'
     <div class="page-header-image">{{ svgimage('#header-contact', '', 300, 300)|raw }}</div>
 {% endblock %}
 
-{% block pageAside %}
+{% block pageAsideBody %}
+    <div class="page-aside-body h-card vcard ui-has-sticky">
+        <h4 class="p-name fn p-org org">Unilend</h4>
+        <address class="p-adr h-adr">
+            <span class="p-street-address">6 rue du Général Clergerie</span><br>
+            <span class="p-postal-code">75116</span> <span class="p-locality">Paris</span> &ndash;
+            <span class="p-country-name">France</span>
+        </address>
+        <div>Tel. <a href="tel:+33182285120" title="Telephone" class="p-tel">01 82 28 51 20</a></div>
+        <div>Tel. <a href="tel:+33182836655" title="Telephone (emprunters)" class="p-tel">01 82 83 66 55</a> (emprunteurs)
+        </div>
+    </div><!-- /.page-aside-body -->
 {% endblock %}
 
-{% block pageContent %}
-<div class="col-lg-12 col-md-12 page-content" data-equal-height="md lg" data-equal-height-group="content">
+{% block pageContentBody %}
     <section class="page-section">
         <h2 class="h4">{% trans %} contact_search-section-title {% endtrans %}</h2>
         <form action="{{ path('contact_search') }}" method="post" class="site-search" role="search" data-formvalidation data-formvalidation-notificationselem="#contact-search-form-notifications">
@@ -159,20 +169,4 @@ title: 'Contact'
             </div>
         </form>
     </section><!-- /.page-section -->
-
-    <section class="page-section">
-        <div class="page-aside-body h-card vcard col-lg-6 col-md-6 ">
-            <h4 class="p-name fn p-org org">Unilend</h4>
-            <address class="p-adr h-adr">
-                <span class="p-street-address">6 rue du Général Clergerie</span><br>
-                <span class="p-postal-code">75116</span> <span class="p-locality">Paris</span> &ndash;
-                <span class="p-country-name">France</span>
-            </address>
-            <div>Tel. <a href="tel:+33182285120" title="Telephone" class="p-tel">01 82 28 51 20</a></div>
-            <div>Tel. <a href="tel:+33182836655" title="Telephone (emprunters)" class="p-tel">01 82 83 66 55</a> (emprunteurs)
-            </div>
-        </div><!-- /.page-aside-body -->
-
-        </section>
-    </div>
 {% endblock %}

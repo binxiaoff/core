@@ -56,17 +56,14 @@ th {
   line-height: 1em;
   text-transform: uppercase;
 
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-
   .label {
-    //display: block;
-    //width: 100%;
-    //height: 1.2em;
-    //white-space: nowrap;
-    //overflow: hidden;
-    //text-overflow: ellipsis;
+    max-width: 100%;
+    display: inline-block;
+    height: 1.2em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
   }
 
   @include devices('sm', 'laptop', 'lg') {
@@ -167,12 +164,7 @@ thead.table-sortable-columns {
   vertical-align: middle;
 
   .label {
-    display: inline-block;
-    max-width: 80%;
-    height: 1em;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    max-width: 75%;
   }
 
   // Currently sorted column

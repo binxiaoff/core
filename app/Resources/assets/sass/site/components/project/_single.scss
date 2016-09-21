@@ -656,6 +656,7 @@ a#{$js-project-single-map-toggle} {
       right: 0;
       z-index: ($depth-site-header + 1);
 
+      backface-visibility: hidden;
       background-color: $c-bg3;
       border-bottom: solid 2px $c-bg2;
 
@@ -995,6 +996,7 @@ a#{$js-project-single-map-toggle} {
   // Info
   .project-single-info-wrap {
     position: relative;
+    backface-visibility: hidden;
     // -webkit-backface-visibility: hidden;
     // -webkit-transform-style: preserve-3d;
   }
@@ -1006,6 +1008,8 @@ a#{$js-project-single-map-toggle} {
     right: 0;
     top: 0;
     z-index: ($depth-tooltip - 5);
+
+    backface-visibility: hidden;
 
     // View map transition
     transition: margin-top .5s;
@@ -1019,6 +1023,7 @@ a#{$js-project-single-map-toggle} {
     padding: 30px 30px 20px;
     margin-left: 0;
     margin-right: 0;
+    backface-visibility: hidden;
 
     .list-sharing {
       .btn-facebook, .btn-twitter, .btn-email {

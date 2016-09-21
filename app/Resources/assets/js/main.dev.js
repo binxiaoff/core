@@ -17,7 +17,6 @@ var Clipboard = require('clipboard')
 var Tether = require('tether')
 var Drop = require('tether-drop')
 var SortableJS = require('sortablejs')
-var Pikaday = require('pikaday')
 
 // UI stuff
 // require('jquery-ui')
@@ -32,7 +31,6 @@ require('bs.transition')
 require('bs.tab')
 require('bs.tooltip')
 require('bs.collapse')
-require('pikaday.jquery')
 
 // Lib
 var Utility = require('Utility')
@@ -74,6 +72,8 @@ var BidsDetail = require('./app/components/BidsDetail')
 
 // Page controllers
 // Manage component or page-specific behaviours
+require('./app/controllers/Fancybox')
+require('./app/controllers/Pikaday')
 require('./app/controllers/Swipers')
 require('./app/controllers/BorrowerOperations')
 require('./app/controllers/NewPasswordRequest')
@@ -87,6 +87,10 @@ require('./app/controllers/Autolend')
 
 // @debug
 // CacheData.clearAll()
+
+// VideoJS
+// Running a modified version to customise the placement of items in the control bar
+videojs.options.flash.swf = '/assets/js/vendor/videojs/video-js.swf'
 
 // Watch window for scroll actions (triggers events on elements to show if visible/hidden for navigation, animation, etc.)
 var watchWindow = window.watchWindow = new WatchScroll.Watcher(window)
@@ -120,97 +124,14 @@ $(document).ready(function ($) {
   })
 
   /*
-   * jQuery UI Date Picker
+   * Text Counters
    */
-  // Set FR language in datepicker
-  // @note For supporting other languages, see: https://github.com/jquery/jquery-ui/blob/master/ui/i18n/
-  // @note I've inlined the language code since we are using browserify to compile code as it's a pain to do this kind of stuff in the Twig files
-  // if (/^fr/i.test($('html').attr('lang'))) {
-  //   $.datepicker.regional.fr = {
-  //     closeText: "Fermer",
-  //     prevText: "Précédent",
-  //     nextText: "Suivant",
-  //     currentText: "Aujourd'hui",
-  //     monthNames: ["janvier", "février", "mars", "avril", "mai", "juin",
-  //       "juillet", "août", "septembre", "octobre", "novembre", "décembre"],
-  //     monthNamesShort: ["janv.", "févr.", "mars", "avr.", "mai", "juin",
-  //       "juil.", "août", "sept.", "oct.", "nov.", "déc."],
-  //     dayNames: ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"],
-  //     dayNamesShort: ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."],
-  //     dayNamesMin: ["D", "L", "M", "M", "J", "V", "S"],
-  //     weekHeader: "Sem.",
-  //     dateFormat: "dd/mm/yy",
-  //     firstDay: 1,
-  //     isRTL: false,
-  //     showMonthAfterYear: false,
-  //     yearSuffix: ""
-  //   }
-  //   $.datepicker.setDefaults($.datepicker.regional.fr)
-  //
-  // // Italian
-  // } else if (/^it/i.test($('html').attr('lang'))) {
-  //   datepicker.regional.it = {
-  //     closeText: "Chiudi",
-  //     prevText: "&#x3C;Prec",
-  //     nextText: "Succ&#x3E;",
-  //     currentText: "Oggi",
-  //     monthNames: [ "Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno",
-  //       "Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre" ],
-  //     monthNamesShort: [ "Gen","Feb","Mar","Apr","Mag","Giu",
-  //       "Lug","Ago","Set","Ott","Nov","Dic" ],
-  //     dayNames: [ "Domenica","Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato" ],
-  //     dayNamesShort: [ "Dom","Lun","Mar","Mer","Gio","Ven","Sab" ],
-  //     dayNamesMin: [ "Do","Lu","Ma","Me","Gi","Ve","Sa" ],
-  //     weekHeader: "Sm",
-  //     dateFormat: "dd/mm/yy",
-  //     firstDay: 1,
-  //     isRTL: false,
-  //     showMonthAfterYear: false,
-  //     yearSuffix: ""
-  //   }
-  //   $.datepicker.setDefaults($.datepicker.regional.it)
-  // }
-
-  // Initialise any datepicker inputs
-  // $('.ui-has-datepicker, [data-ui-datepicker]').datepicker({
-  //   firstDay: 1,
-  //   format: 'dd/mm/yy'
-  // })
-  var pikadayOptions = {
-    format: 'DD/MM/YYYY'
-  }
-
-  // Language settings for datepicker
-  var pikadayI18n = {
-    fr: {
-      previousMonth : 'Précédent Mois',
-      nextMonth     : 'Suivant Mois',
-      months        : ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'],
-      weekdays      : ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'],
-      weekdaysShort : ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
-    },
-    it: {
-      previousMonth : 'Prec',
-      nextMonth     : 'Succ',
-      months        : ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'],
-      weekdays      : ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'],
-      weekdaysShort : ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab']
-    }
-  }
-  // Use french language
-  if (/^fr/i.test($('html').attr('lang'))) {
-    pikadayOptions.i18n = pikadayI18n.fr
-  // Use italian language
-  } else if (/^it/i.test($('html').attr('lang'))) {
-    pikadayOptions.i18n = pikadayI18n.it
-  }
-
-  // Instantiate datepickers
-  $('.ui-has-datepicker, [data-ui-datepicker]').pikaday(pikadayOptions)
-
-  // VideoJS
-  // Running a modified version to customise the placement of items in the control bar
-  videojs.options.flash.swf = '/assets/js/vendor/videojs/video-js.swf' // @TODO needs correct link '/js/vendor/videojs/video-js.swf'
+  // @note `.ui-text-count` is the old class, adding auto invocation here for backwards compatibility
+  // @note API relies on [data-textcount] being set for behaviours applied automatically
+  //       you should only use the `.ui-textcount` class if you want to explicitly set the behaviours
+  //       through JS otherwise rely on automatic invocation through the attribute [data-textcount]
+  // @todo Remove this call when the Twig views have been updated
+  $('.ui-text-count, .ui-has-textcount').uiTextCount()
 
   // Site Search AutoComplete
   if ($('.site-header .site-search-input').length > 0) {
@@ -412,85 +333,6 @@ $(document).ready(function ($) {
     event.preventDefault()
     openSearch()
   })
-
-  /*
-   * FancyBox
-   */
-  // Generic fancybox
-  $('.fancybox').fancybox()
-
-  // Show HTML content in fancybox (use href='#target-id' to indicate the content. See `src/twig/devenir_preter_lp.twig` for an example)
-  $('.fancybox-html').fancybox({
-    maxWidth: 800,
-    maxHeight: 600,
-    autoSize: true
-  })
-
-  // Open up media
-  $('.fancybox-media').each(function (i, elem) {
-    var $elem = $(elem)
-    if ($elem.is('.fancybox-embed-videojs')) {
-      $elem.fancybox({
-        padding: 0,
-        margin: 0,
-        autoSize: true,
-        autoCenter: true,
-        content: '<div class="fancybox-video"><video id="fancybox-videojs" class="video-js" autoplay controls preload="auto" data-setup=\'{ "techOrder": ["youtube"], "sources": [{ "type": "video/youtube", "src": "' + $elem.attr('href') + '" }], "inactivityTimeout": 0 }\'></video></div>',
-        beforeShow: function () {
-          $.fancybox.showLoading()
-          $('.fancybox-overlay').addClass('fancybox-loading')
-        },
-        // Assign video player functionality
-        afterShow: function () {
-          // Video not assigned yet
-          if (!videojs.getPlayers().hasOwnProperty('fancybox-video')) {
-            videojs('#fancybox-videojs', {}, function () {
-              var videoPlayer = this
-
-              // Set video width
-              var videoWidth = window.innerWidth * 0.7
-              if (videoWidth < 280) videoWidth = 280
-              if (videoWidth > 1980) videoWidth = 1980
-              videoPlayer.width(videoWidth)
-
-              // Update the fancybox width
-              $.fancybox.update()
-              $.fancybox.hideLoading()
-              setTimeout(function () {
-                $('.fancybox-overlay').removeClass('fancybox-loading')
-              }, 200)
-            })
-          } else {
-            $.fancybox.update()
-            $.fancybox.hideLoading()
-            setTimeout(function () {
-              $('.fancybox-overlay').removeClass('fancybox-loading')
-            }, 200)
-          }
-        },
-        // Remove video player on close
-        afterClose: function () {
-          videojs.getPlayers()['fancybox-videojs'].dispose()
-        }
-      })
-    } else {
-      $elem.fancybox({
-        helpers: {
-          'media': {}
-        }
-      })
-    }
-  })
-
-  /*
-   * Text Counters
-   */
-  // @note `.ui-text-count` is the old class, adding auto invocation here for backwards compatibility
-  // @note API relies on [data-textcount] being set for behaviours applied automatically
-  //       you should only use the `.ui-textcount` class if you want to explicitly set the behaviours
-  //       through JS otherwise rely on automatic invocation through the attribute [data-textcount]
-  // @todo Remove this call when the Twig views have been updated
-  $('.ui-text-count, .ui-has-textcount').uiTextCount()
 
   /*
    * Watch Scroll

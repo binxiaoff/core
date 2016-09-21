@@ -11,7 +11,7 @@
 
   // Columns
   .table-myoperations-item-type {
-    width: 20%;
+    width: 18%;
   }
 
   .table-myoperations-item-contract {
@@ -19,7 +19,7 @@
   }
 
   .table-myoperations-item-project {
-    width: 25%;
+    width: 30%;
 
     a {
       display: block;
@@ -32,16 +32,16 @@
   }
 
   .table-myoperations-item-date {
-    width: 10%;
+    width: 12%;
   }
 
   .table-myoperations-item-amount {
-    width: 10%;
+    width: 15%;
     text-align: right;
   }
 
   .table-myoperations-item-balance {
-    width: 10%;
+    width: 15%;
     text-align: right;
   }
 }
@@ -169,10 +169,6 @@
 
   tbody {
     font-size: 15px;
-  }
-
-  span.label {
-    overflow: visible;
   }
 }
 

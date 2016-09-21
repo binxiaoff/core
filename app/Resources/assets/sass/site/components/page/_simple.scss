@@ -131,15 +131,9 @@
       padding: $width-site-margin-lg;
     }
 
-    // @TODO find a sticky plugin that works properly
-    // @include devices('md', 'lg') {
-    //   &.stuck {
-    //     margin-top: $height-fixed-menu + 20px;
-    //   }
-    // }
-
     // @note I built one! Let's animate the transition coz it's jerky
     &.ui-has-sticky {
+      backface-visibility: hidden;
       transition: all .2s;
     }
   }

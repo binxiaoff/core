@@ -10,6 +10,8 @@ var __ = require('__')
 var $doc = $(document)
 
 $doc.on('ready', function () {
+  var operationsAjaxTimer = 0
+  var lastFormState = {}
 
   // Changing filters will change the contents of the loans table
   $doc.on('change', '#dashboard-lender-operations :input', function (event) {
@@ -18,22 +20,26 @@ $doc.on('ready', function () {
     var filterAction = $input.attr('name').match(/filter\[(.*)\]/i)[1]
     $form.children(':input.id_last_action').val(filterAction)
 
-    $.ajax({
-      method: $form.attr('method'),
-      url: $form.attr('action'),
-      data: $form.serialize(),
-      success: function (data) {
-        // Data has object with props target and template
-        // After adding the template, need to trigger that it's visible for any other components to auto-initialise
-        $('article#' + data.target).html(data.template).trigger('UI:visible')
-      },
-      complete: function () {
-        $('.ui-has-datepicker, [data-ui-datepicker]').datepicker({
-          firstDay: 1,
-          format: 'dd/mm/yy'
-        })
-      }
-    })
+    // Disable
+    if ($('#dashboard-lender-operations').prop('disabled')) return
+
+    // Debounce AJAX
+    clearTimeout(operationsAjaxTimer)
+    operationsAjaxTimer = setTimeout(function () {
+      $('#dashboard-lender-operations').prop('disabled', true)
+      $.ajax({
+        method: $form.attr('method'),
+        url: $form.attr('action'),
+        data: $form.serialize(),
+        success: function (data) {
+          // Data has object with props target and template
+          // After adding the template, need to trigger that it's visible for any other components to auto-initialise
+          $('article#' + data.target).html(data.template).trigger('UI:visible')
+
+          $('#dashboard-lender-operations').removeProp('disabled')
+        }
+      })
+    }, 400)
   })
 
   // Show/hide details for individual rows

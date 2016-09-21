@@ -743,7 +743,7 @@ ChartView.prototype.render = function (data, schema) {
     }
 
     // @debug
-    console.log('highcharts instantiated', self.chart)
+    // console.log('highcharts instantiated', self.chart)
 
     // Apply the type as a class
     self.$elem.addClass('ui-chartview-type-' + self.settings.type)

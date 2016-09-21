@@ -21,7 +21,7 @@ $doc.on('ready', function () {
         data: form.serialize(),
         dataType: 'json'
       }).done(function (data) {
-        $('table.table-myoperations-borrower tbody').html(data.html_response)
+        $('table.table-myoperations-borrower tbody').html(data.html_response).trigger('UI:visible')
 
         // Results
         if ($('table.table-myoperations-borrower tbody tr').length > 0) {
