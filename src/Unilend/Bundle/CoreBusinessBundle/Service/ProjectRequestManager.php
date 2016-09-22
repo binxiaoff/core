@@ -66,7 +66,7 @@ class ProjectRequestManager
         $clientAddress->create();
 
         $company->id_client_owner               = $client->id_client;
-        $company->siren                         = $aFormData['siren'];
+        $company->siren                         = substr(str_replace(' ', '', $aFormData['siren']), 0, 9);
         $company->status_adresse_correspondance = 1;
         $company->email_dirigeant               = $aFormData['email'];
         $company->create();

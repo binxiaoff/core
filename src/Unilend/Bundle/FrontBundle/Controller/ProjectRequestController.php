@@ -118,17 +118,18 @@ class ProjectRequestController extends Controller
             }
         }
 
-        $sirenLength = strlen($request->request->get('siren'));
+        $siren       = str_replace(' ', '', $request->request->get('siren'));
+        $sirenLength = strlen($siren);
 
         if (
-            empty($request->request->get('siren'))
-            || false === filter_var($request->request->get('siren'), FILTER_VALIDATE_INT)
+            empty($siren)
+            || false === filter_var($siren, FILTER_VALIDATE_INT)
             || false === in_array($sirenLength, [9, 14]) // SIRET numbers also allowed
         ) {
             $message = $translator->trans('borrower-landing-page_required-fields-error');
             $errors['siren'] = true;
         } else {
-            $siren = substr($request->request->get('siren'), 0, 9);
+            $siren = substr($siren, 0, 9);
         }
 
         if ($request->getSession()->get('partnerProjectRequest')) {
@@ -202,7 +203,7 @@ class ProjectRequestController extends Controller
         $this->company = $entityManager->getRepository('companies');
         $this->company->id_client_owner               = $this->client->id_client;
         $this->company->siren                         = $siren;
-        $this->company->siret                         = $sirenLength === 14 ? $request->request->get('siren') : '';
+        $this->company->siret                         = $sirenLength === 14 ? str_replace(' ', '', $request->request->get('siren')) : '';
         $this->company->status_adresse_correspondance = 1;
         $this->company->email_dirigeant               = $email;
         $this->company->email_facture                 = $email;
@@ -370,23 +371,21 @@ class ProjectRequestController extends Controller
             'errors' => isset($session['errors']) ? $session['errors'] : [],
             'values' => [
                 'contact' => [
-                    'civility'   => isset($values['contact']['civility']) ? $values['contact']['civility'] : $this->client->civilite,
-                    'lastname'   => isset($values['contact']['lastname']) ? $values['contact']['lastname'] : $this->client->nom,
-                    'firstname'  => isset($values['contact']['firstname']) ? $values['contact']['firstname'] : $this->client->prenom,
-                    'email'      => isset($values['contact']['email']) ? $values['contact']['email'] : $this->removeEmailSuffix($this->client->email),
-                    'email_conf' => isset($values['contact']['email_conf']) ? $values['contact']['email_conf'] : '',
-                    'mobile'     => isset($values['contact']['mobile']) ? $values['contact']['mobile'] : $this->client->telephone,
-                    'function'   => isset($values['contact']['function']) ? $values['contact']['function'] : $this->client->fonction
+                    'civility'  => isset($values['contact']['civility']) ? $values['contact']['civility'] : $this->client->civilite,
+                    'lastname'  => isset($values['contact']['lastname']) ? $values['contact']['lastname'] : $this->client->nom,
+                    'firstname' => isset($values['contact']['firstname']) ? $values['contact']['firstname'] : $this->client->prenom,
+                    'email'     => isset($values['contact']['email']) ? $values['contact']['email'] : $this->removeEmailSuffix($this->client->email),
+                    'mobile'    => isset($values['contact']['mobile']) ? $values['contact']['mobile'] : $this->client->telephone,
+                    'function'  => isset($values['contact']['function']) ? $values['contact']['function'] : $this->client->fonction
                 ],
                 'manager' => isset($values['manager']) ? $values['manager'] : (isset($advisorClient) ? 'no' : 'yes'),
                 'advisor' => [
-                    'civility'   => isset($values['advisor']['civility']) ? $values['advisor']['civility'] : (isset($advisorClient) ? $advisorClient->civilite : ''),
-                    'lastname'   => isset($values['advisor']['lastname']) ? $values['advisor']['lastname'] : (isset($advisorClient) ? $advisorClient->nom : ''),
-                    'firstname'  => isset($values['advisor']['firstname']) ? $values['advisor']['firstname'] : (isset($advisorClient) ? $advisorClient->prenom : ''),
-                    'email'      => isset($values['advisor']['email']) ? $values['advisor']['email'] : (isset($advisorClient) ? $this->removeEmailSuffix($advisorClient->email) : ''),
-                    'email_conf' => isset($values['advisor']['email_conf']) ? $values['advisor']['email_conf'] : '',
-                    'mobile'     => isset($values['advisor']['mobile']) ? $values['advisor']['mobile'] : (isset($advisorClient) ? $advisorClient->telephone : ''),
-                    'function'   => isset($values['advisor']['function']) ? $values['advisor']['function'] : (isset($advisorClient) ? $advisorClient->fonction : '')
+                    'civility'  => isset($values['advisor']['civility']) ? $values['advisor']['civility'] : (isset($advisorClient) ? $advisorClient->civilite : ''),
+                    'lastname'  => isset($values['advisor']['lastname']) ? $values['advisor']['lastname'] : (isset($advisorClient) ? $advisorClient->nom : ''),
+                    'firstname' => isset($values['advisor']['firstname']) ? $values['advisor']['firstname'] : (isset($advisorClient) ? $advisorClient->prenom : ''),
+                    'email'     => isset($values['advisor']['email']) ? $values['advisor']['email'] : (isset($advisorClient) ? $this->removeEmailSuffix($advisorClient->email) : ''),
+                    'mobile'    => isset($values['advisor']['mobile']) ? $values['advisor']['mobile'] : (isset($advisorClient) ? $advisorClient->telephone : ''),
+                    'function'  => isset($values['advisor']['function']) ? $values['advisor']['function'] : (isset($advisorClient) ? $advisorClient->fonction : '')
                 ],
                 'project' => [
                     'duration'    => isset($values['project']['duration']) ? $values['project']['duration'] : $this->project->period,
@@ -447,9 +446,6 @@ class ProjectRequestController extends Controller
         if (empty($request->request->get('contact')['email']) || false === filter_var($request->request->get('contact')['email'], FILTER_VALIDATE_EMAIL)) {
             $errors['contact']['email'] = true;
         }
-        if (empty($request->request->get('contact')['email_conf']) || $request->request->get('contact')['email'] !== $request->request->get('contact')['email_conf']) {
-            $errors['contact']['email_conf'] = true;
-        }
         if (empty($request->request->get('contact')['mobile'])) {
             $errors['contact']['mobile'] = true;
         }
@@ -480,9 +476,6 @@ class ProjectRequestController extends Controller
             }
             if (empty($request->request->get('advisor')['email']) || false === filter_var($request->request->get('advisor')['email'], FILTER_VALIDATE_EMAIL)) {
                 $errors['advisor']['email'] = true;
-            }
-            if (empty($request->request->get('advisor')['email_conf']) || $request->request->get('advisor')['email'] !== $request->request->get('advisor')['email_conf']) {
-                $errors['advisor']['email_conf'] = true;
             }
             if (empty($request->request->get('advisor')['mobile'])) {
                 $errors['advisor']['mobile'] = true;
@@ -908,16 +901,15 @@ class ProjectRequestController extends Controller
             'errors' => isset($session['errors']) ? $session['errors'] : [],
             'values' => [
                 'contact' => [
-                    'civility'   => isset($values['contact']['civility']) ? $values['contact']['civility'] : $this->client->civilite,
-                    'lastname'   => isset($values['contact']['lastname']) ? $values['contact']['lastname'] : $this->client->nom,
-                    'firstname'  => isset($values['contact']['firstname']) ? $values['contact']['firstname'] : $this->client->prenom,
-                    'email'      => isset($values['contact']['email']) ? $values['contact']['email'] : $this->removeEmailSuffix($this->client->email),
-                    'email_conf' => isset($values['contact']['email_conf']) ? $values['contact']['email_conf'] : '',
-                    'mobile'     => isset($values['contact']['mobile']) ? $values['contact']['mobile'] : $this->client->telephone,
-                    'function'   => isset($values['contact']['function']) ? $values['contact']['function'] : $this->client->fonction
+                    'civility'  => isset($values['contact']['civility']) ? $values['contact']['civility'] : $this->client->civilite,
+                    'lastname'  => isset($values['contact']['lastname']) ? $values['contact']['lastname'] : $this->client->nom,
+                    'firstname' => isset($values['contact']['firstname']) ? $values['contact']['firstname'] : $this->client->prenom,
+                    'email'     => isset($values['contact']['email']) ? $values['contact']['email'] : $this->removeEmailSuffix($this->client->email),
+                    'mobile'    => isset($values['contact']['mobile']) ? $values['contact']['mobile'] : $this->client->telephone,
+                    'function'  => isset($values['contact']['function']) ? $values['contact']['function'] : $this->client->fonction
                 ],
                 'project' => [
-                    'duration'    => isset($values['project']['duration']) ? $values['project']['duration'] : $this->project->period
+                    'duration' => isset($values['project']['duration']) ? $values['project']['duration'] : $this->project->period
                 ]
             ]
         ];
@@ -971,9 +963,6 @@ class ProjectRequestController extends Controller
         }
         if (empty($request->request->get('contact')['email']) || false === filter_var($request->request->get('contact')['email'], FILTER_VALIDATE_EMAIL)) {
             $errors['contact']['email'] = true;
-        }
-        if (empty($request->request->get('contact')['email_conf']) || $request->request->get('contact')['email'] !== $request->request->get('contact')['email_conf']) {
-            $errors['contact']['email_conf'] = true;
         }
         if (empty($request->request->get('contact')['mobile'])) {
             $errors['contact']['mobile'] = true;
@@ -1067,16 +1056,15 @@ class ProjectRequestController extends Controller
         $values  = isset($session['values']) ? $session['values'] : [];
 
         $template = [
-            'form' => [
-                'errors'  => isset($session['errors']) ? $session['errors'] : [],
-                'values'  => [
-                    'civility'   => isset($values['civility']) ? $values['civility'] : $this->client->civilite,
-                    'lastname'   => isset($values['lastname']) ? $values['lastname'] : $this->client->nom,
-                    'firstname'  => isset($values['firstname']) ? $values['firstname'] : $this->client->prenom,
-                    'email'      => isset($values['email']) ? $values['email'] : $this->removeEmailSuffix($this->client->email),
-                    'email_conf' => isset($values['email_conf']) ? $values['email_conf'] : '',
-                    'mobile'     => isset($values['mobile']) ? $values['mobile'] : $this->client->telephone,
-                    'function'   => isset($values['function']) ? $values['function'] : $this->client->fonction
+            'form'    => [
+                'errors' => isset($session['errors']) ? $session['errors'] : [],
+                'values' => [
+                    'civility'  => isset($values['civility']) ? $values['civility'] : $this->client->civilite,
+                    'lastname'  => isset($values['lastname']) ? $values['lastname'] : $this->client->nom,
+                    'firstname' => isset($values['firstname']) ? $values['firstname'] : $this->client->prenom,
+                    'email'     => isset($values['email']) ? $values['email'] : $this->removeEmailSuffix($this->client->email),
+                    'mobile'    => isset($values['mobile']) ? $values['mobile'] : $this->client->telephone,
+                    'function'  => isset($values['function']) ? $values['function'] : $this->client->fonction
                 ]
             ],
             'project' => [
@@ -1118,9 +1106,6 @@ class ProjectRequestController extends Controller
         }
         if (empty($request->request->get('email')) || false === filter_var($request->request->get('email'), FILTER_VALIDATE_EMAIL)) {
             $errors['email'] = true;
-        }
-        if (empty($request->request->get('email_conf')) || $request->request->get('email') !== $request->request->get('email_conf')) {
-            $errors['email_conf'] = true;
         }
         if (empty($request->request->get('mobile'))) {
             $errors['mobile'] = true;
@@ -1632,7 +1617,7 @@ class ProjectRequestController extends Controller
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
         $oProjectManager = $this->get('unilend.service.project_manager');
 
-        if ($this->project->status != $projectStatus) {
+        if ($this->project->status != $projectStatus || $this->project->status == \projects_status::COMPLETUDE_ETAPE_2) {
             $oProjectManager->addProjectStatus(\users::USER_ID_FRONT, $projectStatus, $this->project, 0, $rejectionMessage);
         }
 
