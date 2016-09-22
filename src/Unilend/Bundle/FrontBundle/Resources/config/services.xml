@@ -7,7 +7,7 @@
     <services>
         <service id="unilend.frontbundle.twig_extension" class="Unilend\Bundle\FrontBundle\Twig\FrontBundleExtension" public="false">
             <tag name="twig.extension" />
-            <argument type="service" id="kernel" />
+            <argument>%kernel.root_dir%</argument>
             <argument type="service" id="assets.packages" />
             <argument type="service" id="unilend.service.statistics_manager" />
             <argument type="service" id="unilend.service.translation_manager" />
@@ -47,7 +47,7 @@
 
         <service id="unilend.frontbundle.provider.route_provider" class="Unilend\Bundle\FrontBundle\Service\RouteProvider">
             <argument type="service" id="unilend.service.entity_manager" />
-            <argument type="service" id="memcache.default" />
+            <argument type="service" id="logger" />
         </service>
 
         <service id="unilend.frontbundle.service.lender_account_display_manager" class="Unilend\Bundle\FrontBundle\Service\LenderAccountDisplayManager">

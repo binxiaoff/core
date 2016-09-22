@@ -2,7 +2,6 @@
 namespace Unilend\Bundle\FrontBundle\Twig;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
-use Symfony\Component\HttpKernel\Kernel;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
@@ -12,8 +11,7 @@ use Unilend\core\Loader;
 
 class FrontBundleExtension extends \Twig_Extension
 {
-    /** @var Kernel */
-    private $kernel;
+    private $rootDir;
     /** @var StatisticsManager */
     private $statisticsManager;
     /** @var TranslationManager */
@@ -28,7 +26,7 @@ class FrontBundleExtension extends \Twig_Extension
     private $packages;
 
     public function __construct(
-        Kernel $kernel,
+        $rootDir,
         Packages $assetsPackages,
         StatisticsManager $statisticsManager,
         TranslationManager $translationManager,
@@ -36,7 +34,6 @@ class FrontBundleExtension extends \Twig_Extension
         MemcacheCachePool $cachePool,
         LocationManager $locationManager
     ) {
-        $this->kernel             = $kernel;
         $this->packages           = $assetsPackages;
         $this->statisticsManager  = $statisticsManager;
         $this->translationManager = $translationManager;
@@ -49,9 +46,7 @@ class FrontBundleExtension extends \Twig_Extension
     {
         return array(
             new \Twig_SimpleFunction('setting', [$this, 'settingFunction']),
-            new \Twig_SimpleFunction('route', [$this, 'routeFunction']),
             new \Twig_SimpleFunction('svgimage', [$this, 'svgImageFunction']),
-            new \Twig_SimpleFunction('__', [$this, 'temporaryTranslateFunction']),
             new \Twig_SimpleFunction('siteurlmedia', [$this, 'completeUrlMediaFunction']),
             new \Twig_SimpleFunction('getCategories', [$this, 'getCategoriesForSvg']),
             new \Twig_SimpleFunction('uploadedImage', [$this, 'uploadedImageFunction']),
@@ -137,18 +132,6 @@ class FrontBundleExtension extends \Twig_Extension
         return $sSvgHtml;
     }
 
-    //TODO delete before going live, after having all replaced by path
-    public function routeFunction($sRoute)
-    {
-        return $sRoute;
-    }
-
-    //TODO delete before going live
-    public function temporaryTranslateFunction($sTranslations)
-    {
-        return $sTranslations;
-    }
-
     public function completeUrlMediaFunction($sPath)
     {
         return  $this->packages->getUrl('/assets/images/' . $sPath);
@@ -221,7 +204,7 @@ class FrontBundleExtension extends \Twig_Extension
      */
     public function photo($image, $format = '')
     {
-        $photos = new \photos([$this->kernel->getRootDir() . '/../public/default/var/',  $this->packages->getUrl('')]);
+        $photos = new \photos([$this->rootDir . '/../public/default/var/',  $this->packages->getUrl('')]);
         return $photos->display($image, $format);
     }
 
