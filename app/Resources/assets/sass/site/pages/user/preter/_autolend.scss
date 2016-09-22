@@ -348,6 +348,24 @@ $height-autolend-cell-header: 50px;
     right: 0;
     bottom: 0;
 
+    // Add a percentage
+    &:after {
+      box-sizing: border-box;
+      content: '%';
+      padding: 0;
+      margin: 0;
+
+      position: absolute;
+      right: 24%;
+      top: 38%;
+
+      color: inherit;
+      font-size: .8em;
+      line-height: 1em;
+
+      user-select: none;
+    }
+
     input {
       box-sizing: border-box;
       display: block;
@@ -506,7 +524,7 @@ $height-autolend-cell-header: 50px;
 
       .label {
         padding: 0;
-        margin: 0 0 5px;
+        margin: 10px 0 5px;
         font-size: $fs-base * .8;
         line-height: 1em;
         transition: margin-top .2s;
@@ -534,7 +552,7 @@ $height-autolend-cell-header: 50px;
     .info-scale-balance {
       width: 100%;
       height: 20px;
-      margin-top: 20px;
+      margin-top: 10px;
       clear: both;
       float: left;
       position: relative;
@@ -641,13 +659,13 @@ $height-autolend-cell-header: 50px;
     }
 
     &#{$js-autolend-average-within} {
-      .info-scale-unilend .label {
-        margin-top: 10px;
+      .info-scale-user .label {
+        margin-top: 0;
       }
 
-      .info-scale-balance {
-        margin-top: 10px;
-      }
+      //.info-scale-balance {
+      //  margin-top: 10px;
+      //}
 
       .info-scale-balance-board {
         transform: rotate(5deg);
@@ -655,13 +673,13 @@ $height-autolend-cell-header: 50px;
     }
 
     &#{$js-autolend-average-exceeds} {
-      .info-scale-user .label {
-        margin-top: 10px;
+      .info-scale-unilend .label {
+        margin-top: 0;
       }
 
-      .info-scale-balance {
-        margin-top: 10px;
-      }
+      //.info-scale-balance {
+      //  margin-top: 10px;
+      //}
 
       .info-scale-balance-board {
         transform: rotate(-5deg);

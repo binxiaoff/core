@@ -605,6 +605,9 @@ $(document)
       var $autolendTable = $input.parents('.ui-autolendtable').first()
       var at = $autolendTable[0].AutolendTable
       at.setCellInterest(cellIndex, $input.val())
+
+      // Force to show decimals
+      $input.val(parseFloat($input.val()).toFixed(1))
     }
   })
 

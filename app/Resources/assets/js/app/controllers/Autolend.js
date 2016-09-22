@@ -20,52 +20,46 @@ $(document)
         }
     })
 
-    //switch autolend on/off
+    // Switch autolend on/off
     .on('change', 'input#form-autolend-enable', function (event) {
         var $elem = $(this)
 
         if ($elem.is(':checked')) {
             $('#autolend-config.collapse').collapse('show')
         } else {
-            var form = $('#form-user-autolend');
+            var form = $('#form-user-autolend')
             $('#autolend-config.collapse').collapse('hide')
             emptyNotificationsDiv()
             $.ajax({
                 method: form.attr('method'),
                 url: form.attr('action'),
-                data: {setting : 'autolend-off'},
+                data: {
+                    setting : 'autolend-off'
+                },
                 dataType: 'json'
             }).done(function (data) {
 
-            });
+            })
         }
     })
 
-    //reduce cell rate
-    .on(Utility.clickEvent, '.cell .cell-input .btn-cell-minus', function (event) {
-        var cellData = getCellInfo($(this).parent().attr('data-autolendtable-cell'))
-        var $inputRate = getInputRate(cellData.cellIndex)
-        var newInterest = adjustInterestRate(cellData, -cellData.step)
+    // Change cell rate by keys
+    .on('keydown', '.cell .cell-input input', function (event) {
+        // Press up arrow
+        if (event.which === 38) {
+            eventIncreaseCell(event)
 
-        $inputRate.val(newInterest)
-        cellData.currentRate = newInterest
-        changeCellColor(cellData, newInterest)
-        addCellDataToBalance(cellData)
-        changeBalance(cellData)
+        // Press down arrow
+        } else if (event.which === 40) {
+            eventDecreaseCell(event)
+        }
     })
 
-    //increase cell rate
-    .on(Utility.clickEvent, '.cell .cell-input .btn-cell-plus', function (event) {
-        var cellData = getCellInfo($(this).parent().attr('data-autolendtable-cell'))
-        var newInterest = adjustInterestRate(cellData, cellData.step)
-        var $inputRate = getInputRate(cellData.cellIndex)
+    // Reduce cell rate
+    .on(Utility.clickEvent, '.cell .cell-input .btn-cell-minus', eventDecreaseCell)
 
-        $inputRate.val(newInterest)
-        cellData.currentRate = newInterest
-        changeCellColor(cellData, newInterest)
-        addCellDataToBalance(cellData)
-        changeBalance(cellData)
-    })
+    // Increase cell rate
+    .on(Utility.clickEvent, '.cell .cell-input .btn-cell-plus', eventIncreaseCell)
 
     // Show cell info (side widget)
     .on(Utility.clickEvent, '.cell .cell-input', function (event) {
@@ -116,7 +110,7 @@ $(document)
         // Show dialog
         if ($elem.is('.ui-dialog-confirm')) {
             event.preventDefault()
-            var form = $('#form-user-autolend');
+            var form = $('#form-user-autolend')
 
             $.ajax({
                 method: form.attr('method'),
@@ -130,7 +124,7 @@ $(document)
                     updateSuccess(data.dateText)
                 }
                 $('#autolend-table-dialog').fadeOut()
-            });
+            })
 
         } else {
             $('#autolend-table-dialog').fadeIn().focus()
@@ -139,7 +133,7 @@ $(document)
         }
     })
 
-    //apply unilend average rate to cell
+    // Apply unilend average rate to cell
     .on(Utility.clickEvent, '#apply-average-to-cell', function (event) {
         var $elem = $(this)
         var $cellRef = Utility.getElemIsOrHasParent(this, '[data-autolendtable-cell]')
@@ -198,10 +192,10 @@ function adjustInterestRate(cellData, amount) {
     newInterest = newInterest / 10
 
     if (newInterest >= parseFloat(cellData.max)) {
-        newInterest = cellData.max;
+        newInterest = cellData.max
     }
     if (newInterest <= parseFloat(cellData.min)) {
-        newInterest = cellData.min;
+        newInterest = cellData.min
     }
 
     return newInterest
@@ -213,11 +207,11 @@ function changeCellColor(cellData, currentInterest){
     var $selectedCell = $inputRate.parents('.cell-data').first()
 
     if (parseFloat(currentInterest, 1) <= parseFloat(cellData.avgRateUnilend, 1)) {
-        $selectedCell.removeClass('ui-autolend-average-exceeds');
-        $selectedCell.addClass('ui-autolend-average-within');
+        $selectedCell.removeClass('ui-autolend-average-exceeds')
+        $selectedCell.addClass('ui-autolend-average-within')
     } else {
-        $selectedCell.removeClass('ui-autolend-average-within');
-        $selectedCell.addClass('ui-autolend-average-exceeds');
+        $selectedCell.removeClass('ui-autolend-average-within')
+        $selectedCell.addClass('ui-autolend-average-exceeds')
     }
 }
 
@@ -282,7 +276,7 @@ function addCellDataToBalance(cellData){
 }
 
 function changeBalance(cellData) {
-    var $infoEvaluation = $('.info-evaluation');
+    var $infoEvaluation = $('.info-evaluation')
 
     if (parseFloat(cellData.currentRate, 1) == parseFloat(cellData.avgRateUnilend, 1)) {
         balanceEqual($infoEvaluation)
@@ -354,4 +348,32 @@ function emptyNotificationsDiv(){
     $('#form-info-notifications .message-error').text('').hide()
 }
 
+function eventDecreaseCell (event) {
+    event.preventDefault()
 
+    var cellData = getCellInfo($(event.target).parents('[data-autolendtable-cell]').attr('data-autolendtable-cell'))
+    var $inputRate = getInputRate(cellData.cellIndex)
+    var newInterest = adjustInterestRate(cellData, -cellData.step)
+
+    $inputRate.val(newInterest)
+    cellData.currentRate = newInterest
+    changeCellColor(cellData, newInterest)
+    addCellDataToBalance(cellData)
+    changeBalance(cellData)
+}
+
+function eventIncreaseCell (event) {
+    event.preventDefault()
+
+    var cellData = getCellInfo($(event.target).parents('[data-autolendtable-cell]').attr('data-autolendtable-cell'))
+    var $inputRate = getInputRate(cellData.cellIndex)
+    var newInterest = adjustInterestRate(cellData, cellData.step)
+
+    if (newInterest >= 10) newInterest = parseFloat(newInterest).toFixed(0)
+
+    $inputRate.val(newInterest)
+    cellData.currentRate = newInterest
+    changeCellColor(cellData, newInterest)
+    addCellDataToBalance(cellData)
+    changeBalance(cellData)
+}
