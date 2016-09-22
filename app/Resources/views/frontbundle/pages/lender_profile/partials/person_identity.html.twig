@@ -27,7 +27,7 @@
         <dt>{% trans %} common_birth-city {% endtrans %}</dt>
         <dd id="profile-info-dob-commune-output">{{ client.ville_naissance }}</dd>
         <dt>{% trans %} common_nationality {% endtrans %}</dt>
-        <dd id="profile-info-dob-nationalite-output">{{ client.id_pays_naissance|nationalityLabel }}</dd>
+        <dd id="profile-info-dob-nationalite-output">{{ client.id_pays_naissance|countryLabel }}</dd>
         <dt>{% trans %} lender-profile_information-tab-identity-section-ID-documents-label {% endtrans %}</dt>
         <dd id="profile-info-fichier-identitie-output">
             {% for attachment in identityAttachments %}
