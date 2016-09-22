@@ -924,7 +924,7 @@ class dossiersController extends bootstrap
                 }
             }
 
-            $this->recup_info_remboursement_anticipe($this->projects->id_project);
+            $this->recup_info_remboursement_anticipe();
         } else {
             header('Location: ' . $this->lurl . '/dossiers');
             die;
@@ -2217,7 +2217,7 @@ class dossiersController extends bootstrap
                 }
             }
 
-            $this->recup_info_remboursement_anticipe($this->projects->id_project);
+            $this->recup_info_remboursement_anticipe();
         }
     }
 
@@ -2320,14 +2320,14 @@ class dossiersController extends bootstrap
     }
 
     //utilisé pour récup les infos affichées dans le cadre
-    private function recup_info_remboursement_anticipe($id_project)
+    private function recup_info_remboursement_anticipe()
     {
         $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
         $this->echeanciers            = $this->loadData('echeanciers');
         $oBusinessDays                = $this->loadLib('jours_ouvres');
 
         //Récupération de la date theorique de remb ( ON AJOUTE ICI LA ZONE TAMPON DE 3 JOURS APRES LECHEANCE)
-        $aLastOrder             = $this->echeanciers->getLastOrder($id_project);
+        $aLastOrder             = $this->echeanciers->getLastOrder($this->projects->id_project);
         $iOrderEarlyRefund      = isset($aLastOrder['ordre']) ? $aLastOrder['ordre'] + 1 : 1;
         $sLastOrderDate         = $aLastOrder['date_echeance'];
         $iLastOrderDate         = strtotime($sLastOrderDate);
@@ -2345,10 +2345,10 @@ class dossiersController extends bootstrap
                 $this->date_derniere_echeance_normale = $this->dates->formatDateMysqltoFr_HourOut($aLastOrder['date_echeance']);
 
                 // on va recup la date de la derniere echeance qui suit le process de base
-                $aNextEcheance = $this->echeanciers->select(" id_project = " . $id_project . "
+                $aNextEcheance = $this->echeanciers->select(" id_project = " . $this->projects->id_project . "
                     AND DATE_ADD(date_echeance, INTERVAL 3 DAY) > NOW()
                     AND id_lender = (SELECT id_lender
-                    FROM echeanciers where id_project = " . $id_project . " LIMIT 1)
+                    FROM echeanciers where id_project = " . $this->projects->id_project . " LIMIT 1)
                     AND ordre = " . ($iOrderEarlyRefund + 1), 'ordre ASC', 0, 1);
 
                 if (count($aNextEcheance) > 0) {
@@ -2362,7 +2362,7 @@ class dossiersController extends bootstrap
                 }
             } else {
                 // on va recup la date de la derniere echeance qui suit le process de base
-                $aRepaymentSchedule                   = $this->echeanciers->select(' id_project = ' . $id_project . ' AND ordre = ' . ($iOrderEarlyRefund + 1), 'ordre ASC', 0, 1);
+                $aRepaymentSchedule                   = $this->echeanciers->select(' id_project = ' . $this->projects->id_project . ' AND ordre = ' . ($iOrderEarlyRefund + 1), 'ordre ASC', 0, 1);
                 $this->date_derniere_echeance_normale = $this->dates->formatDateMysqltoFr_HourOut($aRepaymentSchedule[0]['date_echeance']);
             }
         }
@@ -2372,21 +2372,13 @@ class dossiersController extends bootstrap
             $this->date_next_echeance = $this->dates->formatDateMysqltoFr_HourOut($sLastOrderDate);
         }
 
-        $this->montant_restant_du_emprunteur = $this->echeanciers_emprunteur->reste_a_payer_ra($id_project, $iOrderEarlyRefund);
-        $this->montant_restant_du_preteur    = $this->echeanciers->getRemainingCapitalAtDue($id_project, $iOrderEarlyRefund);
+        $this->montant_restant_du_emprunteur = $this->echeanciers_emprunteur->reste_a_payer_ra($this->projects->id_project, $iOrderEarlyRefund);
+        $this->montant_restant_du_preteur    = $this->echeanciers->getRemainingCapitalAtDue($this->projects->id_project, $iOrderEarlyRefund);
         $resultat_num                        = bcsub($this->montant_restant_du_preteur, $this->montant_restant_du_emprunteur, 2);
+        $this->ordre_echeance_ra             = $iOrderEarlyRefund;
+        $this->remb_anticipe_effectue        = false;
 
-        $this->ordre_echeance_ra = $iOrderEarlyRefund;
-
-        $this->projects_status_history = $this->loadData('projects_status_history');
-        $statut_projet                 = $this->projects_status_history->select('id_project = ' . $id_project, 'id_project_status_history DESC', 0, 1);
-
-        $oEarlyRefundStatus = $this->loadData('projects_status');
-        $oEarlyRefundStatus->get(\projects_status::REMBOURSEMENT_ANTICIPE, 'status');
-
-        $this->remb_anticipe_effectue = false;
-
-        if ($statut_projet[0]['id_project_status'] == $oEarlyRefundStatus->id_project_status) {
+        if ($this->projects->status == \projects_status::REMBOURSEMENT_ANTICIPE) {
             $this->phrase_resultat        = "<div style='color:green;'>Remboursement anticip&eacute; effectu&eacute;</div>";
             $this->remb_anticipe_effectue = true;
         } else {
@@ -2405,7 +2397,7 @@ class dossiersController extends bootstrap
 
         $this->virement_recu = false;
 
-        if (count($L_vrmt_anticipe) == 1 && $statut_projet[0]['id_project_status'] != $oEarlyRefundStatus->id_project_status) {
+        if (count($L_vrmt_anticipe) == 1 && $this->projects->status != \projects_status::REMBOURSEMENT_ANTICIPE) {
             $this->virement_recu    = true;
             $this->virement_recu_ok = false;
 
@@ -2420,7 +2412,7 @@ class dossiersController extends bootstrap
         }
 
         // on check si les échéances avant le RA sont toutes payées - si on trouve quelque chose on bloque le RA
-        $L_echeance_avant            = $this->echeanciers->select(" id_project = " . $id_project . " AND status = 0 AND ordre < " . $this->ordre_echeance_ra);
+        $L_echeance_avant            = $this->echeanciers->select(" id_project = " . $this->projects->id_project . " AND status = 0 AND ordre < " . $this->ordre_echeance_ra);
         $this->ra_possible_all_payed = true;
         if (count($L_echeance_avant) > 0) {
             $this->phrase_resultat       = "<div style='color:red;'>Remboursement impossible <br />Toutes les &eacute;ch&eacute;ances pr&eacute;c&eacute;dentes ne sont pas rembours&eacute;es</div>";
