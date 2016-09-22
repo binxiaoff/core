@@ -1,32 +1,36 @@
-<tr class="detail-table-content">
-    <td colspan="4" style="padding:0">
-        <table class="table" data-sortable style="padding:0;border:none;">
-            <thead style="padding:0;border:none;">
-                <tr class="bids-detail-by-rate-header">
-                    <th class="table-sortable-column center" data-sortable-by="detail-id">
+<tr class="detail-table-item">
+    <td colspan="4" class="detail-table-content">
+        <table class="table table-bids-detail" data-sortable>
+            <thead class="table-sortable-columns">
+                <tr>
+                    <th class="table-sortable-column table-bids-detail-item-id" data-sortable-by="detail-id">
                         <span class="label">{% trans %} project-detail_all-bids-table-detail-sort-id {% endtrans %}</span>
                     </th>
-                    <th class="center">
+                    <th class="table-bids-detail-item-rate">
                         <span class="label">{% trans %} project-detail_all-bids-table-detail-sort-rate {% endtrans %}</span>
                     </th>
-                    <th class="table-sortable-column center" data-sortable-by="detail-amount">
+                    <th class="table-sortable-column table-bids-detail-item-amount" data-sortable-by="detail-amount">
                         <span class="label">{% trans %} project-detail_all-bids-table-detail-sort-amount {% endtrans %}</span>
                     </th>
-                    <th class="table-sortable-column center" data-sortable-by="detail-status">
+                    <th class="table-sortable-column table-bids-detail-item-status" data-sortable-by="detail-status">
                         <span class="label">{% trans %} project-detail_all-bids-table-detail-sort-status {% endtrans %}</span>
                     </th>
                 </tr>
             </thead>
             <tbody data-sortable-content>
                 {% for bid in bids %}
-                    <tr class="bids-detail-by-rate{% if bid.userInvolved %} ui-current-user-involved{% endif %}"
+                    <tr class="table-bids-detail-item bids-detail-by-rate {% if bid.status != 0 %} rejected-row {% endif %} {% if bid.userInvolved %} ui-current-user-involved {% endif %}"
                         data-sortable-detail-id="{{ bid.id }}"
                         data-sortable-detail-amount="{{ bid.amount }}"
                         data-sortable-detail-status="{{ bid.status }}">
-                        <td class="bid-cell">{{ bid.id }}{% if bid.autobid > 0 %}<span class="icon fa-autolend-u32 ui-has-tooltip" data-original-title="{% trans %} project-detail_bids-list-autolend-tooltip {% endtrans %}"></span>{% endif %}</td>
-                        <td class="center">{{ bid.rate|localizednumberwithprecision(1) }}&nbsp;%</td>
-                        <td class="center">{{ bid.amount|localizednumber }}&nbsp;€</td>
-                        <td>
+                        <td class="table-bids-detail-item-id">{{ bid.id }}
+                            {% if bid.autobid > 0 %}
+                                <span class="icon fa-autolend-u32 ui-has-tooltip" data-original-title="{% trans %} project-detail_bids-list-autolend-tooltip {% endtrans %}"></span>
+                            {% endif %}
+                        </td>
+                        <td class="table-bids-detail-item-rate">{{ bid.rate|localizednumberwithprecision(1) }}%</td>
+                        <td class="table-bids-detail-item-amount">{{ bid.amount|localizednumber }}€</td>
+                        <td class="table-bids-detail-item-status">
                             {% if bid.status == 0 %}
                                 <span class="c-success">
                                     <span class="icon fa-check-u32"></span>

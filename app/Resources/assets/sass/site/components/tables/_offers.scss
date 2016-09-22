@@ -24,9 +24,9 @@
   text-align: left;
 }
 
-.table-myoffers-item-interest {
+.table-myoffers-item-rate {
   width: 25%;
-  text-align: right;
+  text-align: left;
 }
 
 .table-myoffers-item-amount {
@@ -89,7 +89,7 @@
   text-align: left;
 }
 
-.table-alloffers-item-interest {
+.table-alloffers-item-rate {
   width: 30%;
   text-align: right;
 }
@@ -144,9 +144,8 @@
   // }
 }
 
-.table-alloffersoverview-item-interest {
+.table-alloffersoverview-item-rate {
   width: 20%;
-  // padding-left: 40px;
   text-align: left;
 }
 
@@ -178,116 +177,121 @@
   }
 }
 
-#alloffers-table {
-  position:relative;
-  .rejected-offers {
-    background-color:#f8f6f8;
-    height:50px;
-    td {
-      text-align:center;
-      cursor:pointer;
-      color:#9f9d9f;
-    }
-  }
-  .rejected-row {
-    display:none;
-    background-color:#FDF4FA;
-    color:#9f9d9f;
-  }
-  .c-success{
-    transition-duration:1s;
-  }
-  .bid-rate-cta {
-    display:inline-block;
-    width:60px;
-    line-height:20px;
-    text-align:left;
-  }
-  .icon-cta {
-    line-height:20px;
-  }
+// Single row item in the offers overview table
+.table-alloffersoverview {
+  // Accepted
+  .total-offers-accepted {
+    color: $c-p1;
 
-  .icon-rejected {
-    display:none;
-
-  }
-  .icon-accepted {
-    display:inline-block;
-  }
-
-  .all-rejected {
-    .icon-rejected {
-      display:inline-block;
-
-    }
-    .icon-accepted {
-      display:none;
+    &:before {
+      content: $fa-check-u;
+      display: inline-block;
+      margin-right: 3px;
+      font-family: $ff-icon;
     }
   }
 
-  .bids-row {
-    cursor:pointer;
-    td:first-of-type {
-      padding:10px 55px 10px 30px;
-      text-align:right;
-    }
-  }
-  .bids-row.active-row {
-    background-color:#b20066;
-    color:#fff;
-    .c-p1 span{
-      color:#fff;
-    }
-  }
-  .bids-row.active-row:hover {
-    background-color:#b20066;
-  }
-  .bids-row:hover {
-    background-color: #fbf2f7;
-  }
+  tr {
+    // Button to show all rejected offers
+    &.rejected-offers {
+      background-color: $c-bg3 !important;
 
-  .icon.fa-caret-r-u32 {
-    display:inline-block;
-  }
-  .icon.fa-caret-d-u32 {
-    display:none;
-  }
+      > td {
+        height: 50px;
+        color: $c-p1;
+        text-align: center;
+        vertical-align: middle;
 
-  .active-row {
-    .icon.fa-caret-r-u32 {
-      display:none;
+        a {
+          display: block;
+        }
+      }
     }
-    .icon.fa-caret-d-u32 {
-      display:inline-block;
+
+    // Normal bids row
+    &.bids-row {
+      cursor: pointer;
+
+      &:hover {
+        background-color: $c-bg2;
+      }
+
+      // Rate with angle to show if open/closed
+      .bids-row-rate {
+        display: inline-block;
+        min-width: 80px;
+        position: relative;
+        padding-right: 20px;
+
+        &:after {
+          content: $fa-caret-r-u16;
+          display: inline-block;
+
+          position: absolute;
+          right: 0;
+          top: 0;
+
+          color: $c-t3;
+          font-family: $ff-icon;
+          font-size: 14px;
+
+          transition: transform 0.2s;
+        }
+      }
+
+      // Row is active
+      &.active-row {
+        background-color: $c-p1 !important;
+        color: $c-white;
+
+        &:hover {
+          background-color: $c-p1-hover;
+        }
+
+        .bids-row-rate {
+          &:after {
+            color: inherit;
+            transform: rotate(90deg);
+          }
+        }
+
+        .total-offers-accepted {
+          color: inherit;
+        }
+      }
+
+      // Row is rejected
+      &.rejected-row {
+        display: none;
+        background-color: mix($c-red, $c-white, 10%) !important;
+        color: $c-t2;
+
+        &:nth-of-type(2n+1) {
+          background-color: mix($c-red, $c-white, 8%) !important;
+        }
+
+        .total-offers-accepted {
+          color: $c-red;
+
+          &:before {
+            content: $fa-ban-u;
+          }
+        }
+
+        &:hover {
+          background-color: mix($c-red, $c-white, 12%) !important;
+        }
+
+        // Rejected and active
+        &.active-row {
+          background-color: $c-red !important;
+          color: $c-white;
+
+          .total-offers-accepted {
+            color: inherit;
+          }
+        }
+      }
     }
   }
-  .bid-cell{
-    padding:10px 60px 20px 30px;
-    .icon {
-      color:#d9aa34;
-      float:right;
-    }
-  }
-  .bids-detail-by-rate {
-    background-color:#daf6f9;
-    color:#4fa8b0;
-    transition-duration:1s;
-  }
-  .bids-detail-by-rate.ui-current-user-involved {
-    background-color:#5fc3cf;
-    color:#fff;
-    .c-success{
-      color:#fff;
-    }
-  }
-  .bids-detail-by-rate-header {
-    background-color:#eceaed;
-  }
-  .center {
-    text-align:center;
-  }
-}
-#alloffers-table .bids-detail-by-rate.ui-current-user-involved.bids-detail-by-rate.is-focused{
-  background-color:#daf6f9;
-  color:#b20066;
 }

@@ -317,6 +317,8 @@ h3.round-number {
   text-align: center;
   vertical-align: top;
 
+  transition: background-color 0.2s;
+
   &.pip-has-many {
     line-height: 14px;
 
@@ -327,6 +329,23 @@ h3.round-number {
       height: 6px;
       background-color: $c-white;
       border-radius: 6px;
+      vertical-align: middle;
+    }
+
+    .pip-number {
+      @include hide-accessible;
+    }
+  }
+
+  &.pip-has-none {
+    background-color: $c-t3;
+
+    &:before {
+      content: $fa-check-u16;
+      display: inline;
+      color: $c-white;
+      font-family: $ff-icon;
+      font-size: 10px;
       vertical-align: middle;
     }
 

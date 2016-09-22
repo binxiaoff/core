@@ -20,13 +20,13 @@
                     <table class="table table-alloffersoverview" data-current-project="{{ project.projectId }}">
                         <thead>
                             <tr>
-                                <th class="table-alloffersoverview-item-interest">
+                                <th class="table-alloffersoverview-item-rate">
                                     <span class="label">{% trans %} project-detail_all-bids-table-sort-rate {% endtrans %}</span>
                                 </th>
-                                <th class="table-alloffersoverview-item-amount" style="text-align:left">
+                                <th class="table-alloffersoverview-item-amount">
                                     <span class="label">{% trans %} project-detail_all-bids-table-sort-total-amount {% endtrans %}</span>
                                 </th>
-                                <th class="table-alloffersoverview-item-offers" style="text-align:left">
+                                <th class="table-alloffersoverview-item-offers">
                                     <span class="label">{% trans %} project-detail_all-bids-table-sort-bids-count {% endtrans %}</span>
                                 </th>
                                 <th class="table-alloffersoverview-item-accepted">
@@ -36,26 +36,22 @@
                         </thead>
                         <tbody>
                             {% if (project.bids.summary|first).activePercentage == 0 %}
-                                <tr class="rejected-offers">
-                                    <td colspan="4">{% trans %} project-detail_all-bids-table-rejected-bids-show-action {% endtrans %}</td>
+                                <tr class="table-alloffersoverview-item rejected-offers">
+                                    <td colspan="4" class="text-align-center">
+                                        <a href="javascript:;" class="bids-view-rejected">{% trans %} project-detail_all-bids-table-rejected-bids-show-action {% endtrans %}</a>
+                                    </td>
                                 </tr>
                             {% endif %}
                             {% for rateSummary in project.bids.summary %}
                                 {% if rateSummary.bidsCount > 0 %}
-                                    <tr class="bids-row {% if rateSummary.activePercentage == 0 %} rejected-row {% endif %}" data-bid-rate="{{ rateSummary.rate }}">
-                                        <td>
-                                            <span class="bid-rate-cta">{{ rateSummary.rate|localizednumberwithprecision(1) }}&nbsp;%</span>
-                                            <span class="icon-cta icon fa-caret-r-u32"></span>
-                                            <span class="icon-cta icon fa-caret-d-u32"></span>
+                                    <tr class="table-alloffersoverview-item bids-row {% if rateSummary.activePercentage == 0 %} rejected-row {% endif %}" data-bid-rate="{{ rateSummary.rate }}">
+                                        <td class="table-alloffersoverview-item-rate">
+                                            <span class="bids-row-rate">{{ rateSummary.rate|localizednumberwithprecision(1) }}%</span>
                                         </td>
-                                        <td>{{ rateSummary.totalAmount|localizednumber }}&nbsp;€</td>
-                                        <td>{{ rateSummary.bidsCount|localizednumber }}</td>
-                                        <td>
-                                            <span class="c-p1{% if rateSummary.activePercentage == 0 %} all-rejected {% endif %}">
-                                                <span class="icon icon-rejected fa-refused-u32"></span>
-                                                <span class="icon icon-accepted fa-check-u32"></span>
-                                                <span>{{ rateSummary.activePercentage|localizednumber }}&nbsp;%</span>
-                                            </span>
+                                        <td class="table-alloffersoverview-item-amount">{{ rateSummary.totalAmount|localizednumber }}€</td>
+                                        <td class="table-alloffersoverview-item-offers">{{ rateSummary.bidsCount|localizednumber }}</td>
+                                        <td class="table-alloffersoverview-item-accepted">
+                                            <span class="total-offers-accepted">{{ rateSummary.activePercentage|localizednumber }}%</span>
                                         </td>
                                     </tr>
                                 {% endif %}

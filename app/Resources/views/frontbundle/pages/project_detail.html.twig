@@ -272,10 +272,10 @@
                         {% if conditions.bids %}
                             <div id="offers" data-watchscroll-nav>
                                 {% if conditions.myBids %}
-                                    {{ include('partials/components/project-detail/my-bids.html.twig') }}
+                                    {% include 'partials/components/project-detail/my-bids.html.twig' %}
                                 {% endif %}
 
-                                {{ include('partials/components/project-detail/bids-list.html.twig') }}
+                                {% include 'partials/components/project-detail/bids-list.html.twig' %}
                             </div>
                         {% endif %}
 
@@ -299,7 +299,7 @@
                             </section><!-- /.page-section -->
                         </div>
 
-                        {{ include('partials/components/project-detail/finance.html.twig') }}
+                        {% include 'partials/components/project-detail/finance.html.twig' %}
 
                         <section id="project-section-help" class="page-section">
                             <h3 class="h3">{% trans %} project-detail_project-presentation-repayment-reason-title {% endtrans %}</h3>
