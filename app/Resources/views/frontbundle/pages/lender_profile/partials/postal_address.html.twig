@@ -53,11 +53,12 @@
                         <input id="form-profile-correspondence-code" type="text" name="postal_address_zip" value="{{ formData.postal.postal_address_zip }}" class="input-field"
                                data-formvalidation-input
                                data-formvalidation-required="true"
-                                {# AutoComplete behaviours for addresses needs to be further marked and configured #}
+                               {# AutoComplete behaviours for addresses needs to be further marked and configured #}
                                data-autocomplete-address
                                data-autocomplete-ajaxurl="{{ path('lender_profile_ajax_zip') }}"
                                data-autocomplete-address-countryelem="#form-profile-correspondence-pays"
                                data-autocomplete-address-cityelem="#form-profile-correspondence-ville"
+                               data-autocomplete-address-zipelem="#form-profile-correspondence-code"
                                data-has-spinner="#spinner-profile-correspondence-code"/>
                         <div class="btn-group">
                             <span id="spinner-profile-correspondence-code" class="ui-is-spinner"><span class="sr-only">Loading...</span></span>
@@ -67,7 +68,21 @@
                 <div class="form-field col-lg-6 col-md-6">
                     <label for="form-profile-correspondence-ville">{% trans %} lender-profile_information-tab-postal-address-section-city-label {% endtrans %}
                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
-                    <input id="form-profile-correspondence-ville" type="text" name="postal_address_city" value="{{ formData.postal.postal_address_city }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                    <div class="input-group set-right">
+                        <input id="form-profile-correspondence-ville" type="text" name="postal_address_city" value="{{ formData.postal.postal_address_city }}" class="input-field"
+                               data-formvalidation-input
+                               data-formvalidation-required="true"
+                               {# AutoComplete behaviours for addresses needs to be further marked and configured #}
+                               data-autocomplete-address
+                               data-autocomplete-ajaxurl="{{ path('lender_profile_ajax_zip') }}"
+                               data-autocomplete-address-countryelem="#form-profile-correspondence-pays"
+                               data-autocomplete-address-cityelem="#form-profile-correspondence-ville"
+                               data-autocomplete-address-zipelem="#form-profile-correspondence-code"
+                               data-has-spinner="#spinner-profile-correspondence-city"/>
+                        <div class="btn-group">
+                            <span id="spinner-profile-correspondence-city" class="ui-is-spinner"><span class="sr-only">Loading...</span></span>
+                        </div>
+                    </div>
                 </div><!-- /.form-field -->
             </div>
 

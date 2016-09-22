@@ -786,20 +786,26 @@ $doc
       var cityValue = newValue.replace(/ ?\(.*$/, '')
 
       // Set the new code value
-      elemAutoComplete.$input.val(codeValue)
+      // elemAutoComplete.$input.val(codeValue)
 
       // Get the city element to set it with the city value
       var cityElemSelector = elemAutoComplete.$input.attr('data-autocomplete-address-cityelem')
-      if (Utility.elemExists(cityElemSelector) && /^.*\(\d+\)$/.test(newValue)) {
+      if (Utility.elemExists(cityElemSelector)) {
         var $cityElem = $(cityElemSelector)
-        $cityElem.val(cityValue)
+        if ($cityElem.val() !== cityValue) {
+          $cityElem.val(cityValue)
+          console.log('set city', cityValue, $cityElem)
+        }
       }
 
       // Get the zip element to set it with the zip value
       var zipElemSelector = elemAutoComplete.$input.attr('data-autocomplete-address-zipelem')
       if (Utility.elemExists(zipElemSelector)) {
         var $zipElem = $(zipElemSelector)
-        $zipElem.val(codeValue)
+        if ($zipElem.val() !== codeValue) {
+          $zipElem.val(codeValue)
+          console.log('set code', codeValue, $zipElem)
+        }
       }
     })
   })
