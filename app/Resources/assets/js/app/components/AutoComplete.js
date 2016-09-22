@@ -51,13 +51,14 @@ var AutoComplete = function (elem, options) {
     target: false, // The target element to put the results
     ajaxUrl: false, // An ajax URL to send the term receive results from. If `false`, looks in target element for the text
     ajaxProp: 'term', // The name of the property to send to the ajax URL endpoint
-    delay: 500, // A delay to wait before searching for the term
+    delay: 250, // A delay to wait before searching for the term
     minTermLength: 3, // The minimum character length of a term to find
     showEmpty: false, // Show autocomplete with messages if no results found
     showSingle: true, // Show the autocomplete if only one result found
     attachTargetAfter: false, // Whether to apply the target to be directly after the input, or at the bottom in the body
     constrainTargetWidth: 'input', // Constrain the target's width. Accepted values: {Boolean} false, {String} 'input', or {Int} specific width in pixels
     useTether: true, // Use tether to attach the target element
+    optimised: true, // If true, it'll retrieve AJAX for the first call, and then search within the results for further drilling down (reduces server IO and hopefully speeds up UI for user)
 
     // Special events
     onbeforeajax: undefined, // function (AutoComplete) { return {Boolean} if you want it to continue }
@@ -85,6 +86,13 @@ var AutoComplete = function (elem, options) {
   // -- Use jQuery to select elem, distinguish between string, HTMLElement and jQuery Object
   self.$input = $(self.settings.input)
   self.$target = undefined
+  self.track = {
+    lastSearch: '',
+    results: [],
+    isLoading: false,
+    changedWhileLoading: false,
+    newSearch: ''
+  }
 
   // Needs an input element to be valid
   if (self.$input.length === 0) return self.error('input element doesn\'t exist')
@@ -111,12 +119,13 @@ var AutoComplete = function (elem, options) {
 
 
   // Properties
-  self.timer = undefined
-  self.hideTimer = undefined
+  self.timer = 0
+  self.searchTimer = 0
+  self.hideTimer = 0
   self.Tether = undefined
 
   // UI
-  self.$input.addClass('uni-autocomplete') // This is `uni-autocomplete` since `ui-autocomplete` is taken by jquery-ui
+  self.$input.addClass('ui-autocomplete')
 
   /*
    * Events
@@ -137,17 +146,20 @@ var AutoComplete = function (elem, options) {
           event.preventDefault()
           self.$target.find('li').first().find('a').focus()
 
-        // Pressing down when not visible means user wants to see the autocomplete results
+          // Pressing down when not visible means user wants to see the autocomplete results
         } else {
           self.timer = setTimeout(self.findTerm, self.settings.delay)
         }
 
+      // Press enter when there is one result
+      } else if (event.which === 13 && self.$target.find('li:visible').length === 1) {
+        event.preventDefault()
+        self.$target.find('li:visible').first().find('a').click()
+
       // Tab
-      } else if (event.which === 9) {
-        if (self.$target.is(':visible')) {
-          event.preventDefault()
-          self.$target.find('li').first().find('a').focus()
-        }
+      } else if (event.which === 9 && self.$target.find('li:visible').length > 0) {
+        event.preventDefault()
+        self.$target.find('li:visible').first().find('a').focus()
 
       // Search for the term if user presses any letter/number/punctuation/delete key
       } else if (event.which === 8 || event.which === 46 || (event.which >= 48 && event.which <= 90) || (event.which >= 186 && event.which <= 222)) {
@@ -232,23 +244,111 @@ var AutoComplete = function (elem, options) {
   // Find a term
   self.findTerm = function (term) {
     if (!self.settings.enable) return
-    var results = []
 
     // No term given? Assume term is val() of elem
-    if ( typeof term === 'undefined' || term === false ) term = self.$input.val()
+    if (typeof term === 'undefined' || term === false) term = self.$input.val()
 
     // Term length not long enough, abort
-    if ( term.length < self.settings.minTermLength ) return
+    if (term.length < self.settings.minTermLength) return
+
+    // Trim whitespace from start/end of term
+    term = (term + '').trim()
+
+    // User is attempting to search while it is loading
+    if (self.track.isLoading) {
+      self.track.newSearch = term
+      self.track.changedWhileLoading = true
+
+      // @debug
+      // console.log('currently loading, try again later...', self.track.newSearch)
+      return
+    }
+
+    // @debug
+    // console.log('finding term', term)
+
+    // Optimise the search
+    if (self.settings.optimised) {
+      // Make comparison between last search and new search
+      var reLastSearch = new RegExp('^' + self.reEscape(self.track.lastSearch), 'i')
+
+      // @debug
+      // console.log('optimised', term, self.track.lastSearch, reLastSearch.test(term))
+
+      // Only check if there was a lastSearch and any results exist, otherwise use default behaviours below
+      if (self.track.lastSearch && self.track.results && self.track.results.length > 0) {
+        // If this term is similar to last term, look for the term in the last retrieved results
+        if (reLastSearch.test(term)) {
+          self.findTermInResults(term, self.track.results)
+          return
+        }
+      }
+    }
 
     // Perform ajax search
-    if ( self.settings.ajaxUrl ) {
+    if (self.settings.ajaxUrl) {
       self.findTermViaAjax(term)
 
     // Perform search within target for an element's whose children contain the text
     } else {
-      results = self.$target.find('.autocomplete-results li:Contains(\'' + term + '\')');
-      self.showResults(term, results)
+      self.findTermInResults(term)
     }
+  }
+
+  // Find a term within results array (or element)
+  self.findTermInResults = function (term, results) {
+    // Trim whitespace from start/end of term
+    term = (term + '').trim()
+
+    // Get last retrieved results
+    if (!results) results = self.track.results
+
+    // Still none? Test if results element already has results
+    if ((!results || results.length === 0) && self.$target.find('.autocomplete-results li').length > 0) {
+      results = self.$target.find('.autocomplete-results li')
+    }
+
+    // Filter the results which match the term
+    if (results instanceof jQuery) {
+      // @debug
+      // console.log('filter existing results', results)
+
+      results = results.filter(':Contains(\'' + term + '\')')
+
+    // Accepts array of results
+    } else if (results instanceof Array) {
+      // @debug
+      // console.log('filter results array', results)
+
+      var newResults = []
+      var reTerm = new RegExp(self.reEscape(term), 'i')
+
+      for (var i = 0; i < results.length; i++) {
+        // Check object properties
+        if (typeof results[i] === 'object') {
+          for (var j in results[i]) {
+            if (results[i].hasOwnProperty(j) && reTerm.test(results[i][j])) {
+              newResults.push(results[i])
+              break
+            }
+          }
+
+        // Check single values
+        } else if (typeof results[i] === 'string' || typeof results[i] === 'number') {
+          if (reTerm.test(results[i])) {
+            newResults.push(results[i])
+          }
+        }
+      }
+
+      // @debug
+      // console.log('filtered results for term', term, newResults)
+
+      results = newResults
+    }
+
+    // Show the results
+    self.showResults(term, results)
   }
 
   // Find a term via AJAX
@@ -265,6 +365,9 @@ var AutoComplete = function (elem, options) {
     // @trigger input `Spinner:showLoading`
     self.$input.trigger('Spinner:showLoading')
 
+    // Mark that it is loading
+    self.track.isLoading = true
+
     // Do the ajax operation
     $.ajax({
       url: self.settings.ajaxUrl,
@@ -272,13 +375,15 @@ var AutoComplete = function (elem, options) {
       data: ajaxData,
       global: false,
       success: function (data, textStatus, xhr) {
-        if ( textStatus === 'success' ) {
-          // @todo support AJAX results
-          // @note AJAX should return JSON object as array, e.g.:
-          //       [ "Comment ça va ?", "Comment ?", "Want to leave a comment?" ]
-          //       AutoComplete will automatically highlight the results text as necessary
+        // Complete loading
+        self.track.isLoading = false
+
+        if (textStatus === 'success') {
+          // Results, huzzah!
           if (data instanceof Array) {
+            // Show the results
             self.showResults(term, data)
+
           } else {
             self.warning('Ajax Error: Data is not an array')
             console.log(data, textStatus, xhr)
@@ -302,6 +407,9 @@ var AutoComplete = function (elem, options) {
         self.$input.trigger('AutoComplete:findTermViaAjax:errored', [self, term, undefined, textStatus, xhr])
       },
       complete: function () {
+        // Complete loading
+        self.track.isLoading = false
+
         // @trigger input `Spinner:hideLoading`
         self.$input.trigger('Spinner:hideLoading')
       }
@@ -311,7 +419,9 @@ var AutoComplete = function (elem, options) {
   // Display the results
   self.showResults = function (term, results) {
     clearTimeout(self.hideTimer)
-    var reTerm = new RegExp('(' + self.reEscape(term) + ')', 'gi')
+
+    // @debug
+    // console.log('showing results', term, results.length)
 
     // Remove any messages
     self.$target.find('li.autocomplete-message').remove()
@@ -319,16 +429,26 @@ var AutoComplete = function (elem, options) {
     // @trigger input `AutoComplete:showResults:before` [elemAutoComplete, results]
     self.$input.trigger('AutoComplete:showResults:before', [self, results])
 
-    // Populate the target element results as HTML
-    // -- If ajaxUrl is set, assume results will be array
-    if (self.settings.ajaxUrl) {
+    // Results is collection of existing elements so show/hide as necessary
+    if (results instanceof jQuery) {
+      // @debug
+      // console.log('modify existing results')
+
+      self.removeHighlights()
+      self.$target.find('.autocomplete-results li').hide()
+
+    // Build target element results in HTML
+    } else if (results instanceof Array) {
+      // @debug
+      // console.log('build new results')
+
       var resultsHTML = ''
 
       // Custom render function
       if (typeof self.settings.onrender === 'function') {
         resultsHTML = self.settings.onrender.apply(self, [results])
 
-      // Default render function
+        // Default render function
       } else {
         for (var i = 0; i < results.length; i++) {
           var item = results[i]
@@ -358,16 +478,27 @@ var AutoComplete = function (elem, options) {
 
       // Select all results as jQuery collection for further operations
       results = self.$target.find('.autocomplete-results li')
+    }
 
-    // -- If ajaxUrl is false, assume target already contains items, and that results
-    //    is a jQuery collection of those result elements which match the found term
-    } else {
-      self.removeHighlights()
-      self.$target.find('.autocomplete-results li').hide()
+    // Set the last search term and results (for optimised operations)
+    self.track.lastSearch = term
+    self.track.results = results
+
+    // If the term changed while it was loading, fire the findTerm operation again
+    if (self.track.changedWhileLoading) {
+      var newSearch = self.track.newSearch+''
+      self.track.newSearch = ''
+      self.track.changedWhileLoading = false
+
+      // @debug
+      // console.log('search changed when it was loading', self.track.lastSearch, newSearch)
+
+      self.findTerm(newSearch)
+      return
     }
 
     // No results
-    if ( results.length === 0 ) {
+    if (results.length === 0) {
 
       // Show no results message
       if (self.settings.showEmpty) {
@@ -394,11 +525,12 @@ var AutoComplete = function (elem, options) {
         return
       }
 
-      // Show the results
+      // Highlight then show each result
       self.highlightResults(term, results)
       results.show()
     }
 
+    // Show the results
     self.show()
 
     // @trigger input `AutoComplete:showResults:complete`, [elemAutoComplete, results]
@@ -599,7 +731,7 @@ var $doc = $(document)
 $doc
   // Auto-init component behaviours on document ready, or when parent element (or self) is made visible with `UI:visible` custom event
   .on('ready UI:visible', function (event) {
-    $(event.target).find('[data-autocomplete]').not('.uni-autocomplete').uiAutoComplete()
+    $(event.target).find('[data-autocomplete]').not('.ui-autocomplete').uiAutoComplete()
 
     // Update any tethered targets
     $doc.on('UI:update', function () {

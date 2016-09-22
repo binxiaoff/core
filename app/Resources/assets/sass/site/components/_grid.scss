@@ -29,8 +29,6 @@
   }
 
   .row {
-    @include clearfix;
-
     @for $i from 1 through $cols {
       > .col-#{$prefix}#{$i} {
         float: left;
@@ -55,22 +53,29 @@
 
   // Automatic column padding
   &.row-multi-col#{$prefix} {
-    > * {
+    // Only on direct descendents with "col-" in class
+    > [class*="col-"] {
       padding-left: $padding-width;
       padding-right: $padding-width;
-    }
 
-    // Forms only have two columns
-    // First
-    > :nth-of-type(#{$first-index}) {
-      padding-left: 0;
-    }
+      // Forms only have two columns
+      // First
+      &:nth-of-type(#{$first-index}) {
+        padding-left: 0;
+      }
 
-    // Second
-    > :nth-of-type(#{$last-index}) {
-      padding-right: 0;
+      // Second
+      &:nth-of-type(#{$last-index}) {
+        padding-right: 0;
+      }
     }
   }
+}
+
+// Base styles
+.row {
+  @include clearfix;
+  clear: both;
 }
 
 // Grids

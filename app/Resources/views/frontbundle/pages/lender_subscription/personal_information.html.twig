@@ -46,11 +46,12 @@
                                 <div class="promo-image">
                                     {{ svgimage('#promo-linechart2', '', 190, 190, 'none') | raw }}
                                 </div>
-                                {% if 'lender-subscription_documents-statistics-section-linechart-value'|trans == 'lender-subscription_documents-statistics-section-linechart-value' %}
+                                {% set valueLineChart = getStatistic('averageInterestRateForLenders')|round(1, 'floor') %}
+                                {# {% if 'lender-subscription_documents-statistics-section-linechart-value'|trans == 'lender-subscription_documents-statistics-section-linechart-value' %}
                                     {% set valueLineChart = getStatistic('averageInterestRateForLenders')|round(1, 'floor') %}
                                 {% else %}
                                     {% set valueLineChart = 'lender-subscription_documents-statistics-section-linechart-value'|trans %}
-                                {% endif %}
+                                {% endif %} #}
                                 <h3 class="promo-highlight">
                                     <span class="ui-text-count"
                                           data-start-count="0"

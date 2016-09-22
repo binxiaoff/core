@@ -927,7 +927,7 @@ class LenderOperationsController extends Controller
         $projectsInDept = $project->getProjectsInDebt();
         $year           = empty($request->request->get('filter', null)['date']) ? null : $request->request->get('filter', null)['date'];
         $status         = empty($request->request->get('filter', null)['status']) ? null : $request->request->get('filter', null)['status'];
-        $lenderLoans    = $loanEntity->getSumLoansByProject($lender->id_lender_account, $sOrderBy, $year, $status);
+        $lenderLoans    = [];//$loanEntity->getSumLoansByProject($lender->id_lender_account, $sOrderBy, $year, $status);
         $loanStatus     = [
             'no-problem'            => 0,
             'late-repayment'        => 0,
