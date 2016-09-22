@@ -84,7 +84,7 @@
                     <span class="calandar-ech"><?= $this->dates->formatDate($aProjectLoans['next_echeance'], 'd/m/Y') ?></span>
                     <span class="calandar-ech"><?= $this->dates->formatDate($aProjectLoans['fin'], 'd/m/Y') ?></span>
                 </td>
-                <td><?= $this->ficelle->formatNumber($aProjectLoans['last_perceived_repayment']) ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
+                <td><?= $this->ficelle->formatNumber($aProjectLoans['monthly_repayment_amount']) ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
             <?php } ?>
             <td class="documents">
                 <?php if ($aProjectLoans['nb_loan'] == 1): ?>

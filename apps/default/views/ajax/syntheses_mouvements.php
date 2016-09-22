@@ -4,7 +4,7 @@
 <?
 // mois
 if($_POST['duree'] == 'mois'){
-	
+
 }
 // trimestres
 elseif($_POST['duree'] == 'trimestres'){
@@ -26,7 +26,7 @@ else{
 		<span id="fiscal<?=$a?>" style="display:none;"><?=$this->sumFiscalParAn[$i]?></span>
 		<?
 		$a++;
-	}*/	
+	}*/
 }
 ?>
 
@@ -41,7 +41,7 @@ else{
 			}
 		}
 		elseif($_POST['duree'] == 'trimestres'){
-			
+
 			foreach($this->ordre as $key => $o){
 				?><div id="bar-mensuels-<?=$o?>" class="chart-item"></div><?
 			}
@@ -50,14 +50,14 @@ else{
 		else{
 			$old = 0;
 			foreach($this->tab as $key => $t){
-		
+
 				// Si diff on crée le script
 				if($old != $t){
 					?><div id="bar-mensuels-<?=$t?>" class="chart-item"></div><?
 				}
 				$old = $t;
 			}
-			
+
 		}
         ?>
     </div>
@@ -78,27 +78,27 @@ else{
 
 	<?
 	if($_POST['duree'] == 'mois'){
-		
+
 		$old = 0;
         foreach($this->lesmois as $key => $o){
 			$tab = explode('_',$key);
 			$annee = $tab[0];
 			$mois = $tab[1];
-			
+
 			$intParMois 			= $this->sumIntbParMois[$annee][$mois];
 			$rembParMois			= $this->sumRembParMois[$annee][$mois];
 			$revenueFiscalsParMois 	= $this->sumRevenuesfiscalesParMois[$annee][$mois];
 			?>
-            
+
 				var remb_<?=$key?> = parseFloat('<?=$rembParMois?>');
 				var inte_<?=$key?> = parseFloat('<?=$intParMois?>');
 				var fiscal_<?=$key?> = parseFloat('<?=$revenueFiscalsParMois?>');
-			
+
             <?
 		}
 		foreach($this->lesmois as $key => $o){
-			
-			
+
+
 			// Si diff on créer le script
 			if($old != $o){
 				if($old == 0){
@@ -108,23 +108,23 @@ else{
 				$tab = explode('_',$a);
 				$a_annee = $tab[0];
 				$a_mois = $tab[1];
-				
+
 				next($this->lesmois);
 				$b = key($this->lesmois);
 				$tab = explode('_',$b);
 				$b_annee = $tab[0];
 				$b_mois = $tab[1];
-				
+
 				next($this->lesmois);
 				$c = key($this->lesmois);
 				$tab = explode('_',$c);
 				$c_annee = $tab[0];
 				$c_mois = $tab[1];
-				
+
 				next($this->lesmois);
 
 				?>
-			
+
 				$('#bar-mensuels-<?=$o?>').highcharts({
 					chart: {
 						type: 'column',
@@ -196,20 +196,20 @@ else{
 						]
 					}]
 				});
-			
+
             	<?
 
 			}
 			$old = $o;
-			
+
 		}
 
 	}
 	elseif($_POST['duree'] == 'trimestres'){
-		
-		
+
+
 		foreach($this->ordre as $key => $o){
-			
+
 			// inte
 			$intParTri1 			= number_format($this->sumIntPartrimestre[$o][1],2,'.','');
 			$intParTri2 			= number_format($this->sumIntPartrimestre[$o][2],2,'.','');
@@ -226,17 +226,17 @@ else{
 			$revenueFiscalsParTri3 	= number_format($this->sumFiscalesPartrimestre[$o][3],2,'.','');
 			$revenueFiscalsParTri4 	= number_format($this->sumFiscalesPartrimestre[$o][4],2,'.','');
 			?>
-            
+
 				var inte1_<?=$o?> = parseFloat('<?=$intParTri1?>');
 				var inte2_<?=$o?> = parseFloat('<?=$intParTri2?>');
 				var inte3_<?=$o?> = parseFloat('<?=$intParTri3?>');
 				var inte4_<?=$o?> = parseFloat('<?=$intParTri4?>');
-				
+
 				var remb1_<?=$o?> = parseFloat('<?=$rembParTri1?>');
 				var remb2_<?=$o?> = parseFloat('<?=$rembParTri2?>');
 				var remb3_<?=$o?> = parseFloat('<?=$rembParTri3?>');
 				var remb4_<?=$o?> = parseFloat('<?=$rembParTri4?>');
-				
+
 				var fiscal1_<?=$o?> = parseFloat('<?=$revenueFiscalsParTri1?>');
 				var fiscal2_<?=$o?> = parseFloat('<?=$revenueFiscalsParTri2?>');
 				var fiscal3_<?=$o?> = parseFloat('<?=$revenueFiscalsParTri3?>');
@@ -291,7 +291,7 @@ else{
 					valueSuffix: ' €',
 				},
 				series: [
-				
+
 				{
 					name: ' <b>'+$('.interets_recu').html()+'</b>',
 					data: [
@@ -320,52 +320,52 @@ else{
 					]
 				}]
 			});
-			
+
             <?
 		}
-		
-			
+
+
 	}
 	// annee
 	else{
 		$a = 1;
 		foreach($this->tab as $key => $t){
 
-			$rembParMois			= number_format($this->sumRembParAn[$key],2,'.','');
-			$intParMois 			= number_format($this->sumIntParAn[$key]-$this->sumFiscalParAn[$key],2,'.','');
-			$revenueFiscalsParMois 	= number_format($this->sumFiscalParAn[$key],2,'.','');
+			$rembParMois			= number_format((float)$this->sumRembParAn[$key],2,'.','');
+			$intParMois 			= number_format((float)$this->sumIntParAn[$key]-$this->sumFiscalParAn[$key],2,'.','');
+			$revenueFiscalsParMois 	= number_format((float)$this->sumFiscalParAn[$key],2,'.','');
 			?>
 			var remb_<?=$key?> = parseFloat('<?=$rembParMois?>');
 			var inte_<?=$key?> = parseFloat('<?=$intParMois?>');
 			var fiscal_<?=$key?> = parseFloat('<?=$revenueFiscalsParMois?>');
             <?
-			
+
 		}
 		$old = 0;
 		foreach($this->tab as $key => $t){
-		
+
 			// Si diff on crée le script
 			if($old != $t){
-				
-				
+
+
 				if($old == 0){
 					prev($this->tab);
 				}
-			
+
 				$a = key($this->tab);
-				
-				
+
+
 				next($this->tab);
 				$b = key($this->tab);
-				
-				
-				
+
+
+
 				next($this->tab);
 				$c = key($this->tab);
-				
-				
+
+
 				next($this->tab);
-				
+
 				?>
 				$('#bar-mensuels-<?=$t?>').highcharts({
 					chart: {
@@ -413,7 +413,7 @@ else{
 						valueSuffix: ' €',
 					},
 					series: [
-					
+
 					{
 						name: ' <b>'+$('.interets_recu').html()+'</b>',
 						data: [
