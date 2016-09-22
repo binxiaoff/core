@@ -527,7 +527,7 @@
       );
 
       display: block;
-      padding: 65px 1em 25px;
+      padding: 60px 1em 25px;
       font-size: 18px;
     }
   }
@@ -629,7 +629,6 @@
 
   // Site user
   .site-user {
-
     // Login button
     .btn-site-login {
       @include button-shape-sm;
@@ -651,9 +650,7 @@
 
     // Dashboard header balance
     .site-user-balance {
-      // @include full-site-user-balance;
-      // Default to compact, only show full on fixed menu
-      @include compact-site-user-balance;
+      @include full-site-user-balance;
     }
 
     // Dashboard header profile
@@ -943,13 +940,6 @@
       }
     }
   }
-
-  // // Site search is open
-  // #{$js-site-header-fixed}#{$js-site-search-open} & {
-  //   .site-search {
-  //     width: 350px;
-  //   }
-  // }
 }
 
 // Further modifications to the site header for large devices
