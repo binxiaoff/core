@@ -51,7 +51,7 @@
             <th>Date de première échéance</th>
             <th>Prochaine échéance</th>
             <th>Date de dernière échéance</th>
-            <th>Dernière échéance perçue</th>
+            <th>Mensualité</th>
         </tr>
         <?php foreach ($this->lSumLoans as $aProjectLoans): ?>
             <?php if ($aProjectLoans['project_status'] >= \projects_status::REMBOURSEMENT): ?>
@@ -67,7 +67,7 @@
                         <td><?= $this->dates->formatDate($aProjectLoans['next_echeance'], 'd/m/Y') ?></td>
                         <td><?= $this->dates->formatDate($aProjectLoans['fin'], 'd/m/Y') ?></td>
                     <?php } ?>
-                    <td><?= $this->ficelle->formatNumber($aProjectLoans['last_perceived_repayment']) ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
+                    <td><?= $this->ficelle->formatNumber($aProjectLoans['monthly_repayment_amount']) ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
                 </tr>
             <?php endif; ?>
         <?php endforeach; ?>

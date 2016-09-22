@@ -145,7 +145,7 @@
                         data-sortable-rating="{{ loan.risk|convertRisk }}"
                         data-sortable-amount="{{ loan.amount }}"
                         data-sortable-interest="{{ loan.rate }}"
-                        data-sortable-monthly="{{ loan.last_perceived_repayment }}"
+                        data-sortable-monthly="{{ loan.monthly_repayment_amount }}"
                         data-sortable-next="{{ loan.next_payment_date|date('U') }}"
                         data-sortable-duration="{{ loan.duration }}"
                             {% if loan.loans|length > 1 %} data-details='{{ loan|json_encode|escape('html_attr') }}' {% endif %}>
@@ -165,7 +165,7 @@
                             {% if loan.project_status == constant('\\projects_status::REMBOURSEMENT_ANTICIPE') or loan.project_status == constant('\\projects_status::REMBOURSE') %}
                                 &nbsp;
                             {% else %}
-                                {{ loan.last_perceived_repayment|localizedcurrency('EUR') }}
+                                {{ loan.monthly_repayment_amount|localizedcurrency('EUR') }}
                             {% endif %}
                         </td>
                         <td class="table-myloans-item-next">
