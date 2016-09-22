@@ -653,10 +653,16 @@ class MainController extends Controller
         $tree = $entityManager->getRepository('tree');
         $tree->get(['slug' => 'statistiques']);
 
+        /** @var StatisticsManager $statisticsManager */
+        $statisticsManager = $this->get('unilend.service.statistics_manager');
+        $years = array_merge(['2013-2014'], range(2015, date('Y')));
         $template = [
             'data' => [
-                'projectCountForCategoryTreeMap' => $this->getProjectCountForCategoryTreeMap()
-            ]
+                'projectCountForCategoryTreeMap' => $this->getProjectCountForCategoryTreeMap(),
+                'regulatoryTable' => $statisticsManager->getRegulatoryData(),
+                'performanceGraph' => $statisticsManager->getPerformanceGraphData()
+            ],
+            'years' => array_merge($years, ['total'])
         ];
 
         $response = $this->render('pages/static_pages/statistics.html.twig', $template);

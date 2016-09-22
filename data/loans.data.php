@@ -266,7 +266,7 @@ class loans extends loans_crud
                 DATE((SELECT MIN(e.date_echeance) FROM echeanciers e WHERE e.id_loan = l.id_loan AND e.ordre = 1)) AS debut,
                 DATE((SELECT MAX(e1.date_echeance) FROM echeanciers e1 WHERE e1.id_loan = l.id_loan)) AS fin,
                 DATE((SELECT MIN(e2.date_echeance) FROM echeanciers e2 WHERE e2.id_loan = l.id_loan AND e2.status = 0)) AS next_echeance,
-                SUM((SELECT (ROUND(e3.montant / 100, 2) - 
+                SUM((SELECT (ROUND(e3.montant / 100, 2) -
                 ROUND(
                    (SELECT SUM(ifnull(tax.amount, 0) / 100)
                    FROM tax
@@ -419,5 +419,35 @@ class loans extends loans_crud
     {
         $sql = 'SELECT MIN(YEAR(added)) AS first_loan_year FROM loans WHERE id_lender = :lenderId';
         return $this->bdd->executeQuery($sql, ['lenderId' => $lenderId], ['lenderId' => \PDO::PARAM_INT] )->fetchColumn(0);
+    }
+
+    public function sumLoansByCohort()
+    {
+        $caseSql  = '';
+        foreach (range(2015, date('Y')) as $year ) {
+            $caseSql .= ' WHEN ' . $year . ' THEN "' . $year . '"';
+        }
+
+        $query = 'SELECT SUM(loans.amount)/100 AS amount,
+                    (
+                        SELECT
+                          CASE LEFT(projects_status_history.added, 4)
+                            WHEN 2013 THEN "2013-2014"
+                            WHEN 2014 THEN "2013-2014"
+                            '. $caseSql . '
+                            ELSE LEFT(projects_status_history.added, 4)
+                          END AS date_range
+                        FROM projects_status_history
+                        INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
+                        WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
+                          AND loans.id_project = projects_status_history.id_project
+                        ORDER BY id_project_status_history ASC LIMIT 1
+                      ) AS cohort
+                    FROM loans
+                      INNER JOIN projects on loans.id_project = projects.id_project AND projects.status >= '. \projects_status::REMBOURSEMENT .'
+                    GROUP BY cohort';
+
+        $statement = $this->bdd->executeQuery($query);
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 }

@@ -32,7 +32,7 @@
 }
 %}
 
-{% set preterStatisticsMap = {
+{% set lenderMap = {
     type: 'preterStatisticsMap',
     loadFirst: {
         mapData: '/assets/js/vendor/geojson/fr-regions-all.json'
@@ -80,7 +80,7 @@
     }
 } %}
 
-{% set emprunterStatisticsMap = {
+{% set borrowerMap = {
     type: 'emprunterStatisticsMap',
     loadFirst: {
         mapData: '/assets/js/vendor/geojson/fr-regions-all.json'
@@ -128,366 +128,111 @@
     }
 } %}
 
-{% set overviewStatistics = {
+{% set unilendPerformanceChart = {
     type: 'preterProjectsOverview',
     background: 'none',
     highcharts: {
-    chart: {
-    type: 'pie',
-    height: 300,
-    plotBackgroundColor: null,
-    plotBorderWidth: null,
-    plotShadow: null,
-    spacingTop: 0,
-    spacingBottom: 0
-    },
-    title: {
-    text: ''
-    },
-    subtitle: {
-    text: 'TRI positif au-delà de ce seuil',
-    color: '#999999',
-    floating: true,
-    useHTML: true,
-    verticalAlign: 'middle'
-    },
-    plotOptions: {
-    pie: {
-    borderColor: 'none',
-    borderWidth: 0,
-    showInLegend: true,
-    dataLabels: {
-    enabled: false
-    }
-    }
-    },
-    legend: {
-    symbolRadius: 10
-    },
-    series: [{
-        name: 'Montant',
-        minSize: 120,
-        innerSize: '90%',
-        endAngle: 270,
-        data: [{
-            name: 'Montant Prêté',
-            color: '#5FC5D1',
-            y: 252
-        }]
-    },{
-        name: 'Capital',
-        size: '66%',
-        minSize: 100,
-        innerSize: '90%',
-        endAngle: 270,
-        data: [{
-            name: 'Capital remboursé',
-            color: '#1B88DB',
-            y: 52
-        },{
-            name: 'Capital en attente',
-            color: '#B6D4E4',
-            y: 200
-        },{
-            name: 'Capital en difficulté',
-            color: '#F76965',
-            y: 5
-        }]
-        },{
-            name: 'Intérêts',
-            minSize: 80,
-            size: '33%',
-            innerSize: '90%',
-            endAngle: 330,
+        chart: {
+            type: 'pie',
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: null
+            },
+        title: {
+            text: ''
+            },
+        subtitle: {
+            text: 'lender-dashboard-account_graph-subtitle'|trans,
+            color: '#999999',
+            floating: true,
+            useHTML: true,
+            verticalAlign: 'middle'
+            },
+        plotOptions: {
+            pie: {
+            borderColor: 'none',
+            borderWidth: 0,
+            showInLegend: true,
+            dataLabels: {
+                enabled: false
+                }
+            }
+        },
+        legend: {
+            symbolRadius: 10
+            },
+        series: [{
+            name: 'lender-dashboard-account_lended-amount-circle-title'|trans ~ ' ',
+            minSize: 120,
+            innerSize: '95%',
+            endAngle: 270,
             data: [{
-                name: '',
-                color: '#eeeeee',
-                dataLabels: {
-                    enabled: false
-                },
-                showInLegend: false,
-                y: 225,
-                tooltip: false
+                name: 'lender-dashboard-account_lended-amount-circle-legend'|trans,
+                color: '#5FC5D1',
+                y: data.performanceGraph.amountBorrowed,
+                value: data.performanceGraph.amountBorrowed|localizedcurrency('EUR'),
+                showInLegend: true,
+                }]
+            },{
+                name:  'lender-dashboard-account_capital-circle-title'|trans ~ ' ',
+                size: '66%',
+                minSize: 100,
+                innerSize: '88%',
+                endAngle: 270,
+                data: [{
+                    name: 'lender-dashboard-account_capital-circle-repaid-capital-legend'|trans,
+                    color: '#1B88DB',
+                    y: data.performanceGraph.repaidCapital,
+                    value: data.performanceGraph.repaidCapital|localizedcurrency('EUR'),
+                    showInLegend: true,
                 },{
-                    name: 'Intérêts reçus',
+                    name: 'lender-dashboard-account_capital-circle-owed-capital-legend'|trans,
+                    color: '#B6D4E4',
+                    y: data.performanceGraph.owedCapital,
+                    value: data.performanceGraph.owedCapital|localizedcurrency('EUR'),
+                    showInLegend: true
+                },{
+                    name: 'lender-dashboard-account_capital-circle-troubled-capital-legend'|trans,
+                    color: '#F76965',
+                    y: data.performanceGraph.lateAndLostCapital,
+                    value: data.performanceGraph.lateAndLostCapital|localizedcurrency('EUR'),
+                    showInLegend: true
+                }]
+            },{
+                name: 'lender-dashboard-account_interests-circle-title'|trans ~ ' ',
+                minSize: 80,
+                size: '33%',
+                innerSize: '70%',
+                endAngle: 330,
+                data: [{
+                    name: '',
+                    color: '#ffffff',
+                    dataLabels: {
+                        enabled: false
+                        },
+                    showInLegend: false,
+                    y: (data.performanceGraph.repaidCapital + data.performanceGraph.owedCapital) * 0.66,
+                    tooltip: false
+                },{
+                    name: 'lender-dashboard-account_interests-circle-collected-raw-interests-legend'|trans,
                     color: '#F2980C',
-                    y: 18
+                    y: data.performanceGraph.receivedInterest,
+                    value: data.performanceGraph.receivedInterest|localizedcurrency('EUR'),
+                    showInLegend: true
                 },{
-                    name: 'Intérêts à recevoir',
+                    name: 'lender-dashboard-account_interests-circle-upcoming-raw-interests-legend'|trans,
                     color: '#FFCA2C',
-                    y: 46
-            }]
-        }]
+                    y: data.performanceGraph.upcomingInterests,
+                    value: data.performanceGraph.upcomingInterests|localizedcurrency('EUR'),
+                    showInLegend: true
+                }]
+            }],
+        tooltip: {
+            valueSuffix: ' €'
+            }
+        }
     }
-} %}
-
-{# the intended algorith was squiarfied, however we have too small values, it looks better in strip. To be changed once be have a better ratio in the categories #}
-
-{#{% set unilendAccountChart = {#}
-    {#type: 'preterProjectsOverview',#}
-    {#background: 'none',#}
-    {#highcharts: {#}
-        {#chart: {#}
-            {#type: 'pie',#}
-            {#plotBackgroundColor: null,#}
-            {#plotBorderWidth: null,#}
-            {#plotShadow: null#}
-        {#},#}
-        {#title: {#}
-            {#text: ''#}
-        {#},#}
-        {#subtitle: {#}
-            {#text: 'lender-dashboard-account_graph-subtitle'|trans,#}
-            {#color: '#999999',#}
-            {#floating: true,#}
-            {#useHTML: true,#}
-            {#verticalAlign: 'middle'#}
-        {#},#}
-        {#plotOptions: {#}
-            {#pie: {#}
-            {#borderColor: 'none',#}
-            {#borderWidth: 0,#}
-            {#showInLegend: true,#}
-            {#dataLabels: {#}
-                {#enabled: false#}
-                {#}#}
-            {#}#}
-        {#},#}
-        {#legend: {#}
-            {#symbolRadius: 10#}
-        {#},#}
-        {#series: [{#}
-            {#name: 'lender-dashboard-account_lended-amount-circle-title'|trans ~ ' ',#}
-            {#minSize: 120,#}
-            {#innerSize: '90%',#}
-            {#endAngle: 270,#}
-            {#data: [{#}
-                {#name: 'lender-dashboard-account_lended-amount-circle-legend'|trans,#}
-                {#color: '#5FC5D1',#}
-                {#y: getStatistic('amountBorrowed'),#}
-                {#value: getStatistic('amountBorrowed')|localizedcurrency('EUR'),#}
-                {#showInLegend: true,#}
-            {#}]#}
-        {#},{#}
-            {#name:  'lender-dashboard-account_capital-circle-title'|trans ~ ' ',#}
-            {#size: '66%',#}
-            {#minSize: 100,#}
-            {#innerSize: '90%',#}
-            {#endAngle: 270,#}
-            {#data: [{#}
-            {#name: 'lender-dashboard-account_capital-circle-repaid-capital-legend'|trans,#}
-            {#color: '#1B88DB',#}
-            {#y: getStatistic('totalRepaidCapital'),#}
-            {#value: getStatistic('totalRepaidCapital')|localizedcurrency('EUR'),#}
-            {#showInLegend: true,#}
-        {#},{#}
-            {#name: 'lender-dashboard-account_capital-circle-owed-capital-legend'|trans,#}
-            {#color: '#B6D4E4',#}
-            {#y: getStatistic('OwedCapital'),#}
-            {#value: getStatistic('OwedCapital')|localizedcurrency('EUR'),#}
-            {#showInLegend: true#}
-        {#},{#}
-            {#name: 'lender-dashboard-account_capital-circle-troubled-capital-legend'|trans,#}
-            {#color: '#F76965',#}
-            {#y: getStatistic('CapitalInDifficulty'),#}
-            {#value: getStatistic('CapitalInDifficulty')|localizedcurrency('EUR'),#}
-            {#showInLegend: true#}
-            {#}]#}
-        {#},{#}
-        {#name: 'lender-dashboard-account_interests-circle-title'|trans ~ ' ',#}
-            {#minSize: 80,#}
-            {#size: '33%',#}
-            {#innerSize: '90%',#}
-            {#endAngle: 330,#}
-            {#data: [{#}
-                {#name: '',#}
-                {#color: '#eeeeee',#}
-                {#dataLabels: {#}
-                {#enabled: false#}
-            {#},#}
-            {#showInLegend: false,#}
-            {#y: getStatistic('totalRepaidCapital') + getStatistic('OwedCapital') * 0.66,#}
-            {#tooltip: false#}
-        {#},{#}
-            {#name: 'lender-dashboard-account_interests-circle-collected-raw-interests-legend'|trans,#}
-            {#color: '#F2980C',#}
-            {#y: getStatistic('TotalRepaidInterests'),#}
-            {#value: getStatistic('TotalRepaidInterests')|localizedcurrency('EUR'),#}
-            {#showInLegend: true#}
-        {#},{#}
-            {#name: 'lender-dashboard-account_interests-circle-upcoming-raw-interests-legend'|trans,#}
-            {#color: '#FFCA2C',#}
-            {#y: getStatistic('upcomingInterest'),#}
-            {#value: getStatistic('upcomingInterest')|localizedcurrency('EUR'),#}
-            {#showInLegend: true#}
-            {#}]#}
-        {#}],#}
-        {#tooltip: {#}
-        {#valueSuffix: ' €'#}
-        {#}#}
-    {#}#}
-{#} %}#}
-
-
-{% set stats = {
-"gross": [{
-"label": "Capital emprunté",
-"data": {
-"2014": 7078650,
-"2015": 7078650,
-"2016": 7078650,
-"total": 7078650
-}
-},{
-"label": "Capital remboursé",
-"data": {
-"2014": 7078650,
-"2015": 7078650,
-"2016": 7078650,
-"total": 7078650
-}
-},{
-"label": "Intérêts remboursés",
-"data": {
-"2014": 7078650,
-"2015": 7078650,
-"2016": 7078650,
-"total": 7078650
-}
-},{
-"label": "Intérêts à percevoir sur encours sain",
-"data": {
-"2014": 7078650,
-"2015": 7078650,
-"2016": 7078650,
-"total": 7078650
-}
-},{
-"label": "Capital restant dû global",
-"data": {
-"2014": 7078650,
-"2015": 7078650,
-"2016": 7078650,
-"total": 7078650
-}
-},{
-"label": "&nbsp;&nbsp;&nbsp;Dont capital restant dû non échu",
-"data": {
-"2014": 7078650,
-"2015": 7078650,
-"2016": 7078650,
-"total": 7078650
-}
-},{
-"label": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Dont capital restant dû non échu sain",
-"data": {
-"2014": 707865,
-"2015": 707865,
-"2016": 707865,
-"total": 707865
-}
-},{
-"label": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Dont capital non échu, déchu",
-"data": {
-"2014": 7078650,
-"2015": 7078650,
-"2016": 7078650,
-"total": 7078650
-}
-},{
-"label": "Dont capital échu impayé",
-"data": {
-"2014": 707865,
-"2015": 707865,
-"2016": 707865,
-"total": 707865
-}
-},{
-"label": "Tout capital non échu, déchu et échu impayé",
-"data": {
-"2014": 7078650,
-"2015": 7078650,
-"2016": 7078650,
-"total": 7078650
-}
-},{
-"label": "Taux de rendement interne",
-"data": {
-"2014": "2,16%",
-"2015": "2,16%",
-"2016": "2,16%",
-"total": "2,16%"
-}
-},{
-"label": "Total capital perdu / Capital emprunté",
-"data": {
-"2014": "14,23%",
-"2015": "14,23%",
-"2016": "14,23%",
-"total": "14,23%"
-}
-},{
-"label": "Total capital perdu / Intérêts perçus et à percevoir",
-"data": {
-"2014": "75;55%",
-"2015": "75;55%",
-"2016": "75;55%",
-"total": "75;55%"
-}
-},{
-"label": "Performance globale attendue",
-"data": {
-"2014": "4,86%",
-"2015": "4,86%",
-"2016": "4,86%",
-"total": "4,86%"
-}
-},{
-"label": "Nombre total d'entreprises financées",
-"data": {
-"2014": 80,
-"2015": 80,
-"2016": 80,
-"total": 80
-}
-},{
-"label": "Nombre d'entreprises en défaut (PC et retard > 180j)",
-"data": {
-"2014": 11,
-"2015": 11,
-"2016": 11,
-"total": 11
-}
-},{
-"label": "% défaut (en nb)",
-"data": {
-"2014": "13,75%",
-"2015": "13,75%",
-"2016": "13,75%",
-"total": "13,75%"
-}
-},{
-"label": "Total capital perdu / Intérêts perçus et à percevoir",
-"data": {
-"2014": 7078650,
-"2015": 7078650,
-"2016": 7078650,
-"total": 7078650
-}
-},{
-"label": "Taux incident CMF R548-3°b) 1er tiret (montant total des bons de caisse et contrats de prêts)",
-"data": "8,51%"
-},{
-"label": "Taux incident CMF R548-3°b) 1er tiret (nombre total des bons de caisse et contrats de prêts)",
-"data": "7,76%"
-},{
-"label": "Taux incident CMF R548-3°b) 1er tiret (montant contrats de prêts sous staut IFP)",
-"data": "0%"
-},{
-"label": "Taux incident CMF R548-3°b) 1er tiret (nombre contrats de prêts sous staut IFP)",
-"data": "0%"
-}]
-} %}
+%}
 
 <section id="section-intro" class="page-section">
     <div class="site-wrap">
@@ -536,30 +281,25 @@
                 </div><!-- /.promos -->
                 <div class="stats-charts row">
                     <figure class="stats-chart stats-map">
-                        <div class="chart" data-chartview='{{ preterStatisticsMap|json_encode|escape('html_attr') }}'>
+                        <div class="chart" data-chartview='{{ lenderMap|json_encode|escape('html_attr') }}'>
                             {# @todo Chart #}
                             {# <img src="{{ siteurlmedia('apropos/statistiques/map-fr-repartition.png') }}" alt="" /> #}
                         </div>
                         <figcaption><p>{% trans %} about-us-statistics_lender-statistics-map-title {% endtrans %}</p></figcaption>
                     </figure>
-                    {# TODO margin-top: -175px;#}
                     <div class="stats-members">
-                        <div>
+                        <p>
                             {% set numberOfLendersInCommunity = getStatistic('numberOfLendersInCommunity') %}
-                            <h3 class="promo-highlight promo-highlight-lg">
                                 <span data-textcount data-start-count="0"
                                       data-end-count="{{ numberOfLendersInCommunity }}" data-total-time="3000"
-                                      data-tween-count="easeOutCirc">{{ numberOfLendersInCommunity|localizednumber }}</span>
-                            </h3>
-                            {% trans %} about-us-statistics_lender-statistics-members-active-not-text {% endtrans %}
-                        </div>
-                        <div>
+                                      data-tween-count="easeOutCirc" class="promo-highlight promo-highlight-lg c-p1">{{ numberOfLendersInCommunity|localizednumber }}</span>
+                                {% trans %} about-us-statistics_lender-statistics-members-active-not-text {% endtrans %}
+                        </p>
+                        <p>
                             {% set numberOfActiveLenders = getStatistic('numberOfActiveLenders') %}
-                            <h3 class="promo-highlight promo-highlight-lg">
-                                <span data-textcount data-start-count="0" data-end-count="{{ numberOfActiveLenders }}" data-total-time="3000" data-tween-count="easeOutCirc">{{ numberOfActiveLenders|localizednumber }}</span>
-                            </h3>
+                                <span data-textcount data-start-count="0" data-end-count="{{ numberOfActiveLenders }}" data-total-time="3000" data-tween-count="easeOutCirc" class="promo-highlight promo-highlight-lg c-p1">{{ numberOfActiveLenders|localizednumber }}</span>
                             {% trans %} about-us-statistics_lender-statistics-members-type-text {% endtrans %}
-                        </div>
+                        </p>
                         <img src="{{ siteurlmedia('apropos/statistiques/icons-members.png') }}" alt="">
                     </div>
                     {% set lendersByType = getStatistic('lendersByType') %}
@@ -631,7 +371,7 @@
                 <div class="stats-charts row">
                     <div class="col-lg-6 col-md-6">
                         <figure class="stats-chart stats-map">
-                            <div class="chart" data-chartview='{{ emprunterStatisticsMap|json_encode|escape('html_attr') }}'></div>
+                            <div class="chart" data-chartview='{{ borrowerMap|json_encode|escape('html_attr') }}'></div>
                             <figcaption><p>{% trans %} about-us-statistics_borrower-statistics-region-map-title {% endtrans %}</p></figcaption>
                         </figure>
                     </div>
@@ -726,15 +466,15 @@
             <div class="row">
                 <h3 class="c-t1">{% trans %} about-us-statistics_unilend-performances-chart-title {% endtrans %}</h3>
                 <div class="stats-chart stats-chart-unilend">
-                    <div class="chart" data-chartview='{{ overviewStatistics|json_encode|escape('html_attr') }}'></div>
+                    <div class="chart" data-chartview='{{ unilendPerformanceChart|json_encode|escape('html_attr') }}'></div>
                     <div class="stats-chart-unilend-key">
                         <div class="row">
-                            {% for i, series in overviewStatistics.highcharts.series %}
+                            {% for i, series in unilendPerformanceChart.highcharts.series %}
                                 {% for j, dataItem in series.data if dataItem.showInLegend is defined and dataItem.showInLegend != false %}
                                     <div class="chart-key col-lg-4 col-md-4 col-sm-4 col-xs-2">
-                                        <div class="icon" style="background-color: {{ dataItem.color|default(series.color) }}"></div>
-                                        <div class="label">{{ dataItem.name|default(series.name) }}</div>
-                                        <div class="value">{{ dataItem.y|default(series.value) }}€</div>
+                                        <div class="icon" style="background-color: {{ dataItem.color }}"></div>
+                                        <div class="label">{% if dataItem.name is not empty %} {{ dataItem.name }} {% else %} {{ series.name }} {% endif %}</div>
+                                        <div class="value">{% if dataItem.value is not empty %} {{ dataItem.value }} {% else %} {{ series.value }} {% endif %}</div>
                                     </div>
                                 {% endfor %}
                             {% endfor %}
@@ -745,30 +485,62 @@
             <div class="row">
                 <h3 class="c-t1">{% trans %} about-us-statistics_unilend-performances-gross-data-title {% endtrans %}</h3>
                 <div class="table-scroll">
+
                     <table class="table table-stats-unilend">
                         <thead>
-                            <tr>
-                                <th class="table-stats-unilend-item-label">&nbsp;</th>
-                                <th class="table-stats-unilend-item-value">2013–2014</th>
-                                <th class="table-stats-unilend-item-value">2015</th>
-                                <th class="table-stats-unilend-item-value">2016</th>
-                                <th class="table-stats-unilend-item-value">Total</th>
-                            </tr>
+                        <tr>
+                            <th class="table-stats-unilend-item-label">&nbsp;</th>
+                            {% for year in years %}
+                                <th class="table-stats-unilend-item-value">{{ year }}</th>
+                            {% endfor %}
+                        </tr>
                         </thead>
                         <tbody>
-                            {% for i, item in stats.gross %}
-                                <tr>
-                                    {% if item.data is iterable %}
-                                        <td class="table-stats-unilend-item-label">{{ item.label|raw }}</td>
-                                        {% for j, dataItem in item.data %}
-                                            <td class="table-stats-unilend-item-value">{{ dataItem|localizednumber|nbsp|raw }}</td>
+                        {% for label, years in data.regulatoryTable %}
+                            {% if label in ['pct', 'pct2'] %}
+                                {% for labelPct, yearPct in years %}
+                                    <tr>
+                                        <td class="table-stats-unilend-item-label">{{ "about-us-statistics_regulatory-table-#{labelPct}"|trans|raw }}</td>
+                                        {% for valuePct in yearPct %}
+                                            <td class="table-stats-unilend-item-value">{{ valuePct|localizednumber}} %</td>
                                         {% endfor %}
-                                    {% else %}
-                                        <td colspan="4" class="table-stats-unilend-item-label">{{ item.label|raw }}</td>
-                                        <td class="table-stats-unilend-item-value">{{ item.data|raw }}</td>
-                                    {% endif %}
+                                    </tr>
+                                {% endfor %}
+
+                            {% elseif label == 'nb' %}
+                                {% for labelNb, yearNb in years %}
+                                    <tr>
+                                        <td class="table-stats-unilend-item-label">{{ "about-us-statistics_regulatory-table-#{labelNb}"|trans|raw }}</td>
+                                        {% for valuePct in yearNb %}
+                                            <td class="table-stats-unilend-item-value">{{ valuePct|localizednumber}}</td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td class="table-stats-unilend-item-label">{{ "about-us-statistics_regulatory-table-#{label}"|trans|raw }}</td>
+                                    {% for value in years %}
+                                        <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }} €</td>
+                                    {% endfor %}
                                 </tr>
-                            {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                        <tr>
+                            <td class="table-stats-unilend-item-label" colspan="4">Taux incident CMF R548-3°b) 1er tiret (montant total des bons de caisse et contrats de prêts)</td>
+                            <td class="table-stats-unilend-item-value">8,51%</td>
+                        </tr>
+                        <tr>
+                            <td class="table-stats-unilend-item-label" colspan="4">Taux incident CMF R548-3°b) 1er tiret (nombre total des bons de caisse et contrats de prêts)</td>
+                            <td class="table-stats-unilend-item-value">7,76%</td>
+                        </tr>
+                        <tr>
+                            <td class="table-stats-unilend-item-label" colspan="4">Taux incident CMF R548-3°b) 1er tiret (montant contrats de prêts sous staut IFP)</td>
+                            <td class="table-stats-unilend-item-value">0%</td>
+                        </tr>
+                        <tr>
+                            <td class="table-stats-unilend-item-label" colspan="4">Taux incident CMF R548-3°b) 1er tiret (nombre contrats de prêts sous staut IFP)</td>
+                            <td class="table-stats-unilend-item-value">0%</td>
+                        </tr>
                         </tbody>
                     </table>
                 </div><!-- /.table-scroll -->

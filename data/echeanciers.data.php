@@ -236,7 +236,11 @@ class echeanciers extends echeanciers_crud
             SELECT SUM(e.' . $amountType . ')
             FROM echeanciers e
             INNER JOIN loans l ON e.id_loan = l.id_loan
-            WHERE l.status = ' . \loans::STATUS_ACCEPTED . ' AND e.' . $this->implodeSelector($selector);
+            WHERE l.status = ' . \loans::STATUS_ACCEPTED;
+
+        if (false === empty($selector)) {
+            $query .=  ' AND e.' . $this->implodeSelector($selector);
+        }
 
         if (false === empty($status)) {
             $query .= ' AND e.status IN (' . implode(', ', $status) . ')';
@@ -463,7 +467,7 @@ class echeanciers extends echeanciers_crud
      * @param int $lenderId
      * @return array
      */
-    public function getProblematicProjects($lenderId)
+    public function getProblematicProjects($lenderId = null)
     {
         $sql = '
             SELECT
@@ -473,13 +477,17 @@ class echeanciers extends echeanciers_crud
             FROM echeanciers e
             LEFT JOIN echeanciers unpaid ON unpaid.id_echeancier = e.id_echeancier AND unpaid.status = ' . self::STATUS_PENDING . ' AND DATEDIFF(NOW(), unpaid.date_echeance) > 180
             INNER JOIN loans l ON l.id_lender = e.id_lender AND l.id_loan = e.id_loan
-            WHERE e.id_lender = :id_lender
-                AND e.status IN(' . self::STATUS_PENDING . ', ' . self::STATUS_PARTIALLY_REPAID . ')
+            WHERE e.status IN(' . self::STATUS_PENDING . ', ' . self::STATUS_PARTIALLY_REPAID . ')
                 AND l.status = 0
                 AND (
                     (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = e.id_project ORDER BY psh.id_project_status_history DESC LIMIT 1) >= ' . \projects_status::PROCEDURE_SAUVEGARDE . '
                     OR unpaid.date_echeance IS NOT NULL
                 )';
+
+        if (false === is_null($lenderId)) {
+            $sql .= ' AND e.id_lender = :id_lender';
+        }
+
         return $this->bdd->executeQuery($sql, array('id_lender' => $lenderId))->fetch(\PDO::FETCH_ASSOC);
     }
 
@@ -999,4 +1007,36 @@ class echeanciers extends echeanciers_crud
         }
         return $data;
     }
+
+    public function getTotalRepaidInterestByCohort()
+    {
+        $caseSql  = '';
+        foreach (range(2015, date('Y')) as $year ) {
+            $caseSql .= ' WHEN ' . $year . ' THEN "' . $year . '"';
+        }
+
+        $query = 'SELECT
+                      ROUND(SUM(interets_rembourses) / 100, 2) AS amount,
+                      (
+                        SELECT
+                          CASE LEFT(projects_status_history.added, 4)
+                            WHEN 2013 THEN "2013-2014"
+                            WHEN 2014 THEN "2013-2014"
+                            '. $caseSql . '
+                            ELSE LEFT(projects_status_history.added, 4)
+                          END AS date_range
+                        FROM projects_status_history
+                        INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
+                        WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
+                          AND echeanciers.id_project = projects_status_history.id_project
+                        ORDER BY id_project_status_history ASC LIMIT 1
+                      ) AS cohort
+                    FROM echeanciers
+                        WHERE echeanciers.status IN (' . self::STATUS_REPAID . ', ' . self::STATUS_PARTIALLY_REPAID . ')
+                    GROUP BY cohort';
+
+        $statement = $this->bdd->executeQuery($query);
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
 }
