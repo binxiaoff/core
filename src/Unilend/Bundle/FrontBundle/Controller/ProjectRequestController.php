@@ -806,15 +806,15 @@ class ProjectRequestController extends Controller
         }
 
         if ($values['dl'] < 0) {
-            return $this->redirectStatus(self::PAGE_ROUTE_PROSPECT, \projects_status::NOTE_EXTERNE_FAIBLE, 'Fonds propres négatifs');
+            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, 'Fonds propres négatifs');
         }
 
         if ($values['fl'] < 0) {
-            return $this->redirectStatus(self::PAGE_ROUTE_PROSPECT, \projects_status::NOTE_EXTERNE_FAIBLE, 'REX négatif');
+            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, 'REX négatif');
         }
 
         if ($values['gg'] < \projects::MINIMUM_REVENUE) {
-            return $this->redirectStatus(self::PAGE_ROUTE_PROSPECT, \projects_status::NOTE_EXTERNE_FAIBLE, 'CA trop faibles');
+            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, 'CA trop faible');
         }
 
         if ('true' === $request->request->get('extra_files')) {
@@ -1283,18 +1283,22 @@ class ProjectRequestController extends Controller
 
         $addMoreFiles = false;
         $message      = $translator->trans('project-request_end-page-not-entitled-message');
+        $title        = $translator->trans('project-request_end-page-title');
 
         switch ($this->project->status) {
             case \projects_status::ABANDON:
-                $message = $translator->trans('project-request_end-page-aborded-message');
+                $message = $translator->trans('project-request_end-page-aborted-message');
+                $title   = $translator->trans('project-request_end-page-aborted-title');
                 break;
             CASE \projects_status::PAS_3_BILANS:
                 $message = $translator->trans('project-request_end-page-not-3-annual-accounts-message');
+                $title   = $translator->trans('project-request_end-page-aborted-title');
                 break;
             case \projects_status::REVUE_ANALYSTE:
             case \projects_status::COMITE:
             case \projects_status::PREP_FUNDING:
                 $message = $translator->trans('project-request_end-page-analysis-in-progress-message');
+                $title   = $translator->trans('project-request_end-page-processing-title');
                 break;
             case \projects_status::COMPLETUDE_ETAPE_3:
             case \projects_status::A_TRAITER:
@@ -1308,6 +1312,8 @@ class ProjectRequestController extends Controller
                 }
                 break;
             case \projects_status::NOTE_EXTERNE_FAIBLE:
+                $title = $translator->trans('project-request_end-page-rejection-title');
+
                 switch ($this->project->retour_altares) {
                     case Altares::RESPONSE_CODE_PROCEDURE:
                         $message = $translator->trans('project-request_end-page-collective-proceeding-message');
@@ -1332,6 +1338,9 @@ class ProjectRequestController extends Controller
                             $message = $translator->trans('project-request_end-page-negative-operating-result-message');
                         }
                         break;
+                    default:
+                        $message = $translator->trans('project-request_end-page-external-rating-rejection-default-message');
+                        break;
                 }
                 break;
         }
@@ -1339,6 +1348,7 @@ class ProjectRequestController extends Controller
         $template = [
             'addMoreFiles' => $addMoreFiles,
             'message'      => $message,
+            'title'        => $title,
             'project'      => [
                 'hash' => $this->project->hash
             ]
