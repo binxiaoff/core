@@ -497,41 +497,11 @@ class StatisticsManager
 
     /** STATS FOR THE REGULATORY TABLE AND GRAPH */
 
-    public function getPerformanceGraphData()
-    {
-        $cachedItem = $this->cachePool->getItem(CacheKeys::PERFORMANCE_GRAPH);
-        return $cachedItem->get();
-    }
-
     public function getRegulatoryData()
     {
         $cachedItem     = $this->cachePool->getItem(CacheKeys::REGULATORY_TABLE);
         return $cachedItem->get();
     }
-
-    public function calculatePerformanceGraphData()
-    {
-        /** @var \echeanciers $repaymentSchedule */
-        $repaymentSchedule = $this->entityManager->getRepository('echeanciers');
-        /** @var \echeanciers_emprunteur $borrowerPaymentSchedule */
-        $borrowerPaymentSchedule = $this->entityManager->getRepository('echeanciers_emprunteur');
-
-        $problematicProjects    = $repaymentSchedule->getProblematicProjects();
-        $upcomingGrossInterests = $repaymentSchedule->getOwedInterests([]);
-
-        $graphData = [
-            'amountBorrowed'      => (int)$this->getAmountBorrowed(),
-            'repaidCapital'       => (int)$borrowerPaymentSchedule->getRepaidCapital(),
-            'owedCapital'         => round($repaymentSchedule->getOwedCapital([]) - $problematicProjects['capital'], 2),
-            'problematicProjects' => (int)$problematicProjects,
-            'upcomingInterests'   => round($upcomingGrossInterests - $problematicProjects['interests'], 2),
-            'lateAndLostCapital'  => round($problematicProjects['capital'], 2),
-            'receivedInterest' => (int)$repaymentSchedule->getTotalRepaidInterests()
-        ];
-
-        return $graphData;
-    }
-
 
     public function calculateRegulatoryData()
     {

@@ -28,33 +28,6 @@ EOF
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /** @var LoggerInterface $logger */
-        $logger = $this->getContainer()->get('monolog.logger.console');
-        $logger->info('Start calculation unilend statistics');
-
-        $this->saveDataForGraph();
-        $logger->info('Data for graph finished');
-
-        $this->saveDataForRegulatoryTable();
-        $logger->info('End calculation unilend statistics');
-
-    }
-
-
-    private function saveDataForGraph()
-    {
-        /** @var StatisticsManager $statisticsManager */
-        $statisticsManager = $this->getContainer()->get('unilend.service.statistics_manager');
-        $graphData         = $statisticsManager->calculatePerformanceGraphData();
-        $cachePool         = $this->getContainer()->get('memcache.default');
-        $cachedItem        = $cachePool->getItem(CacheKeys::PERFORMANCE_GRAPH);
-        $cachedItem->set($graphData)->expiresAfter(2 * CacheKeys::DAY);
-        $cachePool->save($cachedItem);
-    }
-
-
-    private function saveDataForRegulatoryTable()
-    {
         /** @var StatisticsManager $statisticsManager */
         $statisticsManager = $this->getContainer()->get('unilend.service.statistics_manager');
         $cachePool         = $this->getContainer()->get('memcache.default');
