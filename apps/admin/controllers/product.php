@@ -35,36 +35,42 @@ class productController extends bootstrap
         $this->contracts = $productContract->getUnderlyingContractsByProduct($this->product->id_product);
         $this->repaymentType->get($this->product->id_repayment_type);
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager $productAttrManager */
-        $productAttrManager = $this->get('unilend.service_product.product_attribute_manager');
-        $this->duration['min'] = $productAttrManager->getProductAttributesByType($this->product, \product_attribute_type::MIN_LOAN_DURATION_IN_MONTH);
-        $this->duration['max'] = $productAttrManager->getProductAttributesByType($this->product, \product_attribute_type::MAX_LOAN_DURATION_IN_MONTH);
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager $productManager */
+        $productManager = $this->get('unilend.service_product.product_manager');
+        $this->duration['min'] = $productManager->getAttributesByType($this->product, \product_attribute_type::MIN_LOAN_DURATION_IN_MONTH);
+        $this->duration['max'] = $productManager->getAttributesByType($this->product, \product_attribute_type::MAX_LOAN_DURATION_IN_MONTH);
 
-        $lenderNationalities = $productAttrManager->getProductAttributesByType($this->product, \product_attribute_type::ELIGIBLE_LENDER_NATIONALITY);
+        $lenderNationalities = $productManager->getAttributesByType($this->product, \product_attribute_type::ELIGIBLE_LENDER_NATIONALITY);
         /** @var nationalites_v2 $productContract */
         $nationality = $this->loadData('nationalites_v2');
         $this->lenderNationalities = [];
-        foreach ($lenderNationalities as $lenderNationality) {
-            $nationality->get($lenderNationality);
-            $this->lenderNationalities[] = $nationality->fr_f;
+        if (false === empty($lenderNationalities)) {
+            foreach ($lenderNationalities as $lenderNationality) {
+                $nationality->get($lenderNationality);
+                $this->lenderNationalities[] = $nationality->fr_f;
+            }
         }
 
-        $borrowerCountries =  $productAttrManager->getProductAttributesByType($this->product, \product_attribute_type::ELIGIBLE_BORROWER_COMPANY_COUNTRY);
+        $borrowerCountries =  $productManager->getAttributesByType($this->product, \product_attribute_type::ELIGIBLE_BORROWER_COMPANY_COUNTRY);
         /** @var pays_v2 $productContract */
         $pays = $this->loadData('pays_v2');
         $this->borrowerCountries = [];
-        foreach ($borrowerCountries as $borrowerCountry) {
-            $pays->get($borrowerCountry);
-            $this->borrowerCountries[] = $pays->fr;
+        if (false === empty($borrowerCountries)) {
+            foreach ($borrowerCountries as $borrowerCountry) {
+                $pays->get($borrowerCountry);
+                $this->borrowerCountries[] = $pays->fr;
+            }
         }
 
-        $borrowerNeeds = $productAttrManager->getProductAttributesByType($this->product, \product_attribute_type::ELIGIBLE_NEED);
+        $borrowerNeeds = $productManager->getAttributesByType($this->product, \product_attribute_type::ELIGIBLE_NEED);
         /** @var project_need $need */
         $need = $this->loadData('project_need');
         $this->borrowerNeeds = [];
-        foreach ($borrowerNeeds as $borrowerNeed) {
-            $need->get($borrowerNeed);
-            $this->borrowerNeeds[] = $need->label;
+        if (false === empty($borrowerNeeds)) {
+            foreach ($borrowerNeeds as $borrowerNeed) {
+                $need->get($borrowerNeed);
+                $this->borrowerNeeds[] = $need->label;
+            }
         }
     }
 }
