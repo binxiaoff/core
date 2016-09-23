@@ -177,8 +177,6 @@
                     <a href="{{ path('project_detail', {'projectSlug' : project.navigation.nextProject.slug}) }}" class="btn-nav-next" title="{{ project.navigation.nextProject.title }}" data-toggle="tooltip" data-placement="left"><span class="sr-only">{% trans %} project-detail_previous-project-label {% endtrans %}</span></a>
                 {%  endif %}
             </div><!-- /.project-single-header -->
-
-            {% include 'partials/components/list-socialmedia.html.twig' %}
         </header><!-- /.project-single-header-wrap -->
 
         {% include 'partials/components/project-detail/side-panel.html.twig' %}
