@@ -273,7 +273,7 @@ class transactions extends transactions_crud
             t.montant as capital,
             IFNULL(interests.montant, 0) AS interests,
             "Remboursement" AS type_transaction_alpha,
-            t.id_project AS id_project,
+            p.id_project AS id_project,
             t.date_transaction AS date_tri,
             (
               SELECT SUM(t2.montant) + (SELECT SUM(montant) FROM transactions WHERE id_echeancier = t.id_echeancier)
