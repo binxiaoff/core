@@ -911,7 +911,6 @@ class rootController extends bootstrap
         $this->error_nom     = 'ok';
         $this->error_prenom  = 'ok';
         $this->error_email   = 'ok';
-        $this->error_captcha = 'ok';
 
         if (isset($_POST['telephone']) && $_POST['telephone'] != '' && $_POST['telephone'] != $this->lng['contact']['telephone']) {
             $this->error_telephone = 'ok';
@@ -948,14 +947,6 @@ class rootController extends bootstrap
         if (! isset($_POST['message']) || $_POST['message'] == '' || $_POST['message'] == $this->lng['contact']['message']) {
             $this->form_ok       = false;
             $this->error_message = 'nok';
-        }
-
-        if (! isset($_POST['captcha']) || $_POST['captcha'] == '' || $_POST['captcha'] == $this->lng['contact']['captcha']) {
-            $this->form_ok       = false;
-            $this->error_captcha = 'nok';
-        } elseif ($_SESSION['securecode'] != strtolower($_POST['captcha'])) {
-            $this->form_ok       = false;
-            $this->error_captcha = 'nok';
         }
 
         if ($this->form_ok == true) {

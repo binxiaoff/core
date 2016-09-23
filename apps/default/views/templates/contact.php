@@ -71,10 +71,6 @@
                     <p><i class="icon-mail"></i> <?= $this->lng['contact']['bloc-email'] ?> :
                         <a href="mailto:<?= $this->content['bloc-email'] ?>"><?= $this->content['bloc-email'] ?></a></p>
                 </div><!-- /.contact-block-body -->
-
-                <div class="contact-block-image">
-                    <img src="<?= $this->photos->display($this->content['bloc-image'], 'img_contact') ?>" alt="<?= $this->complement['bloc-image'] ?>">
-                </div><!-- /.contact-block-image -->
             </div><!-- /.contact-block -->
         </div><!-- /.contact -->
     </div><!-- /.shell -->
