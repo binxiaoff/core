@@ -1,3 +1,4 @@
+{% if app.user %}
 <div class="popup-overlay ui-BidConfirmation">
     <div data-popup-bid-confirmation class="popup message-info">
         <h4>
@@ -17,7 +18,6 @@
         </div>
     </div>
 </div>
-
 <div class="popup-overlay ui-BidConfirmation-error">
     <div data-popup-bid-confirmation class="popup message-error">
             {% transchoice project.lender.bids.inprogress|length with {'%amountRest%': amountRest|localizedcurrency('EUR'), '%amountMax%': amountMax|localizedcurrency('EUR')} %} project-detail_bid-not-eligible-reason-contract_total_loan_amount_limitation_in_euro {% endtranschoice %}
@@ -32,3 +32,4 @@
         </div>
     </div>
 </div>
+{% endif %}
