@@ -843,7 +843,7 @@ class dossiersController extends bootstrap
                     }
                 }
             }
-            if ($product instanceof \product) {
+            if ($product instanceof \product && $product->id_product) {
                 $eligibleNeeds = $productManager->getAttributesByType($product, \product_attribute_type::ELIGIBLE_NEED);
             } else {
                 $eligibleNeeds = [];
