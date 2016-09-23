@@ -108,7 +108,18 @@ class lenders_account_stats extends lenders_account_stats_crud
             WHERE
                 e.id_lender = ' . $iLendersAccountId . '
                 AND e.status = 0
-                AND p.status IN (' . implode(',', [\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT]) . ')';
+                AND p.status IN (' . implode(',', [\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT]) . ')
+
+        UNION ALL
+
+                 SELECT
+                  montant,
+                  date_transaction AS date
+                FROM transactions
+                INNER JOIN lenders_accounts ON transactions.id_client = lenders_accounts.id_client_owner
+                WHERE
+                lenders_accounts.id_lender_account = ' . $iLendersAccountId . '
+                ADN type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT;
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_array($result)) {
