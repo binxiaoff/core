@@ -129,7 +129,7 @@
                 </thead>
                 <tbody data-sortable-content>
                 {% for i, op in lenderOperations %}
-                    {% set classAmount = op.montant_operation > 0 ? 'ui-amount-positive' : 'ui-amount-negative' %}
+                    {% set classAmount = op.montant_operation >= 0 ? 'ui-amount-positive' : 'ui-amount-negative' %}
                     {% set classBalance = op.solde > 0 ? 'ui-balance-positive' : 'ui-balance-negative' %}
                     {% if op.type_transaction in detailedOperations %}
                         {% set operationDetails = {

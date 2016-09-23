@@ -178,19 +178,6 @@
                                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
                                                     {% endif %}
                                                 </div><!-- /.form-field -->
-
-                                                <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.email_conf is defined %} ui-formvalidation-error{% endif %}">
-                                                    <label for="form-project-create-identity-email-conf">
-                                                        {% trans %} common_email-confirmation {% endtrans %}
-                                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
-                                                    </label>
-                                                    <div class="input-group">
-                                                        <input id="form-project-create-identity-email-conf" type="email" name="contact[email_conf]" value="{{ form.values.contact.email_conf }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-samevalueas="#form-project-create-identity-email"/>
-                                                        {% if form.errors.contact.email_conf is defined %}
-                                                            <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
-                                                        {% endif %}
-                                                    </div>
-                                                </div><!-- /.form-field -->
                                             </div>
 
                                             <div class="row row-multi-col-computer">

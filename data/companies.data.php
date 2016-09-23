@@ -333,4 +333,65 @@ class companies extends companies_crud
             $this->sector = 15;
         }
     }
+
+    public function countCompaniesWithProblematicProjectsByCohort()
+    {
+        $caseSql  = '';
+        foreach (range(2015, date('Y')) as $year ) {
+            $caseSql .= ' WHEN ' . $year . ' THEN "' . $year . '"';
+        }
+
+        $query = 'SELECT COUNT(DISTINCT id_company) AS amount,
+                    (
+                        SELECT
+                          CASE LEFT(projects_status_history.added, 4)
+                            WHEN 2013 THEN "2013-2014"
+                            WHEN 2014 THEN "2013-2014"
+                            '. $caseSql . '
+                            ELSE LEFT(projects_status_history.added, 4)
+                          END AS date_range
+                        FROM projects_status_history
+                        INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
+                        WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
+                          AND projects.id_project = projects_status_history.id_project
+                        ORDER BY id_project_status_history ASC LIMIT 1
+                      ) AS cohort
+                    FROM projects
+                    WHERE projects.status >= ' . \projects_status::RECOUVREMENT . '
+                    GROUP BY cohort';
+
+        $statement = $this->bdd->executeQuery($query);
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
+    public function countCompaniesFundedByCohort()
+    {
+        $caseSql  = '';
+        foreach (range(2015, date('Y')) as $year ) {
+            $caseSql .= ' WHEN ' . $year . ' THEN "' . $year . '"';
+        }
+
+        $query = 'SELECT COUNT(DISTINCT id_company) AS amount,
+                    (
+                        SELECT
+                          CASE LEFT(projects_status_history.added, 4)
+                            WHEN 2013 THEN "2013-2014"
+                            WHEN 2014 THEN "2013-2014"
+                            '. $caseSql . '
+                            ELSE LEFT(projects_status_history.added, 4)
+                          END AS date_range
+                        FROM projects_status_history
+                        INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
+                        WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
+                          AND projects.id_project = projects_status_history.id_project
+                        ORDER BY id_project_status_history ASC LIMIT 1
+                      ) AS cohort
+                       FROM projects
+                    WHERE projects.status >= ' . \projects_status::REMBOURSEMENT . '
+                    GROUP BY cohort';
+
+        $statement = $this->bdd->executeQuery($query);
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

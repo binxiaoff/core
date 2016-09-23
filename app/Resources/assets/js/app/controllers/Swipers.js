@@ -91,13 +91,13 @@ $doc.ready(function () {
     var elemSwiper = new Swiper(elem, $.extend({}, swiperOptions))
 
     // @debug
-    console.log({
-      elem: elem,
-      swiper: elemSwiper,
-      swiperOptions: swiperOptions,
-      isPromoSwiper: $elem.is('.promo-swiper'),
-      isBattenberg: $elem.is('.promo-battenberg')
-    })
+    // console.log({
+    //   elem: elem,
+    //   swiper: elemSwiper,
+    //   swiperOptions: swiperOptions,
+    //   isPromoSwiper: $elem.is('.promo-swiper'),
+    //   isBattenberg: $elem.is('.promo-battenberg')
+    // })
 
     // Add event to hook up custom pagination to appropriate slide
     if (swiperOptions.paginationType === 'custom') {

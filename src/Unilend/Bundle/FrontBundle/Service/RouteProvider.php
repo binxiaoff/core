@@ -1,10 +1,9 @@
 <?php
 namespace Unilend\Bundle\FrontBundle\Service;
 
-use Cache\Adapter\Memcache\MemcacheCachePool;
+use Psr\Log\LoggerInterface;
 use Symfony\Cmf\Component\Routing\RouteProviderInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
@@ -21,13 +20,13 @@ class RouteProvider implements RouteProviderInterface
     /** @var EntityManager */
     private $entityManager;
 
-    /** @var MemcacheCachePool */
-    private $cachePool;
+    /** @var LoggerInterface */
+    private $logger;
 
-    public function __construct(EntityManager $entityManager, MemcacheCachePool $cachePool)
+    public function __construct(EntityManager $entityManager, LoggerInterface $logger)
     {
         $this->entityManager = $entityManager;
-        $this->cachePool     = $cachePool;
+        $this->logger     = $logger;
     }
 
     /**
@@ -64,7 +63,8 @@ class RouteProvider implements RouteProviderInterface
         $tree = $this->entityManager->getRepository('tree');
 
         if (false === $tree->get(['slug' => $name, 'status' => 1, 'prive' => 0])) {
-            throw new RouteNotFoundException("No route found for path '$name'");
+            $this->logger->warning('No CMS page found for path ' . $name);
+            return new Route($name);
         }
 
         return new Route($tree->slug);

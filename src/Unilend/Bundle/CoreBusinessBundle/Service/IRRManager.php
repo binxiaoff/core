@@ -174,4 +174,35 @@ class IRRManager
         return array_shift($aUnilendStats);
     }
 
+    public function getUnilendIRRByCohort($year)
+    {
+        set_time_limit(1000);
+        /** @var \unilend_stats $unilendStats */
+        $unilendStats = $this->oEntityManager->getRepository('unilend_stats');
+        $fStartSQL  = microtime(true);
+        $aValuesIRR = $unilendStats->getIRRValuesByCohort($year);
+        $this->oLogger->info('Unilend Cohort ' . $year . ' IRR calculation - SQL Time : ' . (round(microtime(true) - $fStartSQL, 2)) . ' for ' . count($aValuesIRR). ' lines ');
+
+        $fStartXIRR = microtime(true);
+        $xirr      = $this->calculateIRR($aValuesIRR);
+        $this->oLogger->info('Unilend Cohort ' . $year . ' IRR calculation - XIRR Time : ' . (round(microtime(true) - $fStartXIRR, 2)) . ' - Guess : ' . self::IRR_GUESS . ' MAX_INTERATIONS : '. 100);
+        $this->oLogger->info('Unilend Cohort ' . $year . ' IRR calculation - Total time : ' . (round(microtime(true) - $fStartSQL, 2)));
+
+        return $xirr;
+    }
+
+    public function getUnilendIRRForCohort20132014()
+    {
+        /** @var \unilend_stats $unilendStats */
+        $unilendStats = $this->oEntityManager->getRepository('unilend_stats');
+        $valuesIRR2013 = $unilendStats->getIRRValuesByCohort(2013);
+        $valuesIRR2014 = $unilendStats->getIRRValuesByCohort(2014);
+        $valuesIRR = array_merge($valuesIRR2013, $valuesIRR2014);
+        $xirr      = $this->calculateIRR($valuesIRR);
+
+        return $xirr;
+    }
+
+
+
 }

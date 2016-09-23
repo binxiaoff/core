@@ -79,9 +79,9 @@ class unilend_stats extends unilend_stats_crud
                 date_transaction AS date
             FROM transactions
             WHERE type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . '
-        
+
         UNION ALL
-        
+
             SELECT
                 CASE WHEN ee.status_ra = 1 THEN ee.capital ELSE ee.capital + ee.interets END AS montant,
                 (
@@ -102,9 +102,9 @@ class unilend_stats extends unilend_stats_crud
                         AND ee.id_project = e2.id_project
                     LIMIT 1
                 ) = 1
-        
+
         UNION ALL
-        
+
             SELECT
                 ee.capital + ee.interets AS montant,
                 (
@@ -128,9 +128,9 @@ class unilend_stats extends unilend_stats_crud
                 ) = 0
                 AND p.status = ' . \projects_status::REMBOURSEMENT . '
                 AND ee.id_project > 0
-        
+
         UNION ALL
-        
+
             SELECT
                 CASE WHEN ee.date_echeance_emprunteur < NOW() THEN "0" ELSE ee.capital + ee.interets END AS montant,
                 (
@@ -154,9 +154,9 @@ class unilend_stats extends unilend_stats_crud
                 ) = 0
                 AND p.status IN (' . implode(',', [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X]) . ')
                 AND ee.id_project > 0
-        
+
         UNION ALL
-        
+
             SELECT
                 CASE WHEN ee.date_echeance_emprunteur < NOW() THEN "0" ELSE CASE WHEN DATEDIFF (
                     NOW(),
@@ -192,9 +192,9 @@ class unilend_stats extends unilend_stats_crud
                 ) = 0
                 AND p.status = ' . \projects_status::RECOUVREMENT . '
                 AND ee.id_project > 0
-        
+
         UNION ALL
-        
+
             SELECT
                 0 AS montant,
                 (
@@ -217,7 +217,16 @@ class unilend_stats extends unilend_stats_crud
                     LIMIT 1
                 ) = 0
                 AND p.status IN (' . implode(',', [\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT]) . ')
-                AND ee.id_project > 0';
+                AND ee.id_project > 0
+
+        UNION ALL
+
+                SELECT
+                  SUM(montant)     AS montant,
+                  date_transaction AS date
+                FROM transactions
+                WHERE type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . '
+                GROUP BY date_transaction';
 
         $aValuesIRR = array();
         $oQuery  = $this->bdd->query($sQuery);
@@ -226,5 +235,194 @@ class unilend_stats extends unilend_stats_crud
         }
 
         return $aValuesIRR;
+    }
+
+    public function getIRRValuesByCohort($year)
+    {
+        $query =   '
+            SELECT
+                montant - montant_unilend AS montant,
+                date_transaction AS date
+            FROM transactions
+              WHERE type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . '
+                AND (SELECT LEFT(psh.added, 4) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
+                        WHERE psh.id_project = transactions.id_project
+                        ORDER BY psh.id_project_status ASC LIMIT 1) = :year
+
+        UNION ALL
+
+            SELECT
+                CASE WHEN ee.status_ra = 1 THEN ee.capital ELSE ee.capital + ee.interets END AS montant,
+                (
+                    SELECT CASE WHEN e.status = 1 THEN e.date_echeance_reel ELSE e.date_echeance END
+                    FROM echeanciers e
+                    WHERE
+                        e.ordre = ee.ordre
+                        AND ee.id_project = e.id_project
+                    LIMIT 1
+                ) AS date
+            FROM echeanciers_emprunteur ee
+            WHERE
+                (
+                    SELECT e2.status
+                    FROM echeanciers e2
+                    WHERE
+                        e2.ordre = ee.ordre
+                        AND ee.id_project = e2.id_project
+                    LIMIT 1
+                ) = 1
+                 AND (SELECT LEFT(psh.added, 4) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
+                        WHERE psh.id_project = ee.id_project
+                        ORDER BY psh.id_project_status ASC LIMIT 1) = :year
+
+        UNION ALL
+
+            SELECT
+                ee.capital + ee.interets AS montant,
+                (
+                    SELECT e.date_echeance
+                    FROM echeanciers e
+                    WHERE
+                        e.ordre = ee.ordre
+                        AND ee.id_project = e.id_project
+                    LIMIT 1
+                ) AS date
+            FROM echeanciers_emprunteur ee
+            INNER JOIN projects p ON ee.id_project = p.id_project
+            WHERE
+                (
+                    SELECT e2.status
+                    FROM echeanciers e2
+                    WHERE
+                        e2.ordre = ee.ordre
+                        AND ee.id_project = e2.id_project
+                    LIMIT 1
+                ) = 0
+                AND p.status = ' . \projects_status::REMBOURSEMENT . '
+                AND ee.id_project > 0
+                AND (SELECT LEFT(psh.added, 4) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
+                            WHERE psh.id_project = ee.id_project
+                            ORDER BY psh.id_project_status ASC LIMIT 1) = :year
+
+        UNION ALL
+
+            SELECT
+                CASE WHEN ee.date_echeance_emprunteur < NOW() THEN "0" ELSE ee.capital + ee.interets END AS montant,
+                (
+                    SELECT e.date_echeance
+                    FROM echeanciers e
+                    WHERE
+                        e.ordre = ee.ordre
+                        AND ee.id_project = e.id_project
+                    LIMIT 1
+                ) AS date
+            FROM echeanciers_emprunteur ee
+            INNER JOIN projects p ON ee.id_project = p.id_project
+            WHERE
+                (
+                    SELECT e2.status
+                    FROM echeanciers e2
+                    WHERE
+                        e2.ordre = ee.ordre
+                        AND ee.id_project = e2.id_project
+                    LIMIT 1
+                ) = 0
+                AND p.status IN (' . implode(',', [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X]) . ')
+                AND ee.id_project > 0
+                AND (SELECT LEFT(psh.added, 4) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
+                        WHERE psh.id_project = ee.id_project
+                        ORDER BY psh.id_project_status ASC LIMIT 1) = :year
+
+        UNION ALL
+
+            SELECT
+                CASE WHEN ee.date_echeance_emprunteur < NOW() THEN "0" ELSE CASE WHEN DATEDIFF (
+                    NOW(),
+                    (
+                        SELECT psh2.added
+                        FROM projects_status_history psh2
+                        INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                        WHERE
+                            ps2.status = ' . \projects_status::PROBLEME . '
+                            AND psh2.id_project = ee.id_project
+                        ORDER BY psh2.added DESC
+                        LIMIT 1
+                    )
+                ) > 180 THEN "0" ELSE ee.capital + ee.interets END END AS montant,
+                (
+                    SELECT e.date_echeance
+                    FROM echeanciers e
+                    WHERE
+                        e.ordre = ee.ordre
+                        AND ee.id_project = e.id_project
+                    LIMIT 1
+                ) AS date
+            FROM echeanciers_emprunteur ee
+            INNER JOIN projects p ON ee.id_project = p.id_project
+            WHERE
+                (
+                    SELECT e2.status
+                    FROM echeanciers e2
+                    WHERE
+                        e2.ordre = ee.ordre
+                        AND ee.id_project = e2.id_project
+                    LIMIT 1
+                ) = 0
+                AND p.status = ' . \projects_status::RECOUVREMENT . '
+                AND ee.id_project > 0
+                AND (SELECT LEFT(psh.added, 4) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
+                        WHERE psh.id_project = ee.id_project
+                        ORDER BY psh.id_project_status ASC LIMIT 1) = :year
+
+        UNION ALL
+
+            SELECT
+                0 AS montant,
+                (
+                    SELECT e.date_echeance
+                    FROM echeanciers e
+                    WHERE
+                        e.ordre = ee.ordre
+                        AND ee.id_project = e.id_project
+                    LIMIT 1
+                ) AS date
+            FROM echeanciers_emprunteur ee
+            INNER JOIN projects p ON ee.id_project = p.id_project
+            WHERE
+                (
+                    SELECT e2.status
+                    FROM echeanciers e2
+                    WHERE
+                        e2.ordre = ee.ordre
+                        AND ee.id_project = e2.id_project
+                    LIMIT 1
+                ) = 0
+                AND p.status IN (' . implode(',', [\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT]) . ')
+                AND ee.id_project > 0
+                AND (SELECT LEFT(psh.added, 4) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
+                    WHERE psh.id_project = ee.id_project
+                    ORDER BY psh.id_project_status ASC LIMIT 1) = :year
+
+        UNION ALL
+
+                SELECT
+                  SUM(montant)     AS montant,
+                  date_transaction AS Date
+                FROM transactions
+                WHERE type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . '
+                AND
+                    (SELECT LEFT(psh.added, 4) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
+                          WHERE psh.id_project = transactions.id_project ORDER BY psh.id_project_status ASC LIMIT 1) = 2014
+                GROUP BY date_transaction';
+
+        $statement = $this->bdd->executeQuery($query, ['year' => $year], ['year' => \PDO::PARAM_STR]);
+        $records   = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $valuesIRR = [];
+
+        foreach ($records as $record) {
+            $valuesIRR[]      = [$record['date'] => $record['montant']];
+        }
+
+        return $valuesIRR;
     }
 }

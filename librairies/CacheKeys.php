@@ -32,12 +32,12 @@ class CacheKeys
     const CONTRACT_ATTRIBUTE_BY_TYPE = 'contract_attribute_by_type';
 
     /**
-     * constants for statistics
+     * constants for statistics calculated on the go after expiry time
      */
     const LENDERS_IN_COMMUNITY                = 'stats_numberOfLendersInCommunity';
     const ACTIVE_LENDERS                      = 'stats_numberOfActiveLenders';
     const FINANCED_PROJECTS                   = 'stats_numberOfFinancedProjects';
-    const AMOUNT_BORRWED                      = 'stats_amountBorrowed';
+    const AMOUNT_BORROWED                      = 'stats_amountBorrowed';
     const UNILEND_IRR                         = 'stats_unilendIRR';
     const PERCENT_FULLY_FINANCED_PROJECTS     = 'stats_percentageSuccessfullyFinancedProjects';
     const AVG_FUNDING_TIME                    = 'stats_averageFundingTime';
@@ -52,12 +52,16 @@ class CacheKeys
     const LENDERS_BY_REGION                   = 'stats_lendersByRegion';
     const PROJECTS_BY_REGION                  = 'stats_projectsByRegion';
     const TOTAL_REPAID_CAPITAL                = 'stats_totalRepaidCapital';
-    const TOTAL_REPAID_INTERST                = 'stats_totalRepaidInterests';
+    const TOTAL_REPAID_INTEREST                = 'stats_totalRepaidInterests';
     const PROJECTS_BY_CATEGORY                = 'stats_projectCountByCategory';
     const PROJECTS_FUNDED_IN_24_HOURS         = 'stats_numberOfProjectsFundedIn24Hours';
     const PERCENT_PROJECTS_FUNDED_IN_24_HOURS = 'stats_percentageOfProjectsFundedIn24Hours';
     const BID_EVERY_X_SECOND                  = 'stats_secondsForBid';
     const AMOUNT_FINANCED_HIGHEST_FASTEST     = 'stats_highestAmountObtainedFastest';
+
+    /** constants for statistics calculated by cron */
+    const REGULATORY_TABLE = 'stats_regulatoryData';
+    const PERFORMANCE_GRAPH = 'stats_performanceGraph';
 
     public static function getStatisticsCacheKeys()
     {
@@ -65,7 +69,7 @@ class CacheKeys
             self::LENDERS_IN_COMMUNITY,
             self::ACTIVE_LENDERS,
             self::FINANCED_PROJECTS,
-            self::AMOUNT_BORRWED,
+            self::AMOUNT_BORROWED,
             self::UNILEND_IRR,
             self::PERCENT_FULLY_FINANCED_PROJECTS,
             self::AVG_FUNDING_TIME,
@@ -80,7 +84,7 @@ class CacheKeys
             self::LENDERS_BY_REGION,
             self::PROJECTS_BY_REGION,
             self::TOTAL_REPAID_CAPITAL,
-            self::TOTAL_REPAID_INTERST,
+            self::TOTAL_REPAID_INTEREST,
             self::PROJECTS_BY_CATEGORY,
             self::PROJECTS_FUNDED_IN_24_HOURS,
             self::PERCENT_PROJECTS_FUNDED_IN_24_HOURS,

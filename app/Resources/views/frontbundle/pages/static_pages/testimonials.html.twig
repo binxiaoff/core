@@ -16,7 +16,7 @@
 
                     <aside class="block-testimonial promo-p2">
                         <div class="block-testimonial-video promo-p2" style="background-image: url({{ completeTestimonialUrl(person.battenberg_image, 'image') }})">
-                            <a href="{{ completeTestimonialUrl(person.video, 'video') }}" class="fancybox-media fancybox-embed-videojs">
+                            <a href="{{ person.video }}" class="fancybox-media fancybox-embed-videojs">
                                 <img src="{{ completeTestimonialUrl(person.battenberg_image, 'image') }}" alt="" />
                                 <span class="btn-media-wrapper-absolute">
                                     <span class="btn-media"><span class="icon fa-play"></span></span>
@@ -46,7 +46,7 @@
                 </div>
                 <div class="col-lg-6 col-md-6">
                     <div class="block-text">
-                        {{ person.long_testimonial }}
+                        {{ person.long_testimonial|raw }}
                     </div>
                     <div class="btn-toolbar">
                         <a href="{{ path('home_borrower') }}#homeemp-section-esim" class="btn-alternate"><span class="icon fa-angle-right"></span>Présenter un projet</a>

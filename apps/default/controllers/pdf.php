@@ -1147,12 +1147,12 @@ class pdfController extends bootstrap
         $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
         $this->lng['preteur-operations-pdf']            = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
 
-        $post_debut            = $_SESSION['filtre_vos_operations']['debut'];
-        $post_fin              = $_SESSION['filtre_vos_operations']['fin'];
-        $post_nbMois           = $_SESSION['filtre_vos_operations']['nbMois'];
-        $post_annee            = $_SESSION['filtre_vos_operations']['annee'];
-        $post_tri_type_transac = $_SESSION['filtre_vos_operations']['tri_type_transac'];
-        $post_tri_projects     = $_SESSION['filtre_vos_operations']['tri_projects'];
+        $post_debut            = $_SESSION['filtre_vos_operations']['start'];
+        $post_fin              = $_SESSION['filtre_vos_operations']['end'];
+        $post_nbMois           = $_SESSION['filtre_vos_operations']['slide'];
+        $post_annee            = $_SESSION['filtre_vos_operations']['year'];
+        $post_tri_type_transac = $_SESSION['filtre_vos_operations']['operation'];
+        $post_tri_projects     = $_SESSION['filtre_vos_operations']['project'];
         $post_id_last_action   = $_SESSION['filtre_vos_operations']['id_last_action'];
         $post_order            = $_SESSION['filtre_vos_operations']['order'];
         $post_type             = $_SESSION['filtre_vos_operations']['type'];
@@ -1272,7 +1272,7 @@ class pdfController extends bootstrap
             if (in_array($post_tri_projects, array(0, 1))) {
                 $tri_project = '';
             } else {
-                $tri_project = ' AND le_id_project = ' . $post_tri_projects;
+                $tri_project = ' AND id_projet = ' . $post_tri_projects;
             }
         }
 
