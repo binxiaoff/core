@@ -17,3 +17,18 @@
         </div>
     </div>
 </div>
+
+<div class="popup-overlay ui-BidConfirmation-error">
+    <div data-popup-bid-confirmation class="popup message-error">
+            {% transchoice project.lender.bids.inprogress|length with {'%amountRest%': amountRest|localizedcurrency('EUR'), '%amountMax%': amountMax|localizedcurrency('EUR')} %} project-detail_bid-not-eligible-reason-contract_total_loan_amount_limitation_in_euro {% endtranschoice %}
+        <div class="row">
+            <div class="col-lg-12 text-align-right">
+                <p>
+                    <a href="javascript:;" data-popup-bid-confirmation-no class="btn-primary">
+                        {% trans %} project-detail_side-bar-bids-decline-button {% endtrans %}
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

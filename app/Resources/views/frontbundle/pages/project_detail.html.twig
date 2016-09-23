@@ -241,19 +241,23 @@
                                     <h3 class="h3">{% trans %} project-detail_project-history-title {% endtrans %}</h3>
                                     <p>{% trans with {'%amountUserLoan%' : project.lender.loans.myLoanOnProject.solde|localizednumber} %} project-detail_project-presentation-repayment-info {% endtrans %}</p>
                                     <p>
+                                        {% if project.lender.loans.remainingToBeRepaid > 0 %}
                                         {% trans with {
                                             '%amountAlreadyPaidBack%' : project.lender.loans.amountAlreadyPaidBack|localizednumber,
                                             '%remainingToBeRepaid%' : project.lender.loans.remainingToBeRepaid|localizednumber,
                                             '%remainingMonths%' : project.lender.loans.remainingMonths
                                         } %} project-detail_project-presentation-repayment-info-detail {% endtrans %}
+                                        {% else %}
+                                            {% trans with {'%amountAlreadyPaidBack%' : project.lender.loans.amountAlreadyPaidBack|localizednumber, } %} project-detail_project-presentation-repayment-info-detail-fully-repaid {% endtrans %}
+                                        {% endif %}
                                     </p>
 
                                     {% if project.lender.loans.amountAlreadyPaidBack > 0 %}
                                         {% for history in project.statusHistory %}
-                                            {% if 'project-presentation-repayment-info-project-status-#{history.status}'|trans != 'project-presentation-repayment-info-project-status-#{history.status}' %}
+                                            {% if 'project_detail_project-presentation-repayment-info-project-status-#{history.status}'|trans != 'project_detail_project-presentation-repayment-info-project-status-#{history.status}' %}
                                                 <p>
                                                     {{ history.added|date(d/m/Y) }}
-                                                    {{ 'project-presentation-repayment-info-project-status-#{history.status}'|trans }}
+                                                    {{ 'project_detail_project-presentation-repayment-info-project-status-#{history.status}'|trans }}
                                                     <br/>
                                                     {% if history.site_content is not empty %}
                                                         {{ history.content|nl2br }}
@@ -284,6 +288,8 @@
                                 <h3 class="h3">{% trans %} project-detail_project-presentation-about-us-title {% endtrans %}</h3>
                                 {% if conditions.validatedUser %}
                                     <p>{{ project.companyDescription|raw }}</p>
+                                {% elseif conditions.notValidatedUser %}
+                                    <p>{% trans %} project-detail_not-validated-description {% endtrans %}</p>
                                 {% else %}
                                     <p>{% trans %} project-detail_logged-out-description {% endtrans %}</p>
                                 {% endif %}
@@ -293,6 +299,8 @@
                                 <h3 class="h3">{% trans %} project-detail_project-presentation-our-project {% endtrans %}</h3>
                                 {% if conditions.validatedUser %}
                                     <p>{{ project.projectDescription|raw }}</p>
+                                {% elseif conditions.notValidatedUser %}
+                                    <p>{% trans %} project-detail_not-validated-description {% endtrans %}</p>
                                 {% else %}
                                     <p>{% trans %} project-detail_logged-out-description {% endtrans %}</p>
                                 {% endif %}
@@ -305,6 +313,8 @@
                             <h3 class="h3">{% trans %} project-detail_project-presentation-repayment-reason-title {% endtrans %}</h3>
                             {% if conditions.validatedUser %}
                                 <p>{{ project.repaymentDescription|raw }}</p>
+                            {% elseif conditions.notValidatedUser %}
+                                <p>{% trans %} project-detail_not-validated-description {% endtrans %}</p>
                             {% else %}
                                 <p>{% trans %} project-detail_logged-out-description {% endtrans %}</p>
                             {% endif %}
