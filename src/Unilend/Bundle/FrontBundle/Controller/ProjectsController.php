@@ -235,6 +235,14 @@ class ProjectsController extends Controller
             $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
             $lenderAccount->get($user->getClientId(), 'id_client_owner');
 
+            $productManager = $this->get('unilend.service_product.product_manager');
+            /** @var \product $product */
+            $product = $this->get('unilend.service.entity_manager')->getRepository('product');
+            $product->get($project->id_product);
+
+            $template['amountRest'] = $productManager->getAmountLenderCanStillBid($lenderAccount, $project);
+            $template['amountMax']  = $productManager->getMaxEligibleAmount($product);
+
             /** @var LenderAccountDisplayManager $lenderAccountDisplayManager */
             $lenderAccountDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
             $template['project']['lender'] = $lenderAccountDisplayManager->getActivityForProject($lenderAccount, $project->id_project, $project->status);
@@ -244,16 +252,10 @@ class ProjectsController extends Controller
                 $request->getSession()->remove('bidResult');
             }
 
-            $productManager = $this->get('unilend.service_product.product_manager');
             $template['isLenderEligible'] = $productManager->isLenderEligible($lenderAccount, $project);
             if (false === $template['isLenderEligible']) {
-                /** @var \product $product */
-                $product = $this->get('unilend.service.entity_manager')->getRepository('product');
-                $product->get($project->id_product);
-                $amountMax = $productManager->getMaxEligibleAmount($product);
                 $reasons = $productManager->getLenderValidationReasons($lenderAccount, $project);
                 $template['lenderNotEligibleReasons'] = $reasons;
-                $template['amountMax'] = $amountMax;
             }
         }
 
@@ -449,7 +451,6 @@ class ProjectsController extends Controller
                 $request->getSession()->set('bidResult', ['success' => true, 'message' => $translator->trans('project-detail_side-bar-bids-bid-placed-message')]);
             } catch (\Exception $exception) {
                 if ('bids-not-eligible' === $exception->getMessage()) {
-                    $productAttrManager = $this->get('unilend.service_product.product_attribute_manager');
                     $productManager     = $this->get('unilend.service_product.product_manager');
 
                     /** @var \product $product */
@@ -462,7 +463,7 @@ class ProjectsController extends Controller
                     $amountRest = 0;
                     foreach ($reasons as $reason) {
                         if ($reason === \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO) {
-                            $amountRest = $productManager->getAmountLenderCanStillBid($lenderAccount, $project, $productAttrManager, $entityManager);
+                            $amountRest = $productManager->getAmountLenderCanStillBid($lenderAccount, $project);
                         }
                         $currencyFormatter = new \NumberFormatter($request->getLocale(), \NumberFormatter::CURRENCY);
                         $amountRest = $currencyFormatter->formatCurrency($amountRest, 'EUR');

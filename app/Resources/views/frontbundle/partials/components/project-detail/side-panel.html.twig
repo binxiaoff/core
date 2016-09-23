@@ -135,6 +135,8 @@
                                     <button type="submit" class="btn-primary btn-size-full cursor">{% trans %} project-detail_side-bar-bids-submit-button {% endtrans %}</button>
                                     <input type="hidden" name="invest[bidToken]" value="{{ bidToken }}">
                                     <input type="hidden" id="bid-duration" value="{{ project.duration }}">
+                                    <input type="hidden" id="bid-max-amount" value="{{ amountMax }}">
+                                    <input type="hidden" id="bid-rest-amount" value="{{ amountRest }}">
                                 </div><!-- /.btn-toolbar -->
                                 <div class="field-help">&nbsp;</div>
                             </form><!-- /.project-single-form-invest -->
