@@ -387,7 +387,7 @@ class ficelle
      */
     public function cleanFormatedNumber($sFormatedNumber)
     {
-        return (float) str_replace(array(' ', ','), array('', '.'), $sFormatedNumber);
+        return (float) str_replace(array(' ', html_entity_decode('&nbsp;'), ','), array('', '', '.'), $sFormatedNumber);
     }
 
     /**

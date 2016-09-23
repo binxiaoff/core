@@ -7,8 +7,8 @@ $(document).on('submit', 'form[data-bid-confirmation]', function (e) {
   e.preventDefault();
 
   if ($('[data-popup-amount]').val() == '' || $('[data-popup-rate]').val() == '') {
-    $('[data-popup-amount], [data-popup-rate]').each(function () {
-      var el = $(this)
+    $('[data-popup-amount], [data-popup-rate]').each(function (i, elm) {
+      var el = $(elm)
 
       if (el.val() == "") {
         el.closest('.form-field').addClass('ui-formvalidation-error');
@@ -21,16 +21,19 @@ $(document).on('submit', 'form[data-bid-confirmation]', function (e) {
   else {
     $('[data-popup-amount], [data-popup-rate]').closest('.form-field').removeClass('ui-formvalidation-error');
 
-    $('.ui-BidConfirmation').show();
+    if ($('#bid-rest-amount').val() === '' || parseFloat($('#bid-rest-amount').val()) >= parseFloat($('#bid-amount').val())) {
+      $('.ui-BidConfirmation').show()
+    } else {
+      $('.ui-BidConfirmation-error').show()
+    }
 
     $('[data-popup-bid-confirmation-yes]').click(function () {
-      $('.ui-BidConfirmation').hide();
-
+      $('.ui-BidConfirmation').hide()
       form.submit()
     })
 
     $('[data-popup-bid-confirmation-no]').click(function () {
-      $('.ui-BidConfirmation').hide();
+      $(this).parents('.popup-overlay').hide()
     })
   }
 })

@@ -128,6 +128,16 @@
     }
 } %}
 
+{#{% set chartValues = {#}
+    {#pctRepaidCapital : (data.regulatoryTable['repaid-capital']['total'] + data.regulatoryTable['from-which-payments-not-lost-and-healthy']['total']) / data.regulatoryTable['borrowed-capital']['total'],#}
+    {#pctRepaidInterest : data.regulatoryTable['future-healthy-interest']['total'] / data.regulatoryTable['borrowed-capital']['total'] ,#}
+    {#pctFutureInterest : data.regulatoryTable['repaid-interest']['total'] / data.regulatoryTable['borrowed-capital']['total']#}
+
+{#} %}#}
+
+{% set debugValueLateAndLostCapital = data.regulatoryTable['borrowed-capital']['total'] -  data.regulatoryTable['repaid-capital']['total'] - data.regulatoryTable['from-which-payments-not-lost-and-healthy']['total'] %}
+{# normal value içnstead of debug data.regulatoryTable['capital-late-and-lost']['total']#}
+
 {% set unilendPerformanceChart = {
     type: 'preterProjectsOverview',
     background: 'none',
@@ -142,7 +152,7 @@
             text: ''
             },
         subtitle: {
-            text: 'lender-dashboard-account_graph-subtitle'|trans,
+            text: '',
             color: '#999999',
             floating: true,
             useHTML: true,
@@ -162,15 +172,15 @@
             symbolRadius: 10
             },
         series: [{
-            name: 'lender-dashboard-account_lended-amount-circle-title'|trans ~ ' ',
+            name: 'about-us-statistics_regulatory-table-borrowed-capital'|trans ~ ' ',
             minSize: 120,
             innerSize: '95%',
             endAngle: 270,
             data: [{
-                name: 'lender-dashboard-account_lended-amount-circle-legend'|trans,
+                name: 'about-us-statistics_regulatory-table-borrowed-capital'|trans,
                 color: '#5FC5D1',
-                y: data.performanceGraph.amountBorrowed,
-                value: data.performanceGraph.amountBorrowed|localizedcurrency('EUR'),
+                y: data.regulatoryTable['borrowed-capital']['total'],
+                value: data.regulatoryTable['borrowed-capital']['total']|localizedcurrency('EUR'),
                 showInLegend: true,
                 }]
             },{
@@ -180,22 +190,22 @@
                 innerSize: '88%',
                 endAngle: 270,
                 data: [{
-                    name: 'lender-dashboard-account_capital-circle-repaid-capital-legend'|trans,
+                    name: 'about-us-statistics_regulatory-table-repaid-capital'|trans,
                     color: '#1B88DB',
-                    y: data.performanceGraph.repaidCapital,
-                    value: data.performanceGraph.repaidCapital|localizedcurrency('EUR'),
+                    y: data.regulatoryTable['repaid-capital']['total'],
+                    value: data.regulatoryTable['repaid-capital']['total']|localizedcurrency('EUR'),
                     showInLegend: true,
                 },{
-                    name: 'lender-dashboard-account_capital-circle-owed-capital-legend'|trans,
+                    name: 'Capital restant du non échu sain',
                     color: '#B6D4E4',
-                    y: data.performanceGraph.owedCapital,
-                    value: data.performanceGraph.owedCapital|localizedcurrency('EUR'),
+                    y: data.regulatoryTable['from-which-payments-not-lost-and-healthy']['total'],
+                    value: data.regulatoryTable['from-which-payments-not-lost-and-healthy']['total']|localizedcurrency('EUR'),
                     showInLegend: true
                 },{
-                    name: 'lender-dashboard-account_capital-circle-troubled-capital-legend'|trans,
+                    name: 'Capital restant du non échu, déchu',
                     color: '#F76965',
-                    y: data.performanceGraph.lateAndLostCapital,
-                    value: data.performanceGraph.lateAndLostCapital|localizedcurrency('EUR'),
+                    y:  debugValueLateAndLostCapital,
+                    value: debugValueLateAndLostCapital|localizedcurrency('EUR'),
                     showInLegend: true
                 }]
             },{
@@ -211,19 +221,19 @@
                         enabled: false
                         },
                     showInLegend: false,
-                    y: (data.performanceGraph.repaidCapital + data.performanceGraph.owedCapital) * 0.66,
+                    y: (data.regulatoryTable['repaid-capital']['total'] + data.regulatoryTable['from-which-payments-not-lost-and-healthy']['total']) * 0.50,
                     tooltip: false
                 },{
-                    name: 'lender-dashboard-account_interests-circle-collected-raw-interests-legend'|trans,
+                    name: 'about-us-statistics_regulatory-table-repaid-interest'|trans,
                     color: '#F2980C',
-                    y: data.performanceGraph.receivedInterest,
-                    value: data.performanceGraph.receivedInterest|localizedcurrency('EUR'),
+                    y: data.regulatoryTable['repaid-interest']['total'],
+                    value: data.regulatoryTable['repaid-interest']['total']|localizedcurrency('EUR'),
                     showInLegend: true
                 },{
-                    name: 'lender-dashboard-account_interests-circle-upcoming-raw-interests-legend'|trans,
+                    name: 'about-us-statistics_regulatory-table-future-healthy-interest'|trans,
                     color: '#FFCA2C',
-                    y: data.performanceGraph.upcomingInterests,
-                    value: data.performanceGraph.upcomingInterests|localizedcurrency('EUR'),
+                    y: data.regulatoryTable['future-healthy-interest']['total'],
+                    value: data.regulatoryTable['future-healthy-interest']['total']|localizedcurrency('EUR'),
                     showInLegend: true
                 }]
             }],

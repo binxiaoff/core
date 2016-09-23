@@ -107,7 +107,7 @@ $doc.ready(function () {
         $elem.find('.swiper-custom-pagination li.active').removeClass('active')
 
         // Activate the current pagination item
-        $elem.find('.swiper-custom-pagination li:eq(' + elemSwiper.activeIndex + ')').addClass('active')
+        $elem.find('.swiper-custom-pagination li:eq(' + (elemSwiper.activeIndex - 1) + ')').addClass('active')
 
         // console.log('sliderMove', elemSwiper.activeIndex)
       })
@@ -117,7 +117,7 @@ $doc.ready(function () {
         var $elem = $(this).parents('.swiper-container')
         var $target = $(this)
         var swiper = $elem[0].swiper
-        var newSlideIndex = $elem.find('.swiper-custom-pagination li').index($target)
+        var newSlideIndex = $elem.find('.swiper-custom-pagination li').index($target) + 1
 
         event.preventDefault()
         swiper.pauseAutoplay()

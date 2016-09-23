@@ -65,7 +65,7 @@
                                                     <div class="form-field">
                                                         {# Template is defined here so you can better do the translation and select field stuff #}
                                                         <div id="form-extrafiles-template" class="ui-template-definition" style="display: none" disabled="disabled" aria-hidden="true">
-                                                            <div class="form-field file-upload-extra row row-multi-col-computer">
+                                                            <div class="form-field form-field-multi file-upload-extra row row-multi-col-computer" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="typedFile">
                                                                 <div class="col-lg-6 col-md-6">
                                                                     <select name="files[extra__NUM__]" class="input-field">
                                                                         <option value="">{% trans %} project-request_files-select-label {% endtrans %}</option>
@@ -75,14 +75,13 @@
                                                                     </select>
                                                                 </div>
                                                                 <div class="col-lg-6 col-md-6">
-                                                                    <div class="custom-input-file" id="form-extrafile" data-fileattach data-fileattach-inputname="extra__NUM__" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png tiff doc docx"></div><!-- /.ui-fileattach -->
+                                                                    <div class="custom-input-file" id="form-extrafile" data-fileattach data-fileattach-inputname="extra__NUM__" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png tiff doc docx" data-formvalidation-required='input[type="file"][name="file[__NUM__]"]'></div><!-- /.ui-fileattach -->
                                                                 </div>
                                                             </div><!-- /.file-upload-extra -->
-
                                                         </div><!-- /.ui-template-definition -->
 
                                                         <div class="form-extrafiles-list">
-                                                            <div class="form-field row row-multi-col-computer" style="margin-bottom: 0">
+                                                            <div class="form-field  row row-multi-col-computer" style="margin-bottom: 0">
                                                                 <div class="col-lg-6 col-md-6" style="margin-bottom: 0">
                                                                     <label class="field-label">{% trans %} project-request_files-document-type-column-title {% endtrans %}</label>
                                                                 </div>
@@ -91,7 +90,7 @@
                                                                 </div>
                                                             </div>
 
-                                                            <div class="form-field file-upload-extra row row-multi-col-computer">
+                                                            <div class="form-field form-field-multi file-upload-extra row row-multi-col-computer" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="typedFile">
                                                                 <div class="col-lg-6 col-md-6">
                                                                     <select name="files[file]" class="input-field">
                                                                         <option value="">{% trans %} project-request_files-select-label {% endtrans %}</option>
@@ -101,7 +100,7 @@
                                                                     </select>
                                                                 </div>
                                                                 <div class="col-lg-6 col-md-6">
-                                                                    <div class="custom-input-file" id="form-file" data-fileattach data-fileattach-inputname="file" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png tiff doc docx" data-formvalidation-input data-formvalidation-required='input[type="file"][name="file[0]"]'></div><!-- /.ui-fileattach -->
+                                                                    <div class="custom-input-file" id="form-file" data-fileattach data-fileattach-inputname="file" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png tiff doc docx" data-formvalidation-required='input[type="file"][name="file[0]"]'></div><!-- /.ui-fileattach -->
                                                                 </div>
                                                             </div>
 

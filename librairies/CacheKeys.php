@@ -61,7 +61,6 @@ class CacheKeys
 
     /** constants for statistics calculated by cron */
     const REGULATORY_TABLE = 'stats_regulatoryData';
-    const PERFORMANCE_GRAPH = 'stats_performanceGraph';
 
     public static function getStatisticsCacheKeys()
     {

@@ -660,7 +660,6 @@ class MainController extends Controller
             'data' => [
                 'projectCountForCategoryTreeMap' => $this->getProjectCountForCategoryTreeMap(),
                 'regulatoryTable' => $statisticsManager->getRegulatoryData(),
-                'performanceGraph' => $statisticsManager->getPerformanceGraphData()
             ],
             'years' => array_merge($years, ['total'])
         ];

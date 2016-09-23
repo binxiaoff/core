@@ -145,7 +145,7 @@
                                                         {% trans %} common_name {% endtrans %}
                                                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
-                                                    <input id="form-project-create-identity-nom" type="text" name="contact[lastname]" value="{{ form.values.contact.lastname }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                    <input id="form-project-create-identity-nom" type="text" name="contact[lastname]" value="{{ form.values.contact.lastname }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="name"/>
                                                     {% if form.errors.contact.lastname is defined %}
                                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
                                                     {% endif %}
@@ -156,7 +156,7 @@
                                                         {% trans %} common_firstname {% endtrans %}
                                                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
-                                                    <input id="form-project-create-identity-prenom" type="text" name="contact[firstname]" value="{{ form.values.contact.firstname }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                    <input id="form-project-create-identity-prenom" type="text" name="contact[firstname]" value="{{ form.values.contact.firstname }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="name"/>
                                                     {% if form.errors.contact.firstname is defined %}
                                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
                                                     {% endif %}
@@ -169,7 +169,7 @@
                                                         {% trans %} common_email {% endtrans %}
                                                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
-                                                    <input id="form-project-create-identity-email" type="email" name="contact[email]" value="{{ form.values.contact.email }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                    <input id="form-project-create-identity-email" type="email" name="contact[email]" value="{{ form.values.contact.email }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email"/>
                                                     {% if form.errors.contact.email is defined %}
                                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
                                                     {% endif %}
@@ -270,7 +270,7 @@
                                                         {% trans %} common_name {% endtrans %}
                                                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
-                                                    <input id="form-project-create-identity-advisor-nom" type="text" name="advisor[lastname]" value="{{ form.values.advisor.lastname }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                    <input id="form-project-create-identity-advisor-nom" type="text" name="advisor[lastname]" value="{{ form.values.advisor.lastname }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="name"/>
                                                     {% if form.errors.advisor.lastname is defined %}
                                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
                                                     {% endif %}
@@ -281,7 +281,7 @@
                                                         {% trans %} common_firstname{% endtrans %}
                                                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
-                                                    <input id="form-project-create-identity-advisor-prenom" type="text" name="advisor[firstname]" value="{{ form.values.advisor.firstname }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                    <input id="form-project-create-identity-advisor-prenom" type="text" name="advisor[firstname]" value="{{ form.values.advisor.firstname }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="name"/>
                                                     {% if form.errors.advisor.firstname is defined %}
                                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
                                                     {% endif %}
@@ -294,7 +294,7 @@
                                                         {% trans %} common_email {% endtrans %}
                                                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
-                                                    <input id="form-project-create-identity-advisor-email" type="email" name="advisor[email]" value="{{ form.values.advisor.email }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                    <input id="form-project-create-identity-advisor-email" type="email" name="advisor[email]" value="{{ form.values.advisor.email }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email"/>
                                                     {% if form.errors.advisor.email is defined %}
                                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
                                                     {% endif %}
