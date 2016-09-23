@@ -35,16 +35,21 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% if (project.bids.summary|first).activePercentage == 0 %}
-                                <tr class="table-alloffersoverview-item rejected-offers">
+                            {# Detect any summary rows which have all rejected offers #}
+                            {% set hasRejectedRows = false %}
+                            {% for rateSummary in project.bids.summary if rateSummary.activePercentage == 0 %}
+                                {% set hasRejectedRows = true %}
+                            {% endfor %}
+                            {% if hasRejectedRows == true %}
+                                <tr class="table-alloffersoverview-item view-rejected-rows">
                                     <td colspan="4" class="text-align-center">
-                                        <a href="javascript:;" class="bids-view-rejected">{% trans %} project-detail_all-bids-table-rejected-bids-show-action {% endtrans %}</a>
+                                        <a href="javascript:;">{% trans %} project-detail_all-bids-table-rejected-bids-show-action {% endtrans %}</a>
                                     </td>
                                 </tr>
                             {% endif %}
                             {% for rateSummary in project.bids.summary %}
                                 {% if rateSummary.bidsCount > 0 %}
-                                    <tr class="table-alloffersoverview-item bids-row {% if rateSummary.activePercentage == 0 %} rejected-row {% endif %}" data-bid-rate="{{ rateSummary.rate }}">
+                                    <tr class="table-alloffersoverview-item rate-row {% if rateSummary.activePercentage == 0 %} rejected-row {% endif %}" data-bid-rate="{{ rateSummary.rate }}">
                                         <td class="table-alloffersoverview-item-rate">
                                             <span class="bids-row-rate">{{ rateSummary.rate|localizednumberwithprecision(1) }}%</span>
                                         </td>

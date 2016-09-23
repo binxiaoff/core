@@ -193,7 +193,7 @@
 
   tr {
     // Button to show all rejected offers
-    &.rejected-offers {
+    &.view-rejected-rows {
       background-color: $c-bg3 !important;
 
       > td {
@@ -208,8 +208,8 @@
       }
     }
 
-    // Normal bids row
-    &.bids-row {
+    // Normal rate row
+    &.rate-row {
       cursor: pointer;
 
       &:hover {

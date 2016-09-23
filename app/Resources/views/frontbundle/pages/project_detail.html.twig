@@ -120,7 +120,7 @@
                                             {% trans %} project-detail_project-status-finished {% endtrans %}
                                         {% else %}
                                             <span class="icon fa-clock-u32"></span>
-                                            <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|date('Y-m-d\\TH:i:s')|escape('html_attr') }}"></span>
+                                            <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|date('c') }}"></span>
                                         {% endif %}
                                     </div>
 
@@ -206,7 +206,7 @@
                             {% trans %} project-detail_project-status-finished {% endtrans %}
                         {% else %}
                             <span class="icon fa-clock-u32"></span>
-                            <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|date('Y-m-d\\TH:i:s')|escape('html_attr') }}"></span>
+                            <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|date('c') }}"></span>
                         {% endif %}
                     </div><!-- /.project-single-menu-period -->
                     <div class="project-single-menu-col project-single-menu-top">
@@ -218,6 +218,74 @@
 
         <div class="project-single-content page-content">
             <div class="site-wrap">
+
+                {# START TESTING #}
+                {# <div class="project">
+                    <dl class="list-2col">
+                        <dt>Now</dt>
+                        <dd>{{ 'now'|date('c') }}</dd>
+                        <dt>Less than 1m</dt>
+                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+1 minute')|date('c') }}" data-timecount-debug="true"></span></dd>
+                        <dt>Less than 5m</dt>
+                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+5 minutes')|date('c') }}"></span></dd>
+                        <dt>Less than 1hr</dt>
+                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+1 hour')|date('c') }}"></span></dd>
+                        <dt>Less than 24hrs</dt>
+                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+24 hours')|date('c') }}"></span></dd>
+                        <dt>Less than 48hrs</dt>
+                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+48 hours')|date('c') }}"></span></dd>
+                        <dt>Less than 7 days</dt>
+                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+7 days')|date('c') }}"></span></dd>
+                        <dt>Less than 30 days</dt>
+                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+30 days')|date('c') }}"></span></dd>
+                        <dt>More than 30 days</dt>
+                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+45 days')|date('c') }}"></span></dd>
+                    </dl>
+                </div>
+
+                <div class="project-list-item">
+                    <dl class="list-2col">
+                        <dt>Less than 1m</dt>
+                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+1 minutes')|date('c') }}"></span></dd>
+                        <dt>Less than 5m</dt>
+                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+5 minutes')|date('c') }}"></span></dd>
+                        <dt>Less than 1hr</dt>
+                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+1 hour')|date('c') }}"></span></dd>
+                        <dt>Less than 24hrs</dt>
+                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+24 hours')|date('c') }}"></span></dd>
+                        <dt>Less than 48hrs</dt>
+                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+48 hours')|date('c') }}"></span></dd>
+                        <dt>Less than 7 days</dt>
+                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+7 days')|date('c') }}"></span></dd>
+                        <dt>Less than 30 days</dt>
+                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+30 days')|date('c') }}"></span></dd>
+                        <dt>More than 30 days</dt>
+                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+45 days')|date('c') }}"></span></dd>
+                    </dl>
+                </div>
+
+                <div class="project-single">
+                    <dl class="list-2col">
+                        <dt>Less than 1m</dt>
+                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+1 minutes')|date('c') }}"></span></dd>
+                        <dt>Less than 5m</dt>
+                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+5 minutes')|date('c') }}"></span></dd>
+                        <dt>Less than 1hr</dt>
+                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+1 hour')|date('c') }}"></span></dd>
+                        <dt>Less than 24hrs</dt>
+                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+24 hours')|date('c') }}"></span></dd>
+                        <dt>Less than 48hrs</dt>
+                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+48 hours')|date('c') }}"></span></dd>
+                        <dt>Less than 7 days</dt>
+                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+7 days')|date('c') }}"></span></dd>
+                        <dt>Less than 30 days</dt>
+                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+30 days')|date('c') }}"></span></dd>
+                        <dt>More than 30 days</dt>
+                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+45 days')|date('c') }}"></span></dd>
+                    </dl>
+                </div> #}
+                {# END TESTING #}
+
                 <div class="row">
                     <div class="col-lg-8 col-md-8">
                         <nav class="project-single-nav">

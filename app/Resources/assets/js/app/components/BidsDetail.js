@@ -8,23 +8,101 @@ var Utility = require('Utility')
 
 var $doc = $(document)
 
+// Clear active rows and detail
+function clearActiveRow () {
+  if ($('.table-alloffersoverview .active-row').length) {
+    $('.table-alloffersoverview .active-row').removeClass('active-row')
+    $('.table-alloffersoverview .detail-table-item').remove()
+  }
+}
+
+// Show all rejected offer rows for rates
+function showAllRejectedOffers () {
+  $('.table-alloffersoverview tr.view-rejected-rows').remove()
+  $('.table-alloffersoverview .rate-row.rejected-row').show()
+}
+
+// Focus on a specific rate's bid element
+function focusBid (rate, bidId, enableScroll) {
+  // Get the new bid to focus to
+  var $targetRate = $('[data-bid-rate="' + rate  + '"]')
+  var $targetBid = $('[data-sortable-detail-id="' + bidId + '"]')
+
+  // @debug
+  // console.log(rate, $targetRate, bidId, $targetBid)
+
+  if ($targetRate.length) {
+    // If the target rate is in a tab/collapsable element which is hidden, it should be made visible via this `revealElem` method
+    Utility.revealElem($targetRate)
+
+    // Ensure that the target bid's bids summary row is active and visible
+    if (!$targetRate.is('.active-row')) {
+      $('.active-row').removeClass('.active-row')
+      $targetRate.addClass('active-row').show()
+    }
+
+    // Scroll to the target rate, only if the bid wasn't specified
+    if (!$targetBid.length && enableScroll) {
+      Utility.scrollTo($targetRate, undefined, undefined, undefined, {
+        centerTargetInElem: true
+      })
+    }
+  }
+
+  if ($targetBid.length) {
+    // If the target bid is in a tab/collapsable element which is hidden, it should be made visible via this `revealElem` method
+    Utility.revealElem($targetBid)
+
+    // Not already focused
+    if (!$targetBid.is('is-focus')) {
+      // Remove any previously focused items
+      $('.is-focus').removeClass('is-focus')
+
+      // Set this one to focused
+      $targetBid.addClass('is-focus')
+    }
+
+    // Scroll to the target row
+    Utility.scrollTo($targetBid, undefined, undefined, undefined, {
+      centerTargetInElem: true
+    })
+  }
+}
+
 // Instantiate on ready
 $doc.on('ready', function () {
   var bidDetailsAjaxTimer = 0
 
   // AJAX to retrieve bid details results
-  var AjaxCall = function(elem, rate, project, prev) {
+  var AjaxCall = function(elem, projectId, rate, bidId) {
     clearTimeout(bidDetailsAjaxTimer)
 
+    // Before running ajax, ensure that the item isn't already rendered on the page
+    if (bidId && $('[data-sortable-detail-id="' + bidId + '"]').length > 0) {
+      // Hide any previously focused rows
+      $('.is-focused').removeClass('is-focused')
+
+      // Focus the bid
+      focusBid(rate, bidId, !!bidId)
+      return
+    }
+
+    // @debug
+    console.log('AjaxCall', {
+      elem: elem,
+      projectId: projectId,
+      rate: rate,
+      bidId: bidId,
+      bidElem: $('[data-sortable-detail-id="' + bidId + '"]')
+    })
+
+    // Debounce AJAX
     bidDetailsAjaxTimer = setTimeout(function () {
       $.ajax({
         type: 'POST',
-        url: '/projects/bids/' + project + '/' + rate,
+        url: '/projects/bids/' + projectId + '/' + rate,
         success: function(response) {
           var $resp = $(response)
-
-          // Scroll to the active row
-          Utility.scrollTo('.active-row')
 
           // Add response HTML to DOM
           $resp.insertAfter(elem)
@@ -32,23 +110,8 @@ $doc.on('ready', function () {
           // Initiate any interactive bits within
           $resp.trigger('UI:visible')
 
-          // If clicked on user "myoffer"
-          if (prev !== false) {
-            // Hide any previously focused rows
-            $('.is-focused').removeClass('is-focused')
-
-            // Get the new row to focus to
-            var FocusedRow = $('[data-sortable-detail-id="' + prev + '"]')
-            FocusedRow.addClass('is-focused')
-            if (FocusedRow.length == 0) {
-              FocusedRow = $('.ui-current-user-involved').attr('data-sortable-detail-id', prev)
-            }
-
-            // Scroll to the focused row
-            Utility.scrollTo(FocusedRow, function () {
-              FocusedRow.removeClass('is-focused')
-            })
-          }
+          // Focus on the bid
+          focusBid(rate, bidId, !!bidId)
         },
         error: function() {
           console.log("error retrieving datas")
@@ -58,57 +121,49 @@ $doc.on('ready', function () {
   }
 
   // Click on a main row to view details
-  $doc.on('click', '.bids-row, .my-offers-bid-row', function() {
+  $doc.on('click', '.table-alloffersoverview tr.rate-row, .table-myoffers .my-offers-bid-row', function() {
     var ClickedElement = $(this)
     var CurrentProject = $('.table-alloffersoverview').attr('data-current-project')
     var ClickedRate = ClickedElement.attr('data-bid-rate')
-    var CurrentDetail = $('.detail-table-item')
-    var Preview = false
+    var CurrentDetail = $('.table-alloffersoverview .detail-table-item')
+    var bidId = false
 
     // Check if clicked row is from the main table
-    if (ClickedElement.is('.bids-row')) {
+    if (ClickedElement.is('.rate-row')) {
 
-      // check if a row is already active and disactive it before openning the clicked one
-      if ($('.detail-table-item').length && ! ClickedElement.hasClass('active-row')) {
+      // check if a row is already active and deactivate it before opening the clicked one
+      if ($('.table-alloffersoverview .detail-table-item').length && !ClickedElement.hasClass('active-row')) {
+        clearActiveRow()
         ClickedElement.addClass('active-row')
-        CurrentDetail.prev().removeClass('active-row')
-        CurrentDetail.remove()
-        AjaxCall(ClickedElement, ClickedRate, CurrentProject, Preview)
+        AjaxCall(ClickedElement, CurrentProject, ClickedRate, bidId)
 
       // close current active row if user click on it
       } else if (ClickedElement.hasClass('active-row')) {
-        ClickedElement.removeClass('active-row')
-        CurrentDetail.remove()
+        clearActiveRow()
 
       // there is no active row
       } else {
-        $('.active-row').removeClass('active-row')
-        $('.detail-table-item').remove()
         ClickedElement.addClass('active-row')
-        AjaxCall(ClickedElement, ClickedRate, CurrentProject, Preview)
+        AjaxCall(ClickedElement, CurrentProject, ClickedRate, bidId)
       }
 
     // Check if user click on his own bid table
     } else if (ClickedElement.hasClass('my-offers-bid-row')) {
-      // remove active table if exist
-      if ($('.active-row').length) {
-        $('.active-row').removeClass('active-row')
-        $('.detail-table-item').remove()
-      }
+      // Remove active table if exist
+      clearActiveRow()
       var TargetedRow = ClickedElement.find('a').attr('data-related-bid-rate')
-      Preview = ClickedElement.children('.table-myoffers-item-id').html()
+      bidId = ClickedElement.children('.table-myoffers-item-id').html()
       TargetedRow = TargetedRow.replace(',','.')
       ClickedRate = Number(TargetedRow)
-      ClickedElement = $('[data-bid-rate="'+ClickedRate+'"]')
+      ClickedElement = $('[data-bid-rate="' + ClickedRate + '"]')
       ClickedElement.addClass('active-row')
-      AjaxCall(ClickedElement, ClickedRate, CurrentProject, Preview)
+      AjaxCall(ClickedElement, CurrentProject, ClickedRate, bidId)
     }
   })
 
   // Show rejected offers
-  $doc.on('click', '.rejected-offers', function(event) {
+  $doc.on('click', '.table-alloffersoverview .view-rejected-rows', function(event) {
     event.preventDefault()
-    $('.rejected-row').show()
-    $('.rejected-offers').remove()
+    showAllRejectedOffers()
   })
 })
