@@ -127,7 +127,8 @@ $(document)
             })
 
         } else {
-            $('#autolend-table-dialog').fadeIn().focus()
+            //$('#autolend-table-dialog').fadeIn().focus()
+            $('#autolend-table-dialog').uiModal('open')
             event.preventDefault()
             return false
         }
