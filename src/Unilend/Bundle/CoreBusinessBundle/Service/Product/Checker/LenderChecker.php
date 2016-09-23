@@ -69,9 +69,9 @@ trait LenderChecker
         $product = $entityManager->getRepository('product');
         $product->get($project->id_product);
 
-        $totalAmount = $bid->getBidsEncours($project->id_project, $lender->id_lender_account)['solde'];
-
+        $totalAmount       = $bid->getBidsEncours($project->id_project, $lender->id_lender_account)['solde'];
         $maxAmountEligible = $this->getMaxEligibleAmount($product, $productAttributeManager);
+
         if (null === $maxAmountEligible) {
             return null;
         }

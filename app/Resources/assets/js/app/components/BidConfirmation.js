@@ -21,7 +21,7 @@ $(document).on('submit', 'form[data-bid-confirmation]', function (e) {
   else {
     $('[data-popup-amount], [data-popup-rate]').closest('.form-field').removeClass('ui-formvalidation-error');
 
-    if (parseFloat($('#bid-rest-amount').val()) >= parseFloat($('#bid-amount').val())) {
+    if ($('#bid-rest-amount').val() === '' || parseFloat($('#bid-rest-amount').val()) >= parseFloat($('#bid-amount').val())) {
       $('.ui-BidConfirmation').show()
     } else {
       $('.ui-BidConfirmation-error').show()
