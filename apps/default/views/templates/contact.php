@@ -44,13 +44,6 @@
                         <textarea cols="30" rows="10" title="<?= $this->lng['contact']['message'] ?>" name="message" id="message" class="field field-extra-large required <?= (isset($this->error_message) && $this->error_message == 'ok' ? 'LV_valid_field' : (isset($this->error_message) && $this->error_message == 'nok' ? 'LV_invalid_field' : '')) ?>" data-validators="Presence"><?= empty($this->demande_contact->message) ? $this->lng['contact']['message'] : $this->demande_contact->message ?></textarea>
                     </div><!-- /.row -->
 
-                    <div class="row row-captcha">
-                        <div class="captcha-holder">
-                            <img src="<?= $this->surl ?>/images/default/securitecode.php" alt="captcha"/>
-                        </div><!-- /.captcha-holder -->
-                        <input type="text" name="captcha" class="field required <?= (isset($this->error_captcha) && $this->error_captcha == 'ok' ? 'LV_valid_field' : (isset($this->error_captcha) && $this->error_captcha == 'nok' ? 'LV_invalid_field' : '')) ?>" id="captcha" data-validators="Presence" value="<?= $this->lng['contact']['captcha'] ?>" title="<?= $this->lng['contact']['captcha'] ?>">
-                    </div><!-- /.row row-captcha -->
-
                     <div class="form-foot">
                         <input type="hidden" name="send_form_contact" id="send_form_contact"/>
                         <button type="submit" class="btn"><?= $this->content['call-to-action-40'] ?>
@@ -71,6 +64,10 @@
                     <p><i class="icon-mail"></i> <?= $this->lng['contact']['bloc-email'] ?> :
                         <a href="mailto:<?= $this->content['bloc-email'] ?>"><?= $this->content['bloc-email'] ?></a></p>
                 </div><!-- /.contact-block-body -->
+
+                <div class="contact-block-image">
+                    <img src="<?= $this->photos->display($this->content['bloc-image'], 'img_contact') ?>" alt="<?= $this->complement['bloc-image'] ?>">
+                </div><!-- /.contact-block-image -->
             </div><!-- /.contact-block -->
         </div><!-- /.contact -->
     </div><!-- /.shell -->
