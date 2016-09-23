@@ -7,6 +7,7 @@ use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Encoder\EncoderAwareInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
 use Symfony\Component\Security\Core\Exception\AccountExpiredException;
+use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\Exception\LockedException;
@@ -144,7 +145,11 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         // Update the password encoder if it's legacy
         if ($user instanceof EncoderAwareInterface && (null !== $encoderName = $user->getEncoderName())) {
             $user->useDefaultEncoder(); // force to use the default password encoder
-            $client->password = $this->securityPasswordEncoder->encodePassword($user, $this->getCredentials($request)['password']);
+            try {
+                $client->password = $this->securityPasswordEncoder->encodePassword($user, $this->getCredentials($request)['password']);
+            } catch (BadCredentialsException $exeption){
+
+            }
             $client->update();
         }
 
