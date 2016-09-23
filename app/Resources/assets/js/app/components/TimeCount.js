@@ -35,6 +35,7 @@ var TimeCount = function (elem, options) {
     startDate: false, // {String} representing date/time or {Date}
     endDate: false, // {String} representing date/time or {Date}
     relative: false, // {Boolean}
+    debug: false, // {Boolean}
 
     // Callbacks
     onupdate: self.outputTime, // {Function} function (timeDiff) {}
@@ -43,8 +44,14 @@ var TimeCount = function (elem, options) {
   }, ElementAttrsObject(elem, {
     startDate: 'data-timecount-from',
     endDate: 'data-timecount-to',
-    relative: 'data-timecount-relative'
+    relative: 'data-timecount-relative',
+    debug: 'data-timecount-debug'
   }), options)
+
+  // @debug
+  if (self.settings.debug) {
+    console.log('setup timecount', self.settings.startDate, self.settings.endDate)
+  }
 
   // Set up the dates
   if (self.settings.startDate && !(self.settings.startDate instanceof Date)) self.settings.startDate = Utility.getDate(self.settings.startDate)
@@ -82,6 +89,11 @@ var TimeCount = function (elem, options) {
     self.settings.onstart.apply(self)
   }
 
+  // @debug
+  if (self.settings.debug) {
+    console.log('initialised timecount', self)
+  }
+
   // @trigger elem `TimeCount:starting`
   self.$elem.trigger('TimeCount:starting', [self, self.track.timeDiff])
 
@@ -106,6 +118,11 @@ TimeCount.prototype.update = function () {
 
   // @trigger elem `TimeCount:update`
   self.$elem.trigger('TimeCount:update', [self, self.track.timeDiff])
+
+  // @debug
+  if (self.settings.debug) {
+    console.log('TimeCount.update', self, self.track.timeDiff)
+  }
 
   // Complete if finished and a start/end date is set
   if (self.isComplete()) {
@@ -146,6 +163,11 @@ TimeCount.prototype.complete = function () {
     self.settings.oncomplete.apply(self)
   }
 
+  // @debug
+  if (self.settings.debug) {
+    console.log('timecount completed', self, self.track.timeDiff)
+  }
+
   // @trigger elem `TimeCount:completed`
   self.$elem.trigger('TimeCount:completed', [self, self.track.timeDiff])
 }
@@ -181,12 +203,7 @@ TimeCount.prototype.getRelativeTime = function (startDate, endDate, secondsAsUni
   if (!startDate) startDate = self.settings.startDate
   if (!endDate) endDate = self.settings.endDate
 
-  // @debug
-  // console.log('TimeCount.getRelativeTime', {
-  //   startDate: startDate,
-  //   endDate: endDate
-  // })
-
+  // Get relative time via Utility function
   var output = Utility.getRelativeTime(startDate, endDate, secondsAsUnits)
 
   // @note DEV-949 leaving out relative time count direction text
@@ -201,6 +218,15 @@ TimeCount.prototype.getRelativeTime = function (startDate, endDate, secondsAsUni
   //     output = sprintf(__.__('%s remaining', 'timeCountRemaining'), output)
   //   }
   // }
+
+  // @debug
+  if (self.settings.debug) {
+    console.log('TimeCount.getRelativeTime', {
+      startDate: startDate,
+      endDate: endDate,
+      output: output
+    })
+  }
 
   return output
 }
