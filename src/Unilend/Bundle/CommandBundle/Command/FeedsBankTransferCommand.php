@@ -38,6 +38,8 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
         $company = $entityManager->getRepository('companies');
         /** @var \settings $settings */
         $settings = $entityManager->getRepository('settings');
+        /** @var \transactions $transaction */
+        $transaction = $entityManager->getRepository('transactions');
 
         $settings->get('Virement - BIC', 'type');
         $bic = $settings->value;
@@ -66,6 +68,84 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
         $counter->type  = 1;
         $counter->ordre = $counterId;
         $counter->create();
+
+        $negativeBalanceError = [];
+        $xmlBody = '';
+        foreach ($pendingBankTransfers as $pendingBankTransfer) {
+            $client->get($pendingBankTransfer['id_client'], 'id_client');
+
+            if ($pendingBankTransfer['type'] == 4) {
+                $recipientIban = $unilendIban;
+                $recipientBic  = $unilendBic;
+                $recipientName = $unilendAccountHolder;
+            } elseif ($client->isBorrower()) {
+                $company->get($pendingBankTransfer['id_client'], 'id_client_owner');
+
+                $recipientIban = $company->iban;
+                $recipientBic  = $company->bic;
+                $recipientName = $company->name;
+            } else {
+                $balance = $transaction->getSolde($pendingBankTransfer['id_client']);
+                if ($balance < 0) {
+                    $pendingBankTransfersCount --;
+                    $amountLender = bcdiv($pendingBankTransfer['montant'], 100, 2);
+                    $totalAmount  = bcsub($totalAmount, $amountLender, 2);
+                    $negativeBalanceError[] = ['id_client' => $pendingBankTransfer['id_client'], 'balance' => $balance];
+                    continue;
+                }
+                $lender->get($pendingBankTransfer['id_client'], 'id_client_owner');
+
+                $recipientIban = $lender->iban;
+                $recipientBic  = $lender->bic;
+
+                if (in_array($client->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
+                    $company->get($pendingBankTransfer['id_client'], 'id_client_owner');
+                    $recipientName = $company->name;
+                } else {
+                    $recipientName = $client->nom . ' ' . $client->prenom;
+                }
+            }
+
+            $bankTransfer->get($pendingBankTransfer['id_virement'], 'id_virement');
+            $bankTransfer->status    = 1;
+            $bankTransfer->added_xml = date('Y-m-d H:i') . ':00';
+            $bankTransfer->update();
+
+            if (strncmp('FR', strtoupper(str_replace(' ', '', $recipientIban)), 2) === 0) {
+                $frenchBic = '';
+            } else {
+                $frenchBic = '
+                <CdtrAgt>
+                    <FinInstnId>
+                        <BIC>' . str_replace(' ', '', $recipientBic) . '</BIC>
+                    </FinInstnId>
+                </CdtrAgt>';
+            }
+
+            $xmlBody .= '
+            <CdtTrfTxInf>
+                <PmtId>
+                    <EndToEndId>' . $accountHolder . '/' . $date . '/' . $pendingBankTransfer['id_virement'] . '</EndToEndId>
+                </PmtId>
+                <Amt>
+                    <InstdAmt Ccy="EUR">' . bcdiv($pendingBankTransfer['montant'], 100, 2) . '</InstdAmt>
+                </Amt>' . $frenchBic . '
+                <Cdtr>
+                     <Nm>' . str_replace(array('"', '\'', '\\', '>', '<', '&'), '', $recipientName) . '</Nm>
+                     <PstlAdr>
+                         <Ctry>FR</Ctry>
+                     </PstlAdr>
+                </Cdtr>
+                <CdtrAcct>
+                        <Id>
+                            <IBAN>' . str_replace(' ', '', $recipientIban) . '</IBAN>
+                        </Id>
+                </CdtrAcct>
+                <RmtInf>
+                     <Ustrd>' . str_replace(' ', '', $pendingBankTransfer['motif']) . '</Ustrd>
+                </RmtInf>
+            </CdtTrfTxInf>';
+        }
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>
 <Document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.03">
@@ -110,78 +190,28 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                 <Nm>UNILEND - SFPMEI</Nm>
             </UltmtDbtr>';
 
-        foreach ($pendingBankTransfers as $pendingBankTransfer) {
-            $client->get($pendingBankTransfer['id_client'], 'id_client');
-
-            if ($pendingBankTransfer['type'] == 4) {
-                $recipientIban = $unilendIban;
-                $recipientBic  = $unilendBic;
-                $recipientName = $unilendAccountHolder;
-            } elseif ($client->isBorrower()) {
-                $company->get($pendingBankTransfer['id_client'], 'id_client_owner');
-
-                $recipientIban = $company->iban;
-                $recipientBic  = $company->bic;
-                $recipientName = $company->name;
-            } else {
-                $lender->get($pendingBankTransfer['id_client'], 'id_client_owner');
-
-                $recipientIban = $lender->iban;
-                $recipientBic  = $lender->bic;
-
-                if (in_array($client->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
-                    $company->get($pendingBankTransfer['id_client'], 'id_client_owner');
-                    $recipientName = $company->name;
-                } else {
-                    $recipientName = $client->nom . ' ' . $client->prenom;
-                }
-            }
-
-            $bankTransfer->get($pendingBankTransfer['id_virement'], 'id_virement');
-            $bankTransfer->status    = 1;
-            $bankTransfer->added_xml = date('Y-m-d H:i') . ':00';
-            $bankTransfer->update();
-
-            if (strncmp('FR', strtoupper(str_replace(' ', '', $recipientIban)), 2) === 0) {
-                $frenchBic = '';
-            } else {
-                $frenchBic = '
-                <CdtrAgt>
-                    <FinInstnId>
-                        <BIC>' . str_replace(' ', '', $recipientBic) . '</BIC>
-                    </FinInstnId>
-                </CdtrAgt>';
-            }
-
-            $xml .= '
-            <CdtTrfTxInf>
-                <PmtId>
-                    <EndToEndId>' . $accountHolder . '/' . $date . '/' . $pendingBankTransfer['id_virement'] . '</EndToEndId>
-                </PmtId>
-                <Amt>
-                    <InstdAmt Ccy="EUR">' . bcdiv($pendingBankTransfer['montant'], 100, 2) . '</InstdAmt>
-                </Amt>' . $frenchBic . '
-                <Cdtr>
-                     <Nm>' . str_replace(array('"', '\'', '\\', '>', '<', '&'), '', $recipientName) . '</Nm>
-                     <PstlAdr>
-                         <Ctry>FR</Ctry>
-                     </PstlAdr>
-                </Cdtr>
-                <CdtrAcct>
-                        <Id>
-                            <IBAN>' . str_replace(' ', '', $recipientIban) . '</IBAN>
-                        </Id>
-                </CdtrAcct>
-                <RmtInf>
-                     <Ustrd>' . str_replace(' ', '', $pendingBankTransfer['motif']) . '</Ustrd>
-                </RmtInf>
-            </CdtTrfTxInf>';
-        }
+        $xml .= $xmlBody;
 
         $xml .= '
         </PmtInf>
     </CstmrCdtTrfInitn>
 </Document>';
+
+        if (false === empty($negativeBalanceError)) {
+            $settings->get('Adresse controle interne', 'type');
+            $email = $settings->value;
+
+            $details = '<ul>';
+            foreach ($negativeBalanceError as $error) {
+                $details .= '<li>' . 'id client : ' . $error['id_client'] . '; solde : ' . $error['balance'] . '</li>';
+            }
+            $details .= '<ul>';
+            $varMail = ['details' => $details];
+            $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('solde-negatif-notification', $varMail);
+            $message->setTo($email);
+            $mailer = $this->getContainer()->get('mailer');
+            $mailer->send($message);
+        }
 
         if (false === empty($pendingBankTransfers)) {
             file_put_contents($this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/virements/Unilend_Virements_' . $date . '.xml', $xml);

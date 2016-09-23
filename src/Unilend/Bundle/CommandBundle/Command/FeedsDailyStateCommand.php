@@ -80,6 +80,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             $dateTime  = (new \DateTime())->setTimestamp($mois);
             $aColumns  = $this->getColumns();
             $monthDays = $this->getMonthDays($mois);
+            $limitDate = mktime(0, 0, 0, date('m', $time), date('d', $time), date('Y', $time));
 
             $transactionType = [
                 \transactions_types::TYPE_LENDER_SUBSCRIPTION,
@@ -264,7 +265,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
 
             foreach (array_keys($monthDays) as $date) {
 
-                if (strtotime($date . ' 00:00:00') < $time) {
+                if (strtotime($date . ' 00:00:00') < $limitDate) {
                     $interetNetPreteur = bcdiv($transaction->getInterestsAmount($date . ' 00:00:00', $date . ' 23:59:59'), 100, 2);
                     $aDailyTax         = $tax->getDailyTax($date . ' 00:00:00', $date . ' 23:59:59');
                     $iTotalTaxAmount   = 0;

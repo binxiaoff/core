@@ -339,20 +339,29 @@ class echeanciers extends echeanciers_crud
         return $this->getRepaymentAmountInDateRange($lenderId, $startDate, $endDate, 'e.capital + e.interets', array(\echeanciers::STATUS_PENDING));
     }
 
+    public function getNonRepaidAmountInDateRange($lenderId, DateTime $startDate, DateTime $endDate, $loanId = null)
+    {
+        return $this->getRepaymentAmountInDateRange($lenderId, $startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s'), 'e.capital - e.capital_rembourse + e.interets - e.interets_rembourses', array(\echeanciers::STATUS_PENDING, self::STATUS_PARTIALLY_REPAID), null, $loanId);
+    }
+
     /**
      * @param int $lenderId
      * @param int $loanId
+     * @param DateTime $startDate
      * @return string
      * @throws Exception
      */
-    public function getTotalComingCapital($lenderId, $loanId)
+    public function getTotalComingCapital($lenderId, $loanId, DateTime $startDate = null)
     {
+        if ($startDate === null) {
+            $startDate = new DateTime();
+        }
         $bind     = [
             'id_lender'        => $lenderId,
             'loan_status'      => \loans::STATUS_ACCEPTED,
             'id_loan'          => $loanId,
             'repayment_status' => \echeanciers::STATUS_PENDING,
-            'date_echeance'    => date('Y-m-d')
+            'date_echeance'    => $startDate->format('Y-m-d')
         ];
         $bindType = [
             'id_lender'        => \PDO::PARAM_INT,

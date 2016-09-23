@@ -72,19 +72,37 @@
 <div>
     <h2><?= $this->lng['preteur-operations']['titre-vos-documents-isf'] ?></h2>
     <?php
-    $annee      = date('Y');
-    $annee_prec = $annee - 1;
-    $solde      = current(current($this->bdd->run("SELECT solde FROM indexage_vos_operations WHERE id_client = " . $this->clients->id_client . " AND date_operation < '$annee-01-01 00:00:00' ORDER BY date_operation DESC LIMIT 0,1"))) / 100 + current(current($this->bdd->run("SELECT sum(amount) FROM bids INNER JOIN `lenders_accounts` ON lenders_accounts.id_lender_account = bids.id_lender_account WHERE lenders_accounts.id_client_owner = " . $this->clients->id_client . " AND bids.added < '$annee-01-01 00:00:00' AND bids.updated >= '$annee-01-01 00:00:00'"))) / 100;
+    $annee            = date('Y');
+    $annee_prec       = $annee - 1;
+    $operationBalance = $this->bdd->run("SELECT solde FROM indexage_vos_operations WHERE id_client = " . $this->clients->id_client . " AND date_operation < '$annee-01-01 00:00:00' ORDER BY date_operation DESC LIMIT 0,1");
+    $bidsBalance      = $this->bdd->run("SELECT sum(amount) as bids_amount FROM bids INNER JOIN `lenders_accounts` ON lenders_accounts.id_lender_account = bids.id_lender_account WHERE lenders_accounts.id_client_owner = " . $this->clients->id_client . " AND bids.added < '$annee-01-01 00:00:00' AND bids.updated >= '$annee-01-01 00:00:00'");
 
+    if (is_array($operationBalance)) {
+        $operationBalance = bcdiv(array_shift($operationBalance)['solde'], 100, 2);
+    } else {
+        $operationBalance = 0;
+    }
+
+    if (is_array($bidsBalance)) {
+        $bidsBalance = bcdiv(array_shift($bidsBalance)['bids_amount'], 100, 2);
+    } else {
+        $bidsBalance = 0;
+    }
     $projects_en_remboursement = $this->bdd->run("SELECT id_project FROM `projects_status_history` WHERE id_project_status = (SELECT id_project_status FROM projects_status WHERE status = " . \projects_status::REMBOURSEMENT . ") AND added < '$annee-01-01 00:00:00'");
+
     foreach ($projects_en_remboursement as $key => $value) {
         $projects_en_remboursement[$key] = $value['id_project'];
     }
+    $owedCapital = $this->bdd->run("SELECT sum(capital - capital_rembourse) AS owed_capital FROM `echeanciers` INNER JOIN `lenders_accounts` ON lenders_accounts.id_lender_account = echeanciers.id_lender WHERE (date_echeance_reel >= '$annee-01-01 00:00:00' OR echeanciers.status = 0) AND id_project IN(" . implode(',', $projects_en_remboursement) . ") AND lenders_accounts.id_client_owner = " . $this->clients->id_client);
 
-    $capital_du = current(current($this->bdd->run("SELECT sum(capital - capital_rembourse) FROM `echeanciers` INNER JOIN `lenders_accounts` ON lenders_accounts.id_lender_account = echeanciers.id_lender WHERE (date_echeance_reel >= '$annee-01-01 00:00:00' OR echeanciers.status = 0) AND id_project IN(" . implode(',', $projects_en_remboursement) . ") AND lenders_accounts.id_client_owner = " . $this->clients->id_client))) / 100;
+    if (is_array($owedCapital)) {
+        $owedCapital = bcdiv(array_shift($owedCapital)['owed_capital'], 100, 2);
+    } else {
+        $owedCapital = 0;
+    }
 
-    $solde      = $this->ficelle->formatNumber($solde);
-    $capital_du = $this->ficelle->formatNumber($capital_du);
+    $solde      = $this->ficelle->formatNumber($operationBalance + $bidsBalance);
+    $capital_du = $this->ficelle->formatNumber($owedCapital);
 
     $texte = $this->lng['preteur-operations']['texte-vos-documents-isf'];
     eval("\$texte = \"$texte\";");
@@ -100,7 +118,7 @@
             ) ?>
         </span>
     <?php endif; ?>
-    <?php foreach ( $this->taxExemptionHistory as $row ): ?>
+    <?php foreach ($this->taxExemptionHistory as $row): ?>
         <span>
             <?= $this->lng['lender-dashboard']['tax-the'] . ' ' . strftime('%d %B %Y', \DateTime::createFromFormat('Y-m-d H:i:s', $row['added'])->getTimestamp()) . ', ' .
             str_replace(

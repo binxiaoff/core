@@ -893,7 +893,7 @@ class MailerManager
 
             if ($clientNotifications->getNotif($lender->id_client_owner, \notifications::TYPE_LOAN_ACCEPTED, 'immediatement') == true) {
                 $lenderLoans         = $loans->select('id_project = ' . $project->id_project . ' AND id_lender = ' . $lender->id_lender_account, 'id_type_contract DESC');
-                $iSumMonthlyPayments = bcmul($paymentSchedule->getTotalAmount(array('id_lender' => $lender->id_lender_account, 'id_project' => $project->id_project, 'ordre' => 1)), 100);
+                $iSumMonthlyPayments = $paymentSchedule->getTotalAmount(array('id_lender' => $lender->id_lender_account, 'id_project' => $project->id_project, 'ordre' => 1));
                 $aFirstPayment       = $paymentSchedule->getPremiereEcheancePreteur($project->id_project, $lender->id_lender_account);
                 $sDateFirstPayment   = $aFirstPayment['date_echeance'];
                 $sLoansDetails       = '';
@@ -1078,7 +1078,13 @@ class MailerManager
 
                         $oProject->get($aMailNotification['id_project']);
 
-                        if (\projects_status::EN_FUNDING == $oProject->status) {
+                        $oProject->get($aMailNotification['id_project']);
+
+                        /** @var \projects_status $oProjectStatus */
+                        $oProjectStatus = $this->oEntityManager->getRepository('projects_status');
+                        $oProjectStatus->getLastStatut($oProject->id_project);
+
+                        if (\projects_status::EN_FUNDING == $oProjectStatus->status) {
                             $sProjectsListHTML .= '
                                 <tr style="color:#b20066;">
                                     <td  style="font-family:Arial;font-size:14px;height: 25px;">
@@ -1840,7 +1846,7 @@ class MailerManager
         $message->setTo(trim($user->email));
 
         /** @var \settings $settings */
-        $settings = Loader::loadData('settings');
+        $settings = $this->oEntityManager->getRepository('settings');
         $settings->get('alias_tracking_log', 'type');
 
         if (false === empty($settings->value)) {
