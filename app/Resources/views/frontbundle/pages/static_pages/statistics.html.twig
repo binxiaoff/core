@@ -128,6 +128,16 @@
     }
 } %}
 
+{#{% set chartValues = {#}
+    {#pctRepaidCapital : (data.regulatoryTable['repaid-capital']['total'] + data.regulatoryTable['from-which-payments-not-lost-and-healthy']['total']) / data.regulatoryTable['borrowed-capital']['total'],#}
+    {#pctRepaidInterest : data.regulatoryTable['future-healthy-interest']['total'] / data.regulatoryTable['borrowed-capital']['total'] ,#}
+    {#pctFutureInterest : data.regulatoryTable['repaid-interest']['total'] / data.regulatoryTable['borrowed-capital']['total']#}
+
+{#} %}#}
+
+{% set debugValueLateAndLostCapital = data.regulatoryTable['borrowed-capital']['total'] -  data.regulatoryTable['repaid-capital']['total'] - data.regulatoryTable['from-which-payments-not-lost-and-healthy']['total'] %}
+{# normal value içnstead of debug data.regulatoryTable['capital-late-and-lost']['total']#}
+
 {% set unilendPerformanceChart = {
     type: 'preterProjectsOverview',
     background: 'none',
@@ -194,8 +204,8 @@
                 },{
                     name: 'Capital restant du non échu, déchu',
                     color: '#F76965',
-                    y: data.regulatoryTable['capital-late-and-lost']['total'],
-                    value: data.regulatoryTable['capital-late-and-lost']['total']|localizedcurrency('EUR'),
+                    y:  debugValueLateAndLostCapital,
+                    value: debugValueLateAndLostCapital|localizedcurrency('EUR'),
                     showInLegend: true
                 }]
             },{
@@ -203,7 +213,7 @@
                 minSize: 80,
                 size: '33%',
                 innerSize: '70%',
-                endAngle: 330,
+                endAngle: 310,
                 data: [{
                     name: '',
                     color: '#ffffff',
@@ -211,7 +221,7 @@
                         enabled: false
                         },
                     showInLegend: false,
-                    y: (data.performanceGraph.repaidCapital + data.performanceGraph.owedCapital) * 0.66,
+                    y: (data.regulatoryTable['repaid-capital']['total'] + data.regulatoryTable['from-which-payments-not-lost-and-healthy']['total']) * 0.66,
                     tooltip: false
                 },{
                     name: 'about-us-statistics_regulatory-table-repaid-interest'|trans,
