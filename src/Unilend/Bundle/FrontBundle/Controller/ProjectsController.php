@@ -257,7 +257,8 @@ class ProjectsController extends Controller
             }
         }
 
-        $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower);
+        $isFullyConnectedUser       = ($user instanceof UserLender && in_array($user->getClientStatus(), [\clients_status::VALIDATED, \clients_status::MODIFICATION]) || $user instanceof UserBorrower);
+        $isConnectedButNotValidated = ($user instanceof UserLender && false === in_array($user->getClientStatus(), [\clients_status::VALIDATED, \clients_status::MODIFICATION]));
 
         if (false === $isFullyConnectedUser) {
             /** @var TranslatorInterface $translator */
@@ -282,6 +283,7 @@ class ProjectsController extends Controller
 
         $template['conditions'] = [
             'validatedUser'       => $isFullyConnectedUser,
+            'notValidatedUser'    => $isConnectedButNotValidated,
             'bids'                => isset($template['project']['bids']) && $template['project']['status'] == \projects_status::EN_FUNDING,
             'myBids'              => isset($template['project']['lender']) && $template['project']['lender']['bids']['count'] > 0,
             'finance'             => $isFullyConnectedUser,
