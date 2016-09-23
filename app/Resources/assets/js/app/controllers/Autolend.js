@@ -2,163 +2,16 @@ var Utility = require('Utility')
 var Dictionary = require('Dictionary')
 var __ = new Dictionary(window.UTILITY_LANG)
 
-$(document)
-    // Toggle simple/expert settings
-    .on('change', 'input#autolend-table-config-enable', function (event) {
-        var $elem = $(this)
-        console.log($elem)
-        var $interest = $('#div-interest-simple')
-        var simpleValidateButton = $('#validate-simple-settings')
+var $doc = $(document)
 
-        // Disable the general interest rate
-        if ($elem.is(':checked')) {
-            $interest.hide()
-            simpleValidateButton.hide()
-        } else {
-            $interest.show()
-            simpleValidateButton.show()
-        }
-    })
-
-    // Switch autolend on/off
-    .on('change', 'input#form-autolend-enable', function (event) {
-        var $elem = $(this)
-
-        if ($elem.is(':checked')) {
-            $('#autolend-config.collapse').collapse('show')
-        } else {
-            var form = $('#form-user-autolend')
-            $('#autolend-config.collapse').collapse('hide')
-            emptyNotificationsDiv()
-            $.ajax({
-                method: form.attr('method'),
-                url: form.attr('action'),
-                data: {
-                    setting : 'autolend-off'
-                },
-                dataType: 'json'
-            }).done(function (data) {
-
-            })
-        }
-    })
-
-    // Change cell rate by keys
-    .on('keydown', '.cell .cell-input input', function (event) {
-        // Press up arrow
-        if (event.which === 38) {
-            eventIncreaseCell(event)
-
-        // Press down arrow
-        } else if (event.which === 40) {
-            eventDecreaseCell(event)
-        }
-    })
-
-    // Reduce cell rate
-    .on(Utility.clickEvent, '.cell .cell-input .btn-cell-minus', eventDecreaseCell)
-
-    // Increase cell rate
-    .on(Utility.clickEvent, '.cell .cell-input .btn-cell-plus', eventIncreaseCell)
-
-    // Show cell info (side widget)
-    .on(Utility.clickEvent, '.cell .cell-input', function (event) {
-        var $cell = $(this).find('input')
-        activateCell($cell)
-        showBalance($cell.parent().attr('data-autolendtable-cell'))
-    })
-
-    // Close confirmation- dialog
-    .on(Utility.clickEvent, '.ui-dialog-cancel', function (event) {
-        var $dialog = $(this).parents('.autolend-table-dialog').first()
-        $dialog.fadeOut()
-    })
-
-    //disable cell
-    .on(Utility.clickEvent, '#autolend-cell-disable-switch', function (event) {
-        var $checkbox = $(this)
-        if ($checkbox.length > 0) {
-            var cellIndex = $checkbox.parents().find('.col-info').attr('data-autolendtable-cell')
-            var $inputStatus = $('#' + cellIndex + '-param-advanced-is-active')
-            rateActivatedSwitch($checkbox, $inputStatus)
-        }
-    })
-
-    // Enable cell
-    .on(Utility.clickEvent, '.cell .btn-cell-enable', function (event) {
-        var $cell = $(this).parents('.cell-data').first()
-        var cellIndex = ~~$cell.attr('data-autolendtable-cell')
-        var $inputStatus = $('#' + cellIndex + '-param-advanced-is-active')
-        rateActivatedSwitch($('#autolend-cell-disable-switch'), $inputStatus)
-        showBalance(cellIndex)
-    })
-
-    // Show confirmation dialog
-    .on(Utility.clickEvent, 'form#form-user-autolend button[type="submit"]', function (event) {
-        var $elem = $(this)
-        var button = $elem.attr('id')
-        emptyNotificationsDiv()
-
-        if (button == 'validate-simple-settings') {
-            $('#hidden-settings-mode-input').attr('value', 'simple')
-        }
-
-        if (button == 'validate-expert-settings') {
-            $('#hidden-settings-mode-input').attr('value', 'expert')
-        }
-
-        // Show dialog
-        if ($elem.is('.ui-dialog-confirm')) {
-            event.preventDefault()
-            var form = $('#form-user-autolend')
-
-            $.ajax({
-                method: form.attr('method'),
-                url: form.attr('action'),
-                data: form.serialize(),
-                dataType: 'json'
-            }).done(function (data) {
-                if (data.result == 'ko') {
-                    displayErrorMessages(data.errors)
-                } else {
-                    updateSuccess(data.dateText)
-                }
-                $('#autolend-table-dialog').fadeOut()
-            })
-
-        } else {
-            //$('#autolend-table-dialog').fadeIn().focus()
-            $('#autolend-table-dialog').uiModal('open')
-            event.preventDefault()
-            return false
-        }
-    })
-
-    // Apply unilend average rate to cell
-    .on(Utility.clickEvent, '#apply-average-to-cell', function (event) {
-        var $elem = $(this)
-        var $cellRef = Utility.getElemIsOrHasParent(this, '[data-autolendtable-cell]')
-        if ($cellRef.length > 0) {
-            var cellIndex = ~~$cellRef.attr('data-autolendtable-cell')
-            event.preventDefault()
-            var cellData = getCellInfo(cellIndex)
-            var $inputRate = getInputRate(cellData.cellIndex)
-            $inputRate.val(cellData.avgRateUnilend)
-
-            adjustInterestRate(cellData, cellData.avgRateUnilend)
-            changeCellColor(cellData, cellData.avgRateUnilend)
-            addCellDataToBalance(cellData, cellData.avgRateUnilend)
-            changeBalance(cellData)
-
-        }
-    })
-
-
+// Private functions
 function displayErrorMessages(errors){
     var messageDiv = $('#form-info-notifications .message-error')
+    var messagesHTML = ''
     for (var i = 0, len = errors.length; i < len; i++) {
-        messageDiv.append('<p>' + errors[i] + '</p>')
+        messagesHTML += '<p>' + errors[i] + '</p>'
     }
+    messageDiv.append(messagesHTML)
     messageDiv.show()
 }
 
@@ -174,17 +27,17 @@ function getCellInfo(cellIndex) {
     var $inputRate = getInputRate(cellIndex)
 
     return {
-        avgRateUnilend : parseFloat($('#' + cellIndex + '-param-advanced-unilend-rate').attr('data-value')),
-        avgRateUnilendFormated : $('#' + cellIndex + '-param-advanced-unilend-rate').attr('value'),
-        cellIndex : cellIndex,
-        currentRate : $inputRate.val(),
-        enable : $('#' + cellIndex + '-param-advanced-is-active').val(),
-        max : $inputRate.attr('max'),
-        min : $inputRate.attr('min'),
-        rating : $('#' + cellIndex + '-param-advanced-evaluation').val(),
-        convertedRating : $('#' + cellIndex + '-param-advanced-evaluation-converted').val(),
-        periodsAsText : $('#' + cellIndex + '-periods-as-text').val(),
-        step : $inputRate.attr('step')
+        avgRateUnilend: parseFloat($('#' + cellIndex + '-param-advanced-unilend-rate').attr('data-value')),
+        avgRateUnilendFormated: $('#' + cellIndex + '-param-advanced-unilend-rate').attr('value'),
+        cellIndex: cellIndex,
+        currentRate: $inputRate.val(),
+        enable: $('#' + cellIndex + '-param-advanced-is-active').val(),
+        max: $inputRate.attr('max'),
+        min: $inputRate.attr('min'),
+        rating: $('#' + cellIndex + '-param-advanced-evaluation').val(),
+        convertedRating: $('#' + cellIndex + '-param-advanced-evaluation-converted').val(),
+        periodsAsText: $('#' + cellIndex + '-periods-as-text').val(),
+        step: $inputRate.attr('step')
     }
 }
 
@@ -378,3 +231,178 @@ function eventIncreaseCell (event) {
     addCellDataToBalance(cellData)
     changeBalance(cellData)
 }
+
+function setSettingsModeBasedOnButton ($button) {
+    // If the button interacted with was simple, set the autolend mode to simple
+    if ($button.is('#validate-simple-settings')) {
+        $('#hidden-settings-mode-input').attr('value', 'simple')
+    }
+
+    // If the button interacted with was expert, set the autolend mode to expert
+    if ($button.is('#validate-expert-settings')) {
+        $('#hidden-settings-mode-input').attr('value', 'expert')
+    }
+}
+
+
+// Autolend form
+var $form = $('#form-user-autolend')
+
+// Setup modal events
+$('#autolend-table-dialog')
+    // Confirmed submits the AJAX
+    .on('Modal:confirmed', function (event, elemModal) {
+        // Submit the Autolend information
+        $.ajax({
+            method: $form.attr('method'),
+            url: $form.attr('action'),
+            data: $form.serialize(),
+            dataType: 'json'
+        }).done(function (data) {
+            // Show errors
+            if (data.result == 'ko') {
+                displayErrorMessages(data.errors)
+            } else {
+                updateSuccess(data.dateText)
+            }
+
+            // Close modal
+            elemModal.close()
+        })
+    })
+
+$doc
+    // Toggle simple/expert settings
+    .on('change', 'input#autolend-table-config-enable', function (event) {
+        var $elem = $(this)
+        var $interest = $('#div-interest-simple')
+        var simpleValidateButton = $('#validate-simple-settings')
+
+        // Disable the general interest rate
+        if ($elem.is(':checked')) {
+            $interest.hide()
+            simpleValidateButton.hide()
+        } else {
+            $interest.show()
+            simpleValidateButton.show()
+        }
+    })
+
+    // Switch autolend on/off
+    .on('change', 'input#form-autolend-enable', function (event) {
+        var $elem = $(this)
+
+        if ($elem.is(':checked')) {
+            $('#autolend-config.collapse').collapse('show')
+        } else {
+
+            $('#autolend-config.collapse').collapse('hide')
+            emptyNotificationsDiv()
+            $.ajax({
+                method: $form.attr('method'),
+                url: $form.attr('action'),
+                data: {
+                    setting : 'autolend-off'
+                },
+                dataType: 'json'
+            }).done(function (data) {
+
+            })
+        }
+    })
+
+    // Change cell rate by keys
+    .on('keydown', '.cell .cell-input input', function (event) {
+        // Press up arrow
+        if (event.which === 38) {
+            eventIncreaseCell(event)
+
+            // Press down arrow
+        } else if (event.which === 40) {
+            eventDecreaseCell(event)
+        }
+    })
+
+    // Reduce cell rate
+    .on(Utility.clickEvent, '.cell .cell-input .btn-cell-minus', eventDecreaseCell)
+
+    // Increase cell rate
+    .on(Utility.clickEvent, '.cell .cell-input .btn-cell-plus', eventIncreaseCell)
+
+    // Show cell info (side widget)
+    .on(Utility.clickEvent, '.cell .cell-input', function (event) {
+        var $cell = $(this).find('input')
+        activateCell($cell)
+        showBalance($cell.parent().attr('data-autolendtable-cell'))
+    })
+
+    // Close confirmation- dialog
+    .on(Utility.clickEvent, '.ui-dialog-cancel', function (event) {
+        var $dialog = $(this).parents('.autolend-table-dialog').first()
+        $dialog.fadeOut()
+    })
+
+    //disable cell
+    .on(Utility.clickEvent, '#autolend-cell-disable-switch', function (event) {
+        var $checkbox = $(this)
+        if ($checkbox.length > 0) {
+            var cellIndex = $checkbox.parents().find('.col-info').attr('data-autolendtable-cell')
+            var $inputStatus = $('#' + cellIndex + '-param-advanced-is-active')
+            rateActivatedSwitch($checkbox, $inputStatus)
+        }
+    })
+
+    // Enable cell
+    .on(Utility.clickEvent, '.cell .btn-cell-enable', function (event) {
+        var $cell = $(this).parents('.cell-data').first()
+        var cellIndex = ~~$cell.attr('data-autolendtable-cell')
+        var $inputStatus = $('#' + cellIndex + '-param-advanced-is-active')
+        rateActivatedSwitch($('#autolend-cell-disable-switch'), $inputStatus)
+        showBalance(cellIndex)
+    })
+
+    // Click a button to validate autolend values
+    .on(Utility.clickEvent, 'button#validate-simple-settings, button#validate-expert-settings', function (event) {
+        setSettingsModeBasedOnButton($(this))
+    })
+
+    // Press enter on a button
+    .on('keydown', 'button#validate-simple-settings, button#validate-expert-settings', function (event) {
+        // Only match confirmation buttons (enter and space)
+        if (event.which === 13 || event.which === 32) {
+            setSettingsModeBasedOnButton($(this))
+        }
+    })
+
+    // Show confirmation dialog
+    // We're capturing the submit event as users might press enter or submit the form otherwise by not clicking a button
+    .on('submit', 'form#form-user-autolend', function (event) {
+        var $elem = $(this)
+        emptyNotificationsDiv()
+
+        // Always prevent the form from submitting as we will be processing via AJAX in the confirmed modal event
+        event.preventDefault()
+
+        // Show dialog
+        $('#autolend-table-dialog').uiModal('open')
+        return false
+    })
+
+    // Apply unilend average rate to cell
+    .on(Utility.clickEvent, '#apply-average-to-cell', function (event) {
+        var $elem = $(this)
+        var $cellRef = Utility.getElemIsOrHasParent(this, '[data-autolendtable-cell]')
+        if ($cellRef.length > 0) {
+            var cellIndex = ~~$cellRef.attr('data-autolendtable-cell')
+            event.preventDefault()
+            var cellData = getCellInfo(cellIndex)
+            var $inputRate = getInputRate(cellData.cellIndex)
+            $inputRate.val(cellData.avgRateUnilend)
+
+            adjustInterestRate(cellData, cellData.avgRateUnilend)
+            changeCellColor(cellData, cellData.avgRateUnilend)
+            addCellDataToBalance(cellData, cellData.avgRateUnilend)
+            changeBalance(cellData)
+
+        }
+    })

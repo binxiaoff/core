@@ -31,21 +31,6 @@ var Utility = require('Utility')
 var ElementAttrsObject = require('ElementAttrsObject')
 var Templating = require('Templating')
 
-// Any other dependencies...
-
-// Dictionary
-var Dictionary = require('Dictionary')
-// I create this JSON object within the JS file first, then once have finished v0.1 move this to a separate file at `src/lang/Modal.lang.json`
-var MODAL_LANG_LEGACY = {
-  "fr": {
-    // "langEntryKey": "Langue Entry's Value"
-  },
-  "en": {
-    // "langEntryKey": "Language Entry's Value"
-  }
-}
-var __ = new Dictionary(MODAL_LANG_LEGACY)
-
 /*
  * Modal
  * @class
@@ -123,6 +108,9 @@ var Modal = function (elem, options) {
     // Open on load (when the document is ready and this is true, the modal will automatically open)
     openOnLoad: false,
 
+    // Focuses on a [data-modal-doconfirmaction] element after the modal was opened
+    focusConfirmOnOpen: true,
+
     /*
      * The options below essentially mimic that which Fancybox allows
      */
@@ -151,6 +139,7 @@ var Modal = function (elem, options) {
     // Custom events
     oninit: undefined, // function (elemModal) {}
     onbeforeopen: undefined, // function (elemModal, fancyBoxOptions) {}
+    onopened: undefined, // function (elemModal) {}
     onclose: undefined, // function (elemModal) { return {Boolean} false to stop closing event on Fancybox }
     onconfirm: undefined, // function (event, elemModal) { return `{$.deferred:Promise}` }
     oncancel: undefined // function (event, elemModal) { return `{$.deferred:Promise}` }
@@ -171,7 +160,8 @@ var Modal = function (elem, options) {
     showFancyboxClose: 'data-modal-showfancyboxclose',
     showOverlay: 'data-modal-showoverlay',
     closeOnClickOverlay: 'data-modal-closeonclickoverlay',
-    openOnLoad: 'data-modal-openonload'
+    openOnLoad: 'data-modal-openonload',
+    focusConfirmOnOpen: 'data-modal-focusconfirmonopen'
   }),
   // JS invocation overrides
   options)
@@ -239,6 +229,9 @@ Modal.prototype.templates = {
  */
 Modal.prototype.render = function () {
   var self = this
+
+  // @trigger elem `Modal:render:before` [elemModal]
+  self.$elem.trigger('Modal:render:before', [self])
 
   // Templates
   var templates = {
@@ -324,6 +317,9 @@ Modal.prototype.render = function () {
 
   // Set the element's new HTML content (overrides previous)
   self.$elem.html(modalContent)
+
+  // @trigger elem `Modal:rendered` [elemModal, modalContent]
+  self.$elem.trigger('Modal:rendered', [self, modalContent])
 }
 
 /*
@@ -361,6 +357,20 @@ Modal.prototype.open = function () {
         locked: false
       } : null)
     },
+    // After show
+    afterShow: function () {
+      if (typeof self.settings.onopened === 'function') {
+        return self.settings.onopened.call(self)
+      }
+
+      // Focus the confirm button action
+      if (self.settings.focusConfirmOnOpen) {
+        self.$elem.find('[data-modal-doactionconfirm]').eq(0).focus()
+      }
+
+      // @trigger elem `Modal:opened` [elemModal]
+      self.$elem.trigger('Modal:opened', [self])
+    },
     // Close custom event
     beforeClose: function () {
       if (typeof self.settings.onclose === 'function') {
@@ -369,8 +379,8 @@ Modal.prototype.open = function () {
     }
   }
 
-  // @trigger elem `Modal:open` [elemModal, fancyBoxOptions]
-  self.$elem.trigger('Modal:beforeopen', [self, fancyBoxOptions])
+  // @trigger elem `Modal:open:before` [elemModal, fancyBoxOptions]
+  self.$elem.trigger('Modal:open:before', [self, fancyBoxOptions])
 
   // Custom event
   if (typeof self.settings.onbeforeopen === 'function') {
@@ -382,9 +392,6 @@ Modal.prototype.open = function () {
 
   // @debug
   // console.log('Modal.open', self)
-
-  // @trigger `Modal:opened` [elemModal]
-  self.$elem.trigger('Modal:opened', [self])
 }
 
 /*
@@ -396,18 +403,30 @@ Modal.prototype.open = function () {
 Modal.prototype.confirm = function () {
   var self = this
 
+  // @trigger elem `Modal:confirm:before`
+  self.$elem.trigger('Modal:confirm:before', [self])
+
   // Fire the custom `onconfirm` action
   if (typeof self.settings.onconfirm === 'function') {
     // onconfirm should return a Promise made via jQuery's $.deferred API
-    self.settings.onconfirm.call(self).always(function (serverError) {
-      if (!serverError) {
+    self.settings.onconfirm.call(self).always(function (deferredError) {
+      if (!deferredError) {
+        // @trigger elem `Modal:confirmed`
+        self.$elem.trigger('Modal:confirmed', [self])
+
         // Close the modal
         self.close()
+      } else {
+        // @trigger elem `Modal:confirm:error`
+        self.$elem.trigger('Modal:confirm:error', [self, deferredError])
       }
     })
 
   // Close the modal
   } else {
+    // @trigger elem `Modal:confirmed`
+    self.$elem.trigger('Modal:confirmed', [self])
+
     self.close()
   }
 }
@@ -421,18 +440,25 @@ Modal.prototype.confirm = function () {
 Modal.prototype.cancel = function () {
   var self = this
 
+  // @trigger elem `Modal:cancel:before` [elemModal]
+  self.$elem.trigger('Modal:cancel:before', [self])
+
   // Fire the custom `oncancel` action
-  if (typeof self.settings.onconfirm === 'function') {
+  if (typeof self.settings.oncancel === 'function') {
     // oncancel should return a Promise made via jQuery's $.deferred API
-    self.settings.oncancel.call(self).always(function (serverError) {
-      if (!serverError) {
-        // Close the modal
-        self.close()
-      }
+    self.settings.oncancel.call(self).always(function (deferredError) {
+      // @trigger elem `Modal:cancelled`
+      self.$elem.trigger('Modal:cancelled', [self])
+
+      // Close the modal
+      self.close()
     })
 
   // Close the modal
   } else {
+    // @trigger elem `Modal:cancelled`
+    self.$elem.trigger('Modal:cancelled', [self])
+
     self.close()
   }
 }
@@ -446,9 +472,15 @@ Modal.prototype.cancel = function () {
 Modal.prototype.close = function () {
   var self = this
 
+  // @trigger elem `Modal:close:before`
+  self.$elem.trigger('Modal:close:before', [self])
+
   // Only close if the element exists
   if ($('#' + self.settings.id + ':visible').length > 0) {
     $.fancybox.close()
+
+    // @trigger elem `Modal:closed`
+    self.$elem.trigger('Modal:closed', [self])
   }
 }
 
@@ -461,9 +493,15 @@ Modal.prototype.close = function () {
 Modal.prototype.position = function () {
   var self = this
 
+  // @trigger elem `Modal:position:before`
+  self.$elem.trigger('Modal:position:before', [self])
+
   // Only position if the element exists
   if ($('#' + self.settings.id + ':visible').length > 0) {
     $.fancybox.reposition()
+
+    // @trigger elem `Modal:positioned`
+    self.$elem.trigger('Modal:positioned', [self])
   }
 }
 
@@ -476,9 +514,15 @@ Modal.prototype.position = function () {
 Modal.prototype.update = function () {
   var self = this
 
+  // @trigger elem `Modal:update:before`
+  self.$elem.trigger('Modal:update:before', [self])
+
   // Only position if the element exists
   if ($('#' + self.settings.id + ':visible').length > 0) {
     $.fancybox.update()
+
+    // @trigger elem `Modal:updated`
+    self.$elem.trigger('Modal:updated', [self])
   }
 }
 
@@ -490,6 +534,9 @@ Modal.prototype.update = function () {
  */
 Modal.prototype.destroy = function () {
   var self = this
+
+  // @trigger elem `Modal:destroy:before`
+  self.$elem.trigger('Modal:destroy:before', [self])
 
   self.$elem[0].Modal = false
   delete self

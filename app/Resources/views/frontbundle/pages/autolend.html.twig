@@ -238,20 +238,18 @@ classNames: 'user-preter-autolend'
 {% endblock %}
 
 {% block modals %}
-    <div class="autolend-table-dialog" id="autolend-table-dialog" data-modal data-modal-width="600" data-modal-closeonclickoverlay="true">
-        <div class="modal-body autolend-table-dialog-position">
-            <div class="autolend-table-dialog-content">
-                <h3 class="dialog-title">
-                    <span class="icon fa-autolend-u"><span class="sr-only">{% trans %} autolend_confirmation-popup-title {% endtrans %}</span></span>
-                </h3>
-                <div class="dialog-message">
-                    <p>{% trans %} autolend_confirmation-popup-text {% endtrans %}</p>
-                </div>
-                <footer class="dialog-footer">
-                    <button type="submit" href="javascript:;" class="btn-outline ui-dialog-confirm">{% trans %} autolend_confirmation-popup-confirm-button {% endtrans %}</button>
-                    <a href="javascript:;" class="btn-outline btn-shape-clear ui-dialog-cancel">{% trans %} autolend_confirmation-popup-cancel-button {% endtrans %}</a>
-                </footer>
+    <div id="autolend-table-dialog" class="autolend-table-dialog" data-modal data-modal-maxwidth="600" data-modal-closeonclickoverlay="true">
+        <div class="modal-body">
+            <h3 class="dialog-title">
+                <span class="icon fa-autolend-u"><span class="sr-only">{% trans %} autolend_confirmation-popup-title {% endtrans %}</span></span>
+            </h3>
+            <div class="dialog-message">
+                <p>{% trans %} autolend_confirmation-popup-text {% endtrans %}</p>
             </div>
         </div>
+        <footer class="modal-footer">
+            <a href="javascript:;" class="btn-outline" data-modal-doactionconfirm>{% trans %} autolend_confirmation-popup-confirm-button {% endtrans %}</a>
+            <a href="javascript:;" class="btn-outline" data-modal-doactioncancel>{% trans %} autolend_confirmation-popup-cancel-button {% endtrans %}</a>
+        </footer>
     </div><!-- /.autolend-table-dialog -->
 {% endblock %}
