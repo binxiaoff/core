@@ -2,8 +2,8 @@
 namespace Unilend\Bundle\FrontBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Translation\TranslatorInterface;
@@ -35,7 +35,7 @@ class SimpleProjectType extends AbstractType
             return $month;
         }, $possibleDuration);
         $builder
-            ->add('amount', IntegerType::class, [
+            ->add('amount', TextType::class, [
                 'label'    => 'borrower-demand_amount',
                 'required' => true,
                 'attr' => [

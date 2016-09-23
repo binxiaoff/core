@@ -75,7 +75,7 @@
                                                         <li>
                                                             <label>
                                                                 <input type="radio" name="civility" value="M."{% if 'M.' == form.values.civility %} checked{% endif %}/>
-                                                                {% trans %} common_form-of-address {% endtrans %}
+                                                                {% trans %} common_form-of-address-male {% endtrans %}
                                                             </label>
                                                         </li>
                                                     </ul>
@@ -91,7 +91,7 @@
                                                         {% trans %} common_name {% endtrans %}
                                                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
-                                                    <input id="form-project-create-identity-nom" type="text" name="lastname" value="{{ form.values.lastname }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                    <input id="form-project-create-identity-nom" type="text" name="lastname" value="{{ form.values.lastname }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="name"/>
                                                     {% if form.errors.lastname is defined %}
                                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
                                                     {% endif %}
@@ -102,7 +102,7 @@
                                                         {% trans %} common_firstname {% endtrans %}
                                                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
-                                                    <input id="form-project-create-identity-prenom" type="text" name="firstname" value="{{ form.values.firstname }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                    <input id="form-project-create-identity-prenom" type="text" name="firstname" value="{{ form.values.firstname }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="name"/>
                                                     {% if form.errors.firstname is defined %}
                                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
                                                     {% endif %}
@@ -115,7 +115,7 @@
                                                         {% trans %} common_email {% endtrans %}
                                                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
-                                                    <input id="form-project-create-identity-email" type="email" name="email" value="{{ form.values.email }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                    <input id="form-project-create-identity-email" type="email" name="email" value="{{ form.values.email }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email"/>
                                                     {% if form.errors.email is defined %}
                                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
                                                     {% endif %}

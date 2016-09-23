@@ -71,7 +71,7 @@
                                                         <div class="btn-group">
                                                             <span class="icon fa-euro"></span>
                                                         </div><!-- /.btn-group -->
-                                                        <input id="form-project-create-finance-equity" type="text" name="finance[dl]" value="{{ form.values.dl }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                        <input id="form-project-create-finance-equity" type="text" name="finance[dl]" value="{{ form.values.dl|localizednumber }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                                                     </div><!-- /.input-group -->
                                                     {% if form.errors.dl is defined %}
                                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
@@ -89,7 +89,7 @@
                                                         <div class="btn-group">
                                                             <span class="icon fa-euro"></span>
                                                         </div><!-- /.btn-group -->
-                                                        <input id="form-project-create-finance-turnover" type="text" name="finance[fl]" value="{{ form.values.fl }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                        <input id="form-project-create-finance-turnover" type="text" name="finance[fl]" value="{{ form.values.fl|localizednumber }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                                                     </div><!-- /.input-group -->
                                                     {% if form.errors.fl is defined %}
                                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
@@ -107,7 +107,7 @@
                                                         <div class="btn-group">
                                                             <span class="icon fa-euro"></span>
                                                         </div><!-- /.btn-group -->
-                                                        <input id="form-project-create-finance-income" type="text" name="finance[gg]" value="{{ form.values.gg }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                        <input id="form-project-create-finance-income" type="text" name="finance[gg]" value="{{ form.values.gg|localizednumber }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                                                     </div><!-- /.input-group -->
                                                     {% if form.errors.gg is defined %}
                                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>

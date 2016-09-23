@@ -744,9 +744,9 @@ class ProjectRequestController extends Controller
         $ficelle = Loader::loadLib('ficelle');
 
         $updateDeclaration = false;
-        $values['dl']       = $ficelle->cleanFormatedNumber($values['dl']);
-        $values['fl']       = $ficelle->cleanFormatedNumber($values['fl']);
-        $values['gg']       = $ficelle->cleanFormatedNumber($values['gg']);
+        $values['dl']      = $ficelle->cleanFormatedNumber($values['dl']);
+        $values['fl']      = $ficelle->cleanFormatedNumber($values['fl']);
+        $values['gg']      = $ficelle->cleanFormatedNumber($values['gg']);
 
         /** @var \companies_actif_passif $companyAssetsDebts */
         $companyAssetsDebts = $entityManager->getRepository('companies_actif_passif');
@@ -754,16 +754,16 @@ class ProjectRequestController extends Controller
         $annualAccountsEntity = $entityManager->getRepository('companies_bilans');
 
         $altaresCapitalStock     = 0;
-        $altaresOperationIncomes = 0;
         $altaresRevenue          = 0;
+        $altaresOperationIncomes = 0;
         $annualAccounts          = $annualAccountsEntity->select('id_company = ' . $this->company->id_company, 'cloture_exercice_fiscal DESC', 0, 1);
 
         if (false === empty($annualAccounts)) {
             $companyAssetsDebts->get($annualAccounts[0]['id_bilan'], 'id_bilan');
 
             $altaresCapitalStock     = $companyAssetsDebts->capitaux_propres;
-            $altaresOperationIncomes = $annualAccounts[0]['resultat_exploitation'];
             $altaresRevenue          = $annualAccounts[0]['ca'];
+            $altaresOperationIncomes = $annualAccounts[0]['resultat_exploitation'];
         }
 
         if ($altaresCapitalStock != $values['dl']) {
@@ -774,19 +774,19 @@ class ProjectRequestController extends Controller
             $updateDeclaration = true;
         }
 
-        if ($altaresOperationIncomes != $values['fl']) {
-            $this->project->resultat_exploitation_declara_client = $values['fl'];
+        if ($altaresRevenue != $values['fl']) {
+            $this->project->ca_declara_client = $values['fl'];
             $updateDeclaration = true;
-        } elseif (false === empty($this->project->resultat_exploitation_declara_client) && $altaresOperationIncomes == $values['fl']) {
-            $this->project->resultat_exploitation_declara_client = 0;
+        } elseif (false === empty($this->project->ca_declara_client) && $altaresRevenue == $values['fl']) {
+            $this->project->ca_declara_client = 0;
             $updateDeclaration = true;
         }
 
-        if ($altaresRevenue != $values['gg']) {
-            $this->project->ca_declara_client = $values['gg'];
+        if ($altaresOperationIncomes != $values['gg']) {
+            $this->project->resultat_exploitation_declara_client = $values['gg'];
             $updateDeclaration = true;
-        } elseif (false === empty($this->project->ca_declara_client) && $altaresRevenue == $values['gg']) {
-            $this->project->ca_declara_client = 0;
+        } elseif (false === empty($this->project->resultat_exploitation_declara_client) && $altaresOperationIncomes == $values['gg']) {
+            $this->project->resultat_exploitation_declara_client = 0;
             $updateDeclaration = true;
         }
 
@@ -1176,6 +1176,10 @@ class ProjectRequestController extends Controller
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
 
+        /** @var \attachment $attachment */
+        $attachment  = $entityManager->getRepository('attachment');
+        $attachments = array_column($attachment->select('type_owner = "' . \attachment::PROJECT . '" AND id_owner = ' . $this->project->id_project), 'id_type');
+
         $this->attachmentType         = $entityManager->getRepository('attachment_type');
         $attachmentTypes              = $this->attachmentType->getAllTypesForProjects('fr', true, [
             \attachment_type::PRESENTATION_ENTRERPISE,
@@ -1204,6 +1208,13 @@ class ProjectRequestController extends Controller
             \attachment_type::AUTRE1,
             \attachment_type::AUTRE2
         ]);
+
+        foreach ($attachmentTypes as $attachmentIndex => $attachmentType) {
+            if (in_array($attachmentType['id'], $attachments)) {
+                unset($attachmentTypes[$attachmentIndex]);
+            }
+        }
+
         $template['attachment_types'] = $this->attachmentType->changeLabelWithDynamicContent($attachmentTypes);
 
         /** @var \projects_status_history $projectStatusHistory */

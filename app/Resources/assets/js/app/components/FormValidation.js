@@ -437,14 +437,18 @@ FormValidation.prototype.validateInput = function (elem, options) {
     }
   }
 
-  // Auto-select inputType validation
-  if (inputValidation.type === 'auto') {
-    inputValidation.type = getFieldType($elem)
-  }
+  if (typeof inputValidation.options.rules.inputType === 'undefined' && inputValidation.options.rules.inputType !== false) {
+    // Auto-select inputType validation
+    if (inputValidation.type === 'auto') {
+      inputValidation.type = getFieldType($elem)
+    }
 
-  // Make sure to always check non-text input types with the inputType rule
-  if (inputValidation.type !== 'text' && (typeof inputValidation.options.rules.inputType === 'undefined' || inputValidation.options.rules.inputType === false)) {
-    inputValidation.options.rules.inputType = inputValidation.type
+    // Make sure to always check non-text input types with the inputType rule
+    if (inputValidation.type !== 'text') {
+      inputValidation.options.rules.inputType = inputValidation.type
+    }
+  } else {
+    inputValidation.type = inputValidation.options.rules.inputType
   }
 
   // @debug
@@ -940,6 +944,32 @@ FormValidation.prototype.rules = {
             inputValidation.errors.push({
               type: 'inputType',
               description: __.__('Not a valid SIREN number. Please ensure you have entered your number in correctly', 'error-field-input-type-siren')
+            })
+          }
+          break
+
+        case 'name':
+        case 'firstname':
+        case 'lastname':
+          if (!/^[a-zA-Z\u00C0-\u017F]+$/i.test(inputValidation.value)) {
+            inputValidation.errors.push({
+              type: 'inputType',
+              description: __.__('Not a valid name. Please ensure you have only entered alphabetic characters', 'error-field-input-type-name')
+            })
+          }
+          break
+
+        case 'typedfile':
+          if (!inputValidation.$formField.find('select').val()) {
+            inputValidation.errors.push({
+              type: 'inputType',
+              description: __.__('Invalid file type', 'error-field-input-type-file-select')
+            })
+          }
+          if (!inputValidation.$formField.find('input[type=file]').val()) {
+            inputValidation.errors.push({
+              type: 'inputType',
+              description: __.__('No file attached', 'error-field-input-type-file-field')
             })
           }
           break
