@@ -17,7 +17,7 @@ function clearActiveRow () {
 }
 
 // Show all rejected offer rows for rates
-function showAllRejectedOffers () {
+function showAllRejectedRows () {
   $('.table-alloffersoverview tr.view-rejected-rows').remove()
   $('.table-alloffersoverview .rate-row.rejected-row').show()
 }
@@ -35,7 +35,12 @@ function focusBid (rate, bidId, enableScroll) {
     // If the target rate is in a tab/collapsable element which is hidden, it should be made visible via this `revealElem` method
     Utility.revealElem($targetRate)
 
-    // Ensure that the target bid's bids summary row is active and visible
+    // Show all rejected rows if this row was rejected
+    if ($targetRate.is('.rejected-row')) {
+      showAllRejectedRows()
+    }
+
+    // Ensure that the target rate's row is active and visible
     if (!$targetRate.is('.active-row')) {
       $('.active-row').removeClass('.active-row')
       $targetRate.addClass('active-row').show()
@@ -62,7 +67,7 @@ function focusBid (rate, bidId, enableScroll) {
       $targetBid.addClass('is-focus')
     }
 
-    // Scroll to the target row
+    // Always scroll to the target bid
     Utility.scrollTo($targetBid, undefined, undefined, undefined, {
       centerTargetInElem: true
     })
@@ -88,13 +93,13 @@ $doc.on('ready', function () {
     }
 
     // @debug
-    console.log('AjaxCall', {
-      elem: elem,
-      projectId: projectId,
-      rate: rate,
-      bidId: bidId,
-      bidElem: $('[data-sortable-detail-id="' + bidId + '"]')
-    })
+    // console.log('AjaxCall', {
+    //   elem: elem,
+    //   projectId: projectId,
+    //   rate: rate,
+    //   bidId: bidId,
+    //   bidElem: $('[data-sortable-detail-id="' + bidId + '"]')
+    // })
 
     // Debounce AJAX
     bidDetailsAjaxTimer = setTimeout(function () {

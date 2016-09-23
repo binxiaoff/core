@@ -126,6 +126,7 @@
                     <li><a href="<?= $this->lurl ?>/dossiers/remboursements" title="Remboursements">Remboursements</a></li>
                     <li><a href="<?= $this->lurl ?>/dossiers/no_remb" title="Erreurs remboursements">Erreurs remboursements</a></li>
                     <li><a href="<?= $this->lurl ?>/dossiers/status" title="Suivi statuts projets">Suivi statuts projets</a></li>
+                    <li><a href="<?= $this->lurl ?>/product" title="Suivi statuts projets">Gestion produits</a></li>
                 </ul>
             </li>
         <?php endif; ?>

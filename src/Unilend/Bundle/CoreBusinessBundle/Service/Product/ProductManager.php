@@ -176,4 +176,9 @@ class ProductManager
     {
         return $this->lenderValidator->getAmountLenderCanStillBid($lender, $project, $this->productAttributeManager, $this->entityManager);
     }
+
+    public function getAttributesByType(\product $product, $attributeType)
+    {
+        return $this->productAttributeManager->getProductAttributesByType($product, $attributeType);
+    }
 }
