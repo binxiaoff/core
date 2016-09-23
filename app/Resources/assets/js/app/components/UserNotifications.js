@@ -89,6 +89,7 @@ $(document).trigger('UserNotifications:markAllRead')
 
 var $ = require('jquery')
 var Utility = require('Utility')
+var Templating = require('Templating')
 var $doc = $(document)
 
 // UserNotifications
@@ -106,6 +107,20 @@ var UserNotifications = window.UserNotifications = {
 
   // A timer to delay AJAX requests
   ajaxTimer: 0,
+
+  // Templates
+  templates: {
+    // Pip to indicate unread notifications amount
+    pip: '<span class="pip {{ classNames }}"><span class="pip-number">{{ amount }}</span></span>'
+  },
+
+  // Tracking vars for managing pagination
+  track: {
+    dateFrom: new Date(),
+    dateTo: undefined,
+    perPage: 20,
+    currentPage: 1
+  },
 
   // Get a flatmapped version of the USERNOTIFICATIONS collection
   // Each notification within the flatmap will be accessed via a `__x` key where x == notificationObject.id
@@ -172,6 +187,17 @@ var UserNotifications = window.UserNotifications = {
     $doc.trigger('UserNotifications:sort:complete')
 
     UserNotifications.delayUpdated()
+  },
+
+  // Pull notifications from server
+  // @method pull
+  // @param {Object} options
+  // @returns {Void}
+  pull: function (options) {
+    // Options for retrieving from server
+    options = $.extend({
+
+    }, options)
   },
 
   // Push new notifications to the collection
@@ -342,6 +368,8 @@ var UserNotifications = window.UserNotifications = {
       // Mark in UI that notification is now unread
       $('[data-notification-id="' + id + '"]').removeClass('ui-notification-status-unread').addClass('ui-notification-status-read')
 
+      // @todo AJAX to mark single notification read
+
       // Minus 1 on unreadCount
       UserNotifications.updateUnreadCount(UserNotifications.unreadCount - 1)
     }
@@ -367,6 +395,8 @@ var UserNotifications = window.UserNotifications = {
         }
       }
     }
+
+    // @todo AJAX to mark all notifications read
 
     // Update unreadCount
     UserNotifications.updateUnreadCount(0)
@@ -396,11 +426,35 @@ var UserNotifications = window.UserNotifications = {
       }
     }
 
+    // @debug
+    // console.log('UserNotifications.updateUnreadCount', unreadCount)
+
     // Update the unread count
     UserNotifications.unreadCount = unreadCount
 
+    // Update any `[data-usernotifications-unreadcount]` pips
+    UserNotifications.updatePip(unreadCount)
+
     // @trigger document `UserNotifications:updateUnreadCount:complete`
     $doc.trigger('UserNotifications:updateUnreadCount:complete', [unreadCount])
+  },
+
+  // Update the pip number in any element marked `[data-usernotifications-unreadcount]`
+  // @method updatePip
+  // @param {Int} amount
+  // @returns {Void}
+  updatePip: function (amount) {
+    var pipHTML = ''
+
+    // Generate the new pip HTML if there are any unread notifications specified by amount
+    pipHTML = Templating.replace(UserNotifications.templates.pip, {
+      amount: amount,
+      // Mark if has none (changes color) or has many (changes amount number to circle)
+      classNames: (amount === 0 ? 'pip-has-none' : (amount > 9 ? 'pip-has-many' : ''))
+    })
+
+    // Set the unreadcount element's HTML
+    $('[data-usernotifications-unreadcount]').html(pipHTML)
   },
 
   // Trigger the updated event after a short timer
@@ -476,11 +530,22 @@ $doc.on('ready', function () {
       return false
     })
 
-    // Click on an element which represents an unread notifications and mark it read (if it exists in the collection)
-    .on(Utility.clickEvent, '[data-notification-id].ui-notification-status-unread', function (event) {
+    // Click on an element to show/hide its details
+    .on(Utility.clickEvent, '[data-notification-id]', function (event) {
+      var $target = $(event.target)
+
+      // If a link was clicked, ignore the following actions and let the link event go through
+      if ($target.is('a')) return true
+
+      // Toggle the notification's open class
       var $notification = $(this)
       var notificationId = $notification.attr('data-notification-id')
-      UserNotifications.markRead(notificationId)
+      $notification.toggleClass('ui-notification-open')
+
+      // If notification unread, mark as read
+      if ($notification.is('.ui-notification-status-unread')) {
+        UserNotifications.markRead(notificationId)
+      }
     })
 })
 

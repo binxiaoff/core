@@ -7,8 +7,9 @@
 // Compact dashboard header balance
 @mixin compact-site-user-balance {
   display: block;
-  width: $height-site-header;
+  width: $height-site-header; // match dimensions of mobile site-header
   height: $height-site-header;
+  margin-left: 15px;
   float: left;
 
   background-image: url('../images/dashboard/icon-balance-41x34.png');
@@ -28,14 +29,17 @@
   box-sizing: border-box;
   display: block;
   width: auto;
-  padding: 10px 30px 10px 50px;
+  min-width: 50px;
+  height: 50px;
+  padding: 0 15px 0 50px;
+  margin-left: 15px;
   float: left;
 
   background-image: url('../images/dashboard/icon-balance-41x34.png');
   background-repeat: no-repeat;
   background-position: left center;
   font-size: $fs-base;
-  line-height: 1.3em;
+  line-height: 50px;
   text-align: left;
   vertical-align: middle;
 
@@ -45,6 +49,7 @@
 
   @include devices('tablet-l') {
     padding-right: 0;
+    padding-left: 0;
 
     .label {
       display: none;
@@ -58,6 +63,8 @@
   display: inline-block;
   height: $height-fixed-menu;
   margin: 0;
+  margin-left: 10px;
+  margin-right: 10px;
   padding-top: 0;
   padding-bottom: 0;
   line-height: $height-fixed-menu;

@@ -6,6 +6,8 @@
   padding: 20px;
   overflow: hidden;
 
+  transition: background-color 0.2s;
+
   .notification-header {
     position: relative;
   }
@@ -106,12 +108,14 @@
       display: none;
     }
 
-    &#{$js-notification-status-unread} {
-      background-color: $c-white;
-
+    &#{$js-notification-open} {
       .notification-content {
         display: block;
       }
+    }
+
+    &#{$js-notification-status-unread} {
+      background-color: $c-white;
     }
   }
 }

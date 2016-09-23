@@ -575,13 +575,26 @@ var Utility = {
   },
 
   // Scroll an element to a specific target within (either number or a child element)
-  scrollTo: function (target, cb, time, elem) {
+  // @method scrollTo
+  // @param {Mixed} target Can be {String} selector, {HTMLElement} or {jQueryObject}
+  // @param {Function} cb Callback to fire after scroll animation
+  // @param {Int} time Time in milliseconds for the scroll animation
+  // @param {Mixed} elem The element to scroll (defaults to `html,body`)
+  // @param {Object} options Extra options
+  scrollTo: function (target, cb, time, elem, options) {
     var self = this
 
+    // Options
+    options = $.extend({
+      centerTargetInElem: false
+    }, options)
+
     // Get target to scroll to
-    var $elem = $(elem || 'html, body')
+    var $elem = $('html, body')
+    if (Utility.checkSelector(elem)) $elem = $(elem)
     if ($elem.length === 0) return
 
+    // Get the elements current scrollTop value
     var elemScrollTop = $elem.scrollTop()
 
     // Get the target details
@@ -610,7 +623,21 @@ var Utility = {
       } else {
         toScrollTop = self.elemOffsetBetweenAbsolute($target, $elem).top
       }
+
+      // Place in middle of screen
+      if (options.centerTargetInElem) {
+        var elemHeight = $elem.height()
+        if ($elem.is('html, body, window')) {
+          elemHeight = $(window).innerHeight()
+        }
+
+        // Minus height of target from elemHeight and divide by two to get the middle spot where the element should be
+        var targetHeight = $target.outerHeight()
+        toScrollTop -= (elemHeight - targetHeight) * 0.5;
+      }
     }
+
+
 
     // @debug
     // console.log('scrollTo', $target, toScrollTop)

@@ -267,12 +267,11 @@ UserNotificationsDrop.prototype.updatePip = function (amount) {
   var pipHTML = ''
 
   // Generate the new pip HTML if there are any unread notifications specified by amount
-  if (amount > 0) {
-    pipHTML = Templating.replace(self.templates.pip, {
-      amount: amount,
-      classNames: amount > 9 ? 'pip-has-many' : ''
-    })
-  }
+  pipHTML = Templating.replace(self.templates.pip, {
+    amount: amount,
+    // Mark if has none (changes color) or has many (changes amount number to circle)
+    classNames: (amount === 0 ? 'pip-has-none' : (amount > 9 ? 'pip-has-many' : ''))
+  })
 
   // Set the elem's HTML
   self.$elem.html(pipHTML)
