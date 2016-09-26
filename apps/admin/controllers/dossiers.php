@@ -124,8 +124,6 @@ class dossiersController extends bootstrap
         $oProjectManager = $this->get('unilend.service.project_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager $productManager */
         $productManager = $this->get('unilend.service_product.product_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager $productAttrManager */
-        $productAttrManager = $this->get('unilend.service_product.product_attribute_manager');
         /** @var \Symfony\Component\Translation\Translator translator */
         $this->translator = $this->get('translator');
 
@@ -845,8 +843,8 @@ class dossiersController extends bootstrap
                     }
                 }
             }
-            if ($product instanceof \product) {
-                $eligibleNeeds = $productAttrManager->getProductAttributesByType($product, \product_attribute_type::ELIGIBLE_NEED);
+            if ($product instanceof \product && $product->id_product) {
+                $eligibleNeeds = $productManager->getAttributesByType($product, \product_attribute_type::ELIGIBLE_NEED);
             } else {
                 $eligibleNeeds = [];
             }

@@ -72,9 +72,14 @@ $doc.on('ready', function () {
 
       // Expired
       if (timeDiff.total > 0) {
-        outputTime = elemTimeCount.getRelativeTime(timeDiff.startDate, timeDiff.endDate, secondsAsUnits)
+        outputTime = elemTimeCount.getRelativeTime(elemTimeCount.settings.startDate, elemTimeCount.settings.endDate, secondsAsUnits)
       } else {
         outputTime = __.__('Project expired', 'projectPeriodExpired')
+      }
+
+      // @debug
+      if (elemTimeCount.settings.debug) {
+        console.log('timecount onupdate timeDiff', timeDiff, outputTime)
       }
 
       // Update counter
