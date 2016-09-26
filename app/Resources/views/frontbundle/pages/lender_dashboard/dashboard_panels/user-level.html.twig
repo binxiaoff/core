@@ -23,10 +23,12 @@
                 </div>
             </div>
             <div class="dashboard-panel-summary">
-                <h3>
-                    <span class="label">{% trans %} lender-dashboard-user-level_diversification-level-title {% endtrans %}</span>
-                    <span class="value">{{ "lender-dashboard_level-#{ lenderDetails.level }"|trans }}</span>
-                </h3>
+                {% if lenderDetails.companiesLenderInvestedIn != 0 %}
+                    <h3>
+                        <span class="label">{% trans %} lender-dashboard-user-level_diversification-level-title {% endtrans %}</span>
+                        <span class="value">{{ "lender-dashboard_level-#{ lenderDetails.level }"|trans }}</span>
+                    </h3>
+                {% endif %}
                 <p class="message">
                     {% if lenderDetails.hasIRR or lenderDetails.companiesLenderInvestedIn == 0 %}
                         {{ "lender-dashboard_irr-#{ lenderDetails.irrTranslation }level-#{ lenderDetails.level }"|trans|raw }}

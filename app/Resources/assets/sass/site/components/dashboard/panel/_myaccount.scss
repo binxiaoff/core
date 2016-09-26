@@ -8,6 +8,18 @@
   // }
 }
 
+.dashboard-panel-content.cta-message {
+  width: 280px;
+  height: 100px;
+  padding: 20px;
+  margin-top: -50px;
+  margin-left: -140px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  color: $c-t2;
+}
+
 .dashboard-myaccount-chart-key {
   .chart-key {
     padding: 10px 20px 10px 30px;

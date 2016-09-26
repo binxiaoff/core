@@ -131,6 +131,15 @@ $js-user-level-star: '.icon.fa-star';
     }
   }
 
+  #{$js-user-level-0} & {
+    @include colorize-userlevel($c-level-0);
+
+    // Level
+    .user-avatar-level {
+      height: 20%;
+    }
+  }
+
   #{$js-user-level-1} & {
     @include colorize-userlevel($c-level-1);
 

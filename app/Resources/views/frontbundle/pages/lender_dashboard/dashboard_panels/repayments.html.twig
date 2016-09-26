@@ -243,36 +243,46 @@
         <span class="ui-draggable-handle"></span>
     {% endblock %}
     {% block panelContent %}
-        {% if monthSum.capital|length > 0 %}
-        <div class="dashboard-panel-chart">
-            <div class="tabs nested-tabs">
-                <div class="tab-navigation">
-                    <ul class="nav nav-tabs-text">
-                        <li role="presentation" class="active">
-                            <a href="#myrembourse-graph-mth" role="tab" data-toggle="tab">{% transchoice 1 %} lender-dashboard-repayments_period-tab-title {% endtranschoice %}</a>
-                        </li>
-                        <li role="presentation">
-                            <a href="#myrembourse-graph-3mth" role="tab" data-toggle="tab">{% transchoice 3 %} lender-dashboard-repayments_period-tab-title {% endtranschoice %}</a>
-                        </li>
-                        <li role="presentation">
-                            <a href="#myrembourse-graph-year" role="tab" data-toggle="tab">{% transchoice 12 %} lender-dashboard-repayments_period-tab-title {% endtranschoice %}</a>
-                        </li>
-                    </ul>
-                </div><!-- /.tab-navigation -->
-                <div class="tab-content">
-                    <div id="myrembourse-graph-mth" role="tabpanel" class="tab-pane active">
-                        <div class="chart chart-myremboursements" data-chartview='{{ refundChartDataMonth|json_encode|escape('html_attr') }}'></div>
-                    </div><!-- /.tab-pane -->
-                    <div id="myrembourse-graph-3mth" role="tabpanel" class="tab-pane">
-                        <div class="chart chart-myremboursements" data-chartview='{{ refundChartDataQuarter|json_encode|escape('html_attr') }}'></div>
-                    </div><!-- /.tab-pane -->
-                    <div id="myrembourse-graph-year" role="tabpanel" class="tab-pane">
-                        <div class="chart chart-myremboursements" data-chartview='{{ refundChartDataYear|json_encode|escape('html_attr') }}'></div>
-                    </div><!-- /.tab-pane -->
-                </div><!-- /.tab-content -->
-            </div><!-- /.nested-tabs -->
-        </div><!-- /.dashboard-panel-chart -->
-        <div class="field-help">{{ 'lender-dashboard-repayments_tax-deductions-explanation'|trans }}</div>
+        {% if lenderDetails.companiesLenderInvestedIn > 0 %}
+            {% if monthSum.capital|length > 0 %}
+                <div class="dashboard-panel-chart">
+                    <div class="tabs nested-tabs">
+                        <div class="tab-navigation">
+                            <ul class="nav nav-tabs-text">
+                                <li role="presentation" class="active">
+                                    <a href="#myrembourse-graph-mth" role="tab" data-toggle="tab">{% transchoice 1 %} lender-dashboard-repayments_period-tab-title {% endtranschoice %}</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#myrembourse-graph-3mth" role="tab" data-toggle="tab">{% transchoice 3 %} lender-dashboard-repayments_period-tab-title {% endtranschoice %}</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#myrembourse-graph-year" role="tab" data-toggle="tab">{% transchoice 12 %} lender-dashboard-repayments_period-tab-title {% endtranschoice %}</a>
+                                </li>
+                            </ul>
+                        </div><!-- /.tab-navigation -->
+                        <div class="tab-content">
+                            <div id="myrembourse-graph-mth" role="tabpanel" class="tab-pane active">
+                                <div class="chart chart-myremboursements" data-chartview='{{ refundChartDataMonth|json_encode|escape('html_attr') }}'></div>
+                            </div><!-- /.tab-pane -->
+                            <div id="myrembourse-graph-3mth" role="tabpanel" class="tab-pane">
+                                <div class="chart chart-myremboursements" data-chartview='{{ refundChartDataQuarter|json_encode|escape('html_attr') }}'></div>
+                            </div><!-- /.tab-pane -->
+                            <div id="myrembourse-graph-year" role="tabpanel" class="tab-pane">
+                                <div class="chart chart-myremboursements" data-chartview='{{ refundChartDataYear|json_encode|escape('html_attr') }}'></div>
+                            </div><!-- /.tab-pane -->
+                        </div><!-- /.tab-content -->
+                    </div><!-- /.nested-tabs -->
+                </div><!-- /.dashboard-panel-chart -->
+                <div class="field-help">{{ 'lender-dashboard-repayments_tax-deductions-explanation'|trans }}</div>
+            {% endif %}
+        {% else %}
+            <div class="show-computer"><img src="/assets/images/dashboard/empty-dashboard-panel-repayments-computer.png" alt=""/></div>
+            <div class="show-tablet"><img src="/assets/images/dashboard/empty-dashboard-panel-repayments-computer.png" alt=""/></div>
+            <div class="show-mobile"><img src="/assets/images/dashboard/empty-dashboard-panel-repayments-computer.png" alt=""/></div>
+            <div class="cta-message">
+                <p>{% trans %} lender-dashboard_get-started-message {% endtrans %}</p>
+                <a href="{{ path('projects') }}" class="btn-outline">{% trans %} lender-dashboard_get-started-button {% endtrans %}</a>
+            </div>
         {% endif %}
     {% endblock %}
     {% block panelFooter %}

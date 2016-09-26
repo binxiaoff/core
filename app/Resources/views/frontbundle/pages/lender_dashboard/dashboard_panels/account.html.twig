@@ -114,39 +114,49 @@
         <span class="ui-draggable-handle"></span>
     {% endblock %}
     {% block panelContent %}
-        <div class="dashboard-panel-overview">
-            <div class="label">{% trans %} lender-dashboard-account_balance-title {% endtrans %}</div>
-            {% if lenderDetails.balance != 0 %}
-                {% set balanceParts = lenderDetails.balance|split('.') %}
-                <div class="value">{{ balanceParts[0]|localizednumber }},<sup>{{ balanceParts[1] }}&nbsp;€</sup></div>
-            {% else %}
-                <div class="value">0,<sup>00&nbsp;€</sup></div>
-            {% endif %}
-        </div>
-        {% if amountDetails.loaned_amount %}
-            <div class="dashboard-myaccount-chart dashboard-panel-chart">
-                <div class="chart chart-myaccount" data-chartview='{{ myAccountChart|json_encode|escape('html_attr') }}'></div>
-                <div class="dashboard-panel-summary">
-                    <h3>
-                        <span class="label">{% trans %} lender-dashboard-account_expected-earning-title {% endtrans %}</span>
-                        <span class="value">{{ amountDetails.expected_earnings|localizedcurrency('EUR') }}</span>
-                    </h3>
-                </div>
-                {# Include the legend as it's not included in the highchart due to rendering issues #}
-                <div class="dashboard-myaccount-chart-key">
-                    <div class="row">
-                        {% for i, series in myAccountChart.highcharts.series %}
-                            {% for j, dataItem in series.data if dataItem.showInLegend is defined and dataItem.showInLegend != false %}
-                                <div class="chart-key col-lg-4 col-md-4 col-sm-4 col-xs-2">
-                                    <div class="icon" style="background-color: {{ dataItem.color }}"></div>
-                                    <div class="label">{% if dataItem.name is not empty %} {{ dataItem.name }} {% else %} {{ series.name }} {% endif %}</div>
-                                    <div class="value">{% if dataItem.value is not empty %} {{ dataItem.value }} {% else %} {{ series.value }} {% endif %}</div>
-                                </div>
-                            {% endfor %}
-                        {% endfor %}
+        {% if lenderDetails.companiesLenderInvestedIn > 0 %}
+            <div class="dashboard-panel-overview">
+                <div class="label">{% trans %} lender-dashboard-account_balance-title {% endtrans %}</div>
+                {% if lenderDetails.balance != 0 %}
+                    {% set balanceParts = lenderDetails.balance|split('.') %}
+                    <div class="value">{{ balanceParts[0]|localizednumber }},<sup>{{ balanceParts[1] }}&nbsp;€</sup></div>
+                {% else %}
+                    <div class="value">0,<sup>00&nbsp;€</sup></div>
+                {% endif %}
+            </div>
+            {% if amountDetails.loaned_amount %}
+                <div class="dashboard-myaccount-chart dashboard-panel-chart">
+                    <div class="chart chart-myaccount" data-chartview='{{ myAccountChart|json_encode|escape('html_attr') }}'></div>
+                    <div class="dashboard-panel-summary">
+                        <h3>
+                            <span class="label">{% trans %} lender-dashboard-account_expected-earning-title {% endtrans %}</span>
+                            <span class="value">{{ amountDetails.expected_earnings|localizedcurrency('EUR') }}</span>
+                        </h3>
                     </div>
-                </div><!-- /.dashboard-myaccount-chart-key -->
-            </div><!-- /.dashboard-myaccount-chart -->
+                    {# Include the legend as it's not included in the highchart due to rendering issues #}
+                    <div class="dashboard-myaccount-chart-key">
+                        <div class="row">
+                            {% for i, series in myAccountChart.highcharts.series %}
+                                {% for j, dataItem in series.data if dataItem.showInLegend is defined and dataItem.showInLegend != false %}
+                                    <div class="chart-key col-lg-4 col-md-4 col-sm-4 col-xs-2">
+                                        <div class="icon" style="background-color: {{ dataItem.color }}"></div>
+                                        <div class="label">{% if dataItem.name is not empty %} {{ dataItem.name }} {% else %} {{ series.name }} {% endif %}</div>
+                                        <div class="value">{% if dataItem.value is not empty %} {{ dataItem.value }} {% else %} {{ series.value }} {% endif %}</div>
+                                    </div>
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+                    </div><!-- /.dashboard-myaccount-chart-key -->
+                </div><!-- /.dashboard-myaccount-chart -->
+            {% endif %}
+        {% else %}
+            <div class="show-computer"><img src="/assets/images/dashboard/empty-dashboard-panel-account-computer.png" alt=""/></div>
+            <div class="show-tablet"><img src="/assets/images/dashboard/empty-dashboard-panel-account-computer.png" alt=""/></div>
+            <div class="show-mobile"><img src="/assets/images/dashboard/empty-dashboard-panel-account-computer.png" alt=""/></div>
+            <div class="cta-message">
+                <p>{% trans %} lender-dashboard_get-started-message {% endtrans %}</p>
+                <a href="{{ path('projects') }}" class="btn-outline">{% trans %} lender-dashboard_get-started-button {% endtrans %}</a>
+            </div>
         {% endif %}
     {% endblock %}
     {% block panelFooter %}
