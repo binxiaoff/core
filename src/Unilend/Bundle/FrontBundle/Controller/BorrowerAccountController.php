@@ -596,7 +596,10 @@ class BorrowerAccountController extends Controller
         $temporaryLinks   = $this->get('unilend.service.entity_manager')->getRepository('temporary_links_login');
         $isLinkExpired = false;
 
-        $temporaryLinks->get($token, 'token');
+        if (false === $temporaryLinks->get($token, 'token')) {
+            return RedirectResponse::create($this->generateUrl('home'));
+        }
+
         $now         = new \datetime();
         $linkExpires = new \datetime($temporaryLinks->expires);
 
