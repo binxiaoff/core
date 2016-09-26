@@ -21,10 +21,16 @@ $(document).on('submit', 'form[data-bid-confirmation]', function (e) {
   else {
     $('[data-popup-amount], [data-popup-rate]').closest('.form-field').removeClass('ui-formvalidation-error');
 
-    if ($('#bid-rest-amount').val() === '' || parseFloat($('#bid-rest-amount').val()) >= parseFloat($('#bid-amount').val())) {
-      $('.ui-BidConfirmation').show()
+    if (parseFloat($('#bid-min-amount').val()) > parseFloat($('#bid-amount').val())) {
+      $('.ui-BidConfirmation-error').show();
+      $('.bid-min-amount-error').show();
+      $('.loan-max-amount-error').hide();
+    } else if ($('#bid-rest-amount').val().length > 0 && parseFloat($('#bid-rest-amount').val()) < parseFloat($('#bid-amount').val())) {
+      $('.ui-BidConfirmation-error').show();
+      $('.loan-max-amount-error').show();
+      $('.bid-min-amount-error').hide();
     } else {
-      $('.ui-BidConfirmation-error').show()
+      $('.ui-BidConfirmation').show()
     }
 
     $('[data-popup-bid-confirmation-yes]').click(function () {
