@@ -10,40 +10,13 @@
         <div class="hero-wrap">
             <header class="page-header">
                 <div class="site-wrap">
-                    <h1 id="project-create-title" class="h1">{% trans %} project-request_page-title {% endtrans %}</h1>
+                    <h1 id="project-create-title" class="h1">{% trans %} project-request_partner-page-title {% endtrans %}</h1>
                 </div><!-- /.site-wrap -->
             </header><!-- /.page-header -->
 
             <div class="page-content">
                 <div class="site-wrap">
                     <form id="form-project-create" action="{{ path('project_request_partner_form', {'hash' : project.hash}) }}" method="post" enctype="multipart/form-data" class="form-project-create">
-                        <div class="row">
-                            <div class="col-lg-8 col-md-8">
-                                <div class="form-project-create-nav tab-nav">
-                                    <ul class="nav nav-progress">
-                                        <li id="project-create-1" role="presentation" class="complete">
-                                            <span>
-                                                <span class="project-create-progress-point">1.</span>
-                                                <span class="label hide-mobile">{% trans %} project-request_partner-start-tab-title {% endtrans %}</span>
-                                            </span>
-                                        </li>
-                                        <li id="project-create-2" role="presentation" class="active">
-                                            <span>
-                                                <span class="project-create-progress-point">2.</span>
-                                                <span class="label hide-mobile">{% trans %} project-request_contact-tab-title {% endtrans %}</span>
-                                            </span>
-                                        </li>
-                                        <li id="project-create-3" role="presentation">
-                                            <span>
-                                                <span class="project-create-progress-point">3.</span>
-                                                <span class="label hide-mobile">{% trans %} project-request_end-tab-title {% endtrans %}</span>
-                                            </span>
-                                        </li>
-                                    </ul><!-- /.nav-progress -->
-                                </div><!-- /.form-project-create-nav -->
-                            </div>
-                        </div>
-
                         <div class="row ui-sticky-parent">
                             <div class="col-form col-lg-8 col-md-8">
                                 <div class="form-project-create-content tab-content">
