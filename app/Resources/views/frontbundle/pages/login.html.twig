@@ -87,6 +87,7 @@
                                         <input type="submit" class="btn-primary" value="{% trans %} connect-subscribe-page_login-box-connect-button {% endtrans %}"/>
                                     </div>
                                 </div><!-- /.panel -->
+                                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
                             </form><!-- /.form-connect -->
 
                             {# Hidden text until made visible through the fancybox #}
