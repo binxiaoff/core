@@ -33,7 +33,7 @@ var browserifyTask =  function(watchMode) {
         .pipe(source(bundleConfig.outputName))
         .pipe(buffer())
         .pipe(gulpIf(!global.production, sourcemaps.init({loadMaps: true})))
-        .pipe(gulpIf(global.production, uglify()))
+        .pipe(uglify())
         .pipe(gulpIf(!global.production, sourcemaps.write('./', {charset: 'latin1'})))
         .pipe(gulp.dest(path.join(config.root.dest, bundleConfig.dest)))
         .on('end', function() {bundleLogger.end(bundleConfig.outputName)})
