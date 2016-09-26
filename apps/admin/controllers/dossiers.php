@@ -636,13 +636,6 @@ class dossiersController extends bootstrap
 
                     $this->projects->update();
 
-                    if (empty($this->projects->id_product) && $this->projects->status >= projects_status::ATTENTE_ANALYSTE) {
-                        $_SESSION['freeow']['title']   = 'Sauvegarde du résumé';
-                        $_SESSION['freeow']['message'] = 'Aucun produit a été associé au projet';
-                        header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
-                        die;
-                    }
-
                     if ($_POST['status'] != $_POST['current_status'] && $this->projects->status != $_POST['status']) {
 
                         if ($_POST['status'] == \projects_status::PREP_FUNDING) {
@@ -1187,6 +1180,8 @@ class dossiersController extends bootstrap
         $aLenderLoans = $this->loans->getProjectLoansByLender($this->projects->id_project);
 
         if (is_array($aLenderLoans)) {
+            $aNextRepayment = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND date_echeance > "' . date('Y-m-d') . '"', 'date_echeance ASC', 0, 1);
+
             foreach ($aLenderLoans as $aLoans) {
                 $this->lenders_accounts->get($aLoans['id_lender'], 'id_lender_account');
                 $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
@@ -1218,8 +1213,6 @@ class dossiersController extends bootstrap
                     $this->clients_gestion_mails_notif->id_loan         = 0;
                     $this->clients_gestion_mails_notif->immediatement   = 1;
                     $this->clients_gestion_mails_notif->create();
-
-                    $aNextRepayment = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND date_echeance > "' . date('Y-m-d') . '"', 'date_echeance ASC', 0, 1);
 
                     $aReplacements = $aCommonReplacements + array(
                             'prenom_p'                    => $this->clients->prenom,

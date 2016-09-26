@@ -18,6 +18,11 @@ $loader = require __DIR__.'/../app/autoload.php';
 
 setlocale(LC_TIME, 'fr_FR.utf8');
 
+if (extension_loaded ('newrelic')) {
+    newrelic_set_appname ("Unilend-batchjobs");
+    newrelic_background_job(true);
+}
+
 $input = new ArgvInput();
 $env = $input->getParameterOption(['--env', '-e'], getenv('SYMFONY_ENV') ?: 'dev');
 $debug = getenv('SYMFONY_DEBUG') !== '0' && !$input->hasParameterOption(['--no-debug', '']) && $env !== 'prod';

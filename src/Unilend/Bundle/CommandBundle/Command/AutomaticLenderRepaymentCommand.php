@@ -98,7 +98,6 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                             $echeanciers->capital_rembourse   = $echeanciers->capital;
                             $echeanciers->interets_rembourses = $echeanciers->interets;
                             $echeanciers->status              = \echeanciers::STATUS_REPAID;
-                            $echeanciers->status_email_remb   = 1;
                             $echeanciers->date_echeance_reel  = $repaymentDate;
                             $echeanciers->update();
 

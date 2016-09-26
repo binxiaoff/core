@@ -135,6 +135,15 @@ class transactions extends transactions_crud
         return $solde;
     }
 
+    public function getRepaymentTransactionsAmount($iEcheanceId)
+    {
+        if (false == empty($iEcheanceId)) {
+            $sWhere = 'type_transaction IN (' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . ', ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . ')
+            AND id_echeancier = ' . $iEcheanceId;
+            return $this->sum($sWhere, 'montant');
+        }
+    }
+
     public function getOperationsForIndexing($transactionTypeLabel,  $lastIndexedOperationDate, $clientId)
     {
         $sql = '
@@ -168,7 +177,7 @@ class transactions extends transactions_crud
         $sql .='
             ELSE ""
             END AS type_transaction_alpha,
-            CASE
+            CASE 
             WHEN b.id_project IS NULL THEN CASE WHEN b2.id_project IS NULL THEN t.id_project ELSE b2.id_project END
             ELSE b.id_project END AS id_project,
             date_transaction AS date_tri,
@@ -264,7 +273,7 @@ class transactions extends transactions_crud
             t.montant as capital,
             IFNULL(interests.montant, 0) AS interests,
             "Remboursement" AS type_transaction_alpha,
-            t.id_project AS id_project,
+            p.id_project AS id_project,
             t.date_transaction AS date_tri,
             (
               SELECT SUM(t2.montant) + (SELECT SUM(montant) FROM transactions WHERE id_echeancier = t.id_echeancier)
@@ -299,15 +308,6 @@ class transactions extends transactions_crud
             $result[] = $record;
         }
         return $result;
-    }
-
-    public function getRepaymentTransactionsAmount($iEcheanceId)
-    {
-        if (false == empty($iEcheanceId)) {
-            $sWhere = 'type_transaction IN (' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . ', ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . ')
-            AND id_echeancier = ' . $iEcheanceId;
-            return $this->sum($sWhere, 'montant');
-        }
     }
 
     /**

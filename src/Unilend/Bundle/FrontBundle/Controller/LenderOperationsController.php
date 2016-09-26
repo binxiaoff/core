@@ -460,23 +460,22 @@ class LenderOperationsController extends Controller
             \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD => $translator->trans('preteur-operations-vos-operations_gain-filleul'),
             \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD   => $translator->trans('preteur-operations-vos-operations_gain-parrain')
         );
+
         foreach ($operations as $t) {
             if ($t['montant_operation'] >= 0) {
                 $couleur = ' style="color:#40b34f;"';
             } else {
                 $couleur = ' style="color:red;"';
             }
-
             $sProjectId = $t['id_projet'] == 0 ? '' : $t['id_projet'];
-            $sold       = $t['solde'];
-            // remb
+
             if (in_array($t['type_transaction'], array(self::TYPE_REPAYMENT_TRANSACTION, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
 
                 foreach ($aTaxType as $aType) {
                     $aTax[$aType['id_tax_type']]['amount'] = 0;
                 }
 
-                if (self::TYPE_REPAYMENT_TRANSACTION != $t['type_transaction']) {
+                if (self::TYPE_REPAYMENT_TRANSACTION == $t['type_transaction']) {
                     $aTax = $tax->getTaxListByRepaymentId($t['id_echeancier']);
                 }
 
@@ -501,7 +500,7 @@ class LenderOperationsController extends Controller
                     $content .= '</td>';
                 }
                 $content .= '
-                        <td>' . $ficelle->formatNumber(bcdiv($sold, 100, 2)) . '</td>
+                        <td>' . $ficelle->formatNumber(bcdiv($t['solde'], 100, 2)) . '</td>
                         <td></td>
                     </tr>';
 
@@ -537,7 +536,7 @@ class LenderOperationsController extends Controller
                     $t['libelle_operation'] = '';
                 }
 
-                if ($t['type_transaction'] == \transactions_types::TYPE_LENDER_WITHDRAWAL && $t['montant'] > 0) {
+                if ($t['type_transaction'] == \transactions_types::TYPE_LENDER_WITHDRAWAL && $t['montant_operation'] > 0) {
                     $type = "Annulation retrait des fonds - compte bancaire clos";
                 } else {
                     $type = $t['libelle_operation'];
@@ -559,7 +558,7 @@ class LenderOperationsController extends Controller
                         <td></td>
                         <td></td>
                         <td></td> 
-                        <td>' . $ficelle->formatNumber(bcdiv($sold, 100, 2)) . '</td>
+                        <td>' . $ficelle->formatNumber(bcdiv($t['solde'], 100, 2)) . '</td>
                         <td></td>
                     </tr>
                     ';
@@ -591,7 +590,7 @@ class LenderOperationsController extends Controller
                         <td></td>
                         <td></td>
                         <td></td>
-                        <td>' . $ficelle->formatNumber($sold / 100) . '</td>
+                        <td>' . $ficelle->formatNumber($t['solde'] / 100) . '</td>
                         <td>' . $asterix . '</td>
                     </tr>
                    ';
@@ -1052,111 +1051,5 @@ class LenderOperationsController extends Controller
             ];
         }
         return $documents;
-    }
-
-    /**
-     * @param \lender_tax_exemption $lenderTaxExemption
-     * @param int $lenderId
-     * @param string|null $year
-     * @return array
-     */
-    private function getExemptionHistory(\lender_tax_exemption $lenderTaxExemption, $lenderId, $year = null)
-    {
-
-        try {
-            $result = $lenderTaxExemption->getLenderExemptionHistory($lenderId, $year);
-        } catch (Exception $exception) {
-            /** @var \Psr\Log\LoggerInterface $logger */
-            $logger = $this->get('logger');
-            $logger->error('Could not get lender exemption history (id_lender = ' . $lenderId . ') Exception message : ' . $exception->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lenderId));
-            $result = [];
-        }
-        return $result;
-    }
-
-    private function getFiscalAddress(\clients $client, EntityManager $entityManager)
-    {
-        /** @var \pays_v2 $taxCountry */
-        $taxCountry = $entityManager->getRepository('pays_v2');
-        /** @var \clients_adresses $clientAddress */
-        $clientAddress = $entityManager->getRepository('clients_adresses');
-        /** @var \companies $company */
-        $company = $entityManager->getRepository('companies');
-
-        if ($client->type === \clients::TYPE_LEGAL_ENTITY) {
-            $company->get($client->id_client, 'id_client_owner');
-            $this->fiscalAddress['address'] = $company->adresse1 . ' ' . $company->adresse2;
-            $this->fiscalAddress['zipCode'] = $company->zip;
-            $this->fiscalAddress['city']    = $company->city;
-        } else {
-            $clientAddress->get($client->id_client, 'id_client');
-            $this->fiscalAddress['address'] = (false === empty($clientAddress->adresse_fiscal)) ? $clientAddress->adresse_fiscal : $clientAddress->adresse1 . ' ' . $clientAddress->adresse2 . ' ' . $clientAddress->adresse3;
-            $this->fiscalAddress['zipCode'] = (false === empty($clientAddress->cp_fiscal)) ? $clientAddress->cp_fiscal : $clientAddress->cp;
-            $this->fiscalAddress['city']    = (false === empty($clientAddress->ville_fiscal)) ? $clientAddress->ville_fiscal : $clientAddress->ville;
-        }
-
-        if (false === empty($this->clientAadresse->id_pays_fiscal)) {
-            $taxCountry->get($clientAddress->id_pays_fiscal, 'id_pays');
-        } else {
-            $taxCountry->get($clientAddress->id_pays, 'id_pays');
-        }
-        $this->fiscalAddress['country'] = $taxCountry->fr;
-    }
-
-    private function getTaxExemption(EntityManager $entityManager, \lenders_accounts $lender)
-    {
-        /** @var \lender_tax_exemption $lenderTaxExemption */
-        $lenderTaxExemption = $entityManager->getRepository('lender_tax_exemption');
-
-        $this->currentYear = date('Y', time());
-        $this->lastYear    = $this->currentYear - 1;
-        $this->nextYear    = $this->currentYear + 1;
-
-        $taxExemptionDateRange     = $lenderTaxExemption->getTaxExemptionDateRange();
-        $this->taxExemptionHistory = $this->getExemptionHistory($lenderTaxExemption, $lender->id_lender_account);
-        try {
-            $lenderInfo = $lender->getLenderTypeAndFiscalResidence($lender->id_lender_account);
-            if (false === empty($lenderInfo)) {
-                $this->eligible = 'fr' === $lenderInfo['fiscal_address'] && 'person' === $lenderInfo['client_type'];
-            } else {
-                return;
-            }
-        } catch (\Exception $exception) {
-            /** @var \Psr\Log\LoggerInterface $logger */
-            $logger = $this->get('logger');
-            $logger->info('Could not get lender info to check tax exemption eligibility. (id_lender=' . $lender->id_lender_account . ') Error message: ' .
-                $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lender->id_lender_account]);
-            return;
-        }
-
-        if (false === $this->eligible) {
-            return;
-        }
-
-        if (date('Y-m-d H:i:s') < $taxExemptionDateRange['taxExemptionRequestStartDate']->format('Y-m-d 00:00:00')
-            && date('Y-m-d H:i:s') >= $taxExemptionDateRange['taxExemptionRequestLimitDate']->format('Y-m-d 23:59:59')
-        ) {
-            $this->afterDeadline = true;
-        }
-
-        if (false === empty($this->taxExemptionHistory)) {
-            $yearList = array_column($this->taxExemptionHistory, 'year');
-
-            if (true === in_array($this->nextYear, $yearList)) {
-                $this->nextTaxExemptionRequestDone = true;
-            } else {
-                $this->nextTaxExemptionRequestDone = false;
-            }
-
-            if (true === in_array($this->lastYear, $yearList)) {
-                $this->exemptedLastYear = true;
-            } else {
-                $this->exemptedLastYear = false;
-            }
-            $this->taxExemptionRequestLimitDate = strftime('%d %B %Y', $taxExemptionDateRange['taxExemptionRequestLimitDate']->getTimestamp());
-        } else {
-            $this->exemptedLastYear = false;
-        }
-        return ['exemptedLastYear' => $this->exemptedLastYear];
     }
 }

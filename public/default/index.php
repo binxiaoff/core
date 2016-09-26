@@ -15,6 +15,10 @@ ini_set('log_errors', 1);
 
 setlocale(LC_TIME, 'fr_FR.utf8');
 
+if (extension_loaded ('newrelic')) {
+    newrelic_set_appname ("Unilend-front");
+}
+
 if (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) {
     $currentCookieParams = session_get_cookie_params();
 

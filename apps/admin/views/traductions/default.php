@@ -1,13 +1,15 @@
 <script type="text/javascript">
-    <?php if(isset($_SESSION['freeow'])) : ?>
-    $(document).ready(function () {
-        var title, message, opts, container;
-        title = "<?=$_SESSION['freeow']['title']?>";
-        message = "<?=$_SESSION['freeow']['message']?>";
-        opts = {};
-        opts.classes = ['smokey'];
-        $('#freeow-tr').freeow(title, message, opts);
-    });
+    <?php if (isset($_SESSION['freeow'])) : ?>
+        $(document).ready(function () {
+            var title, message, opts, container;
+            title = "<?=$_SESSION['freeow']['title']?>";
+            message = "<?=$_SESSION['freeow']['message']?>";
+            opts = {};
+            opts.classes = ['smokey'];
+            $('#freeow-tr').freeow(title, message, opts);
+        });
+
+        <?php unset($_SESSION['freeow']); ?>
     <?php endif; ?>
 </script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
@@ -23,11 +25,11 @@
         </a>
     </div>
     <div class="btnDroite">
-        <a href="<?= $this->lurl ?>/traductions/add" class="btn_link thickbox">Ajouter une traduction</a>
-        <a href="<?= $this->lurl ?>/traductions/export" class="btn_link">Export</a>
+        <a href="<?= $this->lurl ?>/traductions/add" class="btn_link thickbox">Ajouter une traduction</a>&nbsp;&nbsp;
+        <a href="<?= $this->lurl ?>/traductions/export" class="btn_link">Export</a>&nbsp;&nbsp;
+        <a href="<?= $this->lurl ?>/traductions/import" class="btn_link thickbox">Import</a>
     </div>
-    <?php
-    if (count($this->lSections) > 0) : ?>
+    <?php if (count($this->lSections) > 0) : ?>
         <table class="large">
             <tr>
                 <th>
@@ -94,4 +96,3 @@
         <p>Il n'y a aucune section pour le moment.</p>
     <?php endif; ?>
 </div>
-<?php unset($_SESSION['freeow']); ?>
