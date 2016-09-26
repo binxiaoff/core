@@ -31,7 +31,7 @@
                     {% if lenderDetails.hasIRR or lenderDetails.companiesLenderInvestedIn == 0 %}
                         {{ "lender-dashboard_irr-#{ lenderDetails.irrTranslation }level-#{ lenderDetails.level }"|trans|raw }}
                     {% else %}
-                        {{ "lender-dashboard_irr-not-calculable"|trans|raw }}
+                        {{ "lender-dashboard_irr-#{ lenderDetails.irrTranslation }"|trans|raw }}
                     {% endif %}
                 </p>
                 <p class="secondary">{% trans with {'%unilendIRR%' : lenderDetails.unilendIRR|localizednumber} %} lender-dashboard-user-level_unilend-irr {% endtrans %}</p>
