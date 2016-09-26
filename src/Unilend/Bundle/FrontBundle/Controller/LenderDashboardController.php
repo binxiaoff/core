@@ -54,23 +54,28 @@ class LenderDashboardController extends Controller
             $ongoingProjects[$iKey]['avgrate'] = $project->getAverageInterestRate();
         }
 
-        $ongoingBidsSum            = $bid->sumBidsEncours($lender->id_lender_account);
-        $problematicProjects       = $lenderRepayment->getProblematicProjects($lender->id_lender_account);
-        $upcomingGrossInterests    = $lenderRepayment->getOwedInterests(['id_lender' => $lender->id_lender_account]);
-        $repaidGrossInterests      = $lenderRepayment->getRepaidInterests(['id_lender' => $lender->id_lender_account]);
-        $irr                       = 0;
-        $irrTranslationType        = '';
+        $ongoingBidsSum         = $bid->sumBidsEncours($lender->id_lender_account);
+        $problematicProjects    = $lenderRepayment->getProblematicProjects($lender->id_lender_account);
+        $upcomingGrossInterests = $lenderRepayment->getOwedInterests(['id_lender' => $lender->id_lender_account]);
+        $repaidGrossInterests   = $lenderRepayment->getRepaidInterests(['id_lender' => $lender->id_lender_account]);
+        $irr                    = 0;
+        $irrTranslationType     = '';
+        $hasIRR = false;
 
         if ($this->getUser()->getLevel() > 0) {
             $aLastIRR = $oLenderAccountStats->getLastIRRForLender($lender->id_lender_account);
             if ($aLastIRR) {
                 $irr                = $aLastIRR['tri_value'];
                 $irrTranslationType = ($irr >= 0 ? 'positive-' : 'negative-');
+                $hasIRR = true;
             } else {
                 $fLossRate = $oLenderAccountStats->getLossRate($lender->id_lender_account, $lender);
 
                 if ($fLossRate > 0) {
-                    $irr = -$fLossRate;
+                    $irr                = -$fLossRate;
+                    $irrTranslationType = 'not-calculable';
+                } else {
+                    $irrTranslationType = 'not-calculated-yet';
                 }
             }
         }
@@ -135,7 +140,7 @@ class LenderDashboardController extends Controller
                     'balance'                   => $balance,
                     'level'                     => $this->getUser()->getLevel(),
                     'unilendIRR'                => $lastUnilendIRR['value'],
-                    'hasIRR'                    => $irrTranslationType != '',
+                    'hasIRR'                    => $hasIRR,
                     'irr'                       => $irr,
                     'irrTranslation'            => $irrTranslationType,
                     'initials'                  => $this->getUser()->getInitials(),
