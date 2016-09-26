@@ -29,36 +29,8 @@
 
             <div class="mosaic-spacer show-sm">&nbsp;</div>
 
+            {#Sabine#}
             <article class="mosaic-item">
-                <div class="mosaic-item-image" style="background-image: url('{{ siteurlmedia('apropos/quisommesnous/team/francois-prioux-800x800.jpg') }}');">
-                    <img src="{{ siteurlmedia('apropos/quisommesnous/team/francois-prioux-800x800.jpg') }}" alt=""/>
-                </div><!-- /.mosaic-image -->
-                <div class="mosaic-item-info">
-                    <div class="mosaic-item-info-inner">
-                        <div class="mosaic-item-links">
-                            <ul class="list-sociallinks">
-                                {% if 'about-us-people_founder-linkedin-link'|trans != 'about-us-people_founder-linkedin-link' %}
-                                    <li>
-                                        <a href="{% trans %} about-us-people_founder-linkedin-link {% endtrans %}"><span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
-                                    </li>
-                                {% endif %}
-                                {% if 'about-us-people_founder-twitter-link'|trans != 'about-us-people_founder-twitter-link' %}
-                                    <li>
-                                        <a href="{% trans %} about-us-people_founder-twitter-link {% endtrans %}"><span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
-                                    </li>
-                                {% endif %}
-                            </ul><!-- /.list-sociallinks -->
-                        </div><!-- /.mosaic-item-links -->
-                        <h3 class="mosaic-item-title">{% trans %} about-us-people_founder-name {% endtrans %}</h3>
-                        <h4 class="mosaic-item-subtitle">{% trans %} about-us-people_founder-title {% endtrans %}</h4>
-                        <div class="mosaic-item-details">
-                            <p>{% trans %} about-us-people_founder-description {% endtrans %}</p>
-                        </div><!-- /.mosaic-item-details -->
-                    </div><!-- mosaic-item-info-inner -->
-                </div><!-- /.mosaic-item-info -->
-            </article><!-- /.mosaic-item -->
-
-            <article class="mosaic-item mosaic-item-double-height mosaic-item-float-right">
                 <div class="mosaic-item-image" style="background-image: url('{{ siteurlmedia('apropos/quisommesnous/team/sabine-fillias-800x800.jpg') }}');">
                     <img src="{{ siteurlmedia('apropos/quisommesnous/team/sabine-fillias-800x800.jpg') }}" alt=""/>
                 </div><!-- /.mosaic-image -->
@@ -88,7 +60,36 @@
                     </div><!-- mosaic-item-info-inner -->
                 </div><!-- /.mosaic-item-info -->
             </article><!-- /.mosaic-item -->
-
+            {#Nicolas#}
+            <article class="mosaic-item mosaic-item-double-height mosaic-item-float-right">
+                <div class="mosaic-item-image" style="background-image: url('{{ siteurlmedia('apropos/quisommesnous/team/nicolas-lesur-800x800.jpg') }}');">
+                    <img src="{{ siteurlmedia('apropos/quisommesnous/team/nicolas-lesur-800x800.jpg') }}" alt=""/>
+                </div><!-- /.mosaic-image -->
+                <div class="mosaic-item-info">
+                    <div class="mosaic-item-info-inner">
+                        <div class="mosaic-item-links">
+                            <ul class="list-sociallinks">
+                                {% if 'about-us-people_managing-director-linkedin-link'|trans != 'about-us-people_managing-director-linkedin-link' %}
+                                    <li>
+                                        <a href="{% trans %} about-us-people_managing-founder-linkedin-link {% endtrans %}"><span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
+                                    </li>
+                                {% endif %}
+                                {% if 'about-us-people_managing-director-twitter-link'|trans != 'about-us-people_managing-director-twitter-link' %}
+                                    <li>
+                                        <a href="{% trans %} about-us-people_managing-founder-twitter-link {% endtrans %}"><span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
+                                    </li>
+                                {% endif %}
+                            </ul><!-- /.list-sociallinks -->
+                        </div><!-- /.mosaic-item-links -->
+                        <h3 class="mosaic-item-title">{% trans %} about-us-people_managing-director-name {% endtrans %}</h3>
+                        <h4 class="mosaic-item-subtitle">{% trans %} about-us-people_managing-director-title {% endtrans %}</h4>
+                        <div class="mosaic-item-details">
+                            <p>{% trans %} about-us-people_managing-director-description {% endtrans %}</p>
+                        </div><!-- /.mosaic-item-details -->
+                    </div><!-- mosaic-item-info-inner -->
+                </div><!-- /.mosaic-item-info -->
+            </article><!-- /.mosaic-item -->
+            {#David#}
             <article class="mosaic-item">
                 <div class="mosaic-item-image" style="background-image: url('{{ siteurlmedia('apropos/quisommesnous/team/david-raux-800x800.jpg') }}');">
                     <img src="{{ siteurlmedia('apropos/quisommesnous/team/david-raux-800x800.jpg') }}" alt=""/>
@@ -119,8 +120,8 @@
                     </div>
                 </div><!-- /.mosaic-item-info -->
             </article><!-- /.mosaic-item -->
-
-            <article class="mosaic-item mosaic-item-double-width">
+            {#Alain#}
+            <article class="mosaic-item">
                 <div class="mosaic-item-image" style="background-image: url('{{ siteurlmedia('apropos/quisommesnous/team/alain-elkaim-800x800.jpg') }}');">
                     <img src="{{ siteurlmedia('apropos/quisommesnous/team/alain-elkaim-800x800.jpg') }}" alt=""/>
                 </div><!-- /.mosaic-image -->
@@ -151,46 +152,14 @@
                 </div><!-- /.mosaic-item-info -->
             </article><!-- /.mosaic-item -->
 
-        </div><!-- /.site-wrap -->
-    </div><!-- /.mosaic -->
+            <article class="mosaic-header bg-p2">
+                <p class="mosaic-item-details c-white">
+                    {% trans %} about-us-people_quote-text {% endtrans %}
+                </p>
+            </article>
 
-    <div>
-        <div class="hero-wrap">
-            <div class="row feature feature-quote feature-align-right bg-p1">
-                <div class="feature-panel col-lg-6 col-md-6" data-equal-height data-equal-height-group="feature">
-                    <div class="feature-panel-inner">
-                        <div class="quote">
-                            <p>{% trans %} about-us-people_quote-text {% endtrans %}</p>
-                        </div>
-                        <ul class="list-sociallinks">
-                            {% if 'about-us-people_quote-person-linkedin-link'|trans != 'about-us-people_quote-person-linkedin-link' %}
-                                <li>
-                                    <a href="{% trans %} about-us-people_quote-person-linkedin-link {% endtrans %}">
-                                        <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
-                                </li>
-                            {% endif %}
-                            {% if 'about-us-people_quote-person-twitter-link'|trans != 'about-us-people_quote-person-twitter-link' %}
-                                <li>
-                                    <a href="{% trans %} about-us-people_quote-person-twitter-link {% endtrans %}">
-                                        <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
-                                </li>
-                            {% endif %}
-                        </ul><!-- /.list-sociallinks -->
-                        <div class="credit"><cite>{% trans %} about-us-people_quote-person {% endtrans %}</cite></div>
-                    </div><!-- /.feature-panel-inner -->
-                </div><!-- /.feature-panel -->
-                <div class="feature-image col-lg-6 col-md-6" data-equal-height data-equal-height-group="feature">
-                    <div class="feature-image-inner" style="background-image: url('{{ siteurlmedia('apropos/quisommesnous/team/nicolas-lesur-800x800.jpg') }}');">
-                        <img src="{{ siteurlmedia('apropos/quisommesnous/team/nicolas-lesur-800x800.jpg') }}" alt=""/>
-                    </div><!-- /.feature-image-inner -->
-                </div><!-- /.feature-image -->
-            </div><!-- /.feature -->
-        </div><!-- /.hero-wrap -->
-    </div>
-
-    <div class="mosaic">
-        <div class="site-wrap">
-            <article class="mosaic-item mosaic-item-double-height">
+            {#Arnaud#}
+            <article class="mosaic-item">
                 <div class="mosaic-item-image" style="background-image: url('{{ siteurlmedia('apropos/quisommesnous/team/arnaud-schwartz-800x800.jpg') }}');">
                     <img src="{{ siteurlmedia('apropos/quisommesnous/team/arnaud-schwartz-800x800.jpg') }}" alt=""/>
                 </div><!-- /.mosaic-image -->
@@ -220,8 +189,8 @@
                     </div><!-- mosaic-item-info-inner -->
                 </div><!-- /.mosaic-item-info -->
             </article><!-- /.mosaic-item -->
-
-            <article class="mosaic-item mosaic-item-double-width">
+            {#Emmanuel#}
+            <article class="mosaic-item">
                 <div class="mosaic-item-image" style="background-image: url('{{ siteurlmedia('apropos/quisommesnous/team/emmanuel-perez-duarte-800x800.jpg') }}');">
                     <img src="{{ siteurlmedia('apropos/quisommesnous/team/emmanuel-perez-duarte-800x800.jpg') }}" alt=""/>
                 </div><!-- /.mosaic-image -->
@@ -251,12 +220,10 @@
                     </div><!-- /.mosaic-item-info-inner -->
                 </div><!-- /.mosaic-item-info -->
             </article><!-- /.mosaic-item -->
-
-            <div class="mosaic-spacer show-md show-lg">&nbsp;</div>
-
+            {#Damien#}
             <article class="mosaic-item">
-                <div class="mosaic-item-image" style="background-image: url('{{ siteurlmedia('apropos/quisommesnous/team/alain-elkaim-800x800.jpg') }}');">
-                    <img src="{{ siteurlmedia('apropos/quisommesnous/team/alain-elkaim-800x800.jpg') }}" alt=""/>
+                <div class="mosaic-item-image">
+                    <img src="" alt=""/>
                 </div><!-- /.mosaic-image -->
                 <div class="mosaic-item-info">
                     <div class="mosaic-item-info-inner">
@@ -285,6 +252,8 @@
                 </div><!-- /.mosaic-item-info -->
             </article><!-- /.mosaic-item -->
 
+            <div class="mosaic-spacer show-md show-lg">&nbsp;</div>
+
         </div><!-- /.site-wrap -->
     </div><!-- /.mosaic -->
 </section>
@@ -300,145 +269,21 @@
             <div class="col-lg-6 col-md-6">
                 <div class="block-people block-no-bottom-spacing">
                     <div class="row">
-
-                        <article class="person col-lg-4 col-md-4 col-sm-4" data-equal-height="sm md lg" data-equal-height-group="strategy">
-                            <div class="person-image">
-                                <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/nicolas-lesur-300x300.jpg') }}" alt=""/>
-                                <div class="person-links">
-                                    <ul class="list-sociallinks">
-                                        {% if 'about-us-people_strategy-committee-1-linkedin-link'|trans != 'about-us-people_strategy-committee-1-linkedin-link' %}
-                                            <li>
-                                                <a href="{% trans %} about-us-people_strategy-committee-1-linkedin-link {% endtrans %}">
-                                                    <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
-                                            </li>
-                                        {% endif %}
-                                        {% if 'about-us-people_strategy-committee-1-twitter-link'|trans != 'about-us-people_strategy-committee-1-twitter-link' %}
-                                            <li>
-                                                <a href="{% trans %} about-us-people_strategy-committee-1-twitter-link {% endtrans %}">
-                                                    <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
-                                            </li>
-                                        {% endif %}
-                                    </ul><!-- /.list-sociallinks -->
-                                </div><!-- /.person-links -->
-                            </div><!-- /.person-image -->
-                            <div class="person-info">
-                                <header class="person-header" data-equal-height data-equal-height-group="strategy-header">
-                                    <h3 class="person-name">{% trans %} about-us-people_strategy-committee-name-1 {% endtrans %}</h3>
-                                    <h4 class="person-role">{% trans %} about-us-people_strategy-committee-role-1 {% endtrans %}</h4>
-                                </header>
-                                <div class="person-details">
-                                    <p>{% trans %} about-us-people_strategy-committee-details-1 {% endtrans %}</p>
-                                </div>
-                            </div><!-- /.person-info -->
-                        </article><!-- /.person -->
-
-                        <article class="person col-lg-4 col-md-4 col-sm-4" data-equal-height="sm md lg" data-equal-height-group="strategy">
-                            <div class="person-image">
-                                <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/emmanuel-levi-300x300.jpg') }}" alt=""/>
-                                <div class="person-links">
-                                    <ul class="list-sociallinks">
-                                        {% if 'about-us-people_strategy-committee-2-linkedin-link'|trans != 'about-us-people_strategy-committee-2-linkedin-link' %}
-                                            <li>
-                                                <a href="{% trans %} about-us-people_strategy-committee-2-linkedin-link {% endtrans %}">
-                                                    <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
-                                            </li>
-                                        {% endif %}
-                                        {% if 'about-us-people_strategy-committee-2-twitter-link'|trans != 'about-us-people_strategy-committee-2-twitter-link' %}
-                                            <li>
-                                                <a href="{% trans %} about-us-people_strategy-committee-2-twitter-link {% endtrans %}">
-                                                    <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
-                                            </li>
-                                        {% endif %}
-                                    </ul><!-- /.list-sociallinks -->
-                                </div><!-- /.person-links -->
-                            </div><!-- /.person-image -->
-                            <div class="person-info">
-                                <header class="person-header" data-equal-height data-equal-height-group="strategy-header">
-                                    <h3 class="person-name">{% trans %} about-us-people_strategy-committee-name-2 {% endtrans %}</h3>
-                                    <h4 class="person-role">{% trans %} about-us-people_strategy-committee-role-2 {% endtrans %}</h4>
-                                </header>
-                                <div class="person-details">
-                                    <p>{% trans %} about-us-people_strategy-committee-details-2 {% endtrans %}</p>
-                                </div>
-                            </div><!-- /.person-info -->
-                        </article><!-- /.person -->
-
-                        <article class="person col-lg-4 col-md-4 col-sm-4" data-equal-height="sm md lg" data-equal-height-group="strategy">
-                            <div class="person-image">
-                                <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/francois-prioux-300x300.jpg') }}" alt=""/>
-                                <div class="person-links">
-                                    <ul class="list-sociallinks">
-                                        {% if 'about-us-people_strategy-committee-3-linkedin-link'|trans != 'about-us-people_strategy-committee-3-linkedin-link' %}
-                                            <li>
-                                                <a href="{% trans %} about-us-people_strategy-committee-3-linkedin-link {% endtrans %}">
-                                                    <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
-                                            </li>
-                                        {% endif %}
-                                        {% if 'about-us-people_strategy-committee-3-twitter-link'|trans != 'about-us-people_strategy-committee-3-twitter-link' %}
-                                            <li>
-                                                <a href="{% trans %} about-us-people_strategy-committee-3-twitter-link {% endtrans %}">
-                                                    <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
-                                            </li>
-                                        {% endif %}
-                                    </ul><!-- /.list-sociallinks -->
-                                </div><!-- /.person-links -->
-                            </div><!-- /.person-image -->
-                            <div class="person-info">
-                                <header class="person-header" data-equal-height data-equal-height-group="strategy-header">
-                                    <h3 class="person-name">{% trans %} about-us-people_strategy-committee-name-3 {% endtrans %}</h3>
-                                    <h4 class="person-role">{% trans %} about-us-people_strategy-committee-role-3 {% endtrans %}</h4>
-                                </header>
-                                <div class="person-details">
-                                    <p>{% trans %} about-us-people_strategy-committee-details-3 {% endtrans %}</p>
-                                </div>
-                            </div><!-- /.person-info -->
-                        </article><!-- /.person -->
-
-                        <article class="person col-lg-4 col-md-4 col-sm-4" data-equal-height="sm md lg" data-equal-height-group="strategy">
-                            <div class="person-image">
-                                <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/xavier-delaplace-300x300.jpg') }}" alt=""/>
-                                <div class="person-links">
-                                    <ul class="list-sociallinks">
-                                        {% if 'about-us-people_strategy-committee-4-linkedin-link'|trans != 'about-us-people_strategy-committee-4-linkedin-link' %}
-                                            <li>
-                                                <a href="{% trans %} about-us-people_strategy-committee-4-linkedin-link {% endtrans %}">
-                                                    <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
-                                            </li>
-                                        {% endif %}
-                                        {% if 'about-us-people_strategy-committee-4-twitter-link'|trans != 'about-us-people_strategy-committee-4-twitter-link' %}
-                                            <li>
-                                                <a href="{% trans %} about-us-people_strategy-committee-4-twitter-link {% endtrans %}">
-                                                    <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
-                                            </li>
-                                        {% endif %}
-                                    </ul><!-- /.list-sociallinks -->
-                                </div><!-- /.person-links -->
-                            </div><!-- /.person-image -->
-                            <div class="person-info">
-                                <header class="person-header" data-equal-height data-equal-height-group="strategy-header">
-                                    <h3 class="person-name">{% trans %} about-us-people_strategy-committee-name-4 {% endtrans %}</h3>
-                                    <h4 class="person-role">{% trans %} about-us-people_strategy-committee-role-4 {% endtrans %}</h4>
-                                </header>
-                                <div class="person-details">
-                                    <p>{% trans %} about-us-people_strategy-committee-details-4 {% endtrans %}</p>
-                                </div>
-                            </div><!-- /.person-info -->
-                        </article><!-- /.person -->
-
+                        {#Ventech (Jean Bourcerau) #}
                         <article class="person col-lg-4 col-md-4 col-sm-4" data-equal-height="sm md lg" data-equal-height-group="strategy">
                             <div class="person-image">
                                 <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/jean-bourcereau-300x300.jpg') }}" alt=""/>
                                 <div class="person-links">
                                     <ul class="list-sociallinks">
-                                        {% if 'about-us-people_strategy-committee-5-linkedin-link'|trans != 'about-us-people_strategy-committee-5-linkedin-link' %}
+                                        {% if 'about-us-people_ventech-linkedin-link'|trans != 'about-us-people_ventech-linkedin-link' %}
                                             <li>
-                                                <a href="{% trans %} about-us-people_strategy-committee-5-linkedin-link {% endtrans %}">
+                                                <a href="{% trans %} about-us-people_ventech-linkedin-link {% endtrans %}">
                                                     <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
                                             </li>
                                         {% endif %}
-                                        {% if 'about-us-people_strategy-committee-5-twitter-link'|trans != 'about-us-people_strategy-committee-5-twitter-link' %}
+                                        {% if 'about-us-people_ventech-twitter-link'|trans != 'about-us-people_ventech-twitter-link' %}
                                             <li>
-                                                <a href="{% trans %} about-us-people_strategy-committee-5-twitter-link {% endtrans %}">
+                                                <a href="{% trans %} about-us-people_ventech-twitter-link {% endtrans %}">
                                                     <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
                                             </li>
                                         {% endif %}
@@ -447,46 +292,154 @@
                             </div><!-- /.person-image -->
                             <div class="person-info">
                                 <header class="person-header" data-equal-height data-equal-height-group="strategy-header">
-                                    <h3 class="person-name">{% trans %} about-us-people_strategy-committee-name-5 {% endtrans %}</h3>
-                                    <h4 class="person-role">{% trans %} about-us-people_strategy-committee-role-5 {% endtrans %}</h4>
+                                    <h3 class="person-name">{% trans %} about-us-people_ventech-name {% endtrans %}</h3>
+                                    <h4 class="person-role">{% trans %} about-us-people_ventech-role {% endtrans %}</h4>
                                 </header>
                                 <div class="person-details">
-                                    <p>{% trans %} about-us-people_strategy-committee-details-5 {% endtrans %}</p>
+                                    <p>{% trans %} about-us-people_ventech-details {% endtrans %}</p>
                                 </div>
                             </div><!-- /.person-info -->
                         </article><!-- /.person -->
-                    </div>
-                </div><!-- /.block-people -->
-            </div>
-        </div>
-    </div><!-- /.site-wrap -->
-</section><!-- /.page-section -->
-
-<section id="section-direction" class="page-section block-no-top-spacing-md block-no-top-spacing-lg">
-    <div class="site-wrap">
-        <div class="row reverse">
-            <div class="col-lg-6 col-md-6">
-                <header class="block-header block-no-top-spacing-sm">
-                    <h1 class="h4">{% trans %} about-us-people_orientation-committee-title {% endtrans %}</h1>
-                </header>
-            </div>
-            <div class="col-lg-6 col-md-6">
-                <div class="block-people block-no-bottom-spacing-md block-no-bottom-spacing-lg">
-                    <div class="row">
-                        <article class="person" data-equal-height="sm md lg" data-equal-height-group="direction">
+                        {#360CP (Emmanuel Levi) #}
+                        <article class="person col-lg-4 col-md-4 col-sm-4" data-equal-height="sm md lg" data-equal-height-group="strategy">
                             <div class="person-image">
-                                <img src="{{ siteurlmedia('apropos/quisommesnous/direction/pierre-henri-cassou-300x300.jpg') }}" alt=""/>
+                                <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/emmanuel-levi-300x300.jpg') }}" alt=""/>
                                 <div class="person-links">
                                     <ul class="list-sociallinks">
-                                        {% if 'about-us-people_orientation-committee-1-linkedin-link'|trans != 'about-us-people_orientation-committee-1-linkedin-link' %}
+                                        {% if 'about-us-people_360cp-linkedin-link'|trans != 'about-us-people_360cp-linkedin-link' %}
                                             <li>
-                                                <a href="{% trans %} about-us-people_orientation-committee-1-linkedin-link {% endtrans %}">
+                                                <a href="{% trans %} about-us-people_360cp-linkedin-link {% endtrans %}">
                                                     <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
                                             </li>
                                         {% endif %}
-                                        {% if 'about-us-people_orientation-committee-1-twitter-link'|trans != 'about-us-people_orientation-committee-1-twitter-link' %}
+                                        {% if 'about-us-people_360cp-twitter-link'|trans != 'about-us-people_360cp-twitter-link' %}
                                             <li>
-                                                <a href="{% trans %} about-us-people_orientation-committee-1-twitter-link {% endtrans %}">
+                                                <a href="{% trans %} about-us-people_360cp-twitter-link {% endtrans %}">
+                                                    <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
+                                            </li>
+                                        {% endif %}
+                                    </ul><!-- /.list-sociallinks -->
+                                </div><!-- /.person-links -->
+                            </div><!-- /.person-image -->
+                            <div class="person-info">
+                                <header class="person-header" data-equal-height data-equal-height-group="strategy-header">
+                                    <h3 class="person-name">{% trans %} about-us-people_360cp-name {% endtrans %}</h3>
+                                    <h4 class="person-role">{% trans %} about-us-people_360cp-role {% endtrans %}</h4>
+                                </header>
+                                <div class="person-details">
+                                    <p>{% trans %} about-us-people_360cp-details {% endtrans %}</p>
+                                </div>
+                            </div><!-- /.person-info -->
+                        </article><!-- /.person -->
+                        {#BPI (Xavier Delaplace) #}
+                        <article class="person col-lg-4 col-md-4 col-sm-4" data-equal-height="sm md lg" data-equal-height-group="strategy">
+                            <div class="person-image">
+                                <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/xavier-delaplace-300x300.jpg') }}" alt=""/>
+                                <div class="person-links">
+                                    <ul class="list-sociallinks">
+                                        {% if 'about-us-people_bpi-linkedin-link'|trans != 'about-us-people_bpi-linkedin-link' %}
+                                            <li>
+                                                <a href="{% trans %} about-us-people_bpi-linkedin-link {% endtrans %}">
+                                                    <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
+                                            </li>
+                                        {% endif %}
+                                        {% if 'about-us-people_bpi-twitter-link'|trans != 'about-us-people_bpi-twitter-link' %}
+                                            <li>
+                                                <a href="{% trans %} about-us-people_bpi-twitter-link {% endtrans %}">
+                                                    <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
+                                            </li>
+                                        {% endif %}
+                                    </ul><!-- /.list-sociallinks -->
+                                </div><!-- /.person-links -->
+                            </div><!-- /.person-image -->
+                            <div class="person-info">
+                                <header class="person-header" data-equal-height data-equal-height-group="strategy-header">
+                                    <h3 class="person-name">{% trans %} about-us-people_bpi-name {% endtrans %}</h3>
+                                    <h4 class="person-role">{% trans %} about-us-people_bpi-role {% endtrans %}</h4>
+                                </header>
+                                <div class="person-details">
+                                    <p>{% trans %} about-us-people_bpi-details {% endtrans %}</p>
+                                </div>
+                            </div><!-- /.person-info -->
+                        </article><!-- /.person -->
+                        {#NewAlpha (Lior Derhy) #}
+                        <article class="person col-lg-4 col-md-4 col-sm-4" data-equal-height="sm md lg" data-equal-height-group="strategy">
+                            <div class="person-image">
+                                {#<img src="" alt=""/>#}
+                                <div style="width: 187px;height: 187px; background-color: #f8f6f8;"></div>
+                                <div class="person-links">
+                                    <ul class="list-sociallinks">
+                                        {% if 'about-us-people_new-alpha-linkedin-link'|trans != 'about-us-people_new-alpha-linkedin-link' %}
+                                            <li>
+                                                <a href="{% trans %} about-us-people_new-alpha-linkedin-link {% endtrans %}">
+                                                    <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
+                                            </li>
+                                        {% endif %}
+                                        {% if 'about-us-people_new-alpha-twitter-link'|trans != 'about-us-people_new-alpha-twitter-link' %}
+                                            <li>
+                                                <a href="{% trans %} about-us-people_new-alpha-twitter-link {% endtrans %}">
+                                                    <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
+                                            </li>
+                                        {% endif %}
+                                    </ul><!-- /.list-sociallinks -->
+                                </div><!-- /.person-links -->
+                            </div><!-- /.person-image -->
+                            <div class="person-info">
+                                <header class="person-header" data-equal-height data-equal-height-group="strategy-header">
+                                    <h3 class="person-name">{% trans %} about-us-people_new-alpha-name {% endtrans %}</h3>
+                                    <h4 class="person-role">{% trans %} about-us-people_new-alpha-role {% endtrans %}</h4>
+                                </header>
+                                <div class="person-details">
+                                    <p>{% trans %} about-us-people_new-alpha-details {% endtrans %}</p>
+                                </div>
+                            </div><!-- /.person-info -->
+                        </article><!-- /.person -->
+                        {#François Prioux #}
+                        <article class="person col-lg-4 col-md-4 col-sm-4" data-equal-height="sm md lg" data-equal-height-group="strategy">
+                            <div class="person-image">
+                                <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/francois-prioux-300x300.jpg') }}" alt=""/>
+                                <div class="person-links">
+                                    <ul class="list-sociallinks">
+                                        {% if 'about-us-people_fprioux-linkedin-link'|trans != 'about-us-people_fprioux-linkedin-link' %}
+                                            <li>
+                                                <a href="{% trans %} about-us-people_fprioux-linkedin-link {% endtrans %}">
+                                                    <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
+                                            </li>
+                                        {% endif %}
+                                        {% if 'about-us-people_fprioux-twitter-link'|trans != 'about-us-people_fprioux-twitter-link' %}
+                                            <li>
+                                                <a href="{% trans %} about-us-people_fprioux-twitter-link {% endtrans %}">
+                                                    <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
+                                            </li>
+                                        {% endif %}
+                                    </ul><!-- /.list-sociallinks -->
+                                </div><!-- /.person-links -->
+                            </div><!-- /.person-image -->
+                            <div class="person-info">
+                                <header class="person-header" data-equal-height data-equal-height-group="strategy-header">
+                                    <h3 class="person-name">{% trans %} about-us-people_fprioux-name {% endtrans %}</h3>
+                                    <h4 class="person-role">{% trans %} about-us-people_fprioux-role {% endtrans %}</h4>
+                                </header>
+                                <div class="person-details">
+                                    <p>{% trans %} about-us-people_fprioux-details {% endtrans %}</p>
+                                </div>
+                            </div><!-- /.person-info -->
+                        </article><!-- /.person -->
+                        {#Pierre-Henri Cassou #}
+                        <article class="person col-lg-4 col-md-4 col-sm-4" data-equal-height="sm md lg" data-equal-height-group="strategy">
+                            <div class="person-image">
+                                <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/pierre-henri-cassou-300x300.jpg') }}" alt=""/>
+                                <div class="person-links">
+                                    <ul class="list-sociallinks">
+                                        {% if 'about-us-people_phcassou-linkedin-link'|trans != 'about-us-phcassou-linkedin-link' %}
+                                            <li>
+                                                <a href="{% trans %} about-us-people_phcassou-linkedin-link {% endtrans %}">
+                                                    <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
+                                            </li>
+                                        {% endif %}
+                                        {% if 'about-us-people_phcassou-twitter-link'|trans != 'about-us-people_phcassou-twitter-link' %}
+                                            <li>
+                                                <a href="{% trans %} about-us-people_phcassou-twitter-link {% endtrans %}">
                                                     <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
                                             </li>
                                         {% endif %}
@@ -495,73 +448,11 @@
                             </div><!-- /.person-image -->
                             <div class="person-info">
                                 <header class="person-header" data-equal-height data-equal-height-group="direction-header">
-                                    <h3 class="person-name">{% trans %} about-us-people_orientation-committee-name-1 {% endtrans %}</h3>
-                                    <h4 class="person-role">{% trans %} about-us-people_orientation-committee-role-1 {% endtrans %}</h4>
+                                    <h3 class="person-name">{% trans %} about-us-people_phcassou-name {% endtrans %}</h3>
+                                    <h4 class="person-role">{% trans %} about-us-people_phcassou-role {% endtrans %}</h4>
                                 </header>
                                 <div class="person-details">
-                                    <p>{% trans %} about-us-people_orientation-committee-details-1 {% endtrans %}</p>
-                                </div>
-                            </div><!-- /.person-info -->
-                        </article><!-- /.person -->
-
-                        <article class="person" data-equal-height="sm md lg" data-equal-height-group="direction">
-                            <div class="person-image">
-                                <img src="{{ siteurlmedia('apropos/quisommesnous/direction/claude-rousset-300x300.jpg') }}" alt=""/>
-                                <div class="person-links">
-                                    <ul class="list-sociallinks">
-                                        {% if 'about-us-people_orientation-committee-2-linkedin-link'|trans != 'about-us-people_orientation-committee-2-linkedin-link' %}
-                                            <li>
-                                                <a href="{% trans %} about-us-people_orientation-committee-2-linkedin-link {% endtrans %}">
-                                                    <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
-                                            </li>
-                                        {% endif %}
-                                        {% if 'about-us-people_orientation-committee-2-twitter-link'|trans != 'about-us-people_orientation-committee-2-twitter-link' %}
-                                            <li>
-                                                <a href="{% trans %} about-us-people_orientation-committee-2-twitter-link {% endtrans %}">
-                                                    <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
-                                            </li>
-                                        {% endif %}
-                                    </ul><!-- /.list-sociallinks -->
-                                </div><!-- /.person-links -->
-                            </div><!-- /.person-image -->
-                            <div class="person-info">
-                                <header class="person-header" data-equal-height data-equal-height-group="direction-header">
-                                    <h3 class="person-name">{% trans %} about-us-people_orientation-committee-name-2 {% endtrans %}</h3>
-                                    <h4 class="person-role">{% trans %} about-us-people_orientation-committee-role-2 {% endtrans %}</h4>
-                                </header>
-                                <div class="person-details">
-                                    <p>{% trans %} about-us-people_orientation-committee-details-2 {% endtrans %}</p>
-                                </div>
-                            </div><!-- /.person-info -->
-                        </article><!-- /.person -->
-
-                        <article class="person" data-equal-height="sm md lg" data-equal-height-group="direction">
-                            <div class="person-image">
-                                <img src="{{ siteurlmedia('apropos/quisommesnous/direction/arnaud-poissonnier-300x300.jpg') }}" alt=""/>
-                                <div class="person-links">
-                                    <ul class="list-sociallinks">
-                                        {% if 'about-us-people_orientation-committee-3-linkedin-link'|trans != 'about-us-people_orientation-committee-3-linkedin-link' %}
-                                            <li>
-                                                <a href="{% trans %} about-us-people_orientation-committee-3-linkedin-link {% endtrans %}">
-                                                    <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
-                                            </li>
-                                        {% endif %}
-                                        {% if 'about-us-people_orientation-committee-3-twitter-link'|trans != 'about-us-people_orientation-committee-3-twitter-link' %}
-                                            <li>
-                                                <a href="{% trans %} about-us-people_orientation-committee-3-twitter-link {% endtrans %}">
-                                                    <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
-                                            </li>
-                                        {% endif %}
-                                    </ul><!-- /.list-sociallinks -->
-                                </div><!-- /.person-links -->
-                            </div><!-- /.person-image -->
-                            <div class="person-info">
-                                <header class="person-header" data-equal-height data-equal-height-group="direction-header">
-                                    <h3 class="person-name">{% trans %} about-us-people_orientation-committee-name-3 {% endtrans %}</h3>
-                                    <h4 class="person-role">{% trans %} about-us-people_orientation-committee-role-3 {% endtrans %}</h4>
-                                </header>
-                                <div class="person-details">
-                                    <p>{% trans %} about-us-people_orientation-committee-details-3 {% endtrans %}</p>
+                                    <p>{% trans %} about-us-people_phcassou-details {% endtrans %}</p>
                                 </div>
                             </div><!-- /.person-info -->
                         </article><!-- /.person -->
@@ -591,7 +482,7 @@
                     {{ svgimage('#promo-money', '', 190, 190) | raw }}
                 </div>
                 <h3 class="promo-highlight">
-                    <span data-textcount data-start-count="0" data-end-count="9.5" data-total-time="3000" data-limit-decimal="1" data-tween-count="easeOutCirc">9,5</span>M€
+                    <span data-textcount data-start-count="0" data-end-count="12" data-total-time="3000" data-limit-decimal="1" data-tween-count="easeOutCirc">12</span>M€
                 </h3>
                 <p>{% trans %} about-us-people_stats-section-money-text {% endtrans %}</p>
             </div><!-- /.promo -->
@@ -636,22 +527,18 @@
             </article><!-- /.mosaic-item -->
 
             <article class="mosaic-item mosaic-cell">
-                <a href="http://www.bpifrance.fr" class="mosaic-cell-inner"><img src="{{ siteurlmedia('apropos/quisommesnous/partners/logo-bpifrance-200x60.png') }}" alt=""/></a>
-            </article><!-- /.mosaic-item -->
-
-            <div class="mosaic-spacer show-md show-lg">&nbsp;</div>
-            <div class="mosaic-spacer show-md show-lg">&nbsp;</div>
-
-            <article class="mosaic-item mosaic-cell">
-                <a href="http://www.altares.com/fr/" class="mosaic-cell-inner"><img src="{{ siteurlmedia('apropos/quisommesnous/partners/logo-dataaltares-150x150.png') }}" alt=""/></a>
-            </article><!-- /.mosaic-item -->
-
-            <article class="mosaic-item mosaic-cell">
                 <a href="http://360capitalpartners.com" class="mosaic-cell-inner"><img src="{{ siteurlmedia('apropos/quisommesnous/partners/logo-360capitalpartners-170x90.png') }}" alt=""/></a>
             </article><!-- /.mosaic-item -->
 
+            <div class="mosaic-spacer show-md show-lg">&nbsp;</div>
+            <div class="mosaic-spacer show-md show-lg">&nbsp;</div>
+
             <article class="mosaic-item mosaic-cell">
-                <a href="http://www.sfpmei.com" class="mosaic-cell-inner"><img src="{{ siteurlmedia('apropos/quisommesnous/partners/logo-sfpmei-180x40.png') }}" alt=""/></a>
+                <a href="http://www.bpifrance.fr" class="mosaic-cell-inner"><img src="{{ siteurlmedia('apropos/quisommesnous/partners/logo-bpifrance-200x60.png') }}" alt=""/></a>
+            </article><!-- /.mosaic-item -->
+
+            <article class="mosaic-item mosaic-cell">
+                <a href=" https://www.newalpha.com/" class="mosaic-cell-inner"><img src="{{ siteurlmedia('apropos/quisommesnous/partners/logo_new_alpha.jpg') }}" alt="" height="90px"/></a>
             </article><!-- /.mosaic-item -->
 
         </div><!-- /.mosaic -->
