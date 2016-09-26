@@ -49,25 +49,18 @@ class MainController extends Controller
         $testimonialService = $this->get('unilend.frontbundle.service.testimonial_manager');
         /** @var AuthorizationChecker $authorizationChecker */
         $authorizationChecker = $this->get('security.authorization_checker');
-        /** @var ProjectDisplayManager $projectDisplayManager */
-        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
         /** @var WelcomeOfferManager $welcomeOfferManager */
         $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
 
         $template = [];
-        $template['showWelcomeOffer']  = $welcomeOfferManager->displayOfferOnHome();
+        $template['showWelcomeOffer'] = $welcomeOfferManager->displayOfferOnHome();
         $template['testimonialPeople'] = $testimonialService->getAllBattenbergTestimonials();
-        $template['projects'] = $projectDisplayManager->getProjectsList(
-            [\projects_status::EN_FUNDING],
-            [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC]
-        );
-
         $template['sliderTestimonials'] = $testimonialService->getSliderInformation();
 
         if ($authorizationChecker->isGranted('ROLE_LENDER')) {
-            $this->redirectToRoute('home_lender');
+            return $this->redirectToRoute('home_lender');
         } elseif ($authorizationChecker->isGranted('ROLE_BORROWER')) {
-            $this->redirectToRoute('home_borrower');
+            return $this->redirectToRoute('home_borrower');
         }
 
         return $this->render('pages/homepage_acquisition.html.twig', $template);

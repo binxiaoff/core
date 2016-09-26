@@ -131,26 +131,6 @@ class StatisticsManager
         }
     }
 
-    public function getPercentageSuccessfullyFinancedProjects()
-    {
-        $cachedItem = $this->cachePool->getItem(CacheKeys::PERCENT_FULLY_FINANCED_PROJECTS);
-
-        if (false === $cachedItem->isHit()) {
-            /** @var \projects_status_history $projectStatusHistory */
-            $projectStatusHistory = $this->entityManager->getRepository('projects_status_history');
-            /** @var array $countByStatus */
-            $countByStatus = $projectStatusHistory->countProjectsHavingHadStatus([\projects_status::EN_FUNDING, \projects_status::FUNDE]);
-            /** @var string $percentageSuccessfullyFunded */
-            $percentageSuccessfullyFunded = bcmul(bcdiv($countByStatus[\projects_status::FUNDE], $countByStatus[\projects_status::EN_FUNDING], 4), 100, 2);
-            $cachedItem->set($percentageSuccessfullyFunded)->expiresAfter(CacheKeys::LONG_TIME);
-            $this->cachePool->save($cachedItem);
-
-            return $percentageSuccessfullyFunded;
-        } else {
-            return $cachedItem->get();
-        }
-    }
-
     public function getAverageFundingTime()
     {
         $cachedItem = $this->cachePool->getItem(CacheKeys::AVG_FUNDING_TIME);

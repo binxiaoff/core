@@ -202,7 +202,7 @@ permalink: path('home')
                     <div class="btn-toolbar">
                         <a href="{{ path('projects_list') }}" class="btn-primary">
                             <span class="icon fa-angle-right"></span>
-                            {% transchoice projects|length with {'%numberProjects%' : projects|length} %} project-list_title-ongoing-projects {% endtranschoice %}
+                            {% trans %} site-general_button-to-projects-page {% endtrans %}
                         </a>
                     </div>
                 </div>

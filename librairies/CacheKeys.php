@@ -39,7 +39,6 @@ class CacheKeys
     const FINANCED_PROJECTS                   = 'stats_numberOfFinancedProjects';
     const AMOUNT_BORROWED                      = 'stats_amountBorrowed';
     const UNILEND_IRR                         = 'stats_unilendIRR';
-    const PERCENT_FULLY_FINANCED_PROJECTS     = 'stats_percentageSuccessfullyFinancedProjects';
     const AVG_FUNDING_TIME                    = 'stats_averageFundingTime';
     const AVG_INTEREST_RATE_LENDERS           = 'stats_averageInterestRateForLenders';
     const AVG_LENDER_ON_PROJECT               = 'stats_averageNumberOfLenders';
@@ -70,7 +69,6 @@ class CacheKeys
             self::FINANCED_PROJECTS,
             self::AMOUNT_BORROWED,
             self::UNILEND_IRR,
-            self::PERCENT_FULLY_FINANCED_PROJECTS,
             self::AVG_FUNDING_TIME,
             self::AVG_INTEREST_RATE_LENDERS,
             self::AVG_LENDER_ON_PROJECT,
