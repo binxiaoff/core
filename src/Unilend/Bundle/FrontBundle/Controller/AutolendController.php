@@ -199,7 +199,7 @@ class AutolendController extends Controller
 
         foreach ($post['data'] as $setting) {
             $projectPeriods->get($setting['period']);
-            $periodTranslation = $translator->trans('autolend_autobid-period-' . $projectPeriods->id_period, ['%min%' => $projectPeriods->min, '%max%' => $projectPeriods->max]);
+            $periodTranslation = $translator->trans('autolend_expert-settings-project-period-' . $projectPeriods->id_period, ['%min%' => $projectPeriods->min, '%max%' => $projectPeriods->max]);
             $note = constant('\projects::RISK_' . $setting['evaluation']);
             $note = is_float($note) ? $ficelle->formatNumber($note, 1) : $note;
 

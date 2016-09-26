@@ -398,6 +398,7 @@ $doc
             var cellData = getCellInfo(cellIndex)
             var $inputRate = getInputRate(cellData.cellIndex)
             $inputRate.val(cellData.avgRateUnilend)
+            cellData.currentRate = cellData.avgRateUnilend;
 
             adjustInterestRate(cellData, cellData.avgRateUnilend)
             changeCellColor(cellData, cellData.avgRateUnilend)
