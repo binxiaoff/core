@@ -636,13 +636,6 @@ class dossiersController extends bootstrap
 
                     $this->projects->update();
 
-                    if (empty($this->projects->id_product) && $this->projects->status >= projects_status::ATTENTE_ANALYSTE) {
-                        $_SESSION['freeow']['title']   = 'Sauvegarde du résumé';
-                        $_SESSION['freeow']['message'] = 'Aucun produit a été associé au projet';
-                        header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
-                        die;
-                    }
-
                     if ($_POST['status'] != $_POST['current_status'] && $this->projects->status != $_POST['status']) {
 
                         if ($_POST['status'] == \projects_status::PREP_FUNDING) {
