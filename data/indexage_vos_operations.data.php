@@ -149,13 +149,11 @@ class indexage_vos_operations extends indexage_vos_operations_crud
             'clientId'        => $clientId,
             'startDate'       => $startDate,
             'endDate'         => $endDate,
-            'orderBy'         => $orderBy
         ];
         $bindType = [
             'clientId'  => \PDO::PARAM_INT,
             'startDate' => \PDO::PARAM_STR,
             'endDate'   => \PDO::PARAM_STR,
-            'orderBy'   => \PDO::PARAM_STR
         ];
         $sql      = 'SELECT
                     id,
@@ -196,7 +194,7 @@ class indexage_vos_operations extends indexage_vos_operations_crud
             $bind['projectId']     = $projectId;
             $bindType['projectId'] = \PDO::PARAM_INT;
         }
-        $sql .= ' ORDER BY :orderBy';
+        $sql .= ' ORDER BY ' . $orderBy;
         /** @var \Doctrine\DBAL\Statement $statement */
         $statement = $this->bdd->executeQuery($sql, $bind, $bindType);
         return $statement->fetchAll(\PDO::FETCH_ASSOC);
