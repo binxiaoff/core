@@ -99,7 +99,12 @@
                                             <label class="col-lg-5 col-md-5 push-lg-1 push-md-1">
                                                 <select id="bid-interest" name="invest[interest]" class="input-field" data-popup-rate >
                                                     <option value="">{% trans %} project-detail_side-bar-bids-rate-placeholder {% endtrans %}</option>
-                                                    {% for rate in range(project.maxValidRate - 0.1, project.minRate, 0.1) %}
+                                                    {% if (project.percentFunded < 100) %}
+                                                        {% set adjustment = 0 %}
+                                                    {% else %}
+                                                        {% set adjustment = 0.1 %}
+                                                     {% endif %}
+                                                    {% for rate in range(project.maxValidRate - adjustment, project.minRate, 0.1) %}
                                                         <option value="{{ rate }}">{{ rate|localizednumberwithprecision(1) }} %</option>
                                                     {% endfor %}
                                                 </select>
@@ -135,7 +140,6 @@
                                     <button type="submit" class="btn-primary btn-size-full cursor">{% trans %} project-detail_side-bar-bids-submit-button {% endtrans %}</button>
                                     <input type="hidden" name="invest[bidToken]" value="{{ bidToken }}">
                                     <input type="hidden" id="bid-duration" value="{{ project.duration }}">
-                                    <input type="hidden" id="bid-max-amount" value="{{ amountMax }}">
                                     <input type="hidden" id="bid-rest-amount" value="{{ amountRest }}">
                                 </div><!-- /.btn-toolbar -->
                                 <div class="field-help">&nbsp;</div>

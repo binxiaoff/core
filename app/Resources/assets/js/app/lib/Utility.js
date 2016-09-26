@@ -302,13 +302,14 @@ var Utility = {
   // @param {Mixed} input {String} representing date/time or {Date}
   // @returns {Date}
   getDate: function (input) {
-    // @debug
-    // console.log('Utility.getDate', input)
+    var output
 
-    if (input instanceof Date) return input
+    // Already date
+    if (input instanceof Date) {
+      output = input
 
     // Parse date from string
-    if (typeof input === 'string' && input !== 'now') {
+    } else if (typeof input === 'string' && input !== 'now') {
       input = input.trim()
 
       // Ensure date has times formatted as ISO for Safari compatibility
@@ -316,20 +317,24 @@ var Utility = {
         input = input.replace(/^(\d{4}\-\d{2}\-\d{2}) (\d{2}\:\d{2})(?:\:\d{2}(?:\.\d{,3})?)?$/, '$1T$2:00.000')
       }
 
-      // @debug
-      // console.log('Utility.getDate: parse string input', input, new Date(input), Date.parse(input))
-
-      return new Date(input)
+      output = new Date(input)
+      // return new Date(input)
 
     // Assume unix time (in seconds)
     } else if (typeof input === 'number') {
       var output = new Date()
       output.setTime(input * 1000)
-      return output
+
+    // Assume now
+    } else {
+      // Now
+      output = new Date()
+      // return new Date()
     }
 
-    // Now
-    return new Date()
+    // @debug
+    // console.log('Utility.getDate', input, output)
+    return output
   },
 
   // Get the time difference between two dates
@@ -633,11 +638,9 @@ var Utility = {
 
         // Minus height of target from elemHeight and divide by two to get the middle spot where the element should be
         var targetHeight = $target.outerHeight()
-        toScrollTop -= (elemHeight - targetHeight) * 0.5;
+        toScrollTop = $target.offset().top - ((elemHeight - targetHeight) * 0.5)
       }
     }
-
-
 
     // @debug
     // console.log('scrollTo', $target, toScrollTop)

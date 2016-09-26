@@ -64,8 +64,8 @@ class IRRManager
      */
     private function calculateIRR($aValuesIRR)
     {
-        $aSums = array();
-        $aDates = array();
+        $aSums = [];
+        $aDates = [];
 
         foreach ($aValuesIRR as $aValues) {
             foreach ($aValues as $date => $value) {
@@ -122,7 +122,13 @@ class IRRManager
         $this->oLogger->info('Unilend IRR calculation - SQL Time : ' . (round(microtime(true) - $fStartSQL, 2)) . ' for ' . count($aValuesIRR). ' lines ');
 
         $fStartXIRR = microtime(true);
-        $fXIRR      = $this->calculateIRR($aValuesIRR);
+        $fXIRR = 0;
+
+        try {
+            $fXIRR      = $this->calculateIRR($aValuesIRR);
+        } catch (\Exception $exception) {
+        }
+
         $this->oLogger->info('Unilend IRR calculation - XIRR Time : ' . (round(microtime(true) - $fStartXIRR, 2)) . ' - Guess : ' . self::IRR_GUESS . ' MAX_INTERATIONS : '. 100);
         $this->oLogger->info('Unilend IRR calculation - Total time : ' . (round(microtime(true) - $fStartSQL, 2)));
 
@@ -184,7 +190,13 @@ class IRRManager
         $this->oLogger->info('Unilend Cohort ' . $year . ' IRR calculation - SQL Time : ' . (round(microtime(true) - $fStartSQL, 2)) . ' for ' . count($aValuesIRR). ' lines ');
 
         $fStartXIRR = microtime(true);
-        $xirr      = $this->calculateIRR($aValuesIRR);
+        $xirr = 0;
+
+        try {
+            $xirr = $this->calculateIRR($aValuesIRR);
+        } catch (\Exception $exception){
+
+        }
         $this->oLogger->info('Unilend Cohort ' . $year . ' IRR calculation - XIRR Time : ' . (round(microtime(true) - $fStartXIRR, 2)) . ' - Guess : ' . self::IRR_GUESS . ' MAX_INTERATIONS : '. 100);
         $this->oLogger->info('Unilend Cohort ' . $year . ' IRR calculation - Total time : ' . (round(microtime(true) - $fStartSQL, 2)));
 
@@ -198,8 +210,13 @@ class IRRManager
         $valuesIRR2013 = $unilendStats->getIRRValuesByCohort(2013);
         $valuesIRR2014 = $unilendStats->getIRRValuesByCohort(2014);
         $valuesIRR = array_merge($valuesIRR2013, $valuesIRR2014);
-        $xirr      = $this->calculateIRR($valuesIRR);
+        $xirr = 0;
 
+        try {
+            $xirr = $this->calculateIRR($valuesIRR);
+        } catch (\Exception $exception){
+
+        }
         return $xirr;
     }
 

@@ -412,7 +412,7 @@ class unilend_stats extends unilend_stats_crud
                 WHERE type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . '
                 AND
                     (SELECT LEFT(psh.added, 4) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
-                          WHERE psh.id_project = transactions.id_project ORDER BY psh.id_project_status ASC LIMIT 1) = 2014
+                          WHERE psh.id_project = transactions.id_project ORDER BY psh.id_project_status ASC LIMIT 1) = :year
                 GROUP BY date_transaction';
 
         $statement = $this->bdd->executeQuery($query, ['year' => $year], ['year' => \PDO::PARAM_STR]);

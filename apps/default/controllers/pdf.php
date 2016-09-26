@@ -997,13 +997,13 @@ class pdfController extends bootstrap
                         $this->nature_var = 'Liquidation judiciaire';
                         break;
                 }
-
-                $this->date = date('d/m/Y', strtotime($this->projects_status_history_details->date));
+                $judgementDate = new DateTime($this->projects_status_history_details->date);
+                $this->date = $judgementDate->format('d/m/Y');
             }
 
             try {
-                $this->echu   = $this->echeanciers->getRepaidAmountInDateRange($this->oLendersAccounts->id_lender_account, '2015-04-19 00:00:00', date('Y-m-d H:i:s'), $this->oLoans->id_loan);
-                $this->echoir = $this->echeanciers->getTotalComingCapital($this->oLendersAccounts->id_lender_account, $this->oLoans->id_loan);
+                $this->echu   = $this->echeanciers->getNonRepaidAmountInDateRange($this->oLendersAccounts->id_lender_account, new DateTime('2015-04-19 00:00:00'), $judgementDate, $this->oLoans->id_loan);
+                $this->echoir = $this->echeanciers->getTotalComingCapital($this->oLendersAccounts->id_lender_account, $this->oLoans->id_loan, $judgementDate);
             } catch (\Exception $exception) {
                 /** @var LoggerInterface $logger */
                 $logger = $this->get('logger');

@@ -25,7 +25,7 @@
                             {% if project.finished %}
                                 {{ 'lender-dashboard-projects_project-status-finished'|trans }}
                             {% elseif project.days_left <= 2 %}
-                                <span class="ui-has-timecount" data-timecount-to="{{ project.end_date|date('Y-m-d\\TH:i:s') }}"></span>
+                                <span class="ui-has-timecount" data-timecount-to="{{ project.end_date|date('c') }}"></span>
                             {% else %}
                                 {% trans with {'%remainingDays%' : project.days_left} %} project-list_remaining-days {% endtrans %}
                             {% endif %}

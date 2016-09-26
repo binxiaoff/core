@@ -151,7 +151,10 @@ class AutolendController extends Controller
         if (empty($post['autolend_amount']) || false === is_numeric($post['autolend_amount']) || $post['autolend_amount'] < $minimumBidAmount) {
             $errorMsg[] = $translator->trans('autolend_error-message-amount-wrong', ['%MIN_AMOUNT%' => $minimumBidAmount]);
         }
-        if (empty($post['autolend_rate_min']) || false === is_numeric($post['autolend_rate_min']) || false === $autoBidSettingsManager->isRateValid($post['autolend_rate_min'])) {
+
+        if (empty($post['autolend_rate_min'])
+            || false === str_replace(',', '.', $post['autolend_rate_min'])
+            || false === $autoBidSettingsManager->isRateValid(str_replace(',', '.', $post['autolend_rate_min']))) {
             $errorMsg[] = $translator->trans('autolend_error-message-simple-setting-rate-wrong');
         }
 
