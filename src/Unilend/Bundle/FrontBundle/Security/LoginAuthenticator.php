@@ -18,6 +18,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Guard\Authenticator\AbstractFormLoginAuthenticator;
+use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategyInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
@@ -35,17 +36,21 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     private $entityManager;
     /** @var NotificationManager */
     private $notificationManager;
+    /** @var SessionAuthenticationStrategyInterface */
+    private $sessionStrategy;
 
     public function __construct(
         UserPasswordEncoder $securityPasswordEncoder,
         RouterInterface $router,
         EntityManager $entityManager,
-        NotificationManager $notificationManager
+        NotificationManager $notificationManager,
+        SessionAuthenticationStrategyInterface $sessionStrategy
     ) {
         $this->securityPasswordEncoder = $securityPasswordEncoder;
         $this->router                  = $router;
         $this->entityManager           = $entityManager;
         $this->notificationManager     = $notificationManager;
+        $this->sessionStrategy     = $sessionStrategy;
     }
 
     protected function getDefaultSuccessRedirectUrl(Request $request, UserInterface $user)
@@ -152,6 +157,8 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             }
             $client->update();
         }
+
+        $this->sessionStrategy->onAuthentication($request, $token);
 
         if ($user instanceof UserInterface && in_array('ROLE_LENDER', $user->getRoles())) {
             if ($client->etape_inscription_preteur < 3) {
