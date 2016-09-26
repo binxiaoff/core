@@ -399,7 +399,7 @@ class ProjectRequestController extends Controller
             'company_name'           => $this->company->name,
             'siren'                  => $this->company->siren,
             'amount'                 => $this->project->amount,
-            'averageFundingDuration' => $this->getAverageFundingDuration(),
+            'averageFundingDuration' => $this->get('unilend.service.project_manager')->getAverageFundingDuration($this->project->amount),
             'hash'                   => $this->project->hash
         ];
 
@@ -672,7 +672,7 @@ class ProjectRequestController extends Controller
 
         $template['project'] = [
             'amount'                   => $this->project->amount,
-            'averageFundingDuration'   => $this->getAverageFundingDuration(),
+            'averageFundingDuration'   => $this->get('unilend.service.project_manager')->getAverageFundingDuration($this->project->amount),
             'monthlyPaymentBoundaries' => $this->getMonthlyPaymentBoundaries(),
             'hash'                     => $this->project->hash
         ];
@@ -1167,7 +1167,7 @@ class ProjectRequestController extends Controller
         $template = [
             'project' => [
                 'amount'                   => $this->project->amount,
-                'averageFundingDuration'   => $this->getAverageFundingDuration(),
+                'averageFundingDuration'   => $this->get('unilend.service.project_manager')->getAverageFundingDuration($this->project->amount),
                 'monthlyPaymentBoundaries' => $this->getMonthlyPaymentBoundaries(),
                 'hash'                     => $this->project->hash
             ]
@@ -1283,22 +1283,26 @@ class ProjectRequestController extends Controller
 
         $addMoreFiles = false;
         $message      = $translator->trans('project-request_end-page-not-entitled-message');
-        $title        = $translator->trans('project-request_end-page-title');
+        $title        = $translator->trans('project-request_end-page-success-title');
+        $subtitle     = $translator->trans('project-request_end-page-success-subtitle');
 
         switch ($this->project->status) {
             case \projects_status::ABANDON:
-                $message = $translator->trans('project-request_end-page-aborted-message');
-                $title   = $translator->trans('project-request_end-page-aborted-title');
+                $message  = $translator->trans('project-request_end-page-aborted-message');
+                $title    = $translator->trans('project-request_end-page-aborted-title');
+                $subtitle = $translator->trans('project-request_end-page-aborted-subtitle');
                 break;
             CASE \projects_status::PAS_3_BILANS:
-                $message = $translator->trans('project-request_end-page-not-3-annual-accounts-message');
-                $title   = $translator->trans('project-request_end-page-aborted-title');
+                $message  = $translator->trans('project-request_end-page-not-3-annual-accounts-message');
+                $title    = $translator->trans('project-request_end-page-aborted-title');
+                $subtitle = $translator->trans('project-request_end-page-aborted-subtitle');
                 break;
             case \projects_status::REVUE_ANALYSTE:
             case \projects_status::COMITE:
             case \projects_status::PREP_FUNDING:
-                $message = $translator->trans('project-request_end-page-analysis-in-progress-message');
-                $title   = $translator->trans('project-request_end-page-processing-title');
+                $message  = $translator->trans('project-request_end-page-analysis-in-progress-message');
+                $title    = $translator->trans('project-request_end-page-processing-title');
+                $subtitle = $translator->trans('project-request_end-page-processing-subtitle');
                 break;
             case \projects_status::COMPLETUDE_ETAPE_3:
             case \projects_status::A_TRAITER:
@@ -1312,7 +1316,8 @@ class ProjectRequestController extends Controller
                 }
                 break;
             case \projects_status::NOTE_EXTERNE_FAIBLE:
-                $title = $translator->trans('project-request_end-page-rejection-title');
+                $title    = $translator->trans('project-request_end-page-rejection-title');
+                $subtitle = $translator->trans('project-request_end-page-rejection-subtitle');
 
                 switch ($this->project->retour_altares) {
                     case Altares::RESPONSE_CODE_PROCEDURE:
@@ -1349,6 +1354,7 @@ class ProjectRequestController extends Controller
             'addMoreFiles' => $addMoreFiles,
             'message'      => $message,
             'title'        => $title,
+            'subtitle'     => $subtitle,
             'project'      => [
                 'hash' => $this->project->hash
             ]
@@ -1379,25 +1385,6 @@ class ProjectRequestController extends Controller
         $this->sendCommercialEmail('notification-stop-relance-dossier');
 
         return $this->render('pages/project_request/emails.html.twig');
-    }
-
-    /**
-     * @return int
-     */
-    private function getAverageFundingDuration()
-    {
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('Durée moyenne financement', 'type');
-
-        $projectAverageFundingDuration = 15;
-        foreach (json_decode($settings->value) as $averageFundingDuration) {
-            if ($this->project->amount >= $averageFundingDuration->min && $this->project->amount <= $averageFundingDuration->max) {
-                $projectAverageFundingDuration = round($averageFundingDuration->heures / 24);
-            }
-        }
-
-        return $projectAverageFundingDuration;
     }
 
     /**

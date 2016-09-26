@@ -560,10 +560,12 @@ $(document).ready(function ($) {
             // Show the continue button
             $('.emprunter-sim').addClass('ui-emprunter-sim-estimate-show')
 
+            $('#esim-input-siren').focus()
+
             $(".ui-esim-output-cost").prepend(response.amount);
             $('.ui-esim-output-duration').prepend(response.period)
+            $('.ui-esim-funding-duration-output').html(response.estimatedFundingDuration)
             $('.ui-esim-monthly-output').html(response.estimatedMonthlyRepayment)
-            $('.ui-esim-interest-output').html(response.estimatedRate)
 
             if (!response.motiveSentenceComplementToBeDisplayed) {
               $('p[data-borrower-motive]').show()

@@ -189,12 +189,13 @@ class MainController extends Controller
             ){
                 $estimatedRate                           = $projectRequestManager->getMonthlyRateEstimate();
                 $estimatedMonthlyRepayment               = $projectRequestManager->getMonthlyPaymentEstimate($amount, $period, $estimatedRate);
+                $estimatedFundingDuration                = $projectManager->getAverageFundingDuration($amount);
                 $isMotiveSentenceComplementToBeDisplayed = (false === in_array($motiveId, ['', \borrowing_motive::OTHER]));
                 $translationComplement                   = $isMotiveSentenceComplementToBeDisplayed ? $translator->trans('home-borrower_simulator-step-2-text-segment-motive-' . $motiveId) : '';
 
                 return new JsonResponse([
-                    'estimatedRate'                         => $ficelle->formatNumber($estimatedRate, 1),
-                    'estimatedMonthlyRepayment'             => $ficelle->formatNumber($estimatedMonthlyRepayment, 0),
+                    'estimatedMonthlyRepayment'             => $translator->trans('home-borrower_simulator-footer-monthly-repayment-with-value', ['%monthlyRepayment%' => $ficelle->formatNumber($estimatedMonthlyRepayment, 0)]),
+                    'estimatedFundingDuration'              => $translator->transChoice('home-borrower_simulator-footer-funding-duration-with-value', $estimatedFundingDuration, ['%fundingDuration%' => $estimatedFundingDuration]),
                     'amount'                                => $ficelle->formatNumber($amount, 0),
                     'period'                                => $period,
                     'motiveSentenceComplementToBeDisplayed' => $isMotiveSentenceComplementToBeDisplayed,

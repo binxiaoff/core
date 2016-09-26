@@ -10,7 +10,13 @@
         <div class="hero-wrap">
             <header class="page-header">
                 <div class="site-wrap">
-                    <h1 id="project-create-title" class="h1">{% trans %} project-request_page-title {% endtrans %}</h1>
+                    <h1 id="project-create-title" class="h1">
+                        {% if title is defined %}
+                            {{ title }}
+                        {% else %}
+                            {% trans %} project-request_page-title {% endtrans %}
+                        {% endif %}
+                    </h1>
                 </div><!-- /.site-wrap -->
             </header><!-- /.page-header -->
 
@@ -71,7 +77,9 @@
                             <div class="form-project-create-content tab-content">
                                 <div id="form-project-create-3" aria-labelledby="project-create-3 project-create-title">
                                     <div class="panel">
-                                        <h3 class="h3">{{ title|raw }}</h3>
+                                        {% if subtitle is not empty %}
+                                            <h3 class="h3">{{ subtitle|raw }}</h3>
+                                        {% endif %}
 
                                         <p>{{ message|raw }}</p>
 
@@ -81,7 +89,7 @@
 
                                         <div class="btn-toolbar">
                                             <a href="#" class="btn-default ui-open-site-search">{{ 'project-request_end-page-question-button'|trans|raw }}</a>
-                                            <a href="{{ path('home') }}" class="btn-primary">{{ 'project-request_end-page-go-home-button'|trans|raw }}</a>
+                                            <a href="{{ absolute_url('/guide-de-l-emprunteur') }}" class="btn-primary">{{ 'project-request_end-page-go-home-button'|trans|raw }}</a>
                                         </div><!-- /.btn-toolbar -->
                                     </div><!-- /.panel -->
                                 </div><!-- /#form-project-create-3.tab-pane -->

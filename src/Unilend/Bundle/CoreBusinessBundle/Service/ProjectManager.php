@@ -875,6 +875,26 @@ class ProjectManager
         return (int) $settings->value;
     }
 
+    /**
+     * @param int $amount
+     * @return int
+     */
+    public function getAverageFundingDuration($amount)
+    {
+        /** @var \settings $settings */
+        $settings = $this->oEntityManager->getRepository('settings');
+        $settings->get('Durée moyenne financement', 'type');
+
+        $projectAverageFundingDuration = 15;
+        foreach (json_decode($settings->value) as $averageFundingDuration) {
+            if ($amount >= $averageFundingDuration->min && $amount <= $averageFundingDuration->max) {
+                $projectAverageFundingDuration = round($averageFundingDuration->heures / 24);
+            }
+        }
+
+        return $projectAverageFundingDuration;
+    }
+
     public function getProjectRateRange(\projects $project)
     {
         if (empty($project->period)) {
