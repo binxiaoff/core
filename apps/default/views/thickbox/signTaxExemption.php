@@ -97,7 +97,7 @@
 
 <script type="text/javascript">
     $(function () {
-        $("#validate-btn").click(function () {
+        $("#validate-btn").click(function (event) {
             event.preventDefault();
 
             if (true === $("#agree").prop('checked') && true === $("#h-attest").prop('checked')) {

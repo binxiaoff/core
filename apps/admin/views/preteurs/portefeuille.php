@@ -181,9 +181,9 @@
                             <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aLoan['amount']/100, 0) ?> €</td>
                             <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aLoan['rate'], 1) ?> %</td>
                             <?php if (false === in_array($aProjectLoans['project_status'], array(\projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::REMBOURSE))) :
-                                $aRepayment    = $this->echeanciers->select('id_loan = ' . $aLoan['id_loan'] . ' AND status in(' . \echeanciers::STATUS_PARTIALLY_REPAID . ', ' . \echeanciers::STATUS_REPAID . ')', 'ordre ASC', 0, 1);
-                                $iLoanAmount = $aRepayment[0]['montant'] - $this->tax->getAmountByRepaymentId($aRepayment[0]['id_echeancier']); ?>
-                                <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber(round($iLoanAmount / 100, 2)) .' *** ' . $iLoanAmount  ?> € / mois</td>
+                                $aRepayment = $this->echeanciers->select('id_loan = ' . $aLoan['id_loan'] . ' AND ordre = 1', 'ordre ASC', 0, 1);
+                            ?>
+                            <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber(bcdiv($aRepayment[0]['montant'], 100, 2), 2) ?> € / mois</td>
                             <?php endif; ?>
                             <td>
                                 <?php if ($aProjectLoans['project_status'] >= \projects_status::REMBOURSEMENT): ?>
