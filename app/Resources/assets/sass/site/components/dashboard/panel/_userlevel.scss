@@ -4,7 +4,7 @@
 
 $js-user-level-star: '.icon.fa-star';
 
-@mixin colorize-userlevel($set-color: $c-level-1) {
+@mixin colorize-userlevel($set-color: $c-level-0) {
   @include user-level-colors($to-color: $set-color) {
     .dashboard-panel-summary {
       .value {
@@ -58,7 +58,8 @@ $js-user-level-star: '.icon.fa-star';
     right: 0;
     bottom: 0;
     z-index: 1;
-    transition: height .2s, background-color .2s;
+    transition: height 1s, background-color 1s;
+    transition-timing-function: ease-in-out;
   }
 
   .user-avatar-initials {
@@ -77,6 +78,7 @@ $js-user-level-star: '.icon.fa-star';
 
   .user-avatar-stars {
     // Didn't finish it, hence why magic is hidden
+    // It was a funny idea that wasn't seen nor approved anyway...
     display: none;
     width: 100%;
     height: 100%;
@@ -98,19 +100,20 @@ $js-user-level-star: '.icon.fa-star';
     left: 50%;
     top: 75%;
     z-index: 4;
-    font-size: 30px;
+    font-size: 26px;
     line-height: 30px;
     text-align: center;
     vertical-align: middle;
     opacity: 0;
 
-    transition: left .2s, top .2s, opacity .2s, transform .2s;
+    transition: left 1s, top 1s, opacity 1s, transform 1s;
+    transition-timing-function: ease-in-out;
 
     @include devices('sm') {
       width: 35px;
       height: 35px;
       margin: -17.5px 0 0 -17.5px;
-      font-size: 35px;
+      font-size: 30px;
       line-height: 35px;
     }
 
@@ -118,7 +121,7 @@ $js-user-level-star: '.icon.fa-star';
       width: 40px;
       height: 40px;
       margin: -20px 0 0 -20px;
-      font-size: 40px;
+      font-size: 30px;
       line-height: 40px;
     }
 
@@ -126,12 +129,36 @@ $js-user-level-star: '.icon.fa-star';
       width: 50px;
       height: 50px;
       margin: -25px 0 0 -25px;
-      font-size: 50px;
+      font-size: 30px;
       line-height: 50px;
     }
   }
 
-  #{$js-user-level-1} & {
+  &#{$js-user-level-0} {
+    @include colorize-userlevel($c-level-0);
+
+    // Stars
+    #{$js-user-level-star} {
+      // Off
+      &.ui-user-level-star-1,
+      &.ui-user-level-star-2,
+      &.ui-user-level-star-3,
+      &.ui-user-level-star-4,
+      &.ui-user-level-star-5 {
+        opacity: 0;
+        left: 50%;
+        top: 75%;
+        transform: scale(0);
+      }
+    }
+
+    // Level
+    .user-avatar-level {
+      height: 0;
+    }
+  }
+
+  &#{$js-user-level-1} {
     @include colorize-userlevel($c-level-1);
 
     // Stars
@@ -160,7 +187,7 @@ $js-user-level-star: '.icon.fa-star';
     }
   }
 
-  #{$js-user-level-2} & {
+  &#{$js-user-level-2} {
     @include colorize-userlevel($c-level-2);
 
     // Stars
@@ -194,7 +221,7 @@ $js-user-level-star: '.icon.fa-star';
     }
   }
 
-  #{$js-user-level-3} & {
+  &#{$js-user-level-3} {
     @include colorize-userlevel($c-level-3);
 
     // Stars
@@ -233,7 +260,7 @@ $js-user-level-star: '.icon.fa-star';
     }
   }
 
-  #{$js-user-level-4} & {
+  &#{$js-user-level-4} {
     @include colorize-userlevel($c-level-4);
 
     // Stars
@@ -277,7 +304,7 @@ $js-user-level-star: '.icon.fa-star';
     }
   }
 
-  #{$js-user-level-5} & {
+  &#{$js-user-level-5} {
     @include colorize-userlevel($c-level-5);
 
     // Stars
