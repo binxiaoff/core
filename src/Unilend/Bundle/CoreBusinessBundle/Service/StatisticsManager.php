@@ -503,7 +503,7 @@ class StatisticsManager
         $repaidInterest                           = $this->formatCohortQueryResult($lenderRepaymentSchedule->getTotalRepaidInterestByCohort(), $years);
         $recoveryPayments                         = $this->formatCohortQueryResult($transactions->getBorrowerRecoveryPaymentsByCohort(), $years);
         $futureInterestHealthyProjects            = $this->formatCohortQueryResult($borrowerPaymentSchedule->getFutureInterestPaymentsOfHealthyProjectsByCohort(), $years);
-        $futureCapitalProblematicProjects         = $this->formatCohortQueryResult($borrowerPaymentSchedule->getOwedCapitalOfProblematicProjectsByCohort(), $years);
+        $futureCapitalProblematicProjects         = $this->formatCohortQueryResult($borrowerPaymentSchedule->getFutureOwedCapitalOfProblematicProjectsByCohort(), $years);
         $futureCapitalHealthyProjects             = $this->formatCohortQueryResult($borrowerPaymentSchedule->getFutureCapitalPaymentsOfHealthyProjectsByCohort(), $years);
         $lateCapitalRepayments                    = $this->formatCohortQueryResult($borrowerPaymentSchedule->getLateCapitalRepayments(\projects_status::$runningRepayment), $years);
         $lateCapitalRepaymentsProblematicProjects = $this->formatCohortQueryResult($borrowerPaymentSchedule->getLateCapitalRepayments([
