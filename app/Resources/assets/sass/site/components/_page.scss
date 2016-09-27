@@ -1,0 +1,100 @@
+//
+// Unilend Page
+//
+
+.page {
+  min-height: 700px;
+
+  // Here we assume that any regular button within a btn-toolbar should be manipulated to be larger for extra small devices
+  @include devices('xs') {
+    .btn-toolbar {
+      .btn-default,
+      .btn-primary,
+      .btn-alternate {
+        @include button-shape-md;
+
+        display: block;
+        width: auto;
+        margin-left: auto !important;
+        margin-right: auto !important;
+      }
+    }
+  }
+}
+
+.page-section {
+  padding-top: 30px;
+  padding-bottom: 40px;
+
+  @include devices('sm') {
+    padding-bottom: 60px;
+  }
+
+  @include devices('md') {
+    padding-top: 50px;
+    padding-bottom: 80px;
+  }
+
+  @include devices('lg') {
+    padding-top: 50px;
+    padding-bottom: 120px;
+
+    .h2:first-child {
+      margin-top: 40px;
+    }
+  }
+
+  .h2:first-child {
+    margin-top: 10px;
+  }
+
+  // Nested sections
+  .page-section {
+    padding-bottom: 30px;
+  }
+
+  > .page.section {
+    padding-bottom: 30px;
+  }
+}
+
+.page-section-footer {
+  text-align: center;
+}
+
+.section-tabs-nav {
+  @include clearfix;
+  margin-bottom: 20px;
+
+  header {
+    clear: both;
+
+    > :first-child {
+      margin-top: 5px;
+    }
+
+    > :last-child {
+      margin-bottom: 20px;
+    }
+  }
+
+  .nav {
+    clear: both;
+  }
+
+  @include devices('sm', 'md', 'lg') {
+    header {
+      clear: none;
+      float: left;
+
+      > :last-child {
+        margin-bottom: 5px;
+      }
+    }
+
+    .nav {
+      clear: none;
+      float: right;
+    }
+  }
+}

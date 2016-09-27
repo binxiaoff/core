@@ -89,8 +89,8 @@
             <?php endif; ?>
         </tr>
         <tr>
-            <th>Téléphone :</th>
-            <td><?= $this->clients->telephone ?></td>
+            <th>Téléphone / Mobile :</th>
+            <td><?= $this->clients->telephone ?> / <?= $this->clients->mobile?></td>
         </tr>
     </table>
     <br/><br/>

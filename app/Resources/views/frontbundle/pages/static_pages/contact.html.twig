@@ -1,0 +1,185 @@
+{# Contact page #}
+{% extends 'layouts/_page-simple.html.twig' %}
+
+{% set page = {
+id: 'page-contact',
+title: 'Contact'
+} %}
+
+{% block extendPageHeader %}
+    <div class="page-header-image">{{ svgimage('#header-contact', '', 300, 300)|raw }}</div>
+{% endblock %}
+
+{% block pageAside %} {% endblock %}
+
+{% block pageContent %}
+    <section class="page-section row">
+        <div class="col-lg-6 col-md-6">
+            <h2 class="h4">{% trans %} contact_search-section-title {% endtrans %}</h2>
+        </div>
+        <div class="col-lg-6 col-md-6">
+            {% if query is not empty %}
+                <h3>{% trans with {'%query%' : query} %} contact_search-results-search-repeat {% endtrans %}</h3>
+
+                {% for category, categoryResults in results %}
+                    <h4>{{ "search_result-title-#{ category }"|trans }}</h4>
+                    <ul class="list-links">
+                        {% for links in categoryResults %}
+                            <li>
+                                <a href="{% if links.slug is defined %}/{{ links.slug }}{% else %}{{ links.url }}{% endif %}">{{ links.title }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="message-info">{% trans %} search_no-result-found {% endtrans %}</div>
+                {% endfor %}
+
+                <h3>{% trans %} search_search-again-title {% endtrans %}</h3>
+            {% endif %}
+
+            <form action="{{ path('contact_search') }}" method="post" class="site-search" role="search" data-formvalidation data-formvalidation-notificationselem="#contact-search-form-notifications">
+            {#<form id="contact-search" action="http://aide.unilend.fr/customer/portal/articles/search" method="get" class="site-search" role="search" data-formvalidation data-formvalidation-notificationselem="#contact-search-form-notifications">#}
+                <div id="contact-search-form-notifications" class="ui-formvalidation-notifications col-lg-8 col-md-8 col-sm-4"></div>
+                <div class="row">
+                    <div class="form-field-inline">
+                        <label for="contact-search-input" class="sr-only">
+                            {% trans %} contact_search-label {% endtrans %}
+                        </label>
+                        {#<input id="contact-search-input" type="text" name="q" placeholder="{% trans %} site-general_search-placeholder {% endtrans %}" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true">#}
+                        <input id="contact-search-input" type="text" name="search" placeholder="{% trans %} site-general_search-placeholder {% endtrans %}" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                        <div class="btn-group">
+                            <button type="submit" class="btn-search"><span class="sr-only">{% trans %} contact_search-submit {% endtrans %}</span></button>
+                        </div>
+                    </div><!-- /.form-field-inline -->
+                </div>
+            </form><!-- /.site-search -->
+
+            <p>{% trans %} contact_faq-text {% endtrans %}</p>
+            <p><a href="http://aide.unilend.fr/" class="btn-default">{% trans %} contact_faq-button {% endtrans %}</a></p>
+        </div>
+    </section><!-- /.page-section -->
+
+    <section class="page-section row">
+        <div class="col-lg-6 col-md-6">
+            <h2 class="h4">{% trans %} contact_contact-form-title {% endtrans %}</h2>
+        </div>
+        <div class="col-lg-6 col-md-6">
+            <form action="{{ path('contact') }}" method="post"  data-formvalidation data-formvalidation-notificationselem="#contact-form-notifications">
+
+                <div id="contact-form-notifications" class="ui-formvalidation-notifications col-lg-8 col-md-8 col-sm-4">
+                    {% if app.session.flashBag.has('contactErrors') %}
+                        <div class="message-error">
+                            {% for error in app.session.flashBag.get('contactErrors') %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    {% if app.session.flashBag.has('contactSuccess') %}
+                        <div class="message-success">
+                            {% for error in app.session.flashBag.get('contactSuccess') %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="row row-multi-col">
+                    <div class="col-lg-6 col-md-6 col-sm-4">
+                        <div class="form-field">
+                            <label for="contact-message-profession">{% trans %}contact_votre-demande-porte-sur{% endtrans %}
+                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                            </label>
+                            <select id="contact-message-profession" name="message[role]" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                                <option value="0">{% trans %}contact_preciser{% endtrans %}</option>
+                                <option value="1" {% if formData.role is defined and formData.role == 1 %}selected {% endif %}>{% trans %}contact_relation-presse{% endtrans %}</option>
+                                <option value="2" {% if formData.role is defined and formData.role == 2 %}selected {% endif %}>{% trans %}contact_demande-preteur{% endtrans %}</option>
+                                <option value="3" {% if formData.role is defined and formData.role == 3 %}selected {% endif %}>{% trans %}contact_demande-emprunteur{% endtrans %}</option>
+                                <option value="4" {% if formData.role is defined and formData.role == 4 %}selected {% endif %}>{% trans %}contact_recrutement{% endtrans %}</option>
+                                <option value="5" {% if formData.role is defined and formData.role == 5 %}selected {% endif %}>{% trans %}contact_autre{% endtrans %}</option>
+                                <option value="6" {% if formData.role is defined and formData.role == 6 %}selected {% endif %}>{% trans %}contact_partenariat{% endtrans %}</option>
+                            </select>
+                        </div><!-- /.form-field -->
+                    </div>
+                </div>
+                <div class="row row-multi-col">
+                    <div class="col-lg-6 col-md-6 col-sm-4">
+                        <div class="form-field">
+                            <label for="contact-message-lastname">{% trans %}common_name{% endtrans %}
+                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                            </label>
+                            <input type="text" id="contact-message-lastname" name="message[lastname]" value="{{ formData.lastname|default('') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                        </div><!-- /.form-field -->
+                    </div>
+                    <div class="col-lg-6 col-md-6 col-sm-4">
+                        <div class="form-field">
+                            <label for="contact-message-firstname">{% trans %}common_firstname{% endtrans %}
+                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                            </label>
+                            <input type="text" id="contact-message-firstname" name="message[firstname]" value="{{ formData.firstname|default('') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                        </div><!-- /.form-field -->
+                    </div>
+                </div>
+                <div class="row row-multi-col">
+                    <div class="col-lg-6 col-md-6 col-sm-4">
+                        <div class="form-field">
+                            <label for="contact-message-email">{% trans %}common_email{% endtrans %}
+                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                            </label>
+                            <input type="email" id="contact-message-email" name="message[email]" value="{{ formData.email|default('') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                        </div><!-- /.form-field -->
+                    </div>
+                    <div class="col-lg-6 col-md-6 col-sm-4">
+                        <div class="form-field">
+                            <label for="contact-message-society">{% trans %}common_phone{% endtrans %}
+                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                            </label>
+                            <input type="text" id="contact-message-society" name="message[phone]" value="{{ formData.phone|default('') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                        </div><!-- /.form-field -->
+                    </div>
+                </div>
+                <div class="row row-multi-col">
+                    <div class="col-lg-6 col-md-6 col-sm-4">
+                        <div class="form-field">
+                            <label for="contact-message-society">{% trans %}common_company{% endtrans %}
+                            </label>
+                            <input type="text" id="contact-message-society" name="message[company]" value="{{ formData.company|default('') }}" class="input-field" data-formvalidation-input data-formvalidation-required="false">
+                        </div><!-- /.form-field -->
+                    </div>
+                    <div class="col-lg-6 col-md-6 col-sm-4">&nbsp;</div>
+                </div>
+                <div class="row row-multi-col">
+                    <div class="col-lg-12 col-md-12">
+                        <div class="form-field">
+                            <label for="contact-message-body">{% trans %} contact_contact-from-message-field-title {% endtrans %}
+                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                            </label>
+                            <textarea id="contact-message-body" name="message[body]" rows="8" class="input-field" data-formvalidation-input data-formvalidation-required="true">{{ formData.body|default('') }}</textarea>
+                        </div><!-- /.form-field -->
+                    </div>
+                </div>
+                <div class="row">
+                    <button class="btn-primary">{% trans %} contact_contact-form-submit-button {% endtrans %}</button>
+                </div>
+            </form>
+        </div>
+    </section><!-- /.page-section -->
+
+    <section class="page-section row">
+        <div class="col-lg-6 col-md-6">
+            <h2 class="h4">{% trans %} contact_contact-form-address-title {% endtrans %}</h2>
+        </div>
+        <div class="col-lg-6 col-md-6">
+            <div class="h-card vcard">
+                <h4 class="p-name fn p-org org">Unilend</h4>
+                <address class="p-adr h-adr">
+                    <span class="p-street-address">6 rue du Général Clergerie</span><br>
+                    <span class="p-postal-code">75116</span> <span class="p-locality">Paris</span> &ndash;
+                    <span class="p-country-name">France</span>
+                </address>
+                <div>Tel. <a href="tel:+33182285120" title="Telephone" class="p-tel">01 82 28 51 20</a></div>
+                <div>Tel. <a href="tel:+33182836655" title="Telephone (emprunters)" class="p-tel">01 82 83 66 55</a> (emprunteurs)
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

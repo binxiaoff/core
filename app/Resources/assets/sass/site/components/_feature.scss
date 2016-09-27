@@ -1,0 +1,147 @@
+//
+// Unilend Feature
+//
+
+.feature {
+  box-sizing: border-box;
+
+  // Colours
+  &.bg-p1,
+  &.bg-p2 {
+    color: $c-white;
+
+    h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4 {
+      color: $c-white;
+    }
+
+    a {
+      @include link-states(
+        $link: (
+          color: $c-white
+        ),
+        $hover: (
+          color: $c-white
+        ),
+        $active: (
+          color: $c-white
+        )
+      );
+    }
+  }
+
+  // Feature is a quote
+  &.feature-quote {
+    text-align: left;
+
+    .quote {
+      margin: 0 0 20px;
+      font-size: $fs-h3;
+      line-height: 1.2em;
+
+      p {
+        margin: 0;
+        padding: 0;
+        font-size: inherit;
+        line-height: inherit;
+      }
+    }
+
+    .credit {
+      font-size: $fs-base * .8;
+
+      cite {
+        font-style: italic;
+        font-weight: bold;
+        opacity: .8;
+      }
+    }
+
+    @include devices('tablet-p', 'laptop', 'computer') {
+      .feature-panel-inner {
+        padding-right: 100px;
+      }
+    }
+
+    &.feature-align-right {
+      text-align: right;
+
+      @include devices('tablet-p', 'laptop', 'computer') {
+        .feature-panel-inner {
+          padding-left: 100px;
+        }
+      }
+    }
+  }
+}
+
+.feature-panel {
+  box-sizing: border-box;
+  display: table;
+}
+
+.feature-panel-inner {
+  box-sizing: border-box;
+  display: table-cell;
+  padding: $width-site-margin-xs;
+  vertical-align: middle;
+
+  @include devices('sm') {
+    padding: $width-site-margin-sm;
+  }
+
+  @include devices('md') {
+    padding: $width-site-margin-md;
+  }
+
+  @include devices('lg') {
+    padding: $width-site-margin-lg;
+  }
+
+  // Extra top/bottom padding for quote
+  .feature-quote & {
+    @include devices('sm', 'md') {
+      padding-top: $width-site-margin-md * 2;
+      padding-bottom: $width-site-margin-md * 2;
+    }
+
+    @include devices('lg') {
+      padding-top: $width-site-margin-lg * 2;
+      padding-bottom: $width-site-margin-lg * 2;
+    }
+  }
+}
+
+.feature-image {
+  box-sizing: border-box;
+  height: 100%;
+  position: relative;
+  background-position: top center;
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  img {
+    @include constrain-size-by-width;
+    visibility: hidden;
+  }
+}
+
+.feature-image-inner {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+
+  background-position: top center;
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  img {
+    @include constrain-size-by-width;
+    visibility: hidden;
+  }
+}

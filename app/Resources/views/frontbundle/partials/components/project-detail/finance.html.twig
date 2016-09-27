@@ -1,0 +1,329 @@
+<div id="finance" data-watchscroll-nav>
+    {% if conditions.finance %}
+        <section id="project-section-income" class="page-section">
+            <div class="tabs">
+                <div class="section-tabs-nav">
+                    <header>
+                        <h3 id="project-income" class="h3">{% trans %} project-detail_project-presentation-accounts-title {% endtrans %}</h3>
+                    </header>
+
+                    <ul class="nav nav-tabs">
+                        <li id="project-income-table" role="presentation" class="active">
+                            <a href="#income-table" role="tab" data-toggle="tab">{% trans %} project-detail_project-presentation-accounts-table-button {% endtrans %}</a>
+                        </li>
+                        <li id="project-income-graph" role="presentation">
+                            <a href="#income-graph" role="tab" data-toggle="tab">{% trans %} project-detail_project-presentation-accounts-charts-button {% endtrans %}</a>
+                        </li>
+                    </ul>
+                </div><!-- /.section-tabs-nav -->
+
+                <div class="section-tabs-content tab-content">
+                    <div id="income-table" role="tabpanel" class="tab-pane active" aria-labelledby="project-income-table project-income">
+                        <div class="table-scroll">
+                            <table id="income-table-data" class="table table-finance table-income">
+                                <thead>
+                                    <tr>
+                                        <th class="table-income-item-name">&nbsp;</th>
+                                        {% for financeData in finance %}
+                                            <th class="table-income-item-year">
+                                                {{ financeData.closingDate|date('d/m/Y') }}<br>
+                                                {% transchoice financeData.monthDuration with {'%monthDuration%' : financeData.monthDuration} %} project-detail_balance-sheet-duration {% endtranschoice %}
+                                            </th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for column in financeColumns.balanceSheet %}
+                                        <tr class="table-item">
+                                            <td class="table-income-item-name">{{ "project-detail_finance-column-#{ column }"|trans }}</td>
+                                            {% for balanceSheet in finance %}
+                                                <td class="table-income-item-year">
+                                                    <span class="amount">{{ balanceSheet.balanceSheet[column][0]|localizednumber }}&nbsp;€</span>
+                                                    {% if balanceSheet.balanceSheet[column][1] is defined %}
+                                                        <span class="diff">{{ balanceSheet.balanceSheet[column][1]|localizednumberwithprecision(1) }}&nbsp;%</span>
+                                                    {% endif %}
+                                                </td>
+                                            {% endfor %}
+                                        </tr><!-- /.table-item -->
+                                    {% endfor %}
+                                </tbody>
+                            </table><!-- /.table-income -->
+                        </div><!-- /.table-scroll -->
+                    </div><!-- /.tab-pane -->
+
+                    {% set incomeChart %}{% spaceless %}
+                        {
+                            "type": "projectOwnerIncome",
+                            "background": "none",
+                            "highcharts": {
+                                "chart": {
+                                    "type": "spline",
+                                    "plotBackgroundColor": {
+                                        "linearGradient": {"x1": 0, "y1": 0, "x2": 0, "y2": 1},
+                                        "stops": [[0, "rgba(95, 196, 208, .1)"], [1, "rgba(95, 196, 208, 0)"]]
+                                    }
+                                },
+                                "title": {"text": ""},
+                                "xAxis": {"categories": [{% for financeData in finance|reverse %}"{{ financeData.closingDate|date('d/m/Y') }}"{% if not loop.last %},{% endif %}{% endfor %}]},
+                                "yAxis": {"title": {"text": "Montant (en €)"}, "units": "€"},
+                                "series": [
+                                    {% for column in financeColumns.balanceSheet %}
+                                        {
+                                            "name": "{{ "project-detail_finance-column-#{ column }"|trans|raw }}",
+                                            "data": [{% for balanceSheet in finance|reverse %}{{ balanceSheet.balanceSheet[column][0] }}{% if not loop.last %},{% endif %}{% endfor %}],
+                                            "visible": {% if column in ['resultat-exploitation', 'resultat-brut-exploitation'] %}true{% else %}false{% endif %}
+                                        }{% if not loop.last %},{% endif %}
+                                    {% endfor %}
+                                ]
+                            }
+                        }
+                    {% endspaceless %}{% endset %}
+
+                    <div id="income-graph" role="tabpanel" class="tab-pane">
+                        <div class="chart" data-chartview='{{ incomeChart|raw|escape('html_attr') }}'></div>
+                    </div>
+                </div><!-- /.section-tabs-content -->
+            </div><!-- /tabs -->
+
+            <div class="btn-toolbar">
+                <a href="{{ path('export_income_statement', {'projectId' : project.projectId}) }}" class="btn-default" target="_blank">
+                    <span class="icon fa-excel-u32"></span>
+                    {% trans %} project-detail_project-presentation-accounts-export-csv-button {% endtrans %}
+                </a>
+            </div><!-- /.btn-toolbar -->
+        </section><!-- /.page-section -->
+
+        <section id="project-section-balance" class="page-section">
+            <div class="tabs">
+                <div class="section-tabs-nav">
+                    <header>
+                        <h3 id="project-balance" class="h3">{% trans %} project-detail_project-presentation-accounts-balance {% endtrans %}</h3>
+                    </header>
+
+                    <ul class="nav nav-tabs">
+                        <li id="project-balance-table" role="presentation" class="active">
+                            <a href="#balance-table" role="tab" data-toggle="tab">{% trans %} project-detail_project-presentation-accounts-table-button {% endtrans %}</a>
+                        </li>
+                        <li id="project-balance-graph" role="presentation">
+                            <a href="#balance-graph" role="tab" data-toggle="tab">{% trans %} project-detail_project-presentation-accounts-charts-button {% endtrans %}</a>
+                        </li>
+                    </ul>
+                </div><!-- /.section-tabs-nav -->
+
+                <div class="section-tabs-content tab-content">
+                    <div id="balance-table" role="tabpanel" class="tab-pane active" aria-labelledby="project-balance-table project-balance">
+                        <div class="table-scroll">
+                            <table id="balance-table-data" class="table table-finance table-balance">
+                                <thead>
+                                    <tr>
+                                        <th class="table-income-item-name">&nbsp;</th>
+                                        {% for financeData in finance %}
+                                            <th class="table-income-item-year">
+                                                {{ financeData.closingDate|date('d/m/Y') }}<br>
+                                                {% transchoice financeData.monthDuration with {'%monthDuration%' : financeData.monthDuration} %} project-detail_balance-sheet-duration {% endtranschoice %}
+                                            </th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="table-item-title">
+                                        <td colspan="4">{% trans %} project-detail_finance-assets-title {% endtrans %}</td>
+                                    </tr><!-- /.table-item-title -->
+
+                                    {% for column in financeColumns.assets %}
+                                        {% if column == 'total' %}
+                                            <tr class="table-item-total">
+                                                <td class="table-income-item-name">{{ "project-detail_finance-assets-total"|trans }}</td>
+                                                {% for balanceSheet in finance %}
+                                                    <td class="table-income-item-year">
+                                                        <span class="amount">{{ balanceSheet.assets[column][0]|localizednumber }}&nbsp;€</span>
+                                                        {% if balanceSheet.assets[column][1] is defined %}
+                                                            <span class="diff">{{ balanceSheet.assets[column][1]|localizednumberwithprecision(1) }}&nbsp;%</span>
+                                                        {% endif %}
+                                                    </td>
+                                                {% endfor %}
+                                            </tr><!-- /.table-item -->
+                                        {% else %}
+                                            <tr class="table-item">
+                                                <td class="table-income-item-name">{{ "project-detail_finance-column-#{ column }"|trans }}</td>
+                                                {% for balanceSheet in finance %}
+                                                    <td class="table-income-item-year">
+                                                        <span class="amount">{{ balanceSheet.assets[column][0]|localizednumber }}&nbsp;€</span>
+                                                        {% if balanceSheet.assets[column][1] is defined %}
+                                                            <span class="diff">{{ balanceSheet.assets[column][1]|localizednumberwithprecision(1) }}&nbsp;%</span>
+                                                        {% endif %}
+                                                    </td>
+                                                {% endfor %}
+                                            </tr><!-- /.table-item -->
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    <tr class="table-item-title">
+                                        <td colspan="4">{% trans %} project-detail_finance-debts-title {% endtrans %}</td>
+                                    </tr><!-- /.table-item-title -->
+
+                                    {% for column in financeColumns.debts %}
+                                        {% if column == 'total' %}
+                                            <tr class="table-item-total">
+                                                <td class="table-income-item-name">{{ "project-detail_finance-debts-total"|trans }}</td>
+                                                {% for balanceSheet in finance %}
+                                                    <td class="table-income-item-year">
+                                                        <span class="amount">{{ balanceSheet.debts[column][0]|localizednumber }}&nbsp;€</span>
+                                                        {% if balanceSheet.debts[column][1] is defined %}
+                                                            <span class="diff">{{ balanceSheet.debts[column][1]|localizednumberwithprecision(1) }}&nbsp;%</span>
+                                                        {% endif %}
+                                                    </td>
+                                                {% endfor %}
+                                            </tr><!-- /.table-item -->
+                                        {% else %}
+                                            <tr class="table-item">
+                                                <td class="table-income-item-name">{{ "project-detail_finance-column-#{ column }"|trans }}</td>
+                                                {% for balanceSheet in finance %}
+                                                    <td class="table-income-item-year">
+                                                        <span class="amount">{{ balanceSheet.debts[column][0]|localizednumber }}&nbsp;€</span>
+                                                        {% if balanceSheet.debts[column][1] is defined %}
+                                                            <span class="diff">{{ balanceSheet.debts[column][1]|localizednumberwithprecision(1) }}&nbsp;%</span>
+                                                        {% endif %}
+                                                    </td>
+                                                {% endfor %}
+                                            </tr><!-- /.table-item -->
+                                        {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table><!-- /.table-balance -->
+                        </div><!-- /.table-scroll -->
+                    </div><!-- /.tab-pane -->
+
+                    <div id="balance-graph" role="tabpanel" class="tab-pane">
+                        <div class="tabs nested-tabs">
+                            <div class="tabs-nav">
+                                <ul class="nav nav-tabs-text">
+                                    <li role="presentation" class="active">
+                                        <a href="#balance-graph-active" role="tab" data-toggle="tab">
+                                            {% trans %} project-detail_project-presentation-accounts-balance-active {% endtrans %}
+                                        </a>
+                                    </li>
+                                    <li role="presentation">
+                                        <a href="#balance-graph-passive" role="tab" data-toggle="tab">
+                                            {% trans %} project-detail_project-presentation-accounts-balance-passive {% endtrans %}
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div><!-- /.tab-navigation -->
+
+                            {% set projectOwnerBalanceAssets %}{% spaceless %}
+                                {
+                                    "type": "projectOwnerBalanceActive",
+                                    "background": "none",
+                                    "highcharts": {
+                                        "chart": {
+                                            "type": "spline",
+                                            "plotBackgroundColor": {
+                                                "linearGradient": {
+                                                    "x1": 0,
+                                                    "y1": 0,
+                                                    "x2": 0,
+                                                    "y2": 1
+                                                },
+                                                "stops": [[0, "rgba(95, 196, 208, .1)"], [1, "rgba(95, 196, 208, 0)"]]
+                                            }
+                                        },
+                                        "title": {"text": ""},
+                                        "xAxis": {"categories": [{% for financeData in finance|reverse %}"{{ financeData.closingDate|date('d/m/Y') }}"{% if not loop.last %},{% endif %}{% endfor %}]},
+                                        "yAxis": {"title": {"text": "Montant (en €)"}, "units": "€"},
+                                        "legend": {"symbolRadius": 10},
+                                        "series": [
+                                            {% for column in financeColumns.assets %}
+                                                {
+                                                    "name": "{% if column == 'total' %}{{ 'project-detail_finance-assets-total'|trans|raw }}{% else %}{{ "project-detail_finance-column-#{ column }"|trans|raw }}{% endif %}",
+                                                    "data": [{% for balanceSheet in finance|reverse %}{{ balanceSheet.assets[column][0] }}{% if not loop.last %},{% endif %}{% endfor %}]{% if column == 'total' %},"visible": false{% endif %}
+                                                }{% if not loop.last %},{% endif %}
+                                            {% endfor %}
+                                        ]
+                                    }
+                                }
+                            {% endspaceless %}{% endset %}
+
+                            {% set projectOwnerBalanceDebts %}{% spaceless %}
+                                {
+                                    "type": "projectOwnerBalancePassive",
+                                    "background": "none",
+                                    "highcharts": {
+                                        "chart": {
+                                            "type": "spline",
+                                            "plotBackgroundColor": {
+                                                "linearGradient": {
+                                                    "x1": 0,
+                                                    "y1": 0,
+                                                    "x2": 0,
+                                                    "y2": 1
+                                                },
+                                                "stops": [[0, "rgba(95, 196, 208, .1)"], [1, "rgba(95, 196, 208, 0)"]]
+                                            }
+                                        },
+                                        "title": {"text": ""},
+                                        "xAxis": {"categories": [{% for financeData in finance %}"{{ financeData.closingDate|date('d/m/Y') }}"{% if not loop.last %},{% endif %}{% endfor %}]},
+                                        "yAxis": {"title": {"text": "Montant (en €)"}, "units": "€"},
+                                        "legend": {"symbolRadius": 10},
+                                        "series": [
+                                            {% for column in financeColumns.debts %}
+                                                {
+                                                    "name": "{% if column == 'total' %}{{ 'project-detail_finance-debts-total'|trans|raw }}{% else %}{{ "project-detail_finance-column-#{ column }"|trans|raw }}{% endif %}",
+                                                    "data": [{% for balanceSheet in finance %}{{ balanceSheet.debts[column][0] }}{% if not loop.last %},{% endif %}{% endfor %}]{% if column == 'total' %},"visible": false{% endif %}
+                                                }{% if not loop.last %},{% endif %}
+                                            {% endfor %}
+                                        ]
+                                    }
+                                }
+                            {% endspaceless %}{% endset %}
+
+                            <div class="tab-content">
+                                <div id="balance-graph-active" role="tabpanel" class="tab-pane active">
+                                    <div class="chart" data-chartview='{{ projectOwnerBalanceAssets|raw|escape('html_attr') }}'></div>
+                                </div><!-- /.tab-pane -->
+                                <div id="balance-graph-passive" role="tabpanel" class="tab-pane">
+                                    <div class="chart" data-chartview='{{ projectOwnerBalanceDebts|raw|escape('html_attr') }}'></div>
+                                </div><!-- /.tab-pane -->
+                            </div>
+                        </div><!-- /.nested-tabs -->
+                    </div><!-- /.tab-pane -->
+                </div><!-- /.section-tabs-content -->
+            </div><!-- /tabs -->
+
+            <div class="btn-toolbar">
+                <a href="{{ path('export_balance_sheet', {'projectId' : project.projectId}) }}" class="btn-default" target="_blank">
+                    <span class="icon fa-excel-u32"></span>
+                    {% trans %} project-detail_project-presentation-accounts-export-csv-button {% endtrans %}
+                </a>
+            </div><!-- /.btn-toolbar -->
+        </section><!-- /.page-section -->
+    {% else %}
+        <section id="project-section-income" class="page-section">
+            <div class="tabs">
+                <div class="section-tabs-nav">
+                    <header>
+                        <h3 id="project-income" class="h3">{% trans %} project-detail_project-presentation-accounts-title {% endtrans %}</h3>
+                    </header>
+                </div><!-- /.section-tabs-nav -->
+
+                <div class="section-tabs-content tab-content">
+                    <p>{% trans %} project-detail_logged-out-description {% endtrans %}</p>
+                </div><!-- /.section-tabs-content -->
+            </div><!-- /tabs -->
+        </section><!-- /.page-section -->
+
+        <section id="project-section-balance" class="page-section">
+            <div class="tabs">
+                <div class="section-tabs-nav">
+                    <header>
+                        <h3 id="project-balance" class="h3">{% trans %} project-detail_project-presentation-accounts-balance {% endtrans %}</h3>
+                    </header>
+                </div><!-- /.section-tabs-nav -->
+
+                <div class="section-tabs-content tab-content">
+                    <p>{% trans %} project-detail_logged-out-description {% endtrans %}</p>
+                </div><!-- /.section-tabs-content -->
+            </div><!-- /tabs -->
+        </section><!-- /.page-section -->
+    {% endif %}
+</div>

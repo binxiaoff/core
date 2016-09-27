@@ -1,0 +1,136 @@
+
+// Small inline spinner (mostly used within btn-groups for AutoComplete input elements)
+.ui-is-spinner {
+  display: none !important;
+  color: $c-t3;
+  font-family: $ff-icon;
+  opacity: 0;
+
+  animation: 1s linear 0s infinite spinnerloading;
+  transition: opacity .2s, color .2s;
+
+  &:before {
+    content: $fa-refresh;
+  }
+
+  &#{$js-is-loading} {
+    display: inline-block !important;
+    color: $c-p1;
+    opacity: 1;
+  }
+
+  &#{$js-is-loading-end} {
+    display: inline-block !important;
+    opacity: 0;
+  }
+}
+
+// Full page spinner
+.modal-spinner {
+  display:    none;
+  position:   fixed;
+  z-index:    1000;
+  top:        0;
+  left:       0;
+  height:     100%;
+  width:      100%;
+  background-color: rgba( 255, 255, 255, .5 );
+  background-repeat: no-repeat;
+
+  #{$js-is-loading} & {
+    display: block;
+  }
+}
+
+body#{$js-is-loading} {
+  overflow: hidden;
+}
+
+#floatingCirclesG {
+  position:relative;
+  width:77px;
+  height:77px;
+  margin:0;
+  top:50%;
+  left:50%;
+  transform:scale(0.6) translateX(-50%) translateY(-50%);
+}
+
+.f_circleG {
+  position: absolute;
+  background-color: fade-out($c-purple, .8); // rgba(178,0,101,0.2);
+  height: 14px;
+  width: 14px;
+  border-radius: 7px;
+  animation-name: f_fadeG;
+  animation-duration: 0.622s;
+  animation-iteration-count:infinite;
+  animation-direction:normal;
+}
+
+#frotateG_01 {
+  left: 0;
+  top: 31px;
+  animation-delay: 0.2295s;
+}
+
+#frotateG_02 {
+  left: 9px;
+  top: 9px;
+  animation-delay: 0.316s;
+}
+
+#frotateG_03 {
+  left: 31px;
+  top: 0;
+  animation-delay: 0.3925s;
+}
+
+#frotateG_04 {
+  right: 9px;
+  top: 9px;
+  animation-delay: 0.469s;
+}
+
+#frotateG_05 {
+  right: 0;
+  top: 31px;
+  animation-delay: 0.5455s;
+}
+
+#frotateG_06 {
+  right: 9px;
+  bottom: 9px;
+  animation-delay: 0.622s;
+}
+
+#frotateG_07 {
+  left: 31px;
+  bottom: 0;
+  animation-delay: 0.6985s;
+}
+
+#frotateG_08 {
+  left: 9px;
+  bottom: 9px;
+  animation-delay: 0.775s;
+}
+
+@keyframes spinnerloading {
+  0% {
+    transform: rotateZ(0deg);
+  }
+  100% {
+    transform: rotateZ(360deg);
+  }
+}
+
+@keyframes f_fadeG {
+  0% {
+    background-color: rgb(178,0,101);
+  }
+
+  100% {
+    background-color: rgb(255,255,255);
+  }
+}

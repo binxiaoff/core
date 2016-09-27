@@ -120,4 +120,83 @@ class indexage_vos_operations extends indexage_vos_operations_crud
         }
         return $result;
     }
+
+    /**
+     * @param $clientId
+     * @param $annee
+     * @return string
+     */
+    function getFiscalBalanceToDeclare($clientId, $annee)
+    {
+        $sql = "SELECT solde 
+                FROM indexage_vos_operations 
+                WHERE id_client = " . $clientId . " AND date_operation < '$annee-01-01 00:00:00' ORDER BY date_operation DESC LIMIT 0,1";
+
+        $balance = $this->bdd->executeQuery($sql)->fetchColumn(0);
+
+        $sql = "SELECT sum(amount)
+                FROM bids
+                INNER JOIN `lenders_accounts` ON lenders_accounts.id_lender_account = bids.id_lender_account
+                WHERE lenders_accounts.id_client_owner = " . $clientId . " AND bids.added < '$annee-01-01 00:00:00' AND bids.updated >= '$annee-01-01 00:00:00'";
+        $bidSum = $this->bdd->executeQuery($sql)->fetchColumn(0);
+        return bcdiv(bcadd($balance, $bidSum, 2), 100, 2);
+    }
+
+    public function getLenderOperations(array $transactionType, $clientId, $startDate, $endDate, $projectId = null, $orderBy = 'date_operation DESC, id_transaction DESC')
+    {
+        $bind     = [
+            'transactionType' => $transactionType,
+            'clientId'        => $clientId,
+            'startDate'       => $startDate,
+            'endDate'         => $endDate,
+        ];
+        $bindType = [
+            'clientId'  => \PDO::PARAM_INT,
+            'startDate' => \PDO::PARAM_STR,
+            'endDate'   => \PDO::PARAM_STR,
+        ];
+        $sql      = 'SELECT
+                    id,
+                    id_client,
+                    id_transaction,
+                    id_echeancier,
+                    id_projet,
+                    type_transaction,
+                    libelle_operation,
+                    CASE
+                        WHEN bdc = 0 THEN
+                          NULL 
+                        ELSE
+                          bdc
+                    END AS bdc,
+                    libelle_projet,
+                    date_operation,
+                    ROUND(solde / 100, 2) AS solde,
+                    ROUND(montant_operation / 100, 2) AS montant_operation,
+                    ROUND(montant_capital / 100, 2) AS montant_capital,
+                    ROUND(montant_interet / 100, 2) AS montant_interet,
+                    libelle_prelevement,
+                    ROUND(montant_prelevement / 100, 2) * -1 AS montant_prelevement,
+                    updated,
+                    added
+                FROM indexage_vos_operations
+                WHERE id_client = :clientId
+                  AND DATE(date_operation) >= :startDate
+                  AND DATE(date_operation) <= :endDate
+                ';
+        if (false === empty($transactionType)) {
+            $sql .= ' AND type_transaction in (:transactionType)';
+            $bind['transactionType']     = $transactionType;
+            $bindType['transactionType'] = \Doctrine\DBAL\Connection::PARAM_INT_ARRAY;
+        }
+        if (false == empty($projectId)) {
+            $sql .= ' AND id_projet = :projectId';
+            $bind['projectId']     = $projectId;
+            $bindType['projectId'] = \PDO::PARAM_INT;
+        }
+        $sql .= ' ORDER BY ' . $orderBy;
+        /** @var \Doctrine\DBAL\Statement $statement */
+        $statement = $this->bdd->executeQuery($sql, $bind, $bindType);
+        return $statement->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }

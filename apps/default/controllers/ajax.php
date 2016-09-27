@@ -86,277 +86,6 @@ class ajaxController extends bootstrap
         echo $response;
     }
 
-    public function _load_project()
-    {
-        $this->autoFireView = false;
-
-        $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
-
-        $this->settings->get('Heure fin periode funding', 'type');
-        $this->heureFinFunding = $this->settings->value;
-
-        $this->settings->get('Tri par taux', 'type');
-        $this->triPartx = $this->settings->value;
-        $this->triPartx = explode(';', $this->triPartx);
-
-        $this->settings->get('Tri par taux intervalles', 'type');
-        $this->triPartxInt = $this->settings->value;
-        $this->triPartxInt = explode(';', $this->triPartxInt);
-
-        $this->projects         = $this->loadData('projects');
-        $this->projects_status  = $this->loadData('projects_status');
-        $this->companies        = $this->loadData('companies');
-        $this->favoris          = $this->loadData('favoris');
-        $this->bids             = $this->loadData('bids');
-        $this->loans            = $this->loadData('loans');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
-
-        $where = '';
-        $ordre = $this->tabOrdreProject[$_GET['ordreProject']];
-
-        $_SESSION['ordreProject'] = $_GET['ordreProject'];
-
-        // sort projects by rate
-        $aRateRange = array();
-        if (isset($_SESSION['tri']['taux'])) {
-            $key = $_SESSION['tri']['taux'];
-            switch ($key) {
-                case 1:
-                    $aRateRange = explode('-', $this->triPartxInt[0]);
-                    break;
-                case 2:
-                    $aRateRange = explode('-', $this->triPartxInt[1]);
-                    break;
-                case 3:
-                    $aRateRange = explode('-', $this->triPartxInt[2]);
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        // filter completed projects
-        if (isset($_GET['type']) && $_GET['type'] == 4) {
-            $where = ' AND p.date_fin < "' . date('Y-m-d') . '"';
-        }
-
-        $sPositionStart = filter_var($_GET['positionStart'], FILTER_SANITIZE_NUMBER_INT) + 10;
-        $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, $where . ' AND p.status = 0 AND p.display = 0', $ordre, $aRateRange, $sPositionStart, 10);
-        $affichage             = '';
-
-        if (empty($this->lProjetsFunding)) {
-            $bHasMore = false;
-        } else {
-            $bHasMore = true;
-            foreach ($this->lProjetsFunding as $project) {
-                $this->projects_status->getLastStatut($project['id_project']);
-                $this->companies->get($project['id_company'], 'id_company');
-
-                $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $project['date_retrait_full']); // date fin 21h a chaque fois
-                if ($inter['mois'] > 0) {
-                    $dateRest = $inter['mois'] . ' ' . $this->lng['preteur-projets']['mois'];
-                } else {
-                    $dateRest = '';
-                }
-
-                // dates pour le js
-                $mois_jour = $this->dates->formatDate($project['date_retrait'], 'F d');
-                $annee     = $this->dates->formatDate($project['date_retrait'], 'Y');
-
-                $avgRate  = $this->projects->getAverageInterestRate($project['id_project'], $this->projects_status->status);
-
-                $affichage .= "
-            <tr class='unProjet' id='project" . $project['id_project'] . "'>
-                <td>";
-                if ($this->projects_status->status < \projects_status::FUNDE) {
-                    $tab_date_retrait = explode(' ', $project['date_retrait_full']);
-                    $tab_date_retrait = explode(':', $tab_date_retrait[1]);
-                    $heure_retrait    = $tab_date_retrait[0] . ':' . $tab_date_retrait[1];
-
-                    $affichage .= "
-                        <script>
-                            var cible" . $project['id_project'] . " = new Date('" . $mois_jour . ", " . $annee . " " . $heure_retrait . ":00');
-                            var letime" . $project['id_project'] . " = parseInt(cible" . $project['id_project'] . ".getTime() / 1000, 10);
-                            setTimeout('decompte(letime" . $project['id_project'] . ",\"val" . $project['id_project'] . "\")', 500);
-                        </script>";
-                } else {
-                    if ($project['date_fin'] != '0000-00-00 00:00:00') {
-                        $endDateTime = new \DateTime($project['date_fin']);
-                    } else {
-                        $endDateTime = new \DateTime($project['date_retrait_full']);
-                    }
-                    $endDate  = strftime('%d %B', $endDateTime->getTimestamp());
-                    $dateRest = str_replace('[#date#]', $endDate, $this->lng['preteur-projets']['termine']);
-                }
-
-                if ($project['photo_projet'] != '') {
-                    $affichage .= "<a class='lien' href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'><img src='" . $this->surl . '/images/dyn/projets/72/' . $project['photo_projet'] . "' alt='" . $project['photo_projet'] . "' class='thumb'></a>";
-                }
-
-                $affichage .= "
-                    <div class='description'>";
-                if ($_SESSION['page_projet'] == 'projets_fo') {
-                    $affichage .= "<h5><a href='" . $this->lurl . '/projects/detail/' . $project['slug'] . "'>" . $project['title'] . "</a></h5>";
-                } else {
-                    $affichage .= "<h5><a href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'>" . $project['title'] . "</a></h5>";
-                }
-                $affichage .= "<h6>" . $this->companies->city . ($this->companies->zip != '' ? ', ' : '') . $this->companies->zip . "</h6>
-                        <p>" . $project['nature_project'] . "</p>
-                    </div><!-- /.description -->
-                </td>
-                <td>
-                    <a class='lien' href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'>
-                        <div class='cadreEtoiles'><div class='etoile " . $this->lNotes[$project['risk']] . "'></div></div>
-                    </a>
-                </td>
-                <td style='white-space:nowrap;'>
-                    <a class='lien' href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'>
-                        " . $this->ficelle->formatNumber($project['amount'], 0) . "€
-                    </a>
-                </td>
-                <td style='white-space:nowrap;'>
-                <a class='lien' href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'>
-                    " . ($project['period'] == 1000000 ? $this->lng['preteur-projets']['je-ne-sais-pas'] : $project['period'] . ' ' . $this->lng['preteur-projets']['mois']) . "
-                    </a>
-                </td>";
-                $affichage .= "<td><a class='lien' href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'>";
-                $affichage .= $this->ficelle->formatNumber($avgRate, 1) . "%";
-                $affichage .= "</a></td>";
-                $affichage .= "<td><a class='lien' href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'>";
-
-                if ($this->projects_status->status >= \projects_status::FUNDE) {
-                    $affichage .= "<span class=\"project_ended\" id='val" . $project['id_project'] . "'>" . $dateRest . "</span></a></td>
-                <td><a href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "' class='btn btn-info btn-small multi grise1 btn-grise'>" . $this->lng['preteur-projets']['voir-le-projet'] . "</a>";
-                } else {
-                    $affichage .= "<span id='val" . $project['id_project'] . "'>" . $dateRest . "</span></a></td>
-                <td><a href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "' class='btn btn-info btn-small'>" . $this->lng['preteur-projets']['pretez'] . "</a>";
-                }
-                $affichage .= "</td>
-            </tr>
-            ";
-            }
-        }
-        $table = array('affichage' => $affichage, 'positionStart' => $sPositionStart, 'hasMore' => $bHasMore);
-        echo json_encode($table);
-    }
-
-    public function _triProject()
-    {
-        $this->autoFireView = true;
-
-        $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
-
-        $this->settings->get('Heure fin periode funding', 'type');
-        $this->heureFinFunding = $this->settings->value;
-
-        $this->settings->get('Tri par taux', 'type');
-        $this->triPartx = $this->settings->value;
-        $this->triPartx = explode(';', $this->triPartx);
-
-        $this->settings->get('Tri par taux intervalles', 'type');
-        $this->triPartxInt = $this->settings->value;
-        $this->triPartxInt = explode(';', $this->triPartxInt);
-
-        $this->projects          = $this->loadData('projects');
-        $this->companies         = $this->loadData('companies');
-        $this->favoris           = $this->loadData('favoris');
-        $this->lenders_accounts  = $this->loadData('lenders_accounts');
-        $this->loadData('projects_status'); // Loaded for class constants
-
-        if (isset($_POST['val']) && isset($_POST['id'])) {
-            $val = $_POST['val'];
-            $id  = $_POST['id'];
-
-            $_SESSION['tri'][$id] = $val;
-        }
-
-        // Reset du tri
-        if (isset($_POST['rest_val']) && $_POST['rest_val'] == 1) {
-            unset($_SESSION['tri']);
-        }
-
-        // Si session on execute
-        if (isset($_SESSION['tri'])) {
-            $this->where = '';
-
-            // tri temps
-            if (isset($_SESSION['tri']['temps'])) {
-                $this->ordreProject = $_SESSION['tri']['temps'];
-                $sStatusProject     = \projects_status::EN_FUNDING;
-            } else {
-                $this->ordreProject = 1;
-                $sStatusProject     = $this->tabProjectDisplay;
-            }
-
-            if (isset($_SESSION['tri']['type']) && $_POST['id'] != 'temps') {
-                $aStatusproject = array(
-                    \projects_status::FUNDE,
-                    \projects_status::FUNDING_KO,
-                    \projects_status::PRET_REFUSE,
-                    \projects_status::REMBOURSEMENT,
-                    \projects_status::REMBOURSE,
-                    \projects_status::PROBLEME,
-                    \projects_status::RECOUVREMENT,
-                    \projects_status::PROCEDURE_SAUVEGARDE,
-                    \projects_status::REMBOURSEMENT_ANTICIPE,
-                    \projects_status::PROBLEME,
-                    \projects_status::PROBLEME_J_X,
-                    \projects_status::REDRESSEMENT_JUDICIAIRE,
-                    \projects_status::LIQUIDATION_JUDICIAIRE,
-                    \projects_status::DEFAUT
-                );
-                if ($_SESSION['tri']['type'] == 4) {
-                    $sStatusProject = implode(', ', $aStatusproject);
-                } else if ($_SESSION['tri']['type'] == 1) {
-                    $aStatusproject[] = \projects_status::EN_FUNDING;
-                    $sStatusProject = implode(', ', $aStatusproject);
-                }
-            }
-
-            $_SESSION['ordreProject'] = $this->ordreProject;
-
-            // sort projects by rate
-            $aRateRange = array();
-            if (isset($_SESSION['tri']['taux'])) {
-                $key        = $_SESSION['tri']['taux'];
-                $aRateRange = explode('-', $this->triPartxInt[$key - 1]);
-
-                // where pour le js
-                $this->where = $key;
-            }
-
-            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($sStatusProject, ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], $aRateRange, 0, 10);
-            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($sStatusProject . ' AND p.status = 0 AND p.display = 0');
-        } else {
-            $this->ordreProject = 1;
-            $this->type         = 0;
-
-            $_SESSION['ordreProject'] = $this->ordreProject;
-
-            $this->where           = '';
-            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, ' AND p.status = 0', $this->tabOrdreProject[$this->ordreProject], array(), 0, 10);
-            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ' AND p.status = 0');
-        }
-        foreach ($this->lProjetsFunding as $iKey => $aProject) {
-            $this->companies->get($aProject['id_company'], 'id_company');
-
-            $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $aProject['date_retrait_full']);
-            if ($inter['mois'] > 0) {
-                $this->lProjetsFunding[$iKey]['daterest'] = $inter['mois'] . ' ' . $this->lng['preteur-projets']['mois'];
-            } else {
-                if ($this->lProjetsFunding[$iKey]['date_fin'] != '0000-00-00 00:00:00') {
-                    $endDateTime = new \DateTime($this->lProjetsFunding[$iKey]['date_fin']);
-                } else {
-                    $endDateTime = new \DateTime($this->lProjetsFunding[$iKey]['date_retrait_full']);
-                }
-                $endDate                                  = strftime('%d %B', $endDateTime->getTimestamp());
-                $this->lProjetsFunding[$iKey]['daterest'] = str_replace('[#date#]', $endDate, $this->lng['preteur-projets']['termine']);
-            }
-
-            $this->lProjetsFunding[$iKey]['taux'] = $this->ficelle->formatNumber($this->projects->getAverageInterestRate($aProject['id_project'], $aProject['status']), 1);
-        }
-    }
-
     public function _favori()
     {
         $this->autoFireView = false;
@@ -438,7 +167,7 @@ class ajaxController extends bootstrap
         $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
 
 
-        $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
+        $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', 'fr_FR', $this->App);
 
         $this->projects->get($this->bdd->escape_string($_POST['id']), 'id_project');
 
@@ -464,12 +193,8 @@ class ajaxController extends bootstrap
             $order        = 'ordre ' . $direction;
         }
 
-        /** @var \projects_status $oProjectStatus */
-        $oProjectStatus = $this->loadData('projects_status');
-        $oProjectStatus->getLastStatut($this->projects->id_project);
-
         $this->aBids   = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
-        $this->avgRate = $this->projects->getAverageInterestRate($this->projects->id_project, $oProjectStatus->status);
+        $this->avgRate = $this->projects->getAverageInterestRate();
         $this->status  = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
     }
 
@@ -483,7 +208,7 @@ class ajaxController extends bootstrap
         $this->echeanciers      = $this->loadData('echeanciers');
 
         //Recuperation des element de traductions
-        $this->lng['preteur-mouvement'] = $this->ln->selectFront('preteur-mouvement', $this->language, $this->App);
+        $this->lng['preteur-mouvement'] = $this->ln->selectFront('preteur-mouvement', 'fr_FR', $this->App);
 
         if (isset($_POST['year'])) {
             $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
@@ -759,10 +484,8 @@ class ajaxController extends bootstrap
 
             if ($this->ficelle->isEmail($_POST['email']) == false) {
                 $validMail = 'nok';
-            } elseif ($this->clients->existEmail($_POST['email']) == false) {
-                if ($_POST['email'] != $_POST['oldemail']) {
-                    $validMail = 'nok';
-                }
+            } elseif ($this->clients->existEmail($_POST['email']) && $_POST['email'] != $_POST['oldemail']) {
+                $validMail = 'nok';
             }
         }
         echo $validMail;
@@ -770,25 +493,12 @@ class ajaxController extends bootstrap
 
     public function _captcha_login()
     {
-        $this->autoFireView = false;
-
-        echo $captcha = '<iframe style="margin-top:-16px;margin-left:-5px;" class="captcha_login" width="133" height="33" src="' . $this->surl . '/images/default/securitecode.php"></iframe>';
+        //moved to login controller
     }
 
     public function _captcha()
     {
-        $this->autoFireView = false;
-
-        if (isset($_POST['security'])) {
-            if (strtolower($_POST['security']) != $_SESSION['securecode']) {
-                echo $captcha = '<iframe width="133" src="' . $this->surl . '/images/default/securitecode.php"></iframe>';
-                //echo $_SESSION['securecode'];
-            } else {
-                echo 'nok';
-            }
-        } else {
-            echo 'nok';
-        }
+        //moved to login controller
     }
 
     public function _contact_form()
@@ -933,7 +643,7 @@ class ajaxController extends bootstrap
     public function _syntheses_mouvements()
     {
         if ($this->clients->checkAccess() && isset($_POST['duree']) && in_array($_POST['duree'], array('mois', 'trimestres', 'annees')) || 5 == 5) {
-            $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', $this->language, $this->App);
+            $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', 'fr_FR', $this->App);
 
             $this->echeanciers      = $this->loadData('echeanciers');
             $this->lenders_accounts = $this->loadData('lenders_accounts');
@@ -1177,9 +887,9 @@ class ajaxController extends bootstrap
         $this->companies     = $this->loadData('companies');
         $this->loadData('transactions_types'); // Loaded for class constants
 
-        $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
-        $this->lng['preteur-operations-pdf']            = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
-        $this->lng['preteur-operations']                = $this->ln->selectFront('preteur-operations', $this->language, $this->App);
+        $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', 'fr_FR', $this->App);
+        $this->lng['preteur-operations-pdf']            = $this->ln->selectFront('preteur-operations-pdf', 'fr_FR', $this->App);
+        $this->lng['preteur-operations']                = $this->ln->selectFront('preteur-operations', 'fr_FR', $this->App);
 
         // On met en session les POST pour le PDF
         $_SESSION['filtre_vos_operations']['debut']            = $_POST['debut'];
@@ -1356,7 +1066,7 @@ class ajaxController extends bootstrap
     public function _operations_emprunteur()
     {
         $this->autoFireView = true;
-        $this->lng['espace-emprunteur'] = $this->ln->selectFront('espace-emprunteur', $this->language, $this->App);
+        $this->lng['espace-emprunteur'] = $this->ln->selectFront('espace-emprunteur', 'fr_FR', $this->App);
 
         $oClients   = $this->loadData('clients');
         $oCompanies = $this->loadData('companies');
@@ -1443,7 +1153,7 @@ class ajaxController extends bootstrap
 
         if (isset($this->params[0]) && isset($this->params[1]) && $this->oProject->get($this->params[0]) && $oClient->get($this->params[1], 'hash')) {
             $oLenderAccount->get($this->clients->id_client, 'id_client_owner');
-            $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', $this->language, $this->App);
+            $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', 'fr_FR', $this->App);
             $this->aRejectedBids           = $oBids->select('id_project = ' . $this->oProject->id_project . ' AND id_lender_account = ' . $oLenderAccount->id_lender_account . ' AND status IN (' . implode(',', array(\bids::STATUS_BID_REJECTED)) . ')', 'id_bid DESC');
         }
     }
@@ -1490,7 +1200,7 @@ class ajaxController extends bootstrap
                 $oCachePool->save($oCachedItem);
             }
 
-            $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
+            $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', 'fr_FR', $this->App);
             $this->status                 = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */

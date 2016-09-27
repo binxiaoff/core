@@ -1,0 +1,89 @@
+{# Both person and legal entity forms include this twig template and IDs need to be unique for UX functionality to work #}
+{% if idClientType is empty %}
+    {% set idClientType = 'person' %}
+{% endif %}
+
+<fieldset id="form-lender-{{ idClientType }}-fieldset-postal-address"
+          class="form-lender-fieldset-postal-address panel collapse{% if formData.same_postal_address == true %} in{% endif %}"
+          {% if formData.same_postal_address == true %} aria-expanded="true" {% else %} aria-expanded="false" style="height : 0;" {% endif %}>
+
+    <h3 class="h3">{% trans %} lender-subscription_address-form-postal-address-title {% endtrans %}</h3>
+    <div id="form-preter-{{ idClientType }}-address-autocomplete-error" class="ui-formvalidation-notifications address-autocomplete-error" style="display: none;">
+        <div class="message-error">{% trans %}lender-subscription_fiscal-address-autocomplete-error{% endtrans %}</div>
+    </div>
+
+    <div class="row">
+        <div class="form-field">
+            <label for="form-lender-{{ idClientType }}-postal-address-street">
+                {% trans %} lender-subscription_address-form-postal-address-label {% endtrans %}
+                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+            </label>
+            <input id="form-lender-{{ idClientType }}-postal-address-street" type="text" name="postal_address_street" value="" class="input-field" placeholder=""
+                   data-formvalidation-input
+                   data-formvalidation-required="true"/>
+        </div><!-- /.form-field -->
+    </div>
+
+    <div class="row row-multi-col-computer">
+        <div class="form-field col-lg-6 col-md-6">
+            <label for="form-lender-{{ idClientType }}-postal-address-zip">
+                {% trans %} lender-subscription_address-form-address-postcode-label {% endtrans %}
+                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+            </label>
+            <div class="input-group set-right">
+                <input id="form-lender-{{ idClientType }}-postal-address-zip" type="text" name="postal_address_zip" value="{{ formData.postal_address_zip }}" autocomplete="off" class="input-field"
+                       data-formvalidation-input
+                       data-formvalidation-required="true"
+                        {# AutoComplete behaviours for addresses needs to be further marked and configured #}
+                       data-autocomplete-address
+                       data-autocomplete-ajaxurl="{{ path('lender_subscription_ajax_zip') }}"
+                       data-autocomplete-address-countryelem="#form-lender-{{ idClientType }}-postal-address-country"
+                       data-autocomplete-address-cityelem="#form-lender-{{ idClientType }}-postal-address-city"
+                       data-has-spinner="#{{ idClientType }}-postal-zip-autocomplete-spinner"/>
+                <div class="btn-group">
+                    <span id="{{ idClientType }}-postal-zip-autocomplete-spinner" class="ui-is-spinner"></span>
+                </div>
+            </div><!-- /.input-group -->
+        </div><!-- /.form-field -->
+
+        <div class="form-field col-lg-6 col-md-6">
+            <label for="form-lender-{{ idClientType }}-postal-address-city">
+                {% trans %} lender-subscription_address-form-address-city-label {% endtrans %}
+                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+            </label>
+            <div class="input-group set-right">
+                <input id="form-lender-{{ idClientType }}-postal-address-city" type="text" name="postal_address_city" value="{{ formData.postal_address_city }}" autocomplete="off" class="input-field"
+                       data-formvalidation-input
+                       data-formvalidation-required="true"
+                        {# AutoComplete behaviours for addresses needs to be further marked and configured #}
+                       data-autocomplete-address
+                       data-autocomplete-ajaxurl="{{ path('lender_subscription_ajax_city') }}"
+                       data-autocomplete-ajaxprop="city"
+                       data-autocomplete-address-countryelem="#form-lender-{{ idClientType }}-postal-address-country"
+                       data-autocomplete-address-cityelem="#form-lender-{{ idClientType }}-postal-address-city"
+                       data-autocomplete-address-zipelem="#form-lender-{{ idClientType }}-postal-address-zip"
+                       data-has-spinner="#{{ idClientType }}-postal-city-autocomplete-spinner"/>
+                <div class="btn-group">
+                    <span id="{{ idClientType }}-postal-city-autocomplete-spinner" class="ui-is-spinner"></span>
+                </div>
+            </div><!-- /.input-group -->
+        </div><!-- /.form-field -->
+    </div>
+
+    <div class="row row-multi-col-computer">
+        <div class="form-field col-lg-6 col-md-6">
+            <label for="form-lender-{{ idClientType }}-postal-address-country">
+                {% trans %} lender-subscription_address-form-address-country-label {% endtrans %}
+                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+            </label>
+            <select id="form-lender-{{ idClientType }}-postal-address-country" name="postal_address_country" class="input-field"
+                    data-formvalidation-input
+                    data-formvalidation-required="true">
+                {% for i, country in countries %}
+                    <option value="{{ i }}" {% if formData.postal_address_country == i %} selected {% endif %}>
+                        {{ country }}</option>
+                {% endfor %}
+            </select>
+        </div><!-- /.form-field -->
+    </div>
+</fieldset>

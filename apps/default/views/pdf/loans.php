@@ -51,7 +51,7 @@
             <th>Date de première échéance</th>
             <th>Prochaine échéance</th>
             <th>Date de dernière échéance</th>
-            <th>Dernière échéance perçue</th>
+            <th>Mensualité</th>
         </tr>
         <?php foreach ($this->lSumLoans as $aProjectLoans): ?>
             <?php if ($aProjectLoans['project_status'] >= \projects_status::REMBOURSEMENT): ?>

@@ -1,0 +1,233 @@
+{% extends 'layouts/_layout.html.twig' %}
+
+{% set page = {
+    title: 'Déposer un projet',
+    permalink: path('project_request_finance', {'hash' : project.hash})
+} %}
+
+{% block siteContent %}
+    <article id="deposer-projet" class="page">
+        <div class="hero-wrap">
+            <header class="page-header">
+                <div class="site-wrap">
+                    <h1 id="project-create-title" class="h1">{% trans %} project-request_page-title {% endtrans %}</h1>
+                </div><!-- /.site-wrap -->
+            </header><!-- /.page-header -->
+
+            <div class="page-content">
+                <div class="site-wrap">
+                    <form id="form-project-create" action="{{ path('project_request_finance_form', {'hash' : project.hash}) }}" method="post" enctype="multipart/form-data" class="form-project-create">
+                        <div class="row">
+                            <div class="col-lg-8 col-md-8">
+                                <div class="form-project-create-nav tab-nav">
+                                    <ul class="nav nav-progress">
+                                        <li id="project-create-1" role="presentation" class="complete">
+                                            <span>
+                                                <span class="project-create-progress-point">1.</span>
+                                                <span class="label hide-mobile">{% trans %} project-request_contact-tab-title {% endtrans %}</span>
+                                            </span>
+                                        </li>
+                                        <li id="project-create-2" role="presentation" class="active">
+                                            <span>
+                                                <span class="project-create-progress-point">2.</span>
+                                                <span class="label hide-mobile">{% trans %} project-request_finance-tab-title {% endtrans %}</span>
+                                            </span>
+                                        </li>
+                                        <li id="project-create-3" role="presentation">
+                                            <span>
+                                                <span class="project-create-progress-point">3.</span>
+                                                <span class="label hide-mobile">{% trans %} project-request_end-tab-title {% endtrans %}</span>
+                                            </span>
+                                        </li>
+                                    </ul><!-- /.nav-progress -->
+                                </div><!-- /.form-project-create-nav -->
+                            </div>
+                        </div>
+
+                        <div class="row ui-sticky-parent">
+                            <div class="col-form col-lg-8 col-md-8">
+                                <div class="form-project-create-content tab-content">
+                                    <div id="form-project-create-2" aria-labelledby="project-create-2 project-create-title" data-formvalidation data-formvalidation-notificationselem="#form-project-create-2-notifications">
+                                        <fieldset class="panel">
+                                            <div id="form-project-create-1-notifications" class="ui-formvalidation-notifications">
+                                                {% if form.errors is not empty %}
+                                                    <div class="message-error"><p>{% trans %} form-validation_error-group-has-errors {% endtrans %}</p></div>
+                                                {% endif %}
+                                            </div>
+
+                                            <h3 class="h3">{% trans %} project-request_step-2-title {% endtrans %}</h3>
+
+                                            <div class="message-info">
+                                                <p>{% trans %} project-request_step-2-info-message {% endtrans %}</p>
+                                            </div><!-- /.message-info -->
+
+                                            <div class="row">
+                                                <div class="form-field col-lg-6 col-md-6 col-sm-4{% if form.errors.dl is defined %} ui-formvalidation-error{% endif %}">
+                                                    <label for="form-project-create-finance-equity">
+                                                        {% trans %} project-request_step-2-capital-stock-field-label {% endtrans %}
+                                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                                    </label>
+                                                    <div class="input-group set-left">
+                                                        <div class="btn-group">
+                                                            <span class="icon fa-euro"></span>
+                                                        </div><!-- /.btn-group -->
+                                                        <input id="form-project-create-finance-equity" type="text" name="finance[dl]" value="{{ form.values.dl|localizednumber }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                    </div><!-- /.input-group -->
+                                                    {% if form.errors.dl is defined %}
+                                                        <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
+                                                    {% endif %}
+                                                </div><!-- /.form-field -->
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="form-field col-lg-6 col-md-6 col-sm-4{% if form.errors.fl is defined %} ui-formvalidation-error{% endif %}">
+                                                    <label for="form-project-create-finance-turnover">
+                                                        {% trans %} project-request_step-2-revenue-field-label {% endtrans %}
+                                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                                    </label>
+                                                    <div class="input-group set-left">
+                                                        <div class="btn-group">
+                                                            <span class="icon fa-euro"></span>
+                                                        </div><!-- /.btn-group -->
+                                                        <input id="form-project-create-finance-turnover" type="text" name="finance[fl]" value="{{ form.values.fl|localizednumber }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                    </div><!-- /.input-group -->
+                                                    {% if form.errors.fl is defined %}
+                                                        <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
+                                                    {% endif %}
+                                                </div><!-- /.form-field -->
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="form-field col-lg-6 col-md-6 col-sm-4{% if form.errors.gg is defined %} ui-formvalidation-error{% endif %}">
+                                                    <label for="form-project-create-finance-income">
+                                                        {% trans %} project-request_step-2-operating-income-field-label {% endtrans %}
+                                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                                    </label>
+                                                    <div class="input-group set-left">
+                                                        <div class="btn-group">
+                                                            <span class="icon fa-euro"></span>
+                                                        </div><!-- /.btn-group -->
+                                                        <input id="form-project-create-finance-income" type="text" name="finance[gg]" value="{{ form.values.gg|localizednumber }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                    </div><!-- /.input-group -->
+                                                    {% if form.errors.gg is defined %}
+                                                        <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
+                                                    {% endif %}
+                                                </div><!-- /.form-field -->
+                                            </div>
+                                        </fieldset>
+
+                                        <fieldset class="panel">
+                                            <div class="row">
+                                                <div class="form-field">
+                                                    <label>{% trans %} project-request_step-2-tax-package-upload-field-label {% endtrans %}
+                                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                                    </label>
+
+                                                    <div class="form-field{% if form.errors.accounts is defined %} ui-formvalidation-error{% endif %}">
+                                                        <div class="custom-input-file" id="form-project-create-finance-taxreturn" data-fileattach data-fileattach-inputname="accounts" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png tiff doc docx" data-formvalidation-input data-formvalidation-required='input[type="file"][name="accounts[0]"]'></div><!-- /.ui-fileattach -->
+                                                        {% if form.errors.accounts is defined %}
+                                                            <ul class="ui-formvalidation-messages">
+                                                                <li>
+                                                                    {% if form.errors.accounts.message is defined %}
+                                                                        {{ form.errors.accounts.message }}
+                                                                    {% else %}
+                                                                        {% trans %} form-validation_error-field-required {% endtrans %}
+                                                                    {% endif %}
+                                                                </li>
+                                                            </ul>
+                                                        {% endif %}
+                                                    </div><!-- /.form-field -->
+
+                                                    <div class="form-field form-field-single-checkbox">
+                                                        <label>
+                                                            <input id="form-extrafiles-toggle" type="checkbox" name="extra_files" value="true" data-cacheform-ignore>
+                                                            <span class="label">{% trans %} project-request_step-2-process-fast-selectbox-label {% endtrans %}</span>
+                                                        </label>
+                                                    </div>
+
+                                                    <div id="form-extrafiles" style="display: none">
+                                                        <div class="message-info">
+                                                            {% trans %} project-request_step-2-process-fast-info-message {% endtrans %}
+                                                        </div><!-- /.message-info -->
+
+                                                        <div class="form-field">
+                                                            {# Template is defined here so you can better do the translation and select field stuff #}
+                                                            <div id="form-extrafiles-template" class="ui-template-definition" style="display: none" disabled="disabled" aria-hidden="true">
+                                                                <div class="form-field file-upload-extra row row-multi-col-computer">
+                                                                    <div class="col-lg-6 col-md-6">
+                                                                        <select name="files[extra__NUM__]" class="input-field">
+                                                                            <option value="">{% trans %} project-request_step-2-process-fast-files-select {% endtrans %}</option>
+                                                                            {% for attachment in attachment_types  %}
+                                                                                <option value="{{ attachment.id }}">{{ attachment.label }}</option>
+                                                                            {% endfor %}
+                                                                        </select>
+                                                                    </div>
+                                                                    <div class="col-lg-6 col-md-6">
+                                                                        <div class="custom-input-file" id="form-extrafile" data-fileattach data-fileattach-inputname="extra__NUM__" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png tiff doc docx"></div><!-- /.ui-fileattach -->
+                                                                    </div>
+                                                                </div><!-- /.file-upload-extra -->
+                                                            </div><!-- /.ui-template-definition -->
+
+                                                            <div class="form-extrafiles-list">
+                                                                <div class="form-field row row-multi-col-computer" style="margin-bottom: 0">
+                                                                    <div class="col-lg-6 col-md-6" style="margin-bottom: 0">
+                                                                        <label class="field-label">{% trans %} project-request_step-2-process-fast-files-select-label {% endtrans %}</label>
+                                                                    </div>
+                                                                    <div class="col-lg-6 col-md-6 hide-mobile" style="margin-bottom: 0">
+                                                                        <div class="field-label">{% trans %} project-request_step-2-process-fast-files-file-label {% endtrans %}</div>
+                                                                    </div>
+                                                                </div>
+                                                                {# Files will get added here #}
+                                                            </div><!-- /.form-extrafiles-list -->
+
+                                                            <a href="javascript:;" class="btn-default btn-shape-sq-md ui-form-extrafiles-add">
+                                                                <span class="icon fa-plus-u16 c-t2"></span>
+                                                                <span class="sr-only">{% trans %} project-request_step-2-process-fast-files-add-file-label {% endtrans %}</span>
+                                                            </a>
+                                                        </div><!-- /.form-field -->
+                                                    </div><!-- /.collapse -->
+                                                </div><!-- /.form-field -->
+                                            </div>
+                                        </fieldset>
+
+                                        <div class="row reverse btn-controls tab-footer">
+                                            <div class="col-submit col-lg-12 col-md-12">
+                                                <button type="submit" class="btn-primary">
+                                                    <span class="icon fa-check-u16"></span>
+                                                    {% trans %} project-request_submit-project-button {% endtrans %}
+                                                </button>
+                                            </div>
+                                        </div><!-- /.btn-controls.tab-footer -->
+                                    </div><!-- /#form-project-create-2.tab-pane -->
+                                </div><!-- /.form-project-create-content -->
+                            </div><!-- /.col-form -->
+
+                            <div class="col-sim col-lg-4 col-md-4">
+                                <div class="hide-xs hide-sm">
+                                    <div class="emprunter-sim-mini ui-has-sticky" data-sticky-bufferbottom="156">
+                                        <header class="emprunter-sim-mini-header">
+                                            <h4 class="emprunter-sim-mini-title">{% trans %} project-request_simulator-panel-title {% endtrans %}</h4>
+                                            <p>{% trans %} project-request_simulator-panel-message {% endtrans %}</p>
+                                        </header>
+                                        <div class="emprunter-sim-mini-content">
+                                            <dl class="list-2col">
+                                                <dt id="esim-label-amount">{% trans %} project-request_simulator-panel-amount-label {% endtrans %}</dt>
+                                                <dd id="esim-output-amount">{{ project.amount|localizednumber }}&nbsp;€</dd>
+                                                <dt id="esim-label-duration">{% trans %} project-request_simulator-panel-estimated-funding-time-label {% endtrans %}</dt>
+                                                <dd id="esim-output-duration">{% transchoice project.averageFundingDuration with {'%averageFundingDuration%' : project.averageFundingDuration} %} project-request_simulator-panel-estimated-funding-time-value {% endtranschoice %}</dd>
+                                                <dt id="esim-label-monthly">{% trans %} project-request_simulator-panel-estimated-monthly-repayment-label {% endtrans %}</dt>
+                                                <dd id="esim-output-monthly">{% trans with {'%minimum%' : project.monthlyPaymentBoundaries.minimum|localizednumber, '%maximum%' : project.monthlyPaymentBoundaries.maximum|localizednumber} %} project-request_simulator-panel-estimated-monthly-repayment-value {% endtrans %}</dd>
+                                            </dl>
+                                        </div>
+                                    </div><!-- /.emprunter-sim -->
+                                </div><!-- /.hide-responsive -->
+                            </div><!-- /.col-sim -->
+                        </div><!-- /.row -->
+                    </form><!-- /.form-project-create -->
+                </div><!-- /.site-wrap -->
+            </div><!-- /.page-content -->
+
+            {% include 'partials/components/list-socialmedia.html.twig' %}
+        </div><!-- /.hero-wrap -->
+    </article><!-- /.page -->
+{% endblock %}

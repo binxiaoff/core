@@ -1,0 +1,25 @@
+//
+// Unilend Site Warnings
+// @description Things like no script or out-of-date browser
+
+.site-warning {
+  display: block;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 99999;
+
+  background-color: $c-black;
+  color: $c-white;
+
+  > .site-wrap {
+    box-sizing: border-box;
+    padding: 50px;
+  }
+
+  .btn-toolbar {
+    text-align: right;
+  }
+}

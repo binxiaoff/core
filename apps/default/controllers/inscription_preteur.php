@@ -919,7 +919,7 @@ class inscription_preteurController extends bootstrap
             $bFormOk = false;
         }
 
-        if (false === $this->clients->existEmail($_POST['email']) && (false === $bClientModification || $bClientModification && ($_POST['email'] != $this->clients->email))) {
+        if ($this->clients->existEmail($_POST['email']) && (false === $bClientModification || $bClientModification && ($_POST['email'] != $this->clients->email))) {
             $_SESSION['forms']['lender_subscription_step_1']['errors']['email'] = $this->lng['etape1']['erreur-email'];
             $bFormOk                                                            = false;
         }
@@ -1029,7 +1029,7 @@ class inscription_preteurController extends bootstrap
             $this->clients->email                        = $_POST['email'];
             $this->clients->secrete_question             = $_POST['secret-question'];
             $this->clients->secrete_reponse              = md5($_POST['secret-response']);
-            $this->clients->password                     = password_hash($_POST['pass'], PASSWORD_DEFAULT);
+            $this->clients->password                     = md5($_POST['pass']);
             $this->clients->telephone                    = str_replace(' ', '', $_POST['phone']);
             $this->clients->ville_naissance              = $_POST['naissance'];
             $this->clients->insee_birth                  = $sCodeInsee;
@@ -1197,7 +1197,7 @@ class inscription_preteurController extends bootstrap
             $bFormOk = false;
         }
 
-        if (false === $this->clients->existEmail($_POST['email_inscription']) && (false === $bClientModification || $bClientModification && $_POST['email'] != $this->clients->email)) {
+        if ($this->clients->existEmail($_POST['email_inscription']) && (false === $bClientModification || $bClientModification && $_POST['email'] != $this->clients->email)) {
             $_SESSION['forms']['lender_subscription_step_1']['errors']['email'] = $this->lng['etape1']['erreur-email'];
             $bFormOk                                                            = false;
         }
@@ -1286,7 +1286,7 @@ class inscription_preteurController extends bootstrap
             $this->clients->slug             = $this->bdd->generateSlug($this->clients->prenom . '-' . $this->clients->nom);
             $this->clients->secrete_question = $_POST['secret-questionE'];
             $this->clients->secrete_reponse  = md5($_POST['secret-responseE']);
-            $this->clients->password         = password_hash($_POST['passE'], PASSWORD_DEFAULT);
+            $this->clients->password         = md5($_POST['passE']);
 
             $aPost = $_POST;
             $aPost['passE']            = md5($_POST['passE']);
@@ -1311,7 +1311,7 @@ class inscription_preteurController extends bootstrap
                 $this->clients->update();
                 $this->clients_adresses->update();
 
-                $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $aPost));
+                $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $aPost ));
                 $this->clients_history_actions->histo(16, 'edition inscription etape 1 entreprise', $this->clients->id_client, $serialize);
             } else {
                 $this->setSource($this->clients);

@@ -1,0 +1,123 @@
+{# Projects Index #}
+{% extends 'layouts/_layout.html.twig' %}
+
+{% set page = {
+    title: 'Devenir Prêteur',
+    permalink: path('lender_subscription_money_deposit', {'clientHash' : client.hash })
+} %}
+
+{% block siteContent %}
+    <article id="devenir-preteur" class="page">
+        <div class="hero-wrap">
+
+            <header class="page-header">
+                <div class="site-wrap">
+                    <h1 id="preter-create-title" class="h1">{% trans %} lender-subscription_page-title {% endtrans %}</h1>
+                </div><!-- /.site-wrap -->
+            </header><!-- /.page-header -->
+
+            <div class="page-content">
+                <div class="site-wrap">
+                    <div class="tabs ui-tabs-progress">
+                        <div class="form-preter-content tab-content">
+                            <form action="{{ path('lender_subscription_money_deposit_form', {'clientHash' : client.hash }) }}" method="post" class="form-preter-deposit">
+                                <div id="form-preter-3" role="tabpanel" class="tab-pane active" aria-labelledby="preter-create-3 preter-create-title">
+                                    <div class="row">
+                                        <div class="col-form col-lg-8 col-md-8">
+                                            {% if app.session.flashBag.has('moneyTransferSuccess')%}
+                                            <fieldset class="panel" data-formvalidation data-formvalidation-notificationselem="#form-preter-deposit-notifications">
+                                                <h3 class="h3">{% trans %} lender-subscription_step-3-account-validation-title {% endtrans %}</h3>
+                                                {% trans %} lender-subscription_step-3-validation-explanation {% endtrans %}
+                                                <div id="form-preter-deposit-notifications">
+                                                    <div class="message-success">
+                                                        {% for message in app.session.flashBag.get('moneyTransferSuccess') %}                                                                                                                     <p>{{ message }}</p>
+                                                        {%  endfor %}
+                                                    </div>
+                                                </div>
+                                            </fieldset>
+                                            {% else %}
+                                            <fieldset class="panel" data-formvalidation data-formvalidation-notificationselem="#form-preter-deposit-notifications">
+                                                <h3 class="h3">{% trans %} lender-subscription_step-3-account-validation-title {% endtrans %}</h3>
+                                                {% trans %} lender-subscription_step-3-validation-explanation {% endtrans %}
+                                                <h3 class="h3">{% trans %} lender-subscription_step-3-money-transfer-title {% endtrans %}</h3>
+                                                    {% if app.session.flashBag.has('moneyTransferError') %}
+                                                        <div id="form-preter-deposit-notifications">
+                                                            <div class="message-error">
+                                                                {% for message in app.session.flashBag.get('moneyTransferError') %}                                                                                                                     <p>{{ message }}</p>
+                                                                {%  endfor %}
+                                                            </div>
+                                                        </div>
+                                                    {% endif %}
+                                                <div class="row row-multi-col-computer">
+                                                    <div class="form-field col-lg-7 col-md-7">
+                                                        <label for="form-preter-amount">{% trans %} lender-subscription_step-3-money-transfer-amount-field-label {% endtrans %}</label>
+                                                        <div class="input-group set-right">
+                                                            <input type="text" name="amount" value=""
+                                                                   placeholder="{% trans with {'%amountMin%' : minDepositAmount, '%amountMax%' : maxDepositAmount } %} lender-subscription_step-3-money-transfer-amount-field-placeholder {% endtrans %}"
+                                                                   class="input-field"
+                                                                   data-formvalidation-input
+                                                                   data-formvalidation-minvalue="{{minDepositAmount}}"
+                                                                   data-formvalidation-maxvalue="{{maxDepositAmount}}"
+                                                                   data-formvalidation-required="true">
+                                                            <input type="hidden" name="clientId" value="{{ client.id_client }}">
+                                                            <div class="btn-group">
+                                                                <span>€</span>
+                                                            </div>
+                                                        </div><!-- /.input-group -->
+                                                    </div><!-- /.form-field -->
+                                                    <div class="form-field col-lg-5 col-md-5">
+                                                        <label class="field-help">{% trans %} lender-subscription_step-3-money-transfer-accepted-cards {% endtrans %}</label>
+                                                        <img src="{{ siteurlmedia('cards/cb.png') }}" alt="{{'lender-subscription_step-3-card-image-placeholder'|trans }}"/>
+                                                        <img src="{{ siteurlmedia('cards/visa.png') }}" alt="{{'lender-subscription_step-3-visa-image-placeholder'|trans  }} "/>
+                                                        <img src="{{ siteurlmedia('cards/mastercard.png') }}" alt="{{'lender-subscription_step-3-mastercard-image-placeholder'|trans  }}"/>
+                                                    </div>
+                                                </div>
+                                                <p>
+                                                    <button class="btn-primary">
+                                                        <span class="icon fa-lock"></span> {% trans %} lender-subscription_step-3-money-transfer-sumbit-button {% endtrans %}
+                                                    </button>
+                                                </p>
+                                            </fieldset>
+                                            <fieldset class="panel">
+                                                <div class="unilend-iban-info">
+                                                    <dl class="list-2col">
+                                                        <dt>{% trans %} lender-subscription_step-3-money-transfer-bank-account-details {% endtrans %}</dt>
+                                                        <dd>{{ lenderBankMotif }}</dd>
+                                                        <dt>{% trans %} lender-subscription_step-3-money-transfer-bank-account-BIC-label {% endtrans %}</dt>
+                                                        <dd>{{ setting('Virement - BIC') }}</dd>
+                                                        <dt>{% trans %} lender-subscription_step-3-money-transfer-bank-account-IBAN-label {% endtrans %}</dt>
+                                                        <dd>{{ setting('Virement - IBAN') }}</dd>
+                                                        <dt>{% trans %} lender-subscription_step-3-money-transfer-bank-account-owner-label {% endtrans %}</dt>
+                                                        <dd>{{ setting('Virement - titulaire du compte') }}</dd>
+                                                        <dt>{% trans %} lender-subscription_step-3-money-transfer-bank-account-domiciliation-label {% endtrans %}</dt>
+                                                        <dd>{{ setting('Virement - domiciliation') }}</dd>
+                                                    </dl>
+                                                </div><!-- /.unilend-iban-info -->
+                                                <p>{% trans %} lender-subscription_step-3-money-transfer-help-message {% endtrans %}</p>
+                                            </fieldset>
+                                            {% endif %}
+
+                                            <div class="row btn-controls tab-footer">
+                                                <div class="col-lg-1 col-md-1">&nbsp;</div>
+                                                <div class="col-lg-11 col-md-11">
+                                                    <a href="{{ path('projects_list') }}" class="btn-default">{% trans %} lender-subscription_step-3-button-to-project-list-label {% endtrans %}</a>
+                                                    <a href="{{ path('lender_profile') }}" class="btn-primary">{% trans %} lender-subscription_step-3-button-to-lender-dashboard-label {% endtrans %}</a>
+                                                </div>
+                                            </div><!-- /.btn-controls.tab-footer -->
+                                        </div>
+                                    </div><!-- /.row -->
+                                </div><!-- /.tab-pane -->
+                            </form><!-- /.form-preter-deposit -->
+                        </div><!-- /.form-preter-content -->
+                    </div><!-- /.tabs -->
+                </div><!-- /.site-wrap -->
+            </div><!-- /.page-content -->
+
+            {% include 'partials/components/list-socialmedia.html.twig' %}
+        </div><!-- /.hero-wrap -->
+
+    </article><!-- /.page -->
+{% endblock %}
+
+
+

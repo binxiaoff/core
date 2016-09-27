@@ -1,0 +1,124 @@
+//
+// Unilend Forms & Inputs
+//
+
+// Generic input style
+// For input sizing, see @mixins `text-input`, `textarea-input` and `input-size-*`
+@mixin input {
+  display: block;
+  width: 100%;
+  margin: 0;
+
+  background-color: $c-bg3;
+  border: solid 2px $c-bg3;
+  border-radius: 4px;
+  box-sizing: border-box;
+  color: $c-t2;
+  font-family: $ff-input;
+
+  transition: color .2s, background-color .2s;
+
+  &:hover,
+  &:active,
+  &:focus {
+    background-color: $c-white;
+    border-color: $c-bg1;
+    color: $c-t1;
+  }
+
+  &:disabled {
+    background-color: $c-bg3 !important;
+    border-color: $c-bg3 !important;
+    color: $c-bg1 !important;
+  }
+}
+
+// Responsive input size
+@mixin input-responsive($single-line: true) {
+  @include input;
+  @include input-size-default($single-line);
+
+  @include devices('sm') {
+    @include input-size-sm($single-line);
+  }
+
+  @include devices('md') {
+    @include input-size-md($single-line);
+  }
+
+  @include devices('lg') {
+    @include input-size-lg($single-line);
+  }
+}
+
+// Text input (single line)
+@mixin text-input {
+  @include input;
+  @include input-size-default;
+}
+
+// Textarea input (multi-line)
+@mixin textarea-input {
+  @include input;
+  @include input-size-default($single-line: false);
+}
+
+// Input sizes
+@mixin input-size-default($single-line: true) {
+  @if $single-line {
+    height: $height-input;
+  } @else {
+    min-height: $height-input;
+  }
+  padding: padding-height($height-input, 24px) 20px;
+  font-size: 18px;
+  line-height: 24px;
+}
+
+// -- Small
+@mixin input-size-sm($single-line: true) {
+  @if $single-line {
+    height: $height-input-sm;
+  } @else {
+    min-height: $height-input;
+  }
+  padding: padding-height($height-input-sm, 24px) 20px;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+// -- Medium
+@mixin input-size-md($single-line: true) {
+  @if $single-line {
+    height: $height-input-md;
+  } @else {
+    min-height: $height-input;
+  }
+  padding: padding-height($height-input-md, 24px) 20px;
+  font-size: 18px;
+  line-height: 24px;
+}
+
+// -- Large
+@mixin input-size-lg($single-line: true) {
+  @if $single-line {
+    height: $height-input-lg;
+  } @else {
+    min-height: $height-input;
+  }
+  padding: padding-height($height-input-lg, 24px) 20px;
+  font-size: 18px;
+  line-height: 24px;
+}
+
+// -- Large
+@mixin input-size-hg($single-line: true) {
+  @if $single-line {
+    height: $height-input-hg;
+  } @else {
+    min-height: $height-input;
+  }
+  padding: padding-height($height-input-hg, 24px) 20px;
+  font-size: 18px;
+  line-height: 24px;
+}

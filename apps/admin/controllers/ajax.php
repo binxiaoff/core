@@ -1,5 +1,8 @@
 <?php
 
+use \Unilend\Bundle\TranslationBundle\Service\TranslationManager;
+
+
 class ajaxController extends bootstrap
 {
     public function initialize()
@@ -170,18 +173,21 @@ class ajaxController extends bootstrap
     /* Fonction AJAX chargement des noms de la section de traduction */
     public function _loadNomTexte()
     {
+        /** @var TranslationManager $translationManager */
+        $translationManager = $this->get('unilend.service.translation_manager');
+
         if (isset($this->params[0]) && $this->params[0] != '') {
-            // Recuperation de la liste des noms de la section
-            $this->lNoms = $this->ln->selectTexts($this->params[0]);
+            $this->lNoms = $translationManager->selectNamesForSection($this->params[0]);
         }
     }
 
     /* Fonction AJAX chargement des traductions de la section de traduction */
     public function _loadTradTexte()
     {
+        /** @var TranslationManager $translationManager */
+        $translationManager = $this->get('unilend.service.translation_manager');
         if (isset($this->params[0]) && $this->params[0] != '') {
-            // Recuperation de la liste traductions
-            $this->lTranslations = $this->ln->selectTranslations($this->params[1], $this->params[0]);
+            $this->lTranslations = $translationManager->selectTranslation($this->params[1], $this->params[0]);
         }
     }
 
@@ -204,19 +210,6 @@ class ajaxController extends bootstrap
                 echo $this->surl . '/images/admin/check_on.png';
             }
         }
-    }
-
-    /* Fonction AJAX change le statut d'un dossier*/
-    public function _date_publication()
-    {
-        $this->autoFireView = true;
-
-        $this->projects                = $this->loadData('projects');
-        $this->current_projects_status = $this->loadData('projects_status');
-
-
-        $this->projects->get($this->params[0], 'id_project');
-        $this->current_projects_status->getLastStatut($this->projects->id_project);
     }
 
     public function _addMemo()
@@ -663,7 +656,9 @@ class ajaxController extends bootstrap
         $this->companies    = $this->loadData('companies');
 
         if (isset($_POST['year'], $_POST['id_client']) && $this->clients->get($_POST['id_client'], 'id_client')) {
-            $this->lng['profile'] = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
+            /** @var TranslationManager $translationManager */
+            $translationManager   = $this->get('unilend.service.translation_manager');
+            $this->lng['profile'] = $translationManager->getAllTranslationsForSection('preteur-profile');
 
             $this->lesStatuts = array(
                 \transactions_types::TYPE_LENDER_SUBSCRIPTION         => $this->lng['profile']['versement-initial'],
@@ -719,15 +714,15 @@ class ajaxController extends bootstrap
                 if (count($aPossibleStatus) > 0) {
                     $select = '<select name="status" id="status" class="select">';
                     foreach ($aPossibleStatus as $s) {
-                        $select .= '<option ' . ($oProjectStatus->status == $s['status'] ? 'selected' : '') . ' value="' . $s['status'] . '">' . $s['label'] . '</option>';
+                        $select .= '<option ' . ($this->projects->status == $s['status'] ? 'selected' : '') . ' value="' . $s['status'] . '">' . $s['label'] . '</option>';
                     }
                     $select .= '</select>';
                 } else {
-                    $select = '<input type="hidden" name="status" id="status" value="' . $oProjectStatus->status . '" />';
+                    $select = '<input type="hidden" name="status" id="status" value="' . $this->projects->status . '" />';
                     $select .= $oProjectStatus->label;
                 }
 
-                if ($oProjectStatus->status != \projects_status::REJETE) {
+                if ($this->projects->status != \projects_status::REJETE) {
                     $etape_6  = '
                     <div class="tab_title" id="title_etape6">Etape 6</div>
                     <div class="tab_content" id="etape6">
@@ -792,7 +787,7 @@ class ajaxController extends bootstrap
                             <br /><br />
                             <div id="valid_etape6" class="valid_etape">Données sauvegardées</div>';
 
-                    if ($oProjectStatus->status == \projects_status::REVUE_ANALYSTE) {
+                    if ($this->projects->status == \projects_status::REVUE_ANALYSTE) {
                         $etape_6 .= '
                             <div class="btnDroite listBtn_etape6">
                                 <input type="button" onclick="valid_rejete_etape6(3,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape6"  value="Sauvegarder">
@@ -893,11 +888,10 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        $this->projects        = $this->loadData('projects');
-        $this->projects_status = $this->loadData('projects_status');
-        $this->projects_notes  = $this->loadData('projects_notes');
-        $this->companies       = $this->loadData('companies');
-        $this->clients         = $this->loadData('clients');
+        $this->projects       = $this->loadData('projects');
+        $this->projects_notes = $this->loadData('projects_notes');
+        $this->companies      = $this->loadData('companies');
+        $this->clients        = $this->loadData('clients');
 
         if (isset($_POST['status']) && isset($_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
             $form_ok = true;
@@ -1026,18 +1020,17 @@ class ajaxController extends bootstrap
                     $mailer->send($message);
                 }
 
-                //on recup le statut courant
-                $this->current_projects_status = $this->loadData('projects_status');
-                $this->current_projects_status->getLastStatut($this->projects->id_project);
+                $currentProjectStatus = $this->loadData('projects_status');
+                $currentProjectStatus->get($this->projects->status, 'status');
 
-                $select = '<input type="hidden" name="status" id="status" value="' . $this->current_projects_status->status . '" />';
-                $select .= $this->current_projects_status->label;
+                $select = '<input type="hidden" name="status" id="status" value="' . $this->projects->status . '" />';
+                $select .= $currentProjectStatus->label;
 
                 if (isset($oRejectionReason)) {
                     $select .= ' (' . $oRejectionReason->label . ')';
                 }
 
-                if ($this->current_projects_status->status != \projects_status::REJET_ANALYSTE) {
+                if ($this->projects->status != \projects_status::REJET_ANALYSTE) {
                     $start = '';
                     if ($this->projects_notes->note_comite >= 0) {
                         $start = '2 étoiles';
@@ -1127,7 +1120,7 @@ class ajaxController extends bootstrap
                         <div class="btnDroite">
                             <input type="button" onclick="valid_rejete_etape7(3,' . $this->projects->id_project . ')" class="btn"  value="Sauvegarder">
                         ';
-                    if ($this->current_projects_status->status == \projects_status::COMITE) {
+                    if ($this->projects->status == \projects_status::COMITE) {
                         $etape_7 .= '
                             <input type="button" onclick="valid_rejete_etape7(1,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape7" style="background:#009933;border-color:#009933;" value="Valider">
                             <a href="' . $this->lurl . '/dossiers/ajax_rejection/7/' . $this->projects->id_project . '" class="btn btnValid_rejet_etape7 btn_link thickbox" style="background:#CC0000;border-color:#CC0000;">Rejeter</a>
@@ -1211,11 +1204,10 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        $this->projects        = $this->loadData('projects');
-        $this->projects_notes  = $this->loadData('projects_notes');
-        $this->projects_status = $this->loadData('projects_status');
-        $this->companies       = $this->loadData('companies');
-        $this->clients         = $this->loadData('clients');
+        $this->projects       = $this->loadData('projects');
+        $this->projects_notes = $this->loadData('projects_notes');
+        $this->companies      = $this->loadData('companies');
+        $this->clients        = $this->loadData('clients');
 
         // on check si on a les posts
         if (isset($_POST['status']) && isset($_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
@@ -1344,6 +1336,19 @@ class ajaxController extends bootstrap
                     }
 
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::PREP_FUNDING, $this->projects);
+
+                    if (empty($this->companies->latitude) && empty($this->companies->longitude)) {
+                        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LocationManager $location */
+                        $location    = $this->get('unilend.service.location_manager');
+                        $coordinates = $location->getCompanyCoordinates($this->companies);
+
+                        if ($coordinates) {
+                            $this->companies->latitude  = $coordinates['latitude'];
+                            $this->companies->longitude = $coordinates['longitude'];
+                            $this->companies->update();
+                        }
+                    }
+
                     if (false === in_array(\projects_status::PREP_FUNDING, $aExistingStatus)) {
                         $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein', $this->clients);
                     }
@@ -1416,7 +1421,8 @@ class ajaxController extends bootstrap
 
                 if (false === empty($this->projects->risk) && false === empty($this->projects->period)) {
                     try {
-                        $oProjectManager->setProjectRateRange($this->projects);
+                        $this->projects->id_rate = $oProjectManager->getProjectRateRange($this->projects);
+                        $this->projects->update();
                     } catch (\Exception $exception) {
                         echo json_encode(array('liste' => '', 'btn_etape6' => '', 'content_risk' => '', 'error' => $exception->getMessage()));
                         return;
@@ -1425,16 +1431,19 @@ class ajaxController extends bootstrap
 
                 /** @var \projects_status $oProjectStatus */
                 $oProjectStatus = $this->loadData('projects_status');
-                $oProjectStatus->getLastStatut($this->projects->id_project);
+                $select = '<input type="hidden" name="current_status" value="' . $this->projects->status . '">';
 
-                if ($oProjectStatus->status == \projects_status::PREP_FUNDING) {
-                    $select = '<select name="status" id="status" class="select">';
-                    foreach (array(\projects_status::PREP_FUNDING, \projects_status::A_FUNDER) as $s) {
-                        $select .= '<option ' . ($oProjectStatus->status == $s['status'] ? 'selected' : '') . ' value="' . $s['status'] . '">' . $s['label'] . '</option>';
+                if ($this->projects->status == \projects_status::PREP_FUNDING) {
+                    $select .= '<select name="status" id="status" class="select">';
+                    foreach ([\projects_status::PREP_FUNDING, \projects_status::A_FUNDER] as $status) {
+                        $oProjectStatus->get($status, 'status');
+                        $select .= '<option' . ($this->projects->status == $oProjectStatus->status ? ' selected' : '') . ' value="' . $this->projects->status . '">' . $oProjectStatus->label . '</option>';
                     }
                     $select .= '</select>';
                 } else {
-                    $select = '<input type="hidden" name="status" id="status" value="' . $oProjectStatus->status . '" />';
+                    $oProjectStatus->get($this->projects->status, 'status');
+
+                    $select .= '<input type="hidden" name="status" id="status" value="' . $this->projects->status . '" />';
                     $select .= $oProjectStatus->label;
 
                     if (isset($oRejectionReason)) {

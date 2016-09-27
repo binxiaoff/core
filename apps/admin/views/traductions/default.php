@@ -19,6 +19,11 @@
         <li>Traductions</li>
     </ul>
     <h1>Liste des traductions</h1>
+    <div class="btnGauche">
+        <a href="<?= $this->lurl ?>/traductions/regenerateTranslationCache" class="btn_link" style="background-color: slateblue;">
+            Appliquer les modifications des trads
+        </a>
+    </div>
     <div class="btnDroite">
         <a href="<?= $this->lurl ?>/traductions/add" class="btn_link thickbox">Ajouter une traduction</a>&nbsp;&nbsp;
         <a href="<?= $this->lurl ?>/traductions/export" class="btn_link">Export</a>&nbsp;&nbsp;
@@ -32,7 +37,9 @@
                     <select name="section" id="section" onchange="loadNomTexte(this.value)" class="select">
                         <option value="">Sélectionner</option>
                         <?php foreach ($this->lSections as $section) : ?>
-                            <option value="<?= $section[0] ?>"<?= (isset($this->params[0]) && $this->params[0] == $section[0] ? ' selected' : '') ?>><?= $section[0] ?> (<?= $section[1] ?>)</option>
+                            <option value="<?= $section['section'] ?>"<?= (isset($this->params[0]) && $this->params[0] == $section['section'] ? ' selected="selected"' : '') ?>>
+                                <?= $section['section'] ?>(<?= $section['COUNT(translation)'] ?>)
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </th>
@@ -40,10 +47,11 @@
                     <div id="listeNomTraduction">
                         <?php if (isset($this->params[0]) && $this->params[0] != '') : ?>
                             <label for="nom">Nom : </label>
-                            <select name="nom" id="nom" onchange="loadTradTexte(this.value,document.getElementById('section').value)" class="select">
+                            <select name="name" id="name" onchange="loadTradTexte(this.value,document.getElementById('section').value)" class="select">
                                 <option value="">Sélectionner</option>
                                 <?php foreach ($this->lNoms as $nom) : ?>
-                                    <option value="<?= $nom[0] ?>"<?= ($this->params[1] == $nom[0] ? ' selected="selected"' : '') ?>><?= $nom[0] ?></option>
+                                    <option value="<?= $nom['name'] ?>"
+                                        <?= (isset($this->params[1]) && $this->params[1] == $nom['name'] ? ' selected="selected"' : '') ?>><?= $nom['name'] ?></option>
                                 <?php endforeach; ?>
                             </select>
                         <?php endif; ?>
@@ -51,7 +59,10 @@
                 </th>
                 <td>&nbsp;</td>
                 <th>
-                    <a href="<?= $this->lurl ?>/traductions/add/<?= ((isset($this->params[0]) && $this->params[0] != '') ? $this->params[0] : '') ?>" id="btnAjouterTraduction" class="btn_link thickbox"<?= ((isset($this->params[0]) && $this->params[0] != '') ? ' style="display:block;"' : ' style="display:none;"') ?>>Ajouter une traduction pour la section</a>
+                    <a href="<?= $this->lurl ?>/traductions/add/<?= ((isset($this->params[0]) && $this->params[0] != '') ? $this->params[0] : '') ?>" id="btnAjouterTraduction"
+                       class="btn_link thickbox"<?= ((isset($this->params[0]) && $this->params[0] != '') ? ' style="display:block;"' : ' style="display:none;"') ?>>
+                        Ajouter une traduction pour la section
+                    </a>
                 </th>
             </tr>
         </table>
@@ -61,21 +72,20 @@
                     <input type="hidden" name="section" id="section" value="<?= $this->params[0] ?>"/>
                     <input type="hidden" name="nom" id="nom" value="<?= $this->params[1] ?>"/>
                     <table class="lng">
-                        <?php foreach ($this->lLangues as $key => $lng) : ?>
-                            <tr>
-                                <td>
-                                    <img src="<?= $this->surl ?>/images/admin/langues/<?= $key ?>.png" alt="<?= $lng ?>"/>
-                                </td>
-                                <td>
-                                    <textarea class="textarea_lng" style="background-image: url('<?= $this->surl ?>/images/admin/langues/flag_<?= $key ?>.png'); background-position:center; background-repeat:no-repeat;" name="texte-<?= $key ?>" id="texte-<?= $key ?>"><?= $this->lTranslations[$key] ?></textarea>
-                                </td>
-                            <tr>
-                        <?php endforeach; ?>
+                        <tr>
+                            <td>
+                                <img src="<?= $this->surl ?>/images/admin/langues/fr.png" alt="fr"/>
+                            </td>
+                            <td>
+                                <textarea class="textarea_lng" style="background-image: url('<?= $this->surl ?>/images/admin/langues/flag_fr.png'); background-position:center; background-repeat:no-repeat;" name="texte" id="texte"><?= $this->lTranslations ?></textarea>
+                            </td>
+                        <tr>
                         <tr>
                             <th colspan="2">
                                 <input type="hidden" name="form_mod_traduction" id="form_mod_traduction" value="0"/>
                                 <input type="submit" value="Modifier" name="send_traduction" id="send_traduction" class="btn"/>
-                                <input type="submit" value="Supprimer" name="del_traduction" id="del_traduction" class="btnRouge" onClick="if(confirm('Êtes vous certain ?')){ document.getElementById('form_mod_traduction').value = 1; } else { return false; }"/>
+                                &nbsp;&nbsp;&nbsp;&nbsp;
+                                <input type="submit" value="Supprimer" name="del_traduction" id="del_traduction" class="btnRouge" onClick="if(confirm('Êtes vous certain ?')){ document.getElementById('form_mod_traduction').value = 'delete'; } else { return false; }"/>
                             </th>
                         </tr>
                     </table>

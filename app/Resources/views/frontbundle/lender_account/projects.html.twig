@@ -1,0 +1,11 @@
+{% extends 'layouts/_layout_lender.html.twig' %}
+
+{% set page = {
+  id: 'user-preter-projects',
+  title: 'Prêteur / Projets',
+  classNames: 'user-preter-projects'
+} %}
+
+{% block dashboardContent %}
+  {% include 'partials/components/project-list/project-list.html.twig' %}
+{% endblock %}

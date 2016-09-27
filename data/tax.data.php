@@ -111,31 +111,6 @@ class tax extends tax_crud
 
     /**
      * @param int $iLenderId
-     * @param string $sYear
-     * @return array
-     */
-    public function getTaxByMounth($iLenderId, $sYear)
-    {
-        $sql = '
-        SELECT SUM(tax.amount) as taxAmount,
-        LEFT(tax.added, 7) AS date
-        FROM tax
-        INNER JOIN transactions t on t.id_transaction = tax.id_transaction
-        INNER JOIN echeanciers e ON e.id_echeancier = t.id_echeancier AND e.status IN (' . \echeanciers::STATUS_REPAID . ', ' . \echeanciers::STATUS_PARTIALLY_REPAID . ') AND e.id_lender = ' . $iLenderId . '
-        WHERE year(tax.added) = ' . $sYear . '
-        GROUP BY left(tax.added, 7)';
-
-        $res    = array();
-        $result = $this->bdd->query($sql);
-        while ($record = $this->bdd->fetch_array($result)) {
-            $d          = explode('-', $record['date']);
-            $res[$d[1]] = bcdiv($record['taxAmount'], 100, 2);
-        }
-        return $res;
-    }
-
-    /**
-     * @param int $iLenderId
      * @param int $iBegin
      * @param int $iEnd
      * @return array

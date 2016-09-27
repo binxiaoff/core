@@ -467,12 +467,19 @@ class pdfController extends bootstrap
         // Once proxy has been generated, do not update repayment schedule anymore
         $this->updateRepaymentSchedules();
 
-        $this->blocs->get('pouvoir', 'slug');
-        $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
-        foreach ($lElements as $b_elt) {
-            $this->elements->get($b_elt['id_element']);
-            $this->bloc_pouvoir[$this->elements->slug]           = $b_elt['value'];
-            $this->bloc_pouvoirComplement[$this->elements->slug] = $b_elt['complement'];
+        /** @var product $product */
+        $product = $this->loadData('product');
+        $product->get($this->projects->id_product);
+        $template = $product->proxy_template;
+
+        if (false === empty($product->proxy_block_slug)) {
+            $this->blocs->get($product->proxy_block_slug, 'slug');
+            $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
+            foreach ($lElements as $b_elt) {
+                $this->elements->get($b_elt['id_element']);
+                $this->bloc_pouvoir[$this->elements->slug]           = $b_elt['value'];
+                $this->bloc_pouvoirComplement[$this->elements->slug] = $b_elt['complement'];
+            }
         }
 
         $this->companies_actif_passif = $this->loadData('companies_actif_passif');
@@ -481,11 +488,19 @@ class pdfController extends bootstrap
         $this->oEcheanciersEmprunteur = $this->loadData('echeanciers_emprunteur');
         $this->oLendersAccounts       = $this->loadData('lenders_accounts');
         $this->oLoans                 = $this->loadData('loans');
+        /** @var underlying_contract $contract */
+        $contract                     = $this->loadData('underlying_contract');
+
+        $contract->get(\underlying_contract::CONTRACT_BDC, 'label');
+        $BDCContractId = $contract->id_contract;
+
+        $contract->get(\underlying_contract::CONTRACT_IFP, 'label');
+        $IFPContractId = $contract->id_contract;
 
         $this->montantPrete     = $this->projects->amount;
         $this->taux             = $this->projects->getAverageInterestRate();
-        $this->nbLoansBDC       = $this->oLoans->counter('id_type_contract = ' . \loans::TYPE_CONTRACT_BDC . ' AND id_project = ' . $this->projects->id_project);
-        $this->nbLoansIFP       = $this->oLoans->counter('id_type_contract = ' . \loans::TYPE_CONTRACT_IFP . ' AND id_project = ' . $this->projects->id_project);
+        $this->nbLoansBDC       = $this->oLoans->counter('id_type_contract = ' . $BDCContractId . ' AND id_project = ' . $this->projects->id_project);
+        $this->nbLoansIFP       = $this->oLoans->counter('id_type_contract = ' . $IFPContractId . ' AND id_project = ' . $this->projects->id_project);
         $this->lRemb            = $this->oEcheanciersEmprunteur->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
         $this->rembByMonth      = bcdiv($this->lRemb[0]['montant'] + $this->lRemb[0]['commission'] + $this->lRemb[0]['tva'], 100, 2);
         $this->dateLastEcheance = $this->echeanciers->getDateDerniereEcheancePreteur($this->projects->id_project);
@@ -503,7 +518,7 @@ class pdfController extends bootstrap
         $this->dateRemb         = date('d/m/Y');
         $this->dateDernierBilan = date('d/m/Y', strtotime($this->companies_bilans->cloture_exercice_fiscal)); // @todo Intl
 
-        $this->setDisplay('pouvoir_html');
+        $this->setDisplay($template);
     }
 
     public function _contrat()
@@ -516,7 +531,23 @@ class pdfController extends bootstrap
         /** @var \clients $oClients */
         $oClients = $this->loadData('clients');
 
-        if (false === $oClients->get($this->params[0], 'hash') || false === $oClients->checkAccess() && empty($_SESSION['user']['id_user'])) {
+        // hack the symfony guard token
+        $session = $this->get('session');
+
+        /** @var \Symfony\Component\Security\Guard\Token\PostAuthenticationGuardToken $token */
+        $token =  unserialize($session->get('_security_default'));
+        if (!$token instanceof \Symfony\Component\Security\Guard\Token\PostAuthenticationGuardToken) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
+        /** @var \Unilend\Bundle\FrontBundle\Security\User\UserLender $user */
+        $user = $token->getUser();
+        if (!$user instanceof \Unilend\Bundle\FrontBundle\Security\User\UserLender) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
+
+        if (false === $oClients->get($this->params[0], 'hash') || $user->getClientId() !== $oClients->id_client) {
             header('Location: ' . $this->lurl);
             exit;
         }
@@ -565,6 +596,8 @@ class pdfController extends bootstrap
         $this->oLoans                  = $oLoans;
         $this->clients                 = $oClients;
         $this->projects                = $oProjects;
+        /** @var underlying_contract $contract */
+        $contract                      = $this->loadData('underlying_contract');
 
         $this->clients_adresses->get($oClients->id_client, 'id_client');
         $this->companiesEmprunteur->get($oProjects->id_company, 'id_company');
@@ -626,13 +659,10 @@ class pdfController extends bootstrap
         $this->fCommissionProject   = $fProjectCommisionRate * $oLoans->amount / 100 / (1 + $fVat);
         $this->fInterestTotal       = $this->echeanciers->getTotalInterests(array('id_loan' => $oLoans->id_loan));
 
-        if (\loans::TYPE_CONTRACT_BDC == $oLoans->id_type_contract) {
-            $this->blocs->get('pdf-contrat', 'slug');
-            $sTemplate = 'contrat_html';
-        } else {
-            $this->blocs->get('pdf-contrat-ifp', 'slug');
-            $sTemplate = 'contrat_ifp_html';
-        }
+        $contract->get($oLoans->id_type_contract);
+
+        $this->blocs->get($contract->block_slug, 'slug');
+        $sTemplate = $contract->document_template;
 
         $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
         foreach ($lElements as $b_elt) {
@@ -857,11 +887,7 @@ class pdfController extends bootstrap
     {
         ini_set('max_execution_time', 300);
 
-        /** @var \projects_status $projectStatus */
-        $projectStatus = $this->loadData('projects_status');
-        $projectStatus->getLastStatut($this->projects->id_project);
-
-        if ($projectStatus->status == \projects_status::FUNDE) {
+        if ($this->projects->status == \projects_status::FUNDE) {
             /** @var \echeanciers $lenderRepaymentSchedule */
             $lenderRepaymentSchedule = $this->loadData('echeanciers');
             /** @var \echeanciers_emprunteur $borrowerRepaymentSchedule */
@@ -925,17 +951,18 @@ class pdfController extends bootstrap
         $this->pays                            = $this->loadData('pays_v2');
         $this->echeanciers                     = $this->loadData('echeanciers');
         $this->companiesEmpr                   = $this->loadData('companies');
-        $this->projects_status                 = $this->loadData('projects_status');
-        $this->projects_last_status_history    = $this->loadData('projects_last_status_history');
+        $this->projects_status_history         = $this->loadData('projects_status_history');
         $this->projects_status_history_details = $this->loadData('projects_status_history_details');
+        /** @var underlying_contract contract */
+        $this->contract                        = $this->loadData('underlying_contract');
+        /** @var \Symfony\Component\Translation\TranslatorInterface translator */
+        $this->translator                      = $this->get('translator');
 
         $this->oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
 
         if ($this->oLoans->get($this->oLendersAccounts->id_lender_account, 'id_loan = ' . $this->params[1] . ' AND id_lender')) {
             $this->projects->get($this->oLoans->id_project, 'id_project');
             $this->companiesEmpr->get($this->projects->id_company, 'id_company');
-
-            $this->projects_status->getLastStatut($this->projects->id_project);
 
             if (in_array($this->clients->type, array(1, 4))) {
                 $this->clients_adresses->get($this->clients->id_client, 'id_client');
@@ -952,14 +979,14 @@ class pdfController extends bootstrap
             $this->pays->get($iCountryId, 'id_pays');
             $this->pays_fiscal = $this->pays->fr;
 
-            if (in_array($this->projects_status->status, array(\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE))) {
-                $this->projects_last_status_history->get($this->oLoans->id_project, 'id_project');
-                $this->projects_status_history_details->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history');
+            if (in_array($this->projects->status, array(\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE))) {
+                $this->projects_status_history->loadLastProjectHistory($this->oLoans->id_project);
+                $this->projects_status_history_details->get($this->projects_status_history->id_project_status_history, 'id_project_status_history');
 
                 $this->mandataires_var = $this->projects_status_history_details->receiver;
 
                 // @todo intl
-                switch ($this->projects_status->status) {
+                switch ($this->projects->status) {
                     case \projects_status::PROCEDURE_SAUVEGARDE:
                         $this->nature_var = 'Procédure de sauvegarde';
                         break;
@@ -991,6 +1018,8 @@ class pdfController extends bootstrap
             $lastEcheance       = $this->echeanciers->select('id_lender = ' . $this->oLendersAccounts->id_lender_account . ' AND id_loan = ' . $this->oLoans->id_loan, 'ordre DESC', 0, 1);
             $this->lastEcheance = date('d/m/Y', strtotime($lastEcheance[0]['date_echeance']));
 
+            $this->contract->get($this->oLoans->id_type_contract);
+
             $this->setDisplay('declaration_de_creances_html');
         } else {
             header('Location: ' . $this->lurl);
@@ -999,21 +1028,52 @@ class pdfController extends bootstrap
 
     public function _loans()
     {
+        if (false === isset($this->params[0])) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
+
+        /** @var \clients $oClients */
+        $oClients = $this->loadData('clients');
+
+        // hack the symfony guard token
+        $session = $this->get('session');
+
+        /** @var \Symfony\Component\Security\Guard\Token\PostAuthenticationGuardToken $token */
+        $token =  unserialize($session->get('_security_default'));
+        if (!$token instanceof \Symfony\Component\Security\Guard\Token\PostAuthenticationGuardToken) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
+        /** @var \Unilend\Bundle\FrontBundle\Security\User\UserLender $user */
+        $user = $token->getUser();
+        if (!$user instanceof \Unilend\Bundle\FrontBundle\Security\User\UserLender) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
+
+        if (false === $oClients->get($this->params[0], 'hash') || $user->getClientId() !== $oClients->id_client) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
+
         $sPath          = '/tmp/' . uniqid() . '/';
         $sNamePdfClient = 'vos_prets_' . date('Y-m-d_H:i:s') . '.pdf';
 
         $this->lng['preteur-operations-detail'] = $this->ln->selectFront('preteur-operations-detail', $this->language, $this->App);
         $this->lng['preteur-operations-pdf']    = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
 
-        $this->GenerateLoansHtml();
+        $this->GenerateLoansHtml($oClients->id_client);
         $this->WritePdf($sPath . $sNamePdfClient, 'operations');
         $this->ReadPdf($sPath . $sNamePdfClient, $sNamePdfClient);
     }
 
-    private function GenerateLoansHtml()
+    private function GenerateLoansHtml($clientId)
     {
         $this->echeanciers = $this->loadData('echeanciers');
         $this->loans       = $this->loadData('loans');
+        $this->lenders_accounts = $this->loadData('lenders_accounts');
+        $this->lenders_accounts->get($clientId, 'id_client_owner');
 
         $this->aProjectsInDebt = $this->projects->getProjectsInDebt();
         $this->lSumLoans       = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account, 'debut DESC, p.title ASC');
@@ -1087,12 +1147,12 @@ class pdfController extends bootstrap
         $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
         $this->lng['preteur-operations-pdf']            = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
 
-        $post_debut            = $_SESSION['filtre_vos_operations']['debut'];
-        $post_fin              = $_SESSION['filtre_vos_operations']['fin'];
-        $post_nbMois           = $_SESSION['filtre_vos_operations']['nbMois'];
-        $post_annee            = $_SESSION['filtre_vos_operations']['annee'];
-        $post_tri_type_transac = $_SESSION['filtre_vos_operations']['tri_type_transac'];
-        $post_tri_projects     = $_SESSION['filtre_vos_operations']['tri_projects'];
+        $post_debut            = $_SESSION['filtre_vos_operations']['start'];
+        $post_fin              = $_SESSION['filtre_vos_operations']['end'];
+        $post_nbMois           = $_SESSION['filtre_vos_operations']['slide'];
+        $post_annee            = $_SESSION['filtre_vos_operations']['year'];
+        $post_tri_type_transac = $_SESSION['filtre_vos_operations']['operation'];
+        $post_tri_projects     = $_SESSION['filtre_vos_operations']['project'];
         $post_id_last_action   = $_SESSION['filtre_vos_operations']['id_last_action'];
         $post_order            = $_SESSION['filtre_vos_operations']['order'];
         $post_type             = $_SESSION['filtre_vos_operations']['type'];
@@ -1102,7 +1162,7 @@ class pdfController extends bootstrap
         $this->clients_adresses->get($post_id_client, 'id_client');
         $this->oLendersAccounts->get($post_id_client, 'id_client_owner');
 
-        if (isset($post_id_last_action) && in_array($post_id_last_action, array('debut', 'fin'))) {
+        if (isset($post_id_last_action) && in_array($post_id_last_action, array('start', 'end'))) {
 
             $debutTemp = explode('/', $post_debut);
             $finTemp   = explode('/', $post_fin);
@@ -1113,7 +1173,7 @@ class pdfController extends bootstrap
             // On sauvegarde la derniere action
             $_SESSION['id_last_action'] = $post_id_last_action;
 
-        } elseif (isset($post_id_last_action) && $post_id_last_action == 'nbMois') {
+        } elseif (isset($post_id_last_action) && $post_id_last_action == 'slide') {
             $nbMois = $post_nbMois;
 
             $date_debut_time = mktime(0, 0, 0, date("m") - $nbMois, date("d"), date('Y'));
@@ -1121,7 +1181,7 @@ class pdfController extends bootstrap
 
             // On sauvegarde la derniere action
             $_SESSION['id_last_action'] = $post_id_last_action;
-        } elseif (isset($post_id_last_action) && $post_id_last_action == 'annee') {
+        } elseif (isset($post_id_last_action) && $post_id_last_action == 'year') {
 
             $year = $post_annee;
 
@@ -1136,31 +1196,31 @@ class pdfController extends bootstrap
             // On sauvegarde la derniere action
             $_SESSION['id_last_action'] = $post_id_last_action;
 
-        } // si on a une session
-        elseif (isset($post_id_last_action)) {
-
-            if ($post_debut != "" && $post_fin != "") {
-                //echo 'toto';
-                $debutTemp = explode('/', $post_debut);
-                $finTemp   = explode('/', $post_fin);
-
-                $date_debut_time = strtotime($debutTemp[2] . '-' . $debutTemp[1] . '-' . $debutTemp[0] . ' 00:00:00');
-                $date_fin_time   = strtotime($finTemp[2] . '-' . $finTemp[1] . '-' . $finTemp[0] . ' 00:00:00');
-            } elseif ($post_id_last_action == 'nbMois') {
-                $nbMois = $post_nbMois;
-
-                $date_debut_time = mktime(0, 0, 0, date("m") - $nbMois, date("d"), date('Y'));
-                $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));
-            } elseif ($post_id_last_action == 'annee') {
-                $year = $post_annee;
-
-                $date_debut_time = mktime(0, 0, 0, 1, 1, $year);
-                $date_fin_time   = mktime(0, 0, 0, 12, 31, $year);
+        } elseif (isset($_SESSION['id_last_action'])) {// si on a une session
+            if (in_array($_SESSION['id_last_action'], array('start', 'end'))) {
+                $debutTemp       = explode('/', $post_debut);
+                $finTemp         = explode('/', $post_fin);
+                $date_debut_time = strtotime($debutTemp[2] . '-' . $debutTemp[1] . '-' . $debutTemp[0] . ' 00:00:00');    // date start
+                $date_fin_time   = strtotime($finTemp[2] . '-' . $finTemp[1] . '-' . $finTemp[0] . ' 00:00:00');            // date end
+            } elseif ($_SESSION['id_last_action'] == 'slide') {
+                $nbMois          = $post_nbMois;
+                $date_debut_time = mktime(0, 0, 0, date("m") - $nbMois, date("d"), date('Y')); // date start
+                $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));    // date end
+            } elseif ($_SESSION['id_last_action'] == 'year') {
+                $year            = $post_annee;
+                $date_debut_time = mktime(0, 0, 0, 1, 1, $year);    // date start
+                $date_fin_time   = mktime(0, 0, 0, 12, 31, $year); // date end
             }
-        } // Par defaut (on se base sur le 1M)
-        else {
-            $date_debut_time = mktime(0, 0, 0, date("m") - 1, date("d"), date('Y'));
-            $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));
+        } else {// Par defaut (on se base sur le 1M)
+            if (isset($post_debut) && isset($post_fin)) {
+                $debutTemp       = explode('/', $post_debut);
+                $finTemp         = explode('/', $post_fin);
+                $date_debut_time = strtotime($debutTemp[2] . '-' . $debutTemp[1] . '-' . $debutTemp[0] . ' 00:00:00');    // date start
+                $date_fin_time   = strtotime($finTemp[2] . '-' . $finTemp[1] . '-' . $finTemp[0] . ' 00:00:00');            // date end
+            } else {
+                $date_debut_time = mktime(0, 0, 0, date("m") - 1, date("d"), date('Y')); // date start
+                $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));    // date end
+            }
         }
 
         $this->date_debut = date('Y-m-d', $date_debut_time);

@@ -116,7 +116,7 @@ class rootController extends bootstrap
         $this->projects_status = $this->loadData('projects_status');
         $this->projects        = $this->loadData('projects');
 
-        $this->lProjectsNok = $this->projects->selectProjectsByStatus(implode(', ', array(\projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE)));
+        $this->lProjectsNok = $this->projects->selectProjectsByStatus([\projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE]);
         $this->lStatus      = $this->projects_status->select();
     }
 

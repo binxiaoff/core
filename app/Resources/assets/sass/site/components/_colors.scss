@@ -1,0 +1,28 @@
+//
+// Unilend Color Classes
+//
+
+// Create preset classes for site color and background-colors
+@each $name, $color in $colors-site {
+  .c-#{$name} {
+    color: #{$color};
+  }
+
+  // Anchor Links
+  a.c-#{$name} {
+    &:link,
+    &:visited {
+      color: #{$color};
+    }
+  }
+
+  .bg-#{$name} {
+    background-color: #{$color};
+
+    // @if ( lightness($color) >= 60% ) {
+    //   color: $c-black;
+    // } @else {
+    //   color: $c-white;
+    // }
+  }
+}

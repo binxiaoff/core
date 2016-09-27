@@ -45,7 +45,7 @@ class collectController extends bootstrap
             } elseif (! $this->ficelle->isEmail($email)) {
                 $form_ok = false;
                 $erreur .= 'Format email;';
-            } elseif ($this->clients->existEmail($email) == false) {
+            } elseif ($this->clients->existEmail($email)) {
                 $clients_status_history = $this->loadData('clients_status_history');
                 if ($this->clients->get($email, 'slug_origine != "" AND email') && $clients_status_history->counter('id_client = ' . $this->clients->id_client) <= 0) {
                     $form_update = true;
@@ -176,7 +176,7 @@ class collectController extends bootstrap
             } elseif (! $this->ficelle->isEmail($email)) {
                 $form_ok = false;
                 $erreur .= 'Format email;';
-            } elseif ($this->clients->existEmail($email) == false) {
+            } elseif ($this->clients->existEmail($email)) {
                 $clients_status_history = $this->loadData('clients_status_history');
                 if ($this->clients->get($email, 'origine = 1 AND email') && $clients_status_history->counter('id_client = ' . $this->clients->id_client) <= 0) {
                     $form_update = true;

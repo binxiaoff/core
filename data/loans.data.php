@@ -28,10 +28,6 @@
 
 class loans extends loans_crud
 {
-    const IFP_AMOUNT_MAX = 1000;
-
-    const TYPE_CONTRACT_BDC = 1;
-    const TYPE_CONTRACT_IFP = 2;
     const STATUS_ACCEPTED   = 0;
     const STATUS_REJECTED   = 1;
 
@@ -82,7 +78,7 @@ class loans extends loans_crud
     {
         $nbValid = $this->counter('id_project = ' . $id_project . ' AND id_lender = ' . $id_lender . ' AND status = ' . self::STATUS_ACCEPTED);
 
-        $sql = 'SELECT SUM(amount) as solde FROM loans WHERE id_project = ' . $id_project . ' AND id_lender = ' . $id_lender . ' AND status = ' . self::STATUS_ACCEPTED;
+        $sql = 'SELECT SUM(amount) AS solde FROM loans WHERE id_project = ' . $id_project . ' AND id_lender = ' . $id_lender . ' AND status = ' . self::STATUS_ACCEPTED;
 
         $result = $this->bdd->query($sql);
         $solde  = $this->bdd->result($result);
@@ -97,7 +93,7 @@ class loans extends loans_crud
 
     public function getNbPreteurs($id_project)
     {
-        $sql = 'SELECT count(DISTINCT id_lender) FROM `loans` WHERE id_project = ' . $id_project . ' AND status = ' . self::STATUS_ACCEPTED;
+        $sql = 'SELECT COUNT(DISTINCT id_lender) FROM `loans` WHERE id_project = ' . $id_project . ' AND status = ' . self::STATUS_ACCEPTED;
 
         $result = $this->bdd->query($sql);
         return (int)$this->bdd->result($result, 0, 0);
@@ -138,8 +134,8 @@ class loans extends loans_crud
             LEFT JOIN echeanciers e ON e.id_lender = l.id_lender AND e.id_project = l.id_project
             LEFT JOIN lenders_accounts la ON l.id_lender = la.id_lender_account
             LEFT JOIN clients c ON la.id_client_owner = c.id_client
-            WHERE l.id_project = ' . $id_project . ' AND l.status = ' . self::STATUS_ACCEPTED .
-            ' GROUP BY id_lender';
+            WHERE l.id_project = ' . $id_project . ' AND l.status = ' . self::STATUS_ACCEPTED . '
+            GROUP BY id_lender';
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
@@ -153,6 +149,13 @@ class loans extends loans_crud
     {
         $sql = 'SELECT count(DISTINCT id_project) FROM `loans` WHERE id_lender = ' . $id_lender . ' AND status = ' . self::STATUS_ACCEPTED;
 
+        $result = $this->bdd->query($sql);
+        return (int)($this->bdd->result($result));
+    }
+
+    public function getLoansCount($id_lender)
+    {
+        $sql = 'SELECT count(DISTINCT id_loan) FROM `loans` WHERE id_lender = ' . $id_lender . ' AND status = 0';
         $result = $this->bdd->query($sql);
         return (int)($this->bdd->result($result));
     }
@@ -174,7 +177,7 @@ class loans extends loans_crud
     // retourne la moyenne des prets validés d'un preteur sur un projet
     public function getAvgLoansPreteur($id_project, $id_lender)
     {
-        $sql = 'SELECT IFNULL(SUM(rate * amount) / SUM(amount), 0) AS avg FROM loans WHERE id_project = ' . $id_project . ' AND id_lender = ' . $id_lender . ' AND status = ' . self::STATUS_ACCEPTED;
+        $sql = 'SELECT IFNULL(ROUND(SUM(rate * amount) / SUM(amount), 2), 0) AS avg FROM loans WHERE id_project = ' . $id_project . ' AND id_lender = ' . $id_lender . ' AND status = ' . self::STATUS_ACCEPTED;
 
         $result = $this->bdd->query($sql);
         return $this->bdd->result($result);
@@ -183,7 +186,7 @@ class loans extends loans_crud
     // retourne la moyenne des prets validés d'un preteur
     public function getAvgPrets($id_lender)
     {
-        $sql = 'SELECT IFNULL(SUM(rate * amount) / SUM(amount), 0) AS avg FROM loans WHERE id_lender = ' . $id_lender . ' AND status = ' . self::STATUS_ACCEPTED;
+        $sql = 'SELECT IFNULL(ROUND(SUM(rate * amount) / SUM(amount), 2), 0) AS avg FROM loans WHERE id_lender = ' . $id_lender . ' AND status = ' . self::STATUS_ACCEPTED;
 
         $result = $this->bdd->query($sql);
         return $this->bdd->result($result);
@@ -279,8 +282,7 @@ class loans extends loans_crud
                 DATE((SELECT MIN(e.date_echeance) FROM echeanciers e WHERE e.id_loan = l.id_loan AND e.ordre = 1)) AS debut,
                 DATE((SELECT MAX(e1.date_echeance) FROM echeanciers e1 WHERE e1.id_loan = l.id_loan)) AS fin,
                 DATE((SELECT MIN(e2.date_echeance) FROM echeanciers e2 WHERE e2.id_loan = l.id_loan AND e2.status = 0)) AS next_echeance,
-                SUM((SELECT (ROUND(e3.montant / 100, 2) - 
-              
+                SUM((SELECT (ROUND(e3.montant / 100, 2) -
                 ROUND(
                    (SELECT SUM(IFNULL(tax.amount, 0) / 100)
                    FROM tax
@@ -294,13 +296,13 @@ class loans extends loans_crud
             FROM loans l
             LEFT JOIN projects p ON l.id_project = p.id_project
             LEFT JOIN companies c ON p.id_company = c.id_company
-            LEFT JOIN projects_last_status_history plsh ON p.id_project = plsh.id_project
+            LEFT JOIN (SELECT id_project, MAX(id_project_status_history) AS id_project_status_history FROM projects_status_history GROUP BY id_project) plsh ON p.id_project = plsh.id_project
             LEFT JOIN projects_status_history psh ON plsh.id_project_status_history = psh.id_project_status_history
             LEFT JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
             WHERE id_lender = ' . $iLenderAccountId . '
                 AND l.status = 0
                 ' . (null === $iYear ? '' : 'AND YEAR(l.added) = "' . $iYear . '"') . '
-                ' . (null === $iProjectStatus ? '' : 'AND ps.status = ' . $iProjectStatus) . '
+                ' . (null === $iProjectStatus ? '' : 'AND p.status = ' . $iProjectStatus) . '
             GROUP BY l.id_project
             ORDER BY ' . (null === $sOrder ? 'l.added DESC' : $sOrder)
         );
@@ -412,5 +414,56 @@ class loans extends loans_crud
     {
         parent::unsetData();
         $this->aAcceptedBids = array();
+    }
+
+    public function getAverageLoanAmount()
+    {
+        $query = '
+            SELECT AVG(addedLoans.amount) / 100
+            FROM (
+                SELECT SUM(amount) AS amount
+                FROM loans
+                WHERE status = 0
+                GROUP BY id_project, id_lender
+            ) AS addedLoans';
+        $statement = $this->bdd->executeQuery($query);
+
+        return $statement->fetchColumn(0);
+    }
+
+    public function getFirstLoanYear($lenderId)
+    {
+        $sql = 'SELECT MIN(YEAR(added)) AS first_loan_year FROM loans WHERE id_lender = :lenderId';
+        return $this->bdd->executeQuery($sql, ['lenderId' => $lenderId], ['lenderId' => \PDO::PARAM_INT] )->fetchColumn(0);
+    }
+
+    public function sumLoansByCohort()
+    {
+        $caseSql  = '';
+        foreach (range(2015, date('Y')) as $year ) {
+            $caseSql .= ' WHEN ' . $year . ' THEN "' . $year . '"';
+        }
+
+        $query = 'SELECT SUM(loans.amount)/100 AS amount,
+                    (
+                        SELECT
+                          CASE LEFT(projects_status_history.added, 4)
+                            WHEN 2013 THEN "2013-2014"
+                            WHEN 2014 THEN "2013-2014"
+                            '. $caseSql . '
+                            ELSE LEFT(projects_status_history.added, 4)
+                          END AS date_range
+                        FROM projects_status_history
+                        INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
+                        WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
+                          AND loans.id_project = projects_status_history.id_project
+                        ORDER BY id_project_status_history ASC LIMIT 1
+                      ) AS cohort
+                    FROM loans
+                      INNER JOIN projects on loans.id_project = projects.id_project AND projects.status >= '. \projects_status::REMBOURSEMENT .'
+                    GROUP BY cohort';
+
+        $statement = $this->bdd->executeQuery($query);
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 }

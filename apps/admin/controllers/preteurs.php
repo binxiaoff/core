@@ -85,20 +85,6 @@ class preteursController extends bootstrap
         } else {
             $this->lPreteurs = $this->clients->searchPreteurs('', '', '', '', '', null, '', '0', '300');
         }
-
-        $aTransactionTypes = array(
-            \transactions_types::TYPE_LENDER_SUBSCRIPTION,
-            \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
-            \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
-            \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL,
-            \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS,
-            \transactions_types::TYPE_LENDER_WITHDRAWAL,
-            \transactions_types::TYPE_DIRECT_DEBIT,
-            \transactions_types::TYPE_LENDER_REGULATION
-        );
-        $this->z = count($this->clients->selectPreteursByStatus(\clients_status::VALIDATED, 'c.status = 1 AND status_inscription_preteur = 1 AND (SELECT COUNT(t.id_transaction) FROM transactions t WHERE t.type_transaction IN (' . implode(',', $aTransactionTypes) . ') AND t.status = 1 AND t.etat = 1 AND t.id_client = c.id_client) < 1'));
-        $this->y = $this->clients->counter('clients.status = 0 AND clients.status_inscription_preteur = 1 AND EXISTS (SELECT * FROM lenders_accounts WHERE clients.id_client = lenders_accounts.id_client_owner)');
-        $this->x = $this->clients->counter('clients.status_inscription_preteur = 1 AND EXISTS (SELECT * FROM lenders_accounts WHERE clients.id_client = lenders_accounts.id_client_owner)');
     }
 
     public function _search()
@@ -196,8 +182,11 @@ class preteursController extends bootstrap
         $this->setAttachments($this->lenders_accounts->id_client_owner, $this->aAttachmentTypes);
         $this->aAvailableAttachments = $this->aIdentity + $this->aDomicile + $this->aRibAndFiscale + $this->aOther;
 
-        $this->lng['profile']                           = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
-        $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
+        //// transactions mouvements ////
+        /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
+        $translationManager = $this->get('unilend.service.translation_manager');
+        $this->lng['profile']                           = $translationManager->getAllTranslationsForSection('preteur-profile');
+        $this->lng['preteur-operations-vos-operations'] = $translationManager->getAllTranslationsForSection('preteur-operations-vos-operations');
 
         /** @var \lender_tax_exemption $oLenderTaxExemption */
         $oLenderTaxExemption   = $this->loadData('lender_tax_exemption');
@@ -233,12 +222,16 @@ class preteursController extends bootstrap
     private function setAttachments($iIdClient, $oAttachmentTypes)
     {
         /** @var \greenpoint_attachment $oGreenPointAttachment */
-        $oGreenPointAttachment   = $this->loadData('greenpoint_attachment');
-        $aGreenpointAttachmentStatus = array();
-        $this->aIdentity             = array();
-        $this->aDomicile             = array();
-        $this->aRibAndFiscale        = array();
-        $this->aOther                = array();
+        $oGreenPointAttachment       = $this->loadData('greenpoint_attachment');
+        $aGreenpointAttachmentStatus = [];
+        $this->aIdentity             = [];
+        $this->aDomicile             = [];
+        $this->aRibAndFiscale        = [];
+        $this->aOther                = [];
+        $this->aRibAndFiscaleToAdd   = [];
+        $this->aIdentityToAdd        = [];
+        $this->aDomicileToAdd        = [];
+        $this->aOtherToAdd           = [];
 
         foreach ($oGreenPointAttachment->select('id_client = ' . $iIdClient) as $aGPAS) {
             $aGreenpointAttachmentStatus[$aGPAS['id_attachment']] = $aGPAS;
@@ -277,16 +270,14 @@ class preteursController extends bootstrap
         $this->lNatio                  = $this->nationalites->select();
         $this->lPays                   = $this->pays->select('', 'ordre ASC');
         $this->settings                = $this->loadData('settings');
+        /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
+        $translationManager = $this->get('unilend.service.translation_manager');
+        $this->completude_wording = $translationManager->getAllTranslationsForSection('lender-completeness');
 
-        $lElements = $this->blocs_elements->select('id_bloc = 9 AND id_langue = "' . $this->language . '"');
-        foreach ($lElements as $b_elt) {
-            $this->elements->get($b_elt['id_element']);
-            $this->completude_wording[$this->elements->slug] = $b_elt['value'];
-        }
         $this->nbWordingCompletude = count($this->completude_wording);
 
         $this->settings->get("Liste deroulante conseil externe de l'entreprise", 'type');
-        $this->conseil_externe = $this->ficelle->explodeStr2array($this->settings->value);
+        $this->conseil_externe = json_decode($this->settings->value, true);
 
         $this->lenders_accounts = $this->loadData('lenders_accounts');
         $this->lenders_accounts->get($this->params[0], 'id_lender_account');
@@ -436,7 +427,7 @@ class preteursController extends bootstrap
                     \clients_status::CLOSED_LENDER_REQUEST,
                     \clients_status::CLOSED_BY_UNILEND
                 );
-                $checkEmailExistant    = $this->clients->selectPreteursByStatus(implode(',', $aLenderStatusForQuery), 'email = "' . $_POST['email'] . '" AND id_client != ' . $this->clients->id_client);
+                $checkEmailExistant    = $this->clients->selectPreteursByStatus(implode(',', $aLenderStatusForQuery), 'email = "' . $_POST['email'] . '" AND c.id_client != ' . $this->clients->id_client);
                 if (count($checkEmailExistant) > 0) {
                     $les_id_client_email_exist = '';
                     foreach ($checkEmailExistant as $checkEmailEx) {
@@ -531,7 +522,8 @@ class preteursController extends bootstrap
                 $this->users_history->histo(3, 'modif info preteur', $_SESSION['user']['id_user'], $serialize);
 
                 if (isset($_POST['statut_valider_preteur']) && 1 == $_POST['statut_valider_preteur']) {
-                    $aExistingClient       = array_shift($this->clients->getDuplicates($this->clients->nom, $this->clients->prenom, $this->clients->naissance));
+                    $aExistingClient       = $this->clients->getDuplicates($this->clients->nom, $this->clients->prenom, $this->clients->naissance);
+                    $aExistingClient       = array_shift($aExistingClient);
                     $iOriginForUserHistory = 3;
 
                     if (false === empty($aExistingClient) && $aExistingClient['id_client'] != $this->clients->id_client) {
@@ -675,7 +667,7 @@ class preteursController extends bootstrap
                     \clients_status::MODIFICATION,
                     \clients_status::VALIDATED,
                 );
-                $checkEmailExistant = $this->clients->selectPreteursByStatus(implode(',', $aLenderStatusForQuery), 'email = "' . $_POST['email_e'] . '" AND id_client != ' . $this->clients->id_client);
+                $checkEmailExistant = $this->clients->selectPreteursByStatus(implode(',', $aLenderStatusForQuery), 'email = "' . $_POST['email_e'] . '" AND c.id_client != ' . $this->clients->id_client);
                 if (count($checkEmailExistant) > 0) {
                     $les_id_client_email_exist = '';
                     foreach ($checkEmailExistant as $checkEmailEx) {
@@ -975,7 +967,6 @@ class preteursController extends bootstrap
         $this->settings->get('Twitter', 'type');
         $lien_tw = $this->settings->value;
 
-        $lapage         = (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) ? 'particulier_doc' : 'societe_doc';
         $this->lActions = $this->clients_status_history->select('id_client = ' . $this->clients->id_client, 'added DESC');
         $timeCreate     = (false === empty($this->lActions[0]['added'])) ? strtotime($this->lActions[0]['added']) : strtotime($this->clients->added);
         $month          = $this->dates->tableauMois['fr'][date('n', $timeCreate)];
@@ -986,7 +977,7 @@ class preteursController extends bootstrap
             'prenom_p'      => $this->clients->prenom,
             'date_creation' => date('d', $timeCreate) . ' ' . $month . ' ' . date('Y', $timeCreate),
             'content'       => utf8_encode($_SESSION['content_email_completude'][$this->clients->id_client]),
-            'lien_upload'   => $this->furl . '/profile/' . $lapage,
+            'lien_upload'   => $this->furl . '/profile/documents',
             'lien_fb'       => $lien_fb,
             'lien_tw'       => $lien_tw
         );
@@ -1361,8 +1352,12 @@ class preteursController extends bootstrap
 
         $this->projects_status         = $this->loadData('projects_status');
         $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
-        $this->echeanciers = $this->loadData('echeanciers');
-        $this->tax = $this->loadData('tax');
+        $this->echeanciers             = $this->loadData('echeanciers');
+        $this->tax                     = $this->loadData('tax');
+        /** @var underlying_contract contract */
+        $this->contract                = $this->loadData('underlying_contract');
+        /** @var \Symfony\Component\Translation\TranslatorInterface translator */
+        $this->translator              = $this->get('translator');
 
         $this->lenders_accounts->get($this->params[0], 'id_lender_account');
         $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
@@ -1394,8 +1389,10 @@ class preteursController extends bootstrap
 
         $this->getMessageAboutClientStatus();
 
-        $oTextes                   = $this->loadData('textes');
-        $this->lng['autobid']      = $oTextes->selectFront('autobid', $this->language, $this->App);
+        /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
+        $translationManager = $this->get('unilend.service.translation_manager');
+        $this->lng['autobid']      = $translationManager->getAllTranslationsForSection('autobid');
+        $this->lng['autolend'] = $translationManager->getAllTranslationsForSection('autolend');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
         $oAutoBidSettingsManager   = $this->get('unilend.service.autobid_settings_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $oClientManager */
@@ -1409,12 +1406,14 @@ class preteursController extends bootstrap
         $this->fAverageRateUnilend = round($this->projects->getAvgRate(), 1);
         $this->bIsBetaTester       = $oClientManager->isBetaTester($this->clients);
 
-        $this->aAutoBidSettings = array();
+        $this->settings->get('date-premier-projet-tunnel-de-taux', 'type');
+        $startingDate = $this->settings->value;
+        $this->aAutoBidSettings = [];
         /** @var autobid $autobid */
         $autobid          = $this->loadData('autobid');
         $aAutoBidSettings = $autobid->getSettings($this->lenders_accounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
         foreach ($aAutoBidSettings as $aSetting) {
-            $aSetting['AverageRateUnilend']                                          = $this->projects->getAvgRate($aSetting['evaluation'], $aSetting['min'], $aSetting['max']);
+            $aSetting['AverageRateUnilend']                                          = $this->projects->getAvgRate($aSetting['evaluation'], $aSetting['period_min'], $aSetting['period_max'], $startingDate);
             $this->aAutoBidSettings[$aSetting['id_period']][$aSetting['evaluation']] = $aSetting;
         }
     }

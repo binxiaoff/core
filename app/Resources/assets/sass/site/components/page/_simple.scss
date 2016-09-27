@@ -1,0 +1,162 @@
+//
+// Unilend Page Simple
+//
+
+.page-simple {
+  .page-header {
+    padding-top: 0;
+    padding-bottom: 0;
+    overflow: hidden;
+
+    .hero-wrap {
+      @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0, $padding-md: 0, $padding-lg: 0);
+      background-color: $c-p1;
+      color: $c-white;
+
+      h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4 {
+        color: $c-white;
+        text-transform: uppercase;
+      }
+    }
+
+    .site-wrap {
+      height: auto;
+      padding-top: $width-site-margin-xs;
+      padding-bottom: ($width-site-margin-xs * 2.5);
+
+      @include devices('sm') {
+        height: 150px;
+        padding-top: 0;
+        padding-bottom: 30px;
+      }
+
+      @include devices('md') {
+        height: 200px;
+        padding-top: 0;
+        padding-bottom: 30px;
+      }
+
+      @include devices('lg') {
+        height: 300px;
+        padding-top: 0;
+        padding-bottom: 30px;
+      }
+    }
+  }
+
+  .page-header-image {
+    display: none;
+    width: 50%;
+    height: 100%;
+
+    position: absolute;
+    right: 0;
+    top: 0;
+
+    color: $c-purple-l;
+    text-align: center;
+    user-select: none;
+
+    @include devices('md') {
+      display: block;
+
+      img,
+      svg {
+        margin-top: -30px;
+      }
+    }
+
+    @include devices('lg') {
+      display: block;
+
+      img,
+      svg {
+        margin-top: 0px;
+      }
+    }
+  }
+
+  .page-aside {
+    position: relative;
+    margin-top: -30px;
+
+    svg,
+    img {
+      @include constrain-size-to-width;
+      min-width: 100%;
+    }
+
+    @include devices('md') {
+      padding-right: ($width-site-margin-md * 2);
+    }
+
+    @include devices('lg') {
+      padding-right: ($width-site-margin-lg * 2);
+    }
+
+    &.ui-sticky-bounds {
+      position: static;
+    }
+  }
+
+  .page-aside-body {
+    padding: $width-site-margin-xs;
+    background-color: $c-purple-l2;
+
+    > :first-child {
+      margin-top: 0;
+    }
+
+    > :last-child {
+      margin-bottom: 0;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      color: $c-t1;
+    }
+
+    a:not(.btn-primary) {
+      color: $c-t1;
+    }
+
+    @include devices('sm') {
+      padding: $width-site-margin-sm;
+    }
+
+    @include devices('md') {
+      padding: $width-site-margin-md;
+    }
+
+    @include devices('lg') {
+      padding: $width-site-margin-lg;
+    }
+
+    // @note I built one! Let's animate the transition coz it's jerky
+    &.ui-has-sticky {
+      backface-visibility: hidden;
+      transition: all .2s;
+    }
+  }
+
+  .page-navigation {
+    .list-links {
+      line-height: 1.3em;
+    }
+  }
+
+  .page-content {
+    padding-top: 30px;
+
+    .page-section {
+      padding-top: 0;
+      padding-bottom: 0;
+      margin-top: 50px;
+      margin-bottom: 50px;
+
+      @include devices('md', 'lg') {
+        margin-top: 50px;
+        margin-bottom: 80px;
+      }
+    }
+  }
+}

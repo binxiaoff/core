@@ -28,7 +28,6 @@ class depot_de_dossierController extends bootstrap
         $this->companies_bilans              = $this->loadData('companies_bilans');
         $this->companies_actif_passif        = $this->loadData('companies_actif_passif');
         $this->projects                      = $this->loadData('projects');
-        $this->projects_status               = $this->loadData('projects_status');
         $this->projects_status_history       = $this->loadData('projects_status_history');
         $this->clients                       = $this->loadData('clients');
         $this->clients_adresses              = $this->loadData('clients_adresses');
@@ -98,7 +97,7 @@ class depot_de_dossierController extends bootstrap
 
         $this->setSource($this->clients);
 
-        if (empty($_SESSION['forms']['depot-de-dossier']['email']) || true === $this->clients->existEmail($_SESSION['forms']['depot-de-dossier']['email'])) { // Email does not exist in DB
+        if (empty($_SESSION['forms']['depot-de-dossier']['email']) || false === $this->clients->existEmail($_SESSION['forms']['depot-de-dossier']['email'])) { // Email does not exist in DB
             $this->clients->email = $_SESSION['forms']['depot-de-dossier']['email'];
         } else {
             $this->clients->email = $_SESSION['forms']['depot-de-dossier']['email'] . '-' . time();
@@ -126,6 +125,7 @@ class depot_de_dossierController extends bootstrap
         $this->projects->ca_declara_client                    = 0;
         $this->projects->resultat_exploitation_declara_client = 0;
         $this->projects->fonds_propres_declara_client         = 0;
+        $this->projects->status                               = \projects_status::DEMANDE_SIMULATEUR;
         $this->projects->create();
 
         $this->settings->get('Altares email alertes', 'type');
@@ -327,7 +327,7 @@ class depot_de_dossierController extends bootstrap
             $this->redirect(self::PAGE_NAME_STEP_2);
         }
 
-        if (true === $this->clients->existEmail($_POST['email'])) { // Email does not exist in DB
+        if (false === $this->clients->existEmail($_POST['email'])) { // Email does not exist in DB
             $this->clients->email = $_POST['email'];
         } elseif ($this->removeEmailSuffix($this->clients->email) !== $_POST['email']) { // Email exists but is different from previous one
             $this->clients->email = $_POST['email'] . '-' . time();
@@ -340,7 +340,6 @@ class depot_de_dossierController extends bootstrap
         $this->clients->telephone         = $_POST['telephone'];
         $this->clients->id_langue         = 'fr';
         $this->clients->slug              = $this->bdd->generateSlug($this->clients->prenom . '-' . $this->clients->nom);
-        $this->clients->status_transition = 1; // Used in bootstrap and ajax depot de dossier
         $this->clients->update();
 
         $this->companies->name          = $_POST['raison_sociale'];
@@ -348,7 +347,7 @@ class depot_de_dossierController extends bootstrap
         $this->companies->update();
 
         if ('non' === $_POST['gerant']) {
-            if (true === $this->clients_prescripteur->existEmail($_POST['email_prescripteur'])) { // Email does not exist in DB
+            if (false === $this->clients_prescripteur->existEmail($_POST['email_prescripteur'])) {
                 $this->clients_prescripteur->email = $_POST['email_prescripteur'];
             } elseif ($this->removeEmailSuffix($this->clients_prescripteur->email) !== $_POST['email_prescripteur']) { // Email exists but is different from previous one
                 $this->clients_prescripteur->email = $_POST['email_prescripteur'] . '-' . time();
@@ -653,7 +652,7 @@ class depot_de_dossierController extends bootstrap
             $this->redirect(self::PAGE_NAME_PARTNER);
         }
 
-        if (true === $this->clients->existEmail($_POST['email'])) { // Email does not exist in DB
+        if (false === $this->clients->existEmail($_POST['email'])) {
             $this->clients->email = $_POST['email'];
         } elseif ($this->removeEmailSuffix($this->clients->email) !== $_POST['email']) { // Email exists but is different from previous one
             $this->clients->email = $_POST['email'] . '-' . time();
@@ -666,7 +665,6 @@ class depot_de_dossierController extends bootstrap
         $this->clients->telephone         = $_POST['telephone'];
         $this->clients->id_langue         = 'fr';
         $this->clients->slug              = $this->bdd->generateSlug($this->clients->prenom . '-' . $this->clients->nom);
-        $this->clients->status_transition = 1; // Used in bootstrap and ajax depot de dossier
         $this->clients->update();
 
         $this->companies->name          = $_POST['raison_sociale'];
@@ -759,7 +757,7 @@ class depot_de_dossierController extends bootstrap
             $this->redirect(self::PAGE_NAME_PROSPECT);
         }
 
-        if (true === $this->clients->existEmail($_POST['email'])) { // Email does not exist in DB
+        if (false === $this->clients->existEmail($_POST['email'])) {
             $this->clients->email = $_POST['email'];
         } elseif ($this->removeEmailSuffix($this->clients->email) !== $_POST['email']) { // Email exists but is different from previous one
             $this->clients->email = $_POST['email'] . '-' . time();
@@ -772,7 +770,6 @@ class depot_de_dossierController extends bootstrap
         $this->clients->telephone         = $_POST['telephone'];
         $this->clients->id_langue         = 'fr';
         $this->clients->slug              = $this->bdd->generateSlug($this->clients->prenom . '-' . $this->clients->nom);
-        $this->clients->status_transition = 1; // Used in bootstrap and ajax depot de dossier
         $this->clients->update();
 
         $this->companies->name          = $_POST['raison_sociale'];
@@ -804,9 +801,7 @@ class depot_de_dossierController extends bootstrap
         $this->sYearLessTwo   = date('Y') - 2;
         $this->sYearLessThree = date('Y') - 3;
 
-        $this->projects_last_status_history = $this->loadData('projects_last_status_history');
-        $this->projects_last_status_history->get($this->projects->id_project, 'id_project');
-        $this->projects_status_history->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history');
+        $this->projects_status_history->loadLastProjectHistory($this->projects->id_project);
 
         if (false === empty($this->projects_status_history->content)) {
             $oDOMElement = new DOMDocument();
@@ -858,7 +853,7 @@ class depot_de_dossierController extends bootstrap
         $this->sMessage        = $this->lng['depot-de-dossier-fin']['contenu-non-eligible'];
         $this->bDisplayTouchvibes = false;
 
-        switch ($this->projects_status->status) {
+        switch ($this->projects->status) {
             case \projects_status::ABANDON:
                 $this->sMessage = $this->lng['depot-de-dossier-fin']['abandon'];
                 break;
@@ -1067,13 +1062,11 @@ class depot_de_dossierController extends bootstrap
             $this->companies_prescripteur->get($this->prescripteurs->id_entite, 'id_company');
         }
 
-        $this->projects_status->getLastStatut($this->projects->id_project);
-
         if (self::PAGE_NAME_EMAILS === $sPage) {
             return;
         }
 
-        switch ($this->projects_status->status) {
+        switch ($this->projects->status) {
             case \projects_status::PAS_3_BILANS:
             case \projects_status::NOTE_EXTERNE_FAIBLE:
                 if (false === in_array($sPage, array(self::PAGE_NAME_END, self::PAGE_NAME_PROSPECT))) {
@@ -1124,7 +1117,7 @@ class depot_de_dossierController extends bootstrap
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
         $oProjectManager = $this->get('unilend.service.project_manager');
 
-        if (false === is_null($iProjectStatus) && $this->projects_status->status != $iProjectStatus) {
+        if (false === is_null($iProjectStatus) && $this->projects->status != $iProjectStatus) {
             $oProjectManager->addProjectStatus(\users::USER_ID_FRONT, $iProjectStatus, $this->projects, 0, $sRejectionMessage);
         }
 

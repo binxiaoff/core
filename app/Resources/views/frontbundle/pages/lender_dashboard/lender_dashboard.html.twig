@@ -1,0 +1,37 @@
+{% extends 'layouts/_layout_lender.html.twig' %}
+
+{% set page = {
+  id: 'user-preter-dashboard',
+  title: 'Prêteur / Dashboard',
+  permalink: path('lender_dashboard'),
+  classNames: 'user-preter-dashboard'
+} %}
+
+{% block dashboardContent %}
+    <div class="dashboard-panels-nav">
+        <ul class="list-inline-block">
+            {% for panelId, panelInfo in dashboardPanels %}
+                <li role="presentation">
+                    <a href="#{{ panelId }}" class="dashboard-panel-toggle{% if panelInfo.hidden == true %} ui-dashboard-panel-hidden{% endif %}" data-toggle="ui">
+                      {% if panelId == 'wallet' %}
+                            {% if lenderDetails.numberOfLoans == lenderDetails.numberOfBorrowers %}
+                                {% transchoice lenderDetails.numberOfLoans with {'%offersCount%' : lenderDetails.numberOfLoans|localizednumber} %} lender-dashboard-wallet_title-loans {% endtranschoice %}
+                            {% else %}
+                                {% transchoice lenderDetails.numberOfBorrowers with {'%offersCount%' : lenderDetails.numberOfLoans|localizednumber, '%borrowerCount%' : lenderDetails.numberOfBorrowers|localizednumber} %} lender-dashboard-wallet_title-loans-projects {% endtranschoice %}
+                            {% endif %}
+                      {% else %}
+                        {{ "lender-dashboard-#{ panelId }_title"|trans }}
+                      {% endif %}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+        <span id="dashboard-panels-saving" class="ui-is-spinner"></span>
+    </div>
+
+    <section class="dashboard-panels-content" data-dashboardpanels data-dashboardpanels-ajaxurl="{{ path('save_panel_preferences') }}" data-has-spinner="#dashboard-panels-saving" data-movable-content>
+        {% for panelId, panelInfo in dashboardPanels %}
+            {% include('pages/lender_dashboard/dashboard_panels/' ~ panelId ~ '.html.twig') %}
+        {% endfor %}
+    </section>
+{% endblock %}

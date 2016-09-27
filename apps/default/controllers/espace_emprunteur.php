@@ -23,7 +23,7 @@ class espace_emprunteurController extends bootstrap
             $aAllCompanyProjects = $this->companies->getProjectsForCompany($this->companies->id_company);
             $aAllCompanyProjects = array_shift($aAllCompanyProjects);
 
-            if ($aAllCompanyProjects['project_status'] >= projects_status::A_TRAITER && $aAllCompanyProjects['project_status'] < projects_status::PREP_FUNDING) {
+            if ($aAllCompanyProjects['status'] >= projects_status::A_TRAITER && $aAllCompanyProjects['status'] < projects_status::PREP_FUNDING) {
                 header('Location:' . $this->url . '/depot_de_dossier/fichiers/' . $aAllCompanyProjects['hash']);
                 die;
             }
@@ -340,7 +340,7 @@ class espace_emprunteurController extends bootstrap
         $aProjectsPreFunding = $this->companies->getProjectsForCompany($this->companies->id_company, $aStatusPreFunding);
 
         foreach ($aProjectsPreFunding as $iKey => $aProject) {
-            switch ($aProject['project_status']) {
+            switch ($aProject['status']) {
                 case \projects_status::EN_ATTENTE_PIECES:
                 case \projects_status::A_TRAITER:
                     $aProjectsPreFunding[$iKey]['project_status_label'] = 'en-attente-de-pieces';
@@ -372,7 +372,7 @@ class espace_emprunteurController extends bootstrap
         $this->oDateTimeNow = new \DateTime('NOW');
 
         foreach ($aProjectsFunding as $iKey => $aProject) {
-            $aProjectsFunding[$iKey]['AverageIR']        = $this->projects->getAverageInterestRate($aProject['id_project'], $aProject['project_status']);
+            $aProjectsFunding[$iKey]['AverageIR']        = $this->projects->getAverageInterestRate($aProject['id_project']);
             $iSumBids                                    = $oBids->getSoldeBid($aProject['id_project']);
             $aProjectsFunding[$iKey]['funding-progress'] = ((1 - ($aProject['amount'] - $iSumBids) / $aProject['amount']) * 100);
             $oDateTimeEnd                                = DateTime::createFromFormat('Y-m-d H:i:s', $aProject['date_retrait_full']);
@@ -397,7 +397,7 @@ class espace_emprunteurController extends bootstrap
         $oRepaymentSchedule     = $this->loadData('echeanciers_emprunteur');
 
         foreach ($aProjectsPostFunding as $iKey => $aProject) {
-            $aProjectsPostFunding[$iKey]['AverageIR']              = $this->projects->getAverageInterestRate($aProject['id_project'], $aProject['project_status']);
+            $aProjectsPostFunding[$iKey]['AverageIR']              = $this->projects->getAverageInterestRate($aProject['id_project']);
             $aProjectsPostFunding[$iKey]['RemainingDueCapital']    = $this->calculateRemainingDueCapital($aProject['id_project']);
             $aNextRepayment                                        = $oRepaymentSchedule->select('status_emprunteur = 0 AND id_project = ' . $aProject['id_project'], 'date_echeance_emprunteur ASC', '', 1);
             $aNextRepayment                                        = array_shift($aNextRepayment);
@@ -419,7 +419,7 @@ class espace_emprunteurController extends bootstrap
         $aPayment     = $oPaymentSchedule->getLastOrder($iProjectId);
         $iPaymentOrder = (isset($aPayment)) ? $aPayment['ordre'] + 1 : 1;
 
-        return $oPaymentSchedule->getRemainingCapital($iProjectId, $iPaymentOrder);
+        return $oPaymentSchedule->getRemainingCapitalAtDue($iProjectId, $iPaymentOrder);
     }
 
     private function contactEmailClient()

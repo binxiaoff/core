@@ -1,0 +1,165 @@
+{% set myAccountChart = {
+    type: 'preterProjectsOverview',
+    background: 'none',
+    highcharts: {
+        chart: {
+            type: 'pie',
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: null
+        },
+        title: {
+            text: ''
+        },
+        subtitle: {
+            text: 'lender-dashboard-account_graph-subtitle'|trans,
+            color: '#999999',
+            floating: true,
+            useHTML: true,
+            verticalAlign: 'middle'
+        },
+        plotOptions: {
+            pie: {
+                borderColor: 'none',
+                borderWidth: 0,
+                showInLegend: true,
+                dataLabels: {
+                    enabled: false
+                }
+            }
+        },
+        legend: {
+            symbolRadius: 10
+        },
+        series: [{
+            name: 'lender-dashboard-account_lended-amount-circle-title'|trans ~ ' ',
+            minSize: 120,
+            innerSize: '95%',
+            endAngle: 270,
+            data: [{
+                name: 'lender-dashboard-account_lended-amount-circle-legend'|trans,
+                color: '#5FC5D1',
+                y: amountDetails.loaned_amount,
+                value: amountDetails.loaned_amount|localizedcurrency('EUR'),
+                showInLegend: true,
+            }]
+        },{
+            name:  'lender-dashboard-account_capital-circle-title'|trans ~ ' ',
+            size: '66%',
+            minSize: 100,
+            innerSize: '88%',
+            endAngle: 270,
+            data: [{
+                name: 'lender-dashboard-account_capital-circle-repaid-capital-legend'|trans,
+                color: '#1B88DB',
+                y: capitalDetails.repaid_capital,
+                value: capitalDetails.repaid_capital|localizedcurrency('EUR'),
+                showInLegend: true,
+            },{
+                name: 'lender-dashboard-account_capital-circle-owed-capital-legend'|trans,
+                color: '#B6D4E4',
+                y: capitalDetails.owed_capital,
+                value: capitalDetails.owed_capital|localizedcurrency('EUR'),
+                showInLegend: true
+            },{
+                name: 'lender-dashboard-account_capital-circle-troubled-capital-legend'|trans,
+                color: '#F76965',
+                y: capitalDetails.capital_in_difficulty,
+                value: capitalDetails.capital_in_difficulty|localizedcurrency('EUR'),
+                showInLegend: true
+            }]
+        },{
+            name: 'lender-dashboard-account_interests-circle-title'|trans ~ ' ',
+            minSize: 80,
+            size: '33%',
+            innerSize: '70%',
+            endAngle: 330,
+            data: [{
+                name: '',
+                color: '#ffffff',
+                dataLabels: {
+                    enabled: false
+                },
+                showInLegend: false,
+                y: (capitalDetails.repaid_capital + capitalDetails.owed_capital) * 0.66,
+                tooltip: false
+            },{
+                name: 'lender-dashboard-account_interests-circle-collected-raw-interests-legend'|trans,
+                color: '#F2980C',
+                y: interestsDetails.received_interests,
+                value: interestsDetails.received_interests|localizedcurrency('EUR'),
+                showInLegend: true
+            },{
+                name: 'lender-dashboard-account_interests-circle-upcoming-raw-interests-legend'|trans,
+                color: '#FFCA2C',
+                y: interestsDetails.upcoming_interests,
+                value: interestsDetails.upcoming_interests|localizedcurrency('EUR'),
+                showInLegend: true
+            }]
+        }],
+        tooltip: {
+            valueSuffix: ' €'
+        }
+    }
+} %}
+
+{# Panel - My Account #}
+{% embed 'partials/components/dashboard-panel.html.twig' %}
+    {% block panelAttributes %} id="account" {% endblock %}
+    {% block panelClassNames %} dashboard-panel dashboard-myaccount ui-draggable {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %} col-lg-6 col-md-6 col-sm-8 col-xs-4 {% endblock %}
+    {% block panelTitle %}{{ 'lender-dashboard-account_title'|trans }}{% endblock %}
+    {% block panelControls %}
+        <span class="ui-draggable-handle"></span>
+    {% endblock %}
+    {% block panelContent %}
+        {% if lenderDetails.companiesLenderInvestedIn > 0 or lenderDetails.balance > 0 %}
+            <div class="dashboard-panel-overview">
+                <div class="label">{% trans %} lender-dashboard-account_balance-title {% endtrans %}</div>
+                {% if lenderDetails.balance != 0 %}
+                    {% set balanceParts = lenderDetails.balance|split('.') %}
+                    <div class="value">{{ balanceParts[0]|localizednumber }},<sup>{{ balanceParts[1] }}&nbsp;€</sup></div>
+                {% else %}
+                    <div class="value">0,<sup>00&nbsp;€</sup></div>
+                {% endif %}
+            </div>
+            {% if amountDetails.loaned_amount %}
+                <div class="dashboard-myaccount-chart dashboard-panel-chart">
+                    <div class="chart chart-myaccount" data-chartview='{{ myAccountChart|json_encode|escape('html_attr') }}'></div>
+                    <div class="dashboard-panel-summary">
+                        <h3>
+                            <span class="label">{% trans %} lender-dashboard-account_expected-earning-title {% endtrans %}</span>
+                            <span class="value">{{ amountDetails.expected_earnings|localizedcurrency('EUR') }}</span>
+                        </h3>
+                    </div>
+                    {# Include the legend as it's not included in the highchart due to rendering issues #}
+                    <div class="dashboard-myaccount-chart-key">
+                        <div class="row">
+                            {% for i, series in myAccountChart.highcharts.series %}
+                                {% for j, dataItem in series.data if dataItem.showInLegend is defined and dataItem.showInLegend != false %}
+                                    <div class="chart-key col-lg-4 col-md-4 col-sm-4 col-xs-2">
+                                        <div class="icon" style="background-color: {{ dataItem.color }}"></div>
+                                        <div class="label">{% if dataItem.name is not empty %} {{ dataItem.name }} {% else %} {{ series.name }} {% endif %}</div>
+                                        <div class="value">{% if dataItem.value is not empty %} {{ dataItem.value }} {% else %} {{ series.value }} {% endif %}</div>
+                                    </div>
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+                    </div><!-- /.dashboard-myaccount-chart-key -->
+                </div><!-- /.dashboard-myaccount-chart -->
+            {% endif %}
+        {% else %}
+            <div class="dashboard-panel-empty">
+                <div class="panel-empty-computer"><img src="/assets/images/dashboard/empty/panel-account-computer.jpg" alt=""/></div>
+                <div class="panel-empty-tablet"><img src="/assets/images/dashboard/empty/panel-account-tablet.jpg" alt=""/></div>
+                <div class="panel-empty-mobile"><img src="/assets/images/dashboard/empty/panel-account-mobile.jpg" alt=""/></div>
+                <div class="cta-message">
+                    <p>{% trans %} lender-dashboard_get-started-message {% endtrans %}</p>
+                    <a href="{{ path('projects') }}" class="btn-outline">{% trans %} lender-dashboard_get-started-button {% endtrans %}</a>
+                </div>
+            </div>
+        {% endif %}
+    {% endblock %}
+    {% block panelFooter %}
+        <a href="{{ path('lender_operations') }}" class="link">{% trans %} lender-dashboard-account_operations-details-link {% endtrans %}</a>
+    {% endblock %}
+{% endembed %}

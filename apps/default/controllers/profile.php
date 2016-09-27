@@ -272,74 +272,25 @@ class profileController extends bootstrap
             $this->form_ok = true;
             $this->reponse_email = '';
 
-            $this->clients_adresses->meme_adresse_fiscal = (empty($_POST['mon-addresse'])) ? 0 : 1;
-            $this->clients_adresses->adresse_fiscal      = $_POST['adresse_inscription'];
-            $this->clients_adresses->ville_fiscal        = $_POST['ville_inscription'];
-            $this->clients_adresses->cp_fiscal           = $_POST['postal'];
-            $this->clients_adresses->id_pays_fiscal      = $_POST['pays1'];
-            $this->clients_adresses->adresse1            = (empty($_POST['mon-addresse'])) ? $_POST['adress2'] : $_POST['adresse_inscription'];
-            $this->clients_adresses->ville               = (empty($_POST['mon-addresse'])) ? $_POST['ville2'] : $_POST['ville_inscription'];
-            $this->clients_adresses->cp                  = (empty($_POST['mon-addresse'])) ? $_POST['postal2'] : $_POST['postal'];
-            $this->clients_adresses->id_pays             = (empty($_POST['mon-addresse'])) ? $_POST['pays2'] : $_POST['pays1'];
 
-            $this->clients->civilite = $_POST['sex'];
             $this->clients->nom_usage = (isset($_POST['nom-dusage']) && $_POST['nom-dusage'] != $this->lng['etape1']['nom-dusage']) ? $this->ficelle->majNom($_POST['nom-dusage']) : '';
-
-            //Get the insee code for birth place: if in France, city insee code; if overseas, country insee code
-            $sCodeInsee = '';
-            if (\pays_v2::COUNTRY_FRANCE == $_POST['pays3']) { // if France
-                //Check birth city
-                if (!isset($_POST['insee_birth']) || '' === $_POST['insee_birth']) {
-                    /** @var villes $oVilles */
-                    $oVilles = $this->loadData('villes');
-                    //for France, the code insee is empty means that the city is not verified with table "villes", check again here.
-                    if (false === $oVilles->get($_POST['naissance'], 'ville')) {
-                        $this->form_ok = false;
-                    } else {
-                        $sCodeInsee = $oVilles->insee;
-                    }
-                    unset($oVilles);
-                } else {
-                    $sCodeInsee = $_POST['insee_birth'];
-                }
-            } else {
-                /** @var pays_v2 $oPays */
-                $oPays = $this->loadData('pays_v2');
-                /** @var insee_pays $oInseePays */
-                $oInseePays = $this->loadData('insee_pays');
-
-                if ($oPays->get($_POST['pays3']) && $oInseePays->getByCountryIso(trim($oPays->iso))) {
-                    $sCodeInsee = $oInseePays->COG;
-                } else {
-                    $this->form_ok = false;
-                }
-                unset($oPays, $oInseePays);
-            }
 
             $this->clients->email             = $_POST['email'];
             $this->clients->telephone         = str_replace(' ', '', $_POST['phone']);
-            $this->clients->id_pays_naissance = $_POST['pays3'];
-            $this->clients->ville_naissance   = $_POST['naissance'];
-            $this->clients->insee_birth       = $sCodeInsee;
-            $this->clients->id_nationalite    = $_POST['nationalite'];
-            $this->clients->naissance         = $_POST['annee_naissance'] . '-' . $_POST['mois_naissance'] . '-' . $_POST['jour_naissance'];
 
             if ($this->etranger > 0) {
                 if (isset($_POST['check_etranger']) && $_POST['check_etranger'] == false) {
                     $this->form_ok = false;
                 }
             }
-            if ($this->dates->ageplus18($this->clients->naissance) == false) {
-                $this->form_ok           = false;
-                $_SESSION['reponse_age'] = $this->lng['etape1']['erreur-age'];
-            }
+
             if (! isset($_POST['email']) || $_POST['email'] == $this->lng['etape1']['email']) {
                 $this->form_ok = false;
             } elseif (isset($_POST['email']) && $this->ficelle->isEmail($_POST['email']) == false) {
                 $this->form_ok = false;
             } elseif ($_POST['email'] != $_POST['conf_email']) {
                 $this->form_ok = false;
-            } elseif ($this->clients->existEmail($_POST['email']) == false) {
+            } elseif ($this->clients->existEmail($_POST['email'])) {
                 if ($_POST['email'] != $this->email) {
                     $this->reponse_email       = $this->lng['etape1']['erreur-email'];
                     $this->form_ok             = false;
@@ -352,23 +303,7 @@ class profileController extends bootstrap
             if (! isset($_POST['ville_inscription']) || $_POST['ville_inscription'] == $this->lng['etape1']['ville']) {
                 $this->form_ok = false;
             }
-            if (! isset($_POST['postal']) || $_POST['postal'] == $this->lng['etape1']['code-postal']) {
-                $this->form_ok = false;
-            } else {
-                /** @var villes $oVilles */
-                $oVilles = $this->loadData('villes');
-                //Check cp
-                if (isset($_POST['pays1']) && \pays_v2::COUNTRY_FRANCE == $_POST['pays1']) {
-                    //for France, check post code here.
-                    if (false === $oVilles->exist($_POST['postal'], 'cp')) {
-                        $this->form_ok = false;
-                    }
-                }
-                unset($oVilles);
-            }
-            if (! isset($_POST['phone']) || $_POST['phone'] == $this->lng['etape1']['telephone']) {
-                $this->form_ok = false;
-            }
+
             if ($this->clients_adresses->meme_adresse_fiscal == 0) {
                 if (! isset($_POST['adress2']) || $_POST['adress2'] == $this->lng['etape1']['adresse']) {
                     $this->form_ok = false;
@@ -860,7 +795,7 @@ class profileController extends bootstrap
                 $this->form_ok = false;
             } elseif ($_POST['email_inscription'] != $_POST['conf_email_inscription']) {
                 $this->form_ok = false;
-            } elseif ($this->clients->existEmail($_POST['email_inscription']) == false) {
+            } elseif ($this->clients->existEmail($_POST['email_inscription'])) {
                 if ($_POST['email_inscription'] != $this->email_temp) {
                     $this->reponse_email = $this->lng['etape1']['erreur-email'];
                 } else {
@@ -1269,8 +1204,8 @@ class profileController extends bootstrap
         $oClientHistoryActions  = $this->loadData('clients_history_actions');
         /** @var \clients_status $oClientStatus */
         $oClientStatus          = $this->loadData('clients_status');
-        /** @var \textes $oTextes */
-        $oTextes                = new \textes($this->bdd);
+        /** @var \translations $oTextes */
+        $oTextes                = new \translations($this->bdd);
         $aTranslations          = $oTextes->selectFront('projet', $this->language);
 
         $oLenderAccount         = $this->loadData('lenders_accounts');

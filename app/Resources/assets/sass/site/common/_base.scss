@@ -1,0 +1,64 @@
+//
+// Unilend Base
+// @description Base styles for all media types
+
+body {
+  background-color: $c-bg5;
+  color: $c-t1;
+  font-family: $ff-base;
+  font-size: 18px;
+  line-height: $base-line-height;
+
+  // Reduce thickness of fonts across whole site
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  // Stop iOS from resizing text
+  -webkit-text-size-adjust: 100%;
+}
+
+img {
+  @include constrain-size-by-width;
+}
+
+// This helps lame browsers like IE scale SVGs properly
+.svg-icon-wrap {
+  display: inline-block;
+  position: relative;
+  user-select: none;
+
+  // See: http://nicolasgallagher.com/canvas-fix-svg-scaling-in-internet-explorer/
+  .svg-icon-aspect {
+    display: block;
+    width: 100%;
+    visibility: hidden;
+  }
+
+  svg {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 100% !important;
+    min-height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+}
+
+hr {
+  padding: 0;
+  margin: 15px 0;
+  border: solid transparent;
+  border-top: solid 1px $c-bg1;
+}
+
+// Wait until JS kicks in for this to be visible
+.no-js {
+  [role="tab"][data-toggle],
+  [role="button"][data-toggle] {
+    visibility: hidden;
+  }
+}

@@ -1,0 +1,89 @@
+//
+// Unilend A Propos Qui Sommes Nous Page
+//
+
+@mixin alternate-mosaic-item-mobile {
+  .mosaic-item-info,
+  .mosaic-item-image {
+    float: right;
+    text-align: right;
+  }
+}
+
+#apropos-quisommesnous.page {
+  #section-team {
+    .mosaic {
+      .mosaic-item {
+        @include devices('xs') {
+          width: 100%;
+
+          // Normalise background image sizes
+          .mosaic-item-image {
+            background-size: 200%;
+          }
+
+          // Alternate
+          @include alternate-style-content($which: 2, $columns: 1, $target: '&') {
+            @include alternate-mosaic-item-mobile;
+          }
+        }
+
+        @include devices('sm') {
+          // Normalise background image sizes
+          .mosaic-item-image {
+            background-size: 200%;
+          }
+
+          // Alternate
+          @include alternate-style-content($which: 1, $columns: 2, $target: '&', $num-per-row: 2) {
+            @include alternate-mosaic-item-mobile;
+          }
+        }
+      }
+    }
+  }
+
+  #section-partners {
+    @include devices('xs', 'sm') {
+      margin-bottom: $width-site-margin-lg;
+    }
+
+    .mosaic {
+      .mosaic-item {
+        background-color: $c-bg2;
+
+        // Programmatic altenation
+        // -- even/odd
+        @include devices('xs') {
+          @include alternate-styles(
+            $style-b: (
+              background-color: $c-bg3
+            ),
+            $columns: 1,
+            $target: '&'
+          );
+        }
+
+        @include devices('mobile-l', 'tablet-p') {
+          @include alternate-styles(
+            $style-b: (
+              background-color: $c-bg3
+            ),
+            $columns: 2,
+            $target: '&',
+            $offset: 1
+          );
+        }
+
+        // Due to spacers and the non-logical layout this has to be set by hand
+        @include devices('md', 'lg') {
+          &:nth-of-type(2),
+          &:nth-of-type(3),
+          &:nth-of-type(5) {
+            background-color: $c-bg3;
+          }
+        }
+      }
+    }
+  }
+}

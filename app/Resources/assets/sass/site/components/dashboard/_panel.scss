@@ -1,0 +1,544 @@
+//
+// Unilend Dashboard Panel
+//
+
+$height-panel-header-sm: ((15px * 2) + $fs-h5);
+$height-panel-footer-sm: ((15px * 2) + $fs-base);
+$height-panel-header-md: ((20px * 2) + $fs-h4);
+$height-panel-footer-md: ((20px * 2) + $fs-base);
+$height-panel-header-lg: ((30px * 2) + $fs-h3);
+$height-panel-footer-lg: ((30px * 2) + $fs-base);
+
+@mixin dashboard-panel($padding: 15px, $spacing: 20px) {
+  margin: 0 0 $spacing;
+  color: $c-t2;
+  font-size: $fs-base * .9;
+  line-height: 1.3em;
+
+  transition: background-color .2s;
+
+  .dashboard-panel-header {
+    box-sizing: border-box;
+    position: relative;
+  }
+
+  .dashboard-panel-title {
+    height: 1.5em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dashboard-panel-controls {
+    display: block;
+
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+
+    color: $c-t2;
+    line-height: $height-panel-header-sm;
+    vertical-align: middle;
+
+    > a {
+      display: inline-block;
+      box-sizing: border-box;
+      padding: 0 10px;
+
+      background-color: transparent;
+      border-color: transparent;
+      font-size: $fs-base;
+      line-height: $height-panel-header-md;
+      vertical-align: middle;
+
+      @include link-states(
+          $link: (
+            color: $c-t2,
+            text-decoration: none
+          ),
+          $hover: (
+            color: $c-t1,
+            text-decoration: none
+          ),
+          $active: (
+            color: $c-t1,
+            text-decoration: none
+          )
+      );
+
+      &.btn-close {
+        border: 0;
+
+        &:before {
+          font-size: $fs-base * 1.2;
+        }
+      }
+
+      > span {
+        display: inline-block;
+        box-sizing: border-box;
+        padding: 0 10px;
+
+        background-color: transparent;
+        border-color: transparent;
+        font-size: $fs-base;
+        line-height: $height-panel-header-md;
+        vertical-align: middle;
+      }
+    }
+
+    // Hide close buttons
+    @include devices('xs', 'sm') {
+      .custom-input-switch {
+        margin-right: $spacing;
+      }
+
+      .btn-close {
+        display: none;
+      }
+    }
+  }
+
+  .dashboard-panel-content {
+    box-sizing: border-box;
+    background-color: $c-white;
+  }
+
+  .dashboard-panel-empty {
+    position: relative;
+    min-height: 300px;
+    text-align: center;
+
+    .panel-empty-mobile {
+      display: none;
+
+      @include devices('mobile-p') {
+        display: block;
+      }
+    }
+
+    .panel-empty-tablet {
+      display: none;
+
+      @include devices('mobile-l', 'tablet-p') {
+        display: block;
+      }
+    }
+
+    .panel-empty-computer {
+      display: none;
+
+      @include devices('tablet-l', 'computer') {
+        display: block;
+      }
+    }
+
+    img,
+    svg {
+      @include constrain-size-to-width;
+      opacity: .5;
+    }
+  }
+
+  .dashboard-panel-footer {
+    box-sizing: border-box;
+    text-align: center;
+    background-color: $c-white;
+  }
+
+  // UI
+  &.ui-dashboard-panel-hidden {
+    display: none;
+  }
+
+  // Add extra margins for larger screens
+  @include devices('md', 'lg') {
+    margin: 0;
+
+    .dashboard-panel-header {
+      margin-left: $spacing;
+      margin-top: $spacing;
+      margin-right: $spacing;
+      margin-bottom: 0;
+    }
+
+    .dashboard-panel-content {
+      margin-left: $spacing;
+      margin-top: 0;
+      margin-right: $spacing;
+      margin-bottom: 0;
+    }
+
+    .dashboard-panel-footer {
+      margin-left: $spacing;
+      margin-top: 0;
+      margin-right: $spacing;
+      margin-bottom: $spacing;
+    }
+  }
+
+  .message,
+  .message-info,
+  .message-alert,
+  .message-success,
+  .message-error {
+    padding: $padding;
+    margin-bottom: 0;
+  }
+}
+
+// Small
+@mixin dashboard-panel-sm($padding: 20px) {
+  @include dashboard-panel($padding: $padding);
+
+  .dashboard-panel-header {
+    height: $height-panel-header-md;
+    padding: $padding;
+
+    background-color: $c-white;
+    border-bottom: solid 1px $c-bg2;
+    color: $c-t1;
+    line-height: 1em;
+    text-align: center;
+  }
+
+  .dashboard-panel-controls {
+    padding-left: 2em;
+    line-height: $height-panel-header-md;
+    @include background-image(-svg(linear-gradient(to left, $c-white 75%, fade-out($c-white, 1) 100%)));
+
+    > span,
+    > a {
+      height: $height-panel-header-md;
+      line-height: $height-panel-header-md;
+    }
+  }
+
+  .dashboard-panel-title {
+    margin: 0;
+    font-size: $fs-h4;
+    color: $c-p1;
+  }
+
+  .dashboard-panel-content {
+    padding: $padding;
+  }
+
+  .dashboard-panel-footer {
+    min-height: $height-panel-footer-md;
+    padding: $padding;
+
+    color: $c-t2;
+    line-height: 1em;
+
+    a {
+      @include link-states(
+              $link: (
+                      color: $c-p1
+              )
+      );
+    }
+  }
+}
+
+// Medium
+@mixin dashboard-panel-md($padding: 20px) {
+  @include dashboard-panel($padding: $padding);
+
+  .dashboard-panel-header {
+    height: $height-panel-header-md;
+    padding: $padding;
+
+    background-color: $c-white;
+    border-bottom: solid 2px $c-bg2;
+    color: $c-t1;
+    line-height: 1em;
+    text-align: left;
+  }
+
+  .dashboard-panel-controls {
+    padding-left: 2em;
+    line-height: $height-panel-header-md;
+    @include background-image(-svg(linear-gradient(to left, $c-white 75%, fade-out($c-white, 1) 100%)));
+
+    > span,
+    > a {
+      height: $height-panel-header-md;
+      line-height: $height-panel-header-md;
+    }
+  }
+
+  .dashboard-panel-title {
+    margin: 0;
+    font-size: $fs-h4;
+    color: $c-p1;
+  }
+
+  .dashboard-panel-content {
+    padding: $padding;
+  }
+
+  .dashboard-panel-footer {
+    min-height: $height-panel-footer-md;
+    padding: $padding;
+
+    color: $c-t2;
+    line-height: 1em;
+
+    a {
+      @include link-states(
+              $link: (
+                      color: $c-p1
+              )
+      );
+    }
+  }
+}
+
+// Large
+@mixin dashboard-panel-lg($padding: 30px) {
+  @include dashboard-panel($padding);
+  @include dashboard-panel-md($padding);
+  font-size: $fs-base;
+
+  .dashboard-panel-header {
+    height: $height-panel-header-lg;
+    padding: $padding;
+  }
+
+  .dashboard-panel-title {
+    font-size: $fs-h3;
+  }
+
+  .dashboard-panel-controls {
+    line-height: $height-panel-header-lg;
+
+    > span,
+    > a {
+      height: $height-panel-header-lg;
+      line-height: $height-panel-header-lg;
+    }
+  }
+
+  .dashboard-panel-content {
+    padding: $padding;
+  }
+
+  .dashboard-panel-footer {
+    min-height: $height-panel-footer-lg;
+    padding: $padding;
+  }
+}
+
+// Base class
+.dashboard-panel {
+  @include dashboard-panel-sm;
+
+  @include devices('md') {
+    @include dashboard-panel-md;
+  }
+
+  @include devices('lg') {
+    @include dashboard-panel-lg;
+  }
+}
+
+// Alternative panel (notifications)
+@mixin dashboard-panel-alt {
+  @include dashboard-panel;
+  .dashboard-panel-header {
+    height: $height-panel-header-sm;
+    padding: 15px 20px;
+
+    background-color: $c-bg3;
+    color: $c-t1;
+    line-height: 1em;
+  }
+
+  .dashboard-panel-controls {
+    padding-right: 10px;
+    @include background-image(-svg(linear-gradient(to left, $c-bg3 75%, fade-out($c-bg3, 1) 100%)));
+
+    > span,
+    > a {
+      line-height: $height-panel-header-sm;
+    }
+  }
+
+  .dashboard-panel-title {
+    margin: 0;
+    color: inherit;
+    font-size: $fs-h5;
+    line-height: 1em;
+  }
+
+  .dashboard-panel-content {
+    padding: 20px;
+  }
+
+  .dashboard-panel-footer {
+    min-height: $height-panel-footer-sm;
+    padding: 15px 20px;
+    background-color: $c-t3;
+    color: $c-t1;
+    line-height: 1em;
+
+    a {
+      @include link-states(
+        $link: (
+                color: $c-t1,
+                text-decoration: none
+        )
+      );
+    }
+  }
+}
+
+// Alt class
+.dashboard-panel-alt {
+  @include dashboard-panel-alt;
+}
+
+// Draggable
+.dashboard-panel[data-draggable],
+.dashboard-panel.ui-draggable {
+  @include devices('md', 'lg') {
+    .dashboard-panel-controls {
+      .ui-draggable-handle {
+        padding-left: 15px;
+        padding-right: 15px;
+
+        cursor: move;
+        cursor: grab;
+        user-select: none;
+        vertical-align: middle;
+
+        &:before {
+          content: $fa-grip-u;
+          font-family: $ff-icon;
+          font-size: $fs-base * 1.2;
+        }
+      }
+    }
+
+    // Movable content has extra classes for ghost/chosen/fallback items within
+    &.ui-movablecontent-ghost {
+      position: relative;
+      opacity: .5;
+      border-radius: 5px;
+
+      &:after {
+        content: '';
+        display: block;
+        border: dotted 3px $c-t3;
+        border-radius: 20px;
+        box-sizing: border-box;
+        background: fade-out($c-bg2, .5);
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 5;
+      }
+    }
+
+    &.ui-movablecontent-chosen {
+      opacity: 1;
+      background-color: fade-out($c-bg2, .5);
+      border-radius: 20px;
+    }
+
+    &.ui-movablecontent-fallback {
+      opacity: 1;
+      background-color: fade-out($c-bg2, .5);
+      border-radius: 20px;
+
+      .dashboard-panel-header {
+        border: solid 2px $c-bg1;
+      }
+      .dashboard-panel-footer {
+        border: solid 2px $c-bg1;
+      }
+
+      .dashboard-panel-content {
+        border-left: solid 2px $c-bg1;
+        border-right: solid 2px $c-bg1;
+      }
+    }
+  }
+
+  // @note For Packery
+  // &.is-pointer-down {
+  //   z-index: 999999;
+  //   background-color: fade-out(#000, .9);
+
+  //   .dashboard-panel-title {
+  //     cursor: move;
+  //     cursor: grabbing;
+  //   }
+  // }
+}
+
+// Overview
+.dashboard-panel-overview {
+  text-align: center;
+  margin-bottom: 20px;
+
+  .label {
+    display: block;
+    margin-bottom: 10px;
+    color: $c-t2;
+  }
+
+  .value {
+    display: block;
+    color: $c-p1;
+    font-size: $fs-h2;
+  }
+}
+
+// Chart
+.dashboard-panel-chart {
+  position: relative;
+  text-align: center;
+  min-height: 400px;
+
+  .chart {
+    min-height: none;
+  }
+
+  @include devices('md', 'lg') {
+    .nested-tabs .tab-navigation {
+      position: absolute;
+      right: 0;
+      top: 0;
+      margin-top: -10px;
+    }
+  }
+}
+
+// Summary
+.dashboard-panel-summary {
+  margin: 20px 0;
+  text-align: center;
+
+  .label {
+    color: $c-t1;
+  }
+
+  .value {
+    color: $c-p1;
+  }
+
+  .primary {
+    color: $c-t1;
+  }
+
+  .secondary {
+    color: $c-t2;
+    font-style: italic;
+  }
+}
+

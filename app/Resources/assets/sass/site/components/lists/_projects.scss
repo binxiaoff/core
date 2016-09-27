@@ -1,0 +1,243 @@
+//
+// Unilend List - Projects
+// Different to project list
+//
+
+// Structural styles
+@mixin list-project-sm {
+  padding: 20px;
+
+  .project-cost,
+  .project-interest,
+  .project-offers {
+    padding-right: 40px;
+  }
+}
+
+@mixin list-project-lg {
+  padding: 20px 30px;
+
+  .project-cost,
+  .project-interest,
+  .project-offers {
+    padding-right: 50px;
+  }
+
+  .project-hotspot:after {
+    margin-right: 30px;
+    margin-bottom: 30px;
+  }
+}
+
+// Non-structural styles
+// @note generally shared between all breakpoints
+// .project-
+
+// List styling
+.list-projects {
+  @include block-list;
+
+  // Default styles for `xs` breakpoint
+  > .project {
+    @include clearfix;
+    padding: 20px;
+    position: relative;
+
+    background-color: $c-white;
+    border-bottom: solid 2px $c-bg2;
+    color: $c-t1;
+    font-size: $fs-base;
+    line-height: 1.3em;
+
+    .project-name {
+      clear: both;
+      display: block;
+      width: 100%;
+      margin-bottom: 5px;
+      color: $c-t1;
+      font-size: $fs-base * 1.2;
+
+      a {
+        @include link-states(
+          $link: (
+            color: $c-t1,
+            text-decoration: none
+          ),
+          $hover: (
+            color: $c-t1,
+            text-decoration: none
+          ),
+          $active: (
+            color: $c-t1,
+            text-decoration: none
+          )
+        );
+      }
+    }
+
+    .project-location {
+      clear: left;
+      float: left;
+      color: $c-t3;
+      font-size: $fs-base * .8;
+      font-style: italic;
+
+      &:before {
+        content: $fa-map-marker-u16; // '\e90d';
+        display: inline-block;
+        margin-right: 5px;
+        color: $c-p1;
+        font-family: $ff-icon;
+        font-style: normal;
+      }
+    }
+
+    .project-cost {
+      padding-right: 40px;
+      float: right;
+      clear: right;
+      color: $c-t3;
+      font-size: $fs-base * .8;
+    }
+
+    .project-rating {
+      float: left;
+      clear: left;
+      line-height: $fs-base * 1.4;
+    }
+
+    .project-period {
+      float: left;
+      clear: left;
+
+      .ui-timecount:before {
+        content: $fa-clock-u; // clock
+        margin-right: 5px;
+        font-family: $ff-icon;
+      }
+    }
+
+    .project-interest {
+      padding-right: 40px;
+      float: right;
+      clear: right;
+      color: $c-p1;
+      font-size: $fs-base * 1.4;
+      line-height: 1em;
+    }
+
+    .project-offers {
+      padding-right: 40px;
+      float: right;
+      clear: right;
+      font-size: $fs-base * .9;
+
+      .value {
+        font-weight: bold;
+      }
+    }
+
+    .project-useroffers-accepted,
+    .project-useroffers-inprogress,
+    .project-useroffers-rejected {
+      color: $c-p1;
+    }
+
+    .project-useroffers-accepted {
+      &:before {
+        content: $fa-check-u;
+        font-family: $ff-icon;
+      }
+    }
+
+    .project-useroffers-inprogress {
+      &:before {
+        content: $fa-clock-u;
+        font-family: $ff-icon;
+      }
+    }
+
+    .project-useroffers-rejected {
+      &:before {
+        content: $fa-rejected-u;
+        font-family: $ff-icon;
+      }
+    }
+
+    .project-hotspot {
+      display: block;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 5;
+      text-decoration: none !important;
+
+      // Icon angle right
+      &:after {
+        content: $fa-angle-r-u;
+        display: block;
+        width: 20px;
+        margin-right: 20px;
+        margin-bottom: 20px;
+
+        position: absolute;
+        right: 0;
+        bottom: 0;
+
+        color: $c-p1;
+        font-family: $ff-icon;
+        font-size: 32px;
+        text-align: center;
+      }
+    }
+
+    // Current user involved
+    &#{$js-current-user-involved} {
+      background-color: $c-purple-l2;
+
+      // .project-cost {
+      //   @include background-image(-svg(linear-gradient(to left, $c-purple-l2 0%, $c-purple-l2 90%, fade-out($c-purple-l2, 1) 100%)));
+      // }
+
+      // .project-description {
+      //   @include text-overflow-gradient($bg-color: $c-purple-l2, $height: $lh-base);
+      // }
+    }
+
+    // Expired project
+    &#{$js-expired-project} {
+      background-color: $c-white;
+      opacity: .5;
+
+      > * {
+        color: $c-t1 !important;
+      }
+
+      .project-hotspot:after,
+      .project-location:before,
+      .project-useroffers-accepted,
+      .project-useroffers-inprogress,
+      .project-useroffers-rejected {
+        color: $c-t1 !important;
+      }
+
+      .project-rating,
+      .project-category,
+      img, svg {
+        @include filter(grayscale(100%));
+      }
+    }
+
+    @include devices('sm', 'md') {
+      @include list-project-sm;
+    }
+
+    @include devices('lg') {
+      @include list-project-lg;
+    }
+  }
+}

@@ -127,7 +127,7 @@ class syntheseController extends bootstrap
             }
         }
 
-        $this->lProjetEncours = $this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING, null, 'p.date_retrait ASC', 0, 30);
+        $this->lProjetEncours = $this->projects->selectProjectsByStatus([\projects_status::EN_FUNDING], '', [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_ASC], 0, 30);
         foreach ($this->lProjetEncours as $iKey => $aProject) {
             $this->lProjetEncours[$iKey]['avgrate'] = $this->projects->getAverageInterestRate($aProject['id_project'], $aProject['status']);
         }

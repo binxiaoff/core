@@ -1,0 +1,8 @@
+<p>
+{% if code == 200 %}
+    {% trans with { '%depositAmount%' : depositAmount } %} lender-wallet_deposit-success-message {% endtrans %}
+{% else %}
+    {% trans %} lender-wallet_deposit-error-message {% endtrans %}
+{% endif %}
+</p>
+<p><a href="{{ path('lender_dashboard') }}" class='btn-primary'>{% trans %} lender-wallet_lender-dashboard {% endtrans %}</a></p>

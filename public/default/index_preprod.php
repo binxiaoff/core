@@ -1,4 +1,13 @@
 <?php
+
+if(getenv('SYMFONY_ENV') && 'prod' === getenv('SYMFONY_ENV')) {
+    header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
+    exit;
+}
+
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
 $loader = require __DIR__.'/../../app/autoload.php';
 include __DIR__ . '/../../core/controller.class.php';
 include __DIR__ . '/../../core/command.class.php';
@@ -26,17 +35,14 @@ if (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVE
 session_start();
 ini_set('session.gc_maxlifetime', 3600); // 1h la session
 
-$bCacheFullPage = ($_SERVER['SERVER_NAME'] === 'www.unilend.fr');
+$kernel = new AppKernel('preprod', false);
+$request  = Request::createFromGlobals();
 
-if ($bCacheFullPage) {
-    require __DIR__ . '/prepend.php';
-}
-
-$oKernel = new AppKernel('preprod', false);
-$oKernel->boot();
-
-$oDispatcher = new \Unilend\core\Dispatcher($oKernel, 'default', $config);
-
-if ($bCacheFullPage) {
-    require __DIR__ . '/append.php';
+try {
+    $response = $kernel->handle($request);
+    $response->send();
+    $kernel->terminate($request, $response);
+} catch (NotFoundHttpException $exception) {
+    $kernel->boot();
+    $dispatcher = new \Unilend\core\Dispatcher($kernel, 'default', $config);
 }

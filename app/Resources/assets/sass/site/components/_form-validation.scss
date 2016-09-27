@@ -1,0 +1,131 @@
+//
+// Unilend Form Validation
+//
+
+// Validation UI modifies on the whole form field, not just the input
+.form-field {
+  .input-field:disabled {
+    border:2px solid #DE2F4C!important;
+    background-color:#fadfe4!important;
+  }
+  .input-field+label >span {
+    color:#DE2F4C!important;
+  }
+  &.ui-formvalidation-success,
+  &.ui-formvalidation-error {
+    .input-group {
+      &:after {
+        display: block;
+        width: 2em;
+
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+
+        font-family: $ff-icon;
+        line-height: $height-input; // height of input minus total border height
+        text-align: center;
+
+        transition: width .2s;
+        user-select: none;
+      }
+
+      &.set-right {
+        > .btn-group {
+          padding-right: 2em;
+        }
+      }
+    }
+
+    &:hover {
+      &:after {
+        width: 0;
+      }
+    }
+  }
+
+  // Form field validated successfully
+  &.ui-formvalidation-success {
+    .input-group:after {
+      // No form field should ever marked as "success" (only "error" on errors), so I've removed it -- @matt
+      //content: $fa-check-u16;
+      //color: $c-success;
+    }
+
+    // Hide the messages on success
+    .ui-formvalidation-messages {
+      display: none;
+    }
+  }
+
+  // Errors
+  &.ui-formvalidation-error {
+    // label {
+    //   color: $c-error;
+    // }
+
+    // Show input content has error
+    @include text-inputs {
+      background-color: $c-white;
+      border-color: $c-error;
+      color: $c-error;
+    }
+
+    select, input[type=radio] {
+      background-color: $c-white;
+      border-color: $c-error;
+      color: $c-error;
+    }
+
+    .input-group:after {
+      content: $fa-exclamation; // Exclamation mark
+      color: $c-error;
+    }
+  }
+}
+
+.ui-formvalidation-messages {
+  @include block-list;
+
+  padding: 5px 10px;
+  position: relative;
+  clear: both;
+  font-size: 14px;
+  line-height: 1.3em;
+
+  li {
+    padding: 5px 10px;
+  }
+
+  &:after {
+    content: '';
+    display: none;
+    width: 0;
+    height: 0;
+    margin-top: -20px;
+    margin-left: 15px;
+    overflow: hidden;
+
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 5;
+
+    background-color: transparent;
+    background-position: center center;
+    background-repeat: no-repeat;
+    border: solid transparent;
+    border-width: 10px;
+  }
+
+  .ui-formvalidation-error & {
+    $c-message-bg: lighten($c-error, 40%);
+    background-color: $c-message-bg;
+
+    &:after {
+      display: block;
+      border-bottom-color: $c-message-bg;
+    }
+  }
+}
