@@ -52,9 +52,6 @@
 
     {# Panel footer #}
     {% block panelFooter %}
-        {# @todo only show the "View more" button if there are more notifications than can be displayed on the side here #}
-        {% if app.user.notifications|length > 20 %}
-            <a href="#">{% trans %} lender-notifications_more-notifications-link {% endtrans %}</a>
-        {% endif %}
+        <a href="javascript:;" class="ui-usernotifications-loadmore">{% trans %} lender-notifications_more-notifications-link {% endtrans %}<span class="spinner-usernotifications-loadingmore ui-is-spinner"></span></a>
     {% endblock %}
 {% endembed %}

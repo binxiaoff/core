@@ -7,6 +7,8 @@
  *    'id':       {String}; default: Utility.randomString(),
  *    'type':     {String}; default: 'default',
  *    'status':   {String}; accepted: 'read', 'unread'; default: 'unread',
+ *    'iso-8601': {String}; Must adhere to ISO 8601 date format
+ *    'date':     {Date};
  *    'datetime': {Mixed}; accepted: {String}, {Date}; default: '',
  *    'title':    {String}; default: '',
  *    'image':    {String}; default: '',
@@ -92,12 +94,132 @@ var Utility = require('Utility')
 var Templating = require('Templating')
 var $doc = $(document)
 
+// Normalise a {NotificationObject} as server version is different to JS version
+function normaliseNotificationObject (notification) {
+  // Make a copy
+  var newNotification = $.extend({}, notification)
+
+  // Do necessary tests and transforms on the copy
+  // -- Image
+  if (!/^\<svg/.test(newNotification.image)) {
+    newNotification.image = Utility.svgImage('#notification-' + newNotification.image, newNotification.title, 100, 100, 'none')
+  }
+
+  // -- Get date from iso string
+  if (newNotification.hasOwnProperty('iso-8601')) {
+    newNotification.date = Utility.getDate(newNotification['iso-8601'])
+  }
+
+  // Get the date from a {String} datetime, but only if the date's not already set
+  if (typeof newNotification.datetime === 'string' && (!newNotification.hasOwnProperty('date') || !(newNotification.date instanceof Date))) {
+    newNotification.date = Utility.getDate(newNotification.datetime)
+  }
+
+  // Set the datetime to be a {string} from datetime's own date property
+  if (typeof newNotification.datetime === 'object' && newNotification.datetime.hasOwnProperty('date')) {
+    newNotification.datetime = newNotification.datetime.date
+  }
+
+  // @debug
+  // console.log('normaliseNotificationObject', notification, newNotification)
+
+  // Return the copy
+  return newNotification
+}
+
+// Normalise a collection of notification objects
+function normaliseNotificationObjects (notifications) {
+  // Always normalise the input notifications collection
+  if (notifications.length > 0) {
+    for (var i = 0; i < notifications.length; i++) {
+      notifications[i] = normaliseNotificationObject(notifications[i])
+    }
+  }
+
+  return notifications
+}
+
+// Sort a collection of notifications
+// @note Assumes collection has already been normalised
+function sortNotifications (notifications) {
+  // Sort via which has a newer date
+  function testDate (a, b) {
+    if (a.hasOwnProperty('date') && b.hasOwnProperty('date')) {
+      if (a.date > b.date) {
+        return -1
+      } else {
+        return 1
+      }
+    }
+
+    // No change
+    return 0
+  }
+
+  // Sort via which has a larger ID (if going off numeric IDs this makes sense)
+  function testId (a, b) {
+    if (a.hasOwnProperty('id') && b.hasOwnProperty('id')) {
+      if (a.id > b.id) {
+        return -1
+      } else {
+        return 1
+      }
+    }
+
+    // No change
+    return 0
+  }
+
+  // Sort collection of {NotificationObject}s by datetime property first, then id property
+  notifications.sort(function (a, b) {
+    return testDate(a, b) || testId(a, b)
+  })
+
+  return notifications
+}
+
+// Flatmap collection of notifications
+function flatmapNotifications (notifications) {
+  var notificationsFlatmap = {}
+  for (var i = 0; i < notifications.length; i++) {
+    if (notifications[i].hasOwnProperty('id')) {
+      notificationsFlatmap['__' + notifications[i].id] = notifications[i]
+    }
+  }
+
+  // @debug
+  // console.log('UserNotifications flatmap', notificationsFlatmap)
+
+  return notificationsFlatmap
+}
+
+// Clean notifications
+// @note convenience method for flatmap and sort
+function cleanNotifications (notifications) {
+  var notificationsFlatmapped = flatmapNotifications(notifications)
+  var newNotifications = []
+
+  // Flatmap by design removes duplicates
+  for (var i in notificationsFlatmapped) {
+    newNotifications.push(notificationsFlatmapped[i])
+  }
+
+  // Sort notifications
+  sortNotifications(newNotifications)
+
+  // @debug
+  // console.log('cleanNotifications', notifications, newNotifications)
+
+  return newNotifications
+}
+
 // UserNotifications
-// Expose to the window so other components can reference it
+// @note Exposed to the global window so other components can reference it
 var UserNotifications = window.UserNotifications = {
   // All the current user notifications being stored
   // @note this is referencing the variable defined near the bottom of the _layout.html.twig template
-  collection: window.USERNOTIFICATIONS || [],
+  // @note Ensure to normalise them
+  collection: normaliseNotificationObjects(window.USERNOTIFICATIONS) || [],
 
   // The number of unread notifications
   unreadCount: 0,
@@ -107,6 +229,9 @@ var UserNotifications = window.UserNotifications = {
 
   // A timer to delay AJAX requests
   ajaxTimer: 0,
+
+  // {Boolean} to check if loading actions are happening and prevents any further actions
+  isLoading: false,
 
   // Templates
   templates: {
@@ -119,74 +244,33 @@ var UserNotifications = window.UserNotifications = {
     dateFrom: new Date(),
     dateTo: undefined,
     perPage: 20,
-    currentPage: 1
-  },
-
-  // Get a flatmapped version of the USERNOTIFICATIONS collection
-  // Each notification within the flatmap will be accessed via a `__x` key where x == notificationObject.id
-  // @method flatmap
-  // @returns {Object}
-  flatmap: function () {
-    var notificationsFlatmap = {}
-    for (var i = 0; i < UserNotifications.collection.length; i++) {
-      if (UserNotifications.collection[i].hasOwnProperty('id')) {
-        notificationsFlatmap['__' + UserNotifications.collection[i].id] = UserNotifications.collection[i]
-      }
+    currentPage: 1,
+    actions: {
+      markedRead: [],
+      markedAllRead: false
     }
-
-    // @debug
-    // console.log('UserNotifications flatmap', notificationsFlatmap)
-
-    return notificationsFlatmap
   },
 
-  // Sort the collection
+  // Cleans the collection (sorts and prunes potential duplicates)
   // @method sort
   // @returns {Void}
-  sort: function () {
+  clean: function (doUpdate) {
     // No need to sort an empty collection
     if (UserNotifications.collection.length === 0) return
 
     // @debug
     // console.log('UserNotifications.sort')
 
-    // Sort via which has a newer date
-    function testDateTime (a, b) {
-      if (a.hasOwnProperty('datetime') && b.hasOwnProperty('datetime')) {
-        if (a.datetime > b.datetime) {
-          return -1
-        } else {
-          return 1
-        }
-      }
+    // Sort the notifications collection
+    UserNotifications.collection = cleanNotifications(UserNotifications.collection)
 
-      // No change
-      return 0
+    // @trigger `UserNotifications:cleaned`
+    $doc.trigger('UserNotifications:cleaned')
+
+    // Delay the updated custom event, as it re-rendered elements
+    if (doUpdate) {
+      UserNotifications.delayUpdated()
     }
-
-    // Sort via which has a larger ID (if going off numeric IDs this makes sense)
-    function testId (a, b) {
-      if (a.hasOwnProperty('id') && b.hasOwnProperty('id')) {
-        if (a.id > b.id) {
-          return -1
-        } else {
-          return 1
-        }
-      }
-
-      // No change
-      return 0
-    }
-
-    // Sort collection of {NotificationObject}s by datetime property first, then id property
-    UserNotifications.collection.sort(function (a, b) {
-      return testDateTime(a, b) || testId(a, b)
-    })
-
-    // @trigger `UserNotifications:sort:complete`
-    $doc.trigger('UserNotifications:sort:complete')
-
-    UserNotifications.delayUpdated()
   },
 
   // Pull notifications from server
@@ -194,14 +278,66 @@ var UserNotifications = window.UserNotifications = {
   // @param {Object} options
   // @returns {Void}
   pull: function (options) {
+    if (UserNotifications.isLoading) return
+
     // Options for retrieving from server
     options = $.extend({
-
+      perPage: UserNotifications.track.perPage,
+      currentPage: UserNotifications.track.currentPage
     }, options)
+
+    // Do AJAX
+    UserNotifications.isLoading = true
+
+    // Show spinner
+    $('.spinner-usernotifications-loadingmore').parent().addClass('ui-is-loading')
+
+    clearTimeout(UserNotifications.ajaxTimer)
+    UserNotifications.ajaxTimer = setTimeout(function () {
+      $.ajax({
+        url: '/notifications/pagination',
+        method: 'GET',
+        data: options,
+        global: false,
+        success: function (data, textStatus) {
+          if (textStatus === 'success' && data && data.hasOwnProperty('notifications') && data.notifications) {
+            // Add more notifications to the collection
+            if (data.notifications.length > 0) {
+              // Push the received notifications to the collection
+              if (options.currentPage !== UserNotifications.track.currentPage) {
+                // Update the tracking values
+                UserNotifications.track.currentPage = data.pagination.currentPage
+                UserNotifications.track.perPage = data.pagination.perPage
+
+                // Push the new notifications to the collection
+                UserNotifications.push(data.notifications)
+              }
+
+            // Hide the view more buttons
+            } else {
+              $('.ui-usernotifications-loadmore').hide()
+            }
+
+            return
+          }
+
+          // Error
+          if (data && data.hasOwnProperty('error') && data.error) {
+            console.warn('UserNotifications.pull Error: ' + data.error.details)
+          }
+        },
+        complete: function () {
+          UserNotifications.isLoading = false
+
+          // Hide spinner
+          $('.spinner-usernotifications-loadingmore').parent().removeClass('ui-is-loading')
+        }
+      })
+    }, 500)
   },
 
-  // Push new notifications to the collection
-  // @method markAllRead
+  // Push notifications to the collection
+  // @method push
   // @returns {Void}
   push: function (notifications, options) {
 
@@ -213,6 +349,9 @@ var UserNotifications = window.UserNotifications = {
       console.warn('UserNotifications.push: param notifications given was not array')
       return
     }
+
+    // Normalise all the notifications
+    normaliseNotificationObjects(notifications)
 
     // Create the new/updated list of notifications
     // -- Only push unread notifications to collection
@@ -233,10 +372,17 @@ var UserNotifications = window.UserNotifications = {
       UserNotifications.collection = notifications.concat(UserNotifications.collection)
     }
 
+    // Sort the collection to ensure notifications are in order
+    sortNotifications(UserNotifications.collection)
+
+    // Update unreadCount
+    UserNotifications.updateUnreadCount()
+
     // @trigger document `UserNotifications:push:complete`
     $doc.trigger('UserNotifications:push:complete')
 
-    UserNotifications.delayUpdated()
+    // Delay the updated custom event, as it re-rendered elements
+    UserNotifications.delayUpdated(true)
   },
 
   // Replace old notifications collection with new notifications
@@ -254,6 +400,9 @@ var UserNotifications = window.UserNotifications = {
       console.warn('UserNotifications.replace: param notifications given was not array')
       return
     }
+
+    // Normalise all the notifications
+    normaliseNotificationObjects(notifications)
 
     // Create the new/updated list of notifications
     // -- Only show unread notifications in new collection
@@ -279,13 +428,11 @@ var UserNotifications = window.UserNotifications = {
       UserNotifications.updateUnreadCount()
     }
 
-    // Sort the array to show newest notifications first
-    UserNotifications.sort()
-
     // @trigger document `UserNotifications:replace:complete`
     $doc.trigger('UserNotifications:replace:complete')
 
-    UserNotifications.delayUpdated()
+    // Delay the updated custom event, as it re-rendered elements
+    UserNotifications.delayUpdated(true)
   },
 
   // Patch notifications with updated ones
@@ -295,7 +442,7 @@ var UserNotifications = window.UserNotifications = {
   // @returns {Void}
   patch: function (notifications, options) {
     // Get collection as a flatmap with keys represented as `__id`
-    var flatmap = UserNotifications.flatmap()
+    var flatmap = flatmapNotifications(UserNotifications.collection)
 
     // @debug
     // console.log('UserNotifications.patch', notifications, options)
@@ -305,6 +452,9 @@ var UserNotifications = window.UserNotifications = {
       console.warn('UserNotifications.patch: param notifications given was not array')
       return
     }
+
+    // Normalise all the notifications
+    normaliseNotificationObjects(notifications)
 
     // Iterate over the notifications to update and update via the flatmap
     for (var i = 0; i < notifications.length; i++) {
@@ -330,6 +480,7 @@ var UserNotifications = window.UserNotifications = {
     // @trigger document `UserNotifications:update:complete`
     $doc.trigger('UserNotifications:patch:complete')
 
+    // Delay the updated custom event, as it re-rendered elements
     UserNotifications.delayUpdated()
   },
 
@@ -348,6 +499,7 @@ var UserNotifications = window.UserNotifications = {
     // @trigger document `UserNotifications:clearAll:complete`
     $doc.trigger('UserNotifications:clearAll:complete')
 
+    // Delay the updated custom event, as it re-rendered elements
     UserNotifications.delayUpdated()
   },
 
@@ -357,7 +509,7 @@ var UserNotifications = window.UserNotifications = {
   // @returns {Void}
   markRead: function (id) {
     // Get collection as a flatmap with keys represented as `__id`
-    var flatmap = UserNotifications.flatmap()
+    var flatmap = flatmapNotifications(UserNotifications.collection)
 
     // @debug
     // console.log('UserNotifications.markRead', id, flatmap['__' + id])
@@ -368,10 +520,14 @@ var UserNotifications = window.UserNotifications = {
       // Mark in UI that notification is now unread
       $('[data-notification-id="' + id + '"]').removeClass('ui-notification-status-unread').addClass('ui-notification-status-read')
 
-      // @todo AJAX to mark single notification read
+      // Track that the notification was marked read
+      UserNotifications.track.actions.markedRead.push(id)
 
       // Minus 1 on unreadCount
       UserNotifications.updateUnreadCount(UserNotifications.unreadCount - 1)
+
+      // Update via AJAX
+      UserNotifications.delayAjaxRead()
     }
   },
 
@@ -396,7 +552,11 @@ var UserNotifications = window.UserNotifications = {
       }
     }
 
-    // @todo AJAX to mark all notifications read
+    // Update items in DOM to show that they have been read
+    $('[data-notification-id]').removeClass('ui-notification-status-unread').addClass('ui-notification-status-read')
+
+    // Track marked all read
+    UserNotifications.track.actions.markedAllRead = true
 
     // Update unreadCount
     UserNotifications.updateUnreadCount(0)
@@ -404,7 +564,8 @@ var UserNotifications = window.UserNotifications = {
     // @trigger document `UserNotifications:markAllRead:complete`
     $doc.trigger('UserNotifications:markAllRead:complete')
 
-    UserNotifications.delayUpdated()
+    // Update via AJAX
+    UserNotifications.delayAjaxRead()
   },
 
   // Update the unread count
@@ -457,23 +618,92 @@ var UserNotifications = window.UserNotifications = {
     $('[data-usernotifications-unreadcount]').html(pipHTML)
   },
 
-  // Trigger the updated event after a short timer
+  // Trigger update to notifications after a short timer
   // @method delayUpdated
   // @returns {Void}
-  delayUpdated: function () {
+  delayUpdated: function (doClean) {
     clearTimeout(UserNotifications.delayTimer)
     UserNotifications.delayTimer = setTimeout(function () {
-      // @debug
-      // console.log('UserNotifications.delayUpdated: Triggering UserNotifications:updated event now...')
+      // Clean the notifications collection
+      if (doClean) {
+        // Clean fires the delayUpdated, so we set it to inverse of doClean to not fire
+        UserNotifications.clean(!doClean)
+      }
 
-      // @trigger document `UserNotifications:updated`
+      // @trigger document `UserNotifications:updated` [UserNotifications]
       $doc.trigger('UserNotifications:updated', [UserNotifications])
-    }, 100)
-  }
+    }, 250)
+  },
 
-  // @todo Add in AJAX request stuff here
-  //       It would be best to manage actions queue on client side before pushing to server (e.g. marking individual items unread, clearing all, etc)
-  //       See DEV-815 for any notes on this!
+  // Trigger the AJAX event after a short timer
+  // @method delayAjaxRead
+  // @returns {Void}
+  delayAjaxRead: function () {
+    if (UserNotifications.isLoading) return
+
+    clearTimeout(UserNotifications.ajaxTimer)
+    UserNotifications.ajaxTimer = setTimeout(function () {
+      var data = {}
+
+      // Set to loading
+      UserNotifications.isLoading = true
+
+      // Determine what kind of action to send
+      if (UserNotifications.track.actions.markedAllRead) {
+        data.action = 'all_read'
+      } else if (UserNotifications.track.actions.markedRead.length > 0) {
+        data.action = 'read'
+        data.list = UserNotifications.track.actions.markedRead
+      }
+
+      // Do AJAX
+      $.ajax({
+        url: '/notifications/update',
+        method: 'POST',
+        data: data,
+        global: false,
+        success: function (data, textStatus) {
+          if (textStatus === 'success' && data && data.hasOwnProperty('success') && data.success) {
+            // @debug
+            // console.log('UserNotifications successfully updated', data)
+
+            // Update tracking
+            UserNotifications.track.actions.markedAllRead = false
+            UserNotifications.track.actions.markedRead = []
+
+            // @trigger document `UserNotifications:ajax:success` [UserNotifications, serverResponse]
+            $doc.trigger('UserNotifications:ajax:success', [UserNotifications, data])
+
+            return
+          }
+
+          // Potential error
+          if (data && data.hasOwnProperty('error') && data.error) {
+            console.warn('UserNotifications AJAX error: ' + data.error.details)
+          }
+
+          // @trigger document `UserNotifications:ajax:error` [UserNotifications, serverResponse]
+          $doc.trigger('UserNotifications:ajax:error', [UserNotifications, data])
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+          // @trigger document `UserNotifications:ajax:error` [UserNotifications, ajaxErrorObject]
+          $doc.trigger('UserNotifications:ajax:error', [UserNotifications, {
+            jqXHR: jqXHR,
+            textStatus: textStatus,
+            errorThrown: errorThrown
+          }])
+        },
+        complete: function () {
+          // @trigger document `UserNotifications:updated` [UserNotifications, serverResponse]
+          $doc.trigger('UserNotifications:ajax:complete', [UserNotifications, data])
+
+          UserNotifications.isLoading = false
+        }
+      })
+
+    // 2 second delay, as person might click a bunch of notifications instead of pressing "mark all read"
+    }, 2000)
+  }
 }
 
 /*
@@ -545,6 +775,19 @@ $doc.on('ready', function () {
       // If notification unread, mark as read
       if ($notification.is('.ui-notification-status-unread')) {
         UserNotifications.markRead(notificationId)
+      }
+    })
+
+    // Load in more notifications
+    .on(Utility.clickEvent, '.ui-usernotifications-loadmore', function (event) {
+      var $elem = $(this)
+      event.preventDefault()
+
+      // Only do if not currently disabled
+      if (!$elem.is(':disabled')) {
+        UserNotifications.pull({
+          currentPage: UserNotifications.track.currentPage + 1
+        })
       }
     })
 })

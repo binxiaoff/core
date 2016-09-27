@@ -1,3 +1,5 @@
+// Spinner
+// Inline and whole window
 
 // Small inline spinner (mostly used within btn-groups for AutoComplete input elements)
 .ui-is-spinner {
@@ -13,12 +15,14 @@
     content: $fa-refresh;
   }
 
+  #{$js-is-loading} &,
   &#{$js-is-loading} {
     display: inline-block !important;
     color: $c-p1;
     opacity: 1;
   }
 
+  #{$js-is-loading-end} &,
   &#{$js-is-loading-end} {
     display: inline-block !important;
     opacity: 0;
