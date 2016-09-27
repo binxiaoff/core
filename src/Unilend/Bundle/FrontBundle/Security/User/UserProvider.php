@@ -63,7 +63,7 @@ class UserProvider implements UserProviderInterface
                 $roles[]                 = 'ROLE_LENDER';
                 $clientStatus            = $this->clientManager->getCurrentClientStatus($client);
                 $hasAcceptedCurrentTerms = $this->clientManager->hasAcceptedCurrentTerms($client);
-                $notifications           = $this->notificationDisplayManager->getLenderNotifications($lenderAccount);
+                $notifications           = $this->notificationDisplayManager->getLastLenderNotifications($lenderAccount);
                 $userLevel               = $this->lenderManager->getDiversificationLevel($lenderAccount);
 
                 return new UserLender(

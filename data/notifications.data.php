@@ -90,4 +90,37 @@ class notifications extends notifications_crud
         $result = $this->bdd->query($sql);
         return ($this->bdd->fetch_assoc($result) > 0);
     }
+
+    /**
+     * @param lenders_accounts $lender
+     */
+    public function markAllLenderNotificationsAsRead(\lenders_accounts $lender)
+    {
+        $queryBuilder = $this->bdd->createQueryBuilder();
+        $queryBuilder->update('notifications')
+            ->set('status', self::STATUS_READ)
+            ->where('status = ' . self::STATUS_UNREAD)
+            ->andWhere('id_lender = :id_lender')
+            ->setParameter('id_lender', $lender->id_lender_account);
+
+        $queryBuilder->execute();
+    }
+
+    /**
+     * @param lenders_accounts $lender
+     * @param array            $notifications
+     */
+    public function markLenderNotificationsAsRead(\lenders_accounts $lender, array $notifications)
+    {
+        $queryBuilder = $this->bdd->createQueryBuilder();
+        $queryBuilder->update('notifications')
+            ->set('status', self::STATUS_READ)
+            ->where('status = ' . self::STATUS_UNREAD)
+            ->andWhere('id_lender = :id_lender')
+            ->andWhere('id_notification IN (:notifications)')
+            ->setParameter('id_lender', $lender->id_lender_account, \PDO::PARAM_INT)
+            ->setParameter('notifications', $notifications, \Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
+
+        $queryBuilder->execute();
+    }
 }

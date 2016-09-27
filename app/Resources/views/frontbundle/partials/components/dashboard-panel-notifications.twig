@@ -1,54 +1,58 @@
 {# Dashboard Panel Notifications #}
 
 {% embed 'partials/components/dashboard-panel.html.twig' %}
-  {# Panel classes #}
-  {% block panelClassNames %}dashboard-panel-alt dashboard-notifications{% endblock %}
+    {# Panel classes #}
+    {% block panelClassNames %}dashboard-panel-alt dashboard-notifications{% endblock %}
 
-  {# Panel Title #}
-  {% block panelTitle %}Notifications <span data-usernotifications-unreadcount></span>{% endblock %}
+    {# Panel Title #}
+    {% block panelTitle %}
+        {% trans %} lender-notifications_listing-title {% endtrans %}
+        {% if app.user.unreadNotificationsCount > 0 %}
+            <span data-usernotifications-unreadcount></span>
+        {% endif %}
+    {% endblock %}
 
-  {# Panel controls #}
-  {% block panelControls %}
-    <a href="{{ path('lender_profile_notifications') }}" class="btn-settings"><span class="sr-only">Settings</span></a>
-  {% endblock %}
+    {# Panel controls #}
+    {% block panelControls %}
+        <a href="{{ path('lender_profile_notifications') }}" class="btn-settings"><span class="sr-only">{% trans %} lender-notifications_settings-link-sr {% endtrans %}</span></a>
+    {% endblock %}
 
-  {# Remove close control #}
-  {% block panelClose %} {% endblock %}
+    {# Remove close control #}
+    {% block panelClose %} {% endblock %}
 
-  {# Panel content #}
-  {% block panelContent %}
+    {# Panel content #}
+    {% block panelContent %}
+        <div id="profile-notifications" data-usernotificationslist>
+            <ul class="list-notifications">
+                {% for notification in app.user.notifications %}
+                    <li class="notification notification-type-{{ notification.type|default('message')|escape('html_attr') }} ui-notification-status-{{ notification.status }}" data-notification-id="{{ notification.id|default(notification.datetime|date('U'))|escape('html_attr') }}">
+                        <header class="notification-header">
+                            <h5 class="notification-datetime">{{ notification.datetime|localizeddate('medium', 'short') }}</h5>
+                            <h4 class="notification-title">{{ notification.title|raw }}</h4>
+                            <div class="notification-image">
+                                <span class="svg-icon-wrap">{{ svgimage('#notification-' ~ notification.image, notification.title, 100, 100, 'none')|raw }}</span>
+                            </div>
+                        </header>
+                        <div class="notification-content">
+                            <p>{{ notification.content|raw|nl2br }}</p>
+                        </div>
+                    </li><!-- /.notification -->
+                {% else %}
+                    <li class="notification notification-type-empty">
+                        <div class="notification-content">
+                            <p>{% trans %} lender-notifications_empty-label {% endtrans %}</p>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endblock %}
 
-    <div id="profile-notifications" data-usernotificationslist>
-      <ul class="list-notifications">
-        {% for notification in app.user.notifications %}
-            <li class="notification notification-type-{{ notification.type|default('message')|escape('html_attr') }} ui-notification-status-{{ notification.status }}" data-notification-id="{{ notification.id|default(notification.datetime|date('U'))|escape('html_attr') }}">
-                <header class="notification-header">
-                    <h5 class="notification-datetime">{{ notification.datetime|localizeddate('medium', 'short') }}</h5>
-                    <h4 class="notification-title">{{ notification.title|raw }}</h4>
-                    <div class="notification-image">
-                        <span class="svg-icon-wrap">{{ svgimage('#notification-' ~ notification.image, notification.title, 100, 100, 'none')|raw }}</span>
-                    </div>
-                </header>
-                <div class="notification-content">
-                    <p>{{ notification.content|raw|nl2br }}</p>
-                </div>
-            </li><!-- /.notification -->
-        {% else %}
-          <li class="notification notification-type-empty">
-            <div class="notification-content">
-              <p>{% trans %} lender-notifications_empty-label {% endtrans %}</p>
-            </div>
-          </li>
-        {% endfor %}
-      </ul>
-    </div>
-  {% endblock %}
-
-  {# Panel footer #}
-  {% block panelFooter %}
-    {# @todo only show the "View more" button if there are more notifications than can be displayed on the side here #}
-    {% if app.user.notifications|length > 20 %}
-        {# <a href="#">Voir plus</a> #}
-    {% endif %}
-  {% endblock %}
+    {# Panel footer #}
+    {% block panelFooter %}
+        {# @todo only show the "View more" button if there are more notifications than can be displayed on the side here #}
+        {% if app.user.notifications|length > 20 %}
+            <a href="#">{% trans %} lender-notifications_more-notifications-link {% endtrans %}</a>
+        {% endif %}
+    {% endblock %}
 {% endembed %}

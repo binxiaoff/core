@@ -30,7 +30,18 @@ class NotificationDisplayManager
      * @param \lenders_accounts $lender
      * @return array
      */
-    public function getLenderNotifications(\lenders_accounts $lender)
+    public function getLastLenderNotifications(\lenders_accounts $lender)
+    {
+        return $this->getLenderNotifications($lender, 1, 20);
+    }
+
+    /**
+     * @param \lenders_accounts $lender
+     * @param int $offset
+     * @param int $length
+     * @return array
+     */
+    public function getLenderNotifications(\lenders_accounts $lender, $offset, $length)
     {
         /** @var \accepted_bids $acceptedBid */
         $acceptedBid = $this->entityManager->getRepository('accepted_bids');
@@ -51,7 +62,7 @@ class NotificationDisplayManager
 
         $result = [];
 
-        foreach ($notifications->select('id_lender = ' . $lender->id_lender_account, 'added DESC', 0, 20) as $notification) {
+        foreach ($notifications->select('id_lender = ' . $lender->id_lender_account, 'added DESC', $offset - 1, $length) as $notification) {
             $type    = ''; // Style of title (account, offer-accepted, offer-rejected, remboursement)
             $title   = ''; // Title (translation)
             $content = ''; // Main message (translation)
@@ -284,11 +295,14 @@ class NotificationDisplayManager
                     break;
             }
 
+            $added = new \DateTime($notification['added']);
+
             $result[] = [
                 'id'       => $notification['id_notification'],
                 'type'     => $type,
                 'title'    => $title,
-                'datetime' => new \DateTime($notification['added']),
+                'datetime' => $added,
+                'iso-8601' => $added->format('c'),
                 'content'  => $content,
                 'image'    => $image,
                 'status'   => $notification['status'] == \notifications::STATUS_READ ? 'read' : 'unread'

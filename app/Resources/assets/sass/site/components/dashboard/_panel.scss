@@ -358,12 +358,10 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
 
   .dashboard-panel-controls {
     padding-right: 10px;
-    line-height: $height-panel-header-sm;
     @include background-image(-svg(linear-gradient(to left, $c-bg3 75%, fade-out($c-bg3, 1) 100%)));
 
     > span,
     > a {
-      height: $height-panel-header-sm;
       line-height: $height-panel-header-sm;
     }
   }
@@ -388,10 +386,10 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
 
     a {
       @include link-states(
-              $link: (
-                      color: $c-t1,
-                      text-decoration: none
-              )
+        $link: (
+                color: $c-t1,
+                text-decoration: none
+        )
       );
     }
   }

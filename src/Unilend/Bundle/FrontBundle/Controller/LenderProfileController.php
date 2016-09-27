@@ -1,8 +1,5 @@
 <?php
-
-
 namespace Unilend\Bundle\FrontBundle\Controller;
-
 
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
@@ -21,7 +18,6 @@ use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 use Unilend\core\Loader;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-
 
 class LenderProfileController extends Controller
 {
@@ -1581,7 +1577,7 @@ class LenderProfileController extends Controller
                     '. Lender already exempted',
                     ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lender->id_lender_account]);
             }
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $this->addFlash('exonerationError', $translator->trans('lender-profile_fiscal-information-exoneration-validation-error'));
             $logger->error('Could not register lender tax exemption request for the lender: (id_lender=' . $lender->id_lender_account . ') for the year: ' . $year .
                 ' Exception message : ' . $exception->getMessage(),
@@ -1614,7 +1610,7 @@ class LenderProfileController extends Controller
 
     /**
      * @param \lender_tax_exemption $lenderTaxExemption
-     * @param int $lenderId
+     * @param \lenders_accounts $lenderAccount
      * @param string|null $year
      * @return array
      */
@@ -1622,7 +1618,7 @@ class LenderProfileController extends Controller
     {
         try {
             $result = $lenderTaxExemption->getLenderExemptionHistory($lenderAccount->id_lender_account, $year);
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             /** @var \Psr\Log\LoggerInterface $logger */
             $logger = $this->get('logger');
             $logger->error('Could not get lender exemption history (id_lender = ' . $lenderAccount->id_lender_account . ') Exception message : ' . $exception->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lenderAccount->id_lender_account));
@@ -1656,5 +1652,4 @@ class LenderProfileController extends Controller
             $template['taxExemptionRequestLimitDate'] = false;
         }
     }
-
 }
