@@ -36,7 +36,7 @@ class MainController extends Controller
     const CMS_TEMPLATE_NAV                   = 2;
     const CMS_TEMPLATE_BORROWER_LANDING_PAGE = 3;
 
-    const SLUG_PAGE_BECOME_LENDER = 'devenir-preteur';
+    const SLUG_PAGE_BECOME_LENDER = 'lender_subscription_personal_information';
     const SLUG_ELEMENT_NAV_IMAGE  = 'image-header';
 
     /**
