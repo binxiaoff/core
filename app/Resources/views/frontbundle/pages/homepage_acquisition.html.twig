@@ -13,9 +13,11 @@ permalink: path('home')
                     <div class="swiper-wrapper">
 
                         {% for combination in sliderTestimonials %}
-                            <div class="video-hero swiper-slide" data-preter-name="{{ combination.lender.name }}" data-emprunter-name="{{ combination.borrower.name }}"
-                                 style="background-image: url('{{ completeTestimonialUrl(combination.image, 'image') }}')">
-                                <div class="video-hero-image">&nbsp;</div>
+                            <div class="video-hero swiper-slide swiper-lazy" data-preter-name="{{ combination.lender.name }}" data-emprunter-name="{{ combination.borrower.name }}" data-background="{{ completeTestimonialUrl(combination.image, 'image') }}">
+                                <div class="video-hero-image">
+                                    &nbsp;
+                                    <div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
+                                </div>
                                 <div class="caption caption-align-left">
                                     <div class="caption-name">{{ combination.lender.name }}, {{ combination.lender.projects }}</div>
                                     <div class="caption-info">{{ combination.lender.info }}</div>
@@ -158,13 +160,14 @@ permalink: path('home')
 
                     <div class="promo-{{ person.type }} {{ classRow }} swiper-slide">
                         <div class="col-image {{ classColumnsImage }}">
-                            <div class="promo-image promo-{{ classColor }}" style="background-image: url('{{ completeTestimonialUrl(person.battenberg_image, 'image') }}')">
+                            <div class="promo-image promo-{{ classColor }} swiper-lazy" data-background="{{ completeTestimonialUrl(person.battenberg_image, 'image') }}">
                                 &nbsp;
                                 {% if person.type == 'borrower' %}
                                 <a href="{{ path('home_borrower') }}#homeemp-section-esim" class="promo-image-cta">
                                     <div><span class="link">{{ "site-general_testimonial-section-overlay-link-#{person.type}"|trans }}</span></div>
                                 </a>
                                 {% endif %}
+                                <div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
                             </div><!-- /.promo-image -->
                         </div>
                         <div class="col-text {{ classColumnsSlide }} vertical-align-content">

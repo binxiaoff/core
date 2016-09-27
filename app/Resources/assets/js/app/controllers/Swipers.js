@@ -19,9 +19,6 @@ $doc.ready(function () {
       effect: 'fade',
       speed: 250,
       autoplay: 5000,
-      // Lazy loading
-      lazyLoading: true,
-      preloadImages: false,
       // ARIA keyboard functionality
       a11y: true
     }, ElementAttrsObject(elem, {
@@ -32,6 +29,13 @@ $doc.ready(function () {
       autoplay: 'data-swiper-autoplay',
       a11y: 'data-swiper-aria'
     }))
+
+    // Test for swiper-lazy
+    if ($elem.find('.swiper-lazy').length > 0) {
+      swiperOptions.lazyLoading = true
+      swiperOptions.preloadImages = false
+      swiperOptions.lazyLoadingInPrevNext = true
+    }
 
     // Extra breakpoint options if promo-swiper
     if ($elem.is('.promo-swiper')) {

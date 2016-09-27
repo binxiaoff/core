@@ -12,8 +12,9 @@
     padding-bottom: 0;
 
     .h1 {
-      margin-top: 20px;
+      // margin-top: 20px;
       margin-bottom: 20px;
+      line-height: 1em;
     }
 
     .site-wrap {
@@ -23,10 +24,6 @@
 
   > .hero-wrap {
     @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0, $padding-md: 0, $padding-lg: 0);
-
-    padding-top: 50px;
-    padding-bottom: 50px;
-    margin-bottom: 50px;
 
     background-color: $c-bg3;
     background-image: image-url('backgrounds/bg-guy.jpg');
@@ -38,6 +35,18 @@
     // &.page-lp {
     //   background-image: image-url('backgrounds/bg-guy-2.jpg');
     // }
+
+    @include devices('xs') {
+      padding-top: 30px;
+      padding-bottom: 30px;
+      margin-bottom: 30px;
+    }
+
+    @include devices('sm', 'md', 'lg') {
+      padding-top: 50px;
+      padding-bottom: 50px;
+      margin-bottom: 50px;
+    }
   }
 
   .form-preter-nav {

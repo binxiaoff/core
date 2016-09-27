@@ -105,6 +105,42 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
     background-color: $c-white;
   }
 
+  .dashboard-panel-empty {
+    position: relative;
+    min-height: 300px;
+    text-align: center;
+
+    .panel-empty-mobile {
+      display: none;
+
+      @include devices('mobile-p') {
+        display: block;
+      }
+    }
+
+    .panel-empty-tablet {
+      display: none;
+
+      @include devices('mobile-l', 'tablet-p') {
+        display: block;
+      }
+    }
+
+    .panel-empty-computer {
+      display: none;
+
+      @include devices('tablet-l', 'computer') {
+        display: block;
+      }
+    }
+
+    img,
+    svg {
+      @include constrain-size-to-width;
+      opacity: .5;
+    }
+  }
+
   .dashboard-panel-footer {
     box-sizing: border-box;
     text-align: center;

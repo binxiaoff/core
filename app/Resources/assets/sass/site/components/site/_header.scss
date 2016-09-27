@@ -360,6 +360,10 @@
           text-decoration: none;
         }
 
+        #{$js-user-level-0} & {
+          background-color: $c-level-0;
+        }
+
         #{$js-user-level-1} & {
           background-color: $c-level-1;
         }

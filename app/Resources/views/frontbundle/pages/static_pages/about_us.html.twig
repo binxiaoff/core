@@ -38,13 +38,13 @@
                     <div class="mosaic-item-info-inner">
                         <div class="mosaic-item-links">
                             <ul class="list-sociallinks">
-                                {% if 'about-us-people_deputy-managing-director-linkedin-link'|trans != 'about-us-people_deputy-managing-director-linkedin-link' %}
+                                {% if 'about-us-people_deputy-managing-director-linkedin-link'|trans|trim is not empty %}
                                     <li>
                                         <a href="{% trans %} about-us-people_deputy-managing-director-linkedin-link {% endtrans %}">
                                             <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
                                     </li>
                                 {% endif %}
-                                {% if 'about-us-people_deputy-managing-director-twitter-link'|trans != 'about-us-people_deputy-managing-director-twitter-link' %}
+                                {% if 'about-us-people_deputy-managing-director-twitter-link'|trans|trim is not empty %}
                                     <li>
                                         <a href="{% trans %} about-us-people_deputy-managing-director-twitter-link {% endtrans %}">
                                             <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
@@ -69,14 +69,14 @@
                     <div class="mosaic-item-info-inner">
                         <div class="mosaic-item-links">
                             <ul class="list-sociallinks">
-                                {% if 'about-us-people_managing-director-linkedin-link'|trans != 'about-us-people_managing-director-linkedin-link' %}
+                                {% if 'about-us-people_managing-director-linkedin-link'|trans|trim is not empty %}
                                     <li>
-                                        <a href="{% trans %} about-us-people_managing-founder-linkedin-link {% endtrans %}"><span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
+                                        <a href="{% trans %} about-us-people_managing-director-linkedin-link {% endtrans %}"><span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
                                     </li>
                                 {% endif %}
-                                {% if 'about-us-people_managing-director-twitter-link'|trans != 'about-us-people_managing-director-twitter-link' %}
+                                {% if 'about-us-people_managing-director-twitter-link'|trans|trim is not empty %}
                                     <li>
-                                        <a href="{% trans %} about-us-people_managing-founder-twitter-link {% endtrans %}"><span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
+                                        <a href="{% trans %} about-us-people_managing-director-twitter-link {% endtrans %}"><span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
                                     </li>
                                 {% endif %}
                             </ul><!-- /.list-sociallinks -->
@@ -98,13 +98,13 @@
                     <div class="mosaic-item-info-inner">
                         <div class="mosaic-item-links">
                             <ul class="list-sociallinks">
-                                {% if 'about-us-people_cto-linkedin-link'|trans != 'about-us-people_cto-linkedin-link' %}
+                                {% if 'about-us-people_cto-linkedin-link'|trans|trim is not empty %}
                                     <li>
                                         <a href="{% trans %} about-us-people_cto-linkedin-link {% endtrans %}">
                                             <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
                                     </li>
                                 {% endif %}
-                                {% if 'about-us-people_cto-twitter-link'|trans != 'about-us-people_cto-twitter-link' %}
+                                {% if 'about-us-people_cto-twitter-link'|trans|trim is not empty %}
                                     <li>
                                         <a href="{% trans %} about-us-people_cto-twitter-link {% endtrans %}">
                                             <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
@@ -129,13 +129,13 @@
                     <div class="mosaic-item-info-inner">
                         <div class="mosaic-item-links">
                             <ul class="list-sociallinks">
-                                {% if 'about-us-people_director-risk-linkedin-link'|trans != 'about-us-people_director-risk-linkedin-link' %}
+                                {% if 'about-us-people_director-risk-linkedin-link'|trans|trim is not empty %}
                                     <li>
                                         <a href="{% trans %} about-us-people_director-risk-linkedin-link {% endtrans %}">
                                             <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
                                     </li>
                                 {% endif %}
-                                {% if 'about-us-people_director-risk-twitter-link'|trans != 'about-us-people_director-risk-twitter-link' %}
+                                {% if 'about-us-people_director-risk-twitter-link'|trans|trim is not empty %}
                                     <li>
                                         <a href="{% trans %} about-us-people_director-risk-twitter-link {% endtrans %}">
                                             <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
@@ -167,13 +167,13 @@
                     <div class="mosaic-item-info-inner">
                         <div class="mosaic-item-links">
                             <ul class="list-sociallinks">
-                                {% if 'about-us-people_director-sales-linkedin-link'|trans != 'about-us-people_director-sales-linkedin-link' %}
+                                {% if 'about-us-people_director-sales-linkedin-link'|trans|trim is not empty %}
                                     <li>
                                         <a href="{% trans %} about-us-people_director-sales-linkedin-link {% endtrans %}">
                                             <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
                                     </li>
                                 {% endif %}
-                                {% if 'about-us-people_director-sales-twitter-link'|trans != 'about-us-people_director-sales-twitter-link' %}
+                                {% if 'about-us-people_director-sales-twitter-link'|trans|trim is not empty %}
                                     <li>
                                         <a href="{% trans %} about-us-people_director-sales-twitter-link {% endtrans %}">
                                             <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
@@ -198,13 +198,13 @@
                     <div class="mosaic-item-info-inner">
                         <div class="mosaic-item-links">
                             <ul class="list-sociallinks">
-                                {% if 'about-us-people_director-administration-linkedin-link'|trans != 'about-us-people_director-administration-linkedin-link' %}
+                                {% if 'about-us-people_director-administration-linkedin-link'|trans|trim is not empty %}
                                     <li>
                                         <a href="{% trans %} about-us-people_director-administration-linkedin-link {% endtrans %}">
                                             <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
                                     </li>
                                 {% endif %}
-                                {% if 'about-us-people_director-administration-twitter-link'|trans != 'about-us-people_director-administration-twitter-link' %}
+                                {% if 'about-us-people_director-administration-twitter-link'|trans|trim is not empty %}
                                     <li>
                                         <a href="{% trans %} about-us-people_director-administration-twitter-link {% endtrans %}">
                                             <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
@@ -229,13 +229,13 @@
                     <div class="mosaic-item-info-inner">
                         <div class="mosaic-item-links">
                             <ul class="list-sociallinks">
-                                {% if 'about-us-people_director-marketing-linkedin-link'|trans != 'about-us-people_director-marketing-linkedin-link' %}
+                                {% if 'about-us-people_director-marketing-linkedin-link'|trans|trim is not empty %}
                                     <li>
                                         <a href="{% trans %} about-us-people_director-marketing-linkedin-link {% endtrans %}">
                                             <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
                                     </li>
                                 {% endif %}
-                                {% if 'about-us-people_director-marketing-twitter-link'|trans != 'about-us-people_director-marketing-twitter-link' %}
+                                {% if 'about-us-people_director-marketing-twitter-link'|trans|trim is not empty %}
                                     <li>
                                         <a href="{% trans %} about-us-people_director-marketing-twitter-link {% endtrans %}">
                                             <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
@@ -275,13 +275,13 @@
                                 <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/jean-bourcereau-300x300.jpg') }}" alt=""/>
                                 <div class="person-links">
                                     <ul class="list-sociallinks">
-                                        {% if 'about-us-people_ventech-linkedin-link'|trans != 'about-us-people_ventech-linkedin-link' %}
+                                        {% if 'about-us-people_ventech-linkedin-link'|trans|trim is not empty %}
                                             <li>
                                                 <a href="{% trans %} about-us-people_ventech-linkedin-link {% endtrans %}">
                                                     <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
                                             </li>
                                         {% endif %}
-                                        {% if 'about-us-people_ventech-twitter-link'|trans != 'about-us-people_ventech-twitter-link' %}
+                                        {% if 'about-us-people_ventech-twitter-link'|trans|trim is not empty %}
                                             <li>
                                                 <a href="{% trans %} about-us-people_ventech-twitter-link {% endtrans %}">
                                                     <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
@@ -306,13 +306,13 @@
                                 <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/emmanuel-levi-300x300.jpg') }}" alt=""/>
                                 <div class="person-links">
                                     <ul class="list-sociallinks">
-                                        {% if 'about-us-people_360cp-linkedin-link'|trans != 'about-us-people_360cp-linkedin-link' %}
+                                        {% if 'about-us-people_360cp-linkedin-link'|trans|trim is not empty %}
                                             <li>
                                                 <a href="{% trans %} about-us-people_360cp-linkedin-link {% endtrans %}">
                                                     <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
                                             </li>
                                         {% endif %}
-                                        {% if 'about-us-people_360cp-twitter-link'|trans != 'about-us-people_360cp-twitter-link' %}
+                                        {% if 'about-us-people_360cp-twitter-link'|trans|trim is not empty %}
                                             <li>
                                                 <a href="{% trans %} about-us-people_360cp-twitter-link {% endtrans %}">
                                                     <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
@@ -337,13 +337,13 @@
                                 <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/xavier-delaplace-300x300.jpg') }}" alt=""/>
                                 <div class="person-links">
                                     <ul class="list-sociallinks">
-                                        {% if 'about-us-people_bpi-linkedin-link'|trans != 'about-us-people_bpi-linkedin-link' %}
+                                        {% if 'about-us-people_bpi-linkedin-link'|trans|trim is not empty %}
                                             <li>
                                                 <a href="{% trans %} about-us-people_bpi-linkedin-link {% endtrans %}">
                                                     <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
                                             </li>
                                         {% endif %}
-                                        {% if 'about-us-people_bpi-twitter-link'|trans != 'about-us-people_bpi-twitter-link' %}
+                                        {% if 'about-us-people_bpi-twitter-link'|trans|trim is not empty %}
                                             <li>
                                                 <a href="{% trans %} about-us-people_bpi-twitter-link {% endtrans %}">
                                                     <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
@@ -369,13 +369,13 @@
                                 <div style="width: 187px;height: 187px; background-color: #f8f6f8;"></div>
                                 <div class="person-links">
                                     <ul class="list-sociallinks">
-                                        {% if 'about-us-people_new-alpha-linkedin-link'|trans != 'about-us-people_new-alpha-linkedin-link' %}
+                                        {% if 'about-us-people_new-alpha-linkedin-link'|trans|trim is not empty %}
                                             <li>
                                                 <a href="{% trans %} about-us-people_new-alpha-linkedin-link {% endtrans %}">
                                                     <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
                                             </li>
                                         {% endif %}
-                                        {% if 'about-us-people_new-alpha-twitter-link'|trans != 'about-us-people_new-alpha-twitter-link' %}
+                                        {% if 'about-us-people_new-alpha-twitter-link'|trans|trim is not empty %}
                                             <li>
                                                 <a href="{% trans %} about-us-people_new-alpha-twitter-link {% endtrans %}">
                                                     <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
@@ -400,13 +400,13 @@
                                 <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/francois-prioux-300x300.jpg') }}" alt=""/>
                                 <div class="person-links">
                                     <ul class="list-sociallinks">
-                                        {% if 'about-us-people_fprioux-linkedin-link'|trans != 'about-us-people_fprioux-linkedin-link' %}
+                                        {% if 'about-us-people_fprioux-linkedin-link'|trans|trim is not empty %}
                                             <li>
                                                 <a href="{% trans %} about-us-people_fprioux-linkedin-link {% endtrans %}">
                                                     <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
                                             </li>
                                         {% endif %}
-                                        {% if 'about-us-people_fprioux-twitter-link'|trans != 'about-us-people_fprioux-twitter-link' %}
+                                        {% if 'about-us-people_fprioux-twitter-link'|trans|trim is not empty %}
                                             <li>
                                                 <a href="{% trans %} about-us-people_fprioux-twitter-link {% endtrans %}">
                                                     <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
@@ -431,13 +431,13 @@
                                 <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/pierre-henri-cassou-300x300.jpg') }}" alt=""/>
                                 <div class="person-links">
                                     <ul class="list-sociallinks">
-                                        {% if 'about-us-people_phcassou-linkedin-link'|trans != 'about-us-phcassou-linkedin-link' %}
+                                        {% if 'about-us-people_phcassou-linkedin-link'|trans|trim is not empty %}
                                             <li>
                                                 <a href="{% trans %} about-us-people_phcassou-linkedin-link {% endtrans %}">
                                                     <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
                                             </li>
                                         {% endif %}
-                                        {% if 'about-us-people_phcassou-twitter-link'|trans != 'about-us-people_phcassou-twitter-link' %}
+                                        {% if 'about-us-people_phcassou-twitter-link'|trans|trim is not empty %}
                                             <li>
                                                 <a href="{% trans %} about-us-people_phcassou-twitter-link {% endtrans %}">
                                                     <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>

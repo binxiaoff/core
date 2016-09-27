@@ -1,7 +1,7 @@
 {# Panel - Projects to discover #}
 {% embed 'partials/components/dashboard-panel.html.twig' %}
-    {% block panelAttributes %}id="projects"{% endblock %}
-    {% block panelClassNames %}dashboard-panel dashboard-projects ui-draggable {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %} col-lg-6 col-md-6 col-sm-8 col-xs-4{% endblock %}
+    {% block panelAttributes %} id="projects" {% endblock %}
+    {% block panelClassNames %} dashboard-panel dashboard-projects ui-draggable {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %} col-lg-6 col-md-6 col-sm-8 col-xs-4 {% endblock %}
     {% block panelTitle %}{{ 'lender-dashboard-projects_title'|trans }}{% endblock %}
     {% block panelControls %}
         <span class="ui-draggable-handle"></span>
