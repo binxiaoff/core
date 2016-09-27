@@ -35,6 +35,7 @@ class MainController extends Controller
     const CMS_TEMPLATE_BIG_HEADER            = 1;
     const CMS_TEMPLATE_NAV                   = 2;
     const CMS_TEMPLATE_BORROWER_LANDING_PAGE = 3;
+    const CMS_TEMPLATE_TOS                   = 5;
 
     const SLUG_PAGE_BECOME_LENDER = 'lender_subscription_personal_information';
     const SLUG_ELEMENT_NAV_IMAGE  = 'image-header';
@@ -284,6 +285,8 @@ class MainController extends Controller
                 return $this->renderCmsNav($tree, $finalElements['content'], $entityManager);
             case self::CMS_TEMPLATE_BORROWER_LANDING_PAGE:
                 return $this->renderBorrowerLandingPage($request, $tree, $finalElements['content'], $finalElements['complement'], $entityManager);
+            case self::CMS_TEMPLATE_TOS:
+                return $this->renderTermsOfUse($tree);
             default:
                 return new RedirectResponse('/');
         }
@@ -641,6 +644,8 @@ class MainController extends Controller
      */
     public function statisticsAction()
     {
+        return $this->render('/pages/static_pages/error.html.twig');
+
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \tree $tree */
@@ -840,4 +845,158 @@ class MainController extends Controller
         }
         return $dataForTreeMap;
     }
+
+
+    private function renderTermsOfUse(\tree $tree)
+    {
+        /** @var \pays_v2 $country */
+        $country            = $this->get('unilend.service.entity_manager')->getRepository('pays_v2');
+        /** @var \acceptations_legal_docs $acceptedTermsOfUse */
+        $acceptedTermsOfUse = $this->get('unilend.service.entity_manager')->getRepository('acceptations_legal_docs');
+        /** @var \companies $companies */
+        $company          = $this->get('unilend.service.entity_manager')->getRepository('companies');
+
+        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
+        $settings->get('Lien conditions generales inscription preteur societe', 'type');
+        $idTOSLenderLegalEntity = $settings->value;
+
+        /** @var \tree_elements $treeElements */
+        $treeElements = $this->get('unilend.service.entity_manager')->getRepository('tree_elements');
+        /** @var \elements $elements */
+        $elements = $this->get('unilend.service.entity_manager')->getRepository('elements');
+
+        $content = [];
+        foreach ($treeElements->select('id_tree = "' . $tree->id_tree . '" AND id_langue = "fr"') as $elt) {
+            $elements->get($elt['id_element']);
+            $content[$elements->slug]    = $elt['value'];
+            $template['complement'][$elements->slug] = $elt['complement'];
+        }
+
+        /** @var UserLender $user */
+        $user = $this->getUser();
+        /** @var \clients $client */
+        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        /** @var \clients_adresses $clientAddresses */
+        $clientAddresses = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
+
+        if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') && $client->get($user->getClientId(), 'id_client')) {
+            $listeAccept = $acceptedTermsOfUse->select('id_client = ' . $client->id_client, 'added DESC', 0, 1);
+            $listeAccept = array_shift($listeAccept);
+            $dateAccept = 'Sign&eacute; &eacute;lectroniquement le ' . date('d/m/Y', strtotime($listeAccept['added']));
+
+            $settings->get('Date nouvelles CGV avec 2 mandats', 'type');
+            $sNewTermsOfServiceDate = $settings->value;
+
+            /** @var \lenders_accounts $oLenderAccount */
+            $oLenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
+            $oLenderAccount->get($client->id_client, 'id_client_owner');
+
+            /** @var \loans $oLoans */
+            $oLoans      = $this->get('unilend.service.entity_manager')->getRepository('loans');
+            $iLoansCount = $oLoans->counter('id_lender = ' . $oLenderAccount->id_lender_account . ' AND added < "' . $sNewTermsOfServiceDate . '"');
+
+            if (in_array($client->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
+                $this->getTOSReplacementsForPerson($client, $clientAddresses,$country, $dateAccept, $iLoansCount, $content, $template);
+            } else {
+                $this->getTOSReplacemetsForLegalEntity($company, $client, $country, $dateAccept, $iLoansCount, $content, $template);
+            }
+
+        } elseif ($tree->id_tree == $idTOSLenderLegalEntity) {
+            $variables                                    = [
+                '[Civilite]',
+                '[Prenom]',
+                '[Nom]',
+                '[Fonction]',
+                '[Raison_sociale]',
+                '[SIREN]',
+                '[adresse_fiscale]',
+                '[date_validation_cgv]'
+            ];
+            $tabVariables                                 = explode(';', $content['contenu-variables-par-defaut-morale']);
+            $contentVariables                             = $tabVariables;
+            $template['mandat_de_recouvrement']           = str_replace($variables, $contentVariables, $content['mandat-de-recouvrement-personne-morale']);
+            $template['mandat_de_recouvrement_avec_pret'] = '';
+        } else {
+            $variables                                    = [
+                '[Civilite]',
+                '[Prenom]',
+                '[Nom]',
+                '[date]',
+                '[ville_naissance]',
+                '[adresse_fiscale]',
+                '[date_validation_cgv]'
+            ];
+            $tabVariables                                 = explode(';', $content['contenu-variables-par-defaut']);
+            $contentVariables                             = $tabVariables;
+            $template['mandat_de_recouvrement']           = str_replace($variables, $contentVariables, $content['mandat-de-recouvrement']);
+            $template['mandat_de_recouvrement_avec_pret'] = '';
+        }
+
+        $cms = [
+            'title'         => $tree->title,
+            'header_image'  => $tree->img_menu,
+            'left_content'  => '',
+            'right_content' => $content
+        ];
+
+        $page = [
+            'title'       => $tree->meta_title,
+            'description' => $tree->meta_description,
+            'keywords'    => $tree->meta_keywords,
+            'isIndexable' => $tree->indexation == 1
+        ];
+
+        return $this->render('pages/static_pages/template-cgv.html.twig', ['cms' => $cms, 'page' => $page]);
+
+    }
+
+    public function getTOSReplacementsForPerson(\clients $client, \clients_adresses $clientAddresses,\pays_v2 $country, $dateAccept, $iLoansCount, $content, &$template)
+    {
+        $clientAddresses->get($client->id_client, 'id_client');
+
+        if ($clientAddresses->id_pays_fiscal == 0) {
+            $clientAddresses->id_pays_fiscal = 1;
+        }
+
+        $country->get($clientAddresses->id_pays_fiscal, 'id_pays');
+
+        $aReplacements = [
+            '[Civilite]'            => $client->civilite,
+            '[Prenom]'              => utf8_encode($client->prenom),
+            '[Nom]'                 => utf8_encode($client->nom),
+            '[date]'                => date('d/m/Y', strtotime($client->naissance)),
+            '[ville_naissance]'     => utf8_encode($client->ville_naissance),
+            '[adresse_fiscale]'     => utf8_encode($clientAddresses->adresse_fiscal . ', ' . $clientAddresses->ville_fiscal . ', ' . $clientAddresses->cp_fiscal . ', ' . $country->fr),
+            '[date_validation_cgv]' => $dateAccept
+        ];
+
+        $template['mandat_de_recouvrement']           = str_replace(array_keys($aReplacements), $aReplacements, $content['mandat-de-recouvrement']);
+        $template['mandat_de_recouvrement_avec_pret'] = $iLoansCount > 0 ? str_replace(array_keys($aReplacements), $aReplacements, $content['mandat-de-recouvrement-avec-pret']) : '';
+    }
+
+    public function getTOSReplacemetsForLegalEntity(\companies $company, \clients $client, \pays_v2 $country, $dateAccept, $iLoansCount, $content, &$template)
+    {
+        $company->get($client->id_client, 'id_client_owner');
+
+        if ($company->id_pays == 0) {
+            $company->id_pays = 1;
+        }
+        $country->get($company->id_pays, 'id_pays');
+
+        $aReplacements = [
+            '[Civilite]'            => $client->civilite,
+            '[Prenom]'              => utf8_encode($client->prenom),
+            '[Nom]'                 => utf8_encode($client->nom),
+            '[Fonction]'            => utf8_encode($client->fonction),
+            '[Raison_sociale]'      => utf8_encode($company->name),
+            '[SIREN]'               => $company->siren,
+            '[adresse_fiscale]'     => utf8_encode($company->adresse1 . ', ' . $company->zip . ', ' . $company->city . ', ' . $country->fr),
+            '[date_validation_cgv]' => $dateAccept
+        ];
+
+        $template['mandat_de_recouvrement']           = str_replace(array_keys($aReplacements), $aReplacements, $content['mandat-de-recouvrement-personne-morale']);
+        $template['mandat_de_recouvrement_avec_pret'] = $iLoansCount > 0 ? str_replace(array_keys($aReplacements), $aReplacements, $content['mandat-de-recouvrement-avec-pret-personne-morale']) : '';
+    }
+
+
 }

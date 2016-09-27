@@ -870,7 +870,7 @@ class rootController extends bootstrap
             $sNamePdfClient = 'CGV-UNILEND-PRETEUR-' . $this->clients->id_client . '-' . $id_tree_cgu;
 
             if (false  === file_exists($path . $sNamePdf)) {
-                $this->_cgv_preteurs(true, $oPdf, array($this->clients->hash));
+                $this->cgv_preteurs(true, $oPdf, array($this->clients->hash));
                 $oPdf->WritePdf($path . $sNamePdf, 'cgv_preteurs');
             }
 
@@ -879,7 +879,7 @@ class rootController extends bootstrap
     }
 
     // lecture page du cgv en html
-    public function _cgv_preteurs($bPdf = false, pdfController $oPdf = null, array $aParams = null)
+    private function cgv_preteurs($bPdf = false, pdfController $oPdf = null, array $aParams = null)
     {
         $this->params = (false === is_null($aParams)) ? $aParams : $this->params;
 
