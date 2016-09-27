@@ -127,6 +127,7 @@
     }
   }
 
+  &.ui-loan-status-completing,
   &.ui-loan-status-recovery {
     .table-myloans-item-project {
       border-color: $c-chart-yellow;
