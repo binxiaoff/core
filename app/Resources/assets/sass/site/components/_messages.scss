@@ -150,3 +150,27 @@
     );
   }
 }
+
+.cta-message {
+  box-sizing: border-box;
+  width: 280px;
+  padding: 20px;
+  // margin-top: -70px;
+  // margin-left: -140px;
+
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+
+  transform: translate(-50%, -50%);
+
+  background-color: $c-white;
+  box-shadow: 0 0 20px fade-out($c-black, .9);
+  color: $c-t2;
+  text-align: center;
+
+  @include devices('md', 'lg') {
+    width: 350px;
+  }
+}
