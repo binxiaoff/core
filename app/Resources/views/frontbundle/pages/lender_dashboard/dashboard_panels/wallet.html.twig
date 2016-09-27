@@ -158,8 +158,8 @@
 
 {# Panel - My Wallet #}
 {% embed 'partials/components/dashboard-panel.html.twig' %}
-    {% block panelAttributes %}id="wallet"{% endblock %}
-    {% block panelClassNames %}dashboard-panel dashboard-mywallet ui-draggable {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %} col-lg-12 col-md-12 col-sm-8 col-xs-4{% endblock %}
+    {% block panelAttributes %} id="wallet" {% endblock %}
+    {% block panelClassNames %} dashboard-panel dashboard-mywallet ui-draggable {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %} col-lg-12 col-md-12 col-sm-8 col-xs-4 {% endblock %}
     {% block panelTitle %}
         {% if lenderDetails.numberOfLoans == lenderDetails.numberOfBorrowers %}
             {% transchoice lenderDetails.numberOfLoans with {'%offersCount%' : lenderDetails.numberOfLoans} %} lender-dashboard-wallet_title-loans {% endtranschoice %}
@@ -171,7 +171,7 @@
         <span class="ui-draggable-handle"></span>
     {% endblock %}
     {% block panelContent %}
-        {% if lenderDetails.companiesLenderInvestedIn > 0 %}
+        {% if 1 == 2 and lenderDetails.companiesLenderInvestedIn > 0 %}
                 <div class="row tabs">
                 <div class="dashboard-mywallet-nav col-lg-2 col-md-3 col-sm-8 col-xs-4">
                     <ul class="nav nav-tabs-vertical">
@@ -277,12 +277,14 @@
                 </div><!-- /.dashboard-mywallet-content -->
             </div><!-- /.tabs -->
         {% else %}
-            <div class="show-computer"><img src="/assets/images/dashboard/empty-dashboard-panel-wallet-computer.png" alt=""/></div>
-            <div class="show-tablet"><img src="/assets/images/dashboard/empty-dashboard-panel-wallet-computer.png" alt=""/></div>
-            <div class="show-mobile"><img src="/assets/images/dashboard/empty-dashboard-panel-wallet-computer.png" alt=""/></div>
-            <div class="cta-message">
-                <p>{% trans %} lender-dashboard_get-started-message {% endtrans %}</p>
-                <a href="{{ path('projects') }}" class="btn-outline">{% trans %} lender-dashboard_get-started-button {% endtrans %}</a>
+            <div class="dashboard-panel-empty">
+                <div class="panel-empty-computer"><img src="/assets/images/dashboard/empty/panel-wallet-computer.jpg" alt=""/></div>
+                <div class="panel-empty-tablet"><img src="/assets/images/dashboard/empty/panel-wallet-tablet.jpg" alt=""/></div>
+                <div class="panel-empty-mobile"><img src="/assets/images/dashboard/empty/panel-wallet-mobile.jpg" alt=""/></div>
+                <div class="cta-message">
+                    <p>{% trans %} lender-dashboard_get-started-message {% endtrans %}</p>
+                    <a href="{{ path('projects') }}" class="btn-outline">{% trans %} lender-dashboard_get-started-button {% endtrans %}</a>
+                </div>
             </div>
         {% endif %}
     {% endblock %}

@@ -1,9 +1,7 @@
 {# Panel - User Level #}
 {% embed 'partials/components/dashboard-panel.html.twig' %}
-    {% block panelAttributes %}id="user-level"{% endblock %}
-    {% block panelContentAttributes %}style="height: 650px;"{% endblock %}
-    {% block panelFooterAttributes %}style="height: 92px;"{% endblock %}
-    {% block panelClassNames %}dashboard-panel dashboard-userlevel ui-draggable {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %} col-lg-6 col-md-6 col-sm-8 col-xs-4{% endblock %}
+    {% block panelAttributes %} id="user-level" {% endblock %}
+    {% block panelClassNames %} dashboard-panel dashboard-userlevel ui-draggable {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %} col-lg-6 col-md-6 col-sm-8 col-xs-4 {% endblock %}
     {% block panelTitle %}{{ 'lender-dashboard-user-level_title'|trans }}{% endblock %}
     {% block panelControls %}
         <span class="ui-draggable-handle"></span>

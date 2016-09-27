@@ -236,14 +236,14 @@
 %}
 {# Panel - My Remboursements #}
 {% embed 'partials/components/dashboard-panel.html.twig' %}
-    {% block panelAttributes %}id="repayments"{% endblock %}
-    {% block panelClassNames %}dashboard-panel dashboard-myrembourse ui-draggable{% if panelInfo.hidden == true %} ui-dashboard-panel-hidden{% endif %} col-lg-12 col-md-12 col-sm-8 col-xs-4{% endblock %}
+    {% block panelAttributes %} id="repayments" {% endblock %}
+    {% block panelClassNames %} dashboard-panel dashboard-myrembourse ui-draggable {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %} col-lg-12 col-md-12 col-sm-8 col-xs-4 {% endblock %}
     {% block panelTitle %}{{ 'lender-dashboard-repayments_title'|trans }}{% endblock %}
     {% block panelControls %}
         <span class="ui-draggable-handle"></span>
     {% endblock %}
     {% block panelContent %}
-        {% if lenderDetails.companiesLenderInvestedIn > 0 %}
+        {% if 1 == 2 and lenderDetails.companiesLenderInvestedIn > 0 %}
             {% if monthSum.capital|length > 0 %}
                 <div class="dashboard-panel-chart">
                     <div class="tabs nested-tabs">
@@ -276,12 +276,14 @@
                 <div class="field-help">{{ 'lender-dashboard-repayments_tax-deductions-explanation'|trans }}</div>
             {% endif %}
         {% else %}
-            <div class="show-computer"><img src="/assets/images/dashboard/empty-dashboard-panel-repayments-computer.png" alt=""/></div>
-            <div class="show-tablet"><img src="/assets/images/dashboard/empty-dashboard-panel-repayments-computer.png" alt=""/></div>
-            <div class="show-mobile"><img src="/assets/images/dashboard/empty-dashboard-panel-repayments-computer.png" alt=""/></div>
-            <div class="cta-message">
-                <p>{% trans %} lender-dashboard_get-started-message {% endtrans %}</p>
-                <a href="{{ path('projects') }}" class="btn-outline">{% trans %} lender-dashboard_get-started-button {% endtrans %}</a>
+            <div class="dashboard-panel-empty">
+                <div class="panel-empty-computer"><img src="/assets/images/dashboard/empty/panel-repayments-computer.jpg" alt=""/></div>
+                <div class="panel-empty-tablet"><img src="/assets/images/dashboard/empty/panel-repayments-tablet.jpg" alt=""/></div>
+                <div class="panel-empty-mobile"><img src="/assets/images/dashboard/empty/panel-repayments-mobile.jpg" alt=""/></div>
+                <div class="cta-message">
+                    <p>{% trans %} lender-dashboard_get-started-message {% endtrans %}</p>
+                    <a href="{{ path('projects') }}" class="btn-outline">{% trans %} lender-dashboard_get-started-button {% endtrans %}</a>
+                </div>
             </div>
         {% endif %}
     {% endblock %}
