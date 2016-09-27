@@ -428,7 +428,7 @@ class ProjectsController extends Controller
             $lenderAccount = $entityManager->getRepository('lenders_accounts');
             $lenderAccount->get($user->getClientId(), 'id_client_owner');
 
-            $bidAmount = $post['amount'];
+            $bidAmount = floor($post['amount']); // the cents is not allowed
             $rate      = $post['interest'];
 
             if ($request->getSession()->get('bidToken') !== $post['bidToken']) {
@@ -474,7 +474,7 @@ class ProjectsController extends Controller
                         $amountRest = $currencyFormatter->formatCurrency($amountRest, 'EUR');
                         $amountMax  = $currencyFormatter->formatCurrency($amountMax, 'EUR');
 
-                        $this->addFlash('bid_not_eligible_reason', $translator->trans('project-detail_bid-not-eligible-reason-' . $reason, ['%amountRest%' => $amountRest, '%amountMax%' => $amountMax]));
+                        $this->addFlash('bid_not_eligible_reason', $translator->transChoice('project-detail_bid-not-eligible-reason-' . $reason, 0,['%amountRest%' => $amountRest, '%amountMax%' => $amountMax]));
                     }
                 } else {
                     $request->getSession()->set('bidResult', ['error' => true, 'message' => $translator->trans('project-detail_side-bar-' . $exception->getMessage())]);

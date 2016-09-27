@@ -1,24 +1,24 @@
 // Lib Dependencies
 var $ = require('jquery')
+var __ = require('__')
 
 $(document).on('submit', 'form[data-bid-confirmation]', function (e) {
   var form = e.target
 
   e.preventDefault();
 
-  if ($('[data-popup-amount]').val() == '' || $('[data-popup-rate]').val() == '') {
+  if ($('[data-popup-amount]').val() == '' || $('[data-popup-rate]').val() == ''
+    || false == $.isNumeric($('[data-popup-amount]').val()) || false == $.isNumeric($('[data-popup-rate]').val())) {
     $('[data-popup-amount], [data-popup-rate]').each(function (i, elm) {
       var el = $(elm)
 
-      if (el.val() == "") {
+      if (el.val() == "" || false == $.isNumeric(el.val())) {
         el.closest('.form-field').addClass('ui-formvalidation-error');
-      }
-      else {
+      } else {
         el.closest('.form-field').removeClass('ui-formvalidation-error');
       }
     })
-  }
-  else {
+  } else {
     $('[data-popup-amount], [data-popup-rate]').closest('.form-field').removeClass('ui-formvalidation-error');
 
     if (parseFloat($('#bid-min-amount').val()) > parseFloat($('#bid-amount').val())) {
@@ -32,6 +32,14 @@ $(document).on('submit', 'form[data-bid-confirmation]', function (e) {
     } else {
       $('.ui-BidConfirmation').show()
     }
+
+    var message = $('.ui-BidConfirmation .bids-confirmation-details-holder').html()
+    var bidAmount = __.formatNumber($('#bid-amount').val(), 0)
+    var bidRate = __.formatNumber($('#bid-interest').val(), 1)
+    message = message.replace('%rate%', bidRate + ' %' )
+    message = message.replace('%amount%', bidAmount + ' €')
+
+    $('.ui-BidConfirmation .bids-confirmation-details').html(message)
 
     $('[data-popup-bid-confirmation-yes]').click(function () {
       $('.ui-BidConfirmation').hide()
