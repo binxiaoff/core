@@ -18,8 +18,13 @@
     </div>
 </div>
 <div class="popup-overlay ui-BidConfirmation-error">
-    <div data-popup-bid-confirmation class="popup message-error">
-        {{ ('project-detail_bid-not-eligible-reason-' ~ constant('\underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO'))|transchoice(project.lender.bids.inprogress|length, {'%amountRest%': amountRest|localizedcurrency('EUR'), '%amountMax%': amountMax|localizedcurrency('EUR')}) }}
+    <div data-popup-bid-confirmation class="popup message-info">
+        <p class="loan-max-amount-error">
+            {{ ('project-detail_bid-not-eligible-reason-' ~ constant('\underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO'))|transchoice(project.lender.bids.inprogress|length, {'%amountRest%': amountRest|localizedcurrency('EUR'), '%amountMax%': amountMax|localizedcurrency('EUR')}) }}
+        </p>
+        <p class="bid-min-amount-error">
+            {% trans with {'%amountMin%': amountMin|localizedcurrency('EUR')}%} project-detail_bid-min-amount-error {% endtrans %}
+        </p>
         <div class="row">
             <div class="col-lg-12 text-align-right">
                 <p>

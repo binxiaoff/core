@@ -17,6 +17,8 @@ use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Csrf\CsrfToken;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Guard\Authenticator\AbstractFormLoginAuthenticator;
 use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategyInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager;
@@ -38,19 +40,23 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     private $notificationManager;
     /** @var SessionAuthenticationStrategyInterface */
     private $sessionStrategy;
+    /** @var CsrfTokenManagerInterface */
+    private $csrfTokenManager;
 
     public function __construct(
         UserPasswordEncoder $securityPasswordEncoder,
         RouterInterface $router,
         EntityManager $entityManager,
         NotificationManager $notificationManager,
-        SessionAuthenticationStrategyInterface $sessionStrategy
+        SessionAuthenticationStrategyInterface $sessionStrategy,
+        CsrfTokenManagerInterface $csrfTokenManager
     ) {
         $this->securityPasswordEncoder = $securityPasswordEncoder;
         $this->router                  = $router;
         $this->entityManager           = $entityManager;
         $this->notificationManager     = $notificationManager;
-        $this->sessionStrategy     = $sessionStrategy;
+        $this->sessionStrategy         = $sessionStrategy;
+        $this->csrfTokenManager         = $csrfTokenManager;
     }
 
     protected function getDefaultSuccessRedirectUrl(Request $request, UserInterface $user)
@@ -93,6 +99,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $password           = $request->request->get('_password');
         $captcha            = $request->request->get('captcha');
         $captchaInformation = $request->getSession()->get('captchaInformation');
+        $scrfToken          = $request->get('_csrf_token');
 
         $request->getSession()->set(Security::LAST_USERNAME, $username);
 
@@ -100,7 +107,8 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             'username'           => $username,
             'password'           => $password,
             'captcha'            => $captcha,
-            'captchaInformation' => $captchaInformation
+            'captchaInformation' => $captchaInformation,
+            'csrfToken'          => $scrfToken
         ];
     }
 
@@ -130,6 +138,10 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
 
         if (false === $this->checkCaptcha($credentials)) {
             throw new CustomUserMessageAuthenticationException('wrong-captcha');
+        }
+
+        if ($this->csrfTokenManager->isTokenValid(new CsrfToken('authenticate', $credentials['csrfToken'])) === false) {
+            throw new CustomUserMessageAuthenticationException(''); // Silence is golden
         }
         return true;
     }

@@ -128,16 +128,6 @@
     }
 } %}
 
-{#{% set chartValues = {#}
-    {#pctRepaidCapital : (data.regulatoryTable['repaid-capital']['total'] + data.regulatoryTable['from-which-payments-not-lost-and-healthy']['total']) / data.regulatoryTable['borrowed-capital']['total'],#}
-    {#pctRepaidInterest : data.regulatoryTable['future-healthy-interest']['total'] / data.regulatoryTable['borrowed-capital']['total'] ,#}
-    {#pctFutureInterest : data.regulatoryTable['repaid-interest']['total'] / data.regulatoryTable['borrowed-capital']['total']#}
-
-{#} %}#}
-
-{% set debugValueLateAndLostCapital = data.regulatoryTable['borrowed-capital']['total'] -  data.regulatoryTable['repaid-capital']['total'] - data.regulatoryTable['from-which-payments-not-lost-and-healthy']['total'] %}
-{# normal value içnstead of debug data.regulatoryTable['capital-late-and-lost']['total']#}
-
 {% set unilendPerformanceChart = {
     type: 'preterProjectsOverview',
     background: 'none',
@@ -196,16 +186,16 @@
                     value: data.regulatoryTable['repaid-capital']['total']|localizedcurrency('EUR'),
                     showInLegend: true,
                 },{
-                    name: 'Capital restant du non échu sain',
+                    name: 'about-us-statistics_chart-lost-capital'|trans,
                     color: '#B6D4E4',
                     y: data.regulatoryTable['from-which-payments-not-lost-and-healthy']['total'],
                     value: data.regulatoryTable['from-which-payments-not-lost-and-healthy']['total']|localizedcurrency('EUR'),
                     showInLegend: true
                 },{
-                    name: 'Capital restant du non échu, déchu',
+                    name: 'about-us-statistics_regulatory-table-capital-lost'|trans,
                     color: '#F76965',
-                    y:  debugValueLateAndLostCapital,
-                    value: debugValueLateAndLostCapital|localizedcurrency('EUR'),
+                    y:  data.regulatoryTable['capital-lost']['total'],
+                    value: data.regulatoryTable['capital-lost']['total']|localizedcurrency('EUR'),
                     showInLegend: true
                 }]
             },{
@@ -213,7 +203,7 @@
                 minSize: 80,
                 size: '33%',
                 innerSize: '70%',
-                endAngle: 330,
+                endAngle: (270 * (data.regulatoryTable['borrowed-capital']['total'] + data.regulatoryTable['repaid-interest']['total'] + data.regulatoryTable['future-healthy-interest']['total'])) / data.regulatoryTable['borrowed-capital']['total'],
                 data: [{
                     name: '',
                     color: '#ffffff',
@@ -221,8 +211,8 @@
                         enabled: false
                         },
                     showInLegend: false,
-                    y: (data.regulatoryTable['repaid-capital']['total'] + data.regulatoryTable['from-which-payments-not-lost-and-healthy']['total']) * 0.50,
-                    tooltip: false
+                    y: (data.regulatoryTable['repaid-capital']['total'] + data.regulatoryTable['from-which-payments-not-lost-and-healthy']['total']) * 0.66,
+                    tooltip: true
                 },{
                     name: 'about-us-statistics_regulatory-table-repaid-interest'|trans,
                     color: '#F2980C',

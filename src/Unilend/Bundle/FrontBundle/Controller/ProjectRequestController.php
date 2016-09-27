@@ -809,12 +809,12 @@ class ProjectRequestController extends Controller
             return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, 'Fonds propres négatifs');
         }
 
-        if ($values['fl'] < 0) {
-            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, 'REX négatif');
+        if ($values['fl'] < \projects::MINIMUM_REVENUE) {
+            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, 'CA trop faible');
         }
 
-        if ($values['gg'] < \projects::MINIMUM_REVENUE) {
-            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, 'CA trop faible');
+        if ($values['gg'] < 0) {
+            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, 'REX négatif');
         }
 
         if ('true' === $request->request->get('extra_files')) {

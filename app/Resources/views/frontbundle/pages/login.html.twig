@@ -10,8 +10,7 @@
     <article id="connexion-inscription" class="page">
         <header class="page-header">
             <div class="site-wrap">
-                <h1>{% trans %}connect-subscribe-page_header-title{% endtrans %}
-                </h1>
+                <h1>{% trans %}connect-subscribe-page_header-title{% endtrans %}</h1>
             </div><!-- /.site-wrap -->
         </header><!-- /.page-header -->
         <section class="page-content">
@@ -57,11 +56,11 @@
                                                     <div id="captcha" class="form-field">
                                                         <div class="input-group set-left">
                                                             <div class="btn-group">
-                                                                <label for="connect-access-password"><span class="icon fa-lock-u"></span></label>
+                                                                <label for="connect-access-captcha"><span class="icon fa-lock-u"></span></label>
                                                             </div>
                                                             <input type="text" id="connect-access-captcha" autocomplete="off" required name="captcha" value="" class="input-field">
                                                         </div>
-                                                        <label for="connect-access-catpcha">{% trans %} enter security code (trans TODO) {% endtrans %}</label>
+                                                        <label for="connect-access-catpcha">{% trans %} connect-subscribe-page_login-captcha-instructions {% endtrans %}</label>
                                                     </div>
                                                 </div>
                                             {%  endif %}
@@ -87,6 +86,7 @@
                                         <input type="submit" class="btn-primary" value="{% trans %} connect-subscribe-page_login-box-connect-button {% endtrans %}"/>
                                     </div>
                                 </div><!-- /.panel -->
+                                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
                             </form><!-- /.form-connect -->
 
                             {# Hidden text until made visible through the fancybox #}

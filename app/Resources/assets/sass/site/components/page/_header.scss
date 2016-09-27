@@ -12,9 +12,12 @@
 
   // Constrains text content to the site wrap
   .site-wrap {
-    @include vertical-align-inline-block;
-    height: 200px;
     position: relative;
+
+    @include devices('sm', 'md', 'lg') {
+      height: 200px;
+      @include vertical-align-inline-block;
+    }
   }
 
   .page-title {

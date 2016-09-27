@@ -243,6 +243,11 @@ class ProjectsController extends Controller
             $template['amountRest'] = $productManager->getAmountLenderCanStillBid($lenderAccount, $project);
             $template['amountMax']  = $productManager->getMaxEligibleAmount($product);
 
+            /** @var \settings $settings */
+            $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
+            $settings->get('Pret min', 'type');
+            $template['amountMin'] = (int) trim($settings->value);
+
             /** @var LenderAccountDisplayManager $lenderAccountDisplayManager */
             $lenderAccountDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
             $template['project']['lender'] = $lenderAccountDisplayManager->getActivityForProject($lenderAccount, $project->id_project, $project->status);

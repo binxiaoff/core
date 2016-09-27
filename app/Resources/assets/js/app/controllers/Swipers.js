@@ -30,6 +30,13 @@ $doc.ready(function () {
       a11y: 'data-swiper-aria'
     }))
 
+    // Test for swiper-lazy
+    if ($elem.find('.swiper-lazy').length > 0) {
+      swiperOptions.lazyLoading = true
+      swiperOptions.preloadImages = false
+      swiperOptions.lazyLoadingInPrevNext = true
+    }
+
     // Extra breakpoint options if promo-swiper
     if ($elem.is('.promo-swiper')) {
       swiperOptions.loop = false

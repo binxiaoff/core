@@ -1,7 +1,7 @@
 {# Panel - User Level #}
 {% embed 'partials/components/dashboard-panel.html.twig' %}
     {% block panelAttributes %} id="user-level" {% endblock %}
-    {% block panelClassNames %} dashboard-panel dashboard-userlevel ui-draggable {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %} col-lg-6 col-md-6 col-sm-8 col-xs-4 {% endblock %}
+    {% block panelClassNames %} dashboard-panel dashboard-userlevel ui-draggable {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %} col-lg-6 col-md-6 col-sm-8 col-xs-4 ui-user-level-0 {% endblock %}
     {% block panelTitle %}{{ 'lender-dashboard-user-level_title'|trans }}{% endblock %}
     {% block panelControls %}
         <span class="ui-draggable-handle"></span>
@@ -15,8 +15,8 @@
                 <div class="user-avatar">
                     <div class="user-avatar-level"></div>
                     <div class="user-avatar-initials">{{ lenderDetails.initials }}</div>
-                    <div class="user-avatar-stars">{% for i in 1..5 %}
-                        <span class="icon fa-star ui-user-level-star-{{ i }}"></span>{% endfor %}
+                    <div class="user-avatar-stars">
+                        {% for i in 1..5 %}<span class="icon fa-star ui-user-level-star-{{ i }}"></span>{% endfor %}
                     </div>
                 </div>
             </div>
