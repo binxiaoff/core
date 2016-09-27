@@ -737,56 +737,63 @@ class MainController extends Controller
 
     /**
      * @Route("/cgv-popup", name="tos_popup", condition="request.isXmlHttpRequest()")
-     *
      * @Security("has_role('ROLE_LENDER')")
      */
     public function lastTermsOfServiceAction(Request $request)
     {
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var UserLender $user */
         $user = $this->getUser();
         /** @var \clients $client */
-        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        $client = $entityManager->getRepository('clients');
         $tosDetails = '';
+
         if ($client->get($user->getClientId())) {
             if ($request->isMethod('GET')) {
                 /** @var \blocs $block */
-                $block = $this->get('unilend.service.entity_manager')->getRepository('blocs');
+                $block = $entityManager->getRepository('blocs');
                 $block->get('cgv', 'slug');
 
                 $elementSlug = 'tos-new';
                 /** @var \acceptations_legal_docs $acceptationsTos */
-                $acceptationsTos = $this->get('unilend.service.entity_manager')->getRepository('acceptations_legal_docs');
-                if ($acceptationsTos->exist($client->id_client, 'id_client')) {
-                    /** @var \settings $settings */
-                    $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
+                $acceptationsTos = $entityManager->getRepository('acceptations_legal_docs');
+                /** @var \settings $settings */
+                $settings = $entityManager->getRepository('settings');
 
+                if ($acceptationsTos->exist($client->id_client, 'id_client')) {
                     $settings->get('Date nouvelles CGV avec 2 mandats', 'type');
+
                     $newTermsOfServiceDate = $settings->value;
 
                     /** @var \lenders_accounts $lenderAccount */
-                    $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
+                    $lenderAccount = $entityManager->getRepository('lenders_accounts');
                     $lenderAccount->get($client->id_client, 'id_client_owner');
 
                     /** @var \loans $loans */
-                    $loans = $this->get('unilend.service.entity_manager')->getRepository('loans');
+                    $loans = $entityManager->getRepository('loans');
+
                     if (0 < $loans->counter('id_lender = ' . $lenderAccount->id_lender_account . ' AND added < "' . $newTermsOfServiceDate . '"')) {
                         $elementSlug = 'tos-update-lended';
                     } else {
                         $elementSlug = 'tos-update';
                     }
                 }
+
                 /** @var \elements $elements */
-                $elements = $this->get('unilend.service.entity_manager')->getRepository('elements');
+                $elements = $entityManager->getRepository('elements');
+
                 if ($elements->get($elementSlug, 'slug')) {
                     /** @var \blocs_elements $blockElement */
-                    $blockElement = $this->get('unilend.service.entity_manager')->getRepository('blocs_elements');
+                    $blockElement = $entityManager->getRepository('blocs_elements');
 
                     if ($blockElement->get($elements->id_element, 'id_element')) {
                         $tosDetails = $blockElement->value;
                     } else {
-                        $this->get('logger')->error('The block element id : ' . $elements->id_element . 'doesn\'t exist');
+                        $this->get('logger')->error('The block element id : ' . $elements->id_element . ' doesn\'t exist');
                     }
                 } else {
-                    $this->get('logger')->error('The element slug : ' . $elementSlug . 'doesn\'t exist');
+                    $this->get('logger')->error('The element slug : ' . $elementSlug . ' doesn\'t exist');
                 }
             } elseif ($request->isMethod('POST')) {
                 if ('true' === $request->request->get('terms')) {
