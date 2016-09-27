@@ -11,9 +11,15 @@
 {% block pageContent %}
     <div class="page-content" data-equal-height="md lg" data-equal-height-group="content">
         {% block pageContentBody %}
-            {% for content in cms.right_content %}
-                {{ content|raw }}
-            {% endfor %}
+            {{ cms.right_content.main_content|raw }}
+            {% if cms.right_content.recovery_mandate_with_loans is not empty %}
+                <hr>
+                {{ cms.right_content.recovery_mandate_with_loans|raw }}
+            {% endif %}
+            {% if cms.right_content.recovery_mandate_with_loans is not empty %}
+                <hr>
+                {{ cms.right_content.recovery_mandate_with_loans|raw }}
+            {% endif %}
         {% endblock %}
     </div><!-- /.page-content -->
 {% endblock %}
