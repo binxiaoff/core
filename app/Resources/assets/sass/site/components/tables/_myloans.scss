@@ -133,6 +133,7 @@
     }
   }
 
+  &.ui-loan-status-problem,
   &.ui-loan-status-defaulting {
     .table-myloans-item-project {
       border-color: $c-chart-orange;

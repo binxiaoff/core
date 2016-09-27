@@ -78,6 +78,7 @@ require('./app/controllers/Swipers')
 require('./app/controllers/BorrowerOperations')
 require('./app/controllers/NewPasswordRequest')
 require('./app/controllers/LenderSubscription')
+require('./app/controllers/LenderDashboard')
 require('./app/controllers/LenderWallet')
 require('./app/controllers/LenderOperations')
 require('./app/controllers/LenderProfile')
@@ -666,6 +667,55 @@ $(document).ready(function ($) {
     }
   }
   checkAddressIsCorrespondence()
+  
+  /*
+   * Ajouter des fichiers
+   */
+  var $extraFilesElem = $('#form-extrafiles')
+  var $extraFilesList = $('.form-extrafiles-list')
+  var $extraFilesToggle = $('input#form-extrafiles-toggle')
+  var extraFileTemplate = $('#form-extrafiles-template').html()
+
+  // Toggle extra files
+  $doc.on('change', 'input#form-extrafiles-toggle', function (event) {
+    checkFormHasExtraFiles()
+  })
+
+  function checkFormHasExtraFiles () {
+    if ($extraFilesToggle.is(':checked')) {
+      $extraFilesElem.slideDown()
+    } else {
+      $extraFilesElem.slideUp()
+    }
+  }
+
+  // Add extra files item
+  $doc.on(Utility.clickEvent, '.ui-form-extrafiles-add', function (event) {
+    event.preventDefault()
+    addFormExtraFile()
+  })
+
+  function addFormExtraFile () {
+    var totalExtraFiles = $extraFilesList.find('.file-upload-extra').length
+
+    // Prepare the template
+    template = extraFileTemplate.replace(/__NUM__/g, totalExtraFiles - 1)
+
+    // Make the new one and add to the list
+    var $extraFile = $(template).appendTo($extraFilesList)
+    var $extraFileAttach = $extraFile.find('[data-fileattach], .ui-has-fileattach, .ui-fileattach')
+
+    // Make sure the FileAttach behaviours are loaded
+    if ($extraFileAttach.length > 0) $extraFileAttach.uiFileAttach()
+  }
+
+  // Show the collapse
+  if ($extraFilesElem.length > 0) {
+    checkFormHasExtraFiles()
+
+    // Add one to prompt the user
+    addFormExtraFile()
+  }
 
   /*
    * Validate IBAN Input
@@ -717,55 +767,6 @@ $(document).ready(function ($) {
   }
   $doc.on('keyup', '.custom-input-iban .iban-input', checkIbanInput)
   checkIbanInput()
-
-  /*
-   * Ajouter des fichiers
-   */
-  var $extraFilesElem = $('#form-extrafiles')
-  var $extraFilesList = $('.form-extrafiles-list')
-  var $extraFilesToggle = $('input#form-extrafiles-toggle')
-  var extraFileTemplate = $('#form-extrafiles-template').html()
-
-  // Toggle extra files
-  $doc.on('change', 'input#form-extrafiles-toggle', function (event) {
-    checkFormHasExtraFiles()
-  })
-
-  function checkFormHasExtraFiles () {
-    if ($extraFilesToggle.is(':checked')) {
-      $extraFilesElem.slideDown()
-    } else {
-      $extraFilesElem.slideUp()
-    }
-  }
-
-  // Add extra files item
-  $doc.on(Utility.clickEvent, '.ui-form-extrafiles-add', function (event) {
-    event.preventDefault()
-    addFormExtraFile()
-  })
-
-  function addFormExtraFile () {
-    var totalExtraFiles = $extraFilesList.find('.file-upload-extra').length
-
-    // Prepare the template
-    template = extraFileTemplate.replace(/__NUM__/g, totalExtraFiles - 1)
-
-    // Make the new one and add to the list
-    var $extraFile = $(template).appendTo($extraFilesList)
-    var $extraFileAttach = $extraFile.find('[data-fileattach], .ui-has-fileattach, .ui-fileattach')
-
-    // Make sure the FileAttach behaviours are loaded
-    if ($extraFileAttach.length > 0) $extraFileAttach.uiFileAttach()
-  }
-
-  // Show the collapse
-  if ($extraFilesElem.length > 0) {
-    checkFormHasExtraFiles()
-
-    // Add one to prompt the user
-    addFormExtraFile()
-  }
 
   /*
    * Custom Input Duration

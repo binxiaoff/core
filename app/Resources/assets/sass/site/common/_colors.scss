@@ -42,6 +42,7 @@ $colors: (
   'account':   #ffa210,
 
   // Levels
+  'level-0':   #dedcdf,
   'level-1':   #2cbaa4,
   'level-2':   #4378c6,
   'level-3':   #f78e61,
@@ -91,6 +92,7 @@ $c-twitter:   map-get($colors, 'twitter');
 $c-rejected:  map-get($colors, 'rejected');
 $c-accepted:  map-get($colors, 'accepted');
 $c-account:   map-get($colors, 'account');
+$c-level-0:   map-get($colors, 'level-0');
 $c-level-1:   map-get($colors, 'level-1');
 $c-level-2:   map-get($colors, 'level-2');
 $c-level-3:   map-get($colors, 'level-3');
