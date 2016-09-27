@@ -820,42 +820,61 @@ class rootController extends bootstrap
 
         include_once $this->path . '/apps/default/controllers/pdf.php';
 
-        if ($this->clients->checkAccess() || isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
-            $this->clients->checkAccessLender();
+        // hack the symfony guard token
+        $session = $this->get('session');
 
-            $listeAccept = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC', 0, 1);
-            $listeAccept = array_shift($listeAccept);
+        /** @var \Symfony\Component\Security\Guard\Token\PostAuthenticationGuardToken $token */
+        $token =  unserialize($session->get('_security_default'));
+        if (!$token instanceof \Symfony\Component\Security\Guard\Token\PostAuthenticationGuardToken) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
+        /** @var \Unilend\Bundle\FrontBundle\Security\User\UserLender $user */
+        $user = $token->getUser();
+        if (!$user instanceof \Unilend\Bundle\FrontBundle\Security\User\UserLender) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
 
-            $id_tree_cgu = $listeAccept['id_legal_doc'];
+        if (false === $this->clients->get($user->getClientId(), 'id_client')) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
 
-            $contenu = $this->tree_elements->select('id_tree = "' . $id_tree_cgu . '" AND id_langue = "' . $this->language . '"');
-            foreach ($contenu as $elt) {
-                $this->elements->get($elt['id_element']);
-                $this->content[$this->elements->slug]    = $elt['value'];
-                $this->complement[$this->elements->slug] = $elt['complement'];
+        $this->clients->checkAccessLender();
+
+        $listeAccept = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC', 0, 1);
+        $listeAccept = array_shift($listeAccept);
+
+        $id_tree_cgu = $listeAccept['id_legal_doc'];
+
+        $contenu = $this->tree_elements->select('id_tree = "' . $id_tree_cgu . '" AND id_langue = "' . $this->language . '"');
+        foreach ($contenu as $elt) {
+            $this->elements->get($elt['id_element']);
+            $this->content[$this->elements->slug]    = $elt['value'];
+            $this->complement[$this->elements->slug] = $elt['complement'];
+        }
+
+        // si c'est un ancien cgv de la liste on lance le pdf
+        if (in_array($id_tree_cgu, array(92, 95, 93, 254, 255))) {
+            header("Content-disposition: attachment; filename=" . $this->content['pdf-cgu']);
+            header("Content-Type: application/force-download");
+            @readfile($this->surl . '/var/fichiers/' . $this->content['pdf-cgu']);
+        } else {
+            $oCommandPdf    = new \Command('pdf', 'cgv_preteurs', array($this->clients->hash), $this->language);
+            $oPdf           = new \pdfController($oCommandPdf, $this->Config, 'default');
+            $oPdf->setContainer($this->container);
+            $oPdf->initialize();
+            $path           = $this->path . 'protected/pdf/cgv_preteurs/' . $this->clients->id_client . '/';
+            $sNamePdf       = 'cgv_preteurs-' . $this->clients->hash . '-' . $id_tree_cgu;
+            $sNamePdfClient = 'CGV-UNILEND-PRETEUR-' . $this->clients->id_client . '-' . $id_tree_cgu;
+
+            if (false  === file_exists($path . $sNamePdf)) {
+                $this->_cgv_preteurs(true, $oPdf, array($this->clients->hash));
+                $oPdf->WritePdf($path . $sNamePdf, 'cgv_preteurs');
             }
 
-            // si c'est un ancien cgv de la liste on lance le pdf
-            if (in_array($id_tree_cgu, array(92, 95, 93, 254, 255))) {
-                header("Content-disposition: attachment; filename=" . $this->content['pdf-cgu']);
-                header("Content-Type: application/force-download");
-                @readfile($this->surl . '/var/fichiers/' . $this->content['pdf-cgu']);
-            } else {
-                $oCommandPdf    = new \Command('pdf', 'cgv_preteurs', array($this->clients->hash), $this->language);
-                $oPdf           = new \pdfController($oCommandPdf, $this->Config, 'default');
-                $oPdf->setContainer($this->container);
-                $oPdf->initialize();
-                $path           = $this->path . 'protected/pdf/cgv_preteurs/' . $this->clients->id_client . '/';
-                $sNamePdf       = 'cgv_preteurs-' . $this->clients->hash . '-' . $id_tree_cgu;
-                $sNamePdfClient = 'CGV-UNILEND-PRETEUR-' . $this->clients->id_client . '-' . $id_tree_cgu;
-
-                if (false  === file_exists($path . $sNamePdf)) {
-                    $this->_cgv_preteurs(true, $oPdf, array($this->clients->hash));
-                    $oPdf->WritePdf($path . $sNamePdf, 'cgv_preteurs');
-                }
-
-                $oPdf->ReadPdf($path . $sNamePdf, $sNamePdfClient);
-            }
+            $oPdf->ReadPdf($path . $sNamePdf, $sNamePdfClient);
         }
     }
 
@@ -877,7 +896,23 @@ class rootController extends bootstrap
             $this->complement[$this->elements->slug] = $elt['complement'];
         }
 
-        if ($this->clients->checkAccess() || isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
+        // hack the symfony guard token
+        $session = $this->get('session');
+
+        /** @var \Symfony\Component\Security\Guard\Token\PostAuthenticationGuardToken $token */
+        $token =  unserialize($session->get('_security_default'));
+        if (!$token instanceof \Symfony\Component\Security\Guard\Token\PostAuthenticationGuardToken) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
+        /** @var \Unilend\Bundle\FrontBundle\Security\User\UserLender $user */
+        $user = $token->getUser();
+        if (!$user instanceof \Unilend\Bundle\FrontBundle\Security\User\UserLender) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
+
+        if ($this->clients->get($user->getClientId(), 'id_client') || isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
             if (isset($this->params[0]) && $this->params[0] != 'morale' && $this->params[0] != 'nosign') {
                 $this->autoFireHeader = false;
                 $this->autoFireHead   = true;
