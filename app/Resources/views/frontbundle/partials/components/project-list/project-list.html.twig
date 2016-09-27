@@ -108,7 +108,7 @@
                                                 {{ project.lender.bids.inprogress|length|localizednumber }} {% transchoice project.lender.bids.inprogress|length %} project-list_pending-bids-label {% endtranschoice %}
                                             </div>
                                         {% endif %}
-                                        {% if project.lender.bids.rejected is not empty %}
+                                        {% if project.lender.bids.rejected is not empty and project.finished == false %}
                                             <div class="project-single-useroffers-rejected">
                                                 {{ project.lender.bids.rejected|length|localizednumber }} {% transchoice project.lender.bids.rejected|length %} project-list_rejected-bids-label {% endtranschoice %}
                                             </div>
