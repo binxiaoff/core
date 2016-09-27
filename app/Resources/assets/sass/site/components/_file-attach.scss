@@ -106,6 +106,10 @@
   .ui-fileattach-filename {
     background-color: transparent;
     vertical-align: top;
+
+    .ui-formvalidation-error & {
+      color: $c-error;
+    }
   }
 
   .ui-fileattach-add-btn {
@@ -374,4 +378,43 @@
 
 .ui-fileattach-error-message {
   // color: $c-error;
+}
+
+// In an file-upload-extra field
+.file-upload-extra {
+  .ui-fileattach-add-btn,
+  .ui-fileattach-change-btn,
+  .ui-fileattach-remove-btn {
+    width: 40px !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+
+    .label {
+      @include hide-accessible;
+    }
+  }
+
+  .ui-fileattach-add-btn,
+  .ui-fileattach-change-btn {
+    position: absolute !important;
+    top: 0 !important;
+    right: 40px !important;
+
+    &:before {
+      content: $fa-plus;
+      font-family: $ff-icon;
+    }
+  }
+
+  .ui-fileattach-remove-btn {
+    display: block !important;
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+
+    &:before {
+      content: $fa-times;
+      font-family: $ff-icon;
+    }
+  }
 }

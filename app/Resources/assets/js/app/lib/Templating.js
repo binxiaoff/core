@@ -7,26 +7,55 @@
 var Utility = require('Utility')
 var Dictionary = require('Dictionary')
 
-var reKeywordMatch = /\{\{\s*[a-z0-9_\-\|]+\s*\}\}/gi
+// Builds RegExp to find keywords
+function buildRegExp (options) {
+  // Default options
+  options = $.extend({
+    keywordPrefix: '{{',
+    keywordSuffix: '}}'
+  }, options)
+
+  // Build keyword and propName RegExps and place in options object
+  options.reKeywordMatch = new RegExp(Utility.reEscape(options.keywordPrefix) + '\\s*[a-z0-9_\\|\\-]+\\s*' + Utility.reEscape(options.keywordSuffix), 'gi')
+  options.reKeywordPrefixSuffixMatch = new RegExp('^' + Utility.reEscape(options.keywordPrefix) + '\\s*|\\s*' + Utility.reEscape(options.keywordSuffix) + '$', 'g')
+
+  return options
+}
 
 // Replaces {String} input with the properties within the {Object} props
 // e.g. replaceKeywordsWithValues('Hello {{ example }}', {example: 'World!'}) => "Hello World!"
-function replaceKeywordsWithValues (input, props) {
+// Keyword prefix and suffix can be changed within options {Object}
+function replaceKeywordsWithValues (input, props, options) {
   output = input
   if (typeof output === 'undefined') return ''
 
+  // No options given, so build with default values
+  if (!options) {
+    options = buildRegExp(options)
+  }
+
+  // @debug
+  // console.log('replaceKeywordsWithValues', input, props, options)
+
   // Search for keywords
-  var matches = output.match(reKeywordMatch)
+  var matches = output.match(options.reKeywordMatch)
+
+  // @debug
+  // console.log('replaceKeywordsWithValues: matches', matches)
+
   if (matches && matches.length > 0) {
     for (var i = 0; i < matches.length; i++) {
-      var propName = matches[i].replace(/^\{\{\s*|\s*\}\}$/g, '')
+      var propName = matches[i].replace(options.reKeywordPrefixSuffixMatch, '')
       var propValue = ''
+
+      // @debug
+      // console.log('replaceKeywordsWithValues: matches[' + i + '] propName', propName, matches[i])
 
       // Is prop a Dictionary object? If so get the value as per the matched propName
       if (props instanceof Dictionary) {
         propValue = props.__key(propName)
       } else {
-        propValue = (props.hasOwnProperty(propName) ? props[propName] : matches[i]) + '' // Ensure it's a string, baby~
+        propValue = (typeof props === 'object' && props.hasOwnProperty(propName) ? props[propName] : matches[i]) + '' // Ensure it's a string, baby~
       }
 
       // Only replace if need to
@@ -36,7 +65,7 @@ function replaceKeywordsWithValues (input, props) {
 
         // Check if props value has more keywords to match. If so, add to matches
         if (propValue) {
-          var propValueKeywordMatches = propValue.match(reKeywordMatch)
+          var propValueKeywordMatches = propValue.match(options.reKeywordMatch)
           if (propValueKeywordMatches && propValueKeywordMatches.length > 0) {
             // @debug
             // console.log('Found new keywords in propValue', propValueKeywordMatches)
@@ -53,9 +82,6 @@ function replaceKeywordsWithValues (input, props) {
     }
   }
 
-  // Recursive: test if new keywords have been placed and replace them until complete
-  // output = replaceKeywordsWithValues(output, props)
-
   return output
 }
 
@@ -67,21 +93,27 @@ var Templating = {
   //                      Values in the props are usually strings, but they can also be {Function}s which return strings
   //                      Or even a {Dictionary} instance
   // @returns {String}
-  replace: function (input, props) {
+  replace: function (input, props, options) {
     var self = this
     var output = input
+
+    // Default options (so to build the regexp to search by)
+    options = buildRegExp(options)
 
     // Support processing props in sequential order with multiple objects
     if (!(props instanceof Array)) props = [props]
     for (var i = 0; i < props.length; i++) {
-      output = replaceKeywordsWithValues(output, props[i])
+      output = replaceKeywordsWithValues(output, props[i], options)
 
       // @debug
-      // console.log('Templating.replace: replaced keywords from ' + (i+1) + '/' + props.length + ' prop groups', output)
+      // console.log('Templating.replace: replaced keywords from ' + (i+1) + '/' + props.length + ' prop groups', output, options)
     }
 
     // Clean any unmatched props
-    output = output.replace(reKeywordMatch, '')
+    output = output.replace(options.reKeywordMatch, '')
+
+    // @debug
+    // console.log('Templating.replace: replaced keywords', input, props, options, output)
 
     // Return the final string
     return output

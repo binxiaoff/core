@@ -259,6 +259,12 @@ var Utility = {
     return output
   },
 
+  // Escape a string for regexp purposes
+  // See: http://stackoverflow.com/a/6969486
+  reEscape: function (str) {
+    return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&")
+  },
+
   // Check if element has an attribute set
   // @note if can't find the named attribute, it will also attempt to look
   //       for `data-{{ attr }}` if one exists
