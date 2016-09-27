@@ -36,7 +36,7 @@ function getCellInfo(cellIndex) {
         min: $inputRate.attr('min'),
         rating: $('#' + cellIndex + '-param-advanced-evaluation').val(),
         convertedRating: $('#' + cellIndex + '-param-advanced-evaluation-converted').val(),
-        periodsAsText: $('#' + cellIndex + '-periods-as-text').val(),
+        periodsAsText: $('#' + cellIndex + '-param-advanced-period-as-text').val(),
         step: $inputRate.attr('step')
     }
 }

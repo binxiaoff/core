@@ -147,7 +147,7 @@ classNames: 'user-preter-autolend'
                                                                    id="{{ i }}-param-advanced-evaluation-converted" >
                                                             <input type="hidden" name="periods-as-text"
                                                                    id="{{ i }}-param-advanced-period-as-text"
-                                                                   value="{{ "autolend_autobid-period-#{ setting.id_period }"|trans({'%min%':setting.period_min, '%max%':setting.period_max })|raw }}" >
+                                                                   value="{{ "autolend_expert-settings-project-period-#{ setting.id_period }"|trans({'%min%':setting.period_min, '%max%':setting.period_max })|raw }}" >
                                                             <input type="hidden" value="{{ setting.cellAverageRateUnilend|round(1)|localizednumber }}"
                                                                    data-value="{{ setting.cellAverageRateUnilend|round(1) }}"
                                                                    name="param-advanced-unilend-rate"
