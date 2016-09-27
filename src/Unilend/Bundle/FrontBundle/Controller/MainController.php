@@ -254,7 +254,7 @@ class MainController extends Controller
         $cachePool  = $this->get('memcache.default');
         $cachedItem = $cachePool->getItem('Home_Tree_Childs_Elements_' . $tree->id_tree);
 
-        if (true||false === $cachedItem->isHit()) {
+        if (false === $cachedItem->isHit()) {
             $content    = [];
             $complement = [];
 
