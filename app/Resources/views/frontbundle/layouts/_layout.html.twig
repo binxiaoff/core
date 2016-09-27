@@ -112,6 +112,7 @@
                             id: notification.id,
                             type: notification.type,
                             title: notification.title,
+                            'iso-8601': notification.datetime|date('c'),
                             datetime: notification.datetime|localizeddate('medium', 'short'),
                             content: notification.content,
                             image: svgimage('#notification-' ~ notification.image, notification.title, 100, 100, 'none'),

@@ -234,9 +234,9 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
 
     a {
       @include link-states(
-              $link: (
-                      color: $c-p1
-              )
+        $link: (
+          color: $c-p1
+        )
       );
     }
   }
@@ -288,9 +288,9 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
 
     a {
       @include link-states(
-              $link: (
-                      color: $c-p1
-              )
+        $link: (
+          color: $c-p1
+        )
       );
     }
   }
@@ -363,6 +363,10 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
     > span,
     > a {
       line-height: $height-panel-header-sm;
+
+      .ui-is-spinner {
+        color: $c-white !important;
+      }
     }
   }
 

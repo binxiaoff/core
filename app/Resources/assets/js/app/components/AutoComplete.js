@@ -270,7 +270,7 @@ var AutoComplete = function (elem, options) {
     // Optimise the search
     if (self.settings.optimised) {
       // Make comparison between last search and new search
-      var reLastSearch = new RegExp('^' + self.reEscape(self.track.lastSearch), 'i')
+      var reLastSearch = new RegExp('^' + Utility.reEscape(self.track.lastSearch), 'i')
 
       // @debug
       // console.log('optimised', term, self.track.lastSearch, reLastSearch.test(term))
@@ -321,7 +321,7 @@ var AutoComplete = function (elem, options) {
       // console.log('filter results array', results)
 
       var newResults = []
-      var reTerm = new RegExp(self.reEscape(term), 'i')
+      var reTerm = new RegExp(Utility.reEscape(term), 'i')
 
       for (var i = 0; i < results.length; i++) {
         // Check object properties
@@ -545,12 +545,6 @@ var AutoComplete = function (elem, options) {
     }, 2000)
   }
 
-  // Escape a string for regexp purposes
-  // See: http://stackoverflow.com/a/6969486
-  self.reEscape = function (str) {
-    return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&")
-  }
-
   // Add highlights to the results
   self.highlightResults = function (term, results) {
     results.each( function (i, item) {
@@ -562,7 +556,7 @@ var AutoComplete = function (elem, options) {
 
   // Add highlight to string
   self.highlightTerm = function (term, str) {
-    var reTerm = new RegExp( '(' + self.reEscape(term) + ')', 'gi')
+    var reTerm = new RegExp( '(' + Utility.reEscape(term) + ')', 'gi')
     return str.replace(reTerm, '<span class="highlight">$1</span>')
   }
 

@@ -23,7 +23,7 @@ var __ = new Dictionary(window.FORMVALIDATION_LANG)
 function getLabelForElem (elem) {
   var $elem = $(elem)
   var label = ''
-  var labelledBy = $elem.attr('aria-labelledby')
+  var labelledBy = $elem.closest('[aria-labelledby]').eq(0).attr('aria-labelledby')
   var $label = $('label[for="' + $elem.attr('id') + '"]').first()
 
   // Labelled by other elements
@@ -37,8 +37,8 @@ function getLabelForElem (elem) {
       labelledBy = [labelledBy]
     }
 
-    $.each(labelledBy, function (i, label) {
-      var $labelledBy = $('#' + label).first()
+    $.each(labelledBy, function (i, labelItem) {
+      var $labelledBy = $('#' + labelItem).first()
       if ($labelledBy.length > 0) {
         label.push($labelledBy.text())
       }
@@ -508,7 +508,7 @@ FormValidation.prototype.validateInput = function (elem, options) {
 
       // Render messages
       if (inputValidation.errors.length > 0) {
-        self.renderMessagesToElem((inputValidation.options.showAllErrors
+        self.renderErrorsToElem((inputValidation.options.showAllErrors
           ? inputValidation.errors
           : inputValidation.errors.slice(0, 1)),
           inputValidation.$notifications
@@ -680,7 +680,7 @@ FormValidation.prototype.getInputs = function () {
 FormValidation.prototype.templates = {
   notificationsElem: '<div class="ui-formvalidation-notifications"></div>',
   messagesList: '<ul class="ui-formvalidation-messages"></ul>',
-  messagesListItem: '<li>{{ description }}</li>'
+  messagesListItem: '<li class="{{ classNames }}">{{ targetLabel }}{{ description }}</li>'
 }
 
 // The field validation rules to apply
@@ -692,7 +692,7 @@ FormValidation.prototype.rules = {
     minLength: false, // the minimum length of the input
     maxLength: false, // the maximum length of the input
     setValues: false, // list of possible set values to match to, e.g. ['on', 'off']
-    inputType: false, // a keyword that matches the input to a an input type, e.g. 'text', 'number', 'email', 'date', 'url', etc.
+    inputType: false, // a keyword that matches the input to a an input type, e.g. 'text', 'number', 'email', 'date', 'url', etc., or one of the custom input types
     sameValueAs: false, // {String} selector, {HTMLElement}, {jQueryObject}
     minValue: false, // the minimum value of the input
     maxValue: false, // the maximum value of the input
@@ -960,18 +960,25 @@ FormValidation.prototype.rules = {
           break
 
         case 'typedfile':
+          // Invalid type specified
           if (!inputValidation.$formField.find('select').val()) {
             inputValidation.errors.push({
               type: 'inputType',
-              description: __.__('Invalid file type', 'error-field-input-type-file-select')
+              description: __.__('Invalid file type', 'error-field-input-type-file-select'),
+              target: inputValidation.$formField.find('select')
             })
           }
+
+          // No file attached
           if (!inputValidation.$formField.find('input[type=file]').val()) {
             inputValidation.errors.push({
               type: 'inputType',
-              description: __.__('No file attached', 'error-field-input-type-file-field')
+              description: __.__('No file attached', 'error-field-input-type-file-field'),
+              target: inputValidation.$formField.find('input[type=file]')
             })
           }
+
+          console.log(inputValidation)
           break
       }
     }
@@ -1042,8 +1049,8 @@ FormValidation.prototype.rules = {
   }
 }
 
-// @TODO finish this
 // Show notifications on the field
+// @TODO finish this
 FormValidation.prototype.getNotificationsElem = function (validation) {
   var self = this
   var $notifications
@@ -1099,12 +1106,69 @@ FormValidation.prototype.renderMessagesToElem = function (messages, elem) {
 
   // Remove previous messages
   $elem.html('')
+
+  // Generate messages HTML
   if (messages.length > 0) {
     var messagesHtml = ''
     $.each(messages, function (i, message) {
-      messagesHtml += Templating.replace(self.templates.messagesListItem, message)
+      // Check if message has a target element
+      var targetLabel = ''
+      if (message.hasOwnProperty('target') && $(message.target).length > 0) {
+        var $target = $(message.target)
+
+        // If no ID set, create a random string ID to enable the label to target the element
+        if (!$target.attr('id')) {
+          $target.attr('id', Utility.randomString())
+        }
+
+        targetLabel = '<label for="' + $target.attr('id') + '">' + getLabelForElem(message.target) + ': </label>'
+      }
+
+      // Output message HTML
+      messagesHtml += Templating.replace(self.templates.messagesListItem, [{
+        targetLabel: targetLabel,
+        classNames: 'ui-formvalidation-message ' + (message.hasOwnProperty('type') && message.type ? 'ui-formvalidation-message-{{ type }}' : '')
+      }, message])
     })
     $elem.html(messagesHtml)
+  }
+}
+
+// Render notification errors to the element
+FormValidation.prototype.renderErrorsToElem = function (errors, elem) {
+  var self = this
+  var $elem = $(elem)
+  // @debug
+  // console.log('renderErrorsToElem', errors, elem)
+  if ($elem.length === 0 || errors.length === 0) return
+
+  // Remove previous messages
+  $elem.html('')
+
+  // Generate messages HTML
+  if (errors.length > 0) {
+    var errorsHtml = ''
+    $.each(errors, function (i, error) {
+      // Check if error has a target element
+      var targetLabel = ''
+      if (error.hasOwnProperty('target') && $(error.target).length > 0) {
+        var $target = $(error.target)
+
+        // If no ID set, create a random string ID to enable the label to target the element
+        if (!$target.attr('id')) {
+          $target.attr('id', Utility.randomString())
+        }
+
+        targetLabel = '<label for="' + $target.attr('id') + '" class="ui-formvalidation-target">' + getLabelForElem(error.target) + ': </label>'
+      }
+
+      // Output error message HTML
+      errorsHtml += Templating.replace(self.templates.messagesListItem, [{
+        targetLabel: targetLabel,
+        classNames: 'ui-formvalidation-error ' + (error.hasOwnProperty('type') && error.type ? 'ui-formvalidation-error-{{ type }}' : '')
+      }, error])
+    })
+    $elem.html(errorsHtml)
   }
 }
 

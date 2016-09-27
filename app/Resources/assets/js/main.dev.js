@@ -667,7 +667,7 @@ $(document).ready(function ($) {
     }
   }
   checkAddressIsCorrespondence()
-  
+
   /*
    * Ajouter des fichiers
    */
@@ -709,6 +709,21 @@ $(document).ready(function ($) {
     if ($extraFileAttach.length > 0) $extraFileAttach.uiFileAttach()
   }
 
+  function removeFormExtraFile (elem) {
+    var $extraFile = $(elem)
+
+    // No element found
+    if ($extraFile.length === 0) return
+
+    // Remove it
+    $extraFile.remove()
+
+    // Add an empty one if list is completely empty
+    if ($extraFilesList.find('.file-upload-extra').length === 0) {
+      addFormExtraFile()
+    }
+  }
+
   // Show the collapse
   if ($extraFilesElem.length > 0) {
     checkFormHasExtraFiles()
@@ -716,6 +731,18 @@ $(document).ready(function ($) {
     // Add one to prompt the user
     addFormExtraFile()
   }
+
+  // Remove the extra file if the `.ui-fileattach` element was removed
+  $doc.on('FileAttach:removed', '.file-upload-extra .ui-fileattach', function (event) {
+    var $extraFile = $(this).parents('.file-upload-extra')
+    removeFormExtraFile($extraFile)
+  })
+
+  // Remove the extra file field
+  $doc.on(Utility.clickEvent, '.file-upload-extra .ui-extrafiles-removefile', function (event) {
+    var $extraFile = $(this).parents('.file-upload-extra')
+    removeFormExtraFile($extraFile)
+  })
 
   /*
    * Validate IBAN Input

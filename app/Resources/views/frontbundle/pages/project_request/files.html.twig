@@ -67,7 +67,7 @@
                                                         <div id="form-extrafiles-template" class="ui-template-definition" style="display: none" disabled="disabled" aria-hidden="true">
                                                             <div class="form-field form-field-multi file-upload-extra row row-multi-col-computer" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="typedFile">
                                                                 <div class="col-lg-6 col-md-6">
-                                                                    <select name="files[extra__NUM__]" class="input-field">
+                                                                    <select name="files[extra__NUM__]" class="input-field" aria-labelledby="form-extrafiles-document-type-label">
                                                                         <option value="">{% trans %} project-request_files-select-label {% endtrans %}</option>
                                                                         {% for attachment in attachment_types  %}
                                                                             <option value="{{ attachment.id }}">{{ attachment.label }}</option>
@@ -75,7 +75,7 @@
                                                                     </select>
                                                                 </div>
                                                                 <div class="col-lg-6 col-md-6">
-                                                                    <div class="custom-input-file" id="form-extrafile" data-fileattach data-fileattach-inputname="extra__NUM__" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png tiff doc docx" data-formvalidation-required='input[type="file"][name="file[__NUM__]"]'></div><!-- /.ui-fileattach -->
+                                                                    <div class="custom-input-file" id="form-extrafile" data-fileattach data-fileattach-inputname="extra__NUM__" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png tiff doc docx" data-formvalidation-required='input[type="file"][name="file[__NUM__]"]' aria-labelledby="form-extrafiles-document-file-label"></div><!-- /.ui-fileattach -->
                                                                 </div>
                                                             </div><!-- /.file-upload-extra -->
                                                         </div><!-- /.ui-template-definition -->
@@ -83,16 +83,16 @@
                                                         <div class="form-extrafiles-list">
                                                             <div class="form-field  row row-multi-col-computer" style="margin-bottom: 0">
                                                                 <div class="col-lg-6 col-md-6" style="margin-bottom: 0">
-                                                                    <label class="field-label">{% trans %} project-request_files-document-type-column-title {% endtrans %}</label>
+                                                                    <label id="form-extrafiles-document-type-label" class="field-label">{% trans %} project-request_files-document-type-column-title {% endtrans %}</label>
                                                                 </div>
                                                                 <div class="col-lg-6 col-md-6 hide-mobile" style="margin-bottom: 0">
-                                                                    <div class="field-label">{% trans %} project-request_files-file-column-title {% endtrans %}</div>
+                                                                    <div id="form-extrafiles-document-file-label" class="field-label">{% trans %} project-request_files-file-column-title {% endtrans %}</div>
                                                                 </div>
                                                             </div>
 
                                                             <div class="form-field form-field-multi file-upload-extra row row-multi-col-computer" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="typedFile">
                                                                 <div class="col-lg-6 col-md-6">
-                                                                    <select name="files[file]" class="input-field">
+                                                                    <select name="files[file]" class="input-field" aria-labelledby="form-extrafiles-document-type-label">
                                                                         <option value="">{% trans %} project-request_files-select-label {% endtrans %}</option>
                                                                         {% for attachment in attachment_types  %}
                                                                             <option value="{{ attachment.id }}">{{ attachment.label }}</option>
@@ -100,7 +100,7 @@
                                                                     </select>
                                                                 </div>
                                                                 <div class="col-lg-6 col-md-6">
-                                                                    <div class="custom-input-file" id="form-file" data-fileattach data-fileattach-inputname="file" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png tiff doc docx" data-formvalidation-required='input[type="file"][name="file[0]"]'></div><!-- /.ui-fileattach -->
+                                                                    <div class="custom-input-file" id="form-file" data-fileattach data-fileattach-inputname="file" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png tiff doc docx" data-formvalidation-required='input[type="file"][name="file[0]"]' aria-labelledby="form-extrafiles-document-file-label"></div><!-- /.ui-fileattach -->
                                                                 </div>
                                                             </div>
 
