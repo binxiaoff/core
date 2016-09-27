@@ -112,7 +112,7 @@
         <span class="ui-draggable-handle"></span>
     {% endblock %}
     {% block panelContent %}
-        {% if 1 == 2 and lenderDetails.companiesLenderInvestedIn > 0 %}
+        {% if lenderDetails.companiesLenderInvestedIn > 0 %}
             <div class="dashboard-panel-overview">
                 <div class="label">{% trans %} lender-dashboard-account_balance-title {% endtrans %}</div>
                 {% if lenderDetails.balance != 0 %}
