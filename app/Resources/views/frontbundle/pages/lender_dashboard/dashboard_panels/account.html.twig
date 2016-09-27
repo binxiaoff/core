@@ -1,3 +1,5 @@
+{% set healthyCapital = (capitalDetails.repaid_capital + capitalDetails.owed_capital) %}
+{% set nullSpacer = (amountDetails.loaned_amount * 360 / 270) - healthyCapital - interestsDetails.received_interests - interestsDetails.upcoming_interests %}
 {% set myAccountChart = {
     type: 'preterProjectsOverview',
     background: 'none',
@@ -73,7 +75,7 @@
             minSize: 80,
             size: '33%',
             innerSize: '70%',
-            endAngle: 330,
+            endAngle: 360,
             data: [{
                 name: '',
                 color: '#ffffff',
@@ -81,7 +83,7 @@
                     enabled: false
                 },
                 showInLegend: false,
-                y: (capitalDetails.repaid_capital + capitalDetails.owed_capital) * 0.66,
+                y: (capitalDetails.repaid_capital + capitalDetails.owed_capital),
                 tooltip: false
             },{
                 name: 'lender-dashboard-account_interests-circle-collected-raw-interests-legend'|trans,
@@ -95,6 +97,15 @@
                 y: interestsDetails.upcoming_interests,
                 value: interestsDetails.upcoming_interests|localizedcurrency('EUR'),
                 showInLegend: true
+            },{
+                name: '',
+                color: '#ffffff',
+                dataLabels: {
+                    enabled: false
+                },
+                showInLegend: false,
+                y: nullSpacer,
+                tooltip: false
             }]
         }],
         tooltip: {
