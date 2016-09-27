@@ -19,6 +19,9 @@ $doc.ready(function () {
       effect: 'fade',
       speed: 250,
       autoplay: 5000,
+      // Lazy loading
+      lazyLoading: true,
+      preloadImages: false,
       // ARIA keyboard functionality
       a11y: true
     }, ElementAttrsObject(elem, {
