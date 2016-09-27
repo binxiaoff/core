@@ -135,117 +135,170 @@ class transactions extends transactions_crud
         return $solde;
     }
 
-    public function selectTransactionsOp($array_type_transactions, $sIndexationDateStart, $iClientId)
+    public function getRepaymentTransactionsAmount($iEcheanceId)
+    {
+        if (false == empty($iEcheanceId)) {
+            $sWhere = 'type_transaction IN (' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . ', ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . ')
+            AND id_echeancier = ' . $iEcheanceId;
+            return $this->sum($sWhere, 'montant');
+        }
+    }
+
+    public function getOperationsForIndexing($transactionTypeLabel,  $lastIndexedOperationDate, $clientId)
     {
         $sql = '
-        ( SELECT
+        (
+          SELECT
+            DISTINCT
             t.id_transaction,
             t.date_transaction,
             t.id_client,
             t.id_echeancier,
             t.type_transaction,
-            CASE t.type_transaction
-            WHEN ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . '
-                THEN (SELECT sum(t_refund.montant)
-                   FROM transactions t_refund
-                   WHERE t_refund.id_echeancier = t.id_echeancier AND t_refund.type_transaction IN (' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . ', ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '))
-            ELSE t.montant END                        AS montant,
+            0 AS capital,
+            0 AS interests,
             CASE ';
-
-        foreach ($array_type_transactions as $key => $t) {
-            if ($key == \transactions_types::TYPE_LENDER_LOAN) {
-                foreach ($t as $key_offre => $offre) {
+        foreach ($transactionTypeLabel as $typeId => $label) {
+            if ($typeId == \transactions_types::TYPE_LENDER_LOAN) {
+                foreach ($label as $subtypeId => $offre) {
                     // offre en cours
-                    if ($key_offre == 1) {
-                        $sql .= ' WHEN t.type_transaction = ' . $key . ' AND t.montant <= 0 THEN "' . $offre . '"';
+                    if ($subtypeId == 1) {
+                        $sql .= ' WHEN t.type_transaction = ' . $typeId . ' AND t.montant <= 0 THEN "' . $offre . '"';
                     } // offre rejeté
-                    elseif ($key_offre == 2) {
-                        $sql .= ' WHEN t.type_transaction = ' . $key . ' AND t.montant > 0 THEN "' . $offre . '"';
-                    } // offre acceptée
-                    else {
-                        $sql .= ' WHEN t.type_transaction = ' . $key . ' AND t.montant <= 0 THEN "' . $t[1] . '"';
+                    elseif ($subtypeId == 2) {
+                        $sql .= ' WHEN t.type_transaction = ' . $typeId . ' AND t.montant > 0 THEN "' . $offre . '"';
                     }
                 }
             } else {
                 $sql .= '
-                    WHEN t.type_transaction = ' . $key . ' THEN "' . $t . '"';
+                    WHEN t.type_transaction = ' . $typeId . ' THEN "' . $label . '"';
             }
         }
-        $sql .= '
-                ELSE ""
+        $sql .='
+            ELSE ""
             END AS type_transaction_alpha,
-
-            CASE
-                WHEN t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . ' THEN (SELECT ech.id_project FROM echeanciers ech WHERE ech.id_echeancier = t.id_echeancier)
-                WHEN b.id_project IS NULL THEN b2.id_project
-                ELSE b.id_project
-            END AS le_id_project,
-
+            CASE 
+            WHEN b.id_project IS NULL THEN CASE WHEN b2.id_project IS NULL THEN t.id_project ELSE b2.id_project END
+            ELSE b.id_project END AS id_project,
             date_transaction AS date_tri,
-
-            (SELECT ROUND(SUM(t2.montant / 100), 2) AS solde FROM transactions t2 WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (' . implode(', ', array(\transactions_types::TYPE_BORROWER_REPAYMENT, \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION)) . ') AND t2.id_transaction <= t.id_transaction) AS solde,
-
+            (
+              SELECT SUM(t2.montant)
+              FROM transactions t2
+              WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (' . implode(', ', array(\transactions_types::TYPE_BORROWER_REPAYMENT, \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION)) . ') AND (t2.date_transaction < t.date_transaction OR t2.date_transaction = t.date_transaction AND t2.id_transaction <= t.id_transaction)
+            ) AS solde,
             CASE t.type_transaction
-                WHEN ' . \transactions_types::TYPE_LENDER_LOAN . ' THEN (SELECT p.title FROM projects p WHERE p.id_project = le_id_project)
-                WHEN ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . ' THEN (SELECT p2.title FROM projects p2 LEFT JOIN echeanciers e ON p2.id_project = e.id_project WHERE e.id_echeancier = t.id_echeancier)
-                WHEN ' . \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT . ' THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
-                WHEN ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . ' THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
-                ELSE ""
+            WHEN ' . \transactions_types::TYPE_LENDER_LOAN . ' THEN (
+              SELECT title
+              FROM projects
+              WHERE id_project = t.id_project
+            )
+            WHEN ' . \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT . ' THEN (
+              SELECT title
+              FROM projects
+              WHERE id_project = t.id_project
+            )
+            WHEN ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . ' THEN (
+              SELECT title
+              FROM projects
+              WHERE id_project = t.id_project
+            )
+            ELSE ""
             END AS title,
-
             CASE t.type_transaction
-                WHEN ' . \transactions_types::TYPE_LENDER_LOAN . ' THEN 0
-                WHEN ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . ' THEN (SELECT e.id_loan FROM echeanciers e WHERE e.id_echeancier = t.id_echeancier)
-                WHEN ' . \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT . ' THEN (SELECT e.id_loan FROM echeanciers e WHERE e.id_project = t.id_project AND w.id_lender = e.id_lender LIMIT 1)
-                ELSE ""
+            WHEN ' . \transactions_types::TYPE_LENDER_LOAN . ' THEN 0
+            WHEN ' . \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT . ' THEN (
+              SELECT e.id_loan
+              FROM echeanciers e
+              WHERE e.id_project = t.id_project AND w.id_lender = e.id_lender
+              LIMIT 1
+            )
+            ELSE ""
             END AS bdc,
-            t.montant as amount_operation
-            FROM transactions t
+            t.montant AS amount_operation,
+            0 AS tax_amount
+          FROM transactions t
             LEFT JOIN wallets_lines w ON t.id_transaction = w.id_transaction
-            LEFT JOIN bids b ON w.id_wallet_line = b.id_lender_wallet_line
+            LEFT JOIN  bids b ON w.id_wallet_line = b.id_lender_wallet_line
             LEFT JOIN bids b2 ON t.id_bid_remb = b2.id_bid
-            WHERE DATE(t.date_transaction) >= "' . $sIndexationDateStart . '"
-                AND t.type_transaction IN (' . implode(',', array_keys($array_type_transactions)) . ')
+          WHERE t.date_transaction >= "' . $lastIndexedOperationDate . '"
+                AND t.type_transaction IN (' . implode(',', array_keys($transactionTypeLabel)) . ')
                 AND t.status = 1
                 AND t.etat = 1
-                AND t.id_client = ' . $iClientId . '
+                AND t.id_client = ' . $clientId . '
+        ) UNION ALL (
+          SELECT
+            t.id_transaction,
+            t.date_transaction,
+            t.id_client,
+            t.id_echeancier,
+            t.type_transaction,
+            0 AS capital,
+            0 AS interests,
+            "' . $transactionTypeLabel[\transactions_types::TYPE_LENDER_LOAN][3] . '" AS type_transaction_alpha,
+            lo.id_project AS id_project,
+            psh.added AS date_tri,
+            (
+              SELECT SUM(t2.montant)
+              FROM transactions t2
+              WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (' . implode(', ', array(\transactions_types::TYPE_BORROWER_REPAYMENT, \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION)) . ') AND (t2.date_transaction < date_tri OR t2.date_transaction = date_tri AND t2.id_transaction <= t.id_transaction)
+            ) AS solde,
+            p.title AS title,
+            lo.id_loan AS bdc,
+            lo.amount AS amount_operation,
+            0 AS tax_amount
+          FROM loans lo INNER JOIN accepted_bids ab ON ab.id_loan = lo.id_loan
+            INNER JOIN bids b ON ab.id_bid = b.id_bid
+            INNER JOIN wallets_lines w ON w.id_wallet_line = b.id_lender_wallet_line
+            INNER JOIN transactions t ON t.id_transaction = w.id_transaction
+            INNER JOIN projects p ON p.id_project = lo.id_project
+            INNER JOIN projects_status_history psh ON psh.id_project = lo.id_project
+          WHERE lo.status = 0
+                AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_LOAN . '
+                AND t.status = 1
+                AND t.etat = 1
+                AND t.id_client = ' . $clientId . '
+                AND psh.id_project_status_history = (
+            SELECT MIN(id_project_status_history)
+            FROM projects_status_history psh1
+            WHERE psh1.id_project = lo.id_project AND psh1.id_project_status = 8
+          )
+          GROUP BY lo.id_loan
+        ) UNION ALL (
+          SELECT
+            t.id_transaction,
+            t.date_transaction,
+            t.id_client,
+            t.id_echeancier,
+            5 AS type_transaction,
+            t.montant as capital,
+            IFNULL(interests.montant, 0) AS interests,
+            "Remboursement" AS type_transaction_alpha,
+            p.id_project AS id_project,
+            t.date_transaction AS date_tri,
+            (
+              SELECT SUM(t2.montant) + (SELECT SUM(montant) FROM transactions WHERE id_echeancier = t.id_echeancier)
+              FROM transactions t2
+              WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (' . implode(', ', array(\transactions_types::TYPE_BORROWER_REPAYMENT, \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION)) . ') AND (t2.date_transaction < date_tri OR t2.date_transaction = date_tri AND t2.id_transaction < t.id_transaction)
+            ) AS solde,
+            p.title AS title,
+            (
+              SELECT e.id_loan
+              FROM echeanciers e
+              WHERE e.id_echeancier = t.id_echeancier
+            ) AS bdc,
+            0 AS amount_operation,
+            IFNULL((SELECT SUM(amount) FROM tax WHERE id_transaction IN (SELECT id_transaction FROM transactions WHERE id_echeancier = t.id_echeancier)), 0) AS tax_amount
+          FROM transactions t
+            INNER JOIN echeanciers e ON e.id_echeancier = t.id_echeancier
+            INNER JOIN projects p ON p.id_project = e.id_project
+            LEFT JOIN transactions interests ON t.id_echeancier = interests.id_echeancier AND interests.type_transaction = 28
+          WHERE t.date_transaction >= "' . $lastIndexedOperationDate . '"
+                AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . '
+                AND t.status = 1
+                AND t.etat = 1
+                AND t.id_client = ' . $clientId . '
         )
-        UNION ALL
-        (
-            SELECT
-                t.id_transaction,
-                t.date_transaction,
-                t.id_client,
-                t.id_echeancier,
-                t.type_transaction,
-                CASE t.type_transaction
-                WHEN ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . '
-                THEN (SELECT sum(t_refund.montant)
-                   FROM transactions t_refund
-                   WHERE t_refund.id_echeancier = t.id_echeancier AND t_refund.type_transaction IN (' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . ', ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '))
-                ELSE t.montant END                        AS montant,
-              "' . $array_type_transactions[2][3] . '" AS type_transaction_alpha,
-              lo.id_project AS le_id_project,
-              psh.added AS date_tri,
-              (SELECT ROUND(SUM(t2.montant/100),2) AS solde FROM transactions t2 WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (' . implode(', ', array(\transactions_types::TYPE_BORROWER_REPAYMENT, \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION)) . ') AND t2.date_transaction < date_tri) AS solde,
-              p.title AS title,
-              lo.id_loan AS bdc,
-              lo.amount AS amount_operation
-            FROM loans lo
-              INNER JOIN accepted_bids ab ON ab.id_loan = lo.id_loan
-              INNER JOIN bids b ON ab.id_bid = b.id_bid
-              INNER JOIN wallets_lines w ON w.id_wallet_line = b.id_lender_wallet_line
-              INNER JOIN transactions t ON t.id_transaction = w.id_transaction
-              INNER JOIN projects p ON p.id_project = lo.id_project
-              INNER JOIN projects_status_history psh ON psh.id_project = lo.id_project
-            WHERE lo.status = 0
-                AND t.type_transaction IN (' . implode(',', array_keys($array_type_transactions)) . ')
-                AND t.status = 1
-                AND t.etat = 1
-                AND t.id_client = ' . $iClientId . '
-                AND psh.id_project_status_history = (SELECT MIN(id_project_status_history) FROM projects_status_history psh1 WHERE psh1.id_project = lo.id_project AND psh1.id_project_status = 8)
-                GROUP BY lo.id_loan
-        )';
+        ORDER BY date_tri DESC';
 
         $this->bdd->query('SET SQL_BIG_SELECTS = 1');  //Set it before your main query
 
@@ -255,15 +308,6 @@ class transactions extends transactions_crud
             $result[] = $record;
         }
         return $result;
-    }
-
-    public function getRepaymentTransactionsAmount($iEcheanceId)
-    {
-        if (false == empty($iEcheanceId)) {
-            $sWhere = 'type_transaction IN (' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . ', ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . ')
-            AND id_echeancier = ' . $iEcheanceId;
-            return $this->sum($sWhere, 'montant');
-        }
     }
 
     /**

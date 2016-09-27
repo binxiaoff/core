@@ -497,7 +497,7 @@ class ProjectManager
         $fCommissionRate = $oSettings->value;
 
         /** @var \tax_type $taxType */
-        $taxType = $this->loadData('tax_type');
+        $taxType = $this->oEntityManager->getRepository('tax_type');
 
         $taxRate = $taxType->getTaxRateByCountry('fr');
         $fVAT    = $taxRate[\tax_type::TYPE_VAT] / 100;

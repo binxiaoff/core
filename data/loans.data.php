@@ -208,7 +208,23 @@ class loans extends loans_crud
     public function sumPretsByMonths($id_lender, $month, $year)
     {
 
-        $sql = 'SELECT SUM(amount) FROM `loans` WHERE id_lender = ' . $id_lender . ' AND status = ' . self::STATUS_ACCEPTED . ' AND LEFT(added,7) = "' . $year . '-' . $month . '"';
+        $sql = '
+            SELECT SUM(amount) 
+            FROM loans
+            WHERE id_lender = ' . $id_lender . ' 
+                AND status = ' . self::STATUS_ACCEPTED . ' 
+                AND LEFT(added, 7) = "' . $year . '-' . $month . '"';
+
+        $result  = $this->bdd->query($sql);
+        $montant = (int)($this->bdd->result($result, 0, 0));
+        return $montant > 0 ? $montant / 100 : 0;
+    }
+
+    // sum prêtée d'un du projet
+    public function sumPretsProjet($id_project)
+    {
+
+        $sql = 'SELECT SUM(amount) FROM `loans` WHERE id_project = ' . $id_project;
 
         $result  = $this->bdd->query($sql);
         $montant = (int)($this->bdd->result($result, 0, 0));
@@ -266,14 +282,15 @@ class loans extends loans_crud
                 SUM((SELECT (ROUND(e3.montant / 100, 2) - 
               
                 ROUND(
-                   (SELECT SUM(ifnull(tax.amount, 0) / 100)
+                   (SELECT SUM(IFNULL(tax.amount, 0) / 100)
                    FROM tax
                    WHERE tax.id_transaction =
                          (SELECT t.id_transaction
                           FROM transactions t
                           WHERE t.id_echeancier = e3.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '))
                     , 2)
-                ) FROM echeanciers e3 WHERE e3.id_loan = l.id_loan AND e3.status IN (' . implode(', ', $aPyedRepayment) . ') AND e3.date_echeance = (SELECT MIN(e4.date_echeance) FROM echeanciers e4 WHERE e4.id_loan = l.id_loan AND e4.status IN (' . implode(', ', $aPyedRepayment) . ') ) LIMIT 1)) AS last_perceived_repayment
+                ) FROM echeanciers e3 WHERE e3.id_loan = l.id_loan AND e3.status IN (' . implode(', ', $aPyedRepayment) . ') AND e3.date_echeance = (SELECT MIN(e4.date_echeance) FROM echeanciers e4 WHERE e4.id_loan = l.id_loan AND e4.status IN (' . implode(', ', $aPyedRepayment) . ') ) LIMIT 1)) AS last_perceived_repayment,
+                (SELECT SUM(ROUND(e.montant / 100, 2)) FROM echeanciers e WHERE e.id_project = l.id_project AND e.ordre = 1 AND e.id_lender = l.id_lender) AS monthly_repayment_amount
             FROM loans l
             LEFT JOIN projects p ON l.id_project = p.id_project
             LEFT JOIN companies c ON p.id_company = c.id_company
