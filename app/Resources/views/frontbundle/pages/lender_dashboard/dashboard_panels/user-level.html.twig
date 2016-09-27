@@ -3,9 +3,7 @@
     {% block panelAttributes %} id="user-level" data-userlevel="{{ app.user.level|default(0) }}" {% endblock %}
     {% block panelClassNames %} dashboard-panel dashboard-userlevel ui-draggable {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %} col-lg-6 col-md-6 col-sm-8 col-xs-4 ui-user-level-0 {% endblock %}
     {% block panelTitle %}{{ 'lender-dashboard-user-level_title'|trans }}{% endblock %}
-    {% block panelControls %}
-        <span class="ui-draggable-handle"></span>
-    {% endblock %}
+    {% block panelControls %}<span class="ui-draggable-handle"></span>{% endblock %}
     {% block panelContent %}
             <div class="dashboard-panel-overview">
                 <div class="label">{% trans %} lender-dashboard-user-level_irr-title {% endtrans %}</div>

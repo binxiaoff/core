@@ -896,23 +896,7 @@ class rootController extends bootstrap
             $this->complement[$this->elements->slug] = $elt['complement'];
         }
 
-        // hack the symfony guard token
-        $session = $this->get('session');
-
-        /** @var \Symfony\Component\Security\Guard\Token\PostAuthenticationGuardToken $token */
-        $token =  unserialize($session->get('_security_default'));
-        if (!$token instanceof \Symfony\Component\Security\Guard\Token\PostAuthenticationGuardToken) {
-            header('Location: ' . $this->lurl);
-            exit;
-        }
-        /** @var \Unilend\Bundle\FrontBundle\Security\User\UserLender $user */
-        $user = $token->getUser();
-        if (!$user instanceof \Unilend\Bundle\FrontBundle\Security\User\UserLender) {
-            header('Location: ' . $this->lurl);
-            exit;
-        }
-
-        if ($this->clients->get($user->getClientId(), 'id_client') || isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
+        if (isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
             if (isset($this->params[0]) && $this->params[0] != 'morale' && $this->params[0] != 'nosign') {
                 $this->autoFireHeader = false;
                 $this->autoFireHead   = true;
