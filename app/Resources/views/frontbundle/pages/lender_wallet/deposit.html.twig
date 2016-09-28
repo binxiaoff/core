@@ -73,9 +73,6 @@ classNames: 'user-preter-balance'
                                 </div><!-- /.form-field -->
 
                                 <div class="balance-payment-cb">
-                                    <p>{% trans %} lender-wallet_secure-payment-message {% endtrans %}</p>
-                                    <img src="{{ siteurlmedia('dashboard/logo-payline.png') }}" alt="Payline"/>
-
                                     <form id="form-balance-deposit" action="{{ path('deposit_money') }}" method="post" class="form-balance-deposit" data-formvalidation data-formvalidation-render="false" data-ajax>
                                         <div class="form-field col-lg-5 col-md-5">
                                             <label for="form-balance-deposit-amount">{% trans %} lender-wallet_amount {% endtrans %}
@@ -92,6 +89,10 @@ classNames: 'user-preter-balance'
                                         <div class="btn-controls">
                                             <button id="perform-deposit-money" class="btn-primary">{% trans %} lender-wallet_submit-transaction {% endtrans %}</button>
                                         </div><!-- /.btn-controls -->
+                                        <div class="c-t3">
+                                            <p>{% trans %} lender-wallet_secure-payment-message {% endtrans %}</p>
+                                            <img src="{{ siteurlmedia('dashboard/logo-payline-grey.png') }}" alt="Payline"/>
+                                        </div>
                                     </form>
                                 </div><!-- /.balance-payment-cb -->
 
