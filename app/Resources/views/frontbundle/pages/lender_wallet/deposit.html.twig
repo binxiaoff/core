@@ -93,6 +93,7 @@ classNames: 'user-preter-balance'
                                             <p>{% trans %} lender-wallet_secure-payment-message {% endtrans %}</p>
                                             <img src="{{ siteurlmedia('dashboard/logo-payline-grey.png') }}" alt="Payline"/>
                                         </div>
+                                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('deposit') }}">
                                     </form>
                                 </div><!-- /.balance-payment-cb -->
 
