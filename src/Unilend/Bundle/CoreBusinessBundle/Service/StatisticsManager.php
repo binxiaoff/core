@@ -130,16 +130,19 @@ class StatisticsManager
             return $cachedItem->get();
         }
     }
-
+    /**
+     * Stat  is voluntarily only on the last 6 months
+     */
     public function getAverageFundingTime()
     {
         $cachedItem = $this->cachePool->getItem(CacheKeys::AVG_FUNDING_TIME);
 
         if (false === $cachedItem->isHit()) {
+            $startDate = new \DateTime('NOW - 6 MONTHS');
             /** @var \projects $projects */
             $projects = $this->entityManager->getRepository('projects');
             /** @var array $averageFundingTime */
-            $averageFundingTime = $projects->getAverageFundingTime();
+            $averageFundingTime = $projects->getAverageFundingTime($startDate);
 
             $cachedItem->set($averageFundingTime)->expiresAfter(CacheKeys::LONG_TIME);
             $this->cachePool->save($cachedItem);

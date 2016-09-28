@@ -871,8 +871,12 @@ class projects extends projects_crud
         return $this->bdd->executeQuery($sQuery);
     }
 
-    public function getAverageFundingTime()
+    public function getAverageFundingTime(\DateTime $startingDate = null)
     {
+        if (is_null($startingDate)) {
+            $startingDate = new \DateTime('2014-04-01');
+        }
+
         $sQuery = '
             SELECT
                 FLOOR(HOUR(AVG(t.DurationFunding)) / 24) AS "days",
@@ -887,10 +891,10 @@ class projects extends projects_crud
                 INNER JOIN projects p ON (b.id_project = p.id_project)
                 INNER JOIN projects_status_history psh ON p.id_project = psh.id_project
                 INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                WHERE b.status = ' . \bids::STATUS_BID_REJECTED . ' AND ps.status = ' . \projects_status::FUNDE . ' AND p.date_retrait > "2014-04-01"
+                WHERE b.status = ' . \bids::STATUS_BID_REJECTED . ' AND ps.status = ' . \projects_status::FUNDE . ' AND p.date_retrait > :date
             ) AS t';
 
-        $oStatement = $this->bdd->executeQuery($sQuery);
+        $oStatement = $this->bdd->executeQuery($sQuery, ['date' => $startingDate->format('Y-m-d')], ['date' => \PDO::PARAM_STR]);
         $aDateIntervalInformation  = $oStatement->fetch(\PDO::FETCH_ASSOC);
 
         return $aDateIntervalInformation;
