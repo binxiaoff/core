@@ -434,18 +434,18 @@ class LenderOperationsController extends Controller
         <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8"/>
         <table border=1>
             <tr>
-                <th>' . $translator->trans('lender-operations_operation') . '</th>
-                <th>' . $translator->trans('lender-operations_loans-table-contract-column') . '</th>
-                <th> ID ' . $translator->trans('lender-operations_project') . '</th>
-                <th>' . $translator->trans('lender-operations_project') . '</th>
-                <th>' . $translator->trans('lender-operations_date') . '</th>
-                <th>' . $translator->trans('lender-operations_amount') . '</th>
-                <th>' . $translator->trans('lender-operations_repaid-capital-amount') . '</th>
-                <th>' . $translator->trans('lender-operations_repaid-interests-amount') . '</th>';
+                <th>' . $translator->trans('lender-operations_operations-csv-operation-column') . '</th>
+                <th>' . $translator->trans('lender-operations_operations-csv-contract-column') . '</th>
+                <th>' . $translator->trans('lender-operations_operations-csv-project-id-column') . '</th>
+                <th>' . $translator->trans('lender-operations_operations-csv-project-label-column') . '</th>
+                <th>' . $translator->trans('lender-operations_operations-csv-operation-date-column') . '</th>
+                <th>' . $translator->trans('lender-operations_operations-csv-operation-amount-column') . '</th>
+                <th>' . $translator->trans('lender-operations_operations-csv-repaid-capital-amount-column') . '</th>
+                <th>' . $translator->trans('lender-operations_operations-csv-perceived-interests-amount-column') . '</th>';
         foreach ($aTaxType as $aType) {
             $content .= '<th>' . $aType['name'] . '</th>';
         }
-        $content .= '<th>' . $translator->trans('lender-operations_account-balance') . '</th>
+        $content .= '<th>' . $translator->trans('lender-operations_operations-csv-account-balance-column') . '</th>
                 <td></td>
             </tr>';
 
@@ -486,9 +486,9 @@ class LenderOperationsController extends Controller
                         <td>' . $sProjectId . '</td>
                         <td>' . $t['libelle_projet'] . '</td>
                         <td>' . date('d-m-Y', strtotime($t['date_operation'])) . '</td>
-                        <td' . $couleur . '>' . $ficelle->formatNumber($t['montant_operation']) . '</td>
-                        <td>' . $ficelle->formatNumber(bcdiv($t['montant_capital'], 100, 2)) . '</td>
-                        <td>' . $ficelle->formatNumber(bcdiv($t['montant_interet'], 100, 2)) . '</td>';
+                        <td' . $couleur . '>' . $ficelle->formatNumber($t['montant_operation'], 2) . '</td>
+                        <td>' . $ficelle->formatNumber($t['montant_capital'], 2) . '</td>
+                        <td>' . $ficelle->formatNumber($t['montant_interet'], 2) . '</td>';
                 foreach ($aTaxType as $aType) {
                     $content .= '<td>';
 
@@ -500,7 +500,7 @@ class LenderOperationsController extends Controller
                     $content .= '</td>';
                 }
                 $content .= '
-                        <td>' . $ficelle->formatNumber(bcdiv($t['solde'], 100, 2)) . '</td>
+                        <td>' . $ficelle->formatNumber($t['solde'], 2) . '</td>
                         <td></td>
                     </tr>';
 
@@ -548,7 +548,7 @@ class LenderOperationsController extends Controller
                         <td>' . $sProjectId . '</td>
                         <td></td>
                         <td>' . date('d-m-Y', strtotime($t['date_operation'])) . '</td>
-                        <td' . $couleur . '>' . $ficelle->formatNumber($t['montant_operation'] / 100) . '</td>
+                        <td' . $couleur . '>' . $ficelle->formatNumber($t['montant_operation'], 2) . '</td>
                         <td></td>
                         <td></td>
                         <td></td>
@@ -558,7 +558,7 @@ class LenderOperationsController extends Controller
                         <td></td>
                         <td></td>
                         <td></td> 
-                        <td>' . $ficelle->formatNumber(bcdiv($t['solde'], 100, 2)) . '</td>
+                        <td>' . $ficelle->formatNumber($t['solde'], 2) . '</td>
                         <td></td>
                     </tr>
                     ';
@@ -580,7 +580,7 @@ class LenderOperationsController extends Controller
                         <td>' . $sProjectId . '</td>
                         <td>' . $t['libelle_projet'] . '</td>
                         <td>' . date('d-m-Y', strtotime($t['date_operation'])) . '</td>
-                        <td' . (! $offre_accepte ? $couleur : '') . '>' . $ficelle->formatNumber($t['montant_operation']) . '</td>
+                        <td' . (! $offre_accepte ? $couleur : '') . '>' . $ficelle->formatNumber($t['montant_operation'], 2) . '</td>
                         <td></td>
                         <td></td>
                         <td></td>
@@ -590,7 +590,7 @@ class LenderOperationsController extends Controller
                         <td></td>
                         <td></td>
                         <td></td>
-                        <td>' . $ficelle->formatNumber($t['solde'] / 100) . '</td>
+                        <td>' . $ficelle->formatNumber($t['solde'], 2) . '</td>
                         <td>' . $asterix . '</td>
                     </tr>
                    ';
