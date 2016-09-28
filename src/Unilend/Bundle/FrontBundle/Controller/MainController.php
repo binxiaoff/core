@@ -856,9 +856,11 @@ class MainController extends Controller
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function statisticsAction()
+    public function statisticsAction(Request $request)
     {
-        return $this->render('/pages/static_pages/error.html.twig');
+        if ($request->getClientIp() != '92.154.10.41') {
+            return $this->render('/pages/static_pages/error.html.twig');
+        }
 
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
