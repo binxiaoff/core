@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
 use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
@@ -133,7 +134,7 @@ class SecurityController extends Controller
                     'url'           => $this->get('assets.packages')->getUrl(''),
                     'prenom'        => $clients->prenom,
                     'login'         => $clients->email,
-                    'link_password' => $this->generateUrl('define_new_password', ['clientHash' => $clients->hash]),
+                    'link_password' => $this->generateUrl('define_new_password', ['clientHash' => $clients->hash], UrlGeneratorInterface::ABSOLUTE_URL),
                     'lien_fb'       => $lien_fb,
                     'lien_tw'       => $lien_tw
                 ];
