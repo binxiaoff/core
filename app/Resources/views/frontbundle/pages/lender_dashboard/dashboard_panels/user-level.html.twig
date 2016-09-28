@@ -32,7 +32,7 @@
                         {{ "lender-dashboard_irr-#{ lenderDetails.irrTranslation }"|trans|raw }}
                     {% endif %}
                 </p>
-                <p class="secondary">{% trans with {'%unilendIRR%' : lenderDetails.unilendIRR|localizednumber} %} lender-dashboard-user-level_unilend-irr {% endtrans %}</p>
+                <p class="secondary">{% trans with {'%unilendIRR%' : getStatistic('unilendIRR')|localizednumber} %} lender-dashboard-user-level_unilend-irr {% endtrans %}</p>
             </div>
     {% endblock %}
     {% block panelFooter %}
