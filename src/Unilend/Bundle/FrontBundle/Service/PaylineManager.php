@@ -96,7 +96,6 @@ class PaylineManager
                 $transaction->montant          = $response['payment']['amount'];
                 $transaction->id_langue        = 'fr';
                 $transaction->date_transaction = date('Y-m-d H:i:s');
-                $transaction->status           = \transactions::PHYSICAL;
                 $transaction->etat             = 1;
                 /** @todo id_partenaire is set from db table : partenaires.id_partenaire */
                 $transaction->id_partenaire    = $partnerId;
