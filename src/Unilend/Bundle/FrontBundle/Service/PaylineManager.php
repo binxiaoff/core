@@ -97,7 +97,7 @@ class PaylineManager
                 $transaction->id_langue        = 'fr';
                 $transaction->date_transaction = date('Y-m-d H:i:s');
                 $transaction->etat             = 1;
-                $transaction->status           = 1;
+                $transaction->status           = \transactions::STATUS_VALID;
                 /** @todo id_partenaire is set from db table : partenaires.id_partenaire */
                 $transaction->id_partenaire    = $partnerId;
                 $transaction->type_paiement    = ($response['extendedCard']['type'] == 'VISA' ? \transactions::PAYMENT_TYPE_VISA : ($response['extendedCard']['type'] == 'MASTERCARD' ? \transactions::PAYMENT_TYPE_MASTERCARD : ''));
