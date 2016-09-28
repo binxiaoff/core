@@ -727,6 +727,18 @@ ChartView.prototype.render = function (data, schema) {
 
         // Preter Remboursements Stacked Columns Chart
         case 'preterRemboursements':
+          self.chart = new Highcharts.setOptions({
+            lang: {
+              numericSymbols: null,
+            },
+            yAxis: {
+              labels: {
+                formatter: function () {
+                  return Highcharts.numberFormat(this.value, 0, '.', ' ') + ' €';
+                }
+              }
+            }
+          });
           break
 
         // Preter Operations Pie/Donut Chart
