@@ -380,8 +380,8 @@ class LenderWalletController extends Controller
                 /** @var PaylineManager $paylineManager */
                 $paylineManager = $this->get('unilend.frontbundle.service.payline_manager');
                 $paylineManager->setLogger($logger);
-                if ($paylineManager->handlePaylineReturn($client, $response, $paylineParameter, $partnerId, PaylineManager::PAYMENT_LOCATION_LENDER_WALLET)) {
 
+                if ($paylineManager->handlePaylineReturn($client, $response, $paylineParameter, $partnerId, PaylineManager::PAYMENT_LOCATION_LENDER_WALLET)) {
                     $this->redirectToRoute('lender_wallet_deposit', [
                         'depositResult' => true,
                         'depositCode' => Response::HTTP_OK,
