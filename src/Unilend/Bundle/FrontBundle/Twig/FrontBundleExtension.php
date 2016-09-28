@@ -11,6 +11,7 @@ use Unilend\core\Loader;
 
 class FrontBundleExtension extends \Twig_Extension
 {
+    /** @var string */
     private $rootDir;
     /** @var StatisticsManager */
     private $statisticsManager;
@@ -34,6 +35,7 @@ class FrontBundleExtension extends \Twig_Extension
         MemcacheCachePool $cachePool,
         LocationManager $locationManager
     ) {
+        $this->rootDir            = $rootDir;
         $this->packages           = $assetsPackages;
         $this->statisticsManager  = $statisticsManager;
         $this->translationManager = $translationManager;
