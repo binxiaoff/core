@@ -24,6 +24,7 @@ framework:
             - "%kernel.root_dir%/../src/Unilend/Bundle/TranslationBundle/Resources/translations"
         logging: true
     session:
+        handler_id: null
         gc_maxlifetime: 3600
     esi: { enabled: true }
     csrf_protection: true
