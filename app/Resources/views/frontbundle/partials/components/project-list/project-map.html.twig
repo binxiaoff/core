@@ -45,7 +45,10 @@
                     <div class="project-interest">{{ project.averageRate|localizednumberwithprecision(1) }}&nbsp;%</div>
                     <div class="project-period">
                         {% if project.finished %}
-                            {% trans %} project-list_project-finished {% endtrans %}
+                            {% trans with {
+                                '%fundingDuration%' : ('project-list_funding-duration-' ~ project.fundingDuration.translation)|transchoice(project.fundingDuration.choice, project.fundingDuration.values),
+                                '%date%' : project.endDate|localizeddate('medium', 'none', app.request.locale)}
+                            %} project-list_project-finished {% endtrans %}
                         {% elseif project.daysLeft <= 2 %}
                             <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|date('c') }}"></span>
                         {% else %}
