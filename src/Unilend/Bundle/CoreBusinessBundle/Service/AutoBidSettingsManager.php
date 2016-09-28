@@ -9,7 +9,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
  */
 class AutoBidSettingsManager
 {
-    const CGV_AUTOBID = 474;
+    const CGV_AUTOBID = 53;
 
     /** @var ClientSettingsManager */
     private $oClientSettingsManager;
