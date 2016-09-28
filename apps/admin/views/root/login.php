@@ -64,25 +64,9 @@
 
                     <tr>
                         <td colspan="2" class="center">
-                            <?php if (isset($_SESSION['login_user']) && ($_SESSION['login_user']['nb_tentatives_precedentes'] > 1)): ?>
-                                <div id="load_bloc">
-                                    <img src="<?= $this->surl ?>/images/default/loading.gif" alt="loading...">
-                                    <h2 style="margin-bottom:20px;" class="notice_error"><?= 'Par mesure de sécurité vous devez attendre ' . $_SESSION['login_user']['duree_waiting'] . ' secondes' ?></h2>
-                                </div>
-                            <?php endif ; ?>
-
                             <div id="bloc_action">
                                 <input type="submit" value="Se connecter" title="Se connecter" name="connect" id="connect" class="btn"/>
                             </div>
-                            <?php if (isset($_SESSION['login_user']) && ($_SESSION['login_user']['nb_tentatives_precedentes'] > 1)) : ?>
-                                <script type="text/javascript">
-                                    $("input").keypress(function (event) {
-                                        if (event.keyCode == 13) {
-                                            event.preventDefault();
-                                        }
-                                    });
-                                </script>
-                            <?php endif; ?>
                         </td>
                     </tr>
                 </table>

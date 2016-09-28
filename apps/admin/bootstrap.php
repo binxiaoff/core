@@ -127,9 +127,6 @@ class bootstrap extends Controller
 
                 $this->error_login = "Le couple d'identifiant n'est pas correct";
 
-                $_SESSION['login_user']['duree_waiting']             = $this->duree_waiting;
-                $_SESSION['login_user']['nb_tentatives_precedentes'] = $this->nb_tentatives_precedentes;
-
                 $this->loggin_connection_admin        = $this->loadData('loggin_connection_admin');
                 $this->loggin_connection_admin->email = $_POST['login'];
                 $this->loggin_connection_admin->ip    = $_SERVER['REMOTE_ADDR'];
