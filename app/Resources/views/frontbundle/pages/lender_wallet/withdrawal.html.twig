@@ -82,14 +82,15 @@ classNames: 'user-preter-balance'
                                         <div class="btn-group">
                                             <span class="icon fa-euro"></span>
                                         </div>
-                                        {{ form_widget(withdrawalForm.amount, {'attr' :{
-                                            'class' : 'input-field',
-                                            'id' : 'form-balance-withdraw-amount',
-                                            'data-formvalidation-input data-formvalidation-required' : true,
+                                        {{ form_widget(withdrawalForm.amount, {'attr': {
+                                            'class': 'input-field',
+                                            'autocomplete': 'off',
+                                            'id': 'form-balance-withdraw-amount',
+                                            'data-formvalidation-input data-formvalidation-required': true,
                                             'data-formvalidation-minvalue': 0,
-                                            'data-formvalidation-maxvalue' : balance,
-                                            'data-formvalidation-required' : true,
-                                            'data-formvalidation-render' : true
+                                            'data-formvalidation-maxvalue': balance,
+                                            'data-formvalidation-required': true,
+                                            'data-formvalidation-render': true
                                             } }) }}
                                     </div>
                                 </div><!-- /.form-field -->
@@ -99,11 +100,12 @@ classNames: 'user-preter-balance'
                                         <div class="btn-group">
                                             <span class="icon fa-lock"></span>
                                         </div>
-                                        {{ form_widget(withdrawalForm.password, {'attr':{
+                                        {{ form_widget(withdrawalForm.password, {'attr': {
                                             'id': 'form-balance-withdraw-password',
-                                            'class' : 'input-field',
-                                            'data-formvalidation-input data-formvalidation-required' : true,
-                                            'data-formvalidation-render' : true
+                                            'class': 'input-field',
+                                            'autocomplete': 'off',
+                                            'data-formvalidation-input data-formvalidation-required': true,
+                                            'data-formvalidation-render': true
                                         }} ) }}
                                     </div>
                                 </div><!-- /.form-field -->

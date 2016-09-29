@@ -20,7 +20,7 @@ class AutolendController extends Controller
      * @Route("/profile/autolend", name="autolend")
      * @Security("has_role('ROLE_LENDER')")
      */
-    public function autolendAction(Request $request)
+    public function autolendAction()
     {
         /** @var AutoBidSettingsManager $autoBidSettingsManager */
         $autoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
@@ -90,14 +90,9 @@ class AutolendController extends Controller
         $template['never_activated'] = false === $autoBidSettingsManager->hasAutoBidActivationHistory($lendersAccounts);
         $template['is_novice']       = $autoBidSettingsManager->isNovice($lendersAccounts);
         $template['validation_date'] = strftime('%d %B %G', $validateTime->format('U'));
+        $template['autolend_amount'] = $autoBidSettingsManager->getAmount($lendersAccounts);
 
-        return $this->render('pages/autolend.html.twig', array_merge($template, ['userProfile' => [
-                'autolend' => [
-                    'enableTable' => true,
-                    'enable' => true
-                ]
-            ]
-        ]));
+        return $this->render('pages/autolend.html.twig', $template);
 
     }
 
@@ -120,7 +115,7 @@ class AutolendController extends Controller
         /** @var array $messages */
         $messages = [];
 
-        if ($request->isXMLHttpRequest()) {
+        if ($request->isXmlHttpRequest()) {
             $post = $request->request->all();
             if (false === empty($post['setting']) && $post['setting'] == 'autolend-off') {
                  $messages = $this->saveAutolendOff($lenderAccount, $clientSettings, $autoBidSettingsManager);

@@ -451,6 +451,7 @@ class LenderProfileController extends Controller
 
             if ($client->prenom != $post['first_name']) {
                 $client->prenom = $post['first_name'];
+                $historyContent .= '<li>' . $translator->trans('common_firstname') . '</li>'; //TODO
             }
 
             if ($client->nom_usage != $post['used_name']) {
@@ -1165,15 +1166,21 @@ class LenderProfileController extends Controller
     {
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
+        /** @var \clients $client */
+        $client = $this->getClient();
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->getLenderAccount();
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
+        /** @var string $historyContent */
+        $historyContent = '<ul>';
+
         $newIban = str_replace(' ', '', $request->request->get('iban', $lenderAccount->iban));
 
         if (false == empty($newIban) && true === $ficelle->isIBAN($newIban && false === strlen($newIban) < 27)) {
             $lenderAccount->iban = $newIban;
+            $historyContent .= '<li>' . $translator->trans('lender-profile_fiscal-tab-bank-info-section-iban') . '</li>';
         } else {
             $this->addFlash('bankInfoUpdateError', $translator->trans('lender-profile_fiscal-tab-wrong-iban'));
         }
@@ -1182,6 +1189,7 @@ class LenderProfileController extends Controller
 
         if (false == empty($newSwift) && true === $ficelle->swift_validate($newSwift)) {
             $lenderAccount->bic = $newSwift;
+            $historyContent .= '<li>' . $translator->trans('lender-profile_fiscal-tab-bank-info-section-bic') . '</li>';
         } else {
             $this->addFlash('bankInfoUpdateError', $translator->trans('lender-profile_fiscal-tab-wrong-swift'));
         }
@@ -1190,6 +1198,7 @@ class LenderProfileController extends Controller
 
         if (false === empty($newFundsOrigin)) {
             $lenderAccount->origine_des_fonds = $newFundsOrigin;
+            $historyContent .= '<li>' . $translator->trans('lender-profile_fiscal-tab-bank-info-section-funds-origin-label') . '</li>';
         } else {
             $this->addFlash('bankInfoUpdateError', $translator->trans('lender-profile_fiscal-tab-wrong-funds-origin'));
         }
@@ -1198,16 +1207,25 @@ class LenderProfileController extends Controller
 
             if (false === $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::RIB, 'iban-certificate')) {
                 $this->addFlash('bankInfoUpdateError', $translator->trans('lender-profile_fiscal-tab-rib-file-error'));
+            } else {
+                $historyContent .= '<li>' . $translator->trans('lender-profile_fiscal-tab-bank-info-section-documents') . '</li>';
             }
         }
+
+        $historyContent .= '</ul>';
 
         if (false === $this->get('session')->getFlashBag()->has('bankInfoUpdateError')) {
             $lenderAccount->update();
             $this->addFlash('bankInfoUpdateSuccess', $translator->trans('lender-profile_fiscal-tab-bank-info-update-ok'));
+
+            if (false !== strpos($historyContent, '<li>')) {
+                $this->updateClientStatusAndNotifyClient($client, $historyContent);
+            }
         } else {
             $this->addFlash('bankInfoUpdateError', $translator->trans('lender-profile_fiscal-tab-bank-info-update-ko'));
         }
 
+        $this->saveClientActionHistory($client, serialize(['id_client' => $client->id_client, 'post' => $request->request->all(), 'files' => $_FILES]));
         return $this->redirectToRoute('lender_profile_fiscal_information');
     }
 

@@ -76,13 +76,15 @@ class ProjectRequestController extends Controller
 
     /**
      * @Route("/depot_de_dossier/etape1", name="project_request_landing_page_start")
-     * @Method("POST")
      *
      * @param Request $request
      * @return Response
      */
     public function landingPageStartAction(Request $request)
     {
+        if ($request->isMethod('GET')) {
+            return $this->redirect($this->generateUrl('home_borrower') . '#homeemp-section-esim');
+        }
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \settings $settings */
