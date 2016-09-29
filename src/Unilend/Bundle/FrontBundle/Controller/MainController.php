@@ -766,10 +766,7 @@ class MainController extends Controller
             $finalElements = $cachedItem->get();
         }
 
-        $response = $this->render('partials/site/footer.html.twig', ['menus' => $finalElements['footerMenu'], 'partners' => $finalElements['partners']]);
-        $response->setSharedMaxAge(900);
-
-        return $response;
+        return $this->render('partials/site/footer.html.twig', ['menus' => $finalElements['footerMenu'], 'partners' => $finalElements['partners']]);
     }
 
     /**
@@ -811,10 +808,7 @@ class MainController extends Controller
             }
         }
 
-        $response = $this->render('partials/site/reviews.html.twig', ['reviews' => $reviews]);
-        $response->setSharedMaxAge(900);
-
-        return $response;
+        return $this->render('partials/site/reviews.html.twig', ['reviews' => $reviews]);
     }
 
     /**
