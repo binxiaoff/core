@@ -72,91 +72,74 @@ class bootstrap extends Controller
         $this->users_history    = $this->loadData('users_history');
         $this->mail_template    = $this->loadData('mail_templates');
 
-        if (isset($_POST['captcha'])) {
-            if (isset($_SESSION['captcha']) && $_SESSION['captcha'] == $_POST['captcha']) {
-                $content_captcha = 'ok';
-            } else {
-                $content_captcha           = 'ko';
-                $this->displayCaptchaError = 'Captcha incorrecte';
-            }
-        }
+        if (! empty($_POST['connect']) && ! empty($_POST['password'])) {
+            $this->loggin_connection_admin = $this->loadData('loggin_connection_admin');
+            $user                          = $this->users->login($_POST['login'], $_POST['password']);
 
-        if (!empty($_POST['connect']) && !empty($_POST['password'])) {
-            if (isset($_POST['captcha']) && $content_captcha == 'ko') {
-                $_SESSION['login_user']['displayCaptchaError'] = $this->displayCaptchaError;
-            } else {
-                $this->loggin_connection_admin = $this->loadData('loggin_connection_admin');
-                $user                          = $this->users->login($_POST['login'], $_POST['password']);
+            if ($user != false) {
+                $this->loggin_connection_admin->id_user        = $user['id_user'];
+                $this->loggin_connection_admin->nom_user       = $user['firstname'] . ' ' . $user['name'];
+                $this->loggin_connection_admin->email          = $user['email'];
+                $this->loggin_connection_admin->date_connexion = date('Y-m-d H:i:s');
+                $this->loggin_connection_admin->ip             = $_SERVER['REMOTE_ADDR'];
 
-                if ($user != false) {
-                    $this->loggin_connection_admin->id_user        = $user['id_user'];
-                    $this->loggin_connection_admin->nom_user       = $user['firstname'] . ' ' . $user['name'];
-                    $this->loggin_connection_admin->email          = $user['email'];
-                    $this->loggin_connection_admin->date_connexion = date('Y-m-d H:i:s');
-                    $this->loggin_connection_admin->ip             = $_SERVER['REMOTE_ADDR'];
-
-                    if (function_exists('geoip_country_code_by_name')) {
-                        $country_code = strtolower(geoip_country_code_by_name($_SERVER['REMOTE_ADDR']));
-                    } else {
-                        $country_code = 'fr';
-                    }
-
-                    $this->loggin_connection_admin->pays = $country_code;
-                    $this->loggin_connection_admin->create();
-
-                    unset($_SESSION['login_user']);
-
-                    $this->users->handleLogin('connect', 'login', 'password');
-                    die;
+                if (function_exists('geoip_country_code_by_name')) {
+                    $country_code = strtolower(geoip_country_code_by_name($_SERVER['REMOTE_ADDR']));
                 } else {
-                    /*
-                     * À chaque tentative on double le temps d'attente entre 2 demandes
-                     * - tentative 2 = 2 secondes d'attente
-                     * - tentative 3 = 4 secondes
-                     * - tentative 4 = 8 secondes
-                     * - etc...
-                     *
-                     * Au bout de 10 demandes (avec la même IP) DANS LES 10min
-                     * - Ajout d'un captcha + @ admin
-                     */
-
-                    // H - 10min
-                    $this->duree_waiting             = 0;
-                    $coef_multiplicateur             = 2;
-                    $resultat_precedent              = 1;
-                    $h_moins_dix_min                 = date('Y-m-d H:i:s', mktime(date('H'), date('i') - 10, 0, date('m'), date('d'), date('Y')));
-                    $this->nb_tentatives_precedentes = $this->loggin_connection_admin->counter('ip = "' . $_SERVER["REMOTE_ADDR"] . '" AND date_connexion >= "' . $h_moins_dix_min . '" AND id_user = 0');
-
-                    if ($this->nb_tentatives_precedentes > 0 && $this->nb_tentatives_precedentes < 1000) { // 1000 pour ne pas bloquer le site
-                        for ($i = 1; $i <= $this->nb_tentatives_precedentes; $i++) {
-                            $this->duree_waiting = $resultat_precedent * $coef_multiplicateur;
-                            $resultat_precedent  = $this->duree_waiting;
-                        }
-                    }
-
-                    // DEBUG
-                    //$this->duree_waiting = 1;
-
-                    $this->error_login = "Le couple d'identifiant n'est pas correct";
-
-                    $_SESSION['login_user']['duree_waiting']             = $this->duree_waiting;
-                    $_SESSION['login_user']['nb_tentatives_precedentes'] = $this->nb_tentatives_precedentes;
-                    $_SESSION['login_user']['displayCaptchaError']       = (isset($this->displayCaptchaError)) ? $this->displayCaptchaError : '';
-
-                    $this->loggin_connection_admin        = $this->loadData('loggin_connection_admin');
-                    $this->loggin_connection_admin->email = $_POST['login'];
-                    $this->loggin_connection_admin->ip    = $_SERVER['REMOTE_ADDR'];
-
-                    if (function_exists('geoip_country_code_by_name')) {
-                        $country_code = strtolower(geoip_country_code_by_name($_SERVER['REMOTE_ADDR']));
-                    } else {
-                        $country_code = 'fr';
-                    }
-                    $this->loggin_connection_admin->pays           = $country_code;
-                    $this->loggin_connection_admin->date_connexion = date('Y-m-d H:i:s');
-                    $this->loggin_connection_admin->statut         = 1;
-                    $this->loggin_connection_admin->create();
+                    $country_code = 'fr';
                 }
+
+                $this->loggin_connection_admin->pays = $country_code;
+                $this->loggin_connection_admin->create();
+
+                unset($_SESSION['login_user']);
+
+                $this->users->handleLogin('connect', 'login', 'password');
+                die;
+            } else {
+                /*
+                 * À chaque tentative on double le temps d'attente entre 2 demandes
+                 * - tentative 2 = 2 secondes d'attente
+                 * - tentative 3 = 4 secondes
+                 * - tentative 4 = 8 secondes
+                 * - etc...
+                 *
+                 * Au bout de 10 demandes (avec la même IP) DANS LES 10min
+                 * - Ajout d'un captcha + @ admin
+                 */
+
+                // H - 10min
+                $this->duree_waiting             = 0;
+                $coef_multiplicateur             = 2;
+                $resultat_precedent              = 1;
+                $h_moins_dix_min                 = date('Y-m-d H:i:s', mktime(date('H'), date('i') - 10, 0, date('m'), date('d'), date('Y')));
+                $this->nb_tentatives_precedentes = $this->loggin_connection_admin->counter('ip = "' . $_SERVER["REMOTE_ADDR"] . '" AND date_connexion >= "' . $h_moins_dix_min . '" AND id_user = 0');
+
+                if ($this->nb_tentatives_precedentes > 0 && $this->nb_tentatives_precedentes < 1000) { // 1000 pour ne pas bloquer le site
+                    for ($i = 1; $i <= $this->nb_tentatives_precedentes; $i++) {
+                        $this->duree_waiting = $resultat_precedent * $coef_multiplicateur;
+                        $resultat_precedent  = $this->duree_waiting;
+                    }
+                }
+
+                // DEBUG
+                //$this->duree_waiting = 1;
+
+                $this->error_login = "Le couple d'identifiant n'est pas correct";
+
+                $this->loggin_connection_admin        = $this->loadData('loggin_connection_admin');
+                $this->loggin_connection_admin->email = $_POST['login'];
+                $this->loggin_connection_admin->ip    = $_SERVER['REMOTE_ADDR'];
+
+                if (function_exists('geoip_country_code_by_name')) {
+                    $country_code = strtolower(geoip_country_code_by_name($_SERVER['REMOTE_ADDR']));
+                } else {
+                    $country_code = 'fr';
+                }
+                $this->loggin_connection_admin->pays           = $country_code;
+                $this->loggin_connection_admin->date_connexion = date('Y-m-d H:i:s');
+                $this->loggin_connection_admin->statut         = 1;
+                $this->loggin_connection_admin->create();
             }
         }
 

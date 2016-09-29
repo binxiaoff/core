@@ -10,6 +10,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
+use Symfony\Component\Security\Csrf\CsrfToken;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Service\PaylineManager;
@@ -266,12 +268,15 @@ class LenderWalletController extends Controller
         $ficelle = Loader::loadLib('ficelle');
         /** @var LoggerInterface $logger */
         $logger = $this->get('logger');
+        /** @var CsrfTokenManagerInterface $csrfTokenManager */
+        $csrfTokenManager = $this->get('security.csrf.token_manager');
 
         $amount = $ficelle->cleanFormatedNumber($request->request->get('amount'));
+        $csrfToken = $request->request->get('_csrf_token');
 
         $client->get($this->getUser()->getClientId());
 
-        if (is_numeric($amount) && $amount >= self::MIN_DEPOSIT_AMOUNT && $amount <= self::MAX_DEPOSIT_AMOUNT) {
+        if (is_numeric($amount) && $amount >= self::MIN_DEPOSIT_AMOUNT && $amount <= self::MAX_DEPOSIT_AMOUNT && $csrfTokenManager->isTokenValid(new CsrfToken('deposit', $csrfToken))) {
             $amount = (number_format($amount, 2, '.', '') * 100);
 
             /** @var \clients_history_actions $clientActionHistory */

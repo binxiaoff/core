@@ -180,13 +180,4 @@ class rootController extends bootstrap
             }
         }
     }
-
-    public function _captcha()
-    {
-        $_SESSION['request_url'] = '/';
-
-        require_once($this->path . 'librairies/captcha/classes/captcha.class.php');
-        PhocaCaptcha::displayCaptcha($this->path . 'librairies/captcha/images/06.jpg');
-        $this->captchaCode = $_SESSION['captcha'];
-    }
 }

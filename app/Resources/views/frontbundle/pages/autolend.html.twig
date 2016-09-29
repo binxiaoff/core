@@ -52,7 +52,7 @@ classNames: 'user-preter-autolend'
                                 </div><!-- /.btn-group -->
                                 <input type="text" id="autolend-amount" name="autolend_amount"
                                        data-formvalidation-minvalue="{{ setting('pret min') }}" step="any"
-                                       value="{{ userProfile.autolend.amount|default(setting('pret min'))|localizednumber }}"
+                                       value="{{ autolend_amount|default(setting('pret min'))|localizednumber }}"
                                        class="input-field"
                                        data-formvalidation-input data-formvalidation-required="true"/>
                             </div><!-- /.input-group -->

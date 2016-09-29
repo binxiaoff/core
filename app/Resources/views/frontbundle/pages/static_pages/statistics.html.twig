@@ -386,7 +386,7 @@
                     <div class="promo col-lg-3 col-md-3">
                         <h3 class="promo-highlight promo-highlight-md">
                             {% set percentageOfProjectsFundedIn24Hours = getStatistic('PercentageOfProjectsFundedIn24Hours') %}
-                            <span data-textcount data-start-count="0" data-end-count="percentageOfProjectsFundedIn24Hours" data-total-time="3000" data-tween-count="easeOutCirc">
+                            <span data-textcount data-start-count="0" data-end-count="{{ percentageOfProjectsFundedIn24Hours }}" data-total-time="3000" data-tween-count="easeOutCirc">
                                 {{ percentageOfProjectsFundedIn24Hours|localizednumber }}</span><sup>%</sup>
                         </h3>
                         <p>{% trans %} about-us-statistics_borrower-statistics-1-text {% endtrans %}</p>
