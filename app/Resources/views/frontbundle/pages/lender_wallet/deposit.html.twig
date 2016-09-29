@@ -82,7 +82,7 @@ classNames: 'user-preter-balance'
                                                 <div class="btn-group">
                                                     <span class="icon fa-euro"></span>
                                                 </div>
-                                                <input id="form-balance-deposit-amount" type="text" data-formvalidation-minvalue="{{ minDepositAmount }}" data-formvalidation-maxvalue="{{ maxDepositAmount }}" step="any" name="amount"
+                                                <input id="form-balance-deposit-amount" type="text" autocomplete="off" data-formvalidation-minvalue="{{ minDepositAmount }}" data-formvalidation-maxvalue="{{ maxDepositAmount }}" step="any" name="amount"
                                                        value="{% if formData.amount is defined %}{{ formData.amount }}{% endif %}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-render="true"/>
                                             </div>
                                         </div><!-- /.form-field -->
