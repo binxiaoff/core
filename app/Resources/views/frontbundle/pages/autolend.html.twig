@@ -44,12 +44,12 @@ classNames: 'user-preter-autolend'
                     </div>
                     <div class="row row-multi-col">
                         <div class="form-field col-lg-3 col-md-3 col-sm-4 col-xs-2">
-                            <label for="autolend-amount">{% trans %} autolend_amount-field-label {% endtrans %}
-                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
-                            <div class="input-group set-left">
-                                <div class="btn-group">
-                                    <span class="icon fa-euro"></span>
-                                </div><!-- /.btn-group -->
+                            <label for="autolend-amount">
+                                {% trans %} autolend_amount-field-label {% endtrans %}
+                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                            </label>
+                            <div class="input-group set-right">
+                                <div class="btn-group"><span class="icon fa-euro"></span></div><!-- /.btn-group -->
                                 <input type="text" id="autolend-amount" name="autolend_amount"
                                        data-formvalidation-minvalue="{{ setting('pret min') }}" step="any"
                                        value="{{ autolend_amount|default(setting('pret min'))|localizednumber }}"
@@ -58,9 +58,11 @@ classNames: 'user-preter-autolend'
                             </div><!-- /.input-group -->
                         </div><!-- /.form-field -->
                         <div class="form-field col-lg-3 col-md-3 col-sm-4 col-xs-2" id="div-interest-simple" {% if is_novice == false %} style="display:none;" {% endif %}>
-                            <label for="autolend-amount">{% trans %} autolend_simple-setting-rate-label {% endtrans %}
-                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
-                            <div class="input-group set-left">
+                            <label for="autolend-amount">
+                                {% trans %} autolend_simple-setting-rate-label {% endtrans %}
+                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                            </label>
+                            <div class="input-group set-right">
                                 <div class="btn-group"><span class="icon fa-percent"></span></div><!-- /.btn-group -->
                                 <input type="text" id="autolend-interest" name="autolend_rate_min"
                                        data-formvalidation-minvalue="{{ projectRatesGlobal.rate_min|round(1) }}"
