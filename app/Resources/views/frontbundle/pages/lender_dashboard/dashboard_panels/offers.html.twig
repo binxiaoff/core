@@ -26,7 +26,7 @@
                         {% for bid in project.aPendingBids %}
                             <div class="myoffer-amount">
                                 {% set transParams = {
-                                    '%amount%' : '<span class="amount">' ~ bid.amount|localizednumber ~ '&nbsp;€</span>',
+                                    '%amount%' : '<span class="amount">' ~ bid.amount_euro|localizednumber ~ '&nbsp;€</span>',
                                     '%rate%' : '<span class="interest">' ~ bid.rate|localizednumber ~ '&nbsp;%</span>'
                                 } %}
                                 {% if bid.id_autobid != 0 %}<span class="icon fa-autolend-u"></span> {% trans with transParams %} lender-dashboard-offers_autolend-bid-legend {% endtrans %}{% endif %}
