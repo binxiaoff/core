@@ -882,7 +882,7 @@ FormValidation.prototype.rules = {
           //          mattscheurich@examp.le.com
           //          mattscheurich1983@example-email.co.nz
           //          matt_scheurich@example.email.address.net.nz
-          if (!/^[a-z0-9\-_\.]+\@[a-z0-9\-\.]+\.[a-z0-9]{2,}(?:\.[a-z0-9]{2,})*$/i.test(inputValidation.value)) {
+          if (!/^[-a-z0-9~!$%^&*_=+}{\'?]+(\.[-a-z0-9~!$%^&*_=+}{\'?]+)*@([a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+)*\.(aero|arpa|biz|com|coop|edu|gov|info|int|mil|museum|name|net|org|pro|travel|mobi|[a-z][a-z])|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,5})?$/i.test(inputValidation.value)) {
             inputValidation.errors.push({
               type: 'inputType',
               description: __.__('Not a valid email address', 'error-field-input-type-email')
