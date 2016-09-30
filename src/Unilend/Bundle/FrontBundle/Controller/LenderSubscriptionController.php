@@ -1184,12 +1184,20 @@ class LenderSubscriptionController extends Controller
             if ($this->get('security.authorization_checker')->isGranted('ROLE_LENDER')) {
                 if (false === is_null($clientHash) && $client->get($clientHash, 'hash') && $client->id_client != $this->getUser()->getClientId()) {
                     return $this->redirectToRoute('projects_list');
-                } else {
-                    $client->get($this->getUser()->getClientId());
-                    $redirectRoute = $this->getSubscriptionStepRedirectRoute($client->etape_inscription_preteur, $client->hash);
-                    if ($requestPathInfo !== $redirectRoute) {
-                        return $this->redirect($redirectRoute);
-                    }
+                }
+
+                $client->get($this->getUser()->getClientId());
+                /** @var \clients_status $clientStatus */
+                $clientStatus = $this->get('unilend.service.entity_manager')->getRepository('clients_status');
+                $clientStatus->getLastStatut($client->id_client);
+
+                if ($clientStatus->status >= \clients_status::MODIFICATION){
+                    return $this->redirectToRoute('lender_dashboard');
+                }
+
+                $redirectRoute = $this->getSubscriptionStepRedirectRoute($client->etape_inscription_preteur, $client->hash);
+                if ($requestPathInfo !== $redirectRoute) {
+                    return $this->redirect($redirectRoute);
                 }
             }
         }
