@@ -126,12 +126,7 @@
         {% if lenderDetails.companiesLenderInvestedIn > 0 or lenderDetails.balance > 0 %}
             <div class="dashboard-panel-overview">
                 <div class="label">{% trans %} lender-dashboard-account_balance-title {% endtrans %}</div>
-                {% if lenderDetails.balance != 0 %}
-                    {% set balanceParts = lenderDetails.balance|split('.') %}
-                    <div class="value">{{ balanceParts[0]|localizednumber }},<sup>{{ balanceParts[1] }}&nbsp;€</sup></div>
-                {% else %}
-                    <div class="value">0,<sup>00&nbsp;€</sup></div>
-                {% endif %}
+                <div class="value">{{ lenderDetails.balance|localizednumber }}&nbsp;€</div>
             </div>
             {% if amountDetails.loaned_amount %}
                 <div class="dashboard-myaccount-chart dashboard-panel-chart">

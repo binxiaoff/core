@@ -130,7 +130,7 @@
                                             <div class="col-lg-5 col-md-5 push-lg-1 push-md-1">
                                                 <div class="input-group set-right">
                                                     <div class="btn-group"><span class="icon fa-euro"></span></div>
-                                                    <input id="bid-amount" type="text" name="invest[amount]" value="" class="input-field" data-popup-amount>
+                                                    <input id="bid-amount" type="text" name="invest[amount]" value="" class="input-field" autocomplete="off" data-popup-amount>
                                                 </div>
                                             </div>
                                         </div>
@@ -163,7 +163,7 @@
                             <div class="btn-group">
                                 <span class="icon fa-envelope-o"></span>
                             </div>
-                            <input id="form-access-email" type="email" data-login-name="_username" name="_username"
+                            <input id="form-access-email" type="email" data-login-name="_username" name="_username" autocomplete="off"
                                    placeholder="{% trans %} common_email {% endtrans %}" value="" class="input-field"
                                    data-formvalidation-input data-formvalidation-required="true"/>
                         </div><!-- /.input-group -->
@@ -194,6 +194,7 @@
                             <a href="{{ path('lender_subscription_personal_information') }}"><span class="icon fa-angle-right"></span> {% trans %} project-detail_side-bar-login-subscription-link {% endtrans %}</a>
                         </p>
                     </div><!-- /.btn-toolbar -->
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
                 </form><!-- /.project-single-form-access -->
                 {# Hidden text until made visible through the fancybox #}
                 <div class="hide-accessible">

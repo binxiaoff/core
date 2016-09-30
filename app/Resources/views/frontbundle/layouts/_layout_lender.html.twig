@@ -18,7 +18,7 @@
                                         <span class="label">{% trans %} lender-dashboard-navigation_dashboard-link {% endtrans %}</span>
                                     </a>
                                 </li>
-                                <li role="presentation" class="dashboard-nav-balance {% if app.request.attributes.get('_route') == 'lender_wallet' %}active{% else %}complete{% endif %}">
+                                <li role="presentation" class="dashboard-nav-balance {% if app.request.attributes.get('_route') in ['lender_wallet_deposit', 'lender_wallet_withdrawal'] %}active{% else %}complete{% endif %}">
                                     <a href="{{ path('lender_wallet_deposit') }}">
                                         <span class="icon fa-money-u32"></span>
                                         <span class="label">{% trans %} lender-dashboard-navigation_wallet-link {% endtrans %}</span></a>

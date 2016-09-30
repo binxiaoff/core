@@ -34,6 +34,7 @@ var secondsAsUnits = [{
     plural: '%d ' + __.__('hours', 'timeUnitHours')
   },{
     min: 172800,
+    mod: 86400,
     max: -1,
     single: '%d ' + __.__('day', 'timeUnitDay'),
     plural: '%d ' + __.__('days', 'timeUnitDays')
