@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\FrontBundle\Service\SourceManager;
 
 class ProjectRequestManager
 {
@@ -11,11 +12,13 @@ class ProjectRequestManager
     private $entityManager;
     /** @var  ProjectManager */
     private $projectManager;
+    private $sourceManager;
 
-    public function __construct(EntityManager $entityManager, ProjectManager $projectManager)
+    public function __construct(EntityManager $entityManager, ProjectManager $projectManager, SourceManager $sourceManager)
     {
         $this->entityManager  = $entityManager;
         $this->projectManager = $projectManager;
+        $this->sourceManager  = $sourceManager;
     }
 
     public function getMonthlyRateEstimate()
@@ -60,6 +63,12 @@ class ProjectRequestManager
 
         $client->id_langue = 'fr';
         $client->email     = $client->existEmail($aFormData['email']) ? $aFormData['email'] . '-' . time() : $aFormData['email'];
+
+        $client->source       = $this->sourceManager->getSource(SourceManager::SOURCE1);
+        $client->source2      = $this->sourceManager->getSource(SourceManager::SOURCE2);
+        $client->source3      = $this->sourceManager->getSource(SourceManager::SOURCE3);
+        $client->slug_origine = $this->sourceManager->getSource(SourceManager::ENTRY_SLUG);
+
         $client->create();
 
         $clientAddress->id_client = $client->id_client;
