@@ -30,7 +30,8 @@
                                                 {% trans %} lender-subscription_step-3-validation-explanation {% endtrans %}
                                                 <div id="form-preter-deposit-notifications">
                                                     <div class="message-success">
-                                                        {% for message in app.session.flashBag.get('moneyTransferSuccess') %}                                                                                                                     <p>{{ message }}</p>
+                                                        {% for message in app.session.flashBag.get('moneyTransferSuccess') %}
+                                                            <p>{{ message|raw }}</p>
                                                         {%  endfor %}
                                                     </div>
                                                 </div>
@@ -43,7 +44,8 @@
                                                     {% if app.session.flashBag.has('moneyTransferError') %}
                                                         <div id="form-preter-deposit-notifications">
                                                             <div class="message-error">
-                                                                {% for message in app.session.flashBag.get('moneyTransferError') %}                                                                                                                     <p>{{ message }}</p>
+                                                                {% for message in app.session.flashBag.get('moneyTransferError') %}
+                                                                    <p>{{ message|raw }}</p>
                                                                 {%  endfor %}
                                                             </div>
                                                         </div>

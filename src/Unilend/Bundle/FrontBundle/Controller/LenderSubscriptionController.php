@@ -874,7 +874,9 @@ class LenderSubscriptionController extends Controller
             if (is_numeric($amount) && $amount >= LenderWalletController::MIN_DEPOSIT_AMOUNT && $amount <= LenderWalletController::MAX_DEPOSIT_AMOUNT) {
                 $amount = (number_format($amount, 2, '.', '') * 100);
                 /** @var \lenders_accounts $lenderAccount */
-                $lenderAccount                 = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
+                $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
+                $lenderAccount->get($client->id_client, 'id_client_owner');
+
                 $lenderAccount->fonds          = $amount;
                 $lenderAccount->type_transfert = \lenders_accounts::MONEY_TRANSFER_TYPE_CARD;
                 $lenderAccount->update();
