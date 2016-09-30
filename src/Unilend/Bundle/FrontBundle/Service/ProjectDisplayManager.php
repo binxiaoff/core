@@ -215,8 +215,6 @@ class ProjectDisplayManager
 
     public function getProjectFinancialData(\projects $project)
     {
-        /** @var \companies $company */
-        $company = $this->entityManager->getRepository('companies');
         /** @var \companies_actif_passif $assetsDebtsEntity */
         $assetsDebtsEntity = $this->entityManager->getRepository('companies_actif_passif');
         /** @var \companies_bilans $balanceSheetEntity */
@@ -225,7 +223,7 @@ class ProjectDisplayManager
         $setting = $this->entityManager->getRepository('settings');
 
         $setting->get('Entreprises fundés au passage du risque lot 1', 'type');
-        $isBeforeRiskProject = in_array($company->id_company, explode(',', $setting->value));
+        $isBeforeRiskProject = in_array($project->id_company, explode(',', $setting->value));
 
         $finance                = [];
         $previousBalanceSheetId = null;
