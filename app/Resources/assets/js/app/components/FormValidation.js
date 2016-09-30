@@ -863,13 +863,7 @@ FormValidation.prototype.rules = {
         case 'phone':
         case 'telephone':
         case 'mobile':
-          // Allowed: +33 644 911 250
-          //          (0) 12.34.56.78.90
-          //          856-6688
-          // if (!/^\+?[0-9\-\. \(\)]{6,}$/.test(inputValidation.value)) {
-
-          // DEV-578 mobile phone number format upon input (exclude + before area code)
-          if (/\D+/.test(inputValidation.value) || inputValidation.value.length < 6) {
+          if (!/^0[0-9]{9}$/.test(inputValidation.value)) {
             inputValidation.errors.push({
               type: 'inputType',
               description: __.__('Not a valid telephone number', 'error-field-input-type-telephone')
