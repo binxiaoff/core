@@ -231,13 +231,8 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
         return $statement->fetchColumn(0);
     }
 
-    public function getFutureInterestPaymentsOfHealthyProjectsByCohort()
+    public function getInterestPaymentsOfHealthyProjectsByCohort()
     {
-        $caseSql  = '';
-        foreach (range(2015, date('Y')) as $year ) {
-            $caseSql .= ' WHEN ' . $year . ' THEN "' . $year . '"';
-        }
-
         $query = 'SELECT
                       ROUND(SUM(echeanciers_emprunteur.interets) / 100, 2) AS amount,
                       (
@@ -245,7 +240,6 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                           CASE LEFT(projects_status_history.added, 4)
                             WHEN 2013 THEN "2013-2014"
                             WHEN 2014 THEN "2013-2014"
-                            '. $caseSql . '
                             ELSE LEFT(projects_status_history.added, 4)
                           END AS date_range
                         FROM projects_status_history
@@ -255,22 +249,30 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                         ORDER BY id_project_status_history ASC LIMIT 1
                       ) AS cohort
                     FROM echeanciers_emprunteur
-                      INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status NOT IN ('. implode(',', [\projects_status::RECOUVREMENT, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT]) .')
-                    WHERE (
-                            SELECT e2.status FROM echeanciers e2
+                      INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status >= '. \projects_status::REMBOURSEMENT .'
+                    WHERE
+                        (
+                            SELECT e2.status
+                            FROM echeanciers e2
                             WHERE
-                                e2.ordre = echeanciers_emprunteur.ordre
-                                AND echeanciers_emprunteur.id_project = e2.id_project
+                              e2.ordre = echeanciers_emprunteur.ordre
+                              AND echeanciers_emprunteur.id_project = e2.id_project
                             LIMIT 1
                           ) = 0
-                          AND (
-                                SELECT e_date.date_echeance FROM echeanciers e_date
-                                WHERE
-                                    e_date.ordre = echeanciers_emprunteur.ordre
-                                    AND echeanciers_emprunteur.id_project = e_date.id_project
-                                LIMIT 1
-                              ) >= NOW()
-                    GROUP BY cohort';
+                            AND IF((projects.status NOT IN ('. implode(',', [\projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::DEFAUT]).')
+                            AND projects.status >= '. \projects_status::PROBLEME . '
+                            AND DATEDIFF(NOW(),
+                                (
+                                SELECT psh2.added
+                                      FROM projects_status_history psh2
+                                        INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                                      WHERE ps2.status = '. \projects_status::PROBLEME . '
+                                          AND psh2.id_project = echeanciers_emprunteur.id_project
+                                      ORDER BY psh2.id_project_status_history DESC
+                                      LIMIT 1
+                                    )
+                                       ) > 180), TRUE, FALSE) = FALSE
+                        GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery($query);
         return $statement->fetchAll(PDO::FETCH_ASSOC);
@@ -279,11 +281,6 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
 
     public function getFutureCapitalPaymentsOfHealthyProjectsByCohort()
     {
-        $caseSql  = '';
-        foreach (range(2015, date('Y')) as $year ) {
-            $caseSql .= ' WHEN ' . $year . ' THEN "' . $year . '"';
-        }
-
         $query = 'SELECT
                       ROUND(SUM(echeanciers_emprunteur.capital) / 100, 2) AS amount,
                       (
@@ -291,7 +288,6 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                           CASE LEFT(projects_status_history.added, 4)
                             WHEN 2013 THEN "2013-2014"
                             WHEN 2014 THEN "2013-2014"
-                            '. $caseSql . '
                             ELSE LEFT(projects_status_history.added, 4)
                           END AS date_range
                         FROM projects_status_history
@@ -301,22 +297,30 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                         ORDER BY id_project_status_history ASC LIMIT 1
                       ) AS cohort
                     FROM echeanciers_emprunteur
-                      INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status NOT IN ('. implode(',', [\projects_status::RECOUVREMENT, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT]) .')
-                    WHERE (
-                            SELECT e2.status FROM echeanciers e2
+                      INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status >= '. \projects_status::REMBOURSEMENT .'
+                    WHERE
+                        (
+                            SELECT e2.status
+                            FROM echeanciers e2
                             WHERE
-                                e2.ordre = echeanciers_emprunteur.ordre
-                                AND echeanciers_emprunteur.id_project = e2.id_project
+                              e2.ordre = echeanciers_emprunteur.ordre
+                              AND echeanciers_emprunteur.id_project = e2.id_project
                             LIMIT 1
                           ) = 0
-                          AND (
-                                SELECT e_date.date_echeance FROM echeanciers e_date
-                                WHERE
-                                    e_date.ordre = echeanciers_emprunteur.ordre
-                                    AND echeanciers_emprunteur.id_project = e_date.id_project
-                                LIMIT 1
-                              ) >= NOW()
-                    GROUP BY cohort';
+                            AND IF((projects.status NOT IN ('. implode(',', [\projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::DEFAUT]).')
+                            AND projects.status >= '. \projects_status::PROBLEME . '
+                            AND DATEDIFF(NOW(),
+                                (
+                                SELECT psh2.added
+                                                  FROM projects_status_history psh2
+                                                    INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                                                  WHERE ps2.status = '. \projects_status::PROBLEME . '
+                            AND psh2.id_project = echeanciers_emprunteur.id_project
+                                                  ORDER BY psh2.id_project_status_history DESC
+                                                  LIMIT 1
+                                                )
+                                       ) > 180), TRUE, FALSE) = FALSE
+                        GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery($query);
         return $statement->fetchAll(PDO::FETCH_ASSOC);
@@ -325,11 +329,6 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
 
     public function getFutureOwedCapitalOfProblematicProjectsByCohort()
     {
-        $caseSql  = '';
-        foreach (range(2015, date('Y')) as $year ) {
-            $caseSql .= ' WHEN ' . $year . ' THEN "' . $year . '"';
-        }
-
         $query = 'SELECT
                       ROUND(SUM(echeanciers_emprunteur.capital) / 100, 2) AS amount,
                       (
@@ -337,7 +336,6 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                             CASE LEFT(projects_status_history.added, 4)
                                 WHEN 2013 THEN "2013-2014"
                                 WHEN 2014 THEN "2013-2014"
-                                ' . $caseSql . '
                                 ELSE LEFT(projects_status_history.added, 4)
                             END AS date_range
                         FROM projects_status_history
@@ -347,39 +345,46 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                         ORDER BY id_project_status_history ASC LIMIT 1
                       ) AS cohort
                     FROM echeanciers_emprunteur
-                      INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status IN ('. implode(',', [\projects_status::RECOUVREMENT, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT]) .')
-                      WHERE (
-                              SELECT e2.status FROM echeanciers e2
-                              WHERE
-                                  e2.ordre = echeanciers_emprunteur.ordre
-                                  AND echeanciers_emprunteur.id_project = e2.id_project
-                              LIMIT 1 ) = 0
+                      INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status >= 80
+                    WHERE
+                      (projects.status IN ('. implode(',', [\projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::DEFAUT]).')
+                       OR
+                       (IF(
+                            (projects.status IN ('. implode(',', [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X, \projects_status::RECOUVREMENT]).') AND
+                             DATEDIFF(NOW(),
+                                      (
+                                        SELECT psh2.added
+                                        FROM projects_status_history psh2
+                                          INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                                        WHERE
+                                          ps2.status = ' . \projects_status::PROBLEME . '
+                                          AND psh2.id_project = echeanciers_emprunteur.id_project
+                                        ORDER BY psh2.id_project_status_history DESC
+                                        LIMIT 1
+                                      )
+                             ) > 180), TRUE, FALSE) = TRUE))
+                      AND (SELECT lender_payment_status.status
+                           FROM echeanciers lender_payment_status
+                           WHERE
+                             lender_payment_status.ordre = echeanciers_emprunteur.ordre
+                             AND echeanciers_emprunteur.id_project = lender_payment_status.id_project
+                           LIMIT 1) = 0
                       AND (
-                        SELECT e_date.date_echeance FROM echeanciers e_date
-                        WHERE
-                            e_date.ordre = echeanciers_emprunteur.ordre
-                            AND echeanciers_emprunteur.id_project = e_date.id_project
-                        LIMIT 1
-                      ) >= NOW()
-                      GROUP BY cohort';
+                            SELECT lender_payment_date.date_echeance
+                            FROM echeanciers lender_payment_date
+                            WHERE
+                              lender_payment_date.ordre = echeanciers_emprunteur.ordre
+                              AND echeanciers_emprunteur.id_project = lender_payment_date.id_project
+                            LIMIT 1
+                          ) >= NOW()
+                    GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery($query);
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
-
-    /**
-     * @param array $projectsStatus
-     * @return mixed
-     * @throws Exception
-     */
-    public function getLateCapitalRepayments(array $projectsStatus)
+    public function getLateCapitalRepaymentsProblematicProjects()
     {
-        $caseSql  = '';
-        foreach (range(2015, date('Y')) as $year ) {
-            $caseSql .= ' WHEN ' . $year . ' THEN "' . $year . '"';
-        }
-
         $query = 'SELECT
                       ROUND(SUM(echeanciers_emprunteur.capital) / 100, 2) AS amount,
                       (
@@ -387,7 +392,6 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                           CASE LEFT(projects_status_history.added, 4)
                             WHEN 2013 THEN "2013-2014"
                             WHEN 2014 THEN "2013-2014"
-                            '. $caseSql . '
                             ELSE LEFT(projects_status_history.added, 4)
                           END AS date_range
                         FROM projects_status_history
@@ -397,20 +401,98 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                         ORDER BY id_project_status_history ASC LIMIT 1
                       ) AS cohort
                     FROM echeanciers_emprunteur
-                      INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status IN (:projectsStatus)
-                    WHERE (
-                        SELECT e_status.status FROM echeanciers e_status
-                            WHERE e_status.ordre = echeanciers_emprunteur.ordre AND echeanciers_emprunteur.id_project = e_status.id_project
+                      INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status >= '. \projects_status::REMBOURSEMENT .'
+                    WHERE
+                      (projects.status IN ('. implode(',', [\projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::DEFAUT]).')
+                       OR
+                       (IF(
+                            (projects.status IN ('. implode(',', [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X, \projects_status::RECOUVREMENT]).') AND
+                             DATEDIFF(NOW(),
+                                      (
+                                        SELECT psh2.added
+                                        FROM projects_status_history psh2
+                                          INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                                        WHERE
+                                          ps2.status = ' . \projects_status::PROBLEME . '
+                                          AND psh2.id_project = echeanciers_emprunteur.id_project
+                                        ORDER BY psh2.id_project_status_history DESC
+                                        LIMIT 1
+                                      )
+                             ) > 180), TRUE, FALSE) = TRUE))
+                      AND (SELECT lender_payment_status.status
+                           FROM echeanciers lender_payment_status
+                           WHERE
+                             lender_payment_status.ordre = echeanciers_emprunteur.ordre
+                             AND echeanciers_emprunteur.id_project = lender_payment_status.id_project
+                           LIMIT 1) = 0
+                      AND (
+                            SELECT lender_payment_date.date_echeance
+                            FROM echeanciers lender_payment_date
+                            WHERE
+                              lender_payment_date.ordre = echeanciers_emprunteur.ordre
+                              AND echeanciers_emprunteur.id_project = lender_payment_date.id_project
                             LIMIT 1
-                          ) = 0
-                        AND (
-                        SELECT e_date.date_echeance FROM echeanciers e_date
-                            WHERE e_date.ordre = echeanciers_emprunteur.ordre AND echeanciers_emprunteur.id_project = e_date.id_project
-                                LIMIT 1
-                              ) < NOW()
+                          ) < NOW()
                     GROUP BY cohort';
 
-        $statement = $this->bdd->executeQuery($query, ['projectsStatus' => implode(',', $projectsStatus)], [\PDO::PARAM_STR]);
+        $statement = $this->bdd->executeQuery($query);
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function getLateCapitalRepaymentsHealthyProjects()
+    {
+        $query = 'SELECT
+                      ROUND(SUM(echeanciers_emprunteur.capital) / 100, 2) AS amount,
+                      (
+                        SELECT
+                          CASE LEFT(projects_status_history.added, 4)
+                            WHEN 2013 THEN "2013-2014"
+                            WHEN 2014 THEN "2013-2014"
+                            ELSE LEFT(projects_status_history.added, 4)
+                          END AS date_range
+                        FROM projects_status_history
+                        INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
+                        WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
+                          AND echeanciers_emprunteur.id_project = projects_status_history.id_project
+                        ORDER BY id_project_status_history ASC LIMIT 1
+                      ) AS cohort
+                    FROM echeanciers_emprunteur
+                      INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status >= '. \projects_status::REMBOURSEMENT .'
+                    WHERE
+                      projects.status NOT IN ('. implode(',', [\projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::DEFAUT]).')
+                       AND
+                       IF(
+                            (projects.status IN ('. implode(',', [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X, \projects_status::RECOUVREMENT]).') AND
+                             DATEDIFF(NOW(),
+                                      (
+                                        SELECT psh2.added
+                                        FROM projects_status_history psh2
+                                          INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                                        WHERE
+                                          ps2.status = ' . \projects_status::PROBLEME . '
+                                          AND psh2.id_project = echeanciers_emprunteur.id_project
+                                        ORDER BY psh2.id_project_status_history DESC
+                                        LIMIT 1
+                                      )
+                             ) > 180), TRUE, FALSE) = FALSE
+                      AND (SELECT lender_payment_status.status
+                           FROM echeanciers lender_payment_status
+                           WHERE
+                             lender_payment_status.ordre = echeanciers_emprunteur.ordre
+                             AND echeanciers_emprunteur.id_project = lender_payment_status.id_project
+                           LIMIT 1) = 0
+                      AND (
+                            SELECT lender_payment_date.date_echeance
+                            FROM echeanciers lender_payment_date
+                            WHERE
+                              lender_payment_date.ordre = echeanciers_emprunteur.ordre
+                              AND echeanciers_emprunteur.id_project = lender_payment_date.id_project
+                            LIMIT 1
+                          ) < NOW()
+                    GROUP BY cohort';
+
+        $statement = $this->bdd->executeQuery($query);
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
 }

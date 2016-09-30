@@ -37,7 +37,7 @@ class CacheKeys
     const LENDERS_IN_COMMUNITY                = 'stats_numberOfLendersInCommunity';
     const ACTIVE_LENDERS                      = 'stats_numberOfActiveLenders';
     const FINANCED_PROJECTS                   = 'stats_numberOfFinancedProjects';
-    const AMOUNT_BORROWED                      = 'stats_amountBorrowed';
+    const AMOUNT_BORROWED                     = 'stats_amountBorrowed';
     const UNILEND_IRR                         = 'stats_unilendIRR';
     const AVG_FUNDING_TIME                    = 'stats_averageFundingTime';
     const AVG_INTEREST_RATE_LENDERS           = 'stats_averageInterestRateForLenders';
@@ -51,7 +51,7 @@ class CacheKeys
     const LENDERS_BY_REGION                   = 'stats_lendersByRegion';
     const PROJECTS_BY_REGION                  = 'stats_projectsByRegion';
     const TOTAL_REPAID_CAPITAL                = 'stats_totalRepaidCapital';
-    const TOTAL_REPAID_INTEREST                = 'stats_totalRepaidInterests';
+    const TOTAL_REPAID_INTEREST               = 'stats_totalRepaidInterests';
     const PROJECTS_BY_CATEGORY                = 'stats_projectCountByCategory';
     const PROJECTS_FUNDED_IN_24_HOURS         = 'stats_numberOfProjectsFundedIn24Hours';
     const PERCENT_PROJECTS_FUNDED_IN_24_HOURS = 'stats_percentageOfProjectsFundedIn24Hours';
@@ -59,7 +59,8 @@ class CacheKeys
     const AMOUNT_FINANCED_HIGHEST_FASTEST     = 'stats_highestAmountObtainedFastest';
 
     /** constants for statistics calculated by cron */
-    const REGULATORY_TABLE = 'stats_regulatoryData';
+    const REGULATORY_TABLE   = 'stats_regulatoryData';
+    const INCIDENCE_RATE_IFP = 'stats_incidence_rate_IFP';
 
     public static function getStatisticsCacheKeys()
     {

@@ -212,10 +212,10 @@ class loans extends loans_crud
     {
 
         $sql = '
-            SELECT SUM(amount) 
+            SELECT SUM(amount)
             FROM loans
-            WHERE id_lender = ' . $id_lender . ' 
-                AND status = ' . self::STATUS_ACCEPTED . ' 
+            WHERE id_lender = ' . $id_lender . '
+                AND status = ' . self::STATUS_ACCEPTED . '
                 AND LEFT(added, 7) = "' . $year . '-' . $month . '"';
 
         $result  = $this->bdd->query($sql);
@@ -418,14 +418,17 @@ class loans extends loans_crud
 
     public function getAverageLoanAmount()
     {
-        $query = '
-            SELECT AVG(addedLoans.amount) / 100
-            FROM (
-                SELECT SUM(amount) AS amount
-                FROM loans
-                WHERE status = 0
-                GROUP BY id_project, id_lender
-            ) AS addedLoans';
+        $query = 'SELECT AVG(avgLender.amount_project) / 100
+                    FROM (
+                           SELECT AVG(sumLender.amount) AS amount_project
+                           FROM (SELECT
+                                   SUM(amount) AS amount,
+                                   id_lender,
+                                   id_project
+                                 FROM loans
+                                 WHERE status = 0
+                                 GROUP BY id_project, id_lender) AS sumLender
+                           GROUP BY sumLender.id_project) AS avgLender';
         $statement = $this->bdd->executeQuery($query);
 
         return $statement->fetchColumn(0);

@@ -188,14 +188,14 @@
                 },{
                     name: 'about-us-statistics_chart-lost-capital'|trans,
                     color: '#B6D4E4',
-                    y: data.regulatoryTable['from-which-payments-not-lost-and-healthy']['total'],
-                    value: data.regulatoryTable['from-which-payments-not-lost-and-healthy']['total']|localizedcurrency('EUR'),
+                    y: data.regulatoryTable['future-owed-capital-healthy']['total'],
+                    value: data.regulatoryTable['future-owed-capital-healthy']['total']|localizedcurrency('EUR'),
                     showInLegend: true
                 },{
-                    name: 'about-us-statistics_regulatory-table-capital-lost'|trans,
+                    name: 'about-us-statistics_regulatory-table-total-owed-problematic-capital-late'|trans,
                     color: '#F76965',
-                    y:  data.regulatoryTable['capital-lost']['total'],
-                    value: data.regulatoryTable['capital-lost']['total']|localizedcurrency('EUR'),
+                    y:  data.regulatoryTable['total-owed-problematic-capital-late']['total'],
+                    value: data.regulatoryTable['total-owed-problematic-capital-late']['total']|localizedcurrency('EUR'),
                     showInLegend: true
                 }]
             },{
@@ -203,7 +203,7 @@
                 minSize: 80,
                 size: '33%',
                 innerSize: '70%',
-                endAngle: (270 * (data.regulatoryTable['borrowed-capital']['total'] + data.regulatoryTable['repaid-interest']['total'] + data.regulatoryTable['future-healthy-interest']['total'])) / data.regulatoryTable['borrowed-capital']['total'],
+                endAngle: (270 * (data.regulatoryTable['borrowed-capital']['total'] + data.regulatoryTable['repaid-interest']['total'] + data.regulatoryTable['owed-healthy-interest']['total'])) / data.regulatoryTable['borrowed-capital']['total'],
                 data: [{
                     name: '',
                     color: '#ffffff',
@@ -211,7 +211,7 @@
                         enabled: false
                         },
                     showInLegend: false,
-                    y: (data.regulatoryTable['repaid-capital']['total'] + data.regulatoryTable['from-which-payments-not-lost-and-healthy']['total']) * 0.66,
+                    y: (data.regulatoryTable['repaid-capital']['total'] + data.regulatoryTable['future-owed-capital-healthy']['total']) * 0.66,
                     tooltip: true
                 },{
                     name: 'about-us-statistics_regulatory-table-repaid-interest'|trans,
@@ -220,10 +220,10 @@
                     value: data.regulatoryTable['repaid-interest']['total']|localizedcurrency('EUR'),
                     showInLegend: true
                 },{
-                    name: 'about-us-statistics_regulatory-table-future-healthy-interest'|trans,
+                    name: 'about-us-statistics_regulatory-table-owed-healthy-interest'|trans,
                     color: '#FFCA2C',
-                    y: data.regulatoryTable['future-healthy-interest']['total'],
-                    value: data.regulatoryTable['future-healthy-interest']['total']|localizedcurrency('EUR'),
+                    y: data.regulatoryTable['owed-healthy-interest']['total'],
+                    value: data.regulatoryTable['owed-healthy-interest']['total']|localizedcurrency('EUR'),
                     showInLegend: true
                 }]
             }],
@@ -282,8 +282,6 @@
                 <div class="stats-charts row">
                     <figure class="stats-chart stats-map">
                         <div class="chart" data-chartview='{{ lenderMap|json_encode|escape('html_attr') }}'>
-                            {# @todo Chart #}
-                            {# <img src="{{ siteurlmedia('apropos/statistiques/map-fr-repartition.png') }}" alt="" /> #}
                         </div>
                         <figcaption><p>{% trans %} about-us-statistics_lender-statistics-map-title {% endtrans %}</p></figcaption>
                     </figure>
@@ -385,7 +383,7 @@
                 <div class="block-promos row">
                     <div class="promo col-lg-3 col-md-3">
                         <h3 class="promo-highlight promo-highlight-md">
-                            {% set percentageOfProjectsFundedIn24Hours = getStatistic('PercentageOfProjectsFundedIn24Hours') %}
+                            {% set percentageOfProjectsFundedIn24Hours = getStatistic('percentageOfProjectsFundedIn24Hours') %}
                             <span data-textcount data-start-count="0" data-end-count="{{ percentageOfProjectsFundedIn24Hours }}" data-total-time="3000" data-tween-count="easeOutCirc">
                                 {{ percentageOfProjectsFundedIn24Hours|localizednumber }}</span><sup>%</sup>
                         </h3>
@@ -524,24 +522,18 @@
                                 </tr>
                             {% endif %}
                         {% endfor %}
+                        {% set incidenceRate = getStatistic('incidenceRate') %}
                         <tr>
-                            <td class="table-stats-unilend-item-label" colspan="4">Taux d'incident CMF R548-5°b) 1er tiret (montant total des bons de caisse et contrats de prêts)</td>
-                            <td class="table-stats-unilend-item-value">8,51%</td>
+                            <td class="table-stats-unilend-item-label" colspan="4">{% trans %} about-us-statistics_regulatory-table-incidence-rate-amount {% endtrans %}</td>
+                            <td class="table-stats-unilend-item-value">{{ incidenceRate['amountIFP']|localizednumber }}%</td>
                         </tr>
                         <tr>
-                            <td class="table-stats-unilend-item-label" colspan="4">Taux d'incident CMF R548-5°b) 1er tiret (nombre total des bons de caisse et contrats de prêts)</td>
-                            <td class="table-stats-unilend-item-value">7,76%</td>
-                        </tr>
-                        <tr>
-                            <td class="table-stats-unilend-item-label" colspan="4">Taux d'incident CMF R548-5°b) 1er tiret (montant contrats de prêts sous staut IFP)</td>
-                            <td class="table-stats-unilend-item-value">0%</td>
-                        </tr>
-                        <tr>
-                            <td class="table-stats-unilend-item-label" colspan="4">Taux d'incident CMF R548-5°b) 1er tiret (nombre contrats de prêts sous staut IFP)</td>
-                            <td class="table-stats-unilend-item-value">0%</td>
+                            <td class="table-stats-unilend-item-label" colspan="4">{% trans %} about-us-statistics_regulatory-table-incidence-rate-projects {% endtrans %}</td>
+                            <td class="table-stats-unilend-item-value">{{ incidenceRate['projectsIFP']|localizednumber }}%</td>
                         </tr>
                         </tbody>
                     </table>
+                    <p class="field-help text-align-left">{% trans %} about-us-statistics_regulatory-table-default-explanation {% endtrans %}</p>
                 </div><!-- /.table-scroll -->
             </div>
         </div><!-- /.block-stats -->
