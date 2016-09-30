@@ -506,8 +506,8 @@ class projects extends projects_crud
             INNER JOIN (SELECT id_project, MAX(id_project_status_history) AS id_project_status_history FROM projects_status_history GROUP BY id_project) plsh ON plsh.id_project = p.id_project
             INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
             WHERE p.status = ' . $iStatus . '
-                AND DATE_SUB(CURDATE(), INTERVAL ' . $iDaysInterval . ' DAY) = DATE(plsh.added)
-                AND plsh.numero_relance = ' . $iPreviousReminderIndex
+                AND DATE_SUB(CURDATE(), INTERVAL ' . $iDaysInterval . ' DAY) = DATE(psh.added)
+                AND psh.numero_relance = ' . $iPreviousReminderIndex
         );
 
         if ($this->bdd->num_rows($rResult) > 0) {

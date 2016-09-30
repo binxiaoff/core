@@ -955,7 +955,9 @@ class LenderSubscriptionController extends Controller
         /** @var LoggerInterface $logger */
         $logger = $this->get('logger');
         /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');;
+        $translator = $this->get('translator');
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
 
         if ($client->get($request->query->get('hash'), 'hash')) {
             $paylineParameter = [];
@@ -986,10 +988,11 @@ class LenderSubscriptionController extends Controller
                     $clientHistory->create();
 
                     $this->sendInternalMoneyTransferNotification($client, $response);
-                    $this->addFlash('moneyTransferSuccess', $translator->trans('lender-subscription_money-transfer-success-message', [
-                        '%depositAmount%' => bcdiv($response['payment']['amount'], 100, 2)]));
-                    $this->redirectToRoute('lender_subscription_money_deposit', [ 'clientHash' => $client->hash,
-                    ]);
+                    $this->addFlash(
+                        'moneyTransferSuccess',
+                        $translator->trans('lender-subscription_money-transfer-success-message', ['%depositAmount%' => $ficelle->formatNumber(bcdiv($response['payment']['amount'], 100, 2), 2)])
+                    );
+                    $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->hash]);
                 }
                 $this->addFlash('moneyTransferError', $translator->trans('lender-subscription_money-transfer-error-message'));
                 return $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->hash]);
