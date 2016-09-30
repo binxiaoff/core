@@ -415,7 +415,11 @@ var Utility = {
       if (Math.abs(diffSeconds) >= u.min && (Math.abs(diffSeconds) < u.max || u.max === -1)) {
         // Show the difference via number
         if (u.min > 0) {
-          outputDiff = Math.round(Math.abs(diffSeconds) / u.min)
+          var mod = u.min;
+          if (typeof u.mod !== 'undefined') {
+            mod = u.mod;
+          }
+          outputDiff = Math.floor(Math.abs(diffSeconds) / mod)
           output = sprintf((outputDiff === 1 ? u.single : u.plural), outputDiff)
 
         // No minimum amount given, so assume no need to put number within unit output (reference only single)
