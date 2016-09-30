@@ -277,59 +277,59 @@ class companies extends companies_crud
     public function setSectorAccordingToNaf()
     {
 
-        if (in_array(substr($this->code_naf, 0, 2), array('01', '02', '03'))) {
+        if (in_array(substr($this->code_naf, 0, 2), ['01', '02', '03'])) {
             $this->sector = 1;
         }
 
-        if (in_array(substr($this->code_naf, 0, 2), array('10', '11'))) {
+        if (in_array(substr($this->code_naf, 0, 2), ['10', '11'])) {
             $this->sector = 2;
         }
 
-        if (in_array(substr($this->code_naf, 0, 2), array('41', '42', '43', '71'))) {
+        if (in_array(substr($this->code_naf, 0, 2), ['41', '42', '43', '71'])) {
             $this->sector = 3;
         }
 
-        if (in_array(substr($this->code_naf, 0, 2), array('45', '46', '47', '95'))) {
+        if (in_array(substr($this->code_naf, 0, 2), ['45', '46', '47', '95'])) {
             $this->sector = 4;
         }
 
-        if (in_array(substr($this->code_naf, 0, 2), array('59', '60', '90', '91'))) {
+        if (in_array(substr($this->code_naf, 0, 2), ['59', '60', '90', '91'])) {
             $this->sector = 6;
         }
 
-        if (in_array(substr($this->code_naf, 0, 2), array('55'))) {
+        if (in_array(substr($this->code_naf, 0, 2), ['55'])) {
             $this->sector = 7;
         }
 
-        if (in_array(substr($this->code_naf, 0, 2), array('16', '17', '18', '19', '20', '86'))) {
+        if (in_array(substr($this->code_naf, 0, 2), ['16', '17', '18', '19', '20', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '35', '36'])) {
             $this->sector = 8;
         }
 
-        if (in_array(substr($this->code_naf, 0, 2), array('61', '62', '63'))) {
+        if (in_array(substr($this->code_naf, 0, 2), ['61', '62', '63'])) {
             $this->sector = 9;
         }
 
-        if (in_array(substr($this->code_naf, 0, 2), array('21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '35', '36', '75'))) {
+        if (in_array(substr($this->code_naf, 0, 2), ['21', '75', '86'])) {
             $this->sector = 10;
         }
 
-        if (in_array(substr($this->code_naf, 0, 2), array('56'))) {
+        if (in_array(substr($this->code_naf, 0, 2), ['56'])) {
             $this->sector = 11;
         }
 
-        if (in_array(substr($this->code_naf, 0, 2), array('58', '65', '66', '68', '69', '70', '73', '74', '77', '78', '79', '80', '81', '82', '96', '97'))) {
+        if (in_array(substr($this->code_naf, 0, 2), ['58', '65', '66', '68', '69', '70', '73', '74', '77', '78', '79', '80', '81', '82', '96', '97'])) {
             $this->sector = 12;
         }
 
-        if (in_array(substr($this->code_naf, 0, 2), array('13', '14', '15'))) {
+        if (in_array(substr($this->code_naf, 0, 2), ['13', '14', '15'])) {
             $this->sector = 13;
         }
 
-        if (in_array(substr($this->code_naf, 0, 2), array('49', '50', '51', '52', '53'))) {
+        if (in_array(substr($this->code_naf, 0, 2), ['49', '50', '51', '52', '53'])) {
             $this->sector = 14;
         }
 
-        if (in_array(substr($this->code_naf, 0, 2), array('05', '06', '07', '08', '09', '12', '37', '38', '39', '64', '72', '84', '85', '87', '88', '92', '93', '94', '98', '99'))) {
+        if (in_array(substr($this->code_naf, 0, 2), ['05', '06', '07', '08', '09', '12', '37', '38', '39', '64', '72', '84', '85', '87', '88', '92', '93', '94', '98', '99'])) {
             $this->sector = 15;
         }
     }

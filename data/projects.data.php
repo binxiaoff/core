@@ -877,27 +877,25 @@ class projects extends projects_crud
             $startingDate = new \DateTime('2014-04-01');
         }
 
-        $sQuery = '
-            SELECT
-                FLOOR(HOUR(AVG(t.DurationFunding)) / 24) AS "days",
-                MOD(HOUR(AVG(t.DurationFunding)), 24) AS "hours",
-                MINUTE(AVG(t.DurationFunding)) AS "minutes",
-                AVG(t.DurationFunding) AS "unixtime"
-            FROM (
-                SELECT
-                    p.id_project,
-                    TIMEDIFF(IF(p.date_funded = "0000-00-00", DATE_FORMAT(MIN(b.updated), "%Y-%m-%d %H:%i"), p.date_funded), p.date_publication_full) AS DurationFunding
-                FROM bids b
-                INNER JOIN projects p ON (b.id_project = p.id_project)
-                INNER JOIN projects_status_history psh ON p.id_project = psh.id_project
-                INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                WHERE b.status = ' . \bids::STATUS_BID_REJECTED . ' AND ps.status = ' . \projects_status::FUNDE . ' AND p.date_retrait > :date
-            ) AS t';
+        $query = 'SELECT
+                      FLOOR(AVG(t.DurationFunding / 60 / 24)) AS days,
+                      FLOOR(MOD(AVG(t.DurationFunding / 60), 24)) AS hours,
+                      FLOOR(MOD(AVG(t.DurationFunding), 60)) AS minutes,
+                      FLOOR(AVG(t.DurationFunding / 60)) AS totalHours,
+                      ROUND(AVG(t.DurationFunding)) AS totalMinutes
+                    FROM (
+                     SELECT
+                       date_funded,
+                       date_publication_full,
+                       ROUND(TIMESTAMPDIFF(SECOND, date_publication_full, date_funded) / 60) AS DurationFunding -- minutes
+                     FROM projects
+                     WHERE date_funded != "0000-00-00" AND date_retrait > :date
+                    ) AS t ';
 
-        $oStatement = $this->bdd->executeQuery($sQuery, ['date' => $startingDate->format('Y-m-d')], ['date' => \PDO::PARAM_STR]);
-        $aDateIntervalInformation  = $oStatement->fetch(\PDO::FETCH_ASSOC);
+        $statement = $this->bdd->executeQuery($query, ['date' => $startingDate->format('Y-m-d')], ['date' => \PDO::PARAM_STR]);
+        $dateIntervalInformation  = $statement->fetch(\PDO::FETCH_ASSOC);
 
-        return $aDateIntervalInformation;
+        return $dateIntervalInformation;
     }
 
     public function getGlobalAverageRateOfFundedProjects($iLimit)
