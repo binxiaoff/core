@@ -4,24 +4,6 @@ var __ = new Dictionary(window.UTILITY_LANG)
 
 var $doc = $(document)
 
-// Private functions
-function displayErrorMessages(errors){
-    var messageDiv = $('#form-info-notifications .message-error')
-    var messagesHTML = ''
-    for (var i = 0, len = errors.length; i < len; i++) {
-        messagesHTML += '<p>' + errors[i] + '</p>'
-    }
-    messageDiv.append(messagesHTML)
-    messageDiv.show()
-}
-
-function updateSuccess(dateText){
-    var dateDiv = $('#settings-last-updated')
-    dateDiv.text(dateText)
-    var messageDiv = $('#update-success-message')
-    messageDiv.show()
-}
-
 function getCellInfo(cellIndex) {
 
     var $inputRate = getInputRate(cellIndex)
@@ -244,33 +226,6 @@ function setSettingsModeBasedOnButton ($button) {
     }
 }
 
-
-// Autolend form
-var $form = $('#form-user-autolend')
-
-// Setup modal events
-$('#autolend-table-dialog')
-    // Confirmed submits the AJAX
-    .on('Modal:confirmed', function (event, elemModal) {
-        // Submit the Autolend information
-        $.ajax({
-            method: $form.attr('method'),
-            url: $form.attr('action'),
-            data: $form.serialize(),
-            dataType: 'json'
-        }).done(function (data) {
-            // Show errors
-            if (data.result == 'ko') {
-                displayErrorMessages(data.errors)
-            } else {
-                updateSuccess(data.dateText)
-            }
-
-            // Close modal
-            elemModal.close()
-        })
-    })
-
 $doc
     // Toggle simple/expert settings
     .on('change', 'input#autolend-table-config-enable', function (event) {
@@ -291,6 +246,7 @@ $doc
     // Switch autolend on/off
     .on('change', 'input#form-autolend-enable', function (event) {
         var $elem = $(this)
+        var $form = $('form#form-user-autolend');
 
         if ($elem.is(':checked')) {
             $('#autolend-config.collapse').collapse('show')
@@ -378,6 +334,7 @@ $doc
     // We're capturing the submit event as users might press enter or submit the form otherwise by not clicking a button
     .on('submit', 'form#form-user-autolend', function (event) {
         var $elem = $(this)
+        var form = event.target;
         emptyNotificationsDiv()
 
         // Always prevent the form from submitting as we will be processing via AJAX in the confirmed modal event
@@ -385,6 +342,12 @@ $doc
 
         // Show dialog
         $('#autolend-table-dialog').uiModal('open')
+
+        // Setup modal events
+        $('#autolend-table-dialog').on('Modal:confirmed', function (event, elemModal) {
+            form.submit()
+            elemModal.close()
+        })
         return false
     })
 

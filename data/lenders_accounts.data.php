@@ -357,7 +357,7 @@ class lenders_accounts extends lenders_accounts_crud
 
         $query = 'SELECT COUNT(DISTINCT(c.id_client))
                     FROM clients c
-                    INNER JOIN lenders_accounts la ON c.id_client = la.id_client_owner AND la.status = 1
+                    INNER JOIN lenders_accounts la ON c.id_client = la.id_client_owner
                     '. $clientStatus .'
                     WHERE c.status = ' . \clients::STATUS_ONLINE;
         $statement = $this->bdd->executeQuery($query);

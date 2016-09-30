@@ -874,7 +874,9 @@ class LenderSubscriptionController extends Controller
             if (is_numeric($amount) && $amount >= LenderWalletController::MIN_DEPOSIT_AMOUNT && $amount <= LenderWalletController::MAX_DEPOSIT_AMOUNT) {
                 $amount = (number_format($amount, 2, '.', '') * 100);
                 /** @var \lenders_accounts $lenderAccount */
-                $lenderAccount                 = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
+                $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
+                $lenderAccount->get($client->id_client, 'id_client_owner');
+
                 $lenderAccount->fonds          = $amount;
                 $lenderAccount->type_transfert = \lenders_accounts::MONEY_TRANSFER_TYPE_CARD;
                 $lenderAccount->update();
@@ -953,7 +955,9 @@ class LenderSubscriptionController extends Controller
         /** @var LoggerInterface $logger */
         $logger = $this->get('logger');
         /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');;
+        $translator = $this->get('translator');
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
 
         if ($client->get($request->query->get('hash'), 'hash')) {
             $paylineParameter = [];
@@ -984,10 +988,11 @@ class LenderSubscriptionController extends Controller
                     $clientHistory->create();
 
                     $this->sendInternalMoneyTransferNotification($client, $response);
-                    $this->addFlash('moneyTransferSuccess', $translator->trans('lender-subscription_money-transfer-success-message', [
-                        '%depositAmount%' => bcdiv($response['payment']['amount'], 100, 2)]));
-                    $this->redirectToRoute('lender_subscription_money_deposit', [ 'clientHash' => $client->hash,
-                    ]);
+                    $this->addFlash(
+                        'moneyTransferSuccess',
+                        $translator->trans('lender-subscription_money-transfer-success-message', ['%depositAmount%' => $ficelle->formatNumber(bcdiv($response['payment']['amount'], 100, 2), 2)])
+                    );
+                    $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->hash]);
                 }
                 $this->addFlash('moneyTransferError', $translator->trans('lender-subscription_money-transfer-error-message'));
                 return $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->hash]);
@@ -1182,12 +1187,20 @@ class LenderSubscriptionController extends Controller
             if ($this->get('security.authorization_checker')->isGranted('ROLE_LENDER')) {
                 if (false === is_null($clientHash) && $client->get($clientHash, 'hash') && $client->id_client != $this->getUser()->getClientId()) {
                     return $this->redirectToRoute('projects_list');
-                } else {
-                    $client->get($this->getUser()->getClientId());
-                    $redirectRoute = $this->getSubscriptionStepRedirectRoute($client->etape_inscription_preteur, $client->hash);
-                    if ($requestPathInfo !== $redirectRoute) {
-                        return $this->redirect($redirectRoute);
-                    }
+                }
+
+                $client->get($this->getUser()->getClientId());
+                /** @var \clients_status $clientStatus */
+                $clientStatus = $this->get('unilend.service.entity_manager')->getRepository('clients_status');
+                $clientStatus->getLastStatut($client->id_client);
+
+                if ($clientStatus->status >= \clients_status::MODIFICATION){
+                    return $this->redirectToRoute('lender_dashboard');
+                }
+
+                $redirectRoute = $this->getSubscriptionStepRedirectRoute($client->etape_inscription_preteur, $client->hash);
+                if ($requestPathInfo !== $redirectRoute) {
+                    return $this->redirect($redirectRoute);
                 }
             }
         }

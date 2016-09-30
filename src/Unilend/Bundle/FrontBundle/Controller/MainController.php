@@ -102,16 +102,16 @@ class MainController extends Controller
             $lenderAccount->get($user->getClientId(), 'id_client_owner');
 
             $template['projects'] = $projectDisplayManager->getProjectsList(
-                [\projects_status::EN_FUNDING],
+                [],
                 [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC],
                 null,
-                null,
+                3,
                 $lenderAccount
             );
         } else {
             $template['projects'] = $projectDisplayManager->getProjectsList(
-                [\projects_status::EN_FUNDING],
-                [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC]
+                [],
+                [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC], null, 3
             );
         }
 
@@ -766,10 +766,7 @@ class MainController extends Controller
             $finalElements = $cachedItem->get();
         }
 
-        $response = $this->render('partials/site/footer.html.twig', ['menus' => $finalElements['footerMenu'], 'partners' => $finalElements['partners']]);
-        $response->setSharedMaxAge(900);
-
-        return $response;
+        return $this->render('partials/site/footer.html.twig', ['menus' => $finalElements['footerMenu'], 'partners' => $finalElements['partners']]);
     }
 
     /**
@@ -811,10 +808,7 @@ class MainController extends Controller
             }
         }
 
-        $response = $this->render('partials/site/reviews.html.twig', ['reviews' => $reviews]);
-        $response->setSharedMaxAge(900);
-
-        return $response;
+        return $this->render('partials/site/reviews.html.twig', ['reviews' => $reviews]);
     }
 
     /**
@@ -874,9 +868,9 @@ class MainController extends Controller
      */
     public function statisticsAction(Request $request)
     {
-        if ($request->getClientIp() != '92.154.10.41') {
-            return $this->render('/pages/static_pages/error.html.twig');
-        }
+//        if ($request->getClientIp() != '92.154.10.41') {
+//            return $this->render('/pages/static_pages/error.html.twig');
+//        }
 
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');

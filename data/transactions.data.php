@@ -177,7 +177,7 @@ class transactions extends transactions_crud
         $sql .='
             ELSE ""
             END AS type_transaction_alpha,
-            CASE 
+            CASE
             WHEN b.id_project IS NULL THEN CASE WHEN b2.id_project IS NULL THEN t.id_project ELSE b2.id_project END
             ELSE b.id_project END AS id_project,
             date_transaction AS date_tri,
@@ -402,11 +402,6 @@ class transactions extends transactions_crud
 
     public function getBorrowerRecoveryPaymentsByCohort()
     {
-        $caseSql  = '';
-        foreach (range(2015, date('Y')) as $year ) {
-            $caseSql .= ' WHEN ' . $year . ' THEN "' . $year . '"';
-        }
-
         $query = 'SELECT
                       ROUND(SUM(montant / 100), 2)           AS amount,
                       (
@@ -414,7 +409,6 @@ class transactions extends transactions_crud
                           CASE LEFT(projects_status_history.added, 4)
                             WHEN 2013 THEN "2013-2014"
                             WHEN 2014 THEN "2013-2014"
-                            '. $caseSql . '
                             ELSE LEFT(projects_status_history.added, 4)
                           END AS date_range
                         FROM projects_status_history

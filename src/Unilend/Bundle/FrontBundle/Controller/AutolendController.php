@@ -20,7 +20,7 @@ class AutolendController extends Controller
      * @Route("/profile/autolend", name="autolend")
      * @Security("has_role('ROLE_LENDER')")
      */
-    public function autolendAction()
+    public function autolendAction(Request $request)
     {
         /** @var AutoBidSettingsManager $autoBidSettingsManager */
         $autoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
@@ -45,6 +45,42 @@ class AutolendController extends Controller
         $projectRateSettings = $this->get('unilend.service.entity_manager')->getRepository('project_rate_settings');
         /** @var \project_period $projectPeriods */
         $projectPeriods = $this->get('unilend.service.entity_manager')->getRepository('project_period');
+
+        if ($request->isMethod('POST')) {
+            /** @var \client_settings $clientSettings */
+            $clientSettings = $this->get('unilend.service.entity_manager')->getRepository('client_settings');
+
+            /** @var array $messages */
+            $messages = [];
+            $post = $request->request->all();
+
+            if ($request->isXmlHttpRequest()) {
+                if (false === empty($post['setting']) && $post['setting'] == 'autolend-off') {
+                    $this->saveAutolendOff($lendersAccounts, $clientSettings, $autoBidSettingsManager);
+                }
+            } else {
+                if (isset($post['hidden-settings-mode-input']) && $post['hidden-settings-mode-input'] == 'simple') {
+                    $messages = $this->handleSimpleSettings($post, $settings, $lendersAccounts, $autoBidSettingsManager);
+                }
+
+                if (isset($post['hidden-settings-mode-input']) && $post['hidden-settings-mode-input'] == 'expert') {
+                    $messages = $this->handleExpertSettings($post, $settings, $lendersAccounts, $autoBidSettingsManager);
+                }
+
+                $translator = $this->get('translator');
+                if (isset($messages['error'])) {
+                    foreach ($messages['error'] as $error) {
+                        $this->addFlash('autolend_error', $error);
+                    }
+                } else {
+                    $success = $translator->trans('autolend_update-settings-success-message');
+                    $this->addFlash('autolend_success', $success);
+                }
+
+            }
+        }
+
+
         $projectPeriods = $projectPeriods->select();
         foreach ($projectPeriods as $period) {
             $template['projectPeriods'][$period['id_period']] = $period;
@@ -96,44 +132,6 @@ class AutolendController extends Controller
 
     }
 
-    /**
-     * @param Request $request
-     * @Route("profile/autolend/submit", name="update_autolend_settings")
-     * @Method("POST")
-     */
-    public function autolendFormAction(Request $request)
-    {
-        /** @var AutoBidSettingsManager $autoBidSettingsManager */
-        $autoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->getLenderAccount();
-        /** @var \client_settings $clientSettings */
-        $clientSettings = $this->get('unilend.service.entity_manager')->getRepository('client_settings');
-
-        /** @var array $messages */
-        $messages = [];
-
-        if ($request->isXmlHttpRequest()) {
-            $post = $request->request->all();
-            if (false === empty($post['setting']) && $post['setting'] == 'autolend-off') {
-                 $messages = $this->saveAutolendOff($lenderAccount, $clientSettings, $autoBidSettingsManager);
-            }
-
-            if (isset($post['hidden-settings-mode-input']) && $post['hidden-settings-mode-input'] == 'simple') {
-                $messages = $this->handleSimpleSettings($post, $settings, $lenderAccount, $autoBidSettingsManager);
-            }
-
-            if (isset($post['hidden-settings-mode-input']) && $post['hidden-settings-mode-input'] == 'expert') {
-                $messages = $this->handleExpertSettings($post, $settings, $lenderAccount, $autoBidSettingsManager);
-            }
-            return $this->json($messages);
-        }
-
-        return new Response('not an ajax request');
-    }
-
     private function handleSimpleSettings($post, \settings $settings, \lenders_accounts $lenderAccount, AutoBidSettingsManager $autoBidSettingsManager)
     {
         /** @var TranslatorInterface $translator */
@@ -158,11 +156,8 @@ class AutolendController extends Controller
                 $autoBidSettingsManager->on($lenderAccount);
             }
             $autoBidSettingsManager->saveNoviceSetting($lenderAccount->id_lender_account, $post['autolend_rate_min'], $post['autolend_amount']);
-            $validateTime = $autoBidSettingsManager->getValidationDate($lenderAccount);
-            $updateDateTranslation = $translator->trans('autolend_settings-last-updated-text', ['%date%' => strftime('%d %B %G', $validateTime->format('U'))]);
-            return ['result' => 'ok', 'dateText' => $updateDateTranslation];
         } else {
-            return ['result' => 'ko', 'errors' => $errorMsg];
+            return array('error' => $errorMsg);
         }
     }
 
@@ -229,11 +224,8 @@ class AutolendController extends Controller
                 $autoBidSettingsManager->saveSetting($lenderAccount->id_lender_account, $setting['evaluation'], $setting['period'], $setting['interest'], $amount);
                 $autoBidSettingsManager->activateDeactivateSetting($lenderAccount->id_lender_account, $setting['evaluation'], $setting['period'], $setting['is-active']);
             }
-            $validateTime = $autoBidSettingsManager->getValidationDate($lenderAccount);
-            $updateDateTranslation = $translator->trans('autolend_settings-last-updated-text', ['%date%' => strftime('%d %B %G', $validateTime->format('U'))]);
-            return ['result' => 'ok', 'dateText' => $updateDateTranslation];
         } else {
-            return ['result' => 'ko', 'errors' => $errorMsg];
+            return array('error' => $errorMsg);
         }
     }
 

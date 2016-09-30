@@ -938,9 +938,17 @@ class echeanciers extends echeanciers_crud
     public function getTotalRepaidCapital()
     {
         $query = '
-            SELECT SUM(capital_rembourse)
-            FROM echeanciers
-            WHERE status IN (' . self::STATUS_REPAID . ', ' . self::STATUS_PARTIALLY_REPAID . ')';
+            SELECT (t.totalRepayment + t.totalRecovery)
+            FROM
+                (
+                   SELECT
+                     SUM(capital_rembourse)AS totalRepayment,
+                     (SELECT SUM(montant)
+                      FROM transactions
+                      WHERE transactions.type_transaction = '. \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT .') AS totalRecovery
+                   FROM echeanciers
+                    WHERE status IN (' . self::STATUS_REPAID . ', ' . self::STATUS_PARTIALLY_REPAID . ')) AS t';
+
         return bcdiv($this->bdd->executeQuery($query)->fetchColumn(0), 100, 2);
     }
 
@@ -1019,11 +1027,6 @@ class echeanciers extends echeanciers_crud
 
     public function getTotalRepaidInterestByCohort()
     {
-        $caseSql  = '';
-        foreach (range(2015, date('Y')) as $year ) {
-            $caseSql .= ' WHEN ' . $year . ' THEN "' . $year . '"';
-        }
-
         $query = 'SELECT
                       ROUND(SUM(interets_rembourses) / 100, 2) AS amount,
                       (
@@ -1031,7 +1034,6 @@ class echeanciers extends echeanciers_crud
                           CASE LEFT(projects_status_history.added, 4)
                             WHEN 2013 THEN "2013-2014"
                             WHEN 2014 THEN "2013-2014"
-                            '. $caseSql . '
                             ELSE LEFT(projects_status_history.added, 4)
                           END AS date_range
                         FROM projects_status_history
@@ -1047,5 +1049,42 @@ class echeanciers extends echeanciers_crud
         $statement = $this->bdd->executeQuery($query);
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function getOwedCapitalANdProjectsByContractType($contractType)
+    {
+        $query = ' SELECT
+                      p.id_project,
+                      SUM(e.montant) as amount,
+                      (
+                        SELECT e2.status
+                        FROM echeanciers e2
+                        WHERE
+                          e2.ordre = e.ordre
+                          AND e.id_project = e2.id_project
+                        LIMIT 1
+                      )           AS status,
+                      DATEDIFF(NOW(),
+                               (SELECT e3.date_echeance
+                                FROM echeanciers e3
+                                WHERE
+                                  e3.ordre = e.ordre
+                                  AND e.id_project = e3.id_project
+                                  AND status = 0
+                                ORDER BY e3.id_echeancier
+                                LIMIT 1
+                               )) AS delay,
+                      p.status
+                    FROM echeanciers e
+                      INNER JOIN loans l ON l.id_loan = e.id_loan
+                      INNER JOIN underlying_contract uc ON uc.id_contract = l.id_type_contract
+                      INNER JOIN projects p ON e.id_project = p.id_project
+                    WHERE uc.label = :contractType
+                    GROUP BY p.id_project
+                    HAVING status = 0';
+
+        $statement = $this->bdd->executeQuery($query, ['contractType' => $contractType], ['contractType' => \PDO::PARAM_STR]);
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
 
 }

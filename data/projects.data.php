@@ -506,8 +506,8 @@ class projects extends projects_crud
             INNER JOIN (SELECT id_project, MAX(id_project_status_history) AS id_project_status_history FROM projects_status_history GROUP BY id_project) plsh ON plsh.id_project = p.id_project
             INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
             WHERE p.status = ' . $iStatus . '
-                AND DATE_SUB(CURDATE(), INTERVAL ' . $iDaysInterval . ' DAY) = DATE(plsh.added)
-                AND plsh.numero_relance = ' . $iPreviousReminderIndex
+                AND DATE_SUB(CURDATE(), INTERVAL ' . $iDaysInterval . ' DAY) = DATE(psh.added)
+                AND psh.numero_relance = ' . $iPreviousReminderIndex
         );
 
         if ($this->bdd->num_rows($rResult) > 0) {
@@ -927,7 +927,7 @@ class projects extends projects_crud
 
     public function getAverageNumberOfLendersForProject()
     {
-        $sQuery = 'SELECT ROUND(AVG(t.lenderCount), 0) FROM (SELECT id_project, COUNT(DISTINCT id_lender) AS lenderCount FROM `loans` GROUP BY id_project) AS t ';
+        $sQuery = 'SELECT ROUND(AVG(t.lenderCount), 0) FROM (SELECT id_project, COUNT(DISTINCT id_lender) AS lenderCount FROM `loans` WHERE status = 0 GROUP BY id_project) AS t ';
         $oStatement = $this->bdd->executeQuery($sQuery);
 
         return $oStatement->fetchColumn(0);
@@ -936,10 +936,8 @@ class projects extends projects_crud
     public function getAverageAmount()
     {
         $query = 'SELECT ROUND(AVG(amount), 0)
-                    FROM `projects`
-                    INNER JOIN projects_status_history ON projects.id_project = projects_status_history.id_project
-                    INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
-                    WHERE projects_status.status = ' . \projects_status::FUNDE;
+                    FROM projects
+                    WHERE status >= ' . \projects_status::REMBOURSEMENT;
         $statement = $this->bdd->executeQuery($query);
 
         return $statement->fetchColumn(0);

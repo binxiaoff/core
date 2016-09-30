@@ -525,6 +525,7 @@ class ProjectRequestController extends Controller
             $advisor = $entityManager->getRepository('prescripteurs');
             /** @var \clients $advisorClient */
             $advisorClient = $entityManager->getRepository('clients');
+            $sourceManager = $this->get('unilend.frontbundle.service.source_manager');
 
             if (false === empty($this->project->id_prescripteur)) {
                 $advisor->get($this->project->id_prescripteur);
@@ -544,6 +545,11 @@ class ProjectRequestController extends Controller
             $advisorClient->fonction  = $request->request->get('advisor')['function'];
             $advisorClient->telephone = $request->request->get('advisor')['mobile'];
             $advisorClient->slug      = $ficelle->generateSlug($advisorClient->prenom . '-' . $advisorClient->nom);
+
+            $advisorClient->source       = $sourceManager->getSource(SourceManager::SOURCE1);
+            $advisorClient->source2      = $sourceManager->getSource(SourceManager::SOURCE2);
+            $advisorClient->source3      = $sourceManager->getSource(SourceManager::SOURCE3);
+            $advisorClient->slug_origine = $sourceManager->getSource(SourceManager::ENTRY_SLUG);
 
             if (empty($advisorClient->id_client)) {
                 $advisorClient->create();

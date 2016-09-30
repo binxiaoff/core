@@ -863,13 +863,7 @@ FormValidation.prototype.rules = {
         case 'phone':
         case 'telephone':
         case 'mobile':
-          // Allowed: +33 644 911 250
-          //          (0) 12.34.56.78.90
-          //          856-6688
-          // if (!/^\+?[0-9\-\. \(\)]{6,}$/.test(inputValidation.value)) {
-
-          // DEV-578 mobile phone number format upon input (exclude + before area code)
-          if (/\D+/.test(inputValidation.value) || inputValidation.value.length < 6) {
+          if (!/^0[0-9]{9}$/.test(inputValidation.value)) {
             inputValidation.errors.push({
               type: 'inputType',
               description: __.__('Not a valid telephone number', 'error-field-input-type-telephone')
@@ -882,7 +876,7 @@ FormValidation.prototype.rules = {
           //          mattscheurich@examp.le.com
           //          mattscheurich1983@example-email.co.nz
           //          matt_scheurich@example.email.address.net.nz
-          if (!/^[a-z0-9\-_\.]+\@[a-z0-9\-\.]+\.[a-z0-9]{2,}(?:\.[a-z0-9]{2,})*$/i.test(inputValidation.value)) {
+          if (!/^[-a-z0-9~!$%^&*_=+}{\'?]+(\.[-a-z0-9~!$%^&*_=+}{\'?]+)*@([a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+)*\.(aero|arpa|biz|com|coop|edu|gov|info|int|mil|museum|name|net|org|pro|travel|mobi|[a-z][a-z])|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,5})?$/i.test(inputValidation.value)) {
             inputValidation.errors.push({
               type: 'inputType',
               description: __.__('Not a valid email address', 'error-field-input-type-email')

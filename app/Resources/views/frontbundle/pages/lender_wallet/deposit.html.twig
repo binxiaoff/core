@@ -78,7 +78,7 @@ classNames: 'user-preter-balance'
                                             <label for="form-balance-deposit-amount">{% trans %} lender-wallet_amount {% endtrans %}
                                                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                             </label>
-                                            <div class="input-group set-left">
+                                            <div class="input-group set-right">
                                                 <div class="btn-group">
                                                     <span class="icon fa-euro"></span>
                                                 </div>
@@ -106,7 +106,7 @@ classNames: 'user-preter-balance'
                 {% else %}
                     <section id="balance-deposit-result" role="tabpanel" class="panel collapse in" aria-expanded="true">
                         {% if depositCode == 200 %}
-                            <p>{% trans with { '%depositAmount%' : depositAmount } %} lender-wallet_deposit-success-message {% endtrans %}</p>
+                            <p>{% trans with {'%depositAmount%' : depositAmount} %} lender-wallet_deposit-success-message {% endtrans %}</p>
                             <p>
                                 <a href="{{ path('lender_dashboard') }}" class='btn-primary'>{% trans %} lender-wallet_lender-dashboard {% endtrans %}</a>
                             </p>

@@ -61,9 +61,9 @@
                                 </div>
                                 {% set calendarweekValue = getStatistic('averageFundingTime') %}
                                 <h3 class="promo-highlight">
-                                    <span class="ui-text-count" data-start-count="0" data-end-count="{{ calendarweekValue.days }}" data-total-time="3000" data-round-float="ceil" data-tween-count="easeOutCirc">{{ calendarweekValue.days }}</span>
+                                    <span class="ui-text-count" data-start-count="0" data-end-count="{{ calendarweekValue.hours }}" data-total-time="3000" data-round-float="ceil" data-tween-count="easeOutCirc">{{ calendarweekValue.hours }}</span>
                                 </h3>
-                                <p>{% trans with {'%avgFundingTime%' : calendarweekValue.days} %} home-borrower_why-borrow-stats-calendarweek-text {% endtrans %}</p>
+                                <p>{% trans with {'%avgFundingTime%' : calendarweekValue.hours} %} home-borrower_why-borrow-stats-calendarweek-text {% endtrans %}</p>
                             </div>
                         </div><!-- /.promo -->
                         <div class="col-lg-4 col-md-4 swiper-slide">
@@ -307,7 +307,6 @@
             </div><!-- /.site-wrap -->
         </section><!-- /.page-section -->
 
+        {{ render(controller('UnilendFrontBundle:Main:footerReviews')) }}
     </article><!-- /.page -->
-
-    {{ render_esi(controller('UnilendFrontBundle:Main:footerReviews')) }}
 {% endblock %}

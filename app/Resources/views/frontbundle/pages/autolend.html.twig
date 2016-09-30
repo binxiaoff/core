@@ -10,7 +10,7 @@ classNames: 'user-preter-autolend'
 
 {% block dashboardContent %}
     {# Disable default form validation. See: http://stackoverflow.com/a/22148483/1421162 #}
-    <form id="form-user-autolend" action="{{ path('update_autolend_settings') }}" method="post" class="form-user-autolend" novalidate autocomplete="off">
+    <form id="form-user-autolend" action="{{ path('autolend') }}" method="post" class="form-user-autolend" novalidate autocomplete="off">
         <section class="panel panel-autolend">
             <header class="panel-header">
                 <h3>{% trans %} autolend_page-title {% endtrans %}</h3>
@@ -35,8 +35,20 @@ classNames: 'user-preter-autolend'
                 <section class="panel panel-autolend-config ui-formvalidation" data-formvalidation>
                     <div class="ui-formvalidation-notifications"></div>
                     <div id="form-info-notifications">
-                            <div class="message-error" style="display: none;"></div>
-                            <div class="message-success" id="update-success-message" style="display: none;"><p>{% trans %} autolend_update-settings-success-message {% endtrans %}</p></div>
+                        {% if app.session.flashBag.has('autolend_error') %}
+                            <div class="message-error">
+                                {% for msg in app.session.flashBag.get('autolend_error') %}
+                                    <p>{{ msg|raw }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        {% if app.session.flashBag.has('autolend_success') %}
+                            <div class="message-success" id="update-success-message">
+                                {% for msg in app.session.flashBag.get('autolend_success') %}
+                                    <p>{{ msg|raw }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
                     <div class="readable-wrap">
                         <div class="message-info" id="settings-last-updated">{% trans with {'%date%' : validation_date } %} autolend_settings-last-updated-text {% endtrans %}</div>
@@ -44,12 +56,12 @@ classNames: 'user-preter-autolend'
                     </div>
                     <div class="row row-multi-col">
                         <div class="form-field col-lg-3 col-md-3 col-sm-4 col-xs-2">
-                            <label for="autolend-amount">{% trans %} autolend_amount-field-label {% endtrans %}
-                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
-                            <div class="input-group set-left">
-                                <div class="btn-group">
-                                    <span class="icon fa-euro"></span>
-                                </div><!-- /.btn-group -->
+                            <label for="autolend-amount">
+                                {% trans %} autolend_amount-field-label {% endtrans %}
+                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                            </label>
+                            <div class="input-group set-right">
+                                <div class="btn-group"><span class="icon fa-euro"></span></div><!-- /.btn-group -->
                                 <input type="text" id="autolend-amount" name="autolend_amount"
                                        data-formvalidation-minvalue="{{ setting('pret min') }}" step="any"
                                        value="{{ autolend_amount|default(setting('pret min'))|localizednumber }}"
@@ -58,9 +70,11 @@ classNames: 'user-preter-autolend'
                             </div><!-- /.input-group -->
                         </div><!-- /.form-field -->
                         <div class="form-field col-lg-3 col-md-3 col-sm-4 col-xs-2" id="div-interest-simple" {% if is_novice == false %} style="display:none;" {% endif %}>
-                            <label for="autolend-amount">{% trans %} autolend_simple-setting-rate-label {% endtrans %}
-                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
-                            <div class="input-group set-left">
+                            <label for="autolend-amount">
+                                {% trans %} autolend_simple-setting-rate-label {% endtrans %}
+                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                            </label>
+                            <div class="input-group set-right">
                                 <div class="btn-group"><span class="icon fa-percent"></span></div><!-- /.btn-group -->
                                 <input type="text" id="autolend-interest" name="autolend_rate_min"
                                        data-formvalidation-minvalue="{{ projectRatesGlobal.rate_min|round(1) }}"
@@ -116,6 +130,7 @@ classNames: 'user-preter-autolend'
                                             {% set i = 0 %}
                                             {% for settings in autoBidSettings %}
                                                 {% for setting in settings %}
+                                                    {% set classEnabled = '' %}
                                                     {% if setting.status == constant('\\autobid::STATUS_ACTIVE') %}
                                                         {% set classEnabled = 'ui-autolend-cell-enabled'%}
                                                     {% endif %}
@@ -124,7 +139,7 @@ classNames: 'user-preter-autolend'
                                                     {% else %}
                                                         {% set classAverage = 'ui-autolend-average-exceeds' %}
                                                     {% endif %}
-                                                    <div data-autolendtable-cell="{{ i }}" class="cell cell-data {{ classEnabled|default('') }} {{ classAverage }}">
+                                                    <div data-autolendtable-cell="{{ i }}" class="cell cell-data {{ classEnabled }} {{ classAverage }}">
                                                         <div class="cell-input" data-autolendtable-cell="{{ i }}">
                                                             <a class="btn-cell-minus" tabindex="-1" href="javascript:;"><span class="sr-only">Minus 0.1</span></a>
                                                             {# Inputs containing values for calculations / JS / to be submittes #}
