@@ -329,10 +329,7 @@ class ProjectDisplayManager
      */
     public function getFundingDurationTranslation(\projects $project)
     {
-        $duration    = $this->getFundingDuration($project);
-        $translation = '';
-        $x           = 0;
-        $y           = 0;
+        $duration = $this->getFundingDuration($project);
 
         switch (true) {
             case $duration->d > 0:
@@ -351,6 +348,7 @@ class ProjectDisplayManager
                 $translation = 'minute-second';
                 break;
             case $duration->s > 0:
+            default:
                 $x           = $duration->i;
                 $y           = $duration->s;
                 $translation = 'second';
