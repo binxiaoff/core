@@ -5,6 +5,7 @@
     <div class="project-list-map-list">
         <ul class="list-projects">
             {% for project in projects %}
+                {% set projectRatingTranslation = "project-list_unilend-rating-wording-label"|trans({'%risk%' : project.risk|convertRisk}) %}
                 {% if project.company.latitude is not empty and project.company.longitude is not empty %}
                     {# Set the offer status to show the icon in the marker #}
                     {# @note MapView CSS relies on offerStatuses named 'inprogress', 'rejected' and 'accepted' #}
@@ -20,7 +21,6 @@
                     {# Set the group based on active, expired, or offers inprogress, rejected or accepted #}
                     {# @note MapView JS component & CSS relies on two groups named 'active' and 'expired' (case insensitive) #}
                     {% set mapviewGroup = (project.finished ? 'expired' : 'active') %}
-                    {% set projectRatingTranslation = "project-detail_unilend-rating-wording-label"|trans({'%risk%' : project.risk|convertRisk}) %}
                     {% set mapviewItem = {
                         id: 'marker' ~ project.projectId,
                         categoryId: project.company.sectorId,
