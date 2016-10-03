@@ -588,10 +588,10 @@ class LenderSubscriptionController extends Controller
         $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
 
         if ($clientType == 'person') {
-            $settings->get('Lien conditions generales inscription preteur particulier_type');
+            $settings->get('Lien conditions generales inscription preteur particulier', 'type');
             $termsOfUseVersion = $settings->value;
         } else {
-            $settings->get('Lien conditions generales inscription preteur societe_type');
+            $settings->get('Lien conditions generales inscription preteur societe', 'type');
             $termsOfUseVersion = $settings->value;
         }
 
