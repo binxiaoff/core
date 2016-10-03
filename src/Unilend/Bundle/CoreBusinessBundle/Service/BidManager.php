@@ -1,6 +1,8 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Symfony\Component\Config\Definition\Exception\Exception;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\core\Loader;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
@@ -35,12 +37,16 @@ class BidManager
     /** @var EntityManager */
     private $oEntityManager;
 
-    public function __construct(EntityManager $oEntityManager, NotificationManager $oNotificationManager, AutoBidSettingsManager $oAutoBidSettingsManager, LenderManager $oLenderManager)
+    /** @var ProductManager */
+    private $productManager;
+
+    public function __construct(EntityManager $oEntityManager, NotificationManager $oNotificationManager, AutoBidSettingsManager $oAutoBidSettingsManager, LenderManager $oLenderManager, ProductManager $productManager)
     {
         $this->oEntityManager          = $oEntityManager;
         $this->oNotificationManager    = $oNotificationManager;
         $this->oAutoBidSettingsManager = $oAutoBidSettingsManager;
         $this->oLenderManager          = $oLenderManager;
+        $this->productManager          = $productManager;
 
         $this->oDate    = Loader::loadLib('dates');
         $this->oFicelle = Loader::loadLib('ficelle');
@@ -59,6 +65,7 @@ class BidManager
      * @param bool  $bSendNotification
      *
      * @return bool
+     * @throws \Exception
      */
     public function bid(\bids $oBid, $bSendNotification = true)
     {
@@ -72,8 +79,6 @@ class BidManager
         $oWalletsLine = $this->oEntityManager->getRepository('wallets_lines');
         /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
         $oWelcomeOfferDetails = $this->oEntityManager->getRepository('offres_bienvenues_details');
-        /** @var \projects_status $projectStatus */
-        $projectStatus = $this->oEntityManager->getRepository('projects_status');
         /** @var \projects $project */
         $project = $this->oEntityManager->getRepository('projects');
 
@@ -92,14 +97,14 @@ class BidManager
             if($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->warning('unable to get the project: ' . $iProjectId, ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]);
             }
-            return false;
+            throw new \Exception('bids-invalid-project');
         }
 
         if ($iAmountMin > $fAmount) {
             if($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->warning('Amount is less than the min amount for a bid', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]);
             }
-            return false;
+            throw new \Exception('bids-invalid-amount');
         }
 
         $projectRates = $this->getProjectRateRange($project);
@@ -111,18 +116,17 @@ class BidManager
                     ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]
                 );
             }
-            return false;
+            throw new \Exception('bids-invalid-rate');
         }
 
-        $projectStatus->getLastStatut($iProjectId);
-        if (false === in_array($projectStatus->status, array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING))) {
+        if (false === in_array($project->status, array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING))) {
             if($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->warning(
                     'Project status is not valid for bidding',
-                    ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate, 'project_status' => $projectStatus->status]
+                    ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate, 'project_status' => $project->status]
                 );
             }
-            return false;
+            throw new \Exception('bids-invalid-project-status');
         }
 
         $oCurrentDate = new \DateTime();
@@ -137,21 +141,28 @@ class BidManager
                     'Project end date is passed for bidding',
                     ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate, 'project_ended' => $oEndDate->format('c'), 'now' => $oCurrentDate->format('c')]);
             }
-            return false;
+            throw new \Exception('bids-invalid-project-status');
         }
 
         if (false === $oLenderAccount->get($iLenderId)) {
             if($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->warning('Cannot get lender', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]);
             }
-            return false;
+            throw new \Exception('bids-invalid-lender');
         }
 
         if (false === $this->oLenderManager->canBid($oLenderAccount)) {
             if($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->warning('lender cannot bid', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]);
             }
-            return false;
+            throw new \Exception('bids-lender-cannot-bid');
+        }
+
+        if (false === $this->productManager->isBidEligible($oBid, $project)) {
+            if($this->oLogger instanceof LoggerInterface) {
+                $this->oLogger->warning('The Bid is not eligible for the project', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]);
+            }
+            throw new \Exception('bids-not-eligible');
         }
 
         $iClientId = $oLenderAccount->id_client_owner;
@@ -160,7 +171,7 @@ class BidManager
             if($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->warning('lender\s balance not enough for a bid', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate, 'balance' => $iBalance]);
             }
-            return false;
+            throw new \Exception('bids-low-balance');
         }
 
         $oTransaction->id_client        = $iClientId;
@@ -170,7 +181,6 @@ class BidManager
         $oTransaction->status           = \transactions::PAYMENT_STATUS_OK;
         $oTransaction->etat             = \transactions::STATUS_VALID;
         $oTransaction->id_project       = $iProjectId;
-        $oTransaction->transaction      = \transactions::VIRTUAL;
         $oTransaction->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
         $oTransaction->ip_client        = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
         $oTransaction->create();
@@ -246,7 +256,7 @@ class BidManager
      * @param float     $fRate
      * @param bool      $bSendNotification
      */
-    public function bidByAutoBidSettings(\autobid $oAutoBid, \projects $oProject, $fRate, $bSendNotification)
+    public function bidByAutoBidSettings(\autobid $oAutoBid, \projects $oProject, $fRate, $bSendNotification = true)
     {
         if ($oAutoBid->rate_min <= $fRate) {
             /** @var \bids $oBid */
@@ -269,7 +279,7 @@ class BidManager
      * @param \bids $oBid
      * @param bool  $bSendNotification
      */
-    public function reject(\bids $oBid, $bSendNotification)
+    public function reject(\bids $oBid, $bSendNotification = true)
     {
         if ($oBid->status == \bids::STATUS_BID_PENDING || $oBid->status == \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY) {
             $oTransaction = $this->creditRejectedBid($oBid, $oBid->amount / 100);
@@ -305,7 +315,7 @@ class BidManager
      * @param int    $iMode
      * @param bool   $bSendNotification
      */
-    public function reBidAutoBidOrReject(\bids $oBid, $currentRate, $iMode, $bSendNotification)
+    public function reBidAutoBidOrReject(\bids $oBid, $currentRate, $iMode, $bSendNotification = true)
     {
         /** @var \autobid $oAutoBid */
         $oAutoBid = $this->oEntityManager->getRepository('autobid');
@@ -376,9 +386,8 @@ class BidManager
         $oTransaction->etat             = \transactions::STATUS_VALID;
         $oTransaction->id_project       = $oBid->id_project;
         $oTransaction->ip_client        = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
-        $oTransaction->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
         $oTransaction->id_bid_remb      = $oBid->id_bid;
-        $oTransaction->transaction      = \transactions::VIRTUAL;
+        $oTransaction->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
         $oTransaction->create();
 
         $oWalletsLine->id_lender                = $oBid->id_lender_account;

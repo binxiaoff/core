@@ -1,41 +1,25 @@
-<?
-$this->settings->get('404 - link empruntez','type');
-$empruntez = $this->settings->value;
+<!DOCTYPE html>
+<!--[if lt IE 9]><html lang="fr_FR" class="lt-ie9 no-js"><![endif]-->
+<!--[if IE 9]><html lang="fr_FR" class="ie9 no-js"><![endif]-->
+<!--[if gt IE 9]><!--><html lang="fr_FR" class="no-js"><!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Erreur 404 — Unilend</title>
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Cabin:400,700,400" media="all">
+    <link rel="stylesheet" href="/assets/fonts/style.css" />
+    <link rel="stylesheet" href="/assets/css/main.css" />
+    <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js"></script>
+    <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js"></script>
+    <script type="text/javascript" src="/assets/js/dependencies.js"></script>
+    <script type="text/javascript" src="/assets/js/main.js"></script>
 
-$this->settings->get('404 - link pretez','type');
-$pretez = $this->settings->value;
-
-$this->settings->get('404 - link home','type');
-$home = $this->settings->value;
-?>
-
-
-<!--#include virtual="ssi-header.shtml"  -->
-		<div class="main">
-			<div class="banner higher">
-				<div class="banner-content">
-					<span class="pointer-left"></span>
-					<span class="pointer-right"></span>
-					<span class="pointer-down"></span>
-					<h3>oops !</h3>
-					<h2>la page que vous recherchez <br />n'existe pas ...</h2>
-					<a href="<?=$this->lurl?><?=$pretez?>" class="btn btn-mega btn-info left">
-						<i class="icon-arrow-medium-next right"></i>
-						PRÊTez
-						<small>et recevez des intérêts</small>
-					</a>
-					<a href="<?=$this->lurl?><?=$empruntez?>" class="btn btn-mega right">
-						<i class="icon-arrow-medium-next right"></i>
-						Empruntez
-						<small>simplement et rapidement</small>
-					</a>
-					<p>Où désirez-vous aller ?</p>
-					<a href="<?=$this->lurl?><?=$home?>" class="btn btn-mega btn-stand-alone">
-						<i class="icon-arrow-medium-next right"></i>
-						Accueil
-					</a>
-				</div><!-- /.banner-content -->
-			</div><!-- /.banner -->
-		</div>
-		
-<!--#include virtual="ssi-footer.shtml"  -->
+</head>
+<body>
+<script>
+    $('body').load('<?=$this->url?>/erreur404');
+</script>
+</body>
+</html>

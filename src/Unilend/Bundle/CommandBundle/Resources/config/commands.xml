@@ -104,5 +104,8 @@
         <service id="unilend.command.generate_crud" class="Unilend\Bundle\CommandBundle\Command\GenerateCrudCommand">
             <tag name="console.command"/>
         </service>
+        <service id="unilend.command.clear_statistics" class="Unilend\Bundle\CommandBundle\Command\UnilendClearStatisticsCache">
+            <tag name="console.command"/>
+        </service>
     </services>
 </container>

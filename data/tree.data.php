@@ -87,7 +87,7 @@ class tree extends tree_crud
     //**************************************** AJOUTS ******************************************//
     //******************************************************************************************//
     // Definition des types d'éléments
-    public $typesElements = array('Texte', 'Textearea', 'Texteditor', 'Lien Interne', 'Lien Externe', 'Image', 'Fichier', 'Fichier Protected', 'Date', 'Checkbox');
+    public $typesElements = array('Texte', 'Textearea', 'Texteditor', 'Lien Interne', 'Lien Externe', 'Image', 'Fichier', 'Fichier Protected', 'Date', 'Checkbox', 'Boolean', 'SVG');
 
     // Affichage des elements de formulaire en fonction du type d'élément
     public function displayFormElement($id_tree, $element, $type = 'tree', $langue = 'fr')
@@ -146,7 +146,7 @@ class tree extends tree_crud
                         <th class="bas">
                             <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
                             <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" class="select">';
-                    foreach ($this->listChilds(0, '-', array(), $langue) as $tree) {
+                    foreach ($this->listChilds(0, array(), $langue) as $tree) {
                         echo '<option value="' . $tree['id_tree'] . '"' . ($this->params['tree_elements']->value == $tree['id_tree'] ? ' selected="selected"' : '') . '>' . $tree['title'] . '</option>';
                     }
                     echo '
@@ -321,6 +321,42 @@ class tree extends tree_crud
                     </tr>';
                     break;
 
+                case 'SVG':
+                    $icons = ['header-contact', 'header-fiscalite', 'header-legal', 'header-plandusite', 'header-recrutement', 'header-securite', 'avatar-f-level-1', 'category-1', 'category-10', 'category-11', 'category-12', 'category-13', 'category-14', 'category-15', 'category-2', 'category-3', 'category-4', 'category-5', 'category-6', 'category-7', 'category-8', 'category-9', 'promo-balance', 'promo-barchart', 'promo-calendarweek', 'promo-clock', 'promo-francemap', 'promo-handshake', 'promo-info', 'promo-linechart', 'promo-linechart2', 'promo-money', 'promo-pagestack', 'promo-people', 'promo-piggybank', 'promo-profile', 'promo-projects', 'promo-protection', 'promo-saving', 'promo-transparancy', 'promo-verified'];
+                    sort($icons);
+                    echo '
+                    <tr>
+                        <th>
+                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' : </label>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th class="bas">
+                            <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">
+                                <option value=""></option>';
+                                foreach ($icons as $icon) {
+                                    echo '<option value="' . $icon . '"' . ($this->params['tree_elements']->value === $icon ? ' selected' : '') . '>' . $icon . '</option>';
+                                }
+                    echo '
+                            </select>
+                            <a href="https://unilend.atlassian.net/wiki/display/PROJ/UI+nouveau+site" target="_blank">Voir la liste</a>
+                        </th>
+                    </tr>';
+                    break;
+
+                case 'Boolean':
+                    echo '
+                    <tr>
+                        <th>
+                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' : </label>
+                            <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">
+                                <option value="0"' . ($this->params['tree_elements']->value == 0 ? ' selected' : '') . '>Non</option>
+                                <option value="1"' . ($this->params['tree_elements']->value == 1 ? ' selected' : '') . '>Oui</option>
+                            </select>
+                        </th>
+                    </tr>';
+                    break;
+
                 default:
                     echo '
                     <tr>
@@ -389,7 +425,7 @@ class tree extends tree_crud
                         <th class="bas">
                             <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
                             <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" class="select">';
-                    foreach ($this->listChilds(0, '-', array(), $langue) as $tree) {
+                    foreach ($this->listChilds(0, array(), $langue) as $tree) {
                         echo '<option value="' . $tree['id_tree'] . '"' . ($this->params['blocs_elements']->value == $tree['id_tree'] ? ' selected="selected"' : '') . '>' . $tree['title'] . '</option>';
                     }
                     echo '
@@ -560,6 +596,42 @@ class tree extends tree_crud
                         <th class="bas">
                             <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . '</label> :
                             <input type="checkbox" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" value="1"' . ($this->params['blocs_elements']->value == 1 ? ' checked="checked"' : '') . ' />
+                        </th>
+                    </tr>';
+                    break;
+
+                case 'Boolean':
+                    echo '
+                    <tr>
+                        <th>
+                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' : </label>
+                            <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">
+                                <option value="0"' . ($this->params['blocs_elements']->value == 0 ? ' selected' : '') . '>Non</option>
+                                <option value="1"' . ($this->params['blocs_elements']->value == 1 ? ' selected' : '') . '>Oui</option>
+                            </select>
+                        </th>
+                    </tr>';
+                    break;
+
+                case 'SVG':
+                    $icons = ['header-contact', 'header-fiscalite', 'header-legal', 'header-plandusite', 'header-recrutement', 'header-securite', 'avatar-f-level-1', 'category-1', 'category-10', 'category-11', 'category-12', 'category-13', 'category-14', 'category-15', 'category-2', 'category-3', 'category-4', 'category-5', 'category-6', 'category-7', 'category-8', 'category-9', 'promo-balance', 'promo-barchart', 'promo-calendarweek', 'promo-clock', 'promo-francemap', 'promo-handshake', 'promo-info', 'promo-linechart', 'promo-linechart2', 'promo-money', 'promo-pagestack', 'promo-people', 'promo-piggybank', 'promo-profile', 'promo-projects', 'promo-protection', 'promo-saving', 'promo-transparancy', 'promo-verified'];
+                    sort($icons);
+                    echo '
+                    <tr>
+                        <th>
+                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' : </label>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th class="bas">
+                            <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">
+                                <option value=""></option>';
+                    foreach ($icons as $icon) {
+                        echo '<option value="' . $icon . '"' . ($this->params['blocs_elements']->value === $icon ? ' selected' : '') . '>' . $icon . '</option>';
+                    }
+                    echo '
+                            </select>
+                            <a href="https://unilend.atlassian.net/wiki/display/PROJ/UI+nouveau+site" target="_blank">Voir la liste</a>
                         </th>
                     </tr>';
                     break;
@@ -968,18 +1040,14 @@ class tree extends tree_crud
     }
 
     // Construction de l'arbo pour un select
-    public function listChilds($id_parent, $indent, $tableau, $id_langue = 'fr')
+    public function listChilds($id_parent, $tableau, $id_langue = 'fr', $indent = '')
     {
-        if ($indent != '') {
-            $indent .= '---';
-        }
-
         $sql    = 'SELECT * FROM tree WHERE id_parent = ' . $id_parent . ' AND id_langue = "' . $id_langue . '" ORDER BY ordre ASC ';
         $result = $this->bdd->query($sql);
 
         while ($record = $this->bdd->fetch_assoc($result)) {
             $tableau[] = array('id_tree' => $record['id_tree'], 'title' => $indent . $record['menu_title'], 'id_parent' => $id_parent, 'slug' => $record['slug']);
-            $tableau   = $this->listChilds($record['id_tree'], $indent, $tableau, $id_langue);
+            $tableau   = $this->listChilds($record['id_tree'], $tableau, $id_langue, $indent . '&nbsp;&nbsp;&nbsp;');
         }
 
         return $tableau;
@@ -1070,6 +1138,7 @@ class tree extends tree_crud
     {
         $id_grand_parent = $this->getParent($id_parent);
 
+        $final  = [];
         $sql    = 'SELECT id_tree FROM tree WHERE id_parent = ' . $id_parent;
         $result = $this->bdd->query($sql);
 
@@ -1079,11 +1148,9 @@ class tree extends tree_crud
             $this->deleteCascade($record['id_tree']);
         }
 
-        if (is_array($final)) {
-            foreach ($final as $f) {
-                if (! is_null($f)) {
-                    $this->delete(array('id_tree' => $f));
-                }
+        foreach ($final as $f) {
+            if (! is_null($f)) {
+                $this->delete(array('id_tree' => $f));
             }
         }
 
@@ -1342,21 +1409,20 @@ class tree extends tree_crud
     // Status à 0 en cascade pour les enfants d'une page que l'on passe à 0
     public function statusCascade($id_parent, $id_langue = 'fr')
     {
+        $final  = [];
         $sql    = 'SELECT id_tree FROM tree WHERE id_parent = ' . $id_parent . ' AND id_langue = "' . $id_langue . '"';
         $result = $this->bdd->query($sql);
 
-        while ($record = $this->bdd->fetch_array($result)) {
+        while ($record = $this->bdd->fetch_assoc($result)) {
             $final[] = $record['id_tree'];
             $this->statusCascade($record['id_tree'], $id_langue);
         }
 
-        if (is_array($final)) {
-            foreach ($final as $f) {
-                if (! is_null($f)) {
-                    $this->get(array('id_tree' => $f, 'id_langue' => $id_langue));
-                    $this->status = 0;
-                    $this->update(array('id_tree' => $f, 'id_langue' => $id_langue));
-                }
+        foreach ($final as $f) {
+            if (! is_null($f)) {
+                $this->get(array('id_tree' => $f, 'id_langue' => $id_langue));
+                $this->status = 0;
+                $this->update(array('id_tree' => $f, 'id_langue' => $id_langue));
             }
         }
     }
@@ -1430,9 +1496,9 @@ class tree extends tree_crud
         return $this->sitemap;
     }
 
-    public function search($search, $langue = 'fr')
+    public function search($search, $includeProjects = false, $langue = 'fr')
     {
-        $result = array();
+        $result = [];
         $search = $this->bdd->escape_string($search);
         $sql    = '
             SELECT t.slug AS slug,
@@ -1452,50 +1518,57 @@ class tree extends tree_crud
 
         $resultat = $this->bdd->query($sql);
 
-        while ($record = $this->bdd->fetch_assoc($resultat)) {
-            $replace  = strip_tags($record['value']);
-            $mystring = strtolower($replace);
-            $findme   = strtolower($search);
-            $pos      = strpos($mystring, $findme);
+        if ($this->bdd->num_rows($resultat)) {
+            $result['cms'] = [];
 
-            if ($pos !== false) {
-                if ($record['id_template'] == 7) {
-                    $this->get(array('id_tree' => $record['id_parent'], 'id_langue' => $langue));
+            while ($record = $this->bdd->fetch_assoc($resultat)) {
+                $replace  = strip_tags($record['value']);
+                $mystring = strtolower($replace);
+                $findme   = strtolower($search);
+                $pos      = strpos($mystring, $findme);
 
-                    $result[$this->slug] = array(
-                        'slug'  => $this->slug,
-                        'title' => $this->title
-                    );
-                } else {
-                    $result[$record['slug']] = array(
-                        'slug'  => $record['slug'],
-                        'title' => $record['title']
-                    );
+                if ($pos !== false) {
+                    $result['cms'][] = [
+                        'title' => $record['title'],
+                        'slug'  => $record['slug']
+                    ];
                 }
+            }
+
+            usort($result['cms'], function($firstElement, $secondElement) {
+                return strcmp($firstElement['title'], $secondElement['title']);
+            });
+        }
+
+        if ($includeProjects) {
+            $sql = '
+                SELECT p.slug AS slug,
+                  p.title AS title,
+                  (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.id_project_status_history DESC LIMIT 1) AS status
+                FROM projects p
+                WHERE p.display = 0
+                  AND p.title LIKE "%' . $search . '%"
+                HAVING status >= ' . \projects_status::EN_FUNDING . '
+                ORDER BY p.title ASC';
+
+            $resultatProjects = $this->bdd->query($sql);
+
+            if ($this->bdd->num_rows($resultatProjects)) {
+                $result['projects'] = [];
+
+                while ($recordProjects = $this->bdd->fetch_assoc($resultatProjects)) {
+                    $result['projects'][] = [
+                        'title' => $recordProjects['title'],
+                        'slug'  => 'projects/detail/' . $recordProjects['slug']
+                    ];
+                }
+
+                usort($result['projects'], function($firstElement, $secondElement) {
+                    return strcmp($firstElement['title'], $secondElement['title']);
+                });
             }
         }
 
-        $sql = '
-            SELECT p.slug AS slug,
-              p.title AS title,
-              (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.id_project_status_history DESC LIMIT 1) AS status
-            FROM projects p
-            WHERE p.status = 0
-              AND p.display = 0
-              AND p.title LIKE "%' . $search . '%"
-            HAVING status >= ' . \projects_status::EN_FUNDING . '
-            ORDER BY p.title ASC';
-
-        $resultatProjects = $this->bdd->query($sql);
-
-        while ($recordProjects = $this->bdd->fetch_assoc($resultatProjects)) {
-            $result[$recordProjects['slug']] = array(
-                'slug'  => 'projects/detail/' . $recordProjects['slug'],
-                'title' => $recordProjects['title']
-            );
-        }
-
-        ksort($result);
         return $result;
     }
 

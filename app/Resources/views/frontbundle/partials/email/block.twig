@@ -1,0 +1,68 @@
+{# Block #}
+
+{# Usage:
+
+{% embed 'partials/block.twig' with {'contentStyle': 'text-align: center;'} %}
+  {% block content %}
+    <p>Lorem ipsum dolor sit amet. HTML can go in here too!</p>
+  {% endblock %}
+{% endembed %}
+
+Variables:
+
+  hasTable:             {Boolean}
+  tableClassNames:      {String}
+  tableStyle:           {String}
+  contentColSpan:       {Int} only set if you are using within a table (e.g. hasTable = false), Default: 1
+  contentAlign:         {String}
+  contentClassNames:    {String}
+  contentStyle:         {String}
+  spacerLeftWidth:      {Int} in pixels, Default: 55
+  spacerRightWidth:     {Int} in pixels, Default: 55
+  spacerTopHeight:      {Int} in pixels, Default: 50
+  spacerBottomHeight:   {Int} in pixels, Default: 50
+  hasSpacerTop:         {Boolean}
+  hasSpacerLeft:        {Boolean}
+  hasSpacerRight:       {Boolean}
+  hasSpacerBottom:      {Boolean}
+
+Blocks:
+
+  content
+
+#}
+
+{# Defaults #}
+{% set hasTable = hasTable|default(true) %}
+{% set tableClassNames = tableClassNames|default('') %}
+{% set tableStyle = tableStyle|default('') %}
+{% set contentAlign = contentAlign|default('left') %}
+{% set contentClassNames = contentClassNames|default('') %}
+{% set contentStyle = contentStyle|default('') %}
+{% set spacerLeftWidth = spacerLeftWidth|default(55) %}
+{% set spacerRightWidth = spacerRightWidth|default(55) %}
+{% set spacerTopHeight = spacerTopHeight|default(50) %}
+{% set spacerBottomHeight = spacerBottomHeight|default(50) %}
+{% set hasSpacerLeft = hasSpacerLeft|default(true) %}
+{% set hasSpacerRight = hasSpacerRight|default(true) %}
+{% set hasSpacerTop = hasSpacerTop|default(true) %}
+{% set hasSpacerBottom = hasSpacerBottom|default(true) %}
+{% set contentColSpan = contentColSpan|default(1) %}
+{% set colSpan = colSpan|default((hasSpacerLeft == true ? 1 : 0) + (hasSpacerRight == true ? 1 : 0) + contentColSpan) %}
+
+{# HTML code #}
+{% if hasTable == true %}<table border="0" width="100%" cellpadding="0" cellspacing="0" class="table_reset {{ tableClassNames }}" style="{{ css.table_reset }} {{ tableStyle }}">{% endif %}
+  {% if hasTopSpacer == true %}<tr>
+    <td{% if colSpan > 1 %} colspan="{{ colSpan }}"{% endif %} align="left" valign="top" class="td_reset" style="{{ css.td_reset }} text-align: left; vertical-align: top;"><img src="{{ siteurlmedia('email/1x1.gif') }}" border="0" width="100%" height="{{ spacerTopHeight }}" alt="" class="image_reset" style="{{ css.image_reset }} width: 100%; height: {{ spacerTopHeight }}px;" /></td>
+  </tr>{% endif %}
+  <tr>
+    {% if hasLeftSpacer == true %}<td width="{{ spacerLeftWidth }}" align="left" valign="top" class="td_reset" style="{{ css.td_reset }}"><img src="{{ siteurlmedia('email/1x1.gif') }}" width="{{ spacerLeftWidth }}" height="1" alt="" class="image_reset" style="{{ css.image_reset }} width: {{ spacerLeftWidth }}px; height: 1px;" /></td>{% endif %}
+    <td{% if contentColSpan > 1 %} colspan="{{ contentColSpan }}"{% endif %} align="{{ contentAlign }}" valign="top" class="td_reset {{ contentClassNames }}" style="{{ css.td_reset }} text-align: {{ contentAlign }}; {{ contentStyle }}">
+      {% block content %}No content block set{% endblock %}
+    </td>
+    {% if hasRightSpacer == true %}<td width="{{ spacerRightWidth }}" align="left" valign="top" class="td_reset" style="{{ css.td_reset }} width: {{ spacerRightWidth }}px;"><img src="{{ siteurlmedia('email/1x1.gif') }}" width="{{ spacerRightWidth }}" height="1" alt="" class="image_reset" style="{{ css.image_reset }} width: {{ spacerRightWidth }}px; height: 1px;" /></td>{% endif %}
+  </tr>
+  {% if hasBottomSpacer == true %}<tr>
+    <td{% if colSpan > 1 %} colspan="{{ colSpan }}"{% endif %} align="left" valign="top" class="td_reset" style="{{ css.td_reset }} text-align: left; vertical-align: top;"><img src="{{ siteurlmedia('email/1x1.gif') }}" border="0" width="100%" height="{{ spacerBottomHeight }}" alt="" class="image_reset" style="{{ css.image_reset }} width: 100%; height: {{ spacerBottomHeight }}px;" /></td>
+  </tr>{% endif %}
+{% if hasTable == true %}</table>{% endif %}

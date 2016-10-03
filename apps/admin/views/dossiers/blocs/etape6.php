@@ -1,5 +1,5 @@
 <div id="content_etape6">
-    <?php if ($this->current_projects_status->status >= \projects_status::REVUE_ANALYSTE) : ?>
+    <?php if ($this->projects->status >= \projects_status::REVUE_ANALYSTE) : ?>
         <?php $moyenne  = round($this->projects_notes->performance_fianciere * 0.2 + $this->projects_notes->marche_opere * 0.2 + $this->projects_notes->dirigeance * 0.2 + $this->projects_notes->indicateur_risque_dynamique * 0.4, 1); ?>
         <div class="tab_title" id="title_etape6">Etape 6</div>
         <div class="tab_content" id="etape6">
@@ -66,7 +66,7 @@
                 <?php if(false === $this->bReadonlyRiskNote): ?>
                     <input type="button" onclick="valid_rejete_etape6(3, <?= $this->projects->id_project ?>)" class="btn" value="Sauvegarder">
                 <?php endif; ?>
-                <?php if ($this->current_projects_status->status == 31): ?>
+                <?php if ($this->projects->status == \projects_status::REVUE_ANALYSTE): ?>
                     <input type="button" onclick="valid_rejete_etape6(1, <?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape6" style="background:#009933;border-color:#009933;" value="Valider">
                     <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/6/<?= $this->projects->id_project ?>" class="btn btnValid_rejet_etape6 btn_link thickbox" style="background:#CC0000;border-color:#CC0000;">Rejeter</a>
                 <?php endif; ?>

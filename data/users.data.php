@@ -149,11 +149,7 @@ class users extends users_crud
         $sql = 'SELECT * FROM ' . $this->userTable . ' WHERE ' . $this->userMail . ' = "' . $email . '"';
         $res = $this->bdd->query($sql);
 
-        if ($this->bdd->num_rows($res) == 1) {
-            return false;
-        } else {
-            return true;
-        }
+        return ($this->bdd->num_rows($res) >= 1);
     }
 
     public function checkAccess($zone = '', $superAdmin = false)

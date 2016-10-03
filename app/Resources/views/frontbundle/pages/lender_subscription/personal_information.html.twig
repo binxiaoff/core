@@ -1,0 +1,83 @@
+{# Projects Index #}
+{% extends 'layouts/_layout.html.twig' %}
+
+{% set page = {
+    title: 'Devenir Prêteur',
+    permalink: path('lender_subscription_personal_information')
+} %}
+
+{% block siteContent %}
+<article id="devenir-preteur" class="page">
+    <div class="hero-wrap">
+        <header class="page-header">
+            <div class="site-wrap">
+                <h1 id="preter-create-title" class="h1">{% trans %} lender-subscription_page-title {% endtrans %}</h1>
+            </div><!-- /.site-wrap -->
+        </header><!-- /.page-header -->
+
+        <div class="page-content">
+            <div class="site-wrap">
+                <div class="tabs ui-tabs-progress">
+                    {% include 'pages/lender_subscription/partials/progress_bar.html.twig' %}
+
+                    <div class="row">
+                        <div class="col-form col-lg-8 col-md-8">
+                            <div id="form-lender-person">
+                                {% include 'pages/lender_subscription/partials/personal_information_form_person.html.twig' %}
+                            </div><!-- /.form-preter-content -->
+
+                            <div id="form-lender-legal-entity" style="display: none;">
+                                {% include 'pages/lender_subscription/partials/personal_information_form_legal_entity.html.twig' %}
+                            </div><!-- /.form-preter-content -->
+                        </div>
+
+                        <div class="col-promos col-lg-4 col-md-4">
+                            <div class="promo">
+                                <div class="promo-image">
+                                    {{ svgimage('#promo-francemap', '', 190, 190, 'none') | raw }}
+                                </div>
+                                <h3 class="promo-highlight">
+                                    <span class="ui-text-count" data-start-count="0" data-end-count="{{ 'lender-subscription_personal-information-statistics-francemap-value'|trans }}" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">{{ 'lender-subscription_personal-information-statistics-francemap-value'|trans }}</span><sup>%</sup>
+                                </h3>
+                                <p>{% trans %} lender-subscription_personal-information-statistics-francemap-text {% endtrans %}</p>
+                            </div><!-- /.promo -->
+
+                            <div class="promo">
+                                <div class="promo-image">
+                                    {{ svgimage('#promo-linechart2', '', 190, 190, 'none') | raw }}
+                                </div>
+                                {% set valueLineChart = getStatistic('averageInterestRateForLenders')|round(1, 'floor') %}
+                                {# {% if 'lender-subscription_documents-statistics-section-linechart-value'|trans == 'lender-subscription_documents-statistics-section-linechart-value' %}
+                                    {% set valueLineChart = getStatistic('averageInterestRateForLenders')|round(1, 'floor') %}
+                                {% else %}
+                                    {% set valueLineChart = 'lender-subscription_documents-statistics-section-linechart-value'|trans %}
+                                {% endif %} #}
+                                <h3 class="promo-highlight">
+                                    <span class="ui-text-count"
+                                          data-start-count="0"
+                                          data-end-count="{{ valueLineChart }}"
+                                          data-total-time="3000"
+                                          data-limit-decimal="1"
+                                          data-tween-count="easeOutCirc">{{ valueLineChart|localizednumber }}</span>
+                                    <sup>%</sup>
+                                </h3>
+                                <p>{% trans with {'%avgYearlyInterestRate%' : valueLineChart|localizednumber }%} lender-subscription_personal-information-statistics-linechart2-text {% endtrans %}</p>
+                            </div><!-- /.promo -->
+
+                            <div class="promo">
+                                <div class="promo-image">
+                                    {{ svgimage('#promo-clock', '', 190, 190, 'none') | raw }}
+                                </div>
+                                <h3 class="promo-highlight">{% trans %} lender-subscription_personal-information-statistics-clock-value {% endtrans %}</h3>
+                                <p>{% trans %} lender-subscription_personal-information-statistics-clock-text {% endtrans %}</p>
+                            </div><!-- /.promo -->
+                        </div>
+                    </div>
+                </div><!-- /.tabs -->
+            </div><!-- /.site-wrap -->
+        </div><!-- /.page-content -->
+
+        {% include 'partials/components/list-socialmedia.html.twig' %}
+    </div><!-- /.hero-wrap -->
+</article><!-- /.page -->
+{% endblock %}

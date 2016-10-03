@@ -56,7 +56,7 @@ class --classe-- extends --classe--_crud
         }
 
         $result = $this->bdd->query('SELECT COUNT(*) FROM --table-- ' . $where);
-        return (int) $this->bdd->result($result, 0, 0);
+        return (int) $this->bdd->result($result);
     }
 
     public function exist($list_field_value)
@@ -66,7 +66,7 @@ class --classe-- extends --classe--_crud
             $list .= ' AND ' . $champ . ' = "' . $valeur . '" ';
         }
 
-        $result = $this->bdd->query('SELECT * FROM --table-- WHERE 1 = 1 ' . $list);
+        $result = $this->bdd->query('SELECT * FROM --table-- WHERE 1 = 1' . $list);
         return ($this->bdd->fetch_assoc($result) > 0);
     }
 }

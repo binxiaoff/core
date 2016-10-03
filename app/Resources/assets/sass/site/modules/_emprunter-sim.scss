@@ -1,0 +1,97 @@
+//
+// Unilend Emprunter Sim
+//
+
+.emprunter-sim {
+  // border-radius: 4px;
+  background-color: $c-white;
+  border: solid 1px $c-bg2;
+
+  @include devices('md') {
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  @include devices('lg') {
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .nav-steps {
+    > li {
+      width: 50%;
+    }
+  }
+
+  dl dd {
+    text-align: right;
+  }
+
+  .small {
+    color: $c-purple-l;
+
+    @include devices('md', 'lg') {
+      margin: .5em 0;
+      padding-left: 10px;
+    }
+  }
+}
+
+.emprunter-sim-pane-inner {
+  padding: 40px 20px;
+
+  @include devices('tablet-p', 'md', 'lg') {
+    > .row {
+      > * {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+    }
+  }
+
+  p[data-borrower-motive] {
+    display: none;
+  }
+}
+
+.emprunter-sim-estimate {
+  dl {
+    display: none;
+  }
+
+  .emprunter-sim-estimate-legend {
+    display: none;
+  }
+
+  .btn-continue {
+    display: block;
+  }
+
+  .btn-submit {
+    display: none;
+  }
+
+  .ui-emprunter-sim-estimate-show & {
+    dl {
+      display: block;
+    }
+
+    .emprunter-sim-estimate-legend {
+      display: block;
+    }
+
+    .spacer {
+      display: none;
+    }
+
+    .btn-continue {
+      display: none;
+    }
+
+    .btn-submit {
+      display: block;
+    }
+  }
+}

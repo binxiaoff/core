@@ -282,7 +282,7 @@ EOF
         $aRepaymentSchedules = $echeanciers_emprunteur->select('status_emprunteur = 0 AND id_project = ' . $iProjectId, 'ordre ASC');
 
         foreach ($aRepaymentSchedules as $aRepayment) {
-            $fMonthlyAmount = $echeanciers->getMontantRembEmprunteur(bcdiv($aRepayment['montant'], 100, 2), bcdiv($aRepayment['commission'], 100, 2), bcdiv($aRepayment['tva'], 100, 2));
+            $fMonthlyAmount = round(bcdiv($aRepayment['montant'], 100, 2) + bcdiv($aRepayment['commission'], 100, 2) + bcdiv($aRepayment['tva'], 100, 2), 2);
 
             if ($fMonthlyAmount <= $fAmount) {
                 $echeanciers->updateStatusEmprunteur($iProjectId, $aRepayment['ordre']);
@@ -325,9 +325,8 @@ EOF
         $transactions->montant          = $aRow['montant'];
         $transactions->id_langue        = 'fr';
         $transactions->date_transaction = date('Y-m-d H:i:s');
-        $transactions->status           = 1;
-        $transactions->etat             = 1;
-        $transactions->transaction      = 1;
+        $transactions->status           = \transactions::PAYMENT_STATUS_OK;
+        $transactions->etat             = \transactions::STATUS_VALID;
         $transactions->type_transaction = \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER;
         $transactions->ip_client        = '';
         $transactions->create();
@@ -380,9 +379,8 @@ EOF
             $transactions->montant          = $receptions->montant;
             $transactions->id_langue        = 'fr';
             $transactions->date_transaction = date('Y-m-d H:i:s');
-            $transactions->status           = 1;
-            $transactions->etat             = 1;
-            $transactions->transaction      = 1;
+            $transactions->status           = \transactions::PAYMENT_STATUS_OK;
+            $transactions->etat             = \transactions::STATUS_VALID;
             $transactions->type_transaction = \transactions_types::TYPE_BORROWER_REPAYMENT;
             $transactions->ip_client        = '';
             $transactions->create();
@@ -415,9 +413,8 @@ EOF
         $transactions->montant          = $receptions->montant;
         $transactions->id_langue        = 'fr';
         $transactions->date_transaction = date('Y-m-d H:i:s');
-        $transactions->status           = 1;
-        $transactions->etat             = 1;
-        $transactions->transaction      = 1;
+        $transactions->status           = \transactions::PAYMENT_STATUS_OK;
+        $transactions->etat             = \transactions::STATUS_VALID;
         $transactions->type_transaction = \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT;
         $transactions->ip_client        = '';
         $transactions->create();
@@ -480,9 +477,8 @@ EOF
                 $transactions->montant          = $receptions->montant;
                 $transactions->id_langue        = 'fr';
                 $transactions->date_transaction = date('Y-m-d H:i:s');
-                $transactions->status           = 1;
-                $transactions->etat             = 1;
-                $transactions->transaction      = 1;
+                $transactions->status           = \transactions::PAYMENT_STATUS_OK;
+                $transactions->etat             = \transactions::STATUS_VALID;
                 $transactions->type_transaction = \transactions_types::TYPE_REGULATION_BANK_TRANSFER;
                 $transactions->ip_client        = '';
                 $transactions->create();
@@ -549,9 +545,8 @@ EOF
                     $transactions->montant          = $receptions->montant;
                     $transactions->id_langue        = 'fr';
                     $transactions->date_transaction = date('Y-m-d H:i:s');
-                    $transactions->status           = 1;
-                    $transactions->etat             = 1;
-                    $transactions->transaction      = 1;
+                    $transactions->status           = \transactions::PAYMENT_STATUS_OK;
+                    $transactions->etat             = \transactions::STATUS_VALID;
                     $transactions->type_transaction = \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT;
                     $transactions->ip_client        = '';
                     $transactions->create();
@@ -661,9 +656,8 @@ EOF
             $oTransactions->montant          = -$receptions->montant;
             $oTransactions->id_langue        = 'fr';
             $oTransactions->date_transaction = date('Y-m-d H:i:s');
-            $oTransactions->status           = 1;
-            $oTransactions->etat             = 1;
-            $oTransactions->transaction      = 1;
+            $oTransactions->status           = \transactions::PAYMENT_STATUS_OK;
+            $oTransactions->etat             = \transactions::STATUS_VALID;
             $oTransactions->type_transaction = \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION;
             $oTransactions->ip_client        = '';
             $oTransactions->create();
@@ -682,7 +676,7 @@ EOF
             $fNewAmount = bcdiv($receptions->montant, 100, 2);
 
             foreach ($oEcheanciersEmprunteur->select('status_emprunteur = 1 AND id_project = ' . $projects->id_project, 'ordre DESC') as $e) {
-                $fMonthlyAmount = $oEcheanciers->getMontantRembEmprunteur(bcdiv($e['montant'], 100, 2), bcdiv($e['commission'], 100, 2), bcdiv($e['tva'], 100, 2));
+                $fMonthlyAmount = round(bcdiv($e['montant'], 100, 2) + bcdiv($e['commission'], 100, 2) + bcdiv($e['tva'], 100, 2), 2);
 
                 if ($fMonthlyAmount <= $fNewAmount) {
                     $oEcheanciers->updateStatusEmprunteur($projects->id_project, $e['ordre'], 'annuler');

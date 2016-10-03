@@ -28,6 +28,7 @@
 
 class projects_status extends projects_status_crud
 {
+    const DEMANDE_SIMULATEUR      = 4;
     const NOTE_EXTERNE_FAIBLE     = 5;
     const PAS_3_BILANS            = 6;
     const COMPLETUDE_ETAPE_2      = 7;
@@ -74,6 +75,23 @@ class projects_status extends projects_status_crud
         self::LIQUIDATION_JUDICIAIRE
     );
 
+    /**
+     * List of project status after repayment
+     * @var array
+     */
+    public static $afterRepayment = array(
+        self::REMBOURSEMENT,
+        self::REMBOURSE,
+        self::REMBOURSEMENT_ANTICIPE,
+        self::PROBLEME,
+        self::PROBLEME_J_X,
+        self::RECOUVREMENT,
+        self::PROCEDURE_SAUVEGARDE,
+        self::REDRESSEMENT_JUDICIAIRE,
+        self::LIQUIDATION_JUDICIAIRE,
+        self::DEFAUT
+    );
+
     public function __construct($bdd, $params = '')
     {
         parent::projects_status($bdd, $params);
@@ -91,7 +109,7 @@ class projects_status extends projects_status_crud
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -125,14 +143,6 @@ class projects_status extends projects_status_crud
     {
         $result = $this->bdd->query('SELECT label FROM `projects_status` WHERE status = "' . $status . '"');
         return ($this->bdd->result($result, 0, 0));
-    }
-
-    public function getLastStatut($id_project)
-    {
-        $result            = $this->bdd->query('SELECT id_project_status FROM projects_status_history WHERE id_project = ' . $id_project . ' ORDER BY id_project_status_history DESC LIMIT 1');
-        $id_project_statut = (int) $this->bdd->result($result, 0, 0);
-
-        return parent::get($id_project_statut, 'id_project_status');
     }
 
     public function getLastStatutByMonth($id_project, $month, $year)
@@ -194,14 +204,4 @@ class projects_status extends projects_status_crud
         return $this->select($sPossibleStatus, 'status ASC');
     }
 
-    public static function checkStatusPostRepayment($iStatus)
-    {
-        return $iStatus >= self::REMBOURSEMENT;
-    }
-
-    public static function checkStatusKo($iStatus){
-
-        $aStatusKo = array(self::PROBLEME, self::RECOUVREMENT);
-        return in_array($iStatus, $aStatusKo);
-    }
 }

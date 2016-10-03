@@ -1,0 +1,136 @@
+//
+// Unilend Connexion / Inscription Page
+//
+
+#connexion-inscription.page {
+  .page-header {
+    @include hide-accessible;
+  }
+
+  .page-content {
+    // Set a maximum width using the hero-wrap mixin
+    @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0);
+
+    > .hero-wrap {
+      @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0, $padding-md: 0, $padding-lg: 0);
+      padding-top: 50px;
+      padding-bottom: 50px;
+      // margin-bottom: 50px;
+
+      background-color: $c-bg3;
+      background-image: image-url('user/bg-connexioninscription.jpg');
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-size: cover;
+
+      // Override the .site-wrap defaults as it has padding applied
+      > .site-wrap {
+        @include site-wrap;//($enable-padding: true, $padding-xs: 0, $padding-sm: 0, $padding-md: 0, $padding-lg: 0);
+      }
+    }
+  }
+
+  .col-connect,
+  .col-register {
+    text-align: center;
+
+    h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4 {
+      text-align: inherit;
+      margin-top: 0;
+    }
+  }
+
+  .col-connect {
+    margin-bottom: 50px;
+  }
+
+  .panel {
+    padding: 30px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: $c-white;
+    text-align: left;
+  }
+
+  .panel-preter,
+  .panel-emprunter {
+    text-align: center;
+  }
+
+  .panel-emprunter {
+    h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4 {
+      color: $c-p2;
+    }
+
+    .link, .link-1, .link-2 {
+      color: $c-p2;
+    }
+  }
+
+  h2 {
+    text-transform: uppercase;
+  }
+
+  #form-connect-notifications, #form-connect-notifications-timer{
+    color:#DE2F4C;
+  }
+
+  @include devices('xs', 'sm') {
+    .btn-controls {
+      text-align: center;
+    }
+  }
+
+  @include devices('tablet-l') {
+    .panel {
+      padding: 30px;
+
+      p {
+        font-size: 16px;
+        line-height: 1.4em;
+      }
+    }
+
+    .form-connect {
+      margin-right: 30px;
+    }
+
+    .row {
+      > .col-connect {
+        width: 40%;
+      }
+
+      > .col-register {
+        width: 60%;
+      }
+    }
+  }
+
+  @include devices('laptop', 'lg') {
+    .panel {
+      max-width: 500px;
+      padding: 40px;
+    }
+
+    .form-connect {
+      margin-right: $width-site-margin-md;
+    }
+  }
+
+  @include devices('md', 'lg') {
+    .col-connect,
+    .col-register {
+      margin-bottom: 0;
+      text-align: left;
+    }
+
+    .panel-emprunter,
+    .panel-preter {
+      .panel-inner {
+        display: table-cell;
+        vertical-align: middle;
+      }
+    }
+  }
+}

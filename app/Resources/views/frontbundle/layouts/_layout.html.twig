@@ -1,0 +1,142 @@
+{# Basic Page Layout #}
+{% set bodyClassNames = '' %}
+
+<!DOCTYPE html>
+<!--[if lt IE 9]><html lang="{{ app.request.locale }}" class="lt-ie9 no-js"><![endif]-->
+<!--[if IE 9]><html lang="{{ app.request.locale }}" class="ie9 no-js"><![endif]-->
+<!--[if gt IE 9]><!--><html lang="{{ app.request.locale }}" class="no-js"><!--<![endif]-->
+    <head>
+        {% block metaTags %}
+            <meta charset="utf-8">
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+            <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            {% if page.isIndexable is defined and not page.isIndexable %}
+                <meta name="robots" content="noindex">
+            {% endif %}
+            <title>{% if page.title is defined %}{{ page.title }} — {% endif %}{{ site.title|default('Unilend') }}</title>
+        {% endblock %}
+
+        {% block cssFiles %}
+            <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Cabin:400,700,400" media="all">
+            {# Mapbox #}
+            <link href="https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.css" rel="stylesheet" />
+            <link href="https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.css" rel="stylesheet" />
+            <link href="https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.Default.css" rel="stylesheet" />
+
+            <link rel="stylesheet" href="{{ asset('js/vendor/videojs/video-js.min.css', 'gulp') }}" />
+            <link rel="stylesheet" href="{{ asset('js/vendor/swiper/css/swiper.min.css', 'gulp') }}" />
+            <link rel="stylesheet" href="{{ asset('js/vendor/fancybox/css/jquery.fancybox.css', 'gulp') }}" />
+            <link rel="stylesheet" href="{{ asset('fonts/style.css', 'gulp') }}" />
+            <link rel="stylesheet" href="{{ asset('css/main.css', 'gulp') }}" />
+        {% endblock %}
+
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicons/apple-touch-icon.png', 'gulp') }}">
+        <link rel="icon" type="image/png" href="{{ asset('favicons/favicon-32x32.png', 'gulp') }}" sizes="32x32">
+        <link rel="icon" type="image/png" href="{{ asset('favicons/favicon-16x16.png', 'gulp') }}" sizes="16x16">
+        <link rel="manifest" href="{{ asset('favicons/manifest.json', 'gulp') }}">
+        <link rel="mask-icon" href="{{ asset('favicons/safari-pinned-tab.svg', 'gulp') }}" color="#b20066">
+        <link rel="shortcut icon" href="{{ asset('favicons/favicon.ico', 'gulp') }}">
+        <meta name="msapplication-config" content="{{ asset('favicons/browserconfig.xml', 'gulp') }}">
+        <meta name="theme-color" content="#ffffff">
+    </head>
+    <body class="{% if app.user is defined %} ui-user-level-{{ app.user.level|default(0) }} {% endif %}{% if bodyClassNames is defined %} {{ bodyClassNames }}{% endif %}">
+        {{ google_tag_manager() }}
+        <div id="top" class="site">
+            {% block siteHeader %}
+                {% if app.user is defined and is_granted('ROLE_LENDER') %}
+                    {% include 'partials/site/connected_header_lender.html.twig' %}
+                {% elseif app.user is defined and is_granted('ROLE_BORROWER') %}
+                    {% include 'borrower_account/connected_header_borrower.html.twig' %}
+                {% else %}
+                    {% include 'partials/site/header.html.twig' %}
+                {%  endif %}
+            {% endblock %}
+
+            <div class="site-content">
+                {% block siteContent %}
+                {% endblock %}
+            </div>
+
+            {% if not app.request.cookies.has('acceptCookies') %}
+                {% block siteCookie %}
+                    {% include 'partials/site/cookie-box.html.twig' %}
+                {% endblock %}
+            {% endif %}
+
+            {% block siteFooter %}
+                {{ render(controller('UnilendFrontBundle:Main:footer')) }}
+            {% endblock %}
+        </div>
+
+        {% if app.environment == 'dev' %}
+            {% block debug %}
+                {% include 'partials/site/debug.html.twig' %}
+            {% endblock %}
+        {% endif %}
+
+        <div class="modal-spinner">
+            <div id="floatingCirclesG">
+                <div class="f_circleG" id="frotateG_01"></div>
+                <div class="f_circleG" id="frotateG_02"></div>
+                <div class="f_circleG" id="frotateG_03"></div>
+                <div class="f_circleG" id="frotateG_04"></div>
+                <div class="f_circleG" id="frotateG_05"></div>
+                <div class="f_circleG" id="frotateG_06"></div>
+                <div class="f_circleG" id="frotateG_07"></div>
+                <div class="f_circleG" id="frotateG_08"></div>
+            </div>
+        </div>
+
+        <div rel="templates" style="display:none">
+            {% block modals %}
+                {# Place page-specific modals in this block and then use the `data-modal-toggle="#modal-id"` attribute on the anchor/button element you want to use to show it,
+                   e.g. <a href="javascript:;" data-modal-toggle="#modal-tos">Open the TOS model</a> #}
+            {% endblock %}
+
+            {# Global site-wide modals can be placed here #}
+            {% set tos_session_key = constant('Unilend\\Bundle\\CoreBusinessBundle\\Service\\ClientManager::SESSION_KEY_TOS_ACCEPTED') %}
+            {% if app.user
+                and app.session.has(tos_session_key)
+                and false == app.session.get(tos_session_key) %}
+                <div id="modal-tos" data-modal data-modal-openonload="true"><form id="form-tos" method="post" action="{{ path('tos_popup') }}"></form></div>
+            {% endif %}
+        </div>
+
+        {% block jsFiles %}
+            <script type="text/javascript">
+                {% set notifications = [] %}
+                {% if app.user.notifications is defined %}
+                    {% for notification in app.user.notifications %}
+                        {% set notifications = notifications|merge([{
+                            id: notification.id,
+                            type: notification.type,
+                            title: notification.title,
+                            'iso-8601': notification.datetime|date('c'),
+                            datetime: notification.datetime|localizeddate('medium', 'short'),
+                            content: notification.content,
+                            image: svgimage('#notification-' ~ notification.image, notification.title, 100, 100, 'none'),
+                            status: notification.status
+                        }]) %}
+                    {% endfor %}
+                {% endif %}
+
+                var USERNOTIFICATIONS = JSON.parse('{{ notifications|json_encode|escape('js')|raw }}')
+
+                var UTILITY_LANG = JSON.parse('{{ dictionary('utility')|json_encode|escape('js')|raw }}')
+                var AUTOCOMPLETE_LANG = JSON.parse('{{ dictionary('auto-complete')|json_encode|escape('js')|raw }}')
+                var FORMVALIDATION_LANG = JSON.parse('{{ dictionary('form-validation')|json_encode|escape('js')|raw }}')
+                var PASSWORDCHECK_LANG = JSON.parse('{{ dictionary('password-check')|json_encode|escape('js')|raw }}')
+                var SORTABLE_LANG = JSON.parse('{{ dictionary('sortable')|json_encode|escape('js')|raw }}')
+                var FILEATTACH_LANG = JSON.parse('{{ dictionary('file-attach')|json_encode|escape('js')|raw }}')
+                var USERNOTIFICATIONS_LANG = JSON.parse('{{ dictionary('lender-notifications')|json_encode|escape('js')|raw }}')
+                var MAPVIEW_LANG = JSON.parse('{{ dictionary('mapview')|json_encode|escape('js')|raw }}')
+            </script>
+
+            <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js"></script>
+            <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js"></script>
+            <script type="text/javascript" src="{{ asset('js/dependencies.js', 'gulp') }}"></script>
+            <script type="text/javascript" src="{{ asset('js/main.js', 'gulp') }}"></script>
+        {% endblock %}
+    </body>
+</html>

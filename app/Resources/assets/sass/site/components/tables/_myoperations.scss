@@ -1,0 +1,177 @@
+//
+// Unilend Table My Operations
+// As seen on the `user-preter-operations` page
+//
+
+.table-myoperations {
+  th, td {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  // Columns
+  .table-myoperations-item-type {
+    width: 18%;
+  }
+
+  .table-myoperations-item-contract {
+    width: 10%;
+  }
+
+  .table-myoperations-item-project {
+    width: 30%;
+
+    a {
+      display: block;
+      width: 100%;
+      height: 1.2em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .table-myoperations-item-date {
+    width: 12%;
+  }
+
+  .table-myoperations-item-amount {
+    width: 15%;
+    text-align: right;
+  }
+
+  .table-myoperations-item-balance {
+    width: 15%;
+    text-align: right;
+  }
+}
+
+.table-myoperations-item {
+  // Amount
+  &.ui-amount-positive {
+    .table-myoperations-item-amount {
+      color: $c-teal;
+    }
+  }
+
+  &.ui-amount-negative {
+    .table-myoperations-item-amount {
+      color: $c-error;
+    }
+  }
+
+  // Balance
+  // &.ui-balance-positive {
+  //   .table-myoperations-item-balance {
+  //     color: $c-success;
+  //   }
+  // }
+
+  &.ui-balance-negative {
+    .table-myoperations-item-balance {
+      color: $c-error;
+    }
+  }
+
+  .table-myoperations-item-amount {
+    text-align: right;
+  }
+
+  .table-myoperations-item-balance {
+    text-align: right;
+  }
+
+  // Has details
+  &[data-details] {
+    cursor: pointer;
+
+    &:hover {
+      background-color: $c-bg3;
+    }
+
+    .table-myoperations-item-type {
+      position: relative;
+
+      &:after {
+        content: $fa-angle-d-u; // Angle down
+        display: inline-block;
+        width: $fs-base;
+        height: $fs-base;
+        margin-left: 5px;
+        color: $c-t3;
+        font-family: $ff-icon;
+        font-size: inherit;
+        line-height: $fs-base;
+        text-align: center;
+        vertical-align: middle;
+        transform: rotate(0deg);
+        transform-origin: center center;
+        transition: transform .2s;
+
+        position: absolute;
+        right: 0;
+        top: 50%;
+        margin-top: $fs-base * -0.5;
+      }
+    }
+
+    &#{$js-details-open} {
+      background-color: $c-bg3;
+
+      .table-myoperations-item-type:after {
+        transform: rotate(-180deg);
+      }
+    }
+  }
+}
+
+.table-myoperations-details {
+  vertical-align: top;
+
+  td {
+    padding-top: 0;
+    padding-bottom: 10px;
+    background-color: $c-bg3;
+    color: $c-t2;
+    line-height: 1.3em;
+    vertical-align: top;
+
+    @include devices('laptop', 'lg') {
+      padding-bottom: 20px;
+    }
+  }
+
+  dl {
+    @include clearfix;
+    display: block;
+  }
+
+  dt {
+    display: block;
+    width: 70%;
+    margin-bottom: 3px;
+    float: left;
+    clear: left;
+    text-align: left;
+  }
+
+  dd {
+    display: block;
+    width: 30%;
+    margin-bottom: 3px;
+    float: left;
+    clear: right;
+    text-align: right;
+  }
+}
+
+.table-myoperations {
+
+  tbody {
+    font-size: 15px;
+  }
+}
+
+#form-filters-operations {
+  input {font-size: 15px;}
+}

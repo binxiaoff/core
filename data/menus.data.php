@@ -67,7 +67,7 @@ class menus extends menus_crud
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -89,6 +89,6 @@ class menus extends menus_crud
     {
         $sql    = 'SELECT * FROM `menus` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result) > 0);
+        return ($this->bdd->fetch_assoc($result) > 0);
     }
 }

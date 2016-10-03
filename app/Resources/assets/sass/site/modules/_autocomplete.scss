@@ -1,0 +1,54 @@
+//
+// Unilend AutoComplete
+//
+
+.autocomplete {
+  background-color: $c-white;
+  border: solid 2px $c-bg2;
+  border-radius: 4px;
+  border-top: 0;
+  display: none;
+  left: 0;
+  margin-top: -2px;
+  position: absolute;
+  right: 0;
+  top: 100%;
+
+  .autocomplete-footer {
+    text-align: center;
+  }
+
+  .autocomplete-results {
+    @include block-list();
+    max-height: 200px;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    text-align: left;
+
+    // Highlighted text within autocomplete
+    .highlight {
+      color: $c-t1;
+      font-weight: 700;
+    }
+
+    a {
+      @include link-states((
+        background-color: $c-bg5,
+        color: $c-t2,
+        text-decoration: none
+      ), false, (
+        background-color: $c-bg3,
+        color: $c-t1
+      ), (
+        background-color: $c-bg1,
+        color: $c-white
+      ));
+
+      display: block;
+      padding: 10px 16px;
+
+      font-size: $fs-base;
+      line-height: $lh-base;
+    }
+  }
+}

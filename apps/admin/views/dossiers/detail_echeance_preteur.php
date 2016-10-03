@@ -44,20 +44,13 @@
                 <th>Nom</th>
                 <th>Prénom</th>
                 <th>Montant</th>
-
-                <th>Prélèvements<br/>obligatoires</th>
-                <th>Retenues à la<br/>source</th>
-                <th>CSG</th>
-                <th>Prélèvements<br/>sociaux</th>
-                <th>Contributions<br/>additionnelles</th>
-                <th>Prélèvements <br/>de solidarité</th>
-                <th>CRDS</th>
-
-                <th>capital</th>
-                <th>interets</th>
-                <th>commission</th>
-                <th>tva</th>
-                <th>Date</th>
+                <th>Capital</th>
+                <th>Capital remboursé</th>
+                <th>Interets</th>
+                <th>Interets remboursés</th>
+                <th>Tax</th>
+                <th>Date théorique</th>
+                <th>Date réel</th>
                 <th>Statut</th>
             </tr>
             </thead>
@@ -75,19 +68,25 @@
                     <td><?= $this->clients->nom ?></td>
                     <td><?= $this->clients->prenom ?></td>
                     <td><?= $this->ficelle->formatNumber($r['montant'] / 100) ?></td>
-                    <td><?= $this->ficelle->formatNumber($r['prelevements_obligatoires']) ?></td>
-                    <td><?= $this->ficelle->formatNumber($r['retenues_source']) ?></td>
-                    <td><?= $this->ficelle->formatNumber($r['csg']) ?></td>
-                    <td><?= $this->ficelle->formatNumber($r['prelevements_sociaux']) ?></td>
-                    <td><?= $this->ficelle->formatNumber($r['contributions_additionnelles']) ?></td>
-                    <td><?= $this->ficelle->formatNumber($r['prelevements_solidarite']) ?></td>
-                    <td><?= $this->ficelle->formatNumber($r['crds']) ?></td>
                     <td><?= $this->ficelle->formatNumber($r['capital'] / 100) ?></td>
+                    <td><?= $this->ficelle->formatNumber($r['capital_rembourse'] / 100) ?></td>
                     <td><?= $this->ficelle->formatNumber($r['interets'] / 100) ?></td>
-                    <td><?= $this->ficelle->formatNumber($r['commission'] / 100) ?></td>
-                    <td><?= $this->ficelle->formatNumber($r['tva'] / 100) ?></td>
+                    <td><?= $this->ficelle->formatNumber($r['interets_rembourses'] / 100) ?></td>
+                    <td><?= $this->ficelle->formatNumber($r['tax'] / 100) ?></td>
                     <td><?= $this->dates->formatDate($r['date_echeance'], 'd/m/Y') ?></td>
-                    <td><?= ($r['status'] == 1 ? 'Remboursé' : 'A venir') ?></td>
+                    <td><?= $r['status'] == \echeanciers::STATUS_REPAID ? $this->dates->formatDate($r['date_echeance_reel'], 'd/m/Y') : '' ?></td>
+                    <td><?php switch ($r['status']) {
+                            case \echeanciers::STATUS_PENDING:
+                                echo 'A venir';
+                                break;
+                            case \echeanciers::STATUS_PARTIALLY_REPAID:
+                                echo 'Partiellement remboursé';
+                                break;
+                            case \echeanciers::STATUS_REPAID:
+                                echo 'Remboursé';
+                                break;
+                                    } ?>
+                    </td>
                 </tr>
                 <?php
                 $i++;
@@ -100,16 +99,23 @@
                     <td><?= $this->clients->prenom ?></td>
                     <td><?= $this->ficelle->formatNumber($this->montant_ra) ?></td>
                     <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
                     <td><?= $this->ficelle->formatNumber($this->montant_ra) ?></td>
                     <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
                     <td><?= $this->dates->formatDate($this->date_ra, 'd/m/Y') ?></td>
-                    <td><?= ($r['status'] == 1 ? 'Remboursé' : 'A venir') ?></td>
+                    <td><?php switch ($r['status']) {
+                            case \echeanciers::STATUS_PENDING:
+                                echo 'A venir';
+                                break;
+                            case \echeanciers::STATUS_PARTIALLY_REPAID:
+                                echo 'Partiellement remboursé';
+                                break;
+                            case \echeanciers::STATUS_REPAID:
+                                echo 'Remboursé';
+                                break;
+                        } ?>
+                    </td>
                 </tr>
                 <?php
             }

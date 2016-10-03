@@ -1,0 +1,33 @@
+.faq-panel {
+  position:relative;
+  .top-anchor {
+    display:none;
+    position:fixed;
+    bottom:5%;
+    right:10%;
+    background-color:#b20066;
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    box-shadow:1px 1px 5px 2px rgba(0,0,0,0.1);
+    .icon{
+      color:#fff;
+      text-align:center;
+      line-height:40px;
+      width:40px;
+    }
+  }
+  .faq-section {
+    padding:20px 0 30px 0;
+    border-top:1px solid #eceaed;
+    li {
+      list-style-type:none;
+    }
+  }
+}
+
+@media (min-height: 1000px) {
+  .top-anchor {
+    display:block;
+  }
+}

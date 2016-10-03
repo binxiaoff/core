@@ -563,7 +563,7 @@ class universignController extends bootstrap
                 $this->lien_pdf = $this->lurl . $clients_mandats->url_pdf;
 
                 if ($clients_mandats->status == \clients_mandats::STATUS_SIGNED) {
-                    $aProjects = $this->projects->selectProjectsByStatus(implode(',', \projects_status::$runningRepayment), ' AND id_company = "' . $companies->id_company . '"');
+                    $aProjects = $this->projects->selectProjectsByStatus(\projects_status::$runningRepayment, ' AND id_company = "' . $companies->id_company . '"');
 
                     /** @var \projects $project */
                     $project = $this->loadData('projects');

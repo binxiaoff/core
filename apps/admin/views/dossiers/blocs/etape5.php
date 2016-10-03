@@ -8,7 +8,7 @@
                     if ('ok' == value) {
                         $(".statut_" + fileType).html('Enregistré');
 
-                        <?php if (in_array($this->projects->period, array(0, 1000000)) && $this->current_projects_status->status == \projects_status::PREP_FUNDING) { ?>
+                        <?php if (in_array($this->projects->period, array(0, 1000000)) && $this->projects->status == \projects_status::PREP_FUNDING) { ?>
                         if (fileType == 'fichier_3' && $('#displayPeriodHS').css('display') == 'block') { // RIB
                             $("#status").css('display', 'block');
                             $("#msgProject").css('display', 'block');

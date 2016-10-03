@@ -1,0 +1,25 @@
+//
+// Unilend Site
+//
+
+.site {
+  padding-top: 0;
+
+  // Site Mobile Menu
+  @include devices('xs', 'sm') {
+    padding-top: $height-site-header;
+  }
+
+  // Site fixed header is visible
+  @include devices('md', 'lg') {
+    #{$js-site-header-fixed} & {
+      padding-top: $height-site-header-full;
+    }
+  }
+
+  // Site Mobile Menu open
+  #{$js-site-mobile-menu-open} & {
+    // Restrict scrolling
+    overflow: hidden;
+  }
+}

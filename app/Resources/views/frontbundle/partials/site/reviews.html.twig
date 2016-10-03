@@ -1,0 +1,29 @@
+{# Homepage Reviews #}
+
+<section class="page-section reviews">
+    <div class="site-wrap">
+        <div class="swiper-container" data-swiper-crossfade="true">
+            <div class="swiper-wrapper">
+                {% for review in reviews %}
+                    {% if review.quote is not empty and review.image is not empty %}
+                        <div class="swiper-slide{% if loop.index == 1 %} active{% endif %}">
+                            <div class="reviewer"><img src="{{ uploadedImage(review.image) }}" alt="{{ review.name }}" height="33"/></div>
+                            <div class="quote">
+                                <p>&quot;{{ review.quote }}&quot;</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <ul class="reviewers swiper-custom-pagination">
+                {% for review in reviews %}
+                    {% if review.quote is not empty and review.image is not empty %}
+                        <li{% if loop.index == 1 %} class="active"{% endif %}>
+                            <a href="javascript:;"><img src="{{ uploadedImage(review.image) }}" alt="{{ review.name }}" height="33"/></a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul><!-- /.reviewers -->
+        </div><!-- /.swiper-container -->
+    </div><!-- /.site-wrap -->
+</section><!-- /.reviews -->

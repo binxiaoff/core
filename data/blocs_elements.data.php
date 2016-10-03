@@ -29,33 +29,12 @@
 class blocs_elements extends blocs_elements_crud
 {
 
-    function blocs_elements($bdd, $params = '')
+    public function blocs_elements($bdd, $params = '')
     {
         parent::blocs_elements($bdd, $params);
     }
 
-    function get($id, $field = 'id')
-    {
-        return parent::get($id, $field);
-    }
-
-    function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    function delete($id, $field = 'id')
-    {
-        parent::delete($id, $field);
-    }
-
-    function create($cs = '')
-    {
-        $id = parent::create($cs);
-        return $id;
-    }
-
-    function select($where = '', $order = '', $start = '', $nb = '')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -67,28 +46,28 @@ class blocs_elements extends blocs_elements_crud
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
     }
 
-    function counter($where = '')
+    public function counter($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `blocs_elements` ' . $where;
+        $sql = 'SELECT COUNT(*) FROM `blocs_elements` ' . $where;
 
         $result = $this->bdd->query($sql);
         return (int) ($this->bdd->result($result, 0, 0));
     }
 
-    function exist($id, $field = 'id')
+    public function exist($id, $field = 'id')
     {
         $sql    = 'SELECT * FROM `blocs_elements` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result) > 0);
+        return ($this->bdd->fetch_assoc($result) > 0);
     }
 }

@@ -1,0 +1,125 @@
+<section id="project-single-alloffers" class="page-section separate">
+    <div class="tabs">
+        <div class="section-tabs-nav">
+            <header>
+                <h3 id="project-alloffers" class="h3">{% trans %} project-detail_all-bids-table-title {% endtrans %}</h3>
+            </header>
+
+            <ul class="nav nav-tabs">
+                <li id="project-alloffers-table" role="presentation" class="active">
+                    <a href="#alloffers-table" role="tab" data-toggle="tab">{% trans %} project-detail_all-bids-table-table-view-button {% endtrans %}</a></li>
+                <li id="project-alloffers-graph" role="presentation">
+                    <a href="#alloffers-graph" role="tab" data-toggle="tab">{% trans %} project-detail_all-bids-table-charts-view-button {% endtrans %}</a>
+                </li>
+            </ul>
+        </div><!-- /.section-tabs-nav -->
+
+        <div class="section-tabs-content tab-content">
+            <div id="alloffers-table" role="tabpanel" class="tab-pane active" aria-labelledby="project-alloffers-table project-alloffers">
+                <div class="table-scroll">
+                    <table class="table table-alloffersoverview" data-current-project="{{ project.projectId }}">
+                        <thead>
+                            <tr>
+                                <th class="table-alloffersoverview-item-rate">
+                                    <span class="label">{% trans %} project-detail_all-bids-table-sort-rate {% endtrans %}</span>
+                                </th>
+                                <th class="table-alloffersoverview-item-amount">
+                                    <span class="label">{% trans %} project-detail_all-bids-table-sort-total-amount {% endtrans %}</span>
+                                </th>
+                                <th class="table-alloffersoverview-item-offers">
+                                    <span class="label">{% trans %} project-detail_all-bids-table-sort-bids-count {% endtrans %}</span>
+                                </th>
+                                <th class="table-alloffersoverview-item-accepted">
+                                    <span class="label">{% trans %} project-detail_all-bids-table-sort-active-bids-percentage {% endtrans %}</span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {# Detect any summary rows which have all rejected offers #}
+                            {% set hasRejectedRows = false %}
+                            {% for rateSummary in project.bids.summary if rateSummary.activePercentage == 0 %}
+                                {% set hasRejectedRows = true %}
+                            {% endfor %}
+                            {% if hasRejectedRows == true %}
+                                <tr class="table-alloffersoverview-item view-rejected-rows">
+                                    <td colspan="4" class="text-align-center">
+                                        <a href="javascript:;">{% trans %} project-detail_all-bids-table-rejected-bids-show-action {% endtrans %}</a>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                            {% for rateSummary in project.bids.summary %}
+                                {% if rateSummary.bidsCount > 0 %}
+                                    <tr class="table-alloffersoverview-item rate-row {% if rateSummary.activePercentage == 0 %} rejected-row {% endif %}" data-bid-rate="{{ rateSummary.rate }}">
+                                        <td class="table-alloffersoverview-item-rate">
+                                            <span class="bids-row-rate">{{ rateSummary.rate|localizednumberwithprecision(1) }}%</span>
+                                        </td>
+                                        <td class="table-alloffersoverview-item-amount">{{ rateSummary.totalAmount|localizednumber }}€</td>
+                                        <td class="table-alloffersoverview-item-offers">{{ rateSummary.bidsCount|localizednumber }}</td>
+                                        <td class="table-alloffersoverview-item-accepted">
+                                            <span class="total-offers-accepted">{{ rateSummary.activePercentage|localizednumber }}%</span>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table><!-- /.table-alloffersoverview -->
+                </div><!-- /.table-scroll -->
+            </div><!-- /.tab-pane -->
+
+            {% set projectOffers %}{% spaceless %}
+                {
+                    "type": "projectOffers",
+                    "background": "none",
+                    "highcharts": {
+                        "chart": {
+                            "type": "areaspline",
+                            "plotBackgroundColor": {
+                                "linearGradient": {"x1": 0, "y1": 0, "x2": 0, "y2": 1},
+                                "stops": [[0, "rgba(95, 196, 208, .2)"], [1, "rgba(95, 196, 208, 0)"]]
+                            }
+                        },
+                        "title": {
+                            "margin": 20,
+                            "text": "{% transchoice project.bids.activeBidsCount with {'%activeBidsCount%' : project.bids.activeBidsCount|localizednumber} %} project-detail_all-bids-graph-title {% endtranschoice %}",
+                            "align": "left",
+                            "style": {"fontSize": "16px"}
+                        },
+                        "tooltip": {
+                            "valueSuffix": " €"
+                        },
+                        "xAxis": {
+                            "categories": [{% for rate, rateSummary in project.bids.graph.summary %}"{{ rate }}%"{% if not loop.last %},{% endif %}{% endfor %}]
+                        },
+                        "yAxis": {"title": {"text": "{% trans %} project-detail_all-bids-graph-y-axis-legend {% endtrans %}"}},
+                        "plotOptions": {
+                            "areaspline": {
+                                "dataLabels": {
+                                    "enabled": false,
+                                    "states": {"hover": {"enabled": true}}
+                                }
+                            }
+                        },
+                        "series": [{
+                            "name": "{% trans %} project-detail_all-bids-graph-series-description {% endtrans %}",
+                            "color": "#5FC5D1",
+                            "fillOpacity": 0.25,
+                            "showInLegend": false,
+                            "data": [{% for rate, rateSummary in project.bids.graph.summary %}{{ rateSummary.activeTotalAmount }}{% if not loop.last %},{% endif %}{% endfor %}]
+                        }]
+                    }
+                }
+            {% endspaceless %}{% endset %}
+
+            <div id="alloffers-graph" role="tabpanel" class="tab-pane">
+                <div class="chart" data-chartview='{{ projectOffers|raw|escape('html_attr') }}'></div>
+            </div>
+        </div><!-- /.section-tabs-content -->
+    </div><!-- /tabs -->
+
+    <div class="btn-toolbar">
+        <a href="{{ path('export_bids', {'projectId' : project.projectId}) }}" class="btn-default" target="_blank">
+            <span class="icon fa-excel-u32"></span>
+            {% trans %} project-detail_project-presentation-accounts-export-csv-button {% endtrans %}
+        </a>
+    </div><!-- /.btn-toolbar -->
+</section><!-- /.page-section -->

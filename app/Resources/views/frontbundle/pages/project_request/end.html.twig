@@ -1,0 +1,105 @@
+{% extends 'layouts/_layout.html.twig' %}
+
+{% set page = {
+    title: 'Déposer un projet',
+    permalink: path('project_request_end', {'hash' : project.hash})
+} %}
+
+{% block siteContent %}
+    <article id="deposer-projet" class="page">
+        <div class="hero-wrap">
+            <header class="page-header">
+                <div class="site-wrap">
+                    <h1 id="project-create-title" class="h1">
+                        {% if title is defined %}
+                            {{ title }}
+                        {% else %}
+                            {% trans %} project-request_page-title {% endtrans %}
+                        {% endif %}
+                    </h1>
+                </div><!-- /.site-wrap -->
+            </header><!-- /.page-header -->
+
+            <div class="page-content">
+                <div class="site-wrap">
+                    <div class="row">
+                        <div class="col-lg-8 col-md-8">
+                            <div class="form-project-create-nav tab-nav">
+                                {% if app.session.get('partnerProjectRequest') %}
+                                    <ul class="nav nav-progress">
+                                        <li id="project-create-1" role="presentation" class="complete">
+                                            <span>
+                                                <span class="project-create-progress-point">1.</span>
+                                                <span class="label hide-mobile">{% trans %} project-request_partner-start-tab-title {% endtrans %}</span>
+                                            </span>
+                                        </li>
+                                        <li id="project-create-2" role="presentation" class="complete">
+                                            <span>
+                                                <span class="project-create-progress-point">2.</span>
+                                                <span class="label hide-mobile">{% trans %} project-request_contact-tab-title {% endtrans %}</span>
+                                            </span>
+                                        </li>
+                                        <li id="project-create-3" role="presentation" class="active">
+                                            <span>
+                                                <span class="project-create-progress-point">3.</span>
+                                                <span class="label hide-mobile">{% trans %} project-request_end-tab-title {% endtrans %}</span>
+                                            </span>
+                                        </li>
+                                    </ul><!-- /.nav-progress -->
+                                {% else %}
+                                    <ul class="nav nav-progress">
+                                        <li id="project-create-1" role="presentation" class="complete">
+                                            <span>
+                                                <span class="project-create-progress-point">1.</span>
+                                                <span class="label">{% trans %} project-request_contact-tab-title {% endtrans %}</span>
+                                            </span>
+                                        </li>
+                                        <li id="project-create-2" role="presentation" class="complete">
+                                            <span>
+                                                <span class="project-create-progress-point">2.</span>
+                                                <span class="label">{% trans %} project-request_finance-tab-title {% endtrans %}</span>
+                                            </span>
+                                        </li>
+                                        <li id="project-create-3" role="presentation" class="complete">
+                                            <span>
+                                                <span class="project-create-progress-point">3.</span>
+                                                <span class="label">{% trans %} project-request_end-tab-title {% endtrans %}</span>
+                                            </span>
+                                        </li>
+                                    </ul><!-- /.nav-progress -->
+                                {% endif %}
+                            </div><!-- /.form-project-create-nav -->
+                        </div>
+                    </div>
+
+                    <div class="row ui-sticky-parent">
+                        <div class="col-form col-lg-8 col-md-8">
+                            <div class="form-project-create-content tab-content">
+                                <div id="form-project-create-3" aria-labelledby="project-create-3 project-create-title">
+                                    <div class="panel">
+                                        {% if subtitle is not empty %}
+                                            <h3 class="h3">{{ subtitle|raw }}</h3>
+                                        {% endif %}
+
+                                        <p>{{ message|raw }}</p>
+
+                                        {% if addMoreFiles %}
+                                            <p><a href="{{ path('project_request_files', {'hash' : project.hash}) }}" class="link">{% trans %} project-request_end-page-add-other-files-link {% endtrans %}</a></p>
+                                        {% endif %}
+
+                                        <div class="btn-toolbar">
+                                            <a href="#" class="btn-default ui-open-site-search">{{ 'project-request_end-page-question-button'|trans|raw }}</a>
+                                            <a href="{{ absolute_url('/guide-de-l-emprunteur') }}" class="btn-primary">{{ 'project-request_end-page-go-home-button'|trans|raw }}</a>
+                                        </div><!-- /.btn-toolbar -->
+                                    </div><!-- /.panel -->
+                                </div><!-- /#form-project-create-3.tab-pane -->
+                            </div><!-- /.form-project-create-content -->
+                        </div><!-- /.col-form -->
+                    </div><!-- /.row -->
+                </div><!-- /.site-wrap -->
+            </div><!-- /.page-content -->
+
+            {% include 'partials/components/list-socialmedia.html.twig' %}
+        </div><!-- /.hero-wrap -->
+    </article><!-- /.page -->
+{% endblock %}

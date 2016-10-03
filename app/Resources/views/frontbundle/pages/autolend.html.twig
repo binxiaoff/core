@@ -1,0 +1,270 @@
+{# User / Preter / Autolend #}
+{% extends 'layouts/_layout_lender.html.twig' %}
+
+{% set page = {
+id: 'user-preter-autolend',
+title: 'Prêteur / Autolend',
+permalink: path('autolend'),
+classNames: 'user-preter-autolend'
+} %}
+
+{% block dashboardContent %}
+    {# Disable default form validation. See: http://stackoverflow.com/a/22148483/1421162 #}
+    <form id="form-user-autolend" action="{{ path('autolend') }}" method="post" class="form-user-autolend" novalidate autocomplete="off">
+        <section class="panel panel-autolend">
+            <header class="panel-header">
+                <h3>{% trans %} autolend_page-title {% endtrans %}</h3>
+            </header><!-- /.panel-header -->
+
+            <div class="readable-wrap">
+                <p>{% trans %} autolend_autolend-introduction-text {% endtrans %}</p>
+                <p><a href="#todo" class="link">{% trans %} autolend_link-to-autolend-faq-title {% endtrans %}</a></p>
+            </div><!-- /.readable-wrap -->
+
+            <div class="row autolend-enable">
+                <label for="form-autolend-enable" class="field-label-inline">{% trans %} autolend_on-off-switch-label {% endtrans %}</label>
+                <label id="form-autolend-enable-switch" class="custom-input-switch" data-custom-input="">
+                    <input type="checkbox" id="form-autolend-enable" value="1" {% if autobid_on %}checked{% endif %} name=""/>
+                    <span class="label"><span class="sr-only">Switch off/on</span></span></label>
+            </div>
+        </section><!-- /.panel -->
+
+        <section id="autolend-config" class="collapse{% if autobid_on %} in{% endif %}">
+            <input type="hidden" id="hidden-settings-mode-input" name="hidden-settings-mode-input" value="">
+            <section id="autolend-config" class="collapse in">
+                <section class="panel panel-autolend-config ui-formvalidation" data-formvalidation>
+                    <div class="ui-formvalidation-notifications"></div>
+                    <div id="form-info-notifications">
+                        {% if app.session.flashBag.has('autolend_error') %}
+                            <div class="message-error">
+                                {% for msg in app.session.flashBag.get('autolend_error') %}
+                                    <p>{{ msg|raw }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        {% if app.session.flashBag.has('autolend_success') %}
+                            <div class="message-success" id="update-success-message">
+                                {% for msg in app.session.flashBag.get('autolend_success') %}
+                                    <p>{{ msg|raw }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="readable-wrap">
+                        <div class="message-info" id="settings-last-updated">{% trans with {'%date%' : validation_date } %} autolend_settings-last-updated-text {% endtrans %}</div>
+                        <p>{% trans %} autolend_instructions {% endtrans %}</p>
+                    </div>
+                    <div class="row row-multi-col">
+                        <div class="form-field col-lg-3 col-md-3 col-sm-4 col-xs-2">
+                            <label for="autolend-amount">
+                                {% trans %} autolend_amount-field-label {% endtrans %}
+                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                            </label>
+                            <div class="input-group set-right">
+                                <div class="btn-group"><span class="icon fa-euro"></span></div><!-- /.btn-group -->
+                                <input type="text" id="autolend-amount" name="autolend_amount"
+                                       data-formvalidation-minvalue="{{ setting('pret min') }}" step="any"
+                                       value="{{ autolend_amount|default(setting('pret min'))|localizednumber }}"
+                                       class="input-field"
+                                       data-formvalidation-input data-formvalidation-required="true"/>
+                            </div><!-- /.input-group -->
+                        </div><!-- /.form-field -->
+                        <div class="form-field col-lg-3 col-md-3 col-sm-4 col-xs-2" id="div-interest-simple" {% if is_novice == false %} style="display:none;" {% endif %}>
+                            <label for="autolend-amount">
+                                {% trans %} autolend_simple-setting-rate-label {% endtrans %}
+                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                            </label>
+                            <div class="input-group set-right">
+                                <div class="btn-group"><span class="icon fa-percent"></span></div><!-- /.btn-group -->
+                                <input type="text" id="autolend-interest" name="autolend_rate_min"
+                                       data-formvalidation-minvalue="{{ projectRatesGlobal.rate_min|round(1) }}"
+                                       data-formValidation-maxvalue="{{ projectRatesGlobal.rate_max|round(1) }}"
+                                       step="{{ setting('Auto-bid step')|round(1) }}"
+                                       value="{{ autoBidSettings[1][0]['rate_min']|default(averageRateUnilend)|localizednumber }}"
+                                       class="input-field"
+                                        {% if is_novice %}
+                                            data-formvalidation-input data-formvalidation-required="true"
+                                        {% endif %}/>
+                            </div><!-- /.input-group -->
+                        </div><!-- /.form-field -->
+                    </div>
+                    <div class="btn-controls">
+                        <button type="submit" class="btn-primary" name="validate-simple-settings" id="validate-simple-settings" {% if is_novice == false %} style="display:none;" {% endif %}>{% trans %} autolend_simple-setting-submit-button {% endtrans %}</button>
+                    </div><!-- /.btn-controls -->
+                    {#<div class="ui-formvalidation-notifications"></div>#}
+                </section><!-- /.panel -->
+                <section id="autolend-table">
+                    <section id="autolend-table-config" class="panel panel-autolend-table collapse {% if is_novice == false %} in {% endif %}">
+                        <div id="autolend-table-view" class="autolend-table ui-autolendtable">
+                            <div class="row">
+                                <div class="col-table">
+                                    <div class="row row-header">
+                                        <div class="cell">&nbsp;</div>
+                                        <div class="cell cell-header">
+                                            <span class="rating rating-3"><span class="sr-only">{% trans %} common_sr-only-rating-3-of-5 {% endtrans %}</span></span>
+                                        </div>
+                                        <div class="cell cell-header">
+                                            <span class="rating rating-3-5"><span class="sr-only">{% trans %} common_sr-only-rating-3.5-of-5 {% endtrans %}</span></span>
+                                        </div>
+                                        <div class="cell cell-header">
+                                            <span class="rating rating-4"><span class="sr-only">{% trans %} common_sr-only-rating-4-of-5 {% endtrans %}</span></span>
+                                        </div>
+                                        <div class="cell cell-header">
+                                            <span class="rating rating-4-5"><span class="sr-only">{% trans %} common_sr-only-rating-4.5-of-5 {% endtrans %}</span></span>
+                                        </div>
+                                        <div class="cell cell-header">
+                                            <span class="rating rating-5"><span class="sr-only">{% trans %} common_sr-only-rating-5-of-5 {% endtrans %}</span></span>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        {% spaceless %}
+                                        <div class="col-header">
+                                            {% for period in projectPeriods %}
+                                                <div class="cell cell-header">
+                                                    <span>{{ "autolend_expert-settings-project-period-#{ period.id_period }"|trans }}</span>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                        {% endspaceless %}
+                                        <div class="col-data">
+                                            {% set i = 0 %}
+                                            {% for settings in autoBidSettings %}
+                                                {% for setting in settings %}
+                                                    {% set classEnabled = '' %}
+                                                    {% if setting.status == constant('\\autobid::STATUS_ACTIVE') %}
+                                                        {% set classEnabled = 'ui-autolend-cell-enabled'%}
+                                                    {% endif %}
+                                                    {% if setting.cellAverageRateUnilend is empty or setting.rate_min <= setting.cellAverageRateUnilend|round(1)  %}
+                                                        {% set classAverage = 'ui-autolend-average-within' %}
+                                                    {% else %}
+                                                        {% set classAverage = 'ui-autolend-average-exceeds' %}
+                                                    {% endif %}
+                                                    <div data-autolendtable-cell="{{ i }}" class="cell cell-data {{ classEnabled }} {{ classAverage }}">
+                                                        <div class="cell-input" data-autolendtable-cell="{{ i }}">
+                                                            <a class="btn-cell-minus" tabindex="-1" href="javascript:;"><span class="sr-only">Minus 0.1</span></a>
+                                                            {# Inputs containing values for calculations / JS / to be submittes #}
+                                                            <input type="number" value="{{ setting.rate_min }}"
+                                                                   step="{{ setting('Auto-bid step') }}" max="{{ setting.project_rate_max }}" min="{{ setting.project_rate_min }}"
+                                                                   name="data[{{ setting.id_autobid|default(i) }}][interest]"
+                                                                   id="{{ i }}-param-advanced-interest">
+                                                            <input type="hidden" value="{{ setting.status }}"
+                                                                   name="data[{{ setting.id_autobid|default(i) }}][is-active]"
+                                                                   id="{{ i }}-param-advanced-is-active">
+                                                            <input type="hidden" value="{{ setting.id_period }}"
+                                                                   name="data[{{ setting.id_autobid|default(i) }}][period]"
+                                                                   id="{{ i }}-param-advanced-period" >
+                                                            <input type="hidden" value="{{ setting.evaluation }}"
+                                                                   name="data[{{ setting.id_autobid|default(i) }}][evaluation]"
+                                                                   id="{{ i }}-param-advanced-evaluation" >
+
+                                                            {# Inputs containing formated values for dom interaction #}
+                                                            <input type="hidden" value="{{ setting.evaluation|convertRisk }}"
+                                                                   id="{{ i }}-param-advanced-evaluation-converted" >
+                                                            <input type="hidden" name="periods-as-text"
+                                                                   id="{{ i }}-param-advanced-period-as-text"
+                                                                   value="{{ "autolend_expert-settings-project-period-#{ setting.id_period }"|trans({'%min%':setting.period_min, '%max%':setting.period_max })|raw }}" >
+                                                            <input type="hidden" value="{{ setting.cellAverageRateUnilend|round(1)|localizednumber }}"
+                                                                   data-value="{{ setting.cellAverageRateUnilend|round(1) }}"
+                                                                   name="param-advanced-unilend-rate"
+                                                                   id="{{ i }}-param-advanced-unilend-rate">
+                                                            <a class="btn-cell-plus" tabindex="-1" href="javascript:;"><span class="sr-only">Plus 0.1</span></a>
+                                                        </div>
+                                                        <a class="btn-cell-enable" href="javascript:;">
+                                                            <span class="sr-only">{% trans %} autolend_expert-settings-sidebar-activate-cell-switch-label {% endtrans %}</span></a>
+                                                    </div>
+                                                    {% set i = i+1 %}
+                                                {% endfor %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-info" data-autolend-table-cell="">
+                                    <div class="info-intro">
+                                        <h4 class="info-title">{% trans %} autolend_expert-settings-sidebar-title {% endtrans %}</h4>
+                                        <div class="info-icon"><span class="icon icon-huge fa-autolend-u64"></span></div>
+                                        <div class="info-description">
+                                            <p>{% trans %} autolend_expert-settings-sidebar-text {% endtrans %}</p>
+                                        </div>
+                                    </div>
+                                    <div class="info-evaluation" style="display: none;">
+                                        <h4 class="info-title" id="title-equal-rates" style="display: none;">{% trans %} autolend_expert-settings-sidebar-balance-title-equal {% endtrans %}</h4>
+                                        <h4 class="info-title" id="title-unilend-rate-higher" style="display: none;">{% trans %} autolend_expert-settings-sidebar-balance-title-unilend-rate-higher {% endtrans %}</h4>
+                                        <h4 class="info-title" id="title-unilend-rate-lower" style="display: none;">{% trans %} autolend_expert-settings-sidebar-balance-title-unilend-rate-lower {% endtrans %}</h4>
+
+                                        <div class="info-scale">
+                                            <div class="info-scale-user"><h5 class="label">{% trans %} autolend_expert-settings-sidebar-balance-left-rate-label {% endtrans %}</h5>
+                                                <div class="value"><span id="scale-user-rate"></span><sup>%</sup></div>
+                                            </div>
+                                            <div class="info-scale-unilend"><h5 class="label">{% trans %} autolend_expert-settings-sidebar-balance-right-rate-label {% endtrans %}</h5>
+                                                <div class="value"><span id="scale-unilend-rate"></span><sup>%</sup></div>
+                                            </div>
+                                            <div class="info-scale-balance">
+                                                <div class="info-scale-balance-board"></div>
+                                                <div class="info-scale-balance-pin"></div>
+                                            </div>
+                                        </div>
+                                        <div class="info-description">
+                                            <p id="info-description-equal-rates" style="display: none;">{% trans %} autolend_expert-settings-sidebar-description-equal {% endtrans %}</p>
+                                            <p id="info-description-unilend-rate-higher" style="display: none;">{% trans %} autolend_expert-settings-sidebar-description-unilend-rate-higher {% endtrans %}</p>
+                                            <p id="info-description-unilend-rate-lower" style="display: none;">{% trans %} autolend_expert-settings-sidebar-description-unilend-rate-lower {% endtrans %}</p>
+                                            <p>
+                                                <a class="btn-cell-reset" id="apply-average-to-cell" href="javascript:;">{% trans %} autolend_expert-settings-sidebar-apply-unilend-rate {% endtrans %}</a>
+                                            </p>
+                                            <div class="info-cell-disable">
+                                                <label class="custom-input-switch custom-input-switch-sm btn-cell-disable-toggle" id="autolend-cell-disable-switch-label">
+                                                    <input type="checkbox" checked="checked" value="true" id="autolend-cell-disable-switch">
+                                                    <span class="label"><span class="sr-only">Switch off/on</span></span></label>
+                                                <label for="autolend-cell-disable-switch">{% trans %} autolend_expert-settings-sidebar-enable-setting-switch {% endtrans %}</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-9 col-md-9">
+                                <div class="ui-autolend-table-use-average-interest">
+                                    {#<label id="autolend-table-use-average-interest-switch" class="custom-input-switch custom-input-switch-sm&#x20;btn-table-set-average"#}
+                                           {#data-custom-input>#}
+                                        {#<input type="checkbox" id="autolend-table-use-average-interest" value="true"/>#}
+                                        {#<span class="label"><span class="sr-only">Switch off/on</span></span></label>#}
+                                    {#<label for="autolend-table-use-average-interest" class="field-label">{% trans %} autolend_apply-avergage-rate-label {% endtrans %}</label>#}
+                                </div>
+                            </div>
+                            <div class="btn-controls col-lg-3 col-md-3">
+                                <button type="submit" id="validate-expert-settings" name="validate-expert-settings" class="btn-primary">{% trans %} autolend_expert-settings-submit-button {% endtrans %}</button>
+                            </div>
+                        </div>
+                    </section><!-- /#autolend-config -->
+                    <label data-target="#autolend-table-config" data-toggle="collapse"
+                           class="ui-autolend-table-config-toggle {% if is_novice %}collapsed{% else %}ui-collapse-open{% endif %}">
+                    <span class="ui-autolend-table-is-visible" >{% trans %} autolend_simple-settings-link {% endtrans %}
+                        <span class="icon fa-angle-up"></span></span>
+                    <span class="ui-autolend-table-is-hidden">{% trans %} autolend_expert-settings-link {% endtrans %}
+                        <span class="icon fa-angle-down"></span></span>
+                        <input type="checkbox" id="autolend-table-config-enable" name="autolend[enable_table]"
+                               value="true" {% if is_novice == false %} checked="checked"{% endif %} />
+                    </label>
+                </section>
+            </section>
+        </section>
+    </form><!-- /.form-autolend -->
+
+{% endblock %}
+
+{% block modals %}
+    <div id="autolend-table-dialog" class="autolend-table-dialog" data-modal data-modal-maxwidth="600" data-modal-closeonclickoverlay="true">
+        <div class="modal-body">
+            <h3 class="dialog-title">
+                <span class="icon fa-autolend-u"><span class="sr-only">{% trans %} autolend_confirmation-popup-title {% endtrans %}</span></span>
+            </h3>
+            <div class="dialog-message">
+                <p>{% trans %} autolend_confirmation-popup-text {% endtrans %}</p>
+            </div>
+        </div>
+        <footer class="modal-footer">
+            <a href="javascript:;" class="btn-outline" data-modal-doactionconfirm>{% trans %} autolend_confirmation-popup-confirm-button {% endtrans %}</a>
+            <a href="javascript:;" class="btn-outline" data-modal-doactioncancel>{% trans %} autolend_confirmation-popup-cancel-button {% endtrans %}</a>
+        </footer>
+    </div><!-- /.autolend-table-dialog -->
+{% endblock %}

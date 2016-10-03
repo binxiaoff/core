@@ -1,0 +1,32 @@
+{# Email Macros #}
+{# import 'extensions/_email.macros.twig' as emailComponent #}
+
+{# Button #}
+{# @macro button #}
+{# @param {Object} options #}
+{# @param {TwigContext} context This is the main context which holds all the email style variables #}
+{% macro button(options, context) %}
+
+{# Defaults #}
+{% set settings = {
+  width: 0,
+  height: 40,
+  align: 'left',
+  classNames: 'button',
+  style: context.css.button|default(''),
+  cellClassNames: 'button_cell',
+  cellStyle: context.css.button_cell|default(''),
+  linkUrl: '#no-linkUrl-set',
+  linkClassNames: 'button_link',
+  linkStyle: context.css.button_link|default(''),
+  linkText: 'No linkText set'
+} %}
+
+{# Override default settings with options #}
+{% if options is defined and options is iterable %}
+  {% set settings = settings|merge(options) %}
+{% endif %}
+
+{# HTML code #}
+<table{% if settings.width != 0 and settings.width is not empty %} width="{{ settings.width }}"{% endif %} height="{{ settings.height }}" align="{{ settings.align }}" border="0" cellpadding="0" cellspacing="0" class="{{ settings.classNames }}" style="{{ context.css.table_reset }}{% if settings.width is not empty and settings.width != 0 %}{% if settings.width > 0 %} width: {{ settings.width }}px;{% else %} width: {{ settings.width }};{% endif %}{% endif %} height: {{ settings.height }}px; {{ settings.style }}"><tr><td align="center" valign="middle" class="{{ settings.cellClassNames }}" style="{{ context.css.td_reset }} text-align: center; vertical-align: middle; {{ settings.cellStyle }}"><a href="{{ settings.linkUrl }}" target="_blank" class="{{ settings.linkClassNames }}" style="{{ context.css.link_reset }} {{ settings.linkStyle }}">{{ settings.linkText }}</a></td></tr></table>
+{% endmacro %}

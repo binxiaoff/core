@@ -1,0 +1,255 @@
+//
+// Unilend Notifications
+//
+
+@mixin notification {
+  padding: 20px;
+  overflow: hidden;
+
+  transition: background-color 0.2s;
+
+  .notification-header {
+    position: relative;
+  }
+
+  .notification-datetime {
+    margin: 0;
+    color: $c-t3;
+    font-size: $fs-h6;
+    text-transform: capitalize;
+  }
+
+  .notification-title {
+    margin: 0;
+    color: $c-t2;
+    font-size: $fs-h5;
+  }
+
+  .notification-image {
+    display: block;
+    width: 50px;
+    height: 50px;
+    overflow: hidden;
+
+    position: absolute;
+    right: -20px;
+    top: 0;
+
+    color: $c-t3;
+    user-select: none;
+
+    //img,
+    //svg {
+    //  max-width: 100%;
+    //  max-height: 100%;
+    //}
+
+    .svg-icon-wrap {
+      width: 70px;
+      height: 70px;
+      margin: -35px 0 0 -35px;
+
+      position: absolute;
+      left: 50%;
+      top: 50%;
+
+      svg {
+        stroke-width: 2px;
+      }
+    }
+  }
+
+  .notification-content {
+    margin-top: 6px;
+
+    color: $c-t2;
+    font-size: $fs-base * .8;
+    line-height: 1.3em;
+
+    p {
+      margin: 0;
+      line-height: 1.3em;
+    }
+  }
+
+  &.notification-type-offer-rejected {
+    .notification-title {
+      color: $c-rejected;
+    }
+  }
+
+  &.notification-type-offer-accepted {
+    .notification-title {
+      color: $c-accepted;
+    }
+  }
+
+  &.notification-type-account {
+    .notification-title {
+      color: $c-account;
+    }
+  }
+}
+
+// Single notification
+.notification {
+  @include notification;
+}
+
+// List of notifications
+.list-notifications {
+  @include block-list;
+
+  .notification {
+    border-bottom: solid 1px $c-bg2;
+    background-color: $c-bg3;
+
+    .notification-content {
+      display: none;
+    }
+
+    &#{$js-notification-open} {
+      .notification-content {
+        display: block;
+      }
+    }
+
+    &#{$js-notification-status-unread} {
+      background-color: $c-white;
+    }
+  }
+}
+
+// Drop notification
+.ui-usernotificationsdrop-drop-element.drop-element {
+  display: none;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  z-index: $depth-drop;
+  filter: drop-shadow(0 0 10px fade-out($c-grey-l, .1));
+
+  // Animation/visibility
+  opacity: 0;
+  transform: translateZ(0);
+  transform-origin: top right;
+  transition: opacity 0.1s, width 0.1s, height 0.1s;
+
+  // Arrow
+  &:after {
+    content: '';
+    width: 0;
+    height: 0;
+
+    position: absolute;
+    right: 12px;
+    top: -15px;
+    z-index: $depth-drop + 10;
+
+    border: solid transparent;
+    border-bottom-color: $c-white;
+    border-width: 15px;
+    border-top-width: 0;
+  }
+
+  // The controls
+  .notifications-drop-controls {
+    font-size: $fs-base * .8;
+    text-align: center;
+    border-bottom: solid 1px $c-grey-l3;
+
+    a,
+    a:link,
+    a:visited,
+    a:hover,
+    a:active {
+      color: $c-t3;
+      text-decoration: none;
+    }
+
+    .ui-usernotifications-markallread {
+      padding: 5px 15px;
+
+      &:after {
+        content: $fa-eye-u16;
+        display: inline-block;
+        margin-left: 5px;
+        font-family: $ff-icon;
+      }
+    }
+  }
+
+  // Text overflow gradient
+  // @note b0rks on IE
+  // &:after {
+  //   content: '';
+  //   display: none;
+  //   position: fixed;
+  //   left: 0;
+  //   right: 0;
+  //   top: 0;
+  //   z-index: $depth-drop + 2;
+  //   height: 15px;
+  //   user-select: none;
+  //   @include background-image(-svg(linear-gradient(to bottom, $c-white 0%, fade-out($c-white, 1) 100%)));
+  //   border-top-left-radius: 4px;
+  //   border-top-right-radius: 4px;
+  // }
+
+  .drop-content {
+    width: 280px;
+    height: 300px;
+    position: relative;
+    overflow: auto;
+
+    background-color: $c-white;
+    border-radius: 4px;
+
+    // Animation
+    transition: transform 0.3s;// cubic-bezier(0, 0, 0.265, 1.55);
+    transform: scale(0) translateZ(0);
+    transform-origin: top right;
+  }
+
+  &.drop-open {
+    display: none;
+    overflow: visible;
+    width: 280px;
+    height: 300px;
+  }
+
+  &.drop-open-transitionend {
+    display: block;
+  }
+
+  &.drop-after-open {
+    transition: none;
+    opacity: 1;
+
+    &:before,
+    &:after {
+      display: block;
+    }
+
+    .drop-content {
+      transform: scale(1) translateZ(0);
+
+      &:before,
+      &:after {
+        display: block;
+      }
+    }
+  }
+
+  .notification {
+    // Extra padding on right for scroll
+    padding: 15px 25px 15px 15px;
+
+    .notification-image {
+      svg {
+        max-width: 100%;
+        max-height: 100%;
+      }
+    }
+  }
+}

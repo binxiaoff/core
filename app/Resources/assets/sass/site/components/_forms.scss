@@ -1,0 +1,474 @@
+//
+// Unilend Forms
+//
+
+.field-required {
+  color: $c-p1;
+}
+
+.field-help {
+  color: $c-t3;
+  font-size: 16px;
+  font-style: italic;
+  line-height: 1.4em;
+
+  a {
+    @include link-states(
+      $link: (
+        color: $c-t3
+      ),
+      $hover: (
+        color: $c-t2
+      ),
+      $active: (
+        color: $c-t1
+      )
+    );
+  }
+}
+
+.form-field {
+  margin-bottom: 20px;
+  position: relative;
+
+  > label,
+  .form-field-label,
+  .field-label {
+    display: block;
+    margin-bottom: 10px;
+    color: $c-t1;
+  }
+}
+
+.field-label-inline {
+  display: inline-block;
+}
+
+.field-label-short {
+  min-width: 120px;
+}
+
+.form-field-multi {
+  @include devices('xs') {
+    .list-input-values {
+      @include block-list;
+    }
+  }
+
+  @include devices('md', 'lg') {
+    @include clearfix;
+
+    > .field-label {
+      width: 25%;
+      float: left;
+    }
+
+    > .list-input-values {
+      width: 75%;
+      float: left;
+    }
+  }
+}
+
+.input-group {
+  display: block;
+  position: relative;
+
+  > .btn-group {
+    padding: 0 20px;
+
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 1;
+
+    line-height: $height-input;
+    text-align: center;
+    user-select: none;
+
+    > * {
+      display: inline-block;
+      color: $c-t3;
+    }
+  }
+
+  &.set-left {
+    @include text-inputs($inheritance: '>') {
+      padding-left: 3em;
+    }
+
+    > .btn-group {
+      left: 0;
+    }
+  }
+
+  &.set-right {
+    @include text-inputs($inheritance: '>') {
+      padding-right: 3em;
+    }
+
+    > .btn-group {
+      right: 0;
+    }
+  }
+
+  // No responsive inputs yet
+  // @include devices('sm') {
+  //   > .btn-group {
+  //     line-height: $height-input-sm - 4px;
+  //   }
+  // }
+
+  // @include devices('md') {
+  //   > .btn-group {
+  //     line-height: $height-input-md - 4px;
+  //   }
+  // }
+
+  // @include devices('lg') {
+  //   > .btn-group {
+  //     line-height: $height-input-lg - 4px;
+  //   }
+  // }
+
+  &.input-field-inline {
+    display: inline-block;
+  }
+}
+
+// List of input values (e.g. checkboxes or radio buttons)
+.list-input-values {
+  @include inline-block-list;
+
+  li {
+    margin-right: 20px;
+  }
+}
+
+// Generic input field style
+.input-field {
+  @include input;
+}
+
+// Single line text inputs need height set
+@include text-inputs($textarea: false) {
+  &.input-field {
+    @include input-size-default($single-line: true);
+  }
+
+  &.input-field-short {
+    max-width: 100px;
+    width: auto;
+  }
+}
+
+// Multi-line inputs do not need height set
+textarea.input-field {
+  @include input-size-default($single-line: false);
+}
+
+// Select fields are white instead of grey
+select.input-field {
+  @include input-size-default($single-line: true);
+  background-color: $c-white;
+  border-color: $c-bg3;
+  color: $c-t1;
+}
+
+.input-field-short {
+  display: inline-block;
+  width: auto;
+}
+
+// Inline form field
+.form-field-inline {
+  display: block;
+  color: $c-t1;
+  margin: 0;
+  position: relative;
+  vertical-align: middle;
+
+  > .btn-group {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 1;
+    line-height: $height-input; // Height of input
+    text-align: center;
+    vertical-align: middle;
+
+    &:first-child {
+      left: 0;
+    }
+
+    &:last-child {
+      right: 0;
+    }
+  }
+
+  // Text inputs
+  .input-field {
+    @include input;
+    @include input-size-default($single-line: true);
+    padding-left: $height-input;
+  }
+
+  // No responsive inputs yet
+  // @include devices('sm') {
+  //   > .btn-group {
+  //     line-height: $height-input-sm;
+  //   }
+  // }
+
+  // @include devices('md') {
+  //   > .btn-group {
+  //     line-height: $height-input-md;
+  //   }
+  // }
+
+  // @include devices('lg') {
+  //   > .btn-group {
+  //     line-height: $height-input-lg;
+  //   }
+  // }
+}
+
+.form-field-single-checkbox,
+.form-field-single-radio {
+  @include clearfix;
+  position: relative;
+
+  input {
+    position: absolute;
+    left: 0;
+    top: 0;
+
+    margin-top: .35em;
+  }
+
+  .label {
+    display: block;
+    margin-left: 30px;
+  }
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  display: inline-block;
+  font-size: 21px;
+  line-height: 32px;
+  vertical-align: baseline;
+}
+
+// Custom Input Duration (used in emprunter-sim)
+.custom-input-duration {
+  @include clearfix;
+  display: block;
+  width: 100%;
+  height: 5px;
+  margin: 20px 0;
+  background-color: $c-bg2;
+  border-radius: 5px;
+  overflow: visible;
+  user-select: none;
+
+  label {
+    box-sizing: border-box;
+    float: left;
+    width: (100% / 9); // 9 items
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-top: -14px;
+    text-align: center;
+  }
+
+  .label {
+    display: block;
+    color: $c-t3;
+    opacity: 0;
+
+    transition: opacity .2s;
+
+    // The new looking radio button
+    &:before {
+      content: '';
+      box-sizing: border-box;
+      display: block;
+      width: 18px;
+      height: 18px;
+      padding: 0;
+      margin: 7px auto 5px;
+      clear: both;
+      visibility: hidden;
+
+      background-color: $c-white;
+      background-clip: padding-box;
+      border: solid 4px $c-bg2;
+      border-radius: 18px;
+      line-height: 18px;
+      vertical-align: middle;
+
+      @include devices('sm', 'md', 'lg') {
+        width: 28px;
+        height: 28px;
+        margin-top: 2px;
+        border-radius: 28px;
+        line-height: 28px;
+      }
+    }
+  }
+
+  input[type="radio"] {
+    @include hide-accessible;
+
+    &:checked + .label {
+      opacity: 1;
+      color: $c-t1;
+      font-weight: bold;
+    }
+
+    // Modify the new looking radio button
+    &:checked + .label:before {
+      visibility: visible;
+      background-color: $c-white;
+      border-color: $c-p1;
+    }
+  }
+
+  // Small devices
+  @include devices('xs', 'sm') {
+    > label {
+      &:first-child,
+      &:last-child {
+        .label {
+          opacity: 1;
+        }
+      }
+    }
+
+    // Show the thing when it's checked and user is dragging over top
+    &.ui-interact-is-down input[type="radio"]:checked + .label:before {
+      visibility: visible;
+      background-color: $c-white;
+      border-color: $c-p1;
+    }
+  }
+
+  // Large devices
+  @include devices('md', 'lg') {
+    > label {
+      .label {
+        opacity: 1;
+
+        &:before {
+          visibility: visible;
+        }
+      }
+    }
+  }
+}
+
+// Custom file upload
+.custom-input-file {
+  .input-field {
+    @include input-size-lg($single-line: true);
+  }
+
+  input[type="file"] {
+    @include hide-accessible;
+  }
+}
+
+// IBAN input
+.custom-input-iban {
+  position: relative;
+
+  // .input-field.iban-input {
+  //   width: 100%;
+  //   position: absolute;
+  //   left: 0;
+  //   top: 0;
+  //   right: 0;
+  //   bottom: 0;
+  //   z-index: 2;
+
+  //   color: transparent !important;
+  //   background-color: transparent !important;
+  //   border-color: transparent !important;
+  // }
+}
+
+// Custom checkbox switch
+// @note must be a <label> element!
+label.custom-input-switch {
+  display: inline-block;
+  cursor: pointer;
+
+  > .label {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 25px;
+
+    background-color: $c-t3;
+    border-radius: 25px;
+    line-height: 25px;
+    vertical-align: top;// middle;
+
+    transition: background-color .2s, border-color .2s;
+
+    &:after {
+      content: '';
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      box-sizing: border-box;
+      width: 25px;
+      height: 25px;
+      margin-left: 0;
+      background-color: $c-white;
+      border: solid 2px $c-t3;
+      border-radius: 25px;
+
+      transition: margin-left .2s, background-color .2s, border-color .2s, border-width .2s;
+    }
+  }
+
+  // Input must have an ID!
+  > input[type="checkbox"] {
+    @include hide-accessible;
+
+    // &[checked] + .label,
+    // &[checked="checked"] + .label,
+    &:checked + .label {
+      background-color: $c-teal;
+
+      &:after {
+        border-color: $c-teal;
+        border-width: 2px;
+        margin-left: 25px;
+      }
+    }
+  }
+
+  &.custom-input-switch-sm {
+    > .label {
+      width: 40px;
+      height: 20px;
+      border-radius: 20px;
+      line-height: 20px;
+
+      &:after {
+        width: 20px;
+        height: 20px;
+        border-radius: 20px;
+      }
+    }
+
+    // Real proud of this CSS selector ;)
+    > input[type="checkbox"]:checked + .label:after {
+      margin-left: 20px;
+    }
+  }
+}

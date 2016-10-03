@@ -1,0 +1,53 @@
+{% extends 'layouts/_layout.html.twig' %}
+
+{% set bodyClassNames = 'layout-page-single' %}
+
+{% block siteContent %}
+    <article{% if page.id is defined %} id="{{ page.id }}"{% endif %} class="page page-single">
+        {% block pageHeader %}
+            <header class="page-header">
+                <div class="hero-wrap"{% if cms.header_image is not empty %} style="background-image: url('{{ uploadedImage(cms.header_image) }}')"{% endif %}>
+                    <div class="site-wrap">
+                        {% block pageHeaderInner %}
+                            <h1 class="page-title">{% if page.displayTitle is defined %}{{ page.displayTitle }}{% else %}{{ page.title }}{% endif %}</h1>
+                            {% block extendPageHeader %}{% endblock %}
+                        {% endblock %}
+                    </div><!-- /.site-wrap -->
+
+                    {% include 'partials/components/list-socialmedia.html.twig' %}
+                </div><!-- /.hero-wrap -->
+            </header><!-- /.page-header -->
+        {% endblock %}
+
+        {% block pageContent %}
+            <div class="page-content">
+                <nav class="page-navigation">
+                    <div class="site-wrap">
+                        <ul data-nav-dropdown-menu="mobile">
+                            {% for nav in navigation %}
+                                <li role="presentation" class="{% if nav.selected %}active{% endif %}{% if nav.highlighted %} c-p1{% endif %}"><a href="{{ path(nav.slug) }}">{{ nav.label }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div><!-- /.site-wrap -->
+                </nav><!-- /.page-navigation -->
+
+                {{ cms.content|raw }}
+            </div><!-- /.page-content -->
+        {% endblock %}
+
+        {% if page.next is not empty %}
+            <footer class="page-footer">
+                <div class="page-navigate-next-page" style="background-image: url('{{ uploadedImage(page.next.header_image) }}');">
+                    <a href="{{ path(page.next.slug) }}">
+                        <div class="site-wrap">
+                            <div class="label">
+                                <div class="small">Lire la suite</div>
+                                <div class="big">{{ page.next.label }}</div>
+                            </div>
+                        </div><!-- /.site-wrap -->
+                    </a>
+                </div><!-- /.page-navigate-next-page -->
+            </footer><!-- /.page-footer -->
+        {% endif %}
+    </article><!-- /.page -->
+{% endblock %}

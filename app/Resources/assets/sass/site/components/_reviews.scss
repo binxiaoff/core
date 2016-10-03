@@ -1,0 +1,117 @@
+//
+// Unilend Reviews
+//
+
+.reviews {
+  @include clearfix;
+  padding-top: 30px;
+  background-color: $c-bg3;
+  text-align: center;
+
+  .tab-content {
+    min-height: 120px;
+  }
+
+  .quote {
+    display: table;
+    max-width: 500px;
+    height: 120px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    vertical-align: middle;
+
+    p {
+      @include font-base(24px, 1.4em);
+      display: table-cell;
+      color: $c-black;
+      vertical-align: middle;
+    }
+  }
+
+  .reviewer {
+    display: inline-block;
+  }
+
+  .reviewers {
+    @include inline-block-list();
+    // max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+    text-align: center;
+
+    > li {
+      vertical-align: middle;
+
+      a {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+
+        background-color: transparent;
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-image: inline-svg-code('<svg width="20" height="20" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" preserveAspectRatio="xMidYMid keep"><g stroke="#{$c-t3}" stroke-width="2" fill="none"><circle cx="10" cy="10" r="4" /></g></svg>');
+        color: $c-p1;
+      }
+
+      img,
+      svg,
+      .svg-icon {
+        display: none;
+        height: 33px;
+        width: auto;
+      }
+
+      &.active {
+        a {
+          background-image: inline-svg-code('<svg width="20" height="20" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" preserveAspectRatio="xMidYMid"><g stroke="#{$c-t3}" stroke-width="2" fill="#{$c-t3}"><circle cx="10" cy="10" r="4" /></g></svg>');
+        }
+      }
+    }
+  }
+
+  @include devices('md', 'lg') {
+    padding-top: 50px;
+
+    .reviewer {
+      display: none;
+    }
+
+    .reviewers {
+      margin-top: 30px;
+      text-align: center;
+
+      > li {
+        @include filter(grayscale(100%));
+        margin-left: 15px;
+        margin-right: 15px;
+        margin-bottom: 15px;
+        opacity: .4;
+        vertical-align: middle;
+
+        a {
+          width: auto;
+          height: auto;
+          background-image: none !important;
+        }
+
+        img,
+        svg,
+        .svg-icon {
+          display: block;
+          vertical-align: middle;
+          height: 33px;
+          width: auto;
+        }
+
+        &.active {
+          @include filter(initial);
+          opacity: 1;
+        }
+      }
+    }
+  }
+}

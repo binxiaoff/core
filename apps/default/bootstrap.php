@@ -23,6 +23,14 @@ class bootstrap extends Controller
     {
         parent::initialize();
 
+        // @todo kept for temporary backward compatibility
+        $this->tabProjectDisplay = [\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::FUNDING_KO, \projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE];
+        $this->tabOrdreProject   = [
+            [],
+            [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC],
+            [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_ASC]
+        ];
+
         if ($this->current_function != 'login') {
             $_SESSION['redirection_url'] = $_SERVER['REQUEST_URI'];
         }
@@ -37,7 +45,7 @@ class bootstrap extends Controller
         $this->blocs_templates         = $this->loadData('blocs_templates');
         $this->blocs                   = $this->loadData('blocs');
         $this->mail_template           = $this->loadData('mail_templates');
-        $this->ln                      = $this->loadData('textes');
+        $this->ln                      = $this->loadData('translations');
         $this->clients                 = $this->loadData('clients');
         $this->clients_adresses        = $this->loadData('clients_adresses');
         $this->clients_history         = $this->loadData('clients_history');
@@ -53,6 +61,7 @@ class bootstrap extends Controller
         $this->projects                = $this->loadData('projects');
         $this->lenders_accounts        = $this->loadData('lenders_accounts');
         $this->projects_status         = $this->loadData('projects_status');
+        $this->loadData('transactions_types'); // Loaded for class constants
 
         $this->ficelle = $this->loadLib('ficelle');
         $this->photos  = $this->loadLib('photos', array($this->spath, $this->surl));
@@ -60,15 +69,6 @@ class bootstrap extends Controller
 
         // Recuperation de la liste des langue disponibles
         $this->lLangues = $this->Config['multilanguage']['allowed_languages'];
-
-        // Formulaire de modification d'un texte de traduction
-        if (isset($_POST['form_mod_traduction'])) {
-            foreach ($this->lLangues as $key => $lng) {
-                $values[$key] = $_POST['texte-' . $key];
-            }
-
-            $this->ln->updateTextTranslations($_POST['section'], $_POST['nom'], $values);
-        }
 
         $this->loadCss('default/izicom');
         $this->loadCss('default/colorbox');
@@ -96,13 +96,17 @@ class bootstrap extends Controller
         // XSS protection
         if (false === empty($_POST)) {
             foreach ($_POST as $key => $value) {
-                $_POST[$key] = htmlspecialchars(strip_tags($value));
+                if (is_string($value)) {
+                    $_POST[$key] = htmlspecialchars(strip_tags($value));
+                }
             }
         }
 
         if (false === empty($_GET)) {
             foreach ($_GET as $key => $value) {
-                $_GET[$key] = htmlspecialchars(strip_tags($value));
+                if (is_string($value)) {
+                    $_GET[$key] = htmlspecialchars(strip_tags($value));
+                }
             }
         }
 
@@ -178,63 +182,32 @@ class bootstrap extends Controller
             'J' => 'etoile10'
         );
 
-        // Recuperation du bloc nos-partenaires
-        $oCachedItem = $oCachePool->getItem('Blocs_Partenaires_' . $this->blocs->id_bloc . '_' . $this->language);
-        if (false === $oCachedItem->isHit()) {
-            $this->blocs->get('nos-partenaires', 'slug');
-            $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
-            foreach ($lElements as $b_elt) {
-                $this->elements->get($b_elt['id_element']);
-                $this->bloc_partenaires[$this->elements->slug]           = $b_elt['value'];
-                $this->bloc_partenairesComplement[$this->elements->slug] = $b_elt['complement'];
-            }
-
-            $aElements = array(
-                'blocPartenaires'           => $this->bloc_partenaires,
-                'blocPartenairesComplement' => $this->bloc_partenairesComplement
-            );
-
-            $oCachedItem->set($aElements)
-                        ->expiresAfter(3600);
-            $oCachePool->save($oCachedItem);
-        } else {
-            $aElements   = $oCachedItem->get();
-        }
-
-        $this->bloc_partenaires           = $aElements['blocPartenaires'];
-        $this->bloc_partenairesComplement = $aElements['blocPartenairesComplement'];
-
         //Recuperation des element de traductions
         $oCachedItem = $oCachePool->getItem('Trad_Header_Footer_home');
 
         if (false === $oCachedItem->isHit()) {
             $aElements = array(
-                'TradHeader' => $this->ln->selectFront('header', $this->language, $this->App),
-                'TradFooter' => $this->ln->selectFront('footer', $this->language, $this->App),
-                'TradHome'   => $this->ln->selectFront('home', $this->language, $this->App)
+                'TradHeader' => $this->ln->selectFront('header','fr_FR', $this->App),
+                'TradFooter' => $this->ln->selectFront('footer', 'fr_FR', $this->App),
+                'TradHome'   => $this->ln->selectFront('home', 'fr_FR', $this->App)
             );
 
             $oCachedItem->set($aElements)
                         ->expiresAfter(3600);
             $oCachePool->save($oCachedItem);
         } else {
-            $aElements   = $oCachedItem->get();
-        }
+            $aElements = array(
+                'TradHeader' => $this->ln->selectFront('header','fr_FR', $this->App),
+                'TradFooter' => $this->ln->selectFront('footer', 'fr_FR', $this->App),
+                'TradHome'   => $this->ln->selectFront('home', 'fr_FR', $this->App)
+            );        }
 
         $this->lng['header'] = $aElements['TradHeader'];
         $this->lng['footer'] = $aElements['TradFooter'];
         $this->lng['home']   = $aElements['TradHome'];
 
 
-        //gestion du captcha
-        if (isset($_POST["captcha"])) {
-            if (isset($_SESSION["securecode"]) && $_SESSION["securecode"] == strtolower($_POST["captcha"])) {
-                $bCaptchaOk = true;
-            } else {
-                $bCaptchaOk                = false;
-                $this->displayCaptchaError = true;
-            }
-        }
+        //gestion du captcha --> moved to LoginAuthenticator
 
         $this->bAccountClosed      = false;
         $bErrorLogin               = false;
@@ -246,24 +219,11 @@ class bootstrap extends Controller
 
             // SI on a le captcha d'actif, et qu'il est faux, on bloque avant tout pour ne pas laisser de piste sur le couple login/mdp
             if (isset($bCaptchaOk) && $bCaptchaOk === false) {
-                //on trace la tentative
-                $this->login_log              = $this->loadData('login_log');
-                $this->login_log->pseudo      = $_POST['login'];
-                $this->login_log->IP          = $_SERVER["REMOTE_ADDR"];
-                $this->login_log->date_action = date('Y-m-d H:i:s');
-                $this->login_log->statut      = 0;
-                $this->login_log->retour      = 'erreur captcha';
-                $this->login_log->create();
+                //login_logs geré par eventSubscriber
 
                 $_SESSION['login']['displayCaptchaError'] = $this->displayCaptchaError;
             } else {
-                if ($_POST['login'] == '' || $_POST['password'] == '') {
-                    $bErrorLogin = true;
-                } elseif ($this->clients->exist($_POST['login'], 'email') == false) {
-                    $bErrorLogin = true;
-                } elseif ($this->clients->login($_POST['login'], $_POST['password']) == false) {
-                    $bErrorLogin = true;
-                }
+                // chekc MPD geré par login
 
                 if ($bErrorLogin === false) {
                     if ($this->clients->handleLogin('connect', 'login', 'password')) {
@@ -278,124 +238,32 @@ class bootstrap extends Controller
                                 $this->accept_cookies->update();
                             }
                         }
-                        $this->clients_history->id_client = $_SESSION['client']['id_client'];
-                        $this->clients_history->status    = 1; // statut login
-                        $this->clients_history->create();
+                        //client_history géré par eventSubscriber
 
-                        $this->bIsLender            = $this->clients->isLender();
-                        $this->bIsBorrower          = $this->clients->isBorrower();
-                        $this->bIsBorrowerAndLender = ($this->bIsBorrower && $this->bIsLender);
-
-                        if ($this->bIsLender && false === $this->bIsBorrowerAndLender) {
-                            $this->loginLender();
-                        } elseif ($this->bIsBorrower && false === $this->bIsBorrowerAndLender) {
-                            $this->loginBorrower();
-                        } else {
-                            header('location: ' . $this->surl);
-                            die;
-                        }
                     } else {
-                        $this->error_login = $this->lng['header']['identifiant-ou-mot-de-passe-inccorect'];
+                        //geré par login
                     }
                 } elseif (
                     ($aOfflineClient = $this->clients->select('email = "' . $this->login . '" AND status = 0'))
                     && (md5($this->password) === $aOfflineClient[0]['password'] || password_verify($this->password, $aOfflineClient[0]['password']))
                 ) {
-                    $this->error_login = $this->lng['header']['message-login-compte-ferme'];
-                    $this->bAccountClosed = true;
+                    // geré par user
                 } else {
-                    $oDateTime           = new \datetime('NOW - 10 minutes');
-                    $sNowMinusTenMinutes = $oDateTime->format('Y-m-d H:i:s');
-
-                    $this->login_log      = $this->loadData('login_log');
-                    $this->iPreviousTrys  = $this->login_log->counter('IP = "' . $_SERVER["REMOTE_ADDR"] . '" AND date_action >= "' . $sNowMinusTenMinutes . '" AND statut = 0');
-                    $this->iWaitingPeriod = 0;
-                    $iPreviousResult      = 1;
-
-                    if ($this->iPreviousTrys > 0 && $this->iPreviousTrys < 1000) { // 1000 pour ne pas bloquer le site
-                        for ($i = 1; $i <= $this->iPreviousTrys; $i++) {
-                            $this->iWaitingPeriod = $iPreviousResult * 2;
-                            $iPreviousResult      = $this->iWaitingPeriod;
-                        }
-                    }
-
-                    $this->error_login = $this->lng['header']['identifiant-ou-mot-de-passe-inccorect'];
-
-                    $_SESSION['login']['duree_waiting']             = $this->iWaitingPeriod;
-                    $_SESSION['login']['nb_tentatives_precedentes'] = $this->iPreviousTrys;
-                    $_SESSION['login']['displayCaptchaError']       = $this->displayCaptchaError;
-
-                    $this->login_log              = $this->loadData('login_log');
-                    $this->login_log->pseudo      = $_POST['login'];
-                    $this->login_log->IP          = $_SERVER["REMOTE_ADDR"];
-                    $this->login_log->date_action = date('Y-m-d H:i:s');
-                    $this->login_log->statut      = 0;
-                    $this->login_log->retour      = $this->error_login;
-                    $this->login_log->create();
+                        // moved to LoginAuthenticator
                 }
             }
         }
 
         if ($this->clients->checkAccess()) {
-            $this->clients->get($_SESSION['client']['id_client'], 'id_client');
-            $this->clients_adresses->get($this->clients->id_client, 'id_client');
-
-            $this->bIsLender                   = $this->clients->isLender();
-            $this->bIsBorrower                 = $this->clients->isBorrower();
-            $this->bIsBorrowerAndLender        = $this->bIsBorrower && $this->bIsLender;
-            $this->bDisplayHeaderLender        = false;
-            $this->bDisplayHeaderBorrower      = false;
-            $this->bShowChoiceBorrowerOrLender = $this->bIsBorrowerAndLender;
 
             $this->addDataLayer('uid', md5($this->clients->email));
 
-            if ($this->bIsBorrowerAndLender) {
-                $this->getDataBorrower();
-                $this->getDataLender();
-
-                if (in_array($this->Command->Name, array('espace_emprunteur', 'depot_de_dossier'))) {
-                    $this->bDisplayHeaderBorrower      = true;
-                    $this->bShowChoiceBorrowerOrLender = false;
-                    $this->bDisplayHeaderLender        = false;
-                } else {
-                    $this->bDisplayHeaderBorrower      = false;
-                    $this->bShowChoiceBorrowerOrLender = true;
-                    $this->bDisplayHeaderLender        = true;
-                }
-            } elseif ($this->bIsBorrower) {
-                $this->getDataBorrower();
-
-                $this->bDisplayHeaderBorrower      = true;
-                $this->bShowChoiceBorrowerOrLender = false;
-                $this->bDisplayHeaderLender        = false;
-            } elseif ($this->bIsLender) {
-                $this->getDataLender();
-
-                $this->bDisplayHeaderLender        = true;
-                $this->bShowChoiceBorrowerOrLender = false;
-                $this->bDisplayHeaderBorrower      = false;
-            }
         }
         $this->setSessionMail();
 
         false === isset($_SESSION['email']) || $_SESSION['email'] == '' ? $this->addDataLayer('unique_id', '') : $this->addDataLayer('unique_id', md5($_SESSION['email']));
 
-        // page projet tri
-        // 1 : terminé bientôt
-        // 2 : nouveauté
-        $this->tabOrdreProject = array(
-            '',
-            'lestatut ASC, IF(lestatut = 2, p.date_retrait_full ,"") DESC, IF(lestatut = 1, p.date_retrait_full ,"") ASC, projects_status.status DESC',
-            'p.date_publication DESC'
-        );
 
-        // Afficher les projets terminés ? (1 : oui | 0 : non)
-        $this->settings->get('Afficher les projets termines', 'type');
-        if ($this->settings->value == 1) {
-            $this->tabProjectDisplay = implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::FUNDING_KO, \projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE));
-        } else {
-            $this->tabProjectDisplay = \projects_status::EN_FUNDING;
-        }
 
         $this->create_cookies = true;
         if (isset($_COOKIE['acceptCookies'])) {
@@ -518,122 +386,20 @@ class bootstrap extends Controller
 
     private function loginLender()
     {
-        $this->bDisplayHeaderLender = true;
-
-        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-        $this->clients_gestion_type_notif    = $this->loadData('clients_gestion_type_notif');
-
-        $this->lTypeNotifs = $this->clients_gestion_type_notif->select();
-        $this->lNotifs     = $this->clients_gestion_notifications->select('id_client = ' . $_SESSION['client']['id_client']);
-
-        if ($this->lNotifs == false) {
-            foreach ($this->lTypeNotifs as $n) {
-                $this->clients_gestion_notifications->id_client = $_SESSION['client']['id_client'];
-                $this->clients_gestion_notifications->id_notif  = $n['id_client_gestion_type_notif'];
-                $id_notif                                       = $n['id_client_gestion_type_notif'];
-
-                if (
-                    in_array(
-                        $id_notif,
-                        array(
-                            \clients_gestion_type_notif::TYPE_BID_REJECTED,
-                            \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT,
-                            \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT,
-                            \clients_gestion_type_notif::TYPE_DEBIT
-                        )
-                    )
-                ) {
-                    $this->clients_gestion_notifications->immediatement = 1;
-                } else {
-                    $this->clients_gestion_notifications->immediatement = 0;
-                }
-
-                if (
-                    in_array(
-                        $id_notif,
-                        array(
-                            \clients_gestion_type_notif::TYPE_NEW_PROJECT,
-                            \clients_gestion_type_notif::TYPE_BID_PLACED,
-                            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED,
-                            \clients_gestion_type_notif::TYPE_REPAYMENT
-                        )
-                    )
-                ) {
-                    $this->clients_gestion_notifications->quotidienne = 1;
-                } else {
-                    $this->clients_gestion_notifications->quotidienne = 0;
-                }
-
-                if (
-                    in_array(
-                        $id_notif,
-                        array(
-                            \clients_gestion_type_notif::TYPE_NEW_PROJECT,
-                            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED
-                        )
-                    )
-                ) {
-                    $this->clients_gestion_notifications->hebdomadaire = 1;
-                } else {
-                    $this->clients_gestion_notifications->hebdomadaire = 0;
-                }
-
-                $this->clients_gestion_notifications->mensuelle = 0;
-                $this->clients_gestion_notifications->create();
-            }
-        }
+       //generation des notifs si pas deja existants dans le eventSubscriber
 
         if ($_SESSION['client']['etape_inscription_preteur'] < 3) {
-            $etape = ($_SESSION['client']['etape_inscription_preteur'] + 1);
-            header('Location:' . $this->lurl . '/inscription_preteur/etape' . $etape);
-            die;
+            // redirect subscription page
         } else {
             $this->clients_status->getLastStatut($_SESSION['client']['id_client']);
             if (in_array($this->clients_status->status, array(clients_status::COMPLETENESS, clients_status::COMPLETENESS_REMINDER))) {
-
-                if (in_array($_SESSION['client']['type'], array(clients::TYPE_PERSON, clients::TYPE_PERSON_FOREIGNER))) {
-                    $lapage = 'particulier_doc';
-                } else {
-                    $lapage = 'societe_doc';
-                }
-                header('Location:' . $this->lurl . '/profile/' . $lapage);
-                die;
+                //redirect completeness form
             } else {
-
-                $this->clients->get($_SESSION['client']['id_client'], 'id_client');
-                if (in_array($this->clients->type, array(clients::TYPE_LEGAL_ENTITY, clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
-                    $this->settings->get('Lien conditions generales inscription preteur societe', 'type');
-                    $this->lienConditionsGenerales = $this->settings->value;
-                }
-                else {
-                    $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
-                    $this->lienConditionsGenerales = $this->settings->value;
-                }
-
-                $listeAccept = $this->acceptations_legal_docs->selectAccepts('id_client = ' . $this->clients->id_client);
-
+                // check CVG in clientManager
                 if (!in_array($this->lienConditionsGenerales, $listeAccept)) {
-                    header('Location:' . $this->lurl . '/synthese');
-                    die;
+                    // missing CGV will add message in LoginAuthenticator
                 } else {
-                    if (isset($_SESSION['redirection_url']) &&
-                        $_SESSION['redirection_url'] != '' &&
-                        $_SESSION['redirection_url'] != 'login' &&
-                        $_SESSION['redirection_url'] != 'captcha'
-                    ) {
-                        $redirect = explode('/', $_SESSION['redirection_url']);
-
-                        if ($redirect[1] == 'projects') {
-                            header('Location:' . $_SESSION['redirection_url']);
-                            die;
-                        } else {
-                            header('Location:' . $this->lurl . '/synthese');
-                            die;
-                        }
-                    } else {
-                        header('Location:' . $this->lurl . '/synthese');
-                        die;
-                    }
+                    // redirect URL done
                 }
             }
         }
@@ -646,7 +412,7 @@ class bootstrap extends Controller
 
         $aAllCompanyProjects = $this->companies->getProjectsForCompany($this->companies->id_company);
 
-        if ((int)$aAllCompanyProjects[0]['project_status'] >= projects_status::A_TRAITER && (int)$aAllCompanyProjects[0]['project_status'] < projects_status::PREP_FUNDING) {
+        if ($aAllCompanyProjects[0]['status'] >= projects_status::A_TRAITER && $aAllCompanyProjects[0]['status'] < projects_status::PREP_FUNDING) {
             header('Location:' . $this->url . '/depot_de_dossier/fichiers/' . $aAllCompanyProjects[0]['hash']);
             die;
         } else {
@@ -679,8 +445,8 @@ class bootstrap extends Controller
         $this->companies_notifs = $this->loadData('companies');
         $this->loans            = $this->loadData('loans');
 
-        $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', $this->language, $this->App);
-        $this->lng['notifications']    = $this->ln->selectFront('preteur-notifications', $this->language, $this->App);
+        $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', 'fr_FR', $this->App);
+        $this->lng['notifications']    = $this->ln->selectFront('preteur-notifications', 'fr_FR', $this->App);
 
         $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
 
