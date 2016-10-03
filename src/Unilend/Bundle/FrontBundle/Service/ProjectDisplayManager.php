@@ -317,8 +317,8 @@ class ProjectDisplayManager
      */
     public function getFundingDuration(\projects $project)
     {
-        $startFundingPeriod = ($project->date_publication_full != '0000-00-00 00:00:00') ? new \DateTime($project->date_publication_full) : new \DateTime($project->date_publication . ' 00:00:00');
-        $endFundingPeriod   = ($project->date_retrait_full != '0000-00-00 00:00:00') ? new \DateTime($project->date_retrait_full) : new \DateTime($project->date_retrait);
+        $startFundingPeriod = new \DateTime($project->date_publication_full);
+        $endFundingPeriod   = new \DateTime($project->date_funded);
 
         return $startFundingPeriod->diff($endFundingPeriod);
     }
