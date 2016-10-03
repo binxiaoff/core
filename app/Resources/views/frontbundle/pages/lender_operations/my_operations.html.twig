@@ -108,22 +108,22 @@
                 <thead class="table-sortable-columns">
                 <tr>
                     <th class="table-sortable-column table-myoperations-item-type" data-sortable-by="type">
-                        <span class="label"><span class="sr-only">{{ 'lender-operations_sr-sort-operation-name-column'|trans }} </span>{% trans %} lender-operations_operations-table-operation-column {% endtrans %}</span>
+                        <span class="label" title="{{ 'lender-operations_sr-sort-operation-name-column'|trans|e('html_attr') }}" data-toggle="tooltip">{% trans %} lender-operations_operations-table-operation-column {% endtrans %}</span>
                     </th>
                     <th class="table-sortable-column table-myoperations-item-contract" data-sortable-by="contract">
-                        <span class="label"><span class="sr-only">{{ 'lender-operations_sr-sort-operation-contract-no-column'|trans }} </span>{% trans %} lender-operations_loans-table-contract-column {% endtrans %}</span>
+                        <span class="label" title="{{ 'lender-operations_sr-sort-operation-contract-no-column'|trans|e('html_attr') }}" data-toggle="tooltip">{% trans %} lender-operations_loans-table-contract-column {% endtrans %}</span>
                     </th>
                     <th class="table-sortable-column table-myoperations-item-project" data-sortable-by="project">
-                        <span class="label"><span class="sr-only">{{ 'lender-operations_sr-sort-operation-project-name-column'|trans }} </span>{% trans %} lender-operations_operations-table-project-column {% endtrans %}</span>
+                        <span class="label" title="{{ 'lender-operations_sr-sort-operation-project-name-column'|trans|e('html_attr') }}" data-toggle="tooltip">{% trans %} lender-operations_operations-table-project-column {% endtrans %}</span>
                     </th>
                     <th class="table-sortable-column table-myoperations-item-date" data-sortable-by="date">
-                        <span class="label"><span class="sr-only">{{ 'lender-operations_sr-sort-operation-operation-date-column'|trans }} </span>{% trans %} lender-operations_operations-table-date-column {% endtrans %}</span>
+                        <span class="label" title="{{ 'lender-operations_sr-sort-operation-operation-date-column'|trans|e('html_attr') }}" data-toggle="tooltip">{% trans %} lender-operations_operations-table-date-column {% endtrans %}</span>
                     </th>
                     <th class="table-sortable-column table-myoperations-item-amount" data-sortable-by="amount">
-                        <span class="label"><span class="sr-only">{{ 'lender-operations_sr-sort-operation-operation-amount-column'|trans }} </span>{% trans %} lender-operations_operations-table-amount-column {% endtrans %}</span>
+                        <span class="label" title="{{ 'lender-operations_sr-sort-operation-operation-amount-column'|trans|e('html_attr') }}" data-toggle="tooltip">{% trans %} lender-operations_operations-table-amount-column {% endtrans %}</span>
                     </th>
                     <th class="table-sortable-column table-myoperations-item-balance" data-sortable-by="balance">
-                        <span class="label"><span class="sr-only">{{ 'lender-operations_sr-sort-operation-sold-column'|trans }} </span>{% trans %} lender-operations_operations-table-account-balance-column {% endtrans %}</span>
+                        <span class="label" title="{{ 'lender-operations_sr-sort-operation-sold-column'|trans|e('html_attr') }}" data-toggle="tooltip">{% trans %} lender-operations_operations-table-account-balance-column {% endtrans %}</span>
                     </th>
                 </tr>
                 </thead>

@@ -67,7 +67,7 @@ th {
   }
 
   @include devices('sm', 'laptop', 'lg') {
-    font-size: 13px;
+    font-size: 11px;
     padding: 10px 30px;
   }
 }

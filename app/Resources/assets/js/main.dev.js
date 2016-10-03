@@ -119,7 +119,8 @@ $(document).ready(function ($) {
   // $.support.transition = false
   // Bootstrap Tooltips
   $body.tooltip({
-    selector: '.ui-has-tooltip, [data-toggle="tooltip"]'
+    selector: '.ui-has-tooltip, [data-toggle="tooltip"]',
+    container: 'body'
   })
 
   /*
