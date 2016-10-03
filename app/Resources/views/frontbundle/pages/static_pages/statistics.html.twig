@@ -494,22 +494,37 @@
                         </thead>
                         <tbody>
                         {% for label, years in data.regulatoryTable %}
-                            {% if label in ['pct', 'pct2'] %}
+                            {% if label == 'IRR' %}
+                                    <tr>
+                                        <td class="table-stats-unilend-item-label">{{ "about-us-statistics_regulatory-table-#{label}"|trans|raw }}</td>
+                                        {% for value in years %}
+                                            <td class="table-stats-unilend-item-value">{{ value|localizednumber}} %</td>
+                                        {% endfor %}
+                                    </tr>
+                            {% elseif label == 'projects' %}
+                                    <tr>
+                                        <td class="table-stats-unilend-item-label">{{ "about-us-statistics_regulatory-table-#{label}"|trans|raw }}</td>
+                                        {% for value in years %}
+                                            <td class="table-stats-unilend-item-value">{{ value|localizednumber}}</td>
+                                        {% endfor %}
+                                    </tr>
+                            {% elseif label == 'nb' %}
+                                {% for labelNb, yearNb in years %}
+                                    <tr>
+                                        <td class="table-stats-unilend-item-label">{{ "about-us-statistics_regulatory-table-#{labelNb}"|trans|raw }}</td>
+                                        {% for valueNb in yearNb %}
+                                            <td class="table-stats-unilend-item-value">{{ valueNb|localizednumber}}</td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            {% elseif label == 'empty-line' %}
+                                <tr><td class="table-stats-unilend-item-label"></td><td class="table-stats-unilend-item-value"></td></tr>
+                            {% elseif label == 'pct' %}
                                 {% for labelPct, yearPct in years %}
                                     <tr>
                                         <td class="table-stats-unilend-item-label">{{ "about-us-statistics_regulatory-table-#{labelPct}"|trans|raw }}</td>
                                         {% for valuePct in yearPct %}
                                             <td class="table-stats-unilend-item-value">{{ valuePct|localizednumber}} %</td>
-                                        {% endfor %}
-                                    </tr>
-                                {% endfor %}
-
-                            {% elseif label == 'nb' %}
-                                {% for labelNb, yearNb in years %}
-                                    <tr>
-                                        <td class="table-stats-unilend-item-label">{{ "about-us-statistics_regulatory-table-#{labelNb}"|trans|raw }}</td>
-                                        {% for valuePct in yearNb %}
-                                            <td class="table-stats-unilend-item-value">{{ valuePct|localizednumber}}</td>
                                         {% endfor %}
                                     </tr>
                                 {% endfor %}
