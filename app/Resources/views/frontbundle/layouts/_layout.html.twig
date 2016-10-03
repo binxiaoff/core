@@ -130,11 +130,17 @@
                 var SORTABLE_LANG = JSON.parse('{{ dictionary('sortable')|json_encode|escape('js')|raw }}')
                 var FILEATTACH_LANG = JSON.parse('{{ dictionary('file-attach')|json_encode|escape('js')|raw }}')
                 var USERNOTIFICATIONS_LANG = JSON.parse('{{ dictionary('lender-notifications')|json_encode|escape('js')|raw }}')
-                var MAPVIEW_LANG = JSON.parse('{{ dictionary('mapview')|json_encode|escape('js')|raw }}')
+
+                {% if app.request.attributes.get('_route') in ['project_detail', 'projects_list', 'lender_projects'] %}
+                    var MAPVIEW_LANG = JSON.parse('{{ dictionary('mapview')|json_encode|escape('js')|raw }}')
+                {% endif %}
             </script>
 
-            <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js"></script>
-            <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js"></script>
+            {% if app.request.attributes.get('_route') in ['project_detail', 'projects_list', 'lender_projects'] %}
+                <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js"></script>
+                <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js"></script>
+            {% endif %}
+
             <script type="text/javascript" src="{{ asset('js/dependencies.js', 'gulp') }}"></script>
             <script type="text/javascript" src="{{ asset('js/main.js', 'gulp') }}"></script>
         {% endblock %}
