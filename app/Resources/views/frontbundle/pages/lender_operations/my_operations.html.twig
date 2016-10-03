@@ -92,7 +92,7 @@
                         <div class="col-lg-6 col-md-6 col-sm-4">
                             <select name="filter[project]" class="input-field">
                                 <option value="">{% trans %} lender-operations_operations-table-project-filter-placeholder {% endtrans %}</option>
-                                {% for project in projectsFundedByLender %}
+                                {% for project in projectsFundedByLender if project.title is not empty %}
                                     <option {% if currentFilters.filter.operation is defined and project.id_project == currentFilters.filter.project %} selected="selected"{% endif %} value="{{ project.id_project }}">{{ project.title }}</option>
                                 {% endfor %}
                             </select>
