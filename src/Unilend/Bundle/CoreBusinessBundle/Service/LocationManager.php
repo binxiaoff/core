@@ -217,7 +217,7 @@ class LocationManager
             '76' => 'Occitanie',
             '02' => 'Martinique',
             '06' => 'Mayotte',
-            '32' => 'Nord-Pas-de-Calais-Picardie',
+            '32' => 'Hauts-de-France',
             '28' => 'Normandie',
             '52' => 'Pays de la Loire',
             '93' => 'Provence-Alpes-Côte d\'Azur'
