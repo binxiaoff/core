@@ -33,7 +33,7 @@ class SourceManager
         foreach ($this->sources as $sessionKey => $sourceKey) {
             if (self::ENTRY_SLUG === $sessionKey) {
                 if (false === $session->has(self::ENTRY_SLUG)) {
-                    $slug = $request->getRequestUri();
+                    $slug = $request->getPathInfo();
                     $session->set($sessionKey, $slug);
                 }
             } else {

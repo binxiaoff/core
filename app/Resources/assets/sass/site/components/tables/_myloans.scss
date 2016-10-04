@@ -36,10 +36,16 @@
 
   .table-myloans-item-next {
     width: 12%;
+    text-align: right;
+
+    &[colspan="3"] {
+      text-align: center;
+    }
   }
 
   .table-myloans-item-duration {
     width: 12%;
+    text-align: right;
   }
 
   .table-myloans-item-documents {
@@ -219,24 +225,9 @@
 }
 
 .loan-doc-contract {
-  background-image: image-url('dashboard/file-contract-28x38.png');
+  background-image: url('/assets/images/dashboard/file-contract-28x38.png');
 }
 
 .loan-doc-bond {
-  background-image: image-url('dashboard/file-bond-28x38.png');
-}
-
-.table-myloans * {
-
-  tbody {
-    font-size: 15px;
-  }
-
-  span.label {
-    overflow: visible;
-  }
-}
-
-#form-filters-loans {
-  input {font-size: 15px;}
+  background-image: url('/assets/images/dashboard/file-bond-28x38.png');
 }

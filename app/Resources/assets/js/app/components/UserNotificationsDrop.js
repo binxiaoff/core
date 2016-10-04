@@ -36,7 +36,7 @@ var UserNotificationsDrop = function (elem, options) {
 
   // Error: invalid element
   if (self.$elem.length === 0) {
-    console.log('UserNotificationsDrop Error: Invalid element selected', elem)
+    console.warn('UserNotificationsDrop Error: Invalid element selected', elem)
     return
   }
 
@@ -65,10 +65,11 @@ var UserNotificationsDrop = function (elem, options) {
       classes: 'ui-usernotificationsdrop-drop-element',
       position: 'bottom center',
       openOn: 'click',
+      constrainToWindow: true,
 
       // Stop the drop from auto-closing when "mark all read" is clicked
       beforeClose: function (event) {
-        if ($(event.target).is('[data-usernotifications-markallread]')) {
+        if (event && event.target && $(event.target).is('[data-usernotifications-markallread]')) {
           return false
         }
       },
@@ -84,6 +85,24 @@ var UserNotificationsDrop = function (elem, options) {
     onbeforerender: undefined, // function (notifications) {}
     onrender: undefined, // function (notifications) {}
     onrendernotification: undefined, // function (notification) {}
+    onopen: function (elemUserNotificationsDrop) {
+      // console.log('UserNotificationsDrop.onopen', elemUserNotificationsDrop)
+
+      // TMA-988 issue with Tether/Drop making mobile area scroll, so doing some weird stuff
+      // @note does have a quick flash before rendering. Not ideal but it's the best I can do right now
+      if (elemUserNotificationsDrop.track.firstOpen) {
+        // console.log('UserNotificationsDrop on firstOpen')
+        elemUserNotificationsDrop.track.firstOpen = false
+
+        elemUserNotificationsDrop.drop.close()
+        setTimeout(function () {
+          elemUserNotificationsDrop.drop.open()
+        }, 100)
+
+        return false
+      }
+    }, // function (UserNotificationsDrop) {}
+    onclose: undefined // function (UserNotificationsDrop) {}
   },
   // Get options from the element
   ElementAttrsObject(elem, {
@@ -97,8 +116,24 @@ var UserNotificationsDrop = function (elem, options) {
   /*
    * Properties
    */
+  self.track = {
+    firstOpen: true
+  }
+
   // DROP THA BAAAASSSSSSSS~~~~~~!!!
   self.drop = new Drop(self.settings.dropOptions)
+
+  // Hook in Drop's native open and close events
+  self.drop.on('open', function () {
+    if (typeof self.settings.onopen === 'function') {
+      self.settings.onopen.call(self, self)
+    }
+  })
+  self.drop.on('close', function () {
+    if (typeof self.settings.onclose === 'function') {
+      self.settings.onclose.call(self, self)
+    }
+  })
 
   // UI
   self.$elem.addClass('ui-usernotificationsdrop')
@@ -137,7 +172,9 @@ UserNotificationsDrop.prototype.show = function () {
   self.render()
 
   // Open the drop UI
-  if (!self.drop.isOpened()) self.drop.open()
+  if (!self.drop.isOpened()) {
+    self.drop.open()
+  }
 }
 
 // Hide the user notifications
