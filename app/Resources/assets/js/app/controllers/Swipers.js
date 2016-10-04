@@ -113,8 +113,12 @@ $doc.ready(function () {
         // Unactive any active pagination items
         $elem.find('.swiper-custom-pagination li.active').removeClass('active')
 
-        // Activate the current pagination item
-        $elem.find('.swiper-custom-pagination li:eq(' + (elemSwiper.activeIndex - 1) + ')').addClass('active')
+        if (elemSwiper.isEnd) {
+          $elem.find('.swiper-custom-pagination li:eq(0)').addClass('active')
+        } else {
+          // Activate the current pagination item
+          $elem.find('.swiper-custom-pagination li:eq(' + (elemSwiper.activeIndex - 1) + ')').addClass('active')
+        }
 
         // console.log('sliderMove', elemSwiper.activeIndex)
       })
