@@ -267,14 +267,14 @@
                     <div class="promo col-lg-6 col-md-6 col-sm-4">
                         <h3 class="promo-highlight promo-highlight-lg">
                             {% set unilendIRR = getStatistic('unilendIRR')|round(1, 'floor') %}
-                            <span data-textcount data-start-count="0" data-end-count="{{ unilendIRR }}" data-total-time="3000" data-limit-decimal="1" data-tween-count="easeOutCirc">{{ unilendIRR|localizednumber }}</span><sup>%</sup>
+                            <span data-textcount data-start-count="0" data-end-count="{{ unilendIRR }}" data-total-time="2000" data-limit-decimal="1" data-tween-count="easeOutCirc">{{ unilendIRR|localizednumber }}</span><sup>%</sup>
                         </h3>
                         <p>{% trans %} about-us-statistics_lender-statistics-linechart-unilend-irr-text {% endtrans %}</p>
                     </div><!-- /.promo -->
                     <div class="promo col-lg-6 col-md-6 col-sm-4">
                         <h3 class="promo-highlight promo-highlight-lg">
                             {% set averageInterestRateForLenders = getStatistic('averageInterestRateForLenders')|round(1, 'floor') %}
-                            <span data-textcount data-start-count="0" data-end-count="{{ averageInterestRateForLenders }}" data-total-time="3000" data-limit-decimal="1" data-tween-count="easeOutCirc">{{ averageInterestRateForLenders|localizednumber }}</span><sup>%</sup>
+                            <span data-textcount data-start-count="0" data-end-count="{{ averageInterestRateForLenders }}" data-total-time="2000" data-limit-decimal="1" data-tween-count="easeOutCirc">{{ averageInterestRateForLenders|localizednumber }}</span><sup>%</sup>
                         </h3>
                         <p>{% trans %} about-us-statistics_lender-statistics-linechart-avg-interest-rate-text {% endtrans %}</p>
                     </div><!-- /.promo -->
@@ -285,26 +285,34 @@
                         </div>
                         <figcaption><p>{% trans %} about-us-statistics_lender-statistics-map-title {% endtrans %}</p></figcaption>
                     </figure>
+
                     <div class="stats-members">
-                        <p>
+                        <div class="promo promo-users">
                             {% set numberOfLendersInCommunity = getStatistic('numberOfLendersInCommunity') %}
+                            <h3 class="promo-highlight promo-highlight-md c-p1">
                                 <span data-textcount data-start-count="0"
-                                      data-end-count="{{ numberOfLendersInCommunity }}" data-total-time="3000"
-                                      data-tween-count="easeOutCirc" class="promo-highlight promo-highlight-lg c-p1">{{ numberOfLendersInCommunity|localizednumber }}</span>
-                                {% trans %} about-us-statistics_lender-statistics-members-active-not-text {% endtrans %}
-                        </p>
-                        <p>
+                                  data-end-count="{{ numberOfLendersInCommunity }}" data-total-time="2000" data-tween-count="easeOutCirc">{{ numberOfLendersInCommunity|localizednumber }}</span>
+                            </h3>
+                            <p>{% trans %} about-us-statistics_lender-statistics-members-active-not-text {% endtrans %}</p>
+                        </div><!-- /.promo -->
+
+                        <div class="promo promo-users">
                             {% set numberOfActiveLenders = getStatistic('numberOfActiveLenders') %}
-                                <span data-textcount data-start-count="0" data-end-count="{{ numberOfActiveLenders }}" data-total-time="3000" data-tween-count="easeOutCirc" class="promo-highlight promo-highlight-lg c-p1">{{ numberOfActiveLenders|localizednumber }}</span>
-                            {% trans %} about-us-statistics_lender-statistics-members-type-text {% endtrans %}
-                        </p>
+                            <h3 class="promo-highlight promo-highlight-md c-p1">
+                                <span data-textcount data-start-count="0" data-end-count="{{ numberOfActiveLenders }}" data-total-time="2000" data-tween-count="easeOutCirc">{{ numberOfActiveLenders|localizednumber }}</span>
+                            </h3>
+                            <p>{% trans %} about-us-statistics_lender-statistics-members-type-text {% endtrans %}</p>
+                        </div><!-- /.promo -->
+
+                        <br />
                         <img src="{{ siteurlmedia('apropos/statistiques/icons-members.png') }}" alt="">
                     </div>
+
                     {% set lendersByType = getStatistic('lendersByType') %}
                     <div class="stats-enterprises">
                         <img src="{{ siteurlmedia('apropos/statistiques/icons-enterprises.png') }}" alt="">
                         <div>
-                            <span class="stats-number"><span data-textcount data-start-count="0" data-end-count="{{ lendersByType.person.percentage }}" data-total-time="3000" data-tween-count="easeOutCirc">{{ lendersByType.person.percentage|localizednumber }}</span><sup>%</sup></span> {% trans %} about-us-statistics_lender-statistics-members-type-person-text {% endtrans %}
+                            <span class="stats-number"><span data-textcount data-start-count="0" data-end-count="{{ lendersByType.person.percentage }}" data-total-time="2000" data-tween-count="easeOutCirc">{{ lendersByType.person.percentage|localizednumber }}</span><sup>%</sup></span> {% trans %} about-us-statistics_lender-statistics-members-type-person-text {% endtrans %}
                         </div>
                         <div>
                             <span class="stats-number">{{ lendersByType.legalEntity.percentage|localizednumber }}<sup>%</sup></span>
@@ -313,22 +321,22 @@
                 </div><!-- /.stats-map -->
                 <div class="block-promos row">
                     <div class="promo col-lg-4 col-md-4">
-                        <h3 class="promo-highlight promo-highlight-lg">
+                        <h3 class="promo-highlight promo-highlight-md">
                             {% set averageNumberOfLenders = getStatistic('averageNumberOfLenders')|round %}
-                            <span data-textcount data-start-count="0" data-end-count="{{ averageNumberOfLenders }}" data-total-time="3000" data-tween-count="easeOutCirc">{{ averageNumberOfLenders|localizednumber }}</span>
+                            <span data-textcount data-start-count="0" data-end-count="{{ averageNumberOfLenders }}" data-total-time="2000" data-tween-count="easeOutCirc">{{ averageNumberOfLenders|localizednumber }}</span>
                         </h3>
                         <p>{% trans %} about-us-statistics_lender-statistics-1-text {% endtrans %}</p>
                     </div><!-- /.promo -->
                     <div class="promo col-lg-4 col-md-4">
-                        <h3 class="promo-highlight promo-highlight-lg">
+                        <h3 class="promo-highlight promo-highlight-md">
                             {% set averageLoanAmount = getStatistic('averageLoanAmount')|round|localizednumber %}
-                            <span data-textcount data-start-count="0" data-end-count="{{ averageLoanAmount }}" data-total-time="3000" data-tween-count="easeOutCirc">{{ averageLoanAmount|localizednumber }}</span><sup>€</sup>
+                            <span data-textcount data-start-count="0" data-end-count="{{ averageLoanAmount }}" data-total-time="2000" data-tween-count="easeOutCirc">{{ averageLoanAmount|localizednumber }}</span><sup>€</sup>
                         </h3>
                         <p>{% trans %} about-us-statistics_lender-statistics-2-text {% endtrans %}</p>
                     </div><!-- /.promo -->
                     <div class="promo col-lg-4 col-md-4">
-                        <h3 class="promo-highlight promo-highlight-lg">
-                            <span data-textcount data-start-count="0" data-end-count="100" data-total-time="3000" data-tween-count="easeOutCirc">100</span><sup>%</sup>
+                        <h3 class="promo-highlight promo-highlight-md">
+                            <span data-textcount data-start-count="0" data-end-count="100" data-total-time="2000" data-tween-count="easeOutCirc">100</span><sup>%</sup>
                         </h3>
                         <p>{% trans %} about-us-statistics_lender-statistics-3-text {% endtrans %}</p>
                     </div><!-- /.promo -->
@@ -345,23 +353,23 @@
                 </header>
                 <div class="block-promos row bg-icon-money">
                     <div class="promo col-lg-4 col-md-4">
-                        <h3 class="promo-highlight promo-highlight-md">
+                        <h3 class="promo-highlight promo-highlight-sm">
                             {% set amountBorrowed = getStatistic('amountBorrowed') %}
-                            <span data-textcount data-start-count="0" data-end-count="{{ amountBorrowed }}" data-total-time="3000" data-tween-count="easeOutCirc">{{ amountBorrowed|localizednumber }}</span><sup>€</sup>
+                            <span data-textcount data-start-count="0" data-end-count="{{ amountBorrowed }}" data-total-time="2000" data-tween-count="easeOutCirc">{{ amountBorrowed|localizednumber }}</span><sup>€</sup>
                         </h3>
                         <p>{% trans %} about-us-statistics_borrower-statistics-money-1-text {% endtrans %}</p>
                     </div><!-- /.promo -->
                     <div class="promo col-lg-4 col-md-4">
-                        <h3 class="promo-highlight promo-highlight-md">
+                        <h3 class="promo-highlight promo-highlight-sm">
                             {% set totalRepaidCapital = getStatistic('totalRepaidCapital')|round %}
-                            <span data-textcount data-start-count="0" data-end-count="{{ totalRepaidCapital }}" data-total-time="3000" data-tween-count="easeOutCirc">{{ totalRepaidCapital|localizednumber }}</span><sup>€</sup>
+                            <span data-textcount data-start-count="0" data-end-count="{{ totalRepaidCapital }}" data-total-time="2000" data-tween-count="easeOutCirc">{{ totalRepaidCapital|localizednumber }}</span><sup>€</sup>
                         </h3>
                         <p>{% trans %} about-us-statistics_borrower-statistics-money-2-text {% endtrans %}</p>
                     </div><!-- /.promo -->
                     <div class="promo col-lg-4 col-md-4">
-                        <h3 class="promo-highlight promo-highlight-md">
+                        <h3 class="promo-highlight promo-highlight-sm">
                             {% set totalRepaidInterests = getStatistic('totalRepaidInterests')|round %}
-                            <span data-textcount data-start-count="0" data-end-count="{{ totalRepaidInterests }}" data-total-time="3000" data-tween-count="easeOutCirc">{{ totalRepaidInterests|localizednumber }}</span><sup>€</sup>
+                            <span data-textcount data-start-count="0" data-end-count="{{ totalRepaidInterests }}" data-total-time="2000" data-tween-count="easeOutCirc">{{ totalRepaidInterests|localizednumber }}</span><sup>€</sup>
                         </h3>
                         <p>{% trans %} about-us-statistics_borrower-statistics-money-3-text {% endtrans %}</p>
                     </div><!-- /.promo -->
@@ -383,14 +391,14 @@
                 <div class="block-promos row">
                     <div class="promo col-lg-3 col-md-3">
                         <h3 class="promo-highlight promo-highlight-md">
-                            <span data-textcount data-start-count="0" data-end-count="100" data-total-time="3000" data-tween-count="easeOutCirc">100</span><sup>%</sup>
+                            <span data-textcount data-start-count="0" data-end-count="100" data-total-time="2000" data-tween-count="easeOutCirc">100</span><sup>%</sup>
                         </h3>
                         <p>{% trans %} about-us-statistics_borrower-statistics-1-text {% endtrans %}</p>
                     </div><!-- /.promo -->
                     <div class="promo col-lg-3 col-md-3">
                         <h3 class="promo-highlight promo-highlight-md">
                             {% set percentageOfProjectsFundedIn24Hours = getStatistic('percentageOfProjectsFundedIn24Hours') %}
-                            <span data-textcount data-start-count="0" data-end-count="{{ percentageOfProjectsFundedIn24Hours }}" data-total-time="3000" data-tween-count="easeOutCirc">
+                            <span data-textcount data-start-count="0" data-end-count="{{ percentageOfProjectsFundedIn24Hours }}" data-total-time="2000" data-tween-count="easeOutCirc">
                                 {{ percentageOfProjectsFundedIn24Hours|localizednumber }}</span><sup>%</sup>
                         </h3>
                         <p>{% trans %} about-us-statistics_borrower-statistics-2-text {% endtrans %}</p>
@@ -398,14 +406,14 @@
                     <div class="promo col-lg-3 col-md-3">
                         <h3 class="promo-highlight promo-highlight-md">
                             {% set averageProjectAmount = getStatistic('averageProjectAmount') %}
-                            <span data-textcount data-start-count="0" data-end-count="{{ averageProjectAmount }}" data-total-time="3000" data-tween-count="easeOutCirc">{{ averageProjectAmount|localizednumber }}</span><sup>€</sup>
+                            <span data-textcount data-start-count="0" data-end-count="{{ averageProjectAmount }}" data-total-time="2000" data-tween-count="easeOutCirc">{{ averageProjectAmount|localizednumber }}</span><sup>€</sup>
                         </h3>
                         <p>{% trans %} about-us-statistics_borrower-statistics-3-text {% endtrans %}</p>
                     </div><!-- /.promo -->
                     <div class="promo col-lg-3 col-md-3">
                         <h3 class="promo-highlight promo-highlight-md">
                             {% set numberOfFinancedProjects = getStatistic('numberOfFinancedProjects') %}
-                            <span data-textcount data-start-count="0" data-end-count="{{ numberOfFinancedProjects }}" data-total-time="3000" data-tween-count="easeOutCirc">
+                            <span data-textcount data-start-count="0" data-end-count="{{ numberOfFinancedProjects }}" data-total-time="2000" data-tween-count="easeOutCirc">
                                 {{ numberOfFinancedProjects|localizednumber }}</span><sup></sup>
                         </h3>
                         <p>{% trans %} about-us-statistics_borrower-statistics-4-text {% endtrans %}</p>
@@ -429,7 +437,7 @@
                     </div>
                     {% set highestAmountObtainedFastest = getStatistic('highestAmountObtainedFastest') %}
                     <h3 class="promo-highlight promo-highlight-lg">
-                        <span data-textcount data-start-count="0" data-end-count="{{ highestAmountObtainedFastest }}" data-total-time="3000" data-tween-count="easeOutCirc">{{ highestAmountObtainedFastest|localizednumber }}</span><sup>€</sup>
+                        <span data-textcount data-start-count="0" data-end-count="{{ highestAmountObtainedFastest }}" data-total-time="2000" data-tween-count="easeOutCirc">{{ highestAmountObtainedFastest|localizednumber }}</span><sup>€</sup>
                     </h3>
                     <p>{% trans %} about-us-statistics_unilend-records-medal-bolt-text {% endtrans %}</p>
                 </div>

@@ -65,6 +65,16 @@
     margin-bottom: 20px;
   }
 
+  .promo-highlight-sm {
+    font-size: 30px;
+    line-height: .8em;
+
+    @include devices('md', 'lg') {
+      font-size: 40px;
+      line-height: .8em;
+    }
+  }
+
   .promo-highlight-md {
     font-size: 40px;
     line-height: .8em;
@@ -73,11 +83,6 @@
       font-size: 50px;
       line-height: .8em;
     }
-
-    // @include devices('lg') {
-    //   font-size: 60px;
-    //   line-height: .8em;
-    // }
   }
 
   .promo-highlight-lg {
@@ -88,11 +93,18 @@
       font-size: 60px;
       line-height: .8em;
     }
+  }
 
-    // @include devices('lg') {
-    //   font-size: 80px;
-    //   line-height: .8em;
-    // }
+  .promo-users {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 0;
+    padding-right: 0;
+
+    .promo-highlight {
+      margin-top: 0;
+      margin-bottom: .5em;
+    }
   }
 
   // Icon background
