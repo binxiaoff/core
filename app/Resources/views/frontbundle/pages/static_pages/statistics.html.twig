@@ -380,25 +380,26 @@
                         </figure>
                     </div>
                 </div><!-- /.stats-map -->
+
                 <div class="block-promos row">
+                    <div class="promo col-lg-3 col-md-3">
+                        <h3 class="promo-highlight promo-highlight-md">
+                            <span data-textcount data-start-count="0" data-end-count="100" data-total-time="3000" data-tween-count="easeOutCirc">100</span><sup>%</sup>
+                        </h3>
+                        <p>{% trans %} about-us-statistics_borrower-statistics-1-text {% endtrans %}</p>
+                    </div><!-- /.promo -->
                     <div class="promo col-lg-3 col-md-3">
                         <h3 class="promo-highlight promo-highlight-md">
                             {% set percentageOfProjectsFundedIn24Hours = getStatistic('percentageOfProjectsFundedIn24Hours') %}
                             <span data-textcount data-start-count="0" data-end-count="{{ percentageOfProjectsFundedIn24Hours }}" data-total-time="3000" data-tween-count="easeOutCirc">
                                 {{ percentageOfProjectsFundedIn24Hours|localizednumber }}</span><sup>%</sup>
                         </h3>
-                        <p>{% trans %} about-us-statistics_borrower-statistics-1-text {% endtrans %}</p>
+                        <p>{% trans %} about-us-statistics_borrower-statistics-2-text {% endtrans %}</p>
                     </div><!-- /.promo -->
                     <div class="promo col-lg-3 col-md-3">
                         <h3 class="promo-highlight promo-highlight-md">
                             {% set averageProjectAmount = getStatistic('averageProjectAmount') %}
                             <span data-textcount data-start-count="0" data-end-count="{{ averageProjectAmount }}" data-total-time="3000" data-tween-count="easeOutCirc">{{ averageProjectAmount|localizednumber }}</span><sup>€</sup>
-                        </h3>
-                        <p>{% trans %} about-us-statistics_borrower-statistics-2-text {% endtrans %}</p>
-                    </div><!-- /.promo -->
-                    <div class="promo col-lg-3 col-md-3">
-                        <h3 class="promo-highlight promo-highlight-md">
-                            <span data-textcount data-start-count="0" data-end-count="100" data-total-time="3000" data-tween-count="easeOutCirc">100</span><sup>%</sup>
                         </h3>
                         <p>{% trans %} about-us-statistics_borrower-statistics-3-text {% endtrans %}</p>
                     </div><!-- /.promo -->
