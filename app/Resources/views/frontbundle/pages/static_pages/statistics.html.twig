@@ -162,25 +162,25 @@
             symbolRadius: 10
             },
         series: [{
-            name: 'about-us-statistics_regulatory-table-borrowed-capital'|trans ~ ' ',
+            name: 'about-us-statistics_chart-borrowed-capital-circle-title'|trans ~ ' ',
             minSize: 120,
             innerSize: '95%',
             endAngle: 270,
             data: [{
-                name: 'about-us-statistics_regulatory-table-borrowed-capital'|trans,
+                name: 'about-us-statistics_chart-borrowed-capital'|trans,
                 color: '#5FC5D1',
                 y: data.regulatoryTable['borrowed-capital']['total'],
                 value: data.regulatoryTable['borrowed-capital']['total']|localizedcurrency('EUR'),
                 showInLegend: true,
                 }]
             },{
-                name:  'lender-dashboard-account_capital-circle-title'|trans ~ ' ',
+                name:  'about-us-statistics_chart-capital-circle-title'|trans ~ ' ',
                 size: '66%',
                 minSize: 100,
                 innerSize: '88%',
                 endAngle: 270,
                 data: [{
-                    name: 'about-us-statistics_regulatory-table-repaid-capital'|trans,
+                    name: 'about-us-statistics_chart-repaid-capital'|trans,
                     color: '#1B88DB',
                     y: data.regulatoryTable['repaid-capital']['total'],
                     value: data.regulatoryTable['repaid-capital']['total']|localizedcurrency('EUR'),
@@ -192,14 +192,14 @@
                     value: data.regulatoryTable['future-owed-capital-healthy']['total']|localizedcurrency('EUR'),
                     showInLegend: true
                 },{
-                    name: 'about-us-statistics_regulatory-table-total-owed-problematic-capital-late'|trans,
+                    name: 'about-us-statistics_chart-total-owed-problematic-capital-late'|trans,
                     color: '#F76965',
                     y:  data.regulatoryTable['total-owed-problematic-capital-late']['total'],
                     value: data.regulatoryTable['total-owed-problematic-capital-late']['total']|localizedcurrency('EUR'),
                     showInLegend: true
                 }]
             },{
-                name: 'lender-dashboard-account_interests-circle-title'|trans ~ ' ',
+                name: 'about-us-statistics_chart-interests-circle-title'|trans ~ ' ',
                 minSize: 80,
                 size: '33%',
                 innerSize: '70%',
@@ -214,13 +214,13 @@
                     y: (data.regulatoryTable['repaid-capital']['total'] + data.regulatoryTable['future-owed-capital-healthy']['total']) * 0.66,
                     tooltip: true
                 },{
-                    name: 'about-us-statistics_regulatory-table-repaid-interest'|trans,
+                    name: 'about-us-statistics_chart-repaid-interest'|trans,
                     color: '#F2980C',
                     y: data.regulatoryTable['repaid-interest']['total'],
                     value: data.regulatoryTable['repaid-interest']['total']|localizedcurrency('EUR'),
                     showInLegend: true
                 },{
-                    name: 'about-us-statistics_regulatory-table-owed-healthy-interest'|trans,
+                    name: 'about-us-statistics_chart-owed-healthy-interest'|trans,
                     color: '#FFCA2C',
                     y: data.regulatoryTable['owed-healthy-interest']['total'],
                     value: data.regulatoryTable['owed-healthy-interest']['total']|localizedcurrency('EUR'),
@@ -380,25 +380,26 @@
                         </figure>
                     </div>
                 </div><!-- /.stats-map -->
+
                 <div class="block-promos row">
+                    <div class="promo col-lg-3 col-md-3">
+                        <h3 class="promo-highlight promo-highlight-md">
+                            <span data-textcount data-start-count="0" data-end-count="100" data-total-time="3000" data-tween-count="easeOutCirc">100</span><sup>%</sup>
+                        </h3>
+                        <p>{% trans %} about-us-statistics_borrower-statistics-1-text {% endtrans %}</p>
+                    </div><!-- /.promo -->
                     <div class="promo col-lg-3 col-md-3">
                         <h3 class="promo-highlight promo-highlight-md">
                             {% set percentageOfProjectsFundedIn24Hours = getStatistic('percentageOfProjectsFundedIn24Hours') %}
                             <span data-textcount data-start-count="0" data-end-count="{{ percentageOfProjectsFundedIn24Hours }}" data-total-time="3000" data-tween-count="easeOutCirc">
                                 {{ percentageOfProjectsFundedIn24Hours|localizednumber }}</span><sup>%</sup>
                         </h3>
-                        <p>{% trans %} about-us-statistics_borrower-statistics-1-text {% endtrans %}</p>
+                        <p>{% trans %} about-us-statistics_borrower-statistics-2-text {% endtrans %}</p>
                     </div><!-- /.promo -->
                     <div class="promo col-lg-3 col-md-3">
                         <h3 class="promo-highlight promo-highlight-md">
                             {% set averageProjectAmount = getStatistic('averageProjectAmount') %}
                             <span data-textcount data-start-count="0" data-end-count="{{ averageProjectAmount }}" data-total-time="3000" data-tween-count="easeOutCirc">{{ averageProjectAmount|localizednumber }}</span><sup>€</sup>
-                        </h3>
-                        <p>{% trans %} about-us-statistics_borrower-statistics-2-text {% endtrans %}</p>
-                    </div><!-- /.promo -->
-                    <div class="promo col-lg-3 col-md-3">
-                        <h3 class="promo-highlight promo-highlight-md">
-                            <span data-textcount data-start-count="0" data-end-count="100" data-total-time="3000" data-tween-count="easeOutCirc">100</span><sup>%</sup>
                         </h3>
                         <p>{% trans %} about-us-statistics_borrower-statistics-3-text {% endtrans %}</p>
                     </div><!-- /.promo -->
@@ -494,22 +495,37 @@
                         </thead>
                         <tbody>
                         {% for label, years in data.regulatoryTable %}
-                            {% if label in ['pct', 'pct2'] %}
+                            {% if label == 'IRR' %}
+                                    <tr>
+                                        <td class="table-stats-unilend-item-label">{{ "about-us-statistics_regulatory-table-#{label}"|trans|raw }}</td>
+                                        {% for value in years %}
+                                            <td class="table-stats-unilend-item-value">{{ value|localizednumber}} %</td>
+                                        {% endfor %}
+                                    </tr>
+                            {% elseif label == 'projects' %}
+                                    <tr>
+                                        <td class="table-stats-unilend-item-label">{{ "about-us-statistics_regulatory-table-#{label}"|trans|raw }}</td>
+                                        {% for value in years %}
+                                            <td class="table-stats-unilend-item-value">{{ value|localizednumber}}</td>
+                                        {% endfor %}
+                                    </tr>
+                            {% elseif label == 'nb' %}
+                                {% for labelNb, yearNb in years %}
+                                    <tr>
+                                        <td class="table-stats-unilend-item-label">{{ "about-us-statistics_regulatory-table-#{labelNb}"|trans|raw }}</td>
+                                        {% for valueNb in yearNb %}
+                                            <td class="table-stats-unilend-item-value">{{ valueNb|localizednumber}}</td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            {% elseif label == 'empty-line' %}
+                                <tr><td class="table-stats-unilend-item-label"></td><td class="table-stats-unilend-item-value"></td></tr>
+                            {% elseif label == 'pct' %}
                                 {% for labelPct, yearPct in years %}
                                     <tr>
                                         <td class="table-stats-unilend-item-label">{{ "about-us-statistics_regulatory-table-#{labelPct}"|trans|raw }}</td>
                                         {% for valuePct in yearPct %}
                                             <td class="table-stats-unilend-item-value">{{ valuePct|localizednumber}} %</td>
-                                        {% endfor %}
-                                    </tr>
-                                {% endfor %}
-
-                            {% elseif label == 'nb' %}
-                                {% for labelNb, yearNb in years %}
-                                    <tr>
-                                        <td class="table-stats-unilend-item-label">{{ "about-us-statistics_regulatory-table-#{labelNb}"|trans|raw }}</td>
-                                        {% for valuePct in yearNb %}
-                                            <td class="table-stats-unilend-item-value">{{ valuePct|localizednumber}}</td>
                                         {% endfor %}
                                     </tr>
                                 {% endfor %}
@@ -523,6 +539,9 @@
                             {% endif %}
                         {% endfor %}
                         {% set incidenceRate = getStatistic('incidenceRate') %}
+                        <tr>
+                            <td></td>
+                        </tr>
                         <tr>
                             <td class="table-stats-unilend-item-label" colspan="4">{% trans %} about-us-statistics_regulatory-table-incidence-rate-amount {% endtrans %}</td>
                             <td class="table-stats-unilend-item-value">{{ incidenceRate['amountIFP']|localizednumber }}%</td>

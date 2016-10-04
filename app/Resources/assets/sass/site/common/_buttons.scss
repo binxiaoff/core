@@ -13,6 +13,9 @@
   text-decoration: none !important;
   // white-space: nowrap;
   vertical-align: middle;
+
+  // TMA-1005 Remove silly iOS styling
+  -webkit-appearance: none;
 }
 
 // Button Shapes

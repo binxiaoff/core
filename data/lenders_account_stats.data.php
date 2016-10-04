@@ -113,13 +113,13 @@ class lenders_account_stats extends lenders_account_stats_crud
         UNION ALL
 
                  SELECT
-                  montant,
-                  date_transaction AS date
+                  date_transaction AS date,
+                  montant
                 FROM transactions
                 INNER JOIN lenders_accounts ON transactions.id_client = lenders_accounts.id_client_owner
                 WHERE
                 lenders_accounts.id_lender_account = ' . $iLendersAccountId . '
-                ADN type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT;
+                AND type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT;
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_array($result)) {

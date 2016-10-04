@@ -2,6 +2,11 @@
 // Unilend Base
 // @description Base styles for all media types
 
+html, body {
+  max-width: 100%;
+  min-height: 100%;
+}
+
 body {
   background-color: $c-bg5;
   color: $c-t1;

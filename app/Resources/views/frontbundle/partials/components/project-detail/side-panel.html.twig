@@ -6,8 +6,7 @@
                     {% trans with {'%amount%' : project.amount|localizednumber|nbsp, '%startTag%' : '<span class="sr-only">', '%endTag%' : '</span>'} %} project-detail_amount-sentence {% endtrans %}
                 </div>
                 <div class="project-single-cost-progress"
-                    title="{% trans with {'%percentFunded%' : project.percentFunded} %}
-                    project-detail_project-funding-progress-bar-tooltip {% endtrans %}" data-toggle="tooltip">
+                    title="{% trans with {'%percentFunded%' : project.percentFunded} %} project-detail_project-funding-progress-bar-tooltip {% endtrans %}" data-toggle="tooltip">
                     <div class="project-single-cost-progress-funded" style="width: {{ project.percentFunded }}%">
                         <span class="sr-only">{% trans with {'%percentFunded%' : project.percentFunded} %} project-detail_percentage-funded-text {% endtrans %}</span>
                     </div>
@@ -43,6 +42,7 @@
                         } %} project-detail_project-repaid-user-message {% endtranschoice %}
                     </p>
                 {% endif %}
+                {{ include('partials/components/project-detail/login-form.html.twig') }}
             {% elseif project.status == constant('\\projects_status::FUNDE') or project.status >= constant('\\projects_status::REMBOURSEMENT') %}
                 <p>
                     {% trans with {
@@ -51,13 +51,17 @@
                         '%fundingDuration%' : ('project-detail_funding-duration-' ~ project.fundingDuration.translation)|transchoice(project.fundingDuration.choice, project.fundingDuration.values)
                     } %} project-detail_project-funded-message-with-statistics {% endtrans %}
                 </p>
+                {{ include('partials/components/project-detail/login-form.html.twig') }}
             {%  elseif project.status == constant('\\projects_status::FUNDING_KO') %}
                 <p>{% trans with {'%percentageFunded%' : project.percentFunded|localizednumberwithprecision(1)} %} project-detail_side-bar-funding-ko-message {% endtrans %}</p>
+                {{ include('partials/components/project-detail/login-form.html.twig') }}
             {%  elseif project.status == constant('\\projects_status::PRET_REFUSE') %}
                 <p class="h4">{% trans %} project-detail_side-bar-loan-rejected-title {% endtrans %}</p>
                 <p>{% trans %} project-detail_side-bar-loan-rejected-message {% endtrans %}</p>
+                {{ include('partials/components/project-detail/login-form.html.twig') }}
             {% elseif project.projectPending is defined and project.projectPending == true %}
                 <p>{% trans %} project-detail_side-bar-project-closing-pending {% endtrans %}</p>
+                {{ include('partials/components/project-detail/login-form.html.twig') }}
             {% elseif is_granted('IS_AUTHENTICATED_FULLY') %}
                 {% if is_granted('ROLE_LENDER') and app.user.getClientStatus() < constant('\\clients_status::VALIDATED') %}
                     <p>{% trans %} project-detail_side-bar-completeness-message {% endtrans %}</p>
@@ -153,74 +157,11 @@
                     {% endif %}
                 {% endif %}
             {% else %}
-                <form action="{{ path('login-check') }}" method="post" class="project-single-form project-single-form-access" data-formvalidation>
-                    <div class="form-notice">
-                        {% trans %} project-detail_side-bar-login {% endtrans %}
-                    </div><!-- /.form-notice -->
-                    <div class="form-field">
-                        <label for="form-access-email"><span class="sr-only">{% trans %} common_email {% endtrans %}</span></label>
-                        <div class="input-group set-left">
-                            <div class="btn-group">
-                                <span class="icon fa-envelope-o"></span>
-                            </div>
-                            <input id="form-access-email" type="email" data-login-name="_username" name="_username" autocomplete="off"
-                                   placeholder="{% trans %} common_email {% endtrans %}" value="" class="input-field"
-                                   data-formvalidation-input data-formvalidation-required="true"/>
-                        </div><!-- /.input-group -->
-                        <ul class="ui-formvalidation-messages"></ul>
-                    </div><!-- /.form-field -->
-                    <div class="form-field">
-                        <label for="form-access-password"><span class="sr-only">{% trans %} common_password {% endtrans %}</span></label>
-                        <div class="input-group set-left">
-                            <div class="btn-group">
-                                <span class="icon fa-lock-u32"></span>
-                            </div>
-                            <input id="form-access-password" type="password" data-login-name="_password" name="_password"
-                                   placeholder="{% trans %} common_password {% endtrans %}"
-                                   value="" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
-                        </div><!-- /.input-group -->
-                    </div><!-- /.form-field -->
-                    <div class="form-field">
-                        <div class="field-help">
-                            <a href="#dialog-conditions-content" class="fancybox-html">
-                                {% trans %} connect-subscribe-page_login-box-password-forgotten-link {% endtrans %}
-                            </a>
-                        </div>
-                    </div><!-- /.form-field -->
-                    <div class="btn-toolbar">
-                        <input type="submit" class="btn-primary btn-size-full" value="{% trans %} project-detail_side-bar-login-submit-button {% endtrans %}">
-                        <input type="hidden" name="_target_path" value="{{ path(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')) }}">
-                        <p>
-                            <a href="{{ path('lender_subscription_personal_information') }}"><span class="icon fa-angle-right"></span> {% trans %} project-detail_side-bar-login-subscription-link {% endtrans %}</a>
-                        </p>
-                    </div><!-- /.btn-toolbar -->
-                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-                </form><!-- /.project-single-form-access -->
-                {# Hidden text until made visible through the fancybox #}
-                <div class="hide-accessible">
-                    {{ include('partials/components/popup_password_forgotten.html.twig') }}
-                </div><!-- /.hide-accessible -->
+                <div class="form-notice">
+                    {% trans %} project-detail_side-bar-bid-login {% endtrans %}
+                </div><!-- /.form-notice -->
+                {{ include('partials/components/project-detail/login-form.html.twig') }}
             {% endif %}
-            <ul class="list-sharing">
-                <li>
-                    <a class="btn-facebook" title="{% trans %} project-detail_share-on-facebook-label {% endtrans %}"
-                       href="http://www.facebook.com/sharer.php?u={{ absolute_url(project.slug) }}">
-                        <span class="sr-only">{% trans %} project-detail_share-on-facebook-label {% endtrans %}</span>
-                    </a>
-                </li>
-                <li>
-                    <a class="btn-twitter" title="{% trans %} project-detail_share-on-twitter-label {% endtrans %}"
-                       href="http://twitter.com/share?url={{ absolute_url(project.slug) }}%3Fid%3D12345&text={{ project.title|url_encode }}">
-                        <span class="sr-only">{% trans %} project-detail_share-on-twitter-label {% endtrans %}</span>
-                    </a>
-                </li>
-                <li>
-                    <a class="btn-email" title="{% trans %} project-detail_share-my-email-label {% endtrans %}"
-                       href="mailto:?subject={{ project.title|url_encode }}&body={{ absolute_url(project.slug) }}">
-                        <span class="sr-only">{% trans %} project-detail_share-my-email-label {% endtrans %}</span>
-                    </a>
-                </li>
-            </ul>
         </div><!-- /.project-single-info -->
     </div><!-- /.project-single-info-position -->
 </aside><!-- /.project-single-info-wrap -->

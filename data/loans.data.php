@@ -442,10 +442,6 @@ class loans extends loans_crud
 
     public function sumLoansByCohort()
     {
-        $caseSql  = '';
-        foreach (range(2015, date('Y')) as $year ) {
-            $caseSql .= ' WHEN ' . $year . ' THEN "' . $year . '"';
-        }
 
         $query = 'SELECT SUM(loans.amount)/100 AS amount,
                     (
@@ -453,7 +449,6 @@ class loans extends loans_crud
                           CASE LEFT(projects_status_history.added, 4)
                             WHEN 2013 THEN "2013-2014"
                             WHEN 2014 THEN "2013-2014"
-                            '. $caseSql . '
                             ELSE LEFT(projects_status_history.added, 4)
                           END AS date_range
                         FROM projects_status_history

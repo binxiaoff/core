@@ -55,7 +55,12 @@ classNames: 'user-preter-balance'
                                     </li>
                                     <li>
                                         <div class="label">{% trans %} lender-wallet_bank-iban {% endtrans %}</div>
-                                        <div class="value">{{ lender.iban }}</div>
+                                        <div class="value">
+                                            {% set splitIban = lender.iban|split('', 4) %}
+                                            {% for chunk in splitIban %}
+                                                <span>{{ chunk }}</span>
+                                            {% endfor %}
+                                        </div>
                                     </li>
                                     <li>
                                         <div class="label">{% trans %} lender-wallet_bank-bic {% endtrans %}</div>
