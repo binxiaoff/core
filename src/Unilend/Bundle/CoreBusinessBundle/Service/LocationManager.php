@@ -203,8 +203,8 @@ class LocationManager
     public function getFrenchRegions()
     {
         return [
-            '44' => 'Alsace-Champagne-Ardenne-Lorraine',
-            '75' => 'Aquitaine-Limousin-Poitou-Charentes',
+            '44' => 'Grand Est',
+            '75' => 'Nouvelle-Aquitaine',
             '84' => 'Auvergne-Rhône-Alpes',
             '27' => 'Bourgogne-Franche-Comté',
             '53' => 'Bretagne',

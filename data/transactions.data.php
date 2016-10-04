@@ -400,30 +400,6 @@ class transactions extends transactions_crud
             ['transaction_type' => \PDO::PARAM_INT, 'start_date' => \PDO::PARAM_STR, 'end_date' => \PDO::PARAM_STR])->fetchColumn(0);
     }
 
-    public function getBorrowerRecoveryPaymentsByCohort()
-    {
-        $query = 'SELECT
-                      ROUND(SUM(montant / 100))           AS amount,
-                      (
-                        SELECT
-                          CASE LEFT(projects_status_history.added, 4)
-                            WHEN 2013 THEN "2013-2014"
-                            WHEN 2014 THEN "2013-2014"
-                            ELSE LEFT(projects_status_history.added, 4)
-                          END AS date_range
-                        FROM projects_status_history
-                        INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
-                        WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
-                          AND transactions.id_project = projects_status_history.id_project
-                        ORDER BY id_project_status_history ASC LIMIT 1
-                      ) AS cohort
-                    FROM transactions
-                    WHERE transactions.type_transaction = ' . \transactions_types::TYPE_RECOVERY_BANK_TRANSFER . ' GROUP BY cohort';
-
-        $statement = $this->bdd->executeQuery($query);
-        return $statement->fetchAll(PDO::FETCH_ASSOC);
-    }
-
     public function getBorrowerRecoveryPaymentsOnHealthyProjectsByCohort()
     {
         $query = 'SELECT
@@ -444,20 +420,17 @@ class transactions extends transactions_crud
                     FROM transactions
                       INNER JOIN projects ON transactions.id_project = projects.id_project
                     WHERE transactions.type_transaction = ' . \transactions_types::TYPE_RECOVERY_BANK_TRANSFER . '
-                    AND IF((projects.status IN ('. implode(',', [\projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::DEFAUT]).')
-                              OR (
-                              projects.status >= '. \projects_status::PROBLEME .'
-                              AND DATEDIFF(NOW(),
-                                           (
-                                             SELECT psh2.added
-                                             FROM projects_status_history psh2
-                                               INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
-                                             WHERE ps2.status = '. \projects_status::PROBLEME .'
-                                                   AND psh2.id_project = transactions.id_project
-                                             ORDER BY psh2.id_project_status_history DESC
-                                             LIMIT 1
-                                           )
-                                  ) > 180)), TRUE, FALSE) = FALSE
+                    AND IF(
+                            projects.status IN ('. implode(',', [\projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::DEFAUT]).')
+                            OR (projects.status IN ('. implode(',', [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X, \projects_status::RECOUVREMENT]).')
+                                AND DATEDIFF(NOW(), (
+                                                    SELECT psh2.added
+                                                    FROM projects_status_history psh2
+                                                      INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                                                    WHERE ps2.status = ' . \projects_status::PROBLEME . '
+                                                      AND psh2.id_project = transactions.id_project
+                                                    ORDER BY psh2.id_project_status_history DESC
+                                                    LIMIT 1)) > 180), TRUE, FALSE) = FALSE
                     GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery($query);
@@ -484,22 +457,17 @@ class transactions extends transactions_crud
                     FROM transactions
                       INNER JOIN projects ON transactions.id_project = projects.id_project
                     WHERE transactions.type_transaction = ' . \transactions_types::TYPE_RECOVERY_BANK_TRANSFER . '
-                    AND (projects.status IN ('. implode(',', [\projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::DEFAUT]).')
-                       OR
-                       (IF(
-                            (projects.status IN ('. implode(',', [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X, \projects_status::RECOUVREMENT]).') AND
-                             DATEDIFF(NOW(),
-                                      (
-                                        SELECT psh2.added
-                                        FROM projects_status_history psh2
-                                          INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
-                                        WHERE
-                                          ps2.status = ' . \projects_status::PROBLEME . '
-                                          AND psh2.id_project = transactions.id_project
-                                        ORDER BY psh2.id_project_status_history DESC
-                                        LIMIT 1
-                                      )
-                             ) > 180), TRUE, FALSE) = TRUE))
+                        AND IF(
+                            projects.status IN ('. implode(',', [\projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::DEFAUT]).')
+                            OR (projects.status IN ('. implode(',', [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X, \projects_status::RECOUVREMENT]).')
+                                AND DATEDIFF(NOW(), (
+                                                    SELECT psh2.added
+                                                    FROM projects_status_history psh2
+                                                      INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                                                    WHERE ps2.status = ' . \projects_status::PROBLEME . '
+                                                      AND psh2.id_project = transactions.id_project
+                                                    ORDER BY psh2.id_project_status_history DESC
+                                                    LIMIT 1)) > 180), TRUE, FALSE) = TRUE
                     GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery($query);
