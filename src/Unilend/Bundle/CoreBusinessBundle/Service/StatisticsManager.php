@@ -291,7 +291,7 @@ class StatisticsManager
     {
         $cachedItem = $this->cachePool->getItem(CacheKeys::LENDERS_BY_TYPE);
 
-        if (false === $cachedItem->isHit()) {
+        //if (false === $cachedItem->isHit()) {
             /** @var \lenders_accounts $lenders */
             $lenders = $this->entityManager->getRepository('lenders_accounts');
             /** @var int $lendersPerson */
@@ -299,16 +299,16 @@ class StatisticsManager
             /** @var int $lendersLegalEntity */
             $lendersLegalEntity = $lenders->countLendersByClientType([\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER]);
             /** @var int $totalLenders */
-            $totalLenders = $lenders->countLenders();
+            $totalLenders = bcadd($lendersPerson, $lendersLegalEntity);
 
             $lendersByType = [
                 'person' => [
                     'count'      => $lendersPerson,
-                    'percentage' => bcmul(bcdiv($lendersPerson , $totalLenders, 2), 100)
+                    'percentage' => round(bcmul(bcdiv($lendersPerson , $totalLenders, 4), 100, 2))
                 ],
                 'legalEntity' => [
                     'count' => $lendersLegalEntity,
-                    'percentage' => bcmul(bcdiv($lendersLegalEntity , $totalLenders, 2), 100)
+                    'percentage' => round(bcmul(bcdiv($lendersLegalEntity , $totalLenders, 4), 100, 2))
                 ]
             ];
 
@@ -316,9 +316,9 @@ class StatisticsManager
             $this->cachePool->save($cachedItem);
 
             return $lendersByType;
-        } else {
-            return $cachedItem->get();
-        }
+        //} else {
+          //  return $cachedItem->get();
+        //}
     }
 
     public function getLendersByRegion()
