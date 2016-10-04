@@ -2,6 +2,14 @@
 // Unilend Tables
 //
 
+@mixin table-row-alt($row-bg: mix($c-bg3, $c-bg4)) {
+  &.alt,
+  &:nth-of-type(2n+1) {
+    background-color: $row-bg;
+    @content;
+  }
+}
+
 // Table scroll
 .table-scroll {
   width: 100%;
@@ -115,9 +123,9 @@ td {
       background-color: $c-white;
       color: $c-t1;
 
-      // Color alternative rows
-      &:nth-of-type(2n+1) {
-        background-color: $c-bg4;
+      // Color explicitly marked alternative rows
+      &.alt {
+        background-color: mix($c-bg3, $c-bg4);
       }
 
       // Any row that the current user is involved with
@@ -136,7 +144,7 @@ td {
       }
 
       &.table-item-total {
-        background-color: $c-bg2;
+        background-color: $c-bg2 !important;
         color: $c-p1;
         font-weight: bold;
         text-transform: uppercase;
