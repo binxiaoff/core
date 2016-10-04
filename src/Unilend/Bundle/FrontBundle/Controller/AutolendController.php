@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use \Symfony\Component\HttpFoundation\Response;
@@ -76,10 +75,8 @@ class AutolendController extends Controller
                     $success = $translator->trans('autolend_update-settings-success-message');
                     $this->addFlash('autolend_success', $success);
                 }
-
             }
         }
-
 
         $projectPeriods = $projectPeriods->select();
         foreach ($projectPeriods as $period) {
@@ -105,17 +102,17 @@ class AutolendController extends Controller
         }
 
         foreach ($autoBidSettings as $aSetting) {
-            $aSetting['project_rate_min']   = $template['projectRatesGlobal']['rate_min'];
-            $aSetting['project_rate_max']   = $template['projectRatesGlobal']['rate_max'];
+            $aSetting['project_rate_min'] = $template['projectRatesGlobal']['rate_min'];
+            $aSetting['project_rate_max'] = $template['projectRatesGlobal']['rate_max'];
 
             if (isset($projectRateFormatted[$aSetting['id_period']][$aSetting['evaluation']])) {
                 $aSetting['project_rate_min'] = $projectRateFormatted[$aSetting['id_period']][$aSetting['evaluation']]['rate_min'];
                 $aSetting['project_rate_max'] = $projectRateFormatted[$aSetting['id_period']][$aSetting['evaluation']]['rate_max'];
             }
 
-            $averageRateUnilend = $project->getAvgRate($aSetting['evaluation'], $aSetting['period_min'], $aSetting['period_max'], $startingDate);
+            $averageRateUnilend   = $project->getAvgRate($aSetting['evaluation'], $aSetting['period_min'], $aSetting['period_max'], $startingDate);
             $medianRateForSetting = bcdiv(bcadd($aSetting['project_rate_min'], $aSetting['project_rate_max']), 2, 1);;
-            $aSetting['cellAverageRateUnilend'] = ($averageRateUnilend > 0) ? $averageRateUnilend : $medianRateForSetting ;
+            $aSetting['cellAverageRateUnilend'] = ($averageRateUnilend > 0) ? $averageRateUnilend : $medianRateForSetting;
             $template['autoBidSettings'][$aSetting['id_period']][] = $aSetting;
         }
 
@@ -129,7 +126,6 @@ class AutolendController extends Controller
         $template['autolend_amount'] = $autoBidSettingsManager->getAmount($lendersAccounts);
 
         return $this->render('pages/autolend.html.twig', $template);
-
     }
 
     private function handleSimpleSettings($post, \settings $settings, \lenders_accounts $lenderAccount, AutoBidSettingsManager $autoBidSettingsManager)
@@ -239,8 +235,6 @@ class AutolendController extends Controller
         }
     }
 
-
-
     private function getClient()
     {
         /** @var UserLender $user */
@@ -289,5 +283,4 @@ class AutolendController extends Controller
 
         return $settings;
     }
-
 }
