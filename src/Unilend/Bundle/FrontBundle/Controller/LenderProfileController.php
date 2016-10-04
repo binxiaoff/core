@@ -1155,7 +1155,7 @@ class LenderProfileController extends Controller
             $errorTitle = $translator->trans('lender-error-page_access-denied');
             $status     = Response::HTTP_FORBIDDEN;
         }
-        return $this->render('pages/static_pages/error.html.twig', ['errorTitle' => $errorTitle])->setStatusCode($status);
+        return $this->render('exception/error.html.twig', ['errorTitle' => $errorTitle])->setStatusCode($status);
     }
 
     /**
