@@ -5,6 +5,7 @@
 @mixin notification {
   padding: 20px;
   overflow: hidden;
+  outline: none;
 
   transition: background-color 0.2s;
 
