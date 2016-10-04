@@ -2,7 +2,10 @@
 .DS_Store
 # Izinoa
 /data/crud/*
-/route.php
+/protected
+/public/default/images/dyn
+/public/default/var
+/librairies/payline/logs
 
 # Symfony 3
 /app/config/parameters.yml
@@ -11,8 +14,7 @@
 /phpunit.xml
 /var/*
 !var/SymfonyRequirements.php
-/public/bundles/
-/public/assets/
+/public/default/bundles/
 
 # PHPStorm
 .idea/
@@ -25,12 +27,6 @@
 
 #npm & gulp
 .sass-cache
-.publish
 /node_modules
-**/generated/_icons.sass
 npm-debug.log
-
-# Exceptions
-!public/default/styles/default/*
-!public/default/scripts/default/*
-!/dev/public/
+/public/default/assets/
