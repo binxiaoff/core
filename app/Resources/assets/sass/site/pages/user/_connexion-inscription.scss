@@ -11,6 +11,8 @@
     // Set a maximum width using the hero-wrap mixin
     @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0);
 
+    margin-bottom: 50px;
+
     > .hero-wrap {
       @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0, $padding-md: 0, $padding-lg: 0);
       padding-top: 50px;

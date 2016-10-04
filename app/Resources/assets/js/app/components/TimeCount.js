@@ -2,8 +2,6 @@
  * TimeCount
  */
 
-// @TODO get the right text showing when outputting the time difference direction
-
 var $ = require('jquery')
 var sprintf = require('sprintf-js').sprintf
 var Utility = require('Utility')
@@ -264,3 +262,5 @@ $(document)
   .on('ready UI:visible', function (event) {
     $(event.target).find('[data-timecount]').not('.ui-timecount').uiTimeCount()
   })
+
+module.exports = TimeCount
