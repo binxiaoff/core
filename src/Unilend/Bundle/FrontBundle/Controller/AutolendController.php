@@ -78,8 +78,6 @@ class AutolendController extends Controller
                 }
 
             }
-
-            $this->redirectToRoute('autolend');
         }
 
 
