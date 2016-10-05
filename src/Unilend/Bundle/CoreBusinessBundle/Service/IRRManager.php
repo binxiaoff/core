@@ -40,12 +40,11 @@ class IRRManager
         /** @var float $irrUnilend */
         $irrUnilend = $this->calculateIRRUnilend();
 
-        if ($unilendStats->exist(date('Y-m-d'), 'DATE(added)')) {
-            $unilendStats->get(date('Y-m-d'), 'DATE(added)');
+        if ($unilendStats->get(date('Y-m-d'), 'DATE(added)')) {
             $unilendStats->value = $irrUnilend;
             $unilendStats->update();
         } else {
-            $unilendStats->value = $irrUnilend;
+            $unilendStats->value     = $irrUnilend;
             $unilendStats->type_stat = 'IRR';
             $unilendStats->create();
         }
