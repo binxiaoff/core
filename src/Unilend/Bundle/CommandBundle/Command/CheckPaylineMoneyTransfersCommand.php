@@ -51,10 +51,10 @@ class CheckPaylineMoneyTransfersCommand extends ContainerAwareCommand
 
         require_once($sPaylinePath . 'include.php');
 
-        $date = mktime(0, 0, 0, date("m"), date("d") - 1, date("Y"));
+        $date = mktime(0, 0, 0, date('m'), date('d') - 1, date('Y'));
         $date = date('Y-m-d', $date);
 
-        $listTran = $transactions->select('type_transaction = 3 AND status = 0 AND etat = 0 AND LEFT(date_transaction,10) = "' . $date . '"');
+        $listTran = $transactions->select('type_transaction = ' . \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT . ' AND status = 0 AND etat = 0 AND LEFT(date_transaction, 10) = "' . $date . '"');
 
         /** @var \paylineSDK $payline */
         $payline = new \paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);

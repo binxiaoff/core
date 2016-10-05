@@ -237,8 +237,19 @@
             </th>
         </tr>
         <?php
-        $i          = 1;
-        $asterix_on = false;
+        $i             = 1;
+        $asterix_on    = false;
+        $aTranslations = array(
+            \transactions_types::TYPE_LENDER_SUBSCRIPTION          => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
+            \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT    => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
+            \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
+            \transactions_types::TYPE_LENDER_WITHDRAWAL            => $this->lng['preteur-operations-vos-operations']['retrait-dargents'],
+            \transactions_types::TYPE_WELCOME_OFFER                => $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'],
+            \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION   => $this->lng['preteur-operations-vos-operations']['retrait-offre'],
+            \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD => $this->lng['preteur-operations-vos-operations']['gain-filleul'],
+            \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD   => $this->lng['preteur-operations-vos-operations']['gain-parrain']
+        );
+
         foreach ($this->lTrans as $t) {
             $t['solde']               = ($t['solde'] / 100);
             $t['montant_prelevement'] = ($t['montant_prelevement'] / 100);
@@ -257,15 +268,12 @@
                 $solde = $t['solde'];
             }
 
-            // Remb preteur
-            if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
+            if (in_array($t['type_transaction'], array(5 , \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
                 // Récupération de la traduction et non plus du libelle dans l'indexation (si changement on est ko)
-
                 ?>
-                <!-- debut transasction remb -->
                 <tr class="transact remb_<?= $t['id_transaction'] ?> <?= ($i % 2 == 1 ? '' : 'odd') ?>">
                     <td><?= $t['libelle_operation'] ?>
-                    <?php if (\transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT != $t['type_transaction']): ?>
+                    <?php if (5 == $t['type_transaction']): ?>
                         <span class="plusmoinsOperations"></span>
                     <?php endif; ?>
                     </td>
@@ -277,7 +285,7 @@
                 </tr>
                 <tr class="content_transact <?= ($i % 2 == 1 ? '' : 'odd') ?>" height="0">
                     <td colspan="7">
-                        <?php if (\transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT != $t['type_transaction']): ?>
+                        <?php if (5 == $t['type_transaction']): ?>
                         <div class="div_content_transact content_remb_<?= $t['id_transaction'] ?>" style="display:none;">
                             <table class="soustable" width="100%">
                                 <tbody>
@@ -299,26 +307,6 @@
                                         <td class="chiffres" style="color:red;">-<?= $this->ficelle->formatNumber($t['montant_prelevement']) ?> €</td>
                                         <td>&nbsp;</td>
                                     </tr>
-                                    <?php if ($t['recouvrement'] == 1): ?>
-                                        <tr>
-                                            <td></td>
-                                            <td class="detail_left"><?= $this->lng['preteur-operations-vos-operations']['com-ht'] ?></td>
-                                            <td class="chiffres" style="color:red;">-<?= $this->ficelle->formatNumber($t['commission_ht'] / 100) ?> €</td>
-                                            <td>&nbsp;</td>
-                                        </tr>
-                                        <tr>
-                                            <td></td>
-                                            <td class="detail_left"><?= $this->lng['preteur-operations-vos-operations']['com-tva'] ?></td>
-                                            <td class="chiffres" style="color:red;">-<?= $this->ficelle->formatNumber($t['commission_tva'] / 100) ?> €</td>
-                                            <td>&nbsp;</td>
-                                        </tr>
-                                        <tr>
-                                            <td></td>
-                                            <td class="detail_left"><?= $this->lng['preteur-operations-vos-operations']['com-ttc'] ?></td>
-                                            <td class="chiffres" style="color:red;">-<?= $this->ficelle->formatNumber($t['commission_ttc']) ?> €</td>
-                                            <td>&nbsp;</td>
-                                        </tr>
-                                    <?php endif; ?>
                                     <tr>
                                         <td colspan="4" style=" height:4px;"></td>
                                     </tr>
@@ -328,75 +316,36 @@
                         <?php endif; ?>
                         <script type="text/javascript">
                             $(".remb_<?=$t['id_transaction']?>").click(function () {
-                                $(".content_remb_<?=$t['id_transaction']?>").slideToggle();
-                                if ($(".remb_<?=$t['id_transaction']?>").hasClass("on_display")) {
-                                    $(".remb_<?=$t['id_transaction']?>").find('span').addClass('plus');
-                                    $(".remb_<?=$t['id_transaction']?>").find('span').removeClass('moins');
-
-                                    $(".remb_<?=$t['id_transaction']?>").addClass("off_display");
-                                    $(".remb_<?=$t['id_transaction']?>").removeClass('on_display');
-                                }
-                                else {
-                                    $(".remb_<?=$t['id_transaction']?>").find('span').addClass('moins');
-                                    $(".remb_<?=$t['id_transaction']?>").find('span').removeClass('plus');
-
-                                    $(".remb_<?=$t['id_transaction']?>").addClass("on_display");
-                                    $(".remb_<?=$t['id_transaction']?>").removeClass('off_display');
+                                $(".content_remb_<?= $t['id_transaction'] ?>").slideToggle();
+                                if ($(".remb_<?= $t['id_transaction'] ?>").hasClass("on_display")) {
+                                    $(".remb_<?= $t['id_transaction'] ?>").find('span').addClass('plus');
+                                    $(".remb_<?= $t['id_transaction'] ?>").find('span').removeClass('moins');
+                                    $(".remb_<?= $t['id_transaction'] ?>").addClass("off_display");
+                                    $(".remb_<?= $t['id_transaction'] ?>").removeClass('on_display');
+                                } else {
+                                    $(".remb_<?= $t['id_transaction'] ?>").find('span').addClass('moins');
+                                    $(".remb_<?= $t['id_transaction'] ?>").find('span').removeClass('plus');
+                                    $(".remb_<?= $t['id_transaction'] ?>").addClass("on_display");
+                                    $(".remb_<?= $t['id_transaction'] ?>").removeClass('off_display');
                                 }
                             });
-
                         </script>
                     </td>
                 </tr>
-                <!-- fin transasction remb -->
             <?php
                 $i++;
-            } elseif (in_array($t['type_transaction'], array(8, 1, 3, 4, 16, 17, 19, 20))) {
-            // Récupération de la traduction et non plus du libelle dans l'indexation (si changement on est ko)
-            switch ($t['type_transaction']) {
-                case 8:
-                    $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['retrait-dargents'];
-                    break;
-                case 1:
-                    $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['depot-de-fonds'];
-                    break;
-                case 3:
-                    $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['depot-de-fonds'];
-                    break;
-                case 4:
-                    $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['depot-de-fonds'];
-                    break;
-                case 16:
-                    $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'];
-                    break;
-                case 17:
-                    $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['retrait-offre'];
-                    break;
-                case 19:
-                    $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['gain-filleul'];
-                    break;
-                case 20:
-                    $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['gain-parrain'];
-                    break;
-            }
+            } elseif (in_array($t['type_transaction'], array_keys($aTranslations))) {
+                // Récupération de la traduction et non plus du libelle dans l'indexation (si changement on est ko)
+                $t['libelle_operation'] = $aTranslations[$t['type_transaction']];
 
-            // ajout KLE 03/03/15 , pour un client à a du lui faire un retrait positif car :
-            /*
+                $type = "";
+                if ($t['type_transaction'] == \transactions_types::TYPE_LENDER_WITHDRAWAL && $t['montant_operation'] > 0) {
+                    $type = "Annulation retrait des fonds - compte bancaire clos";
+                } else {
+                    $type = $t['libelle_operation'];
+                }
 
-            Dans le fichier BNP Paribas, nous constatons en date du 25/02/2015 un rejet de virement de EUR 350,00 avec le libellé Christophe Voliotis au motif suivant « Compte clos ».
-
-            Rep :
-            -	La régularisation devra s’effectuer en date du jour (et non pas en corrigeant la ligne correspondant à la date où avait été demandé ce virement).
-            */
-
-            $type = "";
-            if ($t['type_transaction'] == 8 && $t['montant_operation'] > 0) {
-                $type = "Annulation retrait des fonds - compte bancaire clos";
-            } else {
-                $type = $t['libelle_operation'];
-            }
-
-            ?>
+                ?>
                 <tr <?= ($i % 2 == 1 ? '' : 'class="odd"') ?>>
                     <td><?= $type ?></td>
                     <td></td>
@@ -405,24 +354,23 @@
                     <td <?= $couleur ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?> €</td>
                     <td><?= $this->ficelle->formatNumber($t['solde']) ?> €</td>
                 </tr>
-            <?php
+                <?php
                 $i++;
-            } elseif (in_array($t['type_transaction'], array(2))) {
-            $bdc = $t['bdc'];
-            if ($t['bdc'] == 0) {
-                $bdc = "";
-            }
+            } elseif ($t['type_transaction'] == \transactions_types::TYPE_LENDER_LOAN) {
+                $bdc = $t['bdc'];
+                if ($t['bdc'] == 0) {
+                    $bdc = "";
+                }
 
-            //asterix pour les offres acceptees
-            $asterix       = "";
-            $offre_accepte = false;
-            if ($t['libelle_operation'] == $this->lng['preteur-operations-vos-operations']['offre-acceptee']) {
-                $asterix       = " *";
-                $offre_accepte = true;
-                $asterix_on    = true;
-            }
+                $asterix       = "";
+                $offre_accepte = false;
+                if ($t['libelle_operation'] == $this->lng['preteur-operations-vos-operations']['offre-acceptee']) {
+                    $asterix       = " *";
+                    $offre_accepte = true;
+                    $asterix_on    = true;
+                }
 
-            ?>
+                ?>
                 <tr <?= ($i % 2 == 1 ? '' : 'class="odd"') ?>>
                     <td><?= $t['libelle_operation'] ?></td>
                     <td><?= $bdc ?></td>
@@ -437,16 +385,11 @@
         }
         ?>
     </table>
-    <?php
-    if ($asterix_on) {
-        ?>
+    <?php if ($asterix_on) : ?>
         <div>* <?= $this->lng['preteur-operations-vos-operations']['offre-acceptee-asterix'] ?></div>
-        <?php
-    }
-    ?>
+    <?php endif; ?>
     <script type="text/javascript">
         $("#order_operations,#order_projects,#order_date,#order_montant, #order_bdc").click(function () {
-
             if ($(this).attr('id') == 'order_operations') {
                 var type = 'order_operations';
 
@@ -501,19 +444,18 @@
             $(".load_table_vos_operations").fadeIn();
 
             var val = {
-                debut: $("#debut").val(),
-                fin: $("#fin").val(),
-                nbMois: $("#nbMois").val(),
-                annee: $("#annee").val(),
+                debut:            $("#debut").val(),
+                fin:              $("#fin").val(),
+                nbMois:           $("#nbMois").val(),
+                annee:            $("#annee").val(),
                 tri_type_transac: $("#tri_type_transac").val(),
-                tri_projects: $("#tri_projects").val(),
-                id_last_action: $(this).attr('id'),
-                order: order,
-                type: type
+                tri_projects:     $("#tri_projects").val(),
+                id_last_action:  $(this).attr('id'),
+                order:           order,
+                type:            type
             };
 
             $.post(add_url + "/ajax/vos_operations", val).done(function (data) {
-
                 var obj = jQuery.parseJSON(data);
 
                 $("#debut").val(obj.debut);
@@ -533,13 +475,13 @@
         $(".load_table_vos_operations").fadeIn();
 
         var val = {
-            debut: $("#debut").val(),
-            fin: $("#fin").val(),
-            nbMois: $("#nbMois").val(),
-            annee: $("#annee").val(),
+            debut:            $("#debut").val(),
+            fin:              $("#fin").val(),
+            nbMois:           $("#nbMois").val(),
+            annee:            $("#annee").val(),
             tri_type_transac: $("#tri_type_transac").val(),
-            tri_projects: $("#tri_projects").val(),
-            id_last_action: $(this).attr('id')
+            tri_projects:     $("#tri_projects").val(),
+            id_last_action:   $(this).attr('id')
         };
 
         $.post(add_url + "/ajax/vos_operations", val).done(function (data) {

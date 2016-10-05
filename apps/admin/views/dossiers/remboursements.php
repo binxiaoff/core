@@ -103,7 +103,6 @@
                 <?php
 
                 $datePremiereEcheance = $this->echeanciers->getDatePremiereEcheance($aProject['id_project']);
-                $rembTotal            = $this->echeanciers->getRembTotalEmprunteur($aProject['id_project']);
                 $prochainRemb         = $this->echeanciers_emprunteur->select('id_project = ' . $aProject['id_project'] . ' AND status_emprunteur = 0', 'ordre ASC');
 
                 ?>
@@ -115,8 +114,13 @@
                     <td><?= $aProject['company'] ?></td>
                     <td><?= $aProject['title_bo'] ?></td>
                     <td><?= $aProject['status_label'] ?></td>
-                    <td class="right" style="white-space:nowrap;"><?= $this->ficelle->formatNumber(($prochainRemb[0]['montant'] + $prochainRemb[0]['commission'] + $prochainRemb[0]['tva']) / 100) ?> €</td>
-                    <td><?= $this->dates->formatDate($prochainRemb[0]['date_echeance_emprunteur'], 'd/m/Y') ?></td>
+                    <?php if (false === empty($prochainRemb[0])): ?>
+                        <td class="right" style="white-space:nowrap;"><?= $this->ficelle->formatNumber(($prochainRemb[0]['montant'] + $prochainRemb[0]['commission'] + $prochainRemb[0]['tva']) / 100) ?> €</td>
+                        <td><?= $this->dates->formatDate($prochainRemb[0]['date_echeance_emprunteur'], 'd/m/Y') ?></td>
+                    <?php else: ?>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    <?php endif; ?>
                     <td><?= ($aProject['remb_auto'] == 1 ? 'Non' : 'Oui') ?></td>
                     <td class="center">
                         <a href="<?= $this->lurl ?>/dossiers/detail_remb/<?= $aProject['id_project'] ?>">

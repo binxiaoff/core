@@ -1,0 +1,63 @@
+//
+// Unilend Page - Homepage Acquisition
+//
+
+#homeacq.page {
+
+  // Video Hero
+  #homeacq-video-hero.cta-video-hero {
+    .swiper-wrapper {
+      width: 100%;
+      height: 100%;
+    }
+
+    .swiper-slide {
+      width: 100%;
+      height: 100%;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-size: cover;
+
+      img {
+        display: none;
+      }
+
+      @include devices('xs') {
+        background-position: 18.5% center;
+      }
+    }
+
+    .video-hero-cta {
+      box-sizing: border-box;
+
+      @include devices('xs', 'sm') {
+        margin-top: 0;
+        top: auto;
+        bottom: 0;
+        padding-bottom: 50px;
+
+        @include background-image(-svg(linear-gradient("to top", $c-bg3 0%, fade-out($c-bg3, 1) 100%)));
+        // margin-top: -($size-btn-media-hover * .75);
+      }
+
+      @include devices('md') {
+        margin-top: -($size-btn-media-md-hover * .75);
+      }
+
+      @include devices('lg') {
+        margin-top: -($size-btn-media-md-hover * .75);
+      }
+    }
+  }
+
+  // Statistics
+  #homeacq-section-statistics.page-section {
+    padding-bottom: 0;
+  }
+
+  // Ethics
+  #homeacq-section-ethics.page-section {
+
+  }
+
+}

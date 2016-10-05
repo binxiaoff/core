@@ -2,6 +2,8 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Psr\Log\LoggerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
@@ -43,8 +45,24 @@ class ProjectManager
     /** @var  ProjectRateSettingsManager */
     private $projectRateSettingsManager;
 
-    public function __construct(EntityManager $oEntityManager, BidManager $oBidManager, LoanManager $oLoanManager, NotificationManager $oNotificationManager, AutoBidSettingsManager $oAutoBidSettingsManager, MailerManager $oMailerManager, LenderManager $oLenderManager, ProjectRateSettingsManager $projectRateSettingsManager)
-    {
+    /** @var ProductManager */
+    private $productManager;
+
+    /** @var ContractAttributeManager */
+    private $contractAttributeManager;
+
+    public function __construct(
+        EntityManager $oEntityManager,
+        BidManager $oBidManager,
+        LoanManager $oLoanManager,
+        NotificationManager $oNotificationManager,
+        AutoBidSettingsManager $oAutoBidSettingsManager,
+        MailerManager $oMailerManager,
+        LenderManager $oLenderManager,
+        ProjectRateSettingsManager $projectRateSettingsManager,
+        ProductManager $productManager,
+        ContractAttributeManager $contractAttributeManager
+    ) {
         $this->oEntityManager             = $oEntityManager;
         $this->oBidManager                = $oBidManager;
         $this->oLoanManager               = $oLoanManager;
@@ -53,6 +71,8 @@ class ProjectManager
         $this->oMailerManager             = $oMailerManager;
         $this->oLenderManager             = $oLenderManager;
         $this->projectRateSettingsManager = $projectRateSettingsManager;
+        $this->productManager             = $productManager;
+        $this->contractAttributeManager   = $contractAttributeManager;
 
         $this->oFicelle    = Loader::loadLib('ficelle');
         $this->oDate       = Loader::loadLib('dates');
@@ -181,14 +201,10 @@ class ProjectManager
      */
     public function autoBid(\projects $oProject)
     {
-        /** @var \projects_status $oProjectStatus */
-        $oProjectStatus = $this->oEntityManager->getRepository('projects_status');
-        if ($oProjectStatus->getLastStatut($oProject->id_project)) {
-            if ($oProjectStatus->status == \projects_status::A_FUNDER) {
-                $this->bidAllAutoBid($oProject);
-            } elseif ($oProjectStatus->status == \projects_status::EN_FUNDING) {
-                $this->reBidAutoBid($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE, true);
-            }
+        if ($oProject->status == \projects_status::A_FUNDER) {
+            $this->bidAllAutoBid($oProject);
+        } elseif ($oProject->status == \projects_status::EN_FUNDING) {
+            $this->reBidAutoBid($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE, true);
         }
     }
 
@@ -209,7 +225,11 @@ class ProjectManager
 
                 foreach ($aAutoBidList as $aAutoBidSetting) {
                     if ($oAutoBid->get($aAutoBidSetting['id_autobid'])) {
-                        $this->oBidManager->bidByAutoBidSettings($oAutoBid, $oProject, $rateRange['rate_max'], false);
+                        try {
+                            $this->oBidManager->bidByAutoBidSettings($oAutoBid, $oProject, $rateRange['rate_max'], false);
+                        } catch (\Exception $exception) {
+                            continue;
+                        }
                     }
                 }
             }
@@ -305,16 +325,52 @@ class ProjectManager
                 $this->oLogger->info($iTreatedBitNb . '/' . $iBidNbTotal . ' bids treated (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
             }
         }
+        $contractTypes = array_column($this->productManager->getProjectAvailableContractTypes($oProject), 'label');
+        if(in_array(\underlying_contract::CONTRACT_IFP, $contractTypes) && in_array(\underlying_contract::CONTRACT_BDC, $contractTypes)) {
+            $this->buildLoanIFPAndBDC($oProject);
+        } elseif (in_array(\underlying_contract::CONTRACT_IFP, $contractTypes)) {
+            $this->buildLoanIFP($oProject);
+        }
+    }
 
-        $aLenderList = $oBid->getLenders($oProject->id_project, array(\bids::STATUS_BID_ACCEPTED));
+    private function buildLoanIFPAndBDC($project)
+    {
+        /** @var \bids $bid */
+        $bid = $this->oEntityManager->getRepository('bids');
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
+        /** @var \loans $loan */
+        $loan = $this->oEntityManager->getRepository('loans');
+        /** @var \underlying_contract $contract */
+        $contract = $this->oEntityManager->getRepository('underlying_contract');
+
+        $aLenderList = $bid->getLenders($project->id_project, array(\bids::STATUS_BID_ACCEPTED));
+
+        if (false === $contract->get(\underlying_contract::CONTRACT_IFP, 'label')) {
+            throw new \InvalidArgumentException('The contract ' . \underlying_contract::CONTRACT_IFP . 'does not exist.');
+        }
+        $IFPContractId = $contract->id_contract;
+
+        $contractAttrVars = $this->contractAttributeManager->getContractAttributesByType($contract, \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
+        if (empty($contractAttrVars) || false === isset($contractAttrVars[0]) || false === is_numeric($contractAttrVars[0])) {
+            throw new \UnexpectedValueException('The IFP contract max amount is not set');
+        } else {
+            $IFPLoanAmountMax = $contractAttrVars[0];
+        }
+
+        if (false === $contract->get(\underlying_contract::CONTRACT_BDC, 'label')) {
+            throw new \InvalidArgumentException('The contract ' . \underlying_contract::CONTRACT_BDC . 'does not exist.');
+        }
+        $BDCContractId = $contract->id_contract;
+
         foreach ($aLenderList as $aLender) {
             $iLenderId   = $aLender['id_lender_account'];
-            $aLenderBids = $oBid->select(
-                'id_lender_account = ' . $iLenderId . ' AND id_project = ' . $oProject->id_project . ' AND status = ' . \bids::STATUS_BID_ACCEPTED,
+            $aLenderBids = $bid->select(
+                'id_lender_account = ' . $iLenderId . ' AND id_project = ' . $project->id_project . ' AND status = ' . \bids::STATUS_BID_ACCEPTED,
                 'rate DESC'
             );
 
-            if ($oLenderAccount->isNaturalPerson($iLenderId)) {
+            if ($lenderAccount->isNaturalPerson($iLenderId)) {
                 $fLoansLenderSum = 0;
                 $fInterests      = 0;
                 $bIFPContract    = true;
@@ -323,7 +379,7 @@ class ProjectManager
                 foreach ($aLenderBids as $iIndex => $aBid) {
                     $fBidAmount = $aBid['amount'] / 100;
 
-                    if (true === $bIFPContract && ($fLoansLenderSum + $fBidAmount) <= \loans::IFP_AMOUNT_MAX) {
+                    if (true === $bIFPContract && bccomp(bcadd($fLoansLenderSum, $fBidAmount, 2), $IFPLoanAmountMax, 2) <= 0) {
                         $fInterests += $aBid['rate'] * $fBidAmount;
                         $fLoansLenderSum += $fBidAmount;
                         $aBidIFP[] = array(
@@ -331,18 +387,18 @@ class ProjectManager
                             'amount' => $fBidAmount
                         );
                     } else {
-                        // Greater than \loans::IFP_AMOUNT_MAX ? create BDC loan, split it if needed.
+                        // Greater than IFP max amount ? create BDC loan, split it if needed.
                         $bIFPContract = false;
-                        $fDiff        = $fLoansLenderSum + $fBidAmount - \loans::IFP_AMOUNT_MAX;
+                        $fDiff        = bcsub(bcadd($fLoansLenderSum, $fBidAmount, 2), $IFPLoanAmountMax, 2);
 
-                        $oLoan->unsetData();
-                        $oLoan->addAcceptedBid($aBid['id_bid'], $fDiff);
-                        $oLoan->id_lender        = $iLenderId;
-                        $oLoan->id_project       = $oProject->id_project;
-                        $oLoan->amount           = $fDiff * 100;
-                        $oLoan->rate             = $aBid['rate'];
-                        $oLoan->id_type_contract = \loans::TYPE_CONTRACT_BDC;
-                        $this->oLoanManager->create($oLoan);
+                        $loan->unsetData();
+                        $loan->addAcceptedBid($aBid['id_bid'], $fDiff);
+                        $loan->id_lender        = $iLenderId;
+                        $loan->id_project       = $project->id_project;
+                        $loan->amount           = $fDiff * 100;
+                        $loan->rate             = $aBid['rate'];
+                        $loan->id_type_contract = $BDCContractId;
+                        $this->oLoanManager->create($loan);
 
                         $fRest = $fBidAmount - $fDiff;
                         if (0 < $fRest) {
@@ -352,31 +408,104 @@ class ProjectManager
                                 'amount' => $fRest
                             );
                         }
-                        $fLoansLenderSum = \loans::IFP_AMOUNT_MAX;
+                        $fLoansLenderSum = $IFPLoanAmountMax;
                     }
                 }
 
                 // Create IFP loan from the grouped bids
-                $oLoan->unsetData();
+                $loan->unsetData();
                 foreach ($aBidIFP as $aAcceptedBid) {
-                    $oLoan->addAcceptedBid($aAcceptedBid['bid_id'], $aAcceptedBid['amount']);
+                    $loan->addAcceptedBid($aAcceptedBid['bid_id'], $aAcceptedBid['amount']);
                 }
-                $oLoan->id_lender        = $iLenderId;
-                $oLoan->id_project       = $oProject->id_project;
-                $oLoan->amount           = $fLoansLenderSum * 100;
-                $oLoan->rate             = round($fInterests / $fLoansLenderSum, 2);
-                $oLoan->id_type_contract = \loans::TYPE_CONTRACT_IFP;
-                $this->oLoanManager->create($oLoan);
+                $loan->id_lender        = $iLenderId;
+                $loan->id_project       = $project->id_project;
+                $loan->amount           = $fLoansLenderSum * 100;
+                $loan->rate             = round($fInterests / $fLoansLenderSum, 2);
+                $loan->id_type_contract = $IFPContractId;
+                $this->oLoanManager->create($loan);
             } else {
                 foreach ($aLenderBids as $aBid) {
-                    $oLoan->unsetData();
-                    $oLoan->addAcceptedBid($aBid['id_bid'], $aBid['amount'] / 100);
-                    $oLoan->id_lender        = $iLenderId;
-                    $oLoan->id_project       = $oProject->id_project;
-                    $oLoan->amount           = $aBid['amount'];
-                    $oLoan->rate             = $aBid['rate'];
-                    $oLoan->id_type_contract = \loans::TYPE_CONTRACT_BDC;
-                    $this->oLoanManager->create($oLoan);
+                    $loan->unsetData();
+                    $loan->addAcceptedBid($aBid['id_bid'], $aBid['amount'] / 100);
+                    $loan->id_lender        = $iLenderId;
+                    $loan->id_project       = $project->id_project;
+                    $loan->amount           = $aBid['amount'];
+                    $loan->rate             = $aBid['rate'];
+                    $loan->id_type_contract = $BDCContractId;
+                    $this->oLoanManager->create($loan);
+                }
+            }
+        }
+    }
+
+    private function buildLoanIFP($project)
+    {
+        /** @var \bids $bid */
+        $bid = $this->oEntityManager->getRepository('bids');
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
+        /** @var \loans $loan */
+        $loan = $this->oEntityManager->getRepository('loans');
+        /** @var \underlying_contract $contract */
+        $contract = $this->oEntityManager->getRepository('underlying_contract');
+
+        $aLenderList = $bid->getLenders($project->id_project, array(\bids::STATUS_BID_ACCEPTED));
+
+        if (false === $contract->get(\underlying_contract::CONTRACT_IFP, 'label')) {
+            throw new \InvalidArgumentException('The contract ' . \underlying_contract::CONTRACT_IFP . 'does not exist.');
+        }
+        $IFPContractId = $contract->id_contract;
+
+        $contractAttrVars = $this->contractAttributeManager->getContractAttributesByType($contract, \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
+        if (empty($contractAttrVars) || false === isset($contractAttrVars[0]) || false === is_numeric($contractAttrVars[0])) {
+            throw new \UnexpectedValueException('The IFP contract max amount is not set');
+        } else {
+            $IFPLoanAmountMax = $contractAttrVars[0];
+        }
+
+        foreach ($aLenderList as $aLender) {
+            $iLenderId   = $aLender['id_lender_account'];
+            $aLenderBids = $bid->select(
+                'id_lender_account = ' . $iLenderId . ' AND id_project = ' . $project->id_project . ' AND status = ' . \bids::STATUS_BID_ACCEPTED,
+                'rate DESC'
+            );
+
+            if ($lenderAccount->isNaturalPerson($iLenderId)) {
+                $fLoansLenderSum = 0;
+                $fInterests      = 0;
+                $aBidIFP         = array();
+
+                foreach ($aLenderBids as $iIndex => $aBid) {
+                    $fBidAmount = $aBid['amount'] / 100;
+
+                    if (bccomp(bcadd($fLoansLenderSum, $fBidAmount, 2), $IFPLoanAmountMax, 2) <= 0) {
+                        $fInterests += $aBid['rate'] * $fBidAmount;
+                        $fLoansLenderSum += $fBidAmount;
+                        $aBidIFP[] = array(
+                            'bid_id' => $aBid['id_bid'],
+                            'amount' => $fBidAmount
+                        );
+                    } else {
+                        $bid->get($aBid['id_bid']);
+                        $this->oBidManager->reject($bid);
+                    }
+                }
+
+                // Create IFP loan from the grouped bids
+                $loan->unsetData();
+                foreach ($aBidIFP as $aAcceptedBid) {
+                    $loan->addAcceptedBid($aAcceptedBid['bid_id'], $aAcceptedBid['amount']);
+                }
+                $loan->id_lender        = $iLenderId;
+                $loan->id_project       = $project->id_project;
+                $loan->amount           = $fLoansLenderSum * 100;
+                $loan->rate             = round($fInterests / $fLoansLenderSum, 2);
+                $loan->id_type_contract = $IFPContractId;
+                $this->oLoanManager->create($loan);
+            } else {
+                foreach ($aLenderBids as $aBid) {
+                    $bid->get($aBid['id_bid']);
+                    $this->oBidManager->reject($bid);
                 }
             }
         }
@@ -409,17 +538,32 @@ class ProjectManager
         }
     }
 
-    public function createRepaymentSchedule(\projects $oProject)
+    public function createRepaymentSchedule(\projects $project)
+    {
+        /** @var \product $product */
+        $product = $this->oEntityManager->getRepository('product');
+        if (! $product->get($project->id_product)) {
+            throw new \Exception('Invalid product id ' . $project->id_product . ' found for project id ' . $project->id_project);
+        }
+        /** @var \repayment_type $repaymentType */
+        $repaymentType = $this->oEntityManager->getRepository('repayment_type');
+        $repaymentType->get($product->id_repayment_type);
+
+        switch ($repaymentType->label) {
+            case \repayment_type::REPAYMENT_TYPE_AMORTIZATION :
+                return $this->createAmortizationRepaymentSchedule($project);
+            default :
+                throw new \Exception('Unknown repayment schedule type ' . $repaymentType->label);
+        }
+    }
+
+    private function createAmortizationRepaymentSchedule(\projects $oProject)
     {
         ini_set('max_execution_time', 300);
         ini_set('memory_limit', '512M');
 
-        /** @var \settings $oSettings */
-        $oSettings = $this->oEntityManager->getRepository('settings');
         /** @var \loans $oLoan */
         $oLoan = $this->oEntityManager->getRepository('loans');
-        /** @var \projects_status $oProjectStatus */
-        $oProjectStatus = $this->oEntityManager->getRepository('projects_status');
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         /** @var \echeanciers $oRepaymentSchedule */
@@ -429,37 +573,7 @@ class ProjectManager
         /** @var \clients $oClient */
         $oClient = $this->oEntityManager->getRepository('clients');
 
-        $oSettings->get('Commission remboursement', 'type');
-        $commission = $oSettings->value;
-
-        $oSettings->get('TVA', 'type');
-        $tva = $oSettings->value;
-
-        $oSettings->get('EQ-Acompte d\'impôt sur le revenu', 'type');
-        $prelevements_obligatoires = $oSettings->value;
-
-        $oSettings->get('EQ-Contribution additionnelle au Prélèvement Social', 'type');
-        $contributions_additionnelles = $oSettings->value;
-
-        $oSettings->get('EQ-CRDS', 'type');
-        $crds = $oSettings->value;
-
-        $oSettings->get('EQ-CSG', 'type');
-        $csg = $oSettings->value;
-
-        $oSettings->get('EQ-Prélèvement de Solidarité', 'type');
-        $prelevements_solidarite = $oSettings->value;
-
-        $oSettings->get('EQ-Prélèvement social', 'type');
-        $prelevements_sociaux = $oSettings->value;
-
-        $oSettings->get('EQ-Retenue à la source', 'type');
-        $retenues_source = $oSettings->value;
-
-        $oProjectStatus->getLastStatut($oProject->id_project);
-
-        // Si le projet est bien en funde on créer les echeances
-        if ($oProjectStatus->status == \projects_status::FUNDE) {
+        if ($oProject->status == \projects_status::FUNDE) {
             $lLoans = $oLoan->select('id_project = ' . $oProject->id_project);
 
             $iLoanNbTotal   = count($lLoans);
@@ -472,121 +586,30 @@ class ProjectManager
             foreach ($lLoans as $l) {
                 $oLenderAccount->get($l['id_lender'], 'id_lender_account');
                 $oClient->get($oLenderAccount->id_client_owner, 'id_client');
-
                 $oClientAdresse->get($oLenderAccount->id_client_owner, 'id_client');
-
-                // 0 : fr/fr
-                // 1 : fr/resident etranger
-                // 2 : no fr/resident etranger
-                $etranger = 0;
-                // fr/resident etranger
-                if ($oClient->id_nationalite <= 1 && $oClientAdresse->id_pays_fiscal > 1) {
-                    $etranger = 1;
-                } // no fr/resident etranger
-                elseif ($oClient->id_nationalite > 1 && $oClientAdresse->id_pays_fiscal > 1) {
-                    $etranger = 2;
-                }
-
                 $oLoan->get($l['id_loan']);
-                $tabl = $oLoan->getRepaymentSchedule($commission, $tva);
 
                 $aRepaymentSchedule = array();
-                // on crée les echeances de chaques preteurs
-                foreach ($tabl['repayment_schedule'] as $k => $e) {
-                    // Date d'echeance preteur
+                foreach ($oLoan->getRepaymentSchedule() as $k => $e) {
                     $dateEcheance = $this->oDate->dateAddMoisJoursV3($oProject->date_fin, $k);
                     $dateEcheance = date('Y-m-d H:i', $dateEcheance) . ':00';
 
-                    // Date d'echeance emprunteur
                     $dateEcheance_emprunteur = $this->oDate->dateAddMoisJoursV3($oProject->date_fin, $k);
-                    // on retire 6 jours ouvrés
                     $dateEcheance_emprunteur = $this->oWorkingDay->display_jours_ouvres($dateEcheance_emprunteur, 6);
                     $dateEcheance_emprunteur = date('Y-m-d H:i', $dateEcheance_emprunteur) . ':00';
 
-                    // particulier
-                    if (in_array($oClient->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
-                        if ($etranger > 0) {
-                            $montant_prelevements_obligatoires    = 0;
-                            $montant_contributions_additionnelles = 0;
-                            $montant_crds                         = 0;
-                            $montant_csg                          = 0;
-                            $montant_prelevements_solidarite      = 0;
-                            $montant_prelevements_sociaux         = 0;
-
-                            switch ($oLoan->id_type_contract) {
-                                case \loans::TYPE_CONTRACT_BDC:
-                                    $montant_retenues_source = round($retenues_source * $e['interest'], 2);
-                                    break;
-                                case \loans::TYPE_CONTRACT_IFP:
-                                    $montant_retenues_source = 0;
-                                    break;
-                                default:
-                                    $montant_retenues_source = 0;
-                                    trigger_error('Unknown contract type: ' . $oLoan->id_type_contract, E_USER_WARNING);
-                                    break;
-                            }
-                        } else {
-                            if ($oLenderAccount->exonere == 1 // @todo should not be usefull and field should be deleted from DB but as long as it exists and BO interface is based on it, we must use it
-                                && $oLenderAccount->debut_exoneration != '0000-00-00'
-                                && $oLenderAccount->fin_exoneration != '0000-00-00'
-                                && date('Y-m-d', strtotime($dateEcheance)) >= $oLenderAccount->debut_exoneration
-                                && date('Y-m-d', strtotime($dateEcheance)) <= $oLenderAccount->fin_exoneration
-                            ) {
-                                $montant_prelevements_obligatoires = 0;
-                            } else {
-                                $montant_prelevements_obligatoires = round($prelevements_obligatoires * $e['interest'], 2);
-                            }
-
-                            $montant_contributions_additionnelles = round($contributions_additionnelles * $e['interest'], 2);
-                            $montant_crds                         = round($crds * $e['interest'], 2);
-                            $montant_csg                          = round($csg * $e['interest'], 2);
-                            $montant_prelevements_solidarite      = round($prelevements_solidarite * $e['interest'], 2);
-                            $montant_prelevements_sociaux         = round($prelevements_sociaux * $e['interest'], 2);
-                            $montant_retenues_source              = 0;
-                        }
-                    } else {
-                        $montant_prelevements_obligatoires    = 0;
-                        $montant_contributions_additionnelles = 0;
-                        $montant_crds                         = 0;
-                        $montant_csg                          = 0;
-                        $montant_prelevements_solidarite      = 0;
-                        $montant_prelevements_sociaux         = 0;
-
-                        switch ($oLoan->id_type_contract) {
-                            case \loans::TYPE_CONTRACT_BDC:
-                                $montant_retenues_source = round($retenues_source * $e['interest'], 2);
-                                break;
-                            case \loans::TYPE_CONTRACT_IFP:
-                                $montant_retenues_source = 0;
-                                break;
-                            default:
-                                $montant_retenues_source = 0;
-                                trigger_error('Unknown contract type: ' . $oLoan->id_type_contract, E_USER_WARNING);
-                                break;
-                        }
-                    }
-
                     $aRepaymentSchedule[] = array(
-                        'id_lender'                    => $l['id_lender'],
-                        'id_project'                   => $oProject->id_project,
-                        'id_loan'                      => $l['id_loan'],
-                        'ordre'                        => $k,
-                        'montant'                      => $e['repayment'] * 100,
-                        'capital'                      => $e['capital'] * 100,
-                        'interets'                     => $e['interest'] * 100,
-                        'commission'                   => $e['commission'] * 100,
-                        'tva'                          => $e['vat_amount'] * 100,
-                        'prelevements_obligatoires'    => $montant_prelevements_obligatoires,
-                        'contributions_additionnelles' => $montant_contributions_additionnelles,
-                        'crds'                         => $montant_crds,
-                        'csg'                          => $montant_csg,
-                        'prelevements_solidarite'      => $montant_prelevements_solidarite,
-                        'prelevements_sociaux'         => $montant_prelevements_sociaux,
-                        'retenues_source'              => $montant_retenues_source,
-                        'date_echeance'                => $dateEcheance,
-                        'date_echeance_emprunteur'     => $dateEcheance_emprunteur,
-                        'added'                        => date('Y-m-d H:i:s'),
-                        'updated'                      => date('Y-m-d H:i:s'),
+                        'id_lender'                => $l['id_lender'],
+                        'id_project'               => $oProject->id_project,
+                        'id_loan'                  => $l['id_loan'],
+                        'ordre'                    => $k,
+                        'montant'                  => bcmul($e['repayment'], 100),
+                        'capital'                  => bcmul($e['capital'], 100),
+                        'interets'                 => bcmul($e['interest'], 100),
+                        'date_echeance'            => $dateEcheance,
+                        'date_echeance_emprunteur' => $dateEcheance_emprunteur,
+                        'added'                    => date('Y-m-d H:i:s'),
+                        'updated'                  => date('Y-m-d H:i:s')
                     );
                 }
                 $oRepaymentSchedule->multiInsert($aRepaymentSchedule);
@@ -603,7 +626,26 @@ class ProjectManager
         }
     }
 
-    public function createPaymentSchedule(\projects $oProject)
+    public function createPaymentSchedule(\projects $project)
+    {
+        /** @var \product $product */
+        $product = $this->oEntityManager->getRepository('product');
+        if (! $product->get($project->id_product)) {
+            throw new \Exception('Invalid product id ' . $project->id_product . ' found for project id ' . $project->id_project);
+        }
+        /** @var \repayment_type $repaymentType */
+        $repaymentType = $this->oEntityManager->getRepository('repayment_type');
+        $repaymentType->get($product->id_repayment_type);
+
+        switch ($repaymentType->label) {
+            case \repayment_type::REPAYMENT_TYPE_AMORTIZATION :
+                return $this->createAmortizationPaymentSchedule($project);
+            default :
+                throw new \Exception('Unknown repayment schedule type ' . $repaymentType->label);
+        }
+    }
+
+    public function createAmortizationPaymentSchedule(\projects $oProject)
     {
         ini_set('memory_limit', '512M');
 
@@ -617,13 +659,16 @@ class ProjectManager
         $oSettings->get('Commission remboursement', 'type');
         $fCommissionRate = $oSettings->value;
 
-        $oSettings->get('TVA', 'type');
-        $fVAT = $oSettings->value;
+        /** @var \tax_type $taxType */
+        $taxType = $this->oEntityManager->getRepository('tax_type');
+
+        $taxRate = $taxType->getTaxRateByCountry('fr');
+        $fVAT    = $taxRate[\tax_type::TYPE_VAT] / 100;
 
         $fAmount           = $oProject->amount;
         $iMonthNb          = $oProject->period;
         $aCommission       = \repayment::getRepaymentCommission($fAmount, $iMonthNb, $fCommissionRate, $fVAT);
-        $aPaymentList      = $oRepaymentSchedule->getSumRembEmpruntByMonths($oProject->id_project);
+        $aPaymentList      = $oRepaymentSchedule->getMonthlyScheduleByProject($oProject->id_project);
         $iPaymentsNbTotal  = count($aPaymentList);
         $iTreatedPaymentNb = 0;
 
@@ -638,11 +683,11 @@ class ProjectManager
 
             $oPaymentSchedule->id_project               = $oProject->id_project;
             $oPaymentSchedule->ordre                    = $iIndex;
-            $oPaymentSchedule->montant                  = $aPayment['montant'] * 100; // sum montant preteurs
-            $oPaymentSchedule->capital                  = $aPayment['capital'] * 100; // sum capital preteurs
-            $oPaymentSchedule->interets                 = $aPayment['interets'] * 100; // sum interets preteurs
-            $oPaymentSchedule->commission               = $aCommission['commission_monthly'] * 100; // on recup com du projet
-            $oPaymentSchedule->tva                      = $aCommission['vat_amount_monthly'] * 100; // et tva du projet
+            $oPaymentSchedule->montant                  = bcmul($aPayment['montant'], 100);
+            $oPaymentSchedule->capital                  = bcmul($aPayment['capital'], 100);
+            $oPaymentSchedule->interets                 = bcmul($aPayment['interets'], 100);
+            $oPaymentSchedule->commission               = bcmul($aCommission['commission_monthly'], 100);
+            $oPaymentSchedule->tva                      = bcmul($aCommission['vat_amount_monthly'], 100);
             $oPaymentSchedule->date_echeance_emprunteur = $sPaymentDate;
             $oPaymentSchedule->create();
 
@@ -665,15 +710,14 @@ class ProjectManager
         if ($oProject->date_fin != '0000-00-00 00:00:00') {
             $oEndDate = new \DateTime($oProject->date_fin);
         }
-        if ($oEndDate->format('H') === '00') {
-            $oSettings->get('Heure fin periode funding', 'type');
+        if ($oEndDate->format('H') === '00' && $oSettings->get('Heure fin periode funding', 'type')) {
             $iEndHour = (int)$oSettings->value;
             $oEndDate->add(new \DateInterval('PT' . $iEndHour . 'H'));
         }
         return $oEndDate;
     }
 
-    public function addProjectStatus($iUserId, $iProjectStatus, \projects $oProject, $iReminderNumber = 0, $sContent = '')
+    public function addProjectStatus($iUserId, $iProjectStatus, \projects &$oProject, $iReminderNumber = 0, $sContent = '')
     {
         /** @var \projects_status_history $oProjectsStatusHistory */
         $oProjectsStatusHistory = $this->oEntityManager->getRepository('projects_status_history');
@@ -692,15 +736,18 @@ class ProjectManager
         $oProjectsStatusHistory->content           = $sContent;
         $oProjectsStatusHistory->create();
 
-        $this->projectStatusUpdateTrigger($oProjectStatus, $oProject);
+        $oProject->status = $iProjectStatus;
+        $oProject->update();
+
+        $this->projectStatusUpdateTrigger($iProjectStatus, $oProject);
     }
 
-    private function projectStatusUpdateTrigger(\projects_status $oProjectStatus, \projects $oProject)
+    private function projectStatusUpdateTrigger($iProjectStatus, \projects $oProject)
     {
         /** @var \settings $oSettings */
         $oSettings = $this->oEntityManager->getRepository('settings');
 
-        switch ($oProjectStatus->status) {
+        switch ($iProjectStatus) {
             case \projects_status::A_TRAITER:
                 $oSettings->get('Adresse notification inscription emprunteur', 'type');
                 $this->oMailerManager->sendProjectNotificationToStaff('notification-depot-de-dossier', $oProject, trim($oSettings->value));
@@ -753,6 +800,7 @@ class ProjectManager
         /** @var \bids $oBid */
         $oBid      = $this->oEntityManager->getRepository('bids');
         $iBidTotal = $oBid->getSoldeBid($oProject->id_project);
+
         if ($iBidTotal >= $oProject->amount) {
             return true;
         }
@@ -765,6 +813,7 @@ class ProjectManager
         if ($oProject->status_solde == 0) {
             $oFunded    = new \DateTime();
             $oPublished = new \DateTime($oProject->date_publication_full);
+
             if ($oFunded < $oPublished) {
                 $oFunded = $oPublished;
             }
@@ -773,7 +822,6 @@ class ProjectManager
             $oProject->status_solde = 1;
             $oProject->update();
 
-            $this->oMailerManager->sendFundedToBorrower($oProject);
             $this->oMailerManager->sendFundedToStaff($oProject);
         }
     }
@@ -792,18 +840,61 @@ class ProjectManager
     }
 
     /**
-     * @param \projects $oProject
-     *
+     * @param \projects $project
      * @return array
      */
-    public function getBidsStatistics(\projects $oProject)
+    public function getBidsSummary(\projects $project)
     {
-        /** @var \bids $oBid */
-        $oBid = $this->oEntityManager->getRepository('bids');
-        return $oBid->getBidsStatistics($oProject->id_project);
+        /** @var \bids $bid */
+        $bid = $this->oEntityManager->getRepository('bids');
+        return $bid->getBidsSummary($project->id_project);
     }
 
-    public function setProjectRateRange(\projects $project)
+    public function getPossibleProjectPeriods()
+    {
+        /** @var \settings $settings */
+        $settings = $this->oEntityManager->getRepository('settings');
+        $settings->get('Durée des prêts autorisées', 'type');
+        return explode(',', $settings->value);
+    }
+
+    public function getMaxProjectAmount()
+    {
+        /** @var \settings $settings */
+        $settings = $this->oEntityManager->getRepository('settings');
+        $settings->get('Somme à emprunter max', 'type');
+        return (int) $settings->value;
+    }
+
+    public function getMinProjectAmount()
+    {
+        /** @var \settings $settings */
+        $settings = $this->oEntityManager->getRepository('settings');
+        $settings->get('Somme à emprunter min', 'type');
+        return (int) $settings->value;
+    }
+
+    /**
+     * @param int $amount
+     * @return int
+     */
+    public function getAverageFundingDuration($amount)
+    {
+        /** @var \settings $settings */
+        $settings = $this->oEntityManager->getRepository('settings');
+        $settings->get('Durée moyenne financement', 'type');
+
+        $projectAverageFundingDuration = 15;
+        foreach (json_decode($settings->value) as $averageFundingDuration) {
+            if ($amount >= $averageFundingDuration->min && $amount <= $averageFundingDuration->max) {
+                $projectAverageFundingDuration = round($averageFundingDuration->heures / 24);
+            }
+        }
+
+        return $projectAverageFundingDuration;
+    }
+
+    public function getProjectRateRange(\projects $project)
     {
         if (empty($project->period)) {
             throw new \Exception('project period not set.');
@@ -825,8 +916,7 @@ class ProjectManager
                 throw new \Exception('No settings found for the project.');
             }
             if (count($rateSettings) === 1) {
-                $project->id_rate = $rateSettings[0]['id_rate'];
-                $project->update();
+                return $rateSettings[0]['id_rate'];
             } else {
                 throw new \Exception('More than one settings found for the project.');
             }

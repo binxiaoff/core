@@ -1,13 +1,53 @@
 imports:
     - { resource: parameters.yml }
+    - { resource: security.yml }
     - { resource: parameters_extended.yml, ignore_errors: true }
 
 framework:
     secret: "%secret%"
+    router:
+        resource: "%kernel.root_dir%/config/routing.yml"
+        strict_requirements: ~
     default_locale:  "%locale%"
+    templating:
+        engines: ['twig']
     assets:
         base_urls:
             - "%router.request_context.scheme%://%url.host_default%"
+        packages:
+            gulp:
+                base_path: /assets
+    translator:
+        enabled: true
+        fallbacks: ["fr_FR"]
+        paths:
+            - "%kernel.root_dir%/../src/Unilend/Bundle/TranslationBundle/Resources/translations"
+        logging: true
+    session:
+        handler_id: null
+        gc_maxlifetime: 3600
+    csrf_protection: true
+    form:
+        csrf_protection:
+            field_name: _csrf
+
+cmf_routing:
+    chain:
+        routers_by_id:
+            router.default: 200
+            cmf_routing.dynamic_router: 100
+    dynamic:
+        enabled: true
+        default_controller: UnilendFrontBundle:Main:cms
+        route_provider_service_id: "unilend.frontbundle.provider.route_provider"
+
+twig:
+    strict_variables: "%kernel.debug%"
+    exception_controller:  UnilendFrontBundle:Exception:show
+    paths:
+        - "%kernel.root_dir%/Resources/views/frontbundle/"
+    form_themes:
+        - 'frontbundle/layouts/form_layout.html.twig'
 
 doctrine:
     dbal:
@@ -61,7 +101,7 @@ monolog:
             level: error
             path: "%kernel.logs_dir%/error.%kernel.environment%.log"
             max_files: 90
-            date_format: 'Ymd'
+            date_format: 'Y-m-d'
             file_permission: 0664
 #        slack_error:
 #            type: slack
@@ -88,7 +128,7 @@ monolog:
             level: info
             max_files: 90
             file_permission: 0664
-            date_format: 'Ymd'
+            date_format: 'Y-m-d'
         console_console:
             type: console
 
@@ -107,7 +147,27 @@ monolog:
             path: "%kernel.logs_dir%/site.%kernel.environment%.log"
             max_files: 90
             file_permission: 0664
-            date_format: 'Ymd'
+            date_format: 'Y-m-d'
 
 swiftmailer:
     transport: '%mailer_transport%'
+
+unilend_translation:
+    parameters:
+        cache:
+            path: "%kernel.cache_dir%/translations"
+
+services:
+    twig.extension.text:
+        class: Twig_Extensions_Extension_Text
+        tags:
+            - { name: twig.extension }
+    twig.extension.intl:
+        class: Unilend\Bundle\FrontBundle\Twig\IntlExtension
+        tags:
+            - { name: twig.extension }
+
+google_tag_manager:
+    enabled: true
+    id: "%gtm_token%"
+    autoAppend: false

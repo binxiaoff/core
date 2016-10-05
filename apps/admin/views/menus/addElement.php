@@ -7,11 +7,11 @@
 			foreach($this->lLangues as $key => $lng)
 			{
 			?>
-				document.getElementById('typeLX_<?=$key?>').style.display = 'none';	
+				document.getElementById('typeLX_<?=$key?>').style.display = 'none';
 				document.getElementById('typeL_<?=$key?>').style.display = 'table-row';
 			<?
 			}
-			?>	
+			?>
 			document.getElementById('complement').value = 'L';
 		}
 		else if(type == "LX")
@@ -20,7 +20,7 @@
 			foreach($this->lLangues as $key => $lng)
 			{
 			?>
-				document.getElementById('typeLX_<?=$key?>').style.display = 'table-row';	
+				document.getElementById('typeLX_<?=$key?>').style.display = 'table-row';
 				document.getElementById('typeL_<?=$key?>').style.display = 'none';
 			<?
 			}
@@ -33,7 +33,7 @@
 			foreach($this->lLangues as $key => $lng)
 			{
 			?>
-				document.getElementById('typeLX_<?=$key?>').style.display = 'none';	
+				document.getElementById('typeLX_<?=$key?>').style.display = 'none';
 				document.getElementById('typeL_<?=$key?>').style.display = 'none';
 			<?
 			}
@@ -75,7 +75,7 @@
                     <tr>
                         <th><label for="nom_<?=$key?>">Nom du lien <?=(count($this->lLangues) > 1?'('.$key.')':'')?> :</label></th>
                         <td><input type="text" name="nom_<?=$key?>" id="nom_<?=$key?>" class="input_large" /></td>
-                    </tr>            	
+                    </tr>
                     <tr id="typeLX_<?=$key?>" style="display: none;">
                         <th><label for="value_LX_<?=$key?>">Lien <?=(count($this->lLangues) > 1?'('.$key.')':'')?> :</label></th>
                         <td><input type="text" name="value_LX_<?=$key?>" id="value_LX_<?=$key?>" class="input_large" /></td>
@@ -85,7 +85,7 @@
                         <td>
                             <select name="value_L_<?=$key?>" id="value_L_<?=$key?>" class="select">
                                 <?
-                                foreach($this->tree->listChilds(0,'-',array(),$key) as $tree)
+                                foreach($this->tree->listChilds(0,array(),$key) as $tree)
                                 {
                                 ?>
                                     <option value="<?=$tree['id_tree']?>"><?=$tree['title']?></option>
@@ -101,7 +101,7 @@
                             <input type="radio" value="1" id="status1_<?=$key?>" name="status_<?=$key?>" checked="checked" class="radio" />
                             <label for="status1_<?=$key?>" class="label_radio">En ligne</label>
                             <input type="radio" value="0" id="status0_<?=$key?>" name="status_<?=$key?>" class="radio" />
-                            <label for="status0_<?=$key?>" class="label_radio">Hors ligne</label>	
+                            <label for="status0_<?=$key?>" class="label_radio">Hors ligne</label>
                         </td>
                     </tr>
                 <?

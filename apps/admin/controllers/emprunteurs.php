@@ -166,8 +166,9 @@ class emprunteursController extends bootstrap
         $this->clients_adresses = $this->loadData('clients_adresses');
         $this->companies        = $this->loadData('companies');
 
-        $this->settings->get('Liste deroulante secteurs', 'type');
-        $this->lSecteurs = explode(';', $this->settings->value);
+        /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
+        $translationManager  = $this->get('unilend.service.translation_manager');
+        $this->lSecteurs = $translationManager->getTranslatedCompanySectorList();
 
         if (isset($this->params[0]) && $this->clients->get($this->params[0], 'id_client')) {
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
@@ -200,8 +201,9 @@ class emprunteursController extends bootstrap
         $this->clients->history  = '';
         $this->settings          = $this->loadData('settings');
 
-        $this->settings->get('Liste deroulante secteurs', 'type');
-        $this->lSecteurs = explode(';', $this->settings->value);
+        /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
+        $translationManager  = $this->get('unilend.service.translation_manager');
+        $this->lSecteurs = $translationManager->getTranslatedCompanySectorList();
 
         if (isset($this->params[0]) && $this->clients->get($this->params[0], 'id_client') && $this->clients->isBorrower()) {
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
@@ -426,7 +428,7 @@ class emprunteursController extends bootstrap
 
             /** @var \projects $project */
             $project         = $this->loadData('projects');
-            $this->aProjects = $project->selectProjectsByStatus(implode(',', \projects_status::$runningRepayment), ' AND id_company = ' . $company->id_company);
+            $this->aProjects = $project->selectProjectsByStatus([\projects_status::$runningRepayment], ' AND id_company = ' . $company->id_company);
         }
     }
 

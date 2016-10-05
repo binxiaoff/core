@@ -2,19 +2,17 @@
 
 class protectedController extends bootstrap
 {
-	var $Command;
+    public function initialize()
+    {
+        parent::initialize();
 
-	public function initialize()
-	{
-		parent::initialize();
+        $this->hideDecoration();
 
-		$this->hideDecoration();
+        $this->autoFireView = false;
+        $this->catchAll     = true;
 
-		$this->autoFireView = false;
-		$this->catchAll     = true;
-
-		$this->users->checkAccess();
-	}
+        $this->users->checkAccess();
+    }
 
     public function _templates()
     {
@@ -303,9 +301,6 @@ class protectedController extends bootstrap
             die;
         }
     }
-
-
-    /// lenders //
 
     public function _cni_passeport_lender()
     {

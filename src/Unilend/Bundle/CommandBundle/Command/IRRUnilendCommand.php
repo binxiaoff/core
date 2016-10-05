@@ -27,8 +27,6 @@ class IRRUnilendCommand extends ContainerAwareCommand
 
         $sYesterday = date('Y-m-d', strtotime('-1 day'));
 
-        $this->fillProjectLastStatusMaterialized();
-
         if ($oIRRManager->IRRUnilendNeedsToBeRecalculated($sYesterday)) {
             try {
                 $oIRRManager->updateIRRUnilend();
@@ -36,28 +34,5 @@ class IRRUnilendCommand extends ContainerAwareCommand
                 $logger->error('Could not update Unilend IRR. Message: ' . $e->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__));
             }
         }
-        $this->emptyProjectLastStatusMaterialized();
-    }
-
-    private function fillProjectLastStatusMaterialized()
-    {
-        /** @var Connection $bdd */
-        $bdd = $this->getContainer()->get('doctrine.dbal.default_connection');
-
-        $bdd->query('TRUNCATE projects_last_status_history_materialized');
-        $bdd->query('
-            INSERT INTO projects_last_status_history_materialized
-              SELECT MAX(id_project_status_history) AS id_project_status_history, id_project
-              FROM projects_status_history
-              GROUP BY id_project'
-        );
-        $bdd->query('OPTIMIZE TABLE projects_last_status_history_materialized');
-    }
-
-    private function emptyProjectLastStatusMaterialized()
-    {
-        /** @var Connection $bdd */
-        $bdd = $this->getContainer()->get('doctrine.dbal.default_connection');
-        $bdd->query('TRUNCATE projects_last_status_history_materialized');
     }
 }

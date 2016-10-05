@@ -12,20 +12,12 @@
     </style>
 <?php endif; ?>
 <?php
-    $tab_date_retrait      = explode(' ', $this->projects->date_retrait_full);
-    $heure                 = $tab_date_retrait[1];
-    $tab_heure_sans_minute = explode(':', $heure);
-    $heure_sans_minute     = $tab_heure_sans_minute[0] . "h" . $tab_heure_sans_minute[1];
-
-    if ($heure_sans_minute == '00h00') {
-        $HfinFunding       = explode(':', $this->heureFinFunding);
-        $heure_sans_minute = $HfinFunding[0] . 'h00';
-    }
+    $heure_sans_minute = $this->projectEndedDate->format('G\hi');
 
     if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->page_attente) :
         $this->dateRest = $this->lng['preteur-projets']['termine_short'];
     else :
-        $this->heureFinFunding = $tab_heure_sans_minute[0] . ':' . $tab_heure_sans_minute[1]; ?>
+        $this->heureFinFunding = $this->projectEndedDate->format('G:i'); ?>
     <script type="text/javascript">
         var cible = new Date('<?= $this->mois_jour ?>, <?= $this->annee ?> <?= $this->heureFinFunding ?>:00');
         var letime = parseInt((cible.getTime()) / 1000, 10);
@@ -38,52 +30,13 @@
     <div class="shell">
         <button id="scrollUp" style="display:none"><i class="icon-scroll-up"></i></button>
         <div class="section-c clearfix section-single-project">
-            <div class="page-title clearfix">
-                <h1 class="left"><?= $this->lng['preteur-projets']['decouvrez-les'] ?> <?= $this->nbProjects ?> <?= $this->lng['preteur-projets']['projets-en-cours'] ?></h1>
-                <nav class="nav-tools left">
-                    <ul>
-                        <?php if ($this->positionProject['previous'] != '') : ?>
-                            <li>
-                                <a class="prev notext" href="<?= $this->lurl ?>/projects/detail/<?= $this->positionProject['previous'] ?>">arrpw</a>
-                            </li>
-                        <?php endif; ?>
-                            <li <?= ($this->positionProject['previous'] == '' || $this->positionProject['next'] == '' ? 'class="listpro"' : '') ?> >
-                                <a class="view notext" href="<?= $this->lurl ?>/<?= (false === isset($_SESSION['page_projet']) || $_SESSION['page_projet'] === 'projets_fo' ? $this->tree->getSlug(4, $this->language) : 'projects') ?>">view</a>
-                            </li>
-                        <?php if ($this->positionProject['next'] != '') : ?>
-                            <li>
-                                <a class="next notext" href="<?= $this->lurl ?>/projects/detail/<?= $this->positionProject['next'] ?>">arrow</a>
-                            </li>
-                        <?php endif; ?>
-                    </ul>
-                </nav>
-            </div>
 
-            <?php if (isset($_SESSION['messFinEnchere']) && $_SESSION['messFinEnchere'] != false) : ?>
-                <div class="messFinEnchere" style="float:right;color:#C84747;margin-top:18px;"><?= $_SESSION['messFinEnchere'] ?></div>
-                <?php unset($_SESSION['messFinEnchere']); ?>
-                <script type="text/javascript">
-                    setTimeout(function () {
-                        $('.messFinEnchere').slideUp();
-                    }, 5000);
-                </script>
-            <?php elseif (isset($_SESSION['messPretOK']) && $_SESSION['messPretOK'] != false) : ?>
-                <div class="messPretOK" style="float:right;color:#40B34F;margin-top:18px;"><?= $_SESSION['messPretOK'] ?></div>
-                <?php unset($_SESSION['messPretOK']); ?>
-                <script type="text/javascript">
-                    setTimeout(function () {
-                        $('.messPretOK').slideUp();
-                    }, 5000);
-                </script>
-            <?php endif; ?>
 
             <h2><?= $this->projects->title ?></h2>
             <div class="content-col left">
                 <div class="project-c">
                     <div class="top clearfix">
-                        <a <?= ($this->bIsConnected ? '' : 'style="visibility:hidden;"') ?> class="fav-btn right <?= $this->favori ?>" id="fav" onclick="favori(<?= $this->projects->id_project ?>, 'fav',<?= $this->clients->id_client ?>, 'detail');"><?= ($this->favori == 'active' ? $this->lng['preteur-projets']['retirer-de-mes-favoris'] : $this->lng['preteur-projets']['ajouter-a-mes-favoris']) ?>
-                            <i></i>
-                        </a>
+
                         <p class="left multi-line">
                             <em><?= $this->projects->nature_project ?></em>
                             <?php if ($this->projects_status->status == \projects_status::EN_FUNDING): ?>

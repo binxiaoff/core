@@ -57,7 +57,7 @@ class FeedsBPICommand extends ContainerAwareCommand
         $xml = '<?xml version="1.0" encoding="UTF-8"?>';
         $xml .= '<partenaire>';
 
-        $projects = $projects->selectProjectsByStatus(implode(',', $projectStatuses), '', '', array(), '', '', false);
+        $projects = $projects->selectProjectsByStatus($projectStatuses, 'AND p.display = ' . \projects::DISPLAY_PROJECT_ON, [], '', '', false);
         foreach ($projects as $project) {
             $company->get($project['id_company'], 'id_company');
 

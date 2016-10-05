@@ -1,6 +1,3 @@
-<?php if (isset($_SESSION['lexpress'])) { ?>
-    <iframe name="lexpress" SRC="<?= $_SESSION['lexpress']['header'] ?>" scrolling="no" height="138px" width="100%" FRAMEBORDER="no"></iframe>
-<?php } ?>
 <div class="wrapper">
 <?php
     if (
@@ -48,12 +45,12 @@
                             </div>
                             <img class="reload_captcha_login" src="<?= $this->surl ?>/images/default/icon-reload.gif" alt="Reload captcha"/>
                             <script type="text/javascript">
-                                $(".reload_captcha_login").click(function () {
-                                    $.post(add_url + "/ajax/captcha_login").done(function (data) {
-                                        $('.content_captcha_login').html(data);
-                                    });
+                            $(".reload_captcha_login").click(function () {
+                                $.post(add_url + "/ajax/captcha_login").done(function (data) {
+                                    $('.content_captcha_login').html(data);
                                 });
-                            </script>
+                            });
+                        </script>
                         <?php
                         elseif (isset($_SESSION['login']['nb_tentatives_precedentes'])
                                 && $_SESSION['login']['nb_tentatives_precedentes'] > 1

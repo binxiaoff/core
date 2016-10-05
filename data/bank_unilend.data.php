@@ -158,30 +158,4 @@ class bank_unilend extends bank_unilend_crud
 
         return $result;
     }
-
-    public function ListEcheancesByDayMonths($where = '', $month, $year)
-    {
-        if ($where != '') {
-            $where = ' AND ' . $where;
-        }
-
-        $sql = 'SELECT LEFT(added,10) as date, id_echeance_emprunteur FROM `bank_unilend` WHERE LEFT(added,7) = "' . $year . '-' . $month . '" ' . $where . ' ORDER BY date';
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        $ladate   = '';
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            if ($record['id_echeance_emprunteur'] != '0') {
-                if ($record['date'] == $ladate) {
-                    $result[$ladate] .= ',' . $record['id_echeance_emprunteur'];
-                } else {
-                    $result[$record['date']] = $record['id_echeance_emprunteur'];
-                }
-
-                $ladate = $record['date'];
-            }
-        }
-
-        return $result;
-    }
 }

@@ -1,0 +1,84 @@
+//
+// Unilend List - My Offers
+//
+
+// Structural styles
+@mixin list-myoffer-sm {
+  padding: 20px;
+}
+
+@mixin list-myoffer-lg {
+  padding: 20px 30px;
+}
+
+// Non-structural styles below
+// @note shared between all breakpoints
+.myoffer-project-cost {
+  // float: right;
+  color: $c-t3;
+  font-size: $fs-base * .8;
+}
+
+.myoffer-project-period {
+  // float: right;
+}
+
+.myoffer-amount {
+  .amount,
+  .interest {
+    color: $c-p1;
+  }
+}
+
+// List styling
+.list-myoffers {
+  @include block-list;
+
+  // Styled to `xs`
+  > .myoffer {
+    @include clearfix;
+    padding: 20px;
+    position: relative;
+
+    border-bottom: solid 2px $c-bg2;
+    color: $c-t1;
+    font-size: $fs-base;
+    line-height: 1.3em;
+
+    .myoffer-project-name,
+    .myoffer-amount {
+      float: left;
+      clear: left;
+    }
+
+    .myoffer-project-cost,
+    .myoffer-project-period {
+      float: right;
+      clear: right;
+    }
+
+    .myoffer-project-name,
+    .myoffer-project-cost {
+      margin-bottom: 6px;
+    }
+
+    &.myoffer-autolend {
+      .myoffer-amount:before {
+        content: $fa-autolend-u; // Autolend
+        display: inline-block;
+        margin-right: 3px;
+        color: $c-p1;
+        font-family: $ff-icon;
+        font-size: 21px;
+      }
+    }
+
+    @include devices('sm', 'md') {
+      @include list-myoffer-sm;
+    }
+
+    @include devices('lg') {
+      @include list-myoffer-lg;
+    }
+  }
+}

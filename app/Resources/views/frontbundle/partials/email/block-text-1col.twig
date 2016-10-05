@@ -1,0 +1,67 @@
+{# Block Text - 1 column #}
+
+{# Usage:
+
+{% embed 'partials/block-text-1col.twig' with {'contentStyle': 'example-content-class another-class-name'} %}
+  {% block content %}<p>Lorem ipsum dolor sit amet. Put whatever HTML you want in here!</p>{% endblock %}
+{% endembed %}
+
+Variable Reference:
+
+  hasTable:             {Boolean} Default: true
+  contentWidth:         {Int} in pixels, Default: 490
+  spacerLeftWidth:      {Int} in pixels, Default: 55
+  spacerCenterWidth:    {Int} in pixels, Default: 20
+  spacerRightWidth:     {Int} in pixels, Default: 55
+  spacerTopHeight:      {Int} in pixels, Default: 40
+  spacerBottomHeight:   {Int} in pixels, Default: 40
+  hasSpacerTop:         {Boolean} Default: true
+  hasSpacerBottom:      {Boolean} Default: true
+  tableClassNames:      {String}
+  tableStyle:           {String}
+  contentAlign:         {String} Default: 'left'
+  contentColSpan:       {Int} only set if you are using within a table (e.g. hasTable = false), Default: 1
+  contentClassNames:    {String}
+  contentStyle:         {String}
+
+Block Reference:
+
+  content
+#}
+
+{# Set defaults here #}
+{% set hasTable = hasTable|default(true) %}
+{% set contentWidth = colLeftWidth|default(490) %}
+{% set spacerLeftWidth = spacerLeftWidth|default(55) %}
+{% set spacerCenterWidth = spacerLeftWidth|default(20) %}
+{% set spacerRightWidth = spacerRightWidth|default(55) %}
+{% set spacerTopHeight = spacerTopHeight|default(40) %}
+{% set spacerBottomHeight = spacerBottomHeight|default(40) %}
+{% set hasSpacerLeft = hasSpacerLeft|default(true) %}
+{% set hasSpacerRight = hasSpacerRight|default(true) %}
+{% set hasSpacerTop = hasSpacerTop|default(true) %}
+{% set hasSpacerBottom = hasSpacerBottom|default(true) %}
+{% set tableClassNames = tableClassNames|default('') %}
+{% set tableStyle = tableStyle|default('') %}
+{% set contentAlign = contentAlign|default('left') %}
+{% set contentClassNames = contentClassNames|default('') %}
+{% set contentStyle = contentStyle|default('') %}
+{% set contentColSpan = contentColSpan|default(1) %}
+{% set colSpan = ((hasSpacerLeft == true ? 1 : 0) + (hasSpacerRight == true ? 1 : 0) + contentColSpan) %}
+
+{# HTML output #}
+{% if hasTable == true %}<table width="100%" border="0" cellpadding="0" cellspacing="0" class="table_reset {{ tableClassNames }}" style="{{ css.table_reset }} {{ tableStyle }}">{% endif %}
+  {% if hasSpacerTop == true %}<tr>
+    <td colspan="{{ colSpan }}" align="left" valign="top" class="td_reset" style="{{ css.td_reset }} text-align: left; vertical-align: top;"><img src="{{ siteurlmedia('email/1x1.gif') }}" border="0" width="100%" height="{{ spacerTopHeight }}" alt="" class="image_reset" style="{{ css.image_reset }} width: 100%; height: {{ spacerTopHeight }}px;"></td>
+  </tr>{% endif %}
+  <tr>
+    <td width="{{ spacerLeftWidth }}" align="left" valign="top" class="td_reset" style="{{ css.td_reset }} width: {{ spacerLeftWidth }}px; text-align: left; vertical-align: top;"><img src="{{ siteurlmedia('email/1x1.gif') }}" border="0" width="{{ spacerLeftWidth }}" height="1" alt="" class="image_reset" style="{{ css.image_reset }} width: {{ spacerLeftWidth }}px;"></td>
+    <td{% if contentColSpan > 1 %} colspan="{{ contentColSpan }}"{% endif %} width="{{ contentWidth }}" align="{{ contentAlign }}" valign="top" class="td_reset {{ contentClassNames }}" style="{{ css.td_reset }} width: {{ contentWidth }}px; text-align: {{ contentAlign }}; vertical-align: top; {{ contentStyle }}">
+      {% block content %}&nbsp;{% endblock %}
+    </td>
+    <td width="{{ spacerRightWidth }}" align="left" valign="top" class="td_reset" style="{{ css.td_reset }} width: {{ spacerRightWidth }}px; text-align: left; vertical-align: top;"><img src="{{ siteurlmedia('email/1x1.gif') }}" border="0" width="{{ spacerRightWidth }}" height="1" alt="" class="image_reset" style="{{ css.image_reset }} width: {{ spacerRightWidth }}px;"></td>
+  </tr>
+  {% if hasSpacerBottom == true %}<tr>
+    <td colspan="{{ colSpan }}" align="left" valign="top" class="td_reset" style="{{ css.td_reset }} text-align: left; vertical-align: top;"><img src="{{ siteurlmedia('email/1x1.gif') }}" border="0" width="100%" height="{{ spacerBottomHeight }}" alt="" class="image_reset" style="{{ css.image_reset }} width: 100%; height: {{ spacerBottomHeight }}px;"></td>
+  </tr>{% endif %}
+{% if hasTable == true %}</table>{% endif %}

@@ -1,0 +1,412 @@
+//
+// Unilend Mixins
+// @description General use mixins
+
+// Function to replace characters in a string
+// See: http://codepen.io/tigt/post/optimizing-svgs-in-data-uris
+@function str-replace ($string, $search, $replace: '') {
+  $index: str-index($string, $search);
+  @if $index {
+    @return str-slice($string, 1, $index - 1) + $replace +
+        str-replace(str-slice($string, $index +
+        str-length($search)), $search, $replace);
+  }
+  @return $string;
+}
+
+// Function to create an optimized svg url
+// (may need a few extra replacements)
+// See: http://codepen.io/tigt/post/optimizing-svgs-in-data-uris
+@function svg-url ($svg) {
+  //
+  // Chunk up string in order to avoid
+  // "SystemStackError: stack level too deep"
+  //
+  $encoded:'';
+  $slice: 2000;
+  $index: 0;
+  $loops: ceil(str-length($svg)/$slice);
+  @for $i from 1 through $loops {
+    $chunk: str-slice($svg, $index, $index + $slice - 1);
+    //$chunk: str-replace($chunk,' ','%20');
+    $chunk: str-replace($chunk,'"','\'');
+    $chunk: str-replace($chunk,'<','%3C');
+    $chunk: str-replace($chunk,'>','%3E');
+    $chunk: str-replace($chunk,'&','%26');
+    $chunk: str-replace($chunk,'#','%23');
+    $encoded: #{$encoded}#{$chunk};
+    $index: $index + $slice;
+  }
+  @return url("data:image/svg+xml;utf8,#{$encoded}");
+}
+
+// Get inline SVG code as a `url()` string for CSS inlining
+// @note previously this was an external Ruby module, now it is an inline SASS thing
+@function inline-svg-code ($input) {
+  @return svg-url($input);
+}
+
+@function get-image-url ($input) {
+  $image-url: image-url($input, true, false);
+  // @debug $image-url;
+  @return $image-url;
+  // @return '#{$media-url}#{$input}';
+}
+
+// Calculate top/bottom padding from full height
+// Used mainly with button and input elements
+@function padding-height($height: $btn-height, $line-height: $lh-base, $border-width: 2px) {
+  @return ($height - ($border-width * 2) - $line-height) * .5;
+}
+
+// Clearfix
+@mixin clearfix {
+  &:before,
+  &:after {
+    content: ' ';
+    display: table;
+  }
+
+  &:after {
+    clear: both;
+  }
+}
+
+// Hide an element accessibly (i.e. screen readers should still be able to read it)
+// @usage Use when hiding labels of buttons, or other interactive functionality that you
+//        want to only have an icon or image to display in the UI
+@mixin hide-accessible {
+  position: absolute !important;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  clip: rect(1px 1px 1px 1px); /* IE6, IE7 */
+  clip: rect(1px, 1px, 1px, 1px);
+}
+
+.hide-accessible {
+  @include hide-accessible;
+}
+
+@mixin remove-hide-accessible {
+  position: initial !important;
+  height: inherit;
+  width: inherit;
+  overflow: inherit;
+  clip: inherit;
+}
+
+// Adds styles by extending the class with a list of properties
+@mixin add-styles($list) {
+  @each $style, $value in $list {
+    #{$style}: #{$value};
+  }
+}
+
+// Build selectors for alternate styles
+// @returns {Mixed} If which is 1 or 2, returns a {String} selector, else it returns a {Map} containing both
+//                  (use `nth($return-value, {Int})` to target which selector you want)
+@function alternate-style-selectors($which: 'both', $columns: 1, $num-per-row: 0, $target: '', $offset: 0) {
+  $output: '';
+  $sides: 2; // Will always stay 2, but I think algo supports any number
+
+  // Default columns to 1
+  @if $columns == 0 or type-of($columns) != 'number' {
+    $columns: 1;
+  }
+
+  // Props
+  $selector-a: '';
+  $selector-b: '';
+  $count-a: 0;
+  $count-b: 0;
+  // $current-side: 1;
+
+  // Build selectors
+  // -- Apply checkbox to total columns which are even, e.g. 2, 4, 6, 8, etc.
+  @if $columns % 2 == 0 {
+    // @debug 'checkerboard';
+    $max-columns: $columns * $sides;
+
+    @if $columns > 1 {
+      @for $i from 1 through $max-columns {
+        // Apply offset
+        // @note I think offset is a bit dodgy when total number of items exceeds max-columns...
+        $x: $i + $offset;
+        $use-side: ceil(($i + $columns + ceil($i / $columns)) / ($num-per-row + 1)) % $sides;
+
+        // Side A/0
+        @if $use-side == 0 {
+          $count-a: $count-a + 1;
+          $selector-a: if($count-a > 1, '#{$selector-a},', '') + '#{$target}:nth-of-type(#{$max-columns}n+#{$x})';
+
+        // Side B/1
+        } @else {
+          $count-b: $count-b + 1;
+          $selector-b: if($count-b > 1, '#{$selector-b},', '') + '#{$target}:nth-of-type(#{$max-columns}n+#{$x})';
+        }
+
+        // Switch side when reaches the max
+        // @if $i % $max == 0 {
+        //   @if $current-side == 1 {
+        //     $current-side: 2;
+        //   } @else {
+        //     $current-side: 1;
+        //   }
+
+        //   $swap: $selector-a;
+        //   $selector-a: $selector-b;
+        //   $selector-b: $swap;
+
+        //   $swap-count: $count-a;
+        //   $count-a: $count-b;
+        //   $count-b: $swap-count;
+        // }
+      }
+    }
+  // -- Basic even/odd for all total columns which are odd, e.g. 1, 3, 5, 7, etc.
+  } @else {
+    // -- Multiple of same per row
+    // @todo I have a feeling this could be pushed to be properly supported by the above algo
+    @if $num-per-row > 0 {
+      @for $i from 1 through $columns {
+        @if $i % $num-per-row == 0 {
+          $count-a: $count-a + 1;
+          $selector-a: if($count-a > 1, '#{$selector-a},', '') + '#{$target}:nth-of-type(#{$columns}n+#{$i})';
+        } @else {
+          $count-b: $count-b + 1;
+          $selector-b: if($count-b > 1, '#{$selector-b},', '') + '#{$target}:nth-of-type(#{$columns}n+#{$i})';
+        }
+      }
+    // -- Basic
+    } @else {
+      $selector-a: '#{$target}:nth-of-type(#{$sides}n+1)';
+      $selector-b: '#{$target}:nth-of-type(#{$sides}n+2)';
+    }
+
+  }
+
+  // @debug "columns: #{$columns}, num-per-row: #{$num-per-row}";
+  // @debug "#{$selector-a}";
+  // @debug "#{$selector-b}";
+
+  // Output
+  @if $which == 1 {
+    $output: $selector-a;
+  } @else if $which == 2 {
+    $output: $selector-b;
+  } @else {
+    $output: ($selector-a, $selector-b);
+  }
+
+  @return $output;
+}
+
+// Apply 2 different styles {Map}s to alternating Nth items (alternation pattern depends on $columns value)
+// Minimum 1 column, maximum 4 columns
+// Use $target like '.mosaic-item', '>', '&', etc.
+@mixin alternate-styles($style-a: false, $style-b: false, $columns: 1, $target: '', $offset: 0, $num-per-row: 0) {
+  $selectors: alternate-style-selectors($which: 'both', $columns: $columns, $target: $target, $offset: $offset, $num-per-row: $num-per-row);
+  $selector-a: nth($selectors, 1);
+  $selector-b: nth($selectors, 2);
+
+  // Apply styles
+  @if $style-a != false and $selector-a {
+    #{$selector-a} {
+      @include add-styles($style-a);
+    }
+  }
+
+  @if $style-b != false and $selector-b {
+    #{$selector-b} {
+      @include add-styles($style-b);
+    }
+  }
+}
+
+// Apply a {@content} block to only one of the alternate selectors
+@mixin alternate-style-content($which: 1, $columns: 1, $target: '', $offset: 0, $num-per-row: 0) {
+  $selectors: alternate-style-selectors($which: 'both', $columns: $columns, $target: $target, $offset: $offset, $num-per-row: $num-per-row);
+  $selector-a: nth($selectors, 1);
+  $selector-b: nth($selectors, 2);
+  $selector: '';
+
+  // Determine which to apply to
+  @if $which == 1 {
+    $selector: $selector-a;
+  } @else {
+    $selector: $selector-b;
+  }
+
+  // Doits!
+  #{$selector} {
+    @content;
+  }
+}
+
+// Adds styles per link state: :link, :visited, :hover, :active
+@mixin link-states($link, $visited: false, $hover: false, $active: false) {
+  // :link
+  @if $link and $visited {
+    &,
+    &:link {
+      @include add-styles($link);
+    }
+  } @else {
+    &,
+    &:link,
+    &:visited {
+      @include add-styles($link);
+    }
+  }
+
+  // :visited
+  @if $visited {
+    &:visited {
+      @include add-styles($visited);
+    }
+  }
+
+  // :hover
+  @if $hover {
+    &:hover,
+    &:focus {
+      @include add-styles($hover);
+    }
+  }
+
+  // :active
+  @if $active {
+    &:active {
+      @include add-styles($active);
+    }
+  }
+}
+
+// Vertical align using table method
+@mixin vertical-align-table {
+  display: table;
+
+  > * {
+    display: table-cell;
+    vertical-align: middle;
+  }
+}
+
+// Vertically align the contents
+.vertical-align-content {
+  @include vertical-align-table;
+}
+
+// Vertical align using inline block method
+@mixin vertical-align-inline-block {
+  vertical-align: middle;
+
+  &:before {
+    content: "";
+    display: inline-block;
+    width: 0;
+    height: 100%;
+    margin-left: 0;
+    vertical-align: middle;
+    overflow: hidden;
+    clear: none;
+  }
+
+  h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4 {
+    display: inline-block;
+    vertical-align: middle;
+  }
+}
+
+// Show a gradient to hide cropped text
+@mixin text-overflow-gradient ($bg-color: $c-white, $width: 50%, $height: $lh-base, $direction: 'to left', $position: (position: absolute, bottom: 0)) {
+  position: relative;
+
+  &:after {
+    content: '';
+    display: block;
+    width: $width;
+    height: $height;
+
+    @if $position {
+      @include add-styles($position);
+    }
+
+    @if str-index($direction, 'left') {
+      right: 0;
+    } @else if str-index($direction, 'right') {
+      left: 0;
+    }
+    @include background-image(-svg(linear-gradient("#{$direction}", $bg-color 0%, fade-out($bg-color, 1) 100%)));
+  }
+}
+
+// Style only text inputs
+@mixin text-inputs($textarea: true, $inheritance: '') {
+  // Supported input types
+  $text-inputs: ('text', 'search', 'email', 'password', 'url', 'color', 'number', 'range', 'tel', 'date', 'datetime', 'datetime-local', 'week', 'month', 'year');
+
+  // Build the selector to cover supported input types
+  $selector : '';
+  $i: 0;
+  @each $text-input in $text-inputs {
+    // Add a comma if more than one input supported
+    $i: $i + 1;
+    @if $i > 1 {
+      $selector: '#{$selector},';
+    }
+
+    // Append the supported input type to the selector string
+    $selector: '#{$selector} #{$inheritance} input[type="#{$text-input}"]';
+  }
+
+  // Support textarea too
+  @if $textarea {
+    $selector: '#{$selector}, #{$inheritance} textarea';
+  }
+
+  // Apply the content to the selector
+  #{$selector} {
+    @content;
+  }
+}
+
+// Size image to width of parent
+@mixin constrain-size-by-width($width: false) {
+  @if $width {
+    width: $width;
+  }
+  max-width: 100%;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+}
+
+// Alias
+@mixin constrain-size-to-width($width: false) {
+  @include constrain-size-by-width($width);
+}
+
+.constrain-max-width {
+  @include constrain-size-by-width;
+}
+
+@mixin constrain-size-by-height($height: false) {
+  @if $height {
+    height: $height;
+  }
+  max-height: 100%;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+}
+
+// Alias
+@mixin constrain-size-to-height($height: false) {
+  @include constrain-size-by-height($height);
+}
+
+.constrain-max-height {
+  @include constrain-size-by-height;
+}

@@ -1,0 +1,111 @@
+{# Projects Index #}
+{% extends 'layouts/_layout.html.twig' %}
+
+{% set page = {
+    title: 'Devenir Prêteur',
+    permalink: path('lender_subscription_documents', {'clientHash' : client.hash })
+} %}
+
+{# Set input ID namespace to "person" #}
+{% if client.type in [constant('\\clients::TYPE_PERSON'), constant('\\clients::TYPE_PERSON_FOREIGNER')] %}
+    {% set idClientType = 'person' %}
+
+{# Otherwise set input ID namespace to "legal-entity" #}
+{% else %}
+    {% set idClientType = 'legal-entity' %}
+{% endif %}
+
+{% block siteContent %}
+<article id="devenir-preteur" class="page">
+    <div class="hero-wrap">
+
+        <header class="page-header">
+            <div class="site-wrap">
+                <h1 id="preter-create-title" class="h1">{% trans %} lender-subscription_page-title {% endtrans %}</h1>
+            </div><!-- /.site-wrap -->
+        </header><!-- /.page-header -->
+
+        <div class="page-content">
+            <div class="site-wrap">
+                <div class="tabs ui-tabs-progress">
+                    {% include 'pages/lender_subscription/partials/progress_bar.html.twig' %}
+
+                    <div class="form-preter-content tab-content">
+                        <form id="form-lender-step-2" method="post" action="{{ path('lender_subscription_documents_form', {'clientHash' : client.hash }) }}" class="form-preter-create" enctype="multipart/form-data">
+                            <div id="form-preter-2" role="tabpanel" class="tab-pane active" aria-labelledby="preter-create-2 preter-create-title">
+                                <div class="row">
+                                    <div class="col-form col-lg-8 col-md-8" data-formvalidation data-formvalidation-notificationselem="#form-preter-2-notifications">
+
+                                        {% include 'pages/lender_subscription/partials/documents_bank_info.html.twig' %}
+
+                                        {% if idClientType == 'person' %}
+                                            {% include 'pages/lender_subscription/partials/documents_attachments_person.html.twig' %}
+                                        {% else %}
+                                            {% include 'pages/lender_subscription/partials/documents_attachments_legal_entity.html.twig' %}
+                                        {% endif %}
+
+                                        <div class="row reverse btn-controls tab-footer">
+                                            <div class="col-submit col-lg-7 col-md-7">
+                                                <button class="btn-primary">
+                                                    {% trans %} lender-subscription_documents-submit-button {% endtrans %}
+                                                    <span class="icon fa-angle-right"></span>
+                                                </button>
+                                            </div>
+                                        </div><!-- /.btn-controls.tab-footer -->
+                                    </div>
+
+                                    <div class="col-promos col-lg-4 col-md-4">
+                                        <div class="promo">
+                                            <div class="promo-image">
+                                                {{ svgimage('#promo-saving', '', 190, 190, 'none') | raw }}
+                                            </div>
+                                            <h3 class="promo-highlight">
+                                                <span class="ui-text-count" data-start-count="0" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc"
+                                                      data-end-count="{{ 'lender-subscription_documents-statistics-section-saving-value'|trans }}" ></span><sup>%</sup>
+                                            </h3>
+                                            <p>{% trans %} lender-subscription_documents-statistics-section-saving-text {% endtrans %}</p>
+                                        </div><!-- /.promo -->
+
+                                        <div class="promo">
+                                            <div class="promo-image">
+                                                {{ svgimage('#promo-linechart2', '', 190, 190, 'none') | raw }}
+                                            </div>
+                                            <h3 class="promo-highlight">
+                                                {% if 'lender-subscription_documents-statistics-section-linechart-value'|trans != 'lender-subscription_documents-statistics-section-linechart-value' %}
+                                                    {% set valueLineChart = getStatistic('unilendIRR')|round(2, 'floor') %}
+                                                {% else %}
+                                                    {% set valueLineChart = 'lender-subscription_documents-statistics-section-linechart-value'|trans %}
+                                                {% endif %}
+                                                <span class="ui-text-count" data-start-count="0"
+                                                      data-end-count="{{ valueLineChart }}"
+                                                      data-total-time="3000"
+                                                      data-limit-decimal="2"
+                                                      data-tween-count="easeOutQuint"></span>
+                                                <sup>%</sup>
+                                            </h3>
+                                            <p>{% trans %} lender-subscription_documents-statistics-section-linechart-text {% endtrans %}</p>
+                                        </div><!-- /.promo -->
+
+                                        <div class="promo">
+                                            <div class="promo-image">
+                                                {{ svgimage('#promo-pagestack', '', 190, 190, 'none') | raw }}
+                                            </div>
+                                            <h3 class="promo-highlight">{% trans %} lender-subscription_documents-statistics-section-pagestack-value {% endtrans %}</h3>
+                                            <p>{% trans %} lender-subscription_documents-statistics-section-pagestack-text {% endtrans %}</p>
+                                        </div><!-- /.promo -->
+                                    </div>
+                                </div><!-- /.row -->
+                            </div><!-- /.tab-pane -->
+                        </form><!-- /.form-preter-create -->
+                    </div><!-- /.form-preter-content -->
+                </div><!-- /.tabs -->
+            </div><!-- /.site-wrap -->
+        </div><!-- /.page-content -->
+
+        {% include 'partials/components/list-socialmedia.html.twig' %}
+    </div><!-- /.hero-wrap -->
+
+</article><!-- /.page -->
+{% endblock %}
+
+

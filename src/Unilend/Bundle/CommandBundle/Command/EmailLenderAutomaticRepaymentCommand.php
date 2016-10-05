@@ -50,9 +50,7 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
-        $lEcheances           = $echeanciers->selectEcheances_a_remb('status = 1 AND status_email_remb = 0 AND status_emprunteur = 1', '', 0, 300);
-        $sUrl                 = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
-
+        $lEcheances = $echeanciers->select('status = 1 AND status_email_remb = 0 AND status_emprunteur = 1', '', 0, 300);
         $settings->get('Facebook', 'type');
         $sFB      = $settings->value;
 
@@ -61,11 +59,13 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
 
         foreach ($lEcheances as $e) {
             if (
-                $transactions->get($e['id_echeancier'], 'id_echeancier')
+                $transactions->exist($e['id_echeancier'], 'id_echeancier')
                 && $lenders->get($e['id_lender'], 'id_lender_account')
                 && $clients->get($lenders->id_client_owner, 'id_client')
             ) {
                 $echeanciers->get($e['id_echeancier'], 'id_echeancier');
+                $rembNet = bcdiv($transactions->sum(' id_echeancier = ' . $e['id_echeancier'], 'montant'), 100, 2);
+                $transactions->get($e['id_echeancier'], 'type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . ' AND id_echeancier');
 
                 if (1 == $clients->status) {
                     $projects->get($e['id_project'], 'id_project');
@@ -80,7 +80,6 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                     $day               = date('d', $timeAdd);
                     $month             = $dates->tableauMois['fr'][date('n', $timeAdd)];
                     $year              = date('Y', $timeAdd);
-                    $rembNet           = $e['rembNet'];
                     $euros             = ($rembNet >= 2) ? ' euros' : ' euro';
                     $rembNetEmail      = $ficelle->formatNumber($rembNet) . $euros;
                     $getsolde          = $transactions->getSolde($clients->id_client);
@@ -105,12 +104,13 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                         $clients_gestion_mails_notif->immediatement = 1;
                         $clients_gestion_mails_notif->update();
 
+                        $sUrl    = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
                         $varMail = array(
                             'surl'                  => $sUrl,
                             'url'                   => $sUrl,
                             'prenom_p'              => $clients->prenom,
                             'mensualite_p'          => $rembNetEmail,
-                            'mensualite_avantfisca' => bcdiv($e['montant'], 100),
+                            'mensualite_avantfisca' => bcdiv($e['montant'], 100, 2),
                             'nom_entreprise'        => $companies->name,
                             'date_bid_accepte'      => $day . ' ' . $month . ' ' . $year,
                             'solde_p'               => $solde,

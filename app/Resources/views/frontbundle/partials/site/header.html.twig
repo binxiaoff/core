@@ -1,0 +1,67 @@
+<header class="site-header">
+    <div class="site-band"></div>
+
+    <div class="site-header-inner">
+        <div class="site-wrap">
+            {% block siteHeaderMobileMenuOpen %}
+                <a href="javascript:;" tabindex="-1" class="site-mobile-menu-open" role="button">
+                    <span role="presentation" class="icon menu">
+                        <div class="menu-1"></div>
+                        <div class="menu-2"></div>
+                        <div class="menu-3"></div>
+                    </span><span class="sr-only">{% trans %} header_mobile-header-menu {% endtrans %}</span>
+                </a><!-- /.site-mobile-menu-open -->
+            {% endblock %}
+
+            <h1 class="site-title">
+                <a href="{{ path('home') }}" class="site-logo" tabindex="2">{{ site.title|default('Unilend') }}</a>
+            </h1>
+
+            {% block siteHeaderNav %}
+                {% include 'partials/site/header_nav.html.twig' %}
+            {% endblock siteHeaderNav %}
+
+            <div class="site-controls">
+                {% block siteHeaderControls %}
+                    <form action="{{ path('search') }}" method="post" class="site-search" role="search">
+                        <div class="form-field-inline">
+                            <label for="site-search-input" class="site-search-toggle">
+                                <span class="sr-only">{% trans %} site-general_search-label {% endtrans %}</span>
+                            </label>
+                            <div class="btn-group">
+                                <button class="btn-search" tabindex="-1">
+                                    <span class="sr-only">{% trans %} site-general_search-submit {% endtrans %}</span>
+                                </button>
+                            </div>
+                            <input id="site-search-input" type="text" name="search" placeholder="{% trans %} site-general_search-placeholder {% endtrans %}"
+                                   value="" tabindex="1" class="input-field site-search-input">
+
+                            <div id="site-search-autocomplete" class="autocomplete" aria-hidden="true">
+                                <ul class="autocomplete-results">
+                                    {# Site search AutoComplete AJAX results will be rendered here #}
+                                    <li><a href="#" tabindex="-1">Comment les prêteurs alimentent leur compte&nbsp;?</a></li>
+                                    <li><a href="#" tabindex="-1">Comment prêter sur un projet&nbsp;?</a></li>
+                                    <li><a href="#" tabindex="-1">Comment sont calculés les intérêts&nbsp;?</a></li>
+                                    <li><a href="#" tabindex="-1">Comment l'argent des prêteurs est-il transféré à l'entreprise&nbsp;?</a></li>
+                                    <li><a href="#" tabindex="-1">Comment savoir que mon portefeuille est performant&nbsp;?</a></li>
+                                    <li><a href="#" tabindex="-1">Comment se met en place le remboursement du prêt&nbsp;?</a></li>
+                                    <li><a href="#" tabindex="-1">Comment Unilend dépose sur le compte des prêteurs&nbsp;?</a></li>
+                                    <li><a href="#" tabindex="-1">Comment supprimer mon compte&nbsp;?</a></li>
+                                </ul>
+                                <div class="autocomplete-footer">
+                                    <button class="btn-primary btn-shape-md btn-size-full">{% trans %} site-general_search-show-all-results {% endtrans %}</button>
+                                </div>
+                            </div><!-- /.autocomplete -->
+                        </div><!-- /.form-field-inline -->
+                    </form><!-- /.site-search -->
+
+                    <div class="site-user">
+                        <a href="{{ path('login') }}" class="btn-site-login" tabindex="3">
+                            <span class="label">{% trans %} header_site-user-register {% endtrans %}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; {% trans %} header_site-user-login {% endtrans %}</span>
+                        </a>
+                    </div><!-- /.site-user -->
+                {% endblock %}
+            </div><!-- /.site-controls -->
+        </div><!-- /.site-wrap -->
+    </div><!-- /.site-header-inner -->
+</header>

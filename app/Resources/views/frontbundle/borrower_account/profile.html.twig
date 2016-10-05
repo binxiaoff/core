@@ -1,0 +1,92 @@
+{% extends 'borrower_account/_layout.html.twig' %}
+
+{% set page = {
+    id: 'user-borrower-profile',
+    title: 'Emprunteur / Profil',
+    permalink: path('borrower_account_profile'),
+    classNames: 'user-borrower-profile'
+} %}
+
+{% block dashboardContent %}
+    <div class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-nav">
+            <ul class="nav nav-dashboard-tabs" data-nav-dropdown-menu="mobile">
+                <li role="presentation" class="active"><a href="#profile-info" role="tab" data-toggle="tab">{{ 'borrower-profile_information'|trans }}</a></li>
+                <li role="presentation"><a href="#profile-infobank" role="tab" data-toggle="tab">{{ 'borrower-profile_bank-details'|trans }}</a></li>
+            </ul>
+        </div><!-- /.dashboard-nav-content -->
+
+        <div class="dashboard-tabs-content tab-content">
+            <div id="profile-info" role="tabpanel" class="dashboard-tab-pane tab-pane active">
+                <article id="panel-info" class="panel">
+                    <header class="panel-header">
+                        <h3>{{ 'borrower-profile_identity'|trans }}</h3>
+                    </header>
+                    <section id="profile-info-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                        <section id="profile-info-view" role="tabpanel" class="profile-info-view collapse in">
+                            <dl class="list-2col">
+                                <dt>{{ 'common_name'|trans }}</dt>
+                                <dd id="profile-info-nom-output">{{ client.nom|default('') }}</dd>
+                                <dt>{{ 'common_firstname'|trans }}</dt>
+                                <dd id="profile-info-prenom-output">{{ client.prenom|default('') }}</dd>
+                                <dt>{{ 'common_position'|trans }}</dt>
+                                <dd id="profile-info-statut-output">{{ client.fonction|default('') }}</dd>
+                                <dt>{{ 'common_phone'|trans }}</dt>
+                                <dd id="profile-info-phone-output">{{ client.mobile|default('') }}</dd>
+                                <dt>{{ 'common_email'|trans }}</dt>
+                                <dd id="profile-info-email-output">{{ client.email|default('') }}</dd>
+                            </dl>
+                        </section>
+                    </section><!-- /.ui-toggle-group -->
+                </article><!-- /.panel -->
+
+                <article id="panel-address" class="panel">
+                    <header class="panel-header">
+                        <h3>{{ 'borrower-profile_identity-document'|trans }}</h3>
+                    </header>
+                    <section id="profile-address-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                        <section id="profile-address-view" role="tabpanel" class="profile-address-view collapse in">
+                            <dl class="list-2col">
+                                <dt>{{ 'borrower-profile_siren'|trans|upper }}</dt>
+                                <dd>{{ company.siren }}</dd>
+                                <dt>{{ 'borrower-profile_company-name'|trans }}</dt>
+                                <dd>{{ company.name }}</dd>
+                                <dt>{{ 'borrower-profile_address'|trans }}</dt>
+                                <dd id="profile-address-street-output">{{ company.adresse1 }}</dd>
+                                <dt>{{ 'borrower-profile_post-code'|trans }}</dt>
+                                <dd id="profile-address-code-output">{{ company.zip }}</dd>
+                                <dt>{{ 'borrower-profile_city'|trans }}</dt>
+                                <dd id="profile-address-ville-output">{{ company.city }}</dd>
+                                <dt>{{ 'borrower-profile_company-phone-number'|trans }}</dt>
+                                <dd id="profile-address-mobile-output">{{ company.phone }}</dd>
+                                <dt>{{ 'borrower-profile_invoice-email'|trans }}</dt>
+                                <dd>{{ company.email_facture }}</dd>
+                            </dl>
+                        </section><!-- /.profile-address-view -->
+                    </section><!-- /.ui-toggle-group -->
+                    <a href="{{ path('borrower_account_contact') }}" class="btn-primary borrower-profil-button-modification">{{ 'borrower-profile_ask-to-modify-these-information'|trans }}</a>
+                </article><!-- /.panel -->
+            </div><!-- /#profile-info.dashboard-tab-pane -->
+
+            <div id="profile-infobank" role="tabpanel" class="dashboard-tab-pane tab-pane">
+                <article id="panel-bank" class="panel">
+                    <header class="panel-header">
+                        <h3>{{ 'borrower-profile_bank-information'|trans }}</h3>
+                    </header><!-- .panel-header -->
+                    <section id="profile-fiscalite-bank-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                        <section id="profile-fiscalite-bank-view" role="tabpanel" class="profile-bank-view collapse in">
+                            <dl class="list-2col">
+                                <dt>{{ 'borrower-profile_bic'|trans|upper }}</dt>
+                                <dd>{{ company.bic }}</dd>
+                                <dt>{{ 'borrower-profile_iban'|trans|upper }}</dt>
+                                <dd>{{ company.iban|split('', 4)|join(' ') }}</dd>
+                            </dl>
+                            <p>{{ 'borrower-profile_bank-information-modification-message'|trans }}</p>
+                        </section>
+                    </section><!-- /.ui-toggle-group -->
+                    <a href="{{ path('borrower_account_contact') }}" class="btn-primary borrower-profil-button-modification">{{ 'borrower-profile_ask-to-modify-these-information'|trans }}</a>
+                </article><!-- /.panel -->
+            </div><!-- /#profile-fiscalite.dashboard-tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </div><!-- /.dashboard-tabs -->
+{% endblock %}

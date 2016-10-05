@@ -167,16 +167,13 @@ class Dispatcher
 
     public function dispatch()
     {
-        // On inclus le bootstrap, qui va hériter du controller, et qui va regrouper toutes les actions à exécuter sur la totalité du site
         $this->fireBootstrap();
 
-        // On récupère dans l'object command créé lors du traitement de l'URL notre controller
         $controllerName = $this->Command->getControllerName();
+        $controllerClass = $controllerName . 'Controller';
 
-        // On va alors inclure le fichier du controller
-        include($this->path . 'apps/' . $this->App . '/controllers/' . $controllerName . '.php');
-        $controllerClass = $controllerName . "Controller";
-        // Et l'executer
+        include $this->path . 'apps/' . $this->App . '/controllers/' . $controllerName . '.php';
+
         $controller = new $controllerClass($this->Command, $this->Config, $this->App);
         $controller->setContainer($this->kernel->getContainer());
         $controller->execute();

@@ -16,11 +16,10 @@ class repayment
     {
         $aRepaymentSchedule = array();
         if ($fAmount * $iMonthNb * $fRate > 0) {
-            $fRateMonthly = $fRate / 12;
-
+            $fRateMonthly      = $fRate / 12;
             $fRepaymentMonthly = round($fAmount * $fRateMonthly / (1 - pow(1 + $fRateMonthly, -$iMonthNb)), 2);
+            $fRestOfRepayment  = $fAmount;
 
-            $fRestOfRepayment = $fAmount;
             for ($iMonth = 1; $iMonth <= $iMonthNb; $iMonth++) {
                 $fInterest = round($fRateMonthly * $fRestOfRepayment, 2);
                 $fCapital  = round(($fRepaymentMonthly - $fInterest), 2);
@@ -33,10 +32,11 @@ class repayment
                     $fRestOfRepayment = 0;
                 }
 
-                $aRepaymentSchedule[$iMonth]['repayment'] = round($fRepaymentMonthly, 2);
-                $aRepaymentSchedule[$iMonth]['capital']   = round($fCapital, 2);
-                $aRepaymentSchedule[$iMonth]['interest']  = round($fInterest, 2);
-                $aRepaymentSchedule[$iMonth]['rest']      = round($fRestOfRepayment, 2);
+                $aRepaymentSchedule[$iMonth] = array(
+                    'repayment' => round($fRepaymentMonthly, 2),
+                    'capital'   => round($fCapital, 2),
+                    'interest'  => round($fInterest, 2)
+                );
             }
         }
 
@@ -59,18 +59,17 @@ class repayment
             $fCommission += $aOrder['interest'];
         }
 
-        $fMonthlyCommission = round($fCommission / $iMonthNb, 2);
-        $fVATAmount         = round($fVAT * $fMonthlyCommission, 2);
-        $fVATAmountTotal    = round($fVATAmount * $iMonthNb, 2);
-        //incl tax
-        $fMonthlyCommissionTI = round($fMonthlyCommission + $fVATAmount, 2);
+        $fMonthlyCommission   = round($fCommission / $iMonthNb, 2);
+        $fVATAmount           = round($fVAT * $fMonthlyCommission, 2);
+        $fVATAmountTotal      = round($fVATAmount * $iMonthNb, 2);
+        $fMonthlyCommissionTI = round($fMonthlyCommission + $fVATAmount, 2); //incl tax
 
         return array(
-            'commission_total' => $fCommission,
-            'commission_monthly' => $fMonthlyCommission,
-            'vat_amount_monthly' => $fVATAmount,
+            'commission_total'            => $fCommission,
+            'commission_monthly'          => $fMonthlyCommission,
+            'vat_amount_monthly'          => $fVATAmount,
             'commission_monthly_incl_tax' => $fMonthlyCommissionTI,
-            'vat_amount_total' => $fVATAmountTotal,
+            'vat_amount_total'            => $fVATAmountTotal,
         );
     }
 
@@ -95,7 +94,7 @@ class repayment
         }
 
         return array(
-            'commission' => $aCommission,
+            'commission'         => $aCommission,
             'repayment_schedule' => $aSchedule
         );
     }

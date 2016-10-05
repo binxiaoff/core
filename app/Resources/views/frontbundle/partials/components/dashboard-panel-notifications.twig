@@ -1,0 +1,57 @@
+{# Dashboard Panel Notifications #}
+
+{% embed 'partials/components/dashboard-panel.html.twig' %}
+    {# Panel classes #}
+    {% block panelClassNames %}dashboard-panel-alt dashboard-notifications{% endblock %}
+
+    {# Panel Title #}
+    {% block panelTitle %}
+        {% trans %} lender-notifications_listing-title {% endtrans %}
+        {% if app.user.unreadNotificationsCount > 0 %}
+            <span data-usernotifications-unreadcount></span>
+        {% endif %}
+    {% endblock %}
+
+    {# Panel controls #}
+    {% block panelControls %}
+        <a href="{{ path('lender_profile_notifications') }}" class="btn-settings"><span class="sr-only">{% trans %} lender-notifications_settings-link-sr {% endtrans %}</span></a>
+    {% endblock %}
+
+    {# Remove close control #}
+    {% block panelClose %} {% endblock %}
+
+    {# Panel content #}
+    {% block panelContent %}
+        {% if app.user.notifications|length > 0 %}
+            <div id="profile-notifications" data-usernotificationslist>
+                <ul class="list-notifications">
+                    {% for notification in app.user.notifications %}
+                        <li class="notification notification-type-{{ notification.type|default('message')|escape('html_attr') }} ui-notification-status-{{ notification.status }}" data-notification-id="{{ notification.id|default(notification.datetime|date('U'))|e('html_attr') }}" tabindex="0">
+                            <header class="notification-header">
+                                <h5 class="notification-datetime">{{ notification.datetime|localizeddate('medium', 'short') }}</h5>
+                                <h4 class="notification-title">{{ notification.title|raw }}</h4>
+                                <div class="notification-image">
+                                    <span class="svg-icon-wrap">{{ svgimage('#notification-' ~ notification.image, notification.title, 100, 100, 'none')|raw }}</span>
+                                </div>
+                            </header>
+                            <div class="notification-content">
+                                <p>{{ notification.content|raw|nl2br }}</p>
+                            </div>
+                        </li><!-- /.notification -->
+                    {% else %}
+                        <li class="notification notification-type-empty">
+                            <div class="notification-content">
+                                <p>{% trans %} lender-notifications_empty-label {% endtrans %}</p>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    {% endblock %}
+
+    {# Panel footer #}
+    {% block panelFooter %}
+        <a href="javascript:;" class="ui-usernotifications-loadmore">{% trans %} lender-notifications_more-notifications-link {% endtrans %}<span class="spinner-usernotifications-loadingmore ui-is-spinner"></span></a>
+    {% endblock %}
+{% endembed %}
