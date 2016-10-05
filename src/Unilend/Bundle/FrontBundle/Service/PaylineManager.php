@@ -183,7 +183,7 @@ class PaylineManager
                 'url'             => $this->sUrl,
                 'prenom_p'        => $client->prenom,
                 'fonds_depot'     => bcdiv($response['payment']['amount'], 100, 2),
-                'solde_p'         => bcadd($this->clientManager->getClientBalance($client), bcdiv($response['payment']['amount'], 100, 2), 2),
+                'solde_p'         => $this->clientManager->getClientBalance($client),
                 'link_mandat'     => $this->sUrl . '/images/default/mandat.jpg',
                 'motif_virement'  => $client->getLenderPattern($client->id_client),
                 'projets'         => $this->sUrl . $this->router->generate('home', ['type' => 'projets-a-financer']),
