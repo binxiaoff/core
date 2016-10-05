@@ -39,6 +39,8 @@ class MainController extends Controller
 
     const SLUG_PAGE_BECOME_LENDER = 'lender_subscription_personal_information';
     const SLUG_ELEMENT_NAV_IMAGE  = 'image-header';
+    /** anchors in path functions are not supported, see twig template for handing if the borrower esim special case */
+    const SLUG_PAGE_BECOME_BORROWER = 'emprunter-homeemp-section-esim';
 
     /**
      * @Route("/", name="home")
@@ -385,10 +387,11 @@ class MainController extends Controller
             $selected = $page['id_tree'] == $currentPage->id_tree;
 
             $navigation[$page['id_tree']] = [
-                'label'       => $page['menu_title'],
-                'slug'        => $page['slug'],
-                'selected'    => $selected,
-                'highlighted' => $page['slug'] === self::SLUG_PAGE_BECOME_LENDER
+                'label'                => $page['menu_title'],
+                'slug'                 => $page['slug'],
+                'selected'             => $selected,
+                'highlighted_lender'   => $page['slug'] === self::SLUG_PAGE_BECOME_LENDER,
+                'highlighted_borrower' => $page['slug'] === self::SLUG_PAGE_BECOME_BORROWER
             ];
         }
 
