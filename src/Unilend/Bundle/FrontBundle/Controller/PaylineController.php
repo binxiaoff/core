@@ -51,13 +51,15 @@ class PaylineController extends Controller
         $response = $payline->getWebPaymentDetails($params);
 
         if (isset($response)) {
-            $backPayline->code      = $response['result']['code'];
-            $backPayline->token     = $params['token'];
-            $backPayline->id        = $response['transaction']['id'];
-            $backPayline->date      = $response['transaction']['date'];
-            $backPayline->amount    = $response['payment']['amount'];
-            $backPayline->serialize = serialize($response);
-            $backPayline->create();
+            if (false === $backPayline->exist($params['token'], 'token')) {
+                $backPayline->code      = $response['result']['code'];
+                $backPayline->token     = $params['token'];
+                $backPayline->id        = $response['transaction']['id'];
+                $backPayline->date      = $response['transaction']['date'];
+                $backPayline->amount    = $response['payment']['amount'];
+                $backPayline->serialize = serialize($response);
+                $backPayline->create();
+            }
 
             if ($response['result']['code'] == '00000') {
                 $settings->get('DebugAlertesBusiness', 'type');
