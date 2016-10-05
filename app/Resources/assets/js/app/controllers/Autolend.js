@@ -363,17 +363,27 @@ $doc
     // We're capturing the submit event as users might press enter or submit the form otherwise by not clicking a button
     .on('submit', 'form#form-user-autolend', function (event) {
         var $elem = $(this)
-        var form = event.target;
+        var form = event.target
+        var $dialog = $('#autolend-table-dialog')
+
         emptyNotificationsDiv()
 
         // Always prevent the form from submitting as we will be processing via AJAX in the confirmed modal event
         event.preventDefault()
 
+        $('.cell-input[data-autolendtable-cell]').each(function() {
+            var cellData = getCellInfo($(this).attr('data-autolendtable-cell'))
+
+            if (parseFloat(cellData.currentRate, 1) < parseFloat(cellData.min, 1) || parseFloat(cellData.currentRate, 1) > parseFloat(cellData.max, 1)) {
+                $dialog = $('#autolend-out-of-range-table-dialog')
+            }
+        })
+
         // Show dialog
-        $('#autolend-table-dialog').uiModal('open')
+        $dialog.uiModal('open')
 
         // Setup modal events
-        $('#autolend-table-dialog').on('Modal:confirmed', function (event, elemModal) {
+        $dialog.on('Modal:confirmed', function (event, elemModal) {
             form.submit()
             elemModal.close()
         })
