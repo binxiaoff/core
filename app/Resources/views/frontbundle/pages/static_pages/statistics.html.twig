@@ -490,388 +490,6 @@
             <article class="row">
                 <h3 class="c-t1">{% trans %} about-us-statistics_unilend-performances-gross-data-title {% endtrans %}</h3>
 
-                {#
-                {% set maxColumns = data.regulatoryTable|first|length %}
-                {% set colLgSpan = 12 / maxColumns %}
-                {% set colMdSpan = 12 / maxColumns %}
-                {% set colSmSpan = 2 %}
-                {% set colXsSpan = 4 %}
-
-                <section class="stats-unilend-data-group">
-                    <article class="stats-unilend-data-item row">
-                        <div class="stats-unilend-data-image col-lg-1 col-md-2">
-                            {{ svgimage('#promo-linechart', '', 150, 150, 'none')|raw }}
-                        </div>
-                        <div class="stats-unilend-data-info col-lg-11 col-md-10">
-                            <h3 class="stats-unilend-data-title">{{ 'about-us-statistics_regulatory-table-IRR'|trans|raw }}</h3>
-                            <div class="row">
-                                {% for i, value in data.regulatoryTable['IRR'] %}
-                                    <div class="stats-unilend-data-output col-lg-{{ colLgSpan }} col-md-{{ colMdSpan }} col-sm-{{ colSmSpan }} col-xs-{{ colXsSpan }}">
-                                        <div class="stats-unilend-data-value {% if i == 'total' %} c-p2 {% endif %}">{{ value|localizednumber }}<sup>%</sup></div>
-                                        <label class="stats-unilend-data-label {% if i == 'total' %} c-p2 {% endif %}">{{ i }}</label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </article>
-
-                    <hr />
-
-                    <article class="stats-unilend-data-item row">
-                        <div class="stats-unilend-data-image col-lg-1 col-md-2">
-                            {{ svgimage('#promo-projects', '', 150, 150, 'none')|raw }}
-                        </div>
-                        <div class="stats-unilend-data-info col-lg-11 col-md-10">
-                            <h3 class="stats-unilend-data-title">{{ 'about-us-statistics_regulatory-table-projects'|trans|raw }}</h3>
-                            <div class="row">
-                                {% for i, value in data.regulatoryTable['projects'] %}
-                                    <div class="stats-unilend-data-output col-lg-{{ colLgSpan }} col-md-{{ colMdSpan }} col-sm-{{ colSmSpan }} col-xs-{{ colXsSpan }}">
-                                        <div class="stats-unilend-data-value {% if i == 'total' %} c-p2 {% endif %}">{{ value|localizednumber }}</div>
-                                        <label class="stats-unilend-data-label {% if i == 'total' %} c-p2 {% endif %}">{{ i }}</label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </article>
-
-                    <hr />
-
-                    <article class="stats-unilend-data-item row">
-                        <div class="stats-unilend-data-image col-lg-1 col-md-2">
-                            {{ svgimage('#promo-money', '', 150, 150, 'none')|raw }}
-                        </div>
-                        <div class="stats-unilend-data-info col-lg-11 col-md-10">
-                            <h3 class="stats-unilend-data-title">{{ 'about-us-statistics_regulatory-table-borrowed-capital'|trans|raw }}</h3>
-                            <div class="row">
-                                {% for i, value in data.regulatoryTable['borrowed-capital'] %}
-                                    <div class="stats-unilend-data-output col-lg-{{ colLgSpan }} col-md-{{ colMdSpan }} col-sm-{{ colSmSpan }} col-xs-{{ colXsSpan }}">
-                                        <div class="stats-unilend-data-value {% if i == 'total' %} c-p2 {% endif %}">{{ value|localizednumber }}€</div>
-                                        <label class="stats-unilend-data-label {% if i == 'total' %} c-p2 {% endif %}">{{ i }}</label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </article>
-
-                    <hr />
-
-                    <article class="stats-unilend-data-item row">
-                        <div class="stats-unilend-data-image col-lg-1 col-md-2">
-                            {{ svgimage('#promo-piggybank', '', 150, 150, 'none')|raw }}
-                        </div>
-                        <div class="stats-unilend-data-info col-lg-11 col-md-10">
-                            <h3 class="stats-unilend-data-title">{{ 'about-us-statistics_regulatory-table-repaid-capital'|trans|raw }}</h3>
-                            <div class="row">
-                                {% for i, value in data.regulatoryTable['repaid-capital'] %}
-                                    <div class="stats-unilend-data-output col-lg-{{ colLgSpan }} col-md-{{ colMdSpan }} col-sm-{{ colSmSpan }} col-xs-{{ colXsSpan }}">
-                                        <div class="stats-unilend-data-value {% if i == 'total' %} c-p2 {% endif %}">{{ value|localizednumber }}€</div>
-                                        <label class="stats-unilend-data-label {% if i == 'total' %} c-p2 {% endif %}">{{ i }}</label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </article>
-
-                    <hr />
-
-                    <article class="stats-unilend-data-item row">
-                        <div class="stats-unilend-data-image col-lg-1 col-md-2">
-                            {{ svgimage('#promo-saving', '', 150, 150, 'none')|raw }}
-                        </div>
-                        <div class="stats-unilend-data-info col-lg-11 col-md-10">
-                            <h3 class="stats-unilend-data-title">{{ 'about-us-statistics_regulatory-table-repaid-interest'|trans|raw }}</h3>
-                            <div class="row">
-                                {% for i, value in data.regulatoryTable['repaid-interest'] %}
-                                    <div class="stats-unilend-data-output col-lg-{{ colLgSpan }} col-md-{{ colMdSpan }} col-sm-{{ colSmSpan }} col-xs-{{ colXsSpan }}">
-                                        <div class="stats-unilend-data-value {% if i == 'total' %} c-p2 {% endif %}">{{ value|localizednumber }}€</div>
-                                        <label class="stats-unilend-data-label {% if i == 'total' %} c-p2 {% endif %}">{{ i }}</label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </article>
-
-                    <hr />
-
-                    <article class="stats-unilend-data-item row">
-                        <div class="stats-unilend-data-image col-lg-1 col-md-2">
-                            {{ svgimage('#promo-linechart', '', 150, 150, 'none')|raw }}
-                        </div>
-                        <div class="stats-unilend-data-info col-lg-11 col-md-10">
-                            <h3 class="stats-unilend-data-title">{{ 'about-us-statistics_regulatory-table-owed-healthy-interest'|trans|raw }}</h3>
-                            <div class="row">
-                                {% for i, value in data.regulatoryTable['owed-healthy-interest'] %}
-                                    <div class="stats-unilend-data-output col-lg-{{ colLgSpan }} col-md-{{ colMdSpan }} col-sm-{{ colSmSpan }} col-xs-{{ colXsSpan }}">
-                                        <div class="stats-unilend-data-value {% if i == 'total' %} c-p2 {% endif %}">{{ value|localizednumber }}€</div>
-                                        <label class="stats-unilend-data-label {% if i == 'total' %} c-p2 {% endif %}">{{ i }}</label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </article>
-                </section>
-
-                <section class="stats-unilend-data-group">
-                    <article class="stats-unilend-data-item row">
-                        <div class="stats-unilend-data-image col-lg-1 col-md-2">
-                            {{ svgimage('#promo-money', '', 150, 150, 'none')|raw }}
-                        </div>
-                        <div class="stats-unilend-data-info col-lg-11 col-md-10">
-                            <h3 class="stats-unilend-data-title">{{  'about-us-statistics_regulatory-table-global-owed-capital'|trans|raw }}</h3>
-                            <div class="row">
-                                {% for i, value in data.regulatoryTable['global-owed-capital'] %}
-                                    <div class="stats-unilend-data-output col-lg-{{ colLgSpan }} col-md-{{ colMdSpan }} col-sm-{{ colSmSpan }} col-xs-{{ colXsSpan }}">
-                                        <div class="stats-unilend-data-value {% if i == 'total' %} c-p2 {% endif %}">{{ value|localizednumber }}€</div>
-                                        <label class="stats-unilend-data-label {% if i == 'total' %} c-p2 {% endif %}">{{ i }}</label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </article>
-
-                    <hr />
-
-                    <article class="stats-unilend-data-item stats-unilend-data-item-nested row">
-                        <div class="stats-unilend-data-image col-lg-1 col-md-2">
-                            <span class="icon fa-clock-u32 c-blue"></span>
-                        </div>
-                        <div class="stats-unilend-data-info col-lg-11 col-md-10">
-                            <h4 class="stats-unilend-data-title">{{ 'about-us-statistics_regulatory-table-future-owed-capital'|trans|raw }}</h4>
-                            <div class="row">
-                                {% for i, value in data.regulatoryTable['future-owed-capital'] %}
-                                    <div class="stats-unilend-data-output col-lg-{{ colLgSpan }} col-md-{{ colMdSpan }} col-sm-{{ colSmSpan }} col-xs-{{ colXsSpan }}">
-                                        <div class="stats-unilend-data-value {% if i == 'total' %} c-p2 {% endif %}">{{ value|localizednumber }}€</div>
-                                        <label class="stats-unilend-data-label {% if i == 'total' %} c-p2 {% endif %}">{{ i }}</label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </article>
-
-                    <article class="stats-unilend-data-item stats-unilend-data-item-nested row">
-                        <div class="stats-unilend-data-image col-lg-1 col-md-2">
-                            <span class="icon fa-plus-u32 c-teal"></span>
-                        </div>
-                        <div class="stats-unilend-data-info col-lg-11 col-md-10">
-                            <h4 class="stats-unilend-data-title">{{ 'about-us-statistics_regulatory-table-future-owed-capital-healthy'|trans|raw }}</h4>
-                            <div class="row">
-                                {% for i, value in data.regulatoryTable['future-owed-capital-healthy'] %}
-                                    <div class="stats-unilend-data-output col-lg-{{ colLgSpan }} col-md-{{ colMdSpan }} col-sm-{{ colSmSpan }} col-xs-{{ colXsSpan }}">
-                                        <div class="stats-unilend-data-value {% if i == 'total' %} c-p2 {% endif %}">{{ value|localizednumber }}€</div>
-                                        <label class="stats-unilend-data-label {% if i == 'total' %} c-p2 {% endif %}">{{ i }}</label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </article>
-
-                    <article class="stats-unilend-data-item stats-unilend-data-item-nested row">
-                        <div class="stats-unilend-data-image col-lg-1 col-md-2">
-                            <span class="icon fa-warning-u32 c-red"></span>
-                        </div>
-                        <div class="stats-unilend-data-info col-lg-11 col-md-10">
-                            <h4 class="stats-unilend-data-title">{{ 'about-us-statistics_regulatory-table-future-owed-capital-problematic'|trans|raw }}</h4>
-                            <div class="row">
-                                {% for i, value in data.regulatoryTable['future-owed-capital-problematic'] %}
-                                    <div class="stats-unilend-data-output col-lg-{{ colLgSpan }} col-md-{{ colMdSpan }} col-sm-{{ colSmSpan }} col-xs-{{ colXsSpan }}">
-                                        <div class="stats-unilend-data-value {% if i == 'total' %} c-p2 {% endif %}">{{ value|localizednumber }}€</div>
-                                        <label class="stats-unilend-data-label {% if i == 'total' %} c-p2 {% endif %}">{{ i }}</label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </article>
-
-                    <hr />
-
-                    <article class="stats-unilend-data-item stats-unilend-data-item-nested row">
-                        <div class="stats-unilend-data-image col-lg-1 col-md-2">
-                            <span class="icon fa-clock-u32 c-orange"></span>
-                        </div>
-                        <div class="stats-unilend-data-info col-lg-11 col-md-10">
-                            <h4 class="stats-unilend-data-title">{{ 'about-us-statistics_regulatory-table-late-owed-capital'|trans|raw }}</h4>
-                            <div class="row">
-                                {% for i, value in data.regulatoryTable['late-owed-capital'] %}
-                                    <div class="stats-unilend-data-output col-lg-{{ colLgSpan }} col-md-{{ colMdSpan }} col-sm-{{ colSmSpan }} col-xs-{{ colXsSpan }}">
-                                        <div class="stats-unilend-data-value {% if i == 'total' %} c-p2 {% endif %}">{{ value|localizednumber }}€</div>
-                                        <label class="stats-unilend-data-label {% if i == 'total' %} c-p2 {% endif %}">{{ i }}</label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </article>
-
-                    <article class="stats-unilend-data-item stats-unilend-data-item-nested row">
-                        <div class="stats-unilend-data-image col-lg-1 col-md-2">
-                            <span class="icon fa-warning-u32 c-red"></span>
-                        </div>
-                        <div class="stats-unilend-data-info col-lg-11 col-md-10">
-                            <h4 class="stats-unilend-data-title">{{ 'about-us-statistics_regulatory-table-late-owed-capital-problematic'|trans|raw }}</h4>
-                            <div class="row">
-                                {% for i, value in data.regulatoryTable['late-owed-capital-problematic'] %}
-                                    <div class="stats-unilend-data-output col-lg-{{ colLgSpan }} col-md-{{ colMdSpan }} col-sm-{{ colSmSpan }} col-xs-{{ colXsSpan }}">
-                                        <div class="stats-unilend-data-value {% if i == 'total' %} c-p2 {% endif %}">{{ value|localizednumber }}€</div>
-                                        <label class="stats-unilend-data-label {% if i == 'total' %} c-p2 {% endif %}">{{ i }}</label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </article>
-
-                    <article class="stats-unilend-data-item stats-unilend-data-item-nested row">
-                        <div class="stats-unilend-data-image col-lg-1 col-md-2">
-                            <span class="icon fa-plus-u32 c-teal"></span>
-                        </div>
-                        <div class="stats-unilend-data-info col-lg-11 col-md-10">
-                            <h4 class="stats-unilend-data-title">{{ 'about-us-statistics_regulatory-table-late-owed-capital-healthy'|trans|raw }}</h4>
-                            <div class="row">
-                                {% for i, value in data.regulatoryTable['late-owed-capital-healthy'] %}
-                                    <div class="stats-unilend-data-output col-lg-{{ colLgSpan }} col-md-{{ colMdSpan }} col-sm-{{ colSmSpan }} col-xs-{{ colXsSpan }}">
-                                        <div class="stats-unilend-data-value {% if i == 'total' %} c-p2 {% endif %}">{{ value|localizednumber }}€</div>
-                                        <label class="stats-unilend-data-label {% if i == 'total' %} c-p2 {% endif %}">{{ i }}</label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </article>
-
-                    <hr />
-
-                    <article class="stats-unilend-data-item stats-unilend-data-item-nested row">
-                        <div class="stats-unilend-data-image col-lg-1 col-md-2">
-                            <span class="icon fa-warning-u32 c-orange"></span>
-                        </div>
-                        <div class="stats-unilend-data-info col-lg-11 col-md-10">
-                            <h4 class="stats-unilend-data-title">{{ 'about-us-statistics_regulatory-table-total-owed-problematic-capital'|trans|raw }}</h4>
-                            <div class="row">
-                                {% for i, value in data.regulatoryTable['total-owed-problematic-capital'] %}
-                                    <div class="stats-unilend-data-output col-lg-{{ colLgSpan }} col-md-{{ colMdSpan }} col-sm-{{ colSmSpan }} col-xs-{{ colXsSpan }}">
-                                        <div class="stats-unilend-data-value {% if i == 'total' %} c-p2 {% endif %}">{{ value|localizednumber }}€</div>
-                                        <label class="stats-unilend-data-label {% if i == 'total' %} c-p2 {% endif %}">{{ i }}</label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </article>
-
-                    <article class="stats-unilend-data-item stats-unilend-data-item-nested row">
-                        <div class="stats-unilend-data-image col-lg-1 col-md-2">
-                            <span class="icon fa-warning-u32 c-red"></span>
-                        </div>
-                        <div class="stats-unilend-data-info col-lg-11 col-md-10">
-                            <h4 class="stats-unilend-data-title">{{ 'about-us-statistics_regulatory-table-total-owed-problematic-capital-late'|trans|raw }}</h4>
-                            <div class="row">
-                                {% for i, value in data.regulatoryTable['total-owed-problematic-capital-late'] %}
-                                    <div class="stats-unilend-data-output col-lg-{{ colLgSpan }} col-md-{{ colMdSpan }} col-sm-{{ colSmSpan }} col-xs-{{ colXsSpan }}">
-                                        <div class="stats-unilend-data-value {% if i == 'total' %} c-p2 {% endif %}">{{ value|localizednumber }}€</div>
-                                        <label class="stats-unilend-data-label {% if i == 'total' %} c-p2 {% endif %}">{{ i }}</label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </article>
-                </section>
-
-                <section class="stats-unilend-data-group">
-                    <article class="stats-unilend-data-item row">
-                        <div class="stats-unilend-data-image col-lg-1 col-md-2">
-                            {{ svgimage('#promo-pagestack', '', 150, 150, 'none')|raw }}
-                        </div>
-                        <div class="stats-unilend-data-info col-lg-11 col-md-10">
-                            <h3 class="stats-unilend-data-title">{{  'about-us-statistics_regulatory-table-owed-problematic-over-borrowed-capital'|trans|raw }}</h3>
-                            <div class="row">
-                                {% for i, value in data.regulatoryTable['pct']['owed-problematic-over-borrowed-capital'] %}
-                                    <div class="stats-unilend-data-output col-lg-{{ colLgSpan }} col-md-{{ colMdSpan }} col-sm-{{ colSmSpan }} col-xs-{{ colXsSpan }}">
-                                        <div class="stats-unilend-data-value {% if i == 'total' %} c-p2 {% endif %}">{{ value|localizednumber }}<sup>%</sup></div>
-                                        <label class="stats-unilend-data-label {% if i == 'total' %} c-p2 {% endif %}">{{ i }}</label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </article>
-
-                    <hr />
-
-                    <article class="stats-unilend-data-item row">
-                        <div class="stats-unilend-data-image col-lg-1 col-md-2">
-                            {{ svgimage('#promo-linechart', '', 150, 150, 'none')|raw }}
-                        </div>
-                        <div class="stats-unilend-data-info col-lg-11 col-md-10">
-                            <h3 class="stats-unilend-data-title">{{  'about-us-statistics_regulatory-table-problematic-rate'|trans|raw }}</h3>
-                            <div class="row">
-                                {% for i, value in data.regulatoryTable['pct']['problematic-rate'] %}
-                                    <div class="stats-unilend-data-output col-lg-{{ colLgSpan }} col-md-{{ colMdSpan }} col-sm-{{ colSmSpan }} col-xs-{{ colXsSpan }}">
-                                        <div class="stats-unilend-data-value {% if i == 'total' %} c-p2 {% endif %}">{{ value|localizednumber }}<sup>%</sup></div>
-                                        <label class="stats-unilend-data-label {% if i == 'total' %} c-p2 {% endif %}">{{ i }}</label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </article>
-
-                    <hr />
-
-                    <article class="stats-unilend-data-item row">
-                        <div class="stats-unilend-data-image col-lg-1 col-md-2">
-                            {{ svgimage('#promo-barchart', '', 150, 150, 'none')|raw }}
-                        </div>
-                        <div class="stats-unilend-data-info col-lg-11 col-md-10">
-                            <h3 class="stats-unilend-data-title">{{  'about-us-statistics_regulatory-table-interest-over-owed-problematic-capital'|trans|raw }}</h3>
-                            <div class="row">
-                                {% for i, value in data.regulatoryTable['pct']['interest-over-owed-problematic-capital'] %}
-                                    <div class="stats-unilend-data-output col-lg-{{ colLgSpan }} col-md-{{ colMdSpan }} col-sm-{{ colSmSpan }} col-xs-{{ colXsSpan }}">
-                                        <div class="stats-unilend-data-value {% if i == 'total' %} c-p2 {% endif %}">{{ value|localizednumber }}<sup>%</sup></div>
-                                        <label class="stats-unilend-data-label {% if i == 'total' %} c-p2 {% endif %}">{{ i }}</label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </article>
-
-                    <hr />
-
-                    <article class="stats-unilend-data-item row">
-                        <div class="stats-unilend-data-image col-lg-1 col-md-2">
-                            {{ svgimage('#promo-balance', '', 150, 150, 'none')|raw }}
-                        </div>
-                        <div class="stats-unilend-data-info col-lg-11 col-md-10">
-                            <h3 class="stats-unilend-data-title">{{  'about-us-statistics_regulatory-table-expected-performance'|trans|raw }}</h3>
-                            <div class="row">
-                                {% for i, value in data.regulatoryTable['pct']['expected-performance'] %}
-                                    <div class="stats-unilend-data-output col-lg-{{ colLgSpan }} col-md-{{ colMdSpan }} col-sm-{{ colSmSpan }} col-xs-{{ colXsSpan }}">
-                                        <div class="stats-unilend-data-value {% if i == 'total' %} c-p2 {% endif %}">{{ value|localizednumber }}<sup>%</sup></div>
-                                        <label class="stats-unilend-data-label {% if i == 'total' %} c-p2 {% endif %}">{{ i }}</label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </article>
-                </section>
-
-                {% set incidenceRate = getStatistic('incidenceRate') %}
-                <section class="row">
-                    <article class="stats-unilend-data-item stats-unilend-data-single col-lg-6 col-md-6 col-sm-4">
-                        <div class="stats-unilend-data-info row">
-                            <p>{% trans %} about-us-statistics_regulatory-table-incidence-rate-amount {% endtrans %}</p>
-                            <div class="stats-unilend-data-output">
-                                <div class="stats-unilend-data-value">{{ incidenceRate['amountIFP']|localizednumber }}<sup>%</sup></div>
-                            </div>
-                        </div>
-                    </article>
-
-                    <article class="stats-unilend-data-item stats-unilend-data-single col-lg-6 col-md-6 col-sm-4">
-                        <div class="stats-unilend-data-info">
-                            <p>{% trans %} about-us-statistics_regulatory-table-incidence-rate-projects {% endtrans %}</p>
-                            <div class="stats-unilend-data-output">
-                                <div class="stats-unilend-data-value">{{ incidenceRate['projectsIFP']|localizednumber }}<sup>%</sup></div>
-                            </div>
-                        </div>
-                    </article>
-                </section>
-
-                <p class="field-help text-align-left">{% trans %} about-us-statistics_regulatory-table-default-explanation {% endtrans %}</p>
-                #}
-
                 {% set maxColSpan = data.regulatoryTable|first|length + 1 %}
                 <div class="table-scroll">
 
@@ -893,7 +511,7 @@
                             <tr>
                                 <td class="table-stats-unilend-item-label">&nbsp;</td>
                                 {% for value in data.regulatoryTable['IRR'] %}
-                                    <td class="table-stats-unilend-item-value">{{ value|localizednumber }}%</td>
+                                    <td class="table-stats-unilend-item-value">{{ value|localizednumberwithprecision(2) }}%</td>
                                 {% endfor %}
                             </tr>
                             <!-- /IRR -->
@@ -1077,7 +695,7 @@
                             <tr>
                                 <td class="table-stats-unilend-item-label">&nbsp;</td>
                                 {% for value in data.regulatoryTable['pct']['owed-problematic-over-borrowed-capital'] %}
-                                    <td class="table-stats-unilend-item-value">{{ value|localizednumber }}%</td>
+                                    <td class="table-stats-unilend-item-value">{{ value|localizednumberwithprecision(2) }}%</td>
                                 {% endfor %}
                             </tr>
                             <!-- /pct.owed-problematic-over-borrowed-capital -->
@@ -1089,7 +707,7 @@
                             <tr class="alt">
                                 <td class="table-stats-unilend-item-label">&nbsp;</td>
                                 {% for value in data.regulatoryTable['pct']['problematic-rate'] %}
-                                    <td class="table-stats-unilend-item-value">{{ value|localizednumber }}%</td>
+                                    <td class="table-stats-unilend-item-value">{{ value|localizednumberwithprecision(2) }}%</td>
                                 {% endfor %}
                             </tr>
                             <!-- /pct.problematic-rate -->
@@ -1101,7 +719,7 @@
                             <tr>
                                 <td class="table-stats-unilend-item-label">&nbsp;</td>
                                 {% for value in data.regulatoryTable['pct']['interest-over-owed-problematic-capital'] %}
-                                    <td class="table-stats-unilend-item-value">{{ value|localizednumber }}%</td>
+                                    <td class="table-stats-unilend-item-value">{{ value|localizednumberwithprecision(2) }}%</td>
                                 {% endfor %}
                             </tr>
                             <!-- /pct.interest-over-owed-problematic-capital -->
@@ -1113,7 +731,7 @@
                             <tr class="alt">
                                 <td class="table-stats-unilend-item-label">&nbsp;</td>
                                 {% for value in data.regulatoryTable['pct']['expected-performance'] %}
-                                    <td class="table-stats-unilend-item-value">{{ value|localizednumber }}%</td>
+                                    <td class="table-stats-unilend-item-value">{{ value|localizednumberwithprecision(2)}}%</td>
                                 {% endfor %}
                             </tr>
                             <!-- /pct.expected-performance -->
@@ -1121,114 +739,17 @@
                     </table>
                 </div><!-- /.table-scroll -->
 
-                {#
-                <div class="table-scroll">
-
-                    <table class="table table-stats-unilend">
-                        <thead>
-                            <tr>
-                                <th class="table-stats-unilend-item-label">&nbsp;</th>
-                                {% for year in years %}
-                                    <th class="table-stats-unilend-item-value">{{ year }}</th>
-                                {% endfor %}
-                            </tr>
-                        </thead>
-                        <tbody>
-
-                        {% set rowCount = 0 %}
-                        {% for label, years in data.regulatoryTable %}
-                            {% set altClass = '' %}
-                            {% if rowCount % 2 == 1 %}
-                            {% endif %}
-                            {% set altClass = 'alt' %}
-
-                            {% if label == 'IRR' %}
-                                <tr class="{{ altClass }}">
-                                    <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-#{label}"|trans|raw }}</td>
-                                </tr>
-                                <tr class="{{ altClass }}">
-                                    <td class="table-stats-unilend-item-label">&nbsp;</td>
-                                    {% for value in years %}
-                                        <td class="table-stats-unilend-item-value">{{ value|localizednumber }} %</td>
-                                    {% endfor %}
-                                </tr>
-                            {% elseif label == 'projects' %}
-                                <tr class="{{ altClass }}">
-                                    <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-#{label}"|trans|raw }}</td>
-                                </tr>
-                                <tr class="{{ altClass }}">
-                                    <td class="table-stats-unilend-item-label">&nbsp;</td>
-                                    {% for value in years %}
-                                        <td class="table-stats-unilend-item-value">{{ value|localizednumber }}</td>
-                                    {% endfor %}
-                                </tr>
-                            {% elseif label == 'nb' %}
-                                {% for labelNb, yearNb in years %}
-                                    {% set altClass = '' %}
-                                    {% if rowCount % 2 == 1 %}
-                                        {% set altClass = 'alt' %}
-                                    {% endif %}
-                                    <tr class="{{ altClass }}">
-                                        <td colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-#{labelNb}"|trans|raw }}</td>
-                                    </tr>
-                                    <tr class="{{ altClass }}">
-                                        <td class="table-stats-unilend-item-label">&nbsp;</td>
-                                        {% for valueNb in yearNb %}
-                                            <td class="table-stats-unilend-item-value">{{ valueNb|localizednumber}}</td>
-                                        {% endfor %}
-                                    </tr>
-                                    {% set rowCount = rowCount + 1 %}
-                                {% endfor %}
-                            {% elseif label == 'empty-line' %}
-                                <tr class="table-stats-unilend-empty-line"><td colspan="{{ maxColSpan }}">&nbsp;</td></tr>
-                            {% elseif label == 'pct' %}
-                                {% for labelPct, yearPct in years %}
-                                    {% set altClass = '' %}
-                                    {% if rowCount % 2 == 1 %}
-                                        {% set altClass = 'alt' %}
-                                    {% endif %}
-                                    <tr class="{{ altClass }}">
-                                        <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-#{labelPct}"|trans|raw }}</td>
-                                    </tr>
-                                    <tr class="{{ altClass }}">
-                                        <td class="table-stats-unilend-item-label">&nbsp;</td>
-                                        {% for valuePct in yearPct %}
-                                            <td class="table-stats-unilend-item-value">{{ valuePct|localizednumber}} %</td>
-                                        {% endfor %}
-                                    </tr>
-                                    {% set rowCount = rowCount + 1 %}
-                                {% endfor %}
-                            {% else %}
-                                <tr class="{{ altClass }}">
-                                    <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-#{label}"|trans|raw }}</td>
-                                </tr>
-                                <tr class="{{ altClass }}">
-                                    <td class="table-stats-unilend-item-label">&nbsp;</td>
-                                    {% for value in years %}
-                                        <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }} €</td>
-                                    {% endfor %}
-                                </tr>
-                            {% endif %}
-                            {% if label != 'empty-line' and label != 'nb' and label != 'pct' %}
-                                {% set rowCount = rowCount + 1 %}
-                            {% endif %}
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                </div><!-- /.table-scroll -->
-                #}
-
                 {% set incidenceRate = getStatistic('incidenceRate') %}
                 <div class="table-scroll">
                     <table class="table table-stats-unilend-interest">
                         <tbody>
                         <tr>
                             <td class="table-stats-unilend-item-label">{% trans %} about-us-statistics_regulatory-table-incidence-rate-amount {% endtrans %}</td>
-                            <td class="table-stats-unilend-item-value">{{ incidenceRate['amountIFP']|localizednumber }}%</td>
+                            <td class="table-stats-unilend-item-value">{{ incidenceRate['amountIFP']|localizednumberwithprecision(2) }}%</td>
                         </tr>
                         <tr class="alt">
                             <td class="table-stats-unilend-item-label">{% trans %} about-us-statistics_regulatory-table-incidence-rate-projects {% endtrans %}</td>
-                            <td class="table-stats-unilend-item-value">{{ incidenceRate['projectsIFP']|localizednumber }}%</td>
+                            <td class="table-stats-unilend-item-value">{{ incidenceRate['projectsIFP']|localizednumberwithprecision(2) }}%</td>
                         </tr>
                         </tbody>
                     </table>
