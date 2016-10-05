@@ -56,7 +56,7 @@ class CacheKeys
     const AMOUNT_FINANCED_HIGHEST_FASTEST     = 'stats_highestAmountObtainedFastest';
 
     /** constants for statistics calculated by cron */
-    const REGULATORY_TABLE   = 'stats_regulatoryData';
+    const REGULATORY_TABLE   = 'stats_regulatory_data';
     const INCIDENCE_RATE_IFP = 'stats_incidence_rate_IFP';
 
     public static function getStatisticsCacheKeys()

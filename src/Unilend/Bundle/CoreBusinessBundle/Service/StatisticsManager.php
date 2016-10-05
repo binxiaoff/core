@@ -457,13 +457,33 @@ class StatisticsManager
     public function getRegulatoryData()
     {
         $cachedItem     = $this->cachePool->getItem(CacheKeys::REGULATORY_TABLE);
-        return $cachedItem->get();
+
+        if (false === $cachedItem->isHit()) {
+            /** @var \unilend_stats $unilendStats */
+            $unilendStats = $this->entityManager->getRepository('unilend_stats');
+            $statsEntry = $unilendStats->select('type_stat = "' . CacheKeys::REGULATORY_TABLE . '"', 'added DESC', null, '1')[0];
+            $regulatoryTable = json_decode($statsEntry['value'], true);
+            $cachedItem->set($regulatoryTable)->expiresAfter(CacheKeys::DAY);
+            return $regulatoryTable;
+        } else {
+            return $cachedItem->get();
+        }
     }
 
     public function getIncidenceRate()
     {
         $cachedItem     = $this->cachePool->getItem(CacheKeys::INCIDENCE_RATE_IFP);
-        return $cachedItem->get();
+
+        if (false === $cachedItem->isHit()) {
+            /** @var \unilend_stats $unilendStats */
+            $unilendStats = $this->entityManager->getRepository('unilend_stats');
+            $statsEntry = $unilendStats->select('type_stat = "' . CacheKeys::INCIDENCE_RATE_IFP . '"', 'added DESC', null, '1')[0];
+            $incidenceRate = json_decode($statsEntry['value'], true);
+            $cachedItem->set($incidenceRate)->expiresAfter(CacheKeys::DAY);
+            return $incidenceRate;
+        } else {
+            return $cachedItem->get();
+        }
     }
 
     public function calculateRegulatoryData()

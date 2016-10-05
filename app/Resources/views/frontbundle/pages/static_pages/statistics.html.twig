@@ -653,10 +653,10 @@
                             <!-- /late-owed-capital-problematic -->
 
                             <!-- late-owed-capital-healthy -->
-                            <tr class="alt">
+                            <tr>
                                 <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ "about-us-statistics_regulatory-table-late-owed-capital-healthy"|trans|raw }}</td>
                             </tr>
-                            <tr class="alt">
+                            <tr>
                                 <td class="table-stats-unilend-item-label">&nbsp;</td>
                                 {% for value in data.regulatoryTable['late-owed-capital-healthy'] %}
                                     <td class="table-stats-unilend-item-value">{{ value|localizednumber }}€</td>
@@ -665,10 +665,10 @@
                             <!-- /late-owed-capital-healthy -->
 
                             <!-- total-owed-problematic-capital -->
-                            <tr>
+                            <tr class="alt">
                                 <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-total-owed-problematic-capital"|trans|raw }}</td>
                             </tr>
-                            <tr>
+                            <tr class="alt">
                                 <td class="table-stats-unilend-item-label">&nbsp;</td>
                                 {% for value in data.regulatoryTable['total-owed-problematic-capital'] %}
                                     <td class="table-stats-unilend-item-value">{{ value|localizednumber }}€</td>
@@ -677,10 +677,10 @@
                             <!-- /total-owed-problematic-capital -->
 
                             <!-- total-owed-problematic-capital-late -->
-                            <tr class="alt">
+                            <tr>
                                 <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-total-owed-problematic-capital-late"|trans|raw }}</td>
                             </tr>
-                            <tr class="alt">
+                            <tr>
                                 <td class="table-stats-unilend-item-label">&nbsp;</td>
                                 {% for value in data.regulatoryTable['total-owed-problematic-capital-late'] %}
                                     <td class="table-stats-unilend-item-value">{{ value|localizednumber }}€</td>
@@ -689,10 +689,10 @@
                             <!-- /total-owed-problematic-capital-late -->
 
                             <!-- pct.owed-problematic-over-borrowed-capital -->
-                            <tr>
+                            <tr class="alt">
                                 <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-owed-problematic-over-borrowed-capital"|trans|raw }}</td>
                             </tr>
-                            <tr>
+                            <tr class="alt">
                                 <td class="table-stats-unilend-item-label">&nbsp;</td>
                                 {% for value in data.regulatoryTable['pct']['owed-problematic-over-borrowed-capital'] %}
                                     <td class="table-stats-unilend-item-value">{{ value|localizednumberwithprecision(2) }}%</td>
@@ -701,10 +701,10 @@
                             <!-- /pct.owed-problematic-over-borrowed-capital -->
 
                             <!-- pct.problematic-rate -->
-                            <tr class="alt">
+                            <tr>
                                 <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-problematic-rate"|trans|raw }}</td>
                             </tr>
-                            <tr class="alt">
+                            <tr>
                                 <td class="table-stats-unilend-item-label">&nbsp;</td>
                                 {% for value in data.regulatoryTable['pct']['problematic-rate'] %}
                                     <td class="table-stats-unilend-item-value">{{ value|localizednumberwithprecision(2) }}%</td>
@@ -713,10 +713,10 @@
                             <!-- /pct.problematic-rate -->
 
                             <!-- pct.interest-over-owed-problematic-capital -->
-                            <tr>
+                            <tr class="alt">
                                 <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-interest-over-owed-problematic-capital"|trans|raw }}</td>
                             </tr>
-                            <tr>
+                            <tr class="alt">
                                 <td class="table-stats-unilend-item-label">&nbsp;</td>
                                 {% for value in data.regulatoryTable['pct']['interest-over-owed-problematic-capital'] %}
                                     <td class="table-stats-unilend-item-value">{{ value|localizednumberwithprecision(2) }}%</td>
@@ -725,10 +725,10 @@
                             <!-- /pct.interest-over-owed-problematic-capital -->
 
                             <!-- pct.expected-performance -->
-                            <tr class="alt">
+                            <tr>
                                 <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-expected-performance"|trans|raw }}</td>
                             </tr>
-                            <tr class="alt">
+                            <tr>
                                 <td class="table-stats-unilend-item-label">&nbsp;</td>
                                 {% for value in data.regulatoryTable['pct']['expected-performance'] %}
                                     <td class="table-stats-unilend-item-value">{{ value|localizednumberwithprecision(2)}}%</td>
