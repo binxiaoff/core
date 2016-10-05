@@ -935,32 +935,6 @@ class echeanciers extends echeanciers_crud
         return bcdiv($this->bdd->executeQuery($sql)->fetchColumn(0), 100, 2);
     }
 
-    public function getTotalRepaidCapital()
-    {
-        $query = '
-            SELECT (t.totalRepayment + t.totalRecovery)
-            FROM
-                (
-                   SELECT
-                     SUM(capital_rembourse)AS totalRepayment,
-                     (SELECT SUM(montant)
-                      FROM transactions
-                      WHERE transactions.type_transaction = '. \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT .') AS totalRecovery
-                   FROM echeanciers
-                    WHERE status IN (' . self::STATUS_REPAID . ', ' . self::STATUS_PARTIALLY_REPAID . ')) AS t';
-
-        return bcdiv($this->bdd->executeQuery($query)->fetchColumn(0), 100, 2);
-    }
-
-    public function getTotalRepaidInterests()
-    {
-        $query = '
-            SELECT SUM(interets_rembourses)
-            FROM echeanciers
-            WHERE status IN (' . self::STATUS_REPAID . ', ' . self::STATUS_PARTIALLY_REPAID . ')';
-        return bcdiv($this->bdd->executeQuery($query)->fetchColumn(0), 100, 2);
-    }
-
     /**
      * @param int $lenderId
      * @param int|null $projectId
