@@ -27,7 +27,7 @@ class AutolendController extends Controller
         /** @var \clients $client */
         $client = $this->getClient();
         /** @var \lenders_accounts $lendersAccounts */
-        $lendersAccounts  = $this->getLenderAccount();
+        $lendersAccounts = $this->getLenderAccount();
 
         if (false === $autoBidSettingsManager->isQualified($lendersAccounts)) {
             return $this->redirectToRoute('lender_profile');
@@ -52,7 +52,7 @@ class AutolendController extends Controller
 
             /** @var array $messages */
             $messages = [];
-            $post = $request->request->all();
+            $post     = $request->request->all();
 
             if ($request->isXmlHttpRequest()) {
                 if (false === empty($post['setting']) && $post['setting'] == 'autolend-off') {
@@ -78,6 +78,8 @@ class AutolendController extends Controller
                 }
 
             }
+
+            $this->redirectToRoute('autolend');
         }
 
 
@@ -136,18 +138,23 @@ class AutolendController extends Controller
     {
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
 
         $settings->get('pret min', 'type');
         $minimumBidAmount = (int)$settings->value;
-        $errorMsg = [];
+        $errorMsg         = [];
 
+        $post['autolend_amount'] = $ficelle->cleanFormatedNumber($post['autolend_amount']);
         if (empty($post['autolend_amount']) || false === is_numeric($post['autolend_amount']) || $post['autolend_amount'] < $minimumBidAmount) {
             $errorMsg[] = $translator->trans('autolend_error-message-amount-wrong', ['%MIN_AMOUNT%' => $minimumBidAmount]);
         }
 
-        if (empty($post['autolend_rate_min'])
+        if (
+            empty($post['autolend_rate_min'])
             || false === str_replace(',', '.', $post['autolend_rate_min'])
-            || false === $autoBidSettingsManager->isRateValid(str_replace(',', '.', $post['autolend_rate_min']))) {
+            || false === $autoBidSettingsManager->isRateValid(str_replace(',', '.', $post['autolend_rate_min']))
+        ) {
             $errorMsg[] = $translator->trans('autolend_error-message-simple-setting-rate-wrong');
         }
 
@@ -155,6 +162,7 @@ class AutolendController extends Controller
             if (false === $autoBidSettingsManager->isOn($lenderAccount)) {
                 $autoBidSettingsManager->on($lenderAccount);
             }
+            $post['autolend_rate_min'] = str_replace(',', '.', $post['autolend_rate_min']);
             $autoBidSettingsManager->saveNoviceSetting($lenderAccount->id_lender_account, $post['autolend_rate_min'], $post['autolend_amount']);
         } else {
             return array('error' => $errorMsg);
