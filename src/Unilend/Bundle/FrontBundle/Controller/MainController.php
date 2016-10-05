@@ -165,7 +165,7 @@ class MainController extends Controller
      */
     public function projectSimulatorStepOneAction(Request $request)
     {
-        if ($request->isXMLHttpRequest()) {
+        if ($request->isXmlHttpRequest()) {
             $period   = $request->request->get('period');
             $amount   = $request->request->get('amount');
             $motiveId = $request->request->get('motiveId');
@@ -228,10 +228,12 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/cgv_preteurs", name="lenders_terms_of_sales")
-     * @Route("/cgv_preteurs/{trash}", name="lenders_terms_of_sales_deprecated")
+     * @Route("/cgv_preteurs/{type}", name="lenders_terms_of_sales", requirements={"type": "morale"})
+     * @param string $type
+     *
+     * @return Response
      */
-    public function lenderTermsOfSalesAction()
+    public function lenderTermsOfSalesAction($type = '')
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
@@ -257,7 +259,7 @@ class MainController extends Controller
         $tree = $entityManager->getRepository('tree');
         $tree->get(['id_tree' => $idTree]);
 
-        return $this->renderTermsOfUse($tree, $entityManager);
+        return $this->renderTermsOfUse($tree, $type);
     }
 
     /**
@@ -319,7 +321,7 @@ class MainController extends Controller
             case self::CMS_TEMPLATE_BORROWER_LANDING_PAGE:
                 return $this->renderBorrowerLandingPage($request, $tree, $finalElements['content'], $finalElements['complement'], $entityManager);
             case self::CMS_TEMPLATE_TOS:
-                return $this->renderTermsOfUse($tree, $entityManager);
+                return $this->renderTermsOfUse($tree);
             default:
                 return new RedirectResponse('/');
         }
@@ -520,18 +522,14 @@ class MainController extends Controller
 
     /**
      * @param \tree         $tree
-     * @param EntityManager $entityManager
+     * @param string $lenderType
      * @return Response
      */
-    private function renderTermsOfUse(\tree $tree, EntityManager $entityManager)
+    private function renderTermsOfUse(\tree $tree, $lenderType = '')
     {
+        $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \acceptations_legal_docs $acceptedTermsOfUse */
         $acceptedTermsOfUse = $entityManager->getRepository('acceptations_legal_docs');
-
-        /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
-        $settings->get('Lien conditions generales inscription preteur societe', 'type');
-        $idTOSLenderLegalEntity = $settings->value;
 
         /** @var \tree_elements $treeElements */
         $treeElements = $entityManager->getRepository('tree_elements');
@@ -561,7 +559,8 @@ class MainController extends Controller
             if (false === empty($userAccepted)) {
                 $dateAccept = 'Sign&eacute; &eacute;lectroniquement le ' . date('d/m/Y', strtotime($userAccepted[0]['added']));
             }
-
+            /** @var \settings $settings */
+            $settings = $entityManager->getRepository('settings');
             $settings->get('Date nouvelles CGV avec 2 mandats', 'type');
             $sNewTermsOfServiceDate = $settings->value;
 
@@ -578,9 +577,8 @@ class MainController extends Controller
             } else {
                 $this->getTOSReplacementsForLegalEntity($client, $dateAccept, $loansCount, $content, $template);
             }
-        } elseif ($tree->id_tree == $idTOSLenderLegalEntity) {
-            $template['recovery_mandate_with_loans'] = '';
-            $template['recovery_mandate']            = str_replace(
+        } elseif ($lenderType !== '') {
+            $template['recovery_mandate'] = str_replace(
                 [
                     '[Civilite]',
                     '[Prenom]',
@@ -595,8 +593,7 @@ class MainController extends Controller
                 $content['mandat-de-recouvrement-personne-morale']
             );
         } else {
-            $template['recovery_mandate_with_loans'] = '';
-            $template['recovery_mandate']            = str_replace(
+            $template['recovery_mandate'] = str_replace(
                 [
                     '[Civilite]',
                     '[Prenom]',
@@ -655,8 +652,8 @@ class MainController extends Controller
             '[date_validation_cgv]' => $dateAccept
         ];
 
-        $template['recovery_mandate']            = str_replace(array_keys($aReplacements), $aReplacements, $content['mandat-de-recouvrement']);
-        $template['recovery_mandate_with_loans'] = $loansCount > 0 ? str_replace(array_keys($aReplacements), $aReplacements, $content['mandat-de-recouvrement-avec-pret']) : '';
+        $template['recovery_mandate'] = $loansCount > 0 ? $content['mandat-de-recouvrement-avec-pret'] : $content['mandat-de-recouvrement'];
+        $template['recovery_mandate'] = str_replace(array_keys($aReplacements), array_values($aReplacements), $template['recovery_mandate']);
     }
 
     private function getTOSReplacementsForLegalEntity(\clients $client, $dateAccept, $loansCount, $content, &$template)
@@ -695,8 +692,8 @@ class MainController extends Controller
             '[date_validation_cgv]' => $dateAccept
         ];
 
-        $template['mandat_de_recouvrement']           = str_replace(array_keys($aReplacements), $aReplacements, $content['mandat-de-recouvrement-personne-morale']);
-        $template['mandat_de_recouvrement_avec_pret'] = $loansCount > 0 ? str_replace(array_keys($aReplacements), $aReplacements, $content['mandat-de-recouvrement-avec-pret-personne-morale']) : '';
+        $template['recovery_mandate'] = $loansCount > 0 ? $content['mandat-de-recouvrement-avec-pret-personne-morale'] : $content['mandat-de-recouvrement-personne-morale'];
+        $template['recovery_mandate'] = str_replace(array_keys($aReplacements), array_values($aReplacements), $template['recovery_mandate']);
     }
 
     /**

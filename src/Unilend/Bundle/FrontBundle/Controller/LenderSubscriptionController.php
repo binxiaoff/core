@@ -48,11 +48,11 @@ class LenderSubscriptionController extends Controller
         $tree = $this->get('unilend.service.entity_manager')->getRepository('tree');
         $settings->get('Lien conditions generales inscription preteur societe', 'type');
         $tree->get(['id_tree' => $settings->value]);
-        $template['termsOfUseLegalEntity'] = $this->generateUrl($tree->slug);
+        $template['termsOfUseLegalEntity'] = $this->generateUrl('lenders_terms_of_sales', ['type' => 'morale']);
 
         $settings->get('Lien conditions generales inscription preteur particulier', 'type');
         $tree->get(['id_tree' => $settings->value]);
-        $template['termsOfUsePerson'] = $this->generateUrl($tree->slug);
+        $template['termsOfUsePerson'] = $this->generateUrl('lenders_terms_of_sales');
 
         $formData = $request->getSession()->get('subscriptionPersonalInformationFormData', []);
         $request->getSession()->remove('subscriptionPersonalInformationFormData');
