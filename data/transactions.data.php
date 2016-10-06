@@ -403,7 +403,7 @@ class transactions extends transactions_crud
     public function getBorrowerRecoveryPaymentsOnHealthyProjectsByCohort()
     {
         $query = 'SELECT
-                      ROUND(SUM(montant / 100)) AS amount,
+                      SUM(montant / 100) AS amount,
                       (
                         SELECT
                           CASE LEFT(projects_status_history.added, 4)
@@ -440,7 +440,7 @@ class transactions extends transactions_crud
     public function getBorrowerRecoveryPaymentsOnProblematicProjectsByCohort()
     {
         $query = 'SELECT
-                      ROUND(SUM(montant / 100)) AS amount,
+                      SUM(montant / 100) AS amount,
                       (
                         SELECT
                           CASE LEFT(projects_status_history.added, 4)
