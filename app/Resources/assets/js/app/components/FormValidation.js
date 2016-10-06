@@ -945,7 +945,7 @@ FormValidation.prototype.rules = {
         case 'name':
         case 'firstname':
         case 'lastname':
-          if (!/^[a-zA-Z\u00C0-\u017F]+$/i.test(inputValidation.value)) {
+          if (!/^[A-Za-z\u00C0-\u017F]{1,}([ \-']{1}[A-Za-z\u00C0-\u017F]{1,}){0,3}$/i.test(inputValidation.value)) {
             inputValidation.errors.push({
               type: 'inputType',
               description: __.__('Not a valid name. Please ensure you have only entered alphabetic characters', 'error-field-input-type-name')
