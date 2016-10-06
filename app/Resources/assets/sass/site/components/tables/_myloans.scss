@@ -10,6 +10,10 @@
     padding-right: 10px;
   }
 
+  tbody tr {
+    @include table-row-alt;
+  }
+
   // Columns
   .table-myloans-item-project {
     width: 17%;
@@ -231,3 +235,18 @@
 .loan-doc-bond {
   background-image: url('/assets/images/dashboard/file-bond-28x38.png');
 }
+
+//.table-myloans * {
+//
+//  tbody {
+//    font-size: 15px;
+//  }
+//
+//  span.label {
+//    overflow: visible;
+//  }
+//}
+//
+//#form-filters-loans {
+//  input {font-size: 15px;}
+//}

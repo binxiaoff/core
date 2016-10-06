@@ -37,7 +37,6 @@ class CacheKeys
     const LENDERS_IN_COMMUNITY                = 'stats_numberOfLendersInCommunity';
     const ACTIVE_LENDERS                      = 'stats_numberOfActiveLenders';
     const FINANCED_PROJECTS                   = 'stats_numberOfFinancedProjects';
-    const AMOUNT_BORROWED                     = 'stats_amountBorrowed';
     const UNILEND_IRR                         = 'stats_unilendIRR';
     const AVG_FUNDING_TIME                    = 'stats_averageFundingTime';
     const AVG_INTEREST_RATE_LENDERS           = 'stats_averageInterestRateForLenders';
@@ -50,8 +49,6 @@ class CacheKeys
     const LENDERS_BY_TYPE                     = 'stats_lendersByType';
     const LENDERS_BY_REGION                   = 'stats_lendersByRegion';
     const PROJECTS_BY_REGION                  = 'stats_projectsByRegion';
-    const TOTAL_REPAID_CAPITAL                = 'stats_totalRepaidCapital';
-    const TOTAL_REPAID_INTEREST               = 'stats_totalRepaidInterests';
     const PROJECTS_BY_CATEGORY                = 'stats_projectCountByCategory';
     const PROJECTS_FUNDED_IN_24_HOURS         = 'stats_numberOfProjectsFundedIn24Hours';
     const PERCENT_PROJECTS_FUNDED_IN_24_HOURS = 'stats_percentageOfProjectsFundedIn24Hours';
@@ -59,7 +56,7 @@ class CacheKeys
     const AMOUNT_FINANCED_HIGHEST_FASTEST     = 'stats_highestAmountObtainedFastest';
 
     /** constants for statistics calculated by cron */
-    const REGULATORY_TABLE   = 'stats_regulatoryData';
+    const REGULATORY_TABLE   = 'stats_regulatory_data';
     const INCIDENCE_RATE_IFP = 'stats_incidence_rate_IFP';
 
     public static function getStatisticsCacheKeys()
@@ -68,7 +65,6 @@ class CacheKeys
             self::LENDERS_IN_COMMUNITY,
             self::ACTIVE_LENDERS,
             self::FINANCED_PROJECTS,
-            self::AMOUNT_BORROWED,
             self::UNILEND_IRR,
             self::AVG_FUNDING_TIME,
             self::AVG_INTEREST_RATE_LENDERS,
@@ -81,8 +77,6 @@ class CacheKeys
             self::LENDERS_BY_TYPE,
             self::LENDERS_BY_REGION,
             self::PROJECTS_BY_REGION,
-            self::TOTAL_REPAID_CAPITAL,
-            self::TOTAL_REPAID_INTEREST,
             self::PROJECTS_BY_CATEGORY,
             self::PROJECTS_FUNDED_IN_24_HOURS,
             self::PERCENT_PROJECTS_FUNDED_IN_24_HOURS,

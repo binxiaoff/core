@@ -35,6 +35,11 @@
 table.table-myoperations-borrower {
   table-layout: fixed;
 
+  tbody tr {
+    @include table-row-alt;
+  }
+
+  // Columns
   .table-myoperations-borrower-item-type {
     width: 38%;
   }
@@ -175,9 +180,14 @@ table.table-myoperations-borrower {
   td {
     font-size: 12px;
   }
+
+  tbody tr {
+    @include table-row-alt;
+  }
 }
 
 .table-myoperations-borrower-prefunding {
+  // Columns
   .table-borrower-file {
     width: 9%;
   }
@@ -209,6 +219,7 @@ table.table-myoperations-borrower {
 }
 
 .table-myoperations-borrower-funding {
+  // Columns
   .table-borrower-file {
     width: 9%;
   }
@@ -239,6 +250,7 @@ table.table-myoperations-borrower {
 }
 
 .table-myoperations-borrower-postfunding {
+  // Columns
   .table-borrower-file {
     width: 9%;
   }

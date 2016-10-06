@@ -169,6 +169,6 @@ $doc.on('ready', function () {
   // Show rejected offers
   $doc.on('click', '.table-alloffersoverview .view-rejected-rows', function(event) {
     event.preventDefault()
-    showAllRejectedOffers()
+    showAllRejectedRows()
   })
 })

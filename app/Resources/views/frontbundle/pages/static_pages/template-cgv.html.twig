@@ -12,14 +12,8 @@
     <div class="page-content" data-equal-height="md lg" data-equal-height-group="content">
         {% block pageContentBody %}
             {{ cms.right_content.main_content|raw }}
-            {% if cms.right_content.recovery_mandate_with_loans is not empty %}
-                <hr>
-                {{ cms.right_content.recovery_mandate_with_loans|raw }}
-            {% endif %}
-            {% if cms.right_content.recovery_mandate_with_loans is not empty %}
-                <hr>
-                {{ cms.right_content.recovery_mandate_with_loans|raw }}
-            {% endif %}
+            <hr>
+            {{ cms.right_content.recovery_mandate|raw }}
         {% endblock %}
     </div><!-- /.page-content -->
 {% endblock %}
