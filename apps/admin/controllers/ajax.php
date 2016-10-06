@@ -954,7 +954,7 @@ class ajaxController extends bootstrap
                 $this->projects_notes->dirigeance                  = number_format($_POST['dirigeance'], 1, '.', '');
                 $this->projects_notes->indicateur_risque_dynamique = number_format($_POST['indicateur_risque_dynamique'], 1, '.', '');
                 $this->projects_notes->note                        = round($this->projects_notes->performance_fianciere * 0.2 + $this->projects_notes->marche_opere * 0.2 + $this->projects_notes->dirigeance * 0.2 + $this->projects_notes->indicateur_risque_dynamique * 0.4, 1);
-                $this->projects_notes->avis                        = htmlspecialchars(strip_tags($_POST['avis']));
+                $this->projects_notes->avis                        = $_POST['avis'];
 
                 $this->projects_notes->structure_comite                   = empty($this->projects_notes->structure_comite) ? $this->projects_notes->structure : $this->projects_notes->structure_comite;
                 $this->projects_notes->rentabilite_comite                 = empty($this->projects_notes->rentabilite_comite) ? $this->projects_notes->rentabilite : $this->projects_notes->rentabilite_comite;
@@ -1274,7 +1274,7 @@ class ajaxController extends bootstrap
                 $this->projects_notes->dirigeance_comite                  = number_format($_POST['dirigeance_comite'], 1, '.', '');
                 $this->projects_notes->indicateur_risque_dynamique_comite = number_format($_POST['indicateur_risque_dynamique_comite'], 1, '.', '');
                 $this->projects_notes->note_comite                        = round($this->projects_notes->performance_fianciere_comite * 0.2 + $this->projects_notes->marche_opere_comite * 0.2 + $this->projects_notes->dirigeance_comite * 0.2 + $this->projects_notes->indicateur_risque_dynamique_comite * 0.4, 1);
-                $this->projects_notes->avis_comite                        = htmlspecialchars(strip_tags($_POST['avis_comite']));
+                $this->projects_notes->avis_comite                        = $_POST['avis_comite'];
 
                 // on enregistre
                 if ($update == true) {
