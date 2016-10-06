@@ -81,7 +81,9 @@ class CacheKeys
             self::PROJECTS_FUNDED_IN_24_HOURS,
             self::PERCENT_PROJECTS_FUNDED_IN_24_HOURS,
             self::BID_EVERY_X_SECOND,
-            self::AMOUNT_FINANCED_HIGHEST_FASTEST
+            self::AMOUNT_FINANCED_HIGHEST_FASTEST,
+            self::REGULATORY_TABLE,
+            self::INCIDENCE_RATE_IFP
         ];
     }
 

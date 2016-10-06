@@ -877,7 +877,6 @@ class MainController extends Controller
 
         /** @var StatisticsManager $statisticsManager */
         $statisticsManager = $this->get('unilend.service.statistics_manager');
-        //$statisticsManager->calculateRegulatoryData();
         $years = array_merge(['2013-2014'], range(2015, date('Y')));
         $template = [
             'data' => [
