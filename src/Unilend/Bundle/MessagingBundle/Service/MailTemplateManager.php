@@ -27,59 +27,54 @@ class MailTemplateManager
     }
 
     /**
-     * @param string $sType
-     * @param string $sSender
-     * @param string $sSenderEmail
-     * @param string $sSubject
-     * @param string $sContent
+     * @param string $type
+     * @param string $sender
+     * @param string $senderEmail
+     * @param string $subject
+     * @param string $content
      */
-    public function addTemplate($sType, $sSender, $sSenderEmail, $sSubject, $sContent)
+    public function addTemplate($type, $sender, $senderEmail, $subject, $content)
     {
-        /** @var \mail_templates $oMailTemplate */
+        /** @var \mail_templates $mailTemplate */
         $oMailTemplate               = $this->entityManager->getRepository('mail_templates');
-        $oMailTemplate->type         = $sType;
-        $oMailTemplate->sender_name  = $sSender;
-        $oMailTemplate->sender_email = $sSenderEmail;
-        $oMailTemplate->subject      = $sSubject;
-        $oMailTemplate->content      = $sContent;
+        $oMailTemplate->type         = $type;
+        $oMailTemplate->sender_name  = $sender;
+        $oMailTemplate->sender_email = $senderEmail;
+        $oMailTemplate->subject      = $subject;
+        $oMailTemplate->content      = $content;
         $oMailTemplate->locale       = $this->defaultLanguage;
         $oMailTemplate->status       = \mail_templates::STATUS_ACTIVE;
         $oMailTemplate->create();
     }
 
     /**
-     * @param int    $iTemplateID
-     * @param string $sType
-     * @param string $sSender
-     * @param string $sSenderEmail
-     * @param string $sSubject
-     * @param string $sContent
+     * @param \mail_templates $mailTemplate
+     * @param string          $sender
+     * @param string          $senderEmail
+     * @param string          $subject
+     * @param string          $content
      */
-    public function modifyTemplate($iTemplateID, $sType, $sSender, $sSenderEmail, $sSubject, $sContent)
+    public function modifyTemplate(\mail_templates &$mailTemplate, $sender, $senderEmail, $subject, $content)
     {
-        /** @var \mail_templates $oMailTemplate */
-        $oMailTemplate = $this->entityManager->getRepository('mail_templates');
-        $oMailTemplate->get($iTemplateID);
-        if ($this->mailQueueManager->existsInMailQueue($iTemplateID)) {
-            $this->archiveTemplate($oMailTemplate);
-            $this->addTemplate($sType, $sSender, $sSenderEmail, $sSubject, $sContent);
+        if ($this->mailQueueManager->existsInMailQueue($mailTemplate->id_mail_template)) {
+            $this->archiveTemplate($mailTemplate);
+            $this->addTemplate($mailTemplate->type, $sender, $senderEmail, $subject, $content);
         } else {
-            $oMailTemplate->type         = $sType;
-            $oMailTemplate->sender_name  = $sSender;
-            $oMailTemplate->sender_email = $sSenderEmail;
-            $oMailTemplate->subject      = $sSubject;
-            $oMailTemplate->content      = $sContent;
-            $oMailTemplate->update();
+            $mailTemplate->sender_name  = $sender;
+            $mailTemplate->sender_email = $senderEmail;
+            $mailTemplate->subject      = $subject;
+            $mailTemplate->content      = $content;
+            $mailTemplate->update();
         }
     }
 
     /**
-     * @param \mail_templates $oMailTemplate
+     * @param \mail_templates $mailTemplate
      */
-    public function archiveTemplate(\mail_templates $oMailTemplate)
+    public function archiveTemplate(\mail_templates $mailTemplate)
     {
-        $oMailTemplate->status = \mail_templates::STATUS_ARCHIVED;
-        $oMailTemplate->update();
+        $mailTemplate->status = \mail_templates::STATUS_ARCHIVED;
+        $mailTemplate->update();
     }
 
     /**
@@ -87,9 +82,9 @@ class MailTemplateManager
      */
     public function getActiveMailTemplates()
     {
-        /** @var \mail_templates $oMailTemplate */
-        $oMailTemplate = $this->entityManager->getRepository('mail_templates');
-        return $oMailTemplate->getActiveMailTemplates();
+        /** @var \mail_templates $mailTemplate */
+        $mailTemplate = $this->entityManager->getRepository('mail_templates');
+        return $mailTemplate->getActiveMailTemplates();
     }
 
 }
