@@ -342,7 +342,7 @@ UserNotificationsDrop.prototype.templates = {
     </ul>',
 
   // The drop's notification list item, which represents a single notification
-  listItem: '<li class="notification notification-type-{{ type }} ui-notification-status-{{ status }}" data-notification-id="{{ id }}">\
+  listItem: '<li class="notification notification-type-{{ type }} ui-notification-status-{{ status }}" data-notification-id="{{ id }}" tabindex="10">\
       <header class="notification-header">\
         <h5 class="notification-datetime" title="{{ datetime }}">{{ datetimeRelative }}</h5>\
         <h4 class="notification-title">{{ title }}</h4>\

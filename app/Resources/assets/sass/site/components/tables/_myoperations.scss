@@ -9,6 +9,10 @@
     padding-right: 10px;
   }
 
+  tbody tr {
+    @include table-row-alt;
+  }
+
   // Columns
   .table-myoperations-item-type {
     width: 18%;

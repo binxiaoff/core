@@ -5,6 +5,10 @@
 // Generic finance table
 .table-finance {
   tbody {
+    tr {
+      @include table-row-alt;
+    }
+
     tr.table-item-total,
     tr.table-item {
       .amount,

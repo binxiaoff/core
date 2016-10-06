@@ -22,6 +22,7 @@ $colors: (
   'red':       #DE2F4C,
   'red-l':     #ECA2AF,
   'red-l2':    #F5D5DB,
+  'blue':      #1B88DB,
 
   'black':     #302a32,
   'black-r':   #000000, // Rich black
@@ -70,6 +71,7 @@ $c-purple-l2: map-get($colors, 'purple-l2');
 $c-purple-l3: map-get($colors, 'purple-l3');
 $c-green:     map-get($colors, 'green');
 $c-green-l:   map-get($colors, 'green-l');
+$c-blue:      map-get($colors, 'blue');
 $c-teal:      map-get($colors, 'teal');
 $c-teal-l:    map-get($colors, 'teal-l');
 $c-teal-l2:   map-get($colors, 'teal-l2');
