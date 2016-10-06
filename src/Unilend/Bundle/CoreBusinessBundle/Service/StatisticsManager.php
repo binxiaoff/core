@@ -342,16 +342,14 @@ class StatisticsManager
 
     public function getTotalRepaidCapital()
     {
-        $cachedItem = $this->cachePool->getItem(CacheKeys::REGULATORY_TABLE);
-        $regulatoryTable = $cachedItem->get();
+        $regulatoryTable = $this->getRegulatoryData();
 
         return $regulatoryTable['repaid-capital']['total'];
     }
 
     public function getTotalRepaidInterests()
     {
-        $cachedItem = $this->cachePool->getItem(CacheKeys::REGULATORY_TABLE);
-        $regulatoryTable = $cachedItem->get();
+        $regulatoryTable = $this->getRegulatoryData();
 
         return $regulatoryTable['repaid-interest']['total'];
     }
