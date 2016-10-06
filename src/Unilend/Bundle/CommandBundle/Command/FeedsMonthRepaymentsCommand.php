@@ -100,24 +100,20 @@ class FeedsMonthRepaymentsCommand extends ContainerAwareCommand
         /** @var \PHPExcel_Worksheet $oActiveSheet */
         $activeSheet = $document->setActiveSheetIndex(0);
 
-        foreach ($aHeader as $iIndex => $sColumn) {
-            $activeSheet->setCellValueByColumnAndRow($iIndex, 1, $sColumn);
-        }
-
         foreach ($aResult as $iRowIndex => $aRow) {
             $iColIndex = 0;
             foreach ($aRow as $ColValue) {
-                $activeSheet->setCellValueByColumnAndRow($iColIndex++, $iRowIndex + 2, $ColValue);
+                $activeSheet->setCellValueByColumnAndRow($iColIndex++, $iRowIndex + 1, $ColValue);
             }
         }
         /** @var \PHPExcel_Writer_CSV $writer */
         $writer = \PHPExcel_IOFactory::createWriter($document, 'CSV');
         $writer->setDelimiter(';')->save($dayFilePath . '/' . $dayFileName);
-        // Add the content of the daily file we generated at the en of the monthly file
         $outputFile = fopen($monthFilePath . $monthFileName, 'w');
+        fwrite($outputFile, implode(';', $aHeader) . ";" . PHP_EOL);
 
         foreach (glob($dayFilePath . '/echeances_*.csv') as $sFile) {
-            fwrite($outputFile, file_get_contents($sFile));
+            fwrite($outputFile, file_get_contents($sFile) . PHP_EOL);
         }
         fclose($outputFile);
     }
