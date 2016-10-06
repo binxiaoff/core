@@ -169,8 +169,8 @@
             data: [{
                 name: 'about-us-statistics_chart-borrowed-capital'|trans,
                 color: '#5FC5D1',
-                y: data.regulatoryTable['borrowed-capital']['total'],
-                value: data.regulatoryTable['borrowed-capital']['total']|localizedcurrency('EUR'),
+                y: data.regulatoryTable['borrowed-capital']['total']|round,
+                value: data.regulatoryTable['borrowed-capital']['total']|round|localizedcurrency('EUR'),
                 showInLegend: true,
                 }]
             },{
@@ -182,20 +182,20 @@
                 data: [{
                     name: 'about-us-statistics_chart-repaid-capital'|trans,
                     color: '#1B88DB',
-                    y: data.regulatoryTable['repaid-capital']['total'],
-                    value: data.regulatoryTable['repaid-capital']['total']|localizedcurrency('EUR'),
+                    y: data.regulatoryTable['repaid-capital']['total']|round,
+                    value: data.regulatoryTable['repaid-capital']['total']|round|localizedcurrency('EUR'),
                     showInLegend: true,
                 },{
                     name: 'about-us-statistics_chart-lost-capital'|trans,
                     color: '#B6D4E4',
-                    y: data.regulatoryTable['future-owed-capital-healthy']['total'],
-                    value: data.regulatoryTable['future-owed-capital-healthy']['total']|localizedcurrency('EUR'),
+                    y: data.regulatoryTable['future-owed-capital-healthy']['total']|round,
+                    value: data.regulatoryTable['future-owed-capital-healthy']['total']|round|localizedcurrency('EUR'),
                     showInLegend: true
                 },{
                     name: 'about-us-statistics_chart-total-owed-problematic-capital-late'|trans,
                     color: '#F76965',
-                    y:  data.regulatoryTable['total-owed-problematic-capital-late']['total'],
-                    value: data.regulatoryTable['total-owed-problematic-capital-late']['total']|localizedcurrency('EUR'),
+                    y:  data.regulatoryTable['total-owed-problematic-capital-late']['total']|round,
+                    value: data.regulatoryTable['total-owed-problematic-capital-late']['total']|round|localizedcurrency('EUR'),
                     showInLegend: true
                 }]
             },{
@@ -203,7 +203,7 @@
                 minSize: 80,
                 size: '33%',
                 innerSize: '70%',
-                endAngle: (270 * (data.regulatoryTable['borrowed-capital']['total'] + data.regulatoryTable['repaid-interest']['total'] + data.regulatoryTable['owed-healthy-interest']['total'])) / data.regulatoryTable['borrowed-capital']['total'],
+                endAngle: (270 * (data.regulatoryTable['borrowed-capital']['total']|round + data.regulatoryTable['repaid-interest']['total']|round + data.regulatoryTable['owed-healthy-interest']['total']|round)) / data.regulatoryTable['borrowed-capital']['total']|round,
                 data: [{
                     name: '',
                     color: '#ffffff',
@@ -211,19 +211,19 @@
                         enabled: false
                         },
                     showInLegend: false,
-                    y: (data.regulatoryTable['repaid-capital']['total'] + data.regulatoryTable['future-owed-capital-healthy']['total']) * 0.66,
+                    y: (data.regulatoryTable['repaid-capital']['total']|round + data.regulatoryTable['future-owed-capital-healthy']['total']|round) * 0.66,
                     tooltip: true
                 },{
                     name: 'about-us-statistics_chart-repaid-interest'|trans,
                     color: '#F2980C',
-                    y: data.regulatoryTable['repaid-interest']['total'],
-                    value: data.regulatoryTable['repaid-interest']['total']|localizedcurrency('EUR'),
+                    y: data.regulatoryTable['repaid-interest']['total']|round,
+                    value: data.regulatoryTable['repaid-interest']['total']|round|localizedcurrency('EUR'),
                     showInLegend: true
                 },{
                     name: 'about-us-statistics_chart-owed-healthy-interest'|trans,
                     color: '#FFCA2C',
-                    y: data.regulatoryTable['owed-healthy-interest']['total'],
-                    value: data.regulatoryTable['owed-healthy-interest']['total']|localizedcurrency('EUR'),
+                    y: data.regulatoryTable['owed-healthy-interest']['total']|round,
+                    value: data.regulatoryTable['owed-healthy-interest']['total']|round|localizedcurrency('EUR'),
                     showInLegend: true
                 }]
             }],
@@ -757,7 +757,7 @@
 
                 <p class="field-help text-align-left">{% trans %} about-us-statistics_regulatory-table-default-explanation {% endtrans %}</p>
 
-            </div>
+            </article>
         </div><!-- /.block-stats -->
 
         <div class="btn-toolbar">
