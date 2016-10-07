@@ -1024,7 +1024,7 @@ class echeanciers extends echeanciers_crud
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getOwedCapitalANdProjectsByContractType($contractType)
+    public function getOwedCapitalAndProjectsByContractType($contractType)
     {
         $query = ' SELECT
                       p.id_project,
@@ -1059,6 +1059,4 @@ class echeanciers extends echeanciers_crud
         $statement = $this->bdd->executeQuery($query, ['contractType' => $contractType], ['contractType' => \PDO::PARAM_STR]);
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
-
-
 }
