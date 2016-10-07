@@ -130,6 +130,28 @@
             );
           }
         }
+
+        &.c-p2,
+        &.bg-p1 {
+          background-color: $c-p2;
+
+          a {
+            @include link-states(
+                    $link: (
+                            color: $c-white,
+                            text-decoration: none
+                    ),
+                    $hover: (
+                            color: $c-white,
+                            text-decoration: none
+                    ),
+                    $visited: (
+                            color: $c-white,
+                            text-decoration: none
+                    )
+            );
+          }
+        }
       }
 
       a {
