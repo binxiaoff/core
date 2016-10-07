@@ -27,7 +27,7 @@ class AutolendController extends Controller
         /** @var \clients $client */
         $client = $this->getClient();
         /** @var \lenders_accounts $lendersAccounts */
-        $lendersAccounts  = $this->getLenderAccount();
+        $lendersAccounts = $this->getLenderAccount();
 
         if (false === $autoBidSettingsManager->isQualified($lendersAccounts)) {
             return $this->redirectToRoute('lender_profile');
@@ -52,7 +52,7 @@ class AutolendController extends Controller
 
             /** @var array $messages */
             $messages = [];
-            $post = $request->request->all();
+            $post     = $request->request->all();
 
             if ($request->isXmlHttpRequest()) {
                 if (false === empty($post['setting']) && $post['setting'] == 'autolend-off') {
@@ -136,29 +136,42 @@ class AutolendController extends Controller
     {
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
 
         $settings->get('pret min', 'type');
-        $minimumBidAmount = (int)$settings->value;
-        $errorMsg = [];
+        $minimumBidAmount = (int) $settings->value;
+        $errorMsg         = [];
+        $autolendAmount   = null;
+        $autolendRateMin  = null;
 
-        if (empty($post['autolend_amount']) || false === is_numeric($post['autolend_amount']) || $post['autolend_amount'] < $minimumBidAmount) {
+        if (false === empty($post['autolend_amount'])) {
+            $autolendAmount = $ficelle->cleanFormatedNumber($post['autolend_amount']);
+        }
+
+        if (false === empty($post['autolend_rate_min'])) {
+            $autolendRateMin = $ficelle->cleanFormatedNumber($post['autolend_rate_min']);
+        }
+
+        if (empty($autolendAmount) || false === is_numeric($autolendAmount) || $autolendAmount < $minimumBidAmount) {
             $errorMsg[] = $translator->trans('autolend_error-message-amount-wrong', ['%MIN_AMOUNT%' => $minimumBidAmount]);
         }
 
-        if (empty($post['autolend_rate_min'])
-            || false === str_replace(',', '.', $post['autolend_rate_min'])
-            || false === $autoBidSettingsManager->isRateValid(str_replace(',', '.', $post['autolend_rate_min']))) {
+        if (empty($autolendRateMin) || false === $autoBidSettingsManager->isRateValid($autolendRateMin)) {
             $errorMsg[] = $translator->trans('autolend_error-message-simple-setting-rate-wrong');
         }
 
-        if (empty($errorMsg)) {
-            if (false === $autoBidSettingsManager->isOn($lenderAccount)) {
-                $autoBidSettingsManager->on($lenderAccount);
-            }
-            $autoBidSettingsManager->saveNoviceSetting($lenderAccount->id_lender_account, $post['autolend_rate_min'], $post['autolend_amount']);
-        } else {
-            return array('error' => $errorMsg);
+        if (false === empty($errorMsg)) {
+            return ['error' => $errorMsg];
         }
+
+        if (false === $autoBidSettingsManager->isOn($lenderAccount)) {
+            $autoBidSettingsManager->on($lenderAccount);
+        }
+
+        $autoBidSettingsManager->saveNoviceSetting($lenderAccount->id_lender_account, $autolendRateMin, $autolendAmount);
+
+        return [];
     }
 
     private function handleExpertSettings($post, \settings $settings, \lenders_accounts $lenderAccount, AutoBidSettingsManager $autoBidSettingsManager)

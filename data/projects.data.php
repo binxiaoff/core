@@ -1077,7 +1077,7 @@ class projects extends projects_crud
 
         $query = 'SELECT count(projects.id_project)
                     FROM projects
-                    WHERE MOD(HOUR(TIMEDIFF(date_publication_full, date_funded)), 24) <= 24
+                    WHERE ROUND(TIMESTAMPDIFF(SECOND, date_publication_full, date_funded)/120) <= 24
                     AND date_funded >= :startDate AND status >= ' . \projects_status::FUNDE;
 
         $statement = $this->bdd->executeQuery($query, $bind, $type);
