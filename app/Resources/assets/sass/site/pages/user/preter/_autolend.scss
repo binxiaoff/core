@@ -319,10 +319,46 @@ $height-autolend-cell-header: 50px;
 
       &#{$js-autolend-average-exceeds} {
         background-color: $c-white;
-        color: $c-orange;
+        color: $c-orange-l;
 
         .cell-input input {
-          color: $c-orange;
+          color: $c-orange-l;
+        }
+
+        &:hover,
+        &:active,
+        &.active {
+          background-color: $c-orange-l;
+          color: $c-white;
+
+          .cell-input input {
+            color: $c-white;
+          }
+        }
+      }
+
+      &#{$js-autolend-out-of-range} {
+        background-color: $c-grey-l4;
+        color: $c-orange;
+
+        .cell-input {
+          >.icon {
+            display: inline-block;
+            font-size: 64px;
+            position: absolute;
+            left: 24px;
+            top: 12px;
+            opacity: 0.5;
+          }
+
+          input {
+            color: $c-orange;
+          }
+        }
+
+        .btn-cell-minus,
+        .btn-cell-plus {
+          color: transparent;
         }
 
         &:hover,
@@ -333,6 +369,21 @@ $height-autolend-cell-header: 50px;
 
           .cell-input input {
             color: $c-white;
+          }
+
+          .btn-cell-minus,
+          .btn-cell-plus {
+            @include link-states(
+              $link: (
+                color: $c-white
+              ),
+              $hover: (
+                color: $c-white
+              ),
+              $active: (
+                color: $c-white
+              )
+            );
           }
         }
       }
@@ -412,6 +463,10 @@ $height-autolend-cell-header: 50px;
         display: inline;
         content: '+';
       }
+    }
+
+    >.icon {
+      display: none;
     }
   }
 
@@ -544,10 +599,6 @@ $height-autolend-cell-header: 50px;
       text-align: center;
     }
 
-    .info-scale-unilend .value {
-      color: $c-p1;
-    }
-
     // Info scale balance
     .info-scale-balance {
       width: 100%;
@@ -621,17 +672,6 @@ $height-autolend-cell-header: 50px;
         }
       }
 
-      // .info-scale-user,
-      // .info-scale-unilend {
-      //   width: 100%;
-      //   float: none;
-      //   clear: both;
-      // }
-
-      // .info-scale-user {
-      //   margin-bottom: 20px;
-      // }
-
       .info-scale-balance {
         display: none;
       }
@@ -641,7 +681,8 @@ $height-autolend-cell-header: 50px;
     // -- Structural styles
     &#{$js-autolend-average-equal},
     &#{$js-autolend-average-within},
-    &#{$js-autolend-average-exceeds} {
+    &#{$js-autolend-average-exceeds},
+    &#{$js-autolend-out-of-range} {
       .info-title {
         font-size: $fs-h4 * .9;
 
@@ -663,10 +704,6 @@ $height-autolend-cell-header: 50px;
         margin-top: 0;
       }
 
-      //.info-scale-balance {
-      //  margin-top: 10px;
-      //}
-
       .info-scale-balance-board {
         transform: rotate(5deg);
       }
@@ -677,10 +714,6 @@ $height-autolend-cell-header: 50px;
         margin-top: 0;
       }
 
-      //.info-scale-balance {
-      //  margin-top: 10px;
-      //}
-
       .info-scale-balance-board {
         transform: rotate(-5deg);
       }
@@ -690,7 +723,8 @@ $height-autolend-cell-header: 50px;
     // @note only colourise if cell is enabled
     &#{$js-autolend-average-equal}#{$js-autolend-cell-enabled},
     &#{$js-autolend-average-within}#{$js-autolend-cell-enabled},
-    &#{$js-autolend-average-exceeds}#{$js-autolend-cell-enabled} {
+    &#{$js-autolend-average-exceeds}#{$js-autolend-cell-enabled},
+    &#{$js-autolend-out-of-range}#{$js-autolend-cell-enabled} {
       color: $c-white;
 
       .info-scale {
@@ -773,6 +807,23 @@ $height-autolend-cell-header: 50px;
 
     // -- Colourise orange
     &#{$js-autolend-average-exceeds}#{$js-autolend-cell-enabled} {
+      background-color: $c-orange-l;
+
+      .info-scale .label {
+        color: mix($c-orange-l, $c-black, 40%);
+      }
+
+      .info-scale-balance-pin:after {
+        background-color: $c-orange-l;
+      }
+
+      .info-cell-disable {
+        @include background-image(-svg(linear-gradient(to top, $c-orange-l 80%, fade-out($c-orange-l, 1) 100%)));
+      }
+    }
+
+    // -- Colourise red
+    &#{$js-autolend-out-of-range}#{$js-autolend-cell-enabled} {
       background-color: $c-orange;
 
       .info-scale .label {
