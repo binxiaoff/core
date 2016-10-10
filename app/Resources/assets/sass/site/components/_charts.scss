@@ -1,0 +1,117 @@
+//
+// Unilend Charts
+//
+
+.chart {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+
+  &.chart-myaccount {
+    min-height: 300px;
+  }
+
+  &.chart-myremboursements {
+    min-height: 400px;
+  }
+}
+
+.chart-key-icon {
+  box-sizing: border-box;
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+  border: solid 1px $c-white;
+  border-radius: 20px;
+  line-height: 20px;
+  vertical-align: middle;
+}
+
+.chart-legend {
+  @include clearfix;
+  margin-top: 30px;
+  margin-bottom: 30px;
+
+  .chart-key {
+    width: 100%;
+    float: none;
+    clear: both;
+
+    @include devices('sm') {
+      width: 50%;
+      float: left;
+      clear: none;
+    }
+
+    @include devices('md') {
+      width: 50%;
+      float: left;
+      clear: none;
+    }
+
+    @include devices('lg') {
+      width: 33%;
+      float: left;
+      clear: none;
+    }
+  }
+}
+
+.chart-key {
+  padding: 10px 20px 10px 30px;
+  position: relative;
+  text-align: left;
+
+  &:before,
+  .icon {
+    content: '';
+    display: block;
+    box-sizing: border-box;
+    width: 20px;
+    height: 20px;
+
+    position: absolute;
+    left: 0;
+    top: 10px;
+
+    border-radius: 20px;
+  }
+
+  .label {
+    display: block;
+    color: $c-t1;
+    font-size: $fs-base * .8;
+    line-height: 1.1em;
+  }
+
+  .value {
+    display: block;
+    color: $c-t2;
+    font-size: $fs-base * .8;
+  }
+
+  &.chart-key-prete:before {
+    background-color: #5fc4d0;
+  }
+
+  &.chart-key-rembourse:before {
+    background-color: #1d79d8;
+  }
+
+  &.chart-key-attente:before {
+    border: dotted 4px #3286dc;
+  }
+
+  &.chart-key-recu:before {
+    background-color: #ffa210;
+  }
+
+  &.chart-key-recevoir:before {
+    border: dotted 4px #ffa210;
+  }
+
+  &.chart-key-difficulte:before {
+    border: dotted 4px #f8524e;
+  }
+}

@@ -140,7 +140,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <th><label>Statut dans la navigation :</label></th>
+                            <th><label>Visible dans le Sitemap du site :</label></th>
                             <td>
                                 <input type="radio" value="1" id="status_menu1_<?= $key ?>" name="status_menu_<?= $key ?>" class="radio"<?= ($this->tree->status_menu == 1 ? ' checked="checked"' : '') ?> />
                                 <label for="status_menu1_<?= $key ?>" class="label_radio">Visible</label>
@@ -199,47 +199,6 @@
                     </tr>
                 </table>
 
-                <?php if ($this->tree->id_template == 7) : ?>
-                <!-- Video -->
-                <table class="form">
-                    <tr>
-                        <th><label for="video_<?= $key ?>">Video :</label></th>
-                        <td>
-                            <input type="file" name="video_<?= $key ?>" id="video_<?= $key ?>" />
-                            <input type="hidden" name="video_<?= $key ?>-old" id="video_<?= $key ?>-old" value="<?= $this->tree->video ?>" />
-                        </td>
-                    </tr>
-                    <?php if($this->tree->video != '') : ?>
-                        <?php list($width,$height) = @getimagesize($this->surl.'/var/videos/'.$this->tree->img_menu); ?>
-                        <tr id="deleteVideoTree_<?= $key ?>">
-                            <th>
-                                <label>
-                                    Video actuelle&nbsp;&nbsp;
-                                    <a onclick="if(confirm('Etes vous sur de vouloir supprimer cette video ?')){deleteVideoTree(<?= $this->tree->id_tree ?>,'<?= $key ?>');return false;}">
-                                        <img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer" />
-                                    </a>
-                                </label>
-                            </th>
-                            <td>
-                                <a target="_blank" href="<?= $this->surl ?>/var/videos/<?= $this->tree->video ?>"><?= $this->surl ?>/var/videos/<?= $this->tree->video ?></a>
-
-                                <input type="button" class="btn" onclick="$('.content_code').slideDown();" value="Générer code">
-                            </td>
-                        </tr>
-                        <tr>
-                            <th></th>
-                            <td>
-                            <div class="content_code" style="display:none;">
-                                <textarea class="textarea" style="width:450px;height:60px;"><video width="500" controls="controls" type="video/mp4" src="<?= $this->surl ?>/var/videos/<?= $this->tree->video ?>">Votre navigateur ne gère pas l'élément video</video>
-                                </textarea>
-                                </div>
-                            </td>
-                        </tr>
-                    <?php endif; ?>
-                </table>
-                <?php endif; ?>
-
-                <!-- DEBUT DES ELEMENTS DU TEMPLATE -->
                 <?php if (count($this->lElements) > 0) : ?>
                     <br />
                     <h1>El&eacute;ments du template</h1>
@@ -259,7 +218,6 @@
                         </tr>
                     </table>
                 <?php endif; ?>
-                <!-- FIN DES ELEMENTS DU TEMPLATE -->
             </fieldset>
            </div>
         <?php endforeach; ?>

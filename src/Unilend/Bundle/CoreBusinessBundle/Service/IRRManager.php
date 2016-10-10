@@ -64,8 +64,8 @@ class IRRManager
      */
     private function calculateIRR($aValuesIRR)
     {
-        $aSums = array();
-        $aDates = array();
+        $aSums = [];
+        $aDates = [];
 
         foreach ($aValuesIRR as $aValues) {
             foreach ($aValues as $date => $value) {
@@ -95,7 +95,7 @@ class IRRManager
         $oLendersAccountStats = $this->oEntityManager->getRepository('lenders_account_stats');
 
         $fStartSQL  = microtime(true);
-        $aValuesIRR = $oLendersAccountStats->getValuesForIRRUsingProjectsLastStatusHistoryMaterialized($iLenderId);
+        $aValuesIRR = $oLendersAccountStats->getValuesForIRR($iLenderId);
 
         $this->oLogger->info('Calculate IRR for lender ' . $iLenderId . ' - SQL Time : ' . (round(microtime(true) - $fStartSQL, 2)) . ' for ' . count($aValuesIRR). ' lines ');
 
@@ -118,11 +118,17 @@ class IRRManager
         /** @var \unilend_stats $oUnilendStats */
         $oUnilendStats = $this->oEntityManager->getRepository('unilend_stats');
         $fStartSQL  = microtime(true);
-        $aValuesIRR = $oUnilendStats->getDataForUnilendIRRUsingProjectsLastStatusMaterialized();
+        $aValuesIRR = $oUnilendStats->getDataForUnilendIRR();
         $this->oLogger->info('Unilend IRR calculation - SQL Time : ' . (round(microtime(true) - $fStartSQL, 2)) . ' for ' . count($aValuesIRR). ' lines ');
 
         $fStartXIRR = microtime(true);
-        $fXIRR      = $this->calculateIRR($aValuesIRR);
+        $fXIRR = 0;
+
+        try {
+            $fXIRR      = $this->calculateIRR($aValuesIRR);
+        } catch (\Exception $exception) {
+        }
+
         $this->oLogger->info('Unilend IRR calculation - XIRR Time : ' . (round(microtime(true) - $fStartXIRR, 2)) . ' - Guess : ' . self::IRR_GUESS . ' MAX_INTERATIONS : '. 100);
         $this->oLogger->info('Unilend IRR calculation - Total time : ' . (round(microtime(true) - $fStartSQL, 2)));
 
@@ -151,16 +157,8 @@ class IRRManager
         );
 
         $iCountProjectStatusChanges    = $oProjectStatusHistory->countProjectStatusChangesOnDate($sDate, $aProjectStatusTriggeringChange);
-        $iCountLendersWithLatePayments = $oLendersAccountsStats->getLendersWithLatePaymentsForIRRUsingProjectsLastStatusHistoryMaterialized();
+        $iCountLendersWithLatePayments = $oLendersAccountsStats->getLendersWithLatePaymentsForIRR();
         return count($iCountProjectStatusChanges) > 0 || count($iCountLendersWithLatePayments) > 0 ;
-    }
-
-    public function getLastUnilendIRR()
-    {
-        /** @var \unilend_stats $unilendStats */
-        $unilendStats = $this->oEntityManager->getRepository('unilend_stats');
-        $aUnilendStats = $unilendStats->select('type_stat = "IRR"', 'added DESC', null, '1');
-        return array_shift($aUnilendStats);
     }
 
     public function addIRRLender($aLender)
@@ -173,5 +171,55 @@ class IRRManager
         $oLendersAccountsStats->tri_value         = $this->calculateIRRForLender($aLender['id_lender_account']);
         $oLendersAccountsStats->create();
     }
+
+    public function getLastUnilendIRR()
+    {
+        /** @var \unilend_stats $unilendStats */
+        $unilendStats = $this->oEntityManager->getRepository('unilend_stats');
+        $aUnilendStats = $unilendStats->select('type_stat = "IRR"', 'added DESC', null, '1');
+        return array_shift($aUnilendStats);
+    }
+
+    public function getUnilendIRRByCohort($year)
+    {
+        set_time_limit(1000);
+        /** @var \unilend_stats $unilendStats */
+        $unilendStats = $this->oEntityManager->getRepository('unilend_stats');
+        $fStartSQL  = microtime(true);
+        $aValuesIRR = $unilendStats->getIRRValuesByCohort($year);
+        $this->oLogger->info('Unilend Cohort ' . $year . ' IRR calculation - SQL Time : ' . (round(microtime(true) - $fStartSQL, 2)) . ' for ' . count($aValuesIRR). ' lines ');
+
+        $fStartXIRR = microtime(true);
+        $xirr = 0;
+
+        try {
+            $xirr = $this->calculateIRR($aValuesIRR);
+        } catch (\Exception $exception){
+
+        }
+        $this->oLogger->info('Unilend Cohort ' . $year . ' IRR calculation - XIRR Time : ' . (round(microtime(true) - $fStartXIRR, 2)) . ' - Guess : ' . self::IRR_GUESS . ' MAX_INTERATIONS : '. 100);
+        $this->oLogger->info('Unilend Cohort ' . $year . ' IRR calculation - Total time : ' . (round(microtime(true) - $fStartSQL, 2)));
+
+        return $xirr;
+    }
+
+    public function getUnilendIRRForCohort20132014()
+    {
+        /** @var \unilend_stats $unilendStats */
+        $unilendStats = $this->oEntityManager->getRepository('unilend_stats');
+        $valuesIRR2013 = $unilendStats->getIRRValuesByCohort(2013);
+        $valuesIRR2014 = $unilendStats->getIRRValuesByCohort(2014);
+        $valuesIRR = array_merge($valuesIRR2013, $valuesIRR2014);
+        $xirr = 0;
+
+        try {
+            $xirr = $this->calculateIRR($valuesIRR);
+        } catch (\Exception $exception){
+
+        }
+        return $xirr;
+    }
+
+
 
 }

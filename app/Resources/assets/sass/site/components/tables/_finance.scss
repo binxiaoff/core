@@ -1,0 +1,66 @@
+//
+// Unilend Table Finance
+//
+
+// Generic finance table
+.table-finance {
+  tbody {
+    tr {
+      @include table-row-alt;
+    }
+
+    tr.table-item-total,
+    tr.table-item {
+      .amount,
+      .diff {
+        text-align: right;
+      }
+
+      .amount {
+        display: block;
+      }
+
+      .diff {
+        display: none;
+        color: $c-p1;
+      }
+
+      &:hover {
+        .amount {
+          display: none;
+        }
+
+        .diff {
+          display: block;
+        }
+      }
+
+      // Show both if device is touch (!hover)
+      .has-touchevents & {
+        .amount,
+        .diff {
+          display: block;
+        }
+      }
+    }
+
+    // Hover states
+    tr.table-item:hover {
+      background-color: $c-bg3;
+    }
+  }
+}
+
+.table-balance-item-name,
+.table-income-item-name {
+  width: 31%;
+  min-width: 140px;
+  text-align: left;
+}
+
+.table-balance-item-year,
+.table-income-item-year {
+  width: 23%;
+  min-width: 100px;
+  text-align: right;
+}

@@ -116,7 +116,7 @@ class rootController extends bootstrap
         $this->projects_status = $this->loadData('projects_status');
         $this->projects        = $this->loadData('projects');
 
-        $this->lProjectsNok = $this->projects->selectProjectsByStatus(implode(', ', array(\projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE)));
+        $this->lProjectsNok = $this->projects->selectProjectsByStatus([\projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE]);
         $this->lStatus      = $this->projects_status->select();
     }
 
@@ -179,14 +179,5 @@ class rootController extends bootstrap
                 $this->retour_pass = "La confirmation du nouveau de passe doit être la même que votre nouveau mot de passe";
             }
         }
-    }
-
-    public function _captcha()
-    {
-        $_SESSION['request_url'] = '/';
-
-        require_once($this->path . 'librairies/captcha/classes/captcha.class.php');
-        PhocaCaptcha::displayCaptcha($this->path . 'librairies/captcha/images/06.jpg');
-        $this->captchaCode = $_SESSION['captcha'];
     }
 }

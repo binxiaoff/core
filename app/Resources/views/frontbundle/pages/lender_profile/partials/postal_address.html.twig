@@ -1,0 +1,109 @@
+<section id="profile-correspondence-view" role="tabpanel" class="profile-correspondence-view collapse in">
+
+    <button data-target="#profile-correspondence-edit" role="button" data-toggle="collapse" data-parent="#profile-correspondence-section" class="btn-edit">
+        <span class="icon fa-pencil-u32"></span>
+        <span class="label">{% trans %} lender-profile_information-tab-identity-section-modify-button {% endtrans %}</span>
+    </button>
+
+    <div class="profile-correspondence-is-same collapse {% if clientAddresses.meme_adresse_fiscal == 1 %} in {% endif %}">
+        <span class="icon fa-check-u32"></span>{% trans %} lender-profile_information-tab-fiscal-address-section-postal-checkbox {% endtrans %}
+    </div>
+
+    <dl class="profile-correspondence-not-same list-2col collapse {% if clientAddresses.meme_adresse_fiscal != 1 %} in {% endif %}">
+        <dt>{% trans %} lender-profile_information-tab-postal-address-section-address-label {% endtrans %}</dt>
+        <dd id="profile-correspondence-street-output">{{ clientAddresses.adresse1 }}</dd>
+        <dt>{% trans %} lender-profile_information-tab-postal-address-section-zip-label {% endtrans %}</dt>
+        <dd id="profile-correspondence-code-output">{{ clientAddresses.cp}}</dd>
+        <dt>{% trans %} lender-profile_information-tab-postal-address-section-city-label {% endtrans %}</dt>
+        <dd id="profile-correspondence-ville-output">{{ clientAddresses.ville }}</dd>
+        <dt>{% trans %} lender-profile_information-tab-postal-address-section-country-label {% endtrans %}</dt>
+        <dd id="profile-correspondence-pays-output">{{ clientAddresses.id_pays|countryLabel }}</dd>
+    </dl>
+
+</section><!-- /.profile-correspondence-view -->
+
+<section id="profile-correspondence-edit" role="tabpanel" class="profile-correspondence-edit collapse">
+    <form id="form-profile-correspondence-edit" action="{{ path('profile_postal_address_update') }}" method="post" class="form-profile form-profile-correspondence-edit" data-formvalidation data-formvalidation-notificationselem="#form-profile-correspondence-notifications">
+        <div class="row">
+            <div class="form-field form-field-single-checkbox">
+                <label>
+                    <input id="correspondence-is-same" type="checkbox" name="same_postal_address" value="true"
+                           {% if formData.postal.same_postal_address == 1 %}checked="checked"{% endif %} />
+                    <span class="label">{% trans %} lender-profile_information-tab-fiscal-address-section-postal-checkbox {% endtrans %}</span>
+                </label>
+            </div><!-- /.form-field -->
+        </div>
+        <div class="profile-correspondence-not-same collapse {% if formData.postal.same_postal_address != 1 %} in {% endif %}">
+            <div class="row">
+                <div class="form-field">
+                    <label for="form-profile-correspondence-street">{% trans %} lender-profile_information-tab-postal-address-section-address-label {% endtrans %}
+                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                    <input id="form-profile-correspondence-street" type="text" name="postal_address_street" value="{{ formData.postal.postal_address_street }}" class="input-field" placeholder="Addresse utilisée pour vos avis d'imposition"
+                           data-formvalidation-input
+                           data-formvalidation-required="true"/>
+                </div><!-- /.form-field -->
+            </div>
+
+            <div class="row row-multi-col-computer">
+                <div class="form-field col-lg-6 col-md-6">
+                    <label for="form-profile-correspondence-code">{% trans %} lender-profile_information-tab-postal-address-section-zip-label {% endtrans %}
+                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    </label>
+                    <div class="input-group set-right">
+                        <input id="form-profile-correspondence-code" type="text" name="postal_address_zip" value="{{ formData.postal.postal_address_zip }}" class="input-field"
+                               data-formvalidation-input
+                               data-formvalidation-required="true"
+                               {# AutoComplete behaviours for addresses needs to be further marked and configured #}
+                               data-autocomplete-address
+                               data-autocomplete-ajaxurl="{{ path('lender_profile_ajax_zip') }}"
+                               data-autocomplete-address-countryelem="#form-profile-correspondence-pays"
+                               data-autocomplete-address-cityelem="#form-profile-correspondence-ville"
+                               data-autocomplete-address-zipelem="#form-profile-correspondence-code"
+                               data-has-spinner="#spinner-profile-correspondence-code"/>
+                        <div class="btn-group">
+                            <span id="spinner-profile-correspondence-code" class="ui-is-spinner"><span class="sr-only">Loading...</span></span>
+                        </div>
+                    </div><!-- /.input-group -->
+                </div><!-- /.form-field -->
+                <div class="form-field col-lg-6 col-md-6">
+                    <label for="form-profile-correspondence-ville">{% trans %} lender-profile_information-tab-postal-address-section-city-label {% endtrans %}
+                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                    <div class="input-group set-right">
+                        <input id="form-profile-correspondence-ville" type="text" name="postal_address_city" value="{{ formData.postal.postal_address_city }}" class="input-field"
+                               data-formvalidation-input
+                               data-formvalidation-required="true"
+                               {# AutoComplete behaviours for addresses needs to be further marked and configured #}
+                               data-autocomplete-address
+                               data-autocomplete-ajaxurl="{{ path('lender_profile_ajax_zip') }}"
+                               data-autocomplete-address-countryelem="#form-profile-correspondence-pays"
+                               data-autocomplete-address-cityelem="#form-profile-correspondence-ville"
+                               data-autocomplete-address-zipelem="#form-profile-correspondence-code"
+                               data-has-spinner="#spinner-profile-correspondence-city"/>
+                        <div class="btn-group">
+                            <span id="spinner-profile-correspondence-city" class="ui-is-spinner"><span class="sr-only">Loading...</span></span>
+                        </div>
+                    </div>
+                </div><!-- /.form-field -->
+            </div>
+
+            <div class="row row-multi-col-computer">
+                <div class="form-field col-lg-6 col-md-6">
+                    <label for="form-profile-correspondence-pays">{% trans %} lender-profile_information-tab-postal-address-section-country-label {% endtrans %} <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                    <select id="form-profile-correspondence-pays" name="postal_address_country" class="input-field"
+                            data-formvalidation-input
+                            data-formvalidation-required="true">
+                        {% for i, country in countries %}
+                            <option value="{{ i }}"{% if i == formData.postal.postal_address_country %} selected="selected"{% endif %}>{{ country }}</option>
+                        {% endfor %}
+                    </select>
+                </div><!-- /.form-field -->
+            </div>
+        </div>
+
+        <input type="hidden" name="postal_address_form" value="true" />
+        <div class="btn-controls">
+            <button class="btn-primary">{% trans %} lender-profile_information-tab-identity-save-modifications-button {% endtrans %}</button>
+            <button type="reset" role="button" data-toggle="collapse" data-target="#profile-correspondence-view" data-parent="#profile-correspondence-section" class="btn-default" aria-controls="#profile-correspondence-view" aria-expanded="true">{% trans %} lender-profile_information-tab-identity-cancel-modifications-button {% endtrans %}</button>
+        </div><!-- /.btn-controls -->
+    </form><!-- /.form-profile-correspondence-edit -->
+</section><!-- /.profile-correspondence-edit -->

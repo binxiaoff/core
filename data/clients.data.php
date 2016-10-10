@@ -98,6 +98,8 @@ class clients extends clients_crud
     public $userMail = 'email';
     public $userPass = 'password';
 
+    //TODO delete all login and check access functions no longer needed
+
     public function handleLogin($button, $email, $pass)
     {
         if (isset($_POST[$button])) {
@@ -113,11 +115,27 @@ class clients extends clients_crud
                     $_SESSION['client']['password'] = $client['password'];
                 }
 
-                $this->bdd->query('UPDATE ' . $this->userTable . ' SET lastlogin = NOW(), password = "' . $client['password'] . '" WHERE id_client = ' . $client['id_client']);
+                $this->saveLogin(new \DateTime('NOW'), $client['email']);
                 return true;
             }
             return false;
         }
+    }
+
+    /**
+     * @param DateTime $dateLogin
+     * @param string   $email
+     */
+    public function saveLogin(\DateTime $dateLogin, $email)
+    {
+        $aBind = array('lastLogin' => $dateLogin->format('Y-m-d H:i:s'), 'email' => $email);
+        $aType = array('lastLogin' => \PDO::PARAM_STR, 'email' => \PDO::PARAM_STR);
+
+        $sQuery =  '
+            UPDATE clients
+            SET lastlogin = :lastLogin
+            WHERE email = :email AND status = 1';
+        $this->bdd->executeUpdate($sQuery, $aBind, $aType);
     }
 
     public function handleLogout($bRedirect = true)
@@ -168,11 +186,7 @@ class clients extends clients_crud
         $sql = 'SELECT * FROM ' . $this->userTable . ' WHERE ' . $this->userMail . ' = "' . $email . '"';
         $res = $this->bdd->query($sql);
 
-        if ($this->bdd->num_rows($res) >= 1) {
-            return false;
-        } else {
-            return true;
-        }
+        return ($this->bdd->num_rows($res) >= 1);
     }
 
     public function checkAccess()
@@ -381,48 +395,6 @@ class clients extends clients_crud
         return $result;
     }
 
-    public function selectPreteurs($dateMoins1Mois)
-    {
-        $sql = '
-        SELECT
-            c.id_client,
-           la.id_lender_account,
-           c.type,
-           la.exonere,
-           la.debut_exoneration,
-           la.fin_exoneration,
-           e.id_project,
-           e.id_loan,
-           e.ordre,
-           e.montant,
-           e.capital,
-           e.interets,
-           e.prelevements_obligatoires,
-           e.retenues_source,
-           e.csg,
-           e.prelevements_sociaux,
-           e.contributions_additionnelles,
-           e.prelevements_solidarite,
-           e.crds,
-           e.date_echeance,
-           e.date_echeance_reel,
-           e.status,
-           e.date_echeance_emprunteur,
-           e.date_echeance_emprunteur_reel
-        FROM echeanciers e
-        LEFT JOIN lenders_accounts la  ON la.id_lender_account = e.id_lender
-        LEFT JOIN clients c ON c.id_client = la.id_client_owner
-        WHERE LEFT(e.date_echeance_reel,7) = "' . $dateMoins1Mois . '" AND e.status = 1 ORDER BY e.date_echeance ASC';
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
-
-    // presteurs by status
     public function selectPreteursByStatus($status = '', $where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
@@ -438,24 +410,26 @@ class clients extends clients_crud
         $sql = '
             SELECT
                 c.*,
-                (SELECT cs.status FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) as status_client,
-                (SELECT cs.label FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) as label_status,
-                (SELECT csh.added FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) as added_status,
-                (SELECT csh.id_client_status_history FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) as id_client_status_history,
+                cs.status AS status_client,
+                cs.label AS label_status,
+                csh.added AS added_status,
+                clsh.id_client_status_history,
                 l.id_company_owner as id_company,
                 l.type_transfert as type_transfert,
                 l.motif as motif,
                 l.fonds,
                 l.id_lender_account as id_lender
             FROM clients c
-            LEFT JOIN lenders_accounts l ON c.id_client = l.id_client_owner
+            INNER JOIN (SELECT id_client, MAX(id_client_status_history) AS id_client_status_history FROM clients_status_history GROUP BY id_client) clsh ON c.id_client = clsh.id_client
+            INNER JOIN clients_status_history csh ON clsh.id_client_status_history = csh.id_client_status_history
+            INNER JOIN clients_status cs ON csh.id_client_status = cs.id_client_status
+            INNER JOIN lenders_accounts l ON c.id_client = l.id_client_owner
             ' . $where . $status . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
 
-
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -703,20 +677,19 @@ class clients extends clients_crud
     private function getBorrowerOperationTransferFinancing($iClientId, $aProjects, $sStartDate, $sEndDate)
     {
         $aDataForBorrowerOperations = array();
-        $sql = 'SELECT
-                    montant/100 AS montant,
-                    DATE(date_transaction) AS date,
-                    id_project,
-                    "virement" AS type
-                FROM
-                    `transactions`
-                WHERE
-                    `id_project` IN (' . implode(',', $aProjects) . ')
-                    AND id_client = ' . $iClientId . '
-                    AND date_transaction BETWEEN ' . $sStartDate . 'AND ' . $sEndDate . '
-                    AND `type_transaction` = 9
-                GROUP BY
-                    id_project';
+        $sql = '
+            SELECT
+                montant / 100 AS montant,
+                DATE(date_transaction) AS date,
+                id_project,
+                "virement" AS type
+            FROM transactions
+            WHERE
+                id_project IN (' . implode(',', $aProjects) . ')
+                AND id_client = ' . $iClientId . '
+                AND date_transaction BETWEEN ' . $sStartDate . 'AND ' . $sEndDate . '
+                AND type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . '
+            GROUP BY id_project';
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($result)) {
@@ -728,26 +701,23 @@ class clients extends clients_crud
     private function getBorrowerOperationMonthlyDueAndCommission($aProjects, $sStartDate, $sEndDate, $iType = null)
     {
         $aDataForBorrowerOperations = array();
-        $sql = 'SELECT
-                    `id_project`,
-                    SUM(montant + commission + tva)/100 AS montant,
-                    -`commission`/100 AS commission,
-                    -`tva`/100 AS tva,
-                    DATE(date_echeance_emprunteur_reel) AS date
-                FROM
-                    `echeanciers_emprunteur`
-                WHERE
-                    `id_project` IN (' . implode(',', $aProjects) . ')
-                    AND DATE(`date_echeance_emprunteur_reel`) BETWEEN ' . $sStartDate . ' AND ' . $sEndDate . '
-                    AND `status_emprunteur` = 1
-                    AND `status_ra` = 0
-                GROUP BY
-                    `id_project`,
-                    DATE(`date_echeance_emprunteur_reel`)';
+        $sql = '
+            SELECT
+                id_project,
+                SUM(montant + commission + tva) / 100 AS montant,
+                -commission / 100 AS commission,
+                -tva / 100 AS tva,
+                DATE(date_echeance_emprunteur_reel) AS date
+            FROM echeanciers_emprunteur
+            WHERE
+                id_project IN (' . implode(',', $aProjects) . ')
+                AND DATE(date_echeance_emprunteur_reel) BETWEEN ' . $sStartDate . ' AND ' . $sEndDate . '
+                AND status_emprunteur = 1
+                AND status_ra = 0
+            GROUP BY id_project, DATE(date_echeance_emprunteur_reel)';
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($result)) {
-
             if ($iType === self::PRLV_MENSUALITE || $iType === null ) {
                 $aDataForBorrowerOperations[] = array(
                     'id_project' => $record['id_project'],
@@ -861,7 +831,7 @@ class clients extends clients_crud
                     WHERE
                         `id_project` IN (' . implode(',', $aProjects) . ')
                         AND `date` BETWEEN ' . $sStartDate . ' AND ' . $sEndDate. '
-                        AND type_commission = 1';
+                        AND type_commission = ' . \factures::TYPE_COMMISSION_FINANCEMENT;
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($result)) {
@@ -1029,34 +999,30 @@ class clients extends clients_crud
      */
     public function getBorrowersContactDetailsAndSource(\DateTime $oStartDate, \DateTime $oEndDate, $bGroupBySiren)
     {
-        $sGroupBy    = ($bGroupBySiren) ? 'GROUP BY com.siren ' : '';
-        $sCountSiren = ($bGroupBySiren) ? 'count(com.siren) AS "countSiren", ' : '';
+        $sGroupBy    = $bGroupBySiren ? 'GROUP BY com.siren ' : '';
+        $sCountSiren = $bGroupBySiren ? 'COUNT(com.siren) AS countSiren, ' : '';
 
-        $sQuery = 'SELECT
-                        p.id_project,'
-                        . $sCountSiren . '
-                        com.siren,
-                        c.nom,
-                        c.prenom,
-                        c.email,
-                        c.mobile,
-                        c.telephone,
-                        c.source,
-                        c.source2,
-                        c.added,
-                        ps.label
-                    FROM
-                        projects p
-                        INNER JOIN companies com ON p.id_company = com.id_company
-                        INNER JOIN clients c ON com.id_client_owner = c.id_client
-                        INNER JOIN projects_last_status_history plsh ON p.id_project = plsh.id_project
-                        INNER JOIN projects_status_history psh ON plsh.id_project_status_history = psh.id_project_status_history
-                        INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                    WHERE
-                        DATE(p.added) BETWEEN "'. $oStartDate->format('Y-m-d') . '"
-                        AND "'. $oEndDate->format('Y-m-d') . '" '
-                    . $sGroupBy . '
-                    ORDER BY com.siren DESC, c.added DESC';
+        $sQuery = '
+            SELECT
+                p.id_project,'
+                . $sCountSiren . '
+                com.siren,
+                c.nom,
+                c.prenom,
+                c.email,
+                c.mobile,
+                c.telephone,
+                c.source,
+                c.source2,
+                c.added,
+                ps.label
+            FROM projects p
+            INNER JOIN companies com ON p.id_company = com.id_company
+            INNER JOIN clients c ON com.id_client_owner = c.id_client
+            INNER JOIN projects_status ps ON p.status = ps.status
+            WHERE DATE(p.added) BETWEEN "'. $oStartDate->format('Y-m-d') . '" AND "'. $oEndDate->format('Y-m-d') . '" '
+            . $sGroupBy . '
+            ORDER BY com.siren DESC, c.added DESC';
 
         $rQuery = $this->bdd->query($sQuery);
         $aResult = array();
@@ -1176,5 +1142,91 @@ class clients extends clients_crud
                       c.id_client";
 
         return $this->bdd->executeQuery($sQuery);
+    }
+
+
+    public function countClientsByRegion()
+    {
+        $query = 'SELECT
+                      CASE
+                      WHEN LEFT(client_base.cp, 2) IN (08, 10, 51, 52, 54, 55, 57, 67, 68, 88)
+                        THEN "44"
+                      WHEN LEFT(client_base.cp, 2) IN (16, 17, 19, 23, 24, 33, 40, 47, 64, 79, 86, 87)
+                        THEN "75"
+                      WHEN LEFT(client_base.cp, 2) IN (01, 03, 07, 15, 26, 38, 42, 43, 63, 69, 73, 74)
+                        THEN "84"
+                      WHEN LEFT(client_base.cp, 2) IN (21, 25, 39, 58, 70, 71, 89, 90)
+                        THEN "27"
+                      WHEN LEFT(client_base.cp, 2) IN (22, 29, 35, 56)
+                        THEN "53"
+                      WHEN LEFT(client_base.cp, 2) IN (18, 28, 36, 37, 41, 45)
+                        THEN "24"
+                      WHEN LEFT(client_base.cp, 2) IN (20)
+                        THEN "94"
+                      WHEN LEFT(client_base.cp, 3) IN (971)
+                        THEN "01"
+                      WHEN LEFT(client_base.cp, 3) IN (973)
+                        THEN "03"
+                      WHEN LEFT(client_base.cp, 2) IN (75, 77, 78, 91, 92, 93, 94, 95)
+                        THEN "11"
+                      WHEN LEFT(client_base.cp, 3) IN (974)
+                        THEN "04"
+                      WHEN LEFT(client_base.cp, 2) IN (09, 11, 12, 30, 31, 32, 34, 46, 48, 65, 66, 81, 82)
+                        THEN "76"
+                      WHEN LEFT(client_base.cp, 3) IN (972)
+                        THEN "02"
+                      WHEN LEFT(client_base.cp, 3) IN (976)
+                        THEN "06"
+                      WHEN LEFT(client_base.cp, 2) IN (02, 59, 60, 62, 80)
+                        THEN "32"
+                      WHEN LEFT(client_base.cp, 2) IN (14, 27, 50, 61, 76)
+                        THEN "28"
+                      WHEN LEFT(client_base.cp, 2) IN (44, 49, 53, 72, 85)
+                        THEN "52"
+                      WHEN LEFT(client_base.cp, 2) IN (04, 05, 06, 13, 83, 84)
+                        THEN "93"
+                      ELSE "0"
+                      END AS insee_region_code,
+                      COUNT(*) AS count
+                    FROM (SELECT id_client,
+                         CASE WHEN clients.type IN (' . implode(',', [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER]) . ') THEN clients_adresses.cp_fiscal ELSE companies.zip END AS cp
+                         FROM clients
+                             LEFT JOIN clients_adresses USING (id_client)
+                             LEFT JOIN companies ON clients.id_client = companies.id_client_owner
+                             INNER JOIN lenders_accounts ON clients.id_client = lenders_accounts.id_client_owner
+                         WHERE clients.status = '. \clients::STATUS_ONLINE .' AND lenders_accounts.status = 1
+                         AND (clients_adresses.id_pays_fiscal = ' . \pays_v2::COUNTRY_FRANCE . ' OR companies.id_pays = ' . \pays_v2::COUNTRY_FRANCE . ')) AS client_base
+                    GROUP BY insee_region_code';
+
+        $statement = $this->bdd->executeQuery($query);
+        $regionsCount  = [];
+        while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
+            $regionsCount[$row['insee_region_code']] = $row['count'];
+        }
+
+        return $regionsCount;
+    }
+
+    public function getBorrowersByCategory()
+    {
+        $sQuery = 'SELECT
+                      count(DISTINCT projects.id_project), company_sector.sector
+                    FROM
+                      `companies`
+                      INNER JOIN projects ON companies.id_company = projects.id_company
+                      INNER JOIN projects_status_history ON projects.id_project = projects_status_history.id_project
+                      INNER JOIN projects_status ON (projects_status_history.id_project_status = projects_status.id_project_status AND projects_status.status = 80)
+                      INNER JOIN company_sector ON companies.sector = company_sector.id_company_sector
+
+                      GROUP BY companies.sector';
+
+        $oStatement = $this->bdd->executeQuery($sQuery);
+        $aCountByCategories = array();
+
+        while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
+            $aCountByCategories[$aRow['id_sector']] = $aRow['count'];
+        }
+
+        return $aCountByCategories;
     }
 }

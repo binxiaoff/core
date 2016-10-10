@@ -1,0 +1,133 @@
+{# Inscription / Connexion Page #}
+{% extends 'layouts/_layout.html.twig' %}
+
+{% set page = {
+    title: 'Inscription / Connexion',
+    permalink: path('login')
+} %}
+
+{% block siteContent %}
+    <article id="connexion-inscription" class="page">
+        <header class="page-header">
+            <div class="site-wrap">
+                <h1>{% trans %} connect-subscribe-page_header-title {% endtrans %}</h1>
+            </div><!-- /.site-wrap -->
+        </header><!-- /.page-header -->
+        <section class="page-content">
+            <div class="hero-wrap">
+                <div class="site-wrap">
+                    <div class="row">
+
+                        <div class="col-connect col-lg-4 col-md-4">
+                            <h2 class="h3 text-align-left">{% trans %} connect-subscribe-page_login-box-title {% endtrans %}</h2>
+                            <form action="{{ path('login-check') }}" method="post" class="form-connect login-form" data-formvalidation>
+                                <div class="panel panel-connect">
+                                    {% if error is not empty %}
+                                        <div id="form-connect-notifications">
+                                            {{ "connect-subscribe-page_login-box-error-message-#{ error.message }"|trans }}
+                                        </div>
+                                    {% endif %}
+                                    <div class="panel-inner">
+                                        <div class="form-field">
+                                            <label for="connect-access-email">{% trans %} common_email {% endtrans %}</label>
+                                            <div class="input-group set-left">
+                                                <div class="btn-group">
+                                                    <label for="connect-access-email"><span class="icon fa-envelope-o"></span></label>
+                                                </div>
+                                                <input type="text" id="connect-access-email" data-login name="_username" value="" class="input-field" autocomplete="off" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email">
+                                            </div><!-- /.input-group -->
+                                        </div><!-- /.form-field -->
+
+                                        <div class="form-field">
+                                            <label for="connect-access-password">{% trans %} common_password {% endtrans %}</label>
+                                            <div class="input-group set-left">
+                                                <div class="btn-group">
+                                                    <label for="connect-access-password"><span class="icon fa-lock-u"></span></label>
+                                                </div>
+                                                <input type="password" id="connect-access-password" data-login name="_password" value="" class="input-field" autocomplete="off" data-formvalidation-input data-formvalidation-required="true">
+                                            </div><!-- /.input-group -->
+                                        </div><!-- /.form-field -->
+                                        {% if captchaInformation is defined and captchaInformation is not empty %}
+                                            {% if captchaInformation.displayCaptcha %}
+                                                <div class="captcha-wrapper" data-captcha>
+                                                    <iframe class="captcha_login" width="133" height="33"
+                                                            src="{{ path('show_captcha') }}">
+                                                    </iframe>
+                                                    <div id="captcha" class="form-field">
+                                                        <div class="input-group set-left">
+                                                            <div class="btn-group">
+                                                                <label for="connect-access-captcha"><span class="icon fa-lock-u"></span></label>
+                                                            </div>
+                                                            <input type="text" id="connect-access-captcha" autocomplete="off" required name="captcha" value="" class="input-field">
+                                                        </div>
+                                                        <label for="connect-access-catpcha">{% trans %} connect-subscribe-page_login-captcha-instructions {% endtrans %}</label>
+                                                    </div>
+                                                </div>
+                                            {%  endif %}
+                                        {% endif %}
+
+                                        <div class="field-help">
+                                            <p>
+                                                <a href="#dialog-conditions-content" class="fancybox-html">
+                                                    {% trans %} connect-subscribe-page_login-box-password-forgotten-link {% endtrans %}
+                                                </a>
+                                            </p>
+                                        </div>
+
+                                        {% if captchaInformation is defined and captchaInformation is not empty and captchaInformation.displayCaptcha and captchaInformation.displayWaitingPeriod %}
+                                            <div id="form-connect-notifications-timer" data-captcha-timercomplete="hide">
+                                                {% trans with { '%waitingPeriod%' : captchaInformation.waitingPeriod } %} connect-subscribe-page_waiting-period-message {% endtrans %}
+                                            </div>
+                                        {% endif %}
+
+                                    </div><!-- /.panel-inner -->
+                                    <div class="btn-controls" {% if captchaInformation is defined and captchaInformation is not empty and captchaInformation.displayCaptcha %} style="display: none;"  data-captcha-timercomplete="show" {% endif %}>
+                                        <button type="submit" class="btn-primary" {% if captchaInformation is defined and captchaInformation is not empty and captchaInformation.displayCaptcha %} disabled="disabled" data-captcha-timercomplete="enable" {% endif %}>{% trans %} connect-subscribe-page_login-box-connect-button {% endtrans %}</button>
+                                    </div>
+                                </div><!-- /.panel -->
+                                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+                            </form><!-- /.form-connect -->
+
+                        </div><!-- /.col-connect -->
+
+                        <div class="col-register col-lg-8 col-md-8">
+                            <h2 class="h3 text-align-left">{% trans %} connect-subscribe-page_subscribe-box-title {% endtrans %}</h2>
+                            <div class="row">
+                                <div class="col-emprunter col-lg-6 col-md-6">
+                                    <div class="panel panel-emprunter">
+                                        <div class="panel-inner" data-equal-height="md lg">
+                                            <h3>{% trans %} connect-subscribe-page_subscribe-box-borrower-title {% endtrans %}</h3>
+                                            <p>{% trans %} connect-subscribe-page_subscribe-box-borrower-text {% endtrans %}</p>
+                                            <p><a href="{{ path('home_borrower') }}" class="link">{% trans %} connect-subscribe-page_subscribe-box-borrower-more-link {% endtrans %}</a></p>
+                                        </div><!-- /.panel-inner -->
+                                        <div class="btn-controls">
+                                            <a href="{{ path('home_borrower') }}#homeemp-section-esim" class="btn-alternate">{% trans %} connect-subscribe-page_subscribe-box-borrower-button {% endtrans %}</a>
+                                        </div>
+                                    </div><!-- /.panel -->
+                                </div>
+                                <div class="col-preter col-lg-6 col-md-6">
+                                    <div class="panel panel-preter">
+                                        <div class="panel-inner" data-equal-height="md lg">
+                                            <h3>{% trans %} connect-subscribe-page_subscribe-box-lender-title {% endtrans %}</h3>
+                                            <p>{% trans %} connect-subscribe-page_subscribe-box-lender-text {% endtrans %}</p>
+                                            <p><a href="{{ path('home_lender') }}" class="link">{% trans %} connect-subscribe-page_subscribe-box-lender-more-link {% endtrans %}</a></p>
+                                        </div><!-- /.panel-inner -->
+                                        <div class="btn-controls">
+                                            <a href="{{ path('lender_subscription_personal_information') }}" class="btn-primary">{% trans %} connect-subscribe-page_subscribe-box-lender-button {% endtrans %}</a>
+                                        </div>
+                                    </div><!-- /.panel -->
+                                </div>
+                            </div>
+                        </div><!-- /.col-register -->
+                    </div>
+                </div><!-- /.site-wrap -->
+
+                {% include 'partials/components/list-socialmedia.html.twig' %}
+            </div><!-- /.hero-wrap -->
+        </section><!-- /.page-content -->
+    </article><!-- /.page -->
+{% endblock %}
+
+{% block modals %}
+    {% include 'partials/components/popup_password_forgotten.html.twig' %}
+{% endblock %}

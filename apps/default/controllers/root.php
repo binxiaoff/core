@@ -5,6 +5,7 @@ class rootController extends bootstrap
     public function initialize()
     {
         parent::initialize();
+
         $this->catchAll = true;
     }
 
@@ -360,7 +361,7 @@ class rootController extends bootstrap
                 $this->heureFinFunding = $this->settings->value;
 
                 // ensemblee des fonds recupérés
-                $compteurFonds = $this->transactions->sum('type_transaction = 9', 'montant_unilend-montant');
+                $compteurFonds = $this->transactions->sum('type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, 'montant_unilend-montant');
                 $compteurFonds = $this->ficelle->formatNumber(($compteurFonds / 100), 0);
                 $tabCompteur   = str_split($compteurFonds);
 
@@ -436,215 +437,20 @@ class rootController extends bootstrap
             if ($this->templates->slug == '' || $this->tree->id_template == 7) {
                 //header("HTTP/1.0 404 Not Found");
                 header($_SERVER["SERVER_PROTOCOL"] . " 404 Not Found");
+                $this->hideDecoration();
                 $this->setView('../root/404');
             } elseif ($this->tree->status == 0 && ! isset($_SESSION['user'])) {
                 //header("HTTP/1.0 404 Not Found");
                 header($_SERVER["SERVER_PROTOCOL"] . " 404 Not Found");
+                $this->hideDecoration();
                 $this->setView('../root/404');
             } else {
                 $this->setView('../templates/' . $this->templates->slug, true);
             }
         } else {
             header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found');
+            $this->hideDecoration();
             $this->setView('../root/404');
-        }
-    }
-
-    public function _logout()
-    {
-        $this->autoFireView = false;
-
-        $this->clients->handleLogout();
-    }
-
-    public function _search()
-    {
-        $this->lng['search'] = $this->ln->selectFront('search', $this->language, $this->App);
-
-        $this->page_title = $this->lng['search']['title'];
-        $this->page_slug  = 'search';
-
-        if (isset($_POST['search']) && $_POST['search'] != $this->lng['header']['recherche']) {
-            header('Location: ' . $this->lurl . '/search/' . urlencode($_POST['search']));
-            die;
-        }
-
-        if (empty($this->params[0])) {
-            $this->search = '';
-            $this->result = array();
-        } else {
-            /** @var \tree $tree */
-            $tree = $this->loadData('tree');
-
-            $this->search = urldecode($this->params[0]);
-            $this->result = $tree->search($this->search, $this->language);
-        }
-    }
-
-    public function _notification_payline()
-    {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireView   = false;
-        $this->autoFireFooter = false;
-
-        $this->transactions     = $this->loadData('transactions');
-        $this->backpayline      = $this->loadData('backpayline');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
-        $this->wallets_lines    = $this->loadData('wallets_lines');
-        $this->bank_lines       = $this->loadData('bank_lines');
-
-        require_once $this->path . 'librairies/payline/include.php';
-
-        $array = array();
-
-        // GET TOKEN
-        if (isset($_POST['token'])) {
-            $array['token'] = $_POST['token'];
-        } elseif (isset($_GET['token'])) {
-
-            $array['token'] = $_GET['token'];
-        } else {
-            die;
-        }
-
-        $payline = new paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
-
-        $array['version'] = '3';
-        $response         = $payline->getWebPaymentDetails($array);
-
-        if (isset($response)) {
-            // On enregistre le resultat payline
-            $this->backpayline->code           = $response['result']['code'];
-            $this->backpayline->token          = $array['token'];
-            $this->backpayline->id             = $response['transaction']['id'];
-            $this->backpayline->date           = $response['transaction']['date'];
-            $this->backpayline->amount         = $response['payment']['amount'];
-            $this->backpayline->serialize      = serialize($response);
-            $this->backpayline->id_backpayline = $this->backpayline->create();
-
-            if ($response['result']['code'] == '00000') {
-                if ($this->transactions->get($response['order']['ref'], 'status = 0 AND etat = 0 AND id_transaction')) {
-
-                    $this->transactions->id_backpayline   = $this->backpayline->id_backpayline;
-                    $this->transactions->montant          = $response['payment']['amount'];
-                    $this->transactions->id_langue        = 'fr';
-                    $this->transactions->date_transaction = date('Y-m-d H:i:s');
-                    $this->transactions->status           = '1';
-                    $this->transactions->etat             = '1';
-                    $this->transactions->type_paiement    = ($response['extendedCard']['type'] == 'VISA' ? '0' : ($response['extendedCard']['type'] == 'MASTERCARD' ? '3' : ''));
-                    $this->transactions->update();
-
-                    // On recupere le lender
-                    $this->lenders_accounts->get($this->transactions->id_client, 'id_client_owner');
-                    $this->lenders_accounts->status = 1;
-                    $this->lenders_accounts->update();
-
-                    // On enrgistre la transaction dans le wallet
-                    $this->wallets_lines->id_lender                = $this->lenders_accounts->id_lender_account;
-                    $this->wallets_lines->type_financial_operation = 30; // alimentation preteur
-                    $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
-                    $this->wallets_lines->status                   = 1;
-                    $this->wallets_lines->type                     = 1;
-                    $this->wallets_lines->amount                   = $response['payment']['amount'];
-                    $this->wallets_lines->id_wallet_line           = $this->wallets_lines->create();
-
-                    // Transaction physique donc on enregistre aussi dans la bank lines
-                    $this->bank_lines->id_wallet_line    = $this->wallets_lines->id_wallet_line;
-                    $this->bank_lines->id_lender_account = $this->lenders_accounts->id_lender_account;
-                    $this->bank_lines->status            = 1;
-                    $this->bank_lines->amount            = $response['payment']['amount'];
-                    $this->bank_lines->create();
-
-                    ////////////////////////////
-                    // Mail alert transaction //
-                    ////////////////////////////
-
-                    $this->settings->get('DebugAlertesBusiness', 'type');
-                    $to = $this->settings->value;
-                    // subject
-                    $subject = '[Alerte] BACK PAYLINE Transaction approved';
-
-                    // message
-                    $message = '
-                    <html>
-                    <head>
-                      <title>[Alerte] BACK PAYLINE Transaction approved</title>
-                    </head>
-                    <body>
-                      <h3>[Alerte] BACK PAYLINE Transaction approved</h3>
-                      <p>Un payement payline accepet&eacute; n\'a pas &eacute;t&eacute; mis &agrave; jour dans la BDD Unilend.</p>
-                      <table>
-                        <tr>
-                          <th>Id client : </th><td>' . $this->transactions->id_client . '</td>
-                        </tr>
-                        <tr>
-                          <th>montant : </th><td>' . ($this->transactions->montant / 100) . '</td>
-                        </tr>
-                        <tr>
-                          <th>serialize donnees payline : </th><td>' . serialize($response) . '</td>
-                        </tr>
-                      </table>
-                    </body>
-                    </html>
-                    ';
-
-                    // To send HTML mail, the Content-type header must be set
-                    $headers = 'MIME-Version: 1.0' . "\r\n";
-                    $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-
-                    // Additional headers
-
-                    //$headers .= 'To: equinoa <unilend@equinoa.fr>' . "\r\n";
-                    $headers .= 'From: Unilend <equipeit@unilend.fr>' . "\r\n";
-
-                    // Mail it
-                    mail($to, $subject, $message, $headers);
-
-                } else {
-                    ////////////////////////////
-                    // Mail alert transaction //
-                    ////////////////////////////
-
-                    $this->settings->get('DebugAlertesBusiness', 'type');
-                    $to = $this->settings->value;
-
-                    // subject
-                    $subject = '[Alerte] BACK PAYLINE Transaction approved DEJA TRAITE';
-
-                    // message
-                    $message = '
-                    <html>
-                    <head>
-                      <title>[Alerte] BACK PAYLINE Transaction approved DEJA TRAITE</title>
-                    </head>
-                    <body>
-                      <h3>[Alerte] BACK PAYLINE Transaction approved DEJA TRAITE</h3>
-                      <p>Un payement payline accepet&eacute; deacute;j&agrave; &agrave; jour dans la BDD Unilend.</p>
-                      <table>
-                        <tr>
-                          <th>Id client : </th><td>' . $this->transactions->id_client . '</td>
-                        </tr>
-                        <tr>
-                          <th>montant : </th><td>' . ($this->transactions->montant / 100) . '</td>
-                        </tr>
-                        <tr>
-                          <th>serialize donnees payline : </th><td>' . serialize($response) . '</td>
-                        </tr>
-                      </table>
-                    </body>
-                    </html>
-                    ';
-
-                    // To send HTML mail, the Content-type header must be set
-                    $headers = 'MIME-Version: 1.0' . "\r\n";
-                    $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-                    $headers .= 'From: Unilend <equipeit@unilend.fr>' . "\r\n";
-
-                    // Mail it
-                    mail($to, $subject, $message, $headers);
-                }
-            }
         }
     }
 
@@ -654,10 +460,11 @@ class rootController extends bootstrap
         $companies = $this->loadData('companies');
         $bids      = $this->loadData('bids');
 
-        $this->settings->get('Liste deroulante secteurs', 'type'); // added 19/06/2015
-        $this->tabSecteurs = explode(';', $this->settings->value); // added 19/06/2015
+        /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
+        $translationManager  = $this->get('unilend.service.translation_manager');
+        $this->tabSecteurs = $translationManager->getTranslatedCompanySectorList();
 
-        $lProjets = $projects->selectProjectsByStatus(implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT)));
+        $lProjets = $projects->selectProjectsByStatus([\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT]);
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>';
         $xml .= '<partenaire>';
@@ -703,38 +510,6 @@ class rootController extends bootstrap
         die;
     }
 
-    public function _capital()
-    {
-        $this->autoFireHeader = false;
-        $this->autoFireDebug  = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-
-        if (isset($_SESSION['client'])) {
-            header('Location: ' . $this->furl);
-            die;
-        }
-
-        $oXml    = new SimpleXMLElement(file_get_contents('http://www.capital.fr/wrapper-unilend.xml'));
-        $content = explode('<!--CONTENT_ZONE-->', (string)$oXml->content);
-
-        $this->haut = str_replace(array('<!--TITLE_ZONE_HEAD-->', '<!--TITLE_ZONE-->'), array('Financement Participatif  : Prêtez aux entreprises françaises & Recevez des intérêts chaque mois', 'Financement participatif'), $content[0]);
-        $this->bas  = str_replace('<!--XITI_ZONE-->', 'Unilend-accueil', $content[1]);
-    }
-
-    public function _figaro()
-    {
-        $this->autoFireHeader = false;
-        $this->autoFireDebug  = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-
-        if (isset($_SESSION['client'])) {
-            header('Location: ' . $this->furl);
-            die;
-        }
-    }
-
     // Enregistrement et lecture du pdf cgv
     public function _pdf_cgv_preteurs()
     {
@@ -742,47 +517,66 @@ class rootController extends bootstrap
 
         include_once $this->path . '/apps/default/controllers/pdf.php';
 
-        if ($this->clients->checkAccess() || isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
-            $this->clients->checkAccessLender();
+        // hack the symfony guard token
+        $session = $this->get('session');
 
-            $listeAccept = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC', 0, 1);
-            $listeAccept = array_shift($listeAccept);
+        /** @var \Symfony\Component\Security\Guard\Token\PostAuthenticationGuardToken $token */
+        $token =  unserialize($session->get('_security_default'));
+        if (!$token instanceof \Symfony\Component\Security\Guard\Token\PostAuthenticationGuardToken) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
+        /** @var \Unilend\Bundle\FrontBundle\Security\User\UserLender $user */
+        $user = $token->getUser();
+        if (!$user instanceof \Unilend\Bundle\FrontBundle\Security\User\UserLender) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
 
-            $id_tree_cgu = $listeAccept['id_legal_doc'];
+        if (false === $this->clients->get($user->getClientId(), 'id_client')) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
 
-            $contenu = $this->tree_elements->select('id_tree = "' . $id_tree_cgu . '" AND id_langue = "' . $this->language . '"');
-            foreach ($contenu as $elt) {
-                $this->elements->get($elt['id_element']);
-                $this->content[$this->elements->slug]    = $elt['value'];
-                $this->complement[$this->elements->slug] = $elt['complement'];
+        $this->clients->checkAccessLender();
+
+        $listeAccept = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC', 0, 1);
+        $listeAccept = array_shift($listeAccept);
+
+        $id_tree_cgu = $listeAccept['id_legal_doc'];
+
+        $contenu = $this->tree_elements->select('id_tree = "' . $id_tree_cgu . '" AND id_langue = "' . $this->language . '"');
+        foreach ($contenu as $elt) {
+            $this->elements->get($elt['id_element']);
+            $this->content[$this->elements->slug]    = $elt['value'];
+            $this->complement[$this->elements->slug] = $elt['complement'];
+        }
+
+        // si c'est un ancien cgv de la liste on lance le pdf
+        if (in_array($id_tree_cgu, array(92, 95, 93, 254, 255))) {
+            header("Content-disposition: attachment; filename=" . $this->content['pdf-cgu']);
+            header("Content-Type: application/force-download");
+            @readfile($this->surl . '/var/fichiers/' . $this->content['pdf-cgu']);
+        } else {
+            $oCommandPdf    = new \Command('pdf', 'cgv_preteurs', array($this->clients->hash), $this->language);
+            $oPdf           = new \pdfController($oCommandPdf, $this->Config, 'default');
+            $oPdf->setContainer($this->container);
+            $oPdf->initialize();
+            $path           = $this->path . 'protected/pdf/cgv_preteurs/' . $this->clients->id_client . '/';
+            $sNamePdf       = 'cgv_preteurs-' . $this->clients->hash . '-' . $id_tree_cgu;
+            $sNamePdfClient = 'CGV-UNILEND-PRETEUR-' . $this->clients->id_client . '-' . $id_tree_cgu;
+
+            if (false  === file_exists($path . $sNamePdf)) {
+                $this->cgv_preteurs(true, $oPdf, array($this->clients->hash));
+                $oPdf->WritePdf($path . $sNamePdf, 'cgv_preteurs');
             }
 
-            // si c'est un ancien cgv de la liste on lance le pdf
-            if (in_array($id_tree_cgu, array(92, 95, 93, 254, 255))) {
-                header("Content-disposition: attachment; filename=" . $this->content['pdf-cgu']);
-                header("Content-Type: application/force-download");
-                @readfile($this->surl . '/var/fichiers/' . $this->content['pdf-cgu']);
-            } else {
-                $oCommandPdf    = new \Command('pdf', 'cgv_preteurs', array($this->clients->hash), $this->language);
-                $oPdf           = new \pdfController($oCommandPdf, $this->Config, 'default');
-                $oPdf->setContainer($this->container);
-                $oPdf->initialize();
-                $path           = $this->path . 'protected/pdf/cgv_preteurs/' . $this->clients->id_client . '/';
-                $sNamePdf       = 'cgv_preteurs-' . $this->clients->hash . '-' . $id_tree_cgu;
-                $sNamePdfClient = 'CGV-UNILEND-PRETEUR-' . $this->clients->id_client . '-' . $id_tree_cgu;
-
-                if (false  === file_exists($path . $sNamePdf)) {
-                    $this->_cgv_preteurs(true, $oPdf, array($this->clients->hash));
-                    $oPdf->WritePdf($path . $sNamePdf, 'cgv_preteurs');
-                }
-
-                $oPdf->ReadPdf($path . $sNamePdf, $sNamePdfClient);
-            }
+            $oPdf->ReadPdf($path . $sNamePdf, $sNamePdfClient);
         }
     }
 
     // lecture page du cgv en html
-    public function _cgv_preteurs($bPdf = false, pdfController $oPdf = null, array $aParams = null)
+    private function cgv_preteurs($bPdf = false, pdfController $oPdf = null, array $aParams = null)
     {
         $this->params = (false === is_null($aParams)) ? $aParams : $this->params;
 
@@ -799,7 +593,7 @@ class rootController extends bootstrap
             $this->complement[$this->elements->slug] = $elt['complement'];
         }
 
-        if ($this->clients->checkAccess() || isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
+        if (isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
             if (isset($this->params[0]) && $this->params[0] != 'morale' && $this->params[0] != 'nosign') {
                 $this->autoFireHeader = false;
                 $this->autoFireHead   = true;
@@ -911,7 +705,6 @@ class rootController extends bootstrap
         $this->error_nom     = 'ok';
         $this->error_prenom  = 'ok';
         $this->error_email   = 'ok';
-        $this->error_captcha = 'ok';
 
         if (isset($_POST['telephone']) && $_POST['telephone'] != '' && $_POST['telephone'] != $this->lng['contact']['telephone']) {
             $this->error_telephone = 'ok';
@@ -948,14 +741,6 @@ class rootController extends bootstrap
         if (! isset($_POST['message']) || $_POST['message'] == '' || $_POST['message'] == $this->lng['contact']['message']) {
             $this->form_ok       = false;
             $this->error_message = 'nok';
-        }
-
-        if (! isset($_POST['captcha']) || $_POST['captcha'] == '' || $_POST['captcha'] == $this->lng['contact']['captcha']) {
-            $this->form_ok       = false;
-            $this->error_captcha = 'nok';
-        } elseif ($_SESSION['securecode'] != strtolower($_POST['captcha'])) {
-            $this->form_ok       = false;
-            $this->error_captcha = 'nok';
         }
 
         if ($this->form_ok == true) {

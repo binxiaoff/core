@@ -1,0 +1,41 @@
+//
+// Unilend IE fixes
+//
+
+.link,
+.link-1,
+.link-2 {
+  &,
+  &:link,
+  &:visited
+  &:hover,
+  &:active {
+    &:before {
+      text-decoration: none !important;
+    }
+  }
+}
+
+.page-section {
+  h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4 {
+    a {
+      display: inline-block;
+    }
+  }
+}
+
+.ie9 {
+  .project-list-item {
+    height: 100%;
+  }
+
+  .project-list-item-category {
+    overflow: auto;
+    height: 100%;
+  }
+
+  .project-list-item-image {
+    zoom: 1;
+    height: 100%;
+  }
+}

@@ -51,10 +51,10 @@ class CheckPaylineMoneyTransfersCommand extends ContainerAwareCommand
 
         require_once($sPaylinePath . 'include.php');
 
-        $date = mktime(0, 0, 0, date("m"), date("d") - 1, date("Y"));
+        $date = mktime(0, 0, 0, date('m'), date('d') - 1, date('Y'));
         $date = date('Y-m-d', $date);
 
-        $listTran = $transactions->select('type_transaction = 3 AND status = 0 AND etat = 0 AND LEFT(date_transaction,10) = "' . $date . '"');
+        $listTran = $transactions->select('type_transaction = ' . \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT . ' AND status = 0 AND etat = 0 AND LEFT(date_transaction, 10) = "' . $date . '"');
 
         /** @var \paylineSDK $payline */
         $payline = new \paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
@@ -69,16 +69,17 @@ class CheckPaylineMoneyTransfersCommand extends ContainerAwareCommand
             $response         = $payline->getWebPaymentDetails($array);
 
             if (isset($response)) {
+                if (false === $backpayline->exist($array['token'], 'token')) {
+                    $backpayline->code      = $response['result']['code'];
+                    $backpayline->token     = $array['token'];
+                    $backpayline->id        = $response['transaction']['id'];
+                    $backpayline->date      = $response['transaction']['date'];
+                    $backpayline->amount    = $response['payment']['amount'];
+                    $backpayline->serialize = serialize($response);
+                    $backpayline->create();
+                }
                 if ($response['result']['code'] == '00000') {
                     if ($transactions->get($response['order']['ref'], 'status = 0 AND etat = 0 AND id_transaction')) {
-                        $backpayline->code           = $response['result']['code'];
-                        $backpayline->token          = $array['token'];
-                        $backpayline->id             = $response['transaction']['id'];
-                        $backpayline->date           = $response['transaction']['date'];
-                        $backpayline->amount         = $response['payment']['amount'];
-                        $backpayline->serialize      = serialize($response);
-                        $backpayline->create();
-
                         $transactions->id_backpayline   = $backpayline->id_backpayline;
                         $transactions->montant          = $response['payment']['amount'];
                         $transactions->id_langue        = 'fr';

@@ -28,6 +28,12 @@
 
 class clients_history extends clients_history_crud
 {
+    const STATUS_ACTION_LOGIN              = 1;
+    const STATUS_ACTION_ACCOUNT_CREATION   = 2;
+    const STATUS_ACTION_DOSSIER_SUBMISSION = 3;
+    const TYPE_CLIENT_LENDER               = 1;
+    const TYPE_CLIENT_BORROWER             = 2;
+    const TYPE_CLIENT_LENDER_BORROWER      = 3;
 
     function clients_history($bdd, $params = '')
     {
@@ -106,5 +112,44 @@ class clients_history extends clients_history_crud
 
         $result = $this->bdd->query($sql);
         return (int) ($this->bdd->result($result, 0, 0));
+    }
+
+    /**
+     * @param \clients $client
+     * @param $actionStatus
+     * @return int;
+     */
+    public function logClientAction(\clients $client, $actionStatus)
+    {
+        $isLender        = $client->isLender();
+        $isBorrower      = $client->isBorrower();
+        $this->id_client = $client->id_client;
+        $this->status    = $actionStatus;
+
+        if ($isLender && $isBorrower) {
+            $this->type = self::TYPE_CLIENT_LENDER_BORROWER;
+        } elseif ($isLender) {
+            $this->type = self::TYPE_CLIENT_LENDER;
+        } elseif ($isBorrower) {
+            $this->type = self::TYPE_CLIENT_BORROWER;
+        }
+        return $this->create();
+    }
+
+    /**
+     * @param int $clientId
+     * @return mixed
+     */
+    public function getClientLastLogin($clientId)
+    {
+        $sql = '
+        SELECT MAX(added) AS last_login_date FROM clients_history cs
+        WHERE cs.id_client = :id_client
+        AND cs.status = :status
+        ';
+        /** @var \Doctrine\DBAL\Statement $query */
+        $query = $this->bdd->executeQuery($sql, ['id_client' => $clientId, 'status' => self::STATUS_ACTION_LOGIN], ['id_client' => \PDO::PARAM_INT, 'status' => \PDO::PARAM_INT]);
+
+        return $query->fetchColumn();
     }
 }

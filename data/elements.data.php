@@ -28,35 +28,14 @@
 
 class elements extends elements_crud
 {
-    const TYPE_PDF_CGU = 183;
+    const TYPE_PDF_CGU = 143;
 
-    function elements($bdd, $params = '')
+    public function elements($bdd, $params = '')
     {
         parent::elements($bdd, $params);
     }
 
-    function get($id, $field = 'id_element')
-    {
-        return parent::get($id, $field);
-    }
-
-    function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    function delete($id, $field = 'id_element')
-    {
-        parent::delete($id, $field);
-    }
-
-    function create($cs = '')
-    {
-        $id = parent::create($cs);
-        return $id;
-    }
-
-    function select($where = '', $order = '', $start = '', $nb = '')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -68,13 +47,13 @@ class elements extends elements_crud
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
     }
 
-    function counter($where = '')
+    public function counter($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -86,11 +65,11 @@ class elements extends elements_crud
         return (int) ($this->bdd->result($result, 0, 0));
     }
 
-    function exist($id, $field = 'id_element')
+    public function exist($id, $field = 'id_element')
     {
         $sql    = 'SELECT * FROM `elements` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result) > 0);
+        return ($this->bdd->fetch_assoc($result) > 0);
     }
 
     //******************************************************************************************//
@@ -98,7 +77,7 @@ class elements extends elements_crud
     //******************************************************************************************//
 
     // Récupération de la derniere position
-    function getLastPosition($id, $champs)
+    public function getLastPosition($id, $champs)
     {
         $sql    = 'SELECT ordre FROM elements WHERE ' . $champs . ' = "' . $id . '" ORDER BY ordre DESC LIMIT 1';
         $result = $this->bdd->query($sql);
@@ -106,7 +85,7 @@ class elements extends elements_crud
     }
 
     // Récupération de la position
-    function getPosition($id_element, $id, $champs)
+    public function getPosition($id_element, $id, $champs)
     {
         $sql    = 'SELECT ordre FROM elements WHERE ' . $champs . ' = "' . $id . '" AND id_element = ' . $id_element;
         $result = $this->bdd->query($sql);
@@ -115,7 +94,7 @@ class elements extends elements_crud
     }
 
     // Monter un lien
-    function moveUp($id_element, $id, $champs)
+    public function moveUp($id_element, $id, $champs)
     {
         $position = $this->getPosition($id_element, $id, $champs);
 
@@ -128,7 +107,7 @@ class elements extends elements_crud
     }
 
     // Descendre un lien
-    function moveDown($id_element, $id, $champs)
+    public function moveDown($id_element, $id, $champs)
     {
         $position = $this->getPosition($id_element, $id, $champs);
 
@@ -141,13 +120,13 @@ class elements extends elements_crud
     }
 
     // Reordonner un menu
-    function reordre($id, $champs)
+    public function reordre($id, $champs)
     {
         $sql    = 'SELECT * FROM elements WHERE ' . $champs . ' = "' . $id . '" ORDER BY ordre ASC';
         $result = $this->bdd->query($sql);
 
         $i = 0;
-        while ($record = $this->bdd->fetch_array($result)) {
+        while ($record = $this->bdd->fetch_assoc($result)) {
             $sql1 = 'UPDATE elements SET ordre = ' . $i . ' WHERE id_element = ' . $record['id_element'];
             $this->bdd->query($sql1);
             $i++;

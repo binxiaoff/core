@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 300 300" xml:space="preserve" preserveAspectRatio="xMidYMid meet">
+	<polyline style="fill:none;stroke:currentColor;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;" points="93.0793915,78.5585861 28.2319393,78.5585861 28.2319393,221.787674 271.7680664,221.787674
+		271.7680664,78.5585861 205.0544281,78.5585861 	"/>
+	<polyline style="fill:none;stroke:currentColor;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;" points="170.9944916,233.9178314 177.993103,263.7766724 122.0069046,263.7766724 129.0055084,233.9178314
+		"/>
+	<line style="fill:none;stroke:currentColor;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;" x1="190.1228027" y1="263.7766724" x2="109.8771896" y2="263.7766724"/>
+	<circle style="fill:none;stroke:currentColor;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;" cx="150" cy="78.5585861" r="22.5119762"/>
+	<path style="fill:none;stroke:currentColor;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;" d="M107.6647491,78.5585861c0-23.381115,18.9541397-42.3352547,42.3352509-42.3352547
+		s42.3352509,18.9541397,42.3352509,42.3352547S150,141.8896484,150,141.8896484S107.6647491,101.9396973,107.6647491,78.5585861z"
+		/>
+</svg>

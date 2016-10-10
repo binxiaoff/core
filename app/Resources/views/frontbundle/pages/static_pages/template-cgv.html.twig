@@ -1,0 +1,22 @@
+{% extends 'layouts/_page-simple.html.twig' %}
+
+{% block extendPageHeader %}
+    <div class="page-header-image">{{ svgimage('#header-' ~ cms.header_image, '', 300, 300)|raw }}</div>
+{% endblock %}
+
+
+{% block pageAside %} {% endblock %}
+
+
+{% block pageContent %}
+    <div class="page-content" data-equal-height="md lg" data-equal-height-group="content">
+        {% block pageContentBody %}
+            {{ cms.right_content.main_content|raw }}
+            <hr>
+            {{ cms.right_content.recovery_mandate|raw }}
+        {% endblock %}
+    </div><!-- /.page-content -->
+{% endblock %}
+
+
+

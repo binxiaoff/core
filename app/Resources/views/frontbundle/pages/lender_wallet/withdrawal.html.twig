@@ -1,0 +1,127 @@
+{# User / Preter / Apport - Retrait #}
+{% extends 'layouts/_layout_lender.html.twig' %}
+
+{% set page = {
+id: 'user-preter-balance',
+title: 'Prêteur / Retrait',
+permalink: path('lender_wallet_withdrawal'),
+classNames: 'user-preter-balance'
+} %}
+
+{% block dashboardContent %}
+    <div class="dashboard-tabs tabs">
+        {{ include('pages/lender_wallet/partials/tabnavigation.html.twig') }}
+
+        <div class="dashboard-tabs-content tab-content">
+            <article id="balance-withdraw" class="tab-pane dashboard-tab-pane active ui-toggle-group" aria-multiselectable="true">
+                <section id="balance-withdraw-1" class="panel collapse in" aria-expanded="true">
+                    <div id="form-profile-info-notifications">
+                        {% if app.session.flashBag.has('withdrawalErrors') %}
+                            <div class="message-error">
+                                {% for error in app.session.flashBag.get('withdrawalErrors') %}
+                                    {{ error|raw }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        {% if app.session.flashBag.has('withdrawalSuccess') %}
+                            <div class="message-success">
+                                {% for message in app.session.flashBag.get('withdrawalSuccess') %}
+                                    {{ message|raw }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="row reverse">
+                        <div class="col-lg-6 col-md-6">
+                            {# Maybe there's a better way of doing this, rather than duplicating this code twice #}
+                            <div class="dashboard-balance ui-balance-positive">
+                                <dl>
+                                    <dt>{% trans %} lender-wallet_available-balance {% endtrans %}</dt>
+                                    <dd>{{ balance|localizedcurrency('EUR') }}</dd>
+                                </dl>
+                                <div class="dashboard-balance-image">{{ svgimage('#promo-money', '', 190, 190)|raw }}</div>
+                            </div><!-- /.dashboard-balance -->
+
+                            <div class="balance-payment-details balance-payment-myaccount">
+                                <h4>{% trans %} lender-wallet_depositary-bank-account {% endtrans %}</h4>
+                                <ul class="list-block">
+                                    <li>
+                                        <div class="label">{% trans %} lender-wallet_bank-account-owner {% endtrans %}</div>
+                                        <div class="value">{{ client.prenom }} {{ client.nom }}</div>
+                                    </li>
+                                    <li>
+                                        <div class="label">{% trans %} lender-wallet_client-number {% endtrans %}</div>
+                                        <div class="value">{{ client.id_client }}</div>
+                                    </li>
+                                    <li>
+                                        <div class="label">{% trans %} lender-wallet_bank-iban {% endtrans %}</div>
+                                        <div class="value">
+                                            {% set splitIban = lender.iban|split('', 4) %}
+                                            {% for chunk in splitIban %}
+                                                <span>{{ chunk }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="label">{% trans %} lender-wallet_bank-bic {% endtrans %}</div>
+                                        <div class="value">{{ lender.bic }}</div>
+                                    </li>
+                                </ul>
+                                <p>
+                                    <a href="{{ path('lender_profile_fiscal_information') }}" class="link">{% trans %} lender-wallet_change-bank-account {% endtrans %}</a>
+                                </p>
+                            </div><!-- /.balance-payment-details.balance-payment-transfer -->
+                        </div>
+
+                        <div class="dashboard-tab-pane-content col-lg-6 col-md-6">
+                            <h3>{% trans %} lender-wallet_withdraw-cash {% endtrans %}</h3>
+                            <p>{% trans %} lender-wallet_bank-transfer-withdraw-tips {% endtrans %}</p>
+                            {{ form_start(withdrawalForm, {'attr' :
+                                {'class' : 'form-balance-withdraw',
+                                    'id': 'form-balance-withdraw',
+                                    'data-formvalidation data-formvalidation-render' : 'false'}} ) }}
+                            <div class="row row-multi-col-computer">
+                                <div class="form-field col-lg-5 col-md-5">
+                                    {{ form_label(withdrawalForm.amount, 'lender-wallet_amount') }}
+                                    <div class="input-group set-right">
+                                        <div class="btn-group">
+                                            <span class="icon fa-euro"></span>
+                                        </div>
+                                        {{ form_widget(withdrawalForm.amount, {'attr': {
+                                            'class': 'input-field',
+                                            'autocomplete': 'off',
+                                            'id': 'form-balance-withdraw-amount',
+                                            'data-formvalidation-input data-formvalidation-required': true,
+                                            'data-formvalidation-minvalue': 0,
+                                            'data-formvalidation-maxvalue': balance,
+                                            'data-formvalidation-required': true,
+                                            'data-formvalidation-render': true
+                                            } }) }}
+                                    </div>
+                                </div><!-- /.form-field -->
+                                <div class="form-field col-lg-7 col-md-7">
+                                    {{ form_label(withdrawalForm.password, 'common_password') }}
+                                    <div class="input-group set-left">
+                                        <div class="btn-group">
+                                            <span class="icon fa-lock"></span>
+                                        </div>
+                                        {{ form_widget(withdrawalForm.password, {'attr': {
+                                            'id': 'form-balance-withdraw-password',
+                                            'class': 'input-field',
+                                            'autocomplete': 'off',
+                                            'data-formvalidation-input data-formvalidation-required': true,
+                                            'data-formvalidation-render': true
+                                        }} ) }}
+                                    </div>
+                                </div><!-- /.form-field -->
+                            <div class="btn-controls">
+                                <input type="submit" id="perform-withdrawal" class="btn-primary" value="{% trans %} lender-wallet_submit-transaction {% endtrans %}">
+                            </div>
+                            {{ form_end(withdrawalForm) }}
+                        </div><!-- /.dashboard-tab-pane-content -->
+                    </div>
+                </section><!-- /.panel -->
+            </article><!-- /.tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </div><!-- /.dashboard-tabs -->
+{% endblock %}

@@ -1,0 +1,140 @@
+//
+// Unilend Card CTA
+//
+
+.cta-cards {
+  // Combine the card columns into a big card
+  @include devices('xs', 'sm') {
+    .card {
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+
+    // Get the first card
+    .row > :first-child .card {
+      border-bottom-width: 0;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    // Get the second card
+    .row > :last-child .card {
+      border-top-style: dotted;
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
+  }
+
+  @include devices('md', 'lg') {
+    .row > * {
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+  }
+}
+
+.card {
+  display: block;
+  max-width: 320px;
+  padding: 40px 30px;
+  margin: 20px auto;
+  position: relative;
+
+  background-color: $c-white;
+  border: solid 2px $c-bg2;
+  border-radius: 4px;
+  color: $c-t2;
+  text-align: center;
+
+  h1, h2, h3, h4, h5, h6 {
+    color: $c-t2;
+    margin-top: 0;
+    font-weight: normal;
+  }
+
+  .list-checked {
+    text-align: left;
+    margin-bottom: 30px;
+    font-size: 16px;
+    line-height: 1.4em;
+  }
+
+  .stamp {
+    display: block;
+    position: absolute;
+    top: -45px;
+    left: -20px;
+  }
+
+  @include devices('md') {
+    // Constrain width
+    max-width: 400px;
+    padding: 40px 50px;
+
+    .stamp {
+      display: block;
+      position: absolute;
+      left: -70px;
+      top: 30px;
+    }
+  }
+
+  @include devices('lg') {
+    // Constrain width
+    max-width: 540px;
+    padding: 40px 50px;
+
+    .stamp {
+      display: block;
+      position: absolute;
+      left: -60px;
+      top: 30px;
+    }
+
+    h4 {
+      font-size: 24px;
+    }
+
+    .list-checked {
+      font-size: 18px;
+    }
+
+    .card-text {
+      max-width: 320px;
+    }
+  }
+}
+
+.card-preter {
+  h1, h2, h3, h4, h5, h6 {
+    strong {
+      color: $c-p1;
+    }
+  }
+
+  .list-checked {
+    > li:before {
+      color: $c-p1;
+    }
+  }
+}
+
+.card-emprunter {
+  h1, h2, h3, h4, h5, h6 {
+    strong {
+      color: $c-p2;
+    }
+  }
+
+  .list-checked {
+    > li:before {
+      color: $c-p2;
+    }
+  }
+}
+
+.card-text {
+  max-width: 290px;
+  margin-left: auto;
+  margin-right: auto;
+}

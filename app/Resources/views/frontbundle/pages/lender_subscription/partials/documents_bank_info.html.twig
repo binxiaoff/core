@@ -1,0 +1,51 @@
+<fieldset class="panel">
+    <div id="form-preter-2-notifications" class="ui-formvalidation-notifications">
+        {% if app.session.flashBag.has('documentsErrors') %}
+            <div class="message-error">
+                {% for error in app.session.flashBag.get('documentsErrors') %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    <h3 class="h3">{% trans %} lender-subscription_documents-title {% endtrans %}</h3>
+
+    <div class="row">
+        <div class="form-field form-field-iban">
+            <div class="message-info">
+                <p>{% trans %} lender-subscription_documents-bank-information-explanation {% endtrans %}</p>
+            </div><!-- /.message-info -->
+
+            <label for="form-lender-step-2-bic" class="form-field-label">
+                {% trans %} lender-subscription_documents-bic-field-label {% endtrans %}
+                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+            </label>
+
+            <div class="input-group">
+                <div class="custom-input-bic">
+                    <input id="form-lender-step-2-bic" type="text" name="bic" value="{{ formData.bic }}" class="bic-input input-field"
+                           data-formvalidation-input data-formvalidation-type="bic"/>
+                </div>
+            </div><!-- /.input-group -->
+        </div><!-- /.form-field -->
+    </div>
+
+    <div class="row">
+        <div class="form-field">
+            <label for="form-lender-step-2-iban" class="form-field-label">
+                {% trans %} lender-subscription_documents-iban-field-label {% endtrans %}
+                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+            </label>
+
+            <div class="input-group">
+                <div class="custom-input-iban">
+                    <input id="form-lender-step-2-iban" type="text" name="iban" value="{{ formData.iban }}" class="iban-input input-field"
+                           data-formvalidation-input data-formvalidation-type="iban"/>
+                </div>
+            </div><!-- /.input-group -->
+
+            <ul class="ui-formvalidation-messages"></ul>
+        </div><!-- /.form-field -->
+    </div>
+
+</fieldset>

@@ -1,0 +1,281 @@
+//
+// Unilend Deposer un projet page
+//
+
+#deposer-projet.page {
+  @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0);
+
+  .page-header {
+    @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0, $padding-md: 0, $padding-lg: 0);
+    height: auto !important;
+    padding-top: 0;
+    padding-bottom: 0;
+
+    .h1 {
+      margin-top: 20px;
+      margin-bottom: 20px;
+    }
+
+    .site-wrap {
+      height: auto !important;
+    }
+
+    // Remove the vertical alignment psuedo monkey
+    @include devices('xs', 'sm') {
+      .site-wrap:before {
+        display: none;
+      }
+    }
+  }
+
+  > .hero-wrap {
+    @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0, $padding-md: 0, $padding-lg: 0);
+
+    padding-top: 50px;
+    padding-bottom: 50px;
+    margin-bottom: 50px;
+
+    background-color: $c-bg3;
+    background-image: image-url('backgrounds/bg-guy.jpg');
+    background-position: top center;
+    background-repeat: no-repeat;
+    background-size: contain;
+
+    // Change background image for landing page
+    // &.page-lp {
+    //   background-image: image-url('backgrounds/bg-guy-2.jpg');
+    // }
+  }
+
+  .form-project-create-nav {
+    .nav.nav-progress {
+      > li {
+        width: 33.33%;
+
+        &.complete {
+          .project-create-progress-point {
+            display: none;
+          }
+        }
+      }
+    }
+  }
+
+  // Support the tabs spanning multiple forms
+  .tab-content > form > .tab-pane {
+    display: none;
+
+    &.active {
+      display: block;
+    }
+  }
+
+  .col-form {
+    @include devices('xs', 'sm') {
+      width: 100%;
+    }
+  }
+
+  .col-sim {
+    display: none;
+
+    @include devices('md', 'lg') {
+      display: block;
+    }
+  }
+
+  fieldset .h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+  }
+
+  .panel {
+    padding: 20px;
+    margin-bottom: 3px;
+    background-color: $c-white;
+
+    @include devices('md', 'lg') {
+      padding: 30px;
+    }
+  }
+
+  .btn-controls {
+    margin-top: 30px;
+
+    > * {
+      text-align: center;
+    }
+
+    .btn-default,
+    .btn-primary,
+    .btn-alternative {
+      margin-left: 10px;
+      margin-right: 10px;
+      margin-bottom: 20px;
+    }
+
+    @include devices('tablet-l', 'laptop', 'lg') {
+      > .col-back {
+        text-align: left;
+
+        .btn-default,
+        .btn-primary,
+        .btn-alternative {
+          margin-left: 0;
+          margin-right: 20px;
+        }
+      }
+
+      > .col-next,
+      > .col-submit {
+        text-align: right;
+
+        .btn-default,
+        .btn-primary,
+        .btn-alternative {
+          margin-right: 0;
+          margin-left: 20px;
+        }
+      }
+    }
+  }
+
+  // Cram that big button in
+  @include devices('lg') {
+    .btn-controls.tab-footer.row .col-next .btn-primary {
+      width: 100%;
+      padding-left: 20px;
+      padding-right: 20px;
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+
+  .promo-highlight {
+    font-size: 50px;
+    margin-top: -20px;
+  }
+
+  .ui-form-extrafiles-add {
+    border-radius: 4px;
+  }
+
+  // Btn toolbar is usually centered, but for md/lg we'll make it left aligned
+  @include devices('md', 'lg') {
+    #form-project-create-3 {
+      .btn-toolbar {
+        margin-top: 40px;
+        margin-bottom: 40px;
+        text-align: left;
+      }
+    }
+  }
+
+  .has-csstransitions {
+    .ui-sticky-bounds {
+      &.ui-has-sticky {
+        transition: all .2s;
+      }
+    }
+  }
+}
+
+
+// Emprunter sim mini
+.emprunter-sim-mini {
+  box-sizing: border-box;
+  // max-width: 350px;
+  padding: 40px;
+  background-color: $c-p1;
+  color: $c-white;
+}
+
+.emprunter-sim-mini-header {
+  margin: 0;
+
+  h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4 {
+    color: $c-white;
+    margin: 0 0 20px;
+  }
+
+  p {
+    margin: 20px 0;
+    color: $c-purple-l;
+    font-size: $fs-base * .8;
+    line-height: 1.3em;
+  }
+
+  > :first-child {
+    margin-top: 0;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+}
+
+.emprunter-sim-mini-content {
+  margin: 20px 0;
+
+  .list-2col {
+    dt {
+      width: 45%;
+      padding: 0;
+      margin-bottom: 10px;
+      font-size: $fs-base * .8;
+      line-height: $fs-base * 1.2;
+      font-style: italic;
+      text-align: left;
+    }
+    dd {
+      width: 55%;
+      padding: 0;
+      margin-bottom: 10px;
+      font-size: $fs-base * 1.2;
+      line-height: $fs-base * 1.2;
+      font-weight: bold;
+      text-align: right;
+    }
+
+    @include devices('tablet-l') {
+      dt, dd {
+        width: 100%;
+      }
+
+      dt {
+        margin-bottom: 5px;
+      }
+
+      dd {
+        margin-bottom: 15px;
+      }
+    }
+  }
+}
+
+.emprunter-sim-mini-footer {
+  margin: 0;
+  padding-top: 20px;
+  border-top: solid 1px mix($c-purple, $c-purple-l, 80%);
+
+  p {
+    margin: 10px 0;
+    color: $c-purple-l;
+    font-size: $fs-base * .8;
+    line-height: 1.3em;
+
+    &.instructions {
+      font-style: italic;
+      text-align: left;
+      color: $c-white;
+    }
+  }
+
+  > :first-child {
+    margin-top: 0;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+}

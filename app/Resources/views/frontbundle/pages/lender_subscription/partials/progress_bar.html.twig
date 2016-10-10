@@ -1,0 +1,26 @@
+<div class="form-preter-nav tab-nav">
+    <div class="row">
+        <div class="col-lg-8 col-md-8">
+            <ul class="nav nav-progress">
+                <li id="preter-create-1" role="presentation" class="{% if app.request.attributes.get('_route') == 'lender_subscription_personal_information' %}active{% else %}complete{% endif %}" >
+                    <span>
+                        <span class="preter-create-progress-point">1.</span>
+                        <span class="label hide-mobile">{% trans %} lender-subscription_part-1-title {% endtrans %}</span>
+                    </span>
+                </li>
+                <li id="preter-create-2" role="presentation" class="{% if app.request.attributes.get('_route') == 'lender_subscription_documents' %}active{% elseif app.request.attributes.get('_route') == 'lender_subscription_personal_information' %}''{% else %}complete{% endif %}">
+                    <span>
+                        <span class="preter-create-progress-point">2.</span>
+                        <span class="label hide-mobile">{% trans %} lender-subscription_part-2-title {% endtrans %}</span>
+                    </span>
+                </li>
+                <li id="preter-create-3" role="presentation" class="{% if app.request.attributes.get('_route') == 'lender_subscription_money_deposit' %}active{% endif%}">
+                    <span>
+                        <span class="preter-create-progress-point">3.</span>
+                        <span class="label hide-mobile">{% trans %} lender-subscription_part-3-title {% endtrans %}</span>
+                    </span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div><!-- /.form-preter-nav -->

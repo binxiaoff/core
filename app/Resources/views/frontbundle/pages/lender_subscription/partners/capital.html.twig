@@ -1,0 +1,32 @@
+{{ header|raw }}
+
+<link rel="stylesheet" href="{{ asset('js/vendor/videojs/video-js.min.css', 'gulp') }}" />
+<link rel="stylesheet" href="{{ asset('js/vendor/swiper/css/swiper.min.css', 'gulp') }}" />
+<link rel="stylesheet" href="{{ asset('js/vendor/fancybox/css/jquery.fancybox.css', 'gulp') }}" />
+<link rel="stylesheet" href="{{ asset('js/vendor/jquery-ui/themes/base/minified/jquery-ui.min.css', 'gulp') }}" />
+<link rel="stylesheet" href="{{ asset('fonts/style.css', 'gulp') }}" />
+<link rel="stylesheet" href="{{ asset('css/main.css', 'gulp') }}" />
+<style type="text/css">
+    #pageContent_sideBar {
+        display: none;
+    }
+
+    .contentContainer {
+        width: 100%;
+    }
+
+    #devenir-preteur {
+        padding: 0px;
+    }
+
+    #LeftColumn {
+        width: auto;
+    }
+
+</style>
+
+{{ google_tag_manager() }}
+
+{% include 'pages/lender_subscription/partners/partner_landing_page.html.twig' %}
+
+{{ footer|raw }}

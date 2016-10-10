@@ -1,0 +1,266 @@
+//
+// Unilend Call-to-Action Video Hero
+//
+
+.cta-video-hero {
+  @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0);
+  min-height: 400px;
+  max-height: 700px;
+
+  .video-hero-wrapper {
+    @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0, $padding-md: 0, $padding-lg: 0);
+    position: relative;
+  }
+
+  .video-hero {
+    background-color: $c-black;
+    background-image: none;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    width: 100%;
+    min-height: 200px;
+    color: $c-p1;
+    position: relative;
+  }
+
+  .video-hero-image {
+    img {
+      @include constrain-size-by-width;
+      vertical-align: top;
+    }
+  }
+
+  .video-hero-cta {
+    box-sizing: border-box;
+    width: 100%;
+
+    position: absolute;
+    left: 0;
+    top: 50%;
+    z-index: 2;
+
+    text-align: center;
+
+    // Vertical align
+    transform: translateY(-50%);
+
+    h5 {
+      margin-top: 20px;
+      margin-bottom: 20px;
+      margin-left: $site-margin;
+      margin-right: $site-margin;
+      color: $c-p1;
+      letter-spacing: .05em;
+    }
+
+    h3 {
+      margin-top: 20px;
+      margin-bottom: 20px;
+      color: $c-p1;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    @include devices('xs') {
+      h5 {
+        display: none;
+      }
+
+      h3 {
+        font-size: 30px;
+      }
+    }
+
+    @include devices('sm') {
+      h3 {
+        font-size: 35px;
+      }
+
+      h3, h5 {
+        max-width: 650px;
+        padding-left: $width-site-margin-sm;
+        padding-right: $width-site-margin-sm;
+        margin-left: auto;
+        margin-right: auto;
+      }
+    }
+
+    @include devices('md') {
+      h3, h5 {
+        max-width: 650px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+    }
+
+    @include devices('lg') {
+      h3, h5 {
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      h5 {
+        font-size: 25px;
+      }
+
+      h3 {
+        font-size: 42px;
+      }
+    }
+
+    // Extra vertical adjustment
+    @include devices('xs', 'sm') {
+      margin-top: -($size-btn-media-hover * .5);
+    }
+
+    @include devices('md') {
+      margin-top: -($size-btn-media-md-hover * .5);
+    }
+
+    @include devices('lg') {
+      margin-top: -($size-btn-media-md-hover * .5);
+    }
+  }
+
+  .caption {
+    @include text-shadow(0 0 20px fade-out(#000, .25));
+    color: $c-white;
+    position: absolute;
+    bottom: 0;
+    padding: 30px;
+    font-size: 16px;
+    line-height: 1.3em;
+
+    > :last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .caption-align-left {
+    left: 0;
+    text-align: left;
+  }
+
+  .caption-align-right {
+    right: 0;
+    text-align: right;
+  }
+
+  .caption-name {
+    font-weight: bold;
+    font-style: italic;
+  }
+
+  .caption-info {
+    font-style: italic;
+  }
+
+  .caption-links {
+    margin-top: 10px;
+  }
+
+  // For reference see `common/_lists.scss` => .list-sharing
+  .list-socialmedia,
+  .list-sharing {
+    @include block-list;
+
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 9;
+  }
+
+  .link {
+    @include link-states(
+      $link: (
+        color: $c-white
+      ),
+      $hover: (
+        color: $c-white
+      ),
+      $active: (
+        color: $c-white
+      )
+    );
+  }
+
+  .row,
+  .btn-toolbar {
+    > * {
+      margin: 0;
+    }
+  }
+
+  // General responsive adjustments
+  @include devices('xs', 'sm') {
+    .caption {
+      display: none;
+    }
+
+    .swiper-container,
+    .video-hero {
+      min-height: 400px;
+    }
+
+    .btn-toolbar {
+      .btn-cta {
+        text-align: left;
+      }
+    }
+
+    &.ui-set-device-height {
+      position: relative;
+
+      .video-hero-wrapper {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        right: 0;
+      }
+
+      .video-hero-slideshow,
+      .swiper-container,
+      .video-hero {
+        height: 100%;
+      }
+
+      .btn-toolbar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 5;
+      }
+    }
+  }
+
+  @include devices('md') {
+    .list-socialmedia,
+    .list-sharing {
+      display: block;
+    }
+
+    .swiper-container,
+    .video-hero {
+      min-height: 450px;
+    }
+  }
+
+  @include devices('lg') {
+    .list-socialmedia,
+    .list-sharing {
+      display: block;
+    }
+
+    .swiper-container,
+    .video-hero {
+      min-height: 600px;
+    }
+  }
+}

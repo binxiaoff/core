@@ -1,0 +1,30 @@
+{% extends 'layouts/_layout_lender.html.twig' %}
+
+{% set page = {
+id: 'user-preter-operations',
+title: 'Prêteur / Operations',
+classNames: 'user-preter-operations'
+} %}
+
+{% block dashboardContent %}
+    <section class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-nav">
+            <ul class="nav nav-dashboard-tabs">
+                <li role="presentation" class="active">
+                    <a href="#operations" role="tab" data-toggle="tab">{% trans %} lender-operations_operations-tab-title {% endtrans %}</a>
+                </li>
+                <li role="presentation">
+                    <a href="#loans" role="tab" data-toggle="tab">{% trans %} lender-operations_loans-tab-title {% endtrans %}</a>
+                </li>
+            </ul>
+        </div><!-- /.dashboard-tabs-nav -->
+        <div class="dashboard-tabs-content tab-content" id="dashboard-lender-operations">
+            <article id="operations" role="tabpanel" class="dashboard-tab-pane tab-pane active">
+                {% include 'pages/lender_operations/my_operations.html.twig' %}
+            </article><!-- /#myoperations.tab-pane -->
+            <article id="loans" role="tabpanel" class="dashboard-tab-pane tab-pane">
+                {% include 'pages/lender_operations/my_loans.html.twig' %}
+            </article><!-- /#myloans.tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </section><!-- /.dashboard-tabs -->
+{% endblock %}

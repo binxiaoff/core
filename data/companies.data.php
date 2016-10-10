@@ -37,6 +37,28 @@ class companies extends companies_crud
         parent::companies($bdd, $params);
     }
 
+    public function create($cs = '')
+    {
+        $this->setSectorAccordingToNaf();
+
+        if (is_numeric($this->name) || 0 === strcasecmp($this->name, 'Monsieur') || 0 === strcasecmp($this->name, 'Madame')) {
+            trigger_error('TMA-749 : ' . __CLASS__ . '.' . __FUNCTION__ . ' wrong company name - trace : ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)), E_USER_WARNING);
+        }
+
+        return parent::create($cs);
+    }
+
+    public function update($cs = '')
+    {
+        $this->setSectorAccordingToNaf();
+
+        if (is_numeric($this->name) || 0 === strcasecmp($this->name, 'Monsieur') || 0 === strcasecmp($this->name, 'Madame')) {
+            trigger_error('TMA-749 : ' . __CLASS__ . '.' . __FUNCTION__ . ' wrong company name - trace : ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)), E_USER_WARNING);
+        }
+
+        parent::update($cs);
+    }
+
     public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
@@ -49,7 +71,7 @@ class companies extends companies_crud
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -68,7 +90,7 @@ class companies extends companies_crud
     public function exist($id, $field = 'id_company')
     {
         $result = $this->bdd->query('SELECT * FROM `companies` WHERE ' . $field . ' = "' . $id . '"');
-        return ($this->bdd->fetch_array($result) > 0);
+        return ($this->bdd->fetch_assoc($result) > 0);
     }
 
     /**
@@ -84,21 +106,17 @@ class companies extends companies_crud
         }
 
         if (isset($aStatus)) {
-            $sStatus = (is_array($aStatus))? ' AND ps.status IN ('.implode(',', $aStatus).')': ' AND ps.status IN ('.$aStatus.')';
+            $sStatus = ' AND status IN (' . implode(',', $aStatus) . ')';
         } else {
             $sStatus = '';
         }
 
         $sql = '
-            SELECT
-                p.*,
-                ps.status as project_status
-            FROM projects p
-            INNER JOIN projects_last_status_history plsh ON plsh.id_project = p.id_project
-            INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
-            INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
-            WHERE p.id_company = '.$iCompanyId.$sStatus.'
-            ORDER BY project_status DESC';
+            SELECT *
+            FROM projects
+            WHERE id_company = ' . $iCompanyId . '
+            ' . $sStatus . '
+            ORDER BY status DESC';
 
         $resultat  = $this->bdd->query($sql);
         $aProjects = array();
@@ -110,7 +128,6 @@ class companies extends companies_crud
 
     /**
      * Retrieve the amount company still needs to pay to Unilend
-     * @param int $iCompanyId
      * @return float
      */
     public function getOwedCapitalBySIREN()
@@ -118,6 +135,7 @@ class companies extends companies_crud
         if (empty($this->id_company)) {
             return 0.0;
         }
+
         return (float) $this->bdd->result($this->bdd->query('
             SELECT IFNULL(SUM(ee.capital) / 100, 0)
             FROM echeanciers_emprunteur ee
@@ -137,42 +155,36 @@ class companies extends companies_crud
         }
         $aProjects = array();
         $rResult   = $this->bdd->query('
-            SELECT 1 AS rank, p.id_project, p.slug, p.id_company, p.amount, p.period, p.title, p.added, p.updated, ps.label AS status_label, ps.status, IFNULL(CONCAT(sales_person.firstname, " ", sales_person.name), "") AS sales_person, IFNULL(CONCAT(analysts.firstname, " ", analysts.name), "") AS analyst
+            SELECT 1 AS rank, p.id_project, p.slug, p.id_company, p.amount, p.period, p.title, p.added, p.updated, ps.label AS status_label, p.status, IFNULL(CONCAT(sales_person.firstname, " ", sales_person.name), "") AS sales_person, IFNULL(CONCAT(analysts.firstname, " ", analysts.name), "") AS analyst
             FROM companies current_company
             INNER JOIN companies c ON current_company.siren = c.siren
             INNER JOIN projects p ON c.id_company = p.id_company
-            INNER JOIN projects_last_status_history plsh ON plsh.id_project = p.id_project
-            INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
-            INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
+            INNER JOIN projects_status ps ON ps.status = p.status
             LEFT JOIN users sales_person ON p.id_commercial = sales_person.id_user
             LEFT JOIN users analysts ON p.id_analyste = analysts.id_user
-            WHERE ps.status >= ' . \projects_status::EN_FUNDING . ' AND current_company.id_company = ' . $this->id_company . '
+            WHERE p.status >= ' . \projects_status::EN_FUNDING . ' AND current_company.id_company = ' . $this->id_company . '
 
             UNION
 
-            SELECT 2 AS rank, p.id_project, p.slug, p.id_company, p.amount, p.period, p.title, p.added, p.updated, ps.label AS status_label, ps.status, IFNULL(CONCAT(sales_person.firstname, " ", sales_person.name), "") AS sales_person, IFNULL(CONCAT(analysts.firstname, " ", analysts.name), "") AS analyst
+            SELECT 2 AS rank, p.id_project, p.slug, p.id_company, p.amount, p.period, p.title, p.added, p.updated, ps.label AS status_label, p.status, IFNULL(CONCAT(sales_person.firstname, " ", sales_person.name), "") AS sales_person, IFNULL(CONCAT(analysts.firstname, " ", analysts.name), "") AS analyst
             FROM companies current_company
             INNER JOIN companies c ON current_company.siren = c.siren
             INNER JOIN projects p ON c.id_company = p.id_company
-            INNER JOIN projects_last_status_history plsh ON plsh.id_project = p.id_project
-            INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
-            INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
+            INNER JOIN projects_status ps ON ps.status = p.status
             LEFT JOIN users sales_person ON p.id_commercial = sales_person.id_user
             LEFT JOIN users analysts ON p.id_analyste = analysts.id_user
-            WHERE ps.status >= ' . \projects_status::EN_ATTENTE_PIECES . ' AND ps.status < ' . \projects_status::EN_FUNDING . ' AND current_company.id_company = ' . $this->id_company . '
+            WHERE p.status >= ' . \projects_status::EN_ATTENTE_PIECES . ' AND p.status < ' . \projects_status::EN_FUNDING . ' AND current_company.id_company = ' . $this->id_company . '
 
             UNION
 
-            SELECT 3 AS rank, p.id_project, p.slug, p.id_company, p.amount, p.period, p.title, p.added, p.updated, ps.label AS status_label, ps.status, IFNULL(CONCAT(sales_person.firstname, " ", sales_person.name), "") AS sales_person, IFNULL(CONCAT(analysts.firstname, " ", analysts.name), "") AS analyst
+            SELECT 3 AS rank, p.id_project, p.slug, p.id_company, p.amount, p.period, p.title, p.added, p.updated, ps.label AS status_label, p.status, IFNULL(CONCAT(sales_person.firstname, " ", sales_person.name), "") AS sales_person, IFNULL(CONCAT(analysts.firstname, " ", analysts.name), "") AS analyst
             FROM companies current_company
             INNER JOIN companies c ON current_company.siren = c.siren
             INNER JOIN projects p ON c.id_company = p.id_company
-            INNER JOIN projects_last_status_history plsh ON plsh.id_project = p.id_project
-            INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
-            INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
+            INNER JOIN projects_status ps ON ps.status = p.status
             LEFT JOIN users sales_person ON p.id_commercial = sales_person.id_user
             LEFT JOIN users analysts ON p.id_analyste = analysts.id_user
-            WHERE ps.status < ' . \projects_status::EN_ATTENTE_PIECES . ' AND current_company.id_company = ' . $this->id_company . '
+            WHERE p.status < ' . \projects_status::EN_ATTENTE_PIECES . ' AND current_company.id_company = ' . $this->id_company . '
             ORDER BY rank ASC, added DESC'
         );
         while ($aRecord = $this->bdd->fetch_assoc($rResult)) {
@@ -258,21 +270,136 @@ class companies extends companies_crud
         return $this->bdd->executeQuery($sQuery);
     }
 
-    public function create($cs = '')
+    /**
+     * sets the company sector according to the naf_code
+     * matching provided in DEV-273
+     */
+    public function setSectorAccordingToNaf()
     {
-        parent::create($cs = '');
 
-        if (is_numeric($this->name) || 0 === strcasecmp($this->name, 'Monsieur') || 0 === strcasecmp($this->name, 'Madame')) {
-            trigger_error('TMA-749 : ' . __CLASS__ . '.' . __FUNCTION__ . ' wrong company name - trace : ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)), E_USER_WARNING);
+        if (in_array(substr($this->code_naf, 0, 2), ['01', '02', '03'])) {
+            $this->sector = 1;
+        }
+
+        if (in_array(substr($this->code_naf, 0, 2), ['10', '11'])) {
+            $this->sector = 2;
+        }
+
+        if (in_array(substr($this->code_naf, 0, 2), ['41', '42', '43', '71'])) {
+            $this->sector = 3;
+        }
+
+        if (in_array(substr($this->code_naf, 0, 2), ['45', '46', '47', '95'])) {
+            $this->sector = 4;
+        }
+
+        if (in_array(substr($this->code_naf, 0, 2), ['59', '60', '90', '91'])) {
+            $this->sector = 6;
+        }
+
+        if (in_array(substr($this->code_naf, 0, 2), ['55'])) {
+            $this->sector = 7;
+        }
+
+        if (in_array(substr($this->code_naf, 0, 2), ['16', '17', '18', '19', '20', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '35', '36'])) {
+            $this->sector = 8;
+        }
+
+        if (in_array(substr($this->code_naf, 0, 2), ['61', '62', '63'])) {
+            $this->sector = 9;
+        }
+
+        if (in_array(substr($this->code_naf, 0, 2), ['21', '75', '86'])) {
+            $this->sector = 10;
+        }
+
+        if (in_array(substr($this->code_naf, 0, 2), ['56'])) {
+            $this->sector = 11;
+        }
+
+        if (in_array(substr($this->code_naf, 0, 2), ['58', '65', '66', '68', '69', '70', '73', '74', '77', '78', '79', '80', '81', '82', '96', '97'])) {
+            $this->sector = 12;
+        }
+
+        if (in_array(substr($this->code_naf, 0, 2), ['13', '14', '15'])) {
+            $this->sector = 13;
+        }
+
+        if (in_array(substr($this->code_naf, 0, 2), ['49', '50', '51', '52', '53'])) {
+            $this->sector = 14;
+        }
+
+        if (in_array(substr($this->code_naf, 0, 2), ['05', '06', '07', '08', '09', '12', '37', '38', '39', '64', '72', '84', '85', '87', '88', '92', '93', '94', '98', '99'])) {
+            $this->sector = 15;
         }
     }
 
-    public function update($cs = '')
+    public function countCompaniesWithProblematicProjectsByCohort()
     {
-        parent::update($cs = '');
-
-        if (is_numeric($this->name) || 0 === strcasecmp($this->name, 'Monsieur') || 0 === strcasecmp($this->name, 'Madame')) {
-            trigger_error('TMA-749 : ' . __CLASS__ . '.' . __FUNCTION__ . ' wrong company name - trace : ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)), E_USER_WARNING);
+        $caseSql  = '';
+        foreach (range(2015, date('Y')) as $year ) {
+            $caseSql .= ' WHEN ' . $year . ' THEN "' . $year . '"';
         }
+
+        $query = 'SELECT COUNT(DISTINCT id_company) AS amount,
+                   (
+                     SELECT
+                       CASE LEFT(projects_status_history.added, 4)
+                       WHEN 2013 THEN "2013-2014"
+                       WHEN 2014 THEN "2013-2014"
+                       ELSE LEFT(projects_status_history.added, 4)
+                       END AS date_range
+                     FROM projects_status_history
+                       INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
+                     WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
+                            AND projects.id_project = projects_status_history.id_project
+                     ORDER BY id_project_status_history ASC LIMIT 1
+                   ) AS cohort
+            FROM projects
+            WHERE projects.status IN (' . implode(',', [\projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::DEFAUT]) .')
+                  OR
+                  (IF(
+                       (projects.status IN (' . implode(',', [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X, \projects_status::RECOUVREMENT]) . ') AND
+                        DATEDIFF(NOW(),
+                                 (
+                                   SELECT psh2.added
+                                   FROM projects_status_history psh2
+                                     INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                                   WHERE
+                                     ps2.status = ' . \projects_status::PROBLEME . '
+                                     AND psh2.id_project = projects.id_project
+                                   ORDER BY psh2.id_project_status_history DESC
+                                   LIMIT 1
+                                 )
+                        ) > 180), TRUE, FALSE) = TRUE)
+            GROUP BY cohort;';
+
+        $statement = $this->bdd->executeQuery($query);
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
+    public function countCompaniesFundedByCohort()
+    {
+        $query = 'SELECT COUNT(DISTINCT id_company) AS amount,
+                    (
+                        SELECT
+                          CASE LEFT(projects_status_history.added, 4)
+                            WHEN 2013 THEN "2013-2014"
+                            WHEN 2014 THEN "2013-2014"
+                            ELSE LEFT(projects_status_history.added, 4)
+                          END AS date_range
+                        FROM projects_status_history
+                        INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
+                        WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
+                          AND projects.id_project = projects_status_history.id_project
+                        ORDER BY id_project_status_history ASC LIMIT 1
+                      ) AS cohort
+                       FROM projects
+                    WHERE projects.status >= ' . \projects_status::REMBOURSEMENT . '
+                    GROUP BY cohort';
+
+        $statement = $this->bdd->executeQuery($query);
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 }

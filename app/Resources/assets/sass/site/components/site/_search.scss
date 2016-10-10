@@ -1,0 +1,14 @@
+//
+// Unilend Site Search
+//
+
+.site-search {
+  .form-field-inline {
+    width: 100%;
+
+    .site-search-input {
+      @include input;
+      padding-left: 40px;
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{% set bodyClassNames = 'layout-dashboard ui-user-level-' ~ app.user.level %}
+
+<header class="site-header site-header-dashboard">
+    <div class="site-band"></div>
+
+    <div class="site-header-inner">
+        <div class="site-wrap">
+            <h1 class="site-title">
+                <a href="{{ path('home') }}" class="site-logo" tabindex="2">{{ site.title|default('Unilend') }}</a>
+            </h1>
+
+            {% block siteHeaderNav %}
+                {% include 'partials/site/header_nav.html.twig' %}
+            {% endblock siteHeaderNav %}
+
+            <div class="site-controls">
+                {% block siteHeaderControls %}
+                    <div class="site-user">
+                        <a href="{{ path('lender_wallet_deposit') }}" class="site-user-balance">
+                            <span class="label">{% trans %} header-connected_add-money-link {% endtrans %}</span>
+                        </a><!-- /.site-user-balance -->
+
+                        <div class="site-user-profile">
+                            <div class="profile-avatar">
+                                <a href="{{ path('lender_dashboard') }}">
+                                    {{ app.user.initials }}
+                                </a>
+                            </div><!-- /.profile-avatar -->
+
+                            <a href="#" class="profile-notifications" data-usernotificationsdrop>
+                                {% if app.user.unreadNotificationsCount > 0 %}
+                                    <span class="pip{% if app.user.unreadNotificationsCount > 9 %} pip-has-many{% endif %}"><span class="pip-number">{{ app.user.unreadNotificationsCount }}</span></span>
+                                {% endif %}
+                            </a><!-- /.profile-notifications -->
+                            <div class="profile-name"><a href="{{ path('lender_dashboard') }}" class="c-t1">{% trans with {'%firstName%' : app.user.firstName} %} header-connected_greeting {% endtrans %} </a></div>
+                            <div class="profile-balance">
+                                <a href="{{ path('lender_wallet_deposit') }}">{% trans with {'%balance%' : app.user.balance|default(0)|localizedcurrency('EUR')} %} header-connected_balance {% endtrans %}</a>
+                            </div><!-- /.profile-balance -->
+                            <a href="{{ path('logout') }}" class="profile-logout link"><span class="label">{% trans %} header-connected_logout {% endtrans %}</span></a>
+                        </div><!-- /.site-user-profile -->
+                    </div><!-- /.site-user -->
+                {% endblock %}
+            </div><!-- /.site-controls -->
+        </div><!-- /.site-wrap -->
+    </div><!-- /.site-header-inner -->
+</header>

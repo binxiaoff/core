@@ -50,7 +50,6 @@ class UnilendBankTransfertCommand extends ContainerAwareCommand
                 $transactions->status           = \transactions::STATUS_VALID;
                 $transactions->etat             = \transactions::PAYMENT_STATUS_OK;
                 $transactions->type_transaction = \transactions_types::TYPE_UNILEND_BANK_TRANSFER;
-                $transactions->transaction      = \transactions::VIRTUAL;
                 $transactions->create();
 
                 $virements->id_client      = 0;

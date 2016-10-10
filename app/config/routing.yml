@@ -1,0 +1,4 @@
+unilend_front:
+    resource: "@UnilendFrontBundle/Resources/config/routing.yml"
+    prefix:   /
+

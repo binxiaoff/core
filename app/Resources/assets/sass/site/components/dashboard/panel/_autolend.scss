@@ -1,0 +1,19 @@
+//
+// Unilend Dashboard Panel Autolend
+//
+
+.dashboard-panel.dashboard-autolend {
+  .dashboard-panel-footer {
+    display: none;
+  }
+
+  .dashboard-panel-controls {
+    label.custom-input-switch > .label {
+      vertical-align: middle;
+    }
+  }
+
+  .ui-formvalidation-notifications {
+    text-align: center;
+  }
+}

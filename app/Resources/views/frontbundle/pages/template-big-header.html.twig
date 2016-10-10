@@ -1,0 +1,15 @@
+{% extends 'layouts/_page-simple.html.twig' %}
+
+{% block extendPageHeader %}
+    <div class="page-header-image">{{ svgimage('#header-' ~ cms.header_image, '', 300, 300)|raw }}</div>
+{% endblock %}
+
+{% block pageAsideBody %}
+    <div class="page-aside-body h-card vcard ui-has-sticky">
+        {{ cms.left_content|raw }}
+    </div><!-- /.page-aside-body -->
+{% endblock %}
+
+{% block pageContentBody %}
+    {{ cms.right_content|raw }}
+{% endblock %}

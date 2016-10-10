@@ -1,0 +1,37 @@
+//
+// Unilend Page - Homepage Emprunter
+//
+
+#homeemp.page {
+
+  // Video Hero
+  #homeemp-video-hero.cta-video-hero {
+    .video-hero-wrapper .video-hero {
+      background-position: center top;
+
+      @include devices('xs') {
+        background-position: left center;
+      }
+    }
+  }
+
+  #homeemp-section-process.page-section {
+
+  }
+
+  // Why Borrow promos
+  #homeemp-section-whyborrow.page-section {
+    .promo-image {
+      margin-bottom: -30px;
+    }
+
+    .promo-highlight {
+      font-size: 70px;
+    }
+  }
+
+  // Testimonials
+  #homeemp-section-testimonials.page-section {
+    padding-top: 0;
+  }
+}

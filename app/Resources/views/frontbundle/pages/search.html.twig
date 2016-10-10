@@ -1,0 +1,45 @@
+{% extends 'layouts/_layout.html.twig' %}
+
+{% set page = {
+    title: 'Recherche'
+} %}
+
+{% block siteContent %}
+    <article id="search-result" class="page page-simple">
+        <header class="page-header">
+            <div class="hero-wrap">
+                <div class="site-wrap">
+                    <h1 class="page-title"><span class="icon fa-search"></span> {% trans %} search_header-title {% endtrans %}</h1>
+                </div><!-- /.site-wrap -->
+
+                {% include 'partials/components/list-socialmedia.html.twig' %}
+            </div><!-- /.hero-wrap -->
+        </header><!-- /.page-header -->
+
+        <div class="site-wrap">
+            <div class="row">
+                <aside class="col-lg-6 col-md-6 page-aside ui-sticky-bounds" data-equal-height="md lg" data-equal-height-group="content">
+                    <div class="page-aside-body h-card vcard ui-has-sticky">
+                        <h4>{% trans %} search_left-block-title {% endtrans %}</h4>
+                        <p>{% trans with {'%query%' : query} %} search_left-block-search {% endtrans %}</p>
+                    </div><!-- /.page-aside-body -->
+                </aside><!-- /.page-aside -->
+
+                <div class="col-lg-6 col-md-6 page-content" data-equal-height="md lg" data-equal-height-group="content">
+                    <section class="page-section">
+                        {% for category, categoryResults in results %}
+                            <h2>{{ "search_result-title-#{ category }"|trans }}</h2>
+                            <ul class="list-links">
+                                {% for links in categoryResults %}
+                                    <li><a href="{% if links.slug is defined %}/{{ links.slug }}{% else %}{{ links.url }}{% endif %}">{{ links.title }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <h2>{% trans %} search_no-result-found {% endtrans %}</h2>
+                        {% endfor %}
+                    </section>
+                </div><!-- /.page-content -->
+            </div><!-- /.row -->
+        </div><!-- /.site-wrap -->
+    </article><!-- /.page -->
+{% endblock %}

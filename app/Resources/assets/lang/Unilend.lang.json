@@ -1,0 +1,104 @@
+{
+  "fr_FR": {
+    "number-decimal":  ",",
+    "number-milli":    " ",
+    "number-currency": "€",
+
+    "time-unit-now": "maintenant",
+    "time-unit-second": "seconde",
+    "time-unit-seconds": "secondes",
+    "time-unit-minute": "minute",
+    "time-unit-minutes": "minutes",
+    "time-unit-hour": "heure",
+    "time-unit-hours": "heures",
+    "time-unit-day": "jour",
+    "time-unit-days": "jours",
+    "time-unit-week": "semaine",
+    "time-unit-weeks": "semaines",
+    "time-unit-month": "mois",
+    "time-unit-months": "mois",
+    "time-unit-year": "an",
+    "time-unit-years": "ans",
+
+    "time-count-ago": "Il y a %s",
+    "time-count-remaining": "%s restants",
+
+    "site-mobile-menu-open-label": "Ouvrir le menu",
+    "site-mobile-menu-close-label": "Fermer le menu",
+
+    "site-search-label": "Recherche Unilend",
+    "site-search-input-placeholder": "Une question ?",
+    "site-search-submit-label": "Lancer la recherche",
+    "site-search-show-all-results-label": "Voir tous les résultats",
+
+    "site-user-register-label": "Inscription",
+    "site-user-login-label": "Connexion",
+
+    "site-footer-copyright-all-rights": "Tous droits réservés",
+
+    "social-follow-on-facebook-label": "Suivez Unilend sur Facebook",
+    "social-follow-on-twitter-label": "Suivez Unilend sur Twitter",
+
+    "project-period-expired": "Projet terminée",
+
+    "project-list-view-list-label": "Voir la liste",
+    "project-list-view-map-label": "Voir sur la carte",
+    "project-list-item-type-single": "Projet",
+    "project-list-item-type-plural": "Projets",
+
+    "project-list-filter-category": "Catégorie",
+    "project-list-filter-cost": "Cost",
+    "project-list-filter-interest": "Taux Intérêt Moyen",
+    "project-list-filter-rating": "Note",
+    "project-list-filter-period": "Temps restant",
+
+    "project-list-item-offers-label-single": "offre",
+    "project-list-item-offers-label-plural": "offres",
+    "project-list-item-offers-user-status-in-progress": "en cours",
+    "project-list-item-offers-user-status-accepted": "accepté",
+    "project-list-item-offers-user-status-rejected": "rejeté",
+    "project-list-item-offers-autolend": "dont %s offres Autolend",
+    "project-list-item-rating-label": "Rated %d sur 5",
+    "project-list-item-period-label": "%d jours",
+    "project-list-item-period-expired": "Projet terminée",
+    "project-list-item-view-label": "Voir les informations sur ce projet",
+
+    "project-list-pagination-item-label-single": "",
+    "project-list-pagination-item-label-plural": "",
+
+    "project-single-period-expired": "Projet terminée",
+    "project-single-rating-label": "Rated %d sur 5",
+    "project-single-mapShow-label": "Voir la carte",
+    "project-single-mapHide-label": "Cacher la carte",
+
+    "pagination-item-label-single": "",
+    "pagination-item-label-plural": "",
+    "pagination-info-location-label": "%d sur %d",
+    "pagination-info-next-label": "Voir %d %s suivants",
+    "pagination-index-previous-label": "Les %d précédents %s",
+    "pagination-index-next-label": "%d %s suivants",
+
+    "list-sharing-share-text-default": "Regardez %shareTitle% sur Unilend",
+    "list-sharing-link-facebook-share-label": "Partager sur Facebook",
+    "list-sharing-link-twitter-share-label": "Partager sur Twitter",
+
+    "page-home-preter-project-list-title": "%d projets en cours",
+
+    "page-projets-index-header-title": "%s projets en cours, %s projets financés, %s prêteurs actifs."
+  },
+  "en": {
+    "number-decimal":  ".",
+    "number-milli":    ",",
+    "number-currency": "$"
+  },
+  "en-gb": {
+    "numberDecimal":  ".",
+    "numberMilli":    ",",
+    "numberCurrency": "£"
+  },
+  "es": {
+    "numberDecimal":  ",",
+    "numberMilli":    ".",
+    "numberCurrency": "€"
+  }
+}

@@ -1,7 +1,7 @@
 <?php
 
-$exp     = explode('/', $_SERVER['REQUEST_URI']);
-$nocache = false;
+$exp    = explode('/', $_SERVER['REQUEST_URI']);
+$cached = true;
 
 if (isset($_SESSION['client'])) {
     $nocache = true;
@@ -12,19 +12,16 @@ if (strlen($currentController) <= 1) {
     $currentController = $exp[1];
 }
 
-$noCacheControllers = array('ajax', 'cron', 'crongeckoboard', 'pdf', 'LP_inscription_preteurs', '2015', 'Lp-2015-web', 'Lp-offre-bienvenue-web', 'bienvenue', 'inscription_preteur');
-
-if (in_array($currentController, $noCacheControllers)) {
-    $nocache = true;
-} else if (0 === strcmp($exp[1], 'projects') && isset($exp[2]) && 0 === strcmp($exp[2], 'bidsExport')) {
-    $nocache = true;
+if (
+    isset($_SESSION['client'])
+    || $_SERVER['REQUEST_METHOD'] !== 'GET'
+    || false === in_array($currentController, ['', 'projets-a-financer', 'projects'])
+    || $currentController === 'projects' && isset($exp[2]) && $exp[2] === 'bidsExport'
+) {
+    $cached = false;
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    $nocache = true;
-}
-
-if (! $nocache) {
+if ($cached) {
     $params = \Symfony\Component\Yaml\Yaml::parse(file_get_contents(__DIR__ . '/../../app/config/parameters.yml'));
 
     if (file_exists(__DIR__ . '/../../app/config/parameters_extended.yml')) {

@@ -1,0 +1,779 @@
+{% set projectsByCategoryChart = {
+    type: 'preterProjectsCategories',
+    background: 'none',
+    highcharts: {
+        chart: {
+            type: 'treemap',
+            spacing: [0, 0, 0, 0]
+            },
+        title: {
+        text: ''
+        },
+        plotOptions: {
+            treemap: {
+                borderColor: '#B40066',
+                borderWidth: 2,
+                dataLabels: {
+                    useHTML: true,
+                    zIndex: -1
+                }
+            }
+        },
+        tooltip: {
+            backgroundColor: "rgba(255,255,255,1)",
+            useHTML: true
+        },
+        series: [{
+            type: 'treemap',
+            layoutAlgorithm: 'squarified',
+            data: data.projectCountForCategoryTreeMap
+        }]
+    }
+}
+%}
+
+{% set lenderMap = {
+    type: 'preterStatisticsMap',
+    loadFirst: {
+        mapData: '/assets/js/vendor/geojson/fr-regions-all.json'
+    },
+    background: 'none',
+    highcharts: {
+        chart: {
+            type: 'map'
+        },
+        title: {
+            text: ''
+        },
+        mapNavigation: {
+            enabled: false
+        },
+        legend: {
+            enabled: false
+        },
+        tooltip: {
+            enabled: true,
+            headerFormat: '',
+            pointFormat: '{point.name}: {point.value}%'
+        },
+        colorAxis: {
+            minColor: 'rgba(180,0,102,.1)',
+            maxColor: 'rgba(180,0,102,.8)'
+        },
+        series: [{
+            data: getStatistic('LendersByRegion'),
+            joinBy: 'insee',
+            color: 'rgba(180,0,102,.2)',
+            borderColor: '#ffffff',
+            borderWidth: 2,
+            showInLegend: false,
+            dataLabels: {
+                enabled: false
+            },
+            states: {
+                hover: {
+                    color: '#B40066'
+                }
+            },
+            showInLegend: false
+        }]
+    }
+} %}
+
+{% set borrowerMap = {
+    type: 'emprunterStatisticsMap',
+    loadFirst: {
+        mapData: '/assets/js/vendor/geojson/fr-regions-all.json'
+    },
+    background: 'none',
+    highcharts: {
+        chart: {
+            type: 'map'
+        },
+        title: {
+            text: ''
+        },
+        mapNavigation: {
+            enabled: false
+        },
+        legend: {
+            enabled: false
+        },
+        tooltip: {
+            enabled: true,
+            headerFormat: '',
+            pointFormat: '{point.name}: {point.value}%'
+        },
+        colorAxis: {
+            minColor: 'rgba(180,0,102,.1)',
+            maxColor: 'rgba(180,0,102,.8)'
+        },
+        series: [{
+            data: getStatistic('BorrowersByRegion'),
+            joinBy: 'insee',
+            color: 'rgba(180,0,102,.2)',
+            borderColor: '#ffffff',
+            borderWidth: 2,
+            showInLegend: false,
+            dataLabels: {
+                enabled: false
+            },
+            states: {
+                hover: {
+                    color: '#B40066'
+                }
+            },
+            showInLegend: false
+        }]
+    }
+} %}
+
+{% set unilendPerformanceChart = {
+    type: 'preterProjectsOverview',
+    background: 'none',
+    highcharts: {
+        chart: {
+            type: 'pie',
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: null
+            },
+        title: {
+            text: ''
+            },
+        subtitle: {
+            text: '',
+            color: '#999999',
+            floating: true,
+            useHTML: true,
+            verticalAlign: 'middle'
+            },
+        plotOptions: {
+            pie: {
+            borderColor: 'none',
+            borderWidth: 0,
+            showInLegend: true,
+            dataLabels: {
+                enabled: false
+                }
+            }
+        },
+        legend: {
+            symbolRadius: 10
+            },
+        series: [{
+            name: 'about-us-statistics_chart-borrowed-capital-circle-title'|trans ~ ' ',
+            minSize: 120,
+            innerSize: '95%',
+            endAngle: 270,
+            data: [{
+                name: 'about-us-statistics_chart-borrowed-capital'|trans,
+                color: '#5FC5D1',
+                y: data.regulatoryTable['borrowed-capital']['total']|round,
+                value: data.regulatoryTable['borrowed-capital']['total']|round|localizedcurrency('EUR'),
+                showInLegend: true,
+                }]
+            },{
+                name:  'about-us-statistics_chart-capital-circle-title'|trans ~ ' ',
+                size: '66%',
+                minSize: 100,
+                innerSize: '88%',
+                endAngle: 270,
+                data: [{
+                    name: 'about-us-statistics_chart-repaid-capital'|trans,
+                    color: '#1B88DB',
+                    y: data.regulatoryTable['repaid-capital']['total']|round,
+                    value: data.regulatoryTable['repaid-capital']['total']|round|localizedcurrency('EUR'),
+                    showInLegend: true,
+                },{
+                    name: 'about-us-statistics_chart-lost-capital'|trans,
+                    color: '#B6D4E4',
+                    y: data.regulatoryTable['future-owed-capital-healthy']['total']|round,
+                    value: data.regulatoryTable['future-owed-capital-healthy']['total']|round|localizedcurrency('EUR'),
+                    showInLegend: true
+                },{
+                    name: 'about-us-statistics_chart-total-owed-problematic-capital'|trans,
+                    color: '#F76965',
+                    y:  data.regulatoryTable['total-owed-problematic-capital']['total']|round,
+                    value: data.regulatoryTable['total-owed-problematic-capital']['total']|round|localizedcurrency('EUR'),
+                    showInLegend: true
+                }]
+            },{
+                name: 'about-us-statistics_chart-interests-circle-title'|trans ~ ' ',
+                minSize: 80,
+                size: '33%',
+                innerSize: '70%',
+                endAngle: (270 * (data.regulatoryTable['borrowed-capital']['total']|round + data.regulatoryTable['repaid-interest']['total']|round + data.regulatoryTable['owed-healthy-interest']['total']|round)) / data.regulatoryTable['borrowed-capital']['total']|round,
+                data: [{
+                    name: '',
+                    color: '#ffffff',
+                    dataLabels: {
+                        enabled: false
+                        },
+                    showInLegend: false,
+                    y: (data.regulatoryTable['repaid-capital']['total']|round + data.regulatoryTable['future-owed-capital-healthy']['total']|round) * 0.66,
+                    tooltip: true
+                },{
+                    name: 'about-us-statistics_chart-repaid-interest'|trans,
+                    color: '#F2980C',
+                    y: data.regulatoryTable['repaid-interest']['total']|round,
+                    value: data.regulatoryTable['repaid-interest']['total']|round|localizedcurrency('EUR'),
+                    showInLegend: true
+                },{
+                    name: 'about-us-statistics_chart-owed-healthy-interest'|trans,
+                    color: '#FFCA2C',
+                    y: data.regulatoryTable['owed-healthy-interest']['total']|round,
+                    value: data.regulatoryTable['owed-healthy-interest']['total']|round|localizedcurrency('EUR'),
+                    showInLegend: true
+                }]
+            }],
+        tooltip: {
+            valueSuffix: ' €'
+            }
+        }
+    }
+%}
+
+<section id="section-intro" class="page-section">
+    <div class="site-wrap">
+        <div class="row">
+            <div class="col-lg-6 col-md-6">
+                <header class="block-header">
+                    <h1 class="h4">{% trans %} about-us-statistics_general-description-title {% endtrans %}</h1>
+                </header>
+            </div>
+            <div class="col-lg-6 col-md-6">
+                <div class="block-text">
+                    {% trans with {'%numberProjectRequests%' : getStatistic('numberOfProjectRequests')|localizednumber, '%percentageAcceptedRequests%' : getStatistic('percentageOfAcceptedProjects')|localizednumber }%} about-us-statistics_general-description-text {% endtrans %}
+                    <p>
+                        <a href="{% trans %} about-us-statistics_link-under-general-description-target-url {% endtrans %}" class="link">
+                            {% trans %} about-us-statistics_link-under-general-description-text {% endtrans %}
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div><!-- /.site-wrap -->
+</section><!-- /.page-section -->
+
+<div class="bg-bg3">
+    <section id="section-preteurs" class="page-section">
+        <div class="site-wrap">
+            <div class="block-stats block-stats-p1">
+                <header class="block-stats-header">
+                    <h2>{% trans %} about-us-statistics_lender-statistics-title {% endtrans %}</h2>
+                </header>
+                <div class="block-promos row readable-wrap bg-icon-linechart">
+                    <div class="promo col-lg-6 col-md-6 col-sm-4">
+                        <h3 class="promo-highlight promo-highlight-lg">
+                            {% set unilendIRR = getStatistic('unilendIRR')|round(1, 'floor') %}
+                            <span data-textcount data-start-count="0" data-end-count="{{ unilendIRR }}" data-total-time="2000" data-limit-decimal="1" data-tween-count="easeOutCirc">{{ unilendIRR|localizednumber }}</span><sup>%</sup>
+                        </h3>
+                        <p>{% trans %} about-us-statistics_lender-statistics-linechart-unilend-irr-text {% endtrans %}</p>
+                    </div><!-- /.promo -->
+                    <div class="promo col-lg-6 col-md-6 col-sm-4">
+                        <h3 class="promo-highlight promo-highlight-lg">
+                            {% set averageInterestRateForLenders = getStatistic('averageInterestRateForLenders')|round(1, 'floor') %}
+                            <span data-textcount data-start-count="0" data-end-count="{{ averageInterestRateForLenders }}" data-total-time="2000" data-limit-decimal="1" data-tween-count="easeOutCirc">{{ averageInterestRateForLenders|localizednumber }}</span><sup>%</sup>
+                        </h3>
+                        <p>{% trans %} about-us-statistics_lender-statistics-linechart-avg-interest-rate-text {% endtrans %}</p>
+                    </div><!-- /.promo -->
+                </div><!-- /.promos -->
+                <div class="stats-charts row">
+                    <figure class="stats-chart stats-map">
+                        <div class="chart" data-chartview='{{ lenderMap|json_encode|escape('html_attr') }}'>
+                        </div>
+                        <figcaption><p>{% trans %} about-us-statistics_lender-statistics-map-title {% endtrans %}</p></figcaption>
+                    </figure>
+
+                    <div class="stats-members">
+                        <div class="promo promo-users">
+                            {% set numberOfLendersInCommunity = getStatistic('numberOfLendersInCommunity') %}
+                            <h3 class="promo-highlight promo-highlight-md c-p1">
+                                <span data-textcount data-start-count="0"
+                                  data-end-count="{{ numberOfLendersInCommunity }}" data-total-time="2000" data-tween-count="easeOutCirc">{{ numberOfLendersInCommunity|localizednumber }}</span>
+                            </h3>
+                            <p>{% trans %} about-us-statistics_lender-statistics-members-active-not-text {% endtrans %}</p>
+                        </div><!-- /.promo -->
+
+                        <div class="promo promo-users">
+                            {% set numberOfActiveLenders = getStatistic('numberOfActiveLenders') %}
+                            <h3 class="promo-highlight promo-highlight-md c-p1">
+                                <span data-textcount data-start-count="0" data-end-count="{{ numberOfActiveLenders }}" data-total-time="2000" data-tween-count="easeOutCirc">{{ numberOfActiveLenders|localizednumber }}</span>
+                            </h3>
+                            <p>{% trans %} about-us-statistics_lender-statistics-members-type-text {% endtrans %}</p>
+                        </div><!-- /.promo -->
+
+                        <br />
+                        <img src="{{ siteurlmedia('apropos/statistiques/icons-members.png') }}" alt="">
+                    </div>
+
+                    {% set lendersByType = getStatistic('lendersByType') %}
+                    <div class="stats-enterprises">
+                        <img src="{{ siteurlmedia('apropos/statistiques/icons-enterprises.png') }}" alt="">
+                        <div>
+                            <span class="stats-number"><span data-textcount data-start-count="0" data-end-count="{{ lendersByType.person.percentage }}" data-total-time="2000" data-tween-count="easeOutCirc">{{ lendersByType.person.percentage|localizednumber }}</span><sup>%</sup></span> {% trans %} about-us-statistics_lender-statistics-members-type-person-text {% endtrans %}
+                        </div>
+                        <div>
+                            <span class="stats-number">{{ lendersByType.legalEntity.percentage|localizednumber }}<sup>%</sup></span>
+                            {% trans %} about-us-statistics_lender-statistics-members-type-legal-entity-text {% endtrans %}</div>
+                    </div>
+                </div><!-- /.stats-map -->
+                <div class="block-promos row">
+                    <div class="promo col-lg-4 col-md-4">
+                        <h3 class="promo-highlight promo-highlight-md">
+                            {% set averageNumberOfLenders = getStatistic('averageNumberOfLenders')|round %}
+                            <span data-textcount data-start-count="0" data-end-count="{{ averageNumberOfLenders }}" data-total-time="2000" data-tween-count="easeOutCirc">{{ averageNumberOfLenders|localizednumber }}</span>
+                        </h3>
+                        <p>{% trans %} about-us-statistics_lender-statistics-1-text {% endtrans %}</p>
+                    </div><!-- /.promo -->
+                    <div class="promo col-lg-4 col-md-4">
+                        <h3 class="promo-highlight promo-highlight-md">
+                            {% set averageLoanAmount = getStatistic('averageLoanAmount')|round|localizednumber %}
+                            <span data-textcount data-start-count="0" data-end-count="{{ averageLoanAmount }}" data-total-time="2000" data-tween-count="easeOutCirc">{{ averageLoanAmount|localizednumber }}</span><sup>€</sup>
+                        </h3>
+                        <p>{% trans %} about-us-statistics_lender-statistics-2-text {% endtrans %}</p>
+                    </div><!-- /.promo -->
+                    <div class="promo col-lg-4 col-md-4">
+                        <h3 class="promo-highlight promo-highlight-md">
+                            <span data-textcount data-start-count="0" data-end-count="100" data-total-time="2000" data-tween-count="easeOutCirc">100</span><sup>%</sup>
+                        </h3>
+                        <p>{% trans %} about-us-statistics_lender-statistics-3-text {% endtrans %}</p>
+                    </div><!-- /.promo -->
+                </div><!-- /.promos -->
+            </div><!-- /.block-stats -->
+        </div>
+    </section><!-- /#section-preteurs -->
+
+    <section id="section-emprunteurs" class="page-section">
+        <div class="site-wrap">
+            <div class="block-stats block-stats-p2">
+                <header class="block-stats-header">
+                    <h2>{% trans %} about-us-statistics_borrower-statistics-money-title {% endtrans %}</h2>
+                </header>
+                <div class="block-promos row bg-icon-money">
+                    <div class="promo col-lg-4 col-md-4">
+                        <h3 class="promo-highlight promo-highlight-sm">
+                            {% set amountBorrowed = getStatistic('amountBorrowed') %}
+                            <span data-textcount data-start-count="0" data-end-count="{{ amountBorrowed }}" data-total-time="2000" data-tween-count="easeOutCirc">{{ amountBorrowed|localizednumber }}</span><sup>€</sup>
+                        </h3>
+                        <p>{% trans %} about-us-statistics_borrower-statistics-money-1-text {% endtrans %}</p>
+                    </div><!-- /.promo -->
+                    <div class="promo col-lg-4 col-md-4">
+                        <h3 class="promo-highlight promo-highlight-sm">
+                            {% set totalRepaidCapital = getStatistic('totalRepaidCapital')|round %}
+                            <span data-textcount data-start-count="0" data-end-count="{{ totalRepaidCapital }}" data-total-time="2000" data-tween-count="easeOutCirc">{{ totalRepaidCapital|localizednumber }}</span><sup>€</sup>
+                        </h3>
+                        <p>{% trans %} about-us-statistics_borrower-statistics-money-2-text {% endtrans %}</p>
+                    </div><!-- /.promo -->
+                    <div class="promo col-lg-4 col-md-4">
+                        <h3 class="promo-highlight promo-highlight-sm">
+                            {% set totalRepaidInterests = getStatistic('totalRepaidInterests')|round %}
+                            <span data-textcount data-start-count="0" data-end-count="{{ totalRepaidInterests }}" data-total-time="2000" data-tween-count="easeOutCirc">{{ totalRepaidInterests|localizednumber }}</span><sup>€</sup>
+                        </h3>
+                        <p>{% trans %} about-us-statistics_borrower-statistics-money-3-text {% endtrans %}</p>
+                    </div><!-- /.promo -->
+                </div>
+                <div class="stats-charts row">
+                    <div class="col-lg-6 col-md-6">
+                        <figure class="stats-chart stats-map">
+                            <div class="chart" data-chartview='{{ borrowerMap|json_encode|escape('html_attr') }}'></div>
+                            <figcaption><p>{% trans %} about-us-statistics_borrower-statistics-region-map-title {% endtrans %}</p></figcaption>
+                        </figure>
+                    </div>
+                    <div class="col-lg-6 col-md-6">
+                        <figure class="stats-chart stats-treemap">
+                            <div class="chart" data-chartview='{{ projectsByCategoryChart|json_encode|escape('html_attr') }}'></div>
+                            <figcaption><p>{% trans %} about-us-statistics_borrower-statistics-category-map-title {% endtrans %}</p></figcaption>
+                        </figure>
+                    </div>
+                </div><!-- /.stats-map -->
+                <div class="block-promos row">
+                    <div class="promo col-lg-3 col-md-3">
+                        <h3 class="promo-highlight promo-highlight-md">
+                            <span data-textcount data-start-count="0" data-end-count="100" data-total-time="2000" data-tween-count="easeOutCirc">100</span><sup>%</sup>
+                        </h3>
+                        <p>{% trans %} about-us-statistics_borrower-statistics-1-text {% endtrans %}</p>
+                    </div><!-- /.promo -->
+                    <div class="promo col-lg-3 col-md-3">
+                        <h3 class="promo-highlight promo-highlight-md">
+                            {% set percentageOfProjectsFundedIn24Hours = getStatistic('percentageOfProjectsFundedIn24Hours') %}
+                            <span data-textcount data-start-count="0" data-end-count="{{ percentageOfProjectsFundedIn24Hours }}" data-total-time="2000" data-tween-count="easeOutCirc">
+                                {{ percentageOfProjectsFundedIn24Hours|localizednumber }}</span><sup>%</sup>
+                        </h3>
+                        <p>{% trans %} about-us-statistics_borrower-statistics-2-text {% endtrans %}</p>
+                    </div><!-- /.promo -->
+                    <div class="promo col-lg-3 col-md-3">
+                        <h3 class="promo-highlight promo-highlight-md">
+                            {% set averageProjectAmount = getStatistic('averageProjectAmount') %}
+                            <span data-textcount data-start-count="0" data-end-count="{{ averageProjectAmount }}" data-total-time="2000" data-tween-count="easeOutCirc">{{ averageProjectAmount|localizednumber }}</span><sup>€</sup>
+                        </h3>
+                        <p>{% trans %} about-us-statistics_borrower-statistics-3-text {% endtrans %}</p>
+                    </div><!-- /.promo -->
+                    <div class="promo col-lg-3 col-md-3">
+                        <h3 class="promo-highlight promo-highlight-md">
+                            {% set numberOfFinancedProjects = getStatistic('numberOfFinancedProjects') %}
+                            <span data-textcount data-start-count="0" data-end-count="{{ numberOfFinancedProjects }}" data-total-time="2000" data-tween-count="easeOutCirc">
+                                {{ numberOfFinancedProjects|localizednumber }}</span><sup></sup>
+                        </h3>
+                        <p>{% trans %} about-us-statistics_borrower-statistics-4-text {% endtrans %}</p>
+                    </div><!-- /.promo -->
+                </div><!-- /.promos -->
+            </div><!-- /.block-stats -->
+        </div><!-- /.site-wrap -->
+    </section><!-- /#section-emprunters -->
+</div><!-- /.bg-bg3 -->
+
+<section id="section-records" class="page-section">
+    <div class="site-wrap">
+        <div class="block-promos block-promos-unilend">
+            <header class="promos-header">
+                <h2>{% trans %} about-us-statistics_unilend-records-title {% endtrans %}</h2>
+            </header>
+            <div class="row">
+                <div class="promo col-lg-4 col-md-4">
+                    <div class="promo-image">
+                        <img src="{{ siteurlmedia('apropos/statistiques/medal-bolt.png') }}" alt=""/>
+                    </div>
+                    {% set highestAmountObtainedFastest = getStatistic('highestAmountObtainedFastest') %}
+                    <h3 class="promo-highlight promo-highlight-lg">
+                        <span data-textcount data-start-count="0" data-end-count="{{ highestAmountObtainedFastest }}" data-total-time="2000" data-tween-count="easeOutCirc">{{ highestAmountObtainedFastest|localizednumber }}</span><sup>€</sup>
+                    </h3>
+                    <p>{% trans %} about-us-statistics_unilend-records-medal-bolt-text {% endtrans %}</p>
+                </div>
+                <div class="promo col-lg-4 col-md-4">
+                    <div class="promo-image">
+                        <img src="{{ siteurlmedia('apropos/statistiques/medal-handshake.png') }}" alt=""/>
+                    </div>
+                    <h3 class="promo-highlight promo-highlight-lg">{{ getStatistic('secondsForBid')|localizednumber }}<sup>sec</sup></h3>
+                    <p>{% trans with {'%seconds%' : getStatistic('secondsForBid')|localizednumber }%} about-us-statistics_unilend-records-medal-handshake-text {% endtrans %}</p>
+                </div>
+                <div class="promo col-lg-4 col-md-4">
+                    <div class="promo-image">
+                        <img src="{{ siteurlmedia('apropos/statistiques/medal-clock.png') }}" alt=""/>
+                    </div>
+                    <h3 class="promo-highlight promo-highlight-lg">
+                        <span data-textcount data-start-count="0" data-end-count="1" data-total-time="100" data-tween-count="easeOutCirc">1</span><sup>sec</sup>
+                    </h3>
+                    <p>{% trans %} about-us-statistics_unilend-records-medal-clock-text {% endtrans %}</p>
+                </div>
+            </div>
+        </div><!-- /.promos -->
+    </div><!-- /.site-wrap -->
+</section><!-- /#section-records -->
+
+<section id="section-platform" class="page-section bg-bg3">
+    <div class="site-wrap">
+        <div class="block-stats block-stats-unilend">
+            <header class="block-stats-header">
+                <h2>{% trans %} about-us-statistics_unilend-performances-title {% endtrans %}</h2>
+            </header>
+            <div class="row">
+                <h3 class="c-t1">{% trans %} about-us-statistics_unilend-performances-chart-title {% endtrans %}</h3>
+                <div class="stats-chart stats-chart-unilend">
+                    <div class="chart" data-chartview='{{ unilendPerformanceChart|json_encode|escape('html_attr') }}'></div>
+                    <div class="stats-chart-unilend-key">
+                        <div class="row">
+                            {% for i, series in unilendPerformanceChart.highcharts.series %}
+                                {% for j, dataItem in series.data if dataItem.showInLegend is defined and dataItem.showInLegend != false %}
+                                    <div class="chart-key col-lg-4 col-md-4 col-sm-4 col-xs-2">
+                                        <div class="icon" style="background-color: {{ dataItem.color }}"></div>
+                                        <div class="label">{% if dataItem.name is not empty %} {{ dataItem.name }} {% else %} {{ series.name }} {% endif %}</div>
+                                        <div class="value">{% if dataItem.value is not empty %} {{ dataItem.value }} {% else %} {{ series.value }} {% endif %}</div>
+                                    </div>
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+                    </div><!-- /.stats-chart-unilend-key -->
+                </div><!-- /.stats-chart-unilend -->
+            </div>
+            <article class="row">
+                <h3 class="c-t1">{% trans %} about-us-statistics_unilend-performances-gross-data-title {% endtrans %}</h3>
+
+                {% set maxColSpan = data.regulatoryTable|first|length + 1 %}
+                <div class="table-scroll">
+
+                    <table class="table table-stats-unilend">
+                        <thead>
+                            <tr>
+                                <th class="table-stats-unilend-item-label">&nbsp;</th>
+                                {% for year in years %}
+                                    <th class="table-stats-unilend-item-value">{{ year }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <!-- IRR -->
+                            <tr>
+                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-IRR"|trans|raw }}</td>
+                            </tr>
+                            <tr>
+                                <td class="table-stats-unilend-item-label">&nbsp;</td>
+                                {% for value in data.regulatoryTable['IRR'] %}
+                                    <td class="table-stats-unilend-item-value">{{ value|localizednumberwithprecision(2) }}%</td>
+                                {% endfor %}
+                            </tr>
+                            <!-- /IRR -->
+
+                            <!-- projects -->
+                            <tr class="alt">
+                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-projects"|trans|raw }}</td>
+                            </tr>
+                            <tr class="alt">
+                                <td class="table-stats-unilend-item-label">&nbsp;</td>
+                                {% for value in data.regulatoryTable['projects'] %}
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}</td>
+                                {% endfor %}
+                            </tr>
+                            <!-- /projects -->
+
+                            <!-- borrowed-capital -->
+                            <tr>
+                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-borrowed-capital"|trans|raw }}</td>
+                            </tr>
+                            <tr>
+                                <td class="table-stats-unilend-item-label">&nbsp;</td>
+                                {% for value in data.regulatoryTable['borrowed-capital'] %}
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>
+                                {% endfor %}
+                            </tr>
+                            <!-- /borrowed-capital -->
+
+                            <!-- repaid-capital -->
+                            <tr class="alt">
+                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-repaid-capital"|trans|raw }}</td>
+                            </tr>
+                            <tr class="alt">
+                                <td class="table-stats-unilend-item-label">&nbsp;</td>
+                                {% for value in data.regulatoryTable['repaid-capital'] %}
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>
+                                {% endfor %}
+                            </tr>
+                            <!-- /repaid-capital -->
+
+                            <!-- repaid-interest -->
+                            <tr>
+                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-repaid-interest"|trans|raw }}</td>
+                            </tr>
+                            <tr>
+                                <td class="table-stats-unilend-item-label">&nbsp;</td>
+                                {% for value in data.regulatoryTable['repaid-interest'] %}
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>
+                                {% endfor %}
+                            </tr>
+                            <!-- /repaid-interest -->
+
+                            <!-- empty-line -->
+                            <tr class="table-stats-unilend-empty-line"><td colspan="{{ maxColSpan }}">&nbsp;</td></tr>
+                            <!-- /empty-line -->
+
+                            <!-- owed-healthy-interest -->
+                            <tr class="alt">
+                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-owed-healthy-interest"|trans|raw }}</td>
+                            </tr>
+                            <tr class="alt">
+                                <td class="table-stats-unilend-item-label">&nbsp;</td>
+                                {% for value in data.regulatoryTable['owed-healthy-interest'] %}
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>
+                                {% endfor %}
+                            </tr>
+                            <!-- /owed-healthy-interest -->
+
+                            <!-- global-owed-capital-->
+                            <tr>
+                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-global-owed-capital"|trans|raw }}</td>
+                            </tr>
+                            <tr>
+                                <td class="table-stats-unilend-item-label">&nbsp;</td>
+                                {% for value in data.regulatoryTable['global-owed-capital'] %}
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>
+                                {% endfor %}
+                            </tr>
+                            <!-- /global-owed-capital -->
+
+                            <!-- future-owed-capital-->
+                            <tr class="alt">
+                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">&nbsp;&nbsp;&nbsp;{{ "about-us-statistics_regulatory-table-future-owed-capital"|trans|raw }}</td>
+                            </tr>
+                            <tr class="alt">
+                                <td class="table-stats-unilend-item-label">&nbsp;</td>
+                                {% for value in data.regulatoryTable['future-owed-capital'] %}
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>
+                                {% endfor %}
+                            </tr>
+                            <!-- /future-owed-capital -->
+
+                            <!-- future-owed-capital-healthy -->
+                            <tr>
+                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ "about-us-statistics_regulatory-table-future-owed-capital-healthy"|trans|raw }}</td>
+                            </tr>
+                            <tr>
+                                <td class="table-stats-unilend-item-label">&nbsp;</td>
+                                {% for value in data.regulatoryTable['future-owed-capital-healthy'] %}
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>
+                                {% endfor %}
+                            </tr>
+                            <!-- /future-owed-capital-healthy -->
+
+                            <!-- future-owed-capital-problematic -->
+                            <tr class="alt">
+                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ "about-us-statistics_regulatory-table-future-owed-capital-problematic"|trans|raw }}</td>
+                            </tr>
+                            <tr class="alt">
+                                <td class="table-stats-unilend-item-label">&nbsp;</td>
+                                {% for value in data.regulatoryTable['future-owed-capital-problematic'] %}
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>
+                                {% endfor %}
+                            </tr>
+                            <!-- /future-owed-capital-problematic -->
+
+                            <!-- late-owed-capital -->
+                            <tr>
+                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">&nbsp;&nbsp;&nbsp;{{ "about-us-statistics_regulatory-table-late-owed-capital"|trans|raw }}</td>
+                            </tr>
+                            <tr>
+                                <td class="table-stats-unilend-item-label">&nbsp;</td>
+                                {% for value in data.regulatoryTable['late-owed-capital'] %}
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>
+                                {% endfor %}
+                            </tr>
+                            <!-- /late-owed-capital -->
+
+                            <!-- late-owed-capital-problematic -->
+                            <tr class="alt">
+                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ "about-us-statistics_regulatory-table-late-owed-capital-problematic"|trans|raw }}</td>
+                            </tr>
+                            <tr class="alt">
+                                <td class="table-stats-unilend-item-label">&nbsp;</td>
+                                {% for value in data.regulatoryTable['late-owed-capital-problematic'] %}
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>
+                                {% endfor %}
+                            </tr>
+                            <!-- /late-owed-capital-problematic -->
+
+                            <!-- late-owed-capital-healthy -->
+                            <tr>
+                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ "about-us-statistics_regulatory-table-late-owed-capital-healthy"|trans|raw }}</td>
+                            </tr>
+                            <tr>
+                                <td class="table-stats-unilend-item-label">&nbsp;</td>
+                                {% for value in data.regulatoryTable['late-owed-capital-healthy'] %}
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>
+                                {% endfor %}
+                            </tr>
+                            <!-- /late-owed-capital-healthy -->
+
+                            <!-- total-owed-problematic-capital-late -->
+                            <tr class="alt">
+                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-total-owed-problematic-and-late-capital"|trans|raw }}</td>
+                            </tr>
+                            <tr class="alt">
+                                <td class="table-stats-unilend-item-label">&nbsp;</td>
+                                {% for value in data.regulatoryTable['total-owed-problematic-and-late-capital'] %}
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>
+                                {% endfor %}
+                            </tr>
+                            <!-- /total-owed-problematic-capital-late -->
+
+                            <!-- total-owed-problematic-capital -->
+                            <tr>
+                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-total-owed-problematic-capital"|trans|raw }}</td>
+                            </tr>
+                            <tr>
+                                <td class="table-stats-unilend-item-label">&nbsp;</td>
+                                {% for value in data.regulatoryTable['total-owed-problematic-capital'] %}
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>
+                                {% endfor %}
+                            </tr>
+                            <!-- /total-owed-problematic-capital -->
+
+                            {#<!-- total-owed-problematic-capital-late -->#}
+                            {#<tr>#}
+                                {#<td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-total-owed-problematic-capital-late"|trans|raw }}</td>#}
+                            {#</tr>#}
+                            {#<tr>#}
+                                {#<td class="table-stats-unilend-item-label">&nbsp;</td>#}
+                                {#{% for value in data.regulatoryTable['total-owed-problematic-capital-late'] %}#}
+                                    {#<td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>#}
+                                {#{% endfor %}#}
+                            {#</tr>#}
+                            {#<!-- /total-owed-problematic-capital-late -->#}
+
+                            <!-- pct.owed-problematic-over-borrowed-capital -->
+                            <tr class="alt">
+                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-owed-problematic-over-borrowed-capital"|trans|raw }}</td>
+                            </tr>
+                            <tr class="alt">
+                                <td class="table-stats-unilend-item-label">&nbsp;</td>
+                                {% for value in data.regulatoryTable['pct']['owed-problematic-over-borrowed-capital'] %}
+                                    <td class="table-stats-unilend-item-value">{{ value|localizednumberwithprecision(2) }}%</td>
+                                {% endfor %}
+                            </tr>
+                            <!-- /pct.owed-problematic-over-borrowed-capital -->
+
+                            <!-- pct.problematic-rate -->
+                            <tr>
+                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-problematic-rate"|trans|raw }}</td>
+                            </tr>
+                            <tr>
+                                <td class="table-stats-unilend-item-label">&nbsp;</td>
+                                {% for value in data.regulatoryTable['pct']['problematic-rate'] %}
+                                    <td class="table-stats-unilend-item-value">{{ value|localizednumberwithprecision(2) }}%</td>
+                                {% endfor %}
+                            </tr>
+                            <!-- /pct.problematic-rate -->
+
+                            <!-- pct.interest-over-owed-problematic-capital -->
+                            <tr class="alt">
+                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-interest-over-owed-problematic-capital"|trans|raw }}</td>
+                            </tr>
+                            <tr class="alt">
+                                <td class="table-stats-unilend-item-label">&nbsp;</td>
+                                {% for value in data.regulatoryTable['pct']['interest-over-owed-problematic-capital'] %}
+                                    <td class="table-stats-unilend-item-value">{{ value|localizednumberwithprecision(2) }}%</td>
+                                {% endfor %}
+                            </tr>
+                            <!-- /pct.interest-over-owed-problematic-capital -->
+
+                            <!-- pct.expected-performance -->
+                            <tr>
+                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-expected-performance"|trans|raw }}</td>
+                            </tr>
+                            <tr>
+                                <td class="table-stats-unilend-item-label">&nbsp;</td>
+                                {% for value in data.regulatoryTable['pct']['expected-performance'] %}
+                                    <td class="table-stats-unilend-item-value">{{ value|localizednumberwithprecision(2)}}%</td>
+                                {% endfor %}
+                            </tr>
+                            <!-- /pct.expected-performance -->
+                        </tbody>
+                    </table>
+                </div><!-- /.table-scroll -->
+
+                {% set incidenceRate = getStatistic('incidenceRate') %}
+                <div class="table-scroll">
+                    <table class="table table-stats-unilend-interest">
+                        <tbody>
+                        <tr>
+                            <td class="table-stats-unilend-item-label">{% trans %} about-us-statistics_regulatory-table-incidence-rate-amount {% endtrans %}</td>
+                            <td class="table-stats-unilend-item-value">{{ incidenceRate['amountIFP']|localizednumberwithprecision(2) }}%</td>
+                        </tr>
+                        <tr class="alt">
+                            <td class="table-stats-unilend-item-label">{% trans %} about-us-statistics_regulatory-table-incidence-rate-project {% endtrans %}</td>
+                            <td class="table-stats-unilend-item-value">{{ incidenceRate['projectsIFP']|localizednumberwithprecision(2) }}%</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div><!-- /.table-scroll -->
+
+                <p class="field-help text-align-left">{% trans %} about-us-statistics_regulatory-table-default-explanation {% endtrans %}</p>
+
+            </article>
+        </div><!-- /.block-stats -->
+
+        <div class="btn-toolbar">
+            <a href="{{ path('projects_list') }}" class="btn-primary">{% trans %} about-us-statistics_link-to-project-list {% endtrans %}</a>
+        </div><!-- /.btn-toolbar -->
+    </div><!-- /.site-wrap -->
+</section><!-- /#section-platform -->
