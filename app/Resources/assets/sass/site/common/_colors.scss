@@ -19,6 +19,7 @@ $colors: (
   'teal-l2':   #5fc3cf,
   'teal-l3':   #daf6f9,
   'orange':    #f47070,
+  'orange-l':  #ffa210,
   'red':       #DE2F4C,
   'red-l':     #ECA2AF,
   'red-l2':    #F5D5DB,
@@ -77,6 +78,7 @@ $c-teal-l:    map-get($colors, 'teal-l');
 $c-teal-l2:   map-get($colors, 'teal-l2');
 $c-teal-l3:   map-get($colors, 'teal-l3');
 $c-orange:    map-get($colors, 'orange');
+$c-orange-l:  map-get($colors, 'orange-l');
 $c-red:       map-get($colors, 'red');
 $c-red-l:     map-get($colors, 'red-l');
 $c-red-l2:    map-get($colors, 'red-l2');

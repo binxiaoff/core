@@ -169,8 +169,8 @@
             data: [{
                 name: 'about-us-statistics_chart-borrowed-capital'|trans,
                 color: '#5FC5D1',
-                y: data.regulatoryTable['borrowed-capital']['total'],
-                value: data.regulatoryTable['borrowed-capital']['total']|localizedcurrency('EUR'),
+                y: data.regulatoryTable['borrowed-capital']['total']|round,
+                value: data.regulatoryTable['borrowed-capital']['total']|round|localizedcurrency('EUR'),
                 showInLegend: true,
                 }]
             },{
@@ -182,20 +182,20 @@
                 data: [{
                     name: 'about-us-statistics_chart-repaid-capital'|trans,
                     color: '#1B88DB',
-                    y: data.regulatoryTable['repaid-capital']['total'],
-                    value: data.regulatoryTable['repaid-capital']['total']|localizedcurrency('EUR'),
+                    y: data.regulatoryTable['repaid-capital']['total']|round,
+                    value: data.regulatoryTable['repaid-capital']['total']|round|localizedcurrency('EUR'),
                     showInLegend: true,
                 },{
                     name: 'about-us-statistics_chart-lost-capital'|trans,
                     color: '#B6D4E4',
-                    y: data.regulatoryTable['future-owed-capital-healthy']['total'],
-                    value: data.regulatoryTable['future-owed-capital-healthy']['total']|localizedcurrency('EUR'),
+                    y: data.regulatoryTable['future-owed-capital-healthy']['total']|round,
+                    value: data.regulatoryTable['future-owed-capital-healthy']['total']|round|localizedcurrency('EUR'),
                     showInLegend: true
                 },{
-                    name: 'about-us-statistics_chart-total-owed-problematic-capital-late'|trans,
+                    name: 'about-us-statistics_chart-total-owed-problematic-capital'|trans,
                     color: '#F76965',
-                    y:  data.regulatoryTable['total-owed-problematic-capital-late']['total'],
-                    value: data.regulatoryTable['total-owed-problematic-capital-late']['total']|localizedcurrency('EUR'),
+                    y:  data.regulatoryTable['total-owed-problematic-capital']['total']|round,
+                    value: data.regulatoryTable['total-owed-problematic-capital']['total']|round|localizedcurrency('EUR'),
                     showInLegend: true
                 }]
             },{
@@ -203,7 +203,7 @@
                 minSize: 80,
                 size: '33%',
                 innerSize: '70%',
-                endAngle: (270 * (data.regulatoryTable['borrowed-capital']['total'] + data.regulatoryTable['repaid-interest']['total'] + data.regulatoryTable['owed-healthy-interest']['total'])) / data.regulatoryTable['borrowed-capital']['total'],
+                endAngle: (270 * (data.regulatoryTable['borrowed-capital']['total']|round + data.regulatoryTable['repaid-interest']['total']|round + data.regulatoryTable['owed-healthy-interest']['total']|round)) / data.regulatoryTable['borrowed-capital']['total']|round,
                 data: [{
                     name: '',
                     color: '#ffffff',
@@ -211,19 +211,19 @@
                         enabled: false
                         },
                     showInLegend: false,
-                    y: (data.regulatoryTable['repaid-capital']['total'] + data.regulatoryTable['future-owed-capital-healthy']['total']) * 0.66,
+                    y: (data.regulatoryTable['repaid-capital']['total']|round + data.regulatoryTable['future-owed-capital-healthy']['total']|round) * 0.66,
                     tooltip: true
                 },{
                     name: 'about-us-statistics_chart-repaid-interest'|trans,
                     color: '#F2980C',
-                    y: data.regulatoryTable['repaid-interest']['total'],
-                    value: data.regulatoryTable['repaid-interest']['total']|localizedcurrency('EUR'),
+                    y: data.regulatoryTable['repaid-interest']['total']|round,
+                    value: data.regulatoryTable['repaid-interest']['total']|round|localizedcurrency('EUR'),
                     showInLegend: true
                 },{
                     name: 'about-us-statistics_chart-owed-healthy-interest'|trans,
                     color: '#FFCA2C',
-                    y: data.regulatoryTable['owed-healthy-interest']['total'],
-                    value: data.regulatoryTable['owed-healthy-interest']['total']|localizedcurrency('EUR'),
+                    y: data.regulatoryTable['owed-healthy-interest']['total']|round,
+                    value: data.regulatoryTable['owed-healthy-interest']['total']|round|localizedcurrency('EUR'),
                     showInLegend: true
                 }]
             }],
@@ -523,7 +523,7 @@
                             <tr class="alt">
                                 <td class="table-stats-unilend-item-label">&nbsp;</td>
                                 {% for value in data.regulatoryTable['projects'] %}
-                                    <td class="table-stats-unilend-item-value">{{ value|localizednumber }}</td>
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}</td>
                                 {% endfor %}
                             </tr>
                             <!-- /projects -->
@@ -535,7 +535,7 @@
                             <tr>
                                 <td class="table-stats-unilend-item-label">&nbsp;</td>
                                 {% for value in data.regulatoryTable['borrowed-capital'] %}
-                                    <td class="table-stats-unilend-item-value">{{ value|localizednumber }}€</td>
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>
                                 {% endfor %}
                             </tr>
                             <!-- /borrowed-capital -->
@@ -547,7 +547,7 @@
                             <tr class="alt">
                                 <td class="table-stats-unilend-item-label">&nbsp;</td>
                                 {% for value in data.regulatoryTable['repaid-capital'] %}
-                                    <td class="table-stats-unilend-item-value">{{ value|localizednumber }}€</td>
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>
                                 {% endfor %}
                             </tr>
                             <!-- /repaid-capital -->
@@ -559,7 +559,7 @@
                             <tr>
                                 <td class="table-stats-unilend-item-label">&nbsp;</td>
                                 {% for value in data.regulatoryTable['repaid-interest'] %}
-                                    <td class="table-stats-unilend-item-value">{{ value|localizednumber }}€</td>
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>
                                 {% endfor %}
                             </tr>
                             <!-- /repaid-interest -->
@@ -575,7 +575,7 @@
                             <tr class="alt">
                                 <td class="table-stats-unilend-item-label">&nbsp;</td>
                                 {% for value in data.regulatoryTable['owed-healthy-interest'] %}
-                                    <td class="table-stats-unilend-item-value">{{ value|localizednumber }}€</td>
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>
                                 {% endfor %}
                             </tr>
                             <!-- /owed-healthy-interest -->
@@ -587,7 +587,7 @@
                             <tr>
                                 <td class="table-stats-unilend-item-label">&nbsp;</td>
                                 {% for value in data.regulatoryTable['global-owed-capital'] %}
-                                    <td class="table-stats-unilend-item-value">{{ value|localizednumber }}€</td>
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>
                                 {% endfor %}
                             </tr>
                             <!-- /global-owed-capital -->
@@ -599,7 +599,7 @@
                             <tr class="alt">
                                 <td class="table-stats-unilend-item-label">&nbsp;</td>
                                 {% for value in data.regulatoryTable['future-owed-capital'] %}
-                                    <td class="table-stats-unilend-item-value">{{ value|localizednumber }}€</td>
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>
                                 {% endfor %}
                             </tr>
                             <!-- /future-owed-capital -->
@@ -611,7 +611,7 @@
                             <tr>
                                 <td class="table-stats-unilend-item-label">&nbsp;</td>
                                 {% for value in data.regulatoryTable['future-owed-capital-healthy'] %}
-                                    <td class="table-stats-unilend-item-value">{{ value|localizednumber }}€</td>
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>
                                 {% endfor %}
                             </tr>
                             <!-- /future-owed-capital-healthy -->
@@ -623,7 +623,7 @@
                             <tr class="alt">
                                 <td class="table-stats-unilend-item-label">&nbsp;</td>
                                 {% for value in data.regulatoryTable['future-owed-capital-problematic'] %}
-                                    <td class="table-stats-unilend-item-value">{{ value|localizednumber }}€</td>
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>
                                 {% endfor %}
                             </tr>
                             <!-- /future-owed-capital-problematic -->
@@ -635,7 +635,7 @@
                             <tr>
                                 <td class="table-stats-unilend-item-label">&nbsp;</td>
                                 {% for value in data.regulatoryTable['late-owed-capital'] %}
-                                    <td class="table-stats-unilend-item-value">{{ value|localizednumber }}€</td>
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>
                                 {% endfor %}
                             </tr>
                             <!-- /late-owed-capital -->
@@ -647,7 +647,7 @@
                             <tr class="alt">
                                 <td class="table-stats-unilend-item-label">&nbsp;</td>
                                 {% for value in data.regulatoryTable['late-owed-capital-problematic'] %}
-                                    <td class="table-stats-unilend-item-value">{{ value|localizednumber }}€</td>
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>
                                 {% endfor %}
                             </tr>
                             <!-- /late-owed-capital-problematic -->
@@ -659,34 +659,46 @@
                             <tr>
                                 <td class="table-stats-unilend-item-label">&nbsp;</td>
                                 {% for value in data.regulatoryTable['late-owed-capital-healthy'] %}
-                                    <td class="table-stats-unilend-item-value">{{ value|localizednumber }}€</td>
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>
                                 {% endfor %}
                             </tr>
                             <!-- /late-owed-capital-healthy -->
 
-                            <!-- total-owed-problematic-capital -->
+                            <!-- total-owed-problematic-capital-late -->
                             <tr class="alt">
-                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-total-owed-problematic-capital"|trans|raw }}</td>
+                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-total-owed-problematic-and-late-capital"|trans|raw }}</td>
                             </tr>
                             <tr class="alt">
                                 <td class="table-stats-unilend-item-label">&nbsp;</td>
+                                {% for value in data.regulatoryTable['total-owed-problematic-and-late-capital'] %}
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>
+                                {% endfor %}
+                            </tr>
+                            <!-- /total-owed-problematic-capital-late -->
+
+                            <!-- total-owed-problematic-capital -->
+                            <tr>
+                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-total-owed-problematic-capital"|trans|raw }}</td>
+                            </tr>
+                            <tr>
+                                <td class="table-stats-unilend-item-label">&nbsp;</td>
                                 {% for value in data.regulatoryTable['total-owed-problematic-capital'] %}
-                                    <td class="table-stats-unilend-item-value">{{ value|localizednumber }}€</td>
+                                    <td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>
                                 {% endfor %}
                             </tr>
                             <!-- /total-owed-problematic-capital -->
 
-                            <!-- total-owed-problematic-capital-late -->
-                            <tr>
-                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-total-owed-problematic-capital-late"|trans|raw }}</td>
-                            </tr>
-                            <tr>
-                                <td class="table-stats-unilend-item-label">&nbsp;</td>
-                                {% for value in data.regulatoryTable['total-owed-problematic-capital-late'] %}
-                                    <td class="table-stats-unilend-item-value">{{ value|localizednumber }}€</td>
-                                {% endfor %}
-                            </tr>
-                            <!-- /total-owed-problematic-capital-late -->
+                            {#<!-- total-owed-problematic-capital-late -->#}
+                            {#<tr>#}
+                                {#<td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-total-owed-problematic-capital-late"|trans|raw }}</td>#}
+                            {#</tr>#}
+                            {#<tr>#}
+                                {#<td class="table-stats-unilend-item-label">&nbsp;</td>#}
+                                {#{% for value in data.regulatoryTable['total-owed-problematic-capital-late'] %}#}
+                                    {#<td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>#}
+                                {#{% endfor %}#}
+                            {#</tr>#}
+                            {#<!-- /total-owed-problematic-capital-late -->#}
 
                             <!-- pct.owed-problematic-over-borrowed-capital -->
                             <tr class="alt">
@@ -748,7 +760,7 @@
                             <td class="table-stats-unilend-item-value">{{ incidenceRate['amountIFP']|localizednumberwithprecision(2) }}%</td>
                         </tr>
                         <tr class="alt">
-                            <td class="table-stats-unilend-item-label">{% trans %} about-us-statistics_regulatory-table-incidence-rate-projects {% endtrans %}</td>
+                            <td class="table-stats-unilend-item-label">{% trans %} about-us-statistics_regulatory-table-incidence-rate-project {% endtrans %}</td>
                             <td class="table-stats-unilend-item-value">{{ incidenceRate['projectsIFP']|localizednumberwithprecision(2) }}%</td>
                         </tr>
                         </tbody>
@@ -757,7 +769,7 @@
 
                 <p class="field-help text-align-left">{% trans %} about-us-statistics_regulatory-table-default-explanation {% endtrans %}</p>
 
-            </div>
+            </article>
         </div><!-- /.block-stats -->
 
         <div class="btn-toolbar">

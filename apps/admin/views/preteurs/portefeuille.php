@@ -75,7 +75,7 @@
         <div style="margin-bottom: 15px;">
             <span>Montant: </span>
             <input type="text" name="autobid-amount" id="autobid-amount"
-                   value="<?= (isset($this->aAutoBidSettings[1][0]['amount'])) ? $this->aAutoBidSettings[1][0]['amount'] : '' ?>"
+                   value="<?= (isset($this->aAutoBidSettings[1]['A']['amount'])) ? $this->aAutoBidSettings[1]['A']['amount'] : '' ?>"
                    disabled="disabled"/>
         </div>
         <div class="autobid-param-advanced autobid-param-advanced-locked autobid-block" id="autobid-block">

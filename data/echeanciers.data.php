@@ -966,7 +966,7 @@ class echeanciers extends echeanciers_crud
     public function getTotalRepaidInterestByCohort()
     {
         $query = 'SELECT
-                      ROUND(SUM(interets_rembourses)/100) AS amount,
+                      SUM(interets_rembourses)/100 AS amount,
                       (
                         SELECT
                           CASE LEFT(projects_status_history.added, 4)
@@ -988,7 +988,7 @@ class echeanciers extends echeanciers_crud
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getOwedCapitalANdProjectsByContractType($contractType)
+    public function getOwedCapitalAndProjectsByContractType($contractType)
     {
         $query = ' SELECT
                       p.id_project,

@@ -25,7 +25,13 @@
                     <div class="site-wrap">
                         <ul data-nav-dropdown-menu="mobile">
                             {% for nav in navigation %}
-                                <li role="presentation" class="{% if nav.selected %}active{% endif %}{% if nav.highlighted %} c-p1{% endif %}"><a href="{{ path(nav.slug) }}">{{ nav.label }}</a></li>
+                                <li role="presentation" class="{% if nav.selected %}active{% endif %}{% if nav.highlighted_lender %} c-p1 {% elseif nav.highlighted_borrower %}c-p2 {% endif %}">
+                                    {% if nav.slug == constant('\\Unilend\\Bundle\\FrontBundle\\Controller\\MainController::SLUG_PAGE_BECOME_BORROWER') %}
+                                        <a href="{{ path('home_borrower') }}#homeemp-section-esim">{{ nav.label }}</a></li>
+                                    {% else %}
+                                        <a href="{{ path(nav.slug) }}">{{ nav.label }}</a>
+                                    {% endif %}
+                                </li>
                             {% endfor %}
                         </ul>
                     </div><!-- /.site-wrap -->
