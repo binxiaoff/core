@@ -1,0 +1,16 @@
+{% extends 'layouts/_layout_lender.html.twig' %}
+
+{% set page = {
+    id: '',
+    title: '',
+    classNames: ''
+} %}
+
+{% block dashboardContent %}
+<div class="dashboard-tabs tabs">
+    {% include('pages/lender_profile/partials/tab_navigation.html.twig') %}
+
+    <div class="dashboard-tabs-content tab-content">
+    </div>
+</div>
+{% endblock %}

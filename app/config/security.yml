@@ -27,5 +27,6 @@ security:
     access_denied_url: /login
 
     access_control:
-            - { path: ^/espace-emprunteur/securite, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-            - { path: ^/espace-emprunteur, roles: ROLE_BORROWER }
+        - { path: ^/espace-emprunteur/securite, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/espace-emprunteur, roles: ROLE_BORROWER }
+        - { path: ^/conseil-cip(|/.*)$, roles: ROLE_LENDER }
