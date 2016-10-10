@@ -126,7 +126,7 @@
                             </div>
                             <div class="col-lg-6 col-md-6 vertical-align-content">
                                 <div class="promo-slide promo-p2 {{ classPosition }} {{ classAnimatePosition }}">
-                                    <p class="quote">{{ person.quote|raw }}</p>
+                                    <p class="quote">&quot;{{ person.quote|raw }}&quot;</p>
                                     <p class="source"><cite>{{ person.name }}&mdash;{{ person.location }}</cite></p>
                                     <div class="promo-links">
                                         <a href="{{ path('testimonials') }}#testimonial-{{ person.name }}" class="link">{% trans %} site-general_testimonial-section-link-lender-title {% endtrans %}</a>
