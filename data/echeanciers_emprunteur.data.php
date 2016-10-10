@@ -134,28 +134,6 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
     }
 
     /**
-     * @param int $iDaysInterval
-     * @return array
-     */
-    public function getUpcomingRepayments($iDaysInterval)
-    {
-        $sNextWeekPayment = '
-            SELECT ee.*
-            FROM echeanciers_emprunteur ee
-            INNER JOIN projects_last_status_history plsh ON plsh.id_project = ee.id_project
-            INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
-            INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
-            WHERE ps.status = '. \projects_status::REMBOURSEMENT .' AND status_emprunteur = 0 AND DATE_ADD(CURDATE(), INTERVAL '. $iDaysInterval .' DAY) = DATE(date_echeance_emprunteur)';
-
-        $rResult          = $this->bdd->query($sNextWeekPayment);
-        $aNextWeekPayment = array();
-        while ($aRecord = $this->bdd->fetch_assoc($rResult)) {
-            $aNextWeekPayment[] = $aRecord;
-        }
-        return $aNextWeekPayment;
-    }
-
-    /**
      * @param string $scheduleDate
      * @return int
      * @throws Exception
