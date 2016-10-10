@@ -102,7 +102,7 @@ class prelevements extends prelevements_crud
               AND pre.type = :directDebitStatus
               AND DATE_ADD(CURDATE(), INTERVAL :daysInterval DAY) = DATE(pre.date_echeance_emprunteur)';
 
-        $paramValues = array('daysInterval' => $daysInterval, 'projectStatus' => \projects_status::REMBOURSEMENT, 'directDebitStatus' => \prelevements::STATUS_VALID);
+        $paramValues = array('daysInterval' => $daysInterval, 'projectStatus' => \projects_status::REMBOURSEMENT, 'directDebitStatus' => \prelevements::CLIENT_TYPE_BORROWER);
         $paramTypes  = array('daysInterval' => \PDO::PARAM_INT, 'projectStatus' => \PDO::PARAM_INT, 'directDebitStatus' => \PDO::PARAM_INT);
 
         $statement = $this->bdd->executeQuery($sql, $paramValues, $paramTypes);
