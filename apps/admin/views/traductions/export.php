@@ -1,46 +1,20 @@
-<?
-header("Content-Type: application/csv-tab-delimited-table"); 
-header("Content-disposition: filename=traductions.csv");
+<?php
 header("Pragma: no-cache");
 header("Cache-Control: must-revalidate, post-check=0, pre-check=0, public");
 header("Expires: 0");
 
-$i = 0;
+$handle = fopen('php://output', 'w+');
+fputs($handle, "\xEF\xBB\xBF"); // add UTF-8 BOM in order to be compatible to Excel
+fputcsv($handle, ['Id_translation', 'locale', 'Section', 'Nom', 'Traduction', 'Date d\'ajout', 'Date de mise à jour'], ';');
 
-while($i < mysql_num_fields($this->requete_result))
-{
-	$meta = mysql_fetch_field($this->requete_result,$i);
-	
-	if($i != 0)
-	{
-		echo ';';
-	}
-	
-	echo '"'.$meta->name.'"';
-	
-	$i++;
+while ($record = $this->bdd->fetch_assoc($this->requete_result)) {
+    fputcsv($handle, $record, ';');
 }
 
-echo "\n";
+fclose($handle);
 
-while($row = mysql_fetch_array($this->requete_result,MYSQL_NUM))
-{
-	$first = true;
-	
-	foreach($row as $value)
-	{
-		if($first == true)
-		{
-			$first = false;
-		}
-		else
-		{
-			echo ';';
-		}
-		
-		echo '"'.utf8_decode($value).'"';
-	}
-	
-	echo "\n";
-}
+$response->setStatusCode(200);
+$response->headers->set('Content-Type', 'text/csv; charset=utf-8');
+$response->headers->set('Content-Disposition', 'attachment; filename="export-translations.csv"');
+
 ?>
