@@ -4,6 +4,10 @@
 
 // My Offers
 .table-myoffers {
+  tbody tr {
+    @include table-row-alt($row-bg: mix($c-purple-l2, $c-purple-l3));
+  }
+
   tr {
     background-color: $c-purple-l2;
     border-bottom: solid 2px $c-white;
@@ -12,36 +16,41 @@
 
   // Make rejected look dull
   #myoffers-rejected & {
+    tbody tr {
+      @include table-row-alt;
+    }
+
     tr {
       background-color: $c-bg3;
       color: $c-t2;
     }
   }
-}
 
-.table-myoffers-item-id {
-  width: 25%;
-  text-align: left;
-}
+  // Columns
+  .table-myoffers-item-id {
+    width: 25%;
+    text-align: left;
+  }
 
-.table-myoffers-item-rate {
-  width: 25%;
-  text-align: left;
-}
+  .table-myoffers-item-rate {
+    width: 25%;
+    text-align: left;
+  }
 
-.table-myoffers-item-amount {
-  width: 30%;
-  text-align: right;
-}
+  .table-myoffers-item-amount {
+    width: 30%;
+    text-align: right;
+  }
 
-.table-myoffers-item-view {
-  width: 20%;
-  padding-left: 0;
-  padding-right: 0;
+  .table-myoffers-item-view {
+    width: 20%;
+    padding-left: 0;
+    padding-right: 0;
 
-  a {
-    display: block;
-    text-align: center;
+    a {
+      display: block;
+      text-align: center;
+    }
   }
 }
 
@@ -130,6 +139,40 @@
     }
   }
 
+  // Columns
+  .table-alloffersoverview-item-rate {
+    width: 20%;
+    text-align: left;
+  }
+
+  .table-alloffersoverview-item-amount {
+    width: 28%;
+    text-align: right;
+  }
+
+  .table-alloffersoverview-item-offers {
+    width: 22%;
+    text-align: right;
+  }
+
+  .table-alloffersoverview-item-accepted {
+    width: 30%;
+    text-align: right;
+  }
+
+  .table-alloffersoverview-item-myoffers {
+    color: $c-p1;
+    display: block;
+    clear: both;
+    text-align: right;
+
+    @include devices('md', 'lg') {
+      clear: none;
+      float: left;
+      text-align: left;
+    }
+  }
+
   // @note the design asked for this, but it doesn't really work with all the sortable columns
   // &#{$js-sortable-direction-asc} tbody tr.table-alloffersoverview-item-max {
   //   background-color: transparent;
@@ -142,39 +185,6 @@
   //   @include background-image(-svg(linear-gradient(to bottom, fade-out($c-bg-l, 1) 0%, $c-bg-l 100%)));
   //   border-top: dotted 1px $c-bg;
   // }
-}
-
-.table-alloffersoverview-item-rate {
-  width: 20%;
-  text-align: left;
-}
-
-.table-alloffersoverview-item-amount {
-  width: 28%;
-  text-align: right;
-}
-
-.table-alloffersoverview-item-offers {
-  width: 22%;
-  text-align: right;
-}
-
-.table-alloffersoverview-item-accepted {
-  width: 30%;
-  text-align: right;
-}
-
-.table-alloffersoverview-item-myoffers {
-  color: $c-p1;
-  display: block;
-  clear: both;
-  text-align: right;
-
-  @include devices('md', 'lg') {
-    clear: none;
-    float: left;
-    text-align: left;
-  }
 }
 
 // Single row item in the offers overview table
@@ -262,13 +272,11 @@
 
       // Row is rejected
       &.rejected-row {
+        @include table-row-alt(mix($c-red, $c-white, 8%) !important);
+
         display: none;
         background-color: mix($c-red, $c-white, 10%) !important;
         color: $c-t2;
-
-        &:nth-of-type(2n+1) {
-          background-color: mix($c-red, $c-white, 8%) !important;
-        }
 
         .total-offers-accepted {
           color: $c-red;

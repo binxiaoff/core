@@ -48,11 +48,11 @@ class LenderSubscriptionController extends Controller
         $tree = $this->get('unilend.service.entity_manager')->getRepository('tree');
         $settings->get('Lien conditions generales inscription preteur societe', 'type');
         $tree->get(['id_tree' => $settings->value]);
-        $template['termsOfUseLegalEntity'] = $this->generateUrl($tree->slug);
+        $template['termsOfUseLegalEntity'] = $this->generateUrl('lenders_terms_of_sales', ['type' => 'morale']);
 
         $settings->get('Lien conditions generales inscription preteur particulier', 'type');
         $tree->get(['id_tree' => $settings->value]);
-        $template['termsOfUsePerson'] = $this->generateUrl($tree->slug);
+        $template['termsOfUsePerson'] = $this->generateUrl('lenders_terms_of_sales');
 
         $formData = $request->getSession()->get('subscriptionPersonalInformationFormData', []);
         $request->getSession()->remove('subscriptionPersonalInformationFormData');
@@ -275,6 +275,7 @@ class LenderSubscriptionController extends Controller
             $lenderAccount->status          = \lenders_accounts::LENDER_STATUS_ONLINE;
             $lenderAccount->create();
 
+            $this->saveTermsOfUse($client);
             $this->saveClientHistoryAction($client, $post);
             $this->sendSubscriptionStartConfirmationEmail($client);
 
@@ -473,7 +474,7 @@ class LenderSubscriptionController extends Controller
             $lenderAccount->id_company_owner = $company->id_company;
             $lenderAccount->create();
 
-            $this->saveTermsOfUse($client, 'legal_entity');
+            $this->saveTermsOfUse($client);
             $this->saveClientHistoryAction($client, $post);
             $this->sendSubscriptionStartConfirmationEmail($client);
 
@@ -580,18 +581,17 @@ class LenderSubscriptionController extends Controller
 
     /**
      * @param \clients $client
-     * @param $clientType
      */
-    private function saveTermsOfUse(\clients $client, $clientType)
+    private function saveTermsOfUse(\clients $client)
     {
         /** @var \settings $settings */
         $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
 
-        if ($clientType == 'person') {
-            $settings->get('Lien conditions generales inscription preteur particulier_type');
+        if (in_array($client->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) {
+            $settings->get('Lien conditions generales inscription preteur particulier', 'type');
             $termsOfUseVersion = $settings->value;
         } else {
-            $settings->get('Lien conditions generales inscription preteur societe_type');
+            $settings->get('Lien conditions generales inscription preteur societe', 'type');
             $termsOfUseVersion = $settings->value;
         }
 

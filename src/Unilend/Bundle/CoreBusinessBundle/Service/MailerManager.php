@@ -253,57 +253,50 @@ class MailerManager
     }
 
     /**
-     * @param \projects $oProject
+     * @param \projects $project
      */
-    public function sendFundedAndFinishedToBorrower(\projects $oProject)
+    public function sendFundedAndFinishedToBorrower(\projects $project)
     {
-        /** @var \companies $oCompany */
-        $oCompany = $this->oEntityManager->getRepository('companies');
-        /** @var \clients $oBorrower */
-        $oBorrower = $this->oEntityManager->getRepository('clients');
-        /** @var \echeanciers_emprunteur $oBorrowerPaymentSchedule */
-        $oBorrowerPaymentSchedule = $this->oEntityManager->getRepository('echeanciers_emprunteur');
+        /** @var \companies $company */
+        $company = $this->oEntityManager->getRepository('companies');
+        /** @var \clients $borrower */
+        $borrower = $this->oEntityManager->getRepository('clients');
+        /** @var \echeanciers_emprunteur $borrowerPaymentSchedule */
+        $borrowerPaymentSchedule = $this->oEntityManager->getRepository('echeanciers_emprunteur');
 
-        $oCompany->get($oProject->id_company, 'id_company');
-        $oBorrower->get($oCompany->id_client_owner, 'id_client');
+        $company->get($project->id_company, 'id_company');
+        $borrower->get($company->id_client_owner, 'id_client');
 
-        if ($oBorrower->status == 1) {
-            $fWeightedAvgRate = $this->oFicelle->formatNumber($oProject->getAverageInterestRate(), 1);
+        $borrowerPaymentSchedule->get($project->id_project, 'ordre = 1 AND id_project');
+        $monthlyPayment = $borrowerPaymentSchedule->montant + $borrowerPaymentSchedule->commission + $borrowerPaymentSchedule->tva;
+        $monthlyPayment = $monthlyPayment / 100;
 
-            $oBorrowerPaymentSchedule->get($oProject->id_project, 'ordre = 1 AND id_project');
-            $fMonthlyPayment = $oBorrowerPaymentSchedule->montant + $oBorrowerPaymentSchedule->commission + $oBorrowerPaymentSchedule->tva;
-            $fMonthlyPayment = ($fMonthlyPayment / 100);
+        $varMail = array(
+            'surl'                   => $this->sSUrl,
+            'url'                    => $this->sFUrl,
+            'prenom_e'               => $borrower->prenom,
+            'nom_e'                  => $company->name,
+            'mensualite'             => $this->oFicelle->formatNumber($monthlyPayment),
+            'montant'                => $this->oFicelle->formatNumber($project->amount, 0),
+            'taux_moyen'             => $this->oFicelle->formatNumber($project->getAverageInterestRate(), 1),
+            'link_compte_emprunteur' => $this->sFUrl . '/projects/detail/' . $project->id_project,
+            'link_mandat'            => $this->sFUrl . '/pdf/mandat/' . $borrower->hash . '/' . $project->id_project,
+            'link_pouvoir'           => $this->sFUrl . '/pdf/pouvoir/' . $borrower->hash . '/' . $project->id_project,
+            'projet'                 => $project->title,
+            'lien_fb'                => $this->getFacebookLink(),
+            'lien_tw'                => $this->getTwitterLink()
+        );
 
-            $sLinkMandat  = $this->sFUrl . '/pdf/mandat/' . $oBorrower->hash . '/' . $oProject->id_project;
-            $sLinkPouvoir = $this->sFUrl . '/pdf/pouvoir/' . $oBorrower->hash . '/' . $oProject->id_project;
+        /** @var TemplateMessage $message */
+        $message = $this->messageProvider->newMessage('emprunteur-dossier-funde-et-termine', $varMail);
+        $message->setTo($borrower->email);
+        $this->mailer->send($message);
 
-            $varMail = array(
-                'surl'                   => $this->sSUrl,
-                'url'                    => $this->sFUrl,
-                'prenom_e'               => $oBorrower->prenom,
-                'nom_e'                  => $oCompany->name,
-                'mensualite'             => $this->oFicelle->formatNumber($fMonthlyPayment),
-                'montant'                => $this->oFicelle->formatNumber($oProject->amount, 0),
-                'taux_moyen'             => $fWeightedAvgRate,
-                'link_compte_emprunteur' => $this->sFUrl . '/projects/detail/' . $oProject->id_project,
-                'link_mandat'            => $sLinkMandat,
-                'link_pouvoir'           => $sLinkPouvoir,
-                'projet'                 => $oProject->title,
-                'lien_fb'                => $this->getFacebookLink(),
-                'lien_tw'                => $this->getTwitterLink()
+        if ($this->oLogger instanceof LoggerInterface) {
+            $this->oLogger->info(
+                'Email emprunteur-dossier-funde-et-termine sent (project ' . $project->id_project . ')',
+                array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project)
             );
-
-            /** @var TemplateMessage $message */
-            $message = $this->messageProvider->newMessage('emprunteur-dossier-funde-et-termine', $varMail);
-            $message->setTo($oBorrower->email);
-            $this->mailer->send($message);
-
-            if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->info(
-                    'Email emprunteur-dossier-funde-et-termine sent (project ' . $oProject->id_project . ')',
-                    array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project)
-                );
-            }
         }
     }
 

@@ -97,7 +97,10 @@ var $doc = $(document)
 // Normalise a {NotificationObject} as server version is different to JS version
 function normaliseNotificationObject (notification) {
   // Make a copy
-  var newNotification = $.extend({}, notification)
+  var newNotification = $.extend({
+    // Add UserNotifications collection specific info (managing additional UI state, etc.)
+    isOpen: false
+  }, notification)
 
   // Do necessary tests and transforms on the copy
   // -- Image
@@ -503,19 +506,65 @@ var UserNotifications = window.UserNotifications = {
     UserNotifications.delayUpdated()
   },
 
+  // Get notification by ID
+  // @method getNotificationById
+  // @param {String} id
+  // @returns {NotificationObject}
+  getNotificationById: function (id) {
+    // Already object then assume {NotificationObject}
+    if (typeof id === 'object') return id
+
+    // String/number match on the ID
+    for (var i = 0; i < UserNotifications.collection.length; i++) {
+      if (UserNotifications.collection[i].id === id) {
+        return UserNotifications.collection[i]
+      }
+    }
+
+    return undefined
+  },
+
+  // Open a single notification
+  openNotification: function (id) {
+    var notification = UserNotifications.getNotificationById(id)
+
+    if (notification) {
+      notification.isOpen = true
+      $('[data-notification-id="' + notification.id + '"]').addClass('ui-notification-open')
+    }
+  },
+
+  // Close a single notification
+  closeNotification: function (id) {
+    var notification = UserNotifications.getNotificationById(id)
+
+    if (notification) {
+      notification.isOpen = false
+      $('[data-notification-id="' + notification.id + '"]').removeClass('ui-notification-open')
+    }
+  },
+
+  // Toggle a notification
+  toggleNotification: function (id) {
+    var notification = UserNotifications.getNotificationById(id)
+
+    if (notification && notification.isOpen) {
+      UserNotifications.closeNotification(notification)
+    } else {
+      UserNotifications.openNotification(notification)
+    }
+  },
+
   // Mark a single notification read
   // @method markRead
   // @param {String} id
   // @returns {Void}
   markRead: function (id) {
-    // Get collection as a flatmap with keys represented as `__id`
-    var flatmap = flatmapNotifications(UserNotifications.collection)
+    // Get the single notification
+    var notification = UserNotifications.getNotificationById(id)
 
-    // @debug
-    // console.log('UserNotifications.markRead', id, flatmap['__' + id])
-
-    if (flatmap.hasOwnProperty('__' + id)) {
-      flatmap['__' + id].status = 'read'
+    if (notification) {
+      notification.status = 'read'
 
       // Mark in UI that notification is now unread
       $('[data-notification-id="' + id + '"]').removeClass('ui-notification-status-unread').addClass('ui-notification-status-read')
@@ -760,21 +809,42 @@ $doc.on('ready', function () {
       return false
     })
 
+    // Focus a notification to show its details
+    // .on('focus', '[data-notification-id]', function (event) {
+    //   var $target = $(event.target)
+    //
+    //   // Toggle the notification's open class
+    //   var $notification = $(this)
+    //   var notificationId = $notification.attr('data-notification-id')
+    //
+    //   // Toggle notification
+    //   UserNotifications.openNotification(notificationId)
+    //
+    //   // If notification unread, mark as read
+    //   if ($notification.is('.ui-notification-status-unread')) {
+    //     UserNotifications.markRead(notificationId)
+    //   }
+    // })
+
     // Click on an element to show/hide its details
-    .on(Utility.clickEvent, '[data-notification-id]', function (event) {
+    .on('mousedown touchstart keydown', '[data-notification-id]', function (event) {
       var $target = $(event.target)
 
-      // If a link was clicked, ignore the following actions and let the link event go through
+      // If a link was interacted with, ignore the following actions and let the link event go through
       if ($target.is('a')) return true
 
-      // Toggle the notification's open class
-      var $notification = $(this)
-      var notificationId = $notification.attr('data-notification-id')
-      $notification.toggleClass('ui-notification-open')
+      if (event.type === 'mousedown' || event.type === 'touchstart' || (event.type === 'keydown' && event.which === 13)) {
+        // Toggle the notification's open class
+        var $notification = $(this)
+        var notificationId = $notification.attr('data-notification-id')
 
-      // If notification unread, mark as read
-      if ($notification.is('.ui-notification-status-unread')) {
-        UserNotifications.markRead(notificationId)
+        // Toggle notification
+        UserNotifications.toggleNotification(notificationId)
+
+        // If notification unread, mark as read
+        if ($notification.is('.ui-notification-status-unread')) {
+          UserNotifications.markRead(notificationId)
+        }
       }
     })
 

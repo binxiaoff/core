@@ -935,32 +935,6 @@ class echeanciers extends echeanciers_crud
         return bcdiv($this->bdd->executeQuery($sql)->fetchColumn(0), 100, 2);
     }
 
-    public function getTotalRepaidCapital()
-    {
-        $query = '
-            SELECT (t.totalRepayment + t.totalRecovery)
-            FROM
-                (
-                   SELECT
-                     SUM(capital_rembourse)AS totalRepayment,
-                     (SELECT SUM(montant)
-                      FROM transactions
-                      WHERE transactions.type_transaction = '. \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT .') AS totalRecovery
-                   FROM echeanciers
-                    WHERE status IN (' . self::STATUS_REPAID . ', ' . self::STATUS_PARTIALLY_REPAID . ')) AS t';
-
-        return bcdiv($this->bdd->executeQuery($query)->fetchColumn(0), 100, 2);
-    }
-
-    public function getTotalRepaidInterests()
-    {
-        $query = '
-            SELECT SUM(interets_rembourses)
-            FROM echeanciers
-            WHERE status IN (' . self::STATUS_REPAID . ', ' . self::STATUS_PARTIALLY_REPAID . ')';
-        return bcdiv($this->bdd->executeQuery($query)->fetchColumn(0), 100, 2);
-    }
-
     /**
      * @param int $lenderId
      * @param int|null $projectId
@@ -1028,7 +1002,7 @@ class echeanciers extends echeanciers_crud
     public function getTotalRepaidInterestByCohort()
     {
         $query = 'SELECT
-                      ROUND(SUM(interets_rembourses) / 100, 2) AS amount,
+                      SUM(interets_rembourses)/100 AS amount,
                       (
                         SELECT
                           CASE LEFT(projects_status_history.added, 4)
@@ -1050,7 +1024,7 @@ class echeanciers extends echeanciers_crud
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getOwedCapitalANdProjectsByContractType($contractType)
+    public function getOwedCapitalAndProjectsByContractType($contractType)
     {
         $query = ' SELECT
                       p.id_project,
@@ -1085,6 +1059,4 @@ class echeanciers extends echeanciers_crud
         $statement = $this->bdd->executeQuery($query, ['contractType' => $contractType], ['contractType' => \PDO::PARAM_STR]);
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
-
-
 }

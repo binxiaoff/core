@@ -94,20 +94,9 @@ class StatisticsManager
 
     public function getAmountBorrowed()
     {
-        $cachedItem = $this->cachePool->getItem(CacheKeys::AMOUNT_BORROWED);
+        $regulatoryTable = $this->getRegulatoryData();
 
-        if (false === $cachedItem->isHit()) {
-            /** @var \transactions $transactions */
-            $transactions    = $this->entityManager->getRepository('transactions');
-            /** @var int $amountBorrowed */
-            $amountBorrowed = bcdiv($transactions->sum('type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, 'montant_unilend-montant'), 100);
-            $cachedItem->set($amountBorrowed)->expiresAfter(CacheKeys::LONG_TIME);
-            $this->cachePool->save($cachedItem);
-
-            return $amountBorrowed;
-        } else {
-            return $cachedItem->get();
-        }
+        return $regulatoryTable['borrowed-capital']['total'];
     }
 
     public function getAmountBorrowedInMillions()
@@ -299,16 +288,16 @@ class StatisticsManager
             /** @var int $lendersLegalEntity */
             $lendersLegalEntity = $lenders->countLendersByClientType([\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER]);
             /** @var int $totalLenders */
-            $totalLenders = $lenders->countLenders();
+            $totalLenders = bcadd($lendersPerson, $lendersLegalEntity);
 
             $lendersByType = [
                 'person' => [
                     'count'      => $lendersPerson,
-                    'percentage' => bcmul(bcdiv($lendersPerson , $totalLenders, 4), 100)
+                    'percentage' => round(bcmul(bcdiv($lendersPerson , $totalLenders, 4), 100, 2))
                 ],
                 'legalEntity' => [
                     'count' => $lendersLegalEntity,
-                    'percentage' => bcmul(bcdiv($lendersLegalEntity , $totalLenders, 4), 100)
+                    'percentage' => round(bcmul(bcdiv($lendersLegalEntity , $totalLenders, 4), 100, 2))
                 ]
             ];
 
@@ -353,36 +342,16 @@ class StatisticsManager
 
     public function getTotalRepaidCapital()
     {
-        $cachedItem = $this->cachePool->getItem(CacheKeys::TOTAL_REPAID_CAPITAL);
+        $regulatoryTable = $this->getRegulatoryData();
 
-        if (false === $cachedItem->isHit()) {
-            /** @var \echeanciers $paymentSchedule */
-            $paymentSchedule = $this->entityManager->getRepository('echeanciers');
-            $repaidCapital = $paymentSchedule->getTotalRepaidCapital();
-            $cachedItem->set($repaidCapital)->expiresAfter(CacheKeys::DAY);
-            $this->cachePool->save($cachedItem);
-
-            return $repaidCapital;
-        } else {
-            return $cachedItem->get();
-        }
+        return $regulatoryTable['repaid-capital']['total'];
     }
 
     public function getTotalRepaidInterests()
     {
-        $cachedItem = $this->cachePool->getItem(CacheKeys::TOTAL_REPAID_INTEREST);
+        $regulatoryTable = $this->getRegulatoryData();
 
-        if (false === $cachedItem->isHit()) {
-            /** @var \echeanciers $paymentSchedule */
-            $paymentSchedule = $this->entityManager->getRepository('echeanciers');
-            $repaidInterests = $paymentSchedule->getTotalRepaidInterests();
-            $cachedItem->set($repaidInterests)->expiresAfter(CacheKeys::DAY);
-            $this->cachePool->save($cachedItem);
-
-            return $repaidInterests;
-        } else {
-            return $cachedItem->get();
-        }
+        return $regulatoryTable['repaid-interest']['total'];
     }
 
     public function getProjectCountByCategory()
@@ -403,14 +372,14 @@ class StatisticsManager
     }
 
     /**
-     * Stat  is voluntarily only on the last 3 months
+     * Stat  is voluntarily only on the last 6 months
      */
     public function getNumberOfProjectsFundedIn24Hours()
     {
         $cachedItem = $this->cachePool->getItem(CacheKeys::PROJECTS_FUNDED_IN_24_HOURS);
 
         if (false === $cachedItem->isHit()) {
-            $startDate = new \DateTime('NOW - 3 MONTHS');
+            $startDate = new \DateTime('NOW - 6 MONTHS');
             /** @var \projects $projects */
             $projects = $this->entityManager->getRepository('projects');
             $count24hFunding = $projects->countProjectsFundedIn24Hours($startDate);
@@ -424,19 +393,19 @@ class StatisticsManager
     }
 
     /**
-     * Stat  is voluntarily only on the last 3 months
+     * Stat  is voluntarily only on the last 6 months
      */
     public function getPercentageOfProjectsFundedIn24Hours()
     {
         $cachedItem = $this->cachePool->getItem(CacheKeys::PERCENT_PROJECTS_FUNDED_IN_24_HOURS);
 
         if (false === $cachedItem->isHit()) {
-            $startDate = new \DateTime('NOW - 3 MONTHS');
+            $startDate = new \DateTime('NOW - 6 MONTHS');
             /** @var \projects $projects */
             $projects = $this->entityManager->getRepository('projects');
             $countAllProjects = $projects->countProjectsFundedSince($startDate);
             $count24hFunding = $this->getNumberOfProjectsFundedIn24Hours();
-            $percentageFunded24h = $countAllProjects > 0 ? bcmul(bcdiv($count24hFunding, $countAllProjects, 0), 100, 0) : 0;
+            $percentageFunded24h = $countAllProjects > 0 ? bcmul(bcdiv($count24hFunding, $countAllProjects, 4), 100, 0) : 0;
             $cachedItem->set($percentageFunded24h)->expiresAfter(CacheKeys::DAY);
 
             return $percentageFunded24h;
@@ -485,13 +454,33 @@ class StatisticsManager
     public function getRegulatoryData()
     {
         $cachedItem     = $this->cachePool->getItem(CacheKeys::REGULATORY_TABLE);
-        return $cachedItem->get();
+
+        if (false === $cachedItem->isHit()) {
+        /** @var \unilend_stats $unilendStats */
+        $unilendStats = $this->entityManager->getRepository('unilend_stats');
+        $statsEntry = $unilendStats->select('type_stat = "' . CacheKeys::REGULATORY_TABLE . '"', 'added DESC', null, '1')[0];
+        $regulatoryTable = json_decode($statsEntry['value'], true);
+        $cachedItem->set($regulatoryTable)->expiresAfter(CacheKeys::DAY);
+        return $regulatoryTable;
+        } else {
+            return $cachedItem->get();
+        }
     }
 
     public function getIncidenceRate()
     {
         $cachedItem     = $this->cachePool->getItem(CacheKeys::INCIDENCE_RATE_IFP);
-        return $cachedItem->get();
+
+        if (false === $cachedItem->isHit()) {
+            /** @var \unilend_stats $unilendStats */
+            $unilendStats = $this->entityManager->getRepository('unilend_stats');
+            $statsEntry = $unilendStats->select('type_stat = "' . CacheKeys::INCIDENCE_RATE_IFP . '"', 'added DESC', null, '1')[0];
+            $incidenceRate = json_decode($statsEntry['value'], true);
+            $cachedItem->set($incidenceRate)->expiresAfter(CacheKeys::DAY);
+            return $incidenceRate;
+        } else {
+            return $cachedItem->get();
+        }
     }
 
     public function calculateRegulatoryData()
@@ -506,80 +495,60 @@ class StatisticsManager
         $transactions = $this->entityManager->getRepository('transactions');
         /** @var \echeanciers $lenderRepaymentSchedule */
         $lenderRepaymentSchedule = $this->entityManager->getRepository('echeanciers');
+        /** @var \projects $projects */
+        $projects = $this->entityManager->getRepository('projects');
         /** @var \companies $companies */
         $companies = $this->entityManager->getRepository('companies');
 
         $borrowedCapital                          = $this->formatCohortQueryResult($loans->sumLoansByCohort(), $years);
         $repaidCapital                            = $this->formatCohortQueryResult($borrowerPaymentSchedule->getRepaidCapitalByCohort(), $years);
-        $recoveryPayments                         = $this->formatCohortQueryResult($transactions->getBorrowerRecoveryPaymentsByCohort(), $years);
+        $recoveryPaymentsHealthyProjects          = $this->formatCohortQueryResult($transactions->getBorrowerRecoveryPaymentsOnHealthyProjectsByCohort(), $years);
+        $recoveryPaymentsProblematicProjects      = $this->formatCohortQueryResult($transactions->getBorrowerRecoveryPaymentsOnProblematicProjectsByCohort(), $years);
         $repaidInterest                           = $this->formatCohortQueryResult($lenderRepaymentSchedule->getTotalRepaidInterestByCohort(), $years);
         $interestHealthyProjects                  = $this->formatCohortQueryResult($borrowerPaymentSchedule->getInterestPaymentsOfHealthyProjectsByCohort(), $years);
         $futureCapitalProblematicProjects         = $this->formatCohortQueryResult($borrowerPaymentSchedule->getFutureOwedCapitalOfProblematicProjectsByCohort(), $years);
         $futureCapitalHealthyProjects             = $this->formatCohortQueryResult($borrowerPaymentSchedule->getFutureCapitalPaymentsOfHealthyProjectsByCohort(), $years);
         $lateCapitalRepaymentsHealthyProjects     = $this->formatCohortQueryResult($borrowerPaymentSchedule->getLateCapitalRepaymentsHealthyProjects(), $years);
         $lateCapitalRepaymentsProblematicProjects = $this->formatCohortQueryResult($borrowerPaymentSchedule->getLateCapitalRepaymentsProblematicProjects(), $years);
-
-        $countProblematicCompanies = $this->formatCohortQueryResult($companies->countCompaniesWithProblematicProjectsByCohort(), $years);
-        $countFundedCompanies      = $this->formatCohortQueryResult($companies->countCompaniesFundedByCohort(), $years);
+        $countFundedCompanies                     = $this->formatCohortQueryResult($companies->countCompaniesFundedByCohort(), $years);
+        $fundedProjects                           = $this->formatCohortQueryResult($projects->countFundedProjectsByCohort(), $years);
+        $problematicCompanies                     = $this->formatCohortQueryResult($companies->countCompaniesWithProblematicProjectsByCohort(), $years);
 
         $data = [];
 
         foreach ($years as $year) {
 
-            //beforehand calculations
-            $upcomingPayments               = bcadd($futureCapitalHealthyProjects[$year], $futureCapitalProblematicProjects[$year]);
-            $latePayments                   = bcadd($lateCapitalRepaymentsProblematicProjects[$year], $lateCapitalRepaymentsHealthyProjects[$year]);
-            $totalOwedProblematicCapital    = bcadd($lateCapitalRepaymentsProblematicProjects[$year], $futureCapitalProblematicProjects[$year]);
-            $capitalAndInterestLessProblems = bcsub(bcadd(bcadd($borrowedCapital[$year], $repaidInterest[$year]), $interestHealthyProjects[$year]), $totalOwedProblematicCapital);
+            $data['IRR'][$year]                                 = $year == '2013-2014' ? $this->IRRManager->getUnilendIRRForCohort20132014() : $this->IRRManager->getUnilendIRRByCohort($year);
+            $data['projects'][$year]                            = $fundedProjects[$year];
 
-            //Euros
-            //1 : A / 1. => ok
-            $data['borrowed-capital'][$year] = $borrowedCapital[$year];
-            //2 : B 2. => ok
-            $data['repaid-capital'][$year] = $repaidCapital[$year] + $recoveryPayments[$year];
-            //3 : C  3.=> ok
-            $data['repaid-interest'][$year] = $repaidInterest[$year];
-            //4 : D 4. TODO: Validation
-            $data['owed-healthy-interest'][$year] = $interestHealthyProjects[$year];
-            //5 : E (F + J)
-            $data['global-owed-capital'][$year] = bcadd($latePayments, $upcomingPayments);
-            //5.1 : F ( G + H)
-            $data['future-owed-capital'][$year] = $upcomingPayments;
-            //5.1.1 : G TODO: Validation
-            $data['future-owed-capital-healthy'][$year] = $futureCapitalHealthyProjects[$year];
-            //5.1.2 : H => TODO: Validation
-            $data['future-owed-capital-problematic'][$year] = $futureCapitalProblematicProjects[$year];
-            //5.2 : J => o+q
-            $data['late-owed-capital'][$year] = $latePayments;
-            //5.2.1 : O => ok
-            $data['late-owed-capital-problematic'][$year] = $lateCapitalRepaymentsProblematicProjects[$year];
-            //5.2.2 : Q => ok
-            $data['late-owed-capital-healthy'][$year] = $lateCapitalRepaymentsHealthyProjects[$year];
-            //6 : K  = H + J
-            $data['total-owed-problematic-capital'][$year] = bcadd($futureCapitalProblematicProjects[$year], $latePayments);
-            //7 : P
-            $data['total-owed-problematic-capital-late'][$year] = $totalOwedProblematicCapital;
+            $data['borrowed-capital'][$year]                    = $borrowedCapital[$year];
+            $data['repaid-capital'][$year]                      = bcadd($repaidCapital[$year], bcadd($recoveryPaymentsHealthyProjects[$year], $recoveryPaymentsProblematicProjects[$year], 2), 2);
+            $data['repaid-interest'][$year]                     = $repaidInterest[$year];
+            $data['owed-healthy-interest'][$year]               = $interestHealthyProjects[$year];
+
+            $data['future-owed-capital-healthy'][$year]         = $futureCapitalHealthyProjects[$year];
+            $data['future-owed-capital-problematic'][$year]     = $futureCapitalProblematicProjects[$year];
+            $data['future-owed-capital'][$year]                 = bcadd($data['future-owed-capital-healthy'][$year],$data['future-owed-capital-problematic'][$year], 2);
+
+            $data['late-owed-capital-problematic'][$year]       = bcsub($lateCapitalRepaymentsProblematicProjects[$year], $recoveryPaymentsProblematicProjects[$year], 2);
+            $data['late-owed-capital-healthy'][$year]           = bcsub($lateCapitalRepaymentsHealthyProjects[$year], $recoveryPaymentsHealthyProjects[$year], 2);
+            $data['late-owed-capital'][$year]                   = bcadd($data['late-owed-capital-problematic'][$year], $data['late-owed-capital-healthy'][$year], 2);
+
+            $data['global-owed-capital'][$year]                     = bcadd($data['late-owed-capital'][$year], $data['future-owed-capital'][$year], 2);
+
+            $data['total-owed-problematic-and-late-capital'][$year] = bcadd($data['future-owed-capital-problematic'][$year], $data['late-owed-capital'][$year], 2);
+            $data['total-owed-problematic-capital'][$year]          = bcadd($data['future-owed-capital-problematic'][$year], $data['late-owed-capital-problematic'][$year], 2);
 
             //percentages
-            $owedProblematicOverBorrowedCapital     = $borrowedCapital[$year] > 0 ? bcmul(bcdiv($data['total-owed-problematic-capital'][$year], $borrowedCapital[$year], 4), 100, 2) : 0;
-            $owedProblematicLateOverBorrowedCapital = $borrowedCapital[$year] > 0 ? bcmul(bcdiv($data['total-owed-problematic-capital-late'][$year], $borrowedCapital[$year], 4), 100, 2) : 0;
-            $owedProblematicCapitalOverInterest     = bcmul(bcdiv($data['total-owed-problematic-capital'][$year], ($data['repaid-interest'][$year] + $data['owed-healthy-interest'][$year]), 4), 100, 2);
+            $data['pct']['owed-problematic-over-borrowed-capital'][$year] = $data['borrowed-capital'][$year] > 0 ? bcmul(bcdiv($data['total-owed-problematic-and-late-capital'][$year], $data['borrowed-capital'][$year], 4), 100, 2) : 0;
+            $data['pct']['interest-over-owed-problematic-capital'][$year] = $data['total-owed-problematic-and-late-capital'][$year] > 0 ? bcmul(bcdiv(($data['repaid-interest'][$year] + $data['owed-healthy-interest'][$year]), $data['total-owed-problematic-and-late-capital'][$year], 4), 100, 2) : 0;
 
-            $data['pct']['IRR'][$year]                                         = $year == '2013-2014' ? $this->IRRManager->getUnilendIRRForCohort20132014() : $this->IRRManager->getUnilendIRRByCohort($year);//R
-            $data['pct']['owed-problematic-over-borrowed-capital'][$year]      = $owedProblematicOverBorrowedCapital;
-            $data['pct']['owed-problematic-late-over-borrowed-capital'][$year] = $owedProblematicLateOverBorrowedCapital;
-            $data['pct']['owed-problematic-capital-over-interest'][$year]      = $owedProblematicCapitalOverInterest;
-            $data['pct']['expected-performance'][$year]                        = $borrowedCapital[$year] > 0 ? bcmul((bcdiv($capitalAndInterestLessProblems, $borrowedCapital[$year], 4) - 1), 100, 2) : 0;
-
-            //plain numbers
-            $data['nb']['financed-companies'][$year] = $countFundedCompanies[$year]; //L
-            $data['nb']['lost-companies'][$year]     = $countProblematicCompanies[$year]; //M
-
-            //percentage 2
-            $data['pct2']['lost-percentage'][$year] = $countFundedCompanies[$year] > 0 ? bcmul(bcdiv($countProblematicCompanies[$year], $countFundedCompanies[$year], 4), 100, 2) : 0; //N
+            $capitalAndInterestLessProblemsPerYear      = bcsub(bcadd(bcadd($data['borrowed-capital'][$year], $data['repaid-interest'][$year], 2), $data['owed-healthy-interest'][$year], 2), $data['total-owed-problematic-capital'][$year], 2);
+            $data['pct']['expected-performance'][$year] = $data['borrowed-capital'][$year] > 0 ? bcmul((bcdiv($capitalAndInterestLessProblemsPerYear, $data['borrowed-capital'][$year], 4) - 1), 100, 2) : 0;
+            $data['pct']['problematic-rate'][$year]     = bcmul(bcdiv($problematicCompanies[$year], $countFundedCompanies[$year], 4), 100, 2);
         }
 
-        $data = $this->addTotalToData($data);
+        $data = $this->addTotalToData($data, $problematicCompanies, $fundedProjects);
 
         return $data;
     }
@@ -601,36 +570,29 @@ class StatisticsManager
         return $dataByCohort;
     }
 
-    public function addTotalToData(&$data)
+    public function addTotalToData(&$data, $problematicCompanies, $fundedProjects)
     {
+        $data['IRR']['total'] = $this->IRRManager->getLastUnilendIRR()['value'];
+
         foreach($data as $type => $numbers) {
-            if (false === in_array($type, ['pct', 'pct2', 'nb'])){
+            if (false === in_array($type, ['pct', 'IRR'])){
                 $data[$type]['total'] = array_sum($numbers);
             }
         }
 
-        $data = $this->addTotalPercentagesAndPlainNumbers($data);
+        $data = $this->addTotalPercentages($data, $problematicCompanies, $fundedProjects);
 
         return $data;
     }
 
-    public function addTotalPercentagesAndPlainNumbers(&$data)
+    public function addTotalPercentages(&$data, $problematicCompanies, $fundedProjects)
     {
-        $owedProblematicOverBorrowedCapital     = $data['borrowed-capital']['total'] > 0 ? bcmul(bcdiv($data['total-owed-problematic-capital']['total'], $data['borrowed-capital']['total'], 4), 100, 2) : 0;
-        $owedProblematicLateOverBorrowedCapital = $data['borrowed-capital']['total'] > 0 ? bcmul(bcdiv($data['total-owed-problematic-capital-late']['total'], $data['borrowed-capital']['total'], 4), 100, 2) : 0;
-        $owedProblematicCapitalOverInterest     = bcmul(bcdiv($data['total-owed-problematic-capital']['total'], ($data['repaid-interest']['total'] + $data['owed-healthy-interest']['total']), 4), 100, 2);
-        $capitalAndInterestLessProblems         = bcsub(bcadd(bcadd($data['borrowed-capital']['total'], $data['repaid-interest']['total']), $data['owed-healthy-interest']['total']), $data['total-owed-problematic-capital-late']['total']);
+        $data['pct']['owed-problematic-over-borrowed-capital']['total'] = $data['borrowed-capital']['total'] > 0 ? bcmul(bcdiv($data['total-owed-problematic-and-late-capital']['total'], $data['borrowed-capital']['total'], 4), 100, 2) : 0;
+        $data['pct']['interest-over-owed-problematic-capital']['total'] = bcmul(bcdiv(($data['repaid-interest']['total'] + $data['owed-healthy-interest']['total']), $data['total-owed-problematic-and-late-capital']['total'], 4), 100, 2);
 
-        $data['pct']['IRR']['total']                                         = $this->IRRManager->getLastUnilendIRR()['value'];
-        $data['pct']['owed-problematic-over-borrowed-capital']['total']      = $owedProblematicOverBorrowedCapital;
-        $data['pct']['owed-problematic-late-over-borrowed-capital']['total'] = $owedProblematicLateOverBorrowedCapital;
-        $data['pct']['owed-problematic-capital-over-interest']['total']      = $owedProblematicCapitalOverInterest;
-        $data['pct']['expected-performance']['total']                        = bcmul(bcdiv($capitalAndInterestLessProblems, $data['borrowed-capital']['total'], 4), 100, 2);
-
-        $data['nb']['financed-companies']['total'] = array_sum($data['nb']['financed-companies']);
-        $data['nb']['lost-companies']['total']     = array_sum($data['nb']['lost-companies']);
-
-        $data['pct2']['lost-percentage']['total'] = bcmul(bcdiv($data['nb']['lost-companies']['total'], $data['nb']['financed-companies']['total'], 4), 100, 2);
+        $capitalAndInterestLessProblems               = bcsub(bcadd(bcadd($data['borrowed-capital']['total'], $data['repaid-interest']['total']), $data['owed-healthy-interest']['total']), $data['total-owed-problematic-and-late-capital']['total']);
+        $data['pct']['expected-performance']['total'] = bcmul(bcdiv($capitalAndInterestLessProblems, $data['borrowed-capital']['total'], 4) - 1, 100, 2);
+        $data['pct']['problematic-rate']['total']     = bcdiv(array_sum($problematicCompanies), array_sum($fundedProjects));
 
         return $data;
     }
@@ -643,7 +605,7 @@ class StatisticsManager
         $problematicProjects = [];
         $allProjects = [];
 
-        foreach ($paymentSchedule->getOwedCapitalANdProjectsByContractType(\underlying_contract::CONTRACT_IFP) as $project) {
+        foreach ($paymentSchedule->getOwedCapitalAndProjectsByContractType(\underlying_contract::CONTRACT_IFP) as $project) {
             $allProjects[$project['id_project']] = $project['amount'];
 
             if ($project['status'] >= \projects_status::PROBLEME && $project['delay'] >= 60 ) {
