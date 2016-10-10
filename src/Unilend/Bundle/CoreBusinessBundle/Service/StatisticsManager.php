@@ -592,7 +592,7 @@ class StatisticsManager
 
         $capitalAndInterestLessProblems               = bcsub(bcadd(bcadd($data['borrowed-capital']['total'], $data['repaid-interest']['total']), $data['owed-healthy-interest']['total']), $data['total-owed-problematic-and-late-capital']['total']);
         $data['pct']['expected-performance']['total'] = bcmul(bcdiv($capitalAndInterestLessProblems, $data['borrowed-capital']['total'], 4) - 1, 100, 2);
-        $data['pct']['problematic-rate']['total']     = bcdiv(array_sum($problematicCompanies), array_sum($fundedProjects));
+        $data['pct']['problematic-rate']['total']     = bcmul(bcdiv(array_sum($problematicCompanies), array_sum($fundedProjects), 4), 100, 2);
 
         return $data;
     }
