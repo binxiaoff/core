@@ -1,0 +1,167 @@
+<aside class="project-single-info-wrap" xmlns="http://www.w3.org/1999/html">
+    <div class="project-single-info-position">
+        <div class="project-single-info">
+            <div class="project-single-cost">
+                <div class="project-single-cost-total">
+                    {% trans with {'%amount%' : project.amount|localizednumber|nbsp, '%startTag%' : '<span class="sr-only">', '%endTag%' : '</span>'} %} project-detail_amount-sentence {% endtrans %}
+                </div>
+                <div class="project-single-cost-progress"
+                    title="{% trans with {'%percentFunded%' : project.percentFunded} %} project-detail_project-funding-progress-bar-tooltip {% endtrans %}" data-toggle="tooltip">
+                    <div class="project-single-cost-progress-funded" style="width: {{ project.percentFunded }}%">
+                        <span class="sr-only">{% trans with {'%percentFunded%' : project.percentFunded} %} project-detail_percentage-funded-text {% endtrans %}</span>
+                    </div>
+                </div><!-- /.project-single-cost-progress -->
+                {% if project.status == constant('\\projects_status::EN_FUNDING') %}
+                    <div class="project-single-cost-amount">
+                        <div class="project-single-cost-amount-funded">{% transchoice project.costFunded with {'%costFunded%' : project.costFunded|localizednumber} %} project-detail_already-bid-amount {% endtranschoice %}</div>
+                    </div><!-- /.project-single-cost-amount -->
+                {% endif %}
+                </div><!-- /.project-single-cost -->
+
+                <div class="row">
+                    <div class="project-single-interest">
+                        <span class="icon fa-linechart-u32"></span>
+                        <span class="c-p1"><strong>{{ project.averageRate|localizednumber }}</strong>&nbsp;%</span>
+                        <div class="label">{% trans %} project-detail_average-rate-label {% endtrans %}</div>
+                    </div><!-- /.project-single-interest -->
+
+                    <div class="project-single-duration">
+                        <span class="icon fa-calendar-alt-u32"></span>
+                        <span class="c-p1"><strong>{{ project.duration }}</strong> mois</span>
+                        <div class="label">{% trans %} project-detail_period-label {% endtrans %}</div>
+                    </div><!-- /.project-single-duration -->
+                </div>
+
+            {% if project.status in [constant('\\projects_status::REMBOURSE'), constant('\\projects_status::REMBOURSEMENT_ANTICIPE') ] %}
+                <p>{% trans with {'%dateLastRepayment%' : project.dateLastRepayment} %} project-detail_project-repaid-message {% endtrans %}</p>
+                {% if project.lender is defined %}
+                    <p>
+                        {% transchoice project.lender.loans.myLoanOnProject.nbValid with {
+                            '%amountUserLoan%' : project.lender.loans.myLoanOnProject.solde,
+                            '%avgRateUserLoan%' : project.lender.loans.myAverageLoanRate|localizednumber
+                        } %} project-detail_project-repaid-user-message {% endtranschoice %}
+                    </p>
+                {% endif %}
+                {{ include('partials/components/project-detail/login-form.html.twig') }}
+            {% elseif project.status == constant('\\projects_status::FUNDE') or project.status >= constant('\\projects_status::REMBOURSEMENT') %}
+                <p>
+                    {% trans with {
+                        '%numberLenders%' : project.totalLenders|localizednumber,
+                        '%averageRate%' : project.averageRate|localizednumber,
+                        '%fundingDuration%' : ('project-detail_funding-duration-' ~ project.fundingDuration.translation)|transchoice(project.fundingDuration.choice, project.fundingDuration.values)
+                    } %} project-detail_project-funded-message-with-statistics {% endtrans %}
+                </p>
+                {{ include('partials/components/project-detail/login-form.html.twig') }}
+            {%  elseif project.status == constant('\\projects_status::FUNDING_KO') %}
+                <p>{% trans with {'%percentageFunded%' : project.percentFunded|localizednumberwithprecision(1)} %} project-detail_side-bar-funding-ko-message {% endtrans %}</p>
+                {{ include('partials/components/project-detail/login-form.html.twig') }}
+            {%  elseif project.status == constant('\\projects_status::PRET_REFUSE') %}
+                <p class="h4">{% trans %} project-detail_side-bar-loan-rejected-title {% endtrans %}</p>
+                <p>{% trans %} project-detail_side-bar-loan-rejected-message {% endtrans %}</p>
+                {{ include('partials/components/project-detail/login-form.html.twig') }}
+            {% elseif project.projectPending is defined and project.projectPending == true %}
+                <p>{% trans %} project-detail_side-bar-project-closing-pending {% endtrans %}</p>
+                {{ include('partials/components/project-detail/login-form.html.twig') }}
+            {% elseif is_granted('IS_AUTHENTICATED_FULLY') %}
+                {% if is_granted('ROLE_LENDER') and app.user.getClientStatus() < constant('\\clients_status::VALIDATED') %}
+                    <p>{% trans %} project-detail_side-bar-completeness-message {% endtrans %}</p>
+                {% elseif conditions.canBid %}
+                    {% if lender.bidResult is defined %}
+                        <p class="{% if lender.bidResult.error is defined %}c-error{% elseif lender.bidResult.success is defined %}c-success{% else %}c-t2{% endif %}">
+                            {{ lender.bidResult.message }}
+                        </p>
+                    {% endif %}
+                    {% if app.session.flashBag.has('bid_not_eligible_reason') %}
+                        {% for reason in app.session.flashBag.get('bid_not_eligible_reason') %}
+                            <p class="c-error">{{ reason }}</p>
+                        {% endfor %}
+                    {% endif %}
+                    {% if isLenderEligible is defined and isLenderEligible == false %}
+                        {% for reason in lenderNotEligibleReasons %}
+                            <p>{{ ('project-detail_lender-not-eligible-reason-' ~ reason)|trans({'%amountMax%': amountMax|localizedcurrency('EUR')}) }}</p>
+                        {% endfor %}
+                    {% else %}
+                        {% if project.maxValidRate > project.minRate %}
+                            <form action="{{ path('place_bid', {'projectId' : project.projectId}) }}" method="post" class="project-single-form project-single-form-invest" data-bid-confirmation>
+                                <div class="row">
+                                    <div class="form-field col-sm-4">
+                                        <div class="row col-sm-7">
+                                            <div class="col-lg-6 col-md-6">
+                                                <p class="text-align-right show-lg">
+                                                    <label for="bid-interest">{% trans %} project-detail_side-bar-bids-rate-label {% endtrans %}</label>
+                                                </p>
+                                                <p class="text-align-right show-md">
+                                                    <label for="bid-interest">{% trans %} project-detail_side-bar-bids-rate-label {% endtrans %}</label>
+                                                </p>
+                                                <p class="show-sm">
+                                                    <label for="bid-interest">{% trans %} project-detail_side-bar-bids-rate-label {% endtrans %}</label>
+                                                </p>
+                                                <p class="show-xs">
+                                                    <label for="bid-interest">{% trans %} project-detail_side-bar-bids-rate-label {% endtrans %}</label>
+                                                </p>
+                                            </div>
+                                            <label class="col-lg-5 col-md-5 push-lg-1 push-md-1">
+                                                <select id="bid-interest" name="invest[interest]" class="input-field" data-popup-rate >
+                                                    <option value="">{% trans %} project-detail_side-bar-bids-rate-placeholder {% endtrans %}</option>
+                                                    {% if (project.percentFunded < 100) %}
+                                                        {% set adjustment = 0 %}
+                                                    {% else %}
+                                                        {% set adjustment = 0.1 %}
+                                                     {% endif %}
+                                                    {% for rate in range(project.maxValidRate - adjustment, project.minRate, 0.1) %}
+                                                        <option value="{{ rate }}">{{ rate|localizednumberwithprecision(1) }} %</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </label>
+                                        </div>
+                                    </div><!-- /.form-field -->
+                                    <div class="form-field col-sm-4">
+                                        <div class="row col-sm-7 push-sm-1">
+                                            <div class="col-lg-6 col-md-6">
+                                                <p class="text-align-right show-lg">
+                                                    <label for="bid-amount">{% trans %} project-detail_side-bar-bids-amount-label {% endtrans %}</label>
+                                                </p>
+                                                <p class="text-align-right show-md">
+                                                    <label for="bid-amount">{% trans %} project-detail_side-bar-bids-amount-label {% endtrans %}</label>
+                                                </p>
+                                                <p class="show-sm">
+                                                    <label for="bid-amount">{% trans %} project-detail_side-bar-bids-amount-label {% endtrans %}</label>
+                                                </p>
+                                                <p class="show-xs">
+                                                    <label for="bid-amount">{% trans %} project-detail_side-bar-bids-amount-label {% endtrans %}</label>
+                                                </p>
+                                            </div>
+                                            <div class="col-lg-5 col-md-5 push-lg-1 push-md-1">
+                                                <div class="input-group set-right">
+                                                    <div class="btn-group"><span class="icon fa-euro"></span></div>
+                                                    <input id="bid-amount" type="text" name="invest[amount]" value="" class="input-field" autocomplete="off" data-popup-amount>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div><!-- /.form-field -->
+                                </div>
+                                <div class="btn-toolbar">
+                                    <button type="submit" class="btn-primary btn-size-full cursor">{% trans %} project-detail_side-bar-bids-submit-button {% endtrans %}</button>
+                                    <input type="hidden" name="invest[bidToken]" value="{{ bidToken }}">
+                                    <input type="hidden" id="bid-duration" value="{{ project.duration }}">
+                                    <input type="hidden" id="bid-rest-amount" value="{{ amountRest }}">
+                                    <input type="hidden" id="bid-min-amount" value="{{ amountMin }}">
+                                </div><!-- /.btn-toolbar -->
+                                <div class="field-help">&nbsp;</div>
+                            </form><!-- /.project-single-form-invest -->
+                        {% else %}
+                            <div class="field-help">
+                                <p>{% trans %} project-detail_low-boundary-rate-alert {% endtrans %}</p>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            {% else %}
+                <div class="form-notice">
+                    {% trans %} project-detail_side-bar-bid-login {% endtrans %}
+                </div><!-- /.form-notice -->
+                {{ include('partials/components/project-detail/login-form.html.twig') }}
+            {% endif %}
+        </div><!-- /.project-single-info -->
+    </div><!-- /.project-single-info-position -->
+</aside><!-- /.project-single-info-wrap -->

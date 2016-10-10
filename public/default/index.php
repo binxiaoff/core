@@ -1,4 +1,7 @@
 <?php
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
 $loader = require __DIR__.'/../../app/autoload.php';
 include __DIR__ . '/../../core/controller.class.php';
 include __DIR__ . '/../../core/command.class.php';
@@ -12,6 +15,10 @@ ini_set('log_errors', 1);
 
 setlocale(LC_TIME, 'fr_FR.utf8');
 
+if (extension_loaded ('newrelic')) {
+    newrelic_set_appname ("Unilend-front");
+}
+
 if (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) {
     $currentCookieParams = session_get_cookie_params();
 
@@ -24,16 +31,20 @@ if (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVE
     );
 }
 
-session_start();
-ini_set('session.gc_maxlifetime', 3600); // 1h la session
-
 header('X-Server: ' . exec('hostname'));
 
 require __DIR__ . '/prepend.php';
 
-$oKernel = new AppKernel('prod', false);
-$oKernel->boot();
+$kernel = new AppKernel('prod', false);
+$request  = Request::createFromGlobals();
 
-$oDispatcher = new \Unilend\core\Dispatcher($oKernel, 'default', $config);
+try {
+    $response = $kernel->handle($request);
+    $response->send();
+    $kernel->terminate($request, $response);
+} catch (NotFoundHttpException $exception) {
+    $kernel->boot();
+    $dispatcher = new \Unilend\core\Dispatcher($kernel, 'default', $config);
+}
 
 require __DIR__ . '/append.php';

@@ -1,0 +1,47 @@
+//
+// Dashboard Panel - Notifications
+//
+
+.dashboard-panel-alt.dashboard-notifications {
+  width: 100%;
+
+  .dashboard-panel-header,
+  .dashboard-panel-footer {
+    margin: 0 !important;
+    border-bottom: solid 1px $c-grey-l3;
+  }
+
+  .dashboard-panel-header {
+    .dashboard-panel-title {
+      .pip {
+        min-width: 18px;
+        height: 18px;
+        border-radius: 18px;
+        line-height: 18px;
+
+        .pip-number {
+          padding: 0 5px;
+        }
+      }
+    }
+  }
+
+  .dashboard-panel-content {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .dashboard-panel-footer {
+    min-height: 0;
+    padding: 0;
+
+    a {
+      display: block;
+      padding: 15px 15px;
+
+      .ui-is-spinner {
+        color: $c-white !important;
+      }
+    }
+  }
+}

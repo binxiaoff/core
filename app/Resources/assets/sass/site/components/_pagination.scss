@@ -1,0 +1,129 @@
+//
+// Unilend Pagination
+//
+
+.pagination-wrap {
+  @include max-width-site;
+  $padding-height: ($height-pagination - $height-btn) * .5;
+
+  padding-top: 10px;
+  padding-bottom: 10px;
+
+  // Ensure height of pagination equals $height-pagination
+  @include devices('xs', 'sm') {
+    text-align: center;
+  }
+
+  @include devices('md') {
+    $padding-height: ($height-pagination - $height-btn-md) * .5;
+    padding-top: $padding-height;
+    padding-bottom: $padding-height;
+  }
+
+  @include devices('lg') {
+    $padding-height: ($height-pagination - $height-btn-lg) * .5;
+    padding-top: $padding-height;
+    padding-bottom: $padding-height;
+  }
+}
+
+.pagination {
+  a,
+  .link {
+    @include link-states((
+      color: $c-t1,
+      text-decoration: none
+    ), false, (
+      color: $c-t1,
+      text-decoration: underline
+    ), (
+      color: $c-t1,
+      text-decoration: underline
+    ))
+  }
+}
+
+.pagination-info {
+  font-size: 18px;
+  line-height: 26px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+
+  @include devices('md', 'lg') {
+    text-align: left;
+  }
+}
+
+.pagination-location {
+  display: inline-block;
+  margin-right: 50px;
+}
+
+.pagination-index {
+  @include inline-block-list;
+  font-size: 18px;
+  line-height: $height-btn - 4px;
+  vertical-align: middle;
+
+  > li {
+    vertical-align: top;
+    height: $height-btn;
+
+    > a {
+      @include button;
+      @include button-shape-sq;
+
+      @include link-states(
+        $link: (
+          background-color: $c-white,
+          border-color: $c-white,
+          color: $c-t1
+        ),
+        $hover: (
+          background-color: $c-bg1,
+          border-color: $c-bg1,
+          color: $c-t1
+        ),
+        $active: (
+          background-color: $c-white,
+          border-color: $c-white,
+          color: $c-p1
+        )
+      );
+
+      text-align: center;
+    }
+
+    &.current {
+      > a {
+        background-color: $c-white;
+        border-color: $c-white;
+        color: $c-p1;
+      }
+    }
+  }
+
+  @include devices('md', 'lg') {
+    text-align: right;
+  }
+
+  @include devices('md') {
+    line-height: $height-btn-md - 4px; // Minus the vertical border-width total
+
+    > li {
+      height: $height-btn-md;
+    }
+  }
+
+  @include devices('lg') {
+    line-height: $height-btn-lg - 4px;
+
+    > li {
+      height: $height-btn-lg;
+    }
+  }
+}
+
+.pagination-more {
+  padding: 0 20px;
+}

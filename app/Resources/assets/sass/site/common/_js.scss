@@ -1,0 +1,116 @@
+//
+// Unilend UI JS Classes
+// These are applied/removed to the html element via JS
+// Anything related to the site UI JS will either be in main.dev.js
+// or in the related component JS file, e.g. FileAttach.js, Sortable.js, etc.
+
+// Loading spinner
+$js-is-spinner: '.ui-is-spinner';
+
+// Mark something in UI is loading or working
+$js-is-loading: '.ui-is-loading';
+$js-is-loading-end: '.ui-is-loading-end'; // Loading has finished, this is for animation/transition end of loading
+
+// Site header fixed class (applied to <html>)
+$js-site-header-fixed: '.ui-site-header-fixed';
+
+// Site mobile menu states (applied to <html>)
+$js-site-mobile-menu-open: '.ui-site-mobile-menu-open';
+$js-site-mobile-menu-opening: '.ui-site-mobile-menu-opening';
+$js-site-mobile-menu-closing: '.ui-site-mobile-menu-closing';
+
+// Site search states (applied to <html>)
+$js-site-search-open: '.ui-site-search-open';
+$js-site-mobile-search-open: '.ui-site-mobile-search-open';
+
+// Represents when the current (logged in) user is involved with something (project, etc.)
+$js-current-user-involved: '.ui-current-user-involved';
+
+// Represents when a project has expired
+$js-expired-project: '.ui-project-expired';
+
+// Applied to .project-list-filter when the sorting has been changed to ascending
+$js-project-list-sort-asc: '.ui-project-list-sort-asc';
+
+// Applied to .project-list-filter when the sorting has been changed to descending
+$js-project-list-sort-desc: '.ui-project-list-sort-desc';
+
+// Project List map item selected
+$js-project-list-map-item-selected: '.ui-project-list-map-item-selected';
+
+// Project single nav fixed class (applied to <head>)
+$js-project-single-menu-fixed: '.ui-project-single-menu-fixed';
+
+// Sortable column
+$js-sortable-column: '.ui-sortable-column';
+
+// Sortable responsive filters
+$js-sortable-responsivefilters: '.ui-sortable-responsivefilters';
+
+// Current sorted column
+$js-current-sortable-column: '.ui-sortable-current';
+
+// Applied to current sortable column when the sorting has been changed to ascending
+$js-sortable-direction-asc: '.ui-sortable-direction-asc';
+
+// Applied to current sortable column when the sorting has been changed to descending
+$js-sortable-direction-desc: '.ui-sortable-direction-desc';
+
+// View the project-single-map (applied to <html>)
+$js-project-single-map-open: '.ui-project-single-map-open';
+$js-project-single-map-opening: '.ui-project-single-map-opening';
+$js-project-single-map-closing: '.ui-project-single-map-closing';
+
+// project-single-map toggle
+$js-project-single-map-toggle: '.ui-project-single-map-toggle';
+
+// Collapse (accordian) is open
+$js-collapse-open: '.ui-collapse-open';
+
+// User Levels
+$js-user-level-0: '.ui-user-level-0';
+$js-user-level-1: '.ui-user-level-1';
+$js-user-level-2: '.ui-user-level-2';
+$js-user-level-3: '.ui-user-level-3';
+$js-user-level-4: '.ui-user-level-4';
+$js-user-level-5: '.ui-user-level-5';
+
+// Element has a tooltip to show
+$js-tooltip: '.ui-tooltip';
+
+// User has a positive/low/negative balance
+$js-balance-positive: '.ui-balance-positive';
+$js-balance-low: '.ui-balance-low';
+$js-balance-negative: '.ui-balance-negative';
+
+// Autolend Table
+// -- JS Functionality has been applied
+$js-autolend: '.ui-autolendtable';
+// -- Cell is enabled/configurable
+$js-autolend-cell-enabled: '.ui-autolend-cell-enabled';
+// -- Interest average equal/within/exceeds
+$js-autolend-average-equal: '.ui-autolend-average-equal';
+$js-autolend-average-within: '.ui-autolend-average-within';
+$js-autolend-average-exceeds: '.ui-autolend-average-exceeds';
+$js-autolend-out-of-range: '.ui-autolend-out-of-range';
+
+// Dropdown menus
+$js-nav-dropdown-menu: '[data-nav-dropdown-menu]';
+$js-nav-dropdown-menu-open: '.ui-nav-dropdown-menu-open';
+
+// Notifications
+$js-notification-open: '.ui-notification-open';
+$js-notification-status-unread: '.ui-notification-status-unread';
+$js-notification-status-read: '.ui-notification-status-read';
+
+// User Preter Operations details open
+$js-details-open: '.ui-details-open';
+
+// Value is positive
+$js-value-positive: '.ui-value-positive';
+// Value is negative
+$js-value-negative: '.ui-value-negative';
+
+// ChartView
+$js-chartview-loading: '.ui-chartview-loading';
+$js-chartview-error: '.ui-chartview-error';

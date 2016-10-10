@@ -1,0 +1,200 @@
+//
+// Unilend Tables
+//
+
+@mixin table-row-alt($row-bg: mix($c-bg3, $c-bg4)) {
+  &.alt,
+  &:nth-of-type(2n+1) {
+    background-color: $row-bg;
+    @content;
+  }
+}
+
+// Table scroll
+.table-scroll {
+  width: 100%;
+  margin-bottom: 20px;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+
+  > table {
+    margin-bottom: 0;
+
+    // Ensure tables have a minimum width
+    @include devices('xs', 'sm') {
+      min-width: 600px;
+    }
+  }
+
+  #{$js-sortable-responsivefilters} {
+    background: $c-bg2;
+    padding: 8px 8px 0;
+    margin-bottom: 0;
+  }
+
+  // Safari bug shows
+  //@include devices('xs', 'sm') {
+  //  overflow: auto;
+  //}
+}
+
+// Base table
+table {
+  display: table;
+  width: 100%;
+  box-sizing: border-box;
+  table-layout: fixed;
+}
+
+tr {
+  box-sizing: border-box;
+  display: table-row;
+  padding: 0;
+  margin: 0;
+}
+
+th {
+  box-sizing: border-box;
+  display: table-cell;
+  padding: 5px 15px;
+  margin: 0;
+  color: $c-t3;
+  font-size: 11px;
+  letter-spacing: 2px;
+  line-height: 1em;
+  text-transform: uppercase;
+
+  .label {
+    max-width: 100%;
+    display: inline-block;
+    height: 1.2em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  @include devices('sm', 'laptop', 'lg') {
+    font-size: 11px;
+    padding: 10px 30px;
+  }
+}
+
+td {
+  box-sizing: border-box;
+  display: table-cell;
+  padding: 5px 15px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.3em;
+
+  // Weird bug in iOS Safari
+  @include devices('xs') {
+    -webkit-text-size-adjust: 100%;
+    font-size: 14px !important;
+
+    &[colspan] {
+      font-size: 14px !important;
+    }
+  }
+
+  @include devices('sm', 'laptop', 'lg') {
+    padding: 10px 30px;
+    font-size: 16px;
+  }
+}
+
+// Generic table
+.table {
+  border: solid 8px $c-bg2;
+  background-color: $c-white;
+
+  thead {
+    background-color: $c-bg2;
+
+    th {
+      padding-top: 10px;
+      padding-bottom: 18px;
+    }
+  }
+
+  tbody {
+    tr {
+      background-color: $c-white;
+      color: $c-t1;
+
+      // Color explicitly marked alternative rows
+      &.alt {
+        background-color: mix($c-bg3, $c-bg4);
+      }
+
+      // Any row that the current user is involved with
+      &#{$js-current-user-involved} {
+        background-color: $c-purple-l2;
+        color: $c-p1;
+      }
+
+      &.table-item-title {
+        background-color: $c-bg3;
+        color: $c-t2;
+
+        td {
+          font-weight: bold;
+        }
+      }
+
+      &.table-item-total {
+        background-color: $c-bg2 !important;
+        color: $c-p1;
+        font-weight: bold;
+        text-transform: uppercase;
+
+        td {
+          font-weight: bold;
+        }
+      }
+    }
+  }
+}
+
+// Sortable table columns
+thead.table-sortable-columns {
+  display: none;
+
+  @include devices('md', 'lg') {
+    display: table-header-group;
+  }
+}
+
+.table-sortable-column {
+  cursor: pointer;
+  line-height: 1em;
+  vertical-align: middle;
+
+  .label {
+    max-width: 75%;
+  }
+
+  // Currently sorted column
+  &#{$js-current-sortable-column} {
+    color: $c-t1;
+  }
+
+  // Sort order icon
+  &:after {
+    font-family: $ff-icon;
+    content: $fa-sort-u;
+  }
+
+  // Ascending
+  &#{$js-sortable-direction-asc}:after {
+    // content: '\f0de'; // Sort asc
+    content: $fa-sort-asc-u;
+  }
+
+  // Descending
+  &#{$js-sortable-direction-desc}:after {
+    // content: '\f0dd'; // Sort desc
+    content: $fa-sort-desc-u;
+  }
+}

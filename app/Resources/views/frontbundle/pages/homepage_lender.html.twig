@@ -1,0 +1,158 @@
+{# Homepage Preter #}
+{% extends 'layouts/_layout.html.twig' %}
+
+{% set page = {
+    title: 'Prêter'
+} %}
+
+{% block siteContent %}
+    <article id="homepre" class="page">
+
+        <section id="homepre-video-hero" class="cta-video-hero" aria-hidden="true" data-set-device-height="xs">
+            <div class="video-hero-wrapper">
+                <div class="video-hero" style="background-image: url('{{ completeTestimonialUrl(featureLender.feature_image, 'image') }}')">
+                    <div class="caption caption-align-left">
+                        <div class="caption-name">{{ featureLender.name }}, {{ featureLender.projects }}</div>
+                        <div class="caption-info">{{ featureLender.info }}</div>
+                    </div><!-- /.caption -->
+                </div><!-- /.video-hero -->
+
+                <div class="video-hero-cta">
+                    <div class="btn-media-wrapper">
+                        <a href="https://www.youtube.com/watch?v=Fmtz6vI65GY" class="btn-media fancybox-media fancybox-embed-videojs">
+                            <span class="icon fa-play"><span class="sr-only">Play</span></span>
+                        </a>
+                    </div>
+                    <h3>{{ featureLender.video_caption }}</h3>
+                </div><!-- /.video-hero-cta -->
+
+                {% include 'partials/components/list-socialmedia.html.twig' %}
+
+                <div class="btn-toolbar">
+                    <a href="{{ path('lender_subscription_personal_information') }}" class="btn-cta btn-color-primary">
+                        <span class="icon fa-angle-right"></span>
+                        {% trans %} site-general_button-under-video-lender {% endtrans %}
+                    </a>
+                </div>
+            </div><!-- /.video-hero-wrapper -->
+        </section><!-- /.cta-video-hero -->
+
+        <section id="homepre-section-steps" class="page-section">
+            <div class="site-wrap">
+                <h1 class="h2">{% trans %} home-lender_lending-steps-title {% endtrans %}</h1>
+                <div class="row">
+                    <div class="col-lg-4 col-md-4">
+                        <div class="promo">
+                            <div class="promo-image">
+                                {{ svgimage('#promo-profile', '', 190, 190, 'none')  | raw }}
+                            </div>
+                            <h3 class="round-number">1</h3>
+                            <p>{% trans %} home-lender_lending-step-1-text {% endtrans %}</p>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4 col-md-4">
+                        <div class="promo">
+                            <div class="promo-image">
+                                {{ svgimage('#promo-projects', '', 190, 190, 'none')  | raw }}
+                            </div>
+                            <h3 class="round-number">2</h3>
+                            <p>{% trans %} home-lender_lending-step-2-text {% endtrans %}</p>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4 col-md-4">
+                        <div class="promo">
+                            <div class="promo-image">
+                                {{ svgimage('#promo-money', '', 190, 190, 'none')  | raw }}
+                            </div>
+                            <h3 class="round-number">3</h3>
+                            <p>{% trans %} home-lender_lending-step-3-text {% endtrans %}</p>
+                        </div>
+                    </div>
+                </div><!-- /.row -->
+                <div class="row">
+                    <div class="btn-toolbar">
+                        <a href="{{ path('lender_faq') }}" class="btn-default ui-open-site-search">{% trans %} home-lender_question-button {% endtrans %}</a>
+                        <a href="{{ path('lender_subscription_personal_information') }}" class="btn-primary">{% trans %} home-lender_create-account-button {% endtrans %}</a>
+                    </div><!-- /.btn-toolbar -->
+                    {% if showWelcomeOffer == true %}
+                        <div class="stamp" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
+                            {% trans %} site-general_unilend-advantages-welcome-offer-description {% endtrans %}
+                        </div><!-- /.stamp -->
+                    {% endif %}
+                </div>
+            </div><!-- /.site-wrap -->
+        </section><!-- /.page-section -->
+
+        <section id="homepre-project-list" class="page-section bg-bg3">
+            <div class="site-wrap">
+                <h2 class="h2"> {% transchoice projects|length with {'%numberProjects%' : projects|length} %} project-list_title-ongoing-projects  {% endtranschoice %}</h2>
+
+                {% include 'partials/components/project-list/project-list.html.twig' %}
+
+                <div class="btn-toolbar">
+                    <a href="{{ path('projects_list') }}" class="btn-primary">{% trans %} home-lender_all-projects-button {% endtrans %}</a>
+                </div><!-- /.btn-toolbar -->
+            </div><!-- /.site-wrap -->
+        </section><!-- /.page-section -->
+
+        <section id="homepre-section-whylend" class="page-section">
+            <div class="site-wrap">
+                <h2 class="h2">{% trans %} home-lender_unilend-fact-title {% endtrans %}</h2>
+
+                <div class="promo-swiper swiper-container">
+                    <div class="row swiper-wrapper">
+                        <div class="col-lg-4 col-md-4 swiper-slide">
+                            <div class="promo">
+                                <div class="promo-image">
+                                    {{ svgimage('#promo-saving', '', 190, 190, 'none') | raw }}
+                                </div>
+                                <h3 class="promo-highlight">
+                                    <span class="ui-text-count" data-start-count="0" data-end-count="100" data-total-time="3000" data-tween-count="easeOutQuint">100</span>
+                                    <sup>%</sup>
+                                </h3>
+                                <p>{% trans %} home-lender_unilend-stats-saving-text {% endtrans %}</p>
+                            </div><!-- /.promo -->
+                        </div>
+
+                        <div class="col-lg-4 col-md-4 swiper-slide">
+                            <div class="promo">
+                                <div class="promo-image">
+                                    {{ svgimage('#promo-money', '', 190, 190, 'none') | raw }}
+                                </div>
+                                <h3 class="promo-highlight">
+                                    <span class="ui-text-count" data-start-count="0" data-end-count="{{ getStatistic('unilendIRR')|round(1, 'floor') }}" data-total-time="3000" data-limit-decimal="1" data-tween-count="easeOutQuint">{{ getStatistic('unilendIRR')|round(1, 'floor')|localizednumber }}</span>
+                                    <sup>%</sup>
+                                </h3>
+                                <p>{% trans %} home-lender_unilend-stats-linechart-text {% endtrans %}</p>
+                            </div>
+                        </div><!-- /.promo -->
+
+                        <div class="col-lg-4 col-md-4 swiper-slide">
+                            <div class="promo">
+                                <div class="promo-image">
+                                    {{ svgimage('#promo-piggybank', '', 190, 190, 'none') | raw }}
+                                </div>
+                                <h3 class="promo-highlight">
+                                   <span class="ui-text-count" data-start-count="0" data-end-count="20" data-total-time="3000" data-tween-count="easeOutQuint">20</span>
+                                    <sup>€</sup>
+                                </h3>
+                                <p>{% trans %} home-lender_unilend-stats-piggybank-text {% endtrans %}</p>
+                            </div><!-- /.promo -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row page-section-footer">
+                    <div class="btn-toolbar">
+                        <a href="{{ path('lender_subscription_personal_information') }}" class="btn-primary">{% trans %} home-lender_lending-button-below-unilend-facts {% endtrans %}</a>
+                    </div>
+                    <p><a href="{{ path('home_borrower') }}" class="link c-p2">{% trans %} home-lender_borrow-link-below-unilend-facts {% endtrans %}</a></p>
+                </div>
+            </div><!-- /.site-wrap -->
+        </section><!-- /.promos -->
+
+        {{ render(controller('UnilendFrontBundle:Main:footerReviews')) }}
+    </article>
+{% endblock %}

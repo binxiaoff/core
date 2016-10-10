@@ -17,7 +17,7 @@ class Loader
      *
      * @internal You cannot call this method directly.
      *
-     * @return bool
+     * @return mixed|bool
      */
     public static function loadData($object, array $params = array(), $db = null)
     {
@@ -155,7 +155,7 @@ class Loader
             if (isset($id[0])) {
                 $dao = str_replace('--id--', $id[0], $dao);
             }
-            
+
             $dao = str_replace('--declaration--', $declaration, $dao);
             $dao = str_replace('--initialisation--', $initialisation, $dao);
             $dao = str_replace('--remplissage--', $remplissage, $dao);

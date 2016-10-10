@@ -56,7 +56,7 @@
             </tbody>
         </table>
     <?php else: ?>
-        <p>Il n'y a aucun utilisateur pour le moment.</p>
+        <p>Il n'y a aucun configuration pour le moment.</p>
     <?php endif; ?>
 </div>
 <?php unset($_SESSION['freeow']); ?>

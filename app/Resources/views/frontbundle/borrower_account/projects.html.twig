@@ -1,0 +1,198 @@
+{% extends 'borrower_account/_layout.html.twig' %}
+
+{% set page = {
+    id: 'user-borrower-projects',
+    title: 'Emprunteur / Dashboard',
+    permalink: path('borrower_account_projects'),
+    classNames: 'user-emprunteur-projects'
+} %}
+
+{% block dashboardContent %}
+    <div class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-nav">
+            <ul class="nav nav-dashboard-tabs" data-nav-dropdown-menu="mobile">
+                <li role="presentation" class="active"><a href="#">{{ 'borrower-projects_projects-tab-title'|trans }}</a></li>
+                <li role="presentation"><a href="{{ path('borrower_account_new_demand') }}">{{ 'borrower-demand_new-demand-tab-title'|trans }}</a></li>
+            </ul>
+        </div><!-- /.dashboard-nav-content -->
+
+        <div class="dashboard-tabs-content tab-content">
+            <div id="profile-projects" class="dashboard-tab-pane">
+                <article class="panel">
+                    <section role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                        <div class="table-scroll">
+                            {% if pre_funding_projects is not empty %}
+                                <table class="table table-myoperations-prefunding">
+                                    <thead>
+                                        <tr>
+                                            <th class="table-borrower-file">
+                                                <span class="label">{% trans %} borrower-projects_project-id {% endtrans %}</span>
+                                            </th>
+                                            <th class="table-borrower-nature">
+                                                <span class="label">{% trans %} borrower-projects_object {% endtrans %}</span>
+                                            </th>
+                                            <th class="table-borrower-amount">
+                                                <span class="label">{% trans %} borrower-projects_amount-and-duration {% endtrans %}</span>
+                                            </th>
+                                            <th class="table-borrower-status">
+                                                <span class="label">{% trans %} borrower-projects_status {% endtrans %}</span>
+                                            </th>
+                                            <th class="table-borrower-autolend">
+                                                <span class="label">{% trans %} borrower-projects_autolend-predict-by-precentage {% endtrans %}</span>
+                                            </th>
+                                            <th class="table-borrower-upload">
+                                                <span class="label"></span>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                        <tbody>
+                                        {% for project in pre_funding_projects %}
+                                            <tr>
+                                                <td>{{ project.id_project }}</td>
+                                                <td>{{ project.nature_project }}</td>
+                                                <td>{{ project.amount|localizednumber }}&nbsp;€<br>{% transchoice project.period with {'%count%' : project.period} %} common_month {% endtranschoice %}</td>
+                                                <td>{{ ('borrower-projects_' ~ project.project_status_label)|trans }}</td>
+                                                <td>{% if project.predict_autobid > 0 %} {{ project.predict_autobid|localizednumber }}&nbsp;% {% endif %}</td>
+                                                <td class="center">
+                                                    <a href="{{ path('project_request_files', {'hash' : project.hash}) }}" class="ui-has-tooltip" data-original-title="{% trans %} borrower-projects_add-documents-icon {% endtrans %}"><span class="icon fa-file-u16"></span></a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            {% endif %}
+                        </div>
+
+                        <div class="table-scroll">
+                            {% if funding_projects is not empty %}
+                                <table class="table table-myoperations-funding">
+                                    <thead>
+                                        <tr>
+                                            <th class="table-borrower-file">
+                                                <span class="label">{% trans %} borrower-projects_project-id {% endtrans %}</span>
+                                            </th>
+                                            <th class="table-borrower-nature">
+                                                <span class="label">{% trans %} borrower-projects_object {% endtrans %}</span>
+                                            </th>
+                                            <th class="table-borrower-amount">
+                                                <span class="label">{% trans %} borrower-projects_amount-and-duration {% endtrans %}</span>
+                                            </th>
+                                            <th class="table-borrower-ending-date">
+                                                <span class="label">{% trans %} borrower-projects_end-date {% endtrans %}</span>
+                                            </th>
+                                            <th class="table-borrower-funding-rate">
+                                                <span class="label">{% trans %} borrower-projects_funding-reached-by-precentage {% endtrans %}</span>
+                                            </th>
+                                            <th class="table-borrower-average-rate">
+                                                <span class="label">{% trans %} borrower-projects_current-average-rate {% endtrans %}</span>
+                                            </th>
+                                            <th class="table-borrower-buttons">
+                                                <span class="label"></span>
+                                            </th>
+                                            <th class="table-borrower-buttons">
+                                                <span class="label"></span>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for project in funding_projects %}
+                                            <tr>
+                                                <td>{{ project.id_project }}</td>
+                                                <td>{{ project.nature_project }}</td>
+                                                <td>{{ project.amount|localizednumber }}&nbsp;€<br>{% transchoice project.period with {'%count%' : project.period} %} common_month {% endtranschoice %}</td>
+                                                <td>{{ project.ended|localizeddate('short', 'none')}}</td>
+                                                <td>{{ project.funding_progress|localizednumber }}&nbsp;%</td>
+                                                <td>{{ project.average_ir|localizednumber }}&nbsp;%</td>
+                                                <td>
+                                                    {% if project.funding_progress >= 100 and app.session.get('closingProjects')[project.id_project] is not defined %}
+                                                        <a href="javascript:;" class="ui-has-tooltip" data-original-title="{{ 'borrower-projects_early-closing-stop-tooltip'|trans|escape('html_attr') }}" data-modal-toggle="#close-funding-project-{{ project.id_project }}">
+                                                            <span class="icon fa-close-u32"></span>
+                                                        </a>
+                                                        <div style="display:none">
+                                                            <div id="close-funding-project-{{ project.id_project }}" data-modal>
+                                                                <form action="{{ path('borrower_account_close_project') }}" method="post">
+                                                                    <header class="modal-header">
+                                                                        <h2>{{ 'borrower-projects_early-closing-lightbox-title'|trans }}</h2>
+                                                                    </header>
+                                                                    <div class="modal-body">
+                                                                        <p>{{ 'borrower-projects_early-closing-lightbox-content'|trans({'%currentRate%' : project.average_ir|localizednumber})|raw }}</p>
+                                                                    </div>
+                                                                    <footer class="modal-footer">
+                                                                        <a href="javascript:;" class="btn-default" data-modal-doactionclose>{{ 'borrower-projects_early-closing-lightbox-cancel-button'|trans }}</a>
+                                                                        <button type="submit" name="project" value="{{ project.id_project }}" class="btn-primary">{{ 'borrower-projects_early-closing-lightbox-confirm-button'|trans }}</button>
+                                                                    </footer>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    {% elseif project.funding_progress >= 100  %}
+                                                        <a class="ui-has-tooltip" data-original-title="{{ 'borrower-projects_early-closing-processing-tooltip'|trans|escape('html_attr') }}">
+                                                            <span class="icon fa-refresh"></span>
+                                                        </a>
+                                                    {% endif %}
+                                                </td>
+                                                <td><a href="{{ path('project_detail', {'projectSlug' : project.slug }) }}" class="ui-has-tooltip" data-original-title="{{ 'borrower-projects_project-detail-link-icon'|trans|escape('html_attr') }}"><span class="icon fa-eye-u16"></span></a></td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            {% endif %}
+                        </div>
+
+                        <div class="table-scroll">
+                            {% if post_funding_projects is not empty %}
+                            <table class="table table-myoperations-postfunding">
+                                <thead>
+                                    <tr>
+                                        <th class="table-borrower-file">
+                                            <span class="label">{% trans %} borrower-projects_project-id {% endtrans %}</span>
+                                        </th>
+                                        <th class="table-borrower-nature">
+                                            <span class="label">{% trans %} borrower-projects_object {% endtrans %}</span>
+                                        </th>
+                                        <th class="table-borrower-amount">
+                                            <span class="label">{% trans %} borrower-projects_amount-and-duration {% endtrans %}</span>
+                                        </th>
+                                        <th class="table-borrower-ending-date">
+                                            <span class="label">{% trans %} borrower-projects_end-date {% endtrans %}</span>
+                                        </th>
+                                        <th class="table-borrower-monthly">
+                                            <span class="label">{% trans %} borrower-projects_monthly-payment {% endtrans %}</span>
+                                        </th>
+                                        <th class="table-borrower-average-rate">
+                                            <span class="label">{% trans %} borrower-projects_average-rate-of-project {% endtrans %}</span>
+                                        </th>
+                                        <th class="table-borrower-crd">
+                                            <span class="label">{% trans %} borrower-projects_current-outstanding-capital {% endtrans %}</span>
+                                        </th>
+                                        <th class="table-borrower-date">
+                                            <span class="label">{% trans %} borrower-projects_next-maturity {% endtrans %}</span>
+                                        </th>
+                                        <th class="table-borrower-button">
+                                            <span class="label"></span>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for project in post_funding_projects %}
+                                        <tr>
+                                            <td>{{ project.id_project }}</td>
+                                            <td>{{ project.nature_project }}</td>
+                                            <td>{{ project.amount|localizednumber }}&nbsp;€<br>{% transchoice project.period with {'%count%': project.period} %} common_month {% endtranschoice %}</td>
+                                            <td>{{ project.ended|localizeddate('short', 'none')}}</td>
+                                            <td>{{ project.monthly_payment|localizedcurrency('EUR') }}</td>
+                                            <td>{{ project.average_ir|localizednumber }}&nbsp;%</td>
+                                            <td>{{ project.outstanding_capital|localizedcurrency('EUR') }}</td>
+                                            <td>{{ project.next_maturity_date|localizeddate('short', 'none') }}</td>
+                                            <td><a href="{{ path('project_detail', {'projectSlug' : project.slug }) }}" class="ui-has-tooltip" data-original-title="{{ 'borrower-projects_project-detail-link-icon'|trans }}"><span class="icon fa-eye-u16"></span></a></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                                {% endif %}
+                            </table>
+                        </div>
+                    </section><!-- /.ui-toggle-group -->
+                </article><!-- /.panel -->
+            </div><!-- /#profile-info.dashboard-tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </div><!-- /.dashboard-tabs -->
+{% endblock %}

@@ -1,0 +1,997 @@
+//
+// Unilend User Preter Autolend
+//
+
+// @todo Sooooo much refactoring to make it easier to follow all the responsive changes
+
+$height-autolend-cell: 90px;
+$height-autolend-cell-header: 50px;
+
+#user-preter-autolend.dashboard {
+
+  @include devices ('md', 'lg') {
+    > .dashboard-inner > .site-wrap > .col-content {
+      padding-left: 20px;
+    }
+  }
+
+  .readable-wrap {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .panel {
+    @include dashboard-content-panel;
+    position: relative;
+    border-bottom: 0 !important;
+
+    .panel-header {
+      margin-bottom: 20px;
+
+      > :first-child {
+        margin-top: 0;
+      }
+
+      > :last-child {
+        margin-bottom: 0;
+      }
+
+      @include devices('lg') {
+        margin-bottom: 30px;
+      }
+    }
+
+    .panel-content {
+      margin-bottom: 20px;
+    }
+
+    // Padding on the right side for larger devices
+    .panel-autolend,
+    .panel-autolend-config {
+      @include devices('laptop') {
+        padding-right: 150px !important;
+      }
+
+      @include devices('lg') {
+        padding-right: 200px !important;
+      }
+    }
+
+    &.panel-autolend-config {
+      padding-top: 0 !important;
+    }
+
+    &.panel-autolend-table {
+      background-color: $c-bg3;
+    }
+  }
+
+  .panel-autolend-config {
+    .readable-wrap {
+      > :first-child {
+        margin-top: 0;
+      }
+    }
+  }
+
+  .panel-autolend-table {
+    border-bottom: solid 2px $c-bg2 !important;
+
+    .btn-controls {
+      margin: 0;
+      text-align: center;
+
+      .btn-default,
+      .btn-primary,
+      .btn-alternate {
+        margin: 0;
+      }
+
+      @include devices('md', 'lg') {
+        text-align: right;
+      }
+    }
+  }
+
+  .autolend-enable {
+    padding-top: 20px;
+    padding-bottom: 20px;
+
+    .field-label-inline {
+      margin-right: 20px;
+    }
+  }
+
+  .ui-autolend-table-config-toggle {
+    display: block;
+    padding: 15px;
+    background-color: $c-bg3;
+    color: $c-t2;
+    cursor: pointer;
+    line-height: 1.3em;
+    text-align: center;
+    text-decoration: none;
+
+    .icon {
+      color: $c-t3;
+    }
+
+    .ui-autolend-table-is-visible {
+      display: none;
+    }
+
+    .ui-autolend-table-is-hidden {
+      display: block;
+    }
+
+    //
+    &.ui-collapse-open {
+      .ui-autolend-table-is-visible {
+        display: block;
+      }
+
+      .ui-autolend-table-is-hidden {
+        display: none;
+      }
+    }
+
+    > input[type="checkbox"] {
+      @include hide-accessible;
+    }
+  }
+
+  .ui-autolend-table-use-average-interest {
+    @include clearfix;
+    padding-bottom: 20px;
+    text-align: center;
+
+    .field-label {
+      display: block;
+      font-size: $fs-base * .9;
+      line-height: 1.3em;
+    }
+
+    label.custom-input-switch {
+      display: block;
+      float: none;
+      clear: both;
+    }
+
+    @include devices('md', 'lg') {
+      text-align: left;
+
+      label.custom-input-switch {
+        float: left;
+        margin-right: 10px;
+      }
+    }
+  }
+}
+
+// Autolend Table
+.autolend-table {
+  margin-bottom: 20px;
+
+  @include devices('md') {
+    margin-bottom: 30px;
+  }
+
+  @include devices('lg') {
+    margin-bottom: 40px;
+  }
+
+  .btn-cell-enable {
+    display: block;
+    width: 100%;
+    height: 100%;
+
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+
+    text-align: center;
+    text-decoration: none !important;
+
+    &:before {
+      content: $fa-plus-u16;
+      display: block;
+      width: 46px;
+      height: 46px;
+      margin: -23px 0 0 -23px;
+
+      position: absolute;
+      left: 50%;
+      top: 50%;
+
+      background-color: $c-white;
+      border-radius: 46px;
+      color: $c-bg1;
+      font-family: $ff-icon;
+      font-size: $fs-h3;
+      line-height: 46px;
+      text-align: center;
+      text-decoration: none !important;
+      vertical-align: middle;
+    }
+  }
+
+  .btn-cell-minus,
+  .btn-cell-plus {
+    display: block;
+    width: 30px;
+    height: $height-autolend-cell;
+
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 5;
+
+    font-size: $fs-base * 1.2;
+    font-weight: bold;
+    line-height: $height-autolend-cell;
+    text-align: center;
+    text-decoration: none !important;
+    vertical-align: middle;
+
+    transition: background-color .2s;
+
+    @include link-states(
+      $link: (
+        background-color: transparent,
+        color: $c-white
+      ),
+      $hover: (
+        background-color: fade-out($c-white, .8),
+        color: $c-white
+      ),
+      $active: (
+        background-color: fade-out($c-white, .6),
+        color: $c-white
+      )
+    );
+
+    @include devices('xs', 'sm') {
+      display: none;
+    }
+  }
+
+  .col-table {
+    @include clearfix;
+  }
+
+  .col-table,
+  .col-info,
+  .col-header,
+  .col-data {
+    box-sizing: border-box;
+    float: left;
+  }
+
+  .cell {
+    box-sizing: border-box;
+    padding: 10px;
+    height: $height-autolend-cell;
+    float: left;
+    overflow: hidden;
+    position: relative;
+
+    border-bottom: solid 2px $c-bg2;
+    border-right: solid 2px $c-bg2;
+    line-height: 1.3em;
+    text-align: center;
+  }
+
+  .cell-header {
+    background-color: $c-bg2;
+    color: $c-t2;
+    font-size: $fs-base * .9;
+    text-align: center;
+    vertical-align: middle;
+
+    @include devices('xs', 'sm') {
+      font-size: $fs-base * .8;
+    }
+  }
+
+  .cell-data {
+    &#{$js-autolend-cell-enabled} {
+      &#{$js-autolend-average-within} {
+        background-color: $c-white;
+        color: $c-teal;
+
+        .cell-input input {
+          color: $c-teal;
+        }
+
+        &:hover,
+        &:active,
+        &.active {
+          background-color: $c-teal;
+          color: $c-white;
+
+          .cell-input input {
+            color: $c-white;
+          }
+        }
+      }
+
+      &#{$js-autolend-average-exceeds} {
+        background-color: $c-white;
+        color: $c-orange-l;
+
+        .cell-input input {
+          color: $c-orange-l;
+        }
+
+        &:hover,
+        &:active,
+        &.active {
+          background-color: $c-orange-l;
+          color: $c-white;
+
+          .cell-input input {
+            color: $c-white;
+          }
+        }
+      }
+
+      &#{$js-autolend-out-of-range} {
+        background-color: $c-grey-l4;
+        color: $c-orange;
+
+        .cell-input {
+          >.icon {
+            display: inline-block;
+            font-size: 64px;
+            position: absolute;
+            left: 24px;
+            top: 12px;
+            opacity: 0.5;
+          }
+
+          input {
+            color: $c-orange;
+          }
+        }
+
+        .btn-cell-minus,
+        .btn-cell-plus {
+          color: transparent;
+        }
+
+        &:hover,
+        &:active,
+        &.active {
+          background-color: $c-orange;
+          color: $c-white;
+
+          .cell-input input {
+            color: $c-white;
+          }
+
+          .btn-cell-minus,
+          .btn-cell-plus {
+            @include link-states(
+              $link: (
+                color: $c-white
+              ),
+              $hover: (
+                color: $c-white
+              ),
+              $active: (
+                color: $c-white
+              )
+            );
+          }
+        }
+      }
+    }
+  }
+
+  .cell-input {
+    width: 100%;
+    height: $height-autolend-cell;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+
+    // Add a percentage
+    &:after {
+      box-sizing: border-box;
+      content: '%';
+      padding: 0;
+      margin: 0;
+
+      position: absolute;
+      right: 24%;
+      top: 38%;
+
+      color: inherit;
+      font-size: .8em;
+      line-height: 1em;
+
+      user-select: none;
+    }
+
+    input {
+      box-sizing: border-box;
+      display: block;
+      width: 100%;
+      height: $height-autolend-cell;
+
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+
+      background-color: transparent;
+      border: 0;
+      font-family: $ff-base;
+      font-size: $fs-h3;
+      line-height: $height-autolend-cell;
+      text-align: center;
+      vertical-align: middle;
+
+      // Remove the default number spin buttons
+      -moz-appearance: textfield;
+
+      &::-webkit-inner-spin-button,
+      &::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+    }
+
+    .btn-cell-minus {
+      left: 0;
+
+      &:before {
+        display: inline;
+        content: '–';
+      }
+    }
+
+    .btn-cell-plus {
+      right: 0;
+
+      &:before {
+        display: inline;
+        content: '+';
+      }
+    }
+
+    >.icon {
+      display: none;
+    }
+  }
+
+  .info-intro,
+  .info-evaluation {
+    box-sizing: border-box;
+    padding: 20px;
+    overflow: auto;
+    position: relative;
+    text-align: center;
+
+    @include devices('sm', 'md', 'lg') {
+      height: $height-autolend-cell * 5;
+    }
+
+    @include devices('md') {
+      padding: 20px;
+    }
+
+    @include devices('lg') {
+      padding: 30px;
+    }
+  }
+
+  .info-intro {
+    h1, h2, h3, h4, h5, h6 {
+      color: $c-t1;
+    }
+
+    .info-icon {
+      color: $c-p1;
+    }
+  }
+
+  .info-evaluation {
+    .info-title {
+      margin-top: 0;
+    }
+
+    .btn-cell-reset {
+      @include button;
+      @include button-shape-xs;
+      @include button-color-outline;
+
+      // @include devices('md', 'lg') {
+      //   @include button-shape-sm;
+      // }
+      font-size: $fs-base * .8;
+    }
+
+    .info-cell-disable {
+      @include clearfix;
+      box-sizing: border-box;
+      width: 100%;
+
+      font-size: $fs-base * .8;
+      line-height: 1.3em;
+      text-align: left;
+
+      label.custom-input-switch {
+        float: right;
+        margin-left: 20px;
+        margin-top: 10px;
+      }
+
+      @include devices('xs') {
+        max-width: 200px;
+        margin-top: 20px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      @include devices('sm', 'md', 'lg') {
+        padding-left: 20px;
+        padding-right: 20px;
+        padding-bottom: 20px;
+
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        @include background-image(-svg(linear-gradient(to top, $c-white 80%, fade-out($c-white, 1) 100%)));
+      }
+
+      @include devices('md', 'lg') {
+        padding-left: 40px;
+        padding-right: 40px;
+      }
+    }
+
+    .info-description {
+      max-width: 200px;
+      margin-left: auto;
+      margin-right: auto;
+
+      p {
+        font-size: $fs-base * .8;
+        line-height: 1.3em;
+      }
+    }
+
+    // Info scale
+    .info-scale {
+      @include clearfix;
+      max-width: 200px;
+      margin-left: auto;
+      margin-right: auto;
+      color: $c-t3;
+
+      .label {
+        padding: 0;
+        margin: 10px 0 5px;
+        font-size: $fs-base * .8;
+        line-height: 1em;
+        transition: margin-top .2s;
+      }
+
+      .value {
+        font-size: $fs-h2;
+        line-height: 1em;
+      }
+    }
+
+    .info-scale-user,
+    .info-scale-unilend {
+      width: 50%;
+      clear: none;
+      float: left;
+      text-align: center;
+    }
+
+    // Info scale balance
+    .info-scale-balance {
+      width: 100%;
+      height: 20px;
+      margin-top: 10px;
+      clear: both;
+      float: left;
+      position: relative;
+    }
+
+    .info-scale-balance-board {
+      display: block;
+      width: 200px;
+      height: 2px;
+      margin-left: -100px;
+
+      position: absolute;
+      left: 50%;
+      top: 0;
+
+      background-color: $c-t3;
+      transition: transform .2s;
+      transform-origin: center center;
+      transform: rotate(0deg);
+    }
+
+    .info-scale-balance-pin {
+      display: block;
+      width: 2px;
+      height: 100%;
+      margin-left: -1px;
+
+      background-color: $c-t3;
+      position: absolute;
+      left: 50%;
+      top: 0;
+
+      &:after {
+        content: '';
+        box-sizing: border-box;
+        display: block;
+        width: 10px;
+        height: 10px;
+        margin-left: -5px;
+        margin-top: -5px;
+
+        position: absolute;
+        left: 50%;
+        top: 0;
+
+        background-color: $c-white;
+        border: solid 2px $c-t3;
+        border-radius: 10px;
+      }
+    }
+
+    // Extra Small and Small devices
+    @include devices('sm') {
+      .info-description p {
+        font-size: $fs-base * .8;
+      }
+
+      .info-scale {
+        .label {
+          margin-top: 0 !important;
+          font-size: $fs-base * .7;
+        }
+
+        .value {
+          font-size: $fs-base * 1.4;
+        }
+      }
+
+      .info-scale-balance {
+        display: none;
+      }
+    }
+
+    // Evaluation exceeds or is within Unilend average interest
+    // -- Structural styles
+    &#{$js-autolend-average-equal},
+    &#{$js-autolend-average-within},
+    &#{$js-autolend-average-exceeds},
+    &#{$js-autolend-out-of-range} {
+      .info-title {
+        font-size: $fs-h4 * .9;
+
+        @include devices('lg') {
+          font-size: $fs-h4;
+        }
+      }
+    }
+
+    // -- Structural styles for balance board
+    &#{$js-autolend-average-equal} {
+      .info-scale-balance-board {
+        transform: rotate(0deg);
+      }
+    }
+
+    &#{$js-autolend-average-within} {
+      .info-scale-user .label {
+        margin-top: 0;
+      }
+
+      .info-scale-balance-board {
+        transform: rotate(5deg);
+      }
+    }
+
+    &#{$js-autolend-average-exceeds} {
+      .info-scale-unilend .label {
+        margin-top: 0;
+      }
+
+      .info-scale-balance-board {
+        transform: rotate(-5deg);
+      }
+    }
+
+    // -- Colour styles
+    // @note only colourise if cell is enabled
+    &#{$js-autolend-average-equal}#{$js-autolend-cell-enabled},
+    &#{$js-autolend-average-within}#{$js-autolend-cell-enabled},
+    &#{$js-autolend-average-exceeds}#{$js-autolend-cell-enabled},
+    &#{$js-autolend-out-of-range}#{$js-autolend-cell-enabled} {
+      color: $c-white;
+
+      .info-scale {
+        color: $c-white;
+      }
+
+      .info-scale-unilend .value {
+        color: $c-white;
+      }
+
+      .info-scale-balance-board,
+      .info-scale-balance-pin {
+        background-color: $c-white;
+      }
+
+      .info-scale-balance-pin:after {
+        border-color: $c-white;
+      }
+
+      .btn-cell-reset {
+        @include button-color-outline($c-white, $c-white, $c-white);
+      }
+
+      label.custom-input-switch {
+        > .label {
+          background-color: fade-out($c-white, .7);
+
+          &:after {
+            background-color: $c-white;
+            border-color: fade-out($c-white, .7);
+          }
+        }
+
+        > input[type="checkbox"]:checked + .label {
+          background-color: $c-white;
+
+          &:after {
+            background-color: $c-teal;
+            border-color: $c-white;
+          }
+        }
+      }
+
+      h1, h2, h3, h4, h5, h6 {
+        color: $c-white;
+      }
+
+      a {
+        @include link-states(
+          $link: (
+            color: $c-white
+          ),
+          $hover: (
+            color: $c-white
+          ),
+          $active: (
+            color: $c-white
+          )
+        );
+      }
+    }
+
+    // -- Colourise teal
+    &#{$js-autolend-average-equal}#{$js-autolend-cell-enabled},
+    &#{$js-autolend-average-within}#{$js-autolend-cell-enabled} {
+      background-color: $c-teal;
+
+      .info-scale .label {
+        color: darken($c-teal, 20%);
+      }
+
+      .info-scale-balance-pin:after {
+        background-color: $c-teal;
+      }
+
+      .info-cell-disable {
+        @include background-image(-svg(linear-gradient(to top, $c-teal 80%, fade-out($c-teal, 1) 100%)));
+      }
+    }
+
+    // -- Colourise orange
+    &#{$js-autolend-average-exceeds}#{$js-autolend-cell-enabled} {
+      background-color: $c-orange-l;
+
+      .info-scale .label {
+        color: mix($c-orange-l, $c-black, 40%);
+      }
+
+      .info-scale-balance-pin:after {
+        background-color: $c-orange-l;
+      }
+
+      .info-cell-disable {
+        @include background-image(-svg(linear-gradient(to top, $c-orange-l 80%, fade-out($c-orange-l, 1) 100%)));
+      }
+    }
+
+    // -- Colourise red
+    &#{$js-autolend-out-of-range}#{$js-autolend-cell-enabled} {
+      background-color: $c-orange;
+
+      .info-scale .label {
+        color: mix($c-orange, $c-black, 40%);
+      }
+
+      .info-scale-balance-pin:after {
+        background-color: $c-orange;
+      }
+
+      .info-cell-disable {
+        @include background-image(-svg(linear-gradient(to top, $c-orange 80%, fade-out($c-orange, 1) 100%)));
+      }
+    }
+  }
+
+  .col-info {
+    width: 100%;
+    background-color: $c-white;
+
+    p {
+      font-size: $fs-base * .9;
+      line-height: 1.3em;
+    }
+
+    @include devices('sm', 'md', 'lg') {
+      width: 30%;
+      margin-top: $height-autolend-cell-header;
+    }
+  }
+
+  .col-table {
+    width: 70%;
+
+    @include devices('xs') {
+      width: 100%;
+    }
+  }
+
+  .row-header {
+    @include clearfix;
+
+    .cell {
+      width: 16.66%;
+      height: $height-autolend-cell-header;
+    }
+
+    @include devices('xs') {
+      display: none;
+    }
+  }
+
+  .col-header {
+    width: 16.66%;
+
+    .cell {
+      width: 100%;
+
+      @include devices('sm', 'md', 'lg') {
+        @include vertical-align-inline-block;
+
+        span {
+          display: inline-block;
+          vertical-align: middle;
+        }
+      }
+    }
+
+    @include devices('xs') {
+      display: none;
+    }
+  }
+
+  .col-data {
+    width: 83.34%;
+
+    .cell {
+      width: 20%;
+
+      // Hide this for non xs devices
+      @include devices('sm', 'md', 'lg') {
+        .cell-rating,
+        .cell-period {
+          @include hide-accessible;
+        }
+      }
+
+      .cell-input {
+        display: none;
+      }
+
+      &#{$js-autolend-cell-enabled} {
+        .cell-input {
+          display: block;
+        }
+
+        .btn-cell-enable {
+          display: none;
+        }
+      }
+    }
+
+    @include devices('xs') {
+      width: 100%;
+      border: solid 1px $c-bg2;
+
+      .cell {
+        width: 100%;
+        height: auto;
+        border: solid 1px $c-bg2;
+
+        .cell-input {
+          height: $height-autolend-cell-header;
+          position: relative;
+          left: auto;
+          top: auto;
+          right: auto;
+          bottom: auto;
+
+          input {
+            height: $height-autolend-cell-header;
+            line-height: $height-autolend-cell-header;
+          }
+
+          .btn-cell-minus,
+          .btn-cell-plus {
+            display: block;
+            width: 40px;
+            height: $height-autolend-cell-header;
+            line-height: $height-autolend-cell-header;
+          }
+        }
+
+        .btn-cell-enable {
+          height: $height-autolend-cell-header;
+          position: relative;
+          left: auto;
+          top: auto;
+          right: auto;
+          bottom: auto;
+        }
+      }
+    }
+  }
+}
+
+.autolend-table-dialog {
+  padding: 20px;
+  text-align: center;
+  vertical-align: middle;
+
+  .dialog-title {
+    font-size: $fs-h1;
+    margin: 0 0 20px;
+  }
+
+  .dialog-message {
+    max-width: $width-readable-wrap-sm;
+    margin: 0 auto;
+    line-height: 1.3em;
+  }
+
+  .dialog-footer {
+    text-align: center;
+
+    > * {
+      margin-left: 10px;
+      margin-right: 10px;
+    }
+  }
+}

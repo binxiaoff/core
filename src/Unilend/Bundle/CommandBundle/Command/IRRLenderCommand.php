@@ -41,9 +41,7 @@ EOF
         $logger = $this->getContainer()->get('monolog.logger.console');
         $oIRRManager->setLogger($logger);
 
-        $this->fillProjectLastStatusMaterialized();
-
-        $aLendersWithLatePayments = $oLendersAccountsStats->getLendersWithLatePaymentsForIRRUsingProjectsLastStatusHistoryMaterialized();
+        $aLendersWithLatePayments = $oLendersAccountsStats->getLendersWithLatePaymentsForIRR();
         $oLenderManager->addLendersToLendersAccountsStatQueue($aLendersWithLatePayments);
 
         $iAmountOfLenderAccounts = $input->getArgument('quantity');
@@ -71,29 +69,5 @@ EOF
         }
 
         $logger->info('IRR calculation time for ' . $aIRRsCalculated . ' lenders: ' . round((microtime(true) - $fTimeStart) / 60, 2) . ' minutes', ['class' => __CLASS__, 'function' => __FUNCTION__]);
-
-        $this->emptyProjectLastStatusMaterialized();
-    }
-
-    private function fillProjectLastStatusMaterialized()
-    {
-        /** @var Connection $bdd */
-        $bdd = $this->getContainer()->get('doctrine.dbal.default_connection');
-
-        $bdd->query('TRUNCATE projects_last_status_history_materialized');
-        $bdd->query('
-            INSERT INTO projects_last_status_history_materialized
-              SELECT MAX(id_project_status_history) AS id_project_status_history, id_project
-              FROM projects_status_history
-              GROUP BY id_project'
-        );
-        $bdd->query('OPTIMIZE TABLE projects_last_status_history_materialized');
-    }
-
-    private function emptyProjectLastStatusMaterialized()
-    {
-        /** @var Connection $bdd */
-        $bdd = $this->getContainer()->get('doctrine.dbal.default_connection');
-        $bdd->query('TRUNCATE projects_last_status_history_materialized');
     }
 }

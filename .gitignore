@@ -1,24 +1,11 @@
 # Mac
 .DS_Store
-
-# NetBeans
-nbproject/*
-!nbproject/project.properties
-!nbproject/project.xml
-build/
-nbbuild/
-dist/
-nbdist/
-nbactions.xml
-nb-configuration.xml
-.nb-gradle/
-
 # Izinoa
-/tmp/
-/public/admin/.htaccess
-/public/default/.htaccess
 /data/crud/*
-/route.php
+/protected
+/public/default/images/dyn
+/public/default/var
+/librairies/payline/logs
 
 # Symfony 3
 /app/config/parameters.yml
@@ -26,11 +13,8 @@ nb-configuration.xml
 /build/
 /phpunit.xml
 /var/*
-/var/cache/*
-/var/logs/*
-/var/sessions/*
 !var/SymfonyRequirements.php
-/public/bundles/
+/public/default/bundles/
 
 # PHPStorm
 .idea/
@@ -41,7 +25,8 @@ nb-configuration.xml
 # Composer
 /vendor/
 
-# Exceptions
-!public/default/styles/default/*
-!public/default/scripts/default/*
-!/dev/public/
+#npm & gulp
+.sass-cache
+/node_modules
+npm-debug.log
+/public/default/assets/

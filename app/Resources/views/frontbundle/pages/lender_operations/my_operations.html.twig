@@ -1,0 +1,177 @@
+<div class="panel panel-operations-operations">
+    <header class="panel-header">
+        <h3 class="panel-title">{% trans %} lender-operations_operations-table-title {% endtrans %}</h3>
+        {% if lenderOperations|length > 0 %}
+        <div class="panel-controls">
+            <a href="/pdf/vos_operations_pdf_indexation" class="btn-default">
+                <span class="icon fa-print-u32"></span>
+                <span class="label"> {% trans %} lender-operations_print {% endtrans %} </span>
+            </a>
+            <a href="{{ path('export_operations_csv') }}" class="btn-default">
+                <span class="icon fa-excel-u32"></span>
+                <span class="label"> {% trans %} lender-operations_csv-export-button {% endtrans %} </span>
+            </a>
+        </div>
+        {% endif %}
+    </header><!-- /.panel-header -->
+    <div class="panel-content">
+        <div>
+        <form id="form-filters-operations" action="{{ path('filter_operations') }}" method="post" class="form-filters" data-ajax>
+            <input class="id_last_action" type="hidden" name="filter[id_last_action]" value="">
+            <div id="filters" class="row row-multi-col-computer collapse in">
+                <div class="form-field col-lg-8 col-md-8">
+                    <div class="field-label">
+                        <label>{% trans %} lender-operations_operations-table-filter-by-period {% endtrans %}
+                            <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                    </div><!-- /.field-label -->
+                    <div class="row input-fields">
+                        <div class="col-lg-3 col-md-3 col-sm-4">
+                            <select name="filter[slide]" class="input-field">
+                                <option value="">{% trans %} lender-operations_operations-table-rolling-period-filter {% endtrans %}</option>
+                                {% set monthNumber = [1, 3, 6, 12] %}
+                                {% for numberOfMonths in monthNumber %}
+                                    <option {% if currentFilters.filter.slide is defined and numberOfMonths == currentFilters.filter.slide %} selected="selected"{% endif %} value="{{ numberOfMonths }}"> {% transchoice numberOfMonths with { '%count%' : numberOfMonths } %} common_month {% endtranschoice %} </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        {% set startYear = 2013 %}
+                        {% set endYear   = date() | date('Y') %}
+                        <div class="col-lg-3 col-md-3 col-sm-4">
+                            <select name="filter[year]" class="input-field">
+                                <option value=""> {% trans %} lender-operations_operations-table-year-filter-placeholder {% endtrans %} </option>
+                                {% for year in endYear..startYear %}
+                                    <option {% if currentFilters.filter.year is defined and year == currentFilters.filter.year %} selected="selected"{% endif %} value="{{ year }}"> {{ year }} </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-lg-3 col-md-3 col-sm-4">
+                            <div class="input-group set-right">
+                                {% if currentFilters.filter.start is defined %}
+                                    {% set startDate = currentFilters.filter.start %}
+                                {% else %}
+                                    {% set startDate = date('-1month') | date('d/m/Y') %}
+                                {% endif %}
+                                <input type="text" id="filter-start" name="filter[start]" value="{{ startDate }}" {#placeholder="{% trans %} lender-operations_operations-table-start-date-filter-placeholder {% endtrans %}"#} class="input-field ui-has-datepicker"/>
+                                <div class="btn-group">
+                                    <label for="filter-start"><span class="icon fa-calendar-u32 c-p1"><span class="sr-only">{{ 'lender-operations_sr-operation-start-date-filter'|trans }}</span></span></label>
+                                </div><!-- /.btn-group -->
+                            </div><!-- /.input-group -->
+                        </div>
+                        <div class="col-lg-3 col-md-3 col-sm-4">
+                            <div class="input-group set-right">
+                                {% if currentFilters.filter.end is defined %}
+                                    {% set endDate = currentFilters.filter.end %}
+                                {% else %}
+                                    {% set endDate = date() | date('d/m/Y') %}
+                                {% endif %}
+                                <input type="text" id="filter-end" name="filter[end]" value="{{ endDate }}" {#placeholder="{% trans %} lender-operations_end-date-placeholder {% endtrans %}"#} class="input-field ui-has-datepicker"/>
+                                <div class="btn-group">
+                                    <label for="filter-end"><span class="icon fa-calendar-u32 c-p1"><span class="sr-only">{{ 'lender-operations_sr-operation-end-date-filter'|trans }}</span></span></label>
+                                </div><!-- /.btn-group -->
+                            </div><!-- /.input-group -->
+                        </div>
+                    </div><!-- /.input-fields -->
+                </div><!-- /.form-field -->
+
+                <div class="form-field col-lg-4 col-md-4">
+                    <div class="field-label">
+                        <label>{% trans %} lender-operations_operations-table-filter-by-type {% endtrans %}
+                            <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                    </div><!-- /.field-label -->
+                    <div class="row input-fields">
+                        <div class="col-lg-6 col-md-6 col-sm-4">
+                            <select name="filter[operation]" class="input-field">
+                                <option {% if currentFilters.filter.operation is defined and 1 == currentFilters.filter.operation %} selected="selected"{% endif %} value="1">{% trans %} lender-operations_operations-table-operation-filter-placeholder {% endtrans %}</option>
+                                <option {% if currentFilters.filter.operation is defined and 2 == currentFilters.filter.operation %} selected="selected"{% endif %} value="2">{% trans %} lender-operations_operations-table-deposit-withdrawal-operations-label {% endtrans %}</option>
+                                <option {% if currentFilters.filter.operation is defined and 3 == currentFilters.filter.operation %} selected="selected"{% endif %} value="3">{% trans %} lender-operations_operations-table-deposit-operations-label {% endtrans %}</option>
+                                <option {% if currentFilters.filter.operation is defined and 4 == currentFilters.filter.operation %} selected="selected"{% endif %} value="4">{% trans %} lender-operations_operations-table-withdrawal-operations-label {% endtrans %}</option>
+                                <option {% if currentFilters.filter.operation is defined and 5 == currentFilters.filter.operation %} selected="selected"{% endif %} value="5">{% trans %} lender-operations_operations-table-loan-deals-operations-label {% endtrans %}</option>
+                                <option {% if currentFilters.filter.operation is defined and 6 == currentFilters.filter.operation %} selected="selected"{% endif %} value="6">{% trans %} lender-operations_operations-table-repayment-operations-label {% endtrans %}</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-6 col-md-6 col-sm-4">
+                            <select name="filter[project]" class="input-field">
+                                <option value="">{% trans %} lender-operations_operations-table-project-filter-placeholder {% endtrans %}</option>
+                                {% for project in projectsFundedByLender if project.title is not empty %}
+                                    <option {% if currentFilters.filter.operation is defined and project.id_project == currentFilters.filter.project %} selected="selected"{% endif %} value="{{ project.id_project }}">{{ project.title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div><!-- /.input-fields -->
+                </div><!-- /.form-field -->
+            </div>
+        </form><!-- /.form-operations-filters -->
+        </div>
+        {% if lenderOperations|length > 0 %}
+        <div class="table-scroll">
+            <table class="table table-myoperations" data-sortable>
+                <thead class="table-sortable-columns">
+                <tr>
+                    <th class="table-sortable-column table-myoperations-item-type" data-sortable-by="type">
+                        <span class="label" title="{{ 'lender-operations_sr-sort-operation-name-column'|trans|e('html_attr') }}" data-toggle="tooltip">{% trans %} lender-operations_operations-table-operation-column {% endtrans %}</span>
+                    </th>
+                    <th class="table-sortable-column table-myoperations-item-contract" data-sortable-by="contract">
+                        <span class="label" title="{{ 'lender-operations_sr-sort-operation-contract-no-column'|trans|e('html_attr') }}" data-toggle="tooltip">{% trans %} lender-operations_loans-table-contract-column {% endtrans %}</span>
+                    </th>
+                    <th class="table-sortable-column table-myoperations-item-project" data-sortable-by="project">
+                        <span class="label" title="{{ 'lender-operations_sr-sort-operation-project-name-column'|trans|e('html_attr') }}" data-toggle="tooltip">{% trans %} lender-operations_operations-table-project-column {% endtrans %}</span>
+                    </th>
+                    <th class="table-sortable-column table-myoperations-item-date" data-sortable-by="date">
+                        <span class="label" title="{{ 'lender-operations_sr-sort-operation-operation-date-column'|trans|e('html_attr') }}" data-toggle="tooltip">{% trans %} lender-operations_operations-table-date-column {% endtrans %}</span>
+                    </th>
+                    <th class="table-sortable-column table-myoperations-item-amount" data-sortable-by="amount">
+                        <span class="label" title="{{ 'lender-operations_sr-sort-operation-operation-amount-column'|trans|e('html_attr') }}" data-toggle="tooltip">{% trans %} lender-operations_operations-table-amount-column {% endtrans %}</span>
+                    </th>
+                    <th class="table-sortable-column table-myoperations-item-balance" data-sortable-by="balance">
+                        <span class="label" title="{{ 'lender-operations_sr-sort-operation-sold-column'|trans|e('html_attr') }}" data-toggle="tooltip">{% trans %} lender-operations_operations-table-account-balance-column {% endtrans %}</span>
+                    </th>
+                </tr>
+                </thead>
+                <tbody data-sortable-content>
+                {% for i, op in lenderOperations %}
+                    {% set classAmount = op.montant_operation >= 0 ? 'ui-amount-positive' : 'ui-amount-negative' %}
+                    {% set classBalance = op.solde > 0 ? 'ui-balance-positive' : 'ui-balance-negative' %}
+                    {% if op.type_transaction in detailedOperations %}
+                        {% set operationDetails = {
+                            "label": 'lender-operations_operations-table-repayment-collapse-details'|trans,
+                            "items": [
+                                {
+                                    "label": repaidCapitalLabel,
+                                    "value": op.montant_capital
+                                },{
+                                    "label": repaidInterestsLabel,
+                                    "value": op.montant_interet
+                                },{
+                                    "label": op.libelle_prelevement,
+                                    "value": op.montant_prelevement
+                                }
+                            ]
+                        } %}
+                    {% endif %}
+                    <tr id="operation-{{ op.id }}" class="table-myoperations-item {{ classAmount }} {{ classBalance }}"
+                        {% if op.type_transaction in detailedOperations %} data-details='{{ operationDetails|json_encode|escape('html_attr') }}'{% endif %}
+                        data-sortable-type="{{ op.libelle_operation }}"
+                        data-sortable-contract="{{ op.bdc }}"
+                        data-sortable-project="{{ op.id_projet }}"
+                        data-sortable-date="{{ op.date_operation|date('U') }}"
+                        data-sortable-amount="{{ op.montant_operation }}"
+                        data-sortable-balance="{{ op.solde }}">
+                        <td class="table-myoperations-item-type">{{ op.libelle_operation }}</td>
+                        <td class="table-myoperations-item-contract">{{ op.bdc }}</td>
+                        <td class="table-myoperations-item-project">
+                            <div class="text-crop">{{ op.libelle_projet }}</div>
+                        </td>
+                        <td class="table-myoperations-item-date">{{ op.date_operation|date('d/m/y') }}</td>
+                        <td class="table-myoperations-item-amount">{{ op.montant_operation|localizedcurrency('EUR') }}</td>
+                        <td class="table-myoperations-item-balance">{{ op.solde|localizedcurrency('EUR') }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table><!-- /.table-myoperations -->
+        </div><!-- /.table-scroll -->
+        {% else %}
+        <div class="message-info after">{{ 'lender-operations_no-result-found-message'|trans }}</div>
+        {% endif %}
+    </div><!-- /.panel-content -->
+</div><!-- /.panel -->
+

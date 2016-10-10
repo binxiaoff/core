@@ -1,0 +1,182 @@
+//
+// Unilend User Preter Operations
+//
+
+#user-preter-operations.dashboard,
+#user-emprunteur-operations.dashboard {
+  .nav-dashboard-tabs {
+    > li {
+      width: 50%;
+    }
+  }
+
+  .panel-header {
+    @include clearfix;
+    position: relative;
+    margin-bottom: 20px;
+
+    .panel-title {
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+
+    .panel-controls {
+      .btn-default {
+        @include button-shape-xs;
+        min-width: 0;
+        padding-left: 10px;
+        padding-right: 10px;
+        margin-right: 10px;
+        margin-bottom: 5px;
+      }
+    }
+
+    @include devices('sm') {
+      .panel-controls {
+        .btn-default {
+          @include button-shape-sm;
+          min-width: 0;
+          padding-left: 15px;
+          padding-right: 15px;
+        }
+      }
+    }
+
+    @include devices('md', 'lg') {
+      .panel-title {
+        padding-top: 15px;
+        margin-bottom: 0;
+        float: left;
+      }
+
+      .panel-controls {
+        float: right;
+
+        .btn-default {
+          @include button-shape-md;
+          min-width: 0;
+          margin-right: 0;
+          margin-left: 20px;
+        }
+      }
+    }
+
+    @include devices('desktop') {
+      margin-bottom: 30px;
+    }
+  }
+
+  .form-filters {
+    padding: 20px;
+    margin-bottom: 20px;
+    background-color: $c-bg3;
+
+    @include devices('lg') {
+      padding: 30px;
+    }
+
+    .input-field {
+      padding-left: 10px;
+      padding-right: 10px;
+      background-color: $c-white;
+      border-color: $c-bg1;
+    }
+
+    .input-group > .btn-group {
+      margin: 2px;
+      padding-left: 10px;
+      padding-right: 10px;
+      @include background-image(-svg(linear-gradient(to left, $c-white 75%, fade-out($c-white, 1) 100%)));
+    }
+
+    .row .input-fields {
+      > * {
+        margin-bottom: 10px;
+      }
+    }
+
+    @include devices('sm') {
+      .row .input-fields {
+        > * {
+          padding-left: 5px;
+          padding-right: 5px;
+          margin-bottom: 5px;
+        }
+
+        > :nth-of-type(2n+1) {
+          padding-left: 0;
+        }
+
+        > :nth-of-type(2n+2) {
+          padding-right: 0;
+        }
+      }
+    }
+
+    @include devices('md', 'lg') {
+      .row .input-fields {
+        > * {
+          padding-left: 5px;
+          padding-right: 5px;
+          margin-bottom: 0;
+        }
+
+        > :first-child {
+          padding-left: 0;
+        }
+
+        > :last-child {
+          padding-right: 0;
+        }
+      }
+    }
+  }
+
+  .panel-operations-loans {
+    position: relative;
+
+    .chart {
+      margin-left: auto;
+      margin-right: auto;
+      width: auto !important;
+      height: auto !important;
+      max-width: 400px;
+      min-height: 250px;
+      margin-bottom: 30px;
+    }
+
+    .chart-legend {
+      margin-bottom: 30px;
+    }
+
+    @include devices('tablet-p', 'md', 'lg') {
+      .panel-before-table {
+        @include clearfix;
+        position: relative;
+        min-height: 150px;
+
+        .chart {
+          margin-left: 0;
+          margin-right: 30px;
+          float: left;
+          clear: none;
+        }
+
+        .chart-legend {
+          width: 50%;
+          float: left;
+        }
+
+        .form-filters#form-filters-loans {
+          padding: 0 !important;
+          background-color: transparent;
+
+          width: 50%;
+          position: absolute;
+          right: 0;
+          bottom: 0;
+        }
+      }
+    }
+  }
+}

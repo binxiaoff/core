@@ -9,7 +9,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
  */
 class AutoBidSettingsManager
 {
-    const CGV_AUTOBID = 474;
+    const CGV_AUTOBID = 53;
 
     /** @var ClientSettingsManager */
     private $oClientSettingsManager;
@@ -406,5 +406,19 @@ class AutoBidSettingsManager
         }
 
         return false;
+    }
+
+    public function getAmount(\lenders_accounts $lender) {
+        /** @var \autobid $oAutoBid */
+        $oAutoBid = $this->oEntityManager->getRepository('autobid');
+        $settings = $oAutoBid->getSettings($lender->id_lender_account, null, null, \autobid::STATUS_ACTIVE, [], 1);
+
+        $amount = null;
+
+        if (true === isset($settings[0]['amount'])) {
+            $amount = $settings[0]['amount'];
+        }
+
+        return $amount;
     }
 }
