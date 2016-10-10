@@ -210,7 +210,49 @@ class bootstrap extends Controller
         //gestion du captcha --> moved to LoginAuthenticator
 
         $this->bAccountClosed      = false;
+        $bErrorLogin               = false;
         $this->displayCaptchaError = null;
+
+        if (isset($_POST['login'], $_POST['password'])) {
+            $this->login    = $_POST['login'];
+            $this->password = $_POST['password'];
+
+            // SI on a le captcha d'actif, et qu'il est faux, on bloque avant tout pour ne pas laisser de piste sur le couple login/mdp
+            if (isset($bCaptchaOk) && $bCaptchaOk === false) {
+                //login_logs geré par eventSubscriber
+
+                $_SESSION['login']['displayCaptchaError'] = $this->displayCaptchaError;
+            } else {
+                // chekc MPD geré par login
+
+                if ($bErrorLogin === false) {
+                    if ($this->clients->handleLogin('connect', 'login', 'password')) {
+                        unset($_SESSION['login']);
+                        $this->clients->get($_SESSION['client']['id_client'], 'id_client');
+
+                        if (isset($_COOKIE['acceptCookies'])) {
+                            $this->create_cookies = false;
+
+                            if ($this->accept_cookies->get($_COOKIE['acceptCookies'], 'id_client = 0 AND id_accept_cookies')) {
+                                $this->accept_cookies->id_client = $_SESSION['client']['id_client'];
+                                $this->accept_cookies->update();
+                            }
+                        }
+                        //client_history géré par eventSubscriber
+
+                    } else {
+                        //geré par login
+                    }
+                } elseif (
+                    ($aOfflineClient = $this->clients->select('email = "' . $this->login . '" AND status = 0'))
+                    && (md5($this->password) === $aOfflineClient[0]['password'] || password_verify($this->password, $aOfflineClient[0]['password']))
+                ) {
+                    // geré par user
+                } else {
+                        // moved to LoginAuthenticator
+                }
+            }
+        }
 
         if ($this->clients->checkAccess()) {
 
