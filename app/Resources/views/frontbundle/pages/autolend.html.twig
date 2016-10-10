@@ -132,13 +132,16 @@ classNames: 'user-preter-autolend'
                                                     {% if setting.status == constant('\\autobid::STATUS_ACTIVE') %}
                                                         {% set classEnabled = 'ui-autolend-cell-enabled'%}
                                                     {% endif %}
-                                                    {% if setting.cellAverageRateUnilend is empty or setting.rate_min <= setting.cellAverageRateUnilend|round(1)  %}
+                                                    {% if setting.cellAverageRateUnilend is not empty and (setting.rate_min < setting.project_rate_min or setting.rate_min > setting.project_rate_max) %}
+                                                        {% set classAverage = 'ui-autolend-out-of-range' %}
+                                                    {% elseif setting.cellAverageRateUnilend is empty or setting.rate_min <= setting.cellAverageRateUnilend|round(1) %}
                                                         {% set classAverage = 'ui-autolend-average-within' %}
                                                     {% else %}
                                                         {% set classAverage = 'ui-autolend-average-exceeds' %}
                                                     {% endif %}
                                                     <div data-autolendtable-cell="{{ i }}" class="cell cell-data {{ classEnabled }} {{ classAverage }}">
                                                         <div class="cell-input" data-autolendtable-cell="{{ i }}">
+                                                            <span class="icon fa-ban-u"></span>
                                                             <a class="btn-cell-minus" tabindex="-1" href="javascript:;"><span class="sr-only">Minus 0.1</span></a>
                                                             {# Inputs containing values for calculations / JS / to be submittes #}
                                                             <input type="number" value="{{ setting.rate_min }}"
@@ -160,7 +163,7 @@ classNames: 'user-preter-autolend'
                                                                    id="{{ i }}-param-advanced-evaluation-converted" >
                                                             <input type="hidden" name="periods-as-text"
                                                                    id="{{ i }}-param-advanced-period-as-text"
-                                                                   value="{{ "autolend_expert-settings-project-period-#{ setting.id_period }"|trans({'%min%':setting.period_min, '%max%':setting.period_max })|raw }}" >
+                                                                   value="{{ "autolend_expert-settings-project-period-#{ setting.id_period }"|trans({'%min%' : setting.period_min, '%max%' : setting.period_max})|raw }}" >
                                                             <input type="hidden" value="{{ setting.cellAverageRateUnilend|round(1)|localizednumber }}"
                                                                    data-value="{{ setting.cellAverageRateUnilend|round(1) }}"
                                                                    name="param-advanced-unilend-rate"
@@ -168,9 +171,10 @@ classNames: 'user-preter-autolend'
                                                             <a class="btn-cell-plus" tabindex="-1" href="javascript:;"><span class="sr-only">Plus 0.1</span></a>
                                                         </div>
                                                         <a class="btn-cell-enable" href="javascript:;">
-                                                            <span class="sr-only">{% trans %} autolend_expert-settings-sidebar-activate-cell-switch-label {% endtrans %}</span></a>
+                                                            <span class="sr-only">{% trans %} autolend_expert-settings-sidebar-activate-cell-switch-label {% endtrans %}</span>
+                                                        </a>
                                                     </div>
-                                                    {% set i = i+1 %}
+                                                    {% set i = i + 1 %}
                                                 {% endfor %}
                                             {% endfor %}
                                         </div>
@@ -188,12 +192,15 @@ classNames: 'user-preter-autolend'
                                         <h4 class="info-title" id="title-equal-rates" style="display: none;">{% trans %} autolend_expert-settings-sidebar-balance-title-equal {% endtrans %}</h4>
                                         <h4 class="info-title" id="title-unilend-rate-higher" style="display: none;">{% trans %} autolend_expert-settings-sidebar-balance-title-unilend-rate-higher {% endtrans %}</h4>
                                         <h4 class="info-title" id="title-unilend-rate-lower" style="display: none;">{% trans %} autolend_expert-settings-sidebar-balance-title-unilend-rate-lower {% endtrans %}</h4>
+                                        <h4 class="info-title" id="title-unilend-rate-out-of-range" style="display: none;">{% trans %} autolend_expert-settings-sidebar-balance-title-unilend-rate-out-of-range {% endtrans %}</h4>
 
-                                        <div class="info-scale">
-                                            <div class="info-scale-user"><h5 class="label">{% trans %} autolend_expert-settings-sidebar-balance-left-rate-label {% endtrans %}</h5>
+                                        <div class="info-scale info-scale-in-range" style="display: none;">
+                                            <div class="info-scale-user">
+                                                <h5 class="label">{% trans %} autolend_expert-settings-sidebar-balance-left-rate-label {% endtrans %}</h5>
                                                 <div class="value"><span id="scale-user-rate"></span><sup>%</sup></div>
                                             </div>
-                                            <div class="info-scale-unilend"><h5 class="label">{% trans %} autolend_expert-settings-sidebar-balance-right-rate-label {% endtrans %}</h5>
+                                            <div class="info-scale-unilend">
+                                                <h5 class="label">{% trans %} autolend_expert-settings-sidebar-balance-right-rate-label {% endtrans %}</h5>
                                                 <div class="value"><span id="scale-unilend-rate"></span><sup>%</sup></div>
                                             </div>
                                             <div class="info-scale-balance">
@@ -201,10 +208,23 @@ classNames: 'user-preter-autolend'
                                                 <div class="info-scale-balance-pin"></div>
                                             </div>
                                         </div>
+
+                                        <div class="info-scale info-scale-out-of-range" style="display: none;">
+                                            <div class="info-scale-user">
+                                                <h5 class="label">{% trans %} autolend_expert-settings-sidebar-balance-minimum-rate-label {% endtrans %}</h5>
+                                                <div class="value"><span id="scale-min-rate"></span><sup>%</sup></div>
+                                            </div>
+                                            <div class="info-scale-unilend">
+                                                <h5 class="label">{% trans %} autolend_expert-settings-sidebar-balance-maximum-rate-label {% endtrans %}</h5>
+                                                <div class="value"><span id="scale-max-rate"></span><sup>%</sup></div>
+                                            </div>
+                                        </div>
+
                                         <div class="info-description">
                                             <p id="info-description-equal-rates" style="display: none;">{% trans %} autolend_expert-settings-sidebar-description-equal {% endtrans %}</p>
                                             <p id="info-description-unilend-rate-higher" style="display: none;">{% trans %} autolend_expert-settings-sidebar-description-unilend-rate-higher {% endtrans %}</p>
                                             <p id="info-description-unilend-rate-lower" style="display: none;">{% trans %} autolend_expert-settings-sidebar-description-unilend-rate-lower {% endtrans %}</p>
+                                            <p id="info-description-unilend-rate-out-of-range" style="display: none;">{% trans %} autolend_expert-settings-sidebar-description-unilend-rate-out-of-range {% endtrans %}</p>
                                             <p>
                                                 <a class="btn-cell-reset" id="apply-average-to-cell" href="javascript:;">{% trans %} autolend_expert-settings-sidebar-apply-unilend-rate {% endtrans %}</a>
                                             </p>
@@ -221,13 +241,7 @@ classNames: 'user-preter-autolend'
                         </div>
                         <div class="row">
                             <div class="col-lg-9 col-md-9">
-                                <div class="ui-autolend-table-use-average-interest">
-                                    {#<label id="autolend-table-use-average-interest-switch" class="custom-input-switch custom-input-switch-sm&#x20;btn-table-set-average"#}
-                                           {#data-custom-input>#}
-                                        {#<input type="checkbox" id="autolend-table-use-average-interest" value="true"/>#}
-                                        {#<span class="label"><span class="sr-only">Switch off/on</span></span></label>#}
-                                    {#<label for="autolend-table-use-average-interest" class="field-label">{% trans %} autolend_apply-avergage-rate-label {% endtrans %}</label>#}
-                                </div>
+                                <div class="ui-autolend-table-use-average-interest"></div>
                             </div>
                             <div class="btn-controls col-lg-3 col-md-3">
                                 <button type="submit" id="validate-expert-settings" name="validate-expert-settings" class="btn-primary">{% trans %} autolend_expert-settings-submit-button {% endtrans %}</button>
@@ -247,7 +261,6 @@ classNames: 'user-preter-autolend'
             </section>
         </section>
     </form><!-- /.form-autolend -->
-
 {% endblock %}
 
 {% block modals %}
@@ -263,6 +276,21 @@ classNames: 'user-preter-autolend'
         <footer class="modal-footer">
             <a href="javascript:;" class="btn-outline" data-modal-doactionconfirm>{% trans %} autolend_confirmation-popup-confirm-button {% endtrans %}</a>
             <a href="javascript:;" class="btn-outline" data-modal-doactioncancel>{% trans %} autolend_confirmation-popup-cancel-button {% endtrans %}</a>
+        </footer>
+    </div><!-- /.autolend-table-dialog -->
+
+    <div id="autolend-out-of-range-table-dialog" class="autolend-table-dialog" data-modal data-modal-maxwidth="600" data-modal-closeonclickoverlay="true">
+        <div class="modal-body">
+            <h3 class="dialog-title">
+                <span class="icon fa-autolend-u"><span class="sr-only">{% trans %} autolend_out-of-range-confirmation-popup-title {% endtrans %}</span></span>
+            </h3>
+            <div class="dialog-message">
+                <p>{% trans %} autolend_out-of-range-confirmation-popup-text {% endtrans %}</p>
+            </div>
+        </div>
+        <footer class="modal-footer">
+            <a href="javascript:;" class="btn-outline" data-modal-doactionconfirm>{% trans %} autolend_out-of-range-confirmation-popup-confirm-button {% endtrans %}</a>
+            <a href="javascript:;" class="btn-outline" data-modal-doactioncancel>{% trans %} autolend_out-of-range-confirmation-popup-cancel-button {% endtrans %}</a>
         </footer>
     </div><!-- /.autolend-table-dialog -->
 {% endblock %}

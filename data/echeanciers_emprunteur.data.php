@@ -176,7 +176,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
     public function getRepaidCapitalByCohort()
     {
         $query = 'SELECT
-                  ROUND(SUM(echeanciers_emprunteur.capital)/100) AS amount,
+                  SUM(echeanciers_emprunteur.capital)/100 AS amount,
                   (
                     SELECT
                       CASE LEFT(projects_status_history.added, 4)
@@ -225,7 +225,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
     public function getInterestPaymentsOfHealthyProjectsByCohort()
     {
         $query = 'SELECT
-                      ROUND(SUM(echeanciers_emprunteur.interets)/100) AS amount,
+                      SUM(echeanciers_emprunteur.interets)/100 AS amount,
                       (
                         SELECT
                           CASE LEFT(projects_status_history.added, 4)
@@ -272,7 +272,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
     public function getFutureCapitalPaymentsOfHealthyProjectsByCohort()
     {
         $query = 'SELECT
-                      ROUND(SUM(echeanciers_emprunteur.capital)/100) AS amount,
+                      SUM(echeanciers_emprunteur.capital)/100 AS amount,
                       (
                         SELECT
                           CASE LEFT(projects_status_history.added, 4)
@@ -326,7 +326,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
     public function getFutureOwedCapitalOfProblematicProjectsByCohort()
     {
         $query = 'SELECT
-                      ROUND(SUM(echeanciers_emprunteur.capital)/100) AS amount,
+                      SUM(echeanciers_emprunteur.capital)/100 AS amount,
                       (
                         SELECT
                             CASE LEFT(projects_status_history.added, 4)
@@ -375,7 +375,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
     public function getLateCapitalRepaymentsProblematicProjects()
     {
         $query = 'SELECT
-                      ROUND(SUM(echeanciers_emprunteur.capital)/100) AS amount,
+                      SUM(echeanciers_emprunteur.capital)/100 AS amount,
                       (
                         SELECT
                           CASE LEFT(projects_status_history.added, 4)
@@ -426,7 +426,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
     public function getLateCapitalRepaymentsHealthyProjects()
     {
         $query = 'SELECT
-                      ROUND(SUM(echeanciers_emprunteur.capital)/100) AS amount,
+                      SUM(echeanciers_emprunteur.capital)/100 AS amount,
                       (
                         SELECT
                           CASE LEFT(projects_status_history.added, 4)

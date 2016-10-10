@@ -557,6 +557,16 @@ FormValidation.prototype.validateInput = function (elem, options) {
   return inputValidation
 }
 
+// Quickly validate a single input by a custom rule
+FormValidation.prototype.validateInputCustom = function (elem, customRule) {
+  var self = this
+  return self.validateInput(elem, {
+    rules: {
+      custom: customRule
+    }
+  })
+}
+
 // Validate the element's fields
 // @returns {Boolean}
 FormValidation.prototype.validate = function (options) {
@@ -1171,7 +1181,7 @@ FormValidation.prototype.renderErrorsToElem = function (errors, elem) {
  */
 $.fn.uiFormValidation = function (op) {
   // Fire a command to the FormValidation object, e.g. $('[data-formvalidation]').uiFormValidation('validate', {..})
-  if (typeof op === 'string' && /^validate|validateInput|clear|clearAll$/.test(op)) {
+  if (typeof op === 'string' && /^validate|validateInput|validateInputCustom|clear|clearAll$/.test(op)) {
     // Get further additional arguments to apply to the matched command method
     var args = Array.prototype.slice.call(arguments)
     args.shift()

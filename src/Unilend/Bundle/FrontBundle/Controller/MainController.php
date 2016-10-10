@@ -40,6 +40,8 @@ class MainController extends Controller
 
     const SLUG_PAGE_BECOME_LENDER = 'lender_subscription_personal_information';
     const SLUG_ELEMENT_NAV_IMAGE  = 'image-header';
+    /** anchors in path functions are not supported, see twig template for handing if the borrower esim special case */
+    const SLUG_PAGE_BECOME_BORROWER = 'emprunter-homeemp-section-esim';
 
     /**
      * @Route("/", name="home")
@@ -382,10 +384,11 @@ class MainController extends Controller
             $selected = $page['id_tree'] == $currentPage->id_tree;
 
             $navigation[$page['id_tree']] = [
-                'label'       => $page['menu_title'],
-                'slug'        => $page['slug'],
-                'selected'    => $selected,
-                'highlighted' => $page['slug'] === self::SLUG_PAGE_BECOME_LENDER
+                'label'                => $page['menu_title'],
+                'slug'                 => $page['slug'],
+                'selected'             => $selected,
+                'highlighted_lender'   => $page['slug'] === self::SLUG_PAGE_BECOME_LENDER,
+                'highlighted_borrower' => $page['slug'] === self::SLUG_PAGE_BECOME_BORROWER
             ];
         }
 
@@ -843,10 +846,6 @@ class MainController extends Controller
      */
     public function statisticsAction(Request $request)
     {
-        if ($request->getClientIp() != '92.154.10.41') {
-            return $this->render('exception/error.html.twig');
-        }
-
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \tree $tree */
@@ -855,7 +854,6 @@ class MainController extends Controller
 
         /** @var StatisticsManager $statisticsManager */
         $statisticsManager = $this->get('unilend.service.statistics_manager');
-        //$statisticsManager->calculateRegulatoryData();
         $years = array_merge(['2013-2014'], range(2015, date('Y')));
         $template = [
             'data' => [

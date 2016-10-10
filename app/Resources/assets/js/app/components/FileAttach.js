@@ -529,6 +529,37 @@ $(document)
     fa.remove(fileIndex)
   })
 
+  // -- Drop a file onto the fileattach element
+  .on('dragenter dragleave dragover drop', '.ui-fileattach', function (event) {
+    event.preventDefault()
+  })
+  .on('dragenter dragover', '.ui-fileattach', function (event) {
+    $(this).addClass('ui-fileattach-dropfile')
+  })
+  .on('dragleave drop', '.ui-fileattach', function (event) {
+    $(this).removeClass('ui-fileattach-dropfile')
+  })
+  .on('drop', '.ui-fileattach', function (event) {
+    var $fileattach = $(this)
+    var $target = $(event.target)
+    var $targetParent = $target.closest('.ui-fileattach-item')
+    var $fileTarget
+
+    // Target a specific item
+    if ($targetParent.length > 0 && $targetParent[0] !== this) {
+      $fileTarget = $targetParent.find('input[type="file"]').eq(0)
+
+    // Target the whole fileattach
+    } else {
+      $fileTarget = $fileattach.find('input[type="file"]').eq(0)
+    }
+
+    // Attach the file to the input file
+    if ($fileTarget && $fileTarget.length > 0) {
+      $fileTarget.prop('files', event.originalEvent.dataTransfer.files)
+    }
+  })
+
   // -- When the file input has changed
   .on('change', '.ui-fileattach input[type="file"]', function (event) {
     // Attach the new file specified by the input file element
