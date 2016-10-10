@@ -1,11 +1,6 @@
 {# Projects Index #}
 {% extends 'layouts/_layout.html.twig' %}
 
-{% set page = {
-    title: 'Devenir Prêteur',
-    permalink: path('lender_subscription_documents', {'clientHash' : client.hash })
-} %}
-
 {# Set input ID namespace to "person" #}
 {% if client.type in [constant('\\clients::TYPE_PERSON'), constant('\\clients::TYPE_PERSON_FOREIGNER')] %}
     {% set idClientType = 'person' %}
