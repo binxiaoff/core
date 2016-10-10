@@ -92,17 +92,15 @@ class prelevements extends prelevements_crud
     public function getUpcomingRepayments($daysInterval)
     {
         $sql = '
-            SELECT p.id_project, p.num_prelevement, p.date_echeance_emprunteur, p.montant
-            FROM prelevements p
-            INNER JOIN projects_last_status_history plsh ON plsh.id_project = p.id_project
-            INNER JOIN echeanciers_emprunteur ee ON ee.ordre = p.num_prelevement
-            INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
-            INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
-            WHERE ps.status = :projectStatus
+            SELECT pre.id_project, pre.num_prelevement, pre.date_echeance_emprunteur, pre.montant
+            FROM prelevements pre
+            INNER JOIN projects pro ON pro.id_project = pre.id_project
+            INNER JOIN echeanciers_emprunteur ee ON ee.ordre = pre.num_prelevement
+            WHERE pro.status = :projectStatus
               AND ee.status_emprunteur = 0
-              AND p.id_project = ee.id_project
-              AND p.type = :directDebitStatus
-              AND DATE_ADD(CURDATE(), INTERVAL :daysInterval DAY) = DATE(p.date_echeance_emprunteur)';
+              AND pre.id_project = ee.id_project
+              AND pre.type = :directDebitStatus
+              AND DATE_ADD(CURDATE(), INTERVAL :daysInterval DAY) = DATE(pre.date_echeance_emprunteur)';
 
         $paramValues = array('daysInterval' => $daysInterval, 'projectStatus' => \projects_status::REMBOURSEMENT, 'directDebitStatus' => \prelevements::STATUS_VALID);
         $paramTypes  = array('daysInterval' => \PDO::PARAM_INT, 'projectStatus' => \PDO::PARAM_INT, 'directDebitStatus' => \PDO::PARAM_INT);
