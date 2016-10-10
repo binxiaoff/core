@@ -33,9 +33,6 @@ class bids extends bids_crud
     const STATUS_BID_REJECTED                 = 2;
     const STATUS_AUTOBID_REJECTED_TEMPORARILY = 3;
 
-    const BID_RATE_MIN = 4.0;
-    const BID_RATE_MAX = 10.0;
-
     const CACHE_KEY_PROJECT_BIDS = 'bids-projet';
 
     public function __construct($bdd, $params = '')
@@ -80,17 +77,34 @@ class bids extends bids_crud
         return ($this->bdd->fetch_array($result) > 0);
     }
 
-    public function getSoldeBid($id_project)
+    public function getSoldeBid($idProject, $rate = null, $status = [])
     {
-        $sql = 'SELECT SUM(amount) as solde FROM bids WHERE id_project = ' . $id_project;
+        $queryBuilder = $this->bdd->createQueryBuilder();
+        $queryBuilder
+            ->select('SUM(amount)')
+            ->from('bids')
+            ->where('id_project=:id_project')
+            ->setParameter('id_project', $idProject);
 
-        $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result, 0, 0);
-        if ($solde == '') {
+        if (false === empty($rate)) {
+            $queryBuilder->andWhere('ROUND(rate, 1) = ROUND(:rate, 1)');
+            $queryBuilder->setParameter('rate', $rate);
+        }
+
+        if (is_array($status) && false === empty($status)) {
+            $queryBuilder->andWhere('status in (:status)');
+            $queryBuilder->setParameter('status', $status, \Doctrine\DBAL\Connection::PARAM_STR_ARRAY);
+        }
+
+        $statement = $queryBuilder->execute();
+        $solde = $statement->fetchColumn(0);
+
+        if (null === $solde) {
             $solde = 0;
         } else {
             $solde = ($solde / 100);
         }
+
         return $solde;
     }
 
@@ -217,18 +231,20 @@ class bids extends bids_crud
 
     public function getAcceptationPossibilityRounded()
     {
-        $sQuery = 'SELECT b.rate, count(DISTINCT b.id_bid) as count_bid
-                        FROM bids b
-                        INNER JOIN accepted_bids ab ON ab.id_bid = b.id_bid
-                        INNER JOIN projects p ON p.id_project = b.id_project
-                        INNER JOIN projects_last_status_history plsh ON plsh.id_project = p.id_project
-                        INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
-                        INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
-                        WHERE ps.status >= :funded
-                        AND ps.status != :fundingKo GROUP BY b.rate ORDER BY b.rate DESC';
+        $sQuery = '
+            SELECT b.rate, COUNT(DISTINCT b.id_bid) AS count_bid
+            FROM bids b
+            INNER JOIN accepted_bids ab ON ab.id_bid = b.id_bid
+            INNER JOIN projects p ON p.id_project = b.id_project
+            WHERE p.status >= :funded
+                AND p.status != :fundingKo
+            GROUP BY b.rate
+            ORDER BY b.rate DESC';
+
         try {
-            $result = $this->bdd->executeQuery($sQuery, array('funded' => \projects_status::FUNDE, 'fundingKo' => \projects_status::FUNDING_KO), array('funded' => \PDO::PARAM_INT, 'fundingKo' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
-                ->fetchAll(PDO::FETCH_ASSOC);
+            $statement = $this->bdd->executeQuery($sQuery, array('funded' => \projects_status::FUNDE, 'fundingKo' => \projects_status::FUNDING_KO), array('funded' => \PDO::PARAM_INT, 'fundingKo' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)));
+            $result    = $statement->fetchAll(PDO::FETCH_ASSOC);
+            $statement->closeCursor();
         } catch (\Doctrine\DBAL\DBALException $ex) {
             return false;
         }
@@ -268,17 +284,26 @@ class bids extends bids_crud
         $this->bdd->query($sShuffle);
     }
 
-    public function getBidsStatistics($iProjectId)
+    public function getBidsSummary($iProjectId)
     {
         $aBidsByRate = array();
+
         if ($iProjectId) {
-            $sQuery = ' SELECT rate, SUM(amount / 100) as amount_total, SUM(IF(status = 2, 0, amount / 100))  as amount_active, count(*) as nb_bids
-                    FROM bids
-                    WHERE id_project = ' . $iProjectId . '
-                    GROUP BY rate ORDER BY rate DESC';
+            $sQuery = '
+                SELECT
+                    rate,
+                    COUNT(*) AS bidsCount,
+                    SUM(IF(status = 0, 1, 0)) AS activeBidsCount,
+                    SUM(ROUND(amount / 100, 2)) AS totalAmount,
+                    SUM(IF(status = 0, ROUND(amount / 100, 2), 0)) AS activeTotalAmount,
+                    IF(SUM(amount) > 0, ROUND(SUM(IF(status = 2, 0, ROUND(amount / 100, 2))) / SUM(ROUND(amount / 100, 2)) * 100, 1), 100) AS activePercentage
+                FROM bids
+                WHERE id_project = ' . $iProjectId . '
+                GROUP BY rate
+                ORDER BY rate DESC';
             $rQuery = $this->bdd->query($sQuery);
             while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
-                $aBidsByRate[] = $aRow;
+                $aBidsByRate[$aRow['rate']] = $aRow;
             }
         }
 
@@ -309,4 +334,133 @@ class bids extends bids_crud
 
         return $bids;
     }
+
+    public function countBidsOnProjectByStatusForLender($iLenderId, $iProjectID, $iStatus)
+    {
+        $aBind = array('lenderId' => $iLenderId, 'projectId' => $iProjectID, 'status' => $iStatus);
+        $aType = array('lenderId' => \PDO::PARAM_INT, 'projectId' => \PDO::PARAM_INT, 'status' => \PDO::PARAM_INT);
+
+        $sQuery = 'SELECT count(*) FROM bids WHERE id_lender_account = :lenderId AND id_project = :projectId and status = :status';
+        $oStatement = $this->bdd->executeQuery($sQuery, $aBind, $aType);
+
+        return $oStatement->fetchColumn(0);
+    }
+
+    public function countLendersOnProject($projectId)
+    {
+        $aBind = array('projectId' => $projectId);
+        $aType = array('section' => \PDO::PARAM_INT);
+
+        $sQuery     = 'SELECT count(DISTINCT id_lender_account) FROM `bids` WHERE id_project = :projectId';
+        $oStatement = $this->bdd->executeQuery($sQuery, $aBind, $aType);
+
+        return $oStatement->fetchColumn(0);
+    }
+
+    public function getNumberActiveBidsByRate($projectId)
+    {
+        $aBind = array('projectId' => $projectId, 'bidStatus' => self::STATUS_BID_PENDING);
+        $aType = array('projectId' => \PDO::PARAM_INT, 'bidStatus' => \PDO::PARAM_INT);
+
+        $sQuery = ' SELECT rate, count(*) as nb_bids
+                    FROM bids
+                    WHERE id_project = :projectId AND status = :bidStatus
+                    GROUP BY rate ORDER BY rate DESC';
+
+        $oStatement = $this->bdd->executeQuery($sQuery, $aBind, $aType);
+        $bids  = array();
+        while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
+            $bids[] = $aRow;
+        }
+
+        return $bids;
+    }
+
+    /**
+     * @param int $bidStatus
+     * @param int|null $projectId
+     * @param int|null $lenderId
+     * @return array
+     * @throws \Exception
+     */
+    public function getBidsByStatus($bidStatus, $projectId = null, $lenderId = null )
+    {
+        $sql = '
+            SELECT
+                id_bid,
+                id_lender_account,
+                id_project,
+                id_autobid,
+                id_lender_wallet_line,
+                amount,
+                rate,
+                ordre,
+                status,
+                checked,
+                added,
+                updated,
+                ROUND(amount / 100) as amount_euro
+            FROM bids
+            WHERE status = :status';
+
+        if (false === empty($projectId)) {
+            $sql .= ' AND id_project = :id_project ';
+            $bind['id_project'] = $projectId;
+            $type['id_project'] = \PDO::PARAM_INT;
+        }
+
+        if (false === empty($lenderId)) {
+            $sql .= ' AND id_lender_account = :id_lender ';
+            $bind['id_lender'] = $lenderId;
+            $type['id_lender'] = \PDO::PARAM_INT;
+        }
+
+        $sql .= ' ORDER BY id_bid DESC';
+        $bind['status'] = $bidStatus;
+        $type['status'] = \PDO::PARAM_INT;
+
+        return $this->bdd->executeQuery($sql, $bind, $type)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @param \lenders_accounts $lender
+     * @param DateTime|null $dateTimeStart
+     * @param DateTime|null $dateTimeEnd
+     * @return array
+     */
+    public function getBidsByLenderAndDates(\lenders_accounts $lender, $dateTimeStart = null, $dateTimeEnd = null)
+    {
+        $sql = '
+            SELECT  b.id_project, b.id_bid, la.id_client_owner, b.added, (CASE b.STATUS WHEN 0 THEN "En cours" WHEN 1 THEN "OK" WHEN 2 THEN "KO" END) AS status, ROUND((b.amount / 100), 0) AS amount, REPLACE (b.rate, ".", ",") AS rate
+            FROM bids b
+            INNER JOIN lenders_accounts la ON la.id_lender_account = b.id_lender_account
+            WHERE b.id_lender_account = :idLenderAccount';
+
+        if ($dateTimeStart && $dateTimeEnd) {
+            $sql .= ' AND (b.added BETWEEN :dateStart AND :dateEnd)';
+        }
+
+        $paramValues = array('idLenderAccount' => $lender->id_lender_account, 'dateStart' => $dateTimeStart, 'dateEnd' => $dateTimeEnd);
+        $paramTypes  = array('idLenderAccount' => \PDO::PARAM_INT, 'dateStart' => 'datetime', 'dateEnd' => 'datetime');
+
+        $statement = $this->bdd->executeQuery($sql, $paramValues, $paramTypes);
+        $result    = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+        return $result;
+    }
+
+    public function getMaxCountBidsPerDay()
+    {
+        $query = 'SELECT MAX(t.numberBids)
+                    FROM (
+                           SELECT count(id_bid) AS numberBids
+                           FROM bids
+                           GROUP BY DATE(added)) AS t';
+
+        $statement = $this->bdd->executeQuery($query);
+
+        return $statement->fetchColumn(0);
+    }
+
+
 }

@@ -1,0 +1,90 @@
+// Table Bids Details
+
+.table-bids-detail {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-bottom: solid 8px $c-bg2;
+
+  // Details columns
+  .table-bids-detail-item-id {
+    width: 25%;
+  }
+
+  .table-bids-detail-item-rate {
+    width: 25%;
+    text-align: right;
+  }
+
+  .table-bids-detail-item-amount {
+    width: 25%;
+    text-align: right;
+  }
+
+  .table-bids-detail-item-status {
+    width: 25%;
+    text-align: right;
+  }
+
+  thead {
+    background-color: $c-bg3;
+
+    tr {
+      background-color: $c-bg3 !important;
+    }
+
+    th {
+      padding-bottom: 5px;
+    }
+  }
+}
+
+// Color the autolend icon correctly
+.table-bids-detail-item {
+  @include table-row-alt;
+
+  background-color: $c-teal-l3;
+  color: $c-teal-l;
+
+  .fa-autolend-u32 {
+    color: $c-p1;
+  }
+
+  // Focused offer
+  &.is-focus {
+    background-color: $c-teal-l2 !important;
+    color: $c-teal;
+  }
+
+  // Rejected offer
+  &.rejected-row {
+    @include table-row-alt($row-bg: mix($c-red, $c-white, 8%) !important);
+
+    background-color: mix($c-red, $c-white, 10%) !important;
+    color: $c-red;
+
+    &.is-focus {
+      background-color: mix($c-red, $c-white, 12%) !important;
+    }
+  }
+
+  // User's offer
+  &#{$js-current-user-involved} {
+    background-color: $c-purple-l2 !important;
+    color: $c-p1;
+
+    &.is-focus {
+      background-color: $c-purple-l !important;
+      color: $c-p1;
+    }
+  }
+}
+
+// Containers for the table-bids-details
+.detail-table-item {
+  padding: 0;
+}
+
+.detail-table-content {
+  padding: 0;
+}

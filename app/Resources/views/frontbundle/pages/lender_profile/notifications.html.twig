@@ -1,0 +1,42 @@
+{% extends 'layouts/_layout_lender.html.twig' %}
+
+{% set page = {
+id: 'user-preter-profile',
+title: 'Prêteur / Profil',
+classNames: 'user-preter-profile'
+} %}
+
+{% block dashboardContent %}
+    <div class="dashboard-tabs tabs">
+        {% include('pages/lender_profile/partials/tab_navigation.html.twig') %}
+
+        <div class="dashboard-tabs-content tab-content">
+            <div id="profile-info" role="tabpanel" class="dashboard-tab-pane tab-pane active">
+
+                <form id="form-alerts" class="panel form-alerts" method="post" action="{{ path('lender_profile_notification') }}">
+                    {% for type, settings in notification_settings %}
+                        <header class="panel-header">
+                            <h3>{{ "notification-settings_#{ type }-email-alert-title"|trans }}</h3>
+                        </header>
+                        <div class="panel-content">
+                            <p>{{ "notification-settings_#{ type }-email-alert-details"|trans }}</p>
+                            <ul class="list-block">
+                                {% for key, isActived in settings %}
+                                    <li>
+                                        <label class="custom-input-switch" id="label-alert-{{ type }}-{{ key }}">
+                                            <input type="checkbox" {% if isActived %}checked="checked"{% endif %} value="true" name="{{ type }}-{{ key }}" id="input-alert-{{ type }}-{{ key }}">
+                                            <span class="label">
+                                                <span class="sr-only">Switch off/on</span>
+                                            </span>
+                                        </label>
+                                        <label for="input-alert-{{ type }}-{{ key }}">{{ "notification-settings_alart-#{ key }"|trans }}</label>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endfor %}
+                </form><!-- /#form-alerts.panel -->
+            </div><!-- /#profile-info.dashboard-tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </div><!-- /.dashboard-tabs -->
+{% endblock %}

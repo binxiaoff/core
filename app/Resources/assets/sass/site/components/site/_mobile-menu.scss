@@ -1,0 +1,293 @@
+//
+// Unilend Site Mobile Menu
+//
+
+@mixin site-mobile-menu-hidden {
+  display: none;
+  width: 0;
+  height: 0;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  z-index: $depth-site-mobile-menu;
+}
+
+@mixin site-mobile-menu-visible {
+  display: block;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: $depth-site-mobile-menu;
+}
+
+.site-mobile-menu {
+  @include site-mobile-menu-hidden;
+  position: fixed;
+  -webkit-overflow-scrolling: touch;
+
+  background-color: $c-black;
+  color: $c-white;
+  opacity: 0;
+  overflow: auto;
+  text-align: center;
+
+  a {
+    @include link-states(
+      $link: (
+        color: $c-white,
+        text-decoration: none
+      ),
+      $hover: (
+        color: $c-white,
+        text-decoration: none
+      ),
+      $active: (
+        color: $c-white,
+        text-decoration: none
+      )
+    );
+  }
+
+  // Site Mobile Menu Close
+  .site-mobile-menu-close {
+    @include button;
+    @include button-shape-sq-lg;
+    @include link-states(
+      $link: (
+        background-color: transparent,
+        border-color: transparent,
+        color: $c-white,
+        text-decoration: none
+      ),
+      $hover: (
+        background-color: transparent,
+        border-color: transparent,
+        color: $c-white,
+        text-decoration: none
+      ),
+      $active: (
+        background-color: transparent,
+        border-color: transparent,
+        color: $c-white,
+        text-decoration: none
+      )
+    );
+
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  // Site mobile search
+  .site-mobile-search {
+    box-sizing: border-box;
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 60px; // Reference large buttons for these things
+    padding: (60px - $height-btn) * .5;
+    height: 60px;
+    overflow: hidden;
+
+    .site-mobile-search-inner {
+      width: $height-btn;
+      height: $height-btn;
+      float: right;
+      position: relative;
+      transition: width .2s;
+    }
+
+    .site-mobile-search-toggle {
+      @include button;
+      @include button-shape-sq-lg;
+
+      width: 60px;
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 2;
+
+      background-color: transparent;
+      border-color: transparent;
+      color: $c-white;
+      font-family: $ff-icon;
+
+      &:before {
+        content: $fa-search; // Search icon
+      }
+    }
+
+    .form-field-inline {
+      display: block;
+      width: 100%;
+      height: $height-btn;
+
+      > .btn-group {
+        width: $height-btn;
+        height: $height-btn;
+        line-height: $height-btn - 4px; // Minus border (always 2px on top/bottom)
+        position: absolute;
+        left: 0;
+        top: 0;
+      }
+
+      @include text-inputs($inheritance: '>') {
+        @include input;
+        @include input-size-default;
+
+        width: 100%;
+        padding-left: $height-btn;
+        padding-right: $height-btn;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        opacity: 0;
+
+        transition: opacity .2s;
+        @include input-placeholder {
+          color: $c-t1;
+        }
+      }
+    }
+
+    .btn-search {
+      display: none;
+    }
+
+    #{$js-site-mobile-search-open} & {
+      .site-mobile-search-inner {
+        width: 100%;
+      }
+
+      .site-mobile-search-toggle {
+        color: $c-black;
+
+        &:before {
+          // content: '\f00d'; // Close icon
+          content: $fa-close-u;
+        }
+      }
+
+      .form-field-inline {
+        @include text-inputs($inheritance: '>') {
+          opacity: 1;
+        }
+      }
+
+      .btn-search {
+        display: block;
+      }
+    }
+  }
+
+  // Site Nav
+  .site-nav {
+    text-align: center;
+    padding-top: 80px;
+
+    @include devices('xs') {
+      padding-top: 40px;
+    }
+  }
+
+  .site-nav-menu {
+    @include block-list;
+
+    > li > a {
+      display: block;
+      font-size: 26px;
+      padding: 20px;
+
+      @include link-states(
+        $link: (
+          background-color: transparent,
+          color: $c-white
+        ),
+        $hover: (
+          background-color: transparent,
+          color: $c-white
+        ),
+        $active: (
+          background-color: $c-p2,
+          color: $c-white
+        )
+      );
+
+      @include devices('xs') {
+        font-size: 21px;
+      }
+    }
+  }
+
+  .list-socialmedia {
+    @include inline-block-list;
+    margin-top: 30px;
+
+    > li {
+      margin-right: 10px;
+
+      > a {
+        @include button;
+        @include button-shape-round-md;
+        @include button-color-default;
+
+        > .icon {
+          font-family: $ff-icon;
+        }
+      }
+
+      &:last-child {
+        margin-right: 0;
+      }
+    }
+
+    @include devices('xs') {
+      margin-top: 15px;
+    }
+  }
+
+  // Show the mobile menu
+  #{$js-site-mobile-menu-open} & {
+    @include site-mobile-menu-visible;
+    opacity: 1;
+  }
+
+  // Showing the mobile menu
+  #{$js-site-mobile-menu-opening} & {
+    @include site-mobile-menu-visible;
+    animation: .2s linear 0s 1 sitemobilemenuopening;
+  }
+
+  #{$js-site-mobile-menu-closing} & {
+    @include site-mobile-menu-visible;
+    animation: .2s linear 0s 1 sitemobilemenuclosing;
+  }
+}
+
+@include keyframes(sitemobilemenuopening) {
+  0% {
+    // Start from transparent
+    opacity: 0;
+  }
+  100% {
+    // Fade in
+    opacity: 1;
+  }
+}
+
+@include keyframes(sitemobilemenuclosing) {
+  0% {
+    // Start from visible
+    opacity: 1;
+  }
+  100% {
+    // Fade out
+    opacity: 0;
+  }
+}

@@ -1,0 +1,77 @@
+{% extends 'borrower_account/_layout.html.twig' %}
+
+{% set page = {
+    id: 'user-borrower-security',
+    title: 'Emprunteur / securité',
+    permalink: path(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')),
+    classNames: 'user-borrower-security'
+} %}
+
+{% block siteHeader %}
+    {% include 'partials/site/header.html.twig' %}
+{% endblock %}
+
+{% block dashboardNav %} {% endblock %}
+
+{% block dashboardContent %}
+    <div class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-content tab-content">
+            <div class="dashboard-tab-pane">
+                <article class="dashboard-tab-pane tab-pane">
+                    <div class="panel">
+                        <header class="panel-header">
+                            <h3>{{ 'borrower-profile_security-title'|trans }}</h3>
+                        </header>
+
+                        <div class="panel-content">
+                            {% if app.session.flashBag.has('error') %}
+                                <div class="message-error">
+                                    {% for error in app.session.flashBag.get('error') %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% elseif app.session.flashBag.has('success') %}
+                                <div class="message-success">
+                                    {% for success in app.session.flashBag.get('success') %}
+                                        <p>{{ success }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <form action="" method="post" id="form_mdp_question_emprunteur" name="form_mdp_question_emprunteur">
+                                <div class="row row-multi-col">
+                                    <div class="col-lg-6 col-md-6 col-sm-4">
+                                        <div class="form-field">
+                                            <label for="borrower_security_password">{% trans %}common_password{% endtrans %}<span class="field-required">*</span></label>
+                                            <input type="password" name="borrower_security[password]" id="borrower_security_password" required="required" class="input-field">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-md-6 col-sm-4">
+                                        <div class="form-field">
+                                            <label for="borrower_security_repeated-password">{% trans %}common_password-confirmation{% endtrans %}<span class="field-required">*</span></label>
+                                            <input type="password" name="borrower_security[repeated_password]" id="borrower_security_repeated-password" required="required" class="input-field">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="form-field">
+                                        <label for="borrower_security_question">{% trans %}common_security-question{% endtrans %}<span class="field-required">*</span></label>
+                                        <input type="text" name="borrower_security[question]" id="borrower_security_question" required="required" class="input-field">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="form-field">
+                                        <label for="borrower_security_answer">{% trans %}common_security-answer{% endtrans %}<span class="field-required">*</span></label>
+                                        <input type="text" name="borrower_security[answer]" id="borrower_security_answer" required="required" class="input-field">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <button type="submit" class="btn-primary ui-dialog-confirm">{{ 'borrower-profile_security-submit-button'|trans }}</button>
+                                </div>
+                            </form>
+                        </div><!-- /.panel-content -->
+                    </div><!-- /.panel -->
+                </article><!-- /.dashboard-tab-pane -->
+            </div><!-- /.dashboard-tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </div><!-- /.dashboard-tabs -->
+{% endblock %}

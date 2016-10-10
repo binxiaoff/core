@@ -118,19 +118,6 @@
         <!-- /.shell -->
     </div>
     <!-- /.footer-partners -->
-    <?php
-    if (isset($_SESSION['lexpress'])) {
-        if ($_SESSION['lexpress']['id_template'] == 15) {
-            ?>
-            <iframe name="lexpressfooter" SRC="<?= $_SESSION['lexpress']['footer'] ?>" scrolling="no" height="1000px" width="100%" FRAMEBORDER="no"></iframe>
-            <?
-        } elseif ($_SESSION['lexpress']['id_template'] == 19) {
-            ?>
-            <iframe name="lexpressfooter" SRC="<?= $_SESSION['lexpress']['footer'] ?>" scrolling="no" height="1160px" width="100%" FRAMEBORDER="no"></iframe>
-            <?
-        }
-    }
-    ?>
 </div><!-- /.footer -->
 <div class="cookies">
     <div class="content_cookies">

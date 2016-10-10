@@ -1,0 +1,41 @@
+{# Panel - My Offers in progress #}
+{% embed 'partials/components/dashboard-panel.html.twig' %}
+    {% block panelAttributes %} id="offers" {% endblock %}
+    {% block panelClassNames %} dashboard-panel dashboard-myoffers ui-draggable {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %} col-lg-6 col-md-6 col-sm-8 col-xs-4 {% endblock %}
+    {% block panelTitle %}{{ 'lender-dashboard-offers_title'|trans }}{% endblock %}
+    {% block panelControls %}
+        <span class="ui-draggable-handle"></span>
+    {% endblock %}
+    {% block panelContent %}
+        <div class="message">
+            <p>{% transchoice ongoingBids with {'%count%' : ongoingBids} %} lender-dashboard-offers_pending-offers-legend {% endtranschoice %}</p>
+        </div><!-- /.message -->
+        {% if ongoingBids|length > 0 %}
+            <ul class="list-myoffers">
+                {% for project in ongoingProjects %}
+                    <li class="myoffer">
+                        <div class="myoffer-project-name">{{ project.title }}</div>
+                        <div class="myoffer-project-cost">{{ project.amount|localizednumber }}&nbsp;€</div>
+                        <div class="myoffer-project-period">
+                            {% if project.days_left <= 2 %}
+                                <span class="ui-has-timecount" data-timecount-to="{{ project.end_date|date('Y-m-d\\TH:i:s') }}"></span>
+                            {% else %}
+                                {% trans with {'%remainingDays%' : project.days_left} %} project-list_remaining-days {% endtrans %}
+                            {% endif %}
+                        </div>
+                        {% for bid in project.aPendingBids %}
+                            <div class="myoffer-amount">
+                                {% set transParams = {
+                                    '%amount%' : '<span class="amount">' ~ bid.amount_euro|localizednumber ~ '&nbsp;€</span>',
+                                    '%rate%' : '<span class="interest">' ~ bid.rate|localizednumber ~ '&nbsp;%</span>'
+                                } %}
+                                {% if bid.id_autobid != 0 %}<span class="icon fa-autolend-u"></span> {% trans with transParams %} lender-dashboard-offers_autolend-bid-legend {% endtrans %}{% endif %}
+                                {% trans with transParams %} lender-dashboard-offers_bid-description {% endtrans %}
+                            </div>
+                        {% endfor %}
+                    </li>
+                {% endfor %}
+            </ul><!-- /.list-myoffers -->
+        {% endif %}
+    {% endblock %}
+{% endembed %}

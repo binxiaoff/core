@@ -1,0 +1,51 @@
+<tr class="detail-table-item">
+    <td colspan="4" class="detail-table-content">
+        <table class="table table-bids-detail" data-sortable>
+            <thead class="table-sortable-columns">
+                <tr>
+                    <th class="table-sortable-column table-bids-detail-item-id" data-sortable-by="detail-id">
+                        <span class="label">{% trans %} project-detail_all-bids-table-detail-sort-id {% endtrans %}</span>
+                    </th>
+                    <th class="table-bids-detail-item-rate">
+                        <span class="label">{% trans %} project-detail_all-bids-table-detail-sort-rate {% endtrans %}</span>
+                    </th>
+                    <th class="table-sortable-column table-bids-detail-item-amount" data-sortable-by="detail-amount">
+                        <span class="label">{% trans %} project-detail_all-bids-table-detail-sort-amount {% endtrans %}</span>
+                    </th>
+                    <th class="table-sortable-column table-bids-detail-item-status" data-sortable-by="detail-status">
+                        <span class="label">{% trans %} project-detail_all-bids-table-detail-sort-status {% endtrans %}</span>
+                    </th>
+                </tr>
+            </thead>
+            <tbody data-sortable-content>
+                {% for bid in bids %}
+                    <tr class="table-bids-detail-item bids-detail-by-rate {% if bid.status != 0 %} rejected-row {% endif %} {% if bid.userInvolved %} ui-current-user-involved {% endif %}"
+                        data-sortable-detail-id="{{ bid.id }}"
+                        data-sortable-detail-amount="{{ bid.amount }}"
+                        data-sortable-detail-status="{{ bid.status }}">
+                        <td class="table-bids-detail-item-id">{{ bid.id }}
+                            {% if bid.autobid > 0 %}
+                                <span class="icon fa-autolend-u32 ui-has-tooltip" data-original-title="{% trans %} project-detail_bids-list-autolend-tooltip {% endtrans %}"></span>
+                            {% endif %}
+                        </td>
+                        <td class="table-bids-detail-item-rate">{{ bid.rate|localizednumberwithprecision(1) }}%</td>
+                        <td class="table-bids-detail-item-amount">{{ bid.amount|localizednumber }}€</td>
+                        <td class="table-bids-detail-item-status">
+                            {% if bid.status == 0 %}
+                                <span class="c-success">
+                                    <span class="icon fa-check-u32"></span>
+                                    {% trans %} project-detail_all-bids-table-detail-status-valid {% endtrans %}
+                                </span>
+                            {% else %}
+                                <span class="c-error">
+                                    <span class="icon fa-close-u32"></span>
+                                    {% trans %} project-detail_all-bids-table-detail-status-rejected {% endtrans %}
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </td>
+</tr>

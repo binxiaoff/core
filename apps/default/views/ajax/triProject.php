@@ -54,7 +54,13 @@
                     </script>
                     <?php
                 } else {
-                    $project['daterest'] = 'Terminé';
+                    if ($aProject['date_fin'] != '0000-00-00 00:00:00') {
+                        $endDateTime = new \DateTime($aProject['date_fin']);
+                    } else {
+                        $endDateTime = new \DateTime($aProject['date_retrait_full']);
+                    }
+                    $endDate             = strftime('%d %B', $endDateTime->getTimestamp());
+                    $aProject['daterest'] = str_replace('[#date#]', $endDate, $this->lng['preteur-projets']['termine']);
                 }
                 ?>
 
@@ -93,7 +99,7 @@
             </td>
             <td>
                 <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>">
-                    <strong id="val<?= $aProject['id_project'] ?>"><?= $aProject['daterest'] ?></strong>
+                    <span id="val<?= $aProject['id_project'] ?>"<?php if ($aProject['status'] >= \projects_status::FUNDE) :?> class="project_ended"<?php endif; ?>><?= $aProject['daterest'] ?></span>
                 </a>
             </td>
             <td>

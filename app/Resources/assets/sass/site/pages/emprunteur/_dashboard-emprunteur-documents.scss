@@ -1,0 +1,55 @@
+//
+// Unilend Dashboard emprunteur documents
+//
+#mydocuments {
+
+  .table-mydocuments-borrower-item-filenumber {
+    width:20%;
+  }
+
+  .table-mydocuments-borrower-item-pouvoir {
+    width:40%;
+    text-align:center;
+  }
+
+  .table-mydocuments-borrower-item-mandat {
+    width:40%;
+    text-align:center;
+  }
+
+  .table-mydocuments-borrower-item-billnumber {
+    width:25%;
+  }
+
+  .table-mydocuments-borrower-item-billfilenumber {
+    width:25%;
+  }
+
+  .table-mydocuments-borrower-item-billdate {
+    width:25%;
+  }
+
+  .table-mydocuments-borrower-item-bill {
+    width:25%;
+    text-align:center;
+  }
+
+  td.table-mydocuments-borrower-item-bill {
+    .file {
+      background-size:contain;
+      padding-left:0;
+      width:30%;
+      margin:0 auto;
+    }
+  }
+  .document-download {
+    text-align:center;
+    img {
+      vertical-align:middle;
+      margin-right:20px;
+    }
+    img[alt='PDF'] {
+      width:28px;
+    }
+  }
+}

@@ -46,9 +46,14 @@ function checkFormAjoutUser()
         alert("Vous devez indiquer une adresse e-mail !");
         return false;
     }
-    else if(document.getElementById('password').value == '')
+    else if(document.getElementById('firstname').value == '')
     {
-        alert("Vous devez indiquer un mot de passe !");
+        alert("Vous devez indiquer un prenom !");
+        return false;
+    }
+    else if(document.getElementById('name').value == '')
+    {
+        alert("Vous devez indiquer un nom de famille !");
         return false;
     }
 

@@ -40,15 +40,10 @@ class transactions extends transactions_crud
     const STATUS_VALID    = 1;
     const STATUS_CANCELED = 3;
 
-    const PHYSICAL = 1;
-    const VIRTUAL  = 2;
-
-    const DISPLAY_IN_FO = 0;
-    const HIDE_IN_FO = 1;
-
     public function __construct($bdd, $params = '')
     {
         parent::transactions($bdd, $params);
+        \Unilend\core\Loader::loadData('transactions_types');
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -83,29 +78,6 @@ class transactions extends transactions_crud
     {
         $result = $this->bdd->query('SELECT * FROM `transactions` WHERE ' . $field . ' = "' . $id . '"');
         return ($this->bdd->fetch_array($result) > 0);
-    }
-
-    public function getSumDepotByMonths($id_client, $year)
-    {
-        $sql = '
-            SELECT SUM(montant / 100) AS montant,
-                LEFT(date_transaction, 7) AS date
-            FROM transactions
-            WHERE status = 1
-                AND etat = 1
-                AND YEAR(date_transaction) = ' . $year . '
-                AND type_transaction IN (1, 3, 4)
-                AND display = 0
-                AND id_client = ' . $id_client . '
-            GROUP BY LEFT(date_transaction, 7)';
-
-        $req = $this->bdd->query($sql);
-        $res = array();
-        while ($rec = $this->bdd->fetch_array($req)) {
-            $d          = explode('-', $rec['date']);
-            $res[$d[1]] = $rec['montant'];
-        }
-        return $res;
     }
 
     public function sum($where = '', $champ)
@@ -150,7 +122,7 @@ class transactions extends transactions_crud
             WHERE etat = 1
                 AND status = 1
                 AND id_client = ' . $id_client . '
-                AND type_transaction NOT IN (9, 6, 15)
+                AND type_transaction NOT IN (' . implode(', ', array(\transactions_types::TYPE_BORROWER_REPAYMENT, \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION)) . ')
                 AND DATE(added) <= "' . $dateLimite . '"';
 
         $result = $this->bdd->query($sql);
@@ -163,303 +135,170 @@ class transactions extends transactions_crud
         return $solde;
     }
 
-    public function sumByMonthByPreteur($id_client, $type_transaction, $month, $year)
+    public function getRepaymentTransactionsAmount($iEcheanceId)
     {
-        $sql = '
-            SELECT SUM(montant) AS montant
-            FROM transactions
-            WHERE MONTH(added) = ' . $month . '
-                AND YEAR(added) = ' . $year . '
-                AND etat = 1
-                AND status = 1
-                AND type_transaction IN(' . $type_transaction . ')
-                AND id_client = ' . $id_client;
-
-        $result  = $this->bdd->query($sql);
-        $montant = $this->bdd->result($result);
-        if ($montant == '') {
-            $montant = 0;
-        } else {
-            $montant = ($montant / 100);
+        if (false == empty($iEcheanceId)) {
+            $sWhere = 'type_transaction IN (' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . ', ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . ')
+            AND id_echeancier = ' . $iEcheanceId;
+            return $this->sum($sWhere, 'montant');
         }
-        return $montant;
     }
 
-    public function sumByday($type_transaction, $month, $year)
-    {
-        // On recup le nombre de jour dans le mois
-        $mois    = mktime(0, 0, 0, $month, 1, $year);
-        $nbJours = date("t", $mois);
-
-        $listDates = array();
-        for ($i = 1; $i <= $nbJours; $i++) {
-            $listDates[$i] = $year . '-' . $month . '-' . (strlen($i) < 2 ? '0' : '') . $i;
-        }
-
-        $result = array();
-
-        if ($type_transaction == 3) { // si cb on recup les inscription par cb
-            $sql = '
-                SELECT
-                    SUM(ROUND(t.montant / 100, 2)) AS montant,
-                    SUM(ROUND(montant_unilend / 100, 2)) AS montant_unilend,
-                    SUM(ROUND(montant_etat / 100, 2)) AS montant_etat,
-                    DATE(t.date_transaction) AS jour
-                FROM transactions t,lenders_accounts l
-                WHERE t.id_client = l.id_client_owner
-                    AND MONTH(t.added) = ' . $month . '
-                    AND YEAR(t.added) = ' . $year . '
-                    AND t.etat = 1
-                    AND t.status = 1
-                    AND t.type_transaction = 1
-                    AND l.type_transfert = 2
-                GROUP BY DATE(t.date_transaction)';
-
-            $resultat = $this->bdd->query($sql);
-
-            while ($record = $this->bdd->fetch_array($resultat)) {
-                $result[$record['jour']]['montant']         = $record['montant'];
-                $result[$record['jour']]['montant_unilend'] = $record['montant_unilend'];
-                $result[$record['jour']]['montant_etat']    = $record['montant_etat'];
-            }
-        }
-
-        $sql = '
-            SELECT
-                SUM(ROUND(montant / 100, 2)) AS montant,
-                SUM(ROUND(montant_unilend / 100, 2)) AS montant_unilend,
-                SUM(ROUND(montant_etat / 100, 2)) AS montant_etat,
-                DATE(date_transaction) AS jour
-            FROM transactions
-            WHERE MONTH(added) = ' . $month . '
-                AND YEAR(added) = ' . $year . '
-                AND etat = 1
-                AND status = 1
-                AND type_transaction IN(' . $type_transaction . ')
-            GROUP BY DATE(date_transaction)';
-
-        $resultat = $this->bdd->query($sql);
-
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            if (false === isset($result[$record['jour']])) {
-                $result[$record['jour']] = array(
-                    'montant'         => 0,
-                    'montant_unilend' => 0,
-                    'montant_etat'    => 0
-                );
-            }
-            $result[$record['jour']]['montant'] += $record['montant'];
-            $result[$record['jour']]['montant_unilend'] += $record['montant_unilend'];
-            $result[$record['jour']]['montant_etat'] = $record['montant_etat'];
-        }
-
-        // on affiche chaque jours du mois
-        foreach ($listDates as $d) {
-            $lresult[$d]['montant']         = empty($result[$d]['montant']) ? '0' : $result[$d]['montant'];
-            $lresult[$d]['montant_unilend'] = empty($result[$d]['montant_unilend']) ? '0' : $result[$d]['montant_unilend'];
-            $lresult[$d]['montant_etat']    = empty($result[$d]['montant_etat']) ? '0' : $result[$d]['montant_etat'];
-
-        }
-
-        return $lresult;
-    }
-
-    // solde d'une journée
-    public function getSoldeReelDay($date)
+    public function getOperationsForIndexing($transactionTypeLabel,  $lastIndexedOperationDate, $clientId)
     {
         $sql = '
-            SELECT SUM(montant) AS solde
-            FROM transactions
-            WHERE etat = 1
-                AND status = 1
-                AND transaction = 1
-                AND type_transaction <> 9
-                AND type_transaction <> 11
-                AND type_transaction <> 12
-                AND type_transaction <> 14
-                AND DATE(date_transaction) = "' . $date . '"
-            GROUP BY DATE(date_transaction)';
-
-        $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result);
-        if ($solde == '') {
-            $solde = 0;
-        } else {
-            $solde = ($solde / 100);
-        }
-        return $solde;
-    }
-
-    // solde d'une journée
-    public function getSoldeReelUnilendDay($date)
-    {
-        $sql = '
-            SELECT SUM(montant - montant_unilend) AS solde
-            FROM transactions
-            WHERE etat = 1
-                AND status = 1
-                AND transaction = 1
-                AND type_transaction = 9
-                AND DATE(date_transaction) = "' . $date . '"
-            GROUP BY DATE(date_transaction)';
-
-        $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result);
-        if ($solde == '') {
-            $solde = 0;
-        } else {
-            $solde = ($solde / 100);
-        }
-        return $solde;
-    }
-
-    public function getSoldeReelEtatDay($date)
-    {
-        $sql = '
-            SELECT SUM(montant_etat) AS solde
-            FROM transactions
-            WHERE etat = 1
-                AND status = 1
-                AND transaction = 2
-                AND type_transaction = 10
-                AND DATE(date_transaction) = "' . $date . '"
-            GROUP BY DATE(date_transaction)';
-
-        $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result);
-        if ($solde == '') {
-            $solde = 0;
-        } else {
-            $solde = ($solde / 100);
-        }
-        return $solde;
-    }
-
-    // total soldes d'un mois
-    public function getSoldePreteur($id_client, $month, $year)
-    {
-        $sql = '
-            SELECT SUM(montant) AS solde
-            FROM transactions
-            WHERE etat = 1
-                AND status = 1
-                AND LEFT(added, 7) <= "' . $year . '-' . $month . '"
-                AND id_client = ' . $id_client;
-
-        $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result);
-        if ($solde == '') {
-            $solde = 0;
-        } else {
-            $solde = ($solde / 100);
-        }
-        return $solde;
-    }
-
-    public function selectTransactionsOp($array_type_transactions, $sIndexationDateStart, $iClientId)
-    {
-        $sql = '
-        ( SELECT t.*,
-
+        (
+          SELECT
+            DISTINCT
+            t.id_transaction,
+            t.date_transaction,
+            t.id_client,
+            t.id_echeancier,
+            t.type_transaction,
+            0 AS capital,
+            0 AS interests,
             CASE ';
-
-        foreach ($array_type_transactions as $key => $t) {
-            if ($key == 2) {
-                foreach ($t as $key_offre => $offre) {
+        foreach ($transactionTypeLabel as $typeId => $label) {
+            if ($typeId == \transactions_types::TYPE_LENDER_LOAN) {
+                foreach ($label as $subtypeId => $offre) {
                     // offre en cours
-                    if ($key_offre == 1) {
-                        $sql .= ' WHEN t.type_transaction = ' . $key . ' AND t.montant <= 0 THEN "' . $offre . '"';
+                    if ($subtypeId == 1) {
+                        $sql .= ' WHEN t.type_transaction = ' . $typeId . ' AND t.montant <= 0 THEN "' . $offre . '"';
                     } // offre rejeté
-                    elseif ($key_offre == 2) {
-                        $sql .= ' WHEN t.type_transaction = ' . $key . ' AND t.montant > 0 THEN "' . $offre . '"';
-                    } // offre acceptée
-                    else {
-                        $sql .= ' WHEN t.type_transaction = ' . $key . ' AND t.montant <= 0 THEN "' . $t[1] . '"';
-                    }
-                }
-            } elseif ($key == 5) {
-                foreach ($t as $key_remb => $remb) {
-                    // remb
-                    if ($key_remb == 1) {
-                        $sql .= ' WHEN t.type_transaction = ' . $key . ' AND t.recouvrement = 0 THEN "' . $remb . '"';
-                    } // recouvrement
-                    else {
-                        $sql .= ' WHEN t.type_transaction = ' . $key . ' AND t.recouvrement = 1 THEN "' . $remb . '"';
+                    elseif ($subtypeId == 2) {
+                        $sql .= ' WHEN t.type_transaction = ' . $typeId . ' AND t.montant > 0 THEN "' . $offre . '"';
                     }
                 }
             } else {
                 $sql .= '
-                    WHEN t.type_transaction = ' . $key . ' THEN "' . $t . '"';
+                    WHEN t.type_transaction = ' . $typeId . ' THEN "' . $label . '"';
             }
         }
-        $sql .= '
-                ELSE ""
-            END as type_transaction_alpha,
-
+        $sql .='
+            ELSE ""
+            END AS type_transaction_alpha,
             CASE
-                WHEN t.type_transaction = 5 THEN (SELECT ech.id_project FROM echeanciers ech WHERE ech.id_echeancier = t.id_echeancier)
-                WHEN b.id_project IS NULL THEN b2.id_project
-                ELSE b.id_project
-            END as le_id_project,
-
-            date_transaction as date_tri,
-
-            (SELECT ROUND(SUM(t2.montant/100),2) as solde FROM transactions t2 WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (9,6,15) AND t2.id_transaction <= t.id_transaction) as solde,
-
+            WHEN b.id_project IS NULL THEN CASE WHEN b2.id_project IS NULL THEN t.id_project ELSE b2.id_project END
+            ELSE b.id_project END AS id_project,
+            date_transaction AS date_tri,
+            (
+              SELECT SUM(t2.montant)
+              FROM transactions t2
+              WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (' . implode(', ', array(\transactions_types::TYPE_BORROWER_REPAYMENT, \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION)) . ') AND (t2.date_transaction < t.date_transaction OR t2.date_transaction = t.date_transaction AND t2.id_transaction <= t.id_transaction)
+            ) AS solde,
             CASE t.type_transaction
-                WHEN 2 THEN (SELECT p.title FROM projects p WHERE p.id_project = le_id_project)
-                WHEN 5 THEN (SELECT p2.title FROM projects p2 LEFT JOIN echeanciers e ON p2.id_project = e.id_project WHERE e.id_echeancier = t.id_echeancier)
-                WHEN 23 THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
-                WHEN 26 THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
-                ELSE ""
-            END as title,
-
+            WHEN ' . \transactions_types::TYPE_LENDER_LOAN . ' THEN (
+              SELECT title
+              FROM projects
+              WHERE id_project = t.id_project
+            )
+            WHEN ' . \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT . ' THEN (
+              SELECT title
+              FROM projects
+              WHERE id_project = t.id_project
+            )
+            WHEN ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . ' THEN (
+              SELECT title
+              FROM projects
+              WHERE id_project = t.id_project
+            )
+            ELSE ""
+            END AS title,
             CASE t.type_transaction
-                WHEN 2 THEN 0
-                WHEN 5 THEN (SELECT e.id_loan FROM echeanciers e WHERE e.id_echeancier = t.id_echeancier)
-                WHEN 23 THEN (SELECT e.id_loan FROM echeanciers e WHERE e.id_project = t.id_project AND w.id_lender = e.id_lender LIMIT 1)
-                ELSE ""
-            END as bdc,
-
-            t.montant as amount_operation
-
-            FROM transactions t
+            WHEN ' . \transactions_types::TYPE_LENDER_LOAN . ' THEN 0
+            WHEN ' . \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT . ' THEN (
+              SELECT e.id_loan
+              FROM echeanciers e
+              WHERE e.id_project = t.id_project AND w.id_lender = e.id_lender
+              LIMIT 1
+            )
+            ELSE ""
+            END AS bdc,
+            t.montant AS amount_operation,
+            0 AS tax_amount
+          FROM transactions t
             LEFT JOIN wallets_lines w ON t.id_transaction = w.id_transaction
-            LEFT JOIN bids b ON w.id_wallet_line = b.id_lender_wallet_line
+            LEFT JOIN  bids b ON w.id_wallet_line = b.id_lender_wallet_line
             LEFT JOIN bids b2 ON t.id_bid_remb = b2.id_bid
-            WHERE DATE(t.date_transaction) >= "' . $sIndexationDateStart . '"
-                AND t.type_transaction IN (' . implode(',', array_keys($array_type_transactions)) . ')
+          WHERE t.date_transaction >= "' . $lastIndexedOperationDate . '"
+                AND t.type_transaction IN (' . implode(',', array_keys($transactionTypeLabel)) . ')
                 AND t.status = 1
                 AND t.etat = 1
-                AND t.display = 0
-                AND t.id_client = ' . $iClientId . '
+                AND t.id_client = ' . $clientId . '
+        ) UNION ALL (
+          SELECT
+            t.id_transaction,
+            t.date_transaction,
+            t.id_client,
+            t.id_echeancier,
+            t.type_transaction,
+            0 AS capital,
+            0 AS interests,
+            "' . $transactionTypeLabel[\transactions_types::TYPE_LENDER_LOAN][3] . '" AS type_transaction_alpha,
+            lo.id_project AS id_project,
+            psh.added AS date_tri,
+            (
+              SELECT SUM(t2.montant)
+              FROM transactions t2
+              WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (' . implode(', ', array(\transactions_types::TYPE_BORROWER_REPAYMENT, \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION)) . ') AND (t2.date_transaction < date_tri OR t2.date_transaction = date_tri AND t2.id_transaction <= t.id_transaction)
+            ) AS solde,
+            p.title AS title,
+            lo.id_loan AS bdc,
+            lo.amount AS amount_operation,
+            0 AS tax_amount
+          FROM loans lo INNER JOIN accepted_bids ab ON ab.id_loan = lo.id_loan
+            INNER JOIN bids b ON ab.id_bid = b.id_bid
+            INNER JOIN wallets_lines w ON w.id_wallet_line = b.id_lender_wallet_line
+            INNER JOIN transactions t ON t.id_transaction = w.id_transaction
+            INNER JOIN projects p ON p.id_project = lo.id_project
+            INNER JOIN projects_status_history psh ON psh.id_project = lo.id_project
+          WHERE lo.status = 0
+                AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_LOAN . '
+                AND t.status = 1
+                AND t.etat = 1
+                AND t.id_client = ' . $clientId . '
+                AND psh.id_project_status_history = (
+            SELECT MIN(id_project_status_history)
+            FROM projects_status_history psh1
+            WHERE psh1.id_project = lo.id_project AND psh1.id_project_status = 8
+          )
+          GROUP BY lo.id_loan
+        ) UNION ALL (
+          SELECT
+            t.id_transaction,
+            t.date_transaction,
+            t.id_client,
+            t.id_echeancier,
+            5 AS type_transaction,
+            t.montant as capital,
+            IFNULL(interests.montant, 0) AS interests,
+            "Remboursement" AS type_transaction_alpha,
+            p.id_project AS id_project,
+            t.date_transaction AS date_tri,
+            (
+              SELECT SUM(t2.montant) + (SELECT SUM(montant) FROM transactions WHERE id_echeancier = t.id_echeancier)
+              FROM transactions t2
+              WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (' . implode(', ', array(\transactions_types::TYPE_BORROWER_REPAYMENT, \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION)) . ') AND (t2.date_transaction < date_tri OR t2.date_transaction = date_tri AND t2.id_transaction < t.id_transaction)
+            ) AS solde,
+            p.title AS title,
+            (
+              SELECT e.id_loan
+              FROM echeanciers e
+              WHERE e.id_echeancier = t.id_echeancier
+            ) AS bdc,
+            0 AS amount_operation,
+            IFNULL((SELECT SUM(amount) FROM tax WHERE id_transaction IN (SELECT id_transaction FROM transactions WHERE id_echeancier = t.id_echeancier)), 0) AS tax_amount
+          FROM transactions t
+            INNER JOIN echeanciers e ON e.id_echeancier = t.id_echeancier
+            INNER JOIN projects p ON p.id_project = e.id_project
+            LEFT JOIN transactions interests ON t.id_echeancier = interests.id_echeancier AND interests.type_transaction = 28
+          WHERE t.date_transaction >= "' . $lastIndexedOperationDate . '"
+                AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . '
+                AND t.status = 1
+                AND t.etat = 1
+                AND t.id_client = ' . $clientId . '
         )
-        UNION ALL
-        (
-            SELECT
-              t.*,
-              "' . $array_type_transactions[2][3] . '" as type_transaction_alpha,
-              lo.id_project as le_id_project,
-              psh.added as date_tri,
-              (SELECT ROUND(SUM(t2.montant/100),2) as solde FROM transactions t2 WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (9,6,15) AND t2.date_transaction < date_tri) as solde,
-              p.title as title,
-              lo.id_loan as bdc,
-              lo.amount as amount_operation
-            FROM loans lo
-              INNER JOIN accepted_bids ab ON ab.id_loan = lo.id_loan
-              INNER JOIN bids b ON ab.id_bid = b.id_bid
-              INNER JOIN wallets_lines w ON w.id_wallet_line = b.id_lender_wallet_line
-              INNER JOIN transactions t ON t.id_transaction = w.id_transaction
-              INNER JOIN projects p ON p.id_project = lo.id_project
-              INNER JOIN projects_status_history psh ON psh.id_project = lo.id_project
-            WHERE lo.status = 0
-                AND t.type_transaction IN (' . implode(',', array_keys($array_type_transactions)) . ')
-                AND t.status = 1
-                AND t.etat = 1
-                AND t.display = 0
-                AND t.id_client = ' . $iClientId . '
-                AND psh.id_project_status_history = (SELECT MIN(id_project_status_history) FROM projects_status_history psh1 WHERE psh1.id_project = lo.id_project AND psh1.id_project_status = 8)
-        )';
+        ORDER BY date_tri DESC';
 
         $this->bdd->query('SET SQL_BIG_SELECTS = 1');  //Set it before your main query
 
@@ -469,5 +308,169 @@ class transactions extends transactions_crud
             $result[] = $record;
         }
         return $result;
+    }
+
+    /**
+     * @param array $transactionTypes
+     * @param \DateTime $date
+     * @return array
+     * @throws Exception
+     */
+    public function getDailyState(array $transactionTypes, \DateTime $date)
+    {
+        $sql = '
+            SELECT
+                type_transaction,
+                ROUND(SUM(t.montant) / 100, 2) AS montant,
+                ROUND(SUM(t.montant_unilend) / 100, 2) AS montant_unilend,
+                ROUND(SUM(t.montant_etat) / 100, 2) AS montant_etat,
+                DATE(t.date_transaction) AS jour
+            FROM transactions t
+            WHERE LEFT(t.added, 7) = :transaction_date
+                AND t.etat = 1
+                AND t.status = 1
+                AND t.type_transaction IN(:transaction_type)
+            GROUP BY t.type_transaction, DATE(t.date_transaction)
+        ';
+        $data = $this->bdd->executeQuery($sql,
+            ['transaction_type' => $transactionTypes, 'transaction_date' => $date->format('Y-m')],
+            ['transaction_type' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY, 'transaction_date' => \PDO::PARAM_STR])->fetchAll(\PDO::FETCH_ASSOC);
+        $result = [];
+        foreach ($data as $row) {
+            $result[$row['type_transaction']][$row['jour']] = [
+                'montant'         => $row['montant'],
+                'montant_unilend' => $row['montant_unilend'],
+                'montant_etat'    => $row['montant_etat'],
+            ];
+        }
+        return $result;
+    }
+
+    /**
+     * @param DateTime $date
+     * @return array
+     * @throws Exception
+     */
+    public function getDailyWelcomeOffer(\DateTime $date)
+    {
+        $sql = '
+            SELECT
+                ROUND(SUM(t.montant) / 100, 2) AS montant,
+                ROUND(SUM(t.montant_unilend) / 100, 2) AS montant_unilend,
+                ROUND(SUM(t.montant_etat) / 100, 2) AS montant_etat,
+                DATE(t.date_transaction) AS jour
+            FROM transactions t
+            INNER JOIN lenders_accounts l ON t.id_client = l.id_client_owner
+            WHERE LEFT(t.added, 7) = :transaction_date
+                AND t.etat = 1
+                AND t.status = 1
+                AND t.type_transaction = :transaction_type
+                AND l.type_transfert = 2
+            GROUP BY DATE(t.date_transaction)
+        ';
+        $data = $this->bdd->executeQuery($sql,
+            ['transaction_type' => \transactions_types::TYPE_LENDER_SUBSCRIPTION, 'transaction_date' => $date->format('Y-m')],
+            ['transaction_type' => \PDO::PARAM_INT, 'transaction_date' => \PDO::PARAM_STR])->fetchAll(\PDO::FETCH_ASSOC);
+        $result = [];
+
+        foreach ($data as $row) {
+            $result[$row['jour']]['montant']         = $row['montant'];
+            $result[$row['jour']]['montant_unilend'] = $row['montant_unilend'];
+            $result[$row['jour']]['montant_etat']    = $row['montant_etat'];
+        }
+        return $result;
+    }
+
+    /**
+     * @param string $startDate yyyy-mm-dd H:i:s date formated
+     * @param string $endDate yyyy-mm-dd H:i:s date formated
+     * @return int
+     */
+    public function getInterestsAmount($startDate, $endDate)
+    {
+        $sql = '
+            SELECT SUM(t.montant) as interests
+            FROM transactions t
+            WHERE
+              t.type_transaction = :transaction_type
+              AND t.date_transaction BETWEEN :start_date AND :end_date
+        ';
+        return $this->bdd->executeQuery($sql,
+            ['transaction_type' => \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS, 'start_date' => $startDate, 'end_date' => $endDate],
+            ['transaction_type' => \PDO::PARAM_INT, 'start_date' => \PDO::PARAM_STR, 'end_date' => \PDO::PARAM_STR])->fetchColumn(0);
+    }
+
+    public function getBorrowerRecoveryPaymentsOnHealthyProjectsByCohort()
+    {
+        $query = 'SELECT
+                      SUM(montant / 100) AS amount,
+                      (
+                        SELECT
+                          CASE LEFT(projects_status_history.added, 4)
+                            WHEN 2013 THEN "2013-2014"
+                            WHEN 2014 THEN "2013-2014"
+                            ELSE LEFT(projects_status_history.added, 4)
+                          END AS date_range
+                        FROM projects_status_history
+                        INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
+                        WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
+                          AND transactions.id_project = projects_status_history.id_project
+                        ORDER BY id_project_status_history ASC LIMIT 1
+                      ) AS cohort
+                    FROM transactions
+                      INNER JOIN projects ON transactions.id_project = projects.id_project
+                    WHERE transactions.type_transaction = ' . \transactions_types::TYPE_RECOVERY_BANK_TRANSFER . '
+                    AND IF(
+                            projects.status IN ('. implode(',', [\projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::DEFAUT]).')
+                            OR (projects.status IN ('. implode(',', [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X, \projects_status::RECOUVREMENT]).')
+                                AND DATEDIFF(NOW(), (
+                                                    SELECT psh2.added
+                                                    FROM projects_status_history psh2
+                                                      INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                                                    WHERE ps2.status = ' . \projects_status::PROBLEME . '
+                                                      AND psh2.id_project = transactions.id_project
+                                                    ORDER BY psh2.id_project_status_history DESC
+                                                    LIMIT 1)) > 180), TRUE, FALSE) = FALSE
+                    GROUP BY cohort';
+
+        $statement = $this->bdd->executeQuery($query);
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getBorrowerRecoveryPaymentsOnProblematicProjectsByCohort()
+    {
+        $query = 'SELECT
+                      SUM(montant / 100) AS amount,
+                      (
+                        SELECT
+                          CASE LEFT(projects_status_history.added, 4)
+                            WHEN 2013 THEN "2013-2014"
+                            WHEN 2014 THEN "2013-2014"
+                            ELSE LEFT(projects_status_history.added, 4)
+                          END AS date_range
+                        FROM projects_status_history
+                        INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
+                        WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
+                          AND transactions.id_project = projects_status_history.id_project
+                        ORDER BY id_project_status_history ASC LIMIT 1
+                      ) AS cohort
+                    FROM transactions
+                      INNER JOIN projects ON transactions.id_project = projects.id_project
+                    WHERE transactions.type_transaction = ' . \transactions_types::TYPE_RECOVERY_BANK_TRANSFER . '
+                        AND IF(
+                            projects.status IN ('. implode(',', [\projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::DEFAUT]).')
+                            OR (projects.status IN ('. implode(',', [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X, \projects_status::RECOUVREMENT]).')
+                                AND DATEDIFF(NOW(), (
+                                                    SELECT psh2.added
+                                                    FROM projects_status_history psh2
+                                                      INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                                                    WHERE ps2.status = ' . \projects_status::PROBLEME . '
+                                                      AND psh2.id_project = transactions.id_project
+                                                    ORDER BY psh2.id_project_status_history DESC
+                                                    LIMIT 1)) > 180), TRUE, FALSE) = TRUE
+                    GROUP BY cohort';
+
+        $statement = $this->bdd->executeQuery($query);
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 }

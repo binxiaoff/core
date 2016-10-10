@@ -50,6 +50,7 @@
     <div><?= $this->sClientStatusMessage ?></div>
     <h1>Detail prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
     <div class="btnDroite">
+        <a href="<?= $this->lurl ?>/preteurs/bids/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Enchères</a>
         <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Modifier Prêteur</a>
         <a href="<?= $this->lurl ?>/preteurs/email_history/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Historique des emails</a>
         <a href="<?= $this->lurl ?>/preteurs/portefeuille/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Portefeuille & Performances</a></div>
@@ -88,8 +89,8 @@
             <?php endif; ?>
         </tr>
         <tr>
-            <th>Téléphone :</th>
-            <td><?= $this->clients->telephone ?></td>
+            <th>Téléphone / Mobile :</th>
+            <td><?= $this->clients->telephone ?> / <?= $this->clients->mobile?></td>
         </tr>
     </table>
     <br/><br/>
@@ -125,7 +126,13 @@
             </tr>
             <tr>
                 <th>Exonéré :</th>
-                <td><?= ($this->lenders_accounts->exonere == 1 ? 'Oui' : 'Non') ?></td>
+                <td>
+                    <?php if (empty($this->aExemptionYears)) : ?>
+                        Non
+                    <?php else : ?>
+                        <?= implode('<br>', $this->aExemptionYears) ?>
+                    <?php endif; ?>
+                </td>
             </tr>
         </table>
     </div>
@@ -152,7 +159,7 @@
                 <td><?= $this->ficelle->formatNumber($this->SumInscription) ?> €</td>
             </tr>
             <tr>
-                <th>Taux moyen :</th>
+                <th>Taux moyen pondéré :</th>
                 <td><?= $this->ficelle->formatNumber($this->txMoyen) ?> %</td>
             </tr>
             <tr>
@@ -218,22 +225,22 @@
                 <?php
                 $i = 1;
                 foreach ($this->lTrans as $t) :
-                    if ($t['type_transaction'] == 5) :
+                if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS))) :
                         $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
                         $this->projects->get($this->echeanciers->id_project, 'id_project');
                         $this->companies->get($this->projects->id_company, 'id_company');
-                    elseif ($t['type_transaction'] == 23) :
+                    elseif ($t['type_transaction'] == \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT) :
                         $this->projects->get($t['id_project'], 'id_project');
                         $this->companies->get($this->projects->id_company, 'id_company');
                     endif;
                     $type = "";
-                    if ($t['type_transaction'] == 8 && $t['montant'] > 0) :
+                    if ($t['type_transaction'] == \transactions_types::TYPE_LENDER_WITHDRAWAL && $t['montant'] > 0) :
                         $type = "Annulation retrait des fonds - compte bancaire clos";
                     else :
-                        $type = $this->lesStatuts[$t['type_transaction']] . ($t['type_transaction'] == 5 ? ' - ' . $this->companies->name : '');
+                        $type = $this->lesStatuts[$t['type_transaction']] . (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS)) ? ' - ' . $this->companies->name : '');
                     endif; ?>
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
-                        <td><?= $this->lesStatuts[$t['type_transaction']] . ($t['type_transaction'] == 5 || $t['type_transaction'] == 23 ? ' - ' . $this->companies->name : '') ?></td>
+                        <td><?= $this->lesStatuts[$t['type_transaction']] . (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT)) ? ' - ' . $this->companies->name : '') ?></td>
                         <td><?= $this->dates->formatDate($t['date_transaction'], 'd-m-Y') ?></td>
                         <td><?= $this->ficelle->formatNumber($t['montant'] / 100) ?> €</td>
                     </tr>
@@ -331,14 +338,14 @@
     <?php if (count($this->lEncheres) > 0) : ?>
         <table class="tablesorter encheres">
             <thead>
-            <tr>
-                <th>Année</th>
-                <th>Projet</th>
-                <th>Montant Prêt (€)</th>
-                <th>Pourcentage</th>
-                <th>Nbre de mois</th>
-                <th>Remboursement (€)</th>
-                <th>Contrat</th>
+                <tr>
+                    <th>Année</th>
+                    <th>Projet</th>
+                    <th>Montant prêt (€)</th>
+                    <th>Pourcentage</th>
+                    <th>Nombre de mois</th>
+                    <th>Remboursement (€)</th>
+                    <th>Contrat</th>
             </tr>
             </thead>
             <tbody>
@@ -347,17 +354,17 @@
             foreach ($this->lEncheres as $e) :
                 $year = $this->dates->formatDate($e['added'], 'Y');
                 $this->projects->get($e['id_project'], 'id_project');
-                $sumMontant = $this->echeanciers->getSum($e['id_loan']);
+                $sumMontant = $this->echeanciers->getTotalAmount(array('id_loan' => $e['id_loan']));
             ?>
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                     <td align="center"><?= $year ?></td>
                     <td>
                         <a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>"><?= $this->projects->title_bo ?></a>
                     </td>
-                    <td align="center"><?= number_format($e['amount'] / 100, 2, '.', ' ') ?></td>
-                    <td align="center"><?= number_format($e['rate'], 2, '.', ' ') ?> %</td>
+                    <td align="center"><?= $this->ficelle->formatNumber($e['amount'] / 100, 0) ?></td>
+                    <td align="center"><?= $this->ficelle->formatNumber($e['rate'], 1) ?> %</td>
                     <td align="center"><?= $this->projects->period ?></td>
-                    <td align="center"><?= number_format($sumMontant, 2, '.', ' ') ?></td>
+                    <td align="center"><?= $this->ficelle->formatNumber($sumMontant, 2) ?></td>
                     <td align="center">
                         <a href="<?= $this->furl . '/pdf/contrat/' . $this->clients->hash . '/' . $e['id_loan'] ?>">PDF</a>
                     </td>

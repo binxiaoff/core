@@ -1,0 +1,101 @@
+<section id="profile-address-view" role="tabpanel" class="profile-address-view collapse in">
+
+    <button data-target="#profile-address-edit" role="button" data-toggle="collapse" data-parent="#profile-address-section" class="btn-edit" aria-controls="#profile-address-edit">
+        <span class="icon fa-pencil-u32"></span>
+        <span class="label">{% trans %} lender-profile_information-tab-identity-section-modify-button {% endtrans %}</span>
+    </button>
+
+    <dl class="list-2col">
+        <dt>{% trans %} lender-profile_information-tab-fiscal-address-section-address-label {% endtrans %}</dt>
+        <dd id="profile-address-street-output">{{ company.adresse1 }}</dd>
+        <dt>{% trans %} lender-profile_information-tab-fiscal-address-section-zip-label {% endtrans %}</dt>
+        <dd id="profile-address-code-output">{{ company.zip }}</dd>
+        <dt>{% trans %} lender-profile_information-tab-fiscal-address-section-city-label {% endtrans %}</dt>
+        <dd id="profile-address-ville-output">{{ company.city }}</dd>
+        <dt>{% trans %} lender-profile_information-tab-fiscal-address-section-country-label {% endtrans %}</dt>
+        <dd id="profile-address-pays-output">{{ company.id_pays|countryLabel }}</dd>
+    </dl>
+
+</section><!-- /.profile-address-view -->
+
+<section id="profile-address-edit" role="tabpanel" class="profile-address-edit collapse">
+    <form id="form-profile-address-edit" action="{{ path('profile_legal_entity_fiscal_address_update') }}" method="post" enctype="multipart/form-data" class="form-profile form-profile-address-edit"
+          data-formvalidation
+          data-formvalidation-notificationselem="#form-profile-address-notifications">
+        <div class="row">
+            <div class="form-field">
+                <label for="form-profile-address-street">{% trans %} lender-profile_information-tab-fiscal-address-section-address-label {% endtrans %}
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                <input id="form-profile-address-street" type="text" name="fiscal_address_street" value="{{ formData.legalEntity.fiscal_address_street }}" class="input-field"
+                       data-formvalidation-input
+                       data-formvalidation-required="true"/>
+            </div><!-- /.form-field -->
+        </div>
+
+        <div class="row row-multi-col-computer">
+            <div class="form-field col-lg-6 col-md-6">
+                <label for="form-profile-address-code">{% trans %} lender-profile_information-tab-fiscal-address-section-zip-label {% endtrans %}
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                </label>
+                <div class="input-group set-right">
+                    <input id="form-profile-address-code" type="text" name="fiscal_address_zip" value="{{ formData.legalEntity.fiscal_address_zip  }}" class="input-field"
+                           data-formvalidation-input
+                           data-formvalidation-required="true"
+                           {# AutoComplete behaviours for addresses needs to be further marked and configured #}
+                           data-autocomplete-address
+                           data-autocomplete-ajaxurl="{{ path('lender_profile_ajax_zip') }}"
+                           data-autocomplete-address-countryelem="#form-profile-address-pays"
+                           data-autocomplete-address-cityelem="#form-profile-address-ville"
+                           data-autocomplete-address-zipelem="#form-profile-address-code"
+                           data-has-spinner="#spinner-profile-address-code"/>
+                    <div class="btn-group">
+                        <span id="spinner-profile-address-code" class="ui-is-spinner"><span class="sr-only">Loading...</span></span>
+                    </div>
+                </div><!-- /.input-group -->
+            </div><!-- /.form-field -->
+            <div class="form-field col-lg-6 col-md-6">
+                <label for="form-profile-address-ville">{% trans %} lender-profile_information-tab-fiscal-address-section-city-label {% endtrans %}
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                <div class="input-group set-right">
+                    <input id="form-profile-address-ville" type="text" name="fiscal_address_city" value="{{ formData.legalEntity.fiscal_address_city  }}" class="input-field"
+                           data-formvalidation-input
+                           data-formvalidation-required="true"
+                           {# AutoComplete behaviours for addresses needs to be further marked and configured #}
+                           data-autocomplete-address
+                           data-autocomplete-ajaxurl="{{ path('lender_profile_ajax_zip') }}"
+                           data-autocomplete-address-countryelem="#form-profile-address-pays"
+                           data-autocomplete-address-cityelem="#form-profile-address-ville"
+                           data-autocomplete-address-zipelem="#form-profile-address-code"
+                           data-has-spinner="#spinner-profile-address-city"/>
+                    <div class="btn-group">
+                        <span id="spinner-profile-address-city" class="ui-is-spinner"><span class="sr-only">Loading...</span></span>
+                    </div>
+                </div><!-- /.input-group -->
+            </div><!-- /.form-field -->
+        </div>
+
+        <div class="row row-multi-col-computer">
+            <div class="form-field col-lg-6 col-md-6">
+                <label for="form-profile-address-pays">{% trans %} lender-profile_information-tab-fiscal-address-section-country-label {% endtrans %}
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                <select id="form-profile-address-pays" name="fiscal_address_country" class="input-field"
+                        data-formvalidation-input
+                        data-formvalidation-required="true">
+                    {% for i, country in countries %}
+                        <option value="{{ i }}"{% if i == formData.legalEntity.fiscal_address_country  %} selected="selected"{% endif %}>{{ country }}</option>
+                    {% endfor %}
+                </select>
+            </div><!-- /.form-field -->
+            <div class="form-field col-lg-6 col-md-6">
+            </div><!-- /.form-field -->
+        </div>
+
+        <input type="hidden" name="fiscal_address_company_form" value="true" />
+
+        <div class="btn-controls">
+            <button class="btn-primary">{% trans %} lender-profile_information-tab-identity-save-modifications-button {% endtrans %}</button>
+            <button type="reset" role="button" data-toggle="collapse" data-target="#profile-address-view" data-parent="#profile-address-section" class="btn-default">{% trans %} lender-profile_information-tab-identity-cancel-modifications-button {% endtrans %}</button>
+        </div><!-- /.btn-controls -->
+    </form><!-- /.form-profile-address-edit -->
+</section><!-- /.profile-address-edit -->
+

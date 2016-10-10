@@ -88,11 +88,17 @@
                             <td>
                                 <?
                                 if ($this->projects_status->status >= \projects_status::FUNDE) {
-                                    $dateRest = $this->lng['preteur-projets']['termine'];
+                                    if ($aProject['date_fin'] != '0000-00-00 00:00:00') {
+                                        $endDateTime = new \DateTime($aProject['date_fin']);
+                                    } else {
+                                        $endDateTime = new \DateTime($aProject['date_retrait_full']);
+                                    }
+                                    $endDate  = strftime('%d %B', $endDateTime->getTimestamp());
+                                    $dateRest = str_replace('[#date#]', $endDate, $this->lng['preteur-projets']['termine']);
                                 } else {
                                     $tab_date_retrait = explode(' ', $aProject['date_retrait_full']);
                                     $tab_date_retrait = explode(':', $tab_date_retrait[1]);
-                                    $heure_retrait = $tab_date_retrait[0] . ':' . $tab_date_retrait[1];
+                                    $heure_retrait    = $tab_date_retrait[0] . ':' . $tab_date_retrait[1];
                                     ?>
                                     <script>
                                         var cible<?= $aProject['id_project'] ?> = new Date('<?= $mois_jour ?>, <?= $annee ?> <?= $heure_retrait ?>:00');
@@ -134,7 +140,7 @@
                             </td>
                             <td>
                                 <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>">
-                                    <strong id="val<?= $aProject['id_project'] ?>"><?= $dateRest ?></strong>
+                                    <span id="val<?= $aProject['id_project'] ?>"<?php if ($this->projects_status->status >= \projects_status::FUNDE) :?> class="project_ended"<?php endif; ?>><?= $dateRest ?></span>
                                 </a>
                             </td>
                             <td>
@@ -179,7 +185,13 @@
                 $annee = $this->dates->formatDate($project['date_retrait'], 'Y');
 
                 if ($this->projects_status->status >= \projects_status::FUNDE) {
-                    $dateRest = $this->lng['preteur-projets']['termine'];
+                if ($project['date_fin'] != '0000-00-00 00:00:00') {
+                    $endDateTime = new \DateTime($project['date_fin']);
+                } else {
+                    $endDateTime = new \DateTime($project['date_retrait_full']);
+                }
+                $endDate  = strftime('%d %B', $endDateTime->getTimestamp());
+                $dateRest = str_replace('[#date#]', $endDate, $this->lng['preteur-projets']['termine']);
                 } else {
                     $heure_retrait = date('H:i', strtotime($project['date_retrait_full']));
                     ?>
@@ -206,7 +218,7 @@
                         <h4><?= $this->companies->city . ($this->companies->zip != '' ? ', ' : '') . $this->companies->zip ?></h4>
                         <h5>
                             <i class="ico-clock"></i>
-                            <strong id="min_val<?= $project['id_project'] ?>"><?= $dateRest ?></strong>
+                            <span id="min_val<?= $project['id_project'] ?>"<?php if ($this->projects_status->status >= \projects_status::FUNDE) :?> class="project_ended"<?php endif; ?>><?= $dateRest ?></span>
                         </h5>
                         <p>
                             <?php if ($this->projects_status->status >= \projects_status::FUNDE) { ?>

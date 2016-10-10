@@ -1,0 +1,141 @@
+{% extends 'layouts/_layout_lender.html.twig' %}
+
+{% set page = {
+id: 'user-preter-profile',
+title: 'Prêteur / Profil',
+classNames: 'user-preter-profile'
+} %}
+
+
+{% block dashboardContent %}
+<div class="dashboard-tabs tabs">
+
+    {% include('pages/lender_profile/partials/tab_navigation.html.twig') %}
+
+    <div class="dashboard-tabs-content tab-content">
+        <div id="profile-info" role="tabpanel" class="dashboard-tab-pane tab-pane active">
+            <article id="panel-info" class="panel">
+                <header class="panel-header">
+                    <h3>{% trans %} lender-profile_information-tab-identity-section-title {% endtrans %}</h3>
+                    <div id="form-profile-info-notifications">
+
+                        {% if app.session.flashBag.has('personIdentityErrors') %}
+                            <div class="message-error">
+                                {% for error in app.session.flashBag.get('personIdentityErrors') %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        {% if app.session.flashBag.has('personIdentitySuccess') %}
+                            <div class="message-success">
+                                {% for message in app.session.flashBag.get('personIdentitySuccess') %}
+                                    <span>{{ message }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        {% if app.session.flashBag.has('legalEntityIdentityErrors') %}
+                            <div class="message-error">
+                                {% for errorMessage in app.session.flashBag.get('legalEntityIdentityErrors') %}
+                                    <p>{{ errorMessage }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        {% if app.session.flashBag.has('legalEntityidentitySuccess') %}
+                            <div class="message-success">
+                                {% for message in app.session.flashBag.get('legalEntityidentitySuccess') %}
+                                    <span>{{ message }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </header>
+                <section id="profile-info-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                    {% if client.type in [constant('\\clients::TYPE_PERSON'), constant('\\clients::TYPE_PERSON_FOREIGNER')] %}
+                        {{ include('pages/lender_profile/partials/person_identity.html.twig') }}
+                        {{ include('pages/lender_profile/partials/person_identity_form.html.twig') }}
+                    {% else %}
+                        {{ include('pages/lender_profile/partials/legal_entity_identity.html.twig') }}
+                        {{ include('pages/lender_profile/partials/legal_entity_identity_form.html.twig') }}
+                    {% endif %}
+                </section><!-- /.ui-toggle-group -->
+            </article><!-- /.panel -->
+
+            <article id="panel-address" class="panel">
+                <header class="panel-header">
+                    <h3>{% trans %} lender-profile_information-tab-fiscal-address-section-title {% endtrans %}</h3>
+                    <div id="form-profile-address-notifications">
+                        {% if app.session.flashBag.has('personFiscalAddressErrors') %}
+                            <div class="message-error">
+                                {% for errorMessage in app.session.flashBag.get('personFiscalAddressErrors') %}
+                                    <p>{{ errorMessage }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        {% if app.session.flashBag.has('personFiscalAddressSuccess') %}
+                            <div class="message-success">
+                                {% for message in app.session.flashBag.get('personFiscalAddressSuccess') %}
+                                    <span>{{ message }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        {% if app.session.flashBag.has('legalEntityFiscalAddressErrors') %}
+                            <div class="message-error">
+                                {% for errorMessage in app.session.flashBag.get('legalEntityFiscalAddressErrors') %}
+                                    <p>{{ errorMessage }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        {% if app.session.flashBag.has('legalEntityFiscalAddressSuccess') %}
+                            <div class="message-success">
+                                {% for message in app.session.flashBag.get('legalEntityFiscalAddressSuccess') %}
+                                    <span>{{ message }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </header>
+                <section id="profile-address-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                    {% if client.type in [constant('\\clients::TYPE_PERSON'), constant('\\clients::TYPE_PERSON_FOREIGNER')] %}
+                        {{ include('pages/lender_profile/partials/person_fiscal_address.html.twig') }}
+                    {% else %}
+                        {{ include('pages/lender_profile/partials/legal_entity_fiscal_address.html.twig') }}
+                    {% endif %}
+                </section><!-- /.ui-toggle-group -->
+            </article><!-- /.panel -->
+
+            {# Address Correspondence #}
+            <article id="panel-correspondence" class="panel">
+                <header class="panel-header">
+                    <h3>{% trans %} lender-profile_information-tab-postal-address-section-title {% endtrans %}</h3>
+                    <div id="form-profile-correspondence-notifications">
+                        {% if app.session.flashBag.has('postalAddressSuccess') %}
+                            <div class="message-success">
+                                {% for message in app.session.flashBag.get('postalAddressSuccess') %}
+                                    <span>{{ message }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </header>
+                <section id="profile-correspondence-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                    {{ include('pages/lender_profile/partials/postal_address.html.twig') }}
+                </section><!-- /.ui-toggle-group -->
+            </article><!-- /.panel -->
+
+
+            <article id="panel-terms-of-use" class="panel">
+                <header class="panel-header">
+                    <h3>{% trans %} lender-profile_information-tab-terms-of-use-section-title {% endtrans %}</h3>
+                </header>
+                <section id="profile-terms-of-use-section">
+                    <div class="list-files">
+                        <div class="file file-type-pdf">
+                            <a target="_blank" href="{{ '/pdf_cgv_preteurs'|baseUrl }}">{% trans %} lender-profile_information-tab-terms-of-use-section-link-label {% endtrans %}</a>
+                        </div>
+                    </div><!-- /.list-files -->
+                </section><!-- /.ui-toggle-group -->
+            </article><!-- /.panel -->
+        </div><!-- /#profile-info.dashboard-tab-pane -->
+    </div><!-- /.dashboard-tabs-content -->
+</div><!-- /.dashboard-tabs -->
+{% endblock %}

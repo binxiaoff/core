@@ -2,6 +2,28 @@
 
 class ficelle
 {
+    public static $normalizeChars = [
+        'À' => 'A', 'Á' => 'A', 'Â' => 'A', 'Ã' => 'A', 'Ä' => 'A', 'Å' => 'A', 'Æ' => 'A', 'Ă' => 'A',
+        'Ç' => 'C',
+        'È' => 'E', 'É' => 'E', 'Ê' => 'E', 'Ë' => 'E',
+        'Ì' => 'I', 'Í' => 'I', 'Î' => 'I', 'Ï' => 'I',
+        'Ñ' => 'N', 'Ń' => 'N',
+        'Ò' => 'O', 'Ó' => 'O', 'Ô' => 'O', 'Õ' => 'O', 'Ö' => 'O', 'Ø' => 'O',
+        'Ș' => 'S', 'Š' => 'S', 'Ț' => 'T',
+        'Ù' => 'U', 'Ú' => 'U', 'Û' => 'U', 'Ü' => 'U',
+        'Ý' => 'Y', 'Ÿ' => 'Y', 'Ž' => 'Z',
+        'à' => 'a', 'á' => 'a', 'â' => 'a', 'ã' => 'a', 'ä' => 'a', 'å' => 'a', 'æ' => 'a', 'ă' => 'a',
+        'ç' => 'c',
+        'è' => 'e', 'é' => 'e', 'ê' => 'e', 'ë' => 'e',
+        'ì' => 'i', 'í' => 'i', 'î' => 'i', 'ï' => 'i',
+        'ñ' => 'n', 'ń' => 'n',
+        'ð' => 'o', 'ò' => 'o', 'ó' => 'o', 'ô' => 'o', 'õ' => 'o', 'ö' => 'o', 'ø' => 'o',
+        'ș' => 's', 'š' => 's','ț' => 't',
+        'ù' => 'u', 'ú' => 'u', 'û' => 'u', 'ü' => 'u',
+        'ý' => 'y', 'ÿ' => 'y', 'ž' => 'z',
+        'Þ' => 'B', 'ß' => 'Ss', 'þ' => 'b', 'ƒ' => 'f', 'Ð' => 'Dj'
+    ];
+
     public function generatePassword($nb)
     {
         $liste_chars  = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -17,8 +39,8 @@ class ficelle
 
     public function generateSlug($string)
     {
-        $string = strip_tags(utf8_decode($string));
-        $string = strtr($string, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyyNn');
+        $string = strip_tags($string);
+        $string = $this->stripAccents($string);
         $string = strtolower($string); // lower-case the string
         $string = preg_replace('/[ ]/', '-', $string); // replace special characters by score
         $string = preg_replace('/[^a-z0-9-.]/', '', $string); // replace all non-alphanumeric characters by void
@@ -55,17 +77,7 @@ class ficelle
     // Enleve les accents
     public function speCharNoAccent($string)
     {
-        $str_trans = array(
-            'À' => 'A', 'à' => 'a', 'Á' => 'A', 'á' => 'a', 'Â' => 'A', 'â' => 'a', 'Ã' => 'A', 'ã' => 'a', 'Ä' => 'A',
-            'ä' => 'a', 'Å' => 'A', 'å' => 'a', 'Æ' => 'A', 'æ' => 'a', 'Ç' => 'C', 'ç' => 'c', 'È' => 'E', 'è' => 'e',
-            'É' => 'E', 'é' => 'e', 'Ê' => 'E', 'ê' => 'e', 'Ë' => 'E', 'ë' => 'e', 'Ì' => 'I', 'ì' => 'i', 'Í' => 'I',
-            'í' => 'i', 'Î' => 'I', 'î' => 'i', 'Ï' => 'I', 'ï' => 'i', 'Ñ' => 'N', 'ñ' => 'n', 'Ò' => 'O', 'ò' => 'o',
-            'Ó' => 'O', 'ó' => 'o', 'Ô' => 'O', 'ô' => 'o', 'Õ' => 'O', 'õ' => 'o', 'Ö' => 'O', 'ö' => 'o', 'Ø' => 'O',
-            'ø' => 'o', 'Œ' => 'OE', 'œ' => 'oe', 'ß' => 'B', 'Ù' => 'U', 'ù' => 'u', 'Ú' => 'U', 'ú' => 'u',
-            'Û' => 'U', 'û' => 'u', 'Ü' => 'U', 'ü' => 'u', 'Ý' => 'Y', 'ý' => 'y', 'Ÿ' => 'Y', 'ÿ' => 'y'
-        );
-
-        return strtr($string, $str_trans);
+        return strtr($string, self::$normalizeChars);
     }
 
     public function stripAccents($string)
@@ -143,70 +155,6 @@ class ficelle
             $array[$k] = $val; // on a notre key et valeur
         }
         return $array;
-    }
-
-
-    // fonction qui check la complexité d'un mot de passe
-    // 10 caractères mini / 1 chiffre / 1 caractère spécial
-    public function password_bo($mdp)    // $mdp le mot de passe passé en paramètre
-    {
-        $point_min        = 0;
-        $point_maj        = 0;
-        $point            = 0;
-        $point_chiffre    = 0;
-        $point_caracteres = 0;
-
-        // On récupère la longueur du mot de passe
-        $longueur = strlen($mdp);
-
-        // On fait une boucle pour lire chaque lettre
-        for ($i = 0; $i < $longueur; $i++) {
-
-            // On sélectionne une à une chaque lettre
-            // $i étant à 0 lors du premier passage de la boucle
-            $lettre = $mdp[$i];
-
-            if ($lettre >= 'a' && $lettre <= 'z') {
-                // On ajoute 1 point pour une minuscule
-                $point = $point + 1;
-
-                // On rajoute le bonus pour une minuscule
-                $point_min = 1;
-            } else {
-                if ($lettre >= 'A' && $lettre <= 'Z') {
-                    // On ajoute 2 points pour une majuscule
-                    $point = $point + 2;
-
-                    // On rajoute le bonus pour une majuscule
-                    $point_maj = 2;
-                } else {
-                    if ($lettre >= '0' && $lettre <= '9') {
-                        // On ajoute 3 points pour un chiffre
-                        $point = $point + 3;
-
-                        // On rajoute le bonus pour un chiffre
-                        $point_chiffre = 3;
-                    } else {
-                        // On ajoute 5 points pour un caractère autre
-                        $point = $point + 5;
-
-                        // On rajoute le bonus pour un caractère autre
-                        $point_caracteres = 5;
-                    }
-                }
-            }
-        }
-
-        // on vérifie que l'on a bien tout les critères nécessaires pour valider le pass
-        /* Au moins 10 caratères, 1 chiffre et 1 caractère spécial */
-        $valid = false;
-        if ($longueur >= 10 && $point_caracteres == 5 && $point_chiffre == 3) {
-            $valid = true;
-        }
-
-
-        return $valid;
-
     }
 
     //fonction qui check la complexité d'un mot de passe
@@ -439,7 +387,7 @@ class ficelle
      */
     public function cleanFormatedNumber($sFormatedNumber)
     {
-        return (float) str_replace(array(' ', ','), array('', '.'), $sFormatedNumber);
+        return (float) str_replace(array(' ', html_entity_decode('&nbsp;'), ','), array('', '', '.'), $sFormatedNumber);
     }
 
     /**

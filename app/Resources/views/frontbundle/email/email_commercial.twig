@@ -1,0 +1,170 @@
+{# Email Commercial #}
+{% extends 'layouts/_email.twig' %}
+{% import 'extensions/_email.macros.twig' as emailComponent %}
+
+{# Email data #}
+{% set placeholderData = {
+"email": {
+"permalink": "http://example.com",
+"subject": "Example email subject",
+"excerpt": "Bonjour David, Cette semaine, l'entreprise ED. Cajetta finalisait avec succès sa campagne de financement sur Unilend.  Ses dirigeants tiennent à vous adresser un message de remerciement que vous trouverez plus bas.",
+"recipient": {
+"nom": "Raux",
+"prenom": "David",
+"email": "david.raux@unilend.fr"
+}
+}
+} %}
+{% set email = placeholderData.email %}
+
+{% block emailContent %}
+
+  {# Header #}
+  {% include 'partials/email/block-header.twig' %}
+  {# /Header #}
+
+  {# Button #}
+  {% embed 'partials/email/block.twig' with {'hasSpacerLeft': false,'hasSpacerRight': false,'hasSpacerTop': false,'hasSpacerBottom': false, 'contentAlign': 'right', 'contentStyle': 'text-align: right;' ~ css.bg_white } %}
+    {% block content %}
+      {{ emailComponent.button({
+        align: 'right',
+        linkStyle: css.button_link ~ ' font-size: 16px;',
+        linkUrl: path('lender_profile'),
+        linkText: 'Acceder à mon compte'
+      }, _context) }}
+    {% endblock %}
+  {% endembed %}
+  {# /Button #}
+
+  {# Text #}
+  {% embed 'partials/email/block-text-1col.twig' with {'hasSpacerTop': false, 'tableStyle': css.bg_white } %}
+    {% block content %}
+      <h2 style="{{ css.p_block }}{{ css.ff_title }}{{ css.fs_title_md }}{{ css.c_p1 }}">Les chiffres de la semaine</h2>
+      <hr style="{{ css.hr_reset }}{{ css.bg_p1 }}">
+
+      <div class="spacer" style="{{ css.spacer }}">&nbsp;</div>
+
+      <p style="{{ css.p_block }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_t1 }}">Bonjour {{ email.recipient.prenom }},</p>
+      <p style="{{ css.p_block }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_t1 }}">Cette semaine, l'entreprise ED. Cajetta finalisait avec succès sa campagne de financement sur Unilend.  Ses dirigeants tiennent à vous adresser un message de remerciement que vous trouverez plus bas.</p>
+      <p style="{{ css.p_block }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_t1 }}">Connaissez-vous le taux d'intérêt moyen auquel la communauté a prêté aux projets présentés sur le site Internet ?</p>
+      <p style="{{ css.p_block }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_t1 }}">C'est l'un des chiffres de la semaine.</p>
+      <p style="{{ css.p_block }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_t1 }}">A vos prêts !</p>
+    {% endblock %}
+  {% endembed %}
+  {# /Text #}
+
+  {# Statistics #}
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" class="table_reset {{ tableClassNames }}" style="{{ css.table_reset }} {{ css.bg_bg2 }}">
+    {% embed 'partials/email/block-text-2col.twig' with {'hasTable': false, 'spacerTopHeight': 40, 'hasSpacerBottom': false, 'colLeftAlign': 'center', 'colRightAlign': 'center'} %}
+      {% block colLeftContent %}
+        <img src="{{ siteurlmedia('email/icon-linechart-98x71.gif') }}" border="0" width="98" height="71" alt="" style="{{ css.no_spacing }}{{ css.no_border }} width: 98px; height: 71px;">
+        <p style="{{ css.ff_base }}{{ css.fs_title_lg }}{{ css.c_p1 }}{{ css.no_spacing }} text-align: center; margin-top: 10px;">8,91&nbsp;%</p>
+        <p style="{{ css.ff_base }}{{ css.fs_md }}{{ css.c_t2 }}{{ css.no_spacing }} text-align: center; margin-top: 10px; margin-bottom: 20px;">taux d'intérêt moyen</p>
+      {% endblock %}
+      {% block colRightContent %}
+        <img src="{{ siteurlmedia('email/icon-people-84x70.gif') }}" border="0" width="98" height="71" alt="" style="{{ css.no_spacing }}{{ css.no_border }} width: 84px; height: 70px;">
+        <p style="{{ css.ff_base }}{{ css.fs_title_lg }}{{ css.c_p1 }}{{ css.no_spacing }} text-align: center; margin-top: 10px;">8&nbsp;372</p>
+        <p style="{{ css.ff_base }}{{ css.fs_md }}{{ css.c_t2 }}{{ css.no_spacing }} text-align: center; margin-top: 10px; margin-bottom: 20px;">prêteurs actifs</p>
+      {% endblock %}
+    {% endembed %}
+    {% embed 'partials/email/block-text-1col.twig' with {'hasTable': false, 'hasSpacerTop': false, 'spacerBottomHeight': 40, 'tableStyle': css.bg_bg2, 'contentAlign': 'center', 'contentColSpan': 3} %}
+      {% block content %}
+        <p style="{{ css.no_spacing }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_p1 }} margin-top: 20px;"><a href="{{ path('statistics') }}" class="link_reset" style="{{ css.link_reset }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_p1 }}"><img src="{{ siteurlmedia('email/arrow-purple-grey-7x10.gif') }}" border="0" width="7" height="10" alt="" style="{{ css.inline }}{{ css.no_border }} width: 7px; height: 10px;"> Découvrir toutes les statistiques</a></p>
+      {% endblock %}
+    {% endembed %}
+  </table>
+  {# /Statistics #}
+
+  {# News #}
+  {% embed 'partials/email/block-text-1col.twig' with {'tableStyle': css.bg_white, 'hasSpacerBottom': false} %}
+    {% block content %}
+      <h2 style="{{ css.p_block }}{{ css.ff_title }}{{ css.fs_title_md }}{{ css.c_p1 }}">Dernière ligne droite</h2>
+      <hr style="{{ css.hr_reset }}{{ css.bg_p1 }}">
+      <div class="spacer" style="{{ css.spacer }}">&nbsp;</div>
+
+      <img src="{{ siteurlmedia('email/images/news-metronome-490x250.jpg') }}" border="0" width="490" height="250" alt="" class="image_reset" style="{{ css.image_reset }}">
+      {% embed 'partials/email/block-text-1col.twig' with {'tableStyle': 'background-color: ' ~ color.purple_l2, 'spacerTopHeight': 20, 'spacerLeftWidth': 45, 'spacerRightWidth': 45, 'hasSpacerBottom': true, 'spacerBottomHeight': 40, 'contentWidth': 400} %}
+        {% block content %}
+          <h3 style="{{ css.no_spacing }}{{ css.ff_title }}{{ css.fs_title_sm }}{{ css.c_p1 }}">Du nouveau chez Metronome Technologie</h3>
+          <p style="{{ css.p_block }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_t1 }}">La société Metronome Technologie redesigne sa gamme de produits hi-fi haut de gamme.</p>
+          <p style="{{ css.no_spacing }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_t1 }} margin-top: 20px;"><a href="#todo" class="link_reset" style="{{ css.link_reset }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_p1 }}"><img src="{{ siteurlmedia('email/arrow-purple-purplel-7x11.gif') }}" border="0" width="7" height="11" alt="" style="{{ css.inline }}{{ css.no_border }} width: 7px; height: 11px;"> En savoir +</a></p>
+        {% endblock %}
+      {% endembed %}
+
+      <div class="spacer" style="{{ css.spacer }} height: 40px;">&nbsp;</div>
+
+      <img src="{{ siteurlmedia('email/images/news-boat-490x250.jpg') }}" border="0" width="490" height="250" alt="" class="image_reset" style="{{ css.image_reset }}">
+      {% embed 'partials/email/block-text-1col.twig' with {'tableStyle': 'background-color: ' ~ color.purple_l2, 'spacerTopHeight': 20, 'spacerLeftWidth': 45, 'spacerRightWidth': 45, 'hasSpacerBottom': true, 'spacerBottomHeight': 40, 'contentWidth': 400} %}
+        {% block content %}
+          <h3 style="{{ css.no_spacing }}{{ css.ff_title }}{{ css.fs_title_sm }}{{ css.c_p1 }}">ED.Cajetta remercie la communauté</h3>
+          <p style="{{ css.p_block }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_t1 }} font-style: italic;">“La Voile Gourmande, le catamaran pizza au mouillage entre les îles de Lerins à Cannes, tient à remercier  'ensemble des prêteurs. Grâce à vous, nous allons pouvoir finaliser l'acquisition de ce nouveau bateau et ainsi atteindre nos objectifs.  Nous vous remercions pour votre confiance. N'hésitez pas à vous présenter au bateau si vous êtes de passage entre les îles du 1 er juin au 30 septembre. C'est avec plaisir que nous vous recevrons à bord.”</p>
+          <p style="{{ css.p_block }}{{ css.ff_base }}{{ css.fs_sm }}{{ css.c_t2 }}">Laurence et Didier Cajetta, dirigeants d' ED. Cajetta</p>
+          <p style="{{ css.no_spacing }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_t1 }} margin-top: 20px;"><a href="#todo" class="link_reset" style="{{ css.link_reset }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_p1 }}"><img src="{{ siteurlmedia('email/arrow-purple-purplel-7x11.gif') }}" border="0" width="7" height="11" alt="" style="{{ css.inline }}{{ css.no_border }} width: 7px; height: 11px;"> En savoir +</a></p>
+        {% endblock %}
+      {% endembed %}
+    {% endblock %}
+  {% endembed %}
+  {# /News #}
+
+  {# Questions #}
+  {% embed 'partials/email/block-text-1col.twig' with {'tableStyle': css.bg_white} %}
+    {% block content %}
+      <h2 style="{{ css.p_block }}{{ css.ff_title }}{{ css.fs_title_md }}{{ css.c_p1 }}">Les questions de la semaine</h2>
+      <hr style="{{ css.hr_reset }}{{ css.bg_p1 }}">
+
+      <div class="spacer" style="{{ css.spacer }}">&nbsp;</div>
+
+      <h3 style="{{ css.p_block }}{{ css.ff_title }}{{ css.fs_md }}{{ css.c_p1 }}">Pourquoi faut-il rapidement formuler ses offres de prêt&nbsp;?</h3>
+      <p style="{{ css.p_block }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_t1 }}">A l'issue d'une campagne de financement sur Unilend, entre deux offres à taux d'intérêt équivalent, celle qui est retenue en priorité est l'offre qui a été formulée le plus tôt. Bon à savoir : dès qu'une campagne atteint 100 % du montant demandé, l'entreprise peut la stopper quand elle le souhaite. Dans ce cas, seules les offres qui ont déjà été proposées sont acceptées. </p>
+
+      <div class="spacer" style="{{ css.spacer }}">&nbsp;</div>
+
+      <h3 style="{{ css.p_block }}{{ css.ff_title }}{{ css.fs_md }}{{ css.c_p1 }}">Je suis personne morale, quelles informations puis-je fournir à mon comptable ?</h3>
+      <p style="{{ css.p_block }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_t1 }}">Toutes les informations comptables concernant votre compte Unilend se trouvent dans vos relevés d'opérations. Pour obtenir un relevé d'opérations de l'année 2015, rendez-vous à la rubrique "Opérations" de votre profil puis sélectionnez la période du 01/01/2015 au 31/12/2015.</p>
+    {% endblock %}
+  {% endembed %}
+  {# /Questions #}
+
+  {# Presse #}
+  {% embed 'partials/email/block-text-1col.twig' with {'tableStyle': css.bg_bg2} %}
+    {% block content %}
+      <h2 style="{{ css.p_block }}{{ css.ff_title }}{{ css.fs_title_md }}{{ css.c_p1 }} margin-bottom: 40px;">Unilend dans la presse</h2>
+
+      <p class="{{ css.p_block }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_t1 }}"><a href="#todo" style="{{ css.link_reset }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_t1 }} font-weight: bold;">« Microprêt, Maxi rentabilité »</a><br/>
+        <img src="{{ siteurlmedia('email/arrow-black-grey-7x10.gif') }}" border="0" width="7" height="10" alt="" style="{{ css.inline }}{{ css.no_border }} width: 7px; height: 10px;"> <span style="{{ css.c_t1 }} font-style: italic;">Les Echos (15/01/2016)</span></p>
+
+      <p class="{{ css.p_block }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_t1 }}"><a href="#todo" style="{{ css.link_reset }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_t1 }} font-weight: bold;">« Les levées de fonds des services Web en 2015 »</a><br/>
+        <img src="{{ siteurlmedia('email/arrow-black-grey-7x10.gif') }}" border="0" width="7" height="10" alt="" style="{{ css.inline }}{{ css.no_border }} width: 7px; height: 10px;"> <span style="{{ css.c_t1 }} font-style: italic;">Journal Du Net (08/01/2016)</span></p>
+
+      <p class="{{ css.p_block }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_t1 }}"><a href="#todo" style="{{ css.link_reset }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_t1 }} font-weight: bold;">« Des particuliers qui prêtent aux entreprises, j’en avais rêvé pour tout vous dire&hellip; »</a><br/>
+        <img src="{{ siteurlmedia('email/arrow-black-grey-7x10.gif') }}" border="0" width="7" height="10" alt="" style="{{ css.inline }}{{ css.no_border }} width: 7px; height: 10px;"> <span style="{{ css.c_t1 }} font-style: italic;">Le Figaro (05/01/2016)</span></p>
+    {% endblock %}
+  {% endembed %}
+  {# /Presse #}
+
+  {# Recruitement #}
+  {% embed 'partials/email/block-text-1col.twig' with {'tableStyle': css.bg_white, 'spacerBottomHeight': 60} %}
+    {% block content %}
+      <h2 style="{{ css.p_block }}{{ css.ff_title }}{{ css.fs_title_md }}{{ css.c_p1 }} margin-bottom: 30px;">Rencontrons-nous</h2>
+
+      <div class="outline_block" style="{{ css.outline_block }} border-bottom: none 0;">
+        <h3 style="{{ css.no_spacing }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_p1 }} margin-bottom: 10px;"><a href="#todo" style="{{ css.link_reset }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_p1 }}">« Economie collaborative : la nouvelle vague »</a></h3>
+        <p style="{{ css.no_spacing }}{{ css.ff_base }}{{ css.fs_sm }}{{ css.c_t1 }}">Le 27 janvier, à partir de 18h00 dans les locaux de Croissance Plus - 203 rue du Faubourg Saint-Honoré, 75008 Paris</p>
+        <p style="{{ css.p_block }}{{ css.ff_base }}{{ css.fs_sm }}{{ css.c_t1 }} margin-bottom: 0;"><a href="#todo" style="{{ css.link_reset }}{{ css.ff_base }}{{ css.fs_sm }}{{ css.c_p1 }}"><img src="{{ siteurlmedia('email/arrow-purple-white-7x10.gif') }}" border="0" width="7" height="10" alt="" style="{{ css.inline }}{{ css.no_border }} width: 7px; height: 10px;"> En savoir +</a></p>
+      </div>
+      <div class="outline_block" style="{{ css.outline_block }}">
+        <h3 style="{{ css.no_spacing }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_p1 }} margin-bottom: 10px;"><a href="#todo" style="{{ css.link_reset }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_p1 }}">« Economie collaborative : la nouvelle vague »</a></h3>
+        <p style="{{ css.no_spacing }}{{ css.ff_base }}{{ css.fs_sm }}{{ css.c_t1 }}">Le 27 janvier, à partir de 18h00 dans les locaux de Croissance Plus - 203 rue du Faubourg Saint-Honoré, 75008 Paris</p>
+        <p style="{{ css.p_block }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_t1 }} margin-bottom: 0;"><a href="#todo" style="{{ css.link_reset }}{{ css.ff_base }}{{ css.fs_sm }}{{ css.c_p1 }}"><img src="{{ siteurlmedia('email/arrow-purple-white-7x10.gif') }}" border="0" width="7" height="10" alt="" style="{{ css.inline }}{{ css.no_border }} width: 7px; height: 10px;"> En savoir +</a></p>
+      </div>
+      {{ emailComponent.button({
+        width: "100%",
+        height: 100,
+        linkStyle: css.button_link ~ ' font-size: 18px;',
+        linkText: '<img src="' ~ siteurlmedia('email/arrow-white-purple-10x14.gif') ~ '" border="0" width="10" height="14" alt="" style="' ~ css.inline ~ css.no_spacing ~ css.no_border ~ ' width: 10px; height: 14px;"> Unilend recrute, envoyez votre Candidature'
+      }, _context) }}
+    {% endblock %}
+  {% endembed %}
+  {# /Recruitement #}
+
+{% endblock %}

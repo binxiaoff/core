@@ -339,7 +339,6 @@ final class Log {
 		$handle = fopen($file, 'a+');
 		fwrite($handle, date('Y-m-d G:i:s') . ' - ' . $message . "\n");
 		fclose($handle);
-		chmod($file, 0664);
 	}
 }
 

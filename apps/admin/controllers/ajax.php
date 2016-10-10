@@ -1,5 +1,8 @@
 <?php
 
+use \Unilend\Bundle\TranslationBundle\Service\TranslationManager;
+
+
 class ajaxController extends bootstrap
 {
     public function initialize()
@@ -170,18 +173,21 @@ class ajaxController extends bootstrap
     /* Fonction AJAX chargement des noms de la section de traduction */
     public function _loadNomTexte()
     {
+        /** @var TranslationManager $translationManager */
+        $translationManager = $this->get('unilend.service.translation_manager');
+
         if (isset($this->params[0]) && $this->params[0] != '') {
-            // Recuperation de la liste des noms de la section
-            $this->lNoms = $this->ln->selectTexts($this->params[0]);
+            $this->lNoms = $translationManager->selectNamesForSection($this->params[0]);
         }
     }
 
     /* Fonction AJAX chargement des traductions de la section de traduction */
     public function _loadTradTexte()
     {
+        /** @var TranslationManager $translationManager */
+        $translationManager = $this->get('unilend.service.translation_manager');
         if (isset($this->params[0]) && $this->params[0] != '') {
-            // Recuperation de la liste traductions
-            $this->lTranslations = $this->ln->selectTranslations($this->params[1], $this->params[0]);
+            $this->lTranslations = $translationManager->selectTranslation($this->params[1], $this->params[0]);
         }
     }
 
@@ -204,19 +210,6 @@ class ajaxController extends bootstrap
                 echo $this->surl . '/images/admin/check_on.png';
             }
         }
-    }
-
-    /* Fonction AJAX change le statut d'un dossier*/
-    public function _date_publication()
-    {
-        $this->autoFireView = true;
-
-        $this->projects                = $this->loadData('projects');
-        $this->current_projects_status = $this->loadData('projects_status');
-
-
-        $this->projects->get($this->params[0], 'id_project');
-        $this->current_projects_status->getLastStatut($this->projects->id_project);
     }
 
     public function _addMemo()
@@ -627,11 +620,15 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        $lender         = $this->loadData('lenders_accounts');
-        $preteur        = $this->loadData('clients');
-        $bids           = $this->loadData('bids');
-        $transactions   = $this->loadData('transactions');
-        $wallets_lines  = $this->loadData('wallets_lines');
+        /** @var \lenders_accounts $lender */
+        $lender = $this->loadData('lenders_accounts');
+        /** @var \bids $bids */
+        $bids = $this->loadData('bids');
+        /** @var \transactions $transactions */
+        $transactions = $this->loadData('transactions');
+        /** @var \wallets_lines $wallets_lines */
+        $wallets_lines = $this->loadData('wallets_lines');
+        /** @var \projects projects */
         $this->projects = $this->loadData('projects');
 
         if (isset($_POST['id_lender'], $_POST['id_bid']) && $bids->get($_POST['id_bid'], 'id_bid') && $lender->get($_POST['id_lender'], 'id_lender_account')) {
@@ -639,20 +636,17 @@ class ajaxController extends bootstrap
             $this->users_history->histo(4, 'Bid en cours delete', $_SESSION['user']['id_user'], $serialize);
 
             $wallets_lines->get($bids->id_lender_wallet_line, 'id_wallet_line');
-            $transactions->get($wallets_lines->id_transaction, 'id_transaction');
 
-            $transactions->delete($transactions->id_transaction, 'id_transaction');
+            $transactions->delete($wallets_lines->id_transaction, 'id_transaction');
             $wallets_lines->delete($wallets_lines->id_wallet_line, 'id_wallet_line');
             $bids->delete($bids->id_bid, 'id_bid');
 
-            // on recharge l'affichage
             $this->lBids = $bids->select('id_lender_account = ' . $_POST['id_lender'] . ' AND status = 0', 'added DESC');
         }
     }
 
     public function _loadMouvTransac()
     {
-
         $this->autoFireView = true;
 
         $this->transactions = $this->loadData('transactions');
@@ -662,23 +656,24 @@ class ajaxController extends bootstrap
         $this->companies    = $this->loadData('companies');
 
         if (isset($_POST['year'], $_POST['id_client']) && $this->clients->get($_POST['id_client'], 'id_client')) {
+            /** @var TranslationManager $translationManager */
+            $translationManager   = $this->get('unilend.service.translation_manager');
+            $this->lng['profile'] = $translationManager->getAllTranslationsForSection('preteur-profile');
 
-            $this->lng['profile'] = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
-
-            $year = $_POST['year'];
-
-            $this->lTrans     = $this->transactions->select('type_transaction IN (1,3,4,5,7,8,14,16,17) AND status = 1 AND etat = 1 AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . $year, 'added DESC');
             $this->lesStatuts = array(
-                1  => $this->lng['profile']['versement-initial'],
-                3  => $this->lng['profile']['alimentation-cb'],
-                4  => $this->lng['profile']['alimentation-virement'],
-                5  => 'Remboursement',
-                7  => $this->lng['profile']['alimentation-prelevement'],
-                8  => $this->lng['profile']['retrait'],
-                14 => 'Régularisation prêteur',
-                16 => 'Offre de bienvenue',
-                17 => 'Retrait offre de bienvenue'
+                \transactions_types::TYPE_LENDER_SUBSCRIPTION         => $this->lng['profile']['versement-initial'],
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT   => $this->lng['profile']['alimentation-cb'],
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT => $this->lng['profile']['alimentation-virement'],
+                \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL    => 'Remboursement de capital',
+                \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS  => 'Remboursement d\'intérêts',
+                \transactions_types::TYPE_DIRECT_DEBIT                => $this->lng['profile']['alimentation-prelevement'],
+                \transactions_types::TYPE_LENDER_WITHDRAWAL           => $this->lng['profile']['retrait'],
+                \transactions_types::TYPE_LENDER_REGULATION           => 'Régularisation prêteur',
+                \transactions_types::TYPE_WELCOME_OFFER               => 'Offre de bienvenue',
+                \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION  => 'Retrait offre de bienvenue'
             );
+
+            $this->lTrans = $this->transactions->select('type_transaction IN (' . implode(', ', array_keys($this->lesStatuts)) . ') AND status = 1 AND etat = 1 AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . $_POST['year'], 'added DESC');
         }
     }
 
@@ -719,15 +714,15 @@ class ajaxController extends bootstrap
                 if (count($aPossibleStatus) > 0) {
                     $select = '<select name="status" id="status" class="select">';
                     foreach ($aPossibleStatus as $s) {
-                        $select .= '<option ' . ($oProjectStatus->status == $s['status'] ? 'selected' : '') . ' value="' . $s['status'] . '">' . $s['label'] . '</option>';
+                        $select .= '<option ' . ($this->projects->status == $s['status'] ? 'selected' : '') . ' value="' . $s['status'] . '">' . $s['label'] . '</option>';
                     }
                     $select .= '</select>';
                 } else {
-                    $select = '<input type="hidden" name="status" id="status" value="' . $oProjectStatus->status . '" />';
+                    $select = '<input type="hidden" name="status" id="status" value="' . $this->projects->status . '" />';
                     $select .= $oProjectStatus->label;
                 }
 
-                if ($oProjectStatus->status != \projects_status::REJETE) {
+                if ($this->projects->status != \projects_status::REJETE) {
                     $etape_6  = '
                     <div class="tab_title" id="title_etape6">Etape 6</div>
                     <div class="tab_content" id="etape6">
@@ -792,7 +787,7 @@ class ajaxController extends bootstrap
                             <br /><br />
                             <div id="valid_etape6" class="valid_etape">Données sauvegardées</div>';
 
-                    if ($oProjectStatus->status == \projects_status::REVUE_ANALYSTE) {
+                    if ($this->projects->status == \projects_status::REVUE_ANALYSTE) {
                         $etape_6 .= '
                             <div class="btnDroite listBtn_etape6">
                                 <input type="button" onclick="valid_rejete_etape6(3,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape6"  value="Sauvegarder">
@@ -889,18 +884,14 @@ class ajaxController extends bootstrap
         }
     }
 
-    /**
-     *
-     */
     public function _valid_rejete_etape6()
     {
         $this->autoFireView = false;
 
-        $this->projects        = $this->loadData('projects');
-        $this->projects_status = $this->loadData('projects_status');
-        $this->projects_notes  = $this->loadData('projects_notes');
-        $this->companies       = $this->loadData('companies');
-        $this->clients         = $this->loadData('clients');
+        $this->projects       = $this->loadData('projects');
+        $this->projects_notes = $this->loadData('projects_notes');
+        $this->companies      = $this->loadData('companies');
+        $this->clients        = $this->loadData('clients');
 
         if (isset($_POST['status']) && isset($_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
             $form_ok = true;
@@ -963,7 +954,7 @@ class ajaxController extends bootstrap
                 $this->projects_notes->dirigeance                  = number_format($_POST['dirigeance'], 1, '.', '');
                 $this->projects_notes->indicateur_risque_dynamique = number_format($_POST['indicateur_risque_dynamique'], 1, '.', '');
                 $this->projects_notes->note                        = round($this->projects_notes->performance_fianciere * 0.2 + $this->projects_notes->marche_opere * 0.2 + $this->projects_notes->dirigeance * 0.2 + $this->projects_notes->indicateur_risque_dynamique * 0.4, 1);
-                $this->projects_notes->avis                        = htmlspecialchars(strip_tags($_POST['avis']));
+                $this->projects_notes->avis                        = $_POST['avis'];
 
                 $this->projects_notes->structure_comite                   = empty($this->projects_notes->structure_comite) ? $this->projects_notes->structure : $this->projects_notes->structure_comite;
                 $this->projects_notes->rentabilite_comite                 = empty($this->projects_notes->rentabilite_comite) ? $this->projects_notes->rentabilite : $this->projects_notes->rentabilite_comite;
@@ -985,6 +976,7 @@ class ajaxController extends bootstrap
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
                 $oProjectManager = $this->get('unilend.service.project_manager');
+
                 if ($_POST['status'] == 1) {
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::COMITE, $this->projects);
                 } elseif ($_POST['status'] == 2) {
@@ -1028,18 +1020,39 @@ class ajaxController extends bootstrap
                     $mailer->send($message);
                 }
 
-                //on recup le statut courant
-                $this->current_projects_status = $this->loadData('projects_status');
-                $this->current_projects_status->getLastStatut($this->projects->id_project);
+                $currentProjectStatus = $this->loadData('projects_status');
+                $currentProjectStatus->get($this->projects->status, 'status');
 
-                $select = '<input type="hidden" name="status" id="status" value="' . $this->current_projects_status->status . '" />';
-                $select .= $this->current_projects_status->label;
+                $select = '<input type="hidden" name="status" id="status" value="' . $this->projects->status . '" />';
+                $select .= $currentProjectStatus->label;
 
                 if (isset($oRejectionReason)) {
                     $select .= ' (' . $oRejectionReason->label . ')';
                 }
 
-                if ($this->current_projects_status->status != \projects_status::REJET_ANALYSTE) {
+                if ($this->projects->status != \projects_status::REJET_ANALYSTE) {
+                    $start = '';
+                    if ($this->projects_notes->note_comite >= 0) {
+                        $start = '2 étoiles';
+                    }
+                    if ($this->projects_notes->note_comite >= 2) {
+                        $start = '2,5 étoiles';
+                    }
+                    if ($this->projects_notes->note_comite >= 4) {
+                        $start = '3 étoiles';
+                    }
+                    if ($this->projects_notes->note_comite >= 5.5) {
+                        $start = '3,5 étoiles';
+                    }
+                    if ($this->projects_notes->note_comite >= 6.5) {
+                        $start = '4 étoiles';
+                    }
+                    if ($this->projects_notes->note_comite >= 7.5) {
+                        $start = '4,5 étoiles';
+                    }
+                    if ($this->projects_notes->note_comite >= 8.5) {
+                        $start = '5 étoiles';
+                    }
                     $etape_7 = '
                     <div class="tab_title" id="title_etape7">Etape 7</div>
                     <div class="tab_content" id="etape7">
@@ -1090,7 +1103,7 @@ class ajaxController extends bootstrap
                             </tr>
 
                             <tr class="lanote">
-                                <th colspan="8" style="text-align:center;" >Note : <span class="moyenneNote_comite">' . $this->projects_notes->note_comite . '/ 10</span></th>
+                                <th colspan="8" style="text-align:center;" >Note : <span class="moyenneNote_comite">' . $this->projects_notes->note_comite . ' / 10 (soit ' . $start . ')</span></th>
                             </tr>
 
                             <tr>
@@ -1107,7 +1120,7 @@ class ajaxController extends bootstrap
                         <div class="btnDroite">
                             <input type="button" onclick="valid_rejete_etape7(3,' . $this->projects->id_project . ')" class="btn"  value="Sauvegarder">
                         ';
-                    if ($this->current_projects_status->status == \projects_status::COMITE) {
+                    if ($this->projects->status == \projects_status::COMITE) {
                         $etape_7 .= '
                             <input type="button" onclick="valid_rejete_etape7(1,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape7" style="background:#009933;border-color:#009933;" value="Valider">
                             <a href="' . $this->lurl . '/dossiers/ajax_rejection/7/' . $this->projects->id_project . '" class="btn btnValid_rejet_etape7 btn_link thickbox" style="background:#CC0000;border-color:#CC0000;">Rejeter</a>
@@ -1148,7 +1161,29 @@ class ajaxController extends bootstrap
 
                             $("#marche_opere_comite").html(marche_opere);
                             $("#performance_fianciere_comite").html(performance_fianciere);
-                            $(".moyenneNote_comite").html(moyenne + " / 10");
+                            var start = "";
+                            if (moyenne >= 0) {
+                                start = "2 étoiles";
+                            }
+                            if (moyenne >= 2) {
+                                start = "2,5 étoiles";
+                            }
+                            if (moyenne >= 4) {
+                                start = "3 étoiles";
+                            }
+                            if (moyenne >= 5.5) {
+                                start = "3,5 étoiles";
+                            }
+                            if (moyenne >= 6.5) {
+                                start = "4 étoiles";
+                            }
+                            if (moyenne >= 7.5) {
+                                start = "4,5 étoiles";
+                            }
+                            if (moyenne >= 8.5) {
+                                start = "5 étoiles";
+                            }
+                            $(".moyenneNote_comite").html(moyenne + " / 10" + " (soit " + start + ")");
                         });
                     </script>
                     ';
@@ -1169,11 +1204,10 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        $this->projects        = $this->loadData('projects');
-        $this->projects_notes  = $this->loadData('projects_notes');
-        $this->projects_status = $this->loadData('projects_status');
-        $this->companies       = $this->loadData('companies');
-        $this->clients         = $this->loadData('clients');
+        $this->projects       = $this->loadData('projects');
+        $this->projects_notes = $this->loadData('projects_notes');
+        $this->companies      = $this->loadData('companies');
+        $this->clients        = $this->loadData('clients');
 
         // on check si on a les posts
         if (isset($_POST['status']) && isset($_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
@@ -1240,7 +1274,7 @@ class ajaxController extends bootstrap
                 $this->projects_notes->dirigeance_comite                  = number_format($_POST['dirigeance_comite'], 1, '.', '');
                 $this->projects_notes->indicateur_risque_dynamique_comite = number_format($_POST['indicateur_risque_dynamique_comite'], 1, '.', '');
                 $this->projects_notes->note_comite                        = round($this->projects_notes->performance_fianciere_comite * 0.2 + $this->projects_notes->marche_opere_comite * 0.2 + $this->projects_notes->dirigeance_comite * 0.2 + $this->projects_notes->indicateur_risque_dynamique_comite * 0.4, 1);
-                $this->projects_notes->avis_comite                        = htmlspecialchars(strip_tags($_POST['avis_comite']));
+                $this->projects_notes->avis_comite                        = $_POST['avis_comite'];
 
                 // on enregistre
                 if ($update == true) {
@@ -1302,6 +1336,19 @@ class ajaxController extends bootstrap
                     }
 
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::PREP_FUNDING, $this->projects);
+
+                    if (empty($this->companies->latitude) && empty($this->companies->longitude)) {
+                        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LocationManager $location */
+                        $location    = $this->get('unilend.service.location_manager');
+                        $coordinates = $location->getCompanyCoordinates($this->companies);
+
+                        if ($coordinates) {
+                            $this->companies->latitude  = $coordinates['latitude'];
+                            $this->companies->longitude = $coordinates['longitude'];
+                            $this->companies->update();
+                        }
+                    }
+
                     if (false === in_array(\projects_status::PREP_FUNDING, $aExistingStatus)) {
                         $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein', $this->clients);
                     }
@@ -1372,18 +1419,31 @@ class ajaxController extends bootstrap
                     ';
                 }
 
+                if (false === empty($this->projects->risk) && false === empty($this->projects->period)) {
+                    try {
+                        $this->projects->id_rate = $oProjectManager->getProjectRateRange($this->projects);
+                        $this->projects->update();
+                    } catch (\Exception $exception) {
+                        echo json_encode(array('liste' => '', 'btn_etape6' => '', 'content_risk' => '', 'error' => $exception->getMessage()));
+                        return;
+                    }
+                }
+
                 /** @var \projects_status $oProjectStatus */
                 $oProjectStatus = $this->loadData('projects_status');
-                $oProjectStatus->getLastStatut($this->projects->id_project);
+                $select = '<input type="hidden" name="current_status" value="' . $this->projects->status . '">';
 
-                if ($oProjectStatus->status == \projects_status::PREP_FUNDING) {
-                    $select = '<select name="status" id="status" class="select">';
-                    foreach (array(\projects_status::PREP_FUNDING, \projects_status::A_FUNDER) as $s) {
-                        $select .= '<option ' . ($oProjectStatus->status == $s['status'] ? 'selected' : '') . ' value="' . $s['status'] . '">' . $s['label'] . '</option>';
+                if ($this->projects->status == \projects_status::PREP_FUNDING) {
+                    $select .= '<select name="status" id="status" class="select">';
+                    foreach ([\projects_status::PREP_FUNDING, \projects_status::A_FUNDER] as $status) {
+                        $oProjectStatus->get($status, 'status');
+                        $select .= '<option' . ($this->projects->status == $oProjectStatus->status ? ' selected' : '') . ' value="' . $this->projects->status . '">' . $oProjectStatus->label . '</option>';
                     }
                     $select .= '</select>';
                 } else {
-                    $select = '<input type="hidden" name="status" id="status" value="' . $oProjectStatus->status . '" />';
+                    $oProjectStatus->get($this->projects->status, 'status');
+
+                    $select .= '<input type="hidden" name="status" id="status" value="' . $this->projects->status . '" />';
                     $select .= $oProjectStatus->label;
 
                     if (isset($oRejectionReason)) {
@@ -1488,46 +1548,6 @@ class ajaxController extends bootstrap
             echo "none";
         }
         die;
-    }
-
-    public function _recouvrement()
-    {
-        $this->projects                = $this->loadData('projects');
-        $this->projects_status_history = $this->loadData('projects_status_history');
-        $this->echeanciers             = $this->loadData('echeanciers');
-        $this->receptions              = $this->loadData('receptions');
-
-        if (isset($_POST['id_reception']) && $this->receptions->get($_POST['id_reception'], 'type = 1 AND type_remb = 3 AND id_reception')) {
-            $this->projects->get($this->receptions->id_project, 'id_project');
-
-            $retour = $_POST['date'];
-            if ($retour != false) {
-                $retour = explode('/',$retour);
-                $retour = $retour[2].'-'.$retour[1].'-'.$retour[0];
-                $this->lastDateRecouvrement = date('d/m/Y', strtotime($retour));
-                $this->lastFormatSql = date('Y-m-d', strtotime($retour));
-                $_SESSION['DER'] = $this->lastFormatSql;
-            } else {
-                $this->lastDateRecouvrement = date('d/m/Y');
-                $this->lastFormatSql = date('Y-m-d');
-                $_SESSION['DER'] = $this->lastFormatSql;
-            }
-
-            $this->CapitalEchu      = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) <= "' . $this->lastFormatSql . '"', 'capital');
-            $this->InteretsEchu     = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) <= "' . $this->lastFormatSql . '"', 'interets');
-            $this->CapitalRestantDu = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) > "' . $this->lastFormatSql . '"', 'capital');
-            $lastEcheanceImpaye     = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) <=  "' . $this->lastFormatSql . '"', 'date_echeance DESC', 0, 1);
-            $dateLastEcheanceImpaye = date('Y-m-d', strtotime($lastEcheanceImpaye[0]['date_echeance']));
-            $echeanceMoisDER        = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND ordre = ' . ($lastEcheanceImpaye[0]['ordre'] + 1), 'date_echeance DESC', 0, 1);
-            $interetsMoisDER        = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND ordre = ' . ($lastEcheanceImpaye[0]['ordre'] + 1), 'interets');
-            $nbJourMoisDER          = date('t', strtotime($echeanceMoisDER[0]['date_echeance']));
-            $diff                   = $this->dates->nbJours($dateLastEcheanceImpaye, $this->lastFormatSql);
-            $this->interetsCourus   = round(($diff / $nbJourMoisDER) * $interetsMoisDER, 2);
-            $this->montantRecouvre  = $this->receptions->sum('type_remb = 3 AND type = 1 AND remb = 1 AND id_project = ' . $this->projects->id_project);
-            $this->montantRecouvre  = $this->montantRecouvre / 100;
-        } else {
-            die;
-        }
     }
 
     public function _get_cities()

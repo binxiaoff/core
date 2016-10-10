@@ -1,0 +1,27 @@
+{# Error page #}
+{% extends 'layouts/_page-simple.html.twig' %}
+
+{% set page = {
+    id: 'page-error',
+    title: 'Error 404'
+} %}
+
+{% block pageAsideBody %}
+    <div class="page-aside-body hide-xs hide-sm c-p1" style="text-align: center">
+        {{ svgimage('#misc-mapcompass', 'Error', 500, 500)|raw }}
+    </div><!-- /.page-aside-body -->
+{% endblock %}
+
+{% block pageContentBody %}
+    <section class="page-section">
+        {% if errorTitle is defined %}
+            <h2>{{ errorTitle }}</h2>
+        {% endif %}
+        {% if errorDetails is defined %}
+            {{ errorDetails|raw }}
+        {% endif %}
+        <div class="btn-toolbar text-align-left">
+            <a href="{{ path('home') }}" class="btn-primary">{% trans %} lender-error-page_button-welcome-page {% endtrans %}</a>
+        </div><!-- /.btn-toolbar -->
+    </section><!-- /.page-section -->
+{% endblock %}

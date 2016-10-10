@@ -1,0 +1,43 @@
+{# Panel - Projects to discover #}
+{% embed 'partials/components/dashboard-panel.html.twig' %}
+    {% block panelAttributes %} id="projects" {% endblock %}
+    {% block panelClassNames %} dashboard-panel dashboard-projects ui-draggable {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %} col-lg-6 col-md-6 col-sm-8 col-xs-4 {% endblock %}
+    {% block panelTitle %}{{ 'lender-dashboard-projects_title'|trans }}{% endblock %}
+    {% block panelControls %}
+        <span class="ui-draggable-handle"></span>
+    {% endblock %}
+    {% block panelContent %}
+        <div class="message">
+            <p>{% transchoice newOngoingProjects|length with {'%count%' : newOngoingProjects|length} %} lender-dashboard-projects_new-projects-legend {% endtranschoice %}</p>
+        </div>
+        {% if newOngoingProjects|length > 0 %}
+            <ul class="list-projects">
+                {% for project in newOngoingProjects %}
+                    <li class="project">
+                        <div class="project-name">{{ project.title }}</div>
+                        <div class="project-location">{{ project.company_address }}</div>
+                        <div class="project-cost">{{ project.amount|localizednumber }}&nbsp;€</div>
+                        <div class="project-rating">
+                            <span class="rating rating-{{ project.risk|convertRisk|split('.')|join('-') }}">
+                                <span class="sr-only">{% trans with {'%risk%' : project.risk|convertRisk} %} project-detail_unilend-rating-wording-label {% endtrans %}</span>
+                            </span>
+                        </div>
+                        <div class="project-interest">{{ project.average_rate|localizednumber }}&nbsp;%</div>
+                        <div class="project-period">
+                            {% if project.finished %}
+                                {{ 'lender-dashboard-projects_project-status-finished'|trans }}
+                            {% elseif project.days_left <= 2 %}
+                                <span class="ui-has-timecount" data-timecount-to="{{ project.end_date|date('c') }}"></span>
+                            {% else %}
+                                {% trans with {'%remainingDays%' : project.days_left} %} project-list_remaining-days {% endtrans %}
+                            {% endif %}
+                        </div>
+                        {% set styledCount = {'%count%' : '<span class="value">' ~ project.bid_count ~ '</span>'} %}
+                        <div class="project-offers">{% transchoice project.bid_count with styledCount %} lender-dashboard-projects_offers-count {% endtranschoice %}</div>
+                        <a href="{{ path('project_detail', {'projectSlug' : project.slug}) }}" class="project-hotspot">&nbsp;</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endblock %}
+{% endembed %}

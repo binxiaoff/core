@@ -1,0 +1,46 @@
+{% extends 'borrower_account/_layout.html.twig' %}
+
+{% set page = {
+    id: 'user-borrower-projects',
+    title: 'Emprunteur / Dashboard',
+    permalink: path('borrower_account_projects'),
+    classNames: 'user-emprunteur-projects'
+} %}
+
+{% block dashboardContent %}
+    <div class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-nav">
+            <ul class="nav nav-dashboard-tabs" data-nav-dropdown-menu="mobile">
+                <li role="presentation"><a href="{{ path('borrower_account_projects') }}">{{ 'borrower-projects_projects-tab-title'|trans }}</a></li>
+                <li role="presentation" class="active"><a href="#">{{ 'borrower-demand_new-demand-tab-title'|trans }}</a></li>
+            </ul>
+        </div><!-- /.dashboard-nav-content -->
+        <div class="dashboard-tabs-content tab-content">
+            <div id="profile-newrequest" class="dashboard-tab-pane">
+                <article class="panel">
+                    <section class="ui-toggle-group" aria-multiselectable="true">
+                        <div class="dashboard-newrequest">
+                            {% if app.session.flashBag.has('error') %}
+                                <div class="message-error">
+                                    <p>{% trans %} borrower-demand_error {% endtrans %}</p>
+                                    {% for error in app.session.flashBag.get('error') %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% elseif app.session.flashBag.has('success') %}
+                                <div class="message-success">
+                                    {% for success in app.session.flashBag.get('success') %}
+                                        <p>{{ success }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+
+                            {{ form(project_form, {'attr': {'id': 'borrower_new_demand'}}) }}
+                            <button type="submit" form="borrower_new_demand" class="btn-primary ui-dialog-confirm"><span class="icon fa-angle-right"></span> {{ 'borrower-demand_form-submit-button'|trans }}</button>
+                        </div><!-- /.dashboard-newrequest -->
+                    </section><!-- /.ui-toggle-group -->
+                </article><!-- /.panel -->
+            </div><!-- /#profile-fiscalite.dashboard-tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </div><!-- /.dashboard-tabs -->
+{% endblock %}

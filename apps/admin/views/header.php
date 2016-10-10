@@ -76,6 +76,7 @@
                     <li><a href="<?= $this->lurl ?>/partenaires" title="Campagnes">Campagnes</a></li>
                     <li><a href="<?= $this->lurl ?>/partenaires/types" title="Types de campagnes">Types de campagnes</a></li>
                     <li><a href="<?= $this->lurl ?>/partenaires/medias" title="Medias de campagnes">Medias de campagnes</a></li>
+                    <li><a href="<?= $this->lurl ?>/project_rate_settings" title="Grille de taux">Grille de taux</a></li>
                 </ul>
             </li>
         <?php endif; ?>
@@ -125,6 +126,7 @@
                     <li><a href="<?= $this->lurl ?>/dossiers/remboursements" title="Remboursements">Remboursements</a></li>
                     <li><a href="<?= $this->lurl ?>/dossiers/no_remb" title="Erreurs remboursements">Erreurs remboursements</a></li>
                     <li><a href="<?= $this->lurl ?>/dossiers/status" title="Suivi statuts projets">Suivi statuts projets</a></li>
+                    <li><a href="<?= $this->lurl ?>/product" title="Suivi statuts projets">Gestion produits</a></li>
                 </ul>
             </li>
         <?php endif; ?>

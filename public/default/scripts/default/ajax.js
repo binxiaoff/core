@@ -2,104 +2,54 @@
 // *** FICHIER AJAX ADMIN ***//
 //***************************//
 
-function no_cache()
-{
+function no_cache() {
     date_object = new Date();
     var param = date_object.getTime();
 
     return param;
 }
 
-function AjaxObject()
-{
-    if(window.XMLHttpRequest)
-    {
+function AjaxObject() {
+    if (window.XMLHttpRequest) {
         xhr_object = new XMLHttpRequest();
         return xhr_object;
     }
-    else if(window.ActiveXObject)
-    {
+    else if (window.ActiveXObject) {
         xhr_object = new ActiveXObject('Microsoft.XMLHTTP');
         return xhr_object;
     }
-    else
-    {
+    else {
         alert('Votre navigateur ne supporte pas les objets XMLHTTPRequest...');
-        return;
+
     }
 }
 
 /* Modification de la modifcation des traductions à la volée */
-function activeModificationsTraduction(etat,url)
-{
+function activeModificationsTraduction(etat, url) {
     xhr_object = AjaxObject();
     var param = no_cache();
 
-    xhr_object.onreadystatechange = function()
-    {
-        if(xhr_object.readyState == 4 && xhr_object.status == 200)
-        {
+    xhr_object.onreadystatechange = function () {
+        if (xhr_object.readyState == 4 && xhr_object.status == 200) {
             var reponse = xhr_object.responseText;
             document.location.href = url;
         }
-    }
-    xhr_object.open('GET',add_url + '/ajax/activeModificationsTraduction/' + etat + '/' + param ,true);
+    };
+    xhr_object.open('GET', add_url + '/ajax/activeModificationsTraduction/' + etat + '/' + param, true);
     xhr_object.send(null);
 }
 
-function session_etape2_lender()
-{
+function favori(id_project, id, id_client, page) {
+    $.post(add_url + '/ajax/favori', {id_project: id_project, id_client: id_client}).done(function (data) {
 
-    var radio1 = $('input[name=radio1]:checked', '#form_inscription_preteur_etape2').val();
-
-    var val = {
-        bic: $("#bic").val(),
-        iban1: $("#iban-1").val(),
-        iban2: $("#iban-2").val(),
-        iban3: $("#iban-3").val(),
-        iban4: $("#iban-4").val(),
-        iban5: $("#iban-5").val(),
-        iban6: $("#iban-6").val(),
-        iban7: $("#iban-7").val(),
-        origine_des_fonds: $("#origine_des_fonds").val(),
-        cni_passeport: radio1,
-        preciser: $("#preciser").val()
-    }
-    $.post(add_url + '/ajax/session_etape2_lender', val).done(function(data) {
-        //alert(data);
-
-    });
-}
-
-function autocompleteCp(laval,id_cp)
-{
-    var val = {
-        ville: laval
-    }
-    $.post(add_url + '/ajax/autocompleteCp', val).done(function(data) {
-
-        if(data != 'nok')
-        {
-            $("#"+id_cp).val(data);
-        }
-    });
-}
-
-function favori(id_project,id,id_client,page)
-{
-    $.post(add_url + '/ajax/favori', {id_project: id_project,id_client: id_client}).done(function(data) {
-
-        if(data != 'nok')
-        {
-            if(data== 'create')
-            {
-                $('#'+id).addClass('active');
-                if(page != 0)$('#'+id).html('Retirer de mes favoris <i></i>');
+        if (data != 'nok') {
+            if (data == 'create') {
+                $('#' + id).addClass('active');
+                if (page != 0)$('#' + id).html('Retirer de mes favoris <i></i>');
             }
-            else if(data=='delete')
-            {
-                $('#'+id).removeClass('active');
-                if(page != 0)$('#'+id).html('Ajouter à mes favoris <i></i>')
+            else if (data == 'delete') {
+                $('#' + id).removeClass('active');
+                if (page != 0)$('#' + id).html('Ajouter à mes favoris <i></i>')
             }
         }
 
@@ -208,23 +158,24 @@ function transfert() {
 }
 
 // fonction controle mdp
-function controleMdp(mdp,id,async, idConfirmation)
-{
+function controleMdp(mdp, id, async, idConfirmation) {
     async = typeof async !== 'undefined' ? async : true;
     var result = false;
 
     $.ajax({
-        url: add_url+"/ajax/complexMdp",
-        data: { mdp: mdp },
+        url: add_url + "/ajax/complexMdp",
+        data: {mdp: mdp},
         method: 'POST',
         async: async
-    }).done(function(data){
-        if(data == 'ok'){
-            $("#"+id).removeClass("LV_invalid_field");$("#"+id).addClass("LV_valid_field");
-            $("#"+idConfirmation).addClass("LV_invalid_field");
+    }).done(function (data) {
+        if (data == 'ok') {
+            $("#" + id).removeClass("LV_invalid_field");
+            $("#" + id).addClass("LV_valid_field");
+            $("#" + idConfirmation).addClass("LV_invalid_field");
             result = true;
-        } else{
-            $("#"+id).removeClass("LV_valid_field");$("#"+id).addClass("LV_invalid_field");
+        } else {
+            $("#" + id).removeClass("LV_valid_field");
+            $("#" + id).addClass("LV_invalid_field");
             result = false;
         }
     });
@@ -232,32 +183,32 @@ function controleMdp(mdp,id,async, idConfirmation)
 }
 
 // fonction controle mdp
-function acceptCookies()
-{
-    $.post( add_url+"/ajax/acceptCookies").done(function( data ) {
+function acceptCookies() {
+    $.post(add_url + "/ajax/acceptCookies").done(function (data) {
 
         var obj = jQuery.parseJSON(data);
 
-        if(obj.reponse == true){
+        if (obj.reponse == true) {
             $('.cookies').slideUp();
-            setTimeout(function(){ $( ".cookies" ).remove(); }, 3000);
+            setTimeout(function () {
+                $(".cookies").remove();
+            }, 3000);
 
         }
-        else{
+        else {
 
         }
     });
 }
 
-function controleCity(elmCity, elmCountry, async)
-{
+function controleCity(elmCity, elmCountry, async) {
     async = typeof async !== 'undefined' ? async : true;
     var result = false;
     $.ajax({
         url: add_url + '/ajax/checkCity/' + elmCity.val() + '/' + elmCountry.val(),
         method: 'GET',
         async: async
-    }).done(function(data){
+    }).done(function (data) {
         if (data == 'ok') {
             elmCity.addClass('LV_valid_field').removeClass('LV_invalid_field');
             result = true;
@@ -270,8 +221,7 @@ function controleCity(elmCity, elmCountry, async)
     return result;
 }
 
-function controlePostCodeCity(elmCp, elmCity, elmCountry, async)
-{
+function controlePostCodeCity(elmCp, elmCity, elmCountry, async) {
     async = typeof async !== 'undefined' ? async : true;
     var result = false;
 
@@ -285,7 +235,7 @@ function controlePostCodeCity(elmCp, elmCity, elmCountry, async)
         url: add_url + '/ajax/checkPostCodeCity/' + elmCp.val() + '/' + elmCity.val() + '/' + elmCountry.val(),
         method: 'GET',
         async: async
-    }).done(function(data){
+    }).done(function (data) {
         if (data == 'ok') {
             elmCp.addClass('LV_valid_field').removeClass('LV_invalid_field');
             elmCity.addClass('LV_valid_field').removeClass('LV_invalid_field');
@@ -325,7 +275,7 @@ function appendProjects() {
             type: 'GET',
             data: val,
             dataType: 'json',
-            success: function(obj) {
+            success: function (obj) {
                 if (obj.hasMore == true) {
                     var positionStart = obj.positionStart;
                     var affichage = obj.affichage;

@@ -1,0 +1,176 @@
+//
+// Unilend Messages
+//
+
+@mixin message-icon($icon-color: $c-p1) {
+  &:before {
+    display: block;
+    padding: 0 0 10px;
+
+    color: $icon-color;
+    font-family: $ff-icon;
+    font-size: 50px;
+    line-height: 50px;
+    text-align: center;
+    vertical-align: middle;
+  }
+}
+
+@mixin message-md-icon {
+  padding-left: 120px;
+  min-height: 100px;
+
+  &:before {
+    width: 50px;
+    padding: 25px 0 25px 40px;
+
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+
+    text-align: left;
+  }
+}
+
+@mixin message($bg-color: $c-purple-l2, $text-color: $c-t1, $icon-color: $c-p1, $show-icon: false) {
+  box-sizing: border-box;
+  //display: block;
+  padding: 20px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+
+  background-color: $bg-color;
+  color: $text-color;
+  font-size: 16px;
+  line-height: 1.4em;
+  text-align: left;
+
+  > :first-child {
+    margin-top: 0;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+
+  @include devices('md', 'lg') {
+    padding: 30px;
+  }
+
+  @if $show-icon {
+    @include message-icon($icon-color);
+
+    @include devices('md', 'lg') {
+      @include message-md-icon;
+    }
+  }
+
+  > .btn-close {
+    @include button;
+    @include button-shape-sq-xs;
+    @include button-color-clear($icon-color, $icon-color, $icon-color);
+
+    position: absolute;
+    right: 0;
+    top: 0;
+    font-size: $fs-base;
+
+    &:before {
+      font-size: $fs-base;
+    }
+  }
+
+  // Ignore min-height if collapsing
+  &.collapsing {
+    min-height: 0 !important;
+  }
+}
+
+// Generic
+.message {
+  @include message;
+  min-height: 0;
+}
+
+// Info
+.message-info {
+  @include message($show-icon: true);
+
+  &:before {
+    // content: '\f05a'; // Info
+    content: $fa-info-u64;
+  }
+}
+
+// Alert
+.message-alert {
+  @include message($show-icon: true);
+
+  &:before {
+    // content: '\f06a'; // Exclamation
+    content: $fa-alert-u64;
+  }
+}
+
+// Success
+.message-success {
+  @include message($bg-color: lighten($c-success, 30%), $icon-color: darken($c-success, 30%), $show-icon: true);
+
+  &:before {
+    //content: '\f00c'; // Check
+    content: $fa-check-u64;
+  }
+}
+
+// Error
+.message-error {
+  @include message($bg-color: $c-error, $text-color: $c-white, $icon-color: $c-white, $show-icon: true);
+
+  &:before {
+    // content: '\f00d'; // cross
+    content: $fa-cross-u64;
+  }
+
+  a {
+    @include link-states(
+      $link: (
+        color: $c-white,
+        text-decoration: underline
+      ),
+      $hover: (
+        color: $c-white,
+        text-decoration: underline
+      ),
+      $active: (
+        color: $c-white,
+        text-decoration: underline
+      )
+    );
+  }
+}
+
+.cta-message {
+  box-sizing: border-box;
+  width: 280px;
+  padding: 20px;
+  // margin-top: -70px;
+  // margin-left: -140px;
+
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+
+  transform: translate(-50%, -50%);
+
+  background-color: $c-white;
+  box-shadow: 0 0 20px fade-out($c-black, .9);
+  color: $c-t2;
+  text-align: center;
+
+  @include devices('md', 'lg') {
+    width: 350px;
+  }
+}

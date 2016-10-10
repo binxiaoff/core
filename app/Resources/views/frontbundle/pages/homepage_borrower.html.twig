@@ -1,0 +1,319 @@
+{% extends 'layouts/_layout.html.twig' %}
+
+{% set page = {
+    title: 'Emprunter'
+} %}
+
+{% block siteContent %}
+    <article id="homeemp" class="page">
+
+        <section id="homeemp-video-hero" class="cta-video-hero" aria-hidden="true" data-set-device-height="xs">
+            <div class="video-hero-wrapper">
+                <div class="video-hero" style="background-image: url('{{ completeTestimonialUrl(featureBorrower.feature_image, 'image') }}')">
+                    <div class="caption caption-align-left">
+                        <div class="caption-name">{{ featureBorrower.name }}, {{ featureBorrower.location }}</div>
+                        <div class="caption-info">{{ featureBorrower.info }}</div>
+                        <div class="caption-links">
+                            <a href="{{ path('testimonials') }}" class="link">{{ 'home-borrower_link-to-testimonial-on-video'|trans }}</a></div>
+                    </div><!-- /.caption -->
+                </div><!-- /.video-hero -->
+
+                <div class="video-hero-cta">
+                    <div class="btn-media-wrapper">
+                        <a href="https://www.youtube.com/watch?v=EVPq8BYm5tM" class="btn-media fancybox-media fancybox-embed-videojs">
+                            <span class="icon fa-play"><span class="sr-only">Play</span></span>
+                        </a>
+                    </div>
+                    <h3>{{ featureBorrower.video_caption }}</h3>
+                </div><!-- /.video-hero-cta -->
+
+                {% include 'partials/components/list-socialmedia.html.twig' %}
+
+                <div class="btn-toolbar">
+                    <a href="#homeemp-section-esim" class="btn-cta btn-color-alternate"><span class="icon fa-angle-right"></span> {{ 'home-borrower_link-below-video-text'|trans }}</a>
+                </div>
+            </div><!-- /.video-hero-wrapper -->
+        </section><!-- /.cta-video-hero -->
+
+        <section id="homeemp-section-whyborrow" class="page-section">
+            <div class="site-wrap">
+                <h2 class="h2">{% trans %} home-borrower_why-borrow-stats-title {% endtrans %}</h2>
+
+                <div class="promo-swiper swiper-container">
+                    <div class="row swiper-wrapper">
+                        <div class="col-lg-4 col-md-4 swiper-slide">
+                            <div class="promo">
+                                <div class="promo-image">
+                                    {{ svgimage('#promo-piggybank', '', 190, 190, 'none')|raw }}
+                                    <img src="{{ siteurlmedia('promos/promo-piggybank-190x190.png') }}" alt="">
+                                </div>
+                                <h3 class="promo-highlight">
+                                    <span class="ui-text-count" data-start-count="0" data-end-count="100" data-total-time="3000" data-round-float="ceil" data-tween-count="easeOutCirc">100</span><sup>%</sup>
+                                </h3>
+                                <p>{% trans with {'%financedProjects%' : 100 } %} home-borrower_why-borrow-stats-piggybank-text {% endtrans %}</p>
+                            </div><!-- /.promo -->
+                        </div>
+                        <div class="col-lg-4 col-md-4 swiper-slide">
+                            <div class="promo">
+                                <div class="promo-image">
+                                    {{ svgimage('#promo-calendarweek', '', 190, 190, 'none')|raw }}
+                                    <img src="{{ siteurlmedia('promos/promo-calendar-190x190.png') }}" alt="">
+                                </div>
+                                {% set calendarweekValue = getStatistic('averageFundingTime') %}
+                                {% if calendarweekValue.days < 1 %}
+                                    <h3 class="promo-highlight">
+                                        <span class="ui-text-count" data-start-count="0" data-end-count="{{ calendarweekValue.hours }}" data-total-time="1000" data-round-float="ceil" data-tween-count="easeOutCirc">{{ calendarweekValue.hours }}</span>
+                                    </h3>
+                                    <p>{% trans with {'%avgFundingTime%' : calendarweekValue.hours} %} home-borrower_why-borrow-stats-calendarweek-text-hours {% endtrans %}</p>
+                                {% else  %}
+                                    <h3 class="promo-highlight">
+                                        <span class="ui-text-count" data-start-count="0" data-end-count="{{ calendarweekValue.days }}" data-total-time="500" data-round-float="ceil" data-tween-count="easeOutCirc">{{ calendarweekValue.days }}</span>
+                                    </h3>
+                                    <p>{% trans with {'%avgFundingTime%' : calendarweekValue.days} %} home-borrower_why-borrow-stats-calendarweek-text-days {% endtrans %}</p>
+                                {% endif %}
+                            </div>
+                        </div><!-- /.promo -->
+                        <div class="col-lg-4 col-md-4 swiper-slide">
+                            <div class="promo">
+                                <div class="promo-image">
+                                    {{ svgimage('#promo-verified', '', 190, 190, 'none')|raw }}
+                                    <img src="{{ siteurlmedia('promos/promo-certificate-190x190.png') }}" alt="">
+                                </div>
+                                <h3 class="promo-highlight"><span>0</span><sup>&nbsp;</sup></h3>
+                                <p>{% trans %} home-borrower_why-borrow-stats-verified-text {% endtrans %}</p>
+                            </div><!-- /.promo -->
+                        </div>
+                    </div>
+                </div><!-- /.promo-slider -->
+
+                <div class="row page-section-footer">
+                    <div class="btn-toolbar">
+                        <a href="#homeemp-section-esim" class="btn-alternate">{% trans %} home-borrower_borrow-button-below-why-borrow-facts {% endtrans %}</a>
+                    </div><!-- /.btn-toolbar -->
+                    <p>
+                        <a href="{{ path('home_lender') }}" class="link">{% trans %} home-borrower_lend-button-below-why-borrow-facts {% endtrans %}</a>
+                    </p>
+                </div><!-- /.page-section-footer -->
+            </div><!-- /.site-wrap -->
+        </section><!-- /.promos -->
+
+        <section id="homeemp-section-testimonials" class="page-section">
+            <div class="site-wrap">
+                <h1 class="h2">{% trans %} home-borrower_testimonial-section-title {% endtrans %}</h1>
+
+                <div class="promo-battenberg" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
+                    {% for i, person in testimonialPeople %}
+                        {% if i % 2 == 1 %}
+                            {% set classPosition = 'promo-align-right' %}
+                            {% set classAnimatePosition = 'ui-animate-from-left' %}
+                            {% set classRow = 'row reverse' %}
+                            {% set classColumnsImage = 'col-lg-5 pull-lg-1 col-md-5 pull-md-1' %}
+                        {% elseif i % 2 == 0 %}
+                            {% set classPosition = 'promo-align-left' %}
+                            {% set classAnimatePosition = 'ui-animate-from-right' %}
+                            {% set classRow = 'row' %}
+                            {% set classColumnsImage = 'col-lg-5 push-lg-1 col-md-5 push-md-1' %}
+                        {% endif %}
+
+                        <div class="promo-borrower {{ classRow }}">
+                            <div class="{{ classColumnsImage }}">
+                                <div class="promo-image promo-p2" style="background-image: url('{{ completeTestimonialUrl(person.battenberg_image, 'image') }}')">
+                                    &nbsp;
+                                    <a href="{{ path('home_borrower') }}#homeemp-section-esim" class="promo-image-cta">
+                                        <div><span class="link">{{ "site-general_testimonial-section-overlay-link-#{person.type}"|trans }}</span></div>
+                                    </a>
+                                </div><!-- /.promo-image -->
+                            </div>
+                            <div class="col-lg-6 col-md-6 vertical-align-content">
+                                <div class="promo-slide promo-p2 {{ classPosition }} {{ classAnimatePosition }}">
+                                    <p class="quote">{{ person.quote|raw }}</p>
+                                    <p class="source"><cite>{{ person.name }}&mdash;{{ person.location }}</cite></p>
+                                    <div class="promo-links">
+                                        <a href="{{ path('testimonials') }}#testimonial-{{ person.name }}" class="link">{% trans %} site-general_testimonial-section-link-lender-title {% endtrans %}</a>
+                                        {% if person.project.slug is not empty %}
+                                            <a href="{{ path('project_detail', {'projectSlug' : person.project.slug}) }}" class="link">
+                                                {% trans %} site-general_testimonial-section-link-borrower-title {% endtrans %}
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div><!-- /.promo-slide -->
+                            </div>
+                        </div><!-- /.promo-emprunter -->
+                    {% endfor %}
+                </div><!-- /.promo-battenberg -->
+
+                <div class="row page-section">
+                    <div class="btn-toolbar">
+                        <a href="{{ path('home_borrower') }}#homeemp-section-esim" class="btn-alternate">
+                            <span class="icon fa-angle-right"></span>
+                            {% trans %} home-borrower_submit-project-button {% endtrans %}
+                        </a>
+                    </div>
+                </div>
+            </div><!-- /.site-wrap -->
+        </section><!-- /.page-section -->
+
+        <section id="homeemp-section-esim" class="page-section bg-bg3">
+            <div class="site-wrap">
+                <h2 class="h2">{% trans %} home-borrower_simulator-title {% endtrans %}</h2>
+
+                <form action="{{ path('project_simulator_form') }}" method="post" class="emprunter-sim tabs ui-tabs-progress">
+                    <div class="emprunter-sim-nav">
+                        <ul class="nav nav-steps" role="tablist">
+                            <li role="presentation" class="active">
+                                <a role="tab">{% trans %} home-borrower_simulator-step-1 {% endtrans %}</a>
+                            </li>
+                            <li role="presentation">
+                                <a href="#esim2" role="tab" data-toggle="tab">{% trans %} home-borrower_simulator-step-2 {% endtrans %}</a>
+                            </li>
+                        </ul>
+                    </div><!-- /.emprunter-sim-nav -->
+
+                    <div class="tab-content emprunter-sim-content">
+                        <div id="esim1" role="tabpanel" class="tab-pane active">
+                            <fieldset class="emprunter-sim-pane-inner" data-formvalidation data-formvalidation-notificationselem=".form-validation-notifications">
+                                <div class="form-validation-notifications"></div>
+                                <div class="row row-multicol-computer">
+                                    <div class="form-field col-lg-6 col-md-6">
+                                        <label for="esim-input-amount">{% trans %} home-borrower_simulator-amount-field-title {% endtrans %}
+                                            <span class="c-t3">{% trans %} home-borrower_simulator-amount-field-addition {% endtrans %}</span>
+                                        </label>
+                                        <input id="esim-input-amount" type="text" step="any" name="esim[amount]" value=""
+                                               placeholder="{% trans %} home-borrower_simulator-amount-field-placeholder {% endtrans %}"
+                                               class="input-field"
+                                               data-formvalidation-minvalue="{{ projectAmountMin }}" data-formvalidation-maxvalue="{{ projectAmountMax }}" data-formvalidation-input
+                                               data-formvalidation-required="true">
+                                    </div>
+                                    <div class="form-field col-lg-6 col-md-6">
+                                        <label for="esim-input-reason">{% trans %} home-borrower_simulator-borrowing-motif-title {% endtrans %}</label>
+                                        <select id="esim-input-reason" name="esim[reason]" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="motive">
+                                            <option value="">{% trans %} home-borrower_simulator-borrowing-motif-select {% endtrans %}</option>
+                                            {% for id, motive in borrowingMotives %}
+                                                <option value="{{ id }}">{{ motive }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row row-multicol-computer">
+                                    <div class="form-field col-lg-12 col-md-12">
+                                        <label>{% trans %} home-borrower_simulator-borrowing-period-title {% endtrans %}</label>
+                                        <div class="custom-input-duration" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="duration">
+                                            {% for period in loanPeriods %}
+                                                <label>
+                                                    <input type="radio" id="esim-input-duration-{{ period }}" name="esim[duration]" value="{{ period }}">
+                                                    <span class="label">{{ period }}</span>
+                                                </label>
+                                            {% endfor %}
+                                        </div><!-- /.custom-input-duration -->
+                                    </div><!-- /.form-field -->
+                                </div>
+                            </fieldset><!-- /.emprunter-sim-pane-inner -->
+                        </div><!-- /.tab-pane -->
+
+                        <div id="esim2" role="tabpanel" class="tab-pane">
+                            <fieldset class="emprunter-sim-pane-inner" data-formvalidation data-formvalidation-notificationselem=".form-validation-notifications">
+                                <div class="form-validation-notifications"></div>
+                                <div class="row">
+                                    <div class="col-lg-12 col-md-12">
+                                        <p data-borrower-motive>{% trans %} home-borrower_simulator-step-2-text-for-motive {% endtrans %}</p>
+                                        <p>{% trans %} home-borrower_simulator-step-2-text-fill-field {% endtrans %}</p>
+                                    </div>
+                                </div>
+                                <div class="row row-multicol-computer">
+                                    <div class="form-field col-lg-6 col-md-6">
+                                        <label for="esim-input-siren">{% trans %} home-borrower_simulator-siren-field-label {% endtrans %}</label>
+                                        <input type="text" id="esim-input-siren" name="esim[siren]" value="" class="input-field" data-formvalidation-input
+                                               data-formvalidation-required="true" data-formvalidation-type="siren">
+                                    </div><!-- /.form-field -->
+                                    <div class="form-field col-lg-6 col-md-6">
+                                        <label for="i_esim_5">{% trans %} home-borrower_simulator-email-field-label {% endtrans %}</label>
+                                        <div class="input-group">
+                                            <input type="email" id="esim-input-email" name="esim[email]" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email">
+                                        </div><!-- /.input-group -->
+                                    </div><!-- /.form-field -->
+                                </div>
+                            </fieldset><!-- /.emprunter-sim-pane-inner -->
+                        </div><!-- /.tab-pane -->
+
+                        <div class="emprunter-sim-estimate">
+                            <div class="emprunter-sim-pane-inner bg-p1 c-bg5">
+                                <div class="row">
+                                    <div class="col-lg-5 col-md-5">
+                                        <dl class="row emprunter-sim-estimate-numbers">
+                                            <dt class="col-lg-8 col-md-9 col-sm-5 col-xs-3">{% trans %} home-borrower_simulator-footer-funding-duration-label {% endtrans %}</dt>
+                                            <dd class="col-lg-4 col-md-3 col-sm-3 col-xs-1">
+                                                <strong class="ui-esim-funding-duration-output"></strong>
+                                            </dd>
+                                            <dt class="col-lg-8 col-md-6 col-sm-5 col-xs-3">{% trans %} home-borrower_simulator-footer-monthly-repayment-label {% endtrans %}</dt>
+                                            <dd class="col-lg-4 col-md-6 col-sm-3 col-xs-1">
+                                                <strong class="ui-esim-monthly-output"></strong>
+                                            </dd>
+                                        </dl>
+                                        <span class="spacer">&nbsp;</span>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4">
+                                        <p class="small emprunter-sim-estimate-legend">{% trans %} home-borrower_simulator-footer-estimation-explanation {% endtrans %}</p>
+                                        <span class="spacer">&nbsp;</span>
+                                    </div>
+                                    <div class="col-lg-3 col-md-3">
+                                        <a href="#esim2" role="tab" data-toggle="tab" class="btn-continue btn-alternate btn-size-full">
+                                            {% trans %} home-borrower_simulator-footer-continue-button {% endtrans %}
+                                        </a>
+                                        <button class="btn-submit btn-alternate btn-size-full">
+                                            {% trans %} home-borrower_simulator-footer-validate-button {% endtrans %}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div><!-- /.emprunter-sim-pane-inner -->
+                        </div><!-- /.emprunter-sim-estimate -->
+                    </div><!-- /.tab-content -->
+                </form><!-- /.emprunter-sim -->
+            </div><!-- /.site-wrap -->
+        </section><!-- /.page-section -->
+
+        <section id="homeemp-section-process" class="page-section">
+            <div class="site-wrap">
+                <h1 class="h2">{% trans %} home-borrower_borrowing-steps-title {% endtrans %}</h1>
+                <div class="row">
+                    <div class="col-lg-4 col-md-4">
+                        <div class="promo">
+                            <div class="promo-image">
+                                {{ svgimage('#promo-projects', '', 190, 190, 'none')|raw }}
+                            </div>
+                            <h3 class="round-number">1</h3>
+                            <p>{% trans %} home-borrower_borrowing-step-1-text {% endtrans %}</p>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4 col-md-4">
+                        <div class="promo">
+                            <div class="promo-image">
+                                {{ svgimage('#promo-money', '', 190, 190, 'none')|raw }}
+                            </div>
+                            <h3 class="round-number">2</h3>
+                            <p>{% trans %} home-borrower_borrowing-step-2-text {% endtrans %}</p>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4 col-md-4">
+                        <div class="promo">
+                            <div class="promo-image">
+                                {{ svgimage('#promo-people', '', 190, 190, 'none')|raw }}
+                            </div>
+                            <h3 class="round-number">3</h3>
+                            <p>{% trans %} home-borrower_borrowing-step-3-text {% endtrans %}</p>
+                        </div>
+                    </div>
+                </div><!-- /.row -->
+                <div class="row page-section-footer">
+                    <div class="btn-toolbar">
+                        <a href="#homeemp-section-esim" class="btn-alternate">{% trans %} home-borrower_submit-project-button {% endtrans %}</a>
+                        <a href="{{ path('borrower_faq') }}" class="btn-default ui-open-site-search" target="_blank">{% trans %} home-borrower_question-button {% endtrans %}</a>
+                    </div>
+                </div><!-- /.page-section-footer -->
+            </div><!-- /.site-wrap -->
+        </section><!-- /.page-section -->
+
+        {{ render(controller('UnilendFrontBundle:Main:footerReviews')) }}
+    </article><!-- /.page -->
+{% endblock %}

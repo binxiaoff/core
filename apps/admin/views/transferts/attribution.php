@@ -75,10 +75,6 @@
                                 <input class="radio" type="radio" name="type_remb" value="regularisation">
                                 Régularisation
                             </label>
-                            <!--<label class="label_radio">
-                                <input class="radio" type="radio" name="type_remb" value="recouvrement">
-                                Recouvrement
-                            </label>-->
                         </td>
                     </tr>
                     <tr>

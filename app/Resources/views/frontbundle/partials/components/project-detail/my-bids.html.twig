@@ -1,0 +1,77 @@
+<section id="project-section-myoffers" class="page-section">
+    <div class="tabs">
+        <div class="section-tabs-nav">
+            <header>
+                <h3 id="project-myoffers" class="h3">{% trans %} project-detail_client-offer-table-title {% endtrans %}</h3>
+            </header>
+
+            <ul class="nav nav-tabs">
+                <li id="project-myoffers-inprogress" role="presentation" class="active">
+                    <a href="#myoffers-inprogress" role="tab" data-toggle="tab">{% trans %} project-detail_client-offer-table-pending {% endtrans %}</a>
+                </li>
+                <li id="project-myoffers-rejected" role="presentation">
+                    <a href="#myoffers-rejected" role="tab" data-toggle="tab">{% trans %} project-detail_client-offer-table-refused {% endtrans %}</a>
+                </li>
+            </ul>
+        </div><!-- /.section-tabs-nav -->
+
+        {# Pending #}
+        <div class="section-tabs-content tab-content">
+            <div id="myoffers-inprogress" role="tabpanel" class="tab-pane active" aria-labelledby="project-myoffers-inprogress project-myoffers">
+                <table class="table-myoffers">
+                    <tbody>
+                    {% for lenderBid in project.lender.bids.inprogress %}
+                        <tr class="my-offers-bid-row">
+                            <td class="table-myoffers-item-id">{{ lenderBid['ordre'] }}</td>
+                            <td class="table-myoffers-item-rate">{{ lenderBid['rate']|localizednumberwithprecision(1) }}&nbsp;%</td>
+                            <td class="table-myoffers-item-amount">{{ (lenderBid['amount'] / 100)|localizednumber }}&nbsp;€</td>
+                            <td class="table-myoffers-item-view">
+                                <a href="javascript:;" data-original-title="{% trans %} project-detail_lender-offer-detail-link-tooltip {% endtrans %}" class="ui-has-tooltip" data-related-bid-rate="{{ lenderBid['rate']|localizednumberwithprecision(1) }}" data-related-bid-id="{{ lenderBid['ordre'] }}"><span class="icon fa-eye-u32"><span class="sr-only">{% trans %} project-detail_lender-offer-detail-link-tooltip {% endtrans %}</span></span></a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td class="table-empty" colspan="4">
+                                <p>
+                                    {% if project.lender.bids.count > 0 %}
+                                        {% trans %} project-detail_client-offer-table-no-inprogress-offers {% endtrans %}
+                                    {% else %}
+                                        {% trans %} project-detail_client-offer-table-no-offers {% endtrans %}
+                                    {% endif %}
+                                </p>
+                                <a href="javascript:;" onclick="$('#bid-amount').focus();" class="btn-primary">
+                                    {% trans %} project-detail_client-offer-table-make-offer-button {% endtrans %}
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table><!-- /.table-myoffers -->
+            </div><!-- /.tab-pane -->
+
+            {# Rejected #}
+            <div id="myoffers-rejected" role="tabpanel" class="tab-pane" aria-labelledby="project-myoffers-rejected project-myoffers">
+                <table class="table-myoffers">
+                    <tbody>
+                    {% for lenderBid in project.lender.bids.rejected %}
+                        <tr class="my-offers-bid-row">
+                            <td class="table-myoffers-item-id">{{ lenderBid['ordre'] }}</td>
+                            <td class="table-myoffers-item-interest">{{ lenderBid['rate']|localizednumberwithprecision(1)  }}&nbsp;%</td>
+                            <td class="table-myoffers-item-amount">{{ (lenderBid['amount'] / 100)|localizednumber }}&nbsp;€</td>
+                            <td class="table-myoffers-item-view">
+                                <a href="javascript:;" data-original-title="{% trans %} project-detail_lender-offer-detail-link {% endtrans %}" class="ui-has-tooltip" data-related-bid-rate="{{ lenderBid['rate']|localizednumberwithprecision(1) }}" data-related-bid-id="{{ lenderBid['ordre'] }}"><span class="icon fa-eye-u32"><span class="sr-only">{% trans %} project-detail_lender-offer-detail-link-tooltip {% endtrans %}</span></span></a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td class="table-empty" colspan="4">
+                                <p>{% trans %} project-detail_client-offer-table-no-rejected-offers {% endtrans %}</p>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table><!-- /.table-myoffers -->
+            </div><!-- /.tab-pane -->
+        </div><!-- /.section-tabs-content -->
+    </div><!-- /tabs -->
+</section><!-- /.page-section -->

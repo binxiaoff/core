@@ -5,6 +5,7 @@ class rootController extends bootstrap
     public function initialize()
     {
         parent::initialize();
+
         $this->catchAll = true;
     }
 
@@ -107,7 +108,7 @@ class rootController extends bootstrap
             // Recuperation du contenu de la page
             $oCachePool = $this->get('memcache.default');
 
-            $oCachedItem  = $oCachePool->getItem('Home_Tree_Childs_Elements_' . $this->tree->id_tree . '_' . $this->language);
+            $oCachedItem = $oCachePool->getItem('Home_Tree_Childs_Elements_' . $this->tree->id_tree . '_' . $this->language);
             if (false === $oCachedItem->isHit()) {
                 $this->content          = array();
                 $this->complement       = array();
@@ -138,10 +139,10 @@ class rootController extends bootstrap
                 );
 
                 $oCachedItem->set($aElements)
-                            ->expiresAfter(3600);
+                    ->expiresAfter(3600);
                 $oCachePool->save($oCachedItem);
             } else {
-                $aElements    = $oCachedItem->get();
+                $aElements = $oCachedItem->get();
             }
 
             $this->content          = $aElements['content'];
@@ -158,7 +159,7 @@ class rootController extends bootstrap
             }
 
             // Recuperation des positions des blocs
-            $oCachedItem  = $oCachePool->getItem('Home_Blocs_Elements_' . $this->tree->id_tree . '_' . $this->language);
+            $oCachedItem = $oCachePool->getItem('Home_Blocs_Elements_' . $this->tree->id_tree . '_' . $this->language);
 
             if (false === $oCachedItem->isHit()) {
                 $this->bloc_content    = array();
@@ -182,10 +183,10 @@ class rootController extends bootstrap
                 );
 
                 $oCachedItem->set($aElements)
-                            ->expiresAfter(3600);
+                    ->expiresAfter(3600);
                 $oCachePool->save($oCachedItem);
             } else {
-                $aElements    = $oCachedItem->get();
+                $aElements = $oCachedItem->get();
             }
 
             $this->bloc_content    = $aElements['bloc_content'];
@@ -209,61 +210,6 @@ class rootController extends bootstrap
                     $this->setHeader('header_account');
                 }
             }
-
-            //////////////////////////////
-            // DEBUT TEMPLATE LESXPRESS //
-            //////////////////////////////
-            // landing page restriction pour pas aller sur d'autres pages
-            if ($this->lurl == 'http://lexpress.unilend.fr') {
-                if ($this->tree->id_template != 18 && $this->tree->id_template != 20 && $this->tree->id_template != 21) {
-                    header('Location: ' . $this->surl);
-                    die;
-                }
-            }
-
-            // landing page restriction pour pas aller sur d'autres pages
-            if ($this->lurl == 'http://pret-entreprise.votreargent.lexpress.fr') {
-                if ($this->tree->id_template != 18 && $this->tree->id_template != 20 && $this->tree->id_template != 21) {
-                    header('Location: ' . $this->surl);
-                    die;
-                }
-            }
-
-            // landing page restriction pour pas aller sur d'autres pages
-            if ($this->lurl == 'http://emprunt-entreprise.lentreprise.lexpress.fr') {
-                if ($this->tree->id_template != 18 && $this->tree->id_template != 20 && $this->tree->id_template != 21) {
-                    header('Location: ' . $this->surl);
-                    die;
-                }
-            }
-
-            if ($this->tree->id_template == 15) {
-                $_SESSION['lexpress']['id_template'] = $this->tree->id_template;
-                $_SESSION['lexpress']['header']      = $this->content['header'];
-                $_SESSION['lexpress']['footer']      = $this->content['footer'];
-
-                header('Location:' . $this->lurl);
-                die;
-            }
-            ////////////////////////////
-            // FIN TEMPLATE LESXPRESS //
-            ////////////////////////////
-
-            //////////////////////////////
-            // DEBUT TEMPLATE LESXPRESS Votre argent //
-            //////////////////////////////
-            if ($this->tree->id_template == 19) {
-                $_SESSION['lexpress']['id_template'] = $this->tree->id_template;
-                $_SESSION['lexpress']['header']      = $this->content['header-277'];
-                $_SESSION['lexpress']['footer']      = $this->content['footer-278'];
-
-                header('Location:' . $this->lurl);
-                die;
-
-            }
-            ////////////////////////////
-            // FIN TEMPLATE LESXPRESS Votre argent //
-            ////////////////////////////
 
             $this->ordreProject = 1;
 
@@ -308,38 +254,20 @@ class rootController extends bootstrap
                 // on signal que c'est une page du fo
                 $this->page              = 'projets_fo';
                 $_SESSION['page_projet'] = $this->page;
-
-                // restriction pour capital
-                if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr'
-                    || $this->lurl == 'http://partenaire.unilend.challenges.fr'
-                    || $this->lurl == 'http://financementparticipatifpme.lefigaro.fr'
-                    || $this->lurl == 'http://financementparticipatifpme.lefigaro.fr'
-                ) {
-                    $this->autoFireHeader = true;
-                    $this->autoFireDebug  = false;
-                    $this->autoFireHead   = true;
-                    $this->autoFireFooter = false;
-                }
             }
 
             if ($paramSlug === 'validation-virement') {
                 $this->page = 'alimentation';
             }
 
-            // restriction pour capital
             if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr' && $this->tree->id_template != 14) {
                 header('Location: http://prets-entreprises-unilend.capital.fr/capital/');
-                die;
-            } elseif ($this->lurl == 'http://partenaire.unilend.challenges.fr' && $this->tree->id_template != 14) {
-                header('Location: http://partenaire.unilend.challenges.fr/challenges/');
-                die;
-            } elseif ($this->lurl == 'http://financementparticipatifpme.lefigaro.fr' && $this->tree->id_template != 14) {
-                header('Location: http://financementparticipatifpme.lefigaro.fr/figaro/');
                 die;
             } elseif ($this->lurl == 'http://financementparticipatifpme.lefigaro.fr' && $this->tree->id_template != 14) {
                 header('Location: http://financementparticipatifpme.lefigaro.fr/figaro/');
                 die;
             }
+
             //////////////////////////
             // FIN TEMPLATE PROJETS //
             //////////////////////////
@@ -433,7 +361,7 @@ class rootController extends bootstrap
                 $this->heureFinFunding = $this->settings->value;
 
                 // ensemblee des fonds recupérés
-                $compteurFonds = $this->transactions->sum('type_transaction = 9', 'montant_unilend-montant');
+                $compteurFonds = $this->transactions->sum('type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, 'montant_unilend-montant');
                 $compteurFonds = $this->ficelle->formatNumber(($compteurFonds / 100), 0);
                 $tabCompteur   = str_split($compteurFonds);
 
@@ -506,296 +434,23 @@ class rootController extends bootstrap
             // FIN TEMPLATE LANDING PAGE DEPOT DE DOSSIER //
             ////////////////////////////////////////////////
 
-            ////////////////////////////////////////////
-            // TEMPLATE LANDING PAGE DEPOT DE DOSSIER l'express //
-            ////////////////////////////////////////////
-
-            // On bloque l'affichage du header/head/footer sur la landing-page
-            // Récup de l'id de page
-
-            $this->settings = $this->loadData('settings');
-            $this->settings->get('id_template_landing_page_depot_de_dossier_lexpress', 'type');
-            $this->id_template_landing_page = $this->settings->value;
-
-            if ($this->tree->id_template == $this->id_template_landing_page) {
-                $this->autoFireHeader = false;
-                $this->autoFireDebug  = false;
-                $this->autoFireHead   = false;
-                $this->autoFireFooter = false;
-
-                $content = file_get_contents('http://lentreprise.lexpress.fr/partenariat/touchvibes/arche.html');
-                $content = str_replace('<!-- partner_code_end -->', '', $content);
-                $content = explode('<!-- partner_code_start -->', $content);
-
-                $this->haut = $content[0];
-                $this->bas  = $content[1];
-
-            }
-            ////////////////////////////////////////////////
-            // FIN TEMPLATE LANDING PAGE DEPOT DE DOSSIER //
-            ////////////////////////////////////////////////
-
-            ////////////////////////////////////////////
-            // TEMPLATE Landing-page-inscription-preteurs-lexpress //
-            ////////////////////////////////////////////
-
-            // On bloque l'affichage du header/head/footer sur la landing-page
-            // Récup de l'id de page
-
-            $this->id_template_landing_page = 20; // Landing-page-inscription-preteurs-lexpress
-
-            if ($this->tree->id_template == $this->id_template_landing_page) {
-                $this->autoFireHeader = false;
-                $this->autoFireDebug  = false;
-                $this->autoFireHead   = false;
-                $this->autoFireFooter = false;
-
-                $content = file_get_contents('http://votreargent.lexpress.fr/partenaires/unilend/arche.html');
-                $content = str_replace('<!-- partner_code_end -->', '', $content);
-                $content = explode('<!-- partner_code_start -->', $content);
-
-                $this->haut = $content[0];
-                $this->bas  = $content[1];
-                $content    = explode('</main>', $this->bas);
-                $this->bas  = $content[1];
-
-            }
-
-            $this->id_template_landing_page = 21; // Landing-page-inscription-preteurs-bienenue-lexpress
-
-            if ($this->tree->id_template == $this->id_template_landing_page) {
-                $this->autoFireHeader = false;
-                $this->autoFireDebug  = false;
-                $this->autoFireHead   = false;
-                $this->autoFireFooter = false;
-
-                $content = file_get_contents('http://votreargent.lexpress.fr/partenaires/unilend/arche.html');
-                $content = str_replace('<!-- partner_code_end -->', '', $content);
-                $content = explode('<!-- partner_code_start -->', $content);
-
-                $this->haut = $content[0];
-                $this->bas  = $content[1];
-                $content    = explode('</main>', $this->bas);
-                $this->bas  = $content[1];
-
-            }
-            ////////////////////////////////////////////////
-            // FIN TEMPLATE LANDING PAGE DEPOT DE DOSSIER //
-            ////////////////////////////////////////////////
-
-            // Chargemement du tempalte
             if ($this->templates->slug == '' || $this->tree->id_template == 7) {
                 //header("HTTP/1.0 404 Not Found");
                 header($_SERVER["SERVER_PROTOCOL"] . " 404 Not Found");
+                $this->hideDecoration();
                 $this->setView('../root/404');
             } elseif ($this->tree->status == 0 && ! isset($_SESSION['user'])) {
                 //header("HTTP/1.0 404 Not Found");
                 header($_SERVER["SERVER_PROTOCOL"] . " 404 Not Found");
+                $this->hideDecoration();
                 $this->setView('../root/404');
             } else {
                 $this->setView('../templates/' . $this->templates->slug, true);
             }
         } else {
             header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found');
+            $this->hideDecoration();
             $this->setView('../root/404');
-        }
-    }
-
-    public function _logout()
-    {
-        $this->autoFireView = false;
-
-        $this->clients->handleLogout();
-    }
-
-    public function _search()
-    {
-        $this->lng['search'] = $this->ln->selectFront('search', $this->language, $this->App);
-
-        $this->page_title = $this->lng['search']['title'];
-        $this->page_slug  = 'search';
-
-        if (isset($_POST['search']) && $_POST['search'] != $this->lng['header']['recherche']) {
-            header('Location: ' . $this->lurl . '/search/' . urlencode($_POST['search']));
-            die;
-        }
-
-        if (empty($this->params[0])) {
-            $this->search = '';
-            $this->result = array();
-        } else {
-            /** @var \tree $tree */
-            $tree = $this->loadData('tree');
-
-            $this->search = urldecode($this->params[0]);
-            $this->result = $tree->search($this->search, $this->language);
-        }
-    }
-
-    public function _notification_payline()
-    {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireView   = false;
-        $this->autoFireFooter = false;
-
-        $this->transactions     = $this->loadData('transactions');
-        $this->backpayline      = $this->loadData('backpayline');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
-        $this->wallets_lines    = $this->loadData('wallets_lines');
-        $this->bank_lines       = $this->loadData('bank_lines');
-
-        require_once $this->path . 'librairies/payline/include.php';
-
-        $array = array();
-
-        // GET TOKEN
-        if (isset($_POST['token'])) {
-            $array['token'] = $_POST['token'];
-        } elseif (isset($_GET['token'])) {
-
-            $array['token'] = $_GET['token'];
-        } else {
-            die;
-        }
-
-        $payline = new paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
-
-        $array['version'] = '3';
-        $response         = $payline->getWebPaymentDetails($array);
-
-        if (isset($response)) {
-            // On enregistre le resultat payline
-            $this->backpayline->code           = $response['result']['code'];
-            $this->backpayline->token          = $array['token'];
-            $this->backpayline->id             = $response['transaction']['id'];
-            $this->backpayline->date           = $response['transaction']['date'];
-            $this->backpayline->amount         = $response['payment']['amount'];
-            $this->backpayline->serialize      = serialize($response);
-            $this->backpayline->id_backpayline = $this->backpayline->create();
-
-            if ($response['result']['code'] == '00000') {
-                if ($this->transactions->get($response['order']['ref'], 'status = 0 AND etat = 0 AND id_transaction')) {
-
-                    $this->transactions->id_backpayline   = $this->backpayline->id_backpayline;
-                    $this->transactions->montant          = $response['payment']['amount'];
-                    $this->transactions->id_langue        = 'fr';
-                    $this->transactions->date_transaction = date('Y-m-d H:i:s');
-                    $this->transactions->status           = '1';
-                    $this->transactions->etat             = '1';
-                    $this->transactions->type_paiement    = ($response['extendedCard']['type'] == 'VISA' ? '0' : ($response['extendedCard']['type'] == 'MASTERCARD' ? '3' : ''));
-                    $this->transactions->update();
-
-                    // On recupere le lender
-                    $this->lenders_accounts->get($this->transactions->id_client, 'id_client_owner');
-                    $this->lenders_accounts->status = 1;
-                    $this->lenders_accounts->update();
-
-                    // On enrgistre la transaction dans le wallet
-                    $this->wallets_lines->id_lender                = $this->lenders_accounts->id_lender_account;
-                    $this->wallets_lines->type_financial_operation = 30; // alimentation preteur
-                    $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
-                    $this->wallets_lines->status                   = 1;
-                    $this->wallets_lines->type                     = 1;
-                    $this->wallets_lines->amount                   = $response['payment']['amount'];
-                    $this->wallets_lines->id_wallet_line           = $this->wallets_lines->create();
-
-                    // Transaction physique donc on enregistre aussi dans la bank lines
-                    $this->bank_lines->id_wallet_line    = $this->wallets_lines->id_wallet_line;
-                    $this->bank_lines->id_lender_account = $this->lenders_accounts->id_lender_account;
-                    $this->bank_lines->status            = 1;
-                    $this->bank_lines->amount            = $response['payment']['amount'];
-                    $this->bank_lines->create();
-
-                    ////////////////////////////
-                    // Mail alert transaction //
-                    ////////////////////////////
-
-                    $this->settings->get('DebugAlertesBusiness', 'type');
-                    $to = $this->settings->value;
-                    // subject
-                    $subject = '[Alerte] BACK PAYLINE Transaction approved';
-
-                    // message
-                    $message = '
-                    <html>
-                    <head>
-                      <title>[Alerte] BACK PAYLINE Transaction approved</title>
-                    </head>
-                    <body>
-                      <h3>[Alerte] BACK PAYLINE Transaction approved</h3>
-                      <p>Un payement payline accepet&eacute; n\'a pas &eacute;t&eacute; mis &agrave; jour dans la BDD Unilend.</p>
-                      <table>
-                        <tr>
-                          <th>Id client : </th><td>' . $this->transactions->id_client . '</td>
-                        </tr>
-                        <tr>
-                          <th>montant : </th><td>' . ($this->transactions->montant / 100) . '</td>
-                        </tr>
-                        <tr>
-                          <th>serialize donnees payline : </th><td>' . serialize($response) . '</td>
-                        </tr>
-                      </table>
-                    </body>
-                    </html>
-                    ';
-
-                    // To send HTML mail, the Content-type header must be set
-                    $headers = 'MIME-Version: 1.0' . "\r\n";
-                    $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-
-                    // Additional headers
-
-                    //$headers .= 'To: equinoa <unilend@equinoa.fr>' . "\r\n";
-                    $headers .= 'From: Unilend <equipeit@unilend.fr>' . "\r\n";
-
-                    // Mail it
-                    mail($to, $subject, $message, $headers);
-
-                } else {
-                    ////////////////////////////
-                    // Mail alert transaction //
-                    ////////////////////////////
-
-                    $this->settings->get('DebugAlertesBusiness', 'type');
-                    $to = $this->settings->value;
-
-                    // subject
-                    $subject = '[Alerte] BACK PAYLINE Transaction approved DEJA TRAITE';
-
-                    // message
-                    $message = '
-                    <html>
-                    <head>
-                      <title>[Alerte] BACK PAYLINE Transaction approved DEJA TRAITE</title>
-                    </head>
-                    <body>
-                      <h3>[Alerte] BACK PAYLINE Transaction approved DEJA TRAITE</h3>
-                      <p>Un payement payline accepet&eacute; deacute;j&agrave; &agrave; jour dans la BDD Unilend.</p>
-                      <table>
-                        <tr>
-                          <th>Id client : </th><td>' . $this->transactions->id_client . '</td>
-                        </tr>
-                        <tr>
-                          <th>montant : </th><td>' . ($this->transactions->montant / 100) . '</td>
-                        </tr>
-                        <tr>
-                          <th>serialize donnees payline : </th><td>' . serialize($response) . '</td>
-                        </tr>
-                      </table>
-                    </body>
-                    </html>
-                    ';
-
-                    // To send HTML mail, the Content-type header must be set
-                    $headers = 'MIME-Version: 1.0' . "\r\n";
-                    $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-                    $headers .= 'From: Unilend <equipeit@unilend.fr>' . "\r\n";
-
-                    // Mail it
-                    mail($to, $subject, $message, $headers);
-                }
-            }
         }
     }
 
@@ -805,10 +460,11 @@ class rootController extends bootstrap
         $companies = $this->loadData('companies');
         $bids      = $this->loadData('bids');
 
-        $this->settings->get('Liste deroulante secteurs', 'type'); // added 19/06/2015
-        $this->tabSecteurs = explode(';', $this->settings->value); // added 19/06/2015
+        /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
+        $translationManager  = $this->get('unilend.service.translation_manager');
+        $this->tabSecteurs = $translationManager->getTranslatedCompanySectorList();
 
-        $lProjets = $projects->selectProjectsByStatus(implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT)));
+        $lProjets = $projects->selectProjectsByStatus([\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT]);
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>';
         $xml .= '<partenaire>';
@@ -854,196 +510,6 @@ class rootController extends bootstrap
         die;
     }
 
-    public function _capital()
-    {
-        $this->autoFireHeader = false;
-        $this->autoFireDebug  = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-
-        $oXml    = new SimpleXMLElement(file_get_contents('http://www.capital.fr/wrapper-unilend.xml'));
-        $content = explode('<!--CONTENT_ZONE-->', (string)$oXml->content);
-
-        $this->haut = str_replace(array('<!--TITLE_ZONE_HEAD-->', '<!--TITLE_ZONE-->'), array('Financement Participatif  : Prêtez aux entreprises françaises & Recevez des intérêts chaque mois', 'Financement participatif'), $content[0]);
-        $this->bas  = str_replace('<!--XITI_ZONE-->', 'Unilend-accueil', $content[1]);
-
-    }
-
-    public function _challenges()
-    {
-        $this->autoFireHeader = false;
-        $this->autoFireDebug  = false;
-        $this->autoFireHead   = true;
-        $this->autoFireFooter = false;
-
-        $this->meta_title = "Financement Participatif  : Prêtez aux entreprises françaises & Recevez des intérêts chaque mois";
-
-        $this->haut = file_get_contents('http://www.challenges.fr/partners/header.php');
-        $this->bas  = file_get_contents('http://www.challenges.fr/partners/footer.php');
-    }
-
-    public function _lexpress()
-    {
-        $this->autoFireHeader = false;
-        $this->autoFireDebug  = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-
-        $this->projects                = $this->loadData('projects');
-        $this->clients                 = $this->loadData('clients');
-        $this->clients_adresses        = $this->loadData('clients_adresses');
-        $this->companies               = $this->loadData('companies');
-        $this->projects_status_history = $this->loadData('projects_status_history');
-        $this->projects                = $this->loadData('projects');
-
-        $this->lng['landing-page'] = $this->ln->selectFront('landing-page', $this->language, $this->App);
-
-        $this->settings->get('Somme à emprunter min', 'type');
-        $this->sommeMin = $this->settings->value;
-
-        $this->settings->get('Somme à emprunter max', 'type');
-        $this->sommeMax = $this->settings->value;
-
-        // Si on a une session d'ouverte on redirige
-        if (isset($_SESSION['client'])) {
-            header('Location:' . $this->lurl);
-            die;
-        }
-
-        // page projet tri
-        // 1 : terminé bientot
-        // 2 : nouveauté
-        //$this->tabOrdreProject[....] <--- dans le bootstrap pour etre accessible partout (page default et ajax)
-
-        $this->ordreProject = 1;
-        $this->type         = 0;
-
-        $aElementsProjects = $this->projects->getProjectsStatusAndCount(implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT)), $this->tabOrdreProject[$this->ordreProject], 0, 6);
-
-        // Liste des projets en funding and nombre des projets en funding
-        $this->lProjetsFunding = $aElementsProjects['lProjetsFunding'];
-        $this->nbProjects      = $aElementsProjects['nbProjects'];
-
-        $this->le_id_tree = 282;
-        $this->le_slug    = $this->tree->getSlug($this->le_id_tree, $this->language);
-
-        // Recuperation du contenu de la page
-        $contenu = $this->tree_elements->select('id_tree = "' . $this->le_id_tree . '" AND id_langue = "' . $this->language . '"');
-        foreach ($contenu as $elt) {
-            $this->elements->get($elt['id_element']);
-            $this->content[$this->elements->slug]    = $elt['value'];
-            $this->complement[$this->elements->slug] = $elt['complement'];
-        }
-    }
-
-    public function _lexpress_entreprise()
-    {
-        $this->autoFireHeader = false;
-        $this->autoFireDebug  = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-
-        $this->projects                = $this->loadData('projects');
-        $this->clients                 = $this->loadData('clients');
-        $this->clients_adresses        = $this->loadData('clients_adresses');
-        $this->companies               = $this->loadData('companies');
-        $this->projects_status_history = $this->loadData('projects_status_history');
-        $this->projects                = $this->loadData('projects');
-
-        $this->lng['landing-page'] = $this->ln->selectFront('landing-page', $this->language, $this->App);
-
-        $this->settings->get('Somme à emprunter min', 'type');
-        $this->sommeMin = $this->settings->value;
-
-        $this->settings->get('Somme à emprunter max', 'type');
-        $this->sommeMax = $this->settings->value;
-
-        // Si on a une session d'ouverte on redirige
-        if (isset($_SESSION['client'])) {
-            header('Location:' . $this->lurl);
-            die;
-        }
-
-        // page projet tri
-        // 1 : terminé bientot
-        // 2 : nouveauté
-        //$this->tabOrdreProject[....] <--- dans le bootstrap pour etre accessible partout (page default et ajax)
-
-        $this->ordreProject = 1;
-        $this->type         = 0;
-
-        $aElementsProjects = $this->projects->getProjectsStatusAndCount(implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT)), $this->tabOrdreProject[$this->ordreProject], 0, 6);
-
-        // Liste des projets en funding and nombre des projets en funding
-        $this->lProjetsFunding = $aElementsProjects['lProjetsFunding'];
-        $this->nbProjects      = $aElementsProjects['nbProjects'];
-
-        $this->le_id_tree = 282;
-        $this->le_slug    = $this->tree->getSlug($this->le_id_tree, $this->language);
-
-        // Recuperation du contenu de la page
-        $contenu = $this->tree_elements->select('id_tree = "' . $this->le_id_tree . '" AND id_langue = "' . $this->language . '"');
-        foreach ($contenu as $elt) {
-            $this->elements->get($elt['id_element']);
-            $this->content[$this->elements->slug]    = $elt['value'];
-            $this->complement[$this->elements->slug] = $elt['complement'];
-        }
-    }
-
-    public function _figaro()
-    {
-        $this->autoFireHeader = false;
-        $this->autoFireDebug  = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-
-        $this->projects                = $this->loadData('projects');
-        $this->clients                 = $this->loadData('clients');
-        $this->clients_adresses        = $this->loadData('clients_adresses');
-        $this->companies               = $this->loadData('companies');
-        $this->projects_status_history = $this->loadData('projects_status_history');
-        $this->projects                = $this->loadData('projects');
-
-        $this->lng['landing-page'] = $this->ln->selectFront('landing-page', $this->language, $this->App);
-
-        $this->settings->get('Somme à emprunter min', 'type');
-        $this->sommeMin = $this->settings->value;
-
-        $this->settings->get('Somme à emprunter max', 'type');
-        $this->sommeMax = $this->settings->value;
-
-        // Si on a une session d'ouverte on redirige
-        if (isset($_SESSION['client'])) {
-            header('Location:' . $this->lurl);
-            die;
-        }
-
-        // page projet tri
-        // 1 : terminé bientot
-        // 2 : nouveauté
-        //$this->tabOrdreProject[....] <--- dans le bootstrap pour etre accessible partout (page default et ajax)
-
-        $this->ordreProject = 1;
-        $this->type         = 0;
-
-        $aElementsProjects = $this->projects->getProjectsStatusAndCount(implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT)), $this->tabOrdreProject[$this->ordreProject], 0, 6);
-
-        // Liste des projets en funding and nombre des projets en funding
-        $this->lProjetsFunding = $aElementsProjects['lProjetsFunding'];
-        $this->nbProjects      = $aElementsProjects['nbProjects'];
-
-        $this->le_id_tree = 282;
-        $this->le_slug    = $this->tree->getSlug($this->le_id_tree, $this->language);
-
-        // Recuperation du contenu de la page
-        $contenu = $this->tree_elements->select('id_tree = "' . $this->le_id_tree . '" AND id_langue = "' . $this->language . '"');
-        foreach ($contenu as $elt) {
-            $this->elements->get($elt['id_element']);
-            $this->content[$this->elements->slug]    = $elt['value'];
-            $this->complement[$this->elements->slug] = $elt['complement'];
-        }
-    }
-
     // Enregistrement et lecture du pdf cgv
     public function _pdf_cgv_preteurs()
     {
@@ -1051,47 +517,66 @@ class rootController extends bootstrap
 
         include_once $this->path . '/apps/default/controllers/pdf.php';
 
-        if ($this->clients->checkAccess() || isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
-            $this->clients->checkAccessLender();
+        // hack the symfony guard token
+        $session = $this->get('session');
 
-            $listeAccept = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC', 0, 1);
-            $listeAccept = array_shift($listeAccept);
+        /** @var \Symfony\Component\Security\Guard\Token\PostAuthenticationGuardToken $token */
+        $token =  unserialize($session->get('_security_default'));
+        if (!$token instanceof \Symfony\Component\Security\Guard\Token\PostAuthenticationGuardToken) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
+        /** @var \Unilend\Bundle\FrontBundle\Security\User\UserLender $user */
+        $user = $token->getUser();
+        if (!$user instanceof \Unilend\Bundle\FrontBundle\Security\User\UserLender) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
 
-            $id_tree_cgu = $listeAccept['id_legal_doc'];
+        if (false === $this->clients->get($user->getClientId(), 'id_client')) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
 
-            $contenu = $this->tree_elements->select('id_tree = "' . $id_tree_cgu . '" AND id_langue = "' . $this->language . '"');
-            foreach ($contenu as $elt) {
-                $this->elements->get($elt['id_element']);
-                $this->content[$this->elements->slug]    = $elt['value'];
-                $this->complement[$this->elements->slug] = $elt['complement'];
+        $this->clients->checkAccessLender();
+
+        $listeAccept = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC', 0, 1);
+        $listeAccept = array_shift($listeAccept);
+
+        $id_tree_cgu = $listeAccept['id_legal_doc'];
+
+        $contenu = $this->tree_elements->select('id_tree = "' . $id_tree_cgu . '" AND id_langue = "' . $this->language . '"');
+        foreach ($contenu as $elt) {
+            $this->elements->get($elt['id_element']);
+            $this->content[$this->elements->slug]    = $elt['value'];
+            $this->complement[$this->elements->slug] = $elt['complement'];
+        }
+
+        // si c'est un ancien cgv de la liste on lance le pdf
+        if (in_array($id_tree_cgu, array(92, 95, 93, 254, 255))) {
+            header("Content-disposition: attachment; filename=" . $this->content['pdf-cgu']);
+            header("Content-Type: application/force-download");
+            @readfile($this->surl . '/var/fichiers/' . $this->content['pdf-cgu']);
+        } else {
+            $oCommandPdf    = new \Command('pdf', 'cgv_preteurs', array($this->clients->hash), $this->language);
+            $oPdf           = new \pdfController($oCommandPdf, $this->Config, 'default');
+            $oPdf->setContainer($this->container);
+            $oPdf->initialize();
+            $path           = $this->path . 'protected/pdf/cgv_preteurs/' . $this->clients->id_client . '/';
+            $sNamePdf       = 'cgv_preteurs-' . $this->clients->hash . '-' . $id_tree_cgu;
+            $sNamePdfClient = 'CGV-UNILEND-PRETEUR-' . $this->clients->id_client . '-' . $id_tree_cgu;
+
+            if (false  === file_exists($path . $sNamePdf)) {
+                $this->cgv_preteurs(true, $oPdf, array($this->clients->hash));
+                $oPdf->WritePdf($path . $sNamePdf, 'cgv_preteurs');
             }
 
-            // si c'est un ancien cgv de la liste on lance le pdf
-            if (in_array($id_tree_cgu, array(92, 95, 93, 254, 255))) {
-                header("Content-disposition: attachment; filename=" . $this->content['pdf-cgu']);
-                header("Content-Type: application/force-download");
-                @readfile($this->surl . '/var/fichiers/' . $this->content['pdf-cgu']);
-            } else {
-                $oCommandPdf    = new \Command('pdf', 'cgv_preteurs', array($this->clients->hash), $this->language);
-                $oPdf           = new \pdfController($oCommandPdf, $this->Config, 'default');
-                $oPdf->setContainer($this->container);
-                $oPdf->initialize();
-                $path           = $this->path . 'protected/pdf/cgv_preteurs/' . $this->clients->id_client . '/';
-                $sNamePdf       = 'cgv_preteurs-' . $this->clients->hash . '-' . $id_tree_cgu;
-                $sNamePdfClient = 'CGV-UNILEND-PRETEUR-' . $this->clients->id_client . '-' . $id_tree_cgu;
-
-                if (false  === file_exists($path . $sNamePdf)) {
-                    $this->_cgv_preteurs(true, $oPdf, array($this->clients->hash));
-                    $oPdf->WritePdf($path . $sNamePdf, 'cgv_preteurs');
-                }
-
-                $oPdf->ReadPdf($path . $sNamePdf, $sNamePdfClient);
-            }
+            $oPdf->ReadPdf($path . $sNamePdf, $sNamePdfClient);
         }
     }
 
     // lecture page du cgv en html
-    public function _cgv_preteurs($bPdf = false, pdfController $oPdf = null, array $aParams = null)
+    private function cgv_preteurs($bPdf = false, pdfController $oPdf = null, array $aParams = null)
     {
         $this->params = (false === is_null($aParams)) ? $aParams : $this->params;
 
@@ -1108,7 +593,7 @@ class rootController extends bootstrap
             $this->complement[$this->elements->slug] = $elt['complement'];
         }
 
-        if ($this->clients->checkAccess() || isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
+        if (isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
             if (isset($this->params[0]) && $this->params[0] != 'morale' && $this->params[0] != 'nosign') {
                 $this->autoFireHeader = false;
                 $this->autoFireHead   = true;
@@ -1220,7 +705,6 @@ class rootController extends bootstrap
         $this->error_nom     = 'ok';
         $this->error_prenom  = 'ok';
         $this->error_email   = 'ok';
-        $this->error_captcha = 'ok';
 
         if (isset($_POST['telephone']) && $_POST['telephone'] != '' && $_POST['telephone'] != $this->lng['contact']['telephone']) {
             $this->error_telephone = 'ok';
@@ -1257,14 +741,6 @@ class rootController extends bootstrap
         if (! isset($_POST['message']) || $_POST['message'] == '' || $_POST['message'] == $this->lng['contact']['message']) {
             $this->form_ok       = false;
             $this->error_message = 'nok';
-        }
-
-        if (! isset($_POST['captcha']) || $_POST['captcha'] == '' || $_POST['captcha'] == $this->lng['contact']['captcha']) {
-            $this->form_ok       = false;
-            $this->error_captcha = 'nok';
-        } elseif ($_SESSION['securecode'] != strtolower($_POST['captcha'])) {
-            $this->form_ok       = false;
-            $this->error_captcha = 'nok';
         }
 
         if ($this->form_ok == true) {

@@ -1,5 +1,29 @@
-<div id="content_etape7"><?php if ($this->current_projects_status->status >= \projects_status::COMITE) : ?>
-        <?php $moyenne  = round($this->projects_notes->performance_fianciere_comite * 0.2 + $this->projects_notes->marche_opere_comite * 0.2 + $this->projects_notes->dirigeance_comite * 0.2 + $this->projects_notes->indicateur_risque_dynamique_comite * 0.4, 1); ?>
+<div id="content_etape7"><?php if ($this->projects->status >= \projects_status::COMITE) : ?>
+        <?php
+        $moyenne  = round($this->projects_notes->performance_fianciere_comite * 0.2 + $this->projects_notes->marche_opere_comite * 0.2 + $this->projects_notes->dirigeance_comite * 0.2 + $this->projects_notes->indicateur_risque_dynamique_comite * 0.4, 1);
+        $start = '';
+        if ($moyenne >= 0) {
+            $start = '2 étoiles';
+        }
+        if ($moyenne >= 2) {
+            $start = '2,5 étoiles';
+        }
+        if ($moyenne >= 4) {
+            $start = '3 étoiles';
+        }
+        if ($moyenne >= 5.5) {
+            $start = '3,5 étoiles';
+        }
+        if ($moyenne >= 6.5) {
+            $start = '4 étoiles';
+        }
+        if ($moyenne >= 7.5) {
+            $start = '4,5 étoiles';
+        }
+        if ($moyenne >= 8.5) {
+            $start = '5 étoiles';
+        }
+        ?>
         <div class="tab_title" id="title_etape7">Etape 7</div>
         <div class="tab_content" id="etape7">
             <table class="form tableNotes" style="width: 100%;">
@@ -47,7 +71,7 @@
                     <td colspan="4"></td>
                 </tr>
                 <tr class="lanote">
-                    <th colspan="8" style="text-align:center;">Note : <span class="moyenneNote_comite"><?= $moyenne ?> / 10</span></th>
+                    <th colspan="8" style="text-align:center;">Note : <span class="moyenneNote_comite"><?= $moyenne ?> / 10 (soit <?= $start ?>)</span></th>
                 </tr>
                 <tr>
                     <td colspan="8" style="text-align:center;">
@@ -88,20 +112,45 @@
                     indicateur_risque_dynamique = Math.round(indicateur_risque_dynamique * 10) / 10;
 
                     moyenne = Math.round((performance_fianciere * 0.2 + marche_opere * 0.2 + dirigeance * 0.2 + indicateur_risque_dynamique * 0.4) * 10) / 10;
+                    document.getElementById("note_comite").value = moyenne;
 
                     $("#marche_opere_comite").html(marche_opere);
                     $("#performance_fianciere_comite").html(performance_fianciere);
-                    $(".moyenneNote_comite").html(moyenne + " / 10");
+                    var start = '';
+                    if (moyenne >= 0) {
+                        start = '2 étoiles';
+                    }
+                    if (moyenne >= 2) {
+                        start = '2,5 étoiles';
+                    }
+                    if (moyenne >= 4) {
+                        start = '3 étoiles';
+                    }
+                    if (moyenne >= 5.5) {
+                        start = '3,5 étoiles';
+                    }
+                    if (moyenne >= 6.5) {
+                        start = '4 étoiles';
+                    }
+                    if (moyenne >= 7.5) {
+                        start = '4,5 étoiles';
+                    }
+                    if (moyenne >= 8.5) {
+                        start = '5 étoiles';
+                    }
+                    $(".moyenneNote_comite").html(moyenne + " / 10" + ' (soit ' + start + ')');
                 });
             </script>
             <br/><br/>
 
             <div id="valid_etape7" class="valid_etape">Données sauvegardées</div>
             <div class="btnDroite">
-                <?php if (false === $this->bReadonlyRiskNote): ?>
+                <?php if (false === $this->bReadonlyRiskNote) : ?>
                     <input type="button" onclick="valid_rejete_etape7(3, <?= $this->projects->id_project ?>)" class="btn" value="Sauvegarder">
                 <?php endif; ?>
-                <?php if ($this->current_projects_status->status == \projects_status::COMITE): ?>
+                <?php if ($this->projects->status == \projects_status::COMITE) : ?>
+                    <input id="min_rate" type="hidden" value="<?= isset($this->rate_min) ? $this->rate_min : '' ?>" />
+                    <input id="max_rate" type="hidden" value="<?= isset($this->rate_max) ? $this->rate_max : '' ?>" />
                     <input type="button" onclick="valid_rejete_etape7(1, <?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape7" style="background:#009933;border-color:#009933;" value="Valider">
                     <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/7/<?= $this->projects->id_project ?>" class="btn btnValid_rejet_etape7 btn_link thickbox" style="background:#CC0000;border-color:#CC0000;">Rejeter</a>
                     <input type="button" onclick="valid_rejete_etape7(4, <?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape7" value="Plus d'informations">

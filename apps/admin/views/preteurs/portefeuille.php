@@ -24,6 +24,7 @@
 
     <h1>Detail prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
     <div class="btnDroite">
+        <a href="<?= $this->lurl ?>/preteurs/bids/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Enchères</a>
         <a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Consulter Prêteur</a>
         <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Modifier Prêteur</a>
         <a href="<?= $this->lurl ?>/preteurs/email_history/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Historique des emails</a>
@@ -74,7 +75,7 @@
         <div style="margin-bottom: 15px;">
             <span>Montant: </span>
             <input type="text" name="autobid-amount" id="autobid-amount"
-                   value="<?= (isset($this->aAutoBidSettings[1][0]['amount'])) ? $this->aAutoBidSettings[1][0]['amount'] : '' ?>"
+                   value="<?= (isset($this->aAutoBidSettings[1]['A']['amount'])) ? $this->aAutoBidSettings[1]['A']['amount'] : '' ?>"
                    disabled="disabled"/>
         </div>
         <div class="autobid-param-advanced autobid-param-advanced-locked autobid-block" id="autobid-block">
@@ -85,15 +86,13 @@
                 </tr>
                 <tr>
                     <th scope="col" class="table-title"><?= $this->lng['autobid']['expert-settings-table-title-period'] ?></th>
-                    <th scope="col">3*</th>
-                    <th scope="col">3,5*</th>
-                    <th scope="col">4*</th>
-                    <th scope="col">4,5*</th>
-                    <th scope="col">5*</th>
+                    <?php foreach (array_keys(array_values($this->aAutoBidSettings)[0]) as $evaluation) : ?>
+                        <th><?=constant('\projects::RISK_' . $evaluation)?>*</th>
+                    <?php endforeach; ?>
                 </tr>
-            <?php foreach ($this->aAutoBidSettings as $iPeriodId => $aPeriodSettings) : ?>
+            <?php foreach ($this->aAutoBidSettings as $aPeriodSettings) : ?>
                 <tr>
-                    <th scope="row"><?= str_replace('[#SEPARATOR#]', '<br />', $this->lng['autobid']['autobid-period-' . $iPeriodId]) ?></th>
+                    <th scope="row"><?= $this->translator->trans('autolend_autobid-period-' . array_values($aPeriodSettings)[0]['id_period'], ['%min%' => array_values($aPeriodSettings)[0]['period_min'], '%max%' => array_values($aPeriodSettings)[0]['period_max']]); ?></th>
                     <?php foreach ($aPeriodSettings as $aSetting) : ?>
                         <td class="<?= (\autobid::STATUS_INACTIVE == $aSetting['status']) ? 'param-off' : '' ?>
                         <?= ($aSetting['rate_min'] <= round($aSetting['AverageRateUnilend'], 1) || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
@@ -129,48 +128,41 @@
             <tr>
                 <th style="text-align: left">ID Projet</th>
                 <th style="text-align: left">Nom</th>
-                <th style="text-align: left">Note</th>
+                <th style="text-align: left">Statut</th>
                 <th style="text-align: left">Montant prêté</th>
                 <th style="text-align: left">Taux d'intérêt</th>
                 <th style="text-align: left">Début</th>
                 <th style="text-align: left">Prochaine</th>
                 <th style="text-align: left">Fin</th>
-                <th style="text-align: left">Mensualité</th>
+                <th style="text-align: left">Dernière échéance perçue</th>
                 <th style="text-align: left">Documents <br> à télécharger</th>
             </tr>
             </thead>
             <tbody>
             <?php foreach ($this->lSumLoans as $iLoanIndex => $aProjectLoans): ?>
+                <?php
+                $this->contract->get($aProjectLoans['id_type_contract']);
+                $contractLabel = $this->translator->trans('contract-type-label_' . $this->contract->label);
+                ?>
                 <tr class="<?= $iLoanIndex % 2 ? '' : 'odd' ?>">
                     <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?>><?= $aProjectLoans['id_project'] ?></td>
                     <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?>><h5><a href="/dossiers/edit/<?= $aProjectLoans['id_project'] ?>"><?= $aProjectLoans['name'] ?></a></h5></td>
-                    <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?>><?= $aProjectLoans['risk'] ?></td>
+                    <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?>><?= $aProjectLoans['project_status_label'] ?></td>
                     <td><?= $this->ficelle->formatNumber($aProjectLoans['amount'], 0) ?> €</td>
                     <td><?= $this->ficelle->formatNumber($aProjectLoans['rate'], 1) ?> %</td>
+                    <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?>><?= $this->dates->formatDate($aProjectLoans['debut'], 'd/m/Y') ?></td>
                     <?php if (in_array($aProjectLoans['project_status'], array(\projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::REMBOURSE))) : ?>
-                        <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?>><?= $this->dates->formatDate($aProjectLoans['debut'], 'd/m/Y') ?></td>
                         <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?> colspan="3"><p>Remboursé intégralementle <?= $this->dates->formatDate($aProjectLoans['status_change'], 'd/m/Y') ?></p></td>
                     <?php else: ?>
-                        <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?>><?= $this->dates->formatDate($aProjectLoans['debut'], 'd/m/Y') ?></td>
                         <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?>><?= $this->dates->formatDate($aProjectLoans['next_echeance'], 'd/m/Y') ?></td>
                         <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?>><?= $this->dates->formatDate($aProjectLoans['fin'], 'd/m/Y') ?></td>
-                        <td><?= $this->ficelle->formatNumber($aProjectLoans['mensuel']) ?> € / mois</td>
+                        <td><?= $this->ficelle->formatNumber($aProjectLoans['last_perceived_repayment']) ?> € / mois</td>
                     <?php endif; ?>
                     <td>
                         <?php if ($aProjectLoans['nb_loan'] == 1): ?>
                             <?php if ($aProjectLoans['project_status'] >= \projects_status::REMBOURSEMENT): ?>
                                 <a href="<?= $this->furl ?>/pdf/contrat/<?= $this->clients->hash ?>/<?= $aProjectLoans['id_loan_if_one_loan'] ?>">
-                                    <?php switch($aProjectLoans['id_type_contract']) {
-                                        case \loans::TYPE_CONTRACT_IFP:
-                                            echo 'Contrat IFP';
-                                            break;
-                                        case \loans::TYPE_CONTRACT_BDC:
-                                            echo 'Bon de Caisse';
-                                            break;
-                                        default :
-                                            trigger_error('Type de contrat inconnue', E_USER_NOTICE);
-                                            break;
-                                    } ?>
+                                    <?= $contractLabel ?>
                                 </a>
                             <?php endif; ?>
                             <?php if (in_array($aProjectLoans['id_project'], $this->aProjectsInDebt)): ?>
@@ -184,18 +176,19 @@
                 </tr>
                 <?php if ($aProjectLoans['nb_loan'] > 1): ?>
                     <?php foreach ($this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project']) as $aLoan):
-                        $SumAremb    = $this->echeanciers->select('id_loan = ' . $aLoan['id_loan'] . ' AND status = 0', 'ordre ASC', 0, 1);
-                        $fLoanAmount = round($SumAremb[0]['montant'] / 100, 2) - round($SumAremb[0]['prelevements_obligatoires'] + $SumAremb[0]['retenues_source'] + $SumAremb[0]['csg'] + $SumAremb[0]['prelevements_sociaux'] + $SumAremb[0]['contributions_additionnelles'] + $SumAremb[0]['prelevements_solidarite'] + $SumAremb[0]['crds'], 2); ?>
+                        ?>
                         <tr class="sub_loan<?= $iLoanIndex % 2 ? '' : ' odd' ?>">
                             <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aLoan['amount']/100, 0) ?> €</td>
                             <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aLoan['rate'], 1) ?> %</td>
-                            <?php if (false === in_array($aProjectLoans['project_status'], array(\projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::REMBOURSE))) : ?>
-                                <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($fLoanAmount) ?> € / mois</td>
+                            <?php if (false === in_array($aProjectLoans['project_status'], array(\projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::REMBOURSE))) :
+                                $aRepayment = $this->echeanciers->select('id_loan = ' . $aLoan['id_loan'] . ' AND ordre = 1', 'ordre ASC', 0, 1);
+                            ?>
+                            <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber(bcdiv($aRepayment[0]['montant'], 100, 2), 2) ?> € / mois</td>
                             <?php endif; ?>
                             <td>
                                 <?php if ($aProjectLoans['project_status'] >= \projects_status::REMBOURSEMENT): ?>
                                     <a href="<?= $this->furl ?>/pdf/contrat/<?= $this->clients->hash ?>/<?= $aLoan['id_loan'] ?>">
-                                        <?= ($aLoan['id_type_contract'] == \loans::TYPE_CONTRACT_IFP) ? 'Contrat IFP' : 'Bon de Caisse' ?>
+                                        <?= $contractLabel ?>
                                     </a>
                                 <?php endif; ?>
                                 <?php if (in_array($aProjectLoans['id_project'], $this->aProjectsInDebt)): ?>

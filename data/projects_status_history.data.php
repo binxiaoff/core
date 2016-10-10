@@ -223,4 +223,26 @@ class projects_status_history extends projects_status_history_crud
             WHERE id_project = ' . $iProjectId;
         return $this->get($this->bdd->result($this->bdd->query($sQuery), 0, 0));
     }
+
+
+    public function countProjectsHavingHadStatus(array $aProjectStatus)
+    {
+        $aBind = array('status' => $aProjectStatus);
+        $aType = array('status' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
+
+        $sQuery = 'SELECT
+                      COUNT(DISTINCT psh.id_project) AS amount,
+                      ps.status
+                    FROM projects_status_history psh
+                    INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                    WHERE ps.status IN (:status)
+                    GROUP BY ps.status';
+
+        $oStatement = $this->bdd->executeQuery($sQuery, $aBind, $aType);
+        $aStatusAmounts  = array();
+        while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
+            $aStatusAmounts[$aRow['status']] = (int)$aRow['amount'];
+        }
+        return $aStatusAmounts;
+    }
 }

@@ -1,0 +1,49 @@
+<section id="profile-info-view" role="tabpanel" class="profile-info-view collapse in">
+    <a href="javascript:;" data-target="#profile-info-edit" role="button" data-toggle="collapse" data-parent="#profile-info-section" class="btn-edit"
+    aria-controls="#profile-info-edit" aria-expanded="false">
+        <span class="icon fa-pencil-u32"></span>
+        <span class="label">{% trans %} lender-profile_information-tab-identity-section-modify-button {% endtrans %}</span>
+    </a>
+    <dl class="list-2col">
+        <dt>{% trans %} lender-profile_information-tab-identity-section-client-type-label {% endtrans %}</dt>
+            <dd id="profile-info-statut-output">{% trans %} lender-profile_information-tab-identity-section-client-type-person-label {% endtrans %}</dd>
+        <dt>{% trans %} common_form-of-address {% endtrans %}</dt>
+        {% if client.civilite == 'M.' %}
+            <dd id="profile-info-civilite-output">{% trans %} common_form-of-address-male {% endtrans %}</dd>
+        {% else %}
+            <dd id="profile-info-civilite-output">{% trans %} common_form-of-address-female {% endtrans %}</dd>
+        {% endif %}
+
+        <dt>{% trans %} common_birth-name {% endtrans %}</dt>
+        <dd id="profile-info-nom-output">{{ client.nom }}</dd>
+        <dt>{% trans %} common_used-name {% endtrans %}</dt>
+        <dd id="profile-info-prenom-output">{{ client.nom_usage }}</dd>
+        <dt>{% trans %} common_firstname {% endtrans %}</dt>
+        <dd id="profile-info-prenom-output">{{ client.prenom }}</dd>
+        <dt>{% trans %} common_birthday {% endtrans %}</dt>
+        <dd id="profile-info-dob-output">{{ client.naissance|date('d/m/Y') }}</dd>
+        <dt>{% trans %} common_birth-country {% endtrans %}</dt>
+        <dd id="profile-info-dob-pays-output">{{ client.id_pays_naissance|countryLabel }}</dd>
+        <dt>{% trans %} common_birth-city {% endtrans %}</dt>
+        <dd id="profile-info-dob-commune-output">{{ client.ville_naissance }}</dd>
+        <dt>{% trans %} common_nationality {% endtrans %}</dt>
+        <dd id="profile-info-dob-nationalite-output">{{ client.id_pays_naissance|countryLabel }}</dd>
+        <dt>{% trans %} lender-profile_information-tab-identity-section-ID-documents-label {% endtrans %}</dt>
+        <dd id="profile-info-fichier-identitie-output">
+            {% for attachment in identityAttachments %}
+                {% set attachmentDate = attachment.updated|default(attachment.added)|localizeddate('short', 'none', app.request.locale) %}
+                {% if attachment.id_type == constant('\\attachment_type::CNI_PASSPORTE') %}
+                    <span id="form-profile-info-file-identite-cni-1-output" class="file-justificatif file-identity-side-a"
+                          title="{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.id_type }"|trans({'%date%' : attachmentDate }) }}" data-toggle="tooltip">
+                                <span class="sr-only">{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.id_type }"|trans({'%date%' : attachmentDate}) }}</span>
+                            </span>
+                {%  else  %}
+                    <span id="form-profile-info-file-identite-cni-2-output" class="file-justificatif file-identity-side-b"
+                          title="{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.id_type }"|trans({'%date%' : attachmentDate}) }}" data-toggle="tooltip">
+                                <span class="sr-only">{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.id_type }"|trans({'%date%' : attachmentDate})}}</span>
+                            </span>
+                {% endif %}
+            {% endfor %}
+        </dd>
+    </dl>
+</section>

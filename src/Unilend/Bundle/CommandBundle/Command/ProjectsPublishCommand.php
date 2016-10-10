@@ -9,6 +9,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager;
 use Unilend\librairies\CacheKeys;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
 
 class ProjectsPublishCommand extends ContainerAwareCommand
 {
@@ -37,7 +38,7 @@ EOF
         /** @var bool $bHasProjectPublished */
         $bHasProjectPublished = false;
 
-        $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::AUTO_BID_PLACED, "AND p.date_publication_full <= NOW()", '', array(), '', '', false);
+        $aProjectToFund = $oProject->selectProjectsByStatus([\projects_status::AUTO_BID_PLACED], "AND p.date_publication_full <= NOW()", [], '', '', false);
         $oLogger->info('Number of projects to publish: ' . count($aProjectToFund), array('class' => __CLASS__, 'function' => __FUNCTION__));
 
         foreach ($aProjectToFund as $aProject) {
@@ -46,8 +47,18 @@ EOF
 
                 $bHasProjectPublished = true;
                 $oProjectManager->publish($oProject);
+
+                if ($oProjectManager->isFunded($oProject)) {
+                    /** @var MailerManager $mailerManager */
+                    $mailerManager = $this->getContainer()->get('unilend.service.email_manager');
+                    $mailerManager->sendFundedToBorrower($oProject);
+                }
+
                 $this->zipProjectAttachments($oProject, $oEntityManager, $oLogger);
-                $this->sendNewProjectEmail($oProject, $oEntityManager);
+
+                if (false === $oProjectManager->isRateMinReached($oProject)) {
+                    $this->sendNewProjectEmail($oProject, $oEntityManager);
+                }
             }
         }
         if ($bHasProjectPublished) {
@@ -208,17 +219,17 @@ EOF
             'annee'           => date('Y')
         );
 
-        /** @var \textes $translations */
-        $translations                          = $oEntityManager->getRepository('textes');
+        /** @var \translations $translations */
+        $translations                          = $oEntityManager->getRepository('translations');
         $aTranslations['email-nouveau-projet'] = $translations->selectFront('email-nouveau-projet', 'fr');
 
-        /** @var \autobid_periods $oAutobidPeriods */
-        $oAutobidPeriods = $oEntityManager->getRepository('autobid_periods');
-        $aPeriod         = $oAutobidPeriods->getPeriod($project->period);
+        /** @var \project_period $oProjectPeriods */
+        $oProjectPeriods = $oEntityManager->getRepository('project_period');
+        $oProjectPeriods->getPeriod($project->period);
 
         /** @var \autobid $oAutobid */
         $oAutobid    = $oEntityManager->getRepository('autobid');
-        $aAutobiders = array_column($oAutobid->getSettings(null, $project->risk, $aPeriod['id_period'], array(\autobid::STATUS_ACTIVE)), 'amount', 'id_lender');
+        $aAutobiders = array_column($oAutobid->getSettings(null, $project->risk, $oProjectPeriods->id_period, array(\autobid::STATUS_ACTIVE)), 'amount', 'id_lender');
 
         /** @var \bids $oBids */
         $oBids            = $oEntityManager->getRepository('bids');
