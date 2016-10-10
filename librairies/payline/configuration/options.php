@@ -7,7 +7,7 @@ define('LANGUAGE_CODE', ''); // Payline pages language
 define('PAYMENT_ACTION', 101); // Default payment method
 define('PAYMENT_MODE', 'CPT'); // Default payment mode
 define('CANCEL_URL', 'https://www.unilend.fr'); // Default cancel URL
-define('NOTIFICATION_URL','https://www.unilend.fr/notification_payline/'); // Default notification URL
+define('NOTIFICATION_URL','https://www.unilend.fr/notification_payline'); // Default notification URL
 define('RETURN_URL', 'https://unilend.fr'); // Default return URL
 define('CUSTOM_PAYMENT_TEMPLATE_URL', 'http://unilend.fr/template.html'); // Default payment template URL
 define('CUSTOM_PAYMENT_PAGE_CODE', '');
