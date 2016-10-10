@@ -1,0 +1,64 @@
+{% extends 'layouts/_layout_lender.html.twig' %}
+
+{% set page = {
+    id: 'user-preter-profile',
+    title: 'Conseils en investissement',
+    classNames: 'user-preter-profile'
+} %}
+
+{#
+    Variables reference:
+    ====================
+
+    cip                         {Object}        Object containing CIP questionaire information
+    cip.complete                {Boolean}       true if complete, false if incomplete
+    cip.last_completed_date     {String}        ISO 8601 date string of the date the last questionnaire was completed (null if not completed)
+    cip.expired                 {Boolean}       true if user's previous CIP questionnaire has expired
+    cip.total_questions         {Int}           The total number of questions to be asked
+    cip.current_question        {Int}           The non-zero indexed number of the current (unanswered) question being asked (> 0)
+    cip.answers                 {Array}         Zero-indexed array containing values of user's answers
+    cip.advice                  {TODO}          Unsure how you might want to output the final advice based on user's answers
+#}
+
+{% set cip = {
+    complete: true,
+    last_completed_date: 'now'|date('c'),
+    expired: false,
+    total_questions: 4,
+    current_question: null,
+    answers: [
+        false,
+        100,
+        20000,
+        true
+    ],
+    advice: null
+} %}
+
+{% block dashboardContent %}
+    {% if cip is defined and cip.expired == true %}
+        <!-- Expired CIP -->
+        <div class="message message-alert">
+            <p>lender-cip_message-questionnaire-expired</p>
+            <p><a href="{{ path('/conseil-cip/oui-non') }}#todo-path-to-reset-cip-questionnaire" class="link">lender-cip_message-questionnaire-expired-accept-and-proceed</a></p>
+        </div>
+    {% endif %}
+
+    <div class="dashboard-tabs tabs">
+        {% include('pages/lender_profile/partials/tab_navigation.html.twig') %}
+
+        <div id="dashboard-cip" class="dashboard-tabs-content tab-content">
+            <div id="cip-summary" class="panel">
+                <header class="panel-header">
+                    <h3>{{ 'lender-cip_questionnare-title'|trans }}</h3>
+                </header>
+
+                <div class="panel-content">
+                    <p>lender-cip_introduction</p>
+
+                    {% include 'pages/lender_cip/partials/summary.html.twig' %}
+                </div>
+            </div><!-- /.panel -->
+        </div><!-- /.dashboard-tabs-content -->
+    </div>
+{% endblock %}

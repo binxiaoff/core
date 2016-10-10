@@ -1,0 +1,43 @@
+{% extends 'layouts/_layout_lender.html.twig' %}
+
+{% set page = {
+    id: 'user-preter-profile',
+    title: 'Conseils en investissement',
+    classNames: 'user-preter-profile'
+} %}
+
+{% set cip = {
+    complete: true,
+    last_completed_date: 'now'|date('c'),
+    expired: false,
+    total_questions: 4,
+    current_question: null,
+    answers: [
+        false,
+        100,
+        20000,
+        true
+    ],
+    advice: null
+} %}
+
+{% block dashboardContent %}
+<div class="dashboard-tabs tabs">
+    {% include('pages/lender_profile/partials/tab_navigation.html.twig') %}
+
+    <div id="dashboard-cip" class="dashboard-tabs-content tab-content">
+        <div class="panel cip-header">
+            <header class="panel-header">
+                <h3>{{ 'lender-cip_questionnaire-completed-title'|trans }}</h3>
+            </header>
+            <div class="cip-progress" data-progressbar data-progressbar-current="{{ cip.total_questions }}" data-progressbar-total="{{ cip.total_questions }}">
+                <div data-progressbar-bar></div>
+            </div>
+        </div>
+
+        <div class="panel">
+            {% include 'pages/lender_cip/partials/summary.html.twig' %}
+        </div><!-- /.panel -->
+    </div><!-- /.dashboard-tabs-content -->
+</div>
+{% endblock %}

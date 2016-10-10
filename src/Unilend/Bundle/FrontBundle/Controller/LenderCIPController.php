@@ -10,7 +10,7 @@ class LenderCIPController extends Controller
 {
     /**
      * @Route("/conseil-cip", name="cip_index")
-     * @Template("lender_cip/index.html.twig")
+     * @Template("pages/lender_cip/index.html.twig")
      *
      * @return array
      */
@@ -21,7 +21,7 @@ class LenderCIPController extends Controller
 
     /**
      * @Route("/conseil-cip/oui-non", name="cip_boolean_question")
-     * @Template("lender_cip/boolean.html.twig")
+     * @Template("pages/lender_cip/boolean.html.twig")
      *
      * @return array
      */
@@ -32,7 +32,7 @@ class LenderCIPController extends Controller
 
     /**
      * @Route("/conseil-cip/valeur", name="cip_value_question")
-     * @Template("lender_cip/value.html.twig")
+     * @Template("pages/lender_cip/value.html.twig")
      *
      * @return array
      */
@@ -43,7 +43,7 @@ class LenderCIPController extends Controller
 
     /**
      * @Route("/conseil-cip/conseil", name="cip_advice")
-     * @Template("lender_cip/advice.html.twig")
+     * @Template("pages/lender_cip/advice.html.twig")
      *
      * @return array
      */

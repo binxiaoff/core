@@ -1,0 +1,21 @@
+//
+// Unilend Progress Bar
+//
+
+.ui-progressbar {
+  width: 100%;
+  height: 5px;
+  position: relative;
+
+  .ui-progressbar-bar {
+    width: 0;
+    height: 100%;
+
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+
+    background-color: $c-p1;
+  }
+}

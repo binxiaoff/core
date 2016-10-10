@@ -1,0 +1,49 @@
+{% if cip is defined and cip.answers is not empty %}
+  <dl class="cip-summary">
+    {% for i in 1..cip.total_questions %}
+      {% set userAnswered = cip.answers[i - 1] %}
+      <dt>{{ 'lender-cip_question-' ~ i|trans }}</dt>
+      <dd>
+        {% if userAnswered is not defined or userAnswered is null %}
+          {{ 'lender-cip_answer-empty'|trans }}
+        {% else %}
+          {% if userAnswered is same as (true) or userAnswered is same as (false) %}
+            {% if userAnswered == true %}
+              {{ 'lender-cip_answer-' ~ i ~ '-true'|trans }}
+            {% else %}
+              {{ 'lender-cip_answer-' ~ i ~ '-false'|trans }}
+            {% endif %}
+          {% else %}
+            {{ 'lender-cip_answer-' ~ i ~ '-with-value'|trans({ '%value%': userAnswered }) }}
+          {% endif %}
+        {% endif %}
+      </dd>
+    {% endfor %}
+  </dl>
+
+  {% if cip.advice is defined %}
+    <div class="message message-info cip-advice">
+      <h4>{{ 'lender-cip_advice-title'|trans }}</h4>
+      {% if cip.advice is not empty %}
+        <p>{{ cip.advice }}</p>
+      {% else %}
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean condimentum fringilla sapien at accumsan. In sed lobortis urna. Morbi facilisis leo in orci accumsan, et semper est semper. Aenean id erat vitae diam aliquam vestibulum. Nulla et luctus massa. Aenean sit amet nisl sollicitudin, posuere ligula et, auctor odio. Praesent dapibus enim odio, ac imperdiet massa feugiat vitae. Duis laoreet, ante quis sagittis efficitur, purus nisl tempus enim, eu congue tortor eros ut lectus. Fusce mollis in massa ac sagittis. Donec et pretium urna.</p>
+
+        <p>Curabitur quis nibh dui. Praesent consequat finibus felis, quis porta velit venenatis et. Proin condimentum, ipsum eget convallis volutpat, libero lacus bibendum magna, porttitor facilisis urna magna at sem. Suspendisse potenti. Mauris non eros dui. Donec non libero luctus, ornare tellus nec, euismod lacus. Integer lectus elit, mollis at lacus vitae, rhoncus blandit tellus. Suspendisse convallis arcu sed massa suscipit, id interdum nulla posuere.</p>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <div class="btn-controls">
+    {% if cip.complete == true or cip.expired == true %}
+      <a href="{{ path('/conseil-cip/oui-non') }}#todo-path-to-reset-cip-questionnaire" class="btn-primary">{{ 'lender-cip_restart-questionnaire'|trans }}</a>
+    {% elseif cip.complete == false %}
+      <a href="{{ path('/conseil-cip/oui-non') }}#todo-path-to-unfinished-cip-questionnaire-step" class="btn-primary">{{ 'lender-cip_continue-questionnaire'|trans }}</a>
+    {% else %}
+      <a href="{{ path('/conseil-cip/oui-non') }}#todo-path-to-start-cip-questionnaire" class="btn-primary">{{ 'lender-cip_start-questionnaire'|trans }}</a>
+    {% endif %}
+  </div>
+
+{% else %}
+  <a href="{{ path('/conseil-cip/oui-non') }}#todo-path-to-start-cip-questionnaire" class="btn-primary">{{ 'lender-cip_start-questionnaire'|trans }}</a>
+{% endif %}

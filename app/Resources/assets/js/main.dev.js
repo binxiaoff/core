@@ -66,6 +66,7 @@ var ModalTOS = require('./app/components/ModalTOS')
 var CookieCheck = require('./app/components/Cookies')
 var BidConfirmation = require('./app/components/BidConfirmation')
 var BidsDetail = require('./app/components/BidsDetail')
+var ProgressBar = require('./app/components/ProgressBar')
 
 // Page controllers
 // Manage component or page-specific behaviours

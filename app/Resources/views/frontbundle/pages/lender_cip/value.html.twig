@@ -1,0 +1,77 @@
+{% extends 'layouts/_layout_lender.html.twig' %}
+
+{% set page = {
+    id: 'user-preter-profile',
+    title: 'Conseils en investissement',
+    classNames: 'user-preter-profile'
+} %}
+
+{# See index.html.twig for the variable reference #}
+{% set cip = {
+    complete: false,
+    last_completed_date: null,
+    expired: false,
+    total_questions: 4,
+    current_question: 2,
+    answers: [
+        false,
+        null,
+        null,
+        null
+    ]
+} %}
+
+{% block dashboardContent %}
+    <div class="dashboard-tabs tabs">
+        {% include('pages/lender_profile/partials/tab_navigation.html.twig') %}
+
+        <article id="dashboard-cip" class="dashboard-tabs-content tab-content">
+            <div id="cip-step-{{ cip.current_question }}">
+                <div class="panel cip-header">
+                    <header class="panel-header">
+                        <h3>{{ 'lender-cip_questionnare-title'|trans }}</h3>
+                    </header>
+                    <div class="cip-progress" data-progressbar data-progressbar-current="{{ cip.current_question }}" data-progressbar-total="{{ cip.total_questions }}">
+                        <div data-progressbar-bar></div>
+                    </div>
+                </div>
+
+                <form method="post" action="{{ path('/conseil-cip/conseil') }}" class="panel" data-formvalidation>
+                    <div class="cip-question">
+                        <p>{{ cip.current_question }}. {{ 'lender-cip_question-' ~ cip.current_question|trans }}</p>
+                    </div><!-- /.cip-question -->
+
+                    <div class="form-field cip-answer">
+                        <label for="cip-answer-value" class="field-label">
+                            {{ 'lender-cip_answer-label'|trans }}
+                        </label>
+
+                        {# @note Use the `lender-cip_answer-X-unit` translation text to give a specific unit to the value, e.g. `%` or `€` #}
+                        {% set answerValueUnit = 'lender-cip_answer-' ~ cip.current_question ~ '-unit'|trans %}
+                        {% if answerValueUnit is not empty and answerValueUnit != 'lender-cip_answer-' ~ cip.current_question ~ '-unit' %}
+                            <div class="input-group set-left">
+                                <div class="btn-group">
+                                    <span>{{ 'lender-cip_answer-' ~ cip.current_question ~ '-unit'|trans }}</span>
+                                </div>
+                                {# @note this is currently an input which accepts number values above 0 #}
+                                <input type="number" min="0" id="cip-answer-value" name="answer_{{ cip.current_question }}" data-formvalidation-input data-formvalidation-required="true" class="input-field" />
+                            </div><!-- /.input-group -->
+                        {% else %}
+                            {# @note this is currently an input which accepts number values above 0 #}
+                            <input type="number" min="0" id="cip-answer-value" name="answer_{{ cip.current_question }}" data-formvalidation-input data-formvalidation-required="true" class="input-field" />
+                        {% endif %}
+
+                    </div><!-- /.form-field -->
+
+                    <div class="row text-align-center">
+                        <button type="submit" class="btn-primary"><span class="label">{{ 'lender-cip_next-step'|trans }}</span> <span class="icon fa-angle-right"></span></button>
+                        {% if cip.current_question > 1 %}
+                            <p><a href="{{ path('/conseil-cip/oui-non') }}#todo-path-to-previous-cip-step"><span class="icon fa-angle-left"></span> <span class="label">{{ 'lender-cip_previous-step'|trans }}</span></a></p>
+                        {% endif %}
+                    </div><!-- /.btn-controls -->
+                </form>
+            </div><!-- /#cip-step-{{ cip.current_question }}.tab-pane -->
+        </article><!-- /.dashboard-tabs-content -->
+    </div>
+{% endblock %}
+
