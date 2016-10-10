@@ -33,17 +33,5 @@
       {% endif %}
     </div>
   {% endif %}
-
-  <div class="btn-controls">
-    {% if cip.complete == true or cip.expired == true %}
-      <a href="{{ path('/conseil-cip/oui-non') }}#todo-path-to-reset-cip-questionnaire" class="btn-primary">{{ 'lender-cip_restart-questionnaire'|trans }}</a>
-    {% elseif cip.complete == false %}
-      <a href="{{ path('/conseil-cip/oui-non') }}#todo-path-to-unfinished-cip-questionnaire-step" class="btn-primary">{{ 'lender-cip_continue-questionnaire'|trans }}</a>
-    {% else %}
-      <a href="{{ path('/conseil-cip/oui-non') }}#todo-path-to-start-cip-questionnaire" class="btn-primary">{{ 'lender-cip_start-questionnaire'|trans }}</a>
-    {% endif %}
-  </div>
-
-{% else %}
-  <a href="{{ path('/conseil-cip/oui-non') }}#todo-path-to-start-cip-questionnaire" class="btn-primary">{{ 'lender-cip_start-questionnaire'|trans }}</a>
 {% endif %}
+

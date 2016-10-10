@@ -37,6 +37,8 @@
 
         <div class="panel">
             {% include 'pages/lender_cip/partials/summary.html.twig' %}
+
+            <a href="{{ path('/conseil-cip') }}" class="btn-primary">{{ 'lender-cip_accept-advice-label'|trans }}</a>
         </div><!-- /.panel -->
     </div><!-- /.dashboard-tabs-content -->
 </div>
