@@ -865,10 +865,6 @@ class MainController extends Controller
      */
     public function statisticsAction(Request $request)
     {
-        if ($request->getClientIp() != '92.154.10.41') {
-            return $this->render('exception/error.html.twig');
-        }
-
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \tree $tree */
