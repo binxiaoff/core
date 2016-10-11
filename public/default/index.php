@@ -37,14 +37,9 @@ require __DIR__ . '/prepend.php';
 
 $kernel = new AppKernel('prod', false);
 $request  = Request::createFromGlobals();
+$response = $kernel->handle($request);
+$response->send();
 
-try {
-    $response = $kernel->handle($request);
-    $response->send();
-    $kernel->terminate($request, $response);
-} catch (NotFoundHttpException $exception) {
-    $kernel->boot();
-    $dispatcher = new \Unilend\core\Dispatcher($kernel, 'default', $config);
-}
+$kernel->terminate($request, $response);
 
 require __DIR__ . '/append.php';
