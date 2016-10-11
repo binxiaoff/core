@@ -128,8 +128,9 @@ class LenderDashboardController extends Controller
         $quarterAxisData        = $this->getQuarterAxis($lenderRepaymentsData);
         $yearAxisData           = $this->getYearAxis($repaymentDateRange);
 
-
-        return $this->render('/pages/lender_dashboard/lender_dashboard.html.twig', [
+        return $this->render(
+            '/pages/lender_dashboard/lender_dashboard.html.twig',
+            [
                 'dashboardPanels'    => $this->getDashboardPreferences(),
                 'lenderDetails'      => [
                     'balance'                   => $balance,
@@ -449,5 +450,19 @@ class LenderDashboardController extends Controller
             'yearInterests'    => array_values($yearInterests),
             'yearTax'          => array_values($yearTax),
         ];
+    }
+
+    /**
+     * @param \lenders_accounts $lender
+     * @param \echeanciers $lenderRepayment
+     * @return array
+     */
+    private function getDetailsByPeriod(\lenders_accounts $lender, \echeanciers $lenderRepayment)
+    {
+        $taxTypeForExemptedLender    = [\tax_type::TYPE_CSG, \tax_type::TYPE_SOCIAL_DEDUCTIONS, \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS, \tax_type::TYPE_SOLIDARITY_DEDUCTIONS, \tax_type::TYPE_CRDS];
+        $taxTypeForTaxableLender     = [\tax_type::TYPE_INCOME_TAX, \tax_type::TYPE_CSG, \tax_type::TYPE_SOCIAL_DEDUCTIONS, \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS, \tax_type::TYPE_SOLIDARITY_DEDUCTIONS, \tax_type::TYPE_CRDS];
+        $taxTypeForForeignerLender   = [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE];
+        $taxTypeForLegalEntityLender = [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE];
+        return $lenderRepayment->getDataForRepaymentWidget($lender->id_lender_account, $lender->id_client_owner, $taxTypeForExemptedLender, $taxTypeForTaxableLender, $taxTypeForForeignerLender, $taxTypeForLegalEntityLender);
     }
 }
