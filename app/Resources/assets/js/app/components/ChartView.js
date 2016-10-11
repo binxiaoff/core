@@ -526,19 +526,27 @@ ChartView.prototype.render = function (data, schema) {
         // Project Offers (spline)
         case 'projectOffers':
           break
-
-        // Project Owner Income (spline)
-        case 'projectOwnerIncome':
-          break
-
-        // Project Owner Balance Active (spline)
-        case 'projectOwnerBalanceActive':
-          break
-
-        // Project Owner Balance Passive (spline)
-        case 'projectOwnerBalancePassive':
-          break
-
+        case 'projectOwnerIncome': // Project Owner Income (spline)
+        case 'projectOwnerBalanceActive':  // Project Owner Balance Active (spline)
+        case 'projectOwnerBalancePassive': // Project Owner Balance Passive (spline)
+            self.chart = new Highcharts.setOptions({
+                lang: {
+                    numericSymbols: null,
+                },
+                yAxis: {
+                    labels: {
+                        formatter: function () {
+                            return Highcharts.numberFormat(this.value, 0, '.', ' ') + ' €';
+                        }
+                    }
+                }
+            });
+            Utility.extendObjProp(self.settings.highcharts, 'tooltip', {
+                enabled: true,
+                headerFormat: '',
+                pointFormat: '{series.name} : {point.y} €',
+            })
+            break
         // Preter Projects Categories is a treemap with a single series
         case 'preterProjectsCategories':
           // Only enable white color
