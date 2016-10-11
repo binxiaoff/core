@@ -841,10 +841,9 @@ class MainController extends Controller
 
     /**
      * @Route("/statistiques", name="statistics")
-     * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function statisticsAction(Request $request)
+    public function statisticsAction()
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
