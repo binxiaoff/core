@@ -77,8 +77,27 @@ class traductionsController extends bootstrap
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
 
-        $this->requete        = 'SELECT * FROM translations ORDER BY section ASC';
-        $this->requete_result = $this->bdd->query($this->requete);
+        /** @var Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager $entityManger */
+        $entityManger    = $this->get('unilend.service.entity_manager');
+        $translations    = $entityManger->getRepository('translations');
+        $locale          = $this->getParameter('kernel.default_locale');
+        $allTranslations = $translations->getAllTranslationMessages($locale);
+
+        header("Pragma: no-cache");
+        header("Cache-Control: must-revalidate, post-check=0, pre-check=0, public");
+        header("Expires: 0");
+        header("Content-Type: text/csv");
+        header("Content-Disposition: attachment; filename=traductions.csv");
+
+        $handle = fopen('php://output', 'w+');
+        fputs($handle, "\xEF\xBB\xBF"); // add UTF-8 BOM in order to be compatible to Excel
+        fputcsv($handle, ['Id_translation', 'locale', 'Section', 'Nom', 'Traduction', 'Date d\'ajout', 'Date de mise à jour'], ';');
+
+        foreach ($allTranslations as $singleTranslation) {
+            fputcsv($handle, $singleTranslation, ';');
+        }
+
+        fclose($handle);
     }
 
     public function _regenerateTranslationCache()
