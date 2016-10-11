@@ -960,8 +960,17 @@ class pdfController extends bootstrap
 
         $this->oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
 
-        if ($this->oLoans->get($this->oLendersAccounts->id_lender_account, 'id_loan = ' . $this->params[1] . ' AND id_lender')) {
-            $this->projects->get($this->oLoans->id_project, 'id_project');
+        $status = [
+            \projects_status::PROCEDURE_SAUVEGARDE,
+            \projects_status::REDRESSEMENT_JUDICIAIRE,
+            \projects_status::LIQUIDATION_JUDICIAIRE
+        ];
+
+        if (
+            $this->oLoans->get($this->oLendersAccounts->id_lender_account, 'id_loan = ' . $this->params[1] . ' AND id_lender')
+            && $this->projects->get($this->oLoans->id_project, 'id_project')
+            && in_array($this->projects->status, $status)
+        ) {
             $this->companiesEmpr->get($this->projects->id_company, 'id_company');
 
             if (in_array($this->clients->type, array(1, 4))) {
@@ -979,39 +988,57 @@ class pdfController extends bootstrap
             $this->pays->get($iCountryId, 'id_pays');
             $this->pays_fiscal = $this->pays->fr;
 
-            if (in_array($this->projects->status, array(\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE))) {
-                $this->projects_status_history->loadLastProjectHistory($this->oLoans->id_project);
-                $this->projects_status_history_details->get($this->projects_status_history->id_project_status_history, 'id_project_status_history');
+            /** @var \projects_status_history $projectStatusHistory */
+            $projectStatusHistory = $this->loadData('projects_status_history');
+            $projectStatusHistory->loadStatusForJudgementDate($this->projects->id_project, $status);
 
-                $this->mandataires_var = $this->projects_status_history_details->receiver;
+            /** @var \projects_status_history_details $projectStatusHistoryDetails */
+            $projectStatusHistoryDetails = $this->loadData('projects_status_history_details');
+            $projectStatusHistoryDetails->get($projectStatusHistory->id_project_status_history, 'id_project_status_history');
 
-                // @todo intl
-                switch ($this->projects->status) {
-                    case \projects_status::PROCEDURE_SAUVEGARDE:
-                        $this->nature_var = 'Procédure de sauvegarde';
-                        break;
-                    case \projects_status::REDRESSEMENT_JUDICIAIRE:
-                        $this->nature_var = 'Redressement judiciaire';
-                        break;
-                    case \projects_status::LIQUIDATION_JUDICIAIRE:
-                        $this->nature_var = 'Liquidation judiciaire';
-                        break;
-                }
-                $judgementDate = new DateTime($this->projects_status_history_details->date);
-                $this->date = $judgementDate->format('d/m/Y');
+            $this->date            = \DateTime::createFromFormat('Y-m-d', $projectStatusHistoryDetails->date);
+            $this->mandataires_var = $projectStatusHistoryDetails->receiver;
+
+            /** @var projects_status $projectStatusType */
+            $projectStatusType = $this->loadData('projects_status');
+            $projectStatusType->get(\projects_status::RECOUVREMENT, 'status');
+
+            $recoveryStatus = $projectStatusHistory->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = ' . $projectStatusType->id_project_status, '', '', 1);
+            if (false === empty($recoveryStatus)) {
+                $expiration = \DateTime::createFromFormat('Y-m-d H:i:s', $recoveryStatus[0]['added']);
+            } else {
+                $expiration = $this->date;
             }
 
-            try {
-                $this->echu   = $this->echeanciers->getNonRepaidAmountInDateRange($this->oLendersAccounts->id_lender_account, new DateTime('2015-04-19 00:00:00'), $judgementDate, $this->oLoans->id_loan);
-                $this->echoir = $this->echeanciers->getTotalComingCapital($this->oLendersAccounts->id_lender_account, $this->oLoans->id_loan, $judgementDate);
-            } catch (\Exception $exception) {
-                /** @var LoggerInterface $logger */
-                $logger = $this->get('logger');
-                $logger->error('Could not get coming capital or repaid amount (id_lender = ' .
-                    $this->oLendersAccounts->id_lender_account . ', id_loan = ' . $this->oLoans->id_loan . ') Exception message : '
-                    . $exception->getMessage() , array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $this->oLendersAccounts->id_lender_account));
-                $this->echoir = 0;
-                $this->echu   = 0;
+            $projectStatusType->get($projectStatusHistory->id_project_status);
+            // @todo intl
+            $this->nature_var = '';
+            switch ($projectStatusType->status) {
+                case \projects_status::PROCEDURE_SAUVEGARDE:
+                    $this->nature_var = 'Procédure de sauvegarde';
+                    break;
+                case \projects_status::REDRESSEMENT_JUDICIAIRE:
+                    $this->nature_var = 'Redressement judiciaire';
+                    break;
+                case \projects_status::LIQUIDATION_JUDICIAIRE:
+                    $this->nature_var = 'Liquidation judiciaire';
+                    break;
+            }
+
+            /** @var \echeanciers $repaymentSchedule */
+            $repaymentSchedule = $this->loadData('echeanciers');
+            $this->echu   = $repaymentSchedule->getNonRepaidAmountInDateRange($this->oLendersAccounts->id_lender_account, new \DateTime($this->oLoans->added), $expiration, $this->oLoans->id_loan);
+            $this->echoir = $repaymentSchedule->getTotalComingCapital($this->oLendersAccounts->id_lender_account, $this->oLoans->id_loan, $expiration);
+
+            if (false === empty($recoveryStatus)) {
+                /** @var \transactions $transaction */
+                $transaction     = $this->loadData('transactions');
+                $where           = 'id_client = ' . $this->oLendersAccounts->id_client_owner . ' AND id_project = ' . $this->projects->id_project . ' AND type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT;
+                $recoveryTaxExcl = bcdiv($transaction->sum($where, 'montant'), 100, 2);
+                // 0.844 is the rate for getting the total amount including the MCS commission and tax. Todo: replace it when doing the Recovery project
+                $recoveryTaxIncl = bcdiv($recoveryTaxExcl, 0.844, 5);
+                $this->echu       = bcsub(bcadd($this->echu, $this->echoir, 2), $recoveryTaxIncl, 2);
+                $this->echoir     = 0;
             }
 
             $this->total        = bcadd($this->echu, $this->echoir, 2);
