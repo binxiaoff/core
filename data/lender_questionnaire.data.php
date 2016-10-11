@@ -2,6 +2,9 @@
 
 class lender_questionnaire extends lender_questionnaire_crud
 {
+    const STATUS_INACTIVE = 0;
+    const STATUS_ACTIVE   = 1;
+
     public function __construct($bdd, $params = '')
     {
         parent::lender_questionnaire($bdd, $params);

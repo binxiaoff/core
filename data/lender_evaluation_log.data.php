@@ -1,10 +1,12 @@
 <?php
 
-class lender_questionnaire_advice extends lender_questionnaire_advice_crud
+class lender_evaluation_log extends lender_evaluation_log_crud
 {
+    const EVENT_ADVICE = 'advice';
+
     public function __construct($bdd, $params = '')
     {
-        parent::lender_questionnaire_advice($bdd, $params);
+        parent::lender_evaluation_log($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -17,7 +19,7 @@ class lender_questionnaire_advice extends lender_questionnaire_advice_crud
             $order = ' ORDER BY ' . $order;
         }
 
-        $sql = 'SELECT * FROM `lender_questionnaire_advice`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+        $sql = 'SELECT * FROM `lender_evaluation_log`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $result   = array();
         $resultat = $this->bdd->query($sql);
@@ -33,11 +35,11 @@ class lender_questionnaire_advice extends lender_questionnaire_advice_crud
             $where = ' WHERE ' . $where;
         }
 
-        return (int) $this->bdd->result($this->bdd->query('SELECT COUNT(*) FROM `lender_questionnaire_advice`' . $where));
+        return (int) $this->bdd->result($this->bdd->query('SELECT COUNT(*) FROM `lender_evaluation_log`' . $where));
     }
 
-    public function exist($id, $field = 'id_lender_questionnaire_advice')
+    public function exist($id, $field = 'id_lender_evaluation_log')
     {
-        return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `lender_questionnaire_advice` WHERE ' . $field . ' = "' . $id . '"')) > 0;
+        return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `lender_evaluation_log` WHERE ' . $field . ' = "' . $id . '"')) > 0;
     }
 }

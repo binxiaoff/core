@@ -88,5 +88,10 @@
             <argument type="service" id="translator"/>
             <argument type="service" id="router" />
         </service>
+
+        <service id="unilend.frontbundle.lender_evaluation_manager" class="Unilend\Bundle\FrontBundle\Service\LenderEvaluationManager">
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="translator" />
+        </service>
     </services>
 </container>

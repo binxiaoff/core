@@ -2,6 +2,20 @@
 
 class lender_questionnaire_question extends lender_questionnaire_question_crud
 {
+    const TYPE_BOOLEAN            = 'bool';
+    const TYPE_ESTATE             = 'estate';
+    const TYPE_MONTHLY_SAVINGS    = 'monthly_savings';
+    const TYPE_BLOCKING_PERIOD    = 'blocking_period';
+    const TYPE_FINANCIAL_PRODUCTS = 'financial_products';
+
+    const VALUE_BOOLEAN_TRUE                = 'true';
+    const VALUE_BOOLEAN_FALSE               = 'false';
+    const VALUE_ESTATE_THRESHOLD            = 20000;
+    const VALUE_MONTHLY_SAVINGS_THRESHOLD   = 200;
+    const VALUE_BLOCKING_PERIOD_THRESHOLD_1 = 12;
+    const VALUE_BLOCKING_PERIOD_THRESHOLD_2 = 36;
+    const VALUE_BLOCKING_PERIOD_THRESHOLD_3 = 60;
+
     public function __construct($bdd, $params = '')
     {
         parent::lender_questionnaire_question($bdd, $params);
