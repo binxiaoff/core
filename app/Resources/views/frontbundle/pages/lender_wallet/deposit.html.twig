@@ -104,16 +104,13 @@ classNames: 'user-preter-balance'
                 {% else %}
                     <section id="balance-deposit-result" role="tabpanel" class="panel collapse in" aria-expanded="true">
                         {% if depositCode == 200 %}
-                            <p>{% trans with {'%depositAmount%' : depositAmount} %} lender-wallet_deposit-success-message {% endtrans %}</p>
-                            <p>
-                                <a href="{{ path('lender_dashboard') }}" class='btn-primary'>{% trans %} lender-wallet_lender-dashboard {% endtrans %}</a>
-                            </p>
+                            {% trans with {'%depositAmount%' : depositAmount} %} lender-wallet_deposit-success-message {% endtrans %}
                         {% else %}
-                            <p>{% trans %} lender-wallet_deposit-error-message {% endtrans %}</p>
-                            <p>
-                                <a href="{{ path('lender_dashboard') }}" class='btn-primary'>{% trans %} lender-wallet_lender-dashboard {% endtrans %}</a>
-                            </p>
+                            {% trans %} lender-wallet_deposit-error-message {% endtrans %}
                         {% endif %}
+                        <p>
+                            <a href="{{ path('lender_dashboard') }}" class='btn-primary'>{% trans %} lender-wallet_lender-dashboard {% endtrans %}</a>
+                        </p>
                     </section><!-- /.panel -->
                 {% endif %}
             </article><!-- /.tab-pane -->

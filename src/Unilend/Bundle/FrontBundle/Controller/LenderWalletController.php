@@ -387,7 +387,7 @@ class LenderWalletController extends Controller
                 $paylineManager->setLogger($logger);
 
                 if ($paylineManager->handlePaylineReturn($client, $response, $paylineParameter, $partnerId, PaylineManager::PAYMENT_LOCATION_LENDER_WALLET)) {
-                    $this->redirectToRoute('lender_wallet_deposit', [
+                    return $this->redirectToRoute('lender_wallet_deposit', [
                         'depositResult' => true,
                         'depositCode' => Response::HTTP_OK,
                         'depositAmount' => bcdiv($response['payment']['amount'], 100, 2)
