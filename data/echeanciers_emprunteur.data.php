@@ -155,7 +155,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                 ORDER BY ee.ordre ASC';
 
         $paramValues = array('idProject' => $project->id_project, 'earlyRefundStatus' => \echeanciers_emprunteur::STATUS_NO_EARLY_REFUND);
-        $paramTypes  = array('idLenderAccount' => \PDO::PARAM_INT, 'earlyRefundStatus' => \PDO::PARAM_INT);
+        $paramTypes  = array('idProject' => \PDO::PARAM_INT, 'earlyRefundStatus' => \PDO::PARAM_INT);
 
         $statement = $this->bdd->executeQuery($sql, $paramValues, $paramTypes);
         $result    = $statement->fetchAll(PDO::FETCH_ASSOC);
