@@ -121,12 +121,13 @@ class LenderDashboardController extends Controller
         /** @var LenderAccountDisplayManager $lenderDisplayManager */
         $lenderDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
 
-        $lenderRepaymentsData   = $lenderRepayment->getDetailsByPeriod($lender->id_lender_account);
+        $lenderRepaymentsData   = $this->getDetailsByPeriod($lender, $lenderRepayment);
         $repaymentDateRange     = $lenderRepayment->getFirstAndLastRepaymentDates($lender->id_lender_account);
         $repaymentDataPerPeriod = $this->getQuarterAndYearSum($lenderRepaymentsData);
         $monthAxisData          = $this->getMonthAxis($repaymentDateRange);
         $quarterAxisData        = $this->getQuarterAxis($lenderRepaymentsData);
         $yearAxisData           = $this->getYearAxis($repaymentDateRange);
+
 
         return $this->render(
             '/pages/lender_dashboard/lender_dashboard.html.twig',
