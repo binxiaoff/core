@@ -161,7 +161,7 @@
                     <td>
                         <?php if ($aProjectLoans['nb_loan'] == 1): ?>
                             <?php if ($aProjectLoans['project_status'] >= \projects_status::REMBOURSEMENT): ?>
-                                <a href="<?= $this->furl ?>/pdf/contrat/<?= $this->clients->hash ?>/<?= $aProjectLoans['id_loan_if_one_loan'] ?>">
+                                <a href="<?= $this->lurl ?>/protected/contrat/<?= $this->clients->hash ?>/<?= $aProjectLoans['id_loan_if_one_loan'] ?>">
                                     <?= $contractLabel ?>
                                 </a>
                             <?php endif; ?>

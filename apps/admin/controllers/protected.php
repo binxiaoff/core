@@ -670,4 +670,36 @@ class protectedController extends bootstrap
             die;
         }
     }
+
+    public function _contrat()
+    {
+        if (file_exists($this->path . 'protected/pdf/contrat/contrat-' . $this->params[0] . '-' . $this->params[1] . '.pdf')) {
+            $url = ($this->path . 'protected/pdf/contrat/contrat-' . $this->params[0] . '-' . $this->params[1] . '.pdf');
+
+            header('Content-Description: File Transfer');
+            header('Content-Type: application/octet-stream');
+            header('Content-Disposition: attachment; filename="' . basename($url) . '";');
+            @readfile($url);
+            die();
+        } else {
+            header('location:' . $this->lurl);
+            die;
+        }
+    }
+
+    public function _declaration_de_creances()
+    {
+        if (file_exists($this->path . 'protected/pdf/declaration_de_creances/declaration-de-creances-' . $this->params[0] . '-' . $this->params[1] . '.pdf')) {
+            $url = ($this->path . 'protected/pdf/declaration_de_creances/declaration-de-creances-' . $this->params[0] . '-' . $this->params[1] . '.pdf');
+
+            header('Content-Description: File Transfer');
+            header('Content-Type: application/octet-stream');
+            header('Content-Disposition: attachment; filename="' . basename($url) . '";');
+            @readfile($url);
+            die();
+        } else {
+            header('location:' . $this->lurl);
+            die;
+        }
+    }
 }
