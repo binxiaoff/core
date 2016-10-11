@@ -28,6 +28,9 @@
 
 class echeanciers_emprunteur extends echeanciers_emprunteur_crud
 {
+    const STATUS_NO_EARLY_REFUND   = 0;
+    const STATUS_EARLY_REFUND_DONE = 1;
+
     public function __construct($bdd, $params = '')
     {
         parent::echeanciers_emprunteur($bdd, $params);
@@ -131,6 +134,33 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
         $result = $this->bdd->query($sql);
         $sum    = (int) ($this->bdd->result($result, 0, 0));
         return ($sum / 100);
+    }
+
+    /**
+     * @param \projects $project
+     * @return mixed
+     */
+    public function getDetailedProjectRepaymentSchedule(\projects $project) {
+        $sql = 'SELECT ee.*, e.date_echeance AS date_echeance_preteur,
+				CASE e.status
+					WHEN 0 THEN "En cours"
+					WHEN 1 THEN "Remboursé"
+				END AS "statut_preteur"
+                FROM echeanciers_emprunteur ee
+                INNER JOIN echeanciers e ON e.id_project = ee.id_project
+                WHERE ee.id_project = :idProject
+                AND ee.ordre = e.ordre
+                AND ee.status_ra = :earlyRefundStatus
+                GROUP BY ee.id_project, ee.ordre
+                ORDER BY ee.ordre ASC';
+
+        $paramValues = array('idProject' => $project->id_project, 'earlyRefundStatus' => \echeanciers_emprunteur::STATUS_NO_EARLY_REFUND);
+        $paramTypes  = array('idProject' => \PDO::PARAM_INT, 'earlyRefundStatus' => \PDO::PARAM_INT);
+
+        $statement = $this->bdd->executeQuery($sql, $paramValues, $paramTypes);
+        $result    = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+        return $result;
     }
 
     /**
@@ -452,5 +482,4 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
         $statement = $this->bdd->executeQuery($query);
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
-
 }
