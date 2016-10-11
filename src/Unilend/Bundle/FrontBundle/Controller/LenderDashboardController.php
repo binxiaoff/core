@@ -60,14 +60,14 @@ class LenderDashboardController extends Controller
         $repaidGrossInterests   = $lenderRepayment->getRepaidInterests(['id_lender' => $lender->id_lender_account]);
         $irr                    = 0;
         $irrTranslationType     = '';
-        $hasIRR = false;
+        $hasIRR                 = false;
 
         if ($this->getUser()->getLevel() > 0) {
             $aLastIRR = $oLenderAccountStats->getLastIRRForLender($lender->id_lender_account);
             if ($aLastIRR) {
                 $irr                = $aLastIRR['tri_value'];
                 $irrTranslationType = ($irr >= 0 ? 'positive-' : 'negative-');
-                $hasIRR = true;
+                $hasIRR             = true;
             } else {
                 $fLossRate = $oLenderAccountStats->getLossRate($lender->id_lender_account, $lender);
 
@@ -118,13 +118,10 @@ class LenderDashboardController extends Controller
             }
         }
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\IRRManager $oIRRManager */
-        $oIRRManager = $this->get('unilend.service.irr_manager');
         /** @var LenderAccountDisplayManager $lenderDisplayManager */
         $lenderDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
 
-        $lastUnilendIRR         = $oIRRManager->getLastUnilendIRR();
-        $lenderRepaymentsData   = $this->getDetailsByPeriod($lender, $lenderRepayment);
+        $lenderRepaymentsData   = $lenderRepayment->getDetailsByPeriod($lender->id_lender_account);
         $repaymentDateRange     = $lenderRepayment->getFirstAndLastRepaymentDates($lender->id_lender_account);
         $repaymentDataPerPeriod = $this->getQuarterAndYearSum($lenderRepaymentsData);
         $monthAxisData          = $this->getMonthAxis($repaymentDateRange);
@@ -138,7 +135,6 @@ class LenderDashboardController extends Controller
                 'lenderDetails'      => [
                     'balance'                   => $balance,
                     'level'                     => $this->getUser()->getLevel(),
-                    'unilendIRR'                => $lastUnilendIRR['value'],
                     'hasIRR'                    => $hasIRR,
                     'irr'                       => $irr,
                     'irrTranslation'            => $irrTranslationType,
