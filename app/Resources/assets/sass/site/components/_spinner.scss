@@ -9,7 +9,11 @@
   opacity: 0;
 
   animation: 1s linear 0s infinite spinnerloading;
+  animation-play-state: paused;
   transition: opacity .2s, color .2s;
+
+  pointer-events: none;
+  user-select: none;
 
   &:before {
     content: $fa-refresh;
@@ -20,12 +24,14 @@
     display: inline-block !important;
     color: $c-p1;
     opacity: 1;
+    animation-play-state: running;
   }
 
   #{$js-is-loading-end} &,
   &#{$js-is-loading-end} {
     display: inline-block !important;
     opacity: 0;
+    animation-play-state: running;
   }
 }
 

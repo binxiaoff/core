@@ -37,7 +37,7 @@ title: 'Contact'
                 <h3>{% trans %} search_search-again-title {% endtrans %}</h3>
             {% endif %}
 
-            <form action="{{ path('contact_search') }}" method="post" class="site-search" role="search" data-formvalidation data-formvalidation-notificationselem="#contact-search-form-notifications">
+            <form action="{{ path('contact_search') }}" method="post" class="site-search" role="search">
             {#<form id="contact-search" action="http://aide.unilend.fr/customer/portal/articles/search" method="get" class="site-search" role="search" data-formvalidation data-formvalidation-notificationselem="#contact-search-form-notifications">#}
                 <div id="contact-search-form-notifications" class="ui-formvalidation-notifications col-lg-8 col-md-8 col-sm-4"></div>
                 <div class="row">
@@ -46,16 +46,16 @@ title: 'Contact'
                             {% trans %} contact_search-label {% endtrans %}
                         </label>
                         {#<input id="contact-search-input" type="text" name="q" placeholder="{% trans %} site-general_search-placeholder {% endtrans %}" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true">#}
-                        <input id="contact-search-input" type="text" name="search" placeholder="{% trans %} site-general_search-placeholder {% endtrans %}" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                        <input id="contact-search-input" type="text" name="search" placeholder="{% trans %} site-general_search-placeholder {% endtrans %}" value="" class="input-field">
                         <div class="btn-group">
-                            <button type="submit" class="btn-search"><span class="sr-only">{% trans %} contact_search-submit {% endtrans %}</span></button>
+                            <button type="submit" class="btn-primary" data-spinnerbutton><span class="icon fa-search"></span> <span class="label hide-xs">{% trans %} contact_search-submit {% endtrans %}</span></button>
                         </div>
                     </div><!-- /.form-field-inline -->
                 </div>
             </form><!-- /.site-search -->
 
             <p>{% trans %} contact_faq-text {% endtrans %}</p>
-            <p><a href="http://aide.unilend.fr/" class="btn-default">{% trans %} contact_faq-button {% endtrans %}</a></p>
+            <p><a href="http://aide.unilend.fr/" class="link-1">{% trans %} contact_faq-button {% endtrans %}</a></p>
         </div>
     </section><!-- /.page-section -->
 
@@ -66,7 +66,7 @@ title: 'Contact'
         <div class="col-lg-6 col-md-6">
             <form action="{{ path('contact') }}" method="post"  data-formvalidation data-formvalidation-notificationselem="#contact-form-notifications">
 
-                <div id="contact-form-notifications" class="ui-formvalidation-notifications col-lg-8 col-md-8 col-sm-4">
+                <div id="contact-form-notifications" class="ui-formvalidation-notifications">
                     {% if app.session.flashBag.has('contactErrors') %}
                         <div class="message-error">
                             {% for error in app.session.flashBag.get('contactErrors') %}
@@ -147,18 +147,16 @@ title: 'Contact'
                     </div>
                     <div class="col-lg-6 col-md-6 col-sm-4">&nbsp;</div>
                 </div>
-                <div class="row row-multi-col">
-                    <div class="col-lg-12 col-md-12">
-                        <div class="form-field">
-                            <label for="contact-message-body">{% trans %} contact_contact-from-message-field-title {% endtrans %}
-                                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
-                            </label>
-                            <textarea id="contact-message-body" name="message[body]" rows="8" class="input-field" data-formvalidation-input data-formvalidation-required="true">{{ formData.body|default('') }}</textarea>
-                        </div><!-- /.form-field -->
-                    </div>
+                <div class="row">
+                    <div class="form-field">
+                        <label for="contact-message-body">{% trans %} contact_contact-from-message-field-title {% endtrans %}
+                            <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                        </label>
+                        <textarea id="contact-message-body" name="message[body]" rows="8" class="input-field" data-formvalidation-input data-formvalidation-required="true">{{ formData.body|default('') }}</textarea>
+                    </div><!-- /.form-field -->
                 </div>
                 <div class="row">
-                    <button class="btn-primary">{% trans %} contact_contact-form-submit-button {% endtrans %}</button>
+                    <button class="btn-primary" data-spinnerbutton>{% trans %} contact_contact-form-submit-button {% endtrans %}</button>
                 </div>
             </form>
         </div>

@@ -4,6 +4,7 @@
  *
  * @model {NotificationObject}
  * {
+ *    // Server
  *    'id':       {String}; default: Utility.randomString(),
  *    'type':     {String}; default: 'default',
  *    'status':   {String}; accepted: 'read', 'unread'; default: 'unread',
@@ -13,6 +14,9 @@
  *    'title':    {String}; default: '',
  *    'image':    {String}; default: '',
  *    'content':  {String}; default: ''
+ *
+ *    // UI only
+ *    'isOpen':   {Boolean}; default: false
  * }
  *
  * @todo Add in any needed AJAX requests here to record when a notification (or all) have been read/cleared
@@ -133,7 +137,7 @@ function normaliseNotificationObject (notification) {
 // Normalise a collection of notification objects
 function normaliseNotificationObjects (notifications) {
   // Always normalise the input notifications collection
-  if (notifications.length > 0) {
+  if (notifications && notifications.length > 0) {
     for (var i = 0; i < notifications.length; i++) {
       notifications[i] = normaliseNotificationObject(notifications[i])
     }
@@ -145,6 +149,8 @@ function normaliseNotificationObjects (notifications) {
 // Sort a collection of notifications
 // @note Assumes collection has already been normalised
 function sortNotifications (notifications) {
+  if (!notifications) return
+
   // Sort via which has a newer date
   function testDate (a, b) {
     if (a.hasOwnProperty('date') && b.hasOwnProperty('date')) {
@@ -184,9 +190,13 @@ function sortNotifications (notifications) {
 // Flatmap collection of notifications
 function flatmapNotifications (notifications) {
   var notificationsFlatmap = {}
-  for (var i = 0; i < notifications.length; i++) {
-    if (notifications[i].hasOwnProperty('id')) {
-      notificationsFlatmap['__' + notifications[i].id] = notifications[i]
+
+  // Ensure there's a collection to flatmap
+  if (notifications) {
+    for (var i = 0; i < notifications.length; i++) {
+      if (notifications[i].hasOwnProperty('id')) {
+        notificationsFlatmap['__' + notifications[i].id] = notifications[i]
+      }
     }
   }
 
@@ -201,6 +211,9 @@ function flatmapNotifications (notifications) {
 function cleanNotifications (notifications) {
   var notificationsFlatmapped = flatmapNotifications(notifications)
   var newNotifications = []
+
+  // Nothing
+  if (!notifications) return newNotifications
 
   // Flatmap by design removes duplicates
   for (var i in notificationsFlatmapped) {

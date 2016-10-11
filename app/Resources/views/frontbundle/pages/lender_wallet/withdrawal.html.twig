@@ -115,7 +115,9 @@ classNames: 'user-preter-balance'
                                     </div>
                                 </div><!-- /.form-field -->
                             <div class="btn-controls">
-                                <input type="submit" id="perform-withdrawal" class="btn-primary" value="{% trans %} lender-wallet_submit-transaction {% endtrans %}">
+                                <button type="submit" id="perform-withdrawal" class="btn-primary" data-spinnerbutton>
+                                    {% trans %} lender-wallet_submit-transaction {% endtrans %}
+                                </button>
                             </div>
                             {{ form_end(withdrawalForm) }}
                         </div><!-- /.dashboard-tab-pane-content -->
