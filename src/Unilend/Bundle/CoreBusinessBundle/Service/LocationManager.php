@@ -181,7 +181,7 @@ class LocationManager
                     $region = array(
                         'name' => $frenchRegions[$row['insee_region_code']],
                         'insee' => $row['insee_region_code'],
-                        'value' => (float)bcdiv($row['count'], $total, 2) * 100
+                        'value' => (float)round(bcmul(bcdiv($row['count'], $total, 3) , 100, 1))
                     );
                     $regions[] = $region;
                 }
@@ -190,7 +190,7 @@ class LocationManager
                     $region = array(
                         'name' => $frenchRegions[$insee],
                         'insee' => (string)$insee,
-                        'value' => (float)bcdiv($row, $total, 2) * 100
+                        'value' => (float)round(bcmul(bcdiv($row, $total, 4), 100, 1))
                     );
                     $regions[] = $region;
                 }

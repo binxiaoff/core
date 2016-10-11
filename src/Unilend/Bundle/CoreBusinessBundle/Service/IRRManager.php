@@ -36,21 +36,15 @@ class IRRManager
     public function updateIRRUnilend()
     {
         /** @var \unilend_stats $unilendStats */
-        $unilendStats = $this->entityManager->getRepository('unilend_stats');
+        $unilendStats = $this->oEntityManager->getRepository('unilend_stats');
+        /** @var float $irrUnilend */
+        $irrUnilend = $this->calculateIRRUnilend();
 
-        $lastUnilendIRR = $this->getLastUnilendIRR();
-        $lastIRRDate    = new \DateTime($lastUnilendIRR['added']);
-        $now            = new \DateTime('NOW');
-        $dateDifference = $now->diff($lastIRRDate);
-
-        $IRRUnilend = $this->calculateIRRUnilend();
-
-        if ($dateDifference->d == 0) {
-            $unilendStats->get($lastUnilendIRR['id_unilend_stat'], 'id_unilend_stat');
-            $unilendStats->value =  bcmul($IRRUnilend, 100, 2);
+        if ($unilendStats->get(date('Y-m-d'), 'DATE(added)')) {
+            $unilendStats->value = $irrUnilend;
             $unilendStats->update();
         } else {
-            $unilendStats->value = bcmul($IRRUnilend, 100, 2);
+            $unilendStats->value     = $irrUnilend;
             $unilendStats->type_stat = 'IRR';
             $unilendStats->create();
         }

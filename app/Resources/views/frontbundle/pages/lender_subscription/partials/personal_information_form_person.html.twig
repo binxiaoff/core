@@ -1,7 +1,7 @@
 {# Set this to 'person' to make included partials' JS UX functionality compatible with this form #}
 {% set idClientType = 'person' %}
 
-<form action="{{ path('lender_subscription_personal_information_person_form') }}" method="post" class="form-preter-create form-preter-create-info-perso" data-formvalidation data-formvalidation-notificationselem="#form-preter-person-1-notifications">
+<form action="{{ path('lender_subscription_personal_information_person_form') }}" method="post" class="form-preter-create form-preter-create-info-person" data-formvalidation data-formvalidation-notificationselem="#form-preter-person-1-notifications" data-cacheform>
     <fieldset class="panel">
         <div class="message-info">
             <p>{% trans %} lender-subscription_person-mandatory-documents-information {% endtrans %}</p>
@@ -104,7 +104,7 @@
 
     <fieldset class="panel">
         <h3 class="h3">{% trans %} lender-subscription_address-form-title {% endtrans %}</h3>
-        <div id="form-preter-person-fiscal-address-autocomplete-error" class="ui-formvalidation-notifications address-autocomplete-error" style="display: none;">
+        <div id="form-preter-person-fiscal-address-autocomplete-error" class="ui-formvalidation-notifications autocomplete-error" style="display: none;">
                 <div class="message-error">{% trans %}lender-subscription_fiscal-address-autocomplete-error{% endtrans %}</div>
         </div>
 
@@ -211,7 +211,7 @@
             <p>{% trans %} lender-subscription_mandatory-french-bank-account-message {% endtrans %}</p>
         </div>
 
-        <div id="form-preter-person-birth-place-autocomplete-error" class="ui-formvalidation-notifications birth-place-autocomplete-error" style="display: none;">
+        <div id="form-preter-person-birth-place-autocomplete-error" class="ui-formvalidation-notifications autocomplete-error" style="display: none;">
             <div class="message-error">{% trans %}lender-subscription_birth-place-autocomplete-error{% endtrans %}</div>
         </div>
 
@@ -266,7 +266,7 @@
         <div class="message-alert" id="error-message-selected-nationality-other" style="display: none;">{% trans %}lender-subscription_error-message-selected-nationality-other'{% endtrans %}</div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6">
+            <div id="form-lender-person-birth-place" class="form-field col-lg-6 col-md-6">
                 <label for="form-lender-person-birth-country">{% trans %} common_birth-country {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
@@ -277,23 +277,23 @@
                 </select>
             </div><!-- /.form-field -->
             <div class="form-field col-lg-6 col-md-6">
-                <label for="form-lender-person-birth-place">
+                <label for="form-lender-person-birth-city">
                     {% trans %} common_birth-city {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <div class="input-group set-right">
-                    <input id="form-lender-person-birth-place" type="text" name="client_place_of_birth" value="{{ formData.client_place_of_birth }}" autocomplete="off" class="input-field"
+                    <input id="form-lender-person-birth-city" type="text" name="client_place_of_birth" value="{{ formData.client_place_of_birth }}" autocomplete="off" class="input-field"
                            data-formvalidation-input
                            data-formvalidation-required="true"
                            data-autocomplete
                            data-autocomplete-ajaxurl="{{ path('lender_subscription_ajax_birth_place') }}"
                            data-autocomplete-ajaxprop="birthPlace"
-                           data-has-spinner="#person-birthplace-spinner"/>
-                    <input id="form-lender-person-birth-place-insee" type="hidden" name="client_insee_place_of_birth" value="{{ formData.client_insee_place_of_birth }}"/>
+                           data-has-spinner="#person-birth-city-spinner"/>
                     <div class="btn-group">
-                        <span id="person-birthplace-spinner" class="ui-is-spinner"></span>
+                        <span id="person-birth-city-spinner" class="ui-is-spinner"></span>
                     </div>
                 </div>
+                <input id="form-lender-person-birth-city-insee" type="hidden" name="client_insee_place_of_birth" value="{{ formData.client_insee_place_of_birth }}"/>
             </div><!-- /.form-field -->
         </div>
     </fieldset>
