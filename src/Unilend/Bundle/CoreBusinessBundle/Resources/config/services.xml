@@ -173,7 +173,7 @@
             <argument type="service" id="unilend.service.entity_manager" />
         </service>
 
-        <service id="unilend.service.cip_manager" class="Unilend\Bundle\FrontBundle\Service\CIPManager">
+        <service id="unilend.service.cip_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\CIPManager">
             <argument type="service" id="unilend.service_product.product_manager" />
             <argument type="service" id="unilend.service_product.contract_attribute_manager" />
             <argument type="service" id="unilend.service.entity_manager" />
