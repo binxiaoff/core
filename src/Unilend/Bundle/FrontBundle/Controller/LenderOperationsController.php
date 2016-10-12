@@ -4,6 +4,7 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -51,19 +52,9 @@ class LenderOperationsController extends Controller
         $lenderOperations       = $lenderOperationsIndex->getLenderOperations([], $this->getUser()->getClientId(), date('Y-m-d', strtotime('-1 month')), date('Y-m-d'));
         $projectsFundedByLender = $lenderOperationsIndex->get_liste_libelle_projet('id_client = ' . $this->getUser()->getClientId() . ' AND DATE(date_operation) >= "' . date('Y-m-d', strtotime('-1 month')) . '" AND DATE(date_operation) <= "' . date('Y-m-d') . '"');
 
-        unset($_SESSION['filtre_vos_operations']);
-        unset($_SESSION['id_last_action']);
-
-        $_SESSION['filtre_vos_operations']['start']          = date('d/m/Y', strtotime('-1 month'));
-        $_SESSION['filtre_vos_operations']['end']            = date('d/m/Y');
-        $_SESSION['filtre_vos_operations']['slide']          = 1;
-        $_SESSION['filtre_vos_operations']['year']           = date('Y');
-        $_SESSION['filtre_vos_operations']['operation']      = 1;
-        $_SESSION['filtre_vos_operations']['project']        = null;
-        $_SESSION['filtre_vos_operations']['id_last_action'] = 'operation';
-        $_SESSION['filtre_vos_operations']['order']          = 'date_operation DESC, id_transaction DESC';
-        $_SESSION['filtre_vos_operations']['type']           = '';
-        $_SESSION['filtre_vos_operations']['id_client']      = $client->id_client;
+        /** @var SessionInterface $session */
+        $session = $request->getSession();
+        $session->set('filtre_vos_operations', $this->getOperationFilters());
 
         $loans = $this->commonLoans($request, $lender);
 
@@ -135,16 +126,10 @@ class LenderOperationsController extends Controller
         /** @var TranslationManager $translationManager */
         $translationManager = $this->get('unilend.service.translation_manager');
 
-        $_SESSION['filtre_vos_operations']['start']          = $request->request->get('filter')['start'];
-        $_SESSION['filtre_vos_operations']['end']            = $request->request->get('filter')['end'];
-        $_SESSION['filtre_vos_operations']['slide']          = $request->request->get('filter')['slide'];
-        $_SESSION['filtre_vos_operations']['year']           = $request->request->get('filter')['year'];
-        $_SESSION['filtre_vos_operations']['operation']      = $request->request->get('filter')['operation'];
-        $_SESSION['filtre_vos_operations']['project']        = $request->request->get('filter')['project'];
-        $_SESSION['filtre_vos_operations']['id_last_action'] = $request->request->get('filter')['id_last_action'];
-        $_SESSION['filtre_vos_operations']['order']          = $request->request->get('order', '');
-        $_SESSION['filtre_vos_operations']['type']           = $request->request->get('type', '');
-        $_SESSION['filtre_vos_operations']['id_client']      = $this->getUser()->getClientId();
+        /** @var SessionInterface $session */
+        $session = $request->getSession();
+        $filters = $this->getOperationFilters($request);
+        $session->set('filtre_vos_operations', $filters);
 
         // tri start/end
         if (in_array($request->request->get('filter')['id_last_action'], array('start', 'end'))) {
@@ -161,7 +146,7 @@ class LenderOperationsController extends Controller
             $endTime                    = mktime(0, 0, 0, date("m"), date("d"), date('Y'));    // date end
             $_SESSION['id_last_action'] = $request->request->get('filter')['id_last_action'];
         } elseif ($request->request->get('filter')['id_last_action'] == 'year') {
-            $year      = $request->request->get('filter')['year'];
+            $year      = (int) $request->request->get('filter')['year'];
             $startTime = mktime(0, 0, 0, 1, 1, $year);    // date start
 
             if (date('Y') == $year) {
@@ -183,7 +168,7 @@ class LenderOperationsController extends Controller
                 $startTime      = mktime(0, 0, 0, date("m") - $numberOfMonths, date("d"), date('Y')); // date start
                 $endTime        = mktime(0, 0, 0, date("m"), date("d"), date('Y'));    // date end
             } elseif ($_SESSION['id_last_action'] == 'year') {
-                $year      = $request->request->get('filter')['year'];
+                $year      = (int) $request->request->get('filter')['year'];
                 $startTime = mktime(0, 0, 0, 1, 1, $year);    // date start
                 $endTime   = mktime(0, 0, 0, 12, 31, $year); // date end
             }
@@ -323,15 +308,18 @@ class LenderOperationsController extends Controller
         $lenderIndexedOperations = $entityManager->getRepository('indexage_vos_operations');
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
+        /** @var SessionInterface $session */
+        $session = $this->get('session');
 
-        $post_debut            = $_SESSION['filtre_vos_operations']['start'];
-        $post_fin              = $_SESSION['filtre_vos_operations']['end'];
-        $post_nbMois           = $_SESSION['filtre_vos_operations']['slide'];
-        $post_annee            = $_SESSION['filtre_vos_operations']['year'];
-        $post_tri_type_transac = $_SESSION['filtre_vos_operations']['operation'];
-        $projectIdFilter       = (false === empty($_SESSION['filtre_vos_operations']['project'])) ? $_SESSION['filtre_vos_operations']['project'] : null;
-        $post_id_last_action   = $_SESSION['filtre_vos_operations']['id_last_action'];
-        $post_id_client        = $_SESSION['filtre_vos_operations']['id_client'];
+        $savedFilters          = $session->get('filtre_vos_operations');
+        $post_debut            = $savedFilters['start'];
+        $post_fin              = $savedFilters['end'];
+        $post_nbMois           = $savedFilters['slide'];
+        $post_annee            = $savedFilters['year'];
+        $post_tri_type_transac = $savedFilters['operation'];
+        $projectIdFilter       = (false === empty($savedFilters['project'])) ? $savedFilters['project'] : null;
+        $post_id_last_action   = $savedFilters['id_last_action'];
+        $post_id_client        = $savedFilters['id_client'];
 
         $client->get($post_id_client, 'id_client');
 
@@ -1051,5 +1039,37 @@ class LenderOperationsController extends Controller
             ];
         }
         return $documents;
+    }
+
+    /**
+     * @param Request|null $request
+     * @return array
+     */
+    private function getOperationFilters(Request $request = null)
+    {
+        if (true === is_null($request)) {
+            $filters['start']          = date('d/m/Y', strtotime('-1 month'));
+            $filters['end']            = date('d/m/Y');
+            $filters['slide']          = 1;
+            $filters['year']           = date('Y');
+            $filters['operation']      = 1;
+            $filters['project']        = null;
+            $filters['id_last_action'] = 'operation';
+            $filters['order']          = 'date_operation DESC, id_transaction DESC';
+            $filters['type']           = '';
+            $filters['id_client']      = $this->getUser()->getClientId();
+        } else {
+            $filters['start']          = $request->request->get('filter')['start'];
+            $filters['end']            = $request->request->get('filter')['end'];
+            $filters['slide']          = $request->request->get('filter')['slide'];
+            $filters['year']           = (int) $request->request->get('filter')['year'];
+            $filters['operation']      = $request->request->get('filter')['operation'];
+            $filters['project']        = $request->request->get('filter')['project'];
+            $filters['id_last_action'] = $request->request->get('filter')['id_last_action'];
+            $filters['order']          = $request->request->get('order', '');
+            $filters['type']           = $request->request->get('type', '');
+            $filters['id_client']      = $this->getUser()->getClientId();
+        }
+        return $filters;
     }
 }

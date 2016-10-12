@@ -1153,17 +1153,21 @@ class pdfController extends bootstrap
 
     public function _vos_operations_pdf_indexation()
     {
-        if (isset($_SESSION['filtre_vos_operations']['id_client'])) {
-            $sPath          = $this->path . 'protected/operations_export_pdf/' . $_SESSION['filtre_vos_operations']['id_client'] . '/';
+        /** @var \Symfony\Component\HttpFoundation\Session\SessionInterface $session */
+        $session = $this->get('session');
+
+        if ($session->has('filtre_vos_operations')) {
+            $savedFilters = $session->get('filtre_vos_operations');
+            $sPath          = $this->path . 'protected/operations_export_pdf/' . $savedFilters['id_client'] . '/';
             $sNamePdfClient = 'vos_operations_' . date('Y-m-d') . '.pdf';
 
-            $this->GenerateOperationsHtml();
+            $this->GenerateOperationsHtml($savedFilters);
             $this->WritePdf($sPath . $sNamePdfClient, 'operations');
             $this->ReadPdf($sPath . $sNamePdfClient, $sNamePdfClient);
         }
     }
 
-    private function GenerateOperationsHtml()
+    private function GenerateOperationsHtml(array $savedFilters)
     {
         $this->wallets_lines    = $this->loadData('wallets_lines');
         $this->bids             = $this->loadData('bids');
@@ -1174,16 +1178,16 @@ class pdfController extends bootstrap
         $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
         $this->lng['preteur-operations-pdf']            = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
 
-        $post_debut            = $_SESSION['filtre_vos_operations']['start'];
-        $post_fin              = $_SESSION['filtre_vos_operations']['end'];
-        $post_nbMois           = $_SESSION['filtre_vos_operations']['slide'];
-        $post_annee            = $_SESSION['filtre_vos_operations']['year'];
-        $post_tri_type_transac = $_SESSION['filtre_vos_operations']['operation'];
-        $post_tri_projects     = $_SESSION['filtre_vos_operations']['project'];
-        $post_id_last_action   = $_SESSION['filtre_vos_operations']['id_last_action'];
-        $post_order            = $_SESSION['filtre_vos_operations']['order'];
-        $post_type             = $_SESSION['filtre_vos_operations']['type'];
-        $post_id_client        = $_SESSION['filtre_vos_operations']['id_client'];
+        $post_debut            = $savedFilters['start'];
+        $post_fin              = $savedFilters['end'];
+        $post_nbMois           = $savedFilters['slide'];
+        $post_annee            = $savedFilters['year'];
+        $post_tri_type_transac = $savedFilters['operation'];
+        $post_tri_projects     = $savedFilters['project'];
+        $post_id_last_action   = $savedFilters['id_last_action'];
+        $post_order            = $savedFilters['order'];
+        $post_type             = $savedFilters['type'];
+        $post_id_client        = $savedFilters['id_client'];
 
         $this->clients->get($post_id_client, 'id_client');
         $this->clients_adresses->get($post_id_client, 'id_client');
