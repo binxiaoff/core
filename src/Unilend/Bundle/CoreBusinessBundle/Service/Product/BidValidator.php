@@ -37,7 +37,8 @@ class BidValidator
         return true;
     }
 
-    public function getReasons(\bids $bid, \product $product) {
+    public function getReasons(\bids $bid, \product $product)
+    {
         $reason = [];
         /** @var \lenders_accounts $lender */
         $lender = $this->entityManager->getRepository('lenders_accounts');

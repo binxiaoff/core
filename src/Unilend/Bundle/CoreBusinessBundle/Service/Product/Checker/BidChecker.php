@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: binxiao
- * Date: 13/09/2016
- * Time: 12:37
- */
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker;
 

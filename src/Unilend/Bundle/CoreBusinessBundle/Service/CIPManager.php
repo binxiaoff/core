@@ -3,23 +3,36 @@
 namespace Unilend\Bundle\FrontBundle\Service;
 
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
-class LenderEvaluationManager
+class CIPManager
 {
+    /** @var ProductManager */
+    private $productManager;
+
+    /** @var ContractAttributeManager */
+    private $contractAttributeManager;
+
     /** @var EntityManager */
     private $entityManager;
+
     /** @var TranslatorInterface */
     private $translator;
 
     /**
-     * @param EntityManager       $entityManager
-     * @param TranslatorInterface $translator
+     * @param ProductManager           $productManager
+     * @param ContractAttributeManager $contractAttributeManager
+     * @param EntityManager            $entityManager
+     * @param TranslatorInterface      $translator
      */
-    public function __construct(EntityManager $entityManager, TranslatorInterface $translator)
+    public function __construct(ProductManager $productManager, ContractAttributeManager $contractAttributeManager, EntityManager $entityManager, TranslatorInterface $translator)
     {
-        $this->entityManager = $entityManager;
-        $this->translator    = $translator;
+        $this->productManager           = $productManager;
+        $this->contractAttributeManager = $contractAttributeManager;
+        $this->entityManager            = $entityManager;
+        $this->translator               = $translator;
     }
 
     /**
@@ -266,5 +279,51 @@ class LenderEvaluationManager
         $advice->create();
 
         return $advice;
+    }
+
+    /**
+     * @param \bids     $bid
+     * @param \projects $project
+     * @return bool
+     */
+    public function isCIPValidationNeeded(\bids $bid, \projects $project)
+    {
+        $productContracts = $this->productManager->getProjectAvailableContractTypes($project);
+
+        if (false === in_array(\underlying_contract::CONTRACT_MINIBON, array_column($productContracts, 'label'))) {
+            return false;
+        }
+
+        /** @var \underlying_contract $contract */
+        $contract = $this->entityManager->getRepository('underlying_contract');
+        if (false === $contract->get(\underlying_contract::CONTRACT_MINIBON, 'label')) {
+            throw new \InvalidArgumentException('The contract ' . \underlying_contract::CONTRACT_IFP . 'does not exist.');
+        }
+
+        $contractAttrVars = $this->contractAttributeManager->getContractAttributesByType($contract, \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
+        if (empty($contractAttrVars) || false === isset($contractAttrVars[0]) || false === is_numeric($contractAttrVars[0])) {
+            throw new \UnexpectedValueException('The IFP contract max amount is not set');
+        }
+
+        $thresholdAmount = $contractAttrVars[0];
+        $lenderBids      = $bid->select('id_lender_account = ' . $bid->id_lender_account . ' AND id_project = ' . $project->id_project . ' AND status = ' . \bids::STATUS_BID_ACCEPTED);
+
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount = $this->entityManager->getRepository('lenders_accounts');
+        if (false === $lenderAccount->isNaturalPerson($bid->id_lender_account)) {
+            return true;
+        }
+
+        $totalBidsAmount = 0;
+        foreach ($lenderBids as $lenderBid) {
+            $totalBidsAmount = bcadd($totalBidsAmount, bcdiv($lenderBid['amount'], 100, 2), 2);
+        }
+        $totalBidsAmount = bcadd($totalBidsAmount, bcdiv($bid->amount, 100, 2), 2);
+
+        if (bccomp($totalBidsAmount, $thresholdAmount, 2) < 0) {
+            return false;
+        }
+
+        return true;
     }
 }

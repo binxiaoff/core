@@ -16,13 +16,19 @@ class ProductManager
     /** @var ProductAttributeManager */
     private $productAttributeManager;
 
-    public function __construct(EntityManager $entityManager, ProjectValidator $projectValidator, BidValidator $bidValidator, LenderValidator $lenderValidator, ProductAttributeManager $productAttributeManager)
+    public function __construct(
+        EntityManager $entityManager,
+        ProjectValidator $projectValidator,
+        BidValidator $bidValidator,
+        LenderValidator $lenderValidator,
+        ProductAttributeManager $productAttributeManager
+    )
     {
-        $this->entityManager    = $entityManager;
-        $this->projectValidator = $projectValidator;
-        $this->bidValidator     = $bidValidator;
-        $this->lenderValidator  = $lenderValidator;
-        $this->productAttributeManager  = $productAttributeManager;
+        $this->entityManager           = $entityManager;
+        $this->projectValidator        = $projectValidator;
+        $this->bidValidator            = $bidValidator;
+        $this->lenderValidator         = $lenderValidator;
+        $this->productAttributeManager = $productAttributeManager;
     }
 
     /**

@@ -276,10 +276,6 @@ class ProjectManager
     {
         /** @var \bids $oBid */
         $oBid = $this->oEntityManager->getRepository('bids');
-        /** @var \loans $oLoan */
-        $oLoan = $this->oEntityManager->getRepository('loans');
-        /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
 
         $this->addProjectStatus(\users::USER_ID_CRON, \projects_status::BID_TERMINATED, $oProject);
         $this->reBidAutoBidDeeply($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE, true);
@@ -326,7 +322,7 @@ class ProjectManager
             }
         }
         $contractTypes = array_column($this->productManager->getProjectAvailableContractTypes($oProject), 'label');
-        if(in_array(\underlying_contract::CONTRACT_IFP, $contractTypes) && in_array(\underlying_contract::CONTRACT_BDC, $contractTypes)) {
+        if (in_array(\underlying_contract::CONTRACT_IFP, $contractTypes) && in_array(\underlying_contract::CONTRACT_BDC, $contractTypes)) {
             $this->buildLoanIFPAndBDC($oProject);
         } elseif (in_array(\underlying_contract::CONTRACT_IFP, $contractTypes)) {
             $this->buildLoanIFP($oProject);

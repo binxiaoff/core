@@ -29,7 +29,7 @@ class underlying_contract_attribute_type extends underlying_contract_attribute_t
 {
     const ELIGIBLE_LENDER_TYPE                 = 'contract_eligible_lender_type';
     const TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO = 'contract_total_loan_amount_limitation_in_euro';
-    const TOTAL_QUATITY_LIMITATION             = 'contract_total_loan_quatity_limitation';
+    const TOTAL_QUANTITY_LIMITATION            = 'contract_total_loan_quantity_limitation';
     const MAX_LOAN_DURATION_IN_MONTH           = 'contract_max_loan_duration_in_month';
 
     public function __construct($bdd, $params = '')
