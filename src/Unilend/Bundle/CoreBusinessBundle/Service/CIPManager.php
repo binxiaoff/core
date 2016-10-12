@@ -2,13 +2,17 @@
 
 namespace Unilend\Bundle\FrontBundle\Service;
 
-use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Symfony\Component\Translation\TranslatorInterface;
 
 class CIPManager
 {
+    const INDICATOR_TOTAL_AMOUNT     = 'total_amount';
+    const INDICATOR_AMOUNT_BY_MONTH  = 'amount_by_month';
+    const INDICATOR_PROJECT_DURATION = 'project_duration';
+
     /** @var ProductManager */
     private $productManager;
 
@@ -27,7 +31,12 @@ class CIPManager
      * @param EntityManager            $entityManager
      * @param TranslatorInterface      $translator
      */
-    public function __construct(ProductManager $productManager, ContractAttributeManager $contractAttributeManager, EntityManager $entityManager, TranslatorInterface $translator)
+    public function __construct(
+        ProductManager $productManager,
+        ContractAttributeManager $contractAttributeManager,
+        EntityManager $entityManager,
+        TranslatorInterface $translator
+    )
     {
         $this->productManager           = $productManager;
         $this->contractAttributeManager = $contractAttributeManager;
@@ -66,6 +75,15 @@ class CIPManager
         }
 
         return $this->createEvaluation($lender);
+    }
+
+    /**
+     * @param \lender_evaluation $evaluation
+     * @return bool
+     */
+    public function isValidEvaluation(\lender_evaluation $evaluation)
+    {
+        return $evaluation->expiry_date !== '0000-00-00 00:00:00';
     }
 
     /**
@@ -325,5 +343,29 @@ class CIPManager
         }
 
         return true;
+    }
+
+    /**
+     * If no evaluation is completed, returns null
+     * If evaluation is completed, return list of indicators (suggested limitations)
+     * If no limitation is suggested, indicator value is null
+     *
+     * @param \lenders_accounts $lender
+     * @return array|null
+     */
+    public function getIndicators(\lenders_accounts $lender)
+    {
+        $evaluation = $this->getCurrentEvaluation($lender);
+
+        if (false === $this->isValidEvaluation($evaluation)) {
+            return null;
+        }
+
+        // @todo retrieve indicators values
+        return [
+            self::INDICATOR_TOTAL_AMOUNT     => null,
+            self::INDICATOR_AMOUNT_BY_MONTH  => 150,
+            self::INDICATOR_PROJECT_DURATION => 36
+        ];
     }
 }
