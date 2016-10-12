@@ -1837,11 +1837,4 @@ class preteursController extends bootstrap
         $writer->setDelimiter(';');
         $writer->save('php://output');
     }
-
-    public function _document_not_found()
-    {
-        /** @var \loans loan */
-        $this->loan = $this->loadData('loans');
-        $this->loan->get($this->params[0]);
-    }
 }

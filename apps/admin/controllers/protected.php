@@ -682,7 +682,7 @@ class protectedController extends bootstrap
             @readfile($url);
             die();
         } else {
-            header('location:' . $this->lurl . '/preteurs/document_not_found/' . $this->params[1]);
+            header('location: ' . $this->lurl . '/protected/document_not_found');
             die;
         }
     }
@@ -698,8 +698,17 @@ class protectedController extends bootstrap
             @readfile($url);
             die();
         } else {
-            header('location:' . $this->lurl . '/preteurs/document_not_found/' . $this->params[1]);
+            header('location: ' . $this->lurl . '/protected/document_not_found');
             die;
         }
+    }
+
+    public function _document_not_found()
+    {
+        $this->menu_admin     = 'protected';
+        $this->autoFireHeader = true;
+        $this->autoFireHead   = true;
+        $this->autoFireFooter = true;
+        $this->autoFireView   = true;
     }
 }
