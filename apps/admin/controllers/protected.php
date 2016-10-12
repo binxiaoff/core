@@ -682,7 +682,7 @@ class protectedController extends bootstrap
             @readfile($url);
             die();
         } else {
-            header('location: ' . $this->lurl . '/protected/document_not_found');
+            header('location: ' . $this->url . '/protected/document_not_found');
             die;
         }
     }
@@ -698,7 +698,7 @@ class protectedController extends bootstrap
             @readfile($url);
             die();
         } else {
-            header('location: ' . $this->lurl . '/protected/document_not_found');
+            header('location: ' . $this->url . '/protected/document_not_found');
             die;
         }
     }

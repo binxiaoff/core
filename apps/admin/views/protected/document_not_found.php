@@ -1,6 +1,6 @@
 <div id="contenu">
     <ul class="breadcrumbs">
-        <li><a href="<?= $this->lurl ?>/" title="Dashboard">Dashboard</a> -</li>
+        <li><a href="<?= $this->url ?>/" title="Dashboard">Dashboard</a> -</li>
         <li>Document introuvable</li>
     </ul>
     <h1>Document introuvable</h1>
