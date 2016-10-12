@@ -1432,24 +1432,25 @@ class preteursController extends bootstrap
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
 
-        /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $oMailQueueManager */
-        $oMailQueueManager = $this->get('unilend.service.mail_queue');
-        /** @var mail_queue $oMailQueue */
-        $oMailQueue = $this->loadData('mail_queue');
-        $oMailQueue->get($this->params[0]);
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $oEmail */
-        $oEmail = $oMailQueueManager->getMessage($oMailQueue);
+        /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $mailQueueManager */
+        $mailQueueManager = $this->get('unilend.service.mail_queue');
+        /** @var mail_queue $mailQueue */
+        $mailQueue = $this->loadData('mail_queue');
+        $mailQueue->get($this->params[0]);
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $email */
+        $email = $mailQueueManager->getMessage($mailQueue);
+        /** @var \DateTime $sentAt */
+        $sentAt = new \DateTime($mailQueue->sent_at);
 
-        $iDate = $oEmail->getDate();
-        $aFrom = $oEmail->getFrom();
-        $aTo   = $oEmail->getTo();
+        $from = $email->getFrom();
+        $to   = $email->getTo();
 
-        $this->aEmail = array(
-            'date'    => date('d/m/Y H:i', $iDate),
-            'from'    => array_shift($aFrom),
-            'to'      => array_shift($aTo),
-            'subject' => $oEmail->getSubject(),
-            'body'    => $oEmail->getBody()
+        $this->email = array(
+            'date'    => $sentAt->format('d/m/Y H:i'),
+            'from'    => array_shift($from),
+            'to'      => array_shift($to),
+            'subject' => $email->getSubject(),
+            'body'    => $email->getBody()
         );
     }
 
