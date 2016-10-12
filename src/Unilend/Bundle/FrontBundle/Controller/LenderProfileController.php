@@ -1463,7 +1463,7 @@ class LenderProfileController extends Controller
     private function sendAccountModificationEmail(\clients $client)
     {
         $varMail = array_merge($this->getCommonEmailVariables(), [
-            'prenom_p' => $client->prenom,
+            'prenom' => $client->prenom,
         ]);
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
