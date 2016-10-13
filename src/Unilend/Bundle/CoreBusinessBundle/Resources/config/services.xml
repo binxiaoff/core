@@ -179,5 +179,9 @@
             <argument type="service" id="unilend.service.entity_manager" />
             <argument type="service" id="translator" />
         </service>
+
+        <service id="unilend.service.altares" class="Unilend\Bundle\CoreBusinessBundle\Service\Altares">
+            <argument type="service" id="unilend.service.entity_manager"/>
+        </service>
     </services>
 </container>

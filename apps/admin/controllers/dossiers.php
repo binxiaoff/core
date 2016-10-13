@@ -1,6 +1,5 @@
 <?php
 
-use Unilend\librairies\Altares;
 use \Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
 
 class dossiersController extends bootstrap
@@ -353,7 +352,8 @@ class dossiersController extends bootstrap
                 die;
             } elseif (isset($this->params[1]) && $this->params[1] == 'altares') {
                 if (false === empty($this->companies->siren)) {
-                    $oAltares = new Altares();
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Altares $oAltares */
+                    $oAltares = $this->get('unilend.service.altares');
                     $oResult  = $oAltares->getEligibility($this->companies->siren);
 
                     if ($oResult->exception == '' && isset($oResult->myInfo) && is_object($oResult->myInfo)) {
@@ -367,7 +367,7 @@ class dossiersController extends bootstrap
 
                         // @todo Revert when TMA-749 is resolved
                         if (is_numeric($this->companies->name) || 0 === strcasecmp($this->companies->name, 'Monsieur') || 0 === strcasecmp($this->companies->name, 'Madame')) {
-                            /** @var LoggerInterface $logger */
+                            /** @var \Psr\Log\LoggerInterface $logger */
                             $logger = $this->get('logger');
                             $logger->error('Wrong company name - altares return : ' . serialize($oResult), array('class' => __CLASS__, 'function' => __FUNCTION__));
                         }
@@ -1472,7 +1472,8 @@ class dossiersController extends bootstrap
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
             if (isset($this->params[1]) && $this->params[1] === 'altares') {
-                $oAltares = new Altares();
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Altares $oAltares */
+                $oAltares = $this->get('unilend.service.altares');
                 $oResult  = $oAltares->getEligibility($this->companies->siren);
                 $oAltares->setCompanyData($this->companies, $oResult->myInfo);
 

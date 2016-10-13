@@ -1,8 +1,7 @@
 <?php
+namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-namespace Unilend\librairies;
-
-use Unilend\core\Loader;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class Altares
 {
@@ -17,26 +16,14 @@ class Altares
     const RESPONSE_CODE_NO_ANNUAL_ACCOUNTS             = 9;
 
     /**
-     * @var string
+     * @var EntityManager
      */
-    private $sIdentification;
+    private $entityManager;
 
-    /**
-     * @var \settings
-     */
-    private $oSettings;
-
-    public function __construct()
+    public function __construct(EntityManager $entityManager)
     {
         ini_set('default_socket_timeout', 60);
-
-        $this->oSettings = Loader::loadData('settings');
-        $this->oSettings->get('Altares login', 'type');
-
-        $this->sIdentification = $this->oSettings->value;
-
-        $this->oSettings->get('Altares mot de passe', 'type');
-        $this->sIdentification .= '|' . $this->oSettings->value;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -46,9 +33,10 @@ class Altares
      */
     public function getEligibility($iSIREN)
     {
-        $this->oSettings->get('Altares WSDL Eligibility', 'type');
+        $settings = $this->entityManager->getRepository('settings');
+        $settings->get('Altares WSDL Eligibility', 'type');
 
-        return $this->soapCall($this->oSettings->value, 'getEligibility', array('siren' => $iSIREN));
+        return $this->soapCall($settings->value, 'getEligibility', array('siren' => $iSIREN));
     }
 
     /**
@@ -59,9 +47,10 @@ class Altares
      */
     public function getBalanceSheets($iSIREN, $iSheetsCount = 3)
     {
-        $this->oSettings->get('Altares WSDL CallistoIdentite', 'type');
+        $settings = $this->entityManager->getRepository('settings');
+        $settings->get('Altares WSDL CallistoIdentite', 'type');
 
-        return $this->soapCall($this->oSettings->value, 'getDerniersBilans', array('siren' => $iSIREN, 'nbBilans' => $iSheetsCount));
+        return $this->soapCall($settings->value, 'getDerniersBilans', array('siren' => $iSIREN, 'nbBilans' => $iSheetsCount));
     }
 
     /**
@@ -102,21 +91,21 @@ class Altares
     {
         if (is_null($oEligibilityInfo)) {
             /** @var \companies $oCompany */
-            $oCompany = Loader::loadData('companies');
+            $oCompany = $this->entityManager->getRepository('companies');
             $oCompany->get($oProject->id_company);
 
             $oEligibilityInfo = $this->getEligibility($oCompany->siren)->myInfo;
         }
 
         /** @var \company_rating_history $oCompanyRatingHistory */
-        $oCompanyRatingHistory = Loader::loadData('company_rating_history');
+        $oCompanyRatingHistory = $this->entityManager->getRepository('company_rating_history');
         $oCompanyRatingHistory->id_company = $oProject->id_company;
         $oCompanyRatingHistory->id_user    = isset($_SESSION['user']['id_user']) ? $_SESSION['user']['id_user'] : 0;
         $oCompanyRatingHistory->action     = \company_rating_history::ACTION_WS;
         $oCompanyRatingHistory->create();
 
         /** @var \company_rating $oCompanyRating */
-        $oCompanyRating = Loader::loadData('company_rating');
+        $oCompanyRating = $this->entityManager->getRepository('company_rating');
 
         if (false === empty($oProject->id_company_rating_history)) {
             foreach ($oCompanyRating->getHistoryRatingsByType($oProject->id_company_rating_history) as $sRating => $mValue) {
@@ -182,13 +171,13 @@ class Altares
 
         if (isset($oBalanceSheets->myInfo->bilans) && is_array($oBalanceSheets->myInfo->bilans)) {
             /** @var \companies_actif_passif $oCompanyAssetsDebts */
-            $oCompanyAssetsDebts = Loader::loadData('companies_actif_passif');
+            $oCompanyAssetsDebts = $this->entityManager->getRepository('companies_actif_passif');
             /** @var \companies_bilans $oCompanyAnnualAccounts */
-            $oCompanyAnnualAccounts = Loader::loadData('companies_bilans');
+            $oCompanyAnnualAccounts = $this->entityManager->getRepository('companies_bilans');
             /** @var \company_balance $oCompanyBalance */
-            $oCompanyBalance = Loader::loadData('company_balance');
+            $oCompanyBalance = $this->entityManager->getRepository('company_balance');
             /** @var \company_balance_type $oCompaniesBalanceTypes */
-            $oCompaniesBalanceTypes = Loader::loadData('company_balance_type');
+            $oCompaniesBalanceTypes = $this->entityManager->getRepository('company_balance_type');
 
             $aCodes = $oCompaniesBalanceTypes->getAllByCode();
 
@@ -245,10 +234,18 @@ class Altares
      */
     private function soapCall($sWSDLUrl, $sWSName, array $aParameters = array())
     {
+        $settings = $this->entityManager->getRepository('settings');
+        $settings->get('Altares login', 'type');
+
+        $identification = $settings->value;
+
+        $settings->get('Altares mot de passe', 'type');
+        $identification .= '|' . $settings->value;
+
         $oClient = new \SoapClient($sWSDLUrl, array('trace' => 1, 'exception' => true));
         $oResult = $oClient->__soapCall(
             $sWSName,
-            array(array('identification' => $this->sIdentification, 'refClient' => 'sffpme') + $aParameters)
+            array(array('identification' => $identification, 'refClient' => 'sffpme') + $aParameters)
         );
         return isset($oResult->return) ? $oResult->return : null;
     }

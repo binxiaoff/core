@@ -12,11 +12,9 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
-use Unilend\Bundle\FrontBundle\Service\RouteProvider;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 use Unilend\core\Loader;
-use Unilend\librairies\Altares;
 
 class ProjectRequestController extends Controller
 {
@@ -263,7 +261,7 @@ class ProjectRequestController extends Controller
         $logger = $this->get('logger');
 
         try {
-            $altares = new Altares();
+            $altares = $this->get('unilend.service.altares');
             $result  = $altares->getEligibility($this->company->siren);
         } catch (\Exception $exception) {
             $logger->error(
