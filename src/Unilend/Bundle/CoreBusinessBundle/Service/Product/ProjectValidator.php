@@ -26,6 +26,10 @@ class ProjectValidator
      */
     public function isEligible(\projects $projects, \product $product)
     {
+        /** @var \companies $company */
+        $company = $this->entityManager->getRepository('companies');
+        $company->get($projects->id_company);
+
         foreach ($this->getAttributeTypeToCheck() as $attributeTypeToCheck) {
             switch ($attributeTypeToCheck) {
                 case \product_attribute_type::MIN_LOAN_DURATION_IN_MONTH :
@@ -39,6 +43,12 @@ class ProjectValidator
                     break;
                 case \underlying_contract_attribute_type::MAX_LOAN_DURATION_IN_MONTH :
                     $eligibility = $this->isProductEligibleForMaxContractDuration($projects, $product, $this->productAttributeManager);
+                    break;
+                case \product_attribute_type::MIN_CREATION_DAYS_PROSPECT :
+                    $eligibility = $this->isEligibleForCreationDays($company, $product, $this->productAttributeManager);
+                    break;
+                case \product_attribute_type::ELIGIBLE_RCS :
+                    $eligibility = $this->isEligibleForRCS($company, $product, $this->productAttributeManager);
                     break;
                 default :
                     $eligibility = false;
@@ -58,7 +68,9 @@ class ProjectValidator
             \product_attribute_type::ELIGIBLE_BORROWING_MOTIVE,
             \product_attribute_type::MIN_LOAN_DURATION_IN_MONTH,
             \product_attribute_type::MAX_LOAN_DURATION_IN_MONTH,
-            \underlying_contract_attribute_type::MAX_LOAN_DURATION_IN_MONTH
+            \underlying_contract_attribute_type::MAX_LOAN_DURATION_IN_MONTH,
+            \product_attribute_type::MIN_CREATION_DAYS_PROSPECT,
+            \product_attribute_type::ELIGIBLE_RCS
         ];
     }
 }

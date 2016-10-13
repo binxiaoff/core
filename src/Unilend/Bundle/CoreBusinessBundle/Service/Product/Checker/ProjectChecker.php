@@ -5,6 +5,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
 
 trait ProjectChecker
 {
+    use CompanyChecker;
     /**
      * @param \projects               $project
      * @param \product                $product

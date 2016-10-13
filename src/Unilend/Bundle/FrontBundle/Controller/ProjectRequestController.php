@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Service\Altares;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
@@ -289,33 +290,36 @@ class ProjectRequestController extends Controller
 
         $altares->setCompanyData($this->company, $result->myInfo);
 
-        switch ($result->myInfo->eligibility) {
-            case 'Oui':
-                $altares->setProjectData($this->project, $result->myInfo);
-                $altares->setCompanyBalance($this->company);
-
-                /** @var \companies_bilans $companyAccount */
-                $companyAccount = $entityManager->getRepository('companies_bilans');
-
-                $this->project->id_dernier_bilan = $companyAccount->select('id_company = ' . $this->company->id_company, 'cloture_exercice_fiscal DESC', 0, 1)[0]['id_bilan'];
-                $this->project->update();
-
-                $companyCreationDate = new \DateTime($this->company->date_creation);
-                if ($companyCreationDate->diff(new \DateTime())->days < \projects::MINIMUM_CREATION_DAYS_PROSPECT) {
-                    return $this->redirectStatus(self::PAGE_ROUTE_PROSPECT, \projects_status::PAS_3_BILANS);
-                }
-
-                return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, $status);
-            case 'Non':
-            default:
-                $this->project->update();
-
-                if (in_array($result->myInfo->codeRetour, [Altares::RESPONSE_CODE_NEGATIVE_CAPITAL_STOCK, Altares::RESPONSE_CODE_NEGATIVE_RAW_OPERATING_INCOMES])) {
-                    return $this->redirectStatus(self::PAGE_ROUTE_PROSPECT, \projects_status::NOTE_EXTERNE_FAIBLE, $result->myInfo->motif);
-                }
-
-                return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, $result->myInfo->motif);
+        $this->project->update();
+        if (in_array($result->myInfo->codeRetour, [Altares::RESPONSE_CODE_NEGATIVE_CAPITAL_STOCK, Altares::RESPONSE_CODE_NEGATIVE_RAW_OPERATING_INCOMES])) {
+            return $this->redirectStatus(self::PAGE_ROUTE_PROSPECT, \projects_status::NOTE_EXTERNE_FAIBLE, $result->myInfo->motif);
         }
+
+        $altares->setProjectData($this->project, $result->myInfo);
+        $altares->setCompanyBalance($this->company);
+
+        /** @var \companies_bilans $companyAccount */
+        $companyAccount = $entityManager->getRepository('companies_bilans');
+
+        $this->project->id_dernier_bilan = $companyAccount->select('id_company = ' . $this->company->id_company, 'cloture_exercice_fiscal DESC', 0, 1)[0]['id_bilan'];
+        $this->project->update();
+
+        $productManager = $this->get('unilend.service_product.product_manager');
+        try {
+            $products = $productManager->findEligibleProducts($this->project);
+            if (count($products) === 1 && isset($products[0]) && $products[0] instanceof \product) {
+                $this->project->id_product = $products[0]->id_product;
+                $this->project->update();
+            }
+        } catch (\Exception $exception) {
+            $this->get('logger')->warning($exception->getMessage(), ['method' => __METHOD__, 'line' => __LINE__]);
+        }
+
+        if (empty($products)){
+            return $this->redirectStatus(self::PAGE_ROUTE_PROSPECT, \projects_status::NOTE_EXTERNE_FAIBLE, 'Eligible à aucun produit');
+        }
+
+        return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, $status);
     }
 
     /**
@@ -798,17 +802,6 @@ class ProjectRequestController extends Controller
 
         if ($updateDeclaration) {
             $this->project->update();
-        }
-
-        $productManager = $this->get('unilend.service_product.product_manager');
-        try {
-            $products = $productManager->findEligibleProducts($this->project);
-            if (count($products) === 1 && isset($products[0]) && $products[0] instanceof \product) {
-                $this->project->id_product = $products[0]->id_product;
-                $this->project->update();
-            }
-        } catch (\Exception $exception) {
-            $this->get('logger')->warning($exception->getMessage(), ['method' => __METHOD__, 'line' => __LINE__]);
         }
 
         if ($values['dl'] < 0) {

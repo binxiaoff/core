@@ -34,6 +34,8 @@ class product_attribute_type extends product_attribute_type_crud
     const ELIGIBLE_BORROWING_MOTIVE         = 'product_eligible_borrowing_motive';
     const MIN_LOAN_DURATION_IN_MONTH        = 'product_min_loan_duration_in_month';
     const MAX_LOAN_DURATION_IN_MONTH        = 'product_max_loan_duration_in_month';
+    const MIN_CREATION_DAYS_PROSPECT        = 'product_min_creation_days_prospect';
+    const ELIGIBLE_RCS                      = 'product_rcs';
 
     public function __construct($bdd, $params = '')
     {

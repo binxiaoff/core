@@ -77,6 +77,7 @@ class Altares
             $oCompany->zip           = $oEligibilityInfo->identite->codePostal;
             $oCompany->siret         = $oEligibilityInfo->identite->siret;
             $oCompany->date_creation = substr($oEligibilityInfo->identite->dateCreation, 0, 10);
+            $oCompany->rcs           = $oEligibilityInfo->identite->rcs;
         }
 
         $oCompany->update();
