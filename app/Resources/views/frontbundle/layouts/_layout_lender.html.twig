@@ -34,7 +34,7 @@
                                         <span class="label">{% trans %} lender-dashboard-navigation_operations-link {% endtrans %}</span>
                                     </a>
                                 </li>
-                                <li role="presentation" class="dashboard-nav-profile {% if app.request.attributes.get('_route') == 'lender_profile' %}active{% else %}complete{% endif %}">
+                                <li role="presentation" class="dashboard-nav-profile {% if app.request.attributes.get('_route') in ['lender_profile', 'lender_profile_fiscal_information', 'lender_profile_security', 'lender_profile_notifications', 'cip_index', 'cip_continue_questionnaire'] %}active{% else %}complete{% endif %}">
                                     <a href="{{ path('lender_profile') }}">
                                         <span class="icon fa-profile-u"></span>
                                         <span class="label">{% trans %} lender-dashboard-navigation_profile-link {% endtrans %}</span>

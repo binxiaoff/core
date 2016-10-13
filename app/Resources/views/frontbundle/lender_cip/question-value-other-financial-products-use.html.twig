@@ -1,0 +1,86 @@
+{% extends 'layouts/_layout_lender.html.twig' %}
+
+{% set page = {
+    id: 'user-preter-profile',
+    title: 'Conseils en investissement',
+    classNames: 'user-preter-profile'
+} %}
+
+{% block dashboardContent %}
+    <div class="dashboard-tabs tabs">
+        {% include('pages/lender_profile/partials/tab_navigation.html.twig') %}
+
+        <article id="dashboard-cip" class="dashboard-tabs-content tab-content">
+            <div id="cip-step-{{ current_step }}">
+                <div class="panel cip-header">
+                    <header class="panel-header">
+                        <h3>Questionnaire</h3>
+                    </header>
+                    <div class="cip-progress" data-progressbar data-progressbar-current="{{ current_step }}" data-progressbar-total="{{ total_steps }}">
+                        <div data-progressbar-bar></div>
+                    </div>
+                </div>
+                <form method="post" action="{{ path('cip_form_questionnaire') }}" class="panel" data-formvalidation>
+                    <div class="row">
+                        <div class="form-field cip-answer">
+                            <label for="estate-answer" class="field-label">
+                                Quel est le montant total de votre patrimoine financier ?
+                            </label>
+                            <input type="text" id="estate-answer" value="{{ answers['value-total-estate'].first_answer }}" class="input-field" readonly />
+                        </div><!-- /.form-field -->
+                    </div>
+                    <div class="row">
+                        <div class="form-field cip-answer">
+                            <label for="savings-answer" class="field-label">
+                                Combien d’argent mettez-vous de côté tous les mois ?
+                            </label>
+                            <input type="text" id="savings-answer" value="{{ answers['value-monthly-savings'].first_answer }}" class="input-field" readonly />
+                        </div><!-- /.form-field -->
+                    </div>
+                    {% if answers['value-blocking-period'] is defined %}
+                        <div class="row">
+                            <div class="form-field cip-answer">
+                                <label for="blocking-answer" class="field-label">
+                                    Dans combien de temps aurez-vous besoin de cet argent ?
+                                </label>
+                                <input type="text" id="blocking-answer" value="{% spaceless %}
+                                       {% if answers['value-blocking-period'].first_answer == '-12' %}Moins d'un an
+                                       {% elseif answers['value-blocking-period'].first_answer == '-36' %}Moins de 3 ans
+                                       {% elseif answers['value-blocking-period'].first_answer == '-60' %}Moins de 5 ans
+                                       {% elseif answers['value-blocking-period'].first_answer == '60+' %}Je n'en ai pas besoin avant 5 ans{% endif %}
+                                       {% endspaceless %}"
+                                       class="input-field" readonly />
+                            </div><!-- /.form-field -->
+                        </div>
+                    {% endif %}
+                    <div class="row">
+                        <div class="form-field cip-answer">
+                            <span class="field-label">
+                                Avez-vous déjà investi votre argent dans les produits suivants ?
+                            </span>
+                            <div class="form-field form-field-multi">
+                                <label>
+                                    <input type="checkbox" name="answer[]" value="actions" />
+                                    <span class="label">Actions (en direct, via des SICAV ...)</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="answer[]" value="prets" />
+                                    <span class="label">Prêts (financement participatif, obligations ...)</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="answer[]" value="autres" />
+                                    <span class="label">Autres formes d'épargne</span>
+                                </label>
+                            </div>
+                        </div><!-- /.form-field -->
+                    </div>
+                    <input type="hidden" name="question" value="{{ question.id }}" />
+                    <button type="submit" class="btn-primary fright">
+                        <span class="icon fa-angle-right"></span>
+                        Continuer
+                    </button>
+                </form>
+            </div><!-- /#cip-step-{{ current_step }} -->
+        </article><!-- /.dashboard-tabs-content -->
+    </div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'layouts/_layout_lender.html.twig' %}
+
+{% set page = {
+    id: 'user-preter-profile',
+    title: 'Conseils en investissement',
+    classNames: 'user-preter-profile'
+} %}
+
+{% block dashboardContent %}
+    <div class="dashboard-tabs tabs">
+        {% include('pages/lender_profile/partials/tab_navigation.html.twig') %}
+
+        <article id="dashboard-cip" class="dashboard-tabs-content tab-content">
+            <div id="cip-step-{{ current_step }}">
+                <div class="panel cip-header">
+                    <header class="panel-header">
+                        <h3>Introduction</h3>
+                    </header>
+                    <div class="cip-progress" data-progressbar data-progressbar-current="{{ current_step }}" data-progressbar-total="{{ total_steps }}">
+                        <div data-progressbar-bar></div>
+                    </div>
+                </div>
+                <form method="post" action="{{ path('cip_start_questionnaire') }}" class="panel">
+                    <p>Nous souhaitons nous assurer que vous avez bien conscience que prêter à des TPE ou PME comporte des risques spécifiques :</p>
+                    <ul>
+                        <li>vous pouvez perdre tout ou partie de l’argent que vous prêtez</li>
+                        <li>vous ne pouvez pas demander le remboursement anticipé de l’argent que vous prêtez : vous devez attendre le remboursement conformément au calendrier prévu par l’échéancier</li>
+                        <li>les remboursements peuvent être retardés par des difficultés de trésorerie de l’emprunteur</li>
+                        <li>il est très important de répartir vos prêts sur un très grand nombre d’entreprises pour réduire l’aléa de votre risque de perte en capital</li>
+                    </ul>
+                    <div class="row text-align-center">
+                        <button type="submit" class="btn-primary">
+                            <span class="icon fa-angle-right"></span>
+                            <span class="label">Commencer le questionnaire</span>
+                        </button>
+                    </div>
+                </form>
+            </div><!-- /#cip-step-{{ current_step }} -->
+        </article><!-- /.dashboard-tabs-content -->
+    </div>
+{% endblock %}

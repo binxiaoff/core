@@ -2,11 +2,14 @@
 
 class lender_questionnaire_question extends lender_questionnaire_question_crud
 {
-    const TYPE_BOOLEAN            = 'bool';
-    const TYPE_ESTATE             = 'estate';
-    const TYPE_MONTHLY_SAVINGS    = 'monthly_savings';
-    const TYPE_BLOCKING_PERIOD    = 'blocking_period';
-    const TYPE_FINANCIAL_PRODUCTS = 'financial_products';
+    CONST TYPE_AWARE_MONEY_LOSS                    = 'aware-money-loss';
+    CONST TYPE_AWARE_PROGRESSIVE_CAPITAL_REPAYMENT = 'aware-progressive-capital-repayment';
+    CONST TYPE_AWARE_RISK_RETURN                   = 'aware-risk-return';
+    CONST TYPE_AWARE_DIVIDE_INVESTMENTS            = 'aware-divide-investments';
+    CONST TYPE_VALUE_TOTAL_ESTATE                  = 'value-total-estate';
+    CONST TYPE_VALUE_MONTHLY_SAVINGS               = 'value-monthly-savings';
+    CONST TYPE_VALUE_BLOCKING_PERIOD               = 'value-blocking-period';
+    CONST TYPE_VALUE_OTHER_FINANCIAL_PRODUCTS_USE  = 'value-other-financial-products-use';
 
     const VALUE_BOOLEAN_TRUE                = 'true';
     const VALUE_BOOLEAN_FALSE               = 'false';
