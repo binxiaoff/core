@@ -1411,7 +1411,7 @@ class LenderSubscriptionController extends Controller
      */
     public function checkCityAction(Request $request)
     {
-        if ($request->isXMLHttpRequest()) {
+        if ($request->isXmlHttpRequest()) {
             $get = $request->query->all();
 
             if (false === empty($get['country']) && \pays_v2::COUNTRY_FRANCE != $get['country']) {
@@ -1426,6 +1426,32 @@ class LenderSubscriptionController extends Controller
                 /** @var LocationManager $locationManager */
                 $locationManager = $this->get('unilend.service.location_manager');
                 return $this->json(['status' => $locationManager->checkFrenchCity($get['city'], $get['zip'])]);
+            }
+
+            return $this->json(['status' => false]);
+        }
+
+        return new Response('not an ajax request');
+    }
+
+    /**
+     * @Route("/inscription_preteur/ajax/check-city-insee", name="lender_subscription_ajax_check_city_insee")
+     * @Method("GET")
+     */
+    public function checkCityInseeCodeAction(Request $request)
+    {
+        if ($request->isXmlHttpRequest()) {
+            $country = $request->query->get('country');
+            $inseeCode = $request->query->get('insee');
+
+            if (false === empty($country) && \pays_v2::COUNTRY_FRANCE != $country) {
+                return $this->json(['status' => true]);
+            }
+
+            if (false === empty($inseeCode)) {
+                /** @var LocationManager $locationManager */
+                $locationManager = $this->get('unilend.service.location_manager');
+                return $this->json(['status' => $locationManager->checkFrenchCityInsee($inseeCode)]);
             }
 
             return $this->json(['status' => false]);
