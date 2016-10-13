@@ -198,28 +198,10 @@ EOF
      */
     private function addAddressData(array &$aData, array $aClient)
     {
-        $aData['adresse']     = $this->getFullAddress($aClient['adresse1'], $aClient['adresse2'], $aClient['adresse3']);
-        $aData['code_postal'] = $aClient['cp'];
-        $aData['ville']       = $aClient['ville'];
+        $aData['adresse']     = $aClient['adresse_fiscal'];
+        $aData['code_postal'] = $aClient['cp_fiscal'];
+        $aData['ville']       = $aClient['ville_fiscal'];
         $aData['pays']        = strtoupper($aClient['fr']);
-    }
-
-    /**
-     * @param string $sAddress1
-     * @param string $sAddress2
-     * @param string $sAddress3
-     * @return string
-     */
-    private function getFullAddress($sAddress1, $sAddress2, $sAddress3)
-    {
-        $sFullAddress = $sAddress1;
-        if (false === empty($sAddress2)) {
-            $sFullAddress .= ' ' . $sAddress2;
-        }
-        if (false === empty($sAddress3)) {
-            $sFullAddress .= ' ' . $sAddress3;
-        }
-        return $sFullAddress;
     }
 
     /**

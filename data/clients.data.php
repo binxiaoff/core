@@ -436,37 +436,87 @@ class clients extends clients_crud
     }
 
     /**
-     * @param array $aLastStatus list of last status to use separated by a column
+     * @param array $clientStatus list of last status to use
      * @return array
      */
-    public function selectLendersByLastStatus(array $aLastStatus = array())
+    public function selectLendersByLastStatus(array $clientStatus = array())
     {
-        $sSql = '
-            SELECT c.id_client, c.nom, c.prenom, c.nom_usage, c.naissance, c.email,
-                   ca.adresse1, ca.adresse2, ca.adresse3, ca.ville, ca.cp, p.iso, p.fr,
-                   la.id_lender_account, la.iban, la.bic,
-                   csh.added,
-                   cs.status, cs.label
+        $naturalPerson = [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER];
+        $legalEntity   = [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER];
+        $bind          = [
+            'naturalPerson' => $naturalPerson,
+            'legalEntity'   => $legalEntity
+        ];
+        $type          = [
+            'naturalPerson' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'legalEntity'   => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+        ];
+        $sSql          = '
+            SELECT
+              c.id_client,
+              c.nom,
+              c.prenom,
+              c.nom_usage,
+              c.naissance,
+              c.email,
+              -- Address
+              CASE
+                WHEN c.type IN (:naturalPerson) THEN ca.adresse_fiscal
+                WHEN c.type IN (:legalEntity) THEN CONCAT(com.adresse1, \' \', IFNULL(com.adresse2, \'\'))
+              END AS adresse_fiscal,
+              -- City
+              CASE
+                WHEN c.type IN (:naturalPerson) THEN ca.ville_fiscal
+                WHEN c.type IN (:legalEntity) THEN com.city
+              END AS ville_fiscal,
+              -- Zip code
+              CASE
+                WHEN c.type IN (:naturalPerson) THEN ca.cp_fiscal
+                WHEN c.type IN (:legalEntity) THEN com.zip
+              END AS cp_fiscal,
+              -- Country ISO
+              CASE
+                WHEN c.type IN (:naturalPerson) THEN person_country.iso
+                WHEN c.type IN (:legalEntity) THEN legal_entity_country.iso
+              END AS iso,
+              -- Country label
+              CASE
+                WHEN c.type IN (:naturalPerson) THEN person_country.fr
+                WHEN c.type IN (:legalEntity) THEN legal_entity_country.fr
+              END AS fr,
+              la.id_lender_account,
+              la.iban,
+              la.bic,
+              csh.added,
+              cs.status,
+              cs.label
             FROM clients_status_history csh
-            INNER JOIN clients c ON c.id_client = csh.id_client
-            INNER JOIN clients_adresses ca ON c.id_client = ca.id_client
-            INNER JOIN pays_v2 p ON p.id_pays = ca.id_pays
-            INNER JOIN lenders_accounts la ON la.id_client_owner = csh.id_client
-            INNER JOIN clients_status cs ON cs.id_client_status = csh.id_client_status
+              INNER JOIN clients c ON c.id_client = csh.id_client
+              LEFT JOIN clients_adresses ca ON ca.id_client = c.id_client
+              LEFT JOIN companies com ON com.id_client_owner = c.id_client
+              LEFT JOIN pays_v2 person_country ON person_country.id_pays = ca.id_pays_fiscal
+              LEFT JOIN pays_v2 legal_entity_country ON legal_entity_country.id_pays = com.id_pays
+              INNER JOIN lenders_accounts la ON la.id_client_owner = csh.id_client
+              INNER JOIN clients_status cs ON cs.id_client_status = csh.id_client_status
             WHERE csh.id_client_status_history = (
-                SELECT MAX(csh1.id_client_status_history)
-                FROM clients_status_history csh1
-                WHERE csh1.id_client = csh.id_client
+              SELECT MAX(csh1.id_client_status_history)
+              FROM clients_status_history csh1
+              WHERE csh1.id_client = csh.id_client
             )';
-        if (false === empty($aLastStatus)) {
-            $sSql .= ' AND cs.status IN (' . implode(', ', $aLastStatus) . ' ) ';
+        if (false === empty($clientStatus)) {
+            $bind['clientStatus'] = $clientStatus;
+            $type['clientStatus'] = \Doctrine\DBAL\Connection::PARAM_INT_ARRAY;
+            $sSql .= ' AND cs.status IN (:clientStatus) ';
         }
-        $oResult = $this->bdd->query($sSql);
-        $aResult = array();
-        while ($aRecord = $this->bdd->fetch_assoc($oResult)) {
-            $aResult[$aRecord['id_client']] = $aRecord;
+        /** @var \Doctrine\DBAL\Statement $statement */
+        $statement = $this->bdd->executeQuery($sSql, $bind, $type);
+
+        $result = array();
+        while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
+            $result[$row['id_client']] = $row;
         }
-        return $aResult;
+        $statement->closeCursor();
+        return $result;
     }
 
     public function update_added($date, $id_client)

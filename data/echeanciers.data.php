@@ -1036,13 +1036,17 @@ class echeanciers extends echeanciers_crud
      */
     public function getDataForRepaymentWidget($lenderId, $clientId, array $taxTypeForExemptedLender = [3, 4, 5, 6, 7], array $taxTypeForTaxableLender = [2, 3, 4, 5, 6, 7], array $taxTypeForForeignerLender = [8], array $taxTypeForLegalEntityLender = [8])
     {
-        $bind  = [
+        $naturalPerson = [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER];
+        $legalEntity   = [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER];
+        $bind          = [
             'id_lender'                    => $lenderId,
             'id_client'                    => $clientId,
             'tax_type_exempted_lender'     => $taxTypeForExemptedLender,
             'tax_type_taxable_lender'      => $taxTypeForTaxableLender,
             'tax_type_foreigner_lender'    => $taxTypeForForeignerLender,
             'tax_type_legal_entity_lender' => $taxTypeForLegalEntityLender,
+            'naturalPerson'                => $naturalPerson,
+            'legalEntity'                  => $legalEntity
         ];
         $type  = [
             'id_lender'                    => \PDO::PARAM_INT,
@@ -1051,6 +1055,8 @@ class echeanciers extends echeanciers_crud
             'tax_type_taxable_lender'      => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
             'tax_type_foreigner_lender'    => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
             'tax_type_legal_entity_lender' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'naturalPerson'                => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'legalEntity'                  => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
         ];
         $query = '
         SELECT
@@ -1061,9 +1067,9 @@ class echeanciers extends echeanciers_crud
           SUM(ROUND(e.interets / 100, 2)) AS rawInterests,
           SUM(IFNULL((SELECT SUM(ROUND(tax.amount / 100, 2)) FROM tax WHERE id_transaction = t.id_transaction) , 0)) AS repaidTaxes,
           
-          CASE c.type
+          CASE
           -- Natural person
-          WHEN ' . \clients::TYPE_PERSON . ' OR ' . \clients::TYPE_PERSON_FOREIGNER . ' THEN
+          WHEN c.type IN (:naturalPerson) THEN
               CASE lih.resident_etranger
               -- FR fiscal resident
               WHEN 0
@@ -1076,7 +1082,7 @@ class echeanciers extends echeanciers_crud
                 SUM(IF (e.status_ra = 1, 0.00, ROUND((e.interets - e.interets_rembourses) * (SELECT tt.rate / 100 FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_foreigner_lender)) / 100, 2)))
               END
           -- Legal entity
-          WHEN ' . \clients::TYPE_LEGAL_ENTITY . ' OR ' . \clients::TYPE_LEGAL_ENTITY_FOREIGNER . ' THEN
+          WHEN c.type IN(:legalEntity) THEN
               SUM(IF (e.status_ra = 1, 0.00, ROUND((e.interets - e.interets_rembourses) * (SELECT tt.rate / 100 FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_legal_entity_lender)) / 100, 2)))
           END                             AS upcomingTaxes
         
