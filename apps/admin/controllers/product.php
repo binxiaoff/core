@@ -62,14 +62,14 @@ class productController extends bootstrap
             }
         }
 
-        $borrowerNeeds = $productManager->getAttributesByType($this->product, \product_attribute_type::ELIGIBLE_NEED);
-        /** @var project_need $need */
-        $need = $this->loadData('project_need');
-        $this->borrowerNeeds = [];
-        if (false === empty($borrowerNeeds)) {
-            foreach ($borrowerNeeds as $borrowerNeed) {
-                $need->get($borrowerNeed);
-                $this->borrowerNeeds[] = $need->label;
+        $borrowerMotives = $productManager->getAttributesByType($this->product, \product_attribute_type::ELIGIBLE_BORROWING_MOTIVE);
+        /** @var borrowing_motive $need */
+        $motive = $this->loadData('borrowing_motive');
+        $this->borrowerMotives = [];
+        if (false === empty($borrowerMotives)) {
+            foreach ($borrowerMotives as $borrowerMotive) {
+                $motive->get($borrowerMotive);
+                $this->borrowerMotives[] = $motive->motive;
             }
         }
     }

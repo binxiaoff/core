@@ -50,7 +50,7 @@
             <td><?= isset($this->duration['max'][0]) ? $this->duration['max'][0] : 'pas de limitation' ?></td>
         </tr>
         <tr>
-            <th>Besoin d'emprunteur éligible</th>
+            <th>Motive d'emprunteur éligible</th>
             <td>
                 <?php if (empty($this->borrowerNeeds)) : ?>
                     pas de limitation

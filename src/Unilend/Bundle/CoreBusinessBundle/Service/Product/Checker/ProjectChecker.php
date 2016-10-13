@@ -48,14 +48,14 @@ trait ProjectChecker
      *
      * @return bool
      */
-    public function isProductEligibleForNeed(\projects $project, \product $product, ProductAttributeManager $productAttributeManager)
+    public function isProductEligibleForMotive(\projects $project, \product $product, ProductAttributeManager $productAttributeManager)
     {
-        $eligibleNeeds = $productAttributeManager->getProductAttributesByType($product, \product_attribute_type::ELIGIBLE_NEED);
-        if (empty($eligibleNeeds)) {
+        $eligibleMotives = $productAttributeManager->getProductAttributesByType($product, \product_attribute_type::ELIGIBLE_BORROWING_MOTIVE);
+        if (empty($eligibleMotives)) {
             return true;
         }
 
-        return in_array($project->id_project_need, $eligibleNeeds);
+        return in_array($project->id_project_need, $eligibleMotives);
     }
 
     /**

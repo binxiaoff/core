@@ -836,16 +836,10 @@ class dossiersController extends bootstrap
                     }
                 }
             }
-            if ($product instanceof \product && $product->id_product) {
-                $eligibleNeeds = $productManager->getAttributesByType($product, \product_attribute_type::ELIGIBLE_NEED);
-            } else {
-                $eligibleNeeds = [];
-            }
 
             /** @var \project_need $oProjectNeed */
             $oProjectNeed = $this->loadData('project_need');
             $needs        = $oProjectNeed->getTree();
-            $this->filterEligibleNeeds($needs, $eligibleNeeds);
             $this->aNeeds = $needs;
 
             if (in_array($this->projects->status, [\projects_status::REJETE, \projects_status::REJET_ANALYSTE, \projects_status::REJET_COMITE])) {
@@ -2945,28 +2939,5 @@ class dossiersController extends bootstrap
         }
 
         echo json_encode($aNames);
-    }
-
-    private function filterEligibleNeeds(&$needsTree, $eligibleNeeds)
-    {
-        if (false === empty($eligibleNeeds)) {
-            foreach ($needsTree as $index => &$need) {
-                if (in_array($need['id_project_need'], $eligibleNeeds)) {
-                    continue;
-                }
-
-                if (isset($need['children'])) {
-                    $this->filterEligibleNeeds($need['children'], $eligibleNeeds);
-                } else {
-                    if (false === in_array($need['id_project_need'], $eligibleNeeds)) {
-                        unset($needsTree[$index]);
-                    }
-                }
-                if (empty($need['children'])) {
-                    unset($needsTree[$index]);
-                }
-
-            }
-        }
     }
 }

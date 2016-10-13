@@ -34,8 +34,8 @@ class ProjectValidator
                 case \product_attribute_type::MAX_LOAN_DURATION_IN_MONTH :
                     $eligibility = $this->isProductEligibleForMaxDuration($projects, $product, $this->productAttributeManager);
                     break;
-                case \product_attribute_type::ELIGIBLE_NEED :
-                    $eligibility = $this->isProductEligibleForNeed($projects, $product, $this->productAttributeManager);
+                case \product_attribute_type::ELIGIBLE_BORROWING_MOTIVE :
+                    $eligibility = $this->isProductEligibleForMotive($projects, $product, $this->productAttributeManager);
                     break;
                 case \underlying_contract_attribute_type::MAX_LOAN_DURATION_IN_MONTH :
                     $eligibility = $this->isProductEligibleForMaxContractDuration($projects, $product, $this->productAttributeManager);
@@ -55,7 +55,7 @@ class ProjectValidator
     private function getAttributeTypeToCheck()
     {
         return [
-            \product_attribute_type::ELIGIBLE_NEED,
+            \product_attribute_type::ELIGIBLE_BORROWING_MOTIVE,
             \product_attribute_type::MIN_LOAN_DURATION_IN_MONTH,
             \product_attribute_type::MAX_LOAN_DURATION_IN_MONTH,
             \underlying_contract_attribute_type::MAX_LOAN_DURATION_IN_MONTH
