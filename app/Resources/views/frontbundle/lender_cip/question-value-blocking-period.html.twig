@@ -29,14 +29,16 @@
                             <input type="text" id="estate-answer" value="{{ answers['value-total-estate'].first_answer }}" class="input-field" readonly />
                         </div><!-- /.form-field -->
                     </div>
-                    <div class="row">
-                        <div class="form-field cip-answer">
-                            <label for="savings-answer" class="field-label">
-                                Combien d’argent mettez-vous de côté tous les mois ?
-                            </label>
-                            <input type="text" id="savings-answer" value="{{ answers['value-monthly-savings'].first_answer }}" class="input-field" readonly />
-                        </div><!-- /.form-field -->
-                    </div>
+                    {% if answers['value-monthly-savings'] is defined %}
+                        <div class="row">
+                            <div class="form-field cip-answer">
+                                <label for="savings-answer" class="field-label">
+                                    Combien d’argent mettez-vous de côté tous les mois ?
+                                </label>
+                                <input type="text" id="savings-answer" value="{{ answers['value-monthly-savings'].first_answer }}" class="input-field" readonly />
+                            </div><!-- /.form-field -->
+                        </div>
+                    {% endif %}
                     <div class="row">
                         <div class="form-field cip-answer">
                             <label for="answer" class="field-label">

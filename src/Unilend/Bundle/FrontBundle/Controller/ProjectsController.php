@@ -456,25 +456,33 @@ class ProjectsController extends Controller
                 $request->getSession()->set('bidResult', ['success' => true, 'message' => $translator->trans('project-detail_side-bar-bids-bid-placed-message')]);
             } catch (\Exception $exception) {
                 if ('bids-not-eligible' === $exception->getMessage()) {
-                    $productManager     = $this->get('unilend.service_product.product_manager');
+                    $productManager = $this->get('unilend.service_product.product_manager');
 
                     /** @var \product $product */
                     $product = $entityManager->getRepository('product');
                     $product->get($project->id_product);
 
-                    $amountMax = $productManager->getMaxEligibleAmount($product);
-
+                    $amountMax  = $productManager->getMaxEligibleAmount($product);
                     $reasons    = $productManager->getBidValidatorReasons($bids, $product);
                     $amountRest = 0;
+
                     foreach ($reasons as $reason) {
                         if ($reason === \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO) {
                             $amountRest = $productManager->getAmountLenderCanStillBid($lenderAccount, $project);
                         }
                         $currencyFormatter = new \NumberFormatter($request->getLocale(), \NumberFormatter::CURRENCY);
-                        $amountRest = $currencyFormatter->formatCurrency($amountRest, 'EUR');
-                        $amountMax  = $currencyFormatter->formatCurrency($amountMax, 'EUR');
+                        $amountRest        = $currencyFormatter->formatCurrency($amountRest, 'EUR');
+                        $amountMax         = $currencyFormatter->formatCurrency($amountMax, 'EUR');
 
-                        $this->addFlash('bid_not_eligible_reason', $translator->transChoice('project-detail_bid-not-eligible-reason-' . $reason, 0,['%amountRest%' => $amountRest, '%amountMax%' => $amountMax]));
+                        $this->addFlash('bid_not_eligible_reason', $translator->transChoice('project-detail_bid-not-eligible-reason-' . $reason, 0, ['%amountRest%' => $amountRest, '%amountMax%' => $amountMax]));
+                    }
+                } elseif ('bids-cip-validation-needed' === $exception->getMessage()) {
+                    $cipManager       = $this->get('unilend.service.cip_manager');
+                    $lenderEvaluation = $cipManager->getCurrentEvaluation($lenderAccount);
+
+                    if ($lenderEvaluation->expiry_date === '0000-00-00 00:00:00') {
+                        $request->getSession()->set('cipBid', ['amount' => $bidAmount, 'rate' => $rate, 'project' => $project->id_project]);
+                        return $this->redirectToRoute('cip_continue_questionnaire');
                     }
                 } else {
                     $request->getSession()->set('bidResult', ['error' => true, 'message' => $translator->trans('project-detail_side-bar-' . $exception->getMessage())]);

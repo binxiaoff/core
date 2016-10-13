@@ -115,6 +115,17 @@ class CIPManager
 
     /**
      * @param \lenders_accounts $lender
+     */
+    public function validateEvaluation(\lenders_accounts $lender)
+    {
+        $expiryDate = new \DateTime('NOW + 1 YEAR');
+        $evaluation = $this->getCurrentEvaluation($lender);
+        $evaluation->expiry_date = $expiryDate->format('Y-m-d H:i:s');
+        $evaluation->update();
+    }
+
+    /**
+     * @param \lenders_accounts $lender
      * @return \lender_questionnaire_question|null
      */
     public function getLastQuestion(\lenders_accounts $lender)
@@ -315,7 +326,7 @@ class CIPManager
 
         /** @var \lender_questionnaire_question $questionEntity */
         $questionEntity = $this->entityManager->getRepository('lender_questionnaire_question');
-        $questions      = $questionEntity->select('id_lender_questionnaire = ' . $evaluation->id_lender_questionnaire . ' AND type IN (' . implode(',', $questionTypes) . ')', '`order` ASC');
+        $questions      = $questionEntity->select('id_lender_questionnaire = ' . $evaluation->id_lender_questionnaire . ' AND type IN ("' . implode('","', $questionTypes) . '")', '`order` ASC');
         $questions      = array_column($questions, 'id_lender_questionnaire_question', 'type');
 
         /** @var \lender_evaluation_answer $answerEntity */
@@ -327,12 +338,15 @@ class CIPManager
             return null;
         }
 
-        $estate         = $answers[$questions[\lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE]];
-        $monthlySavings = $answers[$questions[\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS]];
+        $estate = $answers[$questions[\lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE]];
 
-        if ($estate < \lender_questionnaire_question::VALUE_ESTATE_THRESHOLD && $monthlySavings < \lender_questionnaire_question::VALUE_MONTHLY_SAVINGS_THRESHOLD) {
-            $advices[] = $this->translator->trans('lender-evaluation_low-estate-low-savings-advice');
-            return $advices;
+        if ($estate < \lender_questionnaire_question::VALUE_ESTATE_THRESHOLD) {
+            $monthlySavings = $answers[$questions[\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS]];
+
+            if ($monthlySavings < \lender_questionnaire_question::VALUE_MONTHLY_SAVINGS_THRESHOLD) {
+                $advices[] = $this->translator->trans('lender-evaluation_low-estate-low-savings-advice');
+                return $advices;
+            }
         }
 
         if ($estate >= \lender_questionnaire_question::VALUE_ESTATE_THRESHOLD) {
@@ -370,7 +384,7 @@ class CIPManager
      * @param string             $message
      * @return \lender_evaluation_log
      */
-    public function saveAdvice(\lender_evaluation $evaluation, $event, $message)
+    public function saveLog(\lender_evaluation $evaluation, $event, $message)
     {
         /** @var \lender_evaluation_log $advice */
         $advice = $this->entityManager->getRepository('lender_evaluation_log');
