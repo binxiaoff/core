@@ -78,6 +78,21 @@ class CIPManager
     }
 
     /**
+     * @param \lenders_accounts $lender
+     * @return bool
+     */
+    public function hasValidEvaluation(\lenders_accounts $lender)
+    {
+        $evaluation = $this->getCurrentEvaluation($lender);
+
+        if (null === $evaluation) {
+            return false;
+        }
+
+        return $this->isValidEvaluation($evaluation);
+    }
+
+    /**
      * @param \lender_evaluation $evaluation
      * @return bool
      */
@@ -435,7 +450,7 @@ class CIPManager
 
         /** @var \underlying_contract $contract */
         $contract = $this->entityManager->getRepository('underlying_contract');
-        if (false === $contract->get(\underlying_contract::CONTRACT_MINIBON, 'label')) {
+        if (false === $contract->get(\underlying_contract::CONTRACT_IFP, 'label')) {
             throw new \InvalidArgumentException('The contract ' . \underlying_contract::CONTRACT_IFP . 'does not exist.');
         }
 

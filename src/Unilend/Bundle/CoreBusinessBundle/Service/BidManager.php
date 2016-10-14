@@ -74,11 +74,12 @@ class BidManager
     /**
      * @param \bids $oBid
      * @param bool  $bSendNotification
+     * @param bool  $needsCIPValidation
      *
      * @return bool
      * @throws \Exception
      */
-    public function bid(\bids $oBid, $bSendNotification = true)
+    public function bid(\bids $oBid, $bSendNotification = true, $needsCIPValidation = false)
     {
         /** @var \settings $oSettings */
         $oSettings = $this->oEntityManager->getRepository('settings');
@@ -92,8 +93,6 @@ class BidManager
         $oWelcomeOfferDetails = $this->oEntityManager->getRepository('offres_bienvenues_details');
         /** @var \projects $project */
         $project = $this->oEntityManager->getRepository('projects');
-
-        $this->oEntityManager->getRepository('transactions_types'); //load for constant use
 
         $oSettings->get('Pret min', 'type');
         $iAmountMin = (int)$oSettings->value;
@@ -186,7 +185,7 @@ class BidManager
             throw new \Exception('bids-low-balance');
         }
 
-        if ($this->cipManager->isCIPValidationNeeded($oBid, $project)) {
+        if ($needsCIPValidation && $this->cipManager->isCIPValidationNeeded($oBid, $project)) {
             throw new \Exception('bids-cip-validation-needed');
         }
 
