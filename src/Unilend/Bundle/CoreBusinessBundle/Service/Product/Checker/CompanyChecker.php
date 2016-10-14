@@ -24,7 +24,7 @@ trait CompanyChecker
 
     public function isEligibleForRCS(\companies $company, \product $product, ProductAttributeManager $productAttributeManager)
     {
-        $beRCS = $productAttributeManager->getProductAttributesByType($product, \product_attribute_type::ELIGIBLE_RCS);
+        $beRCS = $productAttributeManager->getProductAttributesByType($product, \product_attribute_type::ELIGIBLE_BORROWER_COMPANY_RCS);
 
         if(empty($beRCS)) {
             return true;

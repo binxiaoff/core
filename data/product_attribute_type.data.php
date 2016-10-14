@@ -27,15 +27,13 @@
 // **************************************************************************************************** //
 class product_attribute_type extends product_attribute_type_crud
 {
-    const ELIGIBLE_LENDER_NATIONALITY       = 'product_eligible_lender_nationality';
-    const ELIGIBLE_BORROWER_COMPANY_COUNTRY = 'product_eligible_borrower_company_country';
-    const TARGET_COUNTRY                    = 'product_target_country';
-    const ELIGIBLE_BORROWER_COMPANY_TYPE    = 'product_eligible_borrower_company_type';
-    const ELIGIBLE_BORROWING_MOTIVE         = 'product_eligible_borrowing_motive';
-    const MIN_LOAN_DURATION_IN_MONTH        = 'product_min_loan_duration_in_month';
-    const MAX_LOAN_DURATION_IN_MONTH        = 'product_max_loan_duration_in_month';
-    const MIN_CREATION_DAYS_PROSPECT        = 'product_min_creation_days_prospect';
-    const ELIGIBLE_RCS                      = 'product_rcs';
+    const ELIGIBLE_BORROWER_COMPANY_COUNTRY  = 'product_eligible_borrower_company_country';
+    const ELIGIBLE_BORROWER_COMPANY_NAF_CODE = 'product_eligible_borrower_company_naf_code';
+    const ELIGIBLE_BORROWING_MOTIVE          = 'product_eligible_borrowing_motive';
+    const MIN_LOAN_DURATION_IN_MONTH         = 'product_min_loan_duration_in_month';
+    const MAX_LOAN_DURATION_IN_MONTH         = 'product_max_loan_duration_in_month';
+    const MIN_CREATION_DAYS                  = 'product_min_creation_days';
+    const ELIGIBLE_BORROWER_COMPANY_RCS      = 'product_eligible_borrower_company_rcs';
 
     public function __construct($bdd, $params = '')
     {

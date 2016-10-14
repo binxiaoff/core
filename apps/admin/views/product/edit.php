@@ -63,33 +63,5 @@
                 <? endif ?>
             </td>
         </tr>
-        <tr>
-            <th>Pays d'emprunteur éligible</th>
-            <td>
-                <?php if (empty($this->borrowerCountries)) : ?>
-                    pas de limitation
-                <?php else: ?>
-                    <ul>
-                        <?php foreach ($this->borrowerCountries as $country): ?>
-                            <li><?= $country ?></li>
-                        <?php endforeach; ?>
-                    </ul>
-                <? endif ?>
-            </td>
-        </tr>
-        <tr>
-            <th>Nationalité de prêteur éligible</th>
-            <td>
-                <?php if (empty($this->lenderNationalities)) : ?>
-                    pas de limitation
-                <?php else: ?>
-                <ul>
-                    <?php foreach ($this->lenderNationalities as $nationality): ?>
-                        <li><?= $nationality ?></li>
-                    <?php endforeach; ?>
-                </ul>
-                <? endif ?>
-            </td>
-        </tr>
     </table>
 </div>

@@ -40,28 +40,6 @@ class productController extends bootstrap
         $this->duration['min'] = $productManager->getAttributesByType($this->product, \product_attribute_type::MIN_LOAN_DURATION_IN_MONTH);
         $this->duration['max'] = $productManager->getAttributesByType($this->product, \product_attribute_type::MAX_LOAN_DURATION_IN_MONTH);
 
-        $lenderNationalities = $productManager->getAttributesByType($this->product, \product_attribute_type::ELIGIBLE_LENDER_NATIONALITY);
-        /** @var nationalites_v2 $productContract */
-        $nationality = $this->loadData('nationalites_v2');
-        $this->lenderNationalities = [];
-        if (false === empty($lenderNationalities)) {
-            foreach ($lenderNationalities as $lenderNationality) {
-                $nationality->get($lenderNationality);
-                $this->lenderNationalities[] = $nationality->fr_f;
-            }
-        }
-
-        $borrowerCountries =  $productManager->getAttributesByType($this->product, \product_attribute_type::ELIGIBLE_BORROWER_COMPANY_COUNTRY);
-        /** @var pays_v2 $productContract */
-        $pays = $this->loadData('pays_v2');
-        $this->borrowerCountries = [];
-        if (false === empty($borrowerCountries)) {
-            foreach ($borrowerCountries as $borrowerCountry) {
-                $pays->get($borrowerCountry);
-                $this->borrowerCountries[] = $pays->fr;
-            }
-        }
-
         $borrowerMotives = $productManager->getAttributesByType($this->product, \product_attribute_type::ELIGIBLE_BORROWING_MOTIVE);
         /** @var borrowing_motive $need */
         $motive = $this->loadData('borrowing_motive');

@@ -66,9 +66,6 @@ class LenderValidator
     private function checkAttribute(\lenders_accounts $lender, \projects $project, \product $product, $attributeTypeToCheck)
     {
         switch ($attributeTypeToCheck) {
-            case \product_attribute_type::ELIGIBLE_LENDER_NATIONALITY :
-                $eligibility = $this->isLenderEligibleForNationality($lender, $product, $this->productAttributeManager, $this->entityManager);
-                break;
             case \underlying_contract_attribute_type::ELIGIBLE_LENDER_TYPE :
                 $eligibility = $this->isLenderEligibleForType($lender, $product, $this->productAttributeManager, $this->entityManager);
                 break;
@@ -85,7 +82,6 @@ class LenderValidator
     private function getAttributeTypeToCheck()
     {
         return [
-            \product_attribute_type::ELIGIBLE_LENDER_NATIONALITY,
             \underlying_contract_attribute_type::ELIGIBLE_LENDER_TYPE,
             \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO,
         ];

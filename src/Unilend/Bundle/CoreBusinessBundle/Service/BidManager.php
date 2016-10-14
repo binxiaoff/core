@@ -1,7 +1,6 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Symfony\Component\Config\Definition\Exception\Exception;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\core\Loader;
 use Psr\Log\LoggerInterface;

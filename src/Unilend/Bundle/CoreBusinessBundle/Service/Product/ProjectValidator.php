@@ -44,10 +44,10 @@ class ProjectValidator
                 case \underlying_contract_attribute_type::MAX_LOAN_DURATION_IN_MONTH :
                     $eligibility = $this->isProductEligibleForMaxContractDuration($projects, $product, $this->productAttributeManager);
                     break;
-                case \product_attribute_type::MIN_CREATION_DAYS_PROSPECT :
+                case \product_attribute_type::MIN_CREATION_DAYS :
                     $eligibility = $this->isEligibleForCreationDays($company, $product, $this->productAttributeManager);
                     break;
-                case \product_attribute_type::ELIGIBLE_RCS :
+                case \product_attribute_type::ELIGIBLE_BORROWER_COMPANY_RCS :
                     $eligibility = $this->isEligibleForRCS($company, $product, $this->productAttributeManager);
                     break;
                 default :
@@ -69,8 +69,8 @@ class ProjectValidator
             \product_attribute_type::MIN_LOAN_DURATION_IN_MONTH,
             \product_attribute_type::MAX_LOAN_DURATION_IN_MONTH,
             \underlying_contract_attribute_type::MAX_LOAN_DURATION_IN_MONTH,
-            \product_attribute_type::MIN_CREATION_DAYS_PROSPECT,
-            \product_attribute_type::ELIGIBLE_RCS
+            \product_attribute_type::MIN_CREATION_DAYS,
+            \product_attribute_type::ELIGIBLE_BORROWER_COMPANY_RCS
         ];
     }
 }
