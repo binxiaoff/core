@@ -1,6 +1,8 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 /**
@@ -12,9 +14,17 @@ class LenderManager
     /** @var EntityManager */
     private $oEntityManager;
 
-    public function __construct(EntityManager $oEntityManager)
+    /** @var  ProductManager */
+    private $productManager;
+
+    /** @var  ContractManager */
+    private $contractManager;
+
+    public function __construct(EntityManager $oEntityManager, ProductManager $productManager, ContractManager $contractManager)
     {
-        $this->oEntityManager = $oEntityManager;
+        $this->oEntityManager           = $oEntityManager;
+        $this->productManager           = $productManager;
+        $this->contractManager          = $contractManager;
     }
 
     /**
@@ -132,5 +142,19 @@ class LenderManager
         }
 
         return $badSettings;
+    }
+
+    public function isAutobidEligible(\lenders_accounts $lender)
+    {
+        foreach ($this->productManager->getAvailableProducts(true) as $product) {
+            $autobidContracts = $this->contractManager->getAutobidEligibleContracts($this->contractManager->getProductAvailableContracts($product));
+            foreach ($autobidContracts as $contract) {
+                if ($this->contractManager->isLenderEligibleForContract($lender, $contract)){
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

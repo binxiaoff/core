@@ -24,11 +24,11 @@ class ProductManager
         ProductAttributeManager $productAttributeManager
     )
     {
-        $this->entityManager           = $entityManager;
-        $this->projectValidator        = $projectValidator;
-        $this->bidValidator            = $bidValidator;
-        $this->lenderValidator         = $lenderValidator;
-        $this->productAttributeManager = $productAttributeManager;
+        $this->entityManager            = $entityManager;
+        $this->projectValidator         = $projectValidator;
+        $this->bidValidator             = $bidValidator;
+        $this->lenderValidator          = $lenderValidator;
+        $this->productAttributeManager  = $productAttributeManager;
     }
 
     /**
@@ -39,16 +39,10 @@ class ProductManager
      */
     public function findEligibleProducts(\projects $project, $includeInactiveProduct = false)
     {
-        /** @var \product $product */
-        $product          = $this->entityManager->getRepository('product');
         $eligibleProducts = [];
 
-        foreach ($product->select() as $oneProduct) {
-            $product->get($oneProduct['id_product']);
-            if ($product->status != \product::STATUS_ARCHIVED
-                && ($includeInactiveProduct || $product->status == \product::STATUS_ONLINE)
-                && $this->projectValidator->isEligible($project, $product)
-            ) {
+        foreach ($this->getAvailableProducts($includeInactiveProduct) as $product) {
+            if ($this->projectValidator->isEligible($project, $product)) {
                 $eligibleProduct = clone $product;
                 $eligibleProducts[] = $eligibleProduct;
             }
@@ -83,9 +77,7 @@ class ProductManager
     public function getProjectAvailableContractTypes(\projects $project)
     {
         $product = $this->getAssociatedProduct($project);
-        /** @var \product_underlying_contract $productContract */
-        $productContract = $this->entityManager->getRepository('product_underlying_contract');
-        return $productContract->getUnderlyingContractsByProduct($product->id_product);
+        return $this->getProductAvailableContracts($product);
     }
 
     /**
@@ -186,5 +178,40 @@ class ProductManager
     public function getAttributesByType(\product $product, $attributeType)
     {
         return $this->productAttributeManager->getProductAttributesByType($product, $attributeType);
+    }
+
+    /**
+     * @param bool      $includeInactiveProduct
+     *
+     * @return \product[]
+     */
+    public function getAvailableProducts($includeInactiveProduct = false)
+    {
+        /** @var \product $product */
+        $product  = $this->entityManager->getRepository('product');
+        $availableProducts = [];
+
+        foreach ($product->select() as $oneProduct) {
+            $product->get($oneProduct['id_product']);
+            if ($product->status != \product::STATUS_ARCHIVED
+                && ($includeInactiveProduct || $product->status == \product::STATUS_ONLINE)) {
+                $availableProduct = clone $product;
+                $availableProducts[] = $availableProduct;
+            }
+        }
+
+        return $availableProducts;
+    }
+
+    /**
+     * @param \product $product
+     *
+     * @return array
+     */
+    public function getProductAvailableContracts(\product $product)
+    {
+        /** @var \product_underlying_contract $productContract */
+        $productContract = $this->entityManager->getRepository('product_underlying_contract');
+        return $productContract->getUnderlyingContractsByProduct($product->id_product);
     }
 }

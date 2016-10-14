@@ -1,6 +1,8 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 /**
@@ -23,13 +25,28 @@ class AutoBidSettingsManager
     /** @var LenderManager */
     private $oLenderManager;
 
-    public function __construct(EntityManager $oEntityManager, ClientSettingsManager $oClientSettingsManager, ClientManager $oClientManager, NotificationManager $oNotificationManager, LenderManager $oLenderManager)
-    {
-        $this->oEntityManager         = $oEntityManager;
+    /** @var  ProductManager */
+    private $productManager;
+
+    /** @var  ContractManager */
+    private $contractManager;
+
+    public function __construct(
+        EntityManager $oEntityManager,
+        ClientSettingsManager $oClientSettingsManager,
+        ClientManager $oClientManager,
+        NotificationManager $oNotificationManager,
+        LenderManager $oLenderManager,
+        ProductManager $productManager,
+        ContractManager $contractManager
+    ) {
+        $this->oEntityManager = $oEntityManager;
         $this->oClientSettingsManager = $oClientSettingsManager;
-        $this->oClientManager         = $oClientManager;
-        $this->oNotificationManager   = $oNotificationManager;
-        $this->oLenderManager         = $oLenderManager;
+        $this->oClientManager = $oClientManager;
+        $this->oNotificationManager = $oNotificationManager;
+        $this->oLenderManager = $oLenderManager;
+        $this->productManager = $productManager;
+        $this->contractManager = $contractManager;
     }
 
     /**
@@ -76,29 +93,33 @@ class AutoBidSettingsManager
     }
 
     /**
-     * @param \lenders_accounts $oLenderAccount
+     * @param \lenders_accounts $lenderAccount
      *
      * @return bool
      */
-    public function isQualified(\lenders_accounts $oLenderAccount)
+    public function isQualified(\lenders_accounts $lenderAccount)
     {
-        if (empty($oLenderAccount->id_lender_account) || empty($oLenderAccount->id_client_owner)) {
+        if (empty($lenderAccount->id_lender_account) || empty($lenderAccount->id_client_owner)) {
             return false;
         }
-        /** @var \settings $oSettings */
-        $oSettings = $this->oEntityManager->getRepository('settings');
-        /** @var \clients $oClient */
-        $oClient = $this->oEntityManager->getRepository('clients');
+        /** @var \settings $settings */
+        $settings = $this->oEntityManager->getRepository('settings');
+        /** @var \clients $client */
+        $client = $this->oEntityManager->getRepository('clients');
 
-        if (false === $oSettings->get('Auto-bid global switch', 'type')) {
-            return false;
-        }
-
-        if (false === $oClient->get($oLenderAccount->id_client_owner)) {
+        if (false === $settings->get('Auto-bid global switch', 'type')) {
             return false;
         }
 
-        if ($oSettings->value && $this->oClientManager->isAcceptedCGV($oClient, self::CGV_AUTOBID) || $this->oClientManager->isBetaTester($oClient)) {
+        if (false === $client->get($lenderAccount->id_client_owner)) {
+            return false;
+        }
+
+        if (false === $this->oLenderManager->isAutobidEligible($lenderAccount)){
+            return false;
+        }
+
+        if ($settings->value && $this->oClientManager->isAcceptedCGV($client, self::CGV_AUTOBID) || $this->oClientManager->isBetaTester($client)) {
             return true;
         }
 
@@ -420,5 +441,20 @@ class AutoBidSettingsManager
         }
 
         return $amount;
+    }
+
+    public function getMaxAmountPossible(\lenders_accounts $lender)
+    {
+        $maxAmounts = [];
+
+        foreach ($this->productManager->getAvailableProducts(true) as $product) {
+            $autobidContracts = $this->contractManager->getAutobidEligibleContracts($this->contractManager->getProductAvailableContracts($product));
+            foreach ($autobidContracts as $autobidContract){
+                if ($this->contractManager->isLenderEligibleForContract($lender, $autobidContract)) {
+                    $maxAmounts[] = $this->contractManager->getContractMaxAmount($autobidContract);
+                }
+            }
+        }
+        return max($maxAmounts);
     }
 }

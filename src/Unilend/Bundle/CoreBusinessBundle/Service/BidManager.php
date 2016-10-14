@@ -3,6 +3,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
 use Unilend\core\Loader;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
@@ -186,7 +187,7 @@ class BidManager
             throw new \Exception('bids-low-balance');
         }
 
-        if ($this->cipManager->isCIPValidationNeeded($oBid, $project)) {
+        if (empty($oBid->id_autobid) && $this->cipManager->isCIPValidationNeeded($oBid, $project)) {
             throw new \Exception('bids-cip-validation-needed');
         }
 

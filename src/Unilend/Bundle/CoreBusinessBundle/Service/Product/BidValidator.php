@@ -1,6 +1,7 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product;
 
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class BidValidator
@@ -11,11 +12,17 @@ class BidValidator
     private $productAttributeManager;
     /** @var EntityManager */
     private $entityManager;
+    /** @var ContractManager */
+    private $contractManager;
 
-    public function __construct(ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
-    {
-        $this->productAttributeManager = $productAttributeManager;
-        $this->entityManager = $entityManager;
+    public function __construct(
+        ProductAttributeManager $productAttributeManager,
+        EntityManager $entityManager,
+        ContractManager $contractManager
+    ) {
+        $this->productAttributeManager  = $productAttributeManager;
+        $this->entityManager            = $entityManager;
+        $this->contractManager          = $contractManager;
     }
 
     public function isEligible(\bids $bid, \product $product)
@@ -28,9 +35,15 @@ class BidValidator
 
         foreach ($this->getAttributeTypeToCheck() as $attributeTypeToCheck) {
            $eligibility = $this->checkAttribute($bid, $lender, $product, $attributeTypeToCheck);
-
             if (false === $eligibility) {
                 return $eligibility;
+            }
+        }
+
+        if (false === empty($bid->id_autobid)) {
+            $autobidEligibility = $this->contractManager->isBidAutobidEligible($bid, $product, $lender);
+            if (false === $autobidEligibility) {
+                return $autobidEligibility;
             }
         }
 

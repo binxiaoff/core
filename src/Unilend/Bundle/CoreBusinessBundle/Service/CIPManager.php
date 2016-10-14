@@ -435,7 +435,7 @@ class CIPManager
 
         /** @var \underlying_contract $contract */
         $contract = $this->entityManager->getRepository('underlying_contract');
-        if (false === $contract->get(\underlying_contract::CONTRACT_MINIBON, 'label')) {
+        if (false === $contract->get(\underlying_contract::CONTRACT_IFP, 'label')) {
             throw new \InvalidArgumentException('The contract ' . \underlying_contract::CONTRACT_IFP . 'does not exist.');
         }
 
