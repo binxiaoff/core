@@ -3,7 +3,6 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
-use Unilend\Bundle\FrontBundle\Service\CIPManager;
 use Unilend\core\Loader;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
