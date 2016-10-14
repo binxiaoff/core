@@ -89,12 +89,13 @@
                     </td>
                     <td colspan="2" rowspan="6" style="vertical-align: top">
                         <?php if (false === in_array($this->iNextYear, $this->aExemptionYears)) : ?>
-                            <input type="checkbox" id="tax_exemption[<?= $this->iNextYear ?>]" name="tax_exemption[<?= $this->iNextYear ?>]" value="1">
+
+                            <input class="requestTaxExemption thickbox" type="checkbox" id="tax_exemption[<?= $this->iNextYear ?>]" name="tax_exemption[<?= $this->iNextYear ?>]" value="1">
                             <label for="tax_exemption[<?= $this->iNextYear ?>]"><?= $this->iNextYear ?></label>
                             <br>
                         <?php endif; ?>
                         <?php foreach ($this->aExemptionYears as $iExemptionYear) : ?>
-                            <input type="checkbox" id="tax_exemption[<?= $iExemptionYear ?>]" name="tax_exemption[<?= $iExemptionYear ?>]" value="1" checked<?php if ($this->iNextYear != $iExemptionYear) : ?> disabled<?php endif; ?>>
+                            <input type="checkbox" id="tax_exemption[<?= $iExemptionYear ?>]" name="tax_exemption[<?= $iExemptionYear ?>]" value="1" checked<?php if ($this->iNextYear != $iExemptionYear) : ?> disabled<?php else:?> class="requestTaxExemption thickbox" onclick="return confirmAction(<?php $this->iNextYear ?>)" <?php endif; ?>>
                             <label for="tax_exemption[<?= $iExemptionYear ?>]"><?= $iExemptionYear ?></label>
                             <br>
                         <?php endforeach; ?>
@@ -661,6 +662,7 @@
                     list-style: disc;
                 }
             </style>
+            <!-- Lender tax country history -->
             <?php
             if (false === empty($this->aTaxationCountryHistory)): ?>
                 <table class="tablesorter histo_status_client">
@@ -678,6 +680,7 @@
                     <?php endif; ?>
                 </table>
             <?php endif; ?>
+            <!-- Lender status history -->
             <?php if (false === empty($this->lActions)) : ?>
                 <style>
                     .histo_status_client li {
@@ -761,6 +764,22 @@
                     }
                 }
                 ?>
+                </table>
+            <?php endif; ?>
+            <!-- Lender tax exemption history -->
+            <?php
+            if (false === empty($this->taxExemption)): ?>
+                <table class="tablesorter histo_status_client">
+                    <?php
+                    foreach ($this->taxExemption as $i => $aRow) { ?>
+                        <tr>
+                            <td>Demande d'exonération fiscal: <b>Année <?= $aRow['year'] ?></b>. Ajoutée le <?= date('d/m/Y H:i:s', strtotime($aRow['added'])) ?>
+                                <?php if (false === empty($aRow['user_firstname'])): ?>
+                                    par: <?= $aRow['user_firstname'] ?>&nbsp;<?= $aRow['user_name'] ?>
+                                <?php endif;?>
+                            </td>
+                        </tr>
+                    <?php } ?>
                 </table>
             <?php endif; ?>
         </div>
@@ -1049,4 +1068,22 @@
     <?php if ($this->lenders_accounts->origine_des_fonds == 1000000): ?>
         $("#row_precision").show();
     <?php endif; ?>
+    function confirmAction(year)
+    {
+        console.log('toto');
+        $('#cboxContent').html(
+        '<a onclick="parent.$.fn.colorbox.close();" class="closeBtn" title="Fermer"><img src="https://www.local.unilend.fr/images/admin/delete.png" alt="Fermer"></a>'+
+        '<h1>Le prêteur sera exonéré pour l\'année ' + year +', Confirmer?</h1>'+
+        '<div style="text-align:center;">'+
+        '<button type="button" class="btn" onclick="parent.$.fn.colorbox.close();">Ok</button>' +
+        '<button type="button" class="btn" onclick="parent.$.fn.colorbox.close();$(\'.requestTaxExemption\').attr(\'checked\');">Annuler</button>'+
+        '</div>'
+            );
+        return false;
+    }
 </script>
+
+<div id="cboxLoadedContent" style="width: 408px; overflow: auto; height: 326px;"><div id="popup">
+        ''
+    </div>
+</div>

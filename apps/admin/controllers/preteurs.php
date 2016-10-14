@@ -310,7 +310,8 @@ class preteursController extends bootstrap
 
             /** @var \lender_tax_exemption $oLenderTaxExemption */
             $oLenderTaxExemption   = $this->loadData('lender_tax_exemption');
-            $this->aExemptionYears = array_column($oLenderTaxExemption->select('id_lender = ' . $this->lenders_accounts->id_lender_account, 'year DESC'), 'year');
+            $this->taxExemption    = $oLenderTaxExemption->getLenderExemptionHistory($this->lenders_accounts->id_lender_account);
+            $this->aExemptionYears = array_column($this->taxExemption, 'year');
             $this->iNextYear       = date('Y') + 1;
 
             $this->settings->get("Liste deroulante origine des fonds", 'status = 1 AND type');
