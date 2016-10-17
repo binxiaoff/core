@@ -1,7 +1,6 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker;
 
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
 
 trait ProjectChecker
