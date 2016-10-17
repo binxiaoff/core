@@ -15,13 +15,16 @@ class ProductManager
     private $lenderValidator;
     /** @var ProductAttributeManager */
     private $productAttributeManager;
+    /** @var ContractAttributeManager */
+    private $contractAttributeManager;
 
     public function __construct(
         EntityManager $entityManager,
         ProjectValidator $projectValidator,
         BidValidator $bidValidator,
         LenderValidator $lenderValidator,
-        ProductAttributeManager $productAttributeManager
+        ProductAttributeManager $productAttributeManager,
+        ContractAttributeManager $contractAttributeManager
     )
     {
         $this->entityManager            = $entityManager;
@@ -29,6 +32,7 @@ class ProductManager
         $this->bidValidator             = $bidValidator;
         $this->lenderValidator          = $lenderValidator;
         $this->productAttributeManager  = $productAttributeManager;
+        $this->contractAttributeManager = $contractAttributeManager;
     }
 
     /**
@@ -67,17 +71,6 @@ class ProductManager
     public function isLenderEligible(\lenders_accounts $lender, \projects $project)
     {
         return $this->lenderValidator->isEligible($lender, $project);
-    }
-
-    /**
-     * @param \projects $project
-     * @return mixed
-     * @throws \Exception
-     */
-    public function getProjectAvailableContractTypes(\projects $project)
-    {
-        $product = $this->getAssociatedProduct($project);
-        return $this->getProductAvailableContracts($product);
     }
 
     /**
@@ -208,10 +201,33 @@ class ProductManager
      *
      * @return array
      */
-    public function getProductAvailableContracts(\product $product)
+    public function getAvailableContracts(\product $product)
     {
         /** @var \product_underlying_contract $productContract */
         $productContract = $this->entityManager->getRepository('product_underlying_contract');
         return $productContract->getUnderlyingContractsByProduct($product->id_product);
     }
+
+    /**
+     * @param array $contracts
+     * @return \underlying_contract[]
+     */
+    public function getAutobidEligibleContracts(\product $product)
+    {
+        /** @var \underlying_contract $contract */
+        $contract = $this->entityManager->getRepository('underlying_contract');
+        $contracts = $this->getAvailableContracts($product);
+        $autobidContracts = [];
+
+        foreach($contracts as $underlyingContract) {
+            $contract->get($underlyingContract['id_contract']);
+            if ($this->bidValidator->isAutobidEligibleForAutobid($contract, $this->contractAttributeManager)) {
+                $autobidContract    = clone $contract;
+                $autobidContracts[] = $autobidContract;
+            }
+        }
+
+        return $autobidContracts;
+    }
+
 }

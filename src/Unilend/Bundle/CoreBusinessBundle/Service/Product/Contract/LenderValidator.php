@@ -26,30 +26,8 @@ class LenderValidator
      *
      * @return bool
      */
-    public function isContractEligible(\lenders_accounts $lender, \underlying_contract $contract)
+    public function isEligible(\lenders_accounts $lender, \underlying_contract $contract)
     {
-        return $this->isLenderTypeEligibleForContract($this->entityManager, $this->contractAttributeManager, $lender, $contract);
-    }
-
-    /**
-     * @param \lenders_accounts $lender
-     * @param \underlying_contract $contract
-     *
-     * @return bool
-     */
-    public function isAutobidEligible(\lenders_accounts $lender, \underlying_contract $contract)
-    {
-        return $this->isLenderEligibleForAutobid($this->entityManager, $this->contractAttributeManager, $lender, $contract);
-    }
-
-    /**
-     * @param \lenders_accounts $lender
-     * @param \product $product
-     *
-     * @return bool|int
-     */
-    public function getMaxEligibleAutobidAmountForLender(\lenders_accounts $lender, \product $product)
-    {
-        return $this->getMaxEligibleAutobidAmount($lender, $product, $this->entityManager, $this->contractAttributeManager);
+        return $this->isEligibleForLenderType($lender, $contract, $this->entityManager, $this->contractAttributeManager);
     }
 }

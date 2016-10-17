@@ -10,6 +10,8 @@ class BidValidator
 
     /** @var ProductAttributeManager */
     private $productAttributeManager;
+    /** @var ContractAttributeManager */
+    private $contractAttributeManager;
     /** @var EntityManager */
     private $entityManager;
     /** @var ContractManager */
@@ -17,10 +19,12 @@ class BidValidator
 
     public function __construct(
         ProductAttributeManager $productAttributeManager,
+        ContractAttributeManager $contractAttributeManager,
         EntityManager $entityManager,
         ContractManager $contractManager
     ) {
         $this->productAttributeManager  = $productAttributeManager;
+        $this->contractAttributeManager = $contractAttributeManager;
         $this->entityManager            = $entityManager;
         $this->contractManager          = $contractManager;
     }
@@ -41,13 +45,16 @@ class BidValidator
         }
 
         if (false === empty($bid->id_autobid)) {
-            $autobidEligibility = $this->contractManager->isBidAutobidEligible($bid, $product, $lender);
-            if (false === $autobidEligibility) {
-                return $autobidEligibility;
-            }
+            $autobidEligibility = $this->isAutobidEligible($bid, $product, $lender);
+            return $autobidEligibility;
         }
 
         return true;
+    }
+
+    private function isAutobidEligible(\bids $bid, \product $product, \lenders_accounts $lender)
+    {
+        $this->isAutobidEligibleForMaxTotalAmount($bid, $lender, $product, $this->entityManager, $this->contractAttributeManager);
     }
 
     public function getReasons(\bids $bid, \product $product)

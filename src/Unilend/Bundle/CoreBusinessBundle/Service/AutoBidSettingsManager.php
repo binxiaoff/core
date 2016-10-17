@@ -115,8 +115,13 @@ class AutoBidSettingsManager
             return false;
         }
 
-        if (false === $this->oLenderManager->isAutobidEligible($lenderAccount)){
-            return false;
+        foreach ($this->productManager->getAvailableProducts(true) as $product) {
+            $autobidContracts = $this->productManager->getAutobidEligibleContracts($product);
+            foreach ($autobidContracts as $contract) {
+                if (false === $this->contractManager->isLenderEligible($lenderAccount, $contract)){
+                    return false;
+                }
+            }
         }
 
         if ($settings->value && $this->oClientManager->isAcceptedCGV($client, self::CGV_AUTOBID) || $this->oClientManager->isBetaTester($client)) {
@@ -445,16 +450,16 @@ class AutoBidSettingsManager
 
     public function getMaxAmountPossible(\lenders_accounts $lender)
     {
-        $maxAmounts = [];
+        $maxAmount = 0;
 
         foreach ($this->productManager->getAvailableProducts(true) as $product) {
-            $autobidContracts = $this->contractManager->getAutobidEligibleContracts($this->contractManager->getProductAvailableContracts($product));
+            $autobidContracts = $this->productManager->getAutobidEligibleContracts($product);
             foreach ($autobidContracts as $autobidContract){
-                if ($this->contractManager->isLenderEligibleForContract($lender, $autobidContract)) {
-                    $maxAmounts[] = $this->contractManager->getContractMaxAmount($autobidContract);
+                if ($this->contractManager->isLenderEligible($lender, $autobidContract)) {
+                    $maxAmount += $this->contractManager->getMaxAmount($autobidContract);
                 }
             }
         }
-        return max($maxAmounts);
+        return $maxAmount;
     }
 }
