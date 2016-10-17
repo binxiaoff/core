@@ -548,7 +548,7 @@ class StatisticsManager
             $data['pct']['problematic-rate'][$year]     = bcmul(bcdiv($problematicCompanies[$year], $countFundedCompanies[$year], 4), 100, 2);
         }
 
-        $data = $this->addTotalToData($data, $problematicCompanies, $fundedProjects);
+        $data = $this->addTotalToData($data, $problematicCompanies, $countFundedCompanies);
 
         return $data;
     }
@@ -570,7 +570,7 @@ class StatisticsManager
         return $dataByCohort;
     }
 
-    public function addTotalToData(&$data, $problematicCompanies, $fundedProjects)
+    public function addTotalToData(&$data, $problematicCompanies, $countFundedCompanies)
     {
         $data['IRR']['total'] = $this->IRRManager->getLastUnilendIRR()['value'];
 
@@ -580,19 +580,19 @@ class StatisticsManager
             }
         }
 
-        $data = $this->addTotalPercentages($data, $problematicCompanies, $fundedProjects);
+        $data = $this->addTotalPercentages($data, $problematicCompanies, $countFundedCompanies);
 
         return $data;
     }
 
-    public function addTotalPercentages(&$data, $problematicCompanies, $fundedProjects)
+    public function addTotalPercentages(&$data, $problematicCompanies, $countFundedCompanies)
     {
         $data['pct']['owed-problematic-over-borrowed-capital']['total'] = $data['borrowed-capital']['total'] > 0 ? bcmul(bcdiv($data['total-owed-problematic-and-late-capital']['total'], $data['borrowed-capital']['total'], 4), 100, 2) : 0;
         $data['pct']['interest-over-owed-problematic-capital']['total'] = bcmul(bcdiv(($data['repaid-interest']['total'] + $data['owed-healthy-interest']['total']), $data['total-owed-problematic-and-late-capital']['total'], 4), 100, 2);
 
         $capitalAndInterestLessProblems               = bcsub(bcadd(bcadd($data['borrowed-capital']['total'], $data['repaid-interest']['total']), $data['owed-healthy-interest']['total']), $data['total-owed-problematic-and-late-capital']['total']);
         $data['pct']['expected-performance']['total'] = bcmul(bcdiv($capitalAndInterestLessProblems, $data['borrowed-capital']['total'], 4) - 1, 100, 2);
-        $data['pct']['problematic-rate']['total']     = bcmul(bcdiv(array_sum($problematicCompanies), array_sum($fundedProjects), 4), 100, 2);
+        $data['pct']['problematic-rate']['total']     = bcmul(bcdiv(array_sum($problematicCompanies), array_sum($countFundedCompanies), 4), 100, 2);
 
         return $data;
     }
