@@ -400,7 +400,7 @@
         width: $height-site-header * 3;
         height: $height-site-header;
         margin: 0;
-        padding: 0;
+        padding: 0 10px 0 0;
         line-height: $height-site-header;
         float: left;
 
@@ -451,7 +451,8 @@
           margin: 0;
           position: absolute;
           top: 34px;
-          right: 34px;
+          right: 44px;
+          z-index: 10;
         }
 
         .profile-logout {
@@ -470,6 +471,29 @@
 
           .label {
             @include hide-accessible;
+          }
+        }
+
+        .site-user-mobile-menu-toggle {
+          display: none;
+
+          // Show only for xs and sm devices
+          @include devices('xs', 'sm') {
+            box-sizing: border-box;
+            display: block;
+            width: 70px;
+            padding: 0 5px 0 0;
+            height: $height-site-header;
+
+            position: absolute;
+            top: 0;
+            right: 0;
+            z-index: 5;
+
+            color: $c-t3;
+            line-height: $height-site-header;
+            text-align: right;
+            vertical-align: middle;
           }
         }
       }
@@ -659,6 +683,10 @@
         font-size: $fs-base * .9;
         line-height: 1em;
       }
+
+      .site-user-mobile-menu-toggle {
+        display: none;
+      }
     }
   }
 
@@ -760,6 +788,10 @@
         .profile-logout {
           font-size: $fs-base * .8;
           line-height: 1em;
+        }
+
+        .site-user-mobile-menu-toggle {
+          display: none;
         }
       }
     }

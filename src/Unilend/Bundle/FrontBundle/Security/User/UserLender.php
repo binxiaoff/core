@@ -9,6 +9,8 @@ class UserLender extends BaseUser
     private $initials;
     /** @var string */
     private $firstName;
+    /** @var string */
+    private $lastName;
     /** @var int */
     private $clientStatus;
     /** @var bool $hasAcceptedCurrentTerms */
@@ -32,6 +34,7 @@ class UserLender extends BaseUser
         $balance,
         $initials,
         $firstName,
+        $lastName,
         $clientStatus,
         $hasAcceptedCurrentTerms,
         array $notifications,
@@ -45,6 +48,7 @@ class UserLender extends BaseUser
         $this->balance                 = $balance;
         $this->initials                = $initials;
         $this->firstName               = $firstName;
+        $this->lastName               = $lastName;
         $this->clientStatus            = $clientStatus;
         $this->hasAcceptedCurrentTerms = $hasAcceptedCurrentTerms;
         $this->notifications           = $notifications;
@@ -65,6 +69,11 @@ class UserLender extends BaseUser
     public function getFirstName()
     {
         return $this->firstName;
+    }
+
+    public function getLastName()
+    {
+        return $this->lastName;
     }
 
     public function getClientStatus()

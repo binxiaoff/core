@@ -1,0 +1,283 @@
+//
+// Unilend Logged in User Mobile Menu
+//
+
+$time-transition: 0.2s;
+$width-site-user-mobile-menu: 250px;
+$c-purple-mix: mix($c-purple-l, $c-p1, 50%);
+$c-purple-mix-l: mix($c-purple-l, $c-purple-mix, 50%);
+
+.site-user-mobile-menu {
+  display: none;
+}
+
+// Enabled only on xs/sm devices
+@include devices('xs', 'sm') {
+  // The outer part of the menu
+  // Effectively a shell to display the inner contents
+  .site-user-mobile-menu {
+    display: block;
+    width: 0;
+    height: 100%;
+    overflow: hidden;
+
+    position: fixed;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: $depth-site-header + 10;
+
+    background: $c-p1;
+    color: $c-white;
+    outline: none;
+
+    // Get the 3d engine happening
+    transform: rotateZ(0);
+    backface-visibility: hidden;
+
+    // The inner part of the menu
+    .site-user-mobile-menu-inner {
+      box-sizing: border-box;
+      width: $width-site-user-mobile-menu;
+      padding: 15px 20px 20px;
+      overflow: auto;
+
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+    }
+
+    .user-menu-close {
+      display: block;
+      padding: 15px 10px;
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+
+    a {
+      color: $c-purple-mix-l;
+
+      @include link-states(
+        $link: (
+          color: $c-purple-mix-l
+        ),
+        $visited: (
+          color: $c-purple-mix-l
+        ),
+        $active: (
+          color: $c-purple-l
+        )
+      );
+    }
+
+    .user-greeting {
+      color: $c-purple-l;
+      font-size: $fs-base * .9;
+      font-style: italic;
+      line-height: $lh-base;
+
+      .user-name {
+        color: $c-white;
+        font-size: $fs-base * 1.2;
+        font-style: normal;
+      }
+    }
+
+    .site-user-nav {
+      margin-top: 20px;
+      margin-bottom: 20px;
+
+      ul, li {
+        @include block-list;
+      }
+
+      a {
+        color: $c-white;
+
+        @include link-states(
+          $link: (
+            color: $c-white
+          ),
+          $visited: (
+            color: $c-white
+          ),
+          $active: (
+            color: $c-white
+          )
+        );
+      }
+    }
+
+    .user-nav-major,
+    .user-nav-minor {
+      font-size: $fs-base * .8;
+      line-height: $lh-base;
+
+      a {
+        display: block;
+        position: relative;
+        padding-top: 8px;
+        padding-bottom: 2px;
+
+        .icon {
+          display: block;
+          box-sizing: border-box;
+          width: 40px;
+          padding-top: 8px;
+          padding-bottom: 2px;
+
+          position: absolute;
+          left: 0;
+          top: 0;
+
+          font-size: $fs-base * 1.2;
+          line-height: inherit;
+          opacity: .8;
+          text-align: center;
+        }
+
+        .label {
+          padding-left: 40px;
+        }
+      }
+
+      &.active {
+        a {
+          color: $c-white !important;
+
+          .icon {
+            opacity: 1;
+          }
+        }
+      }
+    }
+
+    .user-nav-major {
+      border-bottom: solid 1px fade-out($c-purple-l2, .8);
+      font-size: $fs-base;
+      line-height: $lh-base;
+
+      a {
+        padding-top: 6px;
+        padding-bottom: 6px;
+
+        .icon {
+          padding-top: 6px;
+          padding-bottom: 6px;
+        }
+      }
+    }
+
+    .user-nav-minor {
+      a {
+        color: $c-purple-l;
+
+        @include link-states(
+          $link: (
+            color: $c-purple-l
+          ),
+          $visited: (
+            color: $c-purple-l
+          ),
+          $active: (
+            color: $c-white
+          )
+        );
+
+        .icon {
+          font-size: $fs-base;
+        }
+      }
+    }
+
+    .user-site-admin-nav,
+    .user-site-tagline,
+    .user-site-copyright {
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 15px;
+
+      color: $c-purple-mix;
+      font-size: 14px;
+      font-size: $fs-base * .8;
+      line-height: $lh-base * .9;
+    }
+
+    .user-site-admin-nav {
+      a {
+        display: inline-block;
+        margin-right: 20px;
+        margin-bottom: 6px;
+      }
+    }
+
+    // transform: translateX($width-site-user-mobile-menu);
+    user-select: none;
+    pointer-events: none;
+
+    // Opened
+    #{$js-site-user-mobile-menu-open} & {
+      pointer-events: auto;
+    }
+  }
+
+  // Base transition state styles
+  #{$js-site-user-mobile-menu-open},
+  #{$js-site-user-mobile-menu-opening},
+  #{$js-site-user-mobile-menu-closing} {
+    html, body {
+      overflow: hidden;
+    }
+
+    .site {
+      user-select: none;
+      pointer-events: none;
+
+      &:after {
+        display: block;
+        content: '';
+
+        position: fixed;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        z-index: $depth-site-header + 1;
+
+        background: $c-black;
+        opacity: 0;
+
+        transition: opacity $time-transition;
+        pointer-events: auto;
+      }
+    }
+  }
+
+  // Transitions applied only on transition states
+  #{$js-site-user-mobile-menu-opening},
+  #{$js-site-user-mobile-menu-closing} {
+    .site {
+      transition: transform $time-transition;
+      transition-timing-function: ease-in-out;
+    }
+
+    .site-user-mobile-menu {
+      transition: width $time-transition;
+      transition-timing-function: ease-in-out;
+    }
+  }
+
+  // Opening / Open state
+  #{$js-site-user-mobile-menu-open},
+  #{$js-site-user-mobile-menu-opening} {
+    .site:after {
+      opacity: .5;
+    }
+
+    .site-user-mobile-menu {
+      width: $width-site-user-mobile-menu;
+    }
+  }
+}

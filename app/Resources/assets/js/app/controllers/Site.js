@@ -206,6 +206,76 @@ function openSearch() {
 // Class any element `ui-open-site-search` and it can then pull focus and open the site search field
 $doc.on(Utility.clickEvent, '.ui-open-site-search', function (event) {
   event.preventDefault()
-  console.log('open site search')
   openSearch()
+})
+
+
+/*
+ * Site User Mobile Menu
+ */
+
+function openSiteUserMobileMenu () {
+  // No transitions for the moment...
+  // return showSiteUserMobileMenu()
+
+  // @debug console.log('openSiteUserMobileMenu')
+  if (Utility.isIE(9) || Utility.isIE('<9')) return showSiteUserMobileMenu()
+  if (!$html.is('.ui-site-user-mobile-menu-open, .ui-site-user-mobile-menu-opening')) {
+    $html.removeClass('ui-site-user-mobile-menu-closing').addClass('ui-site-user-mobile-menu-opening')
+  }
+}
+
+function closeSiteUserMobileMenu () {
+  // No transitions for the moment...
+  // return hideSiteUserMobileMenu()
+
+  // @debug console.log('closeSiteUserMobileMenu')
+  if (Utility.isIE(9) || Utility.isIE('<9')) return hideSiteUserMobileMenu()
+  $html.removeClass('ui-site-user-mobile-menu-opening ui-site-user-mobile-menu-open').addClass('ui-site-user-mobile-menu-closing')
+}
+
+function showSiteUserMobileMenu () {
+  // @debug console.log('showSiteUserMobileMenu')
+  $html.addClass('ui-site-user-mobile-menu-open').removeClass('ui-site-user-mobile-menu-opening ui-site-user-mobile-menu-closing')
+
+  // ARIA stuff
+  $('.site-user-mobile-menu').removeAttr('aria-hidden')
+  $('.site-user-mobile-menu[tabindex], .site-user-mobile-menu [tabindex]').attr('tabindex', 1)
+
+  // Focus
+  $('.site-user-mobile-menu').focus()
+}
+
+function hideSiteUserMobileMenu () {
+  // @debug console.log('hideSiteUserMobileMenu')
+  $html.removeClass('ui-site-user-mobile-menu-opening ui-site-user-mobile-menu-closing ui-site-user-mobile-menu-open')
+
+  // ARIA stuff
+  $('.site-user-mobile-menu').attr('aria-hidden', 'true')
+  $('.site-user-mobile-menu[tabindex], .site-user-mobile-menu [tabindex]').attr('tabindex', -1)
+}
+
+// Show/close the site user mobile menu
+$doc.on(Utility.clickEvent, '[data-site-user-menu-toggle]', function (event) {
+  event.preventDefault()
+  if ($html.is('.ui-site-user-mobile-menu-open')) {
+    closeSiteUserMobileMenu()
+  } else {
+    openSiteUserMobileMenu()
+  }
+})
+
+// Close the site user mobile menu (if open)
+$doc.on(Utility.clickEvent, '.ui-site-user-mobile-menu-open .site', function (event) {
+  closeSiteUserMobileMenu()
+})
+
+// At end of opening transition
+$doc.on(Utility.transitionEndEvent, '.ui-site-user-mobile-menu-opening', function (event) {
+  showSiteUserMobileMenu()
+})
+
+// At end of closing transition
+$doc.on(Utility.transitionEndEvent, '.ui-site-user-mobile-menu-closing', function (event) {
+  hideSiteUserMobileMenu()
 })
