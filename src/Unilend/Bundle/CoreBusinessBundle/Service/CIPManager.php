@@ -347,28 +347,12 @@ class CIPManager
             $evaluation = $this->getCurrentEvaluation($lender);
         }
 
-        $advices       = [];
-        $questionTypes = [\lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE, \lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS, \lender_questionnaire_question::TYPE_VALUE_BLOCKING_PERIOD];
+        $advices    = [];
+        $indicators = $this->getIndicators($lender, $evaluation);
 
-        /** @var \lender_questionnaire_question $questionEntity */
-        $questionEntity = $this->entityManager->getRepository('lender_questionnaire_question');
-        $questions      = $questionEntity->select('id_lender_questionnaire = ' . $evaluation->id_lender_questionnaire . ' AND type IN ("' . implode('","', $questionTypes) . '")', '`order` ASC');
-        $questions      = array_column($questions, 'id_lender_questionnaire_question', 'type');
-
-        /** @var \lender_evaluation_answer $answerEntity */
-        $answerEntity = $this->entityManager->getRepository('lender_evaluation_answer');
-        $answers      = $answerEntity->select('id_lender_evaluation = ' . $evaluation->id_lender_evaluation . ' AND id_lender_questionnaire_question IN (' . implode(',', $questions) . ')');
-        $answers      = array_column($answers, 'first_answer', 'id_lender_questionnaire_question');
-
-        if (
-            empty($answers[$questions[\lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE]])
-            || empty($answers[$questions[\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS]])
-            || empty($answers[$questions[\lender_questionnaire_question::TYPE_VALUE_BLOCKING_PERIOD]])
-        ) {
+        if (null === $indicators) {
             return null;
         }
-
-        $indicators = $this->getIndicators($lender, $evaluation);
 
         if (null === $indicators[self::INDICATOR_TOTAL_AMOUNT] && null === $indicators[self::INDICATOR_AMOUNT_BY_MONTH]) {
             $advices[] = $this->translator->trans('lender-evaluation_low-estate-low-savings-advice');
@@ -422,16 +406,17 @@ class CIPManager
             $evaluation = $this->getCurrentEvaluation($lender);
         }
 
-        if (false === $this->isValidEvaluation($evaluation)) {
+        $answers = $this->getAnswersByType($lender, $evaluation);
+
+        if (false === isset($answers[\lender_questionnaire_question::TYPE_VALUE_BLOCKING_PERIOD])) {
             return null;
         }
 
         $totalAmountIndicator     = null;
         $amountByMonthIndicator   = null;
         $projectDurationIndicator = null;
-        $answers                  = $this->getAnswersByType($lender, $evaluation);
         $estate                   = $answers[\lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE]['first_answer'];
-        $monthlySavings           = $answers[\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS]['first_answer'];
+        $monthlySavings           = isset($answers[\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS]) ? $answers[\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS]['first_answer'] : 0;
         $blockingPeriod           = $answers[\lender_questionnaire_question::TYPE_VALUE_BLOCKING_PERIOD]['first_answer'];
 
         if ($estate >= \lender_questionnaire_question::VALUE_ESTATE_THRESHOLD) {

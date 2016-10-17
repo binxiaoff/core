@@ -103,6 +103,7 @@ class LenderCIPController extends Controller
             $cipManager->saveLog($evaluation, \lender_evaluation_log::EVENT_ADVICE, $advices);
 
             $template['advices']         = $advices;
+            $template['validEvaluation'] = $cipManager->isValidEvaluation($evaluation);
             return $this->render('lender_cip/advice.html.twig', $template);
         } else {
             $template['current_step'] = $question->order + 1;
