@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
@@ -98,8 +99,10 @@ class LenderCIPController extends Controller
 
         if (null === $question) {
             $advices = implode("\n", $cipManager->getAdvices($lender));
+
             $cipManager->saveLog($evaluation, \lender_evaluation_log::EVENT_ADVICE, $advices);
-            $template['advices'] = $advices;
+
+            $template['advices']         = $advices;
             return $this->render('lender_cip/advice.html.twig', $template);
         } else {
             $template['current_step'] = $question->order + 1;
@@ -233,9 +236,10 @@ class LenderCIPController extends Controller
     /**
      * @Route("/conseil-cip/bid", name="cip_bid")
      *
+     * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function bidAction()
+    public function bidAction(Request $request)
     {
         $entityManager = $this->get('unilend.service.entity_manager');
         $cipManager    = $this->get('unilend.service.cip_manager');
@@ -247,10 +251,38 @@ class LenderCIPController extends Controller
         $lender = $entityManager->getRepository('lenders_accounts');
         $lender->get($user->getClientId());
 
-        if ($cipManager->hasValidEvaluation($lender)) {
-            return $this->redirectToRoute('cip_continue_questionnaire');
+        $rate   = $request->query->get('rate');
+        $amount = $request->query->get('amount');
+
+        /** @var \projects $project */
+        $project = $entityManager->getRepository('projects');
+
+        if (
+            false === $project->get($request->query->get('project'), 'slug')
+            || empty($rate)
+            || empty($amount)
+        ) {
+            return new JsonResponse([
+                'error'   => true,
+                'message' => 'Invalid parameters'
+            ]);
         }
 
-        return $this->render('lender_cip/bid_start.html.twig', ['current_step' => 1, 'total_steps' => self::TOTAL_QUESTIONNAIRE_STEPS]);
+        /** @var \bids $bid */
+        $bid                    = $entityManager->getRepository('bids');
+        $bid->id_lender_account = $lender->id_lender_account;
+        $bid->id_project        = $project->id_project;
+        $bid->amount            = $amount * 100;
+        $bid->rate              = $rate;
+
+        $validation = $cipManager->isCIPValidationNeeded($bid);
+
+        if ($validation) {
+            // @todo log
+        }
+
+        return new JsonResponse([
+            'validation' => $validation
+        ]);
     }
 }

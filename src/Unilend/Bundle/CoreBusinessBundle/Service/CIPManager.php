@@ -460,30 +460,22 @@ class CIPManager
     }
 
     /**
-     * @param \bids     $bid
-     * @param \projects $project
+     * @param \bids $bid
      * @return bool
      */
-    public function isCIPValidationNeeded(\bids $bid, \projects $project)
+    public function isCIPValidationNeeded(\bids $bid)
     {
+        /** @var \projects $project */
+        $project = $this->entityManager->getRepository('projects');
+        $project->get($bid->id_project);
+
         $productContracts = $this->productManager->getProjectAvailableContractTypes($project);
 
         if (false === in_array(\underlying_contract::CONTRACT_MINIBON, array_column($productContracts, 'label'))) {
             return false;
         }
 
-        /** @var \underlying_contract $contract */
-        $contract = $this->entityManager->getRepository('underlying_contract');
-        if (false === $contract->get(\underlying_contract::CONTRACT_IFP, 'label')) {
-            throw new \InvalidArgumentException('The contract ' . \underlying_contract::CONTRACT_IFP . 'does not exist.');
-        }
-
-        $contractAttrVars = $this->contractAttributeManager->getContractAttributesByType($contract, \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
-        if (empty($contractAttrVars) || false === isset($contractAttrVars[0]) || false === is_numeric($contractAttrVars[0])) {
-            throw new \UnexpectedValueException('The IFP contract max amount is not set');
-        }
-
-        $thresholdAmount = $contractAttrVars[0];
+        $thresholdAmount = $this->getContractThresholdAmount();
         $lenderBids      = $bid->select('id_lender_account = ' . $bid->id_lender_account . ' AND id_project = ' . $project->id_project . ' AND status = ' . \bids::STATUS_BID_ACCEPTED);
 
         /** @var \lenders_accounts $lenderAccount */
@@ -521,5 +513,24 @@ class CIPManager
         $advice->create();
 
         return $advice;
+    }
+
+    /**
+     * @return int|float
+     */
+    private function getContractThresholdAmount()
+    {
+        /** @var \underlying_contract $contract */
+        $contract = $this->entityManager->getRepository('underlying_contract');
+        if (false === $contract->get(\underlying_contract::CONTRACT_IFP, 'label')) {
+            throw new \InvalidArgumentException('The contract ' . \underlying_contract::CONTRACT_IFP . 'does not exist.');
+        }
+
+        $contractAttrVars = $this->contractAttributeManager->getContractAttributesByType($contract, \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
+        if (empty($contractAttrVars) || false === isset($contractAttrVars[0]) || false === is_numeric($contractAttrVars[0])) {
+            throw new \UnexpectedValueException('The IFP contract max amount is not set');
+        }
+
+        return $contractAttrVars[0];
     }
 }
