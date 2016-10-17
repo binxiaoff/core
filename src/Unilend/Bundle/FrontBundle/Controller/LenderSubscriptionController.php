@@ -619,17 +619,19 @@ class LenderSubscriptionController extends Controller
         $clientAddress = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
         $clientAddress->get($client->id_client, 'id_client');
 
-        $formData = $request->getSession()->get('subscriptionStep2FormData_');
+        $formData = $request->getSession()->get('subscriptionStep2FormData');
         $request->getSession()->remove('subscriptionStep2FormData');
 
         $template = [
             'client'         => $client->select('id_client = ' . $client->id_client)[0],
             'isLivingAbroad' => $clientAddress->id_pays_fiscal > \pays_v2::COUNTRY_FRANCE,
+            'fundsOrigin'    => $this->getFundsOrigin($client->type)
         ];
 
         $template['formData'] = [
             'bic' => isset($formData['bic']) ? $formData['bic'] : '',
-            'iban' => isset($formData['iban']) ? $formData['iban'] : ''
+            'iban' => isset($formData['iban']) ? $formData['iban'] : '',
+            'fundsOrigin' => isset($formData['funds_origin']) ? $formData['funds_origin'] : ''
         ];
 
         if (in_array($client->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
@@ -677,6 +679,11 @@ class LenderSubscriptionController extends Controller
             $this->addFlash('documentsErrors', $translator->trans('lender-subscription_documents-iban-not-french-error-message'));
         }
 
+        $fundsOrigin = $this->getFundsOrigin($client->type);
+        if (empty($post['funds_origin']) || empty($fundsOrigin[$post['funds_origin']])) {
+            $this->addFlash('documentsErrors', $translator->trans('lender-subscription-documents_wrong-funds-origin'));
+        }
+
         if (isset($_FILES['rib']) && $_FILES['rib']['name'] != '') {
             $attachmentIdRib = $this->uploadAttachment($lenderAccount->id_lender_account, \attachment_type::RIB, 'rib');
             if (false === is_numeric($attachmentIdRib)) {
@@ -699,10 +706,11 @@ class LenderSubscriptionController extends Controller
             $request->getSession()->set('subscriptionStep2FormData', $post);
             return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $client->hash]);
         } else {
-            $lenderAccount->bic           = trim(strtoupper($post['bic']));
-            $lenderAccount->iban          = trim(strtoupper(str_replace(' ', '', $post['iban'])));
-            $lenderAccount->cni_passeport = 1;
-            $lenderAccount->motif        = $client->getLenderPattern($client->id_client);
+            $lenderAccount->bic               = trim(strtoupper($post['bic']));
+            $lenderAccount->iban              = trim(strtoupper(str_replace(' ', '', $post['iban'])));
+            $lenderAccount->cni_passeport     = 1;
+            $lenderAccount->motif             = $client->getLenderPattern($client->id_client);
+            $lenderAccount->origine_des_fonds = $post['funds_origin'];
             $lenderAccount->update();
 
             $client->etape_inscription_preteur = 2;
@@ -1458,5 +1466,54 @@ class LenderSubscriptionController extends Controller
         }
 
         return new Response('not an ajax request');
+    }
+
+
+
+
+    /**
+     * @param int $clientType
+     *
+     * @return array
+     */
+    private function getFundsOrigin($clientType)
+    {
+        /** @var \settings $settings */
+        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
+
+        switch ($clientType) {
+            case \clients::TYPE_PERSON:
+            case \clients::TYPE_PERSON_FOREIGNER:
+                $settings->get("Liste deroulante origine des fonds", 'type');
+                break;
+            default:
+                $settings->get("Liste deroulante origine des fonds", 'type');
+                break;
+        }
+        $fundsOriginList = explode(';', $settings->value);
+        return array_combine(range(1, count($fundsOriginList)), array_values($fundsOriginList));
+    }
+
+    /**
+     * @param int $clientType
+     *
+     * @return array
+     */
+    private function getFundsOrigin($clientType)
+    {
+        /** @var \settings $settings */
+        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
+
+        switch ($clientType) {
+            case \clients::TYPE_PERSON:
+            case \clients::TYPE_PERSON_FOREIGNER:
+                $settings->get("Liste deroulante origine des fonds", 'type');
+                break;
+            default:
+                $settings->get("Liste deroulante origine des fonds", 'type');
+                break;
+        }
+        $fundsOriginList = explode(';', $settings->value);
+        return array_combine(range(1, count($fundsOriginList)), array_values($fundsOriginList));
     }
 }
