@@ -35,7 +35,11 @@
                 {{ advices|raw }}
             </div>
 
-            <a href="{{ path('cip_validate_questionnaire') }}" class="btn-primary fright">J'ai bien lu les conseils</a>
+            {% if app.request.session.get('cipBid') is defined %}
+                <a href="{{ path('cip_validate_questionnaire') }}" class="btn-primary fright">J'ai bien lu les conseils et je retourne voir le projet</a>
+            {% else %}
+                <a href="{{ path('cip_validate_questionnaire') }}" class="btn-primary fright">J'ai bien lu les conseils</a>
+            {% endif %}
         </div><!-- /.panel -->
     </div><!-- /.dashboard-tabs-content -->
 </div>

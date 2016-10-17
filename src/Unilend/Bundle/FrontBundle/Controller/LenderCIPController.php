@@ -173,9 +173,10 @@ class LenderCIPController extends Controller
     /**
      * @Route("/conseil-cip/valider", name="cip_validate_questionnaire")
      *
+     * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function validateQuestionnaireAction()
+    public function validateQuestionnaireAction(Request $request)
     {
         $entityManager = $this->get('unilend.service.entity_manager');
         $cipManager    = $this->get('unilend.service.cip_manager');
@@ -188,6 +189,21 @@ class LenderCIPController extends Controller
         $lender->get($user->getClientId());
 
         $cipManager->validateEvaluation($lender);
+
+        $bid = $request->getSession()->get('cipBid');
+
+        if (false === empty($bid['project'])) {
+            /** @var \projects $project */
+            $project = $entityManager->getRepository('projects');
+
+            if (is_numeric($bid['project']) && $project->get($bid['project'])) {
+                $bid['validate'] = true;
+                $request->getSession()->set('cipBid', $bid);
+                return $this->redirectToRoute('place_bid', ['projectId' => $project->id_project]);
+            }
+
+            $request->getSession()->remove('cipBid');
+        }
 
         return $this->redirectToRoute('cip_index');
     }
@@ -212,5 +228,29 @@ class LenderCIPController extends Controller
         $cipManager->endCurrentEvaluation($lender);
 
         return $this->redirectToRoute('cip_start_questionnaire');
+    }
+
+    /**
+     * @Route("/conseil-cip/bid", name="cip_bid")
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function bidAction()
+    {
+        $entityManager = $this->get('unilend.service.entity_manager');
+        $cipManager    = $this->get('unilend.service.cip_manager');
+
+        /** @var UserLender $user */
+        $user = $this->getUser();
+
+        /** @var \lenders_accounts $lender */
+        $lender = $entityManager->getRepository('lenders_accounts');
+        $lender->get($user->getClientId());
+
+        if ($cipManager->hasValidEvaluation($lender)) {
+            return $this->redirectToRoute('cip_continue_questionnaire');
+        }
+
+        return $this->render('lender_cip/bid_start.html.twig', ['current_step' => 1, 'total_steps' => self::TOTAL_QUESTIONNAIRE_STEPS]);
     }
 }

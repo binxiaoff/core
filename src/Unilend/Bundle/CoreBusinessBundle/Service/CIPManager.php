@@ -78,6 +78,21 @@ class CIPManager
     }
 
     /**
+     * @param \lenders_accounts $lender
+     * @return bool
+     */
+    public function hasValidEvaluation(\lenders_accounts $lender)
+    {
+        $evaluation = $this->getCurrentEvaluation($lender);
+
+        if (null === $evaluation) {
+            return false;
+        }
+
+        return $this->isValidEvaluation($evaluation);
+    }
+
+    /**
      * @param \lender_evaluation $evaluation
      * @return bool
      */

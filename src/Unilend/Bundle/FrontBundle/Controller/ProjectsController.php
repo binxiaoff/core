@@ -392,41 +392,44 @@ class ProjectsController extends Controller
     }
     /**
      * @Route("/projects/bid/{projectId}", requirements={"projectId" = "^\d+$"}, name="place_bid")
-     * @Method({"POST"})
      */
     public function placeBidAction($projectId, Request $request)
     {
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
+        $translator    = $this->get('translator');
+        /** @var \projects $project */
+        $project = $entityManager->getRepository('projects');
+
+        if (false === $project->get($projectId)) {
+            return $this->redirectToRoute('home');
+        }
+
+        /** @var UserLender $user */
+        $user = $this->getUser();
+
+        if (false === ($user instanceof UserLender)
+            || $user->getClientStatus() < \clients_status::VALIDATED
+        ) {
+            $request->getSession()->set('bidResult', ['error' => true, 'message' => $translator->trans('project-detail_side-bar-bids-user-logged-out')]);
+            return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
+        }
+
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount = $entityManager->getRepository('lenders_accounts');
+        $lenderAccount->get($user->getClientId(), 'id_client_owner');
+
+        $needsCIPValidation = true;
+        $bidAmount          = null;
+        $rate               = null;
+
         if (
             ($post = $request->request->get('invest'))
             && isset($post['amount'], $post['interest'], $post['bidToken'])
         ) {
-            /** @var EntityManager $entityManager */
-            $entityManager = $this->get('unilend.service.entity_manager');
-            $translator    = $this->get('translator');
-            /** @var \projects $project */
-            $project = $entityManager->getRepository('projects');
-
-            if (false === $project->get($projectId)) {
-                return $this->redirectToRoute('home');
-            }
-
-            /** @var UserLender $user */
-            $user = $this->getUser();
-
-            if (false === ($user instanceof UserLender)
-                || $user->getClientStatus() < \clients_status::VALIDATED
-            ) {
-                $request->getSession()->set('bidResult', ['error' => true, 'message' => $translator->trans('project-detail_side-bar-bids-user-logged-out')]);
-                return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
-            }
-
             /** @var \clients_history_actions $clientHistoryActions */
             $clientHistoryActions = $entityManager->getRepository('clients_history_actions');
             $clientHistoryActions->histo(9, 'bid', $user->getClientId(), serialize(array('id_client' => $user->getClientId(), 'post' => $post, 'id_projet' => $projectId)));
-
-            /** @var \lenders_accounts $lenderAccount */
-            $lenderAccount = $entityManager->getRepository('lenders_accounts');
-            $lenderAccount->get($user->getClientId(), 'id_client_owner');
 
             $bidAmount = floor($post['amount']); // the cents is not allowed
             $rate      = $post['interest'];
@@ -437,62 +440,66 @@ class ProjectsController extends Controller
             }
 
             $request->getSession()->remove('bidToken');
+        } elseif ($request->getSession()->get('cipBid')) {
+            $cipBid             = $request->getSession()->get('cipBid');
+            $bidAmount          = isset($cipBid['amount']) ? $cipBid['amount'] : null;
+            $rate               = isset($cipBid['rate']) ? $cipBid['rate'] : null;
+            $needsCIPValidation = false;
 
-            /** @var \bids $bids */
-            $bids = $entityManager->getRepository('bids');
-            $bids->unsetData();
-            $bids->id_lender_account = $lenderAccount->id_lender_account;
-            $bids->id_project        = $project->id_project;
-            $bids->amount            = $bidAmount * 100;
-            $bids->rate              = $rate;
-
-            /** @var BidManager $bidManager */
-            $bidManager = $this->get('unilend.service.bid_manager');
-            try {
-                $bidManager->bid($bids);
-                /** @var MemcacheCachePool $oCachePool */
-                $oCachePool = $this->get('memcache.default');
-                $oCachePool->deleteItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $project->id_project);
-                $request->getSession()->set('bidResult', ['success' => true, 'message' => $translator->trans('project-detail_side-bar-bids-bid-placed-message')]);
-            } catch (\Exception $exception) {
-                if ('bids-not-eligible' === $exception->getMessage()) {
-                    $productManager = $this->get('unilend.service_product.product_manager');
-
-                    /** @var \product $product */
-                    $product = $entityManager->getRepository('product');
-                    $product->get($project->id_product);
-
-                    $amountMax  = $productManager->getMaxEligibleAmount($product);
-                    $reasons    = $productManager->getBidValidatorReasons($bids, $product);
-                    $amountRest = 0;
-
-                    foreach ($reasons as $reason) {
-                        if ($reason === \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO) {
-                            $amountRest = $productManager->getAmountLenderCanStillBid($lenderAccount, $project);
-                        }
-                        $currencyFormatter = new \NumberFormatter($request->getLocale(), \NumberFormatter::CURRENCY);
-                        $amountRest        = $currencyFormatter->formatCurrency($amountRest, 'EUR');
-                        $amountMax         = $currencyFormatter->formatCurrency($amountMax, 'EUR');
-
-                        $this->addFlash('bid_not_eligible_reason', $translator->transChoice('project-detail_bid-not-eligible-reason-' . $reason, 0, ['%amountRest%' => $amountRest, '%amountMax%' => $amountMax]));
-                    }
-                } elseif ('bids-cip-validation-needed' === $exception->getMessage()) {
-                    $cipManager       = $this->get('unilend.service.cip_manager');
-                    $lenderEvaluation = $cipManager->getCurrentEvaluation($lenderAccount);
-
-                    if ($lenderEvaluation->expiry_date === '0000-00-00 00:00:00') {
-                        $request->getSession()->set('cipBid', ['amount' => $bidAmount, 'rate' => $rate, 'project' => $project->id_project]);
-                        return $this->redirectToRoute('cip_continue_questionnaire');
-                    }
-                } else {
-                    $request->getSession()->set('bidResult', ['error' => true, 'message' => $translator->trans('project-detail_side-bar-' . $exception->getMessage())]);
-                }
-            }
-
-            return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
+            $request->getSession()->remove('cipBid');
         }
 
-        return $this->redirectToRoute('home');
+        if (empty($bidAmount) || empty($rate)) {
+            return $this->redirectToRoute('home');
+        }
+
+        /** @var \bids $bids */
+        $bids = $entityManager->getRepository('bids');
+        $bids->unsetData();
+        $bids->id_lender_account = $lenderAccount->id_lender_account;
+        $bids->id_project        = $project->id_project;
+        $bids->amount            = $bidAmount * 100;
+        $bids->rate              = $rate;
+
+        /** @var BidManager $bidManager */
+        $bidManager = $this->get('unilend.service.bid_manager');
+        try {
+            $bidManager->bid($bids, true, $needsCIPValidation);
+            /** @var MemcacheCachePool $oCachePool */
+            $oCachePool = $this->get('memcache.default');
+            $oCachePool->deleteItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $project->id_project);
+            $request->getSession()->set('bidResult', ['success' => true, 'message' => $translator->trans('project-detail_side-bar-bids-bid-placed-message')]);
+        } catch (\Exception $exception) {
+            if ('bids-not-eligible' === $exception->getMessage()) {
+                $productManager = $this->get('unilend.service_product.product_manager');
+
+                /** @var \product $product */
+                $product = $entityManager->getRepository('product');
+                $product->get($project->id_product);
+
+                $amountMax  = $productManager->getMaxEligibleAmount($product);
+                $reasons    = $productManager->getBidValidatorReasons($bids, $product);
+                $amountRest = 0;
+
+                foreach ($reasons as $reason) {
+                    if ($reason === \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO) {
+                        $amountRest = $productManager->getAmountLenderCanStillBid($lenderAccount, $project);
+                    }
+                    $currencyFormatter = new \NumberFormatter($request->getLocale(), \NumberFormatter::CURRENCY);
+                    $amountRest        = $currencyFormatter->formatCurrency($amountRest, 'EUR');
+                    $amountMax         = $currencyFormatter->formatCurrency($amountMax, 'EUR');
+
+                    $this->addFlash('bid_not_eligible_reason', $translator->transChoice('project-detail_bid-not-eligible-reason-' . $reason, 0, ['%amountRest%' => $amountRest, '%amountMax%' => $amountMax]));
+                }
+            } elseif ('bids-cip-validation-needed' === $exception->getMessage()) {
+                $request->getSession()->set('cipBid', ['amount' => $bidAmount, 'rate' => $rate, 'project' => $project->id_project]);
+                return $this->redirectToRoute('cip_bid');
+            } else {
+                $request->getSession()->set('bidResult', ['error' => true, 'message' => $translator->trans('project-detail_side-bar-' . $exception->getMessage())]);
+            }
+        }
+
+        return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
     }
 
     /**
