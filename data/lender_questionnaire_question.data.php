@@ -11,13 +11,14 @@ class lender_questionnaire_question extends lender_questionnaire_question_crud
     CONST TYPE_VALUE_BLOCKING_PERIOD               = 'value-blocking-period';
     CONST TYPE_VALUE_OTHER_FINANCIAL_PRODUCTS_USE  = 'value-other-financial-products-use';
 
-    const VALUE_BOOLEAN_TRUE                = 'true';
-    const VALUE_BOOLEAN_FALSE               = 'false';
-    const VALUE_ESTATE_THRESHOLD            = 20000;
-    const VALUE_MONTHLY_SAVINGS_THRESHOLD   = 200;
-    const VALUE_BLOCKING_PERIOD_THRESHOLD_1 = 12;
-    const VALUE_BLOCKING_PERIOD_THRESHOLD_2 = 36;
-    const VALUE_BLOCKING_PERIOD_THRESHOLD_3 = 60;
+    const VALUE_BOOLEAN_TRUE              = 'true';
+    const VALUE_BOOLEAN_FALSE             = 'false';
+    const VALUE_ESTATE_THRESHOLD          = 20000;
+    const VALUE_MONTHLY_SAVINGS_THRESHOLD = 200;
+    const VALUE_BLOCKING_PERIOD_1         = '-12';
+    const VALUE_BLOCKING_PERIOD_2         = '-36';
+    const VALUE_BLOCKING_PERIOD_3         = '-60';
+    const VALUE_BLOCKING_PERIOD_4         = '+60';
 
     public function __construct($bdd, $params = '')
     {
