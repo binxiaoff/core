@@ -6,6 +6,7 @@ use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Sonata\SeoBundle\Seo\SeoPage;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -39,6 +40,8 @@ class MainController extends Controller
 
     const SLUG_PAGE_BECOME_LENDER = 'lender_subscription_personal_information';
     const SLUG_ELEMENT_NAV_IMAGE  = 'image-header';
+    /** anchors in path functions are not supported, see twig template for handing if the borrower esim special case */
+    const SLUG_PAGE_BECOME_BORROWER = 'emprunter-homeemp-section-esim';
 
     /**
      * @Route("/", name="home")
@@ -258,6 +261,7 @@ class MainController extends Controller
         /** @var \tree $tree */
         $tree = $entityManager->getRepository('tree');
         $tree->get(['id_tree' => $idTree]);
+        $this->setCmsSeoData($tree);
 
         return $this->renderTermsOfUse($tree, $type);
     }
@@ -312,14 +316,15 @@ class MainController extends Controller
         } else {
             $finalElements = $cachedItem->get();
         }
+        $this->setCmsSeoData($tree);
 
         switch ($tree->id_template) {
             case self::CMS_TEMPLATE_BIG_HEADER:
-                return $this->renderCmsBigHeader($tree, $finalElements['content']);
+                return $this->renderCmsBigHeader($finalElements['content']);
             case self::CMS_TEMPLATE_NAV:
                 return $this->renderCmsNav($tree, $finalElements['content'], $entityManager);
             case self::CMS_TEMPLATE_BORROWER_LANDING_PAGE:
-                return $this->renderBorrowerLandingPage($request, $tree, $finalElements['content'], $finalElements['complement'], $entityManager);
+                return $this->renderBorrowerLandingPage($request, $finalElements['content'], $finalElements['complement'], $entityManager);
             case self::CMS_TEMPLATE_TOS:
                 return $this->renderTermsOfUse($tree);
             default:
@@ -328,11 +333,10 @@ class MainController extends Controller
     }
 
     /**
-     * @param \tree $tree
      * @param array $content
      * @return Response
      */
-    private function renderCmsBigHeader(\tree $tree, array $content)
+    private function renderCmsBigHeader(array $content)
     {
         $cms = [
             'title'         => $content['titre'],
@@ -341,14 +345,7 @@ class MainController extends Controller
             'right_content' => $content['bloc-droite']
         ];
 
-        $page = [
-            'title'       => $tree->meta_title,
-            'description' => $tree->meta_description,
-            'keywords'    => $tree->meta_keywords,
-            'isIndexable' => $tree->indexation == 1
-        ];
-
-        return $this->render('pages/template-big-header.html.twig', ['cms' => $cms, 'page' => $page]);
+        return $this->render('pages/template-big-header.html.twig', ['cms' => $cms]);
     }
 
     /**
@@ -387,10 +384,11 @@ class MainController extends Controller
             $selected = $page['id_tree'] == $currentPage->id_tree;
 
             $navigation[$page['id_tree']] = [
-                'label'       => $page['menu_title'],
-                'slug'        => $page['slug'],
-                'selected'    => $selected,
-                'highlighted' => $page['slug'] === self::SLUG_PAGE_BECOME_LENDER
+                'label'                => $page['menu_title'],
+                'slug'                 => $page['slug'],
+                'selected'             => $selected,
+                'highlighted_lender'   => $page['slug'] === self::SLUG_PAGE_BECOME_LENDER,
+                'highlighted_borrower' => $page['slug'] === self::SLUG_PAGE_BECOME_BORROWER
             ];
         }
 
@@ -402,9 +400,6 @@ class MainController extends Controller
         $page = [
             'id'          => $pageId,
             'title'       => $currentPage->meta_title,
-            'description' => $currentPage->meta_description,
-            'keywords'    => $currentPage->meta_keywords,
-            'isIndexable' => $currentPage->indexation == 1,
             'next'        => $nextPage
         ];
 
@@ -413,13 +408,12 @@ class MainController extends Controller
 
     /**
      * @param Request       $request
-     * @param \tree         $tree
      * @param array         $content
      * @param array         $complement
      * @param EntityManager $entityManager
      * @return Response
      */
-    private function renderBorrowerLandingPage(Request $request, \tree $tree, array $content, array $complement, EntityManager $entityManager)
+    private function renderBorrowerLandingPage(Request $request, array $content, array $complement, EntityManager $entityManager)
     {
         $sessionHandler = $request->getSession();
 
@@ -479,12 +473,6 @@ class MainController extends Controller
                     $content['image-footer-7'] => $complement['image-footer-7']
                 ],
                 'partner_funnel'              => $isPartnerFunnel
-            ],
-            'page'     => [
-                'title'       => $tree->meta_title,
-                'description' => $tree->meta_description,
-                'keywords'    => $tree->meta_keywords,
-                'isIndexable' => $tree->indexation == 1
             ],
             'form'     => [
                 'message' => empty($sessionHandler->get('projectRequest')['message']) ? '' : $sessionHandler->get('projectRequest')['message'],
@@ -615,14 +603,7 @@ class MainController extends Controller
             'right_content' => $template
         ];
 
-        $page = [
-            'title'       => $tree->meta_title,
-            'description' => $tree->meta_description,
-            'keywords'    => $tree->meta_keywords,
-            'isIndexable' => $tree->indexation == 1
-        ];
-
-        return $this->render('pages/static_pages/template-cgv.html.twig', ['cms' => $cms, 'page' => $page]);
+        return $this->render('pages/static_pages/template-cgv.html.twig', ['cms' => $cms]);
     }
 
     private function getTOSReplacementsForPerson(\clients $client, $dateAccept, $loansCount, $content, &$template)
@@ -846,7 +827,7 @@ class MainController extends Controller
         /** @var \tree $tree */
         $tree = $entityManager->getRepository('tree');
         $tree->get(['slug' => 'qui-sommes-nous']);
-
+        $this->setCmsSeoData($tree);
         $response = $this->render('pages/static_pages/about_us.html.twig');
 
         $finalElements = [
@@ -860,10 +841,9 @@ class MainController extends Controller
 
     /**
      * @Route("/statistiques", name="statistics")
-     *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function statisticsAction(Request $request)
+    public function statisticsAction()
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
@@ -881,7 +861,7 @@ class MainController extends Controller
             ],
             'years' => array_merge($years, ['total'])
         ];
-
+        $this->setCmsSeoData($tree);
         $response = $this->render('pages/static_pages/statistics.html.twig', $template);
 
         $finalElements = [
@@ -956,7 +936,9 @@ class MainController extends Controller
 
     /**
      * @Route("/cgv-popup", name="tos_popup", condition="request.isXmlHttpRequest()")
+     * @param Request $request
      * @Security("has_role('ROLE_LENDER')")
+     * @return Mixed
      */
     public function lastTermsOfServiceAction(Request $request)
     {
@@ -1040,11 +1022,11 @@ class MainController extends Controller
         /** @var \tree $tree */
         $tree = $entityManager->getRepository('tree');
         $tree->get(['slug' => 'temoignages']);
+        $this->setCmsSeoData($tree);
 
         $template['testimonialPeople'] = $testimonialService->getBorrowerBattenbergTestimonials(false);
-        $response = $this->render('pages/static_pages/testimonials.html.twig', $template);
-
-        $finalElements = [
+        $response                      = $this->render('pages/static_pages/testimonials.html.twig', $template);
+        $finalElements                 = [
             'contenu'      => $response->getContent(),
             'complement'   => '',
             'image-header' => ''
@@ -1070,5 +1052,27 @@ class MainController extends Controller
             ];
         }
         return $dataForTreeMap;
+    }
+
+    private function setCmsSeoData(\tree $tree)
+    {
+        /** @var SeoPage $seoPage */
+        $seoPage = $this->get('sonata.seo.page');
+
+        if (false === empty($tree->meta_title)) {
+            $seoPage->setTitle($tree->meta_title);
+        }
+
+        if (false === empty($tree->meta_description)) {
+            $seoPage->addMeta('name', 'description', $tree->meta_description);
+        }
+
+        if (false === empty($tree->meta_keywords)) {
+            $seoPage->addMeta('name', 'keywords', $tree->meta_keywords);
+        }
+
+        if (empty($tree->indexation)) {
+            $seoPage->addMeta('name', 'robots', 'noindex');
+        }
     }
 }

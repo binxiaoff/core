@@ -1,10 +1,5 @@
 {% extends 'layouts/_layout.html.twig' %}
 
-{% set page = {
-    title: 'Déposer un projet',
-    permalink: path('project_request_partner', {'hash' : project.hash})
-} %}
-
 {% block siteContent %}
     <article id="deposer-projet" class="page">
         <div class="hero-wrap">
@@ -260,7 +255,7 @@
 
                                         <div class="row btn-controls tab-footer">
                                             <div class="col-next col-lg-12 col-md-12">
-                                                <button type="submit" class="btn-primary">
+                                                <button type="submit" class="btn-primary" data-spinnerbutton>
                                                     {% trans %} project-request_partner-form-submit-button {% endtrans %}
                                                     <span class="icon fa-angle-right"></span>
                                                 </button>

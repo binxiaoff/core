@@ -67,17 +67,19 @@ class mailsController extends bootstrap
         /** @var \Unilend\Bundle\MessagingBundle\Service\MailTemplateManager $oMailTemplateManager */
         $oMailTemplateManager = $this->get('unilend.service.mail_template');
 
-        if (isset($this->params[0]) && $this->params[0] != '') {
+        if (false === empty($this->params[0])) {
+            /** @var \mail_templates oMailTemplate */
             $this->oMailTemplate = $this->loadData('mail_templates');
-            $this->oMailTemplate->get($this->params[0] . '" AND status = "1', 'type');
+            $this->oMailTemplate->get($this->params[0], 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND type');
 
-            if (isset($_POST['form_mod_mail'])) {
+            if (isset($_POST['form_mod_mail']) && false === empty($this->oMailTemplate->id_mail_template)) {
                 $aPost = $this->handlePost();
-                if (empty($aPost['type']) || empty($aPost['sender_name']) || empty($aPost['sender_email']) || empty($aPost['subject'])) {
+
+                if (empty($aPost['sender_name']) || empty($aPost['sender_email']) || empty($aPost['subject'])) {
                     $_SESSION['freeow']['title']   = 'Modification d\'un mail';
                     $_SESSION['freeow']['message'] = 'Modification impossible : tous les champs n\'ont &eacute;t&eacute; remplis';
                 } else {
-                    $oMailTemplateManager->modifyTemplate($aPost['id_mail_template'], $aPost['type'], $aPost['sender_name'], $aPost['sender_email'], $aPost['subject'], $aPost['content']);
+                    $oMailTemplateManager->modifyTemplate($this->oMailTemplate, $aPost['sender_name'], $aPost['sender_email'], $aPost['subject'], $aPost['content']);
 
                     $_SESSION['freeow']['title']   = 'Modification d\'un mail';
                     $_SESSION['freeow']['message'] = 'Le mail a bien &eacute;t&eacute; modifi&eacute;';
@@ -147,7 +149,7 @@ class mailsController extends bootstrap
             $aPost[$field] = $value;
         }
 
-        $aPost['type']    = $this->bdd->generateSlug(trim($_POST['type']));
+        $aPost['type']    = isset($aPost['type']) ? $this->bdd->generateSlug(trim($_POST['type'])) : '';
         $aPost['subject'] = str_replace('"', '\'', $_POST['subject']);
         $aPost['content'] = str_replace('"', '\'', $_POST['content']);
 

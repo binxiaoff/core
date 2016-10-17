@@ -88,5 +88,10 @@
             <argument type="service" id="translator"/>
             <argument type="service" id="router" />
         </service>
+
+        <service id="unilend.frontbundle.seo_manager" class="Unilend\Bundle\FrontBundle\Service\SeoManager">
+            <argument type="service" id="sonata.seo.page"/>
+            <argument type="service" id="translator"/>
+        </service>
     </services>
 </container>

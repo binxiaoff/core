@@ -198,8 +198,11 @@ var FormValidation = function (elem, options) {
     // The form
     formElem: false,
 
-    // An element that contains notifications (i.e. messages to inform to the user)
-    notificationsElem: self.templates.notificationsElem,
+    // Show notifications
+    showNotifications: true,
+
+    // An element that will contain main notifications (i.e. general messages to inform the user)
+    notificationsElem: false,
 
     // Whether to validate on the form or on the individual field event
     validateOnFormEvents: true,
@@ -245,6 +248,7 @@ var FormValidation = function (elem, options) {
     oncomplete: null
   }, ElementAttrsObject(elem, {
     formElem: 'data-formvalidation-formelem',
+    showNotifications: 'data-formvalidation-shownotifications',
     notificationsElem: 'data-formvalidation-notificationselem',
     render: 'data-formvalidation-render'
   }), options)
@@ -256,9 +260,15 @@ var FormValidation = function (elem, options) {
   if (!self.$form || self.$form.length === 0) self.$form = self.$elem.parents('form').first()
 
   // -- Get/set the notifications element for this form/group
-  self.$notifications = $(self.settings.notificationsElem)
-  if (self.$notifications.length === 0) self.$notifications = $(self.templates.notifications)
-  if (!Utility.elemExists(self.$notifications)) self.$elem.prepend(self.$notifications)
+  self.$notifications = false
+  if (Utility.elemExists(self.settings.notificationsElem)) {
+    self.$notifications = $(self.settings.notificationsElem)
+  }
+  // -- Default notification element
+  if (self.settings.showNotifications && !self.$notifications) {
+    self.$notifications = $(self.templates.notifications)
+    if (!Utility.elemExists(self.$notifications)) self.$elem.prepend(self.$notifications)
+  }
 
   // @debug
   // console.log('new FormValidation', {
@@ -398,6 +408,7 @@ FormValidation.prototype.validateInput = function (elem, options) {
       ),
 
       // Options
+      showNotifications: self.settings.showNotifications,
       notificationsElem: '.ui-formvalidation-messages',
       render: self.settings.render, // render the errors/messages to the UI
       showSuccess: self.settings.showSuccessOnField, // show that the input successfully validated
@@ -422,6 +433,9 @@ FormValidation.prototype.validateInput = function (elem, options) {
     // Override with JS invocation options
     options)
   }
+
+  // Get the notifications element
+  inputValidation.$notifications = self.getNotificationsElem(inputValidation)
 
   // Ignore disabled/hidden fields by saying they're valid
   if ($elem.is(':disabled') || Utility.elemIsHidden(elem)) {
@@ -485,6 +499,11 @@ FormValidation.prototype.validateInput = function (elem, options) {
   inputValidation.$elem.removeClass('ui-formvalidation-error ui-formvalidation-success')
   inputValidation.$formField.removeClass('ui-formvalidation-error ui-formvalidation-success')
 
+  // Clear old messages
+  if (inputValidation.$notifications) {
+    inputValidation.$notifications.html('')
+  }
+
   // Field validation errors
   if (inputValidation.errors.length > 0) {
     inputValidation.isValid = false
@@ -502,14 +521,12 @@ FormValidation.prototype.validateInput = function (elem, options) {
       // console.log('Validation error', inputValidation)
       inputValidation.$formField.addClass('ui-formvalidation-error')
 
-      // Clear old messages
-      inputValidation.$notifications = self.getNotificationsElem(inputValidation)
-      inputValidation.$notifications.html('')
-
       // Render messages
       if (inputValidation.errors.length > 0) {
         self.renderErrorsToElem((inputValidation.options.showAllErrors
+          // Render all errors
           ? inputValidation.errors
+          // Render only one error
           : inputValidation.errors.slice(0, 1)),
           inputValidation.$notifications
         )
@@ -535,11 +552,15 @@ FormValidation.prototype.validateInput = function (elem, options) {
 
       // Clear old messages
       inputValidation.$notifications = self.getNotificationsElem(inputValidation)
-      inputValidation.$notifications.html('')
 
-      // Render messages
-      if (inputValidation.errors.length > 0) {
-        self.renderMessagesToElem(inputValidation.messages, inputValidation.$notifications)
+      // -- Only if a notifications elem is available
+      if (inputValidation.$notifications) {
+        inputValidation.$notifications.html('')
+
+        // Render messages
+        if (inputValidation.errors.length > 0) {
+          self.renderMessagesToElem(inputValidation.messages, inputValidation.$notifications)
+        }
       }
     }
   }
@@ -555,6 +576,16 @@ FormValidation.prototype.validateInput = function (elem, options) {
   inputValidation.$elem.trigger('FormValidation:validateInput:complete', [self, inputValidation])
 
   return inputValidation
+}
+
+// Quickly validate a single input by a custom rule
+FormValidation.prototype.validateInputCustom = function (elem, customRule) {
+  var self = this
+  return self.validateInput(elem, {
+    rules: {
+      custom: customRule
+    }
+  })
 }
 
 // Validate the element's fields
@@ -579,6 +610,7 @@ FormValidation.prototype.validate = function (options) {
     // Options
     options: $.extend({
       render: self.settings.render,
+      showNotifications: self.settings.showNotifications,
       notificationsElem: self.settings.notificationsElem,
       showSuccess: self.settings.showSuccessOnField, // show success messages
       showError: self.settings.showErrorOnField, // show error messages
@@ -619,8 +651,12 @@ FormValidation.prototype.validate = function (options) {
   // @trigger group `FormValidation:validate:afterValidate`
   groupValidation.$elem.trigger('FormValidation:validate:afterValidate', [self, groupValidation])
 
+  // Clear previous notifications
+  if (groupValidation.$notifications) {
+    groupValidation.$notifications.html('')
+  }
+
   // Error
-  groupValidation.$notifications.html('')
   if (groupValidation.erroredFields.length > 0) {
     groupValidation.isValid = false
     if (typeof groupValidation.onerror === 'function') groupValidation.onerror.apply(self, [self, groupValidation])
@@ -628,8 +664,10 @@ FormValidation.prototype.validate = function (options) {
     groupValidation.$elem.trigger('FormValidation:validate:error', [self, groupValidation])
 
     // Render to view
-    if (groupValidation.options.render) {
-      groupValidation.$notifications.html('<div class="message-error"><p>' + __.__('There are errors with the form below. Please ensure your information has been entered correctly before continuing.', 'error-group-has-errors') + '</p></div>')
+    if (groupValidation.options.render && groupValidation.options.showNotifications && groupValidation.$notifications) {
+      groupValidation.$notifications.html(Templating.replace(self.templates.errorMessage, {
+        description: __.__('There are errors with the form below. Please ensure your information has been entered correctly before continuing.', 'error-group-has-errors')
+      }))
     }
 
   // Success
@@ -652,12 +690,18 @@ FormValidation.prototype.validate = function (options) {
 // Relies on notifications elements to have class of `.ui-formvalidation-messages` applied
 FormValidation.prototype.clear = function () {
   var self = this
+
+  // Clear messages on each field
   self.getInputs().each(function (i, input) {
     $(input)
       .parents('.form-field').removeClass('ui-formvalidation-error ui-formvalidation-success')
       .find('.ui-formvalidation-messages').html('')
   })
-  self.$notifications.html('')
+
+  // Clear notifications
+  if (self.$notifications) {
+    self.$notifications.html('')
+  }
 
   // @trigger group `FormValidation:clear` [elemFormValidation]
   self.$elem.trigger('FormValidation:clear', [self])
@@ -680,7 +724,8 @@ FormValidation.prototype.getInputs = function () {
 FormValidation.prototype.templates = {
   notificationsElem: '<div class="ui-formvalidation-notifications"></div>',
   messagesList: '<ul class="ui-formvalidation-messages"></ul>',
-  messagesListItem: '<li class="{{ classNames }}">{{ targetLabel }}{{ description }}</li>'
+  messagesListItem: '<li class="{{ classNames }}">{{ targetLabel }}{{ description }}</li>',
+  errorMessage: '<div class="message-error"><p>{{ description }}</p></div>'
 }
 
 // The field validation rules to apply
@@ -971,8 +1016,6 @@ FormValidation.prototype.rules = {
               target: inputValidation.$formField.find('input[type=file]')
             })
           }
-
-          console.log(inputValidation)
           break
       }
     }
@@ -1049,6 +1092,11 @@ FormValidation.prototype.getNotificationsElem = function (validation) {
   var self = this
   var $notifications
 
+  // Explicitly not set
+  if (validation.$notifications === false) {
+    return false
+  }
+
   // Already set
   if (Utility.elemExists(validation.$notifications)) {
     // @debug
@@ -1093,9 +1141,14 @@ FormValidation.prototype.getNotificationsElem = function (validation) {
 // Render notification messages to the element
 FormValidation.prototype.renderMessagesToElem = function (messages, elem) {
   var self = this
-  var $elem = $(elem)
+
   // @debug
   // console.log('renderMessagesToElem', messages, elem)
+
+  // Invalid selector
+  if (!elem || !Utility.checkSelector(elem)) return
+
+  var $elem = $(elem)
   if ($elem.length === 0 || messages.length === 0) return
 
   // Remove previous messages
@@ -1171,7 +1224,7 @@ FormValidation.prototype.renderErrorsToElem = function (errors, elem) {
  */
 $.fn.uiFormValidation = function (op) {
   // Fire a command to the FormValidation object, e.g. $('[data-formvalidation]').uiFormValidation('validate', {..})
-  if (typeof op === 'string' && /^validate|validateInput|clear|clearAll$/.test(op)) {
+  if (typeof op === 'string' && /^validate|validateInput|validateInputCustom|clear|clearAll$/.test(op)) {
     // Get further additional arguments to apply to the matched command method
     var args = Array.prototype.slice.call(arguments)
     args.shift()

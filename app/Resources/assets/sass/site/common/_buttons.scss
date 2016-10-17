@@ -16,6 +16,14 @@
 
   // TMA-1005 Remove silly iOS styling
   -webkit-appearance: none;
+
+  // Transition the colors?
+  // transition: background-color 0.1s, color 0.1s, border-color 0.1s;
+
+  // Spinner should inherit the button's color
+  #{$js-is-loading} & .ui-is-spinner {
+    color: inherit;
+  }
 }
 
 // Button Shapes
@@ -353,6 +361,11 @@
       color: $c-t1
     )
   );
+
+  @include disabled-state {
+    background-color: fade-out($c-bg2, .5);
+    border-color: transparent;
+  }
 }
 
 // -- Primary - p1
@@ -374,6 +387,12 @@
       color: $c-white
     )
   );
+
+  @include disabled-state {
+    background-color: fade-out($c-p1, .5);
+    border-color: transparent;
+    color: fade-out($c-white, .5);
+  }
 }
 
 // -- Alternate - p2
@@ -395,6 +414,12 @@
       color: $c-white
     )
   );
+
+  @include disabled-state {
+    background-color: fade-out($c-p2, .5);
+    border-color: transparent;
+    color: fade-out($c-white, .5);
+  }
 }
 
 // -- Outline
@@ -416,6 +441,11 @@
       color: $color-active
     )
   );
+
+  @include disabled-state {
+    color: fade-out($color-link, .5);
+    border-color: fade-out($color-link, .5);
+  }
 }
 
 // -- Clear / Transparent
@@ -437,6 +467,10 @@
       color: $color-active
     )
   );
+
+  @include disabled-state {
+    color: fade-out($color-link, .5);
+  }
 }
 
 // Button types (assumes default shape for all)

@@ -726,19 +726,20 @@ class projects extends projects_crud
             $wherePublished = ' AND DATE(p.date_publication_full) >=  :starting_date';
         }
 
-        $sQuery = 'SELECT avg(t1.weighted_rate_by_project)
-                        FROM (
-                          SELECT SUM(t.amount * t.rate) / SUM(t.amount) as weighted_rate_by_project
-                          FROM (
-                            SELECT l.id_loan, l.amount, l.rate, l.added, p.id_project, p.period
-                            FROM loans l
-                              INNER JOIN projects p ON p.id_project = l.id_project
-                            WHERE p.status >= ' . \projects_status::FUNDE . '
-                            AND p.status != ' . \projects_status::FUNDING_KO . $whereRisk . $whereDurationMin . $whereDurationMax . $wherePublished . '
-                          ) t
-                          GROUP BY t.id_project
-                        ) t1
-                        ';
+        $sQuery = '
+            SELECT AVG(t1.weighted_rate_by_project)
+            FROM (
+                SELECT SUM(t.amount * t.rate) / SUM(t.amount) as weighted_rate_by_project
+                FROM (
+                    SELECT l.id_loan, l.amount, l.rate, l.added, p.id_project, p.period
+                    FROM loans l
+                    INNER JOIN projects p ON p.id_project = l.id_project
+                    WHERE p.status >= ' . \projects_status::FUNDE . '
+                        AND p.status != ' . \projects_status::FUNDING_KO . $whereRisk . $whereDurationMin . $whereDurationMax . $wherePublished . '
+                ) t
+                GROUP BY t.id_project
+            ) t1';
+
         try {
             $statement = $this->bdd->executeQuery($sQuery, $bind, $type, new \Doctrine\DBAL\Cache\QueryCacheProfile(1800, md5(__METHOD__)));
             $result = $statement->fetchAll(PDO::FETCH_COLUMN);

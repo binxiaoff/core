@@ -1,9 +1,5 @@
 {% extends 'layouts/_layout.html.twig' %}
 
-{% set page = {
-    title: 'Emprunter'
-} %}
-
 {% block siteContent %}
     <article id="homeemp" class="page">
 
@@ -259,7 +255,7 @@
                                         <a href="#esim2" role="tab" data-toggle="tab" class="btn-continue btn-alternate btn-size-full">
                                             {% trans %} home-borrower_simulator-footer-continue-button {% endtrans %}
                                         </a>
-                                        <button class="btn-submit btn-alternate btn-size-full">
+                                        <button class="btn-submit btn-alternate btn-size-full" data-spinnerbutton>
                                             {% trans %} home-borrower_simulator-footer-validate-button {% endtrans %}
                                         </button>
                                     </div>

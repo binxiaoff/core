@@ -123,7 +123,7 @@ Dictionary.prototype.__ = function (fallbackText, textKey, lang) {
   // console.log(textKey, self.dictionary, self.dictionary[lang][textKey])
 
   // Ensure the textKey exists within the selected lang dictionary
-  if (self.dictionary[lang].hasOwnProperty(textKey)) return self.dictionary[lang][textKey]
+  if (self.dictionary && self.dictionary[lang] && self.dictionary[lang].hasOwnProperty(textKey)) return self.dictionary[lang][textKey]
 
   // Fallback text
   return fallbackText
