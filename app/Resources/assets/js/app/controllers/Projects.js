@@ -295,16 +295,24 @@ $doc.on('ready', function () {
    * Project Single monthly repayment estimation
    */
   var monthlyRepaymentTimeout
+  var previousAmount
+  var previousRate
 
   function estimateMonthlyRepayment () {
+    var messageHolder = $('#repayment-estimation')
     var amount = $('#bid-amount').val()
     var duration = $('#bid-duration').val()
     var rate = $('#bid-interest option:selected').val()
 
-    // @trigger elem `Spinner:showLoading`
-    $('#bid-amount').trigger('Spinner:showLoading')
+    if (amount && duration && rate && amount >= 20 && (previousAmount != amount || previousRate != rate)) {
+      previousAmount = amount
+      previousRate = rate
 
-    if (amount && duration && rate) {
+      messageHolder.html('')
+
+      // @trigger elem `Spinner:showLoading`
+      $('#bid-amount').trigger('Spinner:showLoading')
+
       $.ajax({
         url: '/projects/monthly_repayment',
         method: 'POST',
@@ -316,7 +324,6 @@ $doc.on('ready', function () {
         success: function (data) {
           if (data.success && data.message) {
             var messageContent = $('<p>').addClass('c-t2').html(data.message)
-            var messageHolder = $('form.project-single-form-invest .btn-toolbar').next('.field-help')
             messageHolder.html(messageContent)
           } else if (data.error && data.message) {
             console.log(data.message)
@@ -328,6 +335,8 @@ $doc.on('ready', function () {
           console.log('Unable to estimate monthly repayments')
         }
       })
+    } else if (amount && amount < 20) {
+      messageHolder.html('')
     }
   }
 

@@ -19,7 +19,7 @@ $doc
   })
 
   // Show the spinner manually
-  .on('Spinner:showLoading', '[data-has-spinner], .ui-has-spinner', function () {
+  .on('Spinner:showLoading', '[data-has-spinner]', function () {
     var $elem = $(this)
     var $spinnerTarget
 
@@ -41,7 +41,7 @@ $doc
   })
 
   // Hide the spinner manually
-  .on('Spinner:hideLoading', '[data-has-spinner], .ui-has-spinner', function () {
+  .on('Spinner:hideLoading', '[data-has-spinner]', function () {
     var $elem = $(this)
     var $spinnerTarget
 
@@ -114,4 +114,3 @@ $doc
     // Hide spinner
     $spinnerTarget.removeClass('ui-is-loading')
   })
-
