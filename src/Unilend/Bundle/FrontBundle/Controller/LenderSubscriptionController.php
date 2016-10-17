@@ -1468,32 +1468,6 @@ class LenderSubscriptionController extends Controller
         return new Response('not an ajax request');
     }
 
-
-
-
-    /**
-     * @param int $clientType
-     *
-     * @return array
-     */
-    private function getFundsOrigin($clientType)
-    {
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-
-        switch ($clientType) {
-            case \clients::TYPE_PERSON:
-            case \clients::TYPE_PERSON_FOREIGNER:
-                $settings->get("Liste deroulante origine des fonds", 'type');
-                break;
-            default:
-                $settings->get("Liste deroulante origine des fonds", 'type');
-                break;
-        }
-        $fundsOriginList = explode(';', $settings->value);
-        return array_combine(range(1, count($fundsOriginList)), array_values($fundsOriginList));
-    }
-
     /**
      * @param int $clientType
      *
@@ -1517,3 +1491,4 @@ class LenderSubscriptionController extends Controller
         return array_combine(range(1, count($fundsOriginList)), array_values($fundsOriginList));
     }
 }
+
