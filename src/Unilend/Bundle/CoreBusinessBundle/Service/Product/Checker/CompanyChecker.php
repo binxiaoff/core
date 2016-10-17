@@ -8,7 +8,7 @@ trait CompanyChecker
 {
     public function isEligibleForCreationDays(\companies $company, \product $product, ProductAttributeManager $productAttributeManager)
     {
-        $minDays = $productAttributeManager->getProductAttributesByType($product, \product_attribute_type::MIN_CREATION_DAYS_PROSPECT);
+        $minDays = $productAttributeManager->getProductAttributesByType($product, \product_attribute_type::MIN_CREATION_DAYS);
 
         if(empty($minDays)) {
             return true;
@@ -35,5 +35,16 @@ trait CompanyChecker
         }
 
         return true;
+    }
+
+    public function isEligibleForNafCode(\companies $company, \product $product, ProductAttributeManager $productAttributeManager)
+    {
+        $nafCode = $productAttributeManager->getProductAttributesByType($product, \product_attribute_type::ELIGIBLE_BORROWER_COMPANY_NAF_CODE);
+
+        if(empty($nafCode)) {
+            return true;
+        }
+
+        return in_array($company->code_naf, $nafCode);
     }
 }
