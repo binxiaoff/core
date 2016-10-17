@@ -13,7 +13,7 @@
         <li role="presentation" class="{% if app.request.attributes.get('_route') == 'lender_profile_notifications' %}active{% endif %}">
             <a href="{{ path('lender_profile_notifications') }}" >{% trans %} lender-profile_tab-title-4 {% endtrans %}</a>
         </li>
-        <li role="presentation" class="{% if app.request.attributes.get('_route') in ['cip_index', 'cip_continue_questionnaire', 'cip_start'] %}active{% endif %}">
+        <li role="presentation" class="{% if app.request.attributes.get('_route') in ['cip_index', 'cip_continue_questionnaire', 'cip_start_questionnaire'] %}active{% endif %}">
             <a href="{{ path('cip_index') }}">Conseils en investissement</a>
         </li>
     </ul>

@@ -26,12 +26,12 @@
                     </div>
                     <div class="row">
                         <input type="hidden" name="question" value="{{ question.id }}" />
-                        <button type="submit" name="answer"
-                                value="{{ constant('\\lender_questionnaire_question::VALUE_BOOLEAN_TRUE') }}"
-                                class="btn-primary col-lg-3 push-lg-2 col-md-3 push-md-2 col-sm-2 push-sm-1 col-xs-1">Oui</button>
-                        <button type="submit" name="answer"
-                                value="{{ constant('\\lender_questionnaire_question::VALUE_BOOLEAN_FALSE') }}"
-                                class="btn-primary col-lg-3 push-lg-2 col-md-3 push-md-2 col-sm-2 push-sm-2 col-xs-1 push-xs-2">Non</button>
+                        <div class="col-lg-3 push-lg-2 col-md-3 push-md-2 col-sm-2 push-sm-1 col-xs-1">
+                            <button type="submit" name="answer" value="{{ constant('\\lender_questionnaire_question::VALUE_BOOLEAN_TRUE') }}" class="btn-primary">Oui</button>
+                        </div>
+                        <div class="col-lg-3 push-lg-2 col-md-3 push-md-2 col-sm-2 push-sm-2 col-xs-1 push-xs-2">
+                            <button type="submit" name="answer" value="{{ constant('\\lender_questionnaire_question::VALUE_BOOLEAN_FALSE') }}" class="btn-primary">Non</button>
+                        </div>
                     </div>
                 </form>
             </div><!-- /#cip-step-{{ current_step }} -->
