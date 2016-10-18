@@ -143,7 +143,7 @@ $doc.on('submit', 'form[data-bid-confirmation]', function (event, options) {
             // Show the CIP questionnaire
             if (data.validation && $modalCip.length > 0) {
               // @debug
-              console.log('Asking CIP questionnaire...')
+              // console.log('Asking CIP questionnaire...')
 
               // Save the information about the project to the modal
               $modalCip.data('bid', bidData)
