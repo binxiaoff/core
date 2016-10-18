@@ -111,10 +111,12 @@ $doc.on('submit', 'form[data-bid-confirmation]', function (event, options) {
     // console.log('Bid confirmed. Submitting...')
 
     // Show spinner is loading...
-    $form.find('[data-spinnerbutton]').uiSpinnerButton('startLoading')
+    $form.trigger('Spinner:showLoading')
+
+    event.preventDefault()
 
     // ~~~ Traa la la la laaaa ~~~
-    return true
+    return false
 
   // Show the bid confirmation/CIP questionnaire prompts
   } else {
@@ -127,7 +129,7 @@ $doc.on('submit', 'form[data-bid-confirmation]', function (event, options) {
     if (!$form.is('[data-bid-confirmation-show]')) {
 
       // Show spinner is loading
-      $form.find('[data-spinnerbutton]').uiSpinnerButton('startLoading')
+      $form.trigger('Spinner:showLoading')
 
       // Validate with server to show CIP questionnaire prompt
       $.ajax({
@@ -167,7 +169,7 @@ $doc.on('submit', 'form[data-bid-confirmation]', function (event, options) {
         },
         complete: function () {
           // Hide spinner is loading
-          $form.find('[data-spinnerbutton]').uiSpinnerButton('stopLoading')
+          $form.trigger('Spinner:hideLoading')
         }
       })
 

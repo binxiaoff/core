@@ -13,6 +13,8 @@ $doc
   .on(Utility.transitionEndEvent, '.ui-is-loading-end', function (event) {
     var $target = $(event.target)
 
+    event.stopPropagation()
+
     // console.log('Spinner loading end: complete')
     $target.removeClass('ui-is-loading-end')
 
@@ -25,6 +27,8 @@ $doc
     var $elem = $(this)
     var $spinnerTarget
 
+    event.stopPropagation()
+
     // Set a spinner target that is not the element
     if ($elem.attr('data-has-spinner') && Utility.elemExists($elem.attr('data-has-spinner'))) {
       $spinnerTarget = $($elem.attr('data-has-spinner'))
@@ -34,13 +38,13 @@ $doc
       $spinnerTarget = $elem
     }
 
-    // Check if the spinner target itself has a spinner
-    if ($spinnerTarget.attr('data-has-spinner') && Utility.elemExists($spinnerTarget.attr('data-has-spinner'))) {
+    // Check if the spinner target itself is a spinner button
+    if ($spinnerTarget.is('.ui-spinnerbutton') && $spinnerTarget.attr('data-has-spinner') && Utility.elemExists($spinnerTarget.attr('data-has-spinner'))) {
       $spinnerTarget = $($spinnerTarget.attr('data-has-spinner'))
     }
 
     // @debug
-    // console.log('Spinner:showLoading', $elem[0], $spinnerTarget[0])
+    console.log('Spinner:showLoading', $elem[0], $spinnerTarget[0])
 
     if ($spinnerTarget) {
       $spinnerTarget.removeClass('ui-is-loading-end').addClass('ui-is-loading')
@@ -55,6 +59,8 @@ $doc
     var $elem = $(this)
     var $spinnerTarget
 
+    event.stopPropagation()
+
     // Set a spinner target that is not the element
     if ($elem.attr('data-has-spinner') && Utility.elemExists($elem.attr('data-has-spinner'))) {
       $spinnerTarget = $($elem.attr('data-has-spinner'))
@@ -64,13 +70,13 @@ $doc
       $spinnerTarget = $elem
     }
 
-    // Check if the spinner target itself has a spinner
-    if ($spinnerTarget.attr('data-has-spinner') && Utility.elemExists($spinnerTarget.attr('data-has-spinner'))) {
+    // Check if the spinner target itself is a spinner button
+    if ($spinnerTarget.is('.ui-spinnerbutton') && $spinnerTarget.attr('data-has-spinner') && Utility.elemExists($spinnerTarget.attr('data-has-spinner'))) {
       $spinnerTarget = $($spinnerTarget.attr('data-has-spinner'))
     }
 
     // @debug
-    // console.log('Spinner:hideLoading', $elem[0], $spinnerTarget[0])
+    console.log('Spinner:hideLoading', $elem[0], $spinnerTarget[0])
 
     if ($spinnerTarget) {
       $spinnerTarget.removeClass('ui-is-loading').addClass('ui-is-loading-end')
