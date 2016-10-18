@@ -1,6 +1,7 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product;
 
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class ProductManager
@@ -15,20 +16,24 @@ class ProductManager
     private $lenderValidator;
     /** @var ProductAttributeManager */
     private $productAttributeManager;
+    /** @var ContractManager */
+    private $contractManager;
 
     public function __construct(
         EntityManager $entityManager,
         ProjectValidator $projectValidator,
         BidValidator $bidValidator,
         LenderValidator $lenderValidator,
-        ProductAttributeManager $productAttributeManager
+        ProductAttributeManager $productAttributeManager,
+        ContractManager $contractManager
     )
     {
-        $this->entityManager           = $entityManager;
-        $this->projectValidator        = $projectValidator;
-        $this->bidValidator            = $bidValidator;
-        $this->lenderValidator         = $lenderValidator;
-        $this->productAttributeManager = $productAttributeManager;
+        $this->entityManager            = $entityManager;
+        $this->projectValidator         = $projectValidator;
+        $this->bidValidator             = $bidValidator;
+        $this->lenderValidator          = $lenderValidator;
+        $this->productAttributeManager  = $productAttributeManager;
+        $this->contractManager = $contractManager;
     }
 
     /**
@@ -39,16 +44,10 @@ class ProductManager
      */
     public function findEligibleProducts(\projects $project, $includeInactiveProduct = false)
     {
-        /** @var \product $product */
-        $product          = $this->entityManager->getRepository('product');
         $eligibleProducts = [];
 
-        foreach ($product->select() as $oneProduct) {
-            $product->get($oneProduct['id_product']);
-            if ($product->status != \product::STATUS_ARCHIVED
-                && ($includeInactiveProduct || $product->status == \product::STATUS_ONLINE)
-                && $this->projectValidator->isEligible($project, $product)
-            ) {
+        foreach ($this->getAvailableProducts($includeInactiveProduct) as $product) {
+            if ($this->projectValidator->isEligible($project, $product)) {
                 $eligibleProduct = clone $product;
                 $eligibleProducts[] = $eligibleProduct;
             }
@@ -73,19 +72,6 @@ class ProductManager
     public function isLenderEligible(\lenders_accounts $lender, \projects $project)
     {
         return $this->lenderValidator->isEligible($lender, $project);
-    }
-
-    /**
-     * @param \projects $project
-     * @return mixed
-     * @throws \Exception
-     */
-    public function getProjectAvailableContractTypes(\projects $project)
-    {
-        $product = $this->getAssociatedProduct($project);
-        /** @var \product_underlying_contract $productContract */
-        $productContract = $this->entityManager->getRepository('product_underlying_contract');
-        return $productContract->getUnderlyingContractsByProduct($product->id_product);
     }
 
     /**
@@ -187,4 +173,62 @@ class ProductManager
     {
         return $this->productAttributeManager->getProductAttributesByType($product, $attributeType);
     }
+
+    /**
+     * @param bool      $includeInactiveProduct
+     *
+     * @return \product[]
+     */
+    public function getAvailableProducts($includeInactiveProduct = false)
+    {
+        /** @var \product $product */
+        $product  = $this->entityManager->getRepository('product');
+        $availableProducts = [];
+
+        foreach ($product->select() as $oneProduct) {
+            $product->get($oneProduct['id_product']);
+            if ($product->status != \product::STATUS_ARCHIVED
+                && ($includeInactiveProduct || $product->status == \product::STATUS_ONLINE)) {
+                $availableProduct = clone $product;
+                $availableProducts[] = $availableProduct;
+            }
+        }
+
+        return $availableProducts;
+    }
+
+    /**
+     * @param \product $product
+     *
+     * @return array
+     */
+    public function getAvailableContracts(\product $product)
+    {
+        /** @var \product_underlying_contract $productContract */
+        $productContract = $this->entityManager->getRepository('product_underlying_contract');
+        return $productContract->getUnderlyingContractsByProduct($product->id_product);
+    }
+
+    /**
+     * @param \product
+     * @return \underlying_contract[]
+     */
+    public function getAutobidEligibleContracts(\product $product)
+    {
+        /** @var \underlying_contract $contract */
+        $contract = $this->entityManager->getRepository('underlying_contract');
+        $contracts = $this->getAvailableContracts($product);
+        $autobidContracts = [];
+
+        foreach($contracts as $underlyingContract) {
+            $contract->get($underlyingContract['id_contract']);
+            if ($this->contractManager->isAutobidSettingsEligible($contract)) {
+                $autobidContract    = clone $contract;
+                $autobidContracts[] = $autobidContract;
+            }
+        }
+
+        return $autobidContracts;
+    }
+
 }

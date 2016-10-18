@@ -14,7 +14,7 @@ class LenderManager
 
     public function __construct(EntityManager $oEntityManager)
     {
-        $this->oEntityManager = $oEntityManager;
+        $this->oEntityManager           = $oEntityManager;
     }
 
     /**

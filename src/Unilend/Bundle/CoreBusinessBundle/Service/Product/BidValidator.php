@@ -1,6 +1,7 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product;
 
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class BidValidator
@@ -11,11 +12,17 @@ class BidValidator
     private $productAttributeManager;
     /** @var EntityManager */
     private $entityManager;
+    /** @var ContractManager */
+    private $contractManager;
 
-    public function __construct(ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
-    {
-        $this->productAttributeManager = $productAttributeManager;
-        $this->entityManager = $entityManager;
+    public function __construct(
+        ProductAttributeManager $productAttributeManager,
+        EntityManager $entityManager,
+        ContractManager $contractManager
+    ) {
+        $this->productAttributeManager  = $productAttributeManager;
+        $this->entityManager            = $entityManager;
+        $this->contractManager          = $contractManager;
     }
 
     public function isEligible(\bids $bid, \product $product)
@@ -28,13 +35,22 @@ class BidValidator
 
         foreach ($this->getAttributeTypeToCheck() as $attributeTypeToCheck) {
            $eligibility = $this->checkAttribute($bid, $lender, $product, $attributeTypeToCheck);
-
             if (false === $eligibility) {
                 return $eligibility;
             }
         }
 
+        if (false === empty($bid->id_autobid)) {
+            $autobidEligibility = $this->isAutobidEligible($bid, $product, $lender);
+            return $autobidEligibility;
+        }
+
         return true;
+    }
+
+    private function isAutobidEligible(\bids $bid, \product $product, \lenders_accounts $lender)
+    {
+        $this->isAutobidEligibleForMaxTotalAmount($bid, $lender, $product, $this->entityManager, $this->contractManager);
     }
 
     public function getReasons(\bids $bid, \product $product)
