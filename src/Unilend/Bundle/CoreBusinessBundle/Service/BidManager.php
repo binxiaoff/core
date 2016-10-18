@@ -184,7 +184,7 @@ class BidManager
             throw new \Exception('bids-low-balance');
         }
 
-        if ($needsCIPValidation && $this->cipManager->isCIPValidationNeeded($oBid, $project)) {
+        if (empty($oBid->id_autobid) && $needsCIPValidation && $this->cipManager->isCIPValidationNeeded($oBid)) {
             throw new \Exception('bids-cip-validation-needed');
         }
 

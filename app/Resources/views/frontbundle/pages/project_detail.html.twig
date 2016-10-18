@@ -9,8 +9,7 @@
 {% set classRating = project.risk|convertRisk|split('.')|join('-') %}
 
 {% block siteContent %}
-    <article id="project-single" class="page project-single project-category-{{ project.company.sectorId }}{% if project.finished %} ui-project-expired{% endif %}"
-             data-has-spinner>
+    <article id="project-single" class="page project-single project-category-{{ project.company.sectorId }}{% if project.finished %} ui-project-expired{% endif %}">
         <header class="project-single-header-wrap">
             <div class="project-single-map">
                 {% if project.company.latitude is not empty and project.company.longitude is not empty %}
@@ -35,7 +34,7 @@
                             categoryId: project.company.sectorId,
                             latLng: [project.company.latitude, project.company.longitude],
                             title: project.title,
-                    description: '<div style="font-style: italic;">' ~ project.company.city ~ ', ' ~ project.company.zip ~ '</div><div class="rating rating-' ~ classRating ~ '"><span class="sr-only">' ~ ('project-detail_rating-legend'|trans({'%rating%' : classRating})) ~ '</span></span></div>',
+                            description: '<div style="font-style: italic;">' ~ project.company.city ~ ', ' ~ project.company.zip ~ '</div><div class="rating rating-' ~ classRating ~ '"><span class="sr-only">' ~ ('project-detail_rating-legend'|trans({'%rating%' : classRating})) ~ '</span></span></div>',
                             status: (project.finished ? 'expired' : 'active'),
                             offerStatus: mapviewOfferStatus|default(''),
                             groupName: mapviewGroup|default('all')

@@ -321,7 +321,10 @@ class ProjectManager
                 $this->oLogger->info($iTreatedBitNb . '/' . $iBidNbTotal . ' bids treated (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
             }
         }
-        $contractTypes = array_column($this->productManager->getProjectAvailableContractTypes($oProject), 'label');
+        /** @var \product $product */
+        $product = $this->oEntityManager->getRepository('product');
+        $product->get($oProject->id_product);
+        $contractTypes = array_column($this->productManager->getAvailableContracts($product), 'label');
         if (in_array(\underlying_contract::CONTRACT_IFP, $contractTypes) && in_array(\underlying_contract::CONTRACT_BDC, $contractTypes)) {
             $this->buildLoanIFPAndBDC($oProject);
         } elseif (in_array(\underlying_contract::CONTRACT_IFP, $contractTypes)) {

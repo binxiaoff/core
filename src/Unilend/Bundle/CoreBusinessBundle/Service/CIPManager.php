@@ -9,9 +9,12 @@ use Symfony\Component\Translation\TranslatorInterface;
 
 class CIPManager
 {
-    const INDICATOR_TOTAL_AMOUNT     = 'total_amount';
-    const INDICATOR_AMOUNT_BY_MONTH  = 'amount_by_month';
-    const INDICATOR_PROJECT_DURATION = 'project_duration';
+    const INDICATOR_TOTAL_AMOUNT             = 'total_amount';
+    const INDICATOR_AMOUNT_BY_MONTH          = 'amount_by_month';
+    const INDICATOR_PROJECT_DURATION         = 'project_duration';
+    const INDICATOR_PROJECT_DURATION_1_YEAR  = 12;
+    const INDICATOR_PROJECT_DURATION_3_YEARS = 36;
+    const INDICATOR_PROJECT_DURATION_5_YEARS = 60;
 
     /** @var ProductManager */
     private $productManager;
@@ -232,14 +235,18 @@ class CIPManager
     }
 
     /**
-     * @param \lenders_accounts $lender
+     * @param \lenders_accounts       $lender
+     * @param \lender_evaluation|null $evaluation
      * @return array
      */
-    public function getAnswersByType(\lenders_accounts $lender)
+    public function getAnswersByType(\lenders_accounts $lender, \lender_evaluation $evaluation = null)
     {
+        if (null === $evaluation || $lender->id_lender_account != $evaluation->id_lender) {
+            $evaluation = $this->getCurrentEvaluation($lender);
+        }
+
         /** @var \lender_questionnaire_question $questionEntity */
         $questionEntity   = $this->entityManager->getRepository('lender_questionnaire_question');
-        $evaluation       = $this->getCurrentEvaluation($lender);
         $questions        = $questionEntity->select('id_lender_questionnaire = ' . $evaluation->id_lender_questionnaire, '`order` ASC');
         $indexedQuestions = [];
         $indexedAnswers   = [];
@@ -330,67 +337,153 @@ class CIPManager
     }
 
     /**
-     * @param \lenders_accounts $lender
+     * @param \lenders_accounts       $lender
+     * @param \lender_evaluation|null $evaluation
      * @return string[]|null
      */
-    public function getAdvices(\lenders_accounts $lender)
+    public function getAdvices(\lenders_accounts $lender, \lender_evaluation $evaluation = null)
     {
-        $advices       = [];
-        $evaluation    = $this->getCurrentEvaluation($lender);
-        $questionTypes = [\lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE, \lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS, \lender_questionnaire_question::TYPE_VALUE_BLOCKING_PERIOD];
+        if (null === $evaluation || $lender->id_lender_account != $evaluation->id_lender) {
+            $evaluation = $this->getCurrentEvaluation($lender);
+        }
 
-        /** @var \lender_questionnaire_question $questionEntity */
-        $questionEntity = $this->entityManager->getRepository('lender_questionnaire_question');
-        $questions      = $questionEntity->select('id_lender_questionnaire = ' . $evaluation->id_lender_questionnaire . ' AND type IN ("' . implode('","', $questionTypes) . '")', '`order` ASC');
-        $questions      = array_column($questions, 'id_lender_questionnaire_question', 'type');
+        $advices    = [];
+        $indicators = $this->getIndicators($lender, $evaluation);
 
-        /** @var \lender_evaluation_answer $answerEntity */
-        $answerEntity = $this->entityManager->getRepository('lender_evaluation_answer');
-        $answers      = $answerEntity->select('id_lender_evaluation = ' . $evaluation->id_lender_evaluation . ' AND id_lender_questionnaire_question IN (' . implode(',', $questions) . ')');
-        $answers      = array_column($answers, 'first_answer', 'id_lender_questionnaire_question');
-
-        if (in_array('', $answers)) {
+        if (null === $indicators) {
             return null;
         }
 
-        $estate = $answers[$questions[\lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE]];
-
-        if ($estate < \lender_questionnaire_question::VALUE_ESTATE_THRESHOLD) {
-            $monthlySavings = $answers[$questions[\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS]];
-
-            if ($monthlySavings < \lender_questionnaire_question::VALUE_MONTHLY_SAVINGS_THRESHOLD) {
-                $advices[] = $this->translator->trans('lender-evaluation_low-estate-low-savings-advice');
-                return $advices;
-            }
+        if (null === $indicators[self::INDICATOR_TOTAL_AMOUNT] && null === $indicators[self::INDICATOR_AMOUNT_BY_MONTH]) {
+            $advices[] = $this->translator->trans('lender-evaluation_low-estate-low-savings-advice');
+            return $advices;
         }
 
-        if ($estate >= \lender_questionnaire_question::VALUE_ESTATE_THRESHOLD) {
+        if (null !== $indicators[self::INDICATOR_TOTAL_AMOUNT]) {
             $advices[] = str_replace(
                 ['%maximumAmount%', '%maximumAmount100%', '%maximumAmount200%'],
-                [floor($estate / 10), floor($estate / 1000), floor($estate / 2000)],
+                [$indicators[self::INDICATOR_TOTAL_AMOUNT], floor($indicators[self::INDICATOR_TOTAL_AMOUNT] / 100), floor($indicators[self::INDICATOR_TOTAL_AMOUNT] / 200)],
                 $this->translator->trans('lender-evaluation_low-estate-advice')
             );
-        } elseif ($estate < \lender_questionnaire_question::VALUE_ESTATE_THRESHOLD && $monthlySavings >= \lender_questionnaire_question::VALUE_MONTHLY_SAVINGS_THRESHOLD) {
+        } elseif (null !== $indicators[self::INDICATOR_AMOUNT_BY_MONTH]) {
             $advices[] = str_replace(
                 ['%maximumAmount%'],
-                [floor($estate / 20) * 20],
+                [$indicators[self::INDICATOR_AMOUNT_BY_MONTH]],
                 $this->translator->trans('lender-evaluation_low-savings-advice')
             );
         }
 
-        $blockingPeriod = $answers[$questions[\lender_questionnaire_question::TYPE_VALUE_BLOCKING_PERIOD]];
-
-        if ($blockingPeriod <= \lender_questionnaire_question::VALUE_BLOCKING_PERIOD_THRESHOLD_1) {
-            $advices[] = $this->translator->trans('lender-evaluation_blocking-period-less-1-year-advice');
-        } elseif ($blockingPeriod <= \lender_questionnaire_question::VALUE_BLOCKING_PERIOD_THRESHOLD_2) {
-            $advices[] = $this->translator->trans('lender-evaluation_blocking-period-less-3-years-advice');
-        } elseif ($blockingPeriod <= \lender_questionnaire_question::VALUE_BLOCKING_PERIOD_THRESHOLD_3) {
-            $advices[] = $this->translator->trans('lender-evaluation_blocking-period-less-5-years-advice');
-        } else {
-            $advices[] = $this->translator->trans('lender-evaluation_blocking-period-more-5-years-advice');
+        switch ($indicators[self::INDICATOR_PROJECT_DURATION]) {
+            case self::INDICATOR_PROJECT_DURATION_1_YEAR:
+                $advices[] = $this->translator->trans('lender-evaluation_blocking-period-less-1-year-advice');
+                break;
+            case self::INDICATOR_PROJECT_DURATION_3_YEARS:
+                $advices[] = $this->translator->trans('lender-evaluation_blocking-period-less-3-years-advice');
+                break;
+            case self::INDICATOR_PROJECT_DURATION_5_YEARS:
+                $advices[] = $this->translator->trans('lender-evaluation_blocking-period-less-5-years-advice');
+                break;
+            case null:
+                $advices[] = $this->translator->trans('lender-evaluation_blocking-period-more-5-years-advice');
+                break;
         }
 
         return $advices;
+    }
+
+    /**
+     * If no evaluation is completed, returns null
+     * If evaluation is completed, return list of indicators (suggested limitations)
+     * If no limitation is suggested, indicator value is null
+     *
+     * @param \lenders_accounts       $lender
+     * @param \lender_evaluation|null $evaluation
+     * @return array|null
+     */
+    public function getIndicators(\lenders_accounts $lender, \lender_evaluation $evaluation = null)
+    {
+        if (null === $evaluation || $lender->id_lender_account != $evaluation->id_lender) {
+            $evaluation = $this->getCurrentEvaluation($lender);
+        }
+
+        $answers = $this->getAnswersByType($lender, $evaluation);
+
+        if (false === isset($answers[\lender_questionnaire_question::TYPE_VALUE_BLOCKING_PERIOD])) {
+            return null;
+        }
+
+        $totalAmountIndicator     = null;
+        $amountByMonthIndicator   = null;
+        $projectDurationIndicator = null;
+        $estate                   = $answers[\lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE]['first_answer'];
+        $monthlySavings           = isset($answers[\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS]) ? $answers[\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS]['first_answer'] : 0;
+        $blockingPeriod           = $answers[\lender_questionnaire_question::TYPE_VALUE_BLOCKING_PERIOD]['first_answer'];
+
+        if ($estate >= \lender_questionnaire_question::VALUE_ESTATE_THRESHOLD) {
+            $totalAmountIndicator = floor($estate / 10);
+        } elseif ($monthlySavings >= \lender_questionnaire_question::VALUE_MONTHLY_SAVINGS_THRESHOLD) {
+            $amountByMonthIndicator = floor($monthlySavings / 200) * 20;
+        }
+
+        switch ($blockingPeriod) {
+            case \lender_questionnaire_question::VALUE_BLOCKING_PERIOD_1:
+                $projectDurationIndicator = 12;
+                break;
+            case \lender_questionnaire_question::VALUE_BLOCKING_PERIOD_2:
+                $projectDurationIndicator = 36;
+                break;
+            case \lender_questionnaire_question::VALUE_BLOCKING_PERIOD_3:
+                $projectDurationIndicator = 60;
+                break;
+        }
+
+        return [
+            self::INDICATOR_TOTAL_AMOUNT     => $totalAmountIndicator,
+            self::INDICATOR_AMOUNT_BY_MONTH  => $amountByMonthIndicator,
+            self::INDICATOR_PROJECT_DURATION => $projectDurationIndicator
+        ];
+    }
+
+    /**
+     * @param \bids $bid
+     * @return bool
+     */
+    public function isCIPValidationNeeded(\bids $bid)
+    {
+        /** @var \projects $project */
+        $project = $this->entityManager->getRepository('projects');
+        $project->get($bid->id_project);
+
+        /** @var \product $product */
+        $product = $this->entityManager->getRepository('product');
+        $product->get($project->id_product);
+
+        $productContracts = $this->productManager->getAvailableContractTypes($product);
+
+        if (false === in_array(\underlying_contract::CONTRACT_MINIBON, array_column($productContracts, 'label'))) {
+            return false;
+        }
+
+        $thresholdAmount = $this->getContractThresholdAmount();
+        $lenderBids      = $bid->select('id_lender_account = ' . $bid->id_lender_account . ' AND id_project = ' . $project->id_project . ' AND status = ' . \bids::STATUS_BID_ACCEPTED);
+
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount = $this->entityManager->getRepository('lenders_accounts');
+        if (false === $lenderAccount->isNaturalPerson($bid->id_lender_account)) {
+            return true;
+        }
+
+        $totalBidsAmount = 0;
+        foreach ($lenderBids as $lenderBid) {
+            $totalBidsAmount = bcadd($totalBidsAmount, bcdiv($lenderBid['amount'], 100, 2), 2);
+        }
+        $totalBidsAmount = bcadd($totalBidsAmount, bcdiv($bid->amount, 100, 2), 2);
+
+        if (bccomp($totalBidsAmount, $thresholdAmount, 2) < 0) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -412,42 +505,10 @@ class CIPManager
     }
 
     /**
-     * If no evaluation is completed, returns null
-     * If evaluation is completed, return list of indicators (suggested limitations)
-     * If no limitation is suggested, indicator value is null
-     *
-     * @param \lenders_accounts $lender
-     * @return array|null
+     * @return int|float
      */
-    public function getIndicators(\lenders_accounts $lender)
+    private function getContractThresholdAmount()
     {
-        $evaluation = $this->getCurrentEvaluation($lender);
-
-        if (false === $this->isValidEvaluation($evaluation)) {
-            return null;
-        }
-
-        // @todo retrieve indicators values
-        return [
-            self::INDICATOR_TOTAL_AMOUNT     => null,
-            self::INDICATOR_AMOUNT_BY_MONTH  => 150,
-            self::INDICATOR_PROJECT_DURATION => 36
-        ];
-    }
-
-    /**
-     * @param \bids     $bid
-     * @param \projects $project
-     * @return bool
-     */
-    public function isCIPValidationNeeded(\bids $bid, \projects $project)
-    {
-        $productContracts = $this->productManager->getProjectAvailableContractTypes($project);
-
-        if (false === in_array(\underlying_contract::CONTRACT_MINIBON, array_column($productContracts, 'label'))) {
-            return false;
-        }
-
         /** @var \underlying_contract $contract */
         $contract = $this->entityManager->getRepository('underlying_contract');
         if (false === $contract->get(\underlying_contract::CONTRACT_IFP, 'label')) {
@@ -459,25 +520,6 @@ class CIPManager
             throw new \UnexpectedValueException('The IFP contract max amount is not set');
         }
 
-        $thresholdAmount = $contractAttrVars[0];
-        $lenderBids      = $bid->select('id_lender_account = ' . $bid->id_lender_account . ' AND id_project = ' . $project->id_project . ' AND status = ' . \bids::STATUS_BID_ACCEPTED);
-
-        /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->entityManager->getRepository('lenders_accounts');
-        if (false === $lenderAccount->isNaturalPerson($bid->id_lender_account)) {
-            return true;
-        }
-
-        $totalBidsAmount = 0;
-        foreach ($lenderBids as $lenderBid) {
-            $totalBidsAmount = bcadd($totalBidsAmount, bcdiv($lenderBid['amount'], 100, 2), 2);
-        }
-        $totalBidsAmount = bcadd($totalBidsAmount, bcdiv($bid->amount, 100, 2), 2);
-
-        if (bccomp($totalBidsAmount, $thresholdAmount, 2) < 0) {
-            return false;
-        }
-
-        return true;
+        return $contractAttrVars[0];
     }
 }

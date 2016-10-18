@@ -101,7 +101,7 @@
                                                 </p>
                                             </div>
                                             <label class="col-lg-5 col-md-5 push-lg-1 push-md-1">
-                                                <select id="bid-interest" name="invest[interest]" class="input-field" data-popup-rate >
+                                                <select id="bid-interest" name="invest[interest]" class="input-field" data-popup-rate>
                                                     <option value="">{% trans %} project-detail_side-bar-bids-rate-placeholder {% endtrans %}</option>
                                                     {% if (project.percentFunded < 100) %}
                                                         {% set adjustment = 0 %}
@@ -134,7 +134,7 @@
                                             <div class="col-lg-5 col-md-5 push-lg-1 push-md-1">
                                                 <div class="input-group set-right">
                                                     <div class="btn-group"><span class="icon fa-euro"></span></div>
-                                                    <input id="bid-amount" type="text" name="invest[amount]" value="" class="input-field" autocomplete="off" data-popup-amount>
+                                                    <input id="bid-amount" type="text" name="invest[amount]" value="" class="input-field" autocomplete="off" data-popup-amount data-has-spinner="#repayment-estimation-container">
                                                 </div>
                                             </div>
                                         </div>
@@ -147,7 +147,10 @@
                                     <input type="hidden" id="bid-rest-amount" value="{{ amountRest }}">
                                     <input type="hidden" id="bid-min-amount" value="{{ amountMin }}">
                                 </div><!-- /.btn-toolbar -->
-                                <div class="field-help">&nbsp;</div>
+                                <div id="repayment-estimation-container" class="text-align-center">
+                                    <p class="ui-is-spinner"></p>
+                                    <div id="repayment-estimation" class="field-help">&nbsp;</div>
+                                </div>
                             </form><!-- /.project-single-form-invest -->
                         {% else %}
                             <div class="field-help">

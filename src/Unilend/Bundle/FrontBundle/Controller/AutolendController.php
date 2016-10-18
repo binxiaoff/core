@@ -139,10 +139,12 @@ class AutolendController extends Controller
 
         $settings->get('pret min', 'type');
         $minimumBidAmount = (int)$settings->value;
+        $maxBidAmount = $autoBidSettingsManager->getMaxAmountPossible($lenderAccount);
+
         $errorMsg = [];
 
-        if (empty($post['autolend_amount']) || false === is_numeric($post['autolend_amount']) || $post['autolend_amount'] < $minimumBidAmount) {
-            $errorMsg[] = $translator->trans('autolend_error-message-amount-wrong', ['%MIN_AMOUNT%' => $minimumBidAmount]);
+        if (empty($post['autolend_amount']) || false === is_numeric($post['autolend_amount']) || $post['autolend_amount'] < $minimumBidAmount || $post['autolend_amount'] > $maxBidAmount) {
+            $errorMsg[] = $translator->trans('autolend_error-message-amount-wrong', ['%MIN_AMOUNT%' => $minimumBidAmount, '%MAX_AMOUNT%' => $maxBidAmount]);
         }
 
         if (empty($post['autolend_rate_min'])
@@ -172,6 +174,7 @@ class AutolendController extends Controller
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
+        $maxBidAmount = $autoBidSettingsManager->getMaxAmountPossible($lenderAccount);
         $settings->get('pret min', 'type');
         $minimumBidAmount = (int)$settings->value;
         $autoBidPeriods = [];
@@ -182,9 +185,8 @@ class AutolendController extends Controller
         $aRiskValues = $project->getAvailableRisks();
         $errorMsg = [];
 
-
-        if (empty($post['autolend_amount']) || false === is_numeric($post['autolend_amount']) || $post['autolend_amount'] < $minimumBidAmount) {
-            $errorMsg[] = $translator->trans('autolend_error-message-amount-wrong', ['%MIN_AMOUNT%' => $minimumBidAmount]);
+        if (empty($post['autolend_amount']) || false === is_numeric($post['autolend_amount']) || $post['autolend_amount'] < $minimumBidAmount || $post['autolend_amount'] > $maxBidAmount) {
+            $errorMsg[] = $translator->trans('autolend_error-message-amount-wrong', ['%MIN_AMOUNT%' => $minimumBidAmount, '%MAX_AMOUNT%' => $maxBidAmount]);
         }
 
         foreach ($post['data'] as $setting) {
@@ -289,5 +291,4 @@ class AutolendController extends Controller
 
         return $settings;
     }
-
 }
