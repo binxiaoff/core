@@ -167,7 +167,7 @@
                         $this->insee_pays->getByCountryIso(trim($this->pays->iso));
                         $cp = $this->insee_pays->COG;
 
-                        $retenuesource = $this->ficelle->formatNumber($this->retenuesource * 100) . '%';
+                        $retenuesource = $this->ficelle->formatNumber($this->retenuesource) . '%';
 
                         if ($id_pays_fiscal == 0) {
                             $id_pays = 1;
