@@ -57,6 +57,7 @@
             <argument type="service" id="unilend.service.location_manager" />
             <argument type="service" id="translator" />
             <argument type="service" id="memcache.default" />
+            <argument type="service" id="unilend.service.cip_manager" />
         </service>
 
         <service id="unilend.frontbundle.service.source_manager" class="Unilend\Bundle\FrontBundle\Service\SourceManager">

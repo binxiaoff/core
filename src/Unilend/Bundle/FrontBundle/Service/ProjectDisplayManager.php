@@ -71,7 +71,7 @@ class ProjectDisplayManager
             $projectsData[$project->id_project]['bidsCount'] = $bids->counter('id_project = ' . $project->id_project);
 
             if (false === empty($lenderAccount->id_lender_account)) {
-                $projectsData[$project->id_project]['lender']['bids'] = $this->lenderAccountDisplayManager->getBidsForProject($project->id_project, $lenderAccount);
+                $projectsData[$project->id_project]['lender'] = $this->lenderAccountDisplayManager->getActivityForProject($lenderAccount, $project->id_project, $item['status']);
             }
         }
 
@@ -367,5 +367,26 @@ class ProjectDisplayManager
         /** @var \projects $projects */
         $projects  = $this->entityManager->getRepository('projects');
         return $projects->countSelectProjectsByStatus(implode(',', self::$projectsStatus), ' AND display = ' . \projects::DISPLAY_PROJECT_ON);
+    }
+
+    /**
+     * @param \lenders_accounts $lender
+     * @return \projects[]
+     */
+    public function getCipAdvisedProjectList(\lenders_accounts $lender)
+    {
+        /** @var \projects $project */
+        $project         = $this->entityManager->getRepository('projects');
+        $projectList     = $this->getProjectsList([\projects_status::EN_FUNDING]);
+        $advisedProjects = [];
+
+        foreach ($projectList as $projectInList){
+            $project->get($projectInList['id_project']);
+            if ($this->lenderAccountDisplayManager->isProjectAdvisedForLender($project, $lender)) {
+                $advisedProjects[] = $projectInList;
+            }
+        }
+
+        return $advisedProjects;
     }
 }

@@ -346,7 +346,7 @@ class ProjectsController extends Controller
     public function estimateMonthlyRepaymentAction(Request $request)
 
     {
-        if (false === $request->isXMLHttpRequest()) {
+        if (false === $request->isXmlHttpRequest()) {
             return new Response('not an ajax request');
         }
 
@@ -509,7 +509,7 @@ class ProjectsController extends Controller
      */
     public function bidsListAction($projectId, $rate, Request $request)
     {
-        if (false === $request->isXMLHttpRequest()) {
+        if (false === $request->isXmlHttpRequest()) {
             return new Response('not an ajax request');
         }
 
