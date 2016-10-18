@@ -75,7 +75,7 @@
         <div style="margin-bottom: 15px;">
             <span>Montant: </span>
             <input type="text" name="autobid-amount" id="autobid-amount"
-                   value="<?= (isset($this->aAutoBidSettings[1][0]['amount'])) ? $this->aAutoBidSettings[1][0]['amount'] : '' ?>"
+                   value="<?= (isset($this->aAutoBidSettings[1]['A']['amount'])) ? $this->aAutoBidSettings[1]['A']['amount'] : '' ?>"
                    disabled="disabled"/>
         </div>
         <div class="autobid-param-advanced autobid-param-advanced-locked autobid-block" id="autobid-block">
@@ -161,13 +161,13 @@
                     <td>
                         <?php if ($aProjectLoans['nb_loan'] == 1): ?>
                             <?php if ($aProjectLoans['project_status'] >= \projects_status::REMBOURSEMENT): ?>
-                                <a href="<?= $this->furl ?>/pdf/contrat/<?= $this->clients->hash ?>/<?= $aProjectLoans['id_loan_if_one_loan'] ?>">
+                                <a href="<?= $this->url ?>/protected/contrat/<?= $this->clients->hash ?>/<?= $aProjectLoans['id_loan_if_one_loan'] ?>">
                                     <?= $contractLabel ?>
                                 </a>
                             <?php endif; ?>
                             <?php if (in_array($aProjectLoans['id_project'], $this->aProjectsInDebt)): ?>
                                 <br />
-                                <a href="<?= $this->furl ?>/pdf/declaration_de_creances/<?= $this->clients->hash ?>/<?= $aProjectLoans['id_loan_if_one_loan'] ?>">Declaration de créances</a>
+                                <a href="<?= $this->url ?>/protected/declaration_de_creances/<?= $this->clients->hash ?>/<?= $aProjectLoans['id_loan_if_one_loan'] ?>">Declaration de créances</a>
                             <?php endif; ?>
                         <?php else: ?>
                             &nbsp;
@@ -187,13 +187,13 @@
                             <?php endif; ?>
                             <td>
                                 <?php if ($aProjectLoans['project_status'] >= \projects_status::REMBOURSEMENT): ?>
-                                    <a href="<?= $this->furl ?>/pdf/contrat/<?= $this->clients->hash ?>/<?= $aLoan['id_loan'] ?>">
+                                    <a href="<?= $this->url ?>/protected/contrat/<?= $this->clients->hash ?>/<?= $aLoan['id_loan'] ?>">
                                         <?= $contractLabel ?>
                                     </a>
                                 <?php endif; ?>
                                 <?php if (in_array($aProjectLoans['id_project'], $this->aProjectsInDebt)): ?>
                                     <br />
-                                    <a href="<?= $this->furl ?>/pdf/declaration_de_creances/<?= $this->clients->hash ?>/<?= $aLoan['id_loan'] ?>">Declaration de créances</a>
+                                    <a href="<?= $this->url ?>/protected/declaration_de_creances/<?= $this->clients->hash ?>/<?= $aLoan['id_loan'] ?>">Declaration de créances</a>
                                 <?php endif; ?>
                             </td>
                         </tr>

@@ -87,17 +87,12 @@ $doc.on('ready', function () {
                 global: false,
                 success: function (data) {
                     if (data && data.hasOwnProperty('error')) {
-                        $elem.parents('.ui-formvalidation').uiFormValidation('validateInput', $elem, {
-                            rules: {
-                                // Use custom rule to invoke an error on the field
-                                custom: function (inputValidation) {
-                                    inputValidation.isValid = false
-                                    inputValidation.errors.push({
-                                        type: 'minLength',
-                                        description: data.error
-                                    })
-                                }
-                            }
+                        $elem.parents('.ui-formvalidation').uiFormValidation('validateInputCustom', $elem, function (inputValidation) {
+                            inputValidation.isValid = false
+                            inputValidation.errors.push({
+                                type: 'minLength',
+                                description: data.error
+                            })
                         })
                     }
                 }

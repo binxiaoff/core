@@ -1,0 +1,25 @@
+//
+// Unilend SpinnerButton
+// Relies on _spinner.scss for animation and other styles
+//
+
+.ui-spinnerbutton {
+   position: relative;
+
+  > .ui-is-spinner {
+    width: 30px;
+    height: 30px;
+    margin: -15px 0 0 -15px;
+
+    position: absolute;
+    left: 50%;
+    top: 50%;
+
+    background: $c-p1;
+    border-radius: 30px;
+    color: $c-white;
+    line-height: 30px;
+    text-align: center;
+    vertical-align: middle;
+  }
+}

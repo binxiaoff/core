@@ -2,8 +2,6 @@
 
 {% set page = {
 id: 'user-preter-balance',
-title: 'Prêteur / Apport',
-permalink: path('lender_wallet_deposit'),
 classNames: 'user-preter-balance'
 } %}
 
@@ -87,7 +85,7 @@ classNames: 'user-preter-balance'
                                             </div>
                                         </div><!-- /.form-field -->
                                         <div class="btn-controls">
-                                            <button id="perform-deposit-money" class="btn-primary">{% trans %} lender-wallet_submit-transaction {% endtrans %}</button>
+                                            <button id="perform-deposit-money" class="btn-primary" data-spinnerbutton>{% trans %} lender-wallet_submit-transaction {% endtrans %}</button>
                                         </div><!-- /.btn-controls -->
                                         <div class="c-t3">
                                             <p>{% trans %} lender-wallet_secure-payment-message {% endtrans %}</p>
@@ -106,16 +104,13 @@ classNames: 'user-preter-balance'
                 {% else %}
                     <section id="balance-deposit-result" role="tabpanel" class="panel collapse in" aria-expanded="true">
                         {% if depositCode == 200 %}
-                            <p>{% trans with {'%depositAmount%' : depositAmount} %} lender-wallet_deposit-success-message {% endtrans %}</p>
-                            <p>
-                                <a href="{{ path('lender_dashboard') }}" class='btn-primary'>{% trans %} lender-wallet_lender-dashboard {% endtrans %}</a>
-                            </p>
+                            {% trans with {'%depositAmount%' : depositAmount} %} lender-wallet_deposit-success-message {% endtrans %}
                         {% else %}
-                            <p>{% trans %} lender-wallet_deposit-error-message {% endtrans %}</p>
-                            <p>
-                                <a href="{{ path('lender_dashboard') }}" class='btn-primary'>{% trans %} lender-wallet_lender-dashboard {% endtrans %}</a>
-                            </p>
+                            {% trans %} lender-wallet_deposit-error-message {% endtrans %}
                         {% endif %}
+                        <p>
+                            <a href="{{ path('lender_dashboard') }}" class='btn-primary'>{% trans %} lender-wallet_lender-dashboard {% endtrans %}</a>
+                        </p>
                     </section><!-- /.panel -->
                 {% endif %}
             </article><!-- /.tab-pane -->

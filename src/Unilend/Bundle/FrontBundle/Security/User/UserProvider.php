@@ -45,7 +45,7 @@ class UserProvider implements UserProviderInterface
         /** @var \clients_history $clientHistory */
         $clientHistory = $this->entityManager->getRepository('clients_history');
 
-        if ($client->get($username, 'email')) {
+        if ($client->get($username, 'status = ' . \clients::STATUS_ONLINE. ' AND email')) {
             $balance       = $this->clientManager->getClientBalance($client);
             $initials      = $this->clientManager->getClientInitials($client);
             $isActive      = $this->clientManager->isActive($client);

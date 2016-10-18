@@ -69,16 +69,17 @@ class CheckPaylineMoneyTransfersCommand extends ContainerAwareCommand
             $response         = $payline->getWebPaymentDetails($array);
 
             if (isset($response)) {
+                if (false === $backpayline->exist($array['token'], 'token')) {
+                    $backpayline->code      = $response['result']['code'];
+                    $backpayline->token     = $array['token'];
+                    $backpayline->id        = $response['transaction']['id'];
+                    $backpayline->date      = $response['transaction']['date'];
+                    $backpayline->amount    = $response['payment']['amount'];
+                    $backpayline->serialize = serialize($response);
+                    $backpayline->create();
+                }
                 if ($response['result']['code'] == '00000') {
                     if ($transactions->get($response['order']['ref'], 'status = 0 AND etat = 0 AND id_transaction')) {
-                        $backpayline->code           = $response['result']['code'];
-                        $backpayline->token          = $array['token'];
-                        $backpayline->id             = $response['transaction']['id'];
-                        $backpayline->date           = $response['transaction']['date'];
-                        $backpayline->amount         = $response['payment']['amount'];
-                        $backpayline->serialize      = serialize($response);
-                        $backpayline->create();
-
                         $transactions->id_backpayline   = $backpayline->id_backpayline;
                         $transactions->montant          = $response['payment']['amount'];
                         $transactions->id_langue        = 'fr';

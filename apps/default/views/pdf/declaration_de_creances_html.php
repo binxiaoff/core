@@ -38,7 +38,7 @@
     <div class="procedure">
         <?= $this->nature_var ?>
         <br/>
-        <div style="margin-top:55px;"><?= $this->date ?></div>
+        <div style="margin-top:55px;"><?= $this->date->format('d/m/Y') ?></div>
     </div>
     <div style="clear:both;"></div>
     <div class="creance_declaree">

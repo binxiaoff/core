@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use \Symfony\Component\HttpFoundation\Response;
@@ -27,7 +26,7 @@ class AutolendController extends Controller
         /** @var \clients $client */
         $client = $this->getClient();
         /** @var \lenders_accounts $lendersAccounts */
-        $lendersAccounts  = $this->getLenderAccount();
+        $lendersAccounts = $this->getLenderAccount();
 
         if (false === $autoBidSettingsManager->isQualified($lendersAccounts)) {
             return $this->redirectToRoute('lender_profile');
@@ -52,7 +51,7 @@ class AutolendController extends Controller
 
             /** @var array $messages */
             $messages = [];
-            $post = $request->request->all();
+            $post     = $request->request->all();
 
             if ($request->isXmlHttpRequest()) {
                 if (false === empty($post['setting']) && $post['setting'] == 'autolend-off') {
@@ -76,10 +75,8 @@ class AutolendController extends Controller
                     $success = $translator->trans('autolend_update-settings-success-message');
                     $this->addFlash('autolend_success', $success);
                 }
-
             }
         }
-
 
         $projectPeriods = $projectPeriods->select();
         foreach ($projectPeriods as $period) {
@@ -105,17 +102,17 @@ class AutolendController extends Controller
         }
 
         foreach ($autoBidSettings as $aSetting) {
-            $aSetting['project_rate_min']   = $template['projectRatesGlobal']['rate_min'];
-            $aSetting['project_rate_max']   = $template['projectRatesGlobal']['rate_max'];
+            $aSetting['project_rate_min'] = $template['projectRatesGlobal']['rate_min'];
+            $aSetting['project_rate_max'] = $template['projectRatesGlobal']['rate_max'];
 
             if (isset($projectRateFormatted[$aSetting['id_period']][$aSetting['evaluation']])) {
                 $aSetting['project_rate_min'] = $projectRateFormatted[$aSetting['id_period']][$aSetting['evaluation']]['rate_min'];
                 $aSetting['project_rate_max'] = $projectRateFormatted[$aSetting['id_period']][$aSetting['evaluation']]['rate_max'];
             }
 
-            $averageRateUnilend = $project->getAvgRate($aSetting['evaluation'], $aSetting['period_min'], $aSetting['period_max'], $startingDate);
+            $averageRateUnilend   = $project->getAvgRate($aSetting['evaluation'], $aSetting['period_min'], $aSetting['period_max'], $startingDate);
             $medianRateForSetting = bcdiv(bcadd($aSetting['project_rate_min'], $aSetting['project_rate_max']), 2, 1);;
-            $aSetting['cellAverageRateUnilend'] = ($averageRateUnilend > 0) ? $averageRateUnilend : $medianRateForSetting ;
+            $aSetting['cellAverageRateUnilend'] = ($averageRateUnilend > 0) ? $averageRateUnilend : $medianRateForSetting;
             $template['autoBidSettings'][$aSetting['id_period']][] = $aSetting;
         }
 
@@ -129,36 +126,48 @@ class AutolendController extends Controller
         $template['autolend_amount'] = $autoBidSettingsManager->getAmount($lendersAccounts);
 
         return $this->render('pages/autolend.html.twig', $template);
-
     }
 
     private function handleSimpleSettings($post, \settings $settings, \lenders_accounts $lenderAccount, AutoBidSettingsManager $autoBidSettingsManager)
     {
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
 
         $settings->get('pret min', 'type');
-        $minimumBidAmount = (int)$settings->value;
-        $errorMsg = [];
+        $minimumBidAmount = (int) $settings->value;
+        $errorMsg         = [];
+        $autolendAmount   = null;
+        $autolendRateMin  = null;
 
-        if (empty($post['autolend_amount']) || false === is_numeric($post['autolend_amount']) || $post['autolend_amount'] < $minimumBidAmount) {
+        if (false === empty($post['autolend_amount'])) {
+            $autolendAmount = $ficelle->cleanFormatedNumber($post['autolend_amount']);
+        }
+
+        if (false === empty($post['autolend_rate_min'])) {
+            $autolendRateMin = $ficelle->cleanFormatedNumber($post['autolend_rate_min']);
+        }
+
+        if (empty($autolendAmount) || false === is_numeric($autolendAmount) || $autolendAmount < $minimumBidAmount) {
             $errorMsg[] = $translator->trans('autolend_error-message-amount-wrong', ['%MIN_AMOUNT%' => $minimumBidAmount]);
         }
 
-        if (empty($post['autolend_rate_min'])
-            || false === str_replace(',', '.', $post['autolend_rate_min'])
-            || false === $autoBidSettingsManager->isRateValid(str_replace(',', '.', $post['autolend_rate_min']))) {
+        if (empty($autolendRateMin) || false === $autoBidSettingsManager->isRateValid($autolendRateMin)) {
             $errorMsg[] = $translator->trans('autolend_error-message-simple-setting-rate-wrong');
         }
 
-        if (empty($errorMsg)) {
-            if (false === $autoBidSettingsManager->isOn($lenderAccount)) {
-                $autoBidSettingsManager->on($lenderAccount);
-            }
-            $autoBidSettingsManager->saveNoviceSetting($lenderAccount->id_lender_account, $post['autolend_rate_min'], $post['autolend_amount']);
-        } else {
-            return array('error' => $errorMsg);
+        if (false === empty($errorMsg)) {
+            return ['error' => $errorMsg];
         }
+
+        if (false === $autoBidSettingsManager->isOn($lenderAccount)) {
+            $autoBidSettingsManager->on($lenderAccount);
+        }
+
+        $autoBidSettingsManager->saveNoviceSetting($lenderAccount->id_lender_account, $autolendRateMin, $autolendAmount);
+
+        return [];
     }
 
     private function handleExpertSettings($post, \settings $settings, \lenders_accounts $lenderAccount, AutoBidSettingsManager $autoBidSettingsManager)
@@ -173,60 +182,73 @@ class AutolendController extends Controller
         $ficelle = Loader::loadLib('ficelle');
 
         $settings->get('pret min', 'type');
-        $minimumBidAmount = (int)$settings->value;
-        $autoBidPeriods = [];
+        $minimumBidAmount = (int) $settings->value;
+        $autoBidPeriods   = [];
+        $errorMsg         = [];
+        $aRiskValues      = $project->getAvailableRisks();
+        $amount           = null;
 
         foreach ($projectPeriods->select('status = ' . \project_period::STATUS_ACTIVE) as $period) {
             $autoBidPeriods[] = $period['id_period'];
         }
-        $aRiskValues = $project->getAvailableRisks();
-        $errorMsg = [];
 
+        if (isset($post['autolend_amount'])) {
+            $amount = $ficelle->cleanFormatedNumber($post['autolend_amount']);
+        }
 
-        if (empty($post['autolend_amount']) || false === is_numeric($post['autolend_amount']) || $post['autolend_amount'] < $minimumBidAmount) {
+        if (empty($amount) || false === is_numeric($amount) || $amount < $minimumBidAmount) {
             $errorMsg[] = $translator->trans('autolend_error-message-amount-wrong', ['%MIN_AMOUNT%' => $minimumBidAmount]);
         }
 
         foreach ($post['data'] as $setting) {
             $projectPeriods->get($setting['period']);
-            $periodTranslation = $translator->trans('autolend_expert-settings-project-period-' . $projectPeriods->id_period, ['%min%' => $projectPeriods->min, '%max%' => $projectPeriods->max]);
-            $note = constant('\projects::RISK_' . $setting['evaluation']);
-            $note = is_float($note) ? $ficelle->formatNumber($note, 1) : $note;
+            $note              = constant('\projects::RISK_' . $setting['evaluation']);
+            $note              = is_float($note) ? $ficelle->formatNumber($note, 1) : $note;
+            $periodTranslation = $translator->trans(
+                'autolend_expert-settings-project-period-' . $projectPeriods->id_period,
+                ['%min%' => $projectPeriods->min, '%max%' => $projectPeriods->max]
+            );
 
             if (
                 $setting['is-active'] == \autobid::STATUS_ACTIVE &&
                 (false === in_array($setting['evaluation'], $aRiskValues) || false === in_array($setting['period'], $autoBidPeriods))
             ) {
                 $errorMsg[] = $translator->trans('autolend_error-message-expert-setting-category-non-exist', [
-                    '%RISK%' => $note,
-                    '%period%' => $periodTranslation]);
+                    '%RISK%'   => $note,
+                    '%period%' => $periodTranslation
+                ]);
             }
 
             if (
-                $setting['is-active'] == \autobid::STATUS_ACTIVE &&
-                (false === is_numeric($setting['interest']) || false === $autoBidSettingsManager->isRateValid($setting['interest'], $setting['evaluation'], $setting['period']))
+                $setting['is-active'] == \autobid::STATUS_ACTIVE
+                && empty($setting['interest']) || false === is_numeric($ficelle->cleanFormatedNumber($setting['interest']))
             ) {
                 $projectRateRange = $autoBidSettingsManager->getRateRange($setting['evaluation'], $setting['period']);
-                $errorMsg[] = $translator->trans('autolend_error-message-expert-setting-rate-wrong', [
-                    '%RISK%' => $note,
-                    '%period%' => $periodTranslation ,
-                    '%RATE_MIN%' => $ficelle->formatNumber($projectRateRange['rate_min'], 1),
-                    '%RATE_MAX%' => $ficelle->formatNumber($projectRateRange['rate_max'], 1)]);
+                $errorMsg[]       = $translator->trans('autolend_error-message-expert-setting-rate-wrong', [
+                        '%RISK%'     => $note,
+                        '%period%'   => $periodTranslation,
+                        '%RATE_MIN%' => $ficelle->formatNumber($projectRateRange['rate_min'], 1),
+                        '%RATE_MAX%' => $ficelle->formatNumber($projectRateRange['rate_max'], 1)
+                    ]
+                );
             }
         }
 
-        if (empty($errorMsg)) {
-            if (false === $autoBidSettingsManager->isOn($lenderAccount)) {
-                $autoBidSettingsManager->on($lenderAccount);
-            }
-            $amount = $post['autolend_amount'];
-            foreach ($post['data'] as $setting) {
-                $autoBidSettingsManager->saveSetting($lenderAccount->id_lender_account, $setting['evaluation'], $setting['period'], $setting['interest'], $amount);
-                $autoBidSettingsManager->activateDeactivateSetting($lenderAccount->id_lender_account, $setting['evaluation'], $setting['period'], $setting['is-active']);
-            }
-        } else {
-            return array('error' => $errorMsg);
+        if (false === empty($errorMsg)) {
+            return ['error' => $errorMsg];
         }
+
+        if (false === $autoBidSettingsManager->isOn($lenderAccount)) {
+            $autoBidSettingsManager->on($lenderAccount);
+        }
+
+        foreach ($post['data'] as $setting) {
+            $rate = $ficelle->cleanFormatedNumber($setting['interest']);
+            $autoBidSettingsManager->saveSetting($lenderAccount->id_lender_account, $setting['evaluation'], $setting['period'], $rate, $amount);
+            $autoBidSettingsManager->activateDeactivateSetting($lenderAccount->id_lender_account, $setting['evaluation'], $setting['period'], $setting['is-active']);
+        }
+
+        return [];
     }
 
     private function saveAutolendOff(\lenders_accounts $lenderAccount, \client_settings $clientSettings, AutoBidSettingsManager $autoBidSettingsManager)
@@ -238,8 +260,6 @@ class AutolendController extends Controller
             return 'already-off';
         }
     }
-
-
 
     private function getClient()
     {
@@ -289,5 +309,4 @@ class AutolendController extends Controller
 
         return $settings;
     }
-
 }

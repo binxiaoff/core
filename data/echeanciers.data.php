@@ -935,32 +935,6 @@ class echeanciers extends echeanciers_crud
         return bcdiv($this->bdd->executeQuery($sql)->fetchColumn(0), 100, 2);
     }
 
-    public function getTotalRepaidCapital()
-    {
-        $query = '
-            SELECT (t.totalRepayment + t.totalRecovery)
-            FROM
-                (
-                   SELECT
-                     SUM(capital_rembourse)AS totalRepayment,
-                     (SELECT SUM(montant)
-                      FROM transactions
-                      WHERE transactions.type_transaction = '. \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT .') AS totalRecovery
-                   FROM echeanciers
-                    WHERE status IN (' . self::STATUS_REPAID . ', ' . self::STATUS_PARTIALLY_REPAID . ')) AS t';
-
-        return bcdiv($this->bdd->executeQuery($query)->fetchColumn(0), 100, 2);
-    }
-
-    public function getTotalRepaidInterests()
-    {
-        $query = '
-            SELECT SUM(interets_rembourses)
-            FROM echeanciers
-            WHERE status IN (' . self::STATUS_REPAID . ', ' . self::STATUS_PARTIALLY_REPAID . ')';
-        return bcdiv($this->bdd->executeQuery($query)->fetchColumn(0), 100, 2);
-    }
-
     /**
      * @param int $lenderId
      * @param int|null $projectId
@@ -989,46 +963,10 @@ class echeanciers extends echeanciers_crud
         return $statement->fetch(\PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Returns capital, interests and tax sum amounts grouped by month, quarter and year for a given lender and project
-     * @param int $lenderId
-     * @return array
-     */
-    public function getDetailsByPeriod($lenderId)
-    {
-        $params['id_lender'] = $lenderId;
-        $binds['id_lender']  = \PDO::PARAM_INT;
-        $sql                 = '
-            SELECT
-                LEFT(e.date_echeance, 7) AS month,
-                QUARTER(e.date_echeance) AS quarter,
-                YEAR(e.date_echeance) AS year,
-                SUM(ROUND(e.capital / 100, 2)) AS capital,
-                SUM(ROUND(e.interets / 100, 2)) AS rawInterests,
-                SUM(IFNULL((SELECT SUM(ROUND(tax.amount / 100, 2)) FROM tax WHERE id_transaction = t.id_transaction), 0)) AS taxes
-            FROM echeanciers e
-            LEFT JOIN transactions t ON e.id_echeancier = t.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
-            WHERE e.id_lender = :id_lender
-            GROUP BY year, quarter, month
-            ORDER BY year, quarter, month ASC';
-
-        /** @var \Doctrine\DBAL\Statement $statement */
-        $statement = $this->bdd->executeQuery($sql, $params, $binds);
-        $data      = [];
-        while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
-            $row['capital']      = (float) $row['capital'];
-            $row['rawInterests'] = (float) $row['rawInterests'];
-            $row['netInterests'] = (float) ($row['rawInterests'] - $row['taxes']);
-            $row['taxes']        = (float) $row['taxes'];
-            $data[] = $row;
-        }
-        return $data;
-    }
-
     public function getTotalRepaidInterestByCohort()
     {
         $query = 'SELECT
-                      ROUND(SUM(interets_rembourses)/100) AS amount,
+                      SUM(interets_rembourses)/100 AS amount,
                       (
                         SELECT
                           CASE LEFT(projects_status_history.added, 4)
@@ -1050,7 +988,7 @@ class echeanciers extends echeanciers_crud
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getOwedCapitalANdProjectsByContractType($contractType)
+    public function getOwedCapitalAndProjectsByContractType($contractType)
     {
         $query = ' SELECT
                       p.id_project,
@@ -1086,5 +1024,88 @@ class echeanciers extends echeanciers_crud
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Returns capital, interests and tax sum amounts grouped by month, quarter and year for a lender
+     * @param int $lenderId
+     * @param int $clientId
+     * @param array $taxTypeForExemptedLender
+     * @param array $taxTypeForTaxableLender
+     * @param array $taxTypeForForeignerLender
+     * @param array $taxTypeForLegalEntityLender
+     * @return array
+     */
+    public function getDataForRepaymentWidget($lenderId, $clientId, array $taxTypeForExemptedLender = [3, 4, 5, 6, 7], array $taxTypeForTaxableLender = [2, 3, 4, 5, 6, 7], array $taxTypeForForeignerLender = [8], array $taxTypeForLegalEntityLender = [8])
+    {
+        $bind  = [
+            'id_lender'                    => $lenderId,
+            'id_client'                    => $clientId,
+            'tax_type_exempted_lender'     => $taxTypeForExemptedLender,
+            'tax_type_taxable_lender'      => $taxTypeForTaxableLender,
+            'tax_type_foreigner_lender'    => $taxTypeForForeignerLender,
+            'tax_type_legal_entity_lender' => $taxTypeForLegalEntityLender,
+        ];
+        $type  = [
+            'id_lender'                    => \PDO::PARAM_INT,
+            'id_client'                    => \PDO::PARAM_INT,
+            'tax_type_exempted_lender'     => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'tax_type_taxable_lender'      => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'tax_type_foreigner_lender'    => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'tax_type_legal_entity_lender' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+        ];
+        $query = '
+        SELECT
+          LEFT(e.date_echeance, 7)        AS month,
+          QUARTER(e.date_echeance)        AS quarter,
+          YEAR(e.date_echeance)           AS year,
+          SUM(ROUND(e.capital / 100, 2))  AS capital,
+          SUM(ROUND(e.interets / 100, 2)) AS rawInterests,
+          SUM(IFNULL((SELECT SUM(ROUND(tax.amount / 100, 2)) FROM tax WHERE id_transaction = t.id_transaction) , 0)) AS repaidTaxes,
+          
+          CASE c.type
+          -- Natural person
+          WHEN ' . \clients::TYPE_PERSON . ' OR ' . \clients::TYPE_PERSON_FOREIGNER . ' THEN
+              CASE lih.resident_etranger
+              -- FR fiscal resident
+              WHEN 0
+                THEN CASE lte.id_lender
+                  WHEN NOT NULL THEN SUM(IF (e.status_ra = 1, 0.00, ROUND((e.interets - e.interets_rembourses) * (SELECT SUM(tt.rate / 100) FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_exempted_lender)) / 100, 2)))
+                  ELSE SUM(IF (e.status_ra = 1, 0.00, ROUND((e.interets - e.interets_rembourses) * (SELECT SUM(tt.rate / 100) FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_taxable_lender)) / 100, 2)))
+                END
+              -- Foreigner fiscal resident
+              WHEN 1 THEN
+                SUM(IF (e.status_ra = 1, 0.00, ROUND((e.interets - e.interets_rembourses) * (SELECT tt.rate / 100 FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_foreigner_lender)) / 100, 2)))
+              END
+          -- Legal entity
+          WHEN ' . \clients::TYPE_LEGAL_ENTITY . ' OR ' . \clients::TYPE_LEGAL_ENTITY_FOREIGNER . ' THEN
+              SUM(IF (e.status_ra = 1, 0.00, ROUND((e.interets - e.interets_rembourses) * (SELECT tt.rate / 100 FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_legal_entity_lender)) / 100, 2)))
+          END                             AS upcomingTaxes
+        
+        FROM echeanciers e
+          LEFT JOIN transactions t ON e.id_echeancier = t.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
+          INNER JOIN clients c ON c.id_client = :id_client
+          LEFT JOIN lender_tax_exemption lte ON lte.id_lender = e.id_lender = lte.id_lender AND lte.year = YEAR(e.date_echeance)
+          LEFT JOIN lenders_imposition_history lih ON lih.id_lenders_imposition_history = (SELECT MAX(id_lenders_imposition_history) FROM lenders_imposition_history WHERE id_lender = e.id_lender)
+        WHERE e.id_lender = :id_lender
+        GROUP BY year, quarter, month
+        ORDER BY year, quarter, month ASC
+        ';
+        /** @var \Doctrine\DBAL\Cache\QueryCacheProfile $oQCProfile */
+        $oQCProfile = new \Doctrine\DBAL\Cache\QueryCacheProfile(60, md5(__METHOD__));
+        /** @var \Doctrine\DBAL\Statement $statement */
+        $statement = $this->bdd->executeQuery($query, $bind, $type, $oQCProfile);
+        $data      = [];
+
+        while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
+            $taxes = (float) ($row['repaidTaxes'] + $row['upcomingTaxes']);
+            unset($row['repaidTaxes'], $row['upcomingTaxes']);
+            $row['capital']      = (float) $row['capital'];
+            $row['rawInterests'] = (float) $row['rawInterests'];
+            $row['netInterests'] = (float) $row['rawInterests'] - $taxes;
+            $row['taxes']        = $taxes;
+            $data[]              = $row;
+        }
+        $statement->closeCursor();
+        return $data;
+    }
 
 }

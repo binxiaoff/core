@@ -6,7 +6,7 @@
                     {% trans with {'%amount%' : project.amount|localizednumber|nbsp, '%startTag%' : '<span class="sr-only">', '%endTag%' : '</span>'} %} project-detail_amount-sentence {% endtrans %}
                 </div>
                 <div class="project-single-cost-progress"
-                    title="{% trans with {'%percentFunded%' : project.percentFunded} %} project-detail_project-funding-progress-bar-tooltip {% endtrans %}" data-toggle="tooltip">
+                    title="{% trans with {'%percentFunded%' : project.percentFunded|localizednumberwithprecision(1)} %} project-detail_project-funding-progress-bar-tooltip {% endtrans %}" data-toggle="tooltip">
                     <div class="project-single-cost-progress-funded" style="width: {{ project.percentFunded }}%">
                         <span class="sr-only">{% trans with {'%percentFunded%' : project.percentFunded} %} project-detail_percentage-funded-text {% endtrans %}</span>
                     </div>
@@ -141,7 +141,7 @@
                                     </div><!-- /.form-field -->
                                 </div>
                                 <div class="btn-toolbar">
-                                    <button type="submit" class="btn-primary btn-size-full cursor">{% trans %} project-detail_side-bar-bids-submit-button {% endtrans %}</button>
+                                    <button type="submit" class="btn-primary btn-size-full cursor" data-spinnerbutton>{% trans %} project-detail_side-bar-bids-submit-button {% endtrans %}</button>
                                     <input type="hidden" name="invest[bidToken]" value="{{ bidToken }}">
                                     <input type="hidden" id="bid-duration" value="{{ project.duration }}">
                                     <input type="hidden" id="bid-rest-amount" value="{{ amountRest }}">

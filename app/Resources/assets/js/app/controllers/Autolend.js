@@ -5,7 +5,6 @@ var __ = new Dictionary(window.UTILITY_LANG)
 var $doc = $(document)
 
 function getCellInfo(cellIndex) {
-
     var $inputRate = getInputRate(cellIndex)
 
     return {
@@ -38,15 +37,17 @@ function adjustInterestRate(cellData, amount) {
 }
 
 function changeCellColor(cellData, currentInterest){
-
     var $inputRate = getInputRate(cellData.cellIndex)
     var $selectedCell = $inputRate.parents('.cell-data').first()
 
-    if (parseFloat(currentInterest, 1) <= parseFloat(cellData.avgRateUnilend, 1)) {
-        $selectedCell.removeClass('ui-autolend-average-exceeds')
+    if (parseFloat(currentInterest, 1) < parseFloat(cellData.min, 1) || parseFloat(currentInterest, 1) > parseFloat(cellData.max, 1)) {
+        $selectedCell.removeClass('ui-autolend-average-exceeds ui-autolend-average-within')
+        $selectedCell.addClass('ui-autolend-out-of-range')
+    } else if (parseFloat(currentInterest, 1) <= parseFloat(cellData.avgRateUnilend, 1)) {
+        $selectedCell.removeClass('ui-autolend-average-exceeds ui-autolend-out-of-range')
         $selectedCell.addClass('ui-autolend-average-within')
     } else {
-        $selectedCell.removeClass('ui-autolend-average-within')
+        $selectedCell.removeClass('ui-autolend-average-within ui-autolend-out-of-range')
         $selectedCell.addClass('ui-autolend-average-exceeds')
     }
 }
@@ -54,8 +55,11 @@ function changeCellColor(cellData, currentInterest){
 function balanceEqual($infoEvaluation) {
     removeUnilendHigherItems($infoEvaluation)
     removeUnilendLowerItems($infoEvaluation)
+    removeOutOfRangeItems($infoEvaluation)
 
     $infoEvaluation.addClass('ui-autolend-average-equal')
+    $('.info-scale.info-scale-in-range').show()
+    $('.info-scale.info-scale-out-of-range').hide()
     $('#title-equal-rates').show()
     $('#info-description-equal-rates').show()
 }
@@ -63,8 +67,11 @@ function balanceEqual($infoEvaluation) {
 function unilendRateHigher($infoEvaluation) {
     removeEqualItems($infoEvaluation)
     removeUnilendLowerItems($infoEvaluation)
+    removeOutOfRangeItems($infoEvaluation)
 
     $infoEvaluation.addClass('ui-autolend-average-within')
+    $('.info-scale.info-scale-in-range').show()
+    $('.info-scale.info-scale-out-of-range').hide()
     $('#title-unilend-rate-higher').show()
     $('#info-description-unilend-rate-higher').show()
 }
@@ -72,10 +79,25 @@ function unilendRateHigher($infoEvaluation) {
 function unilendRateLower($infoEvaluation) {
     removeEqualItems($infoEvaluation)
     removeUnilendHigherItems($infoEvaluation)
+    removeOutOfRangeItems($infoEvaluation)
 
     $infoEvaluation.addClass('ui-autolend-average-exceeds')
+    $('.info-scale.info-scale-in-range').show()
+    $('.info-scale.info-scale-out-of-range').hide()
     $('#title-unilend-rate-lower').show()
     $('#info-description-unilend-rate-lower').show()
+}
+
+function unilendRateOutOfRange($infoEvaluation) {
+    removeEqualItems($infoEvaluation)
+    removeUnilendLowerItems($infoEvaluation)
+    removeUnilendHigherItems($infoEvaluation)
+
+    $infoEvaluation.addClass('ui-autolend-out-of-range')
+    $('.info-scale.info-scale-in-range').hide()
+    $('.info-scale.info-scale-out-of-range').show()
+    $('#title-unilend-rate-out-of-range').show()
+    $('#info-description-unilend-rate-out-of-range').show()
 }
 
 function removeEqualItems($infoEvaluation){
@@ -96,10 +118,17 @@ function removeUnilendLowerItems($infoEvaluation){
     $('#info-description-unilend-rate-lower').hide()
 }
 
-function addCellDataToBalance(cellData){
+function removeOutOfRangeItems($infoEvaluation){
+    $infoEvaluation.removeClass('ui-autolend-out-of-range')
+    $('#title-unilend-rate-out-of-range').hide()
+    $('#info-description-unilend-rate-out-of-range').hide()
+}
 
+function addCellDataToBalance(cellData){
     $('#scale-user-rate').text(__.formatNumber(cellData.currentRate))
     $('#scale-unilend-rate').text(cellData.avgRateUnilendFormated)
+    $('#scale-min-rate').text(__.formatNumber(cellData.min))
+    $('#scale-max-rate').text(__.formatNumber(cellData.max))
     $('.info-description-evaluation').text(cellData.convertedRating)
     $('.info-description-periods-as-text').text(cellData.periodsAsText)
     $('.col-info').attr('data-autolendtable-cell', cellData.cellIndex)
@@ -116,6 +145,8 @@ function changeBalance(cellData) {
 
     if (parseFloat(cellData.currentRate, 1) == parseFloat(cellData.avgRateUnilend, 1)) {
         balanceEqual($infoEvaluation)
+    } else if (parseFloat(cellData.currentRate, 1) < parseFloat(cellData.min, 1) || parseFloat(cellData.currentRate, 1) > parseFloat(cellData.max, 1)) {
+        unilendRateOutOfRange($infoEvaluation)
     } else if (parseFloat(cellData.currentRate, 1) > parseFloat(cellData.avgRateUnilend, 1)) {
         unilendRateLower($infoEvaluation)
     } else {
@@ -128,7 +159,6 @@ function getInputRate(cellIndex) {
 }
 
 function rateActivatedSwitch($checkbox, $inputStatus) {
-
     if ($inputStatus.attr('value') == 1) {
         deactivateSetting($inputStatus)
         $checkbox.removeAttr('checked')
@@ -153,7 +183,6 @@ function deactivateSetting($inputStatus) {
 }
 
 function showBalance(cellIndex) {
-
     $('.info-intro').hide()
     $('.info-evaluation').addClass('ui-autolend-cell-enabled').show()
 
@@ -334,17 +363,27 @@ $doc
     // We're capturing the submit event as users might press enter or submit the form otherwise by not clicking a button
     .on('submit', 'form#form-user-autolend', function (event) {
         var $elem = $(this)
-        var form = event.target;
+        var form = event.target
+        var $dialog = $('#autolend-table-dialog')
+
         emptyNotificationsDiv()
 
         // Always prevent the form from submitting as we will be processing via AJAX in the confirmed modal event
         event.preventDefault()
 
+        $('.cell-input[data-autolendtable-cell]').each(function() {
+            var cellData = getCellInfo($(this).attr('data-autolendtable-cell'))
+
+            if (parseFloat(cellData.currentRate, 1) < parseFloat(cellData.min, 1) || parseFloat(cellData.currentRate, 1) > parseFloat(cellData.max, 1)) {
+                $dialog = $('#autolend-out-of-range-table-dialog')
+            }
+        })
+
         // Show dialog
-        $('#autolend-table-dialog').uiModal('open')
+        $dialog.uiModal('open')
 
         // Setup modal events
-        $('#autolend-table-dialog').on('Modal:confirmed', function (event, elemModal) {
+        $dialog.on('Modal:confirmed', function (event, elemModal) {
             form.submit()
             elemModal.close()
         })

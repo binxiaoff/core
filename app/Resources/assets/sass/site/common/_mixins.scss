@@ -283,6 +283,13 @@
   }
 }
 
+// Shorthand for disabled
+@mixin disabled-state {
+  &[disabled] {
+    @content;
+  }
+}
+
 // Vertical align using table method
 @mixin vertical-align-table {
   display: table;

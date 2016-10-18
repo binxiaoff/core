@@ -2,16 +2,6 @@
 
 {% set bodyClassNames = 'layout-page-simple' %}
 
-{# Page object #}
-{#
-page = {
-  id: {String} ID of the page e.g. 'unique-id',
-  classNames: {String} CSS class names to apply to the page, e.g. 'page-unique-id another-class-name',
-  title: {String} The title of the page, which goes into the HTML header <title>..</title>,
-  displayTitle: {String} The display title, i.e. what gets rendered in the viewable page header
-}
-#}
-
 {% block siteContent %}
     <article{% if page.id is defined %} id="{{ page.id }}"{% endif %} class="page page-simple{% if page.classNames is defined %} {{ page.classNames }}{% endif %}">
         {% block pageHeader %}
