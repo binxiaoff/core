@@ -83,7 +83,7 @@ var SpinnerButton = function (elem, options) {
     disable: true,
 
     // Disable the target if loading
-    disableTarget: true
+    disableTarget: false
 
   }, ElementAttrsObject(elem, {
     spinnerElem: 'data-has-spinner',

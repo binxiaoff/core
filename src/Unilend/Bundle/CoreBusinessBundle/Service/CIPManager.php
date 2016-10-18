@@ -458,7 +458,7 @@ class CIPManager
         $product = $this->entityManager->getRepository('product');
         $product->get($project->id_product);
 
-        $productContracts = $this->productManager->getAvailableContractTypes($product);
+        $productContracts = $this->productManager->getAvailableContracts($product);
 
         if (false === in_array(\underlying_contract::CONTRACT_MINIBON, array_column($productContracts, 'label'))) {
             return false;
