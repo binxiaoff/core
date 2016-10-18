@@ -11,7 +11,7 @@ trait CompanyChecker
         $minDays = $productAttributeManager->getProductAttributesByType($product, \product_attribute_type::MIN_CREATION_DAYS);
 
         if (empty($minDays)) {
-            return true;
+            return $this->isEligibleForContractCreationDays($company, $product, $productAttributeManager);
         }
 
         $companyCreationDate = new \DateTime($company->date_creation);
@@ -27,7 +27,7 @@ trait CompanyChecker
         $beRCS = $productAttributeManager->getProductAttributesByType($product, \product_attribute_type::ELIGIBLE_BORROWER_COMPANY_RCS);
 
         if (empty($beRCS)) {
-            return true;
+            return $this->isEligibleForContractRCS($company, $product, $productAttributeManager);
         }
 
         if ($beRCS[0] && empty($company->rcs)) {
@@ -65,7 +65,7 @@ trait CompanyChecker
 
     public function isEligibleForContractRCS(\companies $company, \product $product, ProductAttributeManager $productAttributeManager)
     {
-        $attrVars = $productAttributeManager->getProductContractAttributesByType($product, \underlying_contract_attribute_type::MIN_CREATION_DAYS);
+        $attrVars = $productAttributeManager->getProductContractAttributesByType($product, \underlying_contract_attribute_type::ELIGIBLE_BORROWER_COMPANY_RCS);
         foreach ($attrVars as $contractVars) {
             if (isset($contractVars[0]) && $contractVars[0] && empty($company->rcs)) {
                 return false;

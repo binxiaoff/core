@@ -37,7 +37,7 @@ trait ProjectChecker
         $maxDuration = $productAttributeManager->getProductAttributesByType($product, \product_attribute_type::MAX_LOAN_DURATION_IN_MONTH);
 
         if (empty($maxDuration)) {
-            return true;
+            return $this->isEligibleForMaxContractDuration($project, $product, $productAttributeManager);
         }
 
         return ($project->period <= $maxDuration[0]) && $this->isEligibleForMaxContractDuration($project, $product, $productAttributeManager);

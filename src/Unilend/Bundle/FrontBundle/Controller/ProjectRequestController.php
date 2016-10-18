@@ -300,9 +300,11 @@ class ProjectRequestController extends Controller
 
         /** @var \companies_bilans $companyAccount */
         $companyAccount = $entityManager->getRepository('companies_bilans');
-
-        $this->project->id_dernier_bilan = $companyAccount->select('id_company = ' . $this->company->id_company, 'cloture_exercice_fiscal DESC', 0, 1)[0]['id_bilan'];
-        $this->project->update();
+        $balanceSheets = $companyAccount->select('id_company = ' . $this->company->id_company, 'cloture_exercice_fiscal DESC', 0, 1);
+        if (isset($balanceSheets[0]['id_bilan'])) {
+            $this->project->id_dernier_bilan = $balanceSheets[0]['id_bilan'];
+            $this->project->update();
+        }
 
         $productManager = $this->get('unilend.service_product.product_manager');
         try {
