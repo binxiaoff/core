@@ -6,7 +6,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
 
 class ContractManager
 {
-    /** @var  LenderValidator*/
+    /** @var  LenderValidator */
     private $lenderValidator;
     /** @var AutoBidSettingsValidator */
     private $autoBidSettingsValidator;
@@ -24,7 +24,7 @@ class ContractManager
     }
 
     /**
-     * @param \lenders_accounts $lender
+     * @param \lenders_accounts    $lender
      * @param \underlying_contract $contract
      *
      * @return bool
@@ -42,7 +42,7 @@ class ContractManager
     public function getMaxAmount(\underlying_contract $contract)
     {
         $maxAmount = $this->contractAttributeManager->getContractAttributesByType($contract, \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
-        if (empty($maxAmount)){
+        if (empty($maxAmount)) {
             return null;
         }
 

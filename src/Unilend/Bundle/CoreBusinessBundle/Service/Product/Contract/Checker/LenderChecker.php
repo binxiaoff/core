@@ -9,9 +9,9 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
 trait LenderChecker
 {
     /**
-     * @param \lenders_accounts $lender
-     * @param \underlying_contract $contract
-     * @param EntityManager $entityManager
+     * @param \lenders_accounts        $lender
+     * @param \underlying_contract     $contract
+     * @param EntityManager            $entityManager
      * @param ContractAttributeManager $contractAttributeManager
      *
      * @return bool

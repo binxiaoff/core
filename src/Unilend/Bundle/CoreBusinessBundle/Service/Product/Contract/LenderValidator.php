@@ -21,7 +21,7 @@ class LenderValidator
     }
 
     /**
-     * @param \lenders_accounts $lender
+     * @param \lenders_accounts    $lender
      * @param \underlying_contract $contract
      *
      * @return bool

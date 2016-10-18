@@ -6,6 +6,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
 trait ProjectChecker
 {
     use CompanyChecker;
+
     /**
      * @param \projects               $project
      * @param \product                $product
@@ -17,7 +18,7 @@ trait ProjectChecker
     {
         $minDuration = $productAttributeManager->getProductAttributesByType($product, \product_attribute_type::MIN_LOAN_DURATION_IN_MONTH);
 
-        if(empty($minDuration)) {
+        if (empty($minDuration)) {
             return true;
         }
 
@@ -35,7 +36,7 @@ trait ProjectChecker
     {
         $maxDuration = $productAttributeManager->getProductAttributesByType($product, \product_attribute_type::MAX_LOAN_DURATION_IN_MONTH);
 
-        if(empty($maxDuration)) {
+        if (empty($maxDuration)) {
             return true;
         }
 
@@ -69,7 +70,7 @@ trait ProjectChecker
     private function isEligibleForMaxContractDuration(\projects $project, \product $product, ProductAttributeManager $productAttributeManager)
     {
         $attrVars = $productAttributeManager->getProductContractAttributesByType($product, \underlying_contract_attribute_type::MAX_LOAN_DURATION_IN_MONTH);
-        foreach($attrVars as $contractVars) {
+        foreach ($attrVars as $contractVars) {
             if (isset($contractVars[0]) && $contractVars[0] < $project->period) {
                 return false;
             }

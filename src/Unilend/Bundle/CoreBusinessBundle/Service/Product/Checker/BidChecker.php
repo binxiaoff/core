@@ -9,6 +9,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 trait BidChecker
 {
     use LenderChecker;
+
     /**
      * @param \bids                   $bid
      * @param \product                $product
@@ -31,11 +32,11 @@ trait BidChecker
     }
 
     /**
-     * @param \bids $bid
+     * @param \bids             $bid
      * @param \lenders_accounts $lender
-     * @param \product $product
-     * @param EntityManager $entityManager
-     * @param ContractManager $contractManager
+     * @param \product          $product
+     * @param EntityManager     $entityManager
+     * @param ContractManager   $contractManager
      *
      * @return bool
      */

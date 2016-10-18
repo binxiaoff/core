@@ -6,7 +6,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
 trait AutoBidSettingsChecker
 {
     /**
-     * @param \underlying_contract $contract
+     * @param \underlying_contract     $contract
      * @param ContractAttributeManager $contractAttributeManager
      *
      * @return bool

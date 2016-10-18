@@ -15,7 +15,7 @@ class ProjectValidator
     public function __construct(ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
     {
         $this->productAttributeManager = $productAttributeManager;
-        $this->entityManager = $entityManager;
+        $this->entityManager           = $entityManager;
     }
 
     /**
