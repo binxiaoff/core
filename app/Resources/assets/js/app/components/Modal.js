@@ -403,6 +403,9 @@ Modal.prototype.open = function () {
 Modal.prototype.confirm = function () {
   var self = this
 
+  // @debug
+  // console.log('Modal.prototype.confirm')
+
   // @trigger elem `Modal:confirm:before`
   self.$elem.trigger('Modal:confirm:before', [self])
 
@@ -440,6 +443,9 @@ Modal.prototype.confirm = function () {
 Modal.prototype.cancel = function () {
   var self = this
 
+  // @debug
+  // console.log('Modal.prototype.cancel')
+
   // @trigger elem `Modal:cancel:before` [elemModal]
   self.$elem.trigger('Modal:cancel:before', [self])
 
@@ -472,11 +478,14 @@ Modal.prototype.cancel = function () {
 Modal.prototype.close = function () {
   var self = this
 
+  // @debug
+  // console.log('Modal.prototype.close')
+
   // @trigger elem `Modal:close:before`
   self.$elem.trigger('Modal:close:before', [self])
 
   // Only close if the element exists
-  if ($('#' + self.settings.id + ':visible').length > 0) {
+  if (self.$elem.is(':visible')) {
     $.fancybox.close()
 
     // @trigger elem `Modal:closed`
@@ -582,7 +591,7 @@ $(document)
   // Perform confirm action if user clicks item with `[data-modal-doactionconfirm]`
   .on(Utility.clickEvent, '[data-modal-doactionconfirm]', function (event) {
     // @debug
-    // console.log('Clicked [data-modal-doactionconfirm]')
+    console.log('Clicked [data-modal-doactionconfirm]')
     var $modal = $(this).parents('.ui-modal')
     $modal.uiModal('confirm')
   })
@@ -590,7 +599,7 @@ $(document)
   // Perform cancel action if user clicks item with `[data-modal-doactioncancel]`
   .on(Utility.clickEvent, '[data-modal-doactioncancel]', function (event) {
     // @debug
-    // console.log('Clicked [data-modal-doactioncancel]')
+    console.log('Clicked [data-modal-doactioncancel]')
     var $modal = $(this).parents('.ui-modal')
     $modal.uiModal('cancel')
   })
@@ -598,7 +607,7 @@ $(document)
   // Perform close action if user clicks item with `[data-modal-doactionclose]`
   .on(Utility.clickEvent, '[data-modal-doactionclose]', function (event) {
     // @debug
-    // console.log('Clicked [data-modal-doactionclose]')
+    console.log('Clicked [data-modal-doactionclose]')
     var $modal = $(this).parents('.ui-modal')
     $modal.uiModal('close')
   })

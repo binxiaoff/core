@@ -633,6 +633,13 @@ a#{$js-project-single-map-toggle} {
       margin-left: 0;
     }
   }
+
+  .col-label,
+  .col-input {
+    box-sizing: border-box;
+    float: left;
+    width: 50%;
+  }
 }
 
 // Content

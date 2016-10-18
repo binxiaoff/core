@@ -340,7 +340,9 @@
         </div><!-- /.project-single-content -->
     </article>
 
-    {% if project.lender is defined %}
-        {% include 'partials/components/popup-bid-confirmation.html.twig' %}
-    {% endif %}
+    {% block modals %}
+        {% if project.lender is defined %}
+            {% include 'partials/components/project-detail/modal-bid-confirmation.html.twig' %}
+        {% endif %}
+    {% endblock %}
 {% endblock %}

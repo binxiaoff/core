@@ -124,6 +124,7 @@ $doc.on('ready', function () {
   // Add to window WatchScroll watcher means to make project-single-menu fixed
   if ($projectSingleMenu.length > 0) {
     updateProjectSingleNavOffsetTop()
+
     window.watchWindow
       .watch(window, function (params) {
         // @debug console.log($win.scrollTop() >= projectSingleNavOffsetTop)

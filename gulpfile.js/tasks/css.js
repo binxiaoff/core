@@ -18,6 +18,8 @@ var paths = {
   dest: path.join(config.root.dest, config.tasks.css.dest)
 }
 
+var buildCount = 0
+
 var cssTask = function () {
 
   var compassConfig = {
@@ -32,10 +34,13 @@ var cssTask = function () {
   }
 
   // Compass swallows messages and takes ages, so I want to know when it is started and when it is finished
+  // It also doesn't stop previous builds if I save multiple times while building, so I want to track which build is finished)
+  buildCount++
+  var buildVer = '#' + buildCount
   var startTime = new Date()
   if (!global.production) {
     compassConfig.time = true
-    gutil.log('Compiling CSS...')
+    gutil.log('Compiling CSS... (' + buildVer + ')')
   }
 
   return gulp.src(paths.src)
@@ -51,7 +56,7 @@ var cssTask = function () {
         if (!global.production) {
           var endTime = new Date()
           var totalTime = ((endTime.getTime() - startTime.getTime()) / 1000)
-          gutil.log('Finished compiling CSS (' + totalTime.toFixed(2) + 's)')
+          gutil.log('Finished compiling CSS (' + buildVer + ' -> ' + totalTime.toFixed(2) + 's)')
         }
       }))
     .pipe(gulpIf(!global.production, sourcemaps.write('./')))
