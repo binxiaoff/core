@@ -512,8 +512,10 @@ class statsController extends bootstrap
         $this->loans            = $this->loadData('loans');
         $this->insee_pays       = $this->loadData('insee_pays');
 
-        $this->settings->get('EQ-Retenue à la source', 'type');
-        $this->retenuesource = $this->settings->value;
+        /** @var \tax_type $taxTypes */
+        $taxTypes = $this->loadData('tax_type');
+        $taxTypes->get(\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE);
+        $this->retenuesource = $taxTypes->rate;
         $this->lPre = $this->clients->selectPreteursByStatus(
             '20, 30, 40, 50, 60',
             '(
@@ -521,7 +523,7 @@ class statsController extends bootstrap
                 FROM transactions 
                 WHERE status = 1 
                     AND etat = 1 
-                    AND type_transaction IN (' . implode(', ', [\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT]) . ') 
+                    AND type_transaction IN (' . implode(', ', [\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT]) . ') 
                     AND id_client = c.id_client
                     AND added BETWEEN "' . date('Y') . '-01-01" AND "' . (date('Y') + 1) . '-01-01" 
             ) >= 1'
@@ -542,9 +544,10 @@ class statsController extends bootstrap
         $this->lenders_accounts = $this->loadData('lenders_accounts');
         $this->loans            = $this->loadData('loans');
         $this->insee_pays       = $this->loadData('insee_pays');
-
-        $this->settings->get('EQ-Retenue à la source', 'type');
-        $this->retenuesource = $this->settings->value;
+        /** @var \tax_type $taxTypes */
+        $taxTypes = $this->loadData('tax_type');
+        $taxTypes->get(\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE);
+        $this->retenuesource = $taxTypes->rate;
         $this->lPre = $this->clients->selectPreteursByStatus(
             '20, 30, 40, 50, 60',
             '(
@@ -552,7 +555,7 @@ class statsController extends bootstrap
                 FROM transactions 
                 WHERE status = 1 
                     AND etat = 1 
-                    AND type_transaction IN (' . implode(', ', [\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT]) . ') 
+                    AND type_transaction IN (' . implode(', ', [\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT]) . ') 
                     AND id_client = c.id_client
                     AND added BETWEEN "' . date('Y') . '-01-01" AND "' . (date('Y') + 1) . '-01-01" 
             ) >= 1'
@@ -647,7 +650,7 @@ class statsController extends bootstrap
                     $this->insee_pays->getByCountryIso(trim($this->pays->iso));
                     $cp = $this->insee_pays->COG;
 
-                    $retenuesource = $this->ficelle->formatNumber($this->retenuesource * 100) . '%';
+                    $retenuesource = $this->ficelle->formatNumber($this->retenuesource) . '%';
 
                     if ($id_pays_fiscal == 0) {
                         $id_pays = 1;
@@ -757,8 +760,13 @@ class statsController extends bootstrap
         $csv = "";
         $csv .= $header . " \n";
 
-        $annee = '2015';
-        $date  = '31/12/2015';
+        if (in_array(date('m'), ['01', '02', '03'])) {
+            $annee = (date('Y')-1);
+        } else {
+            $annee = date('Y');
+        }
+
+        $date = '31/12/' . $annee;
 
         $oCountry = $this->loadData('pays_v2');
         $aCountries = $oCountry->getZoneB040Countries();
