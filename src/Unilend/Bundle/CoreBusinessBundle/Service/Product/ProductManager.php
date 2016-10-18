@@ -1,6 +1,7 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product;
 
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class ProductManager
@@ -15,8 +16,8 @@ class ProductManager
     private $lenderValidator;
     /** @var ProductAttributeManager */
     private $productAttributeManager;
-    /** @var ContractAttributeManager */
-    private $contractAttributeManager;
+    /** @var ContractManager */
+    private $contractManager;
 
     public function __construct(
         EntityManager $entityManager,
@@ -24,7 +25,7 @@ class ProductManager
         BidValidator $bidValidator,
         LenderValidator $lenderValidator,
         ProductAttributeManager $productAttributeManager,
-        ContractAttributeManager $contractAttributeManager
+        ContractManager $contractManager
     )
     {
         $this->entityManager            = $entityManager;
@@ -32,7 +33,7 @@ class ProductManager
         $this->bidValidator             = $bidValidator;
         $this->lenderValidator          = $lenderValidator;
         $this->productAttributeManager  = $productAttributeManager;
-        $this->contractAttributeManager = $contractAttributeManager;
+        $this->contractManager = $contractManager;
     }
 
     /**
@@ -209,7 +210,7 @@ class ProductManager
     }
 
     /**
-     * @param array $contracts
+     * @param \product
      * @return \underlying_contract[]
      */
     public function getAutobidEligibleContracts(\product $product)
@@ -221,7 +222,7 @@ class ProductManager
 
         foreach($contracts as $underlyingContract) {
             $contract->get($underlyingContract['id_contract']);
-            if ($this->bidValidator->isAutobidEligibleForAutobid($contract, $this->contractAttributeManager)) {
+            if ($this->contractManager->isAutobidSettingsEligible($contract)) {
                 $autobidContract    = clone $contract;
                 $autobidContracts[] = $autobidContract;
             }
