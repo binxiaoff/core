@@ -151,39 +151,69 @@ SpinnerButton.prototype.init = function () {
   }
 
   // Connect the spinner dots
-  self.$elem.attr('data-has-spinner', self.$spinner.attr('id'))
+  self.$elem.attr('data-has-spinner', '#' + self.$spinner.attr('id'))
 
   // Watch the target for specific start events
   $(document).on(self.settings.targetStartEvents, self.$target, function (event) {
-    self.$elem.trigger('Spinner:showLoading')
-
-    // Disable the button
-    if (self.settings.disable) {
-      self.$elem.prop('disabled', true)
-    }
-
-    // Disable the target too
-    if (self.settings.disableTarget) {
-      self.$target.prop('disabled', true)
-    }
+    self.startLoading()
   })
 
   // Watch the target for specific stop events
   $(document).on(self.settings.targetStopEvents, self.$target, function (event) {
-    if (event.type !== 'Spinner:hideLoading') {
-      self.$elem.trigger('Spinner:hideLoading')
-    }
-
-    // Enable the button
-    if (self.settings.disable) {
-      self.$elem.removeProp('disabled')
-    }
-
-    // Enable the target too
-    if (self.settings.disableTarget) {
-      self.$target.removeProp('disabled')
-    }
+    self.stopLoading()
   })
+}
+
+/*
+ * Start the button/target loading state
+ *
+ * @method startLoading
+ * @returns {Void}
+ */
+SpinnerButton.prototype.startLoading = function () {
+  var self = this
+
+  // @debug
+  // console.log('SpinnerButton.startLoading')
+
+  // Show the loading class to make the spinner visible
+  self.$elem.addClass('ui-is-loading')
+
+  // Disable the button
+  if (self.settings.disable) {
+    self.$elem.prop('disabled', true)
+  }
+
+  // Disable the target too
+  if (self.settings.disableTarget) {
+    self.$target.prop('disabled', true)
+  }
+}
+
+/*
+ * Stop the button/target loading state
+ *
+ * @method stopLoading
+ * @returns {Void}
+ */
+SpinnerButton.prototype.stopLoading = function () {
+  var self = this
+
+  // @debug
+  // console.log('SpinnerButton.stopLoading')
+
+  // Remove the loading class to make the spinner hidden
+  self.$elem.removeClass('ui-is-loading')
+
+  // Re-enable the button
+  if (self.settings.disable) {
+    self.$elem.removeAttr('disabled').removeProp('disabled')
+  }
+
+  // Re-enable the target too
+  if (self.settings.disableTarget) {
+    self.$target.removeAttr('disabled').removeProp('disabled')
+  }
 }
 
 /*
@@ -207,7 +237,7 @@ SpinnerButton.prototype.destroy = function () {
 $.fn.uiSpinnerButton = function (op) {
   // Fire a command to the SpinnerButton object, e.g. $('[data-spinnerbutton]').uiSpinnerButton('publicMethod', {..})
   // @todo add in list of public methods that $.fn.uiSpinnerButton can reference
-  if (typeof op === 'string' && /^(publicMethod|anotherPublicMethod|destroy)$/.test(op)) {
+  if (typeof op === 'string' && /^(startLoading|stopLoading|destroy)$/.test(op)) {
     // Get further additional arguments to apply to the matched command method
     var args = Array.prototype.slice.call(arguments)
     args.shift()
@@ -233,7 +263,21 @@ $.fn.uiSpinnerButton = function (op) {
  * jQuery Events
  */
 $(document)
-// Auto-init `[data-spinnerbutton]` elements through declarative instantiation
-.on('ready UI:visible', function (event) {
-  $(event.target).find('[data-spinnerbutton]').not('.ui-spinnerbutton').uiSpinnerButton()
-})
+  // Auto-init `[data-spinnerbutton]` elements through declarative instantiation
+  .on('ready UI:visible', function (event) {
+    $(event.target).find('[data-spinnerbutton]').not('.ui-spinnerbutton').uiSpinnerButton()
+  })
+
+  // Start the SpinnerButton loading state by hooking into Spinner loading events
+  // @note This allows other elements to cite the spinnerbutton as their `data-has-spinner` element
+  .on('Spinner:loading:started', '.ui-spinnerbutton', function (event) {
+    $(this).uiSpinnerButton('startLoading')
+  })
+
+  // Stop the SpinnerButton loading state by hooking into Spinner loading events
+  // @note This allows other elements to cite the spinnerbutton as their `data-has-spinner` element
+  .on('Spinner:loading:ending Spinner:loading:ended', '.ui-spinnerbutton', function (event) {
+    $(this).uiSpinnerButton('stopLoading')
+  })
+
+module.exports = SpinnerButton

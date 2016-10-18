@@ -304,12 +304,12 @@ $doc.on('ready', function () {
     var amount = $('#bid-amount').val()
     var duration = $('#bid-duration').val()
     var rate = $('#bid-interest option:selected').val()
-
+    
     if (amount && duration && rate && amount >= 20 && (previousAmount != amount || previousRate != rate)) {
       previousAmount = amount
       previousRate = rate
 
-      messageHolder.html('')
+      messageHolder.html('').removeClass('c-error')
 
       // @trigger elem `Spinner:showLoading`
       $('#bid-amount').trigger('Spinner:showLoading')
@@ -317,6 +317,7 @@ $doc.on('ready', function () {
       $.ajax({
         url: '/projects/monthly_repayment',
         method: 'POST',
+        global: false,
         data: {
           amount: amount,
           duration: duration,
@@ -324,16 +325,19 @@ $doc.on('ready', function () {
         },
         success: function (data) {
           if (data.success && data.message) {
-            var messageContent = $('<p>').addClass('c-t2').html(data.message)
-            messageHolder.html(messageContent)
+            messageHolder.html(data.message)
           } else if (data.error && data.message) {
-            console.log(data.message)
+            console.warn(data.message, data)
           } else {
-            console.log('Unknown state')
+            console.warn('Unknown error', data)
           }
         },
-        error: function () {
-          console.log('Unable to estimate monthly repayments')
+        error: function (error) {
+          console.warn('Unable to estimate monthly repayments', error)
+        },
+        complete: function () {
+          // @trigger elem `Spinner:hideLoading`
+          $('#bid-amount').trigger('Spinner:hideLoading')
         }
       })
     } else if (amount && amount < 20) {

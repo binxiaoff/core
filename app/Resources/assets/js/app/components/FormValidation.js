@@ -896,7 +896,7 @@ FormValidation.prototype.rules = {
     if (inputType) {
       switch (inputType.toLowerCase()) {
         case 'number':
-          if (/[^\d-\.]+/.test(inputValidation.value)) {
+          if (/[^\d\-\.\,]+/.test(inputValidation.value)) {
             inputValidation.errors.push({
               type: 'inputType',
               description: __.__('Field accepts only numbers', 'error-field-input-type-number')

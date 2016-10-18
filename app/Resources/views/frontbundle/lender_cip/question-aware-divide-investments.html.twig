@@ -25,14 +25,15 @@
                         <p>Avez-vous conscience que vous devez répartir vos prêts sur un nombre très élevé d’entreprises afin de réduire l’aléa de votre risque de perte en capital ?</p>
                     </div>
                     <div class="row">
-                        <input type="hidden" name="question" value="{{ question.id }}" />
-                        <div class="col-lg-3 push-lg-2 col-md-3 push-md-2 col-sm-2 push-sm-1 col-xs-1">
+                        <div class="col-lg-6 col-md-6 col-sm-4 col-xs-2 text-align-left">
                             <button type="submit" name="answer" value="{{ constant('\\lender_questionnaire_question::VALUE_BOOLEAN_TRUE') }}" class="btn-primary">Oui</button>
                         </div>
-                        <div class="col-lg-3 push-lg-2 col-md-3 push-md-2 col-sm-2 push-sm-2 col-xs-1 push-xs-2">
+                        <div class="col-lg-6 col-md-6 col-sm-4 col-xs-2 text-align-right">
                             <button type="submit" name="answer" value="{{ constant('\\lender_questionnaire_question::VALUE_BOOLEAN_FALSE') }}" class="btn-primary">Non</button>
                         </div>
                     </div>
+
+                    <input type="hidden" name="question" value="{{ question.id }}" />
                 </form>
             </div><!-- /#cip-step-{{ current_step }} -->
         </article><!-- /.dashboard-tabs-content -->

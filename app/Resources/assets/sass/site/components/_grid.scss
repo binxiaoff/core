@@ -111,18 +111,34 @@
 // defaults to 2 columns, so first column has no left padding and 2nd column has no right padding
 .row {
   @include row-multi-col;
-}
 
-// Automatic column padding targetted for mobile devices
-@include devices('mobile') {
-  .row {
+  // Automatic column padding targetted for mobile devices
+  @include devices('mobile') {
     @include row-multi-col($prefix: 'mobile');
   }
-}
 
-// Automatic column padding targetted for computer devices
-@include devices('computer') {
-  .row {
+  // Automatic column padding targetted for computer devices
+  @include devices('computer') {
     @include row-multi-col($prefix: 'computer');
+  }
+
+  // Automatic column padding targetted for xs breakpoint
+  @include devices('xs') {
+    @include row-multi-col($prefix: 'xs');
+  }
+
+  // Automatic column padding targetted for sm breakpoint
+  @include devices('sm') {
+    @include row-multi-col($prefix: 'sm');
+  }
+
+  // Automatic column padding targetted for md breakpoint
+  @include devices('md') {
+    @include row-multi-col($prefix: 'md');
+  }
+
+  // Automatic column padding targetted for lg breakpoint
+  @include devices('lg') {
+    @include row-multi-col($prefix: 'lg');
   }
 }

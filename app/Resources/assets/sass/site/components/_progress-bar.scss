@@ -17,5 +17,8 @@
     bottom: 0;
 
     background-color: $c-p1;
+
+    transition: width 0.2s;
+    transition-timing-function: ease-in;
   }
 }
