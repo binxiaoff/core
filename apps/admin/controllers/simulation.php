@@ -17,48 +17,27 @@ class simulationController extends bootstrap
     public function _altares()
     {
         ini_set('default_socket_timeout', 60);
-
         $this->hideDecoration();
-        $this->autoFireView = false;
-
-        $url = 'http://iws-sffpme.edgeteam.fr/services/MozaikEligibilityObject?wsdl';
-
-        $client = new SoapClient($url);
-
-        var_dump($client->__getFunctions());
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Altares $altares */
+        $altares = $this->get('unilend.service.altares');
 
         $siren = '';
         if (isset($_POST['siren']) && $_POST['siren'] != '') {
             $siren = $_POST['siren'];
         }
-
-        $result = $client->__soapCall(
-            'getEligibility',
-            array(
-                array(
-                    'identification' => 'U2012008557|45c8586a626ddabd233951066138d0efa7f4eb9d',
-                    'refClient'      => 'unilend',
-                    'siren'          => $siren
-                )
-            )
-        );
-
-        ?>
-        <form action="" method="post">
-            <table>
-                <tr>
-                    <td><label>siren : </label></td>
-                    <td><input type="text" name="siren" value="<?= (isset($_POST['siren']) ? $_POST['siren'] : '') ?>"/></td>
-                </tr>
-                <tr>
-                    <td><label>valider : </label></td>
-                    <td><input type="submit" name="send" value="Valider"/></td>
-                </tr>
-            </table>
-        </form>
-        <?php
-        echo '<pre>';
-        print_r($result->return);
-        echo '</pre>';
+        $this->result = [];
+        if (isset($_POST['api'])) {
+            switch ($_POST['api']) {
+                case 1 :
+                    $this->result = $altares->getEligibility($siren);
+                    break;
+                case 2 :
+                    $this->result = $altares->getBalanceSheets($siren);
+                    break;
+                default :
+                    $this->result = [];
+                    break;
+            }
+        }
     }
 }
