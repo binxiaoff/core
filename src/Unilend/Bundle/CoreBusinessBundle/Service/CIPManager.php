@@ -6,6 +6,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\core\Loader;
 
 class CIPManager
 {
@@ -130,41 +131,56 @@ class CIPManager
     }
 
     /**
-     * @param \lenders_accounts $lender
+     * @param \lender_evaluation $evaluation
      */
-    public function endCurrentEvaluation(\lenders_accounts $lender)
+    public function endEvaluation(\lender_evaluation $evaluation)
     {
-        $evaluation = $this->getCurrentEvaluation($lender);
-
-        if ($evaluation instanceof \lender_evaluation) {
-            $evaluation->expiry_date = date('Y-m-d H:i:s');
-            $evaluation->update();
-        }
+        $evaluation->expiry_date = date('Y-m-d H:i:s');
+        $evaluation->update();
     }
 
     /**
-     * @param \lenders_accounts $lender
+     * @param \lender_evaluation $evaluation
      */
-    public function validateEvaluation(\lenders_accounts $lender)
+    public function validateEvaluation(\lender_evaluation $evaluation)
     {
         $expiryDate = new \DateTime('NOW + 1 YEAR');
-        $evaluation = $this->getCurrentEvaluation($lender);
         $evaluation->expiry_date = $expiryDate->format('Y-m-d H:i:s');
         $evaluation->update();
     }
 
     /**
      * @param \lenders_accounts $lender
-     * @return \lender_questionnaire_question|null
      */
-    public function getLastQuestion(\lenders_accounts $lender)
+    public function endLenderEvaluation(\lenders_accounts $lender)
     {
         $evaluation = $this->getCurrentEvaluation($lender);
+        if (null !== $evaluation) {
+            $this->endEvaluation($evaluation);
+        }
+    }
 
+    /**
+     * @param \lenders_accounts $lender
+     */
+    public function validateLenderEvaluation(\lenders_accounts $lender)
+    {
+        $evaluation = $this->getCurrentEvaluation($lender);
+        if (null !== $evaluation) {
+            $this->validateEvaluation($evaluation);
+        }
+    }
+
+    /**
+     * @param \lender_evaluation $evaluation
+     * @return \lender_questionnaire_question|null
+     */
+    public function getLastQuestion(\lender_evaluation $evaluation)
+    {
         /** @var \lender_questionnaire_question $questionEntity */
-        $questionEntity     = $this->entityManager->getRepository('lender_questionnaire_question');
-        $questions          = $questionEntity->select('id_lender_questionnaire = ' . $evaluation->id_lender_questionnaire, '`order` ASC');
-        $previousQuestionId = null;
+        $questionEntity = $this->entityManager->getRepository('lender_questionnaire_question');
+        $questions      = $questionEntity->select('id_lender_questionnaire = ' . $evaluation->id_lender_questionnaire, '`order` ASC');
+        $lastQuestionId = null;
 
         /** @var \lender_evaluation_answer $answerEntity */
         $answerEntity   = $this->entityManager->getRepository('lender_evaluation_answer');
@@ -177,14 +193,12 @@ class CIPManager
 
         foreach ($questions as $index => $question) {
             if (isset($indexedAnswers[$question['id_lender_questionnaire_question']])) {
-                $previousQuestionId = $question['id_lender_questionnaire_question'];
-            } else {
-                break;
+                $lastQuestionId = $question['id_lender_questionnaire_question'];
             }
         }
 
-        if (null !== $previousQuestionId) {
-            $questionEntity->get($previousQuestionId);
+        if (null !== $lastQuestionId) {
+            $questionEntity->get($lastQuestionId);
             return $questionEntity;
         }
 
@@ -192,43 +206,52 @@ class CIPManager
     }
 
     /**
-     * @param \lenders_accounts              $lender
+     * @param \lender_evaluation             $evaluation
      * @param \lender_questionnaire_question $question
-     * @return null
+     * @return \lender_evaluation_answer|null
      */
-    public function insertQuestion(\lenders_accounts $lender, \lender_questionnaire_question $question)
+    public function insertQuestion(\lender_evaluation $evaluation, \lender_questionnaire_question $question)
     {
-        $evaluation = $this->getCurrentEvaluation($lender);
-
-        if (null === $evaluation || $evaluation->id_lender_questionnaire != $question->id_lender_questionnaire) {
-            return null;
-        }
-
         /** @var \lender_evaluation_answer $answer */
         $answer                                   = $this->entityManager->getRepository('lender_evaluation_answer');
         $answer->status                           = \lender_evaluation_answer::STATUS_ACTIVE;
         $answer->id_lender_evaluation             = $evaluation->id_lender_evaluation;
         $answer->id_lender_questionnaire_question = $question->id_lender_questionnaire_question;
         $answer->create();
+
+        return $answer;
     }
 
     /**
-     * @param \lender_questionnaire_question $currentQuestion
+     * @param \lender_evaluation $evaluation
      * @return \lender_questionnaire_question|null
      */
-    public function getNextQuestion(\lender_questionnaire_question $currentQuestion)
+    public function getNextQuestion(\lender_evaluation $evaluation)
     {
         /** @var \lender_questionnaire_question $questionEntity */
         $questionEntity = $this->entityManager->getRepository('lender_questionnaire_question');
-        $questions      = $questionEntity->select('id_lender_questionnaire = ' . $currentQuestion->id_lender_questionnaire, '`order` ASC');
+        $questions      = $questionEntity->select('id_lender_questionnaire = ' . $evaluation->id_lender_questionnaire, '`order` ASC');
+        $lastQuestion   = $this->getLastQuestion($evaluation);
         $nextQuestion   = false;
 
         foreach ($questions as $question) {
             if ($nextQuestion) {
+                if (\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS === $question['type']) {
+                    $questionEntity->get(\lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE, 'type');
+                    $answer = $this->getAnswer($evaluation, $questionEntity);
+
+                    if (null === $answer) {
+                        return null;
+                    }
+
+                    if ($answer->first_answer >= \lender_questionnaire_question::VALUE_ESTATE_THRESHOLD) {
+                        continue;
+                    }
+                }
                 $questionEntity->get($question['id_lender_questionnaire_question']);
                 return $questionEntity;
             }
-            if ($question['id_lender_questionnaire_question'] == $currentQuestion->id_lender_questionnaire_question) {
+            if ($question['id_lender_questionnaire_question'] == $lastQuestion->id_lender_questionnaire_question) {
                 $nextQuestion = true;
             }
         }
@@ -237,17 +260,12 @@ class CIPManager
     }
 
     /**
-     * @param \lenders_accounts              $lender
+     * @param \lender_evaluation             $evaluation
      * @param \lender_questionnaire_question $question
-     * @param \lender_evaluation|null        $evaluation
      * @return \lender_evaluation_answer|null
      */
-    public function getAnswer(\lenders_accounts $lender, \lender_questionnaire_question $question, \lender_evaluation $evaluation = null)
+    public function getAnswer(\lender_evaluation $evaluation, \lender_questionnaire_question $question)
     {
-        if (null === $evaluation || $lender->id_lender_account != $evaluation->id_lender) {
-            $evaluation = $this->getCurrentEvaluation($lender);
-        }
-
         /** @var \lender_evaluation_answer $answer */
         $answer = $this->entityManager->getRepository('lender_evaluation_answer');
 
@@ -259,33 +277,11 @@ class CIPManager
     }
 
     /**
-     * @param \lenders_accounts       $lender
-     * @param \lender_evaluation|null $evaluation
+     * @param \lender_evaluation $evaluation
      * @return array
      */
-    public function getAnswers(\lenders_accounts $lender, \lender_evaluation $evaluation = null)
+    public function getAnswersByType(\lender_evaluation $evaluation)
     {
-        if (null === $evaluation || $lender->id_lender_account != $evaluation->id_lender) {
-            $evaluation = $this->getCurrentEvaluation($lender);
-        }
-
-        /** @var \lender_evaluation_answer $answer */
-        $answer = $this->entityManager->getRepository('lender_evaluation_answer');
-
-        return $answer->select('id_lender_evaluation = ' . $evaluation->id_lender_evaluation . ' AND status = ' . \lender_evaluation_answer::STATUS_ACTIVE, 'added ASC, id_lender_evaluation_answer ASC');
-    }
-
-    /**
-     * @param \lenders_accounts       $lender
-     * @param \lender_evaluation|null $evaluation
-     * @return array
-     */
-    public function getAnswersByType(\lenders_accounts $lender, \lender_evaluation $evaluation = null)
-    {
-        if (null === $evaluation || $lender->id_lender_account != $evaluation->id_lender) {
-            $evaluation = $this->getCurrentEvaluation($lender);
-        }
-
         /** @var \lender_questionnaire_question $questionEntity */
         $questionEntity   = $this->entityManager->getRepository('lender_questionnaire_question');
         $questions        = $questionEntity->select('id_lender_questionnaire = ' . $evaluation->id_lender_questionnaire, '`order` ASC');
@@ -296,7 +292,9 @@ class CIPManager
             $indexedQuestions[$question['id_lender_questionnaire_question']] = $question;
         }
 
-        $answers = $this->getAnswers($lender, $evaluation);
+        /** @var \lender_evaluation_answer $answerEntity */
+        $answerEntity = $this->entityManager->getRepository('lender_evaluation_answer');
+        $answers      = $answerEntity->select('id_lender_evaluation = ' . $evaluation->id_lender_evaluation . ' AND status = ' . \lender_evaluation_answer::STATUS_ACTIVE, 'added ASC, id_lender_evaluation_answer ASC');
 
         foreach ($answers as $answer) {
             $indexedAnswers[$indexedQuestions[$answer['id_lender_questionnaire_question']]['type']] = $answer;
@@ -321,7 +319,7 @@ class CIPManager
             $value = json_encode(empty($value) ? [] : $value);
         }
 
-        $answer = $this->getAnswer($lender, $question, $evaluation);
+        $answer = $this->getAnswer($evaluation, $question);
 
         if (null !== $answer) {
             // Do not switch first answer and second answer assignment
@@ -335,11 +333,15 @@ class CIPManager
             $answer->update();
 
             if (
-                $this->isBooleanType($question->type)
-                && \lender_questionnaire_question::VALUE_BOOLEAN_FALSE === $answer->first_answer
+                false === $this->isBooleanType($question->type)
+                || \lender_questionnaire_question::VALUE_BOOLEAN_FALSE === $answer->first_answer
                 && \lender_questionnaire_question::VALUE_BOOLEAN_TRUE === $answer->second_answer
             ) {
-                $this->insertQuestion($lender, $this->getNextQuestion($question));
+                $nextQuestion = $this->getNextQuestion($evaluation);
+
+                if (null !== $nextQuestion) {
+                    $this->insertQuestion($evaluation, $this->getNextQuestion($evaluation));
+                }
             }
 
             return $answer;
@@ -349,11 +351,11 @@ class CIPManager
     }
 
     /**
-     * @param \lender_evaluation_answer           $answer
-     * @param \lender_questionnaire_question|null $question
+     * @param \lender_evaluation_answer      $answer
+     * @param \lender_questionnaire_question $question
      * @return bool
      */
-    public function isValidAnswer(\lender_evaluation_answer $answer, \lender_questionnaire_question $question = null)
+    private function isValidAnswer(\lender_evaluation_answer $answer, \lender_questionnaire_question $question)
     {
         if (null === $question || $answer->id_lender_questionnaire_question != $question->id_lender_questionnaire_question) {
             /** @var \lender_questionnaire_question $question */
@@ -372,18 +374,37 @@ class CIPManager
     }
 
     /**
-     * @param \lenders_accounts       $lender
-     * @param \lender_evaluation|null $evaluation
-     * @return string[]|null
+     * @param \lender_evaluation $evaluation
      */
-    public function getAdvices(\lenders_accounts $lender, \lender_evaluation $evaluation = null)
+    public function resetValues(\lender_evaluation $evaluation)
     {
-        if (null === $evaluation || $lender->id_lender_account != $evaluation->id_lender) {
-            $evaluation = $this->getCurrentEvaluation($lender);
+        /** @var \lender_evaluation_answer $answerEntity */
+        $answerEntity = $this->entityManager->getRepository('lender_evaluation_answer');
+        $answers      = $this->getAnswersByType($evaluation);
+
+        foreach ($answers as $type => $answer) {
+            if (false === $this->isBooleanType($type)) {
+                $answerEntity->get($answer['id_lender_evaluation_answer']);
+                $answerEntity->status = \lender_evaluation_answer::STATUS_INACTIVE;
+                $answerEntity->update();
+            }
         }
 
+        /** @var \lender_questionnaire_question $question */
+        $question = $this->entityManager->getRepository('lender_questionnaire_question');
+        $question->get(\lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE, 'id_lender_questionnaire = ' . $evaluation->id_lender_questionnaire . ' AND type');
+
+        $this->insertQuestion($evaluation, $question);
+    }
+
+    /**
+     * @param \lenders_accounts $lender
+     * @return string[]|null
+     */
+    public function getAdvices(\lenders_accounts $lender)
+    {
         $advices    = [];
-        $indicators = $this->getIndicators($lender, $evaluation);
+        $indicators = $this->getIndicators($lender);
 
         if (null === $indicators) {
             return null;
@@ -395,15 +416,19 @@ class CIPManager
         }
 
         if (null !== $indicators[self::INDICATOR_TOTAL_AMOUNT]) {
+            /** @var \ficelle $ficelle */
+            $ficelle = Loader::loadLib('ficelle');
             $advices[] = $this->translator->trans('lender-evaluation_low-estate-advice', [
-                '%maximumAmount%'    => $indicators[self::INDICATOR_TOTAL_AMOUNT],
-                '%maximumAmount100%' => floor($indicators[self::INDICATOR_TOTAL_AMOUNT] / 100),
-                '%maximumAmount200%' => floor($indicators[self::INDICATOR_TOTAL_AMOUNT] / 200)
+                '%maximumAmount%'    => $ficelle->formatNumber($indicators[self::INDICATOR_TOTAL_AMOUNT], 0),
+                '%maximumAmount100%' => $ficelle->formatNumber(floor($indicators[self::INDICATOR_TOTAL_AMOUNT] / 100), 0),
+                '%maximumAmount200%' => $ficelle->formatNumber(floor($indicators[self::INDICATOR_TOTAL_AMOUNT] / 200), 0)
             ]);
         } elseif (null !== $indicators[self::INDICATOR_AMOUNT_BY_MONTH]) {
-            $advices[] = $this->translator->trans('lender-evaluation_low-savings-advice',
-                ['%maximumAmount%' => $indicators[self::INDICATOR_AMOUNT_BY_MONTH]]
-            );
+            /** @var \ficelle $ficelle */
+            $ficelle = Loader::loadLib('ficelle');
+            $advices[] = $this->translator->trans('lender-evaluation_low-savings-advice', [
+                '%maximumAmount%' => $ficelle->formatNumber($indicators[self::INDICATOR_AMOUNT_BY_MONTH], 0)
+            ]);
         }
 
         switch ($indicators[self::INDICATOR_PROJECT_DURATION]) {
@@ -429,17 +454,13 @@ class CIPManager
      * If evaluation is completed, return list of indicators (suggested limitations)
      * If no limitation is suggested, indicator value is null
      *
-     * @param \lenders_accounts       $lender
-     * @param \lender_evaluation|null $evaluation
+     * @param \lenders_accounts $lender
      * @return array|null
      */
-    public function getIndicators(\lenders_accounts $lender, \lender_evaluation $evaluation = null)
+    public function getIndicators(\lenders_accounts $lender)
     {
-        if (null === $evaluation || $lender->id_lender_account != $evaluation->id_lender) {
-            $evaluation = $this->getCurrentEvaluation($lender);
-        }
-
-        $answers = $this->getAnswersByType($lender, $evaluation);
+        $evaluation = $this->getCurrentEvaluation($lender);
+        $answers    = $this->getAnswersByType($evaluation);
 
         if (false === isset($answers[\lender_questionnaire_question::TYPE_VALUE_BLOCKING_PERIOD])) {
             return null;

@@ -21,12 +21,13 @@
                     </div>
                 </div>
                 <form method="post" action="{{ path('cip_form_questionnaire') }}" class="panel" data-formvalidation>
+                    <input type="hidden" name="question" value="{{ question.id }}" />
                     <div class="row">
                         <div class="form-field cip-answer">
                             <label for="estate-answer" class="field-label">
                                 Quel est le montant total de votre patrimoine financier ?
                             </label>
-                            <input type="text" id="estate-answer" value="{{ answers['value-total-estate'].first_answer }}" class="input-field" readonly />
+                            <input type="text" id="estate-answer" value="{{ answers['value-total-estate'].first_answer|localizednumber }}" class="input-field" readonly />
                         </div><!-- /.form-field -->
                     </div>
                     {% if answers['value-monthly-savings'] is defined %}
@@ -35,7 +36,7 @@
                                 <label for="savings-answer" class="field-label">
                                     Combien d’argent mettez-vous de côté tous les mois ?
                                 </label>
-                                <input type="text" id="savings-answer" value="{{ answers['value-monthly-savings'].first_answer }}" class="input-field" readonly />
+                                <input type="text" id="savings-answer" value="{{ answers['value-monthly-savings'].first_answer|localizednumber }}" class="input-field" readonly />
                             </div><!-- /.form-field -->
                         </div>
                     {% endif %}
@@ -53,11 +54,16 @@
                             </select>
                         </div><!-- /.form-field -->
                     </div>
-                    <input type="hidden" name="question" value="{{ question.id }}" />
-                    <button type="submit" class="btn-primary fright">
-                        <span class="icon fa-angle-right"></span>
-                        Continuer
-                    </button>
+                    <div class="row text-align-right">
+                        <a href="{{ path('cip_form_questionnaire') }}?reset=values" class="btn-default">
+                            <span class="icon fa-angle-left"></span>
+                            Revenir
+                        </a>
+                        <button type="submit" class="btn-primary">
+                            <span class="icon fa-angle-right"></span>
+                            Continuer
+                        </button>
+                    </div>
                 </form>
             </div><!-- /#cip-step-{{ current_step }} -->
         </article><!-- /.dashboard-tabs-content -->
