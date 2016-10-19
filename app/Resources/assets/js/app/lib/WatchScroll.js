@@ -14,7 +14,16 @@
 var $ = require('jquery')
 var Bounds = require('ElementBounds')
 var raf = require('raf')
-if (window) raf.polyfill()
+
+// Load requestAnimationFrame polyfill
+if (window) {
+  raf.polyfill()
+}
+
+var $win = $(window)
+var $doc = $(document)
+var $html = $('html')
+var $body = $('body')
 
 /*
  * WatchScroll
@@ -31,8 +40,8 @@ var WatchScroll = {
       var elemBounds = new Bounds().setBoundsFromElem(params.Watcher.elem)
       var targetBounds = new Bounds().setBoundsFromElem(this)
       var state = targetBounds.withinBounds(elemBounds)
-      elemBounds.showViz()
-      targetBounds.showViz()
+      // elemBounds.showViz()
+      // targetBounds.showViz()
       if (!state) return 'outside'
     },
 
@@ -41,8 +50,8 @@ var WatchScroll = {
       var elemBounds = new Bounds().setBoundsFromElem(params.Watcher.elem)
       var targetBounds = new Bounds().setBoundsFromElem(this)
       var state = targetBounds.coords[2] < elemBounds.coords[0]
-      elemBounds.showViz()
-      targetBounds.showViz()
+      // elemBounds.showViz()
+      // targetBounds.showViz()
       if (state) return 'before'
     },
 
@@ -51,8 +60,8 @@ var WatchScroll = {
       var elemBounds = new Bounds().setBoundsFromElem(params.Watcher.elem)
       var targetBounds = new Bounds().setBoundsFromElem(this)
       var state = targetBounds.coords[0] > elemBounds.coords[2]
-      elemBounds.showViz()
-      targetBounds.showViz()
+      // elemBounds.showViz()
+      // targetBounds.showViz()
       if (state) return 'after'
     },
 
@@ -62,8 +71,8 @@ var WatchScroll = {
       var targetBounds = new Bounds().setBoundsFromElem(this)
       // target.Y2 < elem.Y1
       var state = targetBounds.coords[3] < elemBounds.coords[1]
-      elemBounds.showViz()
-      targetBounds.showViz()
+      // elemBounds.showViz()
+      // targetBounds.showViz()
       if (state) return 'above'
     },
 
@@ -82,8 +91,8 @@ var WatchScroll = {
       var targetBounds = new Bounds().setBoundsFromElem(this)
       // target.Y1 > elem.Y1
       var state = targetBounds.coords[1] > elemBounds.coords[1]
-      elemBounds.showViz()
-      targetBounds.showViz()
+      // elemBounds.showViz()
+      // targetBounds.showViz()
       if (state) return 'past'
     },
 

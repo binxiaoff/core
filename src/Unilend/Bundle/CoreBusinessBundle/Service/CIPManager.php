@@ -115,6 +115,17 @@ class CIPManager
             $evaluation->id_lender_questionnaire = $this->getCurrentQuestionnaire()->id_lender_questionnaire;
             $evaluation->id_lender               = $lender->id_lender_account;
             $evaluation->create();
+
+            /** @var \lender_questionnaire_question $question */
+            $question  = $this->entityManager->getRepository('lender_questionnaire_question');
+            $questions = $question->select('id_lender_questionnaire = ' . $evaluation->id_lender_questionnaire, '`order` ASC', 0, 1)[0];
+
+            /** @var \lender_evaluation_answer $answer */
+            $answer = $this->entityManager->getRepository('lender_evaluation_answer');
+            $answer->status                           = \lender_evaluation_answer::STATUS_ACTIVE;
+            $answer->id_lender_evaluation             = $evaluation->id_lender_evaluation;
+            $answer->id_lender_questionnaire_question = $questions['id_lender_questionnaire_question'];
+            $answer->create();
         }
     }
 
@@ -151,12 +162,13 @@ class CIPManager
         $evaluation = $this->getCurrentEvaluation($lender);
 
         /** @var \lender_questionnaire_question $questionEntity */
-        $questionEntity = $this->entityManager->getRepository('lender_questionnaire_question');
-        $questions      = $questionEntity->select('id_lender_questionnaire = ' . $evaluation->id_lender_questionnaire, '`order` ASC');
+        $questionEntity     = $this->entityManager->getRepository('lender_questionnaire_question');
+        $questions          = $questionEntity->select('id_lender_questionnaire = ' . $evaluation->id_lender_questionnaire, '`order` ASC');
+        $previousQuestionId = null;
 
         /** @var \lender_evaluation_answer $answerEntity */
         $answerEntity   = $this->entityManager->getRepository('lender_evaluation_answer');
-        $answers        = $answerEntity->select('id_lender_evaluation = ' . $evaluation->id_lender_evaluation, 'added ASC, id_lender_evaluation_answer ASC');
+        $answers        = $answerEntity->select('id_lender_evaluation = ' . $evaluation->id_lender_evaluation . ' AND status = ' . \lender_evaluation_answer::STATUS_ACTIVE, 'added ASC, id_lender_evaluation_answer ASC');
         $indexedAnswers = [];
 
         foreach ($answers as $index => $answer) {
@@ -165,34 +177,59 @@ class CIPManager
 
         foreach ($questions as $index => $question) {
             if (isset($indexedAnswers[$question['id_lender_questionnaire_question']])) {
-                $answer = $indexedAnswers[$question['id_lender_questionnaire_question']];
-
-                if ('' === $answer['first_answer']) {
-                    $questionEntity->get($question['id_lender_questionnaire_question']);
-                    return $questionEntity;
-                } elseif (
-                    in_array($question['type'], [\lender_questionnaire_question::TYPE_AWARE_MONEY_LOSS, \lender_questionnaire_question::TYPE_AWARE_PROGRESSIVE_CAPITAL_REPAYMENT, \lender_questionnaire_question::TYPE_AWARE_RISK_RETURN, \lender_questionnaire_question::TYPE_AWARE_DIVIDE_INVESTMENTS])
-                    && \lender_questionnaire_question::VALUE_BOOLEAN_FALSE === $answer['first_answer']
-                    && '' === $answer['second_answer']
-                ) {
-                    $questionEntity->get($question['id_lender_questionnaire_question']);
-                    return $questionEntity;
-                }
+                $previousQuestionId = $question['id_lender_questionnaire_question'];
             } else {
-                if (\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS === $question['type']) {
-                    $estateAnswer = $indexedAnswers[$questions[$index - 1]['id_lender_questionnaire_question']]['first_answer'];
+                break;
+            }
+        }
 
-                    if ($estateAnswer >= \lender_questionnaire_question::VALUE_ESTATE_THRESHOLD) {
-                        continue;
-                    }
-                }
+        if (null !== $previousQuestionId) {
+            $questionEntity->get($previousQuestionId);
+            return $questionEntity;
+        }
+
+        return null;
+    }
+
+    /**
+     * @param \lenders_accounts              $lender
+     * @param \lender_questionnaire_question $question
+     * @return null
+     */
+    public function insertQuestion(\lenders_accounts $lender, \lender_questionnaire_question $question)
+    {
+        $evaluation = $this->getCurrentEvaluation($lender);
+
+        if (null === $evaluation || $evaluation->id_lender_questionnaire != $question->id_lender_questionnaire) {
+            return null;
+        }
+
+        /** @var \lender_evaluation_answer $answer */
+        $answer                                   = $this->entityManager->getRepository('lender_evaluation_answer');
+        $answer->status                           = \lender_evaluation_answer::STATUS_ACTIVE;
+        $answer->id_lender_evaluation             = $evaluation->id_lender_evaluation;
+        $answer->id_lender_questionnaire_question = $question->id_lender_questionnaire_question;
+        $answer->create();
+    }
+
+    /**
+     * @param \lender_questionnaire_question $currentQuestion
+     * @return \lender_questionnaire_question|null
+     */
+    public function getNextQuestion(\lender_questionnaire_question $currentQuestion)
+    {
+        /** @var \lender_questionnaire_question $questionEntity */
+        $questionEntity = $this->entityManager->getRepository('lender_questionnaire_question');
+        $questions      = $questionEntity->select('id_lender_questionnaire = ' . $currentQuestion->id_lender_questionnaire, '`order` ASC');
+        $nextQuestion   = false;
+
+        foreach ($questions as $question) {
+            if ($nextQuestion) {
                 $questionEntity->get($question['id_lender_questionnaire_question']);
-
-                $answerEntity->id_lender_evaluation             = $evaluation->id_lender_evaluation;
-                $answerEntity->id_lender_questionnaire_question = $questionEntity->id_lender_questionnaire_question;
-                $answerEntity->create();
-
                 return $questionEntity;
+            }
+            if ($question['id_lender_questionnaire_question'] == $currentQuestion->id_lender_questionnaire_question) {
+                $nextQuestion = true;
             }
         }
 
@@ -202,15 +239,19 @@ class CIPManager
     /**
      * @param \lenders_accounts              $lender
      * @param \lender_questionnaire_question $question
+     * @param \lender_evaluation|null        $evaluation
      * @return \lender_evaluation_answer|null
      */
-    public function getAnswer(\lenders_accounts $lender, \lender_questionnaire_question $question)
+    public function getAnswer(\lenders_accounts $lender, \lender_questionnaire_question $question, \lender_evaluation $evaluation = null)
     {
-        /** @var \lender_evaluation_answer $answer */
-        $answer     = $this->entityManager->getRepository('lender_evaluation_answer');
-        $evaluation = $this->getCurrentEvaluation($lender);
+        if (null === $evaluation || $lender->id_lender_account != $evaluation->id_lender) {
+            $evaluation = $this->getCurrentEvaluation($lender);
+        }
 
-        if (false === $answer->get($evaluation->id_lender_evaluation, 'id_lender_questionnaire_question = ' . $question->id_lender_questionnaire_question . ' AND id_lender_evaluation')) {
+        /** @var \lender_evaluation_answer $answer */
+        $answer = $this->entityManager->getRepository('lender_evaluation_answer');
+
+        if (false === $answer->get($evaluation->id_lender_evaluation, 'id_lender_questionnaire_question = ' . $question->id_lender_questionnaire_question . ' AND status = ' . \lender_evaluation_answer::STATUS_ACTIVE . ' AND id_lender_evaluation')) {
             return null;
         }
 
@@ -224,14 +265,14 @@ class CIPManager
      */
     public function getAnswers(\lenders_accounts $lender, \lender_evaluation $evaluation = null)
     {
-        /** @var \lender_evaluation_answer $answer */
-        $answer = $this->entityManager->getRepository('lender_evaluation_answer');
-
         if (null === $evaluation || $lender->id_lender_account != $evaluation->id_lender) {
             $evaluation = $this->getCurrentEvaluation($lender);
         }
 
-        return $answer->select('id_lender_evaluation = ' . $evaluation->id_lender_evaluation, 'added ASC, id_lender_evaluation_answer ASC');
+        /** @var \lender_evaluation_answer $answer */
+        $answer = $this->entityManager->getRepository('lender_evaluation_answer');
+
+        return $answer->select('id_lender_evaluation = ' . $evaluation->id_lender_evaluation . ' AND status = ' . \lender_evaluation_answer::STATUS_ACTIVE, 'added ASC, id_lender_evaluation_answer ASC');
     }
 
     /**
@@ -272,14 +313,17 @@ class CIPManager
      */
     public function saveAnswer(\lender_questionnaire_question $question, \lender_evaluation $evaluation, $value = '')
     {
-        /** @var \lender_evaluation_answer $answer */
-        $answer = $this->entityManager->getRepository('lender_evaluation_answer');
+        /** @var \lenders_accounts $lender */
+        $lender = $this->entityManager->getRepository('lenders_accounts');
+        $lender->get($evaluation->id_lender);
 
         if (\lender_questionnaire_question::TYPE_VALUE_OTHER_FINANCIAL_PRODUCTS_USE == $question->type) {
             $value = json_encode(empty($value) ? [] : $value);
         }
 
-        if ($answer->get($evaluation->id_lender_evaluation, 'id_lender_questionnaire_question = ' . $question->id_lender_questionnaire_question . ' AND id_lender_evaluation')) {
+        $answer = $this->getAnswer($lender, $question, $evaluation);
+
+        if (null !== $answer) {
             // Do not switch first answer and second answer assignment
             $answer->second_answer = empty($answer->first_answer) ? '' : $value;
             $answer->first_answer  = empty($answer->first_answer) ? $value : $answer->first_answer;
@@ -289,19 +333,19 @@ class CIPManager
             }
 
             $answer->update();
-        } else {
-            $answer->id_lender_questionnaire_question = $question->id_lender_questionnaire_question;
-            $answer->id_lender_evaluation             = $evaluation->id_lender_evaluation;
-            $answer->first_answer                     = $value;
 
-            if ($this->isValidAnswer($answer, $question)) {
-                return null;
+            if (
+                $this->isBooleanType($question->type)
+                && \lender_questionnaire_question::VALUE_BOOLEAN_FALSE === $answer->first_answer
+                && \lender_questionnaire_question::VALUE_BOOLEAN_TRUE === $answer->second_answer
+            ) {
+                $this->insertQuestion($lender, $this->getNextQuestion($question));
             }
 
-            $answer->create();
+            return $answer;
         }
 
-        return $answer;
+        return null;
     }
 
     /**
@@ -317,23 +361,14 @@ class CIPManager
             $question->get($answer->id_lender_questionnaire_question);
         }
 
-        switch ($question->type) {
-            case \lender_questionnaire_question::TYPE_AWARE_MONEY_LOSS:
-            case \lender_questionnaire_question::TYPE_AWARE_PROGRESSIVE_CAPITAL_REPAYMENT:
-            case \lender_questionnaire_question::TYPE_AWARE_RISK_RETURN:
-            case \lender_questionnaire_question::TYPE_AWARE_DIVIDE_INVESTMENTS:
-                return (
-                    \lender_questionnaire_question::VALUE_BOOLEAN_TRUE === $answer->first_answer
-                    || \lender_questionnaire_question::VALUE_BOOLEAN_TRUE === $answer->second_answer
-                );
-            case \lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE:
-            case \lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS:
-            case \lender_questionnaire_question::TYPE_VALUE_BLOCKING_PERIOD:
-            case \lender_questionnaire_question::TYPE_VALUE_OTHER_FINANCIAL_PRODUCTS_USE:
-                return ('' !== $answer->first_answer);
+        if ($this->isBooleanType($question->type)) {
+            return (
+                in_array($answer->first_answer, [\lender_questionnaire_question::VALUE_BOOLEAN_TRUE, \lender_questionnaire_question::VALUE_BOOLEAN_FALSE])
+                && in_array($answer->second_answer, [\lender_questionnaire_question::VALUE_BOOLEAN_TRUE, \lender_questionnaire_question::VALUE_BOOLEAN_FALSE, ''])
+            );
         }
 
-        return false;
+        return ('' !== $answer->first_answer);
     }
 
     /**
@@ -360,16 +395,14 @@ class CIPManager
         }
 
         if (null !== $indicators[self::INDICATOR_TOTAL_AMOUNT]) {
-            $advices[] = str_replace(
-                ['%maximumAmount%', '%maximumAmount100%', '%maximumAmount200%'],
-                [$indicators[self::INDICATOR_TOTAL_AMOUNT], floor($indicators[self::INDICATOR_TOTAL_AMOUNT] / 100), floor($indicators[self::INDICATOR_TOTAL_AMOUNT] / 200)],
-                $this->translator->trans('lender-evaluation_low-estate-advice')
-            );
+            $advices[] = $this->translator->trans('lender-evaluation_low-estate-advice', [
+                '%maximumAmount%'    => $indicators[self::INDICATOR_TOTAL_AMOUNT],
+                '%maximumAmount100%' => floor($indicators[self::INDICATOR_TOTAL_AMOUNT] / 100),
+                '%maximumAmount200%' => floor($indicators[self::INDICATOR_TOTAL_AMOUNT] / 200)
+            ]);
         } elseif (null !== $indicators[self::INDICATOR_AMOUNT_BY_MONTH]) {
-            $advices[] = str_replace(
-                ['%maximumAmount%'],
-                [$indicators[self::INDICATOR_AMOUNT_BY_MONTH]],
-                $this->translator->trans('lender-evaluation_low-savings-advice')
+            $advices[] = $this->translator->trans('lender-evaluation_low-savings-advice',
+                ['%maximumAmount%' => $indicators[self::INDICATOR_AMOUNT_BY_MONTH]]
             );
         }
 
@@ -458,7 +491,7 @@ class CIPManager
         $product = $this->entityManager->getRepository('product');
         $product->get($project->id_product);
 
-        $productContracts = $this->productManager->getAvailableContractTypes($product);
+        $productContracts = $this->productManager->getAvailableContracts($product);
 
         if (false === in_array(\underlying_contract::CONTRACT_MINIBON, array_column($productContracts, 'label'))) {
             return false;
@@ -521,5 +554,14 @@ class CIPManager
         }
 
         return $contractAttrVars[0];
+    }
+
+    /**
+     * @param string $type
+     * @return bool
+     */
+    private function isBooleanType($type)
+    {
+        return in_array($type, [\lender_questionnaire_question::TYPE_AWARE_MONEY_LOSS, \lender_questionnaire_question::TYPE_AWARE_PROGRESSIVE_CAPITAL_REPAYMENT, \lender_questionnaire_question::TYPE_AWARE_RISK_RETURN, \lender_questionnaire_question::TYPE_AWARE_DIVIDE_INVESTMENTS]);
     }
 }

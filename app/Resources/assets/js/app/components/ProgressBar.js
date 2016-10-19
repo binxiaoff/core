@@ -135,3 +135,5 @@ $(document)
 .on('ready UI:visible', function (event) {
   $(event.target).find('[data-progressbar]').not('.ui-progressbar').uiProgressBar()
 })
+
+module.exports = ProgressBar

@@ -6,7 +6,13 @@
     {% block panelControls %}<span class="ui-draggable-handle"></span>{% endblock %}
     {% block panelContent %}
             <div class="dashboard-panel-overview">
-                <div class="label">{% trans %} lender-dashboard-user-level_irr-title {% endtrans %}</div>
+                <div class="label">
+                    {% if lenderDetails.hasIRR %}
+                        {% trans %} lender-dashboard-user-level_irr-title {% endtrans %}
+                    {% else %}
+                        {% trans %} lender-dashboard-user-level_loss-rate-title {% endtrans %}
+                    {% endif %}
+                </div>
                 <div class="value">{% if lenderDetails.irr > 0 %}+ {% endif %}{{ lenderDetails.irr|localizednumber }}<sup>%</sup></div>
             </div>
             <div class="dashboard-panel-chart">
@@ -36,6 +42,10 @@
             </div>
     {% endblock %}
     {% block panelFooter %}
-        {{ 'lender-dashboard-user-level_irr-explanation-link'|trans|raw }}
+        {% if lenderDetails.hasIRR %}
+            {{ 'lender-dashboard-user-level_irr-explanation-link'|trans|raw }}
+        {% else %}
+            {{ 'lender-dashboard-user-level_loss-rate-explanation-link'|trans|raw }}
+        {% endif %}
     {% endblock %}
 {% endembed %}

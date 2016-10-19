@@ -40,7 +40,10 @@ var Modal = function (elem, options) {
   self.$elem = $(elem)
 
   // Error
-  if (self.$elem.length === 0 || elem.hasOwnProperty('Modal')) return false
+  if (self.$elem.length === 0) return false
+
+  // Return existing instance
+  if (elem.hasOwnProperty('Modal')) return elem.Modal
 
   /*
    * Settings
@@ -403,22 +406,26 @@ Modal.prototype.open = function () {
 Modal.prototype.confirm = function () {
   var self = this
 
+  // @debug
+  // console.log('Modal.prototype.confirm')
+
   // @trigger elem `Modal:confirm:before`
   self.$elem.trigger('Modal:confirm:before', [self])
 
   // Fire the custom `onconfirm` action
   if (typeof self.settings.onconfirm === 'function') {
     // onconfirm should return a Promise made via jQuery's $.deferred API
-    self.settings.onconfirm.call(self).always(function (deferredError) {
-      if (!deferredError) {
+    self.settings.onconfirm.call(self).always(function (deferredReturn) {
+      // deferred returned falsey value, so consider confirm is actively denied
+      if (!deferredReturn) {
         // @trigger elem `Modal:confirmed`
-        self.$elem.trigger('Modal:confirmed', [self])
+        self.$elem.trigger('Modal:confirmed', [self, deferredReturn])
 
         // Close the modal
-        self.close()
+        self.close(deferredReturn)
       } else {
         // @trigger elem `Modal:confirm:error`
-        self.$elem.trigger('Modal:confirm:error', [self, deferredError])
+        self.$elem.trigger('Modal:confirm:error', [self, deferredReturn])
       }
     })
 
@@ -440,18 +447,28 @@ Modal.prototype.confirm = function () {
 Modal.prototype.cancel = function () {
   var self = this
 
+  // @debug
+  // console.log('Modal.prototype.cancel')
+
   // @trigger elem `Modal:cancel:before` [elemModal]
   self.$elem.trigger('Modal:cancel:before', [self])
 
   // Fire the custom `oncancel` action
   if (typeof self.settings.oncancel === 'function') {
     // oncancel should return a Promise made via jQuery's $.deferred API
-    self.settings.oncancel.call(self).always(function (deferredError) {
-      // @trigger elem `Modal:cancelled`
-      self.$elem.trigger('Modal:cancelled', [self])
+    self.settings.oncancel.call(self).always(function (deferredReturn) {
+      // deferred returned falsey value, so consider cancel is actively denied
+      if (!deferredReturn) {
+        // @trigger elem `Modal:cancel:error`
+        self.$elem.trigger('Modal:cancel:error', [self, deferredReturn])
+        
+      } else {
+        // @trigger elem `Modal:cancelled`
+        self.$elem.trigger('Modal:cancelled', [self, deferredReturn])
 
-      // Close the modal
-      self.close()
+        // Close the modal
+        self.close(deferredReturn)
+      }
     })
 
   // Close the modal
@@ -469,18 +486,21 @@ Modal.prototype.cancel = function () {
  * @method close
  * @returns {Void}
  */
-Modal.prototype.close = function () {
+Modal.prototype.close = function (deferredReturn) {
   var self = this
 
+  // @debug
+  // console.log('Modal.prototype.close')
+
   // @trigger elem `Modal:close:before`
-  self.$elem.trigger('Modal:close:before', [self])
+  self.$elem.trigger('Modal:close:before', [self, deferredReturn])
 
   // Only close if the element exists
-  if ($('#' + self.settings.id + ':visible').length > 0) {
+  if (self.$elem.is(':visible')) {
     $.fancybox.close()
 
     // @trigger elem `Modal:closed`
-    self.$elem.trigger('Modal:closed', [self])
+    self.$elem.trigger('Modal:closed', [self, deferredReturn])
   }
 }
 
@@ -583,6 +603,7 @@ $(document)
   .on(Utility.clickEvent, '[data-modal-doactionconfirm]', function (event) {
     // @debug
     // console.log('Clicked [data-modal-doactionconfirm]')
+
     var $modal = $(this).parents('.ui-modal')
     $modal.uiModal('confirm')
   })
@@ -591,6 +612,7 @@ $(document)
   .on(Utility.clickEvent, '[data-modal-doactioncancel]', function (event) {
     // @debug
     // console.log('Clicked [data-modal-doactioncancel]')
+
     var $modal = $(this).parents('.ui-modal')
     $modal.uiModal('cancel')
   })
@@ -599,6 +621,7 @@ $(document)
   .on(Utility.clickEvent, '[data-modal-doactionclose]', function (event) {
     // @debug
     // console.log('Clicked [data-modal-doactionclose]')
+
     var $modal = $(this).parents('.ui-modal')
     $modal.uiModal('close')
   })
@@ -614,3 +637,5 @@ $(document)
       $targetModal.uiModal('open')
     }
   })
+
+module.exports = Modal

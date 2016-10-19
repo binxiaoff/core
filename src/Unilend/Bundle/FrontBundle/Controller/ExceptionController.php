@@ -31,26 +31,22 @@ class ExceptionController extends Controller
 
         $code = $exception->getStatusCode();
 
-        if ($code === Response::HTTP_NOT_FOUND) {
-            $class = $exception->getClass();
-            throw new $class($exception->getMessage());
-        } else {
-            $translator  = $this->get('translator');
-            $title       = $translator->trans('error-page_404-title');
-            $details     = $translator->trans('error-page_404-details');
-            return $this->render(
-                (string) $this->findTemplate($request, $request->getRequestFormat(), $showException),
-                [
-                    'status_code' => $code,
-                    'status_text' => isset(Response::$statusTexts[$code]) ? Response::$statusTexts[$code] : '',
-                    'exception' => $exception,
-                    'logger' => $logger,
-                    'currentContent' => $currentContent,
-                    'errorTitle' => $title,
-                    'errorDetails' => $details
-                ]
-            );
-        }
+        $translator  = $this->get('translator');
+        $title       = $translator->trans('error-page_404-title');
+        $details     = $translator->trans('error-page_404-details');
+
+        return $this->render(
+            (string) $this->findTemplate($request, $request->getRequestFormat(), $showException),
+            [
+                'status_code' => $code,
+                'status_text' => isset(Response::$statusTexts[$code]) ? Response::$statusTexts[$code] : '',
+                'exception' => $exception,
+                'logger' => $logger,
+                'currentContent' => $currentContent,
+                'errorTitle' => $title,
+                'errorDetails' => $details
+            ]
+        );
     }
 
     /**

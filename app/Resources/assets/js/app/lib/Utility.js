@@ -1217,7 +1217,9 @@ var Utility = {
     Utility.setEqualHeights()
 
     // Trigger the WatchScroll watcher refresh on the window
-    window.watchWindow.refresh()
+    if (window.watchWindow) {
+      window.watchWindow.refresh()
+    }
 
     // @trigger doc `UI:update:afterresize`
     $doc.trigger('UI:update:afterresize')

@@ -245,4 +245,26 @@ class projects_status_history extends projects_status_history_crud
         }
         return $aStatusAmounts;
     }
+
+    public function loadStatusForJudgementDate($projectId, $status)
+    {
+        $query = 'SELECT id_project_status_history
+                  FROM projects_status_history psh
+                  INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                  WHERE ps.status IN (:status)
+                  AND psh.id_project = :project_id
+                  ORDER BY psh.added
+                  LIMIT 1';
+
+        $bind = array('status' => $status, 'project_id' => $projectId);
+        $type = array('status' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
+        $statement = $this->bdd->executeQuery($query, $bind, $type);
+        $historyId = $statement->fetchColumn();
+
+        if ($historyId && $this->get($historyId)) {
+            return $this;
+        }
+
+        return false;
+    }
 }

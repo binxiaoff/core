@@ -1,0 +1,40 @@
+//
+// Unilend Modal - Bid Confirmation
+//
+
+.modal-bid-confirmation {
+  padding: 20px;
+
+  .modal-body {
+    &:before {
+      content: $fa-info-u64;
+      display: block;
+      width: 100%;
+      margin: 20px 0;
+      clear: both;
+
+      color: $c-p1;
+      font-family: $ff-icon;
+      font-size: $fs-title;
+      line-height: 1em;
+      text-align: center;
+    }
+  }
+
+  @include devices('md', 'lg') {
+    .modal-body {
+      padding-left: 60px;
+      padding-right: 60px;
+      position: relative;
+
+      &:before {
+        width: $fs-title;
+        margin-top: 0;
+        position: absolute;
+        left: 0;
+        top: 0;
+      }
+    }
+  }
+}
+

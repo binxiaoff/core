@@ -1,7 +1,6 @@
 /*
  * Spinner
  * Display a spinner to show when AJAX is working
- * Assign a
  */
 var $ = require('jquery')
 var Utility = require('Utility')
@@ -14,14 +13,21 @@ $doc
   .on(Utility.transitionEndEvent, '.ui-is-loading-end', function (event) {
     var $target = $(event.target)
 
+    event.stopPropagation()
+
     // console.log('Spinner loading end: complete')
     $target.removeClass('ui-is-loading-end')
+
+    // @trigger target `Spinner:loading:ended` [jQueryEvent]
+    $target.trigger('Spinner:loading:ended', [event])
   })
 
   // Show the spinner manually
-  .on('Spinner:showLoading', '[data-has-spinner]', function () {
+  .on('Spinner:showLoading', '[data-has-spinner]', function (event) {
     var $elem = $(this)
     var $spinnerTarget
+
+    event.stopPropagation()
 
     // Set a spinner target that is not the element
     if ($elem.attr('data-has-spinner') && Utility.elemExists($elem.attr('data-has-spinner'))) {
@@ -32,18 +38,28 @@ $doc
       $spinnerTarget = $elem
     }
 
+    // Check if the spinner target itself is a spinner button
+    if ($spinnerTarget.is('.ui-spinnerbutton') && $spinnerTarget.attr('data-has-spinner') && Utility.elemExists($spinnerTarget.attr('data-has-spinner'))) {
+      $spinnerTarget = $($spinnerTarget.attr('data-has-spinner'))
+    }
+
     // @debug
-    // console.log('Spinner:showLoading', $elem[0], $spinnerTarget[0])
+    console.log('Spinner:showLoading', $elem[0], $spinnerTarget[0])
 
     if ($spinnerTarget) {
       $spinnerTarget.removeClass('ui-is-loading-end').addClass('ui-is-loading')
+
+      // @trigger target `Spinner:loading:started` [jQueryEvent]
+      $spinnerTarget.trigger('Spinner:loading:started', [event])
     }
   })
 
   // Hide the spinner manually
-  .on('Spinner:hideLoading', '[data-has-spinner]', function () {
+  .on('Spinner:hideLoading', '[data-has-spinner]', function (event) {
     var $elem = $(this)
     var $spinnerTarget
+
+    event.stopPropagation()
 
     // Set a spinner target that is not the element
     if ($elem.attr('data-has-spinner') && Utility.elemExists($elem.attr('data-has-spinner'))) {
@@ -54,11 +70,19 @@ $doc
       $spinnerTarget = $elem
     }
 
+    // Check if the spinner target itself is a spinner button
+    if ($spinnerTarget.is('.ui-spinnerbutton') && $spinnerTarget.attr('data-has-spinner') && Utility.elemExists($spinnerTarget.attr('data-has-spinner'))) {
+      $spinnerTarget = $($spinnerTarget.attr('data-has-spinner'))
+    }
+
     // @debug
-    // console.log('Spinner:hideLoading', $elem[0], $spinnerTarget[0])
+    console.log('Spinner:hideLoading', $elem[0], $spinnerTarget[0])
 
     if ($spinnerTarget) {
       $spinnerTarget.removeClass('ui-is-loading').addClass('ui-is-loading-end')
+
+      // @trigger target `Spinner:loading:ending` [jQueryEvent]
+      $spinnerTarget.trigger('Spinner:loading:ending', [event])
     }
   })
 
@@ -76,6 +100,9 @@ $doc
 
     // Show spinner
     $spinnerTarget.addClass('ui-is-loading')
+
+    // @trigger target `Spinner:loading:started` [jQueryEvent]
+    $spinnerTarget.trigger('Spinner:loading:started', [event])
 
     // @debug
     // console.log('spinner ajaxStart', event, event.target.activeElement)
@@ -113,4 +140,7 @@ $doc
 
     // Hide spinner
     $spinnerTarget.removeClass('ui-is-loading')
+
+    // @trigger target `Spinner:loading:start` [jQueryEvent]
+    $spinnerTarget.trigger('Spinner:loading:ended', [event])
   })

@@ -316,10 +316,10 @@ class LenderWalletController extends Controller
             $secondContracts                               = explode(";", SECOND_CONTRACT_NUMBER_LIST);
             $paylineParameter['secondContracts']           = $secondContracts;
 
-            $logger->info('Calling Payline::doWebPayment: return URL=' . $payline->returnURL . ' Transmetted data: ' . json_encode($paylineParameter), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
+            $logger->info('Calling Payline::doWebPayment: return URL=' . $payline->returnURL . ' Transmitted data: ' . json_encode($paylineParameter), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
 
             $result = $payline->doWebPayment($paylineParameter);
-            $logger->info('Payline response : ' . json_encode(['$result']), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
+            $logger->info('Payline response : ' . json_encode($result), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
 
             $transaction->get($transaction->id_transaction, 'id_transaction');
             $transaction->serialize_payline = serialize($result);
@@ -387,7 +387,7 @@ class LenderWalletController extends Controller
                 $paylineManager->setLogger($logger);
 
                 if ($paylineManager->handlePaylineReturn($client, $response, $paylineParameter, $partnerId, PaylineManager::PAYMENT_LOCATION_LENDER_WALLET)) {
-                    $this->redirectToRoute('lender_wallet_deposit', [
+                    return $this->redirectToRoute('lender_wallet_deposit', [
                         'depositResult' => true,
                         'depositCode' => Response::HTTP_OK,
                         'depositAmount' => bcdiv($response['payment']['amount'], 100, 2)

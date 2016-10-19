@@ -1155,7 +1155,7 @@ class LenderProfileController extends Controller
             $errorTitle = $translator->trans('lender-error-page_access-denied');
             $status     = Response::HTTP_FORBIDDEN;
         }
-        return $this->render('pages/static_pages/error.html.twig', ['errorTitle' => $errorTitle])->setStatusCode($status);
+        return $this->render('exception/error.html.twig', ['errorTitle' => $errorTitle])->setStatusCode($status);
     }
 
     /**
@@ -1463,7 +1463,7 @@ class LenderProfileController extends Controller
     private function sendAccountModificationEmail(\clients $client)
     {
         $varMail = array_merge($this->getCommonEmailVariables(), [
-            'prenom_p' => $client->prenom,
+            'prenom' => $client->prenom,
         ]);
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */

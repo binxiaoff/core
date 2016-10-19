@@ -26,24 +26,6 @@
   padding-top: 30px;
   padding-bottom: 40px;
 
-  @include devices('sm') {
-    padding-bottom: 60px;
-  }
-
-  @include devices('md') {
-    padding-top: 50px;
-    padding-bottom: 80px;
-  }
-
-  @include devices('lg') {
-    padding-top: 50px;
-    padding-bottom: 120px;
-
-    .h2:first-child {
-      margin-top: 40px;
-    }
-  }
-
   .h2:first-child {
     margin-top: 10px;
   }
@@ -55,6 +37,24 @@
 
   > .page.section {
     padding-bottom: 30px;
+  }
+
+  @include devices('sm') {
+    padding-bottom: 40px;
+  }
+
+  @include devices('md') {
+    padding-top: 40px;
+    padding-bottom: 60px;
+  }
+
+  @include devices('lg') {
+    padding-top: 50px;
+    padding-bottom: 80px;
+
+    .h2:first-child {
+      margin-top: 40px;
+    }
   }
 }
 

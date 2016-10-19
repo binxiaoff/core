@@ -1,40 +1,8 @@
-{% extends 'layouts/_layout_lender.html.twig' %}
+{% extends 'lender_cip/_layout-boolean-question.html.twig' %}
 
-{% set page = {
-    id: 'user-preter-profile',
-    title: 'Conseils en investissement',
-    classNames: 'user-preter-profile'
+{% set mock = {
+    question: 'Avez-vous conscience que votre capital ne sera remboursé que progressivement, et qu’une partie sera immobilisée jusqu’à l’échéance finale de vos prêts ?',
+    alt_question: 'Maintenant, avez-vous conscience que votre capital ne sera remboursé que progressivement, et qu’une partie sera immobilisée jusqu’à l’échéance finale de vos prêts ?',
+    yes_explanation: 'Les entreprises qui empruntent de l’argent sur Unilend le remboursent selon un échéancier défini à l’avance. A chaque échéance, les entreprises remboursent un part de capital et une part d’intérêts.<br><br>Or, il n’est pas possible pour un prêteur de demander à l’entreprise de rembourser son prêt par anticipation : le remboursement doit se faire selon l’échéancier. Le capital n’étant remboursé que progressivement, une partie sera donc immobilisée jusqu’à l’échéance finale du prêt.',
+    no_explanation: 'Les entreprises qui empruntent de l’argent sur Unilend le remboursent selon un échéancier défini à l’avance. A chaque échéance, les entreprises remboursent un part de capital et une part d’intérêts.<br><br>Or, il n’est pas possible pour un prêteur de demander à l’entreprise de rembourser son prêt par anticipation : le remboursement doit se faire selon l’échéancier. Le capital n’étant remboursé que progressivement, une partie sera donc immobilisée jusqu’à l’échéance finale du prêt.'
 } %}
-
-{% block dashboardContent %}
-    <div class="dashboard-tabs tabs">
-        {% include('pages/lender_profile/partials/tab_navigation.html.twig') %}
-
-        <article id="dashboard-cip" class="dashboard-tabs-content tab-content">
-            <div id="cip-step-{{ current_step }}">
-                <div class="panel cip-header">
-                    <header class="panel-header">
-                        <h3>Questionnaire</h3>
-                    </header>
-                    <div class="cip-progress" data-progressbar data-progressbar-current="{{ current_step }}" data-progressbar-total="{{ total_steps }}">
-                        <div data-progressbar-bar></div>
-                    </div>
-                </div>
-                <form method="post" action="{{ path('cip_form_questionnaire') }}" class="panel">
-                    <div class="row">
-                        <p>Avez-vous conscience que votre capital ne sera remboursé que progressivement, et qu’une partie sera immobilisée jusqu’à l’échéance finale de vos prêts ?</p>
-                    </div>
-                    <div class="row">
-                        <input type="hidden" name="question" value="{{ question.id }}" />
-                        <div class="col-lg-3 push-lg-2 col-md-3 push-md-2 col-sm-2 push-sm-1 col-xs-1">
-                            <button type="submit" name="answer" value="{{ constant('\\lender_questionnaire_question::VALUE_BOOLEAN_TRUE') }}" class="btn-primary">Oui</button>
-                        </div>
-                        <div class="col-lg-3 push-lg-2 col-md-3 push-md-2 col-sm-2 push-sm-2 col-xs-1 push-xs-2">
-                            <button type="submit" name="answer" value="{{ constant('\\lender_questionnaire_question::VALUE_BOOLEAN_FALSE') }}" class="btn-primary">Non</button>
-                        </div>
-                    </div>
-                </form>
-            </div><!-- /#cip-step-{{ current_step }} -->
-        </article><!-- /.dashboard-tabs-content -->
-    </div>
-{% endblock %}

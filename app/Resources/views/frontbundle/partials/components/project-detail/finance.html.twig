@@ -65,7 +65,7 @@
                                 },
                                 "title": {"text": ""},
                                 "xAxis": {"categories": [{% for financeData in finance|reverse %}"{{ financeData.closingDate|date('d/m/Y') }}"{% if not loop.last %},{% endif %}{% endfor %}]},
-                                "yAxis": {"title": {"text": "Montant (en €)"}, "units": "€"},
+                                "yAxis": {"title": {"text": "Montant"}, "units": "€"},
                                 "series": [
                                     {% for column in financeColumns.balanceSheet %}
                                         {
@@ -230,7 +230,7 @@
                                         },
                                         "title": {"text": ""},
                                         "xAxis": {"categories": [{% for financeData in finance|reverse %}"{{ financeData.closingDate|date('d/m/Y') }}"{% if not loop.last %},{% endif %}{% endfor %}]},
-                                        "yAxis": {"title": {"text": "Montant (en €)"}, "units": "€"},
+                                        "yAxis": {"title": {"text": "Montant"}, "units": "€"},
                                         "legend": {"symbolRadius": 10},
                                         "series": [
                                             {% for column in financeColumns.assets %}
@@ -262,8 +262,8 @@
                                             }
                                         },
                                         "title": {"text": ""},
-                                        "xAxis": {"categories": [{% for financeData in finance %}"{{ financeData.closingDate|date('d/m/Y') }}"{% if not loop.last %},{% endif %}{% endfor %}]},
-                                        "yAxis": {"title": {"text": "Montant (en €)"}, "units": "€"},
+                                        "xAxis": {"categories": [{% for financeData in finance|reverse %}"{{ financeData.closingDate|date('d/m/Y') }}"{% if not loop.last %},{% endif %}{% endfor %}]},
+                                        "yAxis": {"title": {"text": "Montant"}, "units": "€"},
                                         "legend": {"symbolRadius": 10},
                                         "series": [
                                             {% for column in financeColumns.debts %}

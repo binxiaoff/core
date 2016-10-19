@@ -16,6 +16,14 @@
 
   // TMA-1005 Remove silly iOS styling
   -webkit-appearance: none;
+
+  // Transition the colors?
+  // transition: background-color 0.1s, color 0.1s, border-color 0.1s;
+
+  // Spinner should inherit the button's color
+  #{$js-is-loading} & .ui-is-spinner {
+    color: inherit;
+  }
 }
 
 // Button Shapes
@@ -353,6 +361,11 @@
       color: $c-t1
     )
   );
+
+  @include disabled-state {
+    background-color: fade-out($c-bg2, .5);
+    border-color: transparent;
+  }
 }
 
 // -- Primary - p1
@@ -374,6 +387,12 @@
       color: $c-white
     )
   );
+
+  @include disabled-state {
+    background-color: fade-out($c-p1, .5);
+    border-color: transparent;
+    color: fade-out($c-white, .5);
+  }
 }
 
 // -- Alternate - p2
@@ -392,6 +411,54 @@
     $active: (
       background-color: darken($c-p2-hover, 5%),
       border-color: darken($c-p2-hover, 5%),
+      color: $c-white
+    )
+  );
+
+  @include disabled-state {
+    background-color: fade-out($c-p2, .5);
+    border-color: transparent;
+    color: fade-out($c-white, .5);
+  }
+}
+
+// -- Yes - green
+@mixin button-color-yes {
+  @include link-states(
+    $link: (
+      background-color: $c-green,
+      border-color: $c-green,
+      color: $c-white
+    ),
+    $hover: (
+      background-color: $c-green,
+      border-color: $c-green,
+      color: $c-white
+    ),
+    $active: (
+      background-color: darken($c-green, 5%),
+      border-color: darken($c-green, 5%),
+      color: $c-white
+    )
+  );
+}
+
+// -- No - red
+@mixin button-color-no {
+  @include link-states(
+    $link: (
+      background-color: $c-red,
+      border-color: $c-red,
+      color: $c-white
+    ),
+    $hover: (
+      background-color: $c-red,
+      border-color: $c-red,
+      color: $c-white
+    ),
+    $active: (
+      background-color: darken($c-red, 5%),
+      border-color: darken($c-red, 5%),
       color: $c-white
     )
   );
@@ -416,6 +483,11 @@
       color: $color-active
     )
   );
+
+  @include disabled-state {
+    color: fade-out($color-link, .5);
+    border-color: fade-out($color-link, .5);
+  }
 }
 
 // -- Clear / Transparent
@@ -437,6 +509,10 @@
       color: $color-active
     )
   );
+
+  @include disabled-state {
+    color: fade-out($color-link, .5);
+  }
 }
 
 // Button types (assumes default shape for all)
@@ -455,6 +531,18 @@
 @mixin button-type-alternate {
   @include button;
   @include button-color-alternate;
+  @include button-shape-default;
+}
+
+@mixin button-type-yes {
+  @include button;
+  @include button-color-yes;
+  @include button-shape-default;
+}
+
+@mixin button-type-no {
+  @include button;
+  @include button-color-no;
   @include button-shape-default;
 }
 
@@ -861,6 +949,14 @@
 
 .btn-alternate {
   @include button-type-alternate;
+}
+
+.btn-yes {
+  @include button-type-yes;
+}
+
+.btn-no {
+  @include button-type-no;
 }
 
 .btn-outline {

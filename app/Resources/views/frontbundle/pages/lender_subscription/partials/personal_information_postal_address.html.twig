@@ -8,7 +8,7 @@
           {% if formData.same_postal_address == true %} aria-expanded="true" {% else %} aria-expanded="false" style="height : 0;" {% endif %}>
 
     <h3 class="h3">{% trans %} lender-subscription_address-form-postal-address-title {% endtrans %}</h3>
-    <div id="form-preter-{{ idClientType }}-address-autocomplete-error" class="ui-formvalidation-notifications address-autocomplete-error" style="display: none;">
+    <div id="form-preter-{{ idClientType }}-address-autocomplete-error" class="ui-formvalidation-notifications autocomplete-error" style="display: none;">
         <div class="message-error">{% trans %}lender-subscription_fiscal-address-autocomplete-error{% endtrans %}</div>
     </div>
 
@@ -39,6 +39,7 @@
                        data-autocomplete-ajaxurl="{{ path('lender_subscription_ajax_zip') }}"
                        data-autocomplete-address-countryelem="#form-lender-{{ idClientType }}-postal-address-country"
                        data-autocomplete-address-cityelem="#form-lender-{{ idClientType }}-postal-address-city"
+                       data-autocomplete-address-zipelem="#form-lender-{{ idClientType }}-postal-address-zip"
                        data-has-spinner="#{{ idClientType }}-postal-zip-autocomplete-spinner"/>
                 <div class="btn-group">
                     <span id="{{ idClientType }}-postal-zip-autocomplete-spinner" class="ui-is-spinner"></span>

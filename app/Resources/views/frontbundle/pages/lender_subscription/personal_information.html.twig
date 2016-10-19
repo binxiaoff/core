@@ -1,11 +1,6 @@
 {# Projects Index #}
 {% extends 'layouts/_layout.html.twig' %}
 
-{% set page = {
-    title: 'Devenir Prêteur',
-    permalink: path('lender_subscription_personal_information')
-} %}
-
 {% block siteContent %}
 <article id="devenir-preteur" class="page">
     <div class="hero-wrap">
@@ -44,7 +39,7 @@
 
                             <div class="promo">
                                 <div class="promo-image">
-                                    {{ svgimage('#promo-linechart2', '', 190, 190, 'none') | raw }}
+                                    {{ svgimage('#promo-money', '', 190, 190, 'none') | raw }}
                                 </div>
                                 {% set valueLineChart = getStatistic('averageInterestRateForLenders')|round(1, 'floor') %}
                                 {# {% if 'lender-subscription_documents-statistics-section-linechart-value'|trans == 'lender-subscription_documents-statistics-section-linechart-value' %}

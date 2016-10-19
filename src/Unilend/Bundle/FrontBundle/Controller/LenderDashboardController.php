@@ -60,14 +60,14 @@ class LenderDashboardController extends Controller
         $repaidGrossInterests   = $lenderRepayment->getRepaidInterests(['id_lender' => $lender->id_lender_account]);
         $irr                    = 0;
         $irrTranslationType     = '';
-        $hasIRR = false;
+        $hasIRR                 = false;
 
         if ($this->getUser()->getLevel() > 0) {
             $aLastIRR = $oLenderAccountStats->getLastIRRForLender($lender->id_lender_account);
             if ($aLastIRR) {
                 $irr                = $aLastIRR['tri_value'];
                 $irrTranslationType = ($irr >= 0 ? 'positive-' : 'negative-');
-                $hasIRR = true;
+                $hasIRR             = true;
             } else {
                 $fLossRate = $oLenderAccountStats->getLossRate($lender->id_lender_account, $lender);
 
@@ -118,13 +118,10 @@ class LenderDashboardController extends Controller
             }
         }
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\IRRManager $oIRRManager */
-        $oIRRManager = $this->get('unilend.service.irr_manager');
         /** @var LenderAccountDisplayManager $lenderDisplayManager */
         $lenderDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
 
-        $lastUnilendIRR         = $oIRRManager->getLastUnilendIRR();
-        $lenderRepaymentsData   = $lenderRepayment->getDetailsByPeriod($lender->id_lender_account);
+        $lenderRepaymentsData   = $this->getDetailsByPeriod($lender, $lenderRepayment);
         $repaymentDateRange     = $lenderRepayment->getFirstAndLastRepaymentDates($lender->id_lender_account);
         $repaymentDataPerPeriod = $this->getQuarterAndYearSum($lenderRepaymentsData);
         $monthAxisData          = $this->getMonthAxis($repaymentDateRange);
@@ -139,7 +136,6 @@ class LenderDashboardController extends Controller
                 'lenderDetails'      => [
                     'balance'                   => $balance,
                     'level'                     => $this->getUser()->getLevel(),
-                    'unilendIRR'                => $lastUnilendIRR['value'],
                     'hasIRR'                    => $hasIRR,
                     'irr'                       => $irr,
                     'irrTranslation'            => $irrTranslationType,
@@ -455,5 +451,19 @@ class LenderDashboardController extends Controller
             'yearInterests'    => array_values($yearInterests),
             'yearTax'          => array_values($yearTax),
         ];
+    }
+
+    /**
+     * @param \lenders_accounts $lender
+     * @param \echeanciers $lenderRepayment
+     * @return array
+     */
+    private function getDetailsByPeriod(\lenders_accounts $lender, \echeanciers $lenderRepayment)
+    {
+        $taxTypeForExemptedLender    = [\tax_type::TYPE_CSG, \tax_type::TYPE_SOCIAL_DEDUCTIONS, \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS, \tax_type::TYPE_SOLIDARITY_DEDUCTIONS, \tax_type::TYPE_CRDS];
+        $taxTypeForTaxableLender     = [\tax_type::TYPE_INCOME_TAX, \tax_type::TYPE_CSG, \tax_type::TYPE_SOCIAL_DEDUCTIONS, \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS, \tax_type::TYPE_SOLIDARITY_DEDUCTIONS, \tax_type::TYPE_CRDS];
+        $taxTypeForForeignerLender   = [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE];
+        $taxTypeForLegalEntityLender = [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE];
+        return $lenderRepayment->getDataForRepaymentWidget($lender->id_lender_account, $lender->id_client_owner, $taxTypeForExemptedLender, $taxTypeForTaxableLender, $taxTypeForForeignerLender, $taxTypeForLegalEntityLender);
     }
 }

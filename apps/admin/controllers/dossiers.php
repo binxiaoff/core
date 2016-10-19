@@ -209,8 +209,8 @@ class dossiersController extends bootstrap
             $this->longitude = $this->companies->longitude;
 
             $this->aAnnualAccountsDates = array();
-            $this->aAnalysts            = $this->users->select('status = 1 AND id_user_type = 2');
-            $this->aSalesPersons        = $this->users->select('status = 1 AND id_user_type = 3');
+            $this->aAnalysts            = $this->users->select('(status = 1 AND id_user_type = 2) OR id_user = ' . $this->projects->id_analyste);
+            $this->aSalesPersons        = $this->users->select('(status = 1 AND id_user_type = 3) OR id_user = ' . $this->projects->id_commercial);
             $this->aEmails              = $this->projects_status_history->select('content != "" AND id_project = ' . $this->projects->id_project, 'id_project_status_history DESC');
             $this->lProjects_comments   = $this->projects_comments->select('id_project = ' . $this->projects->id_project, 'added DESC');
             $this->lProjects_status     = $this->projects_status->getPossibleStatus($this->projects->id_project, $this->projects_status_history);
@@ -2256,15 +2256,17 @@ class dossiersController extends bootstrap
     public function _echeancier_emprunteur()
     {
         $this->clients                 = $this->loadData('clients');
-        $this->echeanciers_emprunteur  = $this->loadData('echeanciers_emprunteur');
+        $this->echeanciers             = $this->loadData('echeanciers');
         $this->projects                = $this->loadData('projects');
         $this->projects_status         = $this->loadData('projects_status');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->receptions              = $this->loadData('receptions');
         $this->prelevements            = $this->loadData('prelevements');
+        /** @var \echeanciers_emprunteur $repaymentSchedule */
+        $repaymentSchedule = $this->loadData('echeanciers_emprunteur');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
-            $this->lRemb = $this->echeanciers_emprunteur->select('id_project = ' . $this->projects->id_project . ' AND status_ra = 0', 'ordre ASC');
+            $this->lRemb = $repaymentSchedule->getDetailedProjectRepaymentSchedule($this->projects);
 
             $this->montantPreteur    = 0;
             $this->MontantEmprunteur = 0;

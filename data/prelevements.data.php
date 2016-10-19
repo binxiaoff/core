@@ -84,4 +84,30 @@ class prelevements extends prelevements_crud
         $result = $this->bdd->query('SELECT SUM(montant) FROM `prelevements` ' . $where);
         return (int) $this->bdd->result($result, 0, 0);
     }
+
+    /**
+     * @param int $daysInterval
+     * @return array
+     */
+    public function getUpcomingRepayments($daysInterval)
+    {
+        $sql = '
+            SELECT pre.id_project, pre.num_prelevement, pre.date_echeance_emprunteur, pre.montant
+            FROM prelevements pre
+            INNER JOIN projects pro ON pro.id_project = pre.id_project
+            INNER JOIN echeanciers_emprunteur ee ON ee.ordre = pre.num_prelevement
+            WHERE pro.status = :projectStatus
+              AND ee.status_emprunteur = 0
+              AND pre.id_project = ee.id_project
+              AND pre.type = :directDebitStatus
+              AND DATE_ADD(CURDATE(), INTERVAL :daysInterval DAY) = DATE(pre.date_echeance_emprunteur)';
+
+        $paramValues = array('daysInterval' => $daysInterval, 'projectStatus' => \projects_status::REMBOURSEMENT, 'directDebitStatus' => \prelevements::CLIENT_TYPE_BORROWER);
+        $paramTypes  = array('daysInterval' => \PDO::PARAM_INT, 'projectStatus' => \PDO::PARAM_INT, 'directDebitStatus' => \PDO::PARAM_INT);
+
+        $statement = $this->bdd->executeQuery($sql, $paramValues, $paramTypes);
+        $result    = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+        return $result;
+    }
 }

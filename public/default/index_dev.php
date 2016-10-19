@@ -36,13 +36,9 @@ if (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVE
 Debug::enable();
 
 $kernel = new AppKernel('dev', true);
-$request  = Request::createFromGlobals();
 
-try {
-    $response = $kernel->handle($request);
-    $response->send();
-    $kernel->terminate($request, $response);
-} catch (NotFoundHttpException $exception) {
-    $kernel->boot();
-    $dispatcher = new \Unilend\core\Dispatcher($kernel, 'default', $config);
-}
+$request  = Request::createFromGlobals();
+$response = $kernel->handle($request);
+$response->send();
+
+$kernel->terminate($request, $response);

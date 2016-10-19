@@ -2,6 +2,324 @@
 // Unilend Site Search
 //
 
+// Site search - compact
+@mixin site-search-compact {
+  display: block;
+  width: $height-btn;
+  margin-right: 20px;
+  overflow: hidden;
+  position: relative;
+  font-size: 18px;
+  line-height: $height-btn - 4px;
+
+  transition: width .2s;
+
+  // The search button
+  .btn-search {
+    width: $height-btn;
+    height: $height-btn;
+    padding: 0;
+    margin: 0;
+    line-height: $height-btn - 4px; // Minus border
+  }
+
+  // Toggles between compact to open
+  .site-search-toggle {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    height: 100%;
+
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+
+    background: $c-bg3;
+    border: solid 2px $c-bg3;
+    line-height: $height-btn - 4px; // Minus border
+    text-align: center;
+
+    &:before {
+      content: $fa-search;
+      font-family: $ff-icon;
+    }
+
+    &:hover {
+      border-color: $c-bg1;
+    }
+  }
+
+  // Hide input and button group until opened by pressing the site-search-toggle
+  > .btn-group {
+    display: none;
+    width: $height-btn;
+    height: 100%;
+
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 1;
+
+    line-height: $height-btn - 4px;
+  }
+
+  > .input-field {
+    width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+    color: transparent; // Hidden when not visible
+    font-size: 16px;
+    transition: color .2s;
+
+    &:hover {
+      color: transparent;
+    }
+  }
+
+  // Fixed
+  #{$js-site-header-fixed} & {
+    width: $height-fixed-menu;
+    height: $height-fixed-menu;
+    margin-right: 0;
+
+    // The search button
+    .btn-search {
+      height: $height-fixed-menu;
+      padding: 0;
+      margin: 0;
+      border: 0;
+      height: $height-fixed-menu;
+    }
+
+    .site-search-toggle {
+      line-height: $height-fixed-menu;
+    }
+
+    > .btn-group {
+      width: $height-fixed-menu;
+      line-height: $height-fixed-menu;
+    }
+
+    > .input-field {
+      border-radius: 0;
+      height: $height-fixed-menu;
+      padding-left: $height-fixed-menu;
+      padding-right: 0;
+
+      border-top-width: 0;
+      border-bottom-width: 0;
+      border-right-width: 0;
+      color: $c-t1;
+
+      &:hover {
+        color: $c-t1;
+      }
+    }
+  }
+
+  // Open
+  #{$js-site-search-open} &,
+  #{$js-site-header-fixed}#{$js-site-search-open} & {
+    transform: translateY(0);
+    width: $width-site-header-search-full-fixed-open !important;
+
+    // Hide the toggle
+    .site-search-toggle {
+      display: none;
+    }
+
+    // Show the button group which has the submit button
+    > .btn-group {
+      display: block;
+    }
+
+    > .input-field {
+      padding-left: $height-btn;
+      padding-right: 0;
+      color: $c-t1;
+
+      &:hover {
+        color: $c-t1;
+      }
+    }
+  }
+}
+
+@mixin site-search-compact-lg {
+  @include site-search-compact;
+  width: $height-btn-md;
+  line-height: $height-btn-md - 4px;
+
+  .btn-search {
+    width: $height-btn-md;
+    height: $height-btn-md;
+    line-height: $height-btn-md - 4px; // Minus border
+  }
+
+  .site-search-toggle {
+    line-height: $height-btn-md - 4px; // Minus border
+  }
+
+  > .btn-group {
+    width: $height-btn-md;
+    line-height: $height-btn-md - 4px; // Minus border
+  }
+
+  > .input-field {
+    height: $height-btn-md;
+    font-size: 18px;
+    line-height: $height-btn-md - 4px; // Minus border
+  }
+
+  // Fixed
+  // Inherits from site-search-compact
+  #{$js-site-header-fixed} & {
+    > .btn-group {
+      width: $height-btn-md;
+    }
+  }
+
+  // Site search is open
+  #{$js-site-search-open} &,
+  #{$js-site-header-fixed}#{$js-site-search-open} & {
+    > .input-field {
+      padding-left: $height-btn-md;
+    }
+  }
+}
+
+// Site search - full (md)
+@mixin site-search-full-md {
+  display: block;
+  width: $width-site-header-search-full-md;
+  position: relative;
+  margin-right: 20px;
+
+  transition: width .2s;
+
+  // The search button
+  .btn-search {
+    width: $height-btn;
+    height: $height-btn;
+    padding: 0;
+    margin: 0;
+    line-height: $height-btn - 4px; // Minus border
+  }
+
+  .site-search-toggle {
+    display: none;
+  }
+
+  > .btn-group {
+    display: block;
+    width: $height-btn;
+    height: 100%;
+
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+
+    z-index: 1;
+  }
+
+  > .input-field {
+    padding-left: $height-btn;
+    color: $c-t1;
+
+    &:hover {
+      color: $c-t1;
+    }
+  }
+
+  // Fixed
+  #{$js-site-header-fixed} & {
+    width: $width-site-header-search-full-fixed-md;
+    height: $height-fixed-menu;
+    margin-right: 0;
+
+    .btn-search {
+      height: $height-fixed-menu;
+      border: 0;
+      line-height: $height-fixed-menu;
+    }
+
+    > .btn-group {
+      line-height: $height-fixed-menu;
+    }
+
+    > .input-field {
+      border-radius: 0;
+      height: $height-fixed-menu;
+      padding-left: $height-btn;
+      padding-right: 0;
+
+      border-top-width: 0;
+      border-bottom-width: 0;
+      border-right-width: 0;
+      color: $c-t1;
+
+      &:hover {
+        color: $c-t1;
+      }
+    }
+  }
+
+  // Open
+  #{$js-site-search-open} &,
+  #{$js-site-header-fixed}#{$js-site-search-open} & {
+    width: $width-site-header-search-full-fixed-open;
+  }
+}
+
+// Site search - full (lg)
+// inherits site-search-full-md styles
+@mixin site-search-full-lg {
+  @include site-search-full-md;
+  width: $width-site-header-search-full-lg;
+
+  .btn-search {
+    height: $height-btn-md;
+    line-height: $height-btn-md - 4px;
+  }
+
+  > .btn-group {
+    width: $height-btn-lg;
+    line-height: $height-btn-md - 4px;
+  }
+
+  > .input-field {
+    @include input-size-lg;
+    padding-left: $height-btn-md;
+    color: $c-t1;
+    font-size: 18px;
+
+    &:hover {
+      color: $c-t1;
+    }
+  }
+
+  // Fixed
+  #{$js-site-header-fixed} & {
+    width: $width-site-header-search-full-fixed-lg;
+
+    > .input-field {
+      padding-left: $height-btn-md;
+      color: $c-t1;
+    }
+  }
+
+  // Open
+  #{$js-site-search-open} &,
+  #{$js-site-header-fixed}#{$js-site-search-open} & {
+    width: $width-site-header-search-full-fixed-open;
+  }
+}
+
+// @note Potential legacy code
 .site-search {
   .form-field-inline {
     width: 100%;
@@ -9,6 +327,54 @@
     .site-search-input {
       @include input;
       padding-left: 40px;
+    }
+  }
+}
+
+// Site header site search
+.site-header {
+  .site-search {
+    @include devices('xs', 'sm') {
+      // Mobile site search is displayed within `components/site/mobile-menu`
+      display: none;
+    }
+
+    // No user logged in, so always show the full site search (unless breakpoint isn't wide enough for it)
+    #{$js-no-user} & {
+      @include devices('tablet-l') {
+        @include site-search-compact;
+      }
+
+      @include devices('laptop') {
+        @include site-search-full-md;
+      }
+
+      @include devices('lg') {
+        @include site-search-full-lg;
+      }
+    }
+
+    // User logged in, so show the compact site search
+    #{$js-user-type-lender} &,
+    #{$js-user-type-borrower} & {
+      @include devices('md') {
+        @include site-search-compact;
+      }
+
+      @include devices('lg') {
+        @include site-search-compact-lg;
+      }
+
+      // Modification to adjacent site-user
+      + .site-user .site-user-balance {
+        margin-left: 0;
+
+        // site header stuff really needs to be refactored. This is super spaghetti
+        #{$js-site-header-fixed} & {
+          margin-left: 20px;
+          margin-right: 0;
+        }
+      }
     }
   }
 }

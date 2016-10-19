@@ -1,0 +1,14 @@
+<div id="modal-bid-confirmation-prompt" class="modal-bid-confirmation" data-modal>
+    <div class="modal-body">
+        <h4>{% trans %} project-detail_side-bar-bids-confirmation-popup {% endtrans %}</h4>
+        <p data-bid-confirmation-message="{{ 'project-detail_bids-confirmation-details'|trans|e('html_attr') }}"></p>
+    </div>
+    <footer class="modal-footer">
+        <a href="javascript:;" class="btn-primary" data-modal-doactionconfirm>
+            {% trans %} project-detail_side-bar-bids-submit-button {% endtrans %}
+        </a>
+        <a href="javascript:;" class="btn-default" data-modal-doactioncancel>
+            {% trans %} project-detail_side-bar-bids-decline-button {% endtrans %}
+        </a>
+    </footer>
+</div>

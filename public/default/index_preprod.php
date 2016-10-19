@@ -36,13 +36,9 @@ session_start();
 ini_set('session.gc_maxlifetime', 3600); // 1h la session
 
 $kernel = new AppKernel('preprod', false);
-$request  = Request::createFromGlobals();
 
-try {
-    $response = $kernel->handle($request);
-    $response->send();
-    $kernel->terminate($request, $response);
-} catch (NotFoundHttpException $exception) {
-    $kernel->boot();
-    $dispatcher = new \Unilend\core\Dispatcher($kernel, 'default', $config);
-}
+$request  = Request::createFromGlobals();
+$response = $kernel->handle($request);
+$response->send();
+
+$kernel->terminate($request, $response);

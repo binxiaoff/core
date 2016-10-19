@@ -1,40 +1,8 @@
-{% extends 'layouts/_layout_lender.html.twig' %}
+{% extends 'lender_cip/_layout-boolean-question.html.twig' %}
 
-{% set page = {
-    id: 'user-preter-profile',
-    title: 'Conseils en investissement',
-    classNames: 'user-preter-profile'
+{% set mock = {
+    question: 'Avez-vous conscience qu’en matière de placement, plus le rendement attendu est élevé, plus le risque est fort ?',
+    alt_question: 'Maintenant, avez-vous conscience que votre capital ne sera remboursé que progressivement, et qu’une partie sera immobilisée jusqu’à l’échéance finale de vos prêts ?',
+    yes_explanation: 'Plus une entreprise est risquée, plus elle a de chances de ne pas honorer ses dettes. En contrepartie, les personnes qui lui prêtent de l’argent doivent prendre en compte cette probabilité plus importante de ne pas être remboursés : pour ce faire, ils exigent que l’entreprise paye plus d’intérêts, car cela doit permettre en partie de compenser des pertes potentielles.<br><br>En conséquence, plus le taux d’intérêt payé par une entreprise est élevé, plus son risque de défaut est élevé.',
+    no_explanation: 'Plus une entreprise est risquée, plus elle a de chances de ne pas honorer ses dettes. En contrepartie, les personnes qui lui prêtent de l’argent doivent prendre en compte cette probabilité plus importante de ne pas être remboursés : pour ce faire, ils exigent que l’entreprise paye plus d’intérêts, car cela doit permettre en partie de compenser des pertes potentielles.<br><br>En conséquence, plus le taux d’intérêt payé par une entreprise est élevé, plus son risque de défaut est élevé.'
 } %}
-
-{% block dashboardContent %}
-    <div class="dashboard-tabs tabs">
-        {% include('pages/lender_profile/partials/tab_navigation.html.twig') %}
-
-        <article id="dashboard-cip" class="dashboard-tabs-content tab-content">
-            <div id="cip-step-{{ current_step }}">
-                <div class="panel cip-header">
-                    <header class="panel-header">
-                        <h3>Questionnaire</h3>
-                    </header>
-                    <div class="cip-progress" data-progressbar data-progressbar-current="{{ current_step }}" data-progressbar-total="{{ total_steps }}">
-                        <div data-progressbar-bar></div>
-                    </div>
-                </div>
-                <form method="post" action="{{ path('cip_form_questionnaire') }}" class="panel">
-                    <div class="row">
-                        <p>Avez-vous conscience qu’en matière de placement, plus le rendement attendu est élevé, plus le risque est fort ?</p>
-                    </div>
-                    <div class="row">
-                        <input type="hidden" name="question" value="{{ question.id }}" />
-                        <div class="col-lg-3 push-lg-2 col-md-3 push-md-2 col-sm-2 push-sm-1 col-xs-1">
-                            <button type="submit" name="answer" value="{{ constant('\\lender_questionnaire_question::VALUE_BOOLEAN_TRUE') }}" class="btn-primary">Oui</button>
-                        </div>
-                        <div class="col-lg-3 push-lg-2 col-md-3 push-md-2 col-sm-2 push-sm-2 col-xs-1 push-xs-2">
-                            <button type="submit" name="answer" value="{{ constant('\\lender_questionnaire_question::VALUE_BOOLEAN_FALSE') }}" class="btn-primary">Non</button>
-                        </div>
-                    </div>
-                </form>
-            </div><!-- /#cip-step-{{ current_step }} -->
-        </article><!-- /.dashboard-tabs-content -->
-    </div>
-{% endblock %}

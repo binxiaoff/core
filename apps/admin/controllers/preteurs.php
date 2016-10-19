@@ -427,14 +427,9 @@ class preteursController extends bootstrap
                     \clients_status::CLOSED_LENDER_REQUEST,
                     \clients_status::CLOSED_BY_UNILEND
                 );
-                $checkEmailExistant    = $this->clients->selectPreteursByStatus(implode(',', $aLenderStatusForQuery), 'email = "' . $_POST['email'] . '" AND c.id_client != ' . $this->clients->id_client);
-                if (count($checkEmailExistant) > 0) {
-                    $les_id_client_email_exist = '';
-                    foreach ($checkEmailExistant as $checkEmailEx) {
-                        $les_id_client_email_exist .= ' ' . $checkEmailEx['id_client'];
-                    }
 
-                    $_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est déjà utilisé par le compte id ' . $les_id_client_email_exist;
+                if ($this->clients->existEmail($_POST['email'])) {
+                    $_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est déjà utilisé';
                 } else {
                     $this->clients->email = $_POST['email'];
                 }
