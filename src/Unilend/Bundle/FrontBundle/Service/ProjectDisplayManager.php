@@ -381,7 +381,7 @@ class ProjectDisplayManager
         $advisedProjects = [];
 
         foreach ($projectList as $projectInList){
-            $project->get($projectInList['id_project']);
+            $project->get($projectInList['projectId']);
             if ($this->lenderAccountDisplayManager->isProjectAdvisedForLender($project, $lender)) {
                 $advisedProjects[] = $projectInList;
             }

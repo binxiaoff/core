@@ -2,12 +2,16 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Knp\Snappy\GeneratorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
+use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 
 class LenderCIPController extends Controller
 {
@@ -32,6 +36,8 @@ class LenderCIPController extends Controller
         $lender->get($user->getClientId());
 
         $evaluation = $cipManager->getCurrentEvaluation($lender);
+
+        $template['clientHash'] = $this->getUser()->getHash();
 
         if (null === $evaluation) {
             $template['evaluation'] = false;
@@ -102,8 +108,11 @@ class LenderCIPController extends Controller
 
             $cipManager->saveLog($evaluation, \lender_evaluation_log::EVENT_ADVICE, $advices);
 
+            $this->sendAdviceEmail($this->getClient());
+
             $template['advices']         = $advices;
             $template['validEvaluation'] = $cipManager->isValidEvaluation($evaluation);
+            $template['clientHash']      = $this->getUser()->getHash();
             return $this->render('lender_cip/advice.html.twig', $template);
         } else {
             $template['current_step'] = $question->order + 1;
@@ -285,5 +294,109 @@ class LenderCIPController extends Controller
         return new JsonResponse([
             'validation' => $validation
         ]);
+    }
+
+    /**
+     * @Route("/pdf/conseil-cip/{clientHash}", name="pdf_cip")
+     */
+    public function cipAdvisePdfAction($clientHash)
+    {
+        /** @var CIPManager $cipManager */
+        $cipManager = $this->get('unilend.service.cip_manager');
+        /** @var GeneratorInterface $snappy */
+        $snappy = $this->get('knp_snappy.pdf');
+
+        /** @var \clients $client */
+        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        $client->get($clientHash, 'hash');
+
+        /** @var \lenders_accounts $lender */
+        $lender = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
+        $lender->get($client->id_client, 'id_client_owner');
+
+        $content['advice'] = implode("\n", $cipManager->getAdvices($lender));
+        $content['information'] = '';
+
+        $evaluation     = $cipManager->getCurrentEvaluation($lender);
+        $evaluationData = new \DateTime($evaluation->expiry_date . ' - 1 year');
+
+        $filename = sprintf('conseils-investissement-%s.pdf', $evaluationData->format('Y-m-d'));
+
+        return new Response(
+            $snappy->getOutputFromHtml($this->renderView('/pdf/cip_advice.html.twig', $content)),
+            200,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => sprintf('attachment; filename="%s"', $filename)
+            ]
+        );
+    }
+
+    private function sendAdviceEmail(\clients $client)
+    {
+        /** @var \settings $settings */
+        $settings =  $this->get('unilend.service.entity_manager')->getRepository('settings');
+        $settings->get('Facebook', 'type');
+        $fbLink = $settings->value;
+        $settings->get('Twitter', 'type');
+        $twLink = $settings->value;
+
+        /** @var TranslatorInterface */
+        $translator = $this->get('translator.default');
+
+        /** @var CIPManager $cipManager */
+        $cipManager = $this->get('unilend.service.cip_manager');
+
+        $lender = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
+        $lender->get($client->id_client, 'id_client_owner');
+
+        /** @var ProjectDisplayManager $lenderDisplayManager */
+        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
+        $projects = $projectDisplayManager->getCipAdvisedProjectList($lender);
+
+        $projectListHtml = '';
+        if (false === empty($projects)) {
+            $projectListHtml .= '<ul>';
+            foreach ($projects as $project) {
+                $projectListHtml .= '<li>
+                                        <a href="' . $this->generateUrl('project_detail', ['projectSlug' => $project['slug']]) . '"><span style=\'color:#b20066;\'>' . $project['title'] . '</span></a>' .
+                                        $translator->trans('project-list_remaining-days', ['%remainingDays%' => $project['days_left']]) .
+                                    '</li>';
+            }
+            $projectListHtml .= '</ul>';
+        } else {
+            $projectListHtml .= "Nous n'avons actuellement pas de projets à vous conseiller";
+        }//TODO translation
+
+        $varMail = array(
+            'surl'                 => $this->get('assets.packages')->getUrl(''),
+            'url'                  => $this->get('assets.packages')->getUrl(''),
+            'prenom'               => $client->prenom,
+            'email_p'              => $client->email,
+            'advice'               => implode("\n", $cipManager->getAdvices($lender)),
+            'advice_pdf_link'      => $this->generateUrl('pdf_cip', ['clientHash' => $client->hash]),
+            'advised_project_list' => $projectListHtml,
+            'motif_virement'       => $client->getLenderPattern($client->id_client),
+            'lien_fb'              => $fbLink,
+            'lien_tw'              => $twLink
+        );
+
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-conseil-cip', $varMail);
+        $message->setTo($client->email);
+        $mailer = $this->get('mailer');
+        $mailer->send($message);
+    }
+
+    private function getClient()
+    {
+        /** @var UserLender $user */
+        $user     = $this->getUser();
+        $clientId = $user->getClientId();
+        /** @var \clients $client */
+        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        $client->get($clientId);
+
+        return $client;
     }
 }

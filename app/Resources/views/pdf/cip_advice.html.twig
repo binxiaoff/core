@@ -1,0 +1,10 @@
+{% extends 'pdf/layout.html.twig' %}
+
+{% block content %}
+    <section class="page-section">
+        {{ information }}
+    </section>
+    <section class="page-section">
+        {{ advice|raw }}
+    </section>
+{% endblock %}
