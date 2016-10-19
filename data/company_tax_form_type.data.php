@@ -25,14 +25,14 @@
 //  Coupable : CM
 //
 // **************************************************************************************************** //
-
-use Unilend\core\Loader;
-
-class companies_bilans extends companies_bilans_crud
+class company_tax_form_type extends company_tax_form_type_crud
 {
+    const FORM_2033 = '2033';
+    const FORM_2035 = '2035';
+
     public function __construct($bdd, $params = '')
     {
-        parent::companies_bilans($bdd, $params);
+        parent::company_tax_form_type($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -40,10 +40,12 @@ class companies_bilans extends companies_bilans_crud
         if ($where != '') {
             $where = ' WHERE ' . $where;
         }
+
         if ($order != '') {
             $order = ' ORDER BY ' . $order;
         }
-        $sql = 'SELECT * FROM companies_bilans' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+
+        $sql = 'SELECT * FROM `tax_form_type`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $result   = array();
         $resultat = $this->bdd->query($sql);
@@ -59,13 +61,11 @@ class companies_bilans extends companies_bilans_crud
             $where = ' WHERE ' . $where;
         }
 
-        $result = $this->bdd->query('SELECT COUNT(*) FROM companies_bilans' . $where);
-        return (int) $this->bdd->result($result, 0, 0);
+        return (int) $this->bdd->result($this->bdd->query('SELECT COUNT(*) FROM `tax_form_type`' . $where));
     }
 
-    public function exist($id, $field = 'id_bilan')
+    public function exist($id, $field = 'id_type')
     {
-        $result = $this->bdd->query('SELECT * FROM companies_bilans WHERE ' . $field . ' = "' . $id . '"');
-        return ($this->bdd->fetch_array($result) > 0);
+        return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `tax_form_type` WHERE ' . $field . ' = "' . $id . '"')) > 0;
     }
 }

@@ -19,11 +19,14 @@ class Altares
      * @var EntityManager
      */
     private $entityManager;
+    /** @var CompanyBalanceSheetManager */
+    private $companyBalanceSheetManager;
 
-    public function __construct(EntityManager $entityManager)
+    public function __construct(EntityManager $entityManager, CompanyBalanceSheetManager $companyBalanceSheetManager)
     {
         ini_set('default_socket_timeout', 60);
         $this->entityManager = $entityManager;
+        $this->companyBalanceSheetManager = $companyBalanceSheetManager;
     }
 
     /**
@@ -168,59 +171,62 @@ class Altares
      */
     public function setCompanyBalance(\companies &$oCompany, $bRecalculate = true)
     {
-        $oBalanceSheets = $this->getBalanceSheets($oCompany->siren);
+        if (false === empty($oCompany->rcs)) { // We are only capable of managing the fiscal form for a "RCS"( which is 2033)
+            $oBalanceSheets = $this->getBalanceSheets($oCompany->siren);
 
-        if (isset($oBalanceSheets->myInfo->bilans) && is_array($oBalanceSheets->myInfo->bilans)) {
-            /** @var \companies_actif_passif $oCompanyAssetsDebts */
-            $oCompanyAssetsDebts = $this->entityManager->getRepository('companies_actif_passif');
-            /** @var \companies_bilans $oCompanyAnnualAccounts */
-            $oCompanyAnnualAccounts = $this->entityManager->getRepository('companies_bilans');
-            /** @var \company_balance $oCompanyBalance */
-            $oCompanyBalance = $this->entityManager->getRepository('company_balance');
-            /** @var \company_balance_type $oCompaniesBalanceTypes */
-            $oCompaniesBalanceTypes = $this->entityManager->getRepository('company_balance_type');
+            if (isset($oBalanceSheets->myInfo->bilans) && is_array($oBalanceSheets->myInfo->bilans)) {
+                /** @var \companies_actif_passif $oCompanyAssetsDebts */
+                $oCompanyAssetsDebts = $this->entityManager->getRepository('companies_actif_passif');
+                /** @var \companies_bilans $oCompanyAnnualAccounts */
+                $oCompanyAnnualAccounts = $this->entityManager->getRepository('companies_bilans');
+                /** @var \company_balance $oCompanyBalance */
+                $oCompanyBalance = $this->entityManager->getRepository('company_balance');
+                /** @var \company_balance_type $oCompaniesBalanceTypes */
+                $oCompaniesBalanceTypes = $this->entityManager->getRepository('company_balance_type');
+                /** @var \company_tax_form_type $taxFormType */
+                $taxFormType = $this->entityManager->getRepository('company_tax_form_type');
+                $taxFormType->get(\company_tax_form_type::FORM_2033, 'label');
 
-            $aCodes = $oCompaniesBalanceTypes->getAllByCode();
+                $aCodes = $oCompaniesBalanceTypes->getAllByCode($taxFormType->id_type);
 
-            foreach ($oBalanceSheets->myInfo->bilans as $oBalanceSheet) {
-                $aCompanyBalances = array();
-                $aAnnualAccounts  = $oCompanyAnnualAccounts->select('id_company = ' . $oCompany->id_company . ' AND cloture_exercice_fiscal = "' . $oBalanceSheet->dateClotureN . '"');
+                foreach ($oBalanceSheets->myInfo->bilans as $oBalanceSheet) {
+                    $aCompanyBalances = array();
+                    $aAnnualAccounts  = $oCompanyAnnualAccounts->select('id_company = ' . $oCompany->id_company . ' AND cloture_exercice_fiscal = "' . $oBalanceSheet->dateClotureN . '"');
 
-                if (empty($aAnnualAccounts)) {
-                    $oCompanyAnnualAccounts->id_company              = $oCompany->id_company;
-                    $oCompanyAnnualAccounts->cloture_exercice_fiscal = $oBalanceSheet->dateClotureN;
-                    $oCompanyAnnualAccounts->duree_exercice_fiscal   = $oBalanceSheet->dureeN;
-                    $oCompanyAnnualAccounts->create();
+                    if (empty($aAnnualAccounts)) {
+                        $oCompanyAnnualAccounts->id_company              = $oCompany->id_company;
+                        $oCompanyAnnualAccounts->cloture_exercice_fiscal = $oBalanceSheet->dateClotureN;
+                        $oCompanyAnnualAccounts->duree_exercice_fiscal   = $oBalanceSheet->dureeN;
+                        $oCompanyAnnualAccounts->create();
 
-                    $oCompanyAssetsDebts->id_bilan = $oCompanyAnnualAccounts->id_bilan;
-                    $oCompanyAssetsDebts->create();
-                } else {
-                    $oCompanyAnnualAccounts->get($aAnnualAccounts[0]['id_bilan'], 'id_bilan');
-                    foreach ($oCompanyBalance->select('id_bilan = ' . $oCompanyAnnualAccounts->id_bilan) as $aBalance) {
-                        $aCompanyBalances[$aBalance['id_balance_type']] = $aBalance;
-                    }
-                }
-
-                foreach ($oBalanceSheet->posteList as $oBalance) {
-                    if (isset($aCodes[$oBalance->poste])) {
-                        if (false === isset($aCompanyBalances[$aCodes[$oBalance->poste]['id_balance_type']])) {
-                            $oCompanyBalance->id_bilan        = $oCompanyAnnualAccounts->id_bilan;
-                            $oCompanyBalance->id_balance_type = $aCodes[$oBalance->poste]['id_balance_type'];
-                            $oCompanyBalance->value           = $oBalance->valeur;
-                            $oCompanyBalance->create();
-                        } elseif ($aCompanyBalances[$aCodes[$oBalance->poste]['id_balance_type']]['value'] != $oBalance->valeur) {
-                            $oCompanyBalance->get($aCompanyBalances[$aCodes[$oBalance->poste]['id_balance_type']]['id_balance'], 'id_balance');
-                            $oCompanyBalance->value = $oBalance->valeur;
-                            $oCompanyBalance->update();
+                        $oCompanyAssetsDebts->id_bilan = $oCompanyAnnualAccounts->id_bilan;
+                        $oCompanyAssetsDebts->create();
+                    } else {
+                        $oCompanyAnnualAccounts->get($aAnnualAccounts[0]['id_bilan'], 'id_bilan');
+                        foreach ($oCompanyBalance->select('id_bilan = ' . $oCompanyAnnualAccounts->id_bilan) as $aBalance) {
+                            $aCompanyBalances[$aBalance['id_balance_type']] = $aBalance;
                         }
                     }
-                }
 
-                if ($bRecalculate) {
-                    $oCompanyAnnualAccounts->calcultateFromBalance();
+                    foreach ($oBalanceSheet->posteList as $oBalance) {
+                        if (isset($aCodes[$oBalance->poste])) {
+                            if (false === isset($aCompanyBalances[$aCodes[$oBalance->poste]['id_balance_type']])) {
+                                $oCompanyBalance->id_bilan        = $oCompanyAnnualAccounts->id_bilan;
+                                $oCompanyBalance->id_balance_type = $aCodes[$oBalance->poste]['id_balance_type'];
+                                $oCompanyBalance->value           = $oBalance->valeur;
+                                $oCompanyBalance->create();
+                            } elseif ($aCompanyBalances[$aCodes[$oBalance->poste]['id_balance_type']]['value'] != $oBalance->valeur) {
+                                $oCompanyBalance->get($aCompanyBalances[$aCodes[$oBalance->poste]['id_balance_type']]['id_balance'], 'id_balance');
+                                $oCompanyBalance->value = $oBalance->valeur;
+                                $oCompanyBalance->update();
+                            }
+                        }
+                    }
 
-                    $oCompanyAssetsDebts->get($oCompanyAnnualAccounts->id_bilan, 'id_bilan');
-                    $oCompanyAssetsDebts->calcultateFromBalance();
+                    if ($bRecalculate) {
+                        $this->companyBalanceSheetManager->calculateAnnualAccountFromBalance($oCompanyAnnualAccounts->id_bilan);
+                        $this->companyBalanceSheetManager->calculateDebtsAssetsFromBalance($oCompanyAnnualAccounts->id_bilan);
+                    }
                 }
             }
         }

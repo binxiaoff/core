@@ -384,44 +384,54 @@ class ajaxController extends bootstrap
                 $oCompanyBalance = $this->loadData('company_balance');
                 /** @var company_balance_type $oCompanyBalanceType */
                 $oCompanyBalanceType = $this->loadData('company_balance_type');
+                /** @var companies $company */
+                $company = $this->loadData('companies');
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
+                $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
 
                 if ($oProject->get($_POST['id_project'], 'id_project')) {
-                    $aAnnualAccounts    = $oCompanyAnnualAccounts->select('id_company = ' . $oProject->id_company . ' AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $oProject->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
-                    $aAnnualAccountsIds = array_column($aAnnualAccounts, 'id_bilan');
-                    $sAnnualAccountsIds = implode(', ', $aAnnualAccountsIds);
-                    $aBalanceSheets     = array();
+                    $company->get($oProject->id_company);
 
-                    foreach ($oCompanyBalance->select('id_bilan IN (' . $sAnnualAccountsIds . ')', 'FIELD(id_bilan, ' . $sAnnualAccountsIds . ') ASC') as $aAnnualAccount) {
-                        $aBalanceSheets[$aAnnualAccount['id_bilan']][$aAnnualAccount['id_balance_type']] = $aAnnualAccount;
-                    }
+                    if (false === empty($company->rcs)) { // We are only capable of managing the fiscal form for a "RCS"( which is 2033)
+                        /** @var \company_tax_form_type $taxFormType */
+                        $taxFormType = $this->loadData('company_tax_form_type');
+                        $taxFormType->get(\company_tax_form_type::FORM_2033, 'label');
 
-                    foreach ($oCompanyBalanceType->getAllByCode() as $sCode => $aBalanceType) {
-                        if (isset($_POST[$sCode])) {
-                            $iBalanceTypeId = $aBalanceType['id_balance_type'];
+                        $aAnnualAccounts    = $oCompanyAnnualAccounts->select('id_company = ' . $oProject->id_company . ' AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $oProject->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
+                        $aAnnualAccountsIds = array_column($aAnnualAccounts, 'id_bilan');
+                        $sAnnualAccountsIds = implode(', ', $aAnnualAccountsIds);
+                        $aBalanceSheets     = array();
 
-                            foreach ($_POST[$sCode] as $iAnnualAccountsId => $sValue) {
-                                $iValue = $this->ficelle->cleanFormatedNumber($sValue);
+                        foreach ($oCompanyBalance->select('id_bilan IN (' . $sAnnualAccountsIds . ')', 'FIELD(id_bilan, ' . $sAnnualAccountsIds . ') ASC') as $aAnnualAccount) {
+                            $aBalanceSheets[$aAnnualAccount['id_bilan']][$aAnnualAccount['id_balance_type']] = $aAnnualAccount;
+                        }
 
-                                if (isset($aBalanceSheets[$iAnnualAccountsId][$iBalanceTypeId]) && $aBalanceSheets[$iAnnualAccountsId][$iBalanceTypeId]['value'] != $iValue) {
-                                    $oCompanyBalance->get($aBalanceSheets[$iAnnualAccountsId][$iBalanceTypeId]['id_balance']);
-                                    $oCompanyBalance->value = $iValue;
-                                    $oCompanyBalance->update();
-                                } elseif (false === isset($aBalanceSheets[$iAnnualAccountsId][$iBalanceTypeId])) {
-                                    $oCompanyBalance->id_bilan        = $iAnnualAccountsId;
-                                    $oCompanyBalance->id_balance_type = $iBalanceTypeId;
-                                    $oCompanyBalance->value           = $iValue;
-                                    $oCompanyBalance->create();
+                        foreach ($oCompanyBalanceType->getAllByCode($taxFormType->id_type) as $sCode => $aBalanceType) {
+                            if (isset($_POST[$sCode])) {
+                                $iBalanceTypeId = $aBalanceType['id_balance_type'];
+
+                                foreach ($_POST[$sCode] as $iAnnualAccountsId => $sValue) {
+                                    $iValue = $this->ficelle->cleanFormatedNumber($sValue);
+
+                                    if (isset($aBalanceSheets[$iAnnualAccountsId][$iBalanceTypeId]) && $aBalanceSheets[$iAnnualAccountsId][$iBalanceTypeId]['value'] != $iValue) {
+                                        $oCompanyBalance->get($aBalanceSheets[$iAnnualAccountsId][$iBalanceTypeId]['id_balance']);
+                                        $oCompanyBalance->value = $iValue;
+                                        $oCompanyBalance->update();
+                                    } elseif (false === isset($aBalanceSheets[$iAnnualAccountsId][$iBalanceTypeId])) {
+                                        $oCompanyBalance->id_bilan        = $iAnnualAccountsId;
+                                        $oCompanyBalance->id_balance_type = $iBalanceTypeId;
+                                        $oCompanyBalance->value           = $iValue;
+                                        $oCompanyBalance->create();
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    foreach ($aAnnualAccountsIds as $iAnnualAccountId) {
-                        $oCompanyDebtsAssets->get($iAnnualAccountId, 'id_bilan');
-                        $oCompanyDebtsAssets->calcultateFromBalance();
+                        foreach ($aAnnualAccountsIds as $iAnnualAccountId) {
+                            $companyBalanceSheetManager->calculateDebtsAssetsFromBalance($iAnnualAccountId);
 
-                        $oCompanyAnnualAccounts->get($iAnnualAccountId, 'id_bilan');
-                        $oCompanyAnnualAccounts->calcultateFromBalance();
+                            $companyBalanceSheetManager->calculateAnnualAccountFromBalance($iAnnualAccountId);
+                        }
                     }
                 }
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $oProject->id_project);
