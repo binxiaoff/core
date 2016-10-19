@@ -395,16 +395,14 @@ class CIPManager
         }
 
         if (null !== $indicators[self::INDICATOR_TOTAL_AMOUNT]) {
-            $advices[] = str_replace(
-                ['%maximumAmount%', '%maximumAmount100%', '%maximumAmount200%'],
-                [$indicators[self::INDICATOR_TOTAL_AMOUNT], floor($indicators[self::INDICATOR_TOTAL_AMOUNT] / 100), floor($indicators[self::INDICATOR_TOTAL_AMOUNT] / 200)],
-                $this->translator->trans('lender-evaluation_low-estate-advice')
-            );
+            $advices[] = $this->translator->trans('lender-evaluation_low-estate-advice', [
+                '%maximumAmount%'    => $indicators[self::INDICATOR_TOTAL_AMOUNT],
+                '%maximumAmount100%' => floor($indicators[self::INDICATOR_TOTAL_AMOUNT] / 100),
+                '%maximumAmount200%' => floor($indicators[self::INDICATOR_TOTAL_AMOUNT] / 200)
+            ]);
         } elseif (null !== $indicators[self::INDICATOR_AMOUNT_BY_MONTH]) {
-            $advices[] = str_replace(
-                ['%maximumAmount%'],
-                [$indicators[self::INDICATOR_AMOUNT_BY_MONTH]],
-                $this->translator->trans('lender-evaluation_low-savings-advice')
+            $advices[] = $this->translator->trans('lender-evaluation_low-savings-advice',
+                ['%maximumAmount%' => $indicators[self::INDICATOR_AMOUNT_BY_MONTH]]
             );
         }
 
