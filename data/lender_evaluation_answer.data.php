@@ -2,6 +2,9 @@
 
 class lender_evaluation_answer extends lender_evaluation_answer_crud
 {
+    const STATUS_INACTIVE = 0;
+    const STATUS_ACTIVE   = 1;
+
     public function __construct($bdd, $params = '')
     {
         parent::lender_evaluation_answer($bdd, $params);
