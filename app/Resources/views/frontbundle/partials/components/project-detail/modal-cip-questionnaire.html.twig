@@ -1,14 +1,14 @@
-<div id="modal-cip-questionnaire-prompt" class="modal-cip-questionnaire" data-modal>
+<div id="modal-cip-questionnaire-prompt" class="modal-cip-questionnaire" data-modal data-modal-maxwidth="650">
     <div class="modal-body">
-        <h4>{% trans %} cip-questionnaire_modal-confirmation-title {% endtrans %}</h4>
-        <p>{% trans %} cip-questionnaire_modal-confirmation-message {% endtrans %}</p>
+        <h4>Attention, le montant que vous souhaitez prêter est supérieur à 2 000 €</h4>
+        <p>Si vous souhaitez prêter plus de 2 000 € à un projet, nous avons besoin de vous connaître un peu mieux afin de vous proposer des conseils adaptés à votre profil.<br><br>Si vous préférez ne pas répondre à ce court questionnaire, votre offre sera limitée à 2 000 €.</p>
     </div>
     <footer class="modal-footer">
-        <a href="{{ path('cip_continue_questionnaire') }}" class="btn-primary">
-            {% trans %} cip-questionnaire_modal-confirmation-button-accept {% endtrans %}
-        </button>
-        <a href="javascript:;" class="btn-default" data-modal-doactioncancel>
-            {% trans %} cip-questionnaire_modal-confirmation-button-decline {% endtrans %}
+        <a href="{{ path('cip_continue_questionnaire') }}" class="btn-primary btn-shape-md">
+            Je réponds au questionnaire
+        </a>
+        <a href="javascript:;" class="btn-primary btn-shape-md" data-modal-doactioncancel>
+            Je ne prête que 2 000 €
         </a>
     </footer>
 </div>

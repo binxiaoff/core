@@ -2,7 +2,9 @@
 
 class lender_evaluation_log extends lender_evaluation_log_crud
 {
-    const EVENT_ADVICE = 'advice';
+    const EVENT_ADVICE                = 'advice';
+    const EVENT_BID_EVALUATION_NEEDED = 'bid_evaluation_needed';
+    const EVENT_BID_ADVICE            = 'bid_advice';
 
     public function __construct($bdd, $params = '')
     {

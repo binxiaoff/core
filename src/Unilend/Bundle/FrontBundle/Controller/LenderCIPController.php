@@ -226,8 +226,6 @@ class LenderCIPController extends Controller
             $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
 
             if (is_numeric($bid['project']) && $project->get($bid['project'])) {
-                $bid['validate'] = true;
-                $request->getSession()->set('cipBid', $bid);
                 return $this->redirectToRoute('place_bid', ['projectId' => $project->id_project]);
             }
 
@@ -278,22 +276,78 @@ class LenderCIPController extends Controller
             ]);
         }
 
+        $request->getSession()->set('cipBid', ['amount' => $amount, 'rate' => $rate, 'project' => $project->id_project]);
+
+        $response   = [];
+        $lender     = $this->getLenderAccount();
+        $evaluation = $cipManager->getCurrentEvaluation($lender);
+
         /** @var \bids $bid */
         $bid                    = $entityManager->getRepository('bids');
-        $bid->id_lender_account = $this->getLenderAccount()->id_lender_account;
+        $bid->id_lender_account = $lender->id_lender_account;
         $bid->id_project        = $project->id_project;
         $bid->amount            = $amount * 100;
         $bid->rate              = $rate;
 
-        $validation = $cipManager->isCIPValidationNeeded($bid);
+        $validationNeeded = $cipManager->isCIPValidationNeeded($bid);
+        $response['validation']  = $validationNeeded;
 
-        if ($validation) {
-            // @todo log
+        if ($validationNeeded && null !== $evaluation && $cipManager->isValidEvaluation($evaluation)) {
+            $advices    = [];
+            $indicators = $cipManager->getIndicators($lender);
+
+            if (null !== $indicators[CIPManager::INDICATOR_TOTAL_AMOUNT]) {
+                /** @var \bids $bids */
+                $bids        = $entityManager->getRepository('bids');
+                $totalAmount = $bids->sum('id_lender_account = ' . $lender->id_lender_account . ' AND status IN (' . \bids::STATUS_BID_PENDING . ', ' . \bids::STATUS_BID_ACCEPTED . ', ' . \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY . ')', 'ROUND(amount / 100)');
+
+                if ($totalAmount > $indicators[CIPManager::INDICATOR_TOTAL_AMOUNT]) {
+                    $advices[CIPManager::INDICATOR_TOTAL_AMOUNT] = true;
+                }
+            }
+
+            if (null !== $indicators[CIPManager::INDICATOR_AMOUNT_BY_MONTH]) {
+                /** @var \bids $bids */
+                $bids        = $entityManager->getRepository('bids');
+                $totalAmount = $bids->sum('id_lender_account = ' . $lender->id_lender_account . ' AND added >= DATE_SUB(NOW(), INTERVAL 1 MONTH) AND status IN (' . \bids::STATUS_BID_PENDING . ', ' . \bids::STATUS_BID_ACCEPTED . ', ' . \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY . ')', 'ROUND(amount / 100)');
+
+                if ($totalAmount > $indicators[CIPManager::INDICATOR_AMOUNT_BY_MONTH]) {
+                    $advices[CIPManager::INDICATOR_AMOUNT_BY_MONTH] = true;
+                }
+            }
+
+            if (null !== $indicators[CIPManager::INDICATOR_PROJECT_DURATION] && $project->period > $indicators[CIPManager::INDICATOR_PROJECT_DURATION]) {
+                $advices[CIPManager::INDICATOR_PROJECT_DURATION] = true;
+            }
+
+            if (false === empty($advices)) {
+                $message = '';
+
+                if (isset($advices[CIPManager::INDICATOR_TOTAL_AMOUNT], $advices[CIPManager::INDICATOR_AMOUNT_BY_MONTH], $advices[CIPManager::INDICATOR_PROJECT_DURATION])) {
+                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement total, dépassement seuil mensuel, dépassement durée projet.';
+                } elseif (isset($advices[CIPManager::INDICATOR_TOTAL_AMOUNT], $advices[CIPManager::INDICATOR_AMOUNT_BY_MONTH])) {
+                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement total, dépassement seuil mensuel.';
+                } elseif (isset($advices[CIPManager::INDICATOR_TOTAL_AMOUNT], $advices[CIPManager::INDICATOR_PROJECT_DURATION])) {
+                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement total, dépassement durée projet.';
+                } elseif (isset($advices[CIPManager::INDICATOR_TOTAL_AMOUNT])) {
+                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement total.';
+                } elseif (isset($advices[CIPManager::INDICATOR_AMOUNT_BY_MONTH], $advices[CIPManager::INDICATOR_PROJECT_DURATION])) {
+                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement total, dépassement durée projet.';
+                } elseif (isset($advices[CIPManager::INDICATOR_AMOUNT_BY_MONTH])) {
+                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement seuil mensuel.';
+                } elseif (isset($advices[CIPManager::INDICATOR_PROJECT_DURATION])) {
+                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement durée projet.';
+                }
+
+                $cipManager->saveLog($evaluation, \lender_evaluation_log::EVENT_BID_ADVICE, strip_tags($message));
+                $response['advices'] = $message;
+            }
+        } elseif ($validationNeeded) {
+            $cipManager->saveLog($evaluation, \lender_evaluation_log::EVENT_BID_EVALUATION_NEEDED);
+            $response['questionnaire'] = true;
         }
 
-        return new JsonResponse([
-            'validation' => $validation
-        ]);
+        return new JsonResponse($response);
     }
 
     /**

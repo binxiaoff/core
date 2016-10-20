@@ -74,12 +74,11 @@ class BidManager
     /**
      * @param \bids $oBid
      * @param bool  $bSendNotification
-     * @param bool  $needsCIPValidation
      *
      * @return bool
      * @throws \Exception
      */
-    public function bid(\bids $oBid, $bSendNotification = true, $needsCIPValidation = false)
+    public function bid(\bids $oBid, $bSendNotification = true)
     {
         /** @var \settings $oSettings */
         $oSettings = $this->oEntityManager->getRepository('settings');
@@ -185,7 +184,7 @@ class BidManager
             throw new \Exception('bids-low-balance');
         }
 
-        if (empty($oBid->id_autobid) && $needsCIPValidation && $this->cipManager->isCIPValidationNeeded($oBid)) {
+        if (empty($oBid->id_autobid) && $this->cipManager->isCIPValidationNeeded($oBid) && false === $this->cipManager->hasValidEvaluation($oLenderAccount)) {
             throw new \Exception('bids-cip-validation-needed');
         }
 

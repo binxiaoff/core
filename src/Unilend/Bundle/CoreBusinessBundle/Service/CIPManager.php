@@ -519,7 +519,7 @@ class CIPManager
         }
 
         $thresholdAmount = $this->getContractThresholdAmount();
-        $lenderBids      = $bid->select('id_lender_account = ' . $bid->id_lender_account . ' AND id_project = ' . $project->id_project . ' AND status = ' . \bids::STATUS_BID_ACCEPTED);
+        $lenderBids      = $bid->select('id_lender_account = ' . $bid->id_lender_account . ' AND id_project = ' . $project->id_project . ' AND status IN (' . \bids::STATUS_BID_PENDING . ', ' . \bids::STATUS_BID_ACCEPTED . ', ' . \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY . ')');
 
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->entityManager->getRepository('lenders_accounts');
@@ -546,7 +546,7 @@ class CIPManager
      * @param string             $message
      * @return \lender_evaluation_log
      */
-    public function saveLog(\lender_evaluation $evaluation, $event, $message)
+    public function saveLog(\lender_evaluation $evaluation, $event, $message = '')
     {
         /** @var \lender_evaluation_log $advice */
         $advice = $this->entityManager->getRepository('lender_evaluation_log');

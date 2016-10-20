@@ -344,7 +344,6 @@ class ProjectsController extends Controller
      * @Method({"POST"})
      */
     public function estimateMonthlyRepaymentAction(Request $request)
-
     {
         if (false === $request->isXmlHttpRequest()) {
             return new Response('not an ajax request');
@@ -420,9 +419,8 @@ class ProjectsController extends Controller
         $lenderAccount = $entityManager->getRepository('lenders_accounts');
         $lenderAccount->get($user->getClientId(), 'id_client_owner');
 
-        $needsCIPValidation = true;
-        $bidAmount          = null;
-        $rate               = null;
+        $bidAmount = null;
+        $rate      = null;
 
         if (
             ($post = $request->request->get('invest'))
@@ -445,7 +443,6 @@ class ProjectsController extends Controller
             $cipBid             = $request->getSession()->get('cipBid');
             $bidAmount          = isset($cipBid['amount']) ? $cipBid['amount'] : null;
             $rate               = isset($cipBid['rate']) ? $cipBid['rate'] : null;
-            $needsCIPValidation = false;
 
             $request->getSession()->remove('cipBid');
         }
@@ -465,7 +462,7 @@ class ProjectsController extends Controller
         /** @var BidManager $bidManager */
         $bidManager = $this->get('unilend.service.bid_manager');
         try {
-            $bidManager->bid($bids, true, $needsCIPValidation);
+            $bidManager->bid($bids, true);
             /** @var MemcacheCachePool $oCachePool */
             $oCachePool = $this->get('memcache.default');
             $oCachePool->deleteItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $project->id_project);
@@ -492,9 +489,6 @@ class ProjectsController extends Controller
 
                     $this->addFlash('bid_not_eligible_reason', $translator->transChoice('project-detail_bid-not-eligible-reason-' . $reason, 0, ['%amountRest%' => $amountRest, '%amountMax%' => $amountMax]));
                 }
-            } elseif ('bids-cip-validation-needed' === $exception->getMessage()) {
-                $request->getSession()->set('cipBid', ['amount' => $bidAmount, 'rate' => $rate, 'project' => $project->id_project]);
-                return $this->redirectToRoute('cip_bid');
             } else {
                 $request->getSession()->set('bidResult', ['error' => true, 'message' => $translator->trans('project-detail_side-bar-' . $exception->getMessage())]);
             }
