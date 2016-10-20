@@ -1,41 +1,8 @@
-{% extends 'layouts/_layout_lender.html.twig' %}
+{% extends 'lender_cip/_layout-boolean-question.html.twig' %}
 
-{% set page = {
-    id: 'user-preter-profile',
-    title: 'Conseils en investissement',
-    classNames: 'user-preter-profile'
+{% set mock = {
+    question: 'Avez-vous conscience que vous pouvez perdre éventuellement la totalité de vos prêts ?',
+    alt_question: 'Maintenant, avez-vous conscience que vous pouvez perdre éventuellement la totalité de vos prêts ?',
+    yes_explanation: 'Les entreprises qui présentent des projets sur Unilend sont sélectionnées strictement avant leur mise en ligne. Toutefois, toutes les entreprises, même celles qui semblent saines à un moment donné, peuvent connaître des aléas qui les conduisent à ne plus pouvoir honorer leurs dettes. Dans un tel cas de figure, l’argent qui leur a été prêté, que ce soit par la communauté Unilend ou par d’autres créanciers, peut ne pas être remboursé.',
+    no_explanation: 'Les entreprises qui présentent des projets sur Unilend sont sélectionnées strictement avant leur mise en ligne. Toutefois, toutes les entreprises, même celles qui semblent saines à un moment donné, peuvent connaître des aléas qui les conduisent à ne plus pouvoir honorer leurs dettes. Dans un tel cas de figure, l’argent qui leur a été prêté, que ce soit par la communauté Unilend ou par d’autres créanciers, peut ne pas être remboursé.'
 } %}
-
-{% block dashboardContent %}
-    <div class="dashboard-tabs tabs">
-        {% include('pages/lender_profile/partials/tab_navigation.html.twig') %}
-
-        <article id="dashboard-cip" class="dashboard-tabs-content tab-content">
-            <div id="cip-step-{{ current_step }}">
-                <div class="panel cip-header">
-                    <header class="panel-header">
-                        <h3>Questionnaire</h3>
-                    </header>
-                    <div class="cip-progress" data-progressbar data-progressbar-current="{{ current_step }}" data-progressbar-total="{{ total_steps }}">
-                        <div data-progressbar-bar></div>
-                    </div>
-                </div>
-                <form method="post" action="{{ path('cip_form_questionnaire') }}" class="panel">
-                    <div class="row">
-                        <p>Avez-vous conscience que vous pouvez perdre éventuellement la totalité de vos prêts ?</p>
-                    </div>
-                    <div class="row">
-                        <div class="col-lg-6 col-md-6 col-sm-4 col-xs-2 text-align-left">
-                            <button type="submit" name="answer" value="{{ constant('\\lender_questionnaire_question::VALUE_BOOLEAN_TRUE') }}" class="btn-primary">Oui</button>
-                        </div>
-                        <div class="col-lg-6 col-md-6 col-sm-4 col-xs-2 text-align-right">
-                            <button type="submit" name="answer" value="{{ constant('\\lender_questionnaire_question::VALUE_BOOLEAN_FALSE') }}" class="btn-primary">Non</button>
-                        </div>
-                    </div>
-
-                    <input type="hidden" name="question" value="{{ question.id }}" />
-                </form>
-            </div><!-- /#cip-step-{{ current_step }} -->
-        </article><!-- /.dashboard-tabs-content -->
-    </div>
-{% endblock %}

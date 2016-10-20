@@ -1,0 +1,85 @@
+{% extends 'layouts/_layout_lender.html.twig' %}
+
+{% set page = {
+    id: 'user-preter-profile',
+    title: 'Conseils en investissement',
+    classNames: 'user-preter-profile'
+} %}
+
+{% block dashboardContent %}
+    <div class="dashboard-tabs tabs">
+        {% include('pages/lender_profile/partials/tab_navigation.html.twig') %}
+
+        <article id="dashboard-cip" class="dashboard-tabs-content tab-content">
+            <div id="cip-step-{{ current_step }}">
+                <div class="panel cip-header">
+                    <header class="panel-header">
+                        <h3>Questionnaire</h3>
+                    </header>
+                    <div class="cip-progress" data-progressbar data-progressbar-current="{{ current_step }}" data-progressbar-total="{{ total_steps }}">
+                        <div data-progressbar-bar></div>
+                    </div>
+                </div>
+                <form method="post" action="{{ path('cip_form_questionnaire') }}" class="panel">
+                    <input type="hidden" name="question" value="{{ question.id }}" />
+                    <div class="row">
+                        <h4>{{ mock.question|raw }}</h4>
+                    </div>
+                    {% if answers is empty %}
+                        <div class="row">
+                            <div class="col-lg-3 push-lg-2 col-md-3 push-md-2 col-sm-2 push-sm-1 col-xs-1">
+                                <button type="submit" name="answer" value="{{ constant('\\lender_questionnaire_question::VALUE_BOOLEAN_TRUE') }}" class="btn-primary btn-size-full">Oui</button>
+                            </div>
+                            <div class="col-lg-3 push-lg-2 col-md-3 push-md-2 col-sm-2 push-sm-2 col-xs-1 push-xs-2">
+                                <button type="submit" name="answer" value="{{ constant('\\lender_questionnaire_question::VALUE_BOOLEAN_FALSE') }}" class="btn-primary btn-size-full">Non</button>
+                            </div>
+                        </div>
+                    {% elseif answers.current.first == constant('\\lender_questionnaire_question::VALUE_BOOLEAN_TRUE') %}
+                        <div class="row">
+                            <div class="col-lg-3 push-lg-2 col-md-3 push-md-2 col-sm-2 push-sm-1 col-xs-1">
+                                <span class="btn-yes btn-size-full">Oui</span>
+                            </div>
+                            <div class="col-lg-3 push-lg-2 col-md-3 push-md-2 col-sm-2 push-sm-2 col-xs-1 push-xs-2">
+                                <span class="btn-default btn-color-primary btn-size-full">Non</span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <p>{{ mock.yes_explanation|raw }}</p>
+                        </div>
+                        <div class="row text-align-right">
+                            <button type="submit" name="continue" value="next_question" class="btn-primary btn-shape-md">Suivant</button>
+                        </div>
+                    {% elseif answers.current.first == constant('\\lender_questionnaire_question::VALUE_BOOLEAN_FALSE') and answers.current.second is not defined %}
+                        <div class="row">
+                            <div class="col-lg-3 push-lg-2 col-md-3 push-md-2 col-sm-2 push-sm-1 col-xs-1">
+                                <span class="btn-default btn-color-primary btn-size-full">Oui</span>
+                            </div>
+                            <div class="col-lg-3 push-lg-2 col-md-3 push-md-2 col-sm-2 push-sm-2 col-xs-1 push-xs-2">
+                                <span class="btn-no btn-size-full">Non</span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <p>{{ mock.no_explanation|raw }}</p>
+                        </div>
+                        <div class="row">
+                            <h5>{{ mock.alt_question|raw }}</h5>
+                        </div>
+                        <div class="row text-align-right">
+                            <button type="submit" name="answer" value="{{ constant('\\lender_questionnaire_question::VALUE_BOOLEAN_TRUE') }}" class="btn-primary btn-shape-md">Oui</button>
+                            <button type="submit" name="answer" value="{{ constant('\\lender_questionnaire_question::VALUE_BOOLEAN_FALSE') }}" class="btn-primary btn-shape-md">Non</button>
+                        </div>
+                    {% elseif answers.current.first == constant('\\lender_questionnaire_question::VALUE_BOOLEAN_FALSE') and answers.current.second == constant('\\lender_questionnaire_question::VALUE_BOOLEAN_FALSE') %}
+                        <div class="row">
+                            <div class="col-lg-5 col-md-5 col-sm-3 col-xs-2">
+                                <button type="submit" name="continue" value="back" class="btn-primary btn-size-full">D’accord, je me limite à prêter 2 000 €</button>
+                            </div>
+                            <div class="col-lg-5 push-lg-2 col-md-5 push-md-2 col-sm-3 push-sm-2 col-xs-2">
+                                <button type="submit" name="continue" value="loop" class="btn-primary btn-size-full">Non, j’insiste. Reposez-moi la question s’il vous plait</button>
+                            </div>
+                        </div>
+                    {% endif %}
+                </form>
+            </div><!-- /#cip-step-{{ current_step }} -->
+        </article><!-- /.dashboard-tabs-content -->
+    </div>
+{% endblock %}
