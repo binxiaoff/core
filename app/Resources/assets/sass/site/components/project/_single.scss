@@ -1198,14 +1198,7 @@ a#{$js-project-single-map-toggle} {
   }
 }
 
-
 // Repayment estimation
 .repayment-estimation-container {
-  position: relative;
-
-  .ui-is-spinner {
-    position: absolute;
-    right: 0;
-    top: 0;
-  }
+  text-align: center;
 }

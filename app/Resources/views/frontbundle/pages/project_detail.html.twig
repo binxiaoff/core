@@ -343,7 +343,7 @@
     {% block modals %}
         {% if project.lender is defined %}
             {% include 'partials/components/project-detail/modal-bid-confirmation.html.twig' %}
-
+            {% include 'partials/components/project-detail/modal-cip-advices.html.twig' %}
             {% include 'partials/components/project-detail/modal-cip-questionnaire.html.twig' %}
         {% endif %}
     {% endblock %}

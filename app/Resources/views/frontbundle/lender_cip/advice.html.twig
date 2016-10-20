@@ -36,7 +36,7 @@
             </div>
 
             {% if not validEvaluation %}
-                {% if app.request.session.get('cipBid') is not empty %}
+                {% if app.session.get('cipBid') is not empty %}
                     <a href="{{ path('cip_validate_questionnaire') }}" class="btn-primary fright">J'ai bien lu les conseils et je retourne voir le projet</a>
                 {% else %}
                     <a href="{{ path('cip_validate_questionnaire') }}" class="btn-primary fright">J'ai bien lu les conseils</a>
