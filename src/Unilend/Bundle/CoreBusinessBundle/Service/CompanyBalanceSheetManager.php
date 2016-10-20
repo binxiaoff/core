@@ -106,4 +106,20 @@ class CompanyBalanceSheetManager
         $companyBalanceSheet->update();
     }
 
+    /**
+     * @param \companies $company
+     *
+     * @return \company_tax_form_type|null
+     */
+    public function detectTaxFormType(\companies $company)
+    {
+        $taxFormType = $this->entityManager->getRepository('company_tax_form_type');
+        if (false === empty($company->rcs)) { // We are only capable of managing the fiscal form for a "RCS"( which is 2033)
+            $taxFormType->get(\company_tax_form_type::FORM_2033, 'label');
+
+            return $taxFormType;
+        }
+
+        return null;
+    }
 }

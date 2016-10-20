@@ -391,12 +391,9 @@ class ajaxController extends bootstrap
 
                 if ($oProject->get($_POST['id_project'], 'id_project')) {
                     $company->get($oProject->id_company);
+                    $taxFormType = $companyBalanceSheetManager->detectTaxFormType($company);
 
-                    if (false === empty($company->rcs)) { // We are only capable of managing the fiscal form for a "RCS"( which is 2033)
-                        /** @var \company_tax_form_type $taxFormType */
-                        $taxFormType = $this->loadData('company_tax_form_type');
-                        $taxFormType->get(\company_tax_form_type::FORM_2033, 'label');
-
+                    if ($taxFormType) {
                         $aAnnualAccounts    = $oCompanyAnnualAccounts->select('id_company = ' . $oProject->id_company . ' AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $oProject->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
                         $aAnnualAccountsIds = array_column($aAnnualAccounts, 'id_bilan');
                         $sAnnualAccountsIds = implode(', ', $aAnnualAccountsIds);

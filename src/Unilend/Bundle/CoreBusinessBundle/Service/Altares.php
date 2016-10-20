@@ -171,7 +171,8 @@ class Altares
      */
     public function setCompanyBalance(\companies &$oCompany, $bRecalculate = true)
     {
-        if (false === empty($oCompany->rcs)) { // We are only capable of managing the fiscal form for a "RCS"( which is 2033)
+        $taxFormType = $this->companyBalanceSheetManager->detectTaxFormType($oCompany);
+        if ($taxFormType) {
             $oBalanceSheets = $this->getBalanceSheets($oCompany->siren);
 
             if (isset($oBalanceSheets->myInfo->bilans) && is_array($oBalanceSheets->myInfo->bilans)) {
@@ -183,9 +184,6 @@ class Altares
                 $oCompanyBalance = $this->entityManager->getRepository('company_balance');
                 /** @var \company_balance_type $oCompaniesBalanceTypes */
                 $oCompaniesBalanceTypes = $this->entityManager->getRepository('company_balance_type');
-                /** @var \company_tax_form_type $taxFormType */
-                $taxFormType = $this->entityManager->getRepository('company_tax_form_type');
-                $taxFormType->get(\company_tax_form_type::FORM_2033, 'label');
 
                 $aCodes = $oCompaniesBalanceTypes->getAllByCode($taxFormType->id_type);
 
