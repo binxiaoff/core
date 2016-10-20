@@ -80,9 +80,9 @@ class LenderCIPController extends Controller
             return $this->redirectToRoute('cip_start_questionnaire');
         }
 
-        $question = $cipManager->getNextQuestion($evaluation);
+        $nextQuestion = $cipManager->getNextQuestion($evaluation);
 
-        if (null === $question) {
+        if (null === $nextQuestion) {
             $advices = implode("\n", $cipManager->getAdvices($lender));
 
             $cipManager->saveLog($evaluation, \lender_evaluation_log::EVENT_ADVICE, $advices);
@@ -91,15 +91,16 @@ class LenderCIPController extends Controller
             $template['validEvaluation'] = $cipManager->isValidEvaluation($evaluation);
             return $this->render('lender_cip/advice.html.twig', $template);
         } else {
+            $question = $cipManager->getLastQuestion($evaluation);
+            $answers  = $cipManager->getAnswersByType($evaluation);
+            $answer   = $answers[$question->type];
+
             $template['current_step'] = $question->order + 1;
-            $template['answers']      = $cipManager->getAnswersByType($evaluation);
+            $template['answers']      = $answers;
             $template['question']     = [
                 'id'   => $question->id_lender_questionnaire_question,
                 'type' => $question->type,
             ];
-
-            $answers = $cipManager->getAnswersByType($evaluation);
-            $answer  = $answers[$question->type];
 
             if ('' !== $answer['first_answer']) {
                 $template['answers']['current']['first'] = $answer['first_answer'];
