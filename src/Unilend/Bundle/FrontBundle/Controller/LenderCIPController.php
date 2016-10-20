@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Generator\UrlGenerator;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
@@ -86,29 +87,28 @@ class LenderCIPController extends Controller
             return $this->redirectToRoute('cip_start_questionnaire');
         }
 
-        $question = $cipManager->getNextQuestion($evaluation);
+        $nextQuestion = $cipManager->getNextQuestion($evaluation);
 
-        if (null === $question) {
+        if (null === $nextQuestion) {
             $advices = implode("\n", $cipManager->getAdvices($lender));
 
             $cipManager->saveLog($evaluation, \lender_evaluation_log::EVENT_ADVICE, $advices);
-
-            $this->sendAdviceEmail($this->getClient());
 
             $template['advices']         = $advices;
             $template['validEvaluation'] = $cipManager->isValidEvaluation($evaluation);
             $template['clientHash']      = $this->getUser()->getHash();
             return $this->render('lender_cip/advice.html.twig', $template);
         } else {
+            $question = $cipManager->getLastQuestion($evaluation);
+            $answers  = $cipManager->getAnswersByType($evaluation);
+            $answer   = $answers[$question->type];
+
             $template['current_step'] = $question->order + 1;
-            $template['answers']      = $cipManager->getAnswersByType($evaluation);
+            $template['answers']      = $answers;
             $template['question']     = [
                 'id'   => $question->id_lender_questionnaire_question,
                 'type' => $question->type,
             ];
-
-            $answers = $cipManager->getAnswersByType($evaluation);
-            $answer  = $answers[$question->type];
 
             if ('' !== $answer['first_answer']) {
                 $template['answers']['current']['first'] = $answer['first_answer'];
@@ -218,6 +218,7 @@ class LenderCIPController extends Controller
     {
         $cipManager = $this->get('unilend.service.cip_manager');
         $cipManager->validateLenderEvaluation($this->getLenderAccount());
+        $this->sendAdviceEmail($this->getClient());
 
         $bid = $request->getSession()->get('cipBid');
 
@@ -412,15 +413,14 @@ class LenderCIPController extends Controller
         if (false === empty($projects)) {
             $projectListHtml .= '<ul>';
             foreach ($projects as $project) {
-                $projectListHtml .= '<li>
-                                        <a href="' . $this->generateUrl('project_detail', ['projectSlug' => $project['slug']]) . '"><span style=\'color:#b20066;\'>' . $project['title'] . '</span></a>' .
-                                        $translator->trans('project-list_remaining-days', ['%remainingDays%' => $project['days_left']]) .
-                                    '</li>';
+                $projectListHtml .= '<li>                                 
+                                        <a href="' . $this->generateUrl('project_detail', ['projectSlug' => $project['slug']], UrlGenerator::ABSOLUTE_URL) . '"><span style=\'color:#b20066;\'>' . $project['title'] . '</span></a>' .
+                    '</li>';
             }
             $projectListHtml .= '</ul>';
         } else {
-            $projectListHtml .= "Nous n'avons actuellement pas de projets à vous conseiller";
-        }//TODO translation
+            $projectListHtml .= $translator->trans('lender-valiation_confirmation-email-no-advised-projects');
+        }
 
         $varMail = array(
             'surl'                 => $this->get('assets.packages')->getUrl(''),
