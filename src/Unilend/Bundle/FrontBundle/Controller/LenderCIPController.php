@@ -110,6 +110,16 @@ class LenderCIPController extends Controller
                 $template['answers']['current']['second'] = $answer['second_answer'];
             }
 
+            if ($question->isBooleanType($question->type)) {
+                if (\lender_questionnaire_question::TYPE_AWARE_DIVIDE_INVESTMENTS === $question->type) {
+                    $template['question']['valid_answer']   = \lender_questionnaire_question::VALUE_BOOLEAN_FALSE;
+                    $template['question']['invalid_answer'] = \lender_questionnaire_question::VALUE_BOOLEAN_TRUE;
+                } else {
+                    $template['question']['valid_answer']   = \lender_questionnaire_question::VALUE_BOOLEAN_TRUE;
+                    $template['question']['invalid_answer'] = \lender_questionnaire_question::VALUE_BOOLEAN_FALSE;
+                }
+            }
+
             return $this->render('lender_cip/question-' . $question->type . '.html.twig', $template);
         }
     }
@@ -167,17 +177,17 @@ class LenderCIPController extends Controller
                     $cipManager->insertQuestion($evaluation, $question);
                     return $this->redirectToRoute('cip_continue_questionnaire');
                 case 'back':
-                    $bid = $request->getSession()->get('cipBid');
+                    $bid = $request->getSession()->getFlashBag()->peek('cipBid')[0];
 
                     if (false === empty($bid['project'])) {
                         /** @var \projects $project */
                         $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
 
                         if (is_numeric($bid['project']) && $project->get($bid['project'])) {
-                            return $this->redirectToRoute('project_detail', ['projectId' => $project->id_project]);
+                            return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
                         }
 
-                        $request->getSession()->remove('cipBid');
+                        $request->getSession()->getFlashBag()->remove('cipBid');
                     }
 
                     return $this->redirectToRoute('cip_index');
@@ -211,17 +221,17 @@ class LenderCIPController extends Controller
         $cipManager = $this->get('unilend.service.cip_manager');
         $cipManager->validateLenderEvaluation($this->getLenderAccount());
 
-        $bid = $request->getSession()->get('cipBid');
+        $bid = $request->getSession()->getFlashBag()->peek('cipBid');
 
-        if (false === empty($bid['project'])) {
+        if (false === empty($bid[0]['project'])) {
             /** @var \projects $project */
             $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
 
-            if (is_numeric($bid['project']) && $project->get($bid['project'])) {
-                return $this->redirectToRoute('place_bid', ['projectId' => $project->id_project]);
+            if (is_numeric($bid[0]['project']) && $project->get($bid[0]['project'])) {
+                return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
 
-            $request->getSession()->remove('cipBid');
+            $request->getSession()->getFlashBag()->remove('cipBid');
         }
 
         return $this->redirectToRoute('cip_index');
@@ -268,7 +278,7 @@ class LenderCIPController extends Controller
             ]);
         }
 
-        $request->getSession()->set('cipBid', ['amount' => $amount, 'rate' => $rate, 'project' => $project->id_project]);
+        $this->addFlash('cipBid', ['amount' => $amount, 'rate' => $rate, 'project' => $project->id_project]);
 
         $response   = [];
         $lender     = $this->getLenderAccount();

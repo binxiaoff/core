@@ -333,9 +333,9 @@ class CIPManager
             $answer->update();
 
             if (
-                false === $this->isBooleanType($question->type)
-                || \lender_questionnaire_question::VALUE_BOOLEAN_FALSE === $answer->first_answer
-                && \lender_questionnaire_question::VALUE_BOOLEAN_TRUE === $answer->second_answer
+                false === $question->isBooleanType($question->type)
+                || \lender_questionnaire_question::TYPE_AWARE_DIVIDE_INVESTMENTS === $question->type && \lender_questionnaire_question::VALUE_BOOLEAN_TRUE === $answer->first_answer && \lender_questionnaire_question::VALUE_BOOLEAN_FALSE === $answer->second_answer
+                || \lender_questionnaire_question::TYPE_AWARE_DIVIDE_INVESTMENTS !== $question->type && \lender_questionnaire_question::VALUE_BOOLEAN_FALSE === $answer->first_answer && \lender_questionnaire_question::VALUE_BOOLEAN_TRUE === $answer->second_answer
             ) {
                 $nextQuestion = $this->getNextQuestion($evaluation);
 
@@ -363,7 +363,7 @@ class CIPManager
             $question->get($answer->id_lender_questionnaire_question);
         }
 
-        if ($this->isBooleanType($question->type)) {
+        if ($question->isBooleanType($question->type)) {
             return (
                 in_array($answer->first_answer, [\lender_questionnaire_question::VALUE_BOOLEAN_TRUE, \lender_questionnaire_question::VALUE_BOOLEAN_FALSE])
                 && in_array($answer->second_answer, [\lender_questionnaire_question::VALUE_BOOLEAN_TRUE, \lender_questionnaire_question::VALUE_BOOLEAN_FALSE, ''])
@@ -378,12 +378,14 @@ class CIPManager
      */
     public function resetValues(\lender_evaluation $evaluation)
     {
+        /** @var \lender_questionnaire_question $question */
+        $question = $this->entityManager->getRepository('lender_questionnaire_question');
         /** @var \lender_evaluation_answer $answerEntity */
         $answerEntity = $this->entityManager->getRepository('lender_evaluation_answer');
         $answers      = $this->getAnswersByType($evaluation);
 
         foreach ($answers as $type => $answer) {
-            if (false === $this->isBooleanType($type)) {
+            if (false === $question->isBooleanType($type)) {
                 $answerEntity->get($answer['id_lender_evaluation_answer']);
                 $answerEntity->status = \lender_evaluation_answer::STATUS_INACTIVE;
                 $answerEntity->update();
@@ -575,14 +577,5 @@ class CIPManager
         }
 
         return $contractAttrVars[0];
-    }
-
-    /**
-     * @param string $type
-     * @return bool
-     */
-    private function isBooleanType($type)
-    {
-        return in_array($type, [\lender_questionnaire_question::TYPE_AWARE_MONEY_LOSS, \lender_questionnaire_question::TYPE_AWARE_PROGRESSIVE_CAPITAL_REPAYMENT, \lender_questionnaire_question::TYPE_AWARE_RISK_RETURN, \lender_questionnaire_question::TYPE_AWARE_DIVIDE_INVESTMENTS]);
     }
 }
