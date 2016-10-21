@@ -1041,14 +1041,14 @@ class pdfController extends bootstrap
 
                 $recoveryAmountsTaxExcl = [];
                 foreach ($allLoans as $index => $loan) {
-                    $prorataRecovery                          = bcdiv(bcmul(bcdiv($loan['amount'], 100, 2), $totalAmountRecovered), $totalLoans, 2);
+                    $prorataRecovery                          = round(bcdiv(bcmul(bcdiv($loan['amount'], 100, 3), $totalAmountRecovered), $totalLoans, 3), 2);
                     $recoveryAmountsTaxExcl[$loan['id_loan']] = $prorataRecovery;
                 }
 
-                $roundDifference = round((array_sum($recoveryAmountsTaxExcl) - $totalAmountRecovered), 2);
+                $roundDifference = round(bcsub(array_sum($recoveryAmountsTaxExcl), $totalAmountRecovered, 3), 2);
                 if (abs($roundDifference) > 0) {
                     $maxAmountLoanId                          = array_keys($recoveryAmountsTaxExcl, max($recoveryAmountsTaxExcl))[0];
-                    $recoveryAmountsTaxExcl[$maxAmountLoanId] = $recoveryAmountsTaxExcl[$maxAmountLoanId] - $roundDifference;
+                    $recoveryAmountsTaxExcl[$maxAmountLoanId] = bcsub($recoveryAmountsTaxExcl[$maxAmountLoanId], $roundDifference, 2);
                 }
 
                 $recoveryTaxExcl = $recoveryAmountsTaxExcl[$this->oLoans->id_loan];
