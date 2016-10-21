@@ -23,7 +23,7 @@
                     <span class="label">{% trans %} lender-dashboard-navigation_operations-link {% endtrans %}</span>
                 </a>
             </li>
-            <li role="presentation" class="dashboard-nav-profile {% if route|slice(0, 14) == 'lender_profile' or route in ['cip_index', 'cip_continue_questionnaire'] %}active{% else %}complete{% endif %}">
+            <li role="presentation" class="dashboard-nav-profile {% if route|slice(0, 14) == 'lender_profile' or route in ['cip_index', 'cip_start_questionnaire', 'cip_continue_questionnaire'] %}active{% else %}complete{% endif %}">
                 <a href="{{ path('lender_profile') }}">
                     <span class="icon fa-profile-u"></span>
                     <span class="label">{% trans %} lender-dashboard-navigation_profile-link {% endtrans %}</span>

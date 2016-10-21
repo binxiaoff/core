@@ -83,13 +83,16 @@ class LenderCIPController extends Controller
             'total_steps' => self::TOTAL_QUESTIONNAIRE_STEPS
         ];
 
-        if (null === $evaluation) {
+        if (null === $evaluation || false === $cipManager->isEvaluationStarted($evaluation)) {
             return $this->redirectToRoute('cip_start_questionnaire');
         }
 
+        $lastQuestion = $cipManager->getLastQuestion($evaluation);
         $nextQuestion = $cipManager->getNextQuestion($evaluation);
+        $answers      = $cipManager->getAnswersByType($evaluation);
+        $lastAnswer   = $answers[$lastQuestion->type];
 
-        if (null === $nextQuestion) {
+        if (null === $nextQuestion && '' !== $lastAnswer['first_answer']) {
             $advices = implode("\n", $cipManager->getAdvices($lender));
 
             $cipManager->saveLog($evaluation, \lender_evaluation_log::EVENT_ADVICE, $advices);
@@ -98,27 +101,23 @@ class LenderCIPController extends Controller
             $template['validEvaluation'] = $cipManager->isValidEvaluation($evaluation);
             return $this->render('lender_cip/advice.html.twig', $template);
         } else {
-            $question = $cipManager->getLastQuestion($evaluation);
-            $answers  = $cipManager->getAnswersByType($evaluation);
-            $answer   = $answers[$question->type];
-
-            $template['current_step'] = $question->order + 1;
+            $template['current_step'] = $lastQuestion->order + 1;
             $template['answers']      = $answers;
             $template['question']     = [
-                'id'   => $question->id_lender_questionnaire_question,
-                'type' => $question->type,
+                'id'   => $lastQuestion->id_lender_questionnaire_question,
+                'type' => $lastQuestion->type,
             ];
 
-            if ('' !== $answer['first_answer']) {
-                $template['answers']['current']['first'] = $answer['first_answer'];
+            if ('' !== $lastAnswer['first_answer']) {
+                $template['answers']['current']['first'] = $lastAnswer['first_answer'];
             }
 
-            if ('' !== $answer['second_answer']) {
-                $template['answers']['current']['second'] = $answer['second_answer'];
+            if ('' !== $lastAnswer['second_answer']) {
+                $template['answers']['current']['second'] = $lastAnswer['second_answer'];
             }
 
-            if ($question->isBooleanType($question->type)) {
-                if (\lender_questionnaire_question::TYPE_AWARE_DIVIDE_INVESTMENTS === $question->type) {
+            if ($lastQuestion->isBooleanType($lastQuestion->type)) {
+                if (\lender_questionnaire_question::TYPE_AWARE_DIVIDE_INVESTMENTS === $lastQuestion->type) {
                     $template['question']['valid_answer']   = \lender_questionnaire_question::VALUE_BOOLEAN_FALSE;
                     $template['question']['invalid_answer'] = \lender_questionnaire_question::VALUE_BOOLEAN_TRUE;
                 } else {
@@ -127,7 +126,7 @@ class LenderCIPController extends Controller
                 }
             }
 
-            return $this->render('lender_cip/question-' . $question->type . '.html.twig', $template);
+            return $this->render('lender_cip/question-' . $lastQuestion->type . '.html.twig', $template);
         }
     }
 
@@ -352,6 +351,10 @@ class LenderCIPController extends Controller
                 $response['advices'] = $message;
             }
         } elseif ($validationNeeded) {
+            if (null === $evaluation) {
+                $cipManager->createEvaluation($lender);
+            }
+
             $cipManager->saveLog($evaluation, \lender_evaluation_log::EVENT_BID_EVALUATION_NEEDED);
             $response['questionnaire'] = true;
         }
