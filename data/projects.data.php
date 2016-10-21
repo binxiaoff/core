@@ -30,8 +30,6 @@ use \Doctrine\DBAL\Statement;
 
 class projects extends projects_crud
 {
-    const MINIMUM_CREATION_DAYS_PROSPECT = 720;
-    const MINIMUM_CREATION_DAYS          = 1080;
     const MINIMUM_REVENUE                = 80000;
 
     const DISPLAY_PROJECT_ON  = 0;

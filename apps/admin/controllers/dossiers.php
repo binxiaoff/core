@@ -118,6 +118,9 @@ class dossiersController extends bootstrap
         $this->clients_prescripteurs         = $this->loadData('clients');
         $this->companies_prescripteurs       = $this->loadData('companies');
         $this->settings                      = $this->loadData('settings');
+        $companyTaxFormType                  = $this->loadData('company_tax_form_type');
+        /** @var \company_balance_type $companyBalanceDetailsType */
+        $companyBalanceDetailsType           = $this->loadData('company_balance_type');
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
         $oProjectManager = $this->get('unilend.service.project_manager');
@@ -131,6 +134,12 @@ class dossiersController extends bootstrap
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             $this->settings->get('Durée des prêts autorisées', 'type');
             $this->dureePossible = explode(',', $this->settings->value);
+            $this->taxFormTypes =  $companyTaxFormType->select();
+
+            $this->allTaxFormTypes = [];
+            foreach ($this->taxFormTypes as $formType) {
+                $this->allTaxFormTypes[$formType['label']] = $companyBalanceDetailsType->getAllByType($formType['id_type']);
+            }
             /** @var product $product */
             $product = $this->loadData('product');
 
@@ -240,22 +249,12 @@ class dossiersController extends bootstrap
 
                 if (count($this->lCompanies_actif_passif) < count($this->lbilans)) {
                     foreach (array_diff(array_column($this->lbilans, 'id_bilan'), array_column($this->lCompanies_actif_passif, 'id_bilan')) as $iAnnualAccountsId) {
-                        $oAssetsDebts                                     = new \companies_actif_passif($this->bdd);
-                        $oAssetsDebts->id_bilan                           = $iAnnualAccountsId;
-                        $oAssetsDebts->immobilisations_corporelles        = 0;
-                        $oAssetsDebts->immobilisations_incorporelles      = 0;
-                        $oAssetsDebts->immobilisations_financieres        = 0;
-                        $oAssetsDebts->stocks                             = 0;
-                        $oAssetsDebts->creances_clients                   = 0;
-                        $oAssetsDebts->disponibilites                     = 0;
-                        $oAssetsDebts->valeurs_mobilieres_de_placement    = 0;
-                        $oAssetsDebts->capitaux_propres                   = 0;
-                        $oAssetsDebts->provisions_pour_risques_et_charges = 0;
-                        $oAssetsDebts->amortissement_sur_immo             = 0;
-                        $oAssetsDebts->dettes_financieres                 = 0;
-                        $oAssetsDebts->dettes_fournisseurs                = 0;
-                        $oAssetsDebts->autres_dettes                      = 0;
-                        $oAssetsDebts->create();
+                        if ($this->aBalanceSheets[$iAnnualAccountsId]['form_type'] == \company_tax_form_type::FORM_2033) {
+                            /** @var companies_actif_passif $oAssetsDebts */
+                            $oAssetsDebts                                     = $this->loadData('companies_actif_passif');
+                            $oAssetsDebts->id_bilan                           = $iAnnualAccountsId;
+                            $oAssetsDebts->create();
+                        }
                     }
                     $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_bilan IN (' . $sAnnualAccountsIds . ')', 'FIELD(id_bilan, ' . $sAnnualAccountsIds . ') ASC');
                 }
@@ -332,21 +331,23 @@ class dossiersController extends bootstrap
 
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                 die;
-            } elseif (isset($_POST['add_annual_accounts'])) {
+            } elseif (isset($_POST['add_annual_accounts'], $_POST['tax_form_type']) && is_numeric($_POST['tax_form_type']) && $companyTaxFormType->get($_POST['tax_form_type'])) {
                 $aLastAnnualAccounts                                 = current($this->aAllAnnualAccounts);
                 $oClosingDate = new \DateTime($aLastAnnualAccounts['cloture_exercice_fiscal']);
                 $this->companies_bilans->id_company                  = $this->projects->id_company;
                 $this->companies_bilans->cloture_exercice_fiscal     = $oClosingDate->add(new \DateInterval('P12M'))->format('Y-m-d');
                 $this->companies_bilans->duree_exercice_fiscal       = 12;
+                $this->companies_bilans->id_company_tax_form_type    = $_POST['tax_form_type'];
                 $this->companies_bilans->ca                          = 0;
                 $this->companies_bilans->resultat_brute_exploitation = 0;
                 $this->companies_bilans->resultat_exploitation       = 0;
                 $this->companies_bilans->investissements             = 0;
                 $this->companies_bilans->create();
 
-                $this->companies_actif_passif->id_bilan = $this->companies_bilans->id_bilan;
-                $this->companies_actif_passif->create();
-
+                if ($companyTaxFormType->label == \company_tax_form_type::FORM_2035) {
+                    $this->companies_actif_passif->id_bilan = $this->companies_bilans->id_bilan;
+                    $this->companies_actif_passif->create();
+                }
                 $this->projects->id_dernier_bilan = $this->companies_bilans->id_bilan;
                 $this->projects->update();
 
@@ -373,19 +374,9 @@ class dossiersController extends bootstrap
                             $logger = $this->get('logger');
                             $logger->error('Wrong company name - altares return : ' . serialize($oResult), array('class' => __CLASS__, 'function' => __FUNCTION__));
                         }
-
-                        $oCompanyCreationDate = new \DateTime($this->companies->date_creation);
-                        $oInterval            = $oCompanyCreationDate->diff(new \DateTime());
-
-                        if ($oResult->myInfo->eligibility === 'Non' || $oInterval->days < \projects::MINIMUM_CREATION_DAYS_PROSPECT) {
-                            $_SESSION['freeow']['title']   = 'Données Altares';
-                            $_SESSION['freeow']['message'] = 'Société non éligible';
-                        } else {
-                            $oAltares->setCompanyBalance($this->companies);
-
-                            $_SESSION['freeow']['title']   = 'Données Altares';
-                            $_SESSION['freeow']['message'] = 'Données Altares récupéré !';
-                        }
+                        $oAltares->setCompanyBalance($this->companies);
+                        $_SESSION['freeow']['title']   = 'Données Altares';
+                        $_SESSION['freeow']['message'] = 'Données Altares récupéré !';
                     } else {
                         $_SESSION['freeow']['title']   = 'Données Altares';
                         $_SESSION['freeow']['message'] = 'Données Altares erreur !';
@@ -922,7 +913,11 @@ class dossiersController extends bootstrap
     {
         $fTotal = 0.0;
         foreach ($aBalances as $sBalance) {
-            $fTotal += $aBalanceSheet[$sBalance];
+            if ('-' === substr($sBalance, 0, 1)) {
+                $fTotal -= $aBalanceSheet['details'][substr($sBalance, 1)];
+            } else {
+                $fTotal += $aBalanceSheet['details'][$sBalance];
+            }
         }
         return $fTotal;
     }
@@ -1275,7 +1270,7 @@ class dossiersController extends bootstrap
         $this->aRatings                 = $oCompanyRating->getHistoryRatingsByType($this->oProject->id_company_rating_history);
         $this->aAnnualAccounts          = $oAnnualAccounts->select('id_company = ' . $this->oCompany->id_company . ' AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $this->oProject->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
         $aAnnualAccountsIds             = array_column($this->aAnnualAccounts, 'id_bilan');
-        $this->aBalanceSheets           = $companyBalanceSheetManager->getBalanceSheetsByAnnualAccount($aAnnualAccountsIds);
+        $this->aBalanceSheets           = $companyBalanceSheetManager->getBalanceSheetsByAnnualAccount($aAnnualAccountsIds)['details'];
         $this->bIsProblematicCompany    = $this->oCompany->countProblemsBySIREN() > 0;
         $this->iDeclaredRevenue         = $this->oProject->ca_declara_client;
         $this->iDeclaredOperatingIncome = $this->oProject->resultat_exploitation_declara_client;
@@ -2945,5 +2940,116 @@ class dossiersController extends bootstrap
         }
 
         echo json_encode($aNames);
+    }
+
+    protected function generateBalanceLineHtml($codes, $formType, $extraClass = '')
+    {
+        $html = '';
+        foreach ($this->allTaxFormTypes[$formType] as $field) {
+            if ($codes === null || in_array($field['code'], $codes)) {
+                $html .= '<tr class="' . $extraClass . '"> <td>' . $field['label'] . '</td> <td width="45">' . $field['code'] . '</td>';
+                $iColumn                 = 0;
+                $iPreviousBalanceSheetId = null;
+
+                foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
+                    if ($formType != $aBalanceSheet['form_type']) {
+                        $html .= '<td></td>';
+                        if ($iColumn) {
+                            $html .= '<td></td>';
+                        }
+                    } else {
+                        $value = isset($aBalanceSheet['details'][$field['code']]) ? $aBalanceSheet['details'][$field['code']] : 0;
+                        if ($iColumn) {
+                            $previousValue = isset($this->aBalanceSheets[$iPreviousBalanceSheetId]['details'][$field['code']]) ? $this->aBalanceSheets[$iPreviousBalanceSheetId]['details'][$field['code']] : 0;
+                            $movement      = empty($value) || empty($previousValue) ? 'N/A' : round(($previousValue - $value) / abs($value) * 100) . '&nbsp;%';
+                            $html .= '<td>' . $movement . '</td>';
+
+                        }
+                        $formatedValue = $this->ficelle->formatNumber($value, 0);
+                        $tabIndex      = 420 + $iColumn;
+                        $html .= '<td><input type="text" class="numbers" name="' . $field['code'] . '[' . $iBalanceSheetId . ']" value="' . $formatedValue . '" tabindex="' . $tabIndex . '"/>&nbsp;€</td>';
+
+                        $iPreviousBalanceSheetId = $iBalanceSheetId;
+                    }
+                    $iColumn++;
+                }
+                $html .= '</tr>';
+            }
+        }
+
+        return $html;
+    }
+
+    protected function generateBalanceSubTotalLineHtml($label, $codes, $formType, $domId = '')
+    {
+        $html = '<tr class="sub-total"><td colspan="2">' . $label . '</td>';
+        $iPreviousTotal = null;
+        $iColumn = 0;
+        foreach ($this->aBalanceSheets as $aBalanceSheet) {
+            if ($formType != $aBalanceSheet['form_type']) {
+                $html .= '<td></td>';
+                if ($iColumn) {
+                    $html .= '<td></td>';
+                }
+            } else {
+                $iTotal = $this->sumBalances($codes, $aBalanceSheet);
+
+                if ($iColumn) {
+                    $movement = empty($iTotal) || empty($iPreviousTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / abs($iTotal) * 100) . '&nbsp;%';
+                    $html .= '<td>' . $movement . '</td>';
+                }
+                $formatedValue = $this->ficelle->formatNumber($iTotal, 0);
+                $html .= '<td id="'.$domId . '">' . $formatedValue . '</td>';
+                $iPreviousTotal = $iTotal;
+            }
+            $iColumn ++;
+        }
+        $html .= '</tr>';
+
+        return $html;
+    }
+
+    protected function generateBalanceGroupHtml($totalLabel, $code, $formType)
+    {
+        return $this->generateBalanceLineHtml($code, $formType) . $this->generateBalanceSubTotalLineHtml($totalLabel, $code, $formType);
+    }
+
+    protected function generateBalanceTotalLineHtml($label, $codes, $formType, $domId = '')
+    {
+        $html = '<tr><th colspan="2">' . $label . '</th>';
+        $iPreviousTotal = null;
+        $iIndex         = 0;
+        $iColumn        = 0;
+        foreach ($this->aBalanceSheets as $aBalanceSheet) {
+            if ($formType != $aBalanceSheet['form_type']) {
+                $html .= '<th></th>';
+                if ($iColumn) {
+                    $html .= '<th></th>';
+                }
+            } else {
+                $iTotal = $this->sumBalances($codes, $aBalanceSheet);
+
+                if ($iColumn) {
+                    $movement = empty($iTotal) || empty($iPreviousTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / abs($iTotal) * 100) . '&nbsp;%';
+                    $html .= '<th>' . $movement . '</th>';
+                }
+                $formatedValue = $this->ficelle->formatNumber($iTotal, 0);
+                $html .= '<th id="'.$domId . $iIndex++ . '">' . $formatedValue . '</th>';
+                $iPreviousTotal = $iTotal;
+            }
+            $iColumn ++;
+        }
+        $html .= '</tr>';
+
+        return $html;
+    }
+
+    protected function negtive($case)
+    {
+        if ('-' === substr($case, 0, 1)) {
+            return substr($case, 1);
+        } else {
+            return '-' . $case;
+        }
     }
 }

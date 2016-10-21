@@ -902,7 +902,13 @@
         <?php $this->fireView('blocs/etape3'); ?>
         <?php $this->fireView('blocs/etape4_1'); ?>
         <?php $this->fireView('blocs/etape4_2'); ?>
-        <?php $this->fireView('blocs/etape4_3'); ?>
+        <?php
+        $formTypes = array_column($this->aBalanceSheets, 'form_type', 'form_type');
+        if (1 === count($formTypes)
+            && array_values($formTypes)[0] == company_tax_form_type::FORM_2033) {
+            $this->fireView('blocs/etape4_3');
+        }
+        ?>
         <?php $this->fireView('blocs/etape4_4'); ?>
         <?php $this->fireView('blocs/etape5'); ?>
         <?php $this->fireView('blocs/etape6'); ?>

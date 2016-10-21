@@ -673,14 +673,22 @@ class ProjectRequestController extends Controller
         $session = $request->getSession()->get('projectRequest');
         $values  = isset($session['values']) ? $session['values'] : [];
 
-        $template['form'] = [
-            'errors' => isset($session['errors']) ? $session['errors'] : [],
-            'values' => [
+        $template['form']['errors'] = isset($session['errors']) ? $session['errors'] : [];
+
+        if (empty($this->company->rcs)) {
+            $template['form']['values'] = [
+                'ag_2035' => isset($values['ag_2035']) ? $values['ag_2035'] : (empty($this->project->ca_declara_client) ? (empty($altaresRevenue) ? '' : $altaresRevenue) : $this->project->ca_declara_client),
+                ];
+            $template['rcs'] = false;
+        } else {
+            $template['form']['values'] = [
                 'dl' => isset($values['dl']) ? $values['dl'] : (empty($this->project->fonds_propres_declara_client) ? (empty($altaresCapitalStock) ? '' : $altaresCapitalStock) : $this->project->fonds_propres_declara_client),
                 'fl' => isset($values['fl']) ? $values['fl'] : (empty($this->project->ca_declara_client) ? (empty($altaresRevenue) ? '' : $altaresRevenue) : $this->project->ca_declara_client),
                 'gg' => isset($values['gg']) ? $values['gg'] : (empty($this->project->resultat_exploitation_declara_client) ? (empty($altaresOperationIncomes) ? '' : $altaresOperationIncomes) : $this->project->resultat_exploitation_declara_client)
-            ]
-        ];
+            ];
+            $template['rcs'] = true;
+        }
+
 
         $template['project'] = [
             'amount'                   => $this->project->amount,
@@ -718,15 +726,22 @@ class ProjectRequestController extends Controller
         $values = is_array($values) ? $values : [];
         $files  = $request->files->all();
 
-        if (false === isset($values['dl']) || $values['dl'] === '') {
-            $errors['dl'] = true;
+        if (empty($this->company->rcs)) {
+            if (false === isset($values['ag_2035']) || $values['ag_2035'] === '') {
+                $errors['ag_2035'] = true;
+            }
+        } else {
+            if (false === isset($values['dl']) || $values['dl'] === '') {
+                $errors['dl'] = true;
+            }
+            if (false === isset($values['fl']) || $values['fl'] === '') {
+                $errors['fl'] = true;
+            }
+            if (false === isset($values['gg']) || $values['gg'] === '') {
+                $errors['gg'] = true;
+            }
         }
-        if (false === isset($values['fl']) || $values['fl'] === '') {
-            $errors['fl'] = true;
-        }
-        if (false === isset($values['gg']) || $values['gg'] === '') {
-            $errors['gg'] = true;
-        }
+
         if (empty($files['accounts']) || false === ($files['accounts'] instanceof UploadedFile)) {
             $errors['accounts'] = true;
         } elseif (false === $this->uploadAttachment('accounts', \attachment_type::DERNIERE_LIASSE_FISCAL)) {
@@ -755,67 +770,76 @@ class ProjectRequestController extends Controller
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
-        $updateDeclaration = false;
-        $values['dl']      = $ficelle->cleanFormatedNumber($values['dl']);
-        $values['fl']      = $ficelle->cleanFormatedNumber($values['fl']);
-        $values['gg']      = $ficelle->cleanFormatedNumber($values['gg']);
-
-        /** @var \companies_actif_passif $companyAssetsDebts */
-        $companyAssetsDebts = $entityManager->getRepository('companies_actif_passif');
-        /** @var \companies_bilans $annualAccountsEntity */
-        $annualAccountsEntity = $entityManager->getRepository('companies_bilans');
-
-        $altaresCapitalStock     = 0;
-        $altaresRevenue          = 0;
-        $altaresOperationIncomes = 0;
-        $annualAccounts          = $annualAccountsEntity->select('id_company = ' . $this->company->id_company, 'cloture_exercice_fiscal DESC', 0, 1);
-
-        if (false === empty($annualAccounts)) {
-            $companyAssetsDebts->get($annualAccounts[0]['id_bilan'], 'id_bilan');
-
-            $altaresCapitalStock     = $companyAssetsDebts->capitaux_propres;
-            $altaresRevenue          = $annualAccounts[0]['ca'];
-            $altaresOperationIncomes = $annualAccounts[0]['resultat_exploitation'];
-        }
-
-        if ($altaresCapitalStock != $values['dl']) {
-            $this->project->fonds_propres_declara_client = $values['dl'];
+        if (empty($this->company->rcs)) {
+            $this->project->ca_declara_client = $values['ag_2035'];
             $updateDeclaration = true;
-        } elseif (false === empty($this->project->fonds_propres_declara_client) && $altaresCapitalStock == $values['dl']) {
-            $this->project->fonds_propres_declara_client = 0;
-            $updateDeclaration = true;
-        }
+        } else {
+            $updateDeclaration = false;
+            $values['dl']      = $ficelle->cleanFormatedNumber($values['dl']);
+            $values['fl']      = $ficelle->cleanFormatedNumber($values['fl']);
+            $values['gg']      = $ficelle->cleanFormatedNumber($values['gg']);
 
-        if ($altaresRevenue != $values['fl']) {
-            $this->project->ca_declara_client = $values['fl'];
-            $updateDeclaration = true;
-        } elseif (false === empty($this->project->ca_declara_client) && $altaresRevenue == $values['fl']) {
-            $this->project->ca_declara_client = 0;
-            $updateDeclaration = true;
-        }
+            /** @var \companies_actif_passif $companyAssetsDebts */
+            $companyAssetsDebts = $entityManager->getRepository('companies_actif_passif');
+            /** @var \companies_bilans $annualAccountsEntity */
+            $annualAccountsEntity = $entityManager->getRepository('companies_bilans');
 
-        if ($altaresOperationIncomes != $values['gg']) {
-            $this->project->resultat_exploitation_declara_client = $values['gg'];
-            $updateDeclaration = true;
-        } elseif (false === empty($this->project->resultat_exploitation_declara_client) && $altaresOperationIncomes == $values['gg']) {
-            $this->project->resultat_exploitation_declara_client = 0;
-            $updateDeclaration = true;
+            $altaresCapitalStock     = 0;
+            $altaresRevenue          = 0;
+            $altaresOperationIncomes = 0;
+            $annualAccounts          = $annualAccountsEntity->select('id_company = ' . $this->company->id_company, 'cloture_exercice_fiscal DESC', 0, 1);
+
+            if (false === empty($annualAccounts)) {
+                $companyAssetsDebts->get($annualAccounts[0]['id_bilan'], 'id_bilan');
+
+                $altaresCapitalStock     = $companyAssetsDebts->capitaux_propres;
+                $altaresRevenue          = $annualAccounts[0]['ca'];
+                $altaresOperationIncomes = $annualAccounts[0]['resultat_exploitation'];
+            }
+
+            if ($altaresCapitalStock != $values['dl']) {
+                $this->project->fonds_propres_declara_client = $values['dl'];
+                $updateDeclaration = true;
+            } elseif (false === empty($this->project->fonds_propres_declara_client) && $altaresCapitalStock == $values['dl']) {
+                $this->project->fonds_propres_declara_client = 0;
+                $updateDeclaration = true;
+            }
+
+            if ($altaresRevenue != $values['fl']) {
+                $this->project->ca_declara_client = $values['fl'];
+                $updateDeclaration = true;
+            } elseif (false === empty($this->project->ca_declara_client) && $altaresRevenue == $values['fl']) {
+                $this->project->ca_declara_client = 0;
+                $updateDeclaration = true;
+            }
+
+            if ($altaresOperationIncomes != $values['gg']) {
+                $this->project->resultat_exploitation_declara_client = $values['gg'];
+                $updateDeclaration = true;
+            } elseif (false === empty($this->project->resultat_exploitation_declara_client) && $altaresOperationIncomes == $values['gg']) {
+                $this->project->resultat_exploitation_declara_client = 0;
+                $updateDeclaration = true;
+            }
         }
 
         if ($updateDeclaration) {
             $this->project->update();
         }
 
-        if ($values['dl'] < 0) {
+        if (isset($values['dl']) && $values['dl'] < 0) {
             return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, 'Fonds propres négatifs');
         }
 
-        if ($values['fl'] < \projects::MINIMUM_REVENUE) {
+        if (isset($values['fl']) && $values['fl'] < \projects::MINIMUM_REVENUE) {
             return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, 'CA trop faible');
         }
 
-        if ($values['gg'] < 0) {
+        if (isset($values['gg']) &&$values['gg'] < 0) {
             return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, 'REX négatif');
+        }
+
+        if (isset($values['ag_2035']) &&$values['ag_2035'] < \projects::MINIMUM_REVENUE) {
+            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, 'CA trop faible');
         }
 
         if ('true' === $request->request->get('extra_files')) {

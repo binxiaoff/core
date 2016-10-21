@@ -21,18 +21,22 @@ class CompanyBalanceSheetManager
         $companyBalanceDetails = $this->entityManager->getRepository('company_balance');
         /** @var \company_balance_type $companyBalanceDetailsType */
         $companyBalanceDetailsType = $this->entityManager->getRepository('company_balance_type');
+        /** @var \company_tax_form_type $companyTaxFormType */
+        $companyTaxFormType = $this->entityManager->getRepository('company_tax_form_type');
 
         $annualAccounts    = array();
         foreach ($balanceSheetIds as $balanceSheetId) {
             $companyBalance->get($balanceSheetId);
+            $companyTaxFormType->get($companyBalance->id_company_tax_form_type);
             $balanceTypes = $companyBalanceDetailsType->getAllByType($companyBalance->id_company_tax_form_type);
             $balanceTypes = array_column($balanceTypes, 'code', 'id_balance_type');
 
-            $annualAccounts[$balanceSheetId] = array_fill_keys($balanceTypes, 0);
+            $annualAccounts[$balanceSheetId]['form_type'] = $companyTaxFormType->label;
+            $annualAccounts[$balanceSheetId]['details'] = array_fill_keys($balanceTypes, 0);
 
             $balanceSheetDetails = $companyBalanceDetails->select('id_bilan =' . $balanceSheetId);
             foreach ($balanceSheetDetails as $field) {
-                $annualAccounts[$balanceSheetId][$balanceTypes[$field['id_balance_type']]] = $field['value'];
+                $annualAccounts[$balanceSheetId]['details'][$balanceTypes[$field['id_balance_type']]] = $field['value'];
             }
         }
         return $annualAccounts;
@@ -56,7 +60,7 @@ class CompanyBalanceSheetManager
             return;
         }
 
-        $balances = $this->getBalanceSheetsByAnnualAccount(array($balanceSheetId));
+        $balances = $this->getBalanceSheetsByAnnualAccount(array($balanceSheetId))['details'];
 
         $oCompanyDebtsAssets->immobilisations_corporelles        = $balances[$balanceSheetId]['AN'] + $balances[$balanceSheetId]['AP'] + $balances[$balanceSheetId]['AR'] + $balances[$balanceSheetId]['AT'] + $balances[$balanceSheetId]['AV'] + $balances[$balanceSheetId]['AX'];
         $oCompanyDebtsAssets->immobilisations_incorporelles      = $balances[$balanceSheetId]['AB'] + $balances[$balanceSheetId]['AD'] + $balances[$balanceSheetId]['AF'] + $balances[$balanceSheetId]['AH'] + $balances[$balanceSheetId]['AJ'] + $balances[$balanceSheetId]['AL'];
@@ -92,7 +96,7 @@ class CompanyBalanceSheetManager
             return;
         }
 
-        $aBalances = $this->getBalanceSheetsByAnnualAccount(array($balanceSheetId));
+        $aBalances = $this->getBalanceSheetsByAnnualAccount(array($balanceSheetId))['details'];
 
         $companyBalanceSheet->ca                          = $aBalances[$balanceSheetId]['FL'];
         $companyBalanceSheet->resultat_brute_exploitation = $aBalances[$balanceSheetId]['GG'] + $aBalances[$balanceSheetId]['GA'] + $aBalances[$balanceSheetId]['GB'] + $aBalances[$balanceSheetId]['GC'] + $aBalances[$balanceSheetId]['GD'] - $aBalances[$balanceSheetId]['FP'] - $aBalances[$balanceSheetId]['FQ'] + $aBalances[$balanceSheetId]['GE'];
@@ -121,5 +125,19 @@ class CompanyBalanceSheetManager
         }
 
         return null;
+    }
+
+    public function prepareDisplayForm2033($annualAccounts)
+    {
+        /** @var \company_tax_form_type $companyBalanceTaxType */
+        $companyBalanceTaxType     = $this->entityManager->getRepository('company_tax_form_type');
+        /** @var \company_balance_type $companyBalanceDetailsType */
+        $companyBalanceDetailsType = $this->entityManager->getRepository('company_balance_type');
+
+        $companyBalanceTaxType->get(\company_tax_form_type::FORM_2033, 'label');
+        $allFields = $companyBalanceDetailsType->getAllByType($companyBalanceTaxType->id_type);
+        foreach ($allFields as $field) {
+
+        }
     }
 }

@@ -45,7 +45,7 @@ class company_tax_form_type extends company_tax_form_type_crud
             $order = ' ORDER BY ' . $order;
         }
 
-        $sql = 'SELECT * FROM `tax_form_type`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+        $sql = 'SELECT * FROM `company_tax_form_type`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $result   = array();
         $resultat = $this->bdd->query($sql);
@@ -61,11 +61,11 @@ class company_tax_form_type extends company_tax_form_type_crud
             $where = ' WHERE ' . $where;
         }
 
-        return (int) $this->bdd->result($this->bdd->query('SELECT COUNT(*) FROM `tax_form_type`' . $where));
+        return (int) $this->bdd->result($this->bdd->query('SELECT COUNT(*) FROM `company_tax_form_type`' . $where));
     }
 
     public function exist($id, $field = 'id_type')
     {
-        return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `tax_form_type` WHERE ' . $field . ' = "' . $id . '"')) > 0;
+        return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `company_tax_form_type` WHERE ' . $field . ' = "' . $id . '"')) > 0;
     }
 }
