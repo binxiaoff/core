@@ -368,25 +368,4 @@ class ProjectDisplayManager
         $projects  = $this->entityManager->getRepository('projects');
         return $projects->countSelectProjectsByStatus(implode(',', self::$projectsStatus), ' AND display = ' . \projects::DISPLAY_PROJECT_ON);
     }
-
-    /**
-     * @param \lenders_accounts $lender
-     * @return \projects[]
-     */
-    public function getCipAdvisedProjectList(\lenders_accounts $lender)
-    {
-        /** @var \projects $project */
-        $project         = $this->entityManager->getRepository('projects');
-        $projectList     = $this->getProjectsList([\projects_status::EN_FUNDING]);
-        $advisedProjects = [];
-
-        foreach ($projectList as $projectInList){
-            $project->get($projectInList['projectId']);
-            if ($this->lenderAccountDisplayManager->isProjectAdvisedForLender($project, $lender)) {
-                $advisedProjects[] = $projectInList;
-            }
-        }
-
-        return $advisedProjects;
-    }
 }

@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGenerator;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
@@ -39,7 +40,7 @@ class LenderCIPController extends Controller
             $template['evaluation'] = true;
         } else {
             $template['evaluation'] = true;
-            $template['advices']    = implode("\n", $cipManager->getAdvices($lender));
+            $template['advices']    = $this->getFormatedAdvice($lender);
         }
 
         return $this->render('lender_cip/index.html.twig', $template);
@@ -90,7 +91,7 @@ class LenderCIPController extends Controller
         $nextQuestion = $cipManager->getNextQuestion($evaluation);
 
         if (null === $nextQuestion) {
-            $advices = implode("\n", $cipManager->getAdvices($lender));
+            $advices = $this->getFormatedAdvice($lender);
 
             $cipManager->saveLog($evaluation, \lender_evaluation_log::EVENT_ADVICE, $advices);
 
@@ -369,7 +370,7 @@ class LenderCIPController extends Controller
         $lender = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
         $lender->get($client->id_client, 'id_client_owner');
 
-        $content['advice'] = implode("\n", $cipManager->getAdvices($lender));
+        $content['advice']      = $this->getFormatedAdvice($lender);
         $content['information'] = '';
 
         $evaluation     = $cipManager->getCurrentEvaluation($lender);
@@ -396,40 +397,13 @@ class LenderCIPController extends Controller
         $settings->get('Twitter', 'type');
         $twLink = $settings->value;
 
-        /** @var TranslatorInterface */
-        $translator = $this->get('translator.default');
-
-        /** @var CIPManager $cipManager */
-        $cipManager = $this->get('unilend.service.cip_manager');
-
-        $lender = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
-        $lender->get($client->id_client, 'id_client_owner');
-
-        /** @var ProjectDisplayManager $lenderDisplayManager */
-        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
-        $projects = $projectDisplayManager->getCipAdvisedProjectList($lender);
-
-        $projectListHtml = '';
-        if (false === empty($projects)) {
-            $projectListHtml .= '<ul>';
-            foreach ($projects as $project) {
-                $projectListHtml .= '<li>                                 
-                                        <a href="' . $this->generateUrl('project_detail', ['projectSlug' => $project['slug']], UrlGenerator::ABSOLUTE_URL) . '"><span style=\'color:#b20066;\'>' . $project['title'] . '</span></a>' .
-                    '</li>';
-            }
-            $projectListHtml .= '</ul>';
-        } else {
-            $projectListHtml .= $translator->trans('lender-valiation_confirmation-email-no-advised-projects');
-        }
-
         $varMail = array(
             'surl'                 => $this->get('assets.packages')->getUrl(''),
             'url'                  => $this->get('assets.packages')->getUrl(''),
             'prenom'               => $client->prenom,
             'email_p'              => $client->email,
-            'advice'               => implode("\n", $cipManager->getAdvices($lender)),
-            'advice_pdf_link'      => $this->generateUrl('pdf_cip', ['clientHash' => $client->hash]),
-            'advised_project_list' => $projectListHtml,
+            'advice'               => str_replace('h5', 'h3', $this->getFormatedAdvice($this->getLenderAccount())),
+            'advice_pdf_link'      => $this->generateUrl('pdf_cip', ['clientHash' => $client->hash], UrlGeneratorInterface::ABSOLUTE_URL),
             'motif_virement'       => $client->getLenderPattern($client->id_client),
             'lien_fb'              => $fbLink,
             'lien_tw'              => $twLink
@@ -447,6 +421,7 @@ class LenderCIPController extends Controller
         /** @var UserLender $user */
         $user     = $this->getUser();
         $clientId = $user->getClientId();
+
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
         $client->get($clientId);
@@ -468,5 +443,12 @@ class LenderCIPController extends Controller
         $lenderAccount->get($clientId, 'id_client_owner');
 
         return $lenderAccount;
+    }
+
+    private function getFormatedAdvice(\lenders_accounts $lender)
+    {
+        /** @var CIPManager $cipManager */
+        $cipManager = $this->get('unilend.service.cip_manager');
+        return implode("\n", $cipManager->getAdvices($lender));
     }
 }
