@@ -1,36 +1,36 @@
 <nav class="dashboard-nav">
     {% block dashboardNav %}
         <ul>
-            <li role="presentation" class="dashboard-nav-dashboard {% if app.request.attributes.get('_route') == 'lender_dashboard' %}active{% else %}complete{% endif %}">
+            <li role="presentation" class="dashboard-nav-dashboard {% if route == 'lender_dashboard' %}active{% else %}complete{% endif %}">
                 <a href="{{ path('lender_dashboard') }}">
                     <span class="icon fa-dashboard-u"></span>
                     <span class="label">{% trans %} lender-dashboard-navigation_dashboard-link {% endtrans %}</span>
                 </a>
             </li>
-            <li role="presentation" class="dashboard-nav-balance {% if app.request.attributes.get('_route') in ['lender_wallet_deposit', 'lender_wallet_withdrawal'] %}active{% else %}complete{% endif %}">
+            <li role="presentation" class="dashboard-nav-balance {% if route in ['lender_wallet_deposit', 'lender_wallet_withdrawal'] %}active{% else %}complete{% endif %}">
                 <a href="{{ path('lender_wallet_deposit') }}">
                     <span class="icon fa-money-u32"></span>
                     <span class="label">{% trans %} lender-dashboard-navigation_wallet-link {% endtrans %}</span></a>
             </li>
-            <li role="presentation" class="dashboard-nav-projects {% if app.request.attributes.get('_route') == 'lender_projects' %}active{% else %}complete{% endif %}">
+            <li role="presentation" class="dashboard-nav-projects {% if route == 'lender_projects' %}active{% else %}complete{% endif %}">
                 <a href="{{ path('lender_projects') }}">
                     <span class="icon fa-project-u"></span>
                     <span class="label">{% trans %} lender-dashboard-navigation_projects-link {% endtrans %}</span></a>
             </li>
-            <li role="presentation" class="dashboard-nav-operations {% if app.request.attributes.get('_route') == 'lender_operations' %}active{% else %}complete{% endif %}">
+            <li role="presentation" class="dashboard-nav-operations {% if route == 'lender_operations' %}active{% else %}complete{% endif %}">
                 <a href="{{ path('lender_operations') }}">
                     <span class="icon fa-operations-u"></span>
                     <span class="label">{% trans %} lender-dashboard-navigation_operations-link {% endtrans %}</span>
                 </a>
             </li>
-            <li role="presentation" class="dashboard-nav-profile {% if app.request.attributes.get('_route') in ['lender_profile', 'lender_profile_fiscal_information', 'lender_profile_security', 'lender_profile_notifications', 'cip_index', 'cip_continue_questionnaire'] %}active{% else %}complete{% endif %}">
+            <li role="presentation" class="dashboard-nav-profile {% if route|slice(0, 14) == 'lender_profile' or route in ['cip_index', 'cip_start_questionnaire', 'cip_continue_questionnaire'] %}active{% else %}complete{% endif %}">
                 <a href="{{ path('lender_profile') }}">
                     <span class="icon fa-profile-u"></span>
                     <span class="label">{% trans %} lender-dashboard-navigation_profile-link {% endtrans %}</span>
                 </a>
             </li>
             {% if isAutobidQualified %}
-                <li role="presentation" class="dashboard-nav-autolend {% if app.request.attributes.get('_route') == 'autolend' %}active{% else %}complete{% endif %}">
+                <li role="presentation" class="dashboard-nav-autolend {% if route == 'autolend' %}active{% else %}complete{% endif %}">
                     <a href="{{ path('autolend') }}">
                         <span class="icon fa-autolend-u"></span>
                         <span class="label">{% trans %} lender-dashboard-navigation_autolend-link {% endtrans %}</span>

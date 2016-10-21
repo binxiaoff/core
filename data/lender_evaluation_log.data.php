@@ -2,7 +2,9 @@
 
 class lender_evaluation_log extends lender_evaluation_log_crud
 {
-    const EVENT_ADVICE = 'advice';
+    const EVENT_ADVICE                = 'advice';
+    const EVENT_BID_EVALUATION_NEEDED = 'bid_evaluation_needed';
+    const EVENT_BID_ADVICE            = 'bid_advice';
 
     public function __construct($bdd, $params = '')
     {
@@ -41,5 +43,21 @@ class lender_evaluation_log extends lender_evaluation_log_crud
     public function exist($id, $field = 'id_lender_evaluation_log')
     {
         return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `lender_evaluation_log` WHERE ' . $field . ' = "' . $id . '"')) > 0;
+    }
+
+    /**
+     * @param lenders_accounts $lender
+     * @return bool
+     */
+    public function hasLenderLog(\lenders_accounts $lender)
+    {
+        $queryBuilder = $this->bdd->createQueryBuilder();
+        $queryBuilder->select('COUNT(*)')
+            ->from('lender_evaluation_log', 'log')
+            ->innerJoin('log', 'lender_evaluation', 'eval', 'log.id_lender_evaluation = eval.id_lender_evaluation')
+            ->where('eval.id_lender = :id_lender')
+            ->setParameter('id_lender', $lender->id_lender_account);
+
+        return $queryBuilder->execute()->fetchColumn() > 0;
     }
 }

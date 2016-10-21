@@ -2,6 +2,8 @@
 // Unilend Modal - Bid Confirmation
 //
 
+.modal-cip-advices,
+.modal-cip-questionnaire,
 .modal-bid-confirmation {
   padding: 20px;
 
@@ -23,8 +25,6 @@
 
   @include devices('md', 'lg') {
     .modal-body {
-      padding-left: 60px;
-      padding-right: 60px;
       position: relative;
 
       &:before {
@@ -34,7 +34,10 @@
         left: 0;
         top: 0;
       }
+
+      > h4 {
+        padding-left: 40px;
+      }
     }
   }
 }
-

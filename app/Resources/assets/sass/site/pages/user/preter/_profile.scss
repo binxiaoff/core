@@ -7,6 +7,12 @@
     > li {
       width: 25%; // 4 items / 100%
     }
+
+    &.nav-has-cip {
+      > li {
+        width: 20%; // 5 items / 100%
+      }
+    }
   }
 
   .panel {
@@ -332,8 +338,6 @@
       left: 0;
       bottom: 0;
       right: 0;
-
-      background-color: $c-white;
     }
 
     dl.cip-summary {

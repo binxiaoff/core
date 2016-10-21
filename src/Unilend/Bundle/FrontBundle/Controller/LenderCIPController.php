@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
 class LenderCIPController extends Controller
@@ -21,7 +22,9 @@ class LenderCIPController extends Controller
     {
         $cipManager = $this->get('unilend.service.cip_manager');
         $lender     = $this->getLenderAccount();
-        $template   = [];
+        $template   = [
+            'isCIPActive' => true
+        ];
 
         $evaluation = $cipManager->getCurrentEvaluation($lender);
 
@@ -49,7 +52,7 @@ class LenderCIPController extends Controller
         $lender     = $this->getLenderAccount();
         $evaluation = $cipManager->getCurrentEvaluation($lender);
 
-        if (null !== $evaluation && count($cipManager->getAnswers($lender)) > 0) {
+        if (null !== $evaluation && count($cipManager->getAnswersByType($evaluation)) > 0) {
             return $this->redirectToRoute('cip_continue_questionnaire');
         }
 
@@ -58,7 +61,11 @@ class LenderCIPController extends Controller
             return $this->redirectToRoute('cip_continue_questionnaire');
         }
 
-        return $this->render('lender_cip/start.html.twig', ['current_step' => 1, 'total_steps' => self::TOTAL_QUESTIONNAIRE_STEPS]);
+        return $this->render('lender_cip/start.html.twig', [
+            'isCIPActive'  => true,
+            'current_step' => 1,
+            'total_steps'  => self::TOTAL_QUESTIONNAIRE_STEPS
+        ]);
     }
 
     /**
@@ -71,17 +78,21 @@ class LenderCIPController extends Controller
         $cipManager = $this->get('unilend.service.cip_manager');
         $lender     = $this->getLenderAccount();
         $evaluation = $cipManager->getCurrentEvaluation($lender);
-        $template   = [
+        $template = [
+            'isCIPActive' => true,
             'total_steps' => self::TOTAL_QUESTIONNAIRE_STEPS
         ];
 
-        if (null === $evaluation) {
+        if (null === $evaluation || false === $cipManager->isEvaluationStarted($evaluation)) {
             return $this->redirectToRoute('cip_start_questionnaire');
         }
 
-        $question = $cipManager->getLastQuestion($lender);
+        $lastQuestion = $cipManager->getLastQuestion($evaluation);
+        $nextQuestion = $cipManager->getNextQuestion($evaluation);
+        $answers      = $cipManager->getAnswersByType($evaluation);
+        $lastAnswer   = $answers[$lastQuestion->type];
 
-        if (null === $question) {
+        if (null === $nextQuestion && '' !== $lastAnswer['first_answer']) {
             $advices = implode("\n", $cipManager->getAdvices($lender));
 
             $cipManager->saveLog($evaluation, \lender_evaluation_log::EVENT_ADVICE, $advices);
@@ -90,25 +101,32 @@ class LenderCIPController extends Controller
             $template['validEvaluation'] = $cipManager->isValidEvaluation($evaluation);
             return $this->render('lender_cip/advice.html.twig', $template);
         } else {
-            $template['current_step'] = $question->order + 1;
-            $template['answers']      = [];
+            $template['current_step'] = $lastQuestion->order + 1;
+            $template['answers']      = $answers;
             $template['question']     = [
-                'id'   => $question->id_lender_questionnaire_question,
-                'type' => $question->type,
+                'id'   => $lastQuestion->id_lender_questionnaire_question,
+                'type' => $lastQuestion->type,
             ];
 
-            $answers = $cipManager->getAnswersByType($lender);
-            $answer  = $answers[$question->type];
-
-            if ('' !== $answer['first_answer']) {
-                $template['answers']['first'] = $answer['first_answer'];
+            if ('' !== $lastAnswer['first_answer']) {
+                $template['answers']['current']['first'] = $lastAnswer['first_answer'];
             }
 
-            if ('' !== $answer['second_answer']) {
-                $template['answers']['second'] = $answer['second_answer'];
+            if ('' !== $lastAnswer['second_answer']) {
+                $template['answers']['current']['second'] = $lastAnswer['second_answer'];
             }
 
-            return $this->render('lender_cip/question-' . $question->type . '.html.twig', $template);
+            if ($lastQuestion->isBooleanType($lastQuestion->type)) {
+                if (\lender_questionnaire_question::TYPE_AWARE_DIVIDE_INVESTMENTS === $lastQuestion->type) {
+                    $template['question']['valid_answer']   = \lender_questionnaire_question::VALUE_BOOLEAN_FALSE;
+                    $template['question']['invalid_answer'] = \lender_questionnaire_question::VALUE_BOOLEAN_TRUE;
+                } else {
+                    $template['question']['valid_answer']   = \lender_questionnaire_question::VALUE_BOOLEAN_TRUE;
+                    $template['question']['invalid_answer'] = \lender_questionnaire_question::VALUE_BOOLEAN_FALSE;
+                }
+            }
+
+            return $this->render('lender_cip/question-' . $lastQuestion->type . '.html.twig', $template);
         }
     }
 
@@ -120,74 +138,78 @@ class LenderCIPController extends Controller
      */
     public function questionnaireFormAction(Request $request)
     {
-        $questionId    = $request->request->get('question');
-        $answerValue   = $request->request->get('answer');
-        $continueValue = $request->request->get('continue');
-
-        if (null === $questionId) {
-            // @todo error message
-            return $this->redirectToRoute('cip_continue_questionnaire');
-        }
-
-        $entityManager = $this->get('unilend.service.entity_manager');
-
-        if (null === $answerValue && null === $continueValue) {
-            /** @var \lender_questionnaire_question $question */
-            $question = $entityManager->getRepository('lender_questionnaire_question');
-            $question->get(\lender_questionnaire_question::TYPE_VALUE_OTHER_FINANCIAL_PRODUCTS_USE, 'type');
-
-            if ($questionId != $question->id_lender_questionnaire_question) {
-                // @todo error message
-                return $this->redirectToRoute('cip_continue_questionnaire');
-            }
-        }
-
-        $cipManager = $this->get('unilend.service.cip_manager');
-        $lender     = $this->getLenderAccount();
-        $evaluation = $cipManager->getCurrentEvaluation($lender);
+        $cipManager    = $this->get('unilend.service.cip_manager');
+        $lender        = $this->getLenderAccount();
+        $evaluation    = $cipManager->getCurrentEvaluation($lender);
 
         if (null === $evaluation) {
             // @todo error message
             return $this->redirectToRoute('cip_start_questionnaire');
         }
 
-        $question = $cipManager->getLastQuestion($lender);
+        if ('values' === $request->query->get('reset')) {
+            $cipManager->resetValues($evaluation);
+            return $this->redirectToRoute('cip_continue_questionnaire');
+        }
+
+        $questionId = $request->request->get('question');
+
+        if (null === $questionId) {
+            // @todo error message
+            return $this->redirectToRoute('cip_continue_questionnaire');
+        }
+
+        $question = $cipManager->getLastQuestion($evaluation);
 
         if ($question->id_lender_questionnaire_question != $questionId) {
             // @todo error message
             return $this->redirectToRoute('cip_continue_questionnaire');
         }
 
+        $answerValue   = $request->request->get('answer');
+        $continueValue = $request->request->get('continue');
+
         if (null !== $continueValue) {
             switch ($continueValue) {
                 case 'next_question':
-                    $cipManager->insertQuestion($lender, $cipManager->getNextQuestion($question));
+                    $cipManager->insertQuestion($evaluation, $cipManager->getNextQuestion($evaluation));
                     return $this->redirectToRoute('cip_continue_questionnaire');
                 case 'loop':
-                    $answer = $cipManager->getAnswer($lender, $question, $evaluation);
+                    $answer = $cipManager->getAnswer($evaluation, $question);
                     if (null !== $answer) {
                         $answer->status = \lender_evaluation_answer::STATUS_INACTIVE;
                         $answer->update();
                     }
-                    $cipManager->insertQuestion($lender, $question);
+                    $cipManager->insertQuestion($evaluation, $question);
                     return $this->redirectToRoute('cip_continue_questionnaire');
                 case 'back':
-                    $bid = $request->getSession()->get('cipBid');
+                    $bid = $request->getSession()->getFlashBag()->peek('cipBid')[0];
 
                     if (false === empty($bid['project'])) {
                         /** @var \projects $project */
-                        $project = $entityManager->getRepository('projects');
+                        $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
 
                         if (is_numeric($bid['project']) && $project->get($bid['project'])) {
-                            return $this->redirectToRoute('project_detail', ['projectId' => $project->id_project]);
+                            return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
                         }
 
-                        $request->getSession()->remove('cipBid');
+                        $request->getSession()->getFlashBag()->remove('cipBid');
                     }
 
                     return $this->redirectToRoute('cip_index');
             }
-        } elseif (null !== $answerValue) {
+        } else {
+            if (null === $answerValue) {
+                /** @var \lender_questionnaire_question $questionEntity */
+                $questionEntity = $this->get('unilend.service.entity_manager')->getRepository('lender_questionnaire_question');
+                $questionEntity->get(\lender_questionnaire_question::TYPE_VALUE_OTHER_FINANCIAL_PRODUCTS_USE, 'type');
+
+                if ($questionId != $questionEntity->id_lender_questionnaire_question) {
+                    // @todo error message
+                    return $this->redirectToRoute('cip_continue_questionnaire');
+                }
+            }
+
             $cipManager->saveAnswer($question, $evaluation, $answerValue);
         }
 
@@ -203,21 +225,19 @@ class LenderCIPController extends Controller
     public function validateQuestionnaireAction(Request $request)
     {
         $cipManager = $this->get('unilend.service.cip_manager');
-        $cipManager->validateEvaluation($this->getLenderAccount());
+        $cipManager->validateLenderEvaluation($this->getLenderAccount());
 
-        $bid = $request->getSession()->get('cipBid');
+        $bid = $request->getSession()->getFlashBag()->peek('cipBid');
 
-        if (false === empty($bid['project'])) {
+        if (false === empty($bid[0]['project'])) {
             /** @var \projects $project */
             $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
 
-            if (is_numeric($bid['project']) && $project->get($bid['project'])) {
-                $bid['validate'] = true;
-                $request->getSession()->set('cipBid', $bid);
-                return $this->redirectToRoute('place_bid', ['projectId' => $project->id_project]);
+            if (is_numeric($bid[0]['project']) && $project->get($bid[0]['project'])) {
+                return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
 
-            $request->getSession()->remove('cipBid');
+            $request->getSession()->getFlashBag()->remove('cipBid');
         }
 
         return $this->redirectToRoute('cip_index');
@@ -231,7 +251,7 @@ class LenderCIPController extends Controller
     public function resetQuestionnaireAction()
     {
         $cipManager = $this->get('unilend.service.cip_manager');
-        $cipManager->endCurrentEvaluation($this->getLenderAccount());
+        $cipManager->endLenderEvaluation($this->getLenderAccount());
 
         return $this->redirectToRoute('cip_start_questionnaire');
     }
@@ -264,22 +284,82 @@ class LenderCIPController extends Controller
             ]);
         }
 
+        $this->addFlash('cipBid', ['amount' => $amount, 'rate' => $rate, 'project' => $project->id_project]);
+
+        $response   = [];
+        $lender     = $this->getLenderAccount();
+        $evaluation = $cipManager->getCurrentEvaluation($lender);
+
         /** @var \bids $bid */
         $bid                    = $entityManager->getRepository('bids');
-        $bid->id_lender_account = $this->getLenderAccount()->id_lender_account;
+        $bid->id_lender_account = $lender->id_lender_account;
         $bid->id_project        = $project->id_project;
         $bid->amount            = $amount * 100;
         $bid->rate              = $rate;
 
-        $validation = $cipManager->isCIPValidationNeeded($bid);
+        $validationNeeded = $cipManager->isCIPValidationNeeded($bid);
+        $response['validation']  = $validationNeeded;
 
-        if ($validation) {
-            // @todo log
+        if ($validationNeeded && null !== $evaluation && $cipManager->isValidEvaluation($evaluation)) {
+            $advices    = [];
+            $indicators = $cipManager->getIndicators($lender);
+
+            if (null !== $indicators[CIPManager::INDICATOR_TOTAL_AMOUNT]) {
+                /** @var \bids $bids */
+                $bids        = $entityManager->getRepository('bids');
+                $totalAmount = $bids->sum('id_lender_account = ' . $lender->id_lender_account . ' AND status IN (' . \bids::STATUS_BID_PENDING . ', ' . \bids::STATUS_BID_ACCEPTED . ', ' . \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY . ')', 'ROUND(amount / 100)');
+
+                if ($totalAmount > $indicators[CIPManager::INDICATOR_TOTAL_AMOUNT]) {
+                    $advices[CIPManager::INDICATOR_TOTAL_AMOUNT] = true;
+                }
+            }
+
+            if (null !== $indicators[CIPManager::INDICATOR_AMOUNT_BY_MONTH]) {
+                /** @var \bids $bids */
+                $bids        = $entityManager->getRepository('bids');
+                $totalAmount = $bids->sum('id_lender_account = ' . $lender->id_lender_account . ' AND added >= DATE_SUB(NOW(), INTERVAL 1 MONTH) AND status IN (' . \bids::STATUS_BID_PENDING . ', ' . \bids::STATUS_BID_ACCEPTED . ', ' . \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY . ')', 'ROUND(amount / 100)');
+
+                if ($totalAmount > $indicators[CIPManager::INDICATOR_AMOUNT_BY_MONTH]) {
+                    $advices[CIPManager::INDICATOR_AMOUNT_BY_MONTH] = true;
+                }
+            }
+
+            if (null !== $indicators[CIPManager::INDICATOR_PROJECT_DURATION] && $project->period > $indicators[CIPManager::INDICATOR_PROJECT_DURATION]) {
+                $advices[CIPManager::INDICATOR_PROJECT_DURATION] = true;
+            }
+
+            if (false === empty($advices)) {
+                $message = '';
+
+                if (isset($advices[CIPManager::INDICATOR_TOTAL_AMOUNT], $advices[CIPManager::INDICATOR_AMOUNT_BY_MONTH], $advices[CIPManager::INDICATOR_PROJECT_DURATION])) {
+                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement total, dépassement seuil mensuel, dépassement durée projet.';
+                } elseif (isset($advices[CIPManager::INDICATOR_TOTAL_AMOUNT], $advices[CIPManager::INDICATOR_AMOUNT_BY_MONTH])) {
+                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement total, dépassement seuil mensuel.';
+                } elseif (isset($advices[CIPManager::INDICATOR_TOTAL_AMOUNT], $advices[CIPManager::INDICATOR_PROJECT_DURATION])) {
+                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement total, dépassement durée projet.';
+                } elseif (isset($advices[CIPManager::INDICATOR_TOTAL_AMOUNT])) {
+                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement total.';
+                } elseif (isset($advices[CIPManager::INDICATOR_AMOUNT_BY_MONTH], $advices[CIPManager::INDICATOR_PROJECT_DURATION])) {
+                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement total, dépassement durée projet.';
+                } elseif (isset($advices[CIPManager::INDICATOR_AMOUNT_BY_MONTH])) {
+                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement seuil mensuel.';
+                } elseif (isset($advices[CIPManager::INDICATOR_PROJECT_DURATION])) {
+                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement durée projet.';
+                }
+
+                $cipManager->saveLog($evaluation, \lender_evaluation_log::EVENT_BID_ADVICE, strip_tags($message));
+                $response['advices'] = $message;
+            }
+        } elseif ($validationNeeded) {
+            if (null === $evaluation) {
+                $cipManager->createEvaluation($lender);
+            }
+
+            $cipManager->saveLog($evaluation, \lender_evaluation_log::EVENT_BID_EVALUATION_NEEDED);
+            $response['questionnaire'] = true;
         }
 
-        return new JsonResponse([
-            'validation' => $validation
-        ]);
+        return new JsonResponse($response);
     }
 
     /**

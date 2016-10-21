@@ -1,4 +1,3 @@
-
 <aside class="project-single-info-wrap" xmlns="http://www.w3.org/1999/html">
     <div class="project-single-info-position">
         <div class="project-single-info">
@@ -83,7 +82,7 @@
                         {% endfor %}
                     {% else %}
                         {% if project.maxValidRate > project.minRate %}
-                            <form action="{{ path('place_bid', {'projectId' : project.projectId}) }}" method="post" class="project-single-form project-single-form-invest" data-bid-confirmation {% if 1 == 1 or app.request.session.cipBid is defined and app.request.session.cipBid is not empty %} data-bid-confirmation-show="true" {% endif %} data-formvalidation data-formvalidation-shownotifications="false" data-has-spinner="#bid-confirmation-submit">
+                            <form action="{{ path('place_bid', {'projectId': project.projectId}) }}" method="post" class="project-single-form project-single-form-invest" data-bid-confirmation data-formvalidation data-formvalidation-shownotifications="false" data-has-spinner="#bid-confirmation-submit">
                                 <div class="row row-multi-col-sm">
                                     <div class="form-field col-sm-4">
                                         <div class="row">
@@ -97,9 +96,9 @@
                                                         {% set adjustment = 0 %}
                                                     {% else %}
                                                         {% set adjustment = 0.1 %}
-                                                     {% endif %}
+                                                    {% endif %}
                                                     {% for rate in range(project.maxValidRate - adjustment, project.minRate, 0.1) %}
-                                                        <option value="{{ rate }}" {% if app.request.session.cipBid is defined and app.request.session.cipBid.rate == rate %} selected="selected" {% endif %}>{{ rate|localizednumberwithprecision(1) }} %</option>
+                                                        <option value="{{ rate }}"{% if app.session.flashBag.has('cipBid') and app.session.flashBag.peek('cipBid')[0].rate == rate %} selected="selected"{% endif %}>{{ rate|localizednumberwithprecision(1) }} %</option>
                                                     {% endfor %}
                                                 </select>
                                             </div>
@@ -112,7 +111,7 @@
                                             </div>
                                             <div class="col-input">
                                                 <div class="input-group set-right">
-                                                    <input id="bid-amount" type="text" name="invest[amount]" value="{% if app.request.session.cipBid is defined %}{{ app.request.session.cipBid.amount }}{% endif %}" class="input-field" autocomplete="off" data-has-spinner="#repayment-estimation-spinner" data-formvalidation-input data-formvalidation-type="number" data-formvalidation-required="true" data-bid-amount>
+                                                    <input id="bid-amount" type="text" name="invest[amount]" value="{% if app.session.flashBag.has('cipBid') %}{{ app.session.flashBag.get('cipBid')[0].amount }}{% endif %}" class="input-field" autocomplete="off" data-has-spinner="#repayment-estimation-spinner" data-formvalidation-input data-formvalidation-type="number" data-formvalidation-required="true" data-bid-amount>
                                                     <div class="btn-group">
                                                         <span class="icon fa-euro"></span>
                                                     </div>
@@ -123,7 +122,7 @@
                                 </div>
 
                                 <div class="btn-toolbar">
-                                    <button id="bid-confirmation-submit" type="submit" class="btn-primary btn-size-full" data-spinnerbutton data-spinnerbutton-targetstartevents="submit">{% trans %} project-detail_side-bar-bids-submit-button {% endtrans %}</button>
+                                    <button id="bid-confirmation-submit" type="submit" class="btn-primary btn-size-full cursor">{% trans %} project-detail_side-bar-bids-submit-button {% endtrans %}</button>
                                     <input type="hidden" name="invest[bidToken]" value="{{ bidToken }}">
                                     <input type="hidden" id="bid-duration" value="{{ project.duration }}">
                                     <input type="hidden" id="bid-rest-amount" value="{{ amountRest }}">
@@ -131,10 +130,14 @@
                                 </div><!-- /.btn-toolbar -->
 
                                 <div class="repayment-estimation-container">
-                                    <p class="field-help"><span id="repayment-estimation"></span>&nbsp;</p>
+                                    <p class="field-help"><span id="repayment-estimation"></span></p>
                                     <span id="repayment-estimation-spinner" class="ui-is-spinner"></span>
                                 </div>
                             </form><!-- /.project-single-form-invest -->
+
+                            <div class="bid-disclaimer">
+                                {% trans %} project-detail_side-panel-risk-disclaimer {% endtrans %}
+                            </div>
                         {% else %}
                             <div class="field-help">
                                 <p>{% trans %} project-detail_low-boundary-rate-alert {% endtrans %}</p>

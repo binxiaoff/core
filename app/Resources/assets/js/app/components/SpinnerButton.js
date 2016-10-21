@@ -161,7 +161,7 @@ SpinnerButton.prototype.init = function () {
   // Watch the target for specific start events
   $doc.on(self.settings.targetStartEvents, self.$target, function (event) {
     // @debug
-    console.log('spinnerButton start loading', self.settings.targetStartEvents)
+    // console.log('spinnerButton start loading', self.settings.targetStartEvents)
 
     self.startLoading()
   })
@@ -169,7 +169,7 @@ SpinnerButton.prototype.init = function () {
   // Watch the target for specific stop events
   $doc.on(self.settings.targetStopEvents, self.$target, function (event) {
     // @debug
-    console.log('spinnerButton stop loading', self.settings.targetStopEvents)
+    // console.log('spinnerButton stop loading', self.settings.targetStopEvents)
 
     self.stopLoading()
   })
@@ -185,7 +185,7 @@ SpinnerButton.prototype.startLoading = function (disableSpinner) {
   var self = this
 
   // @debug
-  console.log('SpinnerButton.startLoading')
+  // console.log('SpinnerButton.startLoading')
 
   // Use the normal spinner behaviours
   if (!disableSpinner && !self.$elem.is('.ui-is-loading')) {
@@ -213,7 +213,7 @@ SpinnerButton.prototype.stopLoading = function (disableSpinner) {
   var self = this
 
   // @debug
-  console.log('SpinnerButton.stopLoading')
+  // console.log('SpinnerButton.stopLoading')
 
   // Use the normal spinner behaviours
   if (!disableSpinner && !self.$elem.is('.ui-is-loading, .ui-is-loading-end')) {

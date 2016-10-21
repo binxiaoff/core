@@ -44,7 +44,7 @@ $doc
     }
 
     // @debug
-    console.log('Spinner:showLoading', $elem[0], $spinnerTarget[0])
+    // console.log('Spinner:showLoading', $elem[0], $spinnerTarget[0])
 
     if ($spinnerTarget) {
       $spinnerTarget.removeClass('ui-is-loading-end').addClass('ui-is-loading')
@@ -76,7 +76,7 @@ $doc
     }
 
     // @debug
-    console.log('Spinner:hideLoading', $elem[0], $spinnerTarget[0])
+    // console.log('Spinner:hideLoading', $elem[0], $spinnerTarget[0])
 
     if ($spinnerTarget) {
       $spinnerTarget.removeClass('ui-is-loading').addClass('ui-is-loading-end')
