@@ -22,7 +22,9 @@ class LenderCIPController extends Controller
     {
         $cipManager = $this->get('unilend.service.cip_manager');
         $lender     = $this->getLenderAccount();
-        $template   = [];
+        $template   = [
+            'isCIPActive' => true
+        ];
 
         $evaluation = $cipManager->getCurrentEvaluation($lender);
 
@@ -59,7 +61,11 @@ class LenderCIPController extends Controller
             return $this->redirectToRoute('cip_continue_questionnaire');
         }
 
-        return $this->render('lender_cip/start.html.twig', ['current_step' => 1, 'total_steps' => self::TOTAL_QUESTIONNAIRE_STEPS]);
+        return $this->render('lender_cip/start.html.twig', [
+            'isCIPActive'  => true,
+            'current_step' => 1,
+            'total_steps'  => self::TOTAL_QUESTIONNAIRE_STEPS
+        ]);
     }
 
     /**
@@ -72,7 +78,8 @@ class LenderCIPController extends Controller
         $cipManager = $this->get('unilend.service.cip_manager');
         $lender     = $this->getLenderAccount();
         $evaluation = $cipManager->getCurrentEvaluation($lender);
-        $template   = [
+        $template = [
+            'isCIPActive' => true,
             'total_steps' => self::TOTAL_QUESTIONNAIRE_STEPS
         ];
 

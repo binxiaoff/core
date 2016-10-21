@@ -88,11 +88,8 @@
                                     <button type="submit" name="continue" value="loop" class="btn-primary btn-size-full cursor">Non, j’insiste. Reposez-moi la question s’il vous plait</button>
                                 </div>
                             {% else %}
-                                <div class="text-align-center">
-                                    <button type="submit" name="continue" value="loop" class="btn-primary cursor">Non, j’insiste. Reposez-moi la question s’il vous plait</button>
-                                </div>
-                            {% endif %}
-                        </div>
+                                <button type="submit" name="continue" value="loop" class="btn-primary cursor">Non, j’insiste. Reposez-moi la question s’il vous plait</button>
+                        {% endif %}
                     {% endif %}
                 </form>
             </div><!-- /#cip-step-{{ current_step }} -->
