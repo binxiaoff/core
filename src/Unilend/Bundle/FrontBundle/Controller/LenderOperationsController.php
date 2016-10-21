@@ -1047,7 +1047,7 @@ class LenderOperationsController extends Controller
             $documents[] = [
                 'url'   => $this->get('assets.packages')->getUrl('') . '/pdf/declaration_de_creances/' . $hash . '/' . $loanId,
                 'label' => $translationManager->selectTranslation('lender-operations', 'loans-table-declaration-of-debt-doc-tooltip'),
-                'type'  => 'contract'
+                'type'  => 'declaration'
             ];
         }
         return $documents;
