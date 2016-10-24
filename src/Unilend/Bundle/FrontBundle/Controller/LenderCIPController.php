@@ -12,6 +12,7 @@ use Symfony\Component\Routing\Generator\UrlGenerator;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 
@@ -274,8 +275,12 @@ class LenderCIPController extends Controller
      */
     public function bidAction(Request $request)
     {
+        /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var CIPManager $cipManager */
         $cipManager    = $this->get('unilend.service.cip_manager');
+        /** @var TranslatorInterface $transloator */
+        $translator = $this->get('translator.default');
 
         $rate   = $request->query->get('rate');
         $amount = $request->query->get('amount');
@@ -342,19 +347,19 @@ class LenderCIPController extends Controller
                 $message = '';
 
                 if (isset($advices[CIPManager::INDICATOR_TOTAL_AMOUNT], $advices[CIPManager::INDICATOR_AMOUNT_BY_MONTH], $advices[CIPManager::INDICATOR_PROJECT_DURATION])) {
-                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement total, dépassement seuil mensuel, dépassement durée projet.';
+                    $message = $translator->trans('lender-evaluation_warning-not-advised-total-amount-monthly-amount-project-duration');
                 } elseif (isset($advices[CIPManager::INDICATOR_TOTAL_AMOUNT], $advices[CIPManager::INDICATOR_AMOUNT_BY_MONTH])) {
-                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement total, dépassement seuil mensuel.';
+                    $message = $translator->trans('lender-evaluation_warning-not-advised-total-amount-monthly-amount');
                 } elseif (isset($advices[CIPManager::INDICATOR_TOTAL_AMOUNT], $advices[CIPManager::INDICATOR_PROJECT_DURATION])) {
-                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement total, dépassement durée projet.';
+                    $message = $translator->trans('lender-evaluation_warning-not-advised-total-amount-project-duration');
                 } elseif (isset($advices[CIPManager::INDICATOR_TOTAL_AMOUNT])) {
-                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement total.';
+                    $message = $translator->trans('lender-evaluation_warning-not-advised-total-amount');
                 } elseif (isset($advices[CIPManager::INDICATOR_AMOUNT_BY_MONTH], $advices[CIPManager::INDICATOR_PROJECT_DURATION])) {
-                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement total, dépassement durée projet.';
+                    $message = $translator->trans('lender-evaluation_warning-not-advised-monthly-amount-project-duration');
                 } elseif (isset($advices[CIPManager::INDICATOR_AMOUNT_BY_MONTH])) {
-                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement seuil mensuel.';
+                    $message = $translator->trans('lender-evaluation_warning-not-advised-monthly-amount');
                 } elseif (isset($advices[CIPManager::INDICATOR_PROJECT_DURATION])) {
-                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement durée projet.';
+                    $message = $translator->trans('lender-evaluation_warning-not-advised-project-duration');
                 }
 
                 $cipManager->saveLog($evaluation, \lender_evaluation_log::EVENT_BID_ADVICE, strip_tags($message));
