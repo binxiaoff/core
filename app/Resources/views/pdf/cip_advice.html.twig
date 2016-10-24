@@ -2,7 +2,25 @@
 
 {% block content %}
     <section class="page-section">
-        {{ information }}
+        <p class="c-p1">{% trans %}lender-evaluation_risk-introduction-text-questionnaire-finished{% endtrans %}</p>
+        <ul>
+            <li>
+                <span class="c-p1">{% trans %}lender-evaluation_risk-aware-money-loss{% endtrans %}</span><br>
+                {% trans %}lender-evaluation_question-aware-money-loss-yes-explanation{% endtrans %}
+            </li>
+            <li>
+                <span class="c-p1">{% trans %}lender-evaluation_risk-aware-progressive-capital-repayments{% endtrans %}</span><br>
+                {% trans %}lender-evaluation_question-aware-progressive-capital-repayments-yes-explanation{% endtrans %}
+            </li>
+            <li>
+                <span class="c-p1">{% trans %}lender-evaluation_risk-aware-risk-return{% endtrans %}</span><br>
+                {% trans %}lender-evaluation_question-aware-aware-risk-return-yes-explanation{% endtrans %}
+            </li>
+            <li>
+                <span class="c-p1">{% trans %}lender-evaluation_risk-aware-divide-investments{% endtrans %}</span><br>
+                {% trans %}lender-evaluation_question-aware-money-loss-yes-explanation{% endtrans %}
+            </li>
+        </ul>
     </section>
     <section class="page-section">
         {{ advice|raw }}

@@ -1,10 +1,10 @@
 {% extends 'lender_cip/_layout-boolean-question.html.twig' %}
 
-{% set mock = {
-    question: 'Avez-vous conscience que vous pouvez perdre éventuellement la totalité de vos prêts ?',
-    alt_question: 'Maintenant, avez-vous conscience que vous pouvez perdre éventuellement la totalité de vos prêts ?',
-    yes_explanation: 'Les entreprises qui présentent des projets sur Unilend sont sélectionnées strictement avant leur mise en ligne. Toutefois, toutes les entreprises, même celles qui semblent saines à un moment donné, peuvent connaître des aléas qui les conduisent à ne plus pouvoir honorer leurs dettes. Dans un tel cas de figure, l’argent qui leur a été prêté, que ce soit par la communauté Unilend ou par d’autres créanciers, peut ne pas être remboursé.',
-    no_explanation: 'Les entreprises qui présentent des projets sur Unilend sont sélectionnées strictement avant leur mise en ligne. Toutefois, toutes les entreprises, même celles qui semblent saines à un moment donné, peuvent connaître des aléas qui les conduisent à ne plus pouvoir honorer leurs dettes. Dans un tel cas de figure, l’argent qui leur a été prêté, que ce soit par la communauté Unilend ou par d’autres créanciers, peut ne pas être remboursé.',
+{% set text = {
+    question: 'lender-evaluation_question-aware-money-loss'|trans,
+    alt_question: 'lender-evaluation_question-aware-money-loss-alt-question'|trans,
+    yes_explanation: 'lender-evaluation_question-aware-money-loss-yes-explanation'|trans,
+    no_explanation: 'lender-evaluation_question-aware-money-loss-no-explanation'|trans,
     valid_answer: constant('\\lender_questionnaire_question::VALUE_BOOLEAN_TRUE'),
     invalid_answer: constant('\\lender_questionnaire_question::VALUE_BOOLEAN_FALSE')
 } %}

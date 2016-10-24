@@ -14,7 +14,7 @@
             <div id="cip-step-{{ current_step }}">
                 <div class="panel cip-header">
                     <header class="panel-header">
-                        <h3>Questionnaire</h3>
+                        <h3>{% trans %}lender-evaluation_questionnaire-page-title{% endtrans %}</h3>
                     </header>
                     <div class="cip-progress" data-progressbar data-progressbar-current="{{ current_step }}" data-progressbar-total="{{ total_steps }}">
                         <div data-progressbar-bar></div>
@@ -25,7 +25,7 @@
                     <div class="row">
                         <div class="form-field cip-answer">
                             <label for="estate-answer" class="field-label">
-                                Quel est le montant total de votre patrimoine financier ?
+                                {% trans %}lender-evaluation_question-value-total-estate{% endtrans %}
                             </label>
                             <div class="input-group set-right">
                                 <input type="text" id="estate-answer" value="{{ answers['value-total-estate'].first_answer|localizednumber }}" class="input-field" readonly />
@@ -39,7 +39,7 @@
                         <div class="row">
                             <div class="form-field cip-answer">
                                 <label for="savings-answer" class="field-label">
-                                    Combien d’argent mettez-vous de côté tous les mois ?
+                                    {% trans %}lender-evaluation_question-value-monthly-savings{% endtrans %}
                                 </label>
                                 <div class="input-group set-right">
                                     <input type="text" id="savings-answer" value="{{ answers['value-monthly-savings'].first_answer|localizednumber }}" class="input-field" readonly />
@@ -53,25 +53,25 @@
                     <div class="row">
                         <div class="form-field cip-answer">
                             <label for="answer" class="field-label">
-                                Dans combien de temps aurez-vous besoin de cet argent ?
+                                {% trans %}lender-evaluation_question-value-blocking-period{% endtrans %}
                             </label>
                             <select id="answer" name="answer" data-formvalidation-input data-formvalidation-required="true" class="input-field">
                                 <option></option>
-                                <option value="-12">Moins d'un an</option>
-                                <option value="-36">Moins de 3 ans</option>
-                                <option value="-60">Moins de 5 ans</option>
-                                <option value="60+">Je n'en ai pas besoin avant 5 ans</option>
+                                <option value="-12">{% trans %}lender-evaluation_question-value-blocking-period-answer-choice-12{% endtrans %}</option>
+                                <option value="-36">{% trans %}lender-evaluation_question-value-blocking-period-answer-choice-36{% endtrans %}</option>
+                                <option value="-60">{% trans %}lender-evaluation_question-value-blocking-period-answer-choice-60{% endtrans %}</option>
+                                <option value="60+">{% trans %}lender-evaluation_question-value-blocking-period-answer-choice-plus-60{% endtrans %}</option>
                             </select>
                         </div><!-- /.form-field -->
                     </div>
                     <div class="row text-align-right">
                         <a href="{{ path('cip_form_questionnaire') }}?reset=values" class="btn-default">
                             <span class="icon fa-angle-left"></span>
-                            Revenir
+                            {% trans %}lender-evaluation_questionnaire-values-reset-button{% endtrans %}
                         </a>
                         <button type="submit" class="btn-primary">
                             <span class="icon fa-angle-right"></span>
-                            Continuer
+                            {% trans %}lender-evaluation_questionnaire-values-continue-button{% endtrans %}
                         </button>
                     </div>
                 </form>

@@ -13,35 +13,34 @@
     <div id="dashboard-cip" class="dashboard-tabs-content tab-content">
         <div class="panel">
             <header class="panel-header">
-                <h3>Conseils en investissement</h3>
+                <h3>{% trans %}lender-evaluation_index-page-title{% endtrans %}</h3>
             </header>
             {% if not evaluation %}
                 <div class="row">
-                    <p>Vous n'avez actuellement aucune évaluation en cours de validité.</p>
-                    <a href="{{ path('cip_start_questionnaire') }}" class="btn-primary fright">Commencer le questionnaire</a>
+                    <p>{% trans %}lender-evaluation_index-no-ongoing-evaluation-text{% endtrans %}</p>
+                    <a href="{{ path('cip_start_questionnaire') }}" class="btn-primary fright">{% trans %}lender-evaluation_questionnaire-start-button{% endtrans %}</a>
                 </div>
             {% elseif advices is not defined %}
                 <div class="row">
-                    <p>Vous avez déjà un questionnaire non finalisé.</p>
-                    <a href="{{ path('cip_reset_questionnaire') }}" class="btn-primary col-lg-4 push-lg-1 col-md-4 push-md-1 col-sm-2 push-sm-1 col-xs-1">Recommencer le questionnaire</a>
-                    <a href="{{ path('cip_continue_questionnaire') }}" class="btn-primary col-lg-4 push-lg-2 col-md-4 push-md-2 col-sm-2 push-sm-2 col-xs-1 push-xs-2">Continuer le questionnaire</a>
+                    <p>{% trans %}lender-evaluation_index-unfinished-questionnaire-text{% endtrans %}</p>
+                    <a href="{{ path('cip_reset_questionnaire') }}" class="btn-primary col-lg-4 push-lg-1 col-md-4 push-md-1 col-sm-2 push-sm-1 col-xs-1">{% trans %}lender-evaluation_index-retake-questionnaire-button{% endtrans %}</a>
+                    <a href="{{ path('cip_continue_questionnaire') }}" class="btn-primary col-lg-4 push-lg-2 col-md-4 push-md-2 col-sm-2 push-sm-2 col-xs-1 push-xs-2">{% trans %}lender-evaluation_index-continue-questionnaire-button{% endtrans %}</a>
                 </div>
             {% else %}
                 <div class="message message-info cip-advice">
-                    <h4>Nos conseils</h4>
-                    <p>Vous avez bien conscience que :</p>
+                    <h4>{% trans %}lender-evaluation_advice-message-title{% endtrans %}</h4>
+                    <p>{% trans %}lender-evaluation_risk-introduction-text-questionnaire-finished{% endtrans %}</p>
                     <ul>
-                        <li>vous pouvez perdre tout ou partie de l’argent que vous prêtez</li>
-                        <li>vous ne pouvez pas demander le remboursement anticipé de l’argent que vous prêtez :<br>
-                        vous devez attendre le remboursement conformément au calendrier prévu par l’échéancier</li>
-                        <li>les r emboursements peuvent être retardés p ar d es difficultés de trésorerie de l’emprunteur</li>
-                        <li>il est très important de répartir vos prêts sur un très grand nombre d’entreprises pour réduire l’aléa de votre risque de perte en capital</li>
+                        <li>{% trans %}lender-evaluation_risk-aware-money-loss{% endtrans %}</li>
+                        <li>{% trans %}lender-evaluation_risk-aware-progressive-capital-repayments{% endtrans %}</li>
+                        <li>{% trans %}lender-evaluation_risk-aware-risk-return{% endtrans %}</li>
+                        <li>{% trans %}lender-evaluation_risk-aware-divide-investments{% endtrans %}</li>
                     </ul>
-                    <p>Relire les explications en cliquant <a href="{{ path('pdf_cip', {'clientHash' : clientHash}) }}" target="_blank">ici</a>.</p>
+                    <p>{% trans with {'%pdf_link%' : path('pdf_cip', {'clientHash' : clientHash}) } %}lender-evaluation_risk-link-to-explanation-pdf-link{% endtrans %}</p>
                     {{ advices|raw }}
                 </div>
 
-                <a href="{{ path('cip_reset_questionnaire') }}" class="btn-primary fright">Recommencer le questionnaire</a>
+                <a href="{{ path('cip_reset_questionnaire') }}" class="btn-primary fright">{% trans %}lender-evaluation_index-retake-questionnaire-button{% endtrans %}</a>
             {% endif %}
         </div><!-- /.panel -->
     </div><!-- /.dashboard-tabs-content -->
