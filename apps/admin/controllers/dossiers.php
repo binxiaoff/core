@@ -353,6 +353,11 @@ class dossiersController extends bootstrap
 
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                 die;
+            } elseif (isset($_POST['submit-button'], $_POST['id_annual_accounts_remove']) && 'Supprimer' === $_POST['submit-button'] && is_numeric($_POST['id_annual_accounts_remove'])) {
+                $this->companies_bilans->get($_POST['id_annual_accounts_remove']);
+                $companyBalanceSheetManager->removeBalanceSheet($this->companies_bilans, $this->projects);
+                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                die;
             } elseif (isset($this->params[1]) && $this->params[1] == 'altares') {
                 if (false === empty($this->companies->siren)) {
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Altares $oAltares */
@@ -2967,7 +2972,7 @@ class dossiersController extends bootstrap
                         }
                         $formatedValue = $this->ficelle->formatNumber($value, 0);
                         $tabIndex      = 420 + $iColumn;
-                        $html .= '<td><input type="text" class="numbers" name="' . $field['code'] . '[' . $iBalanceSheetId . ']" value="' . $formatedValue . '" tabindex="' . $tabIndex . '"/>&nbsp;€</td>';
+                        $html .= '<td><input type="text" class="numbers" name="box[' . $iBalanceSheetId . '][' . $field['code'] . ']" value="' . $formatedValue . '" tabindex="' . $tabIndex . '"/>&nbsp;€</td>';
 
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }

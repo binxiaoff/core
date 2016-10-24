@@ -17,7 +17,7 @@ class CompanyBalanceSheetManager
     {
         /** @var \companies_bilans $companyBalance */
         $companyBalance = $this->entityManager->getRepository('companies_bilans');
-        /** @var \company_balance $companyBanlanceDetails */
+        /** @var \company_balance $companyBalanceDetails */
         $companyBalanceDetails = $this->entityManager->getRepository('company_balance');
         /** @var \company_balance_type $companyBalanceDetailsType */
         $companyBalanceDetailsType = $this->entityManager->getRepository('company_balance_type');
@@ -50,13 +50,16 @@ class CompanyBalanceSheetManager
         $companyBalanceSheet = $this->entityManager->getRepository('companies_bilans');
         /** @var \companies_actif_passif $oCompanyDebtsAssets */
         $oCompanyDebtsAssets = $this->entityManager->getRepository('companies_actif_passif');
+        /** @var \company_tax_form_type $companyTaxFormType */
+        $companyTaxFormType = $this->entityManager->getRepository('company_tax_form_type');
 
         $setting->get('Entreprises fundés au passage du risque lot 1', 'type');
         $fundedCompanies = explode(',', $setting->value);
 
         $companyBalanceSheet->get($balanceSheetId);
+        $companyTaxFormType->get($companyBalanceSheet->id_company_tax_form_type);
 
-        if (in_array($companyBalanceSheet->id_company, $fundedCompanies)) {
+        if (in_array($companyBalanceSheet->id_company, $fundedCompanies) || $companyTaxFormType->label != \company_tax_form_type::FORM_2033) {
             return;
         }
 
@@ -86,13 +89,16 @@ class CompanyBalanceSheetManager
         $setting = $this->entityManager->getRepository('settings');
         /** @var \companies_bilans $companyBalanceSheet */
         $companyBalanceSheet = $this->entityManager->getRepository('companies_bilans');
+        /** @var \company_tax_form_type $companyTaxFormType */
+        $companyTaxFormType = $this->entityManager->getRepository('company_tax_form_type');
 
         $companyBalanceSheet->get($balanceSheetId);
+        $companyTaxFormType->get($companyBalanceSheet->id_company_tax_form_type);
 
         $setting->get('Entreprises fundés au passage du risque lot 1', 'type');
         $fundedCompanies = explode(',', $setting->value);
 
-        if (in_array($companyBalanceSheet->id_company, $fundedCompanies)) {
+        if (in_array($companyBalanceSheet->id_company, $fundedCompanies) ||  $companyTaxFormType->label != \company_tax_form_type::FORM_2033) {
             return;
         }
 
@@ -127,17 +133,51 @@ class CompanyBalanceSheetManager
         return null;
     }
 
-    public function prepareDisplayForm2033($annualAccounts)
+    /**
+     * @param \companies_bilans $companyAnnualAccounts
+     * @param $box
+     * @param $value
+     */
+    public function saveBalanceSheetDetails(\companies_bilans $companyAnnualAccounts, $box, $value)
     {
-        /** @var \company_tax_form_type $companyBalanceTaxType */
-        $companyBalanceTaxType     = $this->entityManager->getRepository('company_tax_form_type');
         /** @var \company_balance_type $companyBalanceDetailsType */
         $companyBalanceDetailsType = $this->entityManager->getRepository('company_balance_type');
+        /** @var \company_balance $companyBalanceDetails */
+        $companyBalanceDetails = $this->entityManager->getRepository('company_balance');
 
-        $companyBalanceTaxType->get(\company_tax_form_type::FORM_2033, 'label');
-        $allFields = $companyBalanceDetailsType->getAllByType($companyBalanceTaxType->id_type);
-        foreach ($allFields as $field) {
-
+        if ($companyBalanceDetailsType->get($box, 'id_company_tax_form_type = ' . $companyAnnualAccounts->id_company_tax_form_type . ' AND code')) {
+            if ($companyBalanceDetails->exist('id_balance_type = ' . $companyBalanceDetailsType->id_balance_type . ' AND id_bilan = ' . $companyAnnualAccounts->id_bilan)){
+                $companyBalanceDetails->get($companyBalanceDetailsType->id_balance_type, 'id_bilan = ' . $companyAnnualAccounts->id_bilan . ' AND id_balance_type');
+                $companyBalanceDetails->value = $value;
+                $companyBalanceDetails->update();
+            } else {
+                $companyBalanceDetails->id_bilan        = $companyAnnualAccounts->id_bilan;
+                $companyBalanceDetails->id_balance_type = $companyBalanceDetailsType->id_balance_type;
+                $companyBalanceDetails->value           = $value;
+                $companyBalanceDetails->create();
+            }
         }
+    }
+
+    /**
+     * @param \companies_bilans $companyAnnualAccounts
+     */
+    public function removeBalanceSheet(\companies_bilans $companyAnnualAccounts, \projects $project)
+    {
+        /** @var \company_balance $companyBalanceDetails */
+        $companyBalanceDetails = $this->entityManager->getRepository('company_balance');
+        $companyBalanceDetails->delete($companyAnnualAccounts->id_bilan, 'id_bilan');
+        $companyAnnualAccounts->delete($companyAnnualAccounts->id_bilan);
+
+        if ($companyAnnualAccounts->id_bilan === $project->id_dernier_bilan) {
+            $balance = $companyAnnualAccounts->select('id_company = ' . $project->id_company,  'cloture_exercice_fiscal DESC', 0, 1);
+            if (empty($balances)) {
+                $project->id_dernier_bilan = '';
+            } else {
+                $project->id_dernier_bilan = $balance[0]['id_bilan'];
+            }
+            $project->update();
+        }
+
     }
 }

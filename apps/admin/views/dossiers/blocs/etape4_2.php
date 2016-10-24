@@ -8,6 +8,7 @@
             $box = $('#annual_accounts_dates_popup').clone();
             $box.find('[name=duree_exercice_fiscal]').val($(this).data('duration'));
             $box.find('[name=id_annual_accounts]').val($(this).data('annual-account'));
+            $box.find('[name=id_annual_accounts_remove]').val($(this).data('annual-account'));
             $box.find('[name=cloture_exercice_fiscal]').val($(this).data('closing')).datepicker({
                 showOn: 'both',
                 buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
@@ -69,9 +70,20 @@
         <div style="text-align: right">
             <input type="hidden" name="id_annual_accounts"/>
             <input type="hidden" name="change_annual_accounts_info" value="1"/>
+
             <input type="submit" value="Sauvegarder" class="btn_link"/>
         </div>
     </form>
+    <br>
+    <br>
+    <h2>Supprimer l'exercice fiscal</h2>
+    <form action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post" onsubmit="return confirm('Voulez-vous supprimer ce bilan ?');">
+        <div style="text-align: right">
+            <input name="submit-button" type="submit" id="remove-yearly-balance" value="Supprimer" class="btn_link"/>
+            <input type="hidden" name="id_annual_accounts_remove"/>
+        </div>
+    </form>
+
 </div>
 
 <div class="tab_title" id="title_etape4_2">Etape 4.2 - Bilans</div>
