@@ -71,7 +71,7 @@
                 <div class="project-list-items">
                     {% for project in projects %}
                         <article class="project-list-item{% if project.finished %} ui-project-expired{% endif %}{% if project.lender is defined and project.lender.bids.count > 0 %} ui-current-user-involved{% endif %}">
-                            {% if 1 == 1 or project.lender is defined and project.lender.isAdvised %}
+                            {% if project.lender is defined and project.lender.isAdvised %}
                                 <div class="project-list-item-flag project-list-item-flag-type-cip" title="{% trans %} project-list_cip-advised-project-tooltip {% endtrans %}" data-toggle="tooltip">
                                     <span class="sr-only">{% trans %}project-list_cip-advised-project {% endtrans %}</span>
                                 </div>

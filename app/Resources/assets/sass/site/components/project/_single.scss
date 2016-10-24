@@ -211,6 +211,13 @@
   background-color: $c-bg3;
   box-sizing: border-box;
 
+  .bid-disclaimer {
+    background-color: mix($c-purple-l2, $c-purple-l3);
+    padding: 10px 15px;
+    font-size: 15px;
+    line-height: 24px;
+  }
+
   // List social/sharing
   .list-socialmedia,
   .list-sharing {

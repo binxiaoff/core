@@ -20,42 +20,49 @@
                         <div data-progressbar-bar></div>
                     </div>
                 </div>
+
                 <form method="post" action="{{ path('cip_form_questionnaire') }}" class="panel">
                     <input type="hidden" name="question" value="{{ question.id }}" />
-                    <div class="row">
-                        <h4>{{ mock.question|raw }}</h4>
-                    </div>
                     {% if answers.current is not defined or answers.current is empty %}
                         <div class="row">
-                            <div class="col-lg-3 push-lg-2 col-md-3 push-md-2 col-sm-2 push-sm-1 col-xs-1">
-                                <button type="submit" name="answer" value="{{ constant('\\lender_questionnaire_question::VALUE_BOOLEAN_TRUE') }}" class="btn-primary btn-size-full">Oui</button>
-                            </div>
-                            <div class="col-lg-3 push-lg-2 col-md-3 push-md-2 col-sm-2 push-sm-2 col-xs-1 push-xs-2">
-                                <button type="submit" name="answer" value="{{ constant('\\lender_questionnaire_question::VALUE_BOOLEAN_FALSE') }}" class="btn-primary btn-size-full">Non</button>
-                            </div>
+                            <h4>{{ mock.question|raw }}</h4>
                         </div>
-                    {% elseif answers.current.first is defined and answers.current.first == constant('\\lender_questionnaire_question::VALUE_BOOLEAN_TRUE') %}
                         <div class="row">
                             <div class="col-lg-3 push-lg-2 col-md-3 push-md-2 col-sm-2 push-sm-1 col-xs-1">
-                                <span class="btn-yes btn-size-full">Oui</span>
+                                <button type="submit" name="answer" value="{{ constant('\\lender_questionnaire_question::VALUE_BOOLEAN_TRUE') }}" class="btn-primary btn-size-full cursor">Oui</button>
                             </div>
                             <div class="col-lg-3 push-lg-2 col-md-3 push-md-2 col-sm-2 push-sm-2 col-xs-1 push-xs-2">
-                                <span class="btn-default btn-color-primary btn-size-full">Non</span>
+                                <button type="submit" name="answer" value="{{ constant('\\lender_questionnaire_question::VALUE_BOOLEAN_FALSE') }}" class="btn-primary btn-size-full cursor">Non</button>
+                            </div>
+                        </div>
+                    {% elseif answers.current.first is defined and answers.current.first == question.valid_answer %}
+                        <div class="row">
+                            <h4>{{ mock.question|raw }}</h4>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-3 push-lg-2 col-md-3 push-md-2 col-sm-2 push-sm-1 col-xs-1">
+                                <span class="{% if question.valid_answer == constant('\\lender_questionnaire_question::VALUE_BOOLEAN_TRUE') %}btn-yes{% else %}btn-primary{% endif %} btn-size-full">Oui</span>
+                            </div>
+                            <div class="col-lg-3 push-lg-2 col-md-3 push-md-2 col-sm-2 push-sm-2 col-xs-1 push-xs-2">
+                                <span class="{% if question.valid_answer == constant('\\lender_questionnaire_question::VALUE_BOOLEAN_FALSE') %}btn-yes{% else %}btn-primary{% endif %} btn-size-full">Non</span>
                             </div>
                         </div>
                         <div class="row">
                             <p>{{ mock.yes_explanation|raw }}</p>
                         </div>
                         <div class="row text-align-right">
-                            <button type="submit" name="continue" value="next_question" class="btn-primary btn-shape-md">Suivant</button>
+                            <button type="submit" name="continue" value="next_question" class="btn-primary btn-shape-md cursor">Suivant</button>
                         </div>
-                    {% elseif answers.current.first is defined and answers.current.first == constant('\\lender_questionnaire_question::VALUE_BOOLEAN_FALSE') and answers.current.second is not defined %}
+                    {% elseif answers.current.first is defined and answers.current.first == question.invalid_answer and answers.current.second is not defined %}
+                        <div class="row">
+                            <h4>{{ mock.question|raw }}</h4>
+                        </div>
                         <div class="row">
                             <div class="col-lg-3 push-lg-2 col-md-3 push-md-2 col-sm-2 push-sm-1 col-xs-1">
-                                <span class="btn-default btn-color-primary btn-size-full">Oui</span>
+                                <span class="{% if question.valid_answer == constant('\\lender_questionnaire_question::VALUE_BOOLEAN_TRUE') %}btn-primary{% else %}btn-no{% endif %} btn-size-full">Oui</span>
                             </div>
                             <div class="col-lg-3 push-lg-2 col-md-3 push-md-2 col-sm-2 push-sm-2 col-xs-1 push-xs-2">
-                                <span class="btn-no btn-size-full">Non</span>
+                                <span class="{% if question.valid_answer == constant('\\lender_questionnaire_question::VALUE_BOOLEAN_FALSE') %}btn-primary{% else %}btn-no{% endif %} btn-size-full">Non</span>
                             </div>
                         </div>
                         <div class="row">
@@ -65,18 +72,24 @@
                             <h5>{{ mock.alt_question|raw }}</h5>
                         </div>
                         <div class="row text-align-right">
-                            <button type="submit" name="answer" value="{{ constant('\\lender_questionnaire_question::VALUE_BOOLEAN_TRUE') }}" class="btn-primary btn-shape-md">Oui</button>
-                            <button type="submit" name="answer" value="{{ constant('\\lender_questionnaire_question::VALUE_BOOLEAN_FALSE') }}" class="btn-primary btn-shape-md">Non</button>
+                            <button type="submit" name="answer" value="{{ constant('\\lender_questionnaire_question::VALUE_BOOLEAN_TRUE') }}" class="btn-primary btn-shape-md cursor">Oui</button>
+                            <button type="submit" name="answer" value="{{ constant('\\lender_questionnaire_question::VALUE_BOOLEAN_FALSE') }}" class="btn-primary btn-shape-md cursor">Non</button>
                         </div>
-                    {% elseif answers.current.first is defined and answers.current.first == constant('\\lender_questionnaire_question::VALUE_BOOLEAN_FALSE') and answers.current.second == constant('\\lender_questionnaire_question::VALUE_BOOLEAN_FALSE') %}
+                    {% elseif answers.current.first is defined and answers.current.first == question.invalid_answer and answers.current.second == question.invalid_answer %}
                         <div class="row">
-                            <div class="col-lg-5 col-md-5 col-sm-3 col-xs-2">
-                                <button type="submit" name="continue" value="back" class="btn-primary btn-size-full">D’accord, je me limite à prêter 2 000 €</button>
-                            </div>
-                            <div class="col-lg-5 push-lg-2 col-md-5 push-md-2 col-sm-3 push-sm-2 col-xs-2">
-                                <button type="submit" name="continue" value="loop" class="btn-primary btn-size-full">Non, j’insiste. Reposez-moi la question s’il vous plait</button>
-                            </div>
+                            <h4>Nous sommes désolés, vous ne pouvez pas prêter plus de 2000 € à un projet sur Unilend.</h4>
                         </div>
+                        <div class="row">
+                            {% if app.session.flashBag.has('cipBid') %}
+                                <div class="col-lg-5 col-md-5 col-sm-3 col-xs-2">
+                                    <button type="submit" name="continue" value="back" class="btn-primary btn-size-full cursor">D’accord, je me limite à prêter 2 000 €</button>
+                                </div>
+                                <div class="col-lg-5 push-lg-2 col-md-5 push-md-2 col-sm-3 push-sm-2 col-xs-2">
+                                    <button type="submit" name="continue" value="loop" class="btn-primary btn-size-full cursor">Non, j’insiste. Reposez-moi la question s’il vous plait</button>
+                                </div>
+                            {% else %}
+                                <button type="submit" name="continue" value="loop" class="btn-primary cursor">Non, j’insiste. Reposez-moi la question s’il vous plait</button>
+                        {% endif %}
                     {% endif %}
                 </form>
             </div><!-- /#cip-step-{{ current_step }} -->

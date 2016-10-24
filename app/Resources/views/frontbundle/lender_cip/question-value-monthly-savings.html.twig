@@ -27,7 +27,12 @@
                             <label for="estate-answer" class="field-label">
                                 Quel est le montant total de votre patrimoine financier ?
                             </label>
-                            <input type="text" id="estate-answer" value="{{ answers['value-total-estate'].first_answer|localizednumber }}" class="input-field" readonly />
+                            <div class="input-group set-right">
+                                <input type="text" id="estate-answer" value="{{ answers['value-total-estate'].first_answer|localizednumber }}" class="input-field" readonly />
+                                <div class="btn-group">
+                                    <span class="icon fa-euro"></span>
+                                </div>
+                            </div>
                         </div><!-- /.form-field -->
                     </div>
                     <div class="row">
@@ -35,7 +40,12 @@
                             <label for="answer" class="field-label">
                                 Combien d’argent mettez-vous de côté tous les mois ?
                             </label>
-                            <input type="text" id="answer" name="answer" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="number" data-formvalidation-minvalue="0" class="input-field" />
+                            <div class="input-group set-right">
+                                <input type="text" id="answer" name="answer" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="number" data-formvalidation-minvalue="0" class="input-field" />
+                                <div class="btn-group">
+                                    <span class="icon fa-euro"></span>
+                                </div>
+                            </div>
                         </div><!-- /.form-field -->
                     </div>
                     <div class="row text-align-right">

@@ -58,4 +58,13 @@ class lender_questionnaire_question extends lender_questionnaire_question_crud
     {
         return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `lender_questionnaire_question` WHERE ' . $field . ' = "' . $id . '"')) > 0;
     }
+
+    /**
+     * @param string $type
+     * @return bool
+     */
+    public function isBooleanType($type)
+    {
+        return in_array($type, [\lender_questionnaire_question::TYPE_AWARE_MONEY_LOSS, \lender_questionnaire_question::TYPE_AWARE_PROGRESSIVE_CAPITAL_REPAYMENT, \lender_questionnaire_question::TYPE_AWARE_RISK_RETURN, \lender_questionnaire_question::TYPE_AWARE_DIVIDE_INVESTMENTS]);
+    }
 }

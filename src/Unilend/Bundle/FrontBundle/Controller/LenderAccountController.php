@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
@@ -10,16 +9,22 @@ use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 class LenderAccountController extends Controller
 {
     /**
+     * @param string $route
      * @return Response
      */
-    public function lenderMenuAction()
+    public function lenderMenuAction($route)
     {
-        $template = [];
-        $template['isAutobidQualified'] = $this->get('unilend.service.autobid_settings_manager')->isQualified($this->getLenderAccount());
+        $template = [
+            'route'              => $route,
+            'isAutobidQualified' => $this->get('unilend.service.autobid_settings_manager')->isQualified($this->getLenderAccount())
+        ];
 
         return $this->render('frontbundle/lender_account/partials/lender_account_nav.html.twig', $template);
     }
 
+    /**
+     * @return \lenders_accounts
+     */
     private function getLenderAccount()
     {
         /** @var UserLender $user */
@@ -31,5 +36,4 @@ class LenderAccountController extends Controller
 
         return $lenderAccount;
     }
-
 }

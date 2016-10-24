@@ -678,9 +678,10 @@ class MainController extends Controller
     }
 
     /**
+     * @param string $route
      * @return Response
      */
-    public function footerAction()
+    public function footerAction($route)
     {
         /** @var MemcacheCachePool $cachePool */
         $cachePool  = $this->get('memcache.default');
@@ -744,7 +745,11 @@ class MainController extends Controller
             $finalElements = $cachedItem->get();
         }
 
-        return $this->render('partials/site/footer.html.twig', ['menus' => $finalElements['footerMenu'], 'partners' => $finalElements['partners']]);
+        return $this->render('partials/site/footer.html.twig', [
+            'menus'             => $finalElements['footerMenu'],
+            'partners'          => $finalElements['partners'],
+            'displayDisclaimer' => $route !== 'project_detail'
+        ]);
     }
 
     /**

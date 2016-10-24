@@ -100,6 +100,15 @@ class CIPManager
      * @param \lender_evaluation $evaluation
      * @return bool
      */
+    public function isEvaluationStarted(\lender_evaluation $evaluation)
+    {
+        return (null !== $this->getLastQuestion($evaluation));
+    }
+
+    /**
+     * @param \lender_evaluation $evaluation
+     * @return bool
+     */
     public function isValidEvaluation(\lender_evaluation $evaluation)
     {
         return ($evaluation->expiry_date !== '0000-00-00 00:00:00');
@@ -107,16 +116,35 @@ class CIPManager
 
     /**
      * @param \lenders_accounts $lender
+     * @return \lender_evaluation
      */
-    public function startEvaluation(\lenders_accounts $lender)
+    public function createEvaluation(\lenders_accounts $lender)
     {
-        if (null === $this->getCurrentEvaluation($lender)) {
+        $evaluation = $this->getCurrentEvaluation($lender);
+
+        if (null === $evaluation) {
             /** @var \lender_evaluation $evaluation */
             $evaluation = $this->entityManager->getRepository('lender_evaluation');
             $evaluation->id_lender_questionnaire = $this->getCurrentQuestionnaire()->id_lender_questionnaire;
             $evaluation->id_lender               = $lender->id_lender_account;
             $evaluation->create();
+        }
 
+        return $evaluation;
+    }
+
+    /**
+     * @param \lenders_accounts $lender
+     */
+    public function startEvaluation(\lenders_accounts $lender)
+    {
+        $evaluation = $this->getCurrentEvaluation($lender);
+
+        if (null === $evaluation) {
+            $evaluation = $this->createEvaluation($lender);
+        }
+
+        if (false === $this->isEvaluationStarted($evaluation)) {
             /** @var \lender_questionnaire_question $question */
             $question  = $this->entityManager->getRepository('lender_questionnaire_question');
             $questions = $question->select('id_lender_questionnaire = ' . $evaluation->id_lender_questionnaire, '`order` ASC', 0, 1)[0];
@@ -244,7 +272,7 @@ class CIPManager
                         return null;
                     }
 
-                    if ($answer->first_answer >= \lender_questionnaire_question::VALUE_ESTATE_THRESHOLD) {
+                    if ($answer->first_answer > \lender_questionnaire_question::VALUE_ESTATE_THRESHOLD) {
                         continue;
                     }
                 }
@@ -333,9 +361,9 @@ class CIPManager
             $answer->update();
 
             if (
-                false === $this->isBooleanType($question->type)
-                || \lender_questionnaire_question::VALUE_BOOLEAN_FALSE === $answer->first_answer
-                && \lender_questionnaire_question::VALUE_BOOLEAN_TRUE === $answer->second_answer
+                false === $question->isBooleanType($question->type)
+                || \lender_questionnaire_question::TYPE_AWARE_DIVIDE_INVESTMENTS === $question->type && \lender_questionnaire_question::VALUE_BOOLEAN_TRUE === $answer->first_answer && \lender_questionnaire_question::VALUE_BOOLEAN_FALSE === $answer->second_answer
+                || \lender_questionnaire_question::TYPE_AWARE_DIVIDE_INVESTMENTS !== $question->type && \lender_questionnaire_question::VALUE_BOOLEAN_FALSE === $answer->first_answer && \lender_questionnaire_question::VALUE_BOOLEAN_TRUE === $answer->second_answer
             ) {
                 $nextQuestion = $this->getNextQuestion($evaluation);
 
@@ -363,7 +391,7 @@ class CIPManager
             $question->get($answer->id_lender_questionnaire_question);
         }
 
-        if ($this->isBooleanType($question->type)) {
+        if ($question->isBooleanType($question->type)) {
             return (
                 in_array($answer->first_answer, [\lender_questionnaire_question::VALUE_BOOLEAN_TRUE, \lender_questionnaire_question::VALUE_BOOLEAN_FALSE])
                 && in_array($answer->second_answer, [\lender_questionnaire_question::VALUE_BOOLEAN_TRUE, \lender_questionnaire_question::VALUE_BOOLEAN_FALSE, ''])
@@ -378,12 +406,14 @@ class CIPManager
      */
     public function resetValues(\lender_evaluation $evaluation)
     {
+        /** @var \lender_questionnaire_question $question */
+        $question = $this->entityManager->getRepository('lender_questionnaire_question');
         /** @var \lender_evaluation_answer $answerEntity */
         $answerEntity = $this->entityManager->getRepository('lender_evaluation_answer');
         $answers      = $this->getAnswersByType($evaluation);
 
         foreach ($answers as $type => $answer) {
-            if (false === $this->isBooleanType($type)) {
+            if (false === $question->isBooleanType($type)) {
                 $answerEntity->get($answer['id_lender_evaluation_answer']);
                 $answerEntity->status = \lender_evaluation_answer::STATUS_INACTIVE;
                 $answerEntity->update();
@@ -473,7 +503,7 @@ class CIPManager
         $monthlySavings           = isset($answers[\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS]) ? $answers[\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS]['first_answer'] : 0;
         $blockingPeriod           = $answers[\lender_questionnaire_question::TYPE_VALUE_BLOCKING_PERIOD]['first_answer'];
 
-        if ($estate >= \lender_questionnaire_question::VALUE_ESTATE_THRESHOLD) {
+        if ($estate > \lender_questionnaire_question::VALUE_ESTATE_THRESHOLD) {
             $totalAmountIndicator = floor($estate / 10);
         } elseif ($monthlySavings >= \lender_questionnaire_question::VALUE_MONTHLY_SAVINGS_THRESHOLD) {
             $amountByMonthIndicator = floor($monthlySavings / 200) * 20;
@@ -575,14 +605,5 @@ class CIPManager
         }
 
         return $contractAttrVars[0];
-    }
-
-    /**
-     * @param string $type
-     * @return bool
-     */
-    private function isBooleanType($type)
-    {
-        return in_array($type, [\lender_questionnaire_question::TYPE_AWARE_MONEY_LOSS, \lender_questionnaire_question::TYPE_AWARE_PROGRESSIVE_CAPITAL_REPAYMENT, \lender_questionnaire_question::TYPE_AWARE_RISK_RETURN, \lender_questionnaire_question::TYPE_AWARE_DIVIDE_INVESTMENTS]);
     }
 }
