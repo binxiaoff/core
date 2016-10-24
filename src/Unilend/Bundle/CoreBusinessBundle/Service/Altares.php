@@ -174,8 +174,7 @@ class Altares
         $taxFormType = $this->companyBalanceSheetManager->detectTaxFormType($oCompany);
         if ($taxFormType) {
             $oBalanceSheets = $this->getBalanceSheets($oCompany->siren);
-
-            if (isset($oBalanceSheets->myInfo->bilans) && is_array($oBalanceSheets->myInfo->bilans)) {
+            if (isset($oBalanceSheets->myInfo->bilans) && (is_array($oBalanceSheets->myInfo->bilans) || is_object($oBalanceSheets->myInfo->bilans)) ) {
                 /** @var \companies_actif_passif $oCompanyAssetsDebts */
                 $oCompanyAssetsDebts = $this->entityManager->getRepository('companies_actif_passif');
                 /** @var \companies_bilans $oCompanyAnnualAccounts */
@@ -187,14 +186,21 @@ class Altares
 
                 $aCodes = $oCompaniesBalanceTypes->getAllByCode($taxFormType->id_type);
 
-                foreach ($oBalanceSheets->myInfo->bilans as $oBalanceSheet) {
+                if (is_array($oBalanceSheets->myInfo->bilans)) {
+                    $balances = $oBalanceSheets->myInfo->bilans;
+                } else {
+                    $balances = array($oBalanceSheets->myInfo->bilans);
+                }
+
+                foreach ($balances as $oBalanceSheet) {
                     $aCompanyBalances = array();
                     $aAnnualAccounts  = $oCompanyAnnualAccounts->select('id_company = ' . $oCompany->id_company . ' AND cloture_exercice_fiscal = "' . $oBalanceSheet->dateClotureN . '"');
 
                     if (empty($aAnnualAccounts)) {
-                        $oCompanyAnnualAccounts->id_company              = $oCompany->id_company;
-                        $oCompanyAnnualAccounts->cloture_exercice_fiscal = $oBalanceSheet->dateClotureN;
-                        $oCompanyAnnualAccounts->duree_exercice_fiscal   = $oBalanceSheet->dureeN;
+                        $oCompanyAnnualAccounts->id_company               = $oCompany->id_company;
+                        $oCompanyAnnualAccounts->id_company_tax_form_type = $taxFormType->id_type;
+                        $oCompanyAnnualAccounts->cloture_exercice_fiscal  = $oBalanceSheet->dateClotureN;
+                        $oCompanyAnnualAccounts->duree_exercice_fiscal    = $oBalanceSheet->dureeN;
                         $oCompanyAnnualAccounts->create();
 
                         $oCompanyAssetsDebts->id_bilan = $oCompanyAnnualAccounts->id_bilan;

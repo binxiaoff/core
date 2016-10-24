@@ -60,23 +60,23 @@ class CompanyBalanceSheetManager
             return;
         }
 
-        $balances = $this->getBalanceSheetsByAnnualAccount(array($balanceSheetId))['details'];
+        $balances = $this->getBalanceSheetsByAnnualAccount(array($balanceSheetId));
 
-        $oCompanyDebtsAssets->immobilisations_corporelles        = $balances[$balanceSheetId]['AN'] + $balances[$balanceSheetId]['AP'] + $balances[$balanceSheetId]['AR'] + $balances[$balanceSheetId]['AT'] + $balances[$balanceSheetId]['AV'] + $balances[$balanceSheetId]['AX'];
-        $oCompanyDebtsAssets->immobilisations_incorporelles      = $balances[$balanceSheetId]['AB'] + $balances[$balanceSheetId]['AD'] + $balances[$balanceSheetId]['AF'] + $balances[$balanceSheetId]['AH'] + $balances[$balanceSheetId]['AJ'] + $balances[$balanceSheetId]['AL'];
-        $oCompanyDebtsAssets->immobilisations_financieres        = $balances[$balanceSheetId]['CS'] + $balances[$balanceSheetId]['CU'] + $balances[$balanceSheetId]['BB'] + $balances[$balanceSheetId]['BD'] + $balances[$balanceSheetId]['BF'] + $balances[$balanceSheetId]['BH'];
-        $oCompanyDebtsAssets->stocks                             = $balances[$balanceSheetId]['BL'] + $balances[$balanceSheetId]['BN'] + $balances[$balanceSheetId]['BP'] + $balances[$balanceSheetId]['BR'] + $balances[$balanceSheetId]['BT'];
-        $oCompanyDebtsAssets->creances_clients                   = $balances[$balanceSheetId]['BV'] + $balances[$balanceSheetId]['BX'] + $balances[$balanceSheetId]['BZ'] + $balances[$balanceSheetId]['CB'];
-        $oCompanyDebtsAssets->disponibilites                     = $balances[$balanceSheetId]['CF'];
-        $oCompanyDebtsAssets->valeurs_mobilieres_de_placement    = $balances[$balanceSheetId]['CD'];
-        $oCompanyDebtsAssets->comptes_regularisation_actif       = $balances[$balanceSheetId]['CH'] + $balances[$balanceSheetId]['CW'] + $balances[$balanceSheetId]['CM'] + $balances[$balanceSheetId]['CN'];
-        $oCompanyDebtsAssets->capitaux_propres                   = $balances[$balanceSheetId]['DL'] + $balances[$balanceSheetId]['DO'];
-        $oCompanyDebtsAssets->provisions_pour_risques_et_charges = $balances[$balanceSheetId]['CK'] + $balances[$balanceSheetId]['DR'];
-        $oCompanyDebtsAssets->amortissement_sur_immo             = $balances[$balanceSheetId]['BK'];
-        $oCompanyDebtsAssets->dettes_financieres                 = $balances[$balanceSheetId]['DS'] + $balances[$balanceSheetId]['DT'] + $balances[$balanceSheetId]['DU'] + $balances[$balanceSheetId]['DV'];
-        $oCompanyDebtsAssets->dettes_fournisseurs                = $balances[$balanceSheetId]['DW'] + $balances[$balanceSheetId]['DX'];
-        $oCompanyDebtsAssets->autres_dettes                      = $balances[$balanceSheetId]['DY'] + $balances[$balanceSheetId]['DZ'] + $balances[$balanceSheetId]['EA'];
-        $oCompanyDebtsAssets->comptes_regularisation_passif      = $balances[$balanceSheetId]['EB'] + $balances[$balanceSheetId]['ED'];
+        $oCompanyDebtsAssets->immobilisations_corporelles        = $balances[$balanceSheetId]['details']['AN'] + $balances[$balanceSheetId]['details']['AP'] + $balances[$balanceSheetId]['details']['AR'] + $balances[$balanceSheetId]['details']['AT'] + $balances[$balanceSheetId]['details']['AV'] + $balances[$balanceSheetId]['details']['AX'];
+        $oCompanyDebtsAssets->immobilisations_incorporelles      = $balances[$balanceSheetId]['details']['AB'] + $balances[$balanceSheetId]['details']['AD'] + $balances[$balanceSheetId]['details']['AF'] + $balances[$balanceSheetId]['details']['AH'] + $balances[$balanceSheetId]['details']['AJ'] + $balances[$balanceSheetId]['details']['AL'];
+        $oCompanyDebtsAssets->immobilisations_financieres        = $balances[$balanceSheetId]['details']['CS'] + $balances[$balanceSheetId]['details']['CU'] + $balances[$balanceSheetId]['details']['BB'] + $balances[$balanceSheetId]['details']['BD'] + $balances[$balanceSheetId]['details']['BF'] + $balances[$balanceSheetId]['details']['BH'];
+        $oCompanyDebtsAssets->stocks                             = $balances[$balanceSheetId]['details']['BL'] + $balances[$balanceSheetId]['details']['BN'] + $balances[$balanceSheetId]['details']['BP'] + $balances[$balanceSheetId]['details']['BR'] + $balances[$balanceSheetId]['details']['BT'];
+        $oCompanyDebtsAssets->creances_clients                   = $balances[$balanceSheetId]['details']['BV'] + $balances[$balanceSheetId]['details']['BX'] + $balances[$balanceSheetId]['details']['BZ'] + $balances[$balanceSheetId]['details']['CB'];
+        $oCompanyDebtsAssets->disponibilites                     = $balances[$balanceSheetId]['details']['CF'];
+        $oCompanyDebtsAssets->valeurs_mobilieres_de_placement    = $balances[$balanceSheetId]['details']['CD'];
+        $oCompanyDebtsAssets->comptes_regularisation_actif       = $balances[$balanceSheetId]['details']['CH'] + $balances[$balanceSheetId]['details']['CW'] + $balances[$balanceSheetId]['details']['CM'] + $balances[$balanceSheetId]['details']['CN'];
+        $oCompanyDebtsAssets->capitaux_propres                   = $balances[$balanceSheetId]['details']['DL'] + $balances[$balanceSheetId]['details']['DO'];
+        $oCompanyDebtsAssets->provisions_pour_risques_et_charges = $balances[$balanceSheetId]['details']['CK'] + $balances[$balanceSheetId]['details']['DR'];
+        $oCompanyDebtsAssets->amortissement_sur_immo             = $balances[$balanceSheetId]['details']['BK'];
+        $oCompanyDebtsAssets->dettes_financieres                 = $balances[$balanceSheetId]['details']['DS'] + $balances[$balanceSheetId]['details']['DT'] + $balances[$balanceSheetId]['details']['DU'] + $balances[$balanceSheetId]['details']['DV'];
+        $oCompanyDebtsAssets->dettes_fournisseurs                = $balances[$balanceSheetId]['details']['DW'] + $balances[$balanceSheetId]['details']['DX'];
+        $oCompanyDebtsAssets->autres_dettes                      = $balances[$balanceSheetId]['details']['DY'] + $balances[$balanceSheetId]['details']['DZ'] + $balances[$balanceSheetId]['details']['EA'];
+        $oCompanyDebtsAssets->comptes_regularisation_passif      = $balances[$balanceSheetId]['details']['EB'] + $balances[$balanceSheetId]['details']['ED'];
         $oCompanyDebtsAssets->update();
     }
 
@@ -96,17 +96,17 @@ class CompanyBalanceSheetManager
             return;
         }
 
-        $aBalances = $this->getBalanceSheetsByAnnualAccount(array($balanceSheetId))['details'];
+        $aBalances = $this->getBalanceSheetsByAnnualAccount(array($balanceSheetId));
 
-        $companyBalanceSheet->ca                          = $aBalances[$balanceSheetId]['FL'];
-        $companyBalanceSheet->resultat_brute_exploitation = $aBalances[$balanceSheetId]['GG'] + $aBalances[$balanceSheetId]['GA'] + $aBalances[$balanceSheetId]['GB'] + $aBalances[$balanceSheetId]['GC'] + $aBalances[$balanceSheetId]['GD'] - $aBalances[$balanceSheetId]['FP'] - $aBalances[$balanceSheetId]['FQ'] + $aBalances[$balanceSheetId]['GE'];
-        $companyBalanceSheet->resultat_exploitation       = $aBalances[$balanceSheetId]['GG'];
-        $companyBalanceSheet->resultat_financier          = $aBalances[$balanceSheetId]['GV'];
-        $companyBalanceSheet->produit_exceptionnel        = $aBalances[$balanceSheetId]['HA'] + $aBalances[$balanceSheetId]['HB'] + $aBalances[$balanceSheetId]['HC'];
-        $companyBalanceSheet->charges_exceptionnelles     = $aBalances[$balanceSheetId]['HE'] + $aBalances[$balanceSheetId]['HF'] + $aBalances[$balanceSheetId]['HG'];
+        $companyBalanceSheet->ca                          = $aBalances[$balanceSheetId]['details']['FL'];
+        $companyBalanceSheet->resultat_brute_exploitation = $aBalances[$balanceSheetId]['details']['GG'] + $aBalances[$balanceSheetId]['details']['GA'] + $aBalances[$balanceSheetId]['details']['GB'] + $aBalances[$balanceSheetId]['details']['GC'] + $aBalances[$balanceSheetId]['details']['GD'] - $aBalances[$balanceSheetId]['details']['FP'] - $aBalances[$balanceSheetId]['details']['FQ'] + $aBalances[$balanceSheetId]['details']['GE'];
+        $companyBalanceSheet->resultat_exploitation       = $aBalances[$balanceSheetId]['details']['GG'];
+        $companyBalanceSheet->resultat_financier          = $aBalances[$balanceSheetId]['details']['GV'];
+        $companyBalanceSheet->produit_exceptionnel        = $aBalances[$balanceSheetId]['details']['HA'] + $aBalances[$balanceSheetId]['details']['HB'] + $aBalances[$balanceSheetId]['details']['HC'];
+        $companyBalanceSheet->charges_exceptionnelles     = $aBalances[$balanceSheetId]['details']['HE'] + $aBalances[$balanceSheetId]['details']['HF'] + $aBalances[$balanceSheetId]['details']['HG'];
         $companyBalanceSheet->resultat_exceptionnel       = $companyBalanceSheet->produit_exceptionnel - $companyBalanceSheet->charges_exceptionnelles;
-        $companyBalanceSheet->resultat_net                = $aBalances[$balanceSheetId]['HN'];
-        $companyBalanceSheet->investissements             = $aBalances[$balanceSheetId]['0J'];
+        $companyBalanceSheet->resultat_net                = $aBalances[$balanceSheetId]['details']['HN'];
+        $companyBalanceSheet->investissements             = $aBalances[$balanceSheetId]['details']['0J'];
         $companyBalanceSheet->update();
     }
 
