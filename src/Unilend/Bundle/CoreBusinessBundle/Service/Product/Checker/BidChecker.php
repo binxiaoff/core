@@ -55,7 +55,7 @@ trait BidChecker
             if ($contractManager->isAutobidSettingsEligible($contract) && $contractManager->isLenderEligible($lender, $contract)) {
                 $maxAmount = $contractManager->getMaxAmount($contract);
                 if (empty($maxAmount)) {
-                    continue;
+                    return true; // one of the contract has no limit, so no limit.
                 }
                 $bidMaxAmount += $maxAmount;
             }
