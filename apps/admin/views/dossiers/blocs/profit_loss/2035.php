@@ -35,18 +35,18 @@
                 <?php
                 $previousTotal = null;
                 $column = 0;
-                foreach ($this->aBalanceSheets as $aBalanceSheet) {
-                    if (\company_tax_form_type::FORM_2035 != $aBalanceSheet['form_type']) {
+                foreach ($this->incomeStatements as $incomeStatement) {
+                    if (\company_tax_form_type::FORM_2035 != $incomeStatement['form_type']) {
                         echo '<td></td>';
                         if ($column) {
                             echo '<td></td>';
                         }
                     } else {
                         if ($column) : ?>
-                            <td><?= empty($aBalanceSheet['details'][$sFieldName]) || empty($previousTotal) ? 'N/A' : round(($previousTotal - $aBalanceSheet['details'][$sFieldName]) / abs($aBalanceSheet['details'][$sFieldName]) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($incomeStatement['details'][$sFieldName]['value']) || empty($previousTotal) ? 'N/A' : round(($previousTotal - $incomeStatement['details'][$sFieldName]['value']) / abs($incomeStatement['details'][$sFieldName]['value']) * 100) . '&nbsp;%' ?></td>
                         <?php endif; ?>
-                        <td class="grisfonceBG"><?= empty($aBalanceSheet['details'][$sFieldName]) ? '-' : $this->ficelle->formatNumber($aBalanceSheet['details'][$sFieldName], 0) . ' €' ?></td>
-                        <?php $previousTotal = empty($aBalanceSheet['details'][$sFieldName]) ? null : $aBalanceSheet['details'][$sFieldName];
+                        <td class="grisfonceBG"><?= empty($incomeStatement['details'][$sFieldName]['value']) ? '-' : $this->ficelle->formatNumber($incomeStatement['details'][$sFieldName]['value'], 0) . ' €' ?></td>
+                        <?php $previousTotal = empty($incomeStatement['details'][$sFieldName]['value']) ? null : $incomeStatement['details'][$sFieldName]['value'];
                     }
                     $column ++;
                 } ?>

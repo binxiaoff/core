@@ -389,7 +389,7 @@ class ajaxController extends bootstrap
                             $companyBalanceSheetManager->saveBalanceSheetDetails($oCompanyAnnualAccounts, $box, $value);
                         }
                         $companyBalanceSheetManager->calculateDebtsAssetsFromBalance($oCompanyAnnualAccounts->id_bilan);
-                        $companyBalanceSheetManager->calculateAnnualAccountFromBalance($oCompanyAnnualAccounts->id_bilan);
+                        $companyBalanceSheetManager->getIncomeStatement($oCompanyAnnualAccounts);
                     }
                 }
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $oProject->id_project);

@@ -138,7 +138,7 @@ class dossiersController extends bootstrap
 
             $this->allTaxFormTypes = [];
             foreach ($this->taxFormTypes as $formType) {
-                $this->allTaxFormTypes[$formType['label']] = $companyBalanceDetailsType->getAllByType($formType['id_type']);
+                $this->allTaxFormTypes[$formType['label']] = $companyBalanceDetailsType->select('id_company_tax_form_type = '.$formType['id_type']);
             }
             /** @var product $product */
             $product = $this->loadData('product');
@@ -246,7 +246,10 @@ class dossiersController extends bootstrap
                 $sAnnualAccountsIds            = implode(', ', $aAnnualAccountsIds);
                 $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_bilan IN (' . $sAnnualAccountsIds . ')', 'FIELD(id_bilan, ' . $sAnnualAccountsIds . ') ASC');
                 $this->aBalanceSheets          = $companyBalanceSheetManager->getBalanceSheetsByAnnualAccount($aAnnualAccountsIds);
-
+                foreach ($aAnnualAccountsIds as $balanceId) {
+                    $this->companies_bilans->get($balanceId);
+                    $this->incomeStatements[$balanceId] = $companyBalanceSheetManager->getIncomeStatement($this->companies_bilans);
+                }
                 if (count($this->lCompanies_actif_passif) < count($this->lbilans)) {
                     foreach (array_diff(array_column($this->lbilans, 'id_bilan'), array_column($this->lCompanies_actif_passif, 'id_bilan')) as $iAnnualAccountsId) {
                         if ($this->aBalanceSheets[$iAnnualAccountsId]['form_type'] == \company_tax_form_type::FORM_2033) {
@@ -634,7 +637,7 @@ class dossiersController extends bootstrap
 
                     $this->projects->update();
 
-                    if ($_POST['status'] != $_POST['current_status'] && $this->projects->status != $_POST['status']) {
+                    if (isset($_POST['current_status']) && $_POST['status'] != $_POST['current_status'] && $this->projects->status != $_POST['status']) {
 
                         if ($_POST['status'] == \projects_status::PREP_FUNDING) {
                             $aProjects       = $this->projects->select('id_company = ' . $this->projects->id_company);
@@ -2950,36 +2953,37 @@ class dossiersController extends bootstrap
     protected function generateBalanceLineHtml($codes, $formType, $extraClass = '')
     {
         $html = '';
-        foreach ($this->allTaxFormTypes[$formType] as $field) {
-            if ($codes === null || in_array($field['code'], $codes)) {
-                $html .= '<tr class="' . $extraClass . '"> <td>' . $field['label'] . '</td> <td width="45">' . $field['code'] . '</td>';
-                $iColumn                 = 0;
-                $iPreviousBalanceSheetId = null;
+        foreach($codes as $code) {
+            $index = array_search($code, array_column($this->allTaxFormTypes[$formType], 'code'));
+            $field = $this->allTaxFormTypes[$formType][$index];
 
-                foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
-                    if ($formType != $aBalanceSheet['form_type']) {
+            $html .= '<tr class="' . $extraClass . '"> <td>' . $field['label'] . '</td> <td width="45">' . $field['code'] . '</td>';
+            $iColumn                 = 0;
+            $iPreviousBalanceSheetId = null;
+
+            foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
+                if ($formType != $aBalanceSheet['form_type']) {
+                    $html .= '<td></td>';
+                    if ($iColumn) {
                         $html .= '<td></td>';
-                        if ($iColumn) {
-                            $html .= '<td></td>';
-                        }
-                    } else {
-                        $value = isset($aBalanceSheet['details'][$field['code']]) ? $aBalanceSheet['details'][$field['code']] : 0;
-                        if ($iColumn) {
-                            $previousValue = isset($this->aBalanceSheets[$iPreviousBalanceSheetId]['details'][$field['code']]) ? $this->aBalanceSheets[$iPreviousBalanceSheetId]['details'][$field['code']] : 0;
-                            $movement      = empty($value) || empty($previousValue) ? 'N/A' : round(($previousValue - $value) / abs($value) * 100) . '&nbsp;%';
-                            $html .= '<td>' . $movement . '</td>';
-
-                        }
-                        $formatedValue = $this->ficelle->formatNumber($value, 0);
-                        $tabIndex      = 420 + $iColumn;
-                        $html .= '<td><input type="text" class="numbers" name="box[' . $iBalanceSheetId . '][' . $field['code'] . ']" value="' . $formatedValue . '" tabindex="' . $tabIndex . '"/>&nbsp;€</td>';
-
-                        $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
-                    $iColumn++;
+                } else {
+                    $value = isset($aBalanceSheet['details'][$field['code']]) ? $aBalanceSheet['details'][$field['code']] : 0;
+                    if ($iColumn) {
+                        $previousValue = isset($this->aBalanceSheets[$iPreviousBalanceSheetId]['details'][$field['code']]) ? $this->aBalanceSheets[$iPreviousBalanceSheetId]['details'][$field['code']] : 0;
+                        $movement      = empty($value) || empty($previousValue) ? 'N/A' : round(($previousValue - $value) / abs($value) * 100) . '&nbsp;%';
+                        $html .= '<td>' . $movement . '</td>';
+
+                    }
+                    $formatedValue = $this->ficelle->formatNumber($value, 0);
+                    $tabIndex      = 420 + $iColumn;
+                    $html .= '<td><input type="text" class="numbers" name="box[' . $iBalanceSheetId . '][' . $field['code'] . ']" value="' . $formatedValue . '" tabindex="' . $tabIndex . '"/>&nbsp;€</td>';
+
+                    $iPreviousBalanceSheetId = $iBalanceSheetId;
                 }
-                $html .= '</tr>';
+                $iColumn++;
             }
+            $html .= '</tr>';
         }
 
         return $html;

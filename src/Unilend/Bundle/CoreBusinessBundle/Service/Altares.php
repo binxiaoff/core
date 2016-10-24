@@ -228,7 +228,7 @@ class Altares
                     }
 
                     if ($bRecalculate) {
-                        $this->companyBalanceSheetManager->calculateAnnualAccountFromBalance($oCompanyAnnualAccounts->id_bilan);
+                        $this->companyBalanceSheetManager->getIncomeStatement($oCompanyAnnualAccounts);
                         $this->companyBalanceSheetManager->calculateDebtsAssetsFromBalance($oCompanyAnnualAccounts->id_bilan);
                     }
                 }

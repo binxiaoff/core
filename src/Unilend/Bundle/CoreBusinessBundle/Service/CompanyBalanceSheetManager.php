@@ -83,22 +83,20 @@ class CompanyBalanceSheetManager
         $oCompanyDebtsAssets->update();
     }
 
-    public function calculateAnnualAccountFromBalance($balanceSheetId)
+    private function getIncomeStatement2033(\companies_bilans $companyBalanceSheet)
     {
         /** @var \settings $setting */
         $setting = $this->entityManager->getRepository('settings');
-        /** @var \companies_bilans $companyBalanceSheet */
-        $companyBalanceSheet = $this->entityManager->getRepository('companies_bilans');
         /** @var \company_tax_form_type $companyTaxFormType */
         $companyTaxFormType = $this->entityManager->getRepository('company_tax_form_type');
 
-        $companyBalanceSheet->get($balanceSheetId);
+        $balanceSheetId = $companyBalanceSheet->id_bilan;
         $companyTaxFormType->get($companyBalanceSheet->id_company_tax_form_type);
 
         $setting->get('Entreprises fundés au passage du risque lot 1', 'type');
         $fundedCompanies = explode(',', $setting->value);
 
-        if (in_array($companyBalanceSheet->id_company, $fundedCompanies) ||  $companyTaxFormType->label != \company_tax_form_type::FORM_2033) {
+        if (in_array($companyBalanceSheet->id_company, $fundedCompanies) || $companyTaxFormType->label != \company_tax_form_type::FORM_2033) {
             return;
         }
 
@@ -134,24 +132,24 @@ class CompanyBalanceSheetManager
     }
 
     /**
-     * @param \companies_bilans $companyAnnualAccounts
+     * @param \companies_bilans $companyBalanceSheet
      * @param $box
      * @param $value
      */
-    public function saveBalanceSheetDetails(\companies_bilans $companyAnnualAccounts, $box, $value)
+    public function saveBalanceSheetDetails(\companies_bilans $companyBalanceSheet, $box, $value)
     {
         /** @var \company_balance_type $companyBalanceDetailsType */
         $companyBalanceDetailsType = $this->entityManager->getRepository('company_balance_type');
         /** @var \company_balance $companyBalanceDetails */
         $companyBalanceDetails = $this->entityManager->getRepository('company_balance');
 
-        if ($companyBalanceDetailsType->get($box, 'id_company_tax_form_type = ' . $companyAnnualAccounts->id_company_tax_form_type . ' AND code')) {
-            if ($companyBalanceDetails->exist('id_balance_type = ' . $companyBalanceDetailsType->id_balance_type . ' AND id_bilan = ' . $companyAnnualAccounts->id_bilan)){
-                $companyBalanceDetails->get($companyBalanceDetailsType->id_balance_type, 'id_bilan = ' . $companyAnnualAccounts->id_bilan . ' AND id_balance_type');
+        if ($companyBalanceDetailsType->get($box, 'id_company_tax_form_type = ' . $companyBalanceSheet->id_company_tax_form_type . ' AND code')) {
+            if ($companyBalanceDetails->exist('id_balance_type = ' . $companyBalanceDetailsType->id_balance_type . ' AND id_bilan = ' . $companyBalanceSheet->id_bilan)){
+                $companyBalanceDetails->get($companyBalanceDetailsType->id_balance_type, 'id_bilan = ' . $companyBalanceSheet->id_bilan . ' AND id_balance_type');
                 $companyBalanceDetails->value = $value;
                 $companyBalanceDetails->update();
             } else {
-                $companyBalanceDetails->id_bilan        = $companyAnnualAccounts->id_bilan;
+                $companyBalanceDetails->id_bilan        = $companyBalanceSheet->id_bilan;
                 $companyBalanceDetails->id_balance_type = $companyBalanceDetailsType->id_balance_type;
                 $companyBalanceDetails->value           = $value;
                 $companyBalanceDetails->create();
@@ -160,17 +158,17 @@ class CompanyBalanceSheetManager
     }
 
     /**
-     * @param \companies_bilans $companyAnnualAccounts
+     * @param \companies_bilans $companyBalanceSheet
      */
-    public function removeBalanceSheet(\companies_bilans $companyAnnualAccounts, \projects $project)
+    public function removeBalanceSheet(\companies_bilans $companyBalanceSheet, \projects $project)
     {
         /** @var \company_balance $companyBalanceDetails */
         $companyBalanceDetails = $this->entityManager->getRepository('company_balance');
-        $companyBalanceDetails->delete($companyAnnualAccounts->id_bilan, 'id_bilan');
-        $companyAnnualAccounts->delete($companyAnnualAccounts->id_bilan);
+        $companyBalanceDetails->delete($companyBalanceSheet->id_bilan, 'id_bilan');
+        $companyBalanceSheet->delete($companyBalanceSheet->id_bilan);
 
-        if ($companyAnnualAccounts->id_bilan === $project->id_dernier_bilan) {
-            $balance = $companyAnnualAccounts->select('id_company = ' . $project->id_company,  'cloture_exercice_fiscal DESC', 0, 1);
+        if ($companyBalanceSheet->id_bilan === $project->id_dernier_bilan) {
+            $balance = $companyBalanceSheet->select('id_company = ' . $project->id_company,  'cloture_exercice_fiscal DESC', 0, 1);
             if (empty($balances)) {
                 $project->id_dernier_bilan = '';
             } else {
@@ -178,6 +176,89 @@ class CompanyBalanceSheetManager
             }
             $project->update();
         }
+    }
 
+    public function getIncomeStatement(\companies_bilans $companyBalanceSheet)
+    {
+        /** @var \company_tax_form_type $companyTaxFormType */
+        $companyTaxFormType = $this->entityManager->getRepository('company_tax_form_type');
+        $companyTaxFormType->get($companyBalanceSheet->id_company_tax_form_type);
+
+        switch ($companyTaxFormType->label){
+            case \company_tax_form_type::FORM_2033 :
+                return $this->getIncomeStatement2033($companyBalanceSheet);
+            case \company_tax_form_type::FORM_2035 :
+                return $this->getIncomeStatement2035($companyBalanceSheet);
+        }
+    }
+
+    private function getIncomeStatement2035(\companies_bilans $companyBalanceSheet)
+    {
+        $balanceSheetId = $companyBalanceSheet->id_bilan;
+        $balanceDetails = $this->getBalanceSheetsByAnnualAccount(array($balanceSheetId));
+
+        $AG = $balanceDetails[$balanceSheetId]['details']['AD'] + $balanceDetails[$balanceSheetId]['details']['AE'] + $balanceDetails[$balanceSheetId]['details']['AF'];
+
+        $BR = $balanceDetails[$balanceSheetId]['details']['BA'] + $balanceDetails[$balanceSheetId]['details']['BB'] + $balanceDetails[$balanceSheetId]['details']['BC']
+            + $balanceDetails[$balanceSheetId]['details']['BD'] + $balanceDetails[$balanceSheetId]['details']['BF'] + $balanceDetails[$balanceSheetId]['details']['BG']
+            + $balanceDetails[$balanceSheetId]['details']['BH'] + $balanceDetails[$balanceSheetId]['details']['BJ'] + $balanceDetails[$balanceSheetId]['details']['BK']
+            + $balanceDetails[$balanceSheetId]['details']['BM'] + $balanceDetails[$balanceSheetId]['details']['BN'] + $balanceDetails[$balanceSheetId]['details']['BP']
+            + $balanceDetails[$balanceSheetId]['details']['BS'] + $balanceDetails[$balanceSheetId]['details']['BV'] + $balanceDetails[$balanceSheetId]['details']['JY'];
+
+        $CA = $AG - $BR;
+
+        $CE = $CA +  $balanceDetails[$balanceSheetId]['details']['CB'] + $balanceDetails[$balanceSheetId]['details']['CC'] + $balanceDetails[$balanceSheetId]['details']['CD'];
+
+        $CF = $BR - $AG;
+
+        $CN = $CF + $balanceDetails[$balanceSheetId]['details']['CG'] + $balanceDetails[$balanceSheetId]['details']['CH'] + $balanceDetails[$balanceSheetId]['details']['CK']
+            + $balanceDetails[$balanceSheetId]['details']['CL'] + $balanceDetails[$balanceSheetId]['details']['CM'];
+
+        $incomeStatement['details'] = [
+            'AG' => [
+                'label' => 'company-balance_2035-recettes',
+                'value' => $AG
+            ],
+            'BA' => [
+                'label' => 'company-balance_2035-achats',
+                'value' => $balanceDetails[$balanceSheetId]['details']['BA']
+            ],
+            'BB' => [
+                'label' => 'company-balance_2035-frais-personnel',
+                'value' => $balanceDetails[$balanceSheetId]['details']['BB']
+            ],
+            'BC' => [
+                'label' => 'company-balance_2035-charges-sociales',
+                'value' => $balanceDetails[$balanceSheetId]['details']['BC']
+            ],
+            'BN' => [
+                'label' => 'company-balance_2035-frais-financiers',
+                'value' => $balanceDetails[$balanceSheetId]['details']['BN']
+            ],
+            'BR' => [
+                'label' => 'company-balance_2035-total-depenses',
+                'value' => $BR
+            ],
+            'CA' => [
+                'label' => 'company-balance_2035-excedent-brut',
+                'value' => $CA
+            ],
+            'CF' => [
+                'label' => 'company-balance_2035-frais-etablissement',
+                'value' => $BR - $AG
+            ],
+            'CG' => [
+                'label' => 'company-balance_2035-dotation-aux-ammortissements',
+                'value' => $balanceDetails[$balanceSheetId]['details']['CG']
+            ],
+            'CP' => [
+                'label' => 'company-balance_2035-benefice-net',
+                'value' => $CE - $CN
+            ],
+        ];
+
+        $incomeStatement['form_type'] = \company_tax_form_type::FORM_2035;
+
+        return $incomeStatement;
     }
 }
