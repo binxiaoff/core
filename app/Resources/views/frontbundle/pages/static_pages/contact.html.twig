@@ -48,7 +48,7 @@
                         {#<input id="contact-search-input" type="text" name="q" placeholder="{% trans %} site-general_search-placeholder {% endtrans %}" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true">#}
                         <input id="contact-search-input" type="text" name="search" placeholder="{% trans %} site-general_search-placeholder {% endtrans %}" value="" class="input-field">
                         <div class="btn-group">
-                            <button type="submit" class="btn-primary" ><span class="icon fa-search"></span> <span class="label hide-xs">{% trans %} contact_search-submit {% endtrans %}</span></button>
+                            <button type="submit" class="btn-primary" data-spinnerbutton><span class="icon fa-search"></span> <span class="label hide-xs">{% trans %} contact_search-submit {% endtrans %}</span></button>
                         </div>
                     </div><!-- /.form-field-inline -->
                 </div>
@@ -156,7 +156,7 @@
                     </div><!-- /.form-field -->
                 </div>
                 <div class="row">
-                    <button class="btn-primary" >{% trans %} contact_contact-form-submit-button {% endtrans %}</button>
+                    <button class="btn-primary" data-spinnerbutton>{% trans %} contact_contact-form-submit-button {% endtrans %}</button>
                 </div>
             </form>
         </div>
