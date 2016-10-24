@@ -817,7 +817,7 @@ class LenderProfileController extends Controller
             } else {
                 switch ($clientAddress->meme_adresse_fiscal) {
                     case 1:
-                        $this->updateTaxAndCorrespondenceAddress($clientAddress);
+                        $this->updateTaxAndPostalAddress($clientAddress);
                         break;
                     default:
                         $clientAddress->update();
@@ -928,7 +928,7 @@ class LenderProfileController extends Controller
             $formPostalAddress = $request->request->all();
 
             if (isset($formPostalAddress['same_postal_address']) && true == $formPostalAddress['same_postal_address']) {
-                $this->updateTaxAndCorrespondenceAddress($clientAddress);
+                $this->updateTaxAndPostalAddress($clientAddress);
             } else {
                 $clientAddress->meme_adresse_fiscal = 0;
 
@@ -1680,7 +1680,7 @@ class LenderProfileController extends Controller
     /**
      * @param \clients_adresses $clientAddress
      */
-    private function updateTaxAndCorrespondenceAddress(\clients_adresses $clientAddress)
+    private function updateTaxAndPostalAddress(\clients_adresses $clientAddress)
     {
         $clientAddress->meme_adresse_fiscal = 1;
         $clientAddress->adresse1            = $clientAddress->adresse_fiscal;
