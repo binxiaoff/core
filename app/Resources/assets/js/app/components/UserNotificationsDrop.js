@@ -67,7 +67,7 @@ var UserNotificationsDrop = function (elem, options) {
       content: '',
       classes: 'ui-usernotificationsdrop-drop-element',
       position: 'bottom center',
-      openOn: undefined,
+      openOn: 'click', // @note set to undefined after figuring out how to dismiss it cleanly
       constrainToWindow: true,
 
       // Stop the drop from auto-closing when "mark all read" is clicked
@@ -447,12 +447,14 @@ $(document)
   })
 
   // Toggle the usernotificationsdrop if toggled from another element
-  .on(Utility.clickEvent, '.ui-usernotificationsdrop', function (event) {
-    event.preventDefault()
-    $(this).uiUserNotificationsDrop('toggle')
-  })
+  // @note after figuring out the blur/clean dismiss, use this binding
+  // .on(Utility.clickEvent, '.ui-usernotificationsdrop', function (event) {
+  //   event.preventDefault()
+  //   $(this).uiUserNotificationsDrop('toggle')
+  // })
 
   // Hide the usernotificationsdrop if interacted outside of it
+  // @note after figuring out the blur/clean dismiss, use this binding
   // @todo needs more testing/refinement
   // .on(Utility.clickEvent + ' mousedown', function (event) {
   //   if (!$(event.target).closest('.ui-usernotificationsdrop').length) {
