@@ -464,6 +464,6 @@ class LenderDashboardController extends Controller
         $taxTypeForTaxableLender     = [\tax_type::TYPE_INCOME_TAX, \tax_type::TYPE_CSG, \tax_type::TYPE_SOCIAL_DEDUCTIONS, \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS, \tax_type::TYPE_SOLIDARITY_DEDUCTIONS, \tax_type::TYPE_CRDS];
         $taxTypeForForeignerLender   = [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE];
         $taxTypeForLegalEntityLender = [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE];
-        return $lenderRepayment->getDataForRepaymentWidget($lender->id_lender_account, $lender->id_client_owner, $taxTypeForExemptedLender, $taxTypeForTaxableLender, $taxTypeForForeignerLender, $taxTypeForLegalEntityLender);
+        return $lenderRepayment->getDataForRepaymentWidget($lender->id_lender_account, $taxTypeForExemptedLender, $taxTypeForTaxableLender, $taxTypeForForeignerLender, $taxTypeForLegalEntityLender);
     }
 }
