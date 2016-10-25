@@ -5,6 +5,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
 use Unilend\core\Loader;
@@ -288,24 +289,11 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                 $repaymentLog->update();
 
                 if (0 == $echeanciers->counter('id_project = ' . $r['id_project'] . ' AND status = 0')) {
-                    $settings->get('Adresse controle interne', 'type');
-                    $mailBO = $settings->value;
-
-                    $varMail = array(
-                        'surl'           => $sUrl,
-                        'url'            => $sUrl,
-                        'nom_entreprise' => $companies->name,
-                        'nom_projet'     => $projects->title,
-                        'id_projet'      => $projects->id_project,
-                        'annee'          => date('Y')
-                    );
-
-                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $messageBO = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('preteur-dernier-remboursement-controle', $varMail);
-                    $messageBO->setTo($mailBO);
-
-                    $mailer = $this->getContainer()->get('mailer');
-                    $mailer->send($messageBO);
+                    /** @var MailerManager $mailerManager */
+                    $mailerManager = $this->getContainer()->get('unilend.service.email_manager');
+                    $mailerManager->setLogger($logger);
+                    $mailerManager->sendInternalNotificationEndOfRepayment($companies, $projects);
+                    $mailerManager->sendClientNotificationEndOfRepayment($projects, $companies, $emprunteur);
                 }
             } else {
                 $projectRepayment->get($r['id_project_remb'], 'id_project_remb');
