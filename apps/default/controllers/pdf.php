@@ -661,14 +661,15 @@ class pdfController extends bootstrap
 
         $contract->get($oLoans->id_type_contract);
 
-        $this->blocs->get($contract->block_slug, 'slug');
         $sTemplate = $contract->document_template;
 
-        $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
-        foreach ($lElements as $b_elt) {
-            $this->elements->get($b_elt['id_element']);
-            $this->bloc_pdf_contrat[$this->elements->slug]           = $b_elt['value'];
-            $this->bloc_pdf_contratComplement[$this->elements->slug] = $b_elt['complement'];
+        if ($this->blocs->get($contract->block_slug, 'slug')) {
+            $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
+            foreach ($lElements as $b_elt) {
+                $this->elements->get($b_elt['id_element']);
+                $this->bloc_pdf_contrat[$this->elements->slug]           = $b_elt['value'];
+                $this->bloc_pdf_contratComplement[$this->elements->slug] = $b_elt['complement'];
+            }
         }
 
         $this->setDisplay($sTemplate);
