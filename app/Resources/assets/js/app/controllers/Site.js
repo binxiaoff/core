@@ -118,17 +118,33 @@ $doc.on(Utility.animationEndEvent, '.ui-site-mobile-menu-closing', function (eve
 /*
  * Site Mobile Menu
  */
-function openSiteMobileMenu () {
+function openSiteMobileMenu (forceShow) {
   // @debug console.log('openSiteMobileMenu')
-  if (Utility.isIE(9) || Utility.isIE('<9')) return showSiteMobileMenu()
+
+  // Hide all (but...)
+  // @trigger doc `Site:overlay:hideAll` [openOverlaySelector]
+  $doc.trigger('Site:overlay:hideAll', ['.site-mobile-menu'])
+
+  // Hide any other elements which could be obstructing this element
+  $doc.trigger('UI:hideOthers')
+
+  // Ensure always at top
+  $('.site-mobile-menu').scrollTop(0)
+
+  // Force show
+  if (Utility.isIE(9) || Utility.isIE('<9') || forceShow) return showSiteMobileMenu()
+
   if (!$html.is('.ui-site-mobile-menu-open, .ui-site-mobile-menu-opening')) {
     $html.removeClass('ui-site-mobile-menu-closing').addClass('ui-site-mobile-menu-opening')
   }
 }
 
-function closeSiteMobileMenu () {
-  if (Utility.isIE(9) || Utility.isIE('<9')) return hideSiteMobileMenu()
+function closeSiteMobileMenu (forceHide) {
   // @debug console.log('closeSiteMobileMenu')
+
+  // Force hide
+  if (Utility.isIE(9) || Utility.isIE('<9') || forceHide) return hideSiteMobileMenu()
+
   $html.removeClass('ui-site-mobile-menu-opening ui-site-mobile-menu-open').addClass('ui-site-mobile-menu-closing')
 }
 
@@ -209,28 +225,37 @@ $doc.on(Utility.clickEvent, '.ui-open-site-search', function (event) {
   openSearch()
 })
 
-
 /*
  * Site User Mobile Menu
  */
 
-function openSiteUserMobileMenu () {
-  // No transitions for the moment...
-  // return showSiteUserMobileMenu()
-
+function openSiteUserMobileMenu (forceShow) {
   // @debug console.log('openSiteUserMobileMenu')
-  if (Utility.isIE(9) || Utility.isIE('<9')) return showSiteUserMobileMenu()
+
+  // Hide all (but...)
+  // @trigger doc `Site:overlay:hideAll` [openOverlaySelector]
+  $doc.trigger('Site:overlay:hideAll', ['.site-user-mobile-menu'])
+
+  // Hide any other elements which could be obstructing this element
+  $doc.trigger('UI:hideOthers')
+
+  // Make sure always at top
+  $('.site-user-mobile-menu').scrollTop(0)
+
+  // Force show
+  if (Utility.isIE(9) || Utility.isIE('<9') || forceShow) return showSiteUserMobileMenu()
+
   if (!$html.is('.ui-site-user-mobile-menu-open, .ui-site-user-mobile-menu-opening')) {
     $html.removeClass('ui-site-user-mobile-menu-closing').addClass('ui-site-user-mobile-menu-opening')
   }
 }
 
-function closeSiteUserMobileMenu () {
-  // No transitions for the moment...
-  // return hideSiteUserMobileMenu()
-
+function closeSiteUserMobileMenu (forceHide) {
   // @debug console.log('closeSiteUserMobileMenu')
-  if (Utility.isIE(9) || Utility.isIE('<9')) return hideSiteUserMobileMenu()
+
+  // Force hide
+  if (Utility.isIE(9) || Utility.isIE('<9') || forceHide) return hideSiteUserMobileMenu()
+
   $html.removeClass('ui-site-user-mobile-menu-opening ui-site-user-mobile-menu-open').addClass('ui-site-user-mobile-menu-closing')
 }
 
@@ -278,4 +303,25 @@ $doc.on(Utility.transitionEndEvent, '.ui-site-user-mobile-menu-opening', functio
 // At end of closing transition
 $doc.on(Utility.transitionEndEvent, '.ui-site-user-mobile-menu-closing', function (event) {
   hideSiteUserMobileMenu()
+})
+
+// Hide site overlays
+// @event `Site:overlay:hideAll` [overlaySelector]
+$doc.on('Site:overlay:hideAll', function (event, overlaySelector) {
+  // Needs to be a string to match the following
+  if (!overlaySelector) overlaySelector = ''
+
+  // If an overlay's selector was given, then they won't be hidden!
+  if (!overlaySelector.match('site-search')) {
+    closeSiteSearch()
+  }
+  if (!overlaySelector.match('site-mobile-menu')) {
+    closeSiteMobileMenu(true)
+  }
+  if (!overlaySelector.match('site-mobile-search')) {
+    closeSiteMobileSearch()
+  }
+  if (!overlaySelector.match('site-user-mobile-menu')) {
+    closeSiteUserMobileMenu(true)
+  }
 })

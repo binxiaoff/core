@@ -36,12 +36,15 @@ var UserNotificationsDrop = function (elem, options) {
 
   // Error: invalid element
   if (self.$elem.length === 0) {
-    console.warn('UserNotificationsDrop Error: Invalid element selected', elem)
+    console.warn('new UserNotificationsDrop Error: Invalid element selected', elem)
     return
   }
 
   // Don't instantiate another if it already has one
-  if (self.$elem[0].hasOwnProperty('UserNotificationsDrop')) return
+  if (self.$elem[0].hasOwnProperty('UserNotificationsDrop')) {
+    console.log('new UserNotificationsDrop: Element already has instance', elem)
+    return self.$elem[0].UserNotificationsDrop
+  }
 
   // Decouple options.dropOptions to inherit separately
   var optionsDropOptions = {}
@@ -64,7 +67,7 @@ var UserNotificationsDrop = function (elem, options) {
       content: '',
       classes: 'ui-usernotificationsdrop-drop-element',
       position: 'bottom center',
-      openOn: 'click',
+      openOn: undefined,
       constrainToWindow: true,
 
       // Stop the drop from auto-closing when "mark all read" is clicked
@@ -85,23 +88,7 @@ var UserNotificationsDrop = function (elem, options) {
     onbeforerender: undefined, // function (notifications) {}
     onrender: undefined, // function (notifications) {}
     onrendernotification: undefined, // function (notification) {}
-    onopen: function (elemUserNotificationsDrop) {
-      // console.log('UserNotificationsDrop.onopen', elemUserNotificationsDrop)
-
-      // TMA-988 issue with Tether/Drop making mobile area scroll, so doing some weird stuff
-      // @note does have a quick flash before rendering. Not ideal but it's the best I can do right now
-      if (elemUserNotificationsDrop.track.firstOpen) {
-        // console.log('UserNotificationsDrop on firstOpen')
-        elemUserNotificationsDrop.track.firstOpen = false
-
-        elemUserNotificationsDrop.drop.close()
-        setTimeout(function () {
-          elemUserNotificationsDrop.drop.open()
-        }, 100)
-
-        return false
-      }
-    }, // function (UserNotificationsDrop) {}
+    onopen: undefined, // function (UserNotificationsDrop) {}
     onclose: undefined // function (UserNotificationsDrop) {}
   },
   // Get options from the element
@@ -125,11 +112,34 @@ var UserNotificationsDrop = function (elem, options) {
 
   // Hook in Drop's native open and close events
   self.drop.on('open', function () {
+    // Hide all the site overlays
+    $doc.trigger('Site:overlay:hideAll')
+
+    // TMA-988 issue with Tether/Drop making mobile area scroll, so doing some weird stuff
+    // @note does have a quick flash before rendering. Not ideal but it's the best I can do right now
+    if (self.track.firstOpen) {
+      // console.log('UserNotificationsDrop on firstOpen')
+      self.track.firstOpen = false
+
+      self.drop.close()
+      setTimeout(function () {
+        self.drop.open()
+      }, 100)
+
+      return false
+    }
+
+    // @trigger `UserNotificationsDrop:open:before` [elemUserNotificationsDrop]
+    self.$elem.trigger('UserNotificationsDrop:open:before', [self])
+
     if (typeof self.settings.onopen === 'function') {
       self.settings.onopen.call(self, self)
     }
   })
   self.drop.on('close', function () {
+    // @trigger `UserNotificationsDrop:close:before` [elemUserNotificationsDrop]
+    self.$elem.trigger('UserNotificationsDrop:close:before', [self])
+
     if (typeof self.settings.onclose === 'function') {
       self.settings.onclose.call(self, self)
     }
@@ -159,22 +169,21 @@ var UserNotificationsDrop = function (elem, options) {
 
 // Show the user notifications
 // @method show
-// @param {Array} notifications An array of {NotificationObject}s
-// @param {Boolean} pushOrReplace Whether to push or to replace the notifications to the list
+// @param {Boolean} doRender Ensure notifications are rendered
 // @returns {Void}
-UserNotificationsDrop.prototype.show = function () {
+UserNotificationsDrop.prototype.show = function (doRender) {
   var self = this
 
   // @trigger `UserNotificationsDrop:show:before` [elemUserNotificationsDrop]
   self.$elem.trigger('UserNotificationsDrop:show:before', [self])
 
-  // Ensure notifications are rendered
-  self.render()
+  // Ensure notifications are rendered, only if explicitly set
+  if (doRender) {
+    self.render()
+  }
 
   // Open the drop UI
-  if (!self.drop.isOpened()) {
-    self.drop.open()
-  }
+  self.drop.open()
 }
 
 // Hide the user notifications
@@ -190,12 +199,30 @@ UserNotificationsDrop.prototype.hide = function () {
   self.drop.close()
 }
 
+// Toggle the user notifications
+// @method toggle
+// @param {Boolean} doRender Ensure notifications are rendered
+// @returns {Void}
+UserNotificationsDrop.prototype.toggle = function (doRender) {
+  var self = this
+
+  // @debug
+  console.log('UserNotificationsDrop.toggle', self.drop, self.drop.isOpened())
+
+  if (self.drop.isOpened()) {
+    self.hide()
+  } else {
+    self.show(doRender)
+  }
+}
+
 // Render notifications
 // This will generate new HTML to output into the drop element
 // @method render
 // @returns {Void}
 UserNotificationsDrop.prototype.render = function () {
   var self = this
+
   // Make a copy since this component is read-only
   var notifications = UserNotifications.collection.slice(0)
   var unreadNotifications = 0
@@ -298,6 +325,8 @@ UserNotificationsDrop.prototype.renderNotification = function (notificationObjec
 }
 
 // Update the pip number
+// @note deprecate? Can use UserNotifications and `data-usernotifications-unreadcount` instead
+//
 // @method updatePip
 // @param {Int} amount
 // @returns {Void}
@@ -368,7 +397,7 @@ UserNotificationsDrop.prototype.templates = {
 $.fn.uiUserNotificationsDrop = function (op) {
   // Fire a command to the UserNotificationsDrop object, e.g. $('[data-usernotificationsdrop]').uiUserNotificationsDrop('publicMethod', {..})
   // @todo add in list of public methods that $.fn.uiUserNotificationsDrop can reference
-  if (typeof op === 'string' && /^(show|hide|render|position|updatePip)$/.test(op)) {
+  if (typeof op === 'string' && /^(show|hide|toggle|render|position|updatePip)$/.test(op)) {
     // Get further additional arguments to apply to the matched command method
     var args = Array.prototype.slice.call(arguments)
     args.shift()
@@ -396,7 +425,7 @@ $.fn.uiUserNotificationsDrop = function (op) {
 $(document)
   // Auto-init `[data-usernotificationsdrop]` elements
   .on('ready UI:visible', function (event) {
-    $(event.target).find('[data-usernotificationsdrop]').not('.ui-usernotificationsdrop').uiUserNotificationsDrop()
+    $(event.target).find('[data-usernotificationsdrop], .ui-usernotificationsdrop').uiUserNotificationsDrop()
   })
 
   // Reposition any drops on UI:update
@@ -404,16 +433,37 @@ $(document)
     $('.ui-usernotificationsdrop').uiUserNotificationsDrop('position')
   })
 
-  // Prevent notifications drop showing when in unsupported breakpoints
-  .on(Utility.clickEvent, '.site-user a.profile-notifications[href]', function () {
-    // Show/hide of drop is handled with "openOn: click" above
-    // This behaviour below is if user on mobile/tablet
-    if (/(xs|mobile)/.test(Utility.getActiveBreakpoints())) {
-      event.preventDefault()
-      event.stopPropagation()
-      window.location = $(this).attr('href')
-      return false
+  // If another UI element needs to hide certain things before it opens, it'll trigger this on the document
+  // @bind `UI:hideOthers` [exceptSelector]
+  .on('UI:hideOthers', function (event, exceptSelector) {
+    // Default to empty string
+    if (!exceptSelector) {
+      exceptSelector = ''
     }
+
+    if (!exceptSelector.match('ui-usernotificationsdrop')) {
+      $('.ui-usernotificationsdrop').uiUserNotificationsDrop('hide')
+    }
+  })
+
+  // Toggle the usernotificationsdrop if toggled from another element
+  .on(Utility.clickEvent, '.ui-usernotificationsdrop', function (event) {
+    event.preventDefault()
+    $(this).uiUserNotificationsDrop('toggle')
+  })
+
+  // Hide the usernotificationsdrop if interacted outside of it
+  // @todo needs more testing/refinement
+  // .on(Utility.clickEvent + ' mousedown', function (event) {
+  //   if (!$(event.target).closest('.ui-usernotificationsdrop').length) {
+  //     $('.ui-usernotificationsdrop').uiUserNotificationsDrop('hide')
+  //   }
+  // })
+
+  // Show the usernotificationsdrop if toggled from another element
+  .on(Utility.clickEvent, 'a.ui-open-usernotificationsdrop, button.ui-open-usernotificationsdrop', function (event) {
+    event.preventDefault()
+    $('.ui-usernotificationsdrop').uiUserNotificationsDrop('show')
   })
 
   // Update the unread notifications count on the global event
@@ -426,6 +476,21 @@ $(document)
     // @debug
     // console.log('After UserNotifications:updated, re-render the drops')
     $('.ui-usernotificationsdrop').uiUserNotificationsDrop('render')
+  })
+
+  // Show the user notifications via JS event
+  .on('UserNotifications:show', '.ui-usernotificationsdrop', function (event) {
+    $(this).uiUserNotifications('show')
+  })
+
+  // Hide the user notifications via JS event
+  .on('UserNotifications:hide', '.ui-usernotificationsdrop', function (event) {
+    $(this).uiUserNotifications('hide')
+  })
+
+  // Toggle the user notifications via JS event
+  .on('UserNotifications:toggle', '.ui-usernotificationsdrop', function (event) {
+    $(this).uiUserNotifications('toggle')
   })
 
 module.exports = UserNotificationsDrop

@@ -18,78 +18,103 @@
                     <li role="presentation" class="user-nav-major user-nav-dashboard {% if app.request.attributes.get('_route') == 'lender_dashboard' %} active {% else %} complete {% endif %}">
                         <a href="{{ path('lender_dashboard') }}">
                             <span class="icon fa-dashboard-u"></span>
-                            <span class="label">{% trans %} lender-dashboard-navigation_dashboard-link {% endtrans %}</span>
+                            <div class="label">{% trans %} lender-dashboard-navigation_dashboard-link {% endtrans %}</div>
                         </a>
                     </li>
+
                     <li role="presentation" class="user-nav-major user-nav-balance {% if app.request.attributes.get('_route') in ['lender_wallet_deposit', 'lender_wallet_withdrawal'] %} active {% else %} complete {% endif %}">
                         <a href="{{ path('lender_wallet_deposit') }}">
                             <span class="icon fa-money-u32"></span>
-                            <span class="label">{% trans %} lender-dashboard-navigation_wallet-link {% endtrans %}</span></a>
+                            <div class="label">{% trans %} lender-dashboard-navigation_wallet-link {% endtrans %}</div></a>
                     </li>
+
                     <li role="presentation" class="user-nav-major user-nav-projects {% if app.request.attributes.get('_route') == 'lender_projects' %} active {% else %} complete {% endif %}">
                         <a href="{{ path('lender_projects') }}">
                             <span class="icon fa-project-u"></span>
-                            <span class="label">{% trans %} lender-dashboard-navigation_projects-link {% endtrans %}</span></a>
+                            <div class="label">{% trans %} lender-dashboard-navigation_projects-link {% endtrans %}</div></a>
                     </li>
+
                     <li role="presentation" class="user-nav-major user-nav-operations {% if app.request.attributes.get('_route') == 'lender_operations' %} active {% else %} complete {% endif %}">
                         <a href="{{ path('lender_operations') }}">
                             <span class="icon fa-operations-u"></span>
-                            <span class="label">{% trans %} lender-dashboard-navigation_operations-link {% endtrans %}</span>
+                            <div class="label">{% trans %} lender-dashboard-navigation_operations-link {% endtrans %}</div>
                         </a>
                     </li>
+
                     <li role="presentation" class="user-nav-major user-nav-profile {% if app.request.attributes.get('_route') == 'lender_profile' %} active {% else %} complete {% endif %}">
                         <a href="{{ path('lender_profile') }}">
                             <span class="icon fa-profile-u"></span>
-                            <span class="label">{% trans %} lender-dashboard-navigation_profile-link {% endtrans %}</span>
+                            <div class="label">{% trans %} lender-dashboard-navigation_profile-link {% endtrans %}</div>
                         </a>
                     </li>
+
                     {% if app.user.getClientStatus() == constant('\\clients_status::VALIDATED') %}
                         <li role="presentation" class="user-nav-major user-nav-autolend {% if app.request.attributes.get('_route') == 'autolend' %} active {% else %} complete {% endif %}">
                             <a href="{{ path('autolend') }}">
                                 <span class="icon fa-autolend-u"></span>
-                                <span class="label">{% trans %} lender-dashboard-navigation_autolend-link {% endtrans %}</span>
+                                <div class="label">{% trans %} lender-dashboard-navigation_autolend-link {% endtrans %}</div>
                             </a>
                         </li>
                     {%  endif %}
 
+                    {% if app.user.unreadNotificationsCount is defined %}
+                        <li role="presentation" class="user-nav-major user-nav-notifications {% if app.request.attributes.get('_route') == 'notifications' %} active {% else %} complete {% endif %}">
+                            <a href="javascript:;" class="ui-open-usernotificationsdrop">
+                                <span class="icon fa-bell-u"></span>
+                                <div class="label">{% trans %} lender-dashboard-navigation_notifications-link {% endtrans %} <span data-usernotifications-unreadcount></span></div>
+                            </a>
+                        </li>
+                    {% endif %}
+
                     <li role="presentation" class="user-nav-minor">
                         <a href="{{ path(constant('\\Unilend\\Bundle\\FrontBundle\\Service\\RouteProvider::ROUTE_LENDER_FAQ')) }}">
                             <span class="icon fa-question-circle-o"></span>
-                            <span class="label">Help / FAQs</span>
+                            <div class="label">Help / FAQs</div>
                         </a>
                     </li>
 
                 {% elseif is_granted('ROLE_BORROWER') %}
-
                     <li role="presentation" class="user-nav-major user-nav-dashboard {% if app.request.get('_route') == 'borrower_account_projects' or app.request.get('_route') == 'borrower_account_new_demand' %} active {% endif %}">
                         <a href="{{ path('borrower_account_projects') }}">
                             <span class="icon fa-project-u"></span>
-                            <span class="label">{{ 'borrower-account-nav_your-projects'|trans }}</span>
+                            <div class="label">{{ 'borrower-account-nav_your-projects'|trans }}</div>
                         </a>
                     </li>
+
                     <li role="presentation" class="user-nav-major user-nav-operations {% if app.request.get('_route') == 'borrower_account_operations' %} active {% endif %}">
                         <a href="{{ path('borrower_account_operations') }}">
                             <span class="icon fa-operations-u"></span>
-                            <span class="label">{{ 'borrower-account-nav_your-operations'|trans }}</span>
+                            <div class="label">{{ 'borrower-account-nav_your-operations'|trans }}</div>
                         </a>
                     </li>
+
                     <li role="presentation" class="user-nav-major user-nav-profile{% if app.request.get('_route') == 'borrower_account_profile' %} active {% endif %}">
                         <a href="{{ path('borrower_account_profile') }}">
                             <span class="icon fa-profile-u"></span>
-                            <span class="label">{{ 'borrower-account-nav_profile'|trans }}</span>
+                            <div class="label">{{ 'borrower-account-nav_profile'|trans }}</div>
                         </a>
                     </li>
+
                     <li role="presentation" class="user-nav-major user-nav-contact{% if app.request.get('_route') == 'borrower_account_contact' %} active{% endif %}">
                         <a href="{{ path('borrower_account_contact') }}">
                             <span class="icon fa-pen-u"></span>
-                            <span class="label">{{ 'borrower-account-nav_contact'|trans }}</span>
+                            <div class="label">{{ 'borrower-account-nav_contact'|trans }}</div>
                         </a>
                     </li>
+
+                    {% if app.user.unreadNotificationsCount is defined %}
+                        <li role="presentation" class="user-nav-major user-nav-notifications {% if app.request.attributes.get('_route') == 'notifications' %} active {% else %} complete {% endif %}">
+                            <a href="javascript:;" class="ui-open-usernotificationsdrop">
+                                <span class="icon fa-bell-u"></span>
+                                <div class="label">{% trans %} lender-dashboard-navigation_notifications-link {% endtrans %} <span data-usernotifications-unreadcount></span></div>
+                            </a>
+                        </li>
+                    {% endif %}
 
                     <li role="presentation" class="user-nav-minor">
                         <a href="{{ path(constant('\\Unilend\\Bundle\\FrontBundle\\Service\\RouteProvider::ROUTE_BORROWER_FAQ')) }}">
                             <span class="icon fa-question-circle-o"></span>
-                            <span class="label">{{ 'borrower-account-nav_faq'|trans }}</span>
+                            <div class="label">{{ 'borrower-account-nav_faq'|trans }}</div>
                         </a>
                     </li>
                 {% endif %}
@@ -97,27 +122,27 @@
                 <li role="presentation" class="user-nav-minor">
                     <a href="{{ path('search') }}" class="ui-open-site-search">
                         <span class="icon fa-search"></span>
-                        <span class="label">Search Unilend</span>
+                        <div class="label">Search Unilend</div>
                     </a>
                 </li>
                 <li role="presentation" class="user-nav-minor">
                     <a href="{{  path('logout') }}">
                         <span class="icon fa-power-off"></span>
-                        <span class="label">{% trans %} header-connected_logout {% endtrans %}</span>
+                        <div class="label">{% trans %} header-connected_logout {% endtrans %}</div>
                     </a>
                 </li>
             </ul>
         </nav>
 
-        <nav class="user-site-admin-nav">
+        {# <nav class="user-site-admin-nav">
             <a href="{{ path('mentions-legales') }}">{% trans %} footer_small-mandatory-menu-legal-notice {% endtrans %}</a>
             <a href="{{ path('conditions-generales-dutilisation') }}">{% trans %} footer_small-mandatory-menu-terms {% endtrans %}</a>
             <a href="{{ path('securite') }}">{% trans %} footer_small-mandatory-menu-security {% endtrans %}</a>
             <a href="{{ path('sitemap') }}">{% trans %} footer_small-mandatory-menu-sitemap {% endtrans %}</a>
-        </nav>
+        </nav> #}
 
         <div class="user-site-tagline">{% trans %} footer_site-tagline {% endtrans %}</div>
-        <p class="user-site-copyright">{% trans %} footer_copyright-all-rights {% endtrans %}</p>
+        {# <p class="user-site-copyright">{% trans %} footer_copyright-all-rights {% endtrans %}</p> #}
     </div>
 
 </div><!-- /#site-user-mobile-menu -->
