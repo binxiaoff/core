@@ -2,12 +2,19 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Knp\Snappy\GeneratorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Generator\UrlGenerator;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
+use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 
 class LenderCIPController extends Controller
 {
@@ -28,13 +35,15 @@ class LenderCIPController extends Controller
 
         $evaluation = $cipManager->getCurrentEvaluation($lender);
 
+        $template['clientHash'] = $this->getUser()->getHash();
+
         if (null === $evaluation) {
             $template['evaluation'] = false;
         } elseif (false === $cipManager->isValidEvaluation($evaluation)) {
             $template['evaluation'] = true;
         } else {
             $template['evaluation'] = true;
-            $template['advices']    = implode("\n", $cipManager->getAdvices($lender));
+            $template['advices']    = $this->getFormatedAdvice($lender);
         }
 
         return $this->render('lender_cip/index.html.twig', $template);
@@ -93,12 +102,13 @@ class LenderCIPController extends Controller
         $lastAnswer   = $answers[$lastQuestion->type];
 
         if (null === $nextQuestion && '' !== $lastAnswer['first_answer']) {
-            $advices = implode("\n", $cipManager->getAdvices($lender));
+            $advices = $this->getFormatedAdvice($lender);
 
             $cipManager->saveLog($evaluation, \lender_evaluation_log::EVENT_ADVICE, $advices);
 
             $template['advices']         = $advices;
             $template['validEvaluation'] = $cipManager->isValidEvaluation($evaluation);
+            $template['clientHash']      = $this->getUser()->getHash();
             return $this->render('lender_cip/advice.html.twig', $template);
         } else {
             $template['current_step'] = $lastQuestion->order + 1;
@@ -226,6 +236,7 @@ class LenderCIPController extends Controller
     {
         $cipManager = $this->get('unilend.service.cip_manager');
         $cipManager->validateLenderEvaluation($this->getLenderAccount());
+        $this->sendAdviceEmail($this->getClient());
 
         $bid = $request->getSession()->getFlashBag()->peek('cipBid');
 
@@ -264,8 +275,12 @@ class LenderCIPController extends Controller
      */
     public function bidAction(Request $request)
     {
+        /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var CIPManager $cipManager */
         $cipManager    = $this->get('unilend.service.cip_manager');
+        /** @var TranslatorInterface $transloator */
+        $translator = $this->get('translator.default');
 
         $rate   = $request->query->get('rate');
         $amount = $request->query->get('amount');
@@ -332,19 +347,19 @@ class LenderCIPController extends Controller
                 $message = '';
 
                 if (isset($advices[CIPManager::INDICATOR_TOTAL_AMOUNT], $advices[CIPManager::INDICATOR_AMOUNT_BY_MONTH], $advices[CIPManager::INDICATOR_PROJECT_DURATION])) {
-                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement total, dépassement seuil mensuel, dépassement durée projet.';
+                    $message = $translator->trans('lender-evaluation_warning-not-advised-total-amount-monthly-amount-project-duration');
                 } elseif (isset($advices[CIPManager::INDICATOR_TOTAL_AMOUNT], $advices[CIPManager::INDICATOR_AMOUNT_BY_MONTH])) {
-                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement total, dépassement seuil mensuel.';
+                    $message = $translator->trans('lender-evaluation_warning-not-advised-total-amount-monthly-amount');
                 } elseif (isset($advices[CIPManager::INDICATOR_TOTAL_AMOUNT], $advices[CIPManager::INDICATOR_PROJECT_DURATION])) {
-                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement total, dépassement durée projet.';
+                    $message = $translator->trans('lender-evaluation_warning-not-advised-total-amount-project-duration');
                 } elseif (isset($advices[CIPManager::INDICATOR_TOTAL_AMOUNT])) {
-                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement total.';
+                    $message = $translator->trans('lender-evaluation_warning-not-advised-total-amount');
                 } elseif (isset($advices[CIPManager::INDICATOR_AMOUNT_BY_MONTH], $advices[CIPManager::INDICATOR_PROJECT_DURATION])) {
-                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement total, dépassement durée projet.';
+                    $message = $translator->trans('lender-evaluation_warning-not-advised-monthly-amount-project-duration');
                 } elseif (isset($advices[CIPManager::INDICATOR_AMOUNT_BY_MONTH])) {
-                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement seuil mensuel.';
+                    $message = $translator->trans('lender-evaluation_warning-not-advised-monthly-amount');
                 } elseif (isset($advices[CIPManager::INDICATOR_PROJECT_DURATION])) {
-                    $message = 'Attention, l’offre que vous venez de formuler ne correspond  pas à nos conseils  pour votre profil tel que vous l’avez renseigné (<a href="/conseil-cip">cliquez ici pour les relire</a>), car dépassement durée projet.';
+                    $message = $translator->trans('lender-evaluation_warning-not-advised-project-duration');
                 }
 
                 $cipManager->saveLog($evaluation, \lender_evaluation_log::EVENT_BID_ADVICE, strip_tags($message));
@@ -363,6 +378,83 @@ class LenderCIPController extends Controller
     }
 
     /**
+     * @Route("/pdf/conseil-cip/{clientHash}", name="pdf_cip")
+     */
+    public function cipAdvisePdfAction($clientHash)
+    {
+        /** @var CIPManager $cipManager */
+        $cipManager = $this->get('unilend.service.cip_manager');
+        /** @var GeneratorInterface $snappy */
+        $snappy = $this->get('knp_snappy.pdf');
+
+        /** @var \clients $client */
+        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        $client->get($clientHash, 'hash');
+
+        /** @var \lenders_accounts $lender */
+        $lender = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
+        $lender->get($client->id_client, 'id_client_owner');
+
+        $content['advice']      = $this->getFormatedAdvice($lender);
+        $content['information'] = '';
+
+        $evaluation     = $cipManager->getCurrentEvaluation($lender);
+        $evaluationData = new \DateTime($evaluation->expiry_date . ' - 1 year');
+
+        $filename = sprintf('conseils-investissement-%s.pdf', $evaluationData->format('Y-m-d'));
+
+        return new Response(
+            $snappy->getOutputFromHtml($this->renderView('/pdf/cip_advice.html.twig', $content)),
+            200,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => sprintf('attachment; filename="%s"', $filename)
+            ]
+        );
+    }
+
+    private function sendAdviceEmail(\clients $client)
+    {
+        /** @var \settings $settings */
+        $settings =  $this->get('unilend.service.entity_manager')->getRepository('settings');
+        $settings->get('Facebook', 'type');
+        $fbLink = $settings->value;
+        $settings->get('Twitter', 'type');
+        $twLink = $settings->value;
+
+        $varMail = array(
+            'surl'                 => $this->get('assets.packages')->getUrl(''),
+            'url'                  => $this->get('assets.packages')->getUrl(''),
+            'prenom'               => $client->prenom,
+            'email_p'              => $client->email,
+            'advice'               => str_replace('h5', 'h3', $this->getFormatedAdvice($this->getLenderAccount())),
+            'advice_pdf_link'      => $this->generateUrl('pdf_cip', ['clientHash' => $client->hash], UrlGeneratorInterface::ABSOLUTE_URL),
+            'motif_virement'       => $client->getLenderPattern($client->id_client),
+            'lien_fb'              => $fbLink,
+            'lien_tw'              => $twLink
+        );
+
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-conseil-cip', $varMail);
+        $message->setTo($client->email);
+        $mailer = $this->get('mailer');
+        $mailer->send($message);
+    }
+
+    private function getClient()
+    {
+        /** @var UserLender $user */
+        $user     = $this->getUser();
+        $clientId = $user->getClientId();
+
+        /** @var \clients $client */
+        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        $client->get($clientId);
+
+        return $client;
+    }
+
+    /**
      * @return \lenders_accounts
      */
     private function getLenderAccount()
@@ -376,5 +468,12 @@ class LenderCIPController extends Controller
         $lenderAccount->get($clientId, 'id_client_owner');
 
         return $lenderAccount;
+    }
+
+    private function getFormatedAdvice(\lenders_accounts $lender)
+    {
+        /** @var CIPManager $cipManager */
+        $cipManager = $this->get('unilend.service.cip_manager');
+        return implode("\n", $cipManager->getAdvices($lender));
     }
 }

@@ -1,10 +1,10 @@
 {% extends 'lender_cip/_layout-boolean-question.html.twig' %}
 
-{% set mock = {
-    question: 'Avez-vous conscience que votre capital ne sera remboursé que progressivement, et qu’une partie sera immobilisée jusqu’à l’échéance finale de vos prêts ?',
-    alt_question: 'Maintenant, avez-vous conscience que votre capital ne sera remboursé que progressivement, et qu’une partie sera immobilisée jusqu’à l’échéance finale de vos prêts ?',
-    yes_explanation: 'Les entreprises qui empruntent de l’argent sur Unilend le remboursent selon un échéancier défini à l’avance. A chaque échéance, les entreprises remboursent un part de capital et une part d’intérêts.<br><br>Or, il n’est pas possible pour un prêteur de demander à l’entreprise de rembourser son prêt par anticipation : le remboursement doit se faire selon l’échéancier. Le capital n’étant remboursé que progressivement, une partie sera donc immobilisée jusqu’à l’échéance finale du prêt.',
-    no_explanation: 'Les entreprises qui empruntent de l’argent sur Unilend le remboursent selon un échéancier défini à l’avance. A chaque échéance, les entreprises remboursent un part de capital et une part d’intérêts.<br><br>Or, il n’est pas possible pour un prêteur de demander à l’entreprise de rembourser son prêt par anticipation : le remboursement doit se faire selon l’échéancier. Le capital n’étant remboursé que progressivement, une partie sera donc immobilisée jusqu’à l’échéance finale du prêt.',
+{% set text = {
+    question: 'lender-evaluation_question-aware-progressive-capital-repayment'|trans,
+    alt_question: 'lender-evaluation_question-aware-progressive-capital-repayment-alt-question'|trans,
+    yes_explanation: 'lender-evaluation_question-aware-progressive-capital-repayment-yes-explanation'|trans,
+    no_explanation: 'lender-evaluation_question-aware-progressive-capital-repayment-no-explanation'|trans,
     valid_answer: constant('\\lender_questionnaire_question::VALUE_BOOLEAN_TRUE'),
     invalid_answer: constant('\\lender_questionnaire_question::VALUE_BOOLEAN_FALSE')
 } %}

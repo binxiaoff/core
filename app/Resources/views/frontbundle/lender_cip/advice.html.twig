@@ -13,7 +13,7 @@
     <div id="dashboard-cip" class="dashboard-tabs-content tab-content">
         <div class="panel cip-header">
             <header class="panel-header">
-                <h3>Nos conseils</h3>
+                <h3>{% trans %}lender-evaluation_advice-page-title{% endtrans %}</h3>
             </header>
             <div class="cip-progress" data-progressbar data-progressbar-current="{{ total_steps }}" data-progressbar-total="{{ total_steps }}">
                 <div data-progressbar-bar></div>
@@ -22,24 +22,23 @@
 
         <div class="panel">
             <div class="message message-info cip-advice">
-                <h4>Merci !</h4>
-                <p>Vous avez bien conscience que :</p>
+                <h4>{% trans %}lender-evaluation_advice-message-title{% endtrans %}</h4>
+                <p>{% trans %}lender-evaluation_risk-introduction-text-questionnaire-finished{% endtrans %}</p>
                 <ul>
-                    <li>vous pouvez perdre tout ou partie de l’argent que vous prêtez</li>
-                    <li>vous ne pouvez pas demander le remboursement anticipé de l’argent que vous prêtez :<br>
-                    vous devez attendre le remboursement conformément au calendrier prévu par l’échéancier</li>
-                    <li>les r emboursements peuvent être retardés p ar d es difficultés de trésorerie de l’emprunteur</li>
-                    <li>il est très important de répartir vos prêts sur un très grand nombre d’entreprises pour réduire l’aléa de votre risque de perte en capital</li>
+                    <li>{% trans %}lender-evaluation_risk-aware-money-loss{% endtrans %}</li>
+                    <li>{% trans %}lender-evaluation_risk-aware-progressive-capital-repayments{% endtrans %}</li>
+                    <li>{% trans %}lender-evaluation_risk-aware-risk-return{% endtrans %}</li>
+                    <li>{% trans %}lender-evaluation_risk-aware-divide-investments{% endtrans %}</li>
                 </ul>
-                <p>Relire les explications en cliquant <a href="#todo">ici</a>.</p>
+                <p>{% trans with {'%pdf_link%' : path('pdf_cip', {'clientHash' : clientHash}) } %}lender-evaluation_risk-link-to-explanation-pdf-link{% endtrans %}</p>
                 {{ advices|raw }}
             </div>
 
             {% if not validEvaluation %}
                 {% if app.session.flashBag.has('cipBid') %}
-                    <a href="{{ path('cip_validate_questionnaire') }}" class="btn-primary fright">J'ai bien lu les conseils et je retourne voir le projet</a>
+                    <a href="{{ path('cip_validate_questionnaire') }}" class="btn-primary fright">{% trans %}lender-evaluation_advice-accept-and-continue-bid{% endtrans %}</a>
                 {% else %}
-                    <a href="{{ path('cip_validate_questionnaire') }}" class="btn-primary fright">J'ai bien lu les conseils</a>
+                    <a href="{{ path('cip_validate_questionnaire') }}" class="btn-primary fright">{% trans %}lender-evaluation_advice-accept{% endtrans %}</a>
                 {% endif %}
             {% endif %}
         </div><!-- /.panel -->

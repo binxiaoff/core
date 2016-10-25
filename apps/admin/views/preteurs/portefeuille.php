@@ -39,7 +39,8 @@
         </h3>
         <h3>Nombre de projets à probleme dans le portefeuille : <?= $this->problProjects ?></h3>
         <h3>Nombre de projets total dans le portefeuille : <?= $this->totalProjects ?></h3>
-        <h3>Nombre de projets mis en ligne depuis son inscription : <?= $this->projectsPublished ?><h2>
+        <h3>Nombre de projets mis en ligne depuis son inscription : <?= $this->projectsPublished ?></h3>
+        <h3>CIP évalué : <?= $this->cipEnabled ? 'Oui (<a href="' . $this->surl  . '/pdf/conseil-cip/' . $this->clients->hash . '" target="_blank"> Télécharger le PDF des conseils </a>)': 'Non' ?></h3>
     </div>
     <br/>
     <div id="autobid">

@@ -14,24 +14,24 @@
             <div id="cip-step-{{ current_step }}">
                 <div class="panel cip-header">
                     <header class="panel-header">
-                        <h3>Introduction</h3>
+                        <h3>{% trans %}lender-evaluation_questionnaire-introduction-title{% endtrans %}</h3>
                     </header>
                     <div class="cip-progress" data-progressbar data-progressbar-current="{{ current_step }}" data-progressbar-total="{{ total_steps }}">
                         <div data-progressbar-bar></div>
                     </div>
                 </div>
                 <div class="panel">
-                    <p>Nous souhaitons nous assurer que vous avez bien conscience que prêter à des TPE ou PME comporte des risques spécifiques :</p>
+                    <p>{% trans %}lender-evaluation_risk-introduction-text-questionnaire-start{% endtrans %}</p>
                     <ul>
-                        <li>vous pouvez perdre tout ou partie de l’argent que vous prêtez</li>
-                        <li>vous ne pouvez pas demander le remboursement anticipé de l’argent que vous prêtez : vous devez attendre le remboursement conformément au calendrier prévu par l’échéancier</li>
-                        <li>les remboursements peuvent être retardés par des difficultés de trésorerie de l’emprunteur</li>
-                        <li>il est très important de répartir vos prêts sur un très grand nombre d’entreprises pour réduire l’aléa de votre risque de perte en capital</li>
+                        <li>{% trans %}lender-evaluation_risk-aware-money-loss{% endtrans %}</li>
+                        <li>{% trans %}lender-evaluation_risk-aware-progressive-capital-repayments{% endtrans %}</li>
+                        <li>{% trans %}lender-evaluation_risk-aware-risk-return{% endtrans %}</li>
+                        <li>{% trans %}lender-evaluation_risk-aware-divide-investments{% endtrans %}</li>
                     </ul>
                     <div class="row text-align-center">
                         <a href="{{ path('cip_start_questionnaire') }}?start" class="btn-primary">
                             <span class="icon fa-angle-right"></span>
-                            <span class="label">Commencer le questionnaire</span>
+                            <span class="label">{% trans %}lender-evaluation_questionnaire-start-button{% endtrans %}</span>
                         </a>
                     </div>
                 </div>
