@@ -98,7 +98,7 @@
                         <?= $this->lng['pdf-pouvoir']['adresse'] ?>
                     </li>
                     <li>
-                        <h5>pour signer en mon nom et pour mon compte l'intégralité des contrats de prêt récapitulés ci-après et correspondant au total du financement recueilli sur Unilend.fr dont les caractéristiques sont les suivantes :</h5>
+                        <h5>pour signer en mon nom et pour mon compte l'intégralité des minibons et contrats de prêt récapitulés ci-après et correspondant au total du financement recueilli sur Unilend.fr dont les caractéristiques sont les suivantes :</h5>
                     </li>
                     <li>
                         <div class="col-long">
@@ -118,16 +118,27 @@
                         </div>
                         <div class="cl">&nbsp;</div>
                     </li>
+                    <?php if ($this->nbLoansMinibon > 0) : ?>
+                        <li>
+                            <div class="col-long">
+                                Nombre de minibons
+                            </div>
+                            <div class="col-small">
+                                <?= $this->nbLoansMinibon ?>
+                            </div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                    <?php endif; ?>
                     <?php if ($this->nbLoansIFP > 0) : ?>
-                    <li>
-                        <div class="col-long">
-                            Nombre de contrat de prêt
-                        </div>
-                        <div class="col-small">
-                            <?= $this->nbLoansIFP ?>
-                        </div>
-                        <div class="cl">&nbsp;</div>
-                    </li>
+                        <li>
+                            <div class="col-long">
+                                Nombre de contrat de prêt
+                            </div>
+                            <div class="col-small">
+                                <?= $this->nbLoansIFP ?>
+                            </div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
                     <?php endif; ?>
                     <li>
                         <div class="col-long">
@@ -168,7 +179,10 @@
             </div>
             <div class="list">
                 <ul>
-                    <li>La signature des contrats de prêt par Unilend engage l'Emetteur, en contrepartie des sommes remises ce jour </li>
+                    <li>
+                        <h5>Les minibons émis sont nominatifs.<br />Ils reproduisent le dernier bilan de l'Emetteur qu'il certifie sincère tel qu'il figure ci-après.</h5>
+                    </li>
+                    <li>La signature des minibons et contrats de prêt par Unilend engage l'Emetteur, en contrepartie des sommes remises ce jour </li>
                     <li>
                         <div class="col-long">
                             à rembourser aux Prêteurs la somme de
@@ -208,8 +222,102 @@
             <br/>
             <div class="list">
                 <ul>
+                    <li>Les minibons sont réalisés selon les dispositions légales prévues aux articles L226-3 à L226-13 du code monétaire et financier.</li>
                     <li>Les contrats de prêt sont réalisés selon les dispositions légales prévues aux articles R548-6 et R558-8 du code monétaire et financier.</li>
                 </ul>
+            </div>
+        </div>
+        <div class="pageBreakBefore" style="margin-top: 40px;padding-top: 20px;">
+            <h3 class="pink">DERNIER BILAN CERTIFIE SINCERE DE L'EMETTEUR</h3>
+            <div class="list">
+                <ul>
+                    <li>
+                        Au <?= $this->dateDernierBilan ?>
+                    </li>
+                </ul>
+                <h5>ACTIF</h5>
+                <div class="list">
+                    <ul>
+                        <li>
+                            Immobilisations corporelles
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_corporelles'], 0) ?> &euro;</div>
+                        </li>
+                        <li>
+                            Immobilisations incorporelles
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_incorporelles'], 0) ?> &euro;</div>
+                        </li>
+                        <li>
+                            Immobilisations financières
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_financieres'], 0) ?> &euro;</div>
+                        </li>
+                        <li>
+                            Stocks
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['stocks'], 0) ?> &euro;</div>
+                        </li>
+                        <li>
+                            Créances clients et autres
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['creances_clients'], 0) ?> &euro;</div>
+                        </li>
+                        <li>
+                            Disponibilités
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['disponibilites'], 0) ?> &euro;</div>
+                        </li>
+                        <li>
+                            Valeurs mobilières de placement
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['valeurs_mobilieres_de_placement'], 0) ?> &euro;</div>
+                        </li>
+                        <?php if ($this->l_AP[0]['comptes_regularisation_actif'] != 0) : ?>
+                            <li>
+                                Comptes de régularisation
+                                <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['comptes_regularisation_actif'], 0) ?> &euro;</div>
+                            </li>
+                        <?php endif; ?>
+                    </ul>
+                </div>
+                <div class="total-row">
+                    Total actif : <?= $this->ficelle->formatNumber($this->totalActif, 0) ?> &euro;
+                </div>
+                <h5>PASSIF</h5>
+                <div class="list">
+                    <ul>
+                        <li>
+                            Capitaux propres
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['capitaux_propres'], 0) ?> &euro;</div>
+                        </li>
+                        <li>
+                            Provisions pour risques et charges
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['provisions_pour_risques_et_charges'], 0) ?> &euro;</div>
+                        </li>
+                        <li>
+                            Amortissements sur immobilisations
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['amortissement_sur_immo'], 0) ?> &euro;</div>
+                        </li>
+                        <li>
+                            Dettes financières
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['dettes_financieres'], 0) ?> &euro;</div>
+                        </li>
+                        <li>
+                            Dettes fournisseurs
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['dettes_fournisseurs'], 0) ?> &euro;</div>
+                        </li>
+                        <li>
+                            Autres dettes
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['autres_dettes'], 0) ?> &euro;</div>
+                        </li>
+                        <?php if ($this->l_AP[0]['comptes_regularisation_passif'] != 0) : ?>
+                            <li>
+                                Comptes de régularisation
+                                <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['comptes_regularisation_passif'], 0) ?> &euro;</div>
+                            </li>
+                        <?php endif; ?>
+                    </ul>
+                </div>
+                <div class="total-row">
+                    Total passif : <?= $this->ficelle->formatNumber($this->totalPassif, 0) ?> &euro;
+                </div>
+                <div class="center-text">
+                    Certifié sincère par l'Emprunteur
+                </div>
             </div>
         </div>
         <?php if ($this->projects->period > 48): ?>
@@ -336,7 +444,7 @@
             ?>
             <div class="pageBreakBefore" style="padding-top: 30px;">
                 <?php if ($var == 0): ?>
-                    <h3>LISTE ET CARACTERISTIQUES DES CONTRATS DE PRET</h3>
+                    <h3>LISTE ET CARACTERISTIQUES DES MINIBONS ET DES CONTRATS DE PRET</h3>
                 <?php endif; ?>
                 <div class="dates-table">
                     <table width="100%" cellspacing="0" cellpadding="0" class="table-3">
