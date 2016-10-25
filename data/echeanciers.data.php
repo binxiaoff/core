@@ -1026,8 +1026,10 @@ class echeanciers extends echeanciers_crud
 
     /**
      * Returns capital, interests and tax sum amounts grouped by month, quarter and year for a lender
+     * takes into account regular past payments at their real date
+     * recovery payments including commission (fixed value, as done in declaration de créances)
+     * future payments of healthy (according to stats defintion) only projects
      * @param int $lenderId
-     * @param int $clientId
      * @param array $taxTypeForExemptedLender
      * @param array $taxTypeForTaxableLender
      * @param array $taxTypeForForeignerLender
