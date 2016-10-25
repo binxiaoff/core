@@ -52,14 +52,35 @@
         <tr>
             <th>Motive d'emprunteur éligible</th>
             <td>
-                <?php if (empty($this->borrowerNeeds)) : ?>
+                <?php if (empty($this->borrowerMotives)) : ?>
                     pas de limitation
                 <?php else: ?>
                     <ul>
-                        <?php foreach ($this->borrowerNeeds as $need): ?>
-                            <li><?= $need ?></li>
+                        <?php foreach ($this->borrowerMotives as $motive): ?>
+                            <li><?= $motive ?></li>
                         <?php endforeach; ?>
                     </ul>
+                <? endif ?>
+            </td>
+        </tr>
+        <tr>
+            <th>Jours de creation min</th>
+            <td><?= isset($this->creationDaysMin[0]) ? $this->creationDaysMin[0] : 'pas de limitation' ?></td>
+        </tr>
+
+        <tr>
+            <th>RCS</th>
+            <td><?= isset($this->rcs[0]) ? ($this->rcs[0] == 1 ? 'La société doit être RCS.' : 'La société doit être non RCS.') : 'pas de limitation' ?></td>
+        </tr>
+        <tr>
+            <th>Codes NAF éligible</th>
+            <td>
+                <?php if (empty($this->nafcodes)) : ?>
+                    pas de limitation
+                <?php else: ?>
+                    <?php foreach ($this->nafcodes as $code): ?>
+                        <?= $code ?>
+                    <?php endforeach; ?>
                 <? endif ?>
             </td>
         </tr>

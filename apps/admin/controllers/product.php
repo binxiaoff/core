@@ -27,19 +27,21 @@ class productController extends bootstrap
             header('Location: /product');
         }
 
+        // repayment type
         /** @var repayment_type repaymentType */
         $this->repaymentType = $this->loadData('repayment_type');
         /** @var product_underlying_contract $productContract */
         $productContract = $this->loadData('product_underlying_contract');
-
         $this->contracts = $productContract->getUnderlyingContractsByProduct($this->product->id_product);
         $this->repaymentType->get($this->product->id_repayment_type);
 
+        // max / min duration
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager $productManager */
         $productManager = $this->get('unilend.service_product.product_manager');
         $this->duration['min'] = $productManager->getAttributesByType($this->product, \product_attribute_type::MIN_LOAN_DURATION_IN_MONTH);
         $this->duration['max'] = $productManager->getAttributesByType($this->product, \product_attribute_type::MAX_LOAN_DURATION_IN_MONTH);
 
+        // motivation
         $borrowerMotives = $productManager->getAttributesByType($this->product, \product_attribute_type::ELIGIBLE_BORROWING_MOTIVE);
         /** @var borrowing_motive $need */
         $motive = $this->loadData('borrowing_motive');
@@ -50,5 +52,15 @@ class productController extends bootstrap
                 $this->borrowerMotives[] = $motive->motive;
             }
         }
+
+        // creation days
+        $this->creationDaysMin = $productManager->getAttributesByType($this->product, \product_attribute_type::MIN_CREATION_DAYS);
+
+        // RCS
+        $this->rcs = $productManager->getAttributesByType($this->product, \product_attribute_type::ELIGIBLE_BORROWER_COMPANY_RCS);
+
+        // code NAF
+        // motivation
+        $this->nafcodes = $productManager->getAttributesByType($this->product, \product_attribute_type::ELIGIBLE_BORROWER_COMPANY_NAF_CODE);
     }
 }
