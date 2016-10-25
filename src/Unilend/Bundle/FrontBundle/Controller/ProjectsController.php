@@ -220,10 +220,15 @@ class ProjectsController extends Controller
 
         $firstBalanceSheet = current($template['finance']);
         $template['financeColumns'] = [
-            'balanceSheet' => array_keys($firstBalanceSheet['balanceSheet']),
+            'income_statement' => array_keys($firstBalanceSheet['income_statement']['details']),
             'assets'       => array_keys($firstBalanceSheet['assets']),
             'debts'        => array_keys($firstBalanceSheet['debts']),
         ];
+
+        $displayDebtsAssets = true;
+        if (empty($firstBalanceSheet['assets']) || $firstBalanceSheet['debts']) {
+            $displayDebtsAssets = false;
+        }
 
         if (
             $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY')
@@ -297,6 +302,7 @@ class ProjectsController extends Controller
             'history'             => isset($template['project']['lender']['loans']['myLoanOnProject']['nbValid']) && $template['project']['lender']['loans']['myLoanOnProject']['nbValid'] > 0,
             'canBid'              => $isFullyConnectedUser && $user instanceof UserLender && $user->hasAcceptedCurrentTerms(),
             'warningLending'      => true,
+            'displayDebtsAssets'  => $displayDebtsAssets,
             'warningTaxDeduction' => $template['project']['startDate'] >= '2016-01-01'
         ];
         $this->setProjectDetailsSeoData($template['project']['company']['sectorId'], $template['project']['company']['city'], $template['project']['amount']);
@@ -569,7 +575,6 @@ class ProjectsController extends Controller
 
         if (false === $project->get($projectId, 'id_project')
             || $project->display != \projects::DISPLAY_PROJECT_ON
-            || false === $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
             || false === $this->get('security.authorization_checker')->isGranted('ROLE_LENDER')
         ) {
             return new RedirectResponse('/');
@@ -577,77 +582,36 @@ class ProjectsController extends Controller
 
         /** @var \dates $dates */
         $dates = Loader::loadLib('dates');
-        /** @var TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translation_manager');
-        $translations = $translationManager->getAllTranslationsForSection('preteur-projets'); //TODO replace by new translations once they are done
+        $translator = $this->get('translator');
 
-        /** @var \companies $oCompany */
-        $oCompany = $this->get('unilend.service.entity_manager')->getRepository('companies');
-        $oCompany->get($project->id_company, 'id_company');
+        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
+        $financeData           = $projectDisplayManager->getProjectFinancialData($project);
 
-        /** @var \companies_bilans $oAnnualAccounts */
-        $oAnnualAccounts    = $this->get('unilend.service.entity_manager')->getRepository('companies_bilans');
-        $aAnnualAccounts    = $oAnnualAccounts->select('id_company = "' . $oCompany->id_company . '" AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $project->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
-
-        /** @var \settings $oSetting */
-        $oSetting = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $oSetting->get('Entreprises fundés au passage du risque lot 1', 'type');
-        $aFundedCompanies     = explode(',', $oSetting->value);
-        $bPreviousRiskProject = in_array($oCompany->id_company, $aFundedCompanies);
-
+        $firstBalanceSheet     = current($financeData);
+        $columns               = array_keys($firstBalanceSheet['income_statement']['details']);
 
         $iRow         = 1;
         /** @var \PHPExcel $oDocument */
         $oDocument    = new \PHPExcel();
         $oActiveSheet = $oDocument->setActiveSheetIndex(0);
         $oActiveSheet->setCellValueByColumnAndRow(0, $iRow, 'Date de clôture');
-        $oActiveSheet->setCellValueByColumnAndRow(1, $iRow, $dates->formatDate($aAnnualAccounts[0]['cloture_exercice_fiscal'], 'd/m/Y'));
-        $oActiveSheet->setCellValueByColumnAndRow(2, $iRow, $dates->formatDate($aAnnualAccounts[1]['cloture_exercice_fiscal'], 'd/m/Y'));
-        $oActiveSheet->setCellValueByColumnAndRow(3, $iRow, $dates->formatDate($aAnnualAccounts[2]['cloture_exercice_fiscal'], 'd/m/Y'));
+        $columnCount = 1;
+        foreach ($financeData as $balanceSheet) {
+            $oActiveSheet->setCellValueByColumnAndRow($columnCount++, $iRow, $dates->formatDate($balanceSheet['closingDate'], 'd/m/Y'));
+        }
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, 'Durée de l\'exercice');
-        $oActiveSheet->setCellValueByColumnAndRow(1, $iRow, str_replace('[DURATION]', $aAnnualAccounts[0]['duree_exercice_fiscal'], $translations['annual-accounts-duration-months']));
-        $oActiveSheet->setCellValueByColumnAndRow(2, $iRow, str_replace('[DURATION]', $aAnnualAccounts[1]['duree_exercice_fiscal'], $translations['annual-accounts-duration-months']));
-        $oActiveSheet->setCellValueByColumnAndRow(3, $iRow, str_replace('[DURATION]', $aAnnualAccounts[2]['duree_exercice_fiscal'], $translations['annual-accounts-duration-months']));
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['compte-de-resultats']);
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['chiffe-daffaires']);
-        for ($i = 0; $i < 3; $i++) {
-            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['ca']);
+        $columnCount = 1;
+        foreach ($financeData as $balanceSheet) {
+            $oActiveSheet->setCellValueByColumnAndRow($columnCount++, $iRow, str_replace('[DURATION]', $balanceSheet['monthDuration'], $translator->trans('preteur-projets_annual-accounts-duration-months')));
         }
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['resultat-brut-dexploitation']);
-        for ($i = 0; $i < 3; $i++) {
-            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_brute_exploitation']);
-        }
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['resultat-dexploitation']);
-        for ($i = 0; $i < 3; $i++) {
-            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_exploitation']);
-        }
-        if (false === $bPreviousRiskProject) {
-            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['resultat-financier']);
-            for ($i = 0; $i < 3; $i++) {
-                $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_financier']);
-            }
-            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['produit-exceptionnel']);
-            for ($i = 0; $i < 3; $i++) {
-                $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['produit_exceptionnel']);
-            }
-            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['charges-exceptionnelles']);
-            for ($i = 0; $i < 3; $i++) {
-                $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['charges_exceptionnelles']);
-            }
-            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['resultat-exceptionnel']);
-            for ($i = 0; $i < 3; $i++) {
-                $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_exceptionnel']);
-            }
-            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['resultat-net']);
-            for ($i = 0; $i < 3; $i++) {
-                $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_net']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_compte-de-resultats'));
+        foreach ($columns as $column) {
+            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans($column));
+            $columnCount = 1;
+            foreach($financeData as $balanceSheet) {
+                $oActiveSheet->setCellValueByColumnAndRow($columnCount++, $iRow, $balanceSheet['income_statement']['details'][$column][0]);
             }
         }
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['investissements']);
-        for ($i = 0; $i < 3; $i++) {
-            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['investissements']);
-        }
-
         /** @var \PHPExcel_Writer_CSV $oWriter */
         $oWriter = \PHPExcel_IOFactory::createWriter($oDocument, 'CSV');
         $oWriter->setUseBOM(true);

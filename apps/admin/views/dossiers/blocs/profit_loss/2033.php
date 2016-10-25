@@ -1,17 +1,5 @@
 <?php if (count($this->lbilans) > 0) : ?>
     <?php
-
-    $aAnnualAccountsFields = array(
-        'ca'                          => 'Chiffre d\'affaires',
-        'resultat_brute_exploitation' => 'Résultat brut d\'exploitation',
-        'resultat_exploitation'       => 'Résultat d\'exploitation',
-        'resultat_financier'          => 'Résultat financier',
-        'produit_exceptionnel'        => 'Produit exceptionnel',
-        'charges_exceptionnelles'     => 'Charges exceptionnelles',
-        'resultat_exceptionnel'       => 'Résultat exceptionnel',
-        'resultat_net'                => 'Résultat net',
-        'investissements'             => 'Investissements'
-    );
     $oldestAnnualAccountsId = end($this->lbilans)['id_bilan'];
 
     ?>
@@ -28,24 +16,26 @@
         </tr>
         </thead>
         <tbody>
-        <?php foreach ($aAnnualAccountsFields as $sFieldName => $sTitle) : ?>
+        <?php
+        $index = array_search(\company_tax_form_type::FORM_2033, array_column($this->incomeStatements, 'form_type'));
+        foreach (array_keys(array_values($this->incomeStatements)[$index]['details']) as $label) : ?>
             <tr>
-                <td><?= $sTitle ?></td>
+                <td><?= $this->translator->trans($label) ?></td>
                 <?php
                 $previousTotal = null;
                 $column = 0;
-                foreach ($this->lbilans as $aAnnualAccounts) {
-                    if ($aAnnualAccounts['id_company_tax_form_type'] != 1) {
+                foreach ($this->incomeStatements as $incomeStatement) {
+                    if (\company_tax_form_type::FORM_2033 != $incomeStatement['form_type']) {
                         echo '<td></td>';
                         if ($column) {
                             echo '<td></td>';
                         }
                     } else {
                         if ($column) : ?>
-                            <td><?= empty($aAnnualAccounts[$sFieldName]) || empty($previousTotal) ? 'N/A' : round(($previousTotal - $aAnnualAccounts[$sFieldName]) / abs($aAnnualAccounts[$sFieldName]) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($incomeStatement['details'][$label]) || empty($previousTotal) ? 'N/A' : round(($previousTotal - $incomeStatement['details'][$label]) / abs($incomeStatement['details'][$label]) * 100) . '&nbsp;%' ?></td>
                         <?php endif; ?>
-                        <td class="grisfonceBG"><?= empty($aAnnualAccounts[$sFieldName]) ? '-' : $this->ficelle->formatNumber($aAnnualAccounts[$sFieldName], 0) . ' €' ?></td>
-                        <?php $previousTotal = empty($aAnnualAccounts[$sFieldName]) ? null : $aAnnualAccounts[$sFieldName];
+                        <td class="grisfonceBG"><?= empty($incomeStatement['details'][$label]) ? '-' : $this->ficelle->formatNumber($incomeStatement['details'][$label], 0) . ' €' ?></td>
+                        <?php $previousTotal = empty($incomeStatement['details'][$label]) ? null : $incomeStatement['details'][$label];
                     }
                     $column ++;
                 } ?>

@@ -1,18 +1,5 @@
 <?php if (count($this->lbilans) > 0) : ?>
     <?php
-
-    $aAnnualAccountsFields = array(
-        'AG' => 'Recettes',
-        'BA' => 'Achats',
-        'BB' => 'Frais de personnel',
-        'BC' => 'Charges sociales',
-        'BN' => 'Frais financiers',
-        'BR' => 'Total des dépenses',
-        'CA' => 'Excédent brut',
-        'CF' => 'Frais d\'établissement',
-        'CG' => 'Dotation aux ammortissements',
-        'CP' => 'Bénéfice net'
-    );
     $oldestAnnualAccountsId = end($this->lbilans)['id_bilan'];
 
     ?>
@@ -29,9 +16,11 @@
         </tr>
         </thead>
         <tbody>
-        <?php foreach ($aAnnualAccountsFields as $sFieldName => $sTitle) : ?>
+        <?php
+        $index = array_search(\company_tax_form_type::FORM_2035, array_column($this->incomeStatements, 'form_type'));
+        foreach (array_keys(array_values($this->incomeStatements)[$index]['details']) as $label) : ?>
             <tr>
-                <td><?= $sTitle ?></td>
+                <td><?= $this->translator->trans($label) ?></td>
                 <?php
                 $previousTotal = null;
                 $column = 0;
@@ -43,10 +32,10 @@
                         }
                     } else {
                         if ($column) : ?>
-                            <td><?= empty($incomeStatement['details'][$sFieldName]['value']) || empty($previousTotal) ? 'N/A' : round(($previousTotal - $incomeStatement['details'][$sFieldName]['value']) / abs($incomeStatement['details'][$sFieldName]['value']) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($incomeStatement['details'][$label]) || empty($previousTotal) ? 'N/A' : round(($previousTotal - $incomeStatement['details'][$label]) / abs($incomeStatement['details'][$label]) * 100) . '&nbsp;%' ?></td>
                         <?php endif; ?>
-                        <td class="grisfonceBG"><?= empty($incomeStatement['details'][$sFieldName]['value']) ? '-' : $this->ficelle->formatNumber($incomeStatement['details'][$sFieldName]['value'], 0) . ' €' ?></td>
-                        <?php $previousTotal = empty($incomeStatement['details'][$sFieldName]['value']) ? null : $incomeStatement['details'][$sFieldName]['value'];
+                        <td class="grisfonceBG"><?= empty($incomeStatement['details'][$label]) ? '-' : $this->ficelle->formatNumber($incomeStatement['details'][$label], 0) . ' €' ?></td>
+                        <?php $previousTotal = empty($incomeStatement['details'][$label]) ? null : $incomeStatement['details'][$label];
                     }
                     $column ++;
                 } ?>

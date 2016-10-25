@@ -102,16 +102,45 @@ class CompanyBalanceSheetManager
 
         $aBalances = $this->getBalanceSheetsByAnnualAccount(array($balanceSheetId));
 
-        $companyBalanceSheet->ca                          = $aBalances[$balanceSheetId]['details']['FL'];
-        $companyBalanceSheet->resultat_brute_exploitation = $aBalances[$balanceSheetId]['details']['GG'] + $aBalances[$balanceSheetId]['details']['GA'] + $aBalances[$balanceSheetId]['details']['GB'] + $aBalances[$balanceSheetId]['details']['GC'] + $aBalances[$balanceSheetId]['details']['GD'] - $aBalances[$balanceSheetId]['details']['FP'] - $aBalances[$balanceSheetId]['details']['FQ'] + $aBalances[$balanceSheetId]['details']['GE'];
-        $companyBalanceSheet->resultat_exploitation       = $aBalances[$balanceSheetId]['details']['GG'];
-        $companyBalanceSheet->resultat_financier          = $aBalances[$balanceSheetId]['details']['GV'];
-        $companyBalanceSheet->produit_exceptionnel        = $aBalances[$balanceSheetId]['details']['HA'] + $aBalances[$balanceSheetId]['details']['HB'] + $aBalances[$balanceSheetId]['details']['HC'];
-        $companyBalanceSheet->charges_exceptionnelles     = $aBalances[$balanceSheetId]['details']['HE'] + $aBalances[$balanceSheetId]['details']['HF'] + $aBalances[$balanceSheetId]['details']['HG'];
-        $companyBalanceSheet->resultat_exceptionnel       = $companyBalanceSheet->produit_exceptionnel - $companyBalanceSheet->charges_exceptionnelles;
-        $companyBalanceSheet->resultat_net                = $aBalances[$balanceSheetId]['details']['HN'];
-        $companyBalanceSheet->investissements             = $aBalances[$balanceSheetId]['details']['0J'];
+        $turnover             = $aBalances[$balanceSheetId]['details']['FL'];
+        $grossOperationIncome = $aBalances[$balanceSheetId]['details']['GG'] + $aBalances[$balanceSheetId]['details']['GA'] + $aBalances[$balanceSheetId]['details']['GB']
+            + $aBalances[$balanceSheetId]['details']['GC'] + $aBalances[$balanceSheetId]['details']['GD']
+            - $aBalances[$balanceSheetId]['details']['FP'] - $aBalances[$balanceSheetId]['details']['FQ'] + $aBalances[$balanceSheetId]['details']['GE'];
+        $operationIncome      = $aBalances[$balanceSheetId]['details']['GG'];
+        $financialResult      = $aBalances[$balanceSheetId]['details']['GV'];
+        $nonRecurringIncome   = $aBalances[$balanceSheetId]['details']['HA'] + $aBalances[$balanceSheetId]['details']['HB'] + $aBalances[$balanceSheetId]['details']['HC'];
+        $nonRecurringCharge   = $aBalances[$balanceSheetId]['details']['HE'] + $aBalances[$balanceSheetId]['details']['HF'] + $aBalances[$balanceSheetId]['details']['HG'];
+        $nonRecurringResult   = $nonRecurringIncome - $nonRecurringCharge;
+        $netIncome            = $aBalances[$balanceSheetId]['details']['HN'];
+        $investments          = $aBalances[$balanceSheetId]['details']['0J'];
+
+        // back forward compatibility
+        $companyBalanceSheet->ca                          = $turnover;
+        $companyBalanceSheet->resultat_brute_exploitation = $grossOperationIncome;
+        $companyBalanceSheet->resultat_exploitation       = $operationIncome;
+        $companyBalanceSheet->resultat_financier          = $financialResult;
+        $companyBalanceSheet->produit_exceptionnel        = $nonRecurringIncome;
+        $companyBalanceSheet->charges_exceptionnelles     = $nonRecurringCharge;
+        $companyBalanceSheet->resultat_exceptionnel       = $nonRecurringResult;
+        $companyBalanceSheet->resultat_net                = $netIncome;
+        $companyBalanceSheet->investissements             = $investments;
         $companyBalanceSheet->update();
+        // end of back forward compatibility
+
+        $incomeStatement['form_type'] = \company_tax_form_type::FORM_2033;
+        $incomeStatement['details'] = [
+            'project-detail_finance-column-ca'                         => $turnover,
+            'project-detail_finance-column-resultat-brut-exploitation' => $grossOperationIncome,
+            'project-detail_finance-column-resultat-exploitation'      => $operationIncome,
+            'project-detail_finance-column-resultat-financier'         => $financialResult,
+            'project-detail_finance-column-produit-exceptionnel'       => $nonRecurringIncome,
+            'project-detail_finance-column-charges-exceptionnelles'    => $nonRecurringCharge,
+            'project-detail_finance-column-resultat-exceptionnel'      => $nonRecurringResult,
+            'project-detail_finance-column-resultat-net'               => $netIncome,
+            'project-detail_finance-column-investissements'            => $investments,
+        ];
+
+        return $incomeStatement;
     }
 
     /**
@@ -190,12 +219,16 @@ class CompanyBalanceSheetManager
             case \company_tax_form_type::FORM_2035 :
                 return $this->getIncomeStatement2035($companyBalanceSheet);
         }
+
+        return null;
     }
 
     private function getIncomeStatement2035(\companies_bilans $companyBalanceSheet)
     {
+        $incomeStatement['form_type'] = \company_tax_form_type::FORM_2035;
+
         $balanceSheetId = $companyBalanceSheet->id_bilan;
-        $balanceDetails = $this->getBalanceSheetsByAnnualAccount(array($balanceSheetId));
+        $balanceDetails = $this->getBalanceSheetsByAnnualAccount([$balanceSheetId]);
 
         $AG = $balanceDetails[$balanceSheetId]['details']['AD'] + $balanceDetails[$balanceSheetId]['details']['AE'] + $balanceDetails[$balanceSheetId]['details']['AF'];
 
@@ -215,49 +248,16 @@ class CompanyBalanceSheetManager
             + $balanceDetails[$balanceSheetId]['details']['CL'] + $balanceDetails[$balanceSheetId]['details']['CM'];
 
         $incomeStatement['details'] = [
-            'AG' => [
-                'label' => 'company-balance_2035-recettes',
-                'value' => $AG
-            ],
-            'BA' => [
-                'label' => 'company-balance_2035-achats',
-                'value' => $balanceDetails[$balanceSheetId]['details']['BA']
-            ],
-            'BB' => [
-                'label' => 'company-balance_2035-frais-personnel',
-                'value' => $balanceDetails[$balanceSheetId]['details']['BB']
-            ],
-            'BC' => [
-                'label' => 'company-balance_2035-charges-sociales',
-                'value' => $balanceDetails[$balanceSheetId]['details']['BC']
-            ],
-            'BN' => [
-                'label' => 'company-balance_2035-frais-financiers',
-                'value' => $balanceDetails[$balanceSheetId]['details']['BN']
-            ],
-            'BR' => [
-                'label' => 'company-balance_2035-total-depenses',
-                'value' => $BR
-            ],
-            'CA' => [
-                'label' => 'company-balance_2035-excedent-brut',
-                'value' => $CA
-            ],
-            'CF' => [
-                'label' => 'company-balance_2035-frais-etablissement',
-                'value' => $BR - $AG
-            ],
-            'CG' => [
-                'label' => 'company-balance_2035-dotation-aux-ammortissements',
-                'value' => $balanceDetails[$balanceSheetId]['details']['CG']
-            ],
-            'CP' => [
-                'label' => 'company-balance_2035-benefice-net',
-                'value' => $CE - $CN
-            ],
+            'income-statement_2035-recettes'        => $AG,
+            'income-statement_2035-achats'          => $balanceDetails[$balanceSheetId]['details']['BA'],
+            'income-statement_2035-frais-personnel' => $balanceDetails[$balanceSheetId]['details']['BB'] + $balanceDetails[$balanceSheetId]['details']['BC'],
+            'income-statement_2035-autres-depenses' => $BR - $balanceDetails[$balanceSheetId]['details']['BA'] - $balanceDetails[$balanceSheetId]['details']['BB'] - $balanceDetails[$balanceSheetId]['details']['BC'],
+            'income-statement_2035-total-depenses'  => $BR,
+            'income-statement_2035-excedent-brut'   => $CA,
+            'income-statement_2035-autres-produits' => $CE,
+            'income-statement_2035-autres-charges'  => $CN,
+            'income-statement_2035-benefice-net'    => $CE - $CN,  //CP
         ];
-
-        $incomeStatement['form_type'] = \company_tax_form_type::FORM_2035;
 
         return $incomeStatement;
     }
