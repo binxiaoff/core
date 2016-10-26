@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\core\Loader;
@@ -20,8 +20,8 @@ class CIPManager
     /** @var ProductManager */
     private $productManager;
 
-    /** @var ContractAttributeManager */
-    private $contractAttributeManager;
+    /** @var ContractManager */
+    private $contractManager;
 
     /** @var EntityManager */
     private $entityManager;
@@ -30,22 +30,21 @@ class CIPManager
     private $translator;
 
     /**
-     * @param ProductManager           $productManager
-     * @param ContractAttributeManager $contractAttributeManager
-     * @param EntityManager            $entityManager
-     * @param TranslatorInterface      $translator
+     * @param ProductManager      $productManager
+     * @param ContractManager     $contractManager
+     * @param EntityManager       $entityManager
+     * @param TranslatorInterface $translator
      */
     public function __construct(
         ProductManager $productManager,
-        ContractAttributeManager $contractAttributeManager,
+        ContractManager $contractManager,
         EntityManager $entityManager,
         TranslatorInterface $translator
-    )
-    {
-        $this->productManager           = $productManager;
-        $this->contractAttributeManager = $contractAttributeManager;
-        $this->entityManager            = $entityManager;
-        $this->translator               = $translator;
+    ) {
+        $this->productManager  = $productManager;
+        $this->contractManager = $contractManager;
+        $this->entityManager   = $entityManager;
+        $this->translator      = $translator;
     }
 
     /**
@@ -66,6 +65,7 @@ class CIPManager
 
     /**
      * @param \lenders_accounts $lender
+     *
      * @return \lender_evaluation|null
      */
     public function getCurrentEvaluation(\lenders_accounts $lender)
@@ -74,7 +74,9 @@ class CIPManager
         $evaluation    = $this->entityManager->getRepository('lender_evaluation');
         $questionnaire = $this->getCurrentQuestionnaire();
 
-        if ($evaluation->get($lender->id_lender_account, '(expiry_date = "0000-00-00" OR expiry_date > NOW()) AND id_lender_questionnaire = ' . $questionnaire->id_lender_questionnaire . ' AND id_lender')) {
+        if ($evaluation->get($lender->id_lender_account,
+            '(expiry_date = "0000-00-00" OR expiry_date > NOW()) AND id_lender_questionnaire = ' . $questionnaire->id_lender_questionnaire . ' AND id_lender')
+        ) {
             return $evaluation;
         }
 
@@ -83,6 +85,7 @@ class CIPManager
 
     /**
      * @param \lenders_accounts $lender
+     *
      * @return bool
      */
     public function hasValidEvaluation(\lenders_accounts $lender)
@@ -98,6 +101,7 @@ class CIPManager
 
     /**
      * @param \lender_evaluation $evaluation
+     *
      * @return bool
      */
     public function isEvaluationStarted(\lender_evaluation $evaluation)
@@ -107,6 +111,7 @@ class CIPManager
 
     /**
      * @param \lender_evaluation $evaluation
+     *
      * @return bool
      */
     public function isValidEvaluation(\lender_evaluation $evaluation)
@@ -116,6 +121,7 @@ class CIPManager
 
     /**
      * @param \lenders_accounts $lender
+     *
      * @return \lender_evaluation
      */
     public function createEvaluation(\lenders_accounts $lender)
@@ -124,7 +130,7 @@ class CIPManager
 
         if (null === $evaluation) {
             /** @var \lender_evaluation $evaluation */
-            $evaluation = $this->entityManager->getRepository('lender_evaluation');
+            $evaluation                          = $this->entityManager->getRepository('lender_evaluation');
             $evaluation->id_lender_questionnaire = $this->getCurrentQuestionnaire()->id_lender_questionnaire;
             $evaluation->id_lender               = $lender->id_lender_account;
             $evaluation->create();
@@ -150,7 +156,7 @@ class CIPManager
             $questions = $question->select('id_lender_questionnaire = ' . $evaluation->id_lender_questionnaire, '`order` ASC', 0, 1)[0];
 
             /** @var \lender_evaluation_answer $answer */
-            $answer = $this->entityManager->getRepository('lender_evaluation_answer');
+            $answer                                   = $this->entityManager->getRepository('lender_evaluation_answer');
             $answer->status                           = \lender_evaluation_answer::STATUS_ACTIVE;
             $answer->id_lender_evaluation             = $evaluation->id_lender_evaluation;
             $answer->id_lender_questionnaire_question = $questions['id_lender_questionnaire_question'];
@@ -172,7 +178,7 @@ class CIPManager
      */
     public function validateEvaluation(\lender_evaluation $evaluation)
     {
-        $expiryDate = new \DateTime('NOW + 1 YEAR');
+        $expiryDate              = new \DateTime('NOW + 1 YEAR');
         $evaluation->expiry_date = $expiryDate->format('Y-m-d H:i:s');
         $evaluation->update();
     }
@@ -201,6 +207,7 @@ class CIPManager
 
     /**
      * @param \lender_evaluation $evaluation
+     *
      * @return \lender_questionnaire_question|null
      */
     public function getLastQuestion(\lender_evaluation $evaluation)
@@ -212,7 +219,8 @@ class CIPManager
 
         /** @var \lender_evaluation_answer $answerEntity */
         $answerEntity   = $this->entityManager->getRepository('lender_evaluation_answer');
-        $answers        = $answerEntity->select('id_lender_evaluation = ' . $evaluation->id_lender_evaluation . ' AND status = ' . \lender_evaluation_answer::STATUS_ACTIVE, 'added ASC, id_lender_evaluation_answer ASC');
+        $answers        = $answerEntity->select('id_lender_evaluation = ' . $evaluation->id_lender_evaluation . ' AND status = ' . \lender_evaluation_answer::STATUS_ACTIVE,
+            'added ASC, id_lender_evaluation_answer ASC');
         $indexedAnswers = [];
 
         foreach ($answers as $index => $answer) {
@@ -236,6 +244,7 @@ class CIPManager
     /**
      * @param \lender_evaluation             $evaluation
      * @param \lender_questionnaire_question $question
+     *
      * @return \lender_evaluation_answer|null
      */
     public function insertQuestion(\lender_evaluation $evaluation, \lender_questionnaire_question $question)
@@ -252,6 +261,7 @@ class CIPManager
 
     /**
      * @param \lender_evaluation $evaluation
+     *
      * @return \lender_questionnaire_question|null
      */
     public function getNextQuestion(\lender_evaluation $evaluation)
@@ -290,6 +300,7 @@ class CIPManager
     /**
      * @param \lender_evaluation             $evaluation
      * @param \lender_questionnaire_question $question
+     *
      * @return \lender_evaluation_answer|null
      */
     public function getAnswer(\lender_evaluation $evaluation, \lender_questionnaire_question $question)
@@ -297,7 +308,9 @@ class CIPManager
         /** @var \lender_evaluation_answer $answer */
         $answer = $this->entityManager->getRepository('lender_evaluation_answer');
 
-        if (false === $answer->get($evaluation->id_lender_evaluation, 'id_lender_questionnaire_question = ' . $question->id_lender_questionnaire_question . ' AND status = ' . \lender_evaluation_answer::STATUS_ACTIVE . ' AND id_lender_evaluation')) {
+        if (false === $answer->get($evaluation->id_lender_evaluation,
+                'id_lender_questionnaire_question = ' . $question->id_lender_questionnaire_question . ' AND status = ' . \lender_evaluation_answer::STATUS_ACTIVE . ' AND id_lender_evaluation')
+        ) {
             return null;
         }
 
@@ -306,6 +319,7 @@ class CIPManager
 
     /**
      * @param \lender_evaluation $evaluation
+     *
      * @return array
      */
     public function getAnswersByType(\lender_evaluation $evaluation)
@@ -322,7 +336,8 @@ class CIPManager
 
         /** @var \lender_evaluation_answer $answerEntity */
         $answerEntity = $this->entityManager->getRepository('lender_evaluation_answer');
-        $answers      = $answerEntity->select('id_lender_evaluation = ' . $evaluation->id_lender_evaluation . ' AND status = ' . \lender_evaluation_answer::STATUS_ACTIVE, 'added ASC, id_lender_evaluation_answer ASC');
+        $answers      = $answerEntity->select('id_lender_evaluation = ' . $evaluation->id_lender_evaluation . ' AND status = ' . \lender_evaluation_answer::STATUS_ACTIVE,
+            'added ASC, id_lender_evaluation_answer ASC');
 
         foreach ($answers as $answer) {
             $indexedAnswers[$indexedQuestions[$answer['id_lender_questionnaire_question']]['type']] = $answer;
@@ -335,6 +350,7 @@ class CIPManager
      * @param \lender_questionnaire_question $question
      * @param \lender_evaluation             $evaluation
      * @param string                         $value
+     *
      * @return \lender_evaluation_answer|null
      */
     public function saveAnswer(\lender_questionnaire_question $question, \lender_evaluation $evaluation, $value = '')
@@ -381,6 +397,7 @@ class CIPManager
     /**
      * @param \lender_evaluation_answer      $answer
      * @param \lender_questionnaire_question $question
+     *
      * @return bool
      */
     private function isValidAnswer(\lender_evaluation_answer $answer, \lender_questionnaire_question $question)
@@ -429,6 +446,7 @@ class CIPManager
 
     /**
      * @param \lenders_accounts $lender
+     *
      * @return string[]|null
      */
     public function getAdvices(\lenders_accounts $lender)
@@ -447,7 +465,7 @@ class CIPManager
 
         if (null !== $indicators[self::INDICATOR_TOTAL_AMOUNT]) {
             /** @var \ficelle $ficelle */
-            $ficelle = Loader::loadLib('ficelle');
+            $ficelle   = Loader::loadLib('ficelle');
             $advices[] = $this->translator->trans('lender-evaluation_low-estate-advice', [
                 '%maximumAmount%'    => $ficelle->formatNumber($indicators[self::INDICATOR_TOTAL_AMOUNT], 0),
                 '%maximumAmount100%' => $ficelle->formatNumber(floor($indicators[self::INDICATOR_TOTAL_AMOUNT] / 100), 0),
@@ -455,7 +473,7 @@ class CIPManager
             ]);
         } elseif (null !== $indicators[self::INDICATOR_AMOUNT_BY_MONTH]) {
             /** @var \ficelle $ficelle */
-            $ficelle = Loader::loadLib('ficelle');
+            $ficelle   = Loader::loadLib('ficelle');
             $advices[] = $this->translator->trans('lender-evaluation_low-savings-advice', [
                 '%maximumAmount%' => $ficelle->formatNumber($indicators[self::INDICATOR_AMOUNT_BY_MONTH], 0)
             ]);
@@ -485,6 +503,7 @@ class CIPManager
      * If no limitation is suggested, indicator value is null
      *
      * @param \lenders_accounts $lender
+     *
      * @return array|null
      */
     public function getIndicators(\lenders_accounts $lender)
@@ -530,6 +549,7 @@ class CIPManager
 
     /**
      * @param \bids $bid
+     *
      * @return bool
      */
     public function isCIPValidationNeeded(\bids $bid)
@@ -548,14 +568,14 @@ class CIPManager
             return false;
         }
 
-        $thresholdAmount = $this->getContractThresholdAmount();
-        $lenderBids      = $bid->select('id_lender_account = ' . $bid->id_lender_account . ' AND id_project = ' . $project->id_project . ' AND status IN (' . \bids::STATUS_BID_PENDING . ', ' . \bids::STATUS_BID_ACCEPTED . ', ' . \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY . ')');
-
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->entityManager->getRepository('lenders_accounts');
         if (false === $lenderAccount->isNaturalPerson($bid->id_lender_account)) {
             return true;
         }
+
+        $thresholdAmount = $this->getContractThresholdAmount();
+        $lenderBids      = $bid->select('id_lender_account = ' . $bid->id_lender_account . ' AND id_project = ' . $project->id_project . ' AND status IN (' . \bids::STATUS_BID_PENDING . ', ' . \bids::STATUS_BID_ACCEPTED . ', ' . \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY . ')');
 
         $totalBidsAmount = 0;
         foreach ($lenderBids as $lenderBid) {
@@ -574,12 +594,13 @@ class CIPManager
      * @param \lender_evaluation $evaluation
      * @param string             $event
      * @param string             $message
+     *
      * @return \lender_evaluation_log
      */
     public function saveLog(\lender_evaluation $evaluation, $event, $message = '')
     {
         /** @var \lender_evaluation_log $advice */
-        $advice = $this->entityManager->getRepository('lender_evaluation_log');
+        $advice                       = $this->entityManager->getRepository('lender_evaluation_log');
         $advice->id_lender_evaluation = $evaluation->id_lender_evaluation;
         $advice->event                = $event;
         $advice->message              = $message;
@@ -599,7 +620,7 @@ class CIPManager
             throw new \InvalidArgumentException('The contract ' . \underlying_contract::CONTRACT_IFP . 'does not exist.');
         }
 
-        $contractAttrVars = $this->contractAttributeManager->getContractAttributesByType($contract, \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
+        $contractAttrVars = $this->contractManager->getAttributesByType($contract, \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
         if (empty($contractAttrVars) || false === isset($contractAttrVars[0]) || false === is_numeric($contractAttrVars[0])) {
             throw new \UnexpectedValueException('The IFP contract max amount is not set');
         }

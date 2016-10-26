@@ -25,10 +25,17 @@ class BidValidator
         $this->contractManager         = $contractManager;
     }
 
-    public function isEligible(\bids $bid, \product $product)
+    public function isEligible(\bids $bid)
     {
         $reason = [];
         $eligible = true;
+
+        /** @var \projects $project */
+        $project = $this->entityManager->getRepository('projects');
+        $project->get($bid->id_project);
+        /** @var \product $product */
+        $product = $this->entityManager->getRepository('product');
+        $product->get($project->id_product);
 
         /** @var \lenders_accounts $lender */
         $lender = $this->entityManager->getRepository('lenders_accounts');

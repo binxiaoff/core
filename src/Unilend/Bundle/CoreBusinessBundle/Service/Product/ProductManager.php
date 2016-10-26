@@ -62,33 +62,9 @@ class ProductManager
      * @return bool
      * @throws \Exception
      */
-    public function isBidEligible(\bids $bid, \projects $project)
+    public function isBidEligible(\bids $bid)
     {
-        $product = $this->getAssociatedProduct($project);
-
-        return $this->bidValidator->isEligible($bid, $product)['eligible'];
-    }
-
-    public function isLenderEligible(\lenders_accounts $lender, \projects $project)
-    {
-        return $this->lenderValidator->isEligible($lender, $project)['eligible'];
-    }
-
-    /**
-     * @param \projects $project
-     *
-     * @return \product
-     * @throws \Exception
-     */
-    private function getAssociatedProduct(\projects $project)
-    {
-        /** @var \product $product */
-        $product = $this->entityManager->getRepository('product');
-        if (! $product->get($project->id_product)) {
-            throw new \Exception('Invalid product id ' . $project->id_product . ' found for project id ' . $project->id_project);
-        }
-
-        return $product;
+        return $this->bidValidator->isEligible($bid)['eligible'];
     }
 
     /**
@@ -151,20 +127,19 @@ class ProductManager
      *
      * @return array
      */
-    public function getLenderValidationReasons(\lenders_accounts $lenderAccount, \projects $project)
+    public function getLenderEligibilityWithReasons(\lenders_accounts $lenderAccount, \projects $project)
     {
         return $this->lenderValidator->isEligible($lenderAccount, $project)['reason'];
     }
 
     /**
      * @param \bids    $bid
-     * @param \product $product
      *
      * @return array
      */
-    public function getBidValidatorReasons(\bids $bid, \product $product)
+    public function getBidEligibilityWithReasons(\bids $bid)
     {
-        return $this->bidValidator->isEligible($bid, $product)['reason'];
+        return $this->bidValidator->isEligible($bid)['reason'];
     }
 
     public function getAmountLenderCanStillBid(\lenders_accounts $lender, \projects $project)

@@ -117,15 +117,23 @@ $doc.on('submit', 'form[data-bid-confirmation]', function (event, options) {
 
     // Validate with server to show CIP questionnaire prompt
     $.ajax({
-      url: '/conseil-cip/bid',
-      data: {
-        project: bidData.projectSlug,
-        rate: bidData.rate,
-        amount: bidData.amount
-      },
+      url: '/projects/pre-check-bid/' + bidData.projectSlug + '/' + bidData.amount + '/' + bidData.rate,
       global: false,
       success: function (data, textStatus) {
-        if (data.hasOwnProperty('validation') && data.validation) {
+        // Show the eligibility message
+        if (data.hasOwnProperty('error')) {
+
+          var messages = '';
+          data.messages.forEach(function(element) {
+            messages += '<p>' + element + '</p>'
+          });
+
+          $('#modal-bid-error-prompt .modal-body .error-messages').html(messages)
+          $('#modal-bid-error-prompt').uiModal('open')
+          return
+        }
+        // show the CIP advices
+        else if (data.hasOwnProperty('validation') && data.validation) {
           // Show the advices
           if (data.hasOwnProperty('advices') && data.advices && $modalCipAdvices.length > 0) {
             // @debug
