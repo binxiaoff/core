@@ -34,7 +34,7 @@ class ContractManager
         return $this->lenderValidator->isEligible($lender, $contract);
     }
 
-    public function isAutobidSettingsEligible($contract)
+    public function isAutobidSettingsEligible(\underlying_contract $contract)
     {
         return $this->autoBidSettingsValidator->isEligible($contract);
     }
@@ -47,6 +47,11 @@ class ContractManager
         }
 
         return $maxAmount[0];
+    }
+
+    public function getAttributesByType(\underlying_contract $contract, $attributeType)
+    {
+        return $this->contractAttributeManager->getContractAttributesByType($contract, $attributeType);
     }
 
 }

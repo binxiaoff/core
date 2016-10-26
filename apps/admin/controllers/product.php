@@ -63,4 +63,38 @@ class productController extends bootstrap
         // motivation
         $this->nafcodes = $productManager->getAttributesByType($this->product, \product_attribute_type::ELIGIBLE_BORROWER_COMPANY_NAF_CODE);
     }
+
+    public function _contract_details()
+    {
+        /** @var underlying_contract contract */
+        $this->contract = $this->loadData('underlying_contract');
+
+        if (false === isset($this->params[0]) || false === $this->contract->get($this->params[0])) {
+            header('Location: /product');
+        }
+
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager $contractManager */
+        $contractManager = $this->get('unilend.service_product_contract.contract_manager');
+
+        // lender type
+        $this->lenderType = $contractManager->getAttributesByType($this->contract, underlying_contract_attribute_type::ELIGIBLE_LENDER_TYPE);
+
+        // max loan amount
+        $this->loanAmountMax = $contractManager->getAttributesByType($this->contract, underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
+
+        // max loan quantity
+        $this->loanQtyMax = $contractManager->getAttributesByType($this->contract, underlying_contract_attribute_type::TOTAL_QUANTITY_LIMITATION);
+
+        // max loan duration
+        $this->loanDurationMax = $contractManager->getAttributesByType($this->contract, underlying_contract_attribute_type::MAX_LOAN_DURATION_IN_MONTH);
+
+        // Autobid eligibility
+        $this->eligibilityAutobid = $contractManager->getAttributesByType($this->contract, underlying_contract_attribute_type::ELIGIBLE_AUTOBID);
+
+        // company min creation days
+        $this->creationDaysMin = $contractManager->getAttributesByType($this->contract, underlying_contract_attribute_type::MIN_CREATION_DAYS);
+
+        // RCS
+        $this->rcs = $contractManager->getAttributesByType($this->contract, underlying_contract_attribute_type::ELIGIBLE_BORROWER_COMPANY_RCS);
+    }
 }
