@@ -840,7 +840,7 @@ class ProjectsController extends Controller
     }
 
     /**
-     * @Route("/projects/pre-check-bid/{projectSlug}/{amount}/{rate}", name="pre_check_bid", requirements={"amount" = "^\d+$", "rate" ="^\d{1,2}(\.\d$|$)" })
+     * @Route("/projects/pre-check-bid/{projectSlug}/{amount}/{rate}", name="pre_check_bid", condition="request.isXmlHttpRequest()", requirements={"amount" = "^\d+$", "rate" ="^\d{1,2}(\.\d$|$)" })
      *
      * @param $projectSlug
      * @param $amount
