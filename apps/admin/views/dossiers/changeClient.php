@@ -12,6 +12,7 @@
             <?php foreach ($this->lClients as $c) : ?>
                 <tr>
                     <td>
+                        <?= $c['id_client'] ?>
                         <input type="hidden" id="prenom_change_<?= $c['id_client'] ?>" value="<?= $c['prenom'] ?>">
                         <input type="hidden" id="nom_change_<?= $c['id_client'] ?>" value="<?= $c['nom'] ?>">
                         <input class="radio" type="radio" name="clients" id="client_<?= $c['id_client'] ?>" value="<?= $c['id_client'] ?>">

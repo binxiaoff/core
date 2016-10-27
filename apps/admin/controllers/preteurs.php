@@ -388,7 +388,7 @@ class preteursController extends bootstrap
         } elseif (isset($_POST['send_edit_preteur'])) {
             if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
 
-                if ($_POST['meme-adresse'] != false) {
+                if (false === empty($_POST['meme-adresse'])) {
                     $this->clients_adresses->meme_adresse_fiscal = 1;
                 } else {
                     $this->clients_adresses->meme_adresse_fiscal = 0;
