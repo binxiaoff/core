@@ -36,7 +36,7 @@ class IRRManager
     public function updateIRRUnilend()
     {
         /** @var \unilend_stats $unilendStats */
-        $unilendStats = $this->oEntityManager->getRepository('unilend_stats');
+        $unilendStats = $this->entityManager->getRepository('unilend_stats');
         /** @var float $irrUnilend */
         $irrUnilend = $this->calculateIRRUnilend();
 
