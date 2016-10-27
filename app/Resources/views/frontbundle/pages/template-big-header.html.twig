@@ -1,5 +1,9 @@
 {% extends 'layouts/_page-simple.html.twig' %}
 
+{% block pageTitle %}
+    <h1 class="page-title">{{ cms.title }}</h1>
+{% endblock %}
+
 {% block extendPageHeader %}
     <div class="page-header-image">{{ svgimage('#header-' ~ cms.header_image, '', 300, 300)|raw }}</div>
 {% endblock %}
