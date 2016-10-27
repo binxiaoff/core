@@ -1368,12 +1368,12 @@ class preteursController extends bootstrap
         $this->IRRValue = null;
         $this->IRRDate  = null;
 
+        /** @var \lenders_account_stats $oLenderAccountStats */
         $oLenderAccountStats = $this->loadData('lenders_account_stats');
         $aIRR                = $oLenderAccountStats->getLastIRRForLender($this->lenders_accounts->id_lender_account);
 
         if (false === is_null($aIRR)) {
-            $this->IRRValue = $aIRR['tri_value'];
-            $this->IRRDate  = $aIRR['tri_date'];
+            $this->IRR = $aIRR;
         }
 
         $statusOk                = array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::FUNDING_KO, \projects_status::PRET_REFUSE, \projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE);
