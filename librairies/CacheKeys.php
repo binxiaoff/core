@@ -32,6 +32,12 @@ class CacheKeys
     const CONTRACT_ATTRIBUTE_BY_TYPE = 'contract_attribute_by_type';
 
     /**
+     * constant for CMS elements
+     */
+    const FOOTER_PARTNERS = 'footer_partners';
+    const FOOTER_MENU     = 'footer_menu';
+
+    /**
      * constants for statistics calculated on the go after expiry time
      */
     const LENDERS_IN_COMMUNITY                = 'stats_numberOfLendersInCommunity';
