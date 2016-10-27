@@ -8,7 +8,9 @@
             <header class="page-header">
                 <div class="hero-wrap">
                     <div class="site-wrap">
-                        <h1 class="page-title">{% if page.displayTitle is defined %}{{ page.displayTitle }}{% else %}{{ page.title }}{% endif %}</h1>
+                        {% block pageTitle %}
+                            <h1 class="page-title">{% if page.displayTitle is defined %}{{ page.displayTitle }}{% else %}{{ page.title }}{% endif %}</h1>
+                        {% endblock %}
                         {% block extendPageHeader %}{% endblock %}
                     </div><!-- /.site-wrap -->
                     {% include 'partials/components/list-socialmedia.html.twig' %}

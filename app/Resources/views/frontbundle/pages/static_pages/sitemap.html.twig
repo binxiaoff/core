@@ -1,13 +1,11 @@
 {# Site Map / Plan du Page #}
 {% extends 'layouts/_page-simple.html.twig' %}
 
-{% set page = {
-    id: 'page-sitemap',
-    title:  'sitemap_page-title'|trans
-} %}
-
 {% block extendPageHeader %}
     <div class="page-header-image">{{ svgimage('#header-plandusite', 'Plan du site', 300, 300, 'contain')|raw }}</div>
+{% endblock %}
+{% block pageTitle %}
+    <h1 class="page-title">{% trans %}sitemap_page-title{% endtrans %}</h1>
 {% endblock %}
 
 {% block pageAsideBody %}
