@@ -689,20 +689,21 @@ class protectedController extends bootstrap
 
     public function _declaration_de_creances()
     {
-        $this->clients = $this->loadData('clients');
+        /** @var \clients $clients */
+        $clients = $this->loadData('clients');
 
-        if (isset($this->params[0]) && $this->clients->get($this->params[0], 'hash') && isset($this->params[1])) {
+        if (isset($this->params[0]) && $clients->get($this->params[0], 'hash') && isset($this->params[1])) {
             /** @var \loans $loans */
             $loans           = $this->loadData('loans');
             /** @var \lenders_accounts $lendersAccounts */
             $lendersAccounts = $this->loadData('lenders_accounts');
-            $lendersAccounts->get($this->clients->id_client, 'id_client_owner');
+            $lendersAccounts->get($clients->id_client, 'id_client_owner');
 
             if ($loans->get($lendersAccounts->id_lender_account, 'id_loan = ' . $this->params[1] . ' AND id_lender')) {
                 $filePath = $this->path . 'protected/pdf/declaration_de_creances/' . $loans->id_project . '/';
-                $filePath = ($loans->id_project == '1456') ? $filePath : $filePath . $this->clients->id_client . '/';
+                $filePath = ($loans->id_project == '1456') ? $filePath : $filePath . $clients->id_client . '/';
                 $filePath = $filePath . 'declaration-de-creances' . '-' . $this->params[0] . '-' . $this->params[1] . '.pdf';
-                $fileName = 'DECLARATION-DE-CREANCES-UNILEND-' . $this->clients->hash . '-' . $loans->id_loan;
+                $fileName = 'DECLARATION-DE-CREANCES-UNILEND-' . $clients->hash . '-' . $loans->id_loan;
 
                 if (file_exists($filePath)) {
                     header('Content-Description: File Transfer');
