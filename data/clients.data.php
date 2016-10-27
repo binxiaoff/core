@@ -106,14 +106,16 @@ class clients extends clients_crud
      */
     public function saveLogin(\DateTime $dateLogin)
     {
-        $bind = ['lastLogin' => $dateLogin->format('Y-m-d H:i:s'), 'id_client' => $this->id_client];
-        $type = ['lastLogin' => \PDO::PARAM_STR, 'id_client' => \PDO::PARAM_STR];
+        if (false === empty($this->id_client) && is_numeric($this->id_client)){
+            $bind = ['lastLogin' => $dateLogin->format('Y-m-d H:i:s'), 'id_client' => $this->id_client];
+            $type = ['lastLogin' => \PDO::PARAM_STR, 'id_client' => \PDO::PARAM_STR];
 
-        $query =  '
+            $query =  '
             UPDATE clients
             SET lastlogin = :lastLogin
             WHERE id_client = :id_client';
-        $this->bdd->executeUpdate($query, $bind, $type);
+            $this->bdd->executeUpdate($query, $bind, $type);
+        }
     }
 
     public function handleLogout($bRedirect = true)
