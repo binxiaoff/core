@@ -437,6 +437,7 @@ class preteursController extends bootstrap
                 $oBirthday = new \DateTime(str_replace('/', '-', $_POST['naissance']));
 
                 $this->clients->telephone         = str_replace(' ', '', $_POST['phone']);
+                $this->clients->mobile            = str_replace(' ', '', $_POST['mobile']);
                 $this->clients->ville_naissance   = $_POST['com-naissance'];
                 $this->clients->insee_birth       = $_POST['insee_birth'];
                 $this->clients->naissance         = $oBirthday->format('Y-m-d');
