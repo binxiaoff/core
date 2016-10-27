@@ -114,7 +114,7 @@ class CompanyBalanceSheetManager
         $netIncome            = $aBalances[$balanceSheetId]['details']['HN'];
         $investments          = $aBalances[$balanceSheetId]['details']['0J'];
 
-        // back forward compatibility
+        // back forward compatibility (they are used in the BO stats controller, after the migration of this usage, we can remove these columns)
         $companyBalanceSheet->ca                          = $turnover;
         $companyBalanceSheet->resultat_brute_exploitation = $grossOperationIncome;
         $companyBalanceSheet->resultat_exploitation       = $operationIncome;
