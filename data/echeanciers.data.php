@@ -1027,17 +1027,31 @@ class echeanciers extends echeanciers_crud
     /**
      * Returns capital, interests and tax sum amounts grouped by month, quarter and year for a lender
      * takes into account regular past payments at their real date
-     * recovery payments including commission (fixed value, as done in declaration de créances)
-     * future payments of healthy (according to stats defintion) only projects
+     * recovery payments including commission (fixed value, as done in 'declaration de créances')
+     * future payments of healthy (according to stats definition) only projects
      * @param int $lenderId
-     * @param array $taxTypeForExemptedLender
-     * @param array $taxTypeForTaxableLender
-     * @param array $taxTypeForForeignerLender
-     * @param array $taxTypeForLegalEntityLender
      * @return array
      */
-    public function getDataForRepaymentWidget($lenderId, array $taxTypeForExemptedLender = [3, 4, 5, 6, 7], array $taxTypeForTaxableLender = [2, 3, 4, 5, 6, 7], array $taxTypeForForeignerLender = [8], array $taxTypeForLegalEntityLender = [8])
+    public function getDataForRepaymentWidget($lenderId)
     {
+        $taxTypeForExemptedLender    = [
+            \tax_type::TYPE_CSG,
+            \tax_type::TYPE_SOCIAL_DEDUCTIONS,
+            \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS,
+            \tax_type::TYPE_SOLIDARITY_DEDUCTIONS,
+            \tax_type::TYPE_CRDS
+        ];
+        $taxTypeForTaxableLender     = [
+            \tax_type::TYPE_INCOME_TAX,
+            \tax_type::TYPE_CSG,
+            \tax_type::TYPE_SOCIAL_DEDUCTIONS,
+            \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS,
+            \tax_type::TYPE_SOLIDARITY_DEDUCTIONS,
+            \tax_type::TYPE_CRDS
+        ];
+        $taxTypeForForeignerLender   = [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE];
+        $taxTypeForLegalEntityLender = [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE];
+
         $bind  = [
             'id_lender'                    => $lenderId,
             'tax_type_exempted_lender'     => $taxTypeForExemptedLender,

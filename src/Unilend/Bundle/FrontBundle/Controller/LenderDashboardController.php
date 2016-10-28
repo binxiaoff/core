@@ -121,7 +121,7 @@ class LenderDashboardController extends Controller
         /** @var LenderAccountDisplayManager $lenderDisplayManager */
         $lenderDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
 
-        $lenderRepaymentsData   = $this->getDetailsByPeriod($lender, $lenderRepayment);
+        $lenderRepaymentsData   = $lenderRepayment->getDataForRepaymentWidget($lender->id_lender_account);
         $repaymentDateRange     = $lenderRepayment->getFirstAndLastRepaymentDates($lender->id_lender_account);
         $repaymentDataPerPeriod = $this->getQuarterAndYearSum($lenderRepaymentsData);
         $monthAxisData          = $this->getMonthAxis($repaymentDateRange);
@@ -453,17 +453,4 @@ class LenderDashboardController extends Controller
         ];
     }
 
-    /**
-     * @param \lenders_accounts $lender
-     * @param \echeanciers $lenderRepayment
-     * @return array
-     */
-    private function getDetailsByPeriod(\lenders_accounts $lender, \echeanciers $lenderRepayment)
-    {
-        $taxTypeForExemptedLender    = [\tax_type::TYPE_CSG, \tax_type::TYPE_SOCIAL_DEDUCTIONS, \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS, \tax_type::TYPE_SOLIDARITY_DEDUCTIONS, \tax_type::TYPE_CRDS];
-        $taxTypeForTaxableLender     = [\tax_type::TYPE_INCOME_TAX, \tax_type::TYPE_CSG, \tax_type::TYPE_SOCIAL_DEDUCTIONS, \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS, \tax_type::TYPE_SOLIDARITY_DEDUCTIONS, \tax_type::TYPE_CRDS];
-        $taxTypeForForeignerLender   = [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE];
-        $taxTypeForLegalEntityLender = [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE];
-        return $lenderRepayment->getDataForRepaymentWidget($lender->id_lender_account, $taxTypeForExemptedLender, $taxTypeForTaxableLender, $taxTypeForForeignerLender, $taxTypeForLegalEntityLender);
-    }
 }
