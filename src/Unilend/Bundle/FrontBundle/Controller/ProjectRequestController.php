@@ -306,21 +306,6 @@ class ProjectRequestController extends Controller
             $this->project->update();
         }
 
-        $productManager = $this->get('unilend.service_product.product_manager');
-        try {
-            $products = $productManager->findEligibleProducts($this->project);
-            if (count($products) === 1 && isset($products[0]) && $products[0] instanceof \product) {
-                $this->project->id_product = $products[0]->id_product;
-                $this->project->update();
-            }
-        } catch (\Exception $exception) {
-            $this->get('logger')->warning($exception->getMessage(), ['method' => __METHOD__, 'line' => __LINE__]);
-        }
-
-        if (empty($products)){
-            return $this->redirectStatus(self::PAGE_ROUTE_PROSPECT, \projects_status::NOTE_EXTERNE_FAIBLE, 'Eligible à aucun produit');
-        }
-
         return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, $status);
     }
 
@@ -599,6 +584,21 @@ class ProjectRequestController extends Controller
         $this->project->comments            = $request->request->get('project')['description'];
         $this->project->id_borrowing_motive = $request->request->get('project')['motive'];
         $this->project->update();
+
+        $productManager = $this->get('unilend.service_product.product_manager');
+        try {
+            $products = $productManager->findEligibleProducts($this->project);
+            if (count($products) === 1 && isset($products[0]) && $products[0] instanceof \product) {
+                $this->project->id_product = $products[0]->id_product;
+                $this->project->update();
+            }
+        } catch (\Exception $exception) {
+            $this->get('logger')->warning($exception->getMessage(), ['method' => __METHOD__, 'line' => __LINE__]);
+        }
+
+        if (empty($products)){
+            return $this->redirectStatus(self::PAGE_ROUTE_PROSPECT, \projects_status::NOTE_EXTERNE_FAIBLE, 'Eligible à aucun produit');
+        }
 
         return $this->redirectStatus(self::PAGE_ROUTE_FINANCE, \projects_status::COMPLETUDE_ETAPE_3);
     }
