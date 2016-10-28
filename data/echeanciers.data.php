@@ -35,6 +35,11 @@ class echeanciers extends echeanciers_crud
     public function __construct($bdd, $params = '')
     {
         parent::echeanciers($bdd, $params);
+        \Unilend\core\Loader::loadData('clients');
+        \Unilend\core\Loader::loadData('loans');
+        \Unilend\core\Loader::loadData('projects_status');
+        \Unilend\core\Loader::loadData('tax_type');
+        \Unilend\core\Loader::loadData('transactions_types');
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -313,7 +318,7 @@ class echeanciers extends echeanciers_crud
      */
     public function getRepaidCapitalInDateRange($lenderId, $startDate, $endDate)
     {
-        return $this->getRepaymentAmountInDateRange($lenderId, $startDate, $endDate, 'e.capital_rembourse', array(\echeanciers::STATUS_PARTIALLY_REPAID, \echeanciers::STATUS_REPAID));
+        return $this->getRepaymentAmountInDateRange($lenderId, $startDate, $endDate, 'e.capital_rembourse', [self::STATUS_PARTIALLY_REPAID, self::STATUS_REPAID]);
     }
 
     /**
@@ -325,7 +330,7 @@ class echeanciers extends echeanciers_crud
      */
     public function getRepaidAmountInDateRange($lenderId, $startDate, $endDate, $loanId = null)
     {
-        return $this->getRepaymentAmountInDateRange($lenderId, $startDate, $endDate, 'e.capital_rembourse + e.interets_rembourses', array(\echeanciers::STATUS_PARTIALLY_REPAID, \echeanciers::STATUS_REPAID), null, $loanId);
+        return $this->getRepaymentAmountInDateRange($lenderId, $startDate, $endDate, 'e.capital_rembourse + e.interets_rembourses', [self::STATUS_PARTIALLY_REPAID, self::STATUS_REPAID], null, $loanId);
     }
 
     /**
@@ -336,12 +341,12 @@ class echeanciers extends echeanciers_crud
      */
     public function getNextRepaymentAmountInDateRange($lenderId, $startDate, $endDate)
     {
-        return $this->getRepaymentAmountInDateRange($lenderId, $startDate, $endDate, 'e.capital + e.interets', array(\echeanciers::STATUS_PENDING));
+        return $this->getRepaymentAmountInDateRange($lenderId, $startDate, $endDate, 'e.capital + e.interets', [self::STATUS_PENDING]);
     }
 
     public function getNonRepaidAmountInDateRange($lenderId, DateTime $startDate, DateTime $endDate, $loanId = null)
     {
-        return $this->getRepaymentAmountInDateRange($lenderId, $startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s'), 'e.capital - e.capital_rembourse + e.interets - e.interets_rembourses', array(\echeanciers::STATUS_PENDING, self::STATUS_PARTIALLY_REPAID), null, $loanId);
+        return $this->getRepaymentAmountInDateRange($lenderId, $startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s'), 'e.capital - e.capital_rembourse + e.interets - e.interets_rembourses', [self::STATUS_PENDING, self::STATUS_PARTIALLY_REPAID], null, $loanId);
     }
 
     /**
@@ -360,7 +365,7 @@ class echeanciers extends echeanciers_crud
             'id_lender'        => $lenderId,
             'loan_status'      => \loans::STATUS_ACCEPTED,
             'id_loan'          => $loanId,
-            'repayment_status' => \echeanciers::STATUS_PENDING,
+            'repayment_status' => self::STATUS_PENDING,
             'date_echeance'    => $startDate->format('Y-m-d')
         ];
         $bindType = [
@@ -410,7 +415,7 @@ class echeanciers extends echeanciers_crud
             'repayment_status' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY
         ];
 
-        if (in_array(\echeanciers::STATUS_PENDING, $repaymentStatus)) {
+        if (in_array(self::STATUS_PENDING, $repaymentStatus)) {
             $date = 'date_echeance';
         } else {
             $date = 'date_echeance_reel';
@@ -590,7 +595,7 @@ class echeanciers extends echeanciers_crud
             GROUP BY id_project, ordre';
 
         $rQuery  = $this->bdd->query($sQuery);
-        $aResult = array();
+        $aResult = [];
         while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
             $aResult[] = $aRow;
         }
@@ -605,7 +610,7 @@ class echeanciers extends echeanciers_crud
                       GROUP BY id_loan';
 
         $resultat = $this->bdd->query($sql);
-        $result   = array();
+        $result   = [];
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
@@ -730,7 +735,7 @@ class echeanciers extends echeanciers_crud
               LEFT JOIN tax prelevements_solidarite ON prelevements_solidarite.id_transaction = t.id_transaction AND prelevements_solidarite.id_tax_type = ' . \tax_type::TYPE_SOLIDARITY_DEDUCTIONS . '
               LEFT JOIN tax crds ON crds.id_transaction = t.id_transaction AND crds.id_tax_type = ' . \tax_type::TYPE_CRDS . '
             WHERE DATE(e.date_echeance_reel) = :date
-                AND e.status IN (' . \echeanciers::STATUS_REPAID . ', ' . \echeanciers::STATUS_PARTIALLY_REPAID . ')
+                AND e.status IN (' . self::STATUS_REPAID . ', ' . self::STATUS_PARTIALLY_REPAID . ')
                 AND e.status_ra = 0
             ORDER BY e.date_echeance ASC';
 
@@ -786,7 +791,7 @@ class echeanciers extends echeanciers_crud
               INNER JOIN transactions t ON t.id_echeancier = e.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
               ' . $taxDynamicJoin['tax_join'] . '
               LEFT JOIN lender_tax_exemption lte ON lte.id_lender = la.id_lender_account AND lte.year = YEAR(e.date_echeance_reel)
-            WHERE e.status IN (' . \echeanciers::STATUS_REPAID . ', ' . \echeanciers::STATUS_PARTIALLY_REPAID . ')
+            WHERE e.status IN (' . self::STATUS_REPAID . ', ' . self::STATUS_PARTIALLY_REPAID . ')
                 AND e.status_ra = 0
                 AND DATE(e.date_echeance_reel) BETWEEN :start_date AND :end_date
             GROUP BY l.id_type_contract, client_type, fiscal_residence, exemption_status';
@@ -889,7 +894,7 @@ class echeanciers extends echeanciers_crud
             INNER JOIN transactions t ON t.id_echeancier = e.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS
             . $taxDynamicJoin['tax_join']
             . $taxExemptionJoin . '
-        WHERE e.status IN (' . \echeanciers::STATUS_REPAID . ', ' . \echeanciers::STATUS_PARTIALLY_REPAID . ')
+        WHERE e.status IN (' . self::STATUS_REPAID . ', ' . self::STATUS_PARTIALLY_REPAID . ')
             AND e.status_ra = 0
             AND c.type IN (:client_type) '
             . $sExemptionWhere . $sForeignerWhere . '
