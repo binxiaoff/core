@@ -2,21 +2,21 @@
     <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"/></a>
     <table class="formMail">
         <tr>
-            <th>Date : <?= $this->aEmail['date'] ?></th>
+            <th>Date : <?= $this->email['date'] ?></th>
         </tr>
         <tr>
-            <th>From : <?=  $this->aEmail['from']?></th>
+            <th>From : <?=  $this->email['from']?></th>
         </tr>
         <tr>
-            <th>To : <?= $this->aEmail['to'] ?></th>
+            <th>To : <?= $this->email['to'] ?></th>
         </tr>
         <tr>
-            <th>Sujet : <?= $this->aEmail['subject'] ?></th>
+            <th>Sujet : <?= $this->email['subject'] ?></th>
         </tr>
         <tr>
             <td>
                 <div style="width:760px; height:400px; overflow: auto;">
-                    <?= $this->aEmail['body'] ?>
+                    <?= $this->email['body'] ?>
                 </div>
             </td>
         </tr>
