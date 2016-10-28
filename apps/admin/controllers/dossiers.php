@@ -2028,8 +2028,8 @@ class dossiersController extends bootstrap
                         /** @var MailerManager $mailerManager */
                         $mailerManager = $this->get('unilend.service.email_manager');
                         $mailerManager->setLogger($oLogger);
-                        $mailerManager->sendInternalNotificationEndOfRepayment($this->companies, $this->projects);
-                        $mailerManager->sendClientNotificationEndOfRepayment($this->projects, $this->companies, $this->clients);
+                        $mailerManager->sendInternalNotificationEndOfRepayment($this->projects);
+                        $mailerManager->sendClientNotificationEndOfRepayment($this->projects);
                     }
 
                     $lesRembEmprun = $this->bank_unilend->select('type = 1 AND status = 0 AND id_project = ' . $this->projects->id_project, 'id_unilend ASC', 0, 1); // on ajoute la restriction pour BT 17882

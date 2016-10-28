@@ -292,8 +292,8 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                     /** @var MailerManager $mailerManager */
                     $mailerManager = $this->getContainer()->get('unilend.service.email_manager');
                     $mailerManager->setLogger($logger);
-                    $mailerManager->sendInternalNotificationEndOfRepayment($companies, $projects);
-                    $mailerManager->sendClientNotificationEndOfRepayment($projects, $companies, $emprunteur);
+                    $mailerManager->sendInternalNotificationEndOfRepayment($projects);
+                    $mailerManager->sendClientNotificationEndOfRepayment($projects);
                 }
             } else {
                 $projectRepayment->get($r['id_project_remb'], 'id_project_remb');

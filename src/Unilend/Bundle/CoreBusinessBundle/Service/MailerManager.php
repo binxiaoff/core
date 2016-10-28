@@ -1849,11 +1849,14 @@ class MailerManager
     }
 
     /**
-     * @param \companies $companies
      * @param \projects $projects
      */
-    public function sendInternalNotificationEndOfRepayment(\companies $companies, \projects $projects)
+    public function sendInternalNotificationEndOfRepayment(\projects $projects)
     {
+        /** @var \companies $company */
+        $company = $this->oEntityManager->getRepository('companies');
+        $company->get($projects->id_company);
+
         /** @var \settings $settings */
         $settings = $this->oEntityManager->getRepository('settings');
         $settings->get('Adresse controle interne', 'type');
@@ -1862,7 +1865,7 @@ class MailerManager
         $varMail = [
             'surl'           => $this->sSUrl,
             'url'            => $this->sFUrl,
-            'nom_entreprise' => $companies->name,
+            'nom_entreprise' => $company->name,
             'nom_projet'     => $projects->title,
             'id_projet'      => $projects->id_project,
             'annee'          => date('Y')
@@ -1878,11 +1881,17 @@ class MailerManager
 
     /**
      * @param \projects $projects
-     * @param \companies $companies
-     * @param \clients $clients
      */
-    public function sendClientNotificationEndOfRepayment(\projects $projects, \companies $companies, \clients $clients)
+    public function sendClientNotificationEndOfRepayment(\projects $projects)
     {
+        /** @var \companies $company */
+        $company = $this->oEntityManager->getRepository('companies');
+        $company->get($projects->id_company);
+
+        /** @var \clients $client */
+        $client = $this->oEntityManager->getRepository('clients');
+        $client->get($company->id_client_owner);
+
         /** @var \transactions $transactions */
         $transactions = $this->oEntityManager->getRepository('transactions');
         $transactions->get($projects->id_project . '" AND type_transaction = "' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, 'id_project');
@@ -1900,10 +1909,10 @@ class MailerManager
         $varMail = [
             'surl'               => $this->sSUrl,
             'url'                => $this->sFUrl,
-            'prenom'             => $clients->prenom,
+            'prenom'             => $client->prenom,
             'date_financement'   => \DateTime::createFromFormat('Y-m-d H:i:s', $transactions->added)->format('d/m/Y'),
             'date_remboursement' => \DateTime::createFromFormat('Y-m-d H:i:s', array_shift($lastRepayment)['added'])->format('d/m/Y'),
-            'raison_sociale'     => $companies->name,
+            'raison_sociale'     => $company->name,
             'montant'            => $ficelle->formatNumber($projects->amount, 0),
             'duree'              => $projects->period,
             'duree_financement'  => (new \DateTime($projects->date_publication_full))->diff(new \DateTime($projects->date_retrait_full))->d,
@@ -1914,7 +1923,7 @@ class MailerManager
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('emprunteur-dernier-remboursement', $varMail);
-        $message->setTo($clients->email);
+        $message->setTo($client->email);
         $this->mailer->send($message);
     }
 }
