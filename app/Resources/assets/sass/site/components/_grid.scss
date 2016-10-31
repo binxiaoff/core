@@ -120,7 +120,6 @@
   @include devices('computer') {
     @include row-multi-col($prefix: 'computer');
   }
-}
 
   // Automatic column padding targetted for sm breakpoint
   @include devices('sm') {
