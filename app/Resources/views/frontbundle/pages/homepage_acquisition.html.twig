@@ -69,7 +69,7 @@
                                 <div class="promo-image">
                                     {{ svgimage('#promo-projects', '', 190, 190, 'none') | raw }}
                                 </div>
-                                {% set valueProjects = ('site-general_unilend-stats-projects-value'|trans != 'site-general_unilend-stats-projects-value') ? getStatistic('numberOfFinancedProjects') : 'site-general_unilend-stats-projects-value'|trans %}
+                                {% set valueProjects = getStatistic('numberOfFinancedProjects') %}
                                 <h3 class="promo-highlight">
                                     <span class="ui-text-count" data-start-count="0" data-end-count="{{ valueProjects }}" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">{{ valueProjects|localizednumber }}</span>
                                 </h3>
@@ -82,7 +82,7 @@
                                 <div class="promo-image">
                                     {{ svgimage('#promo-money', '', 190, 190, 'none') | raw }}
                                 </div>
-                                {% set valueMoney = ('site-general_unilend-stats-money-value'|trans != 'site-general_unilend-stats-money-value') ? getStatistic('amountBorrowedInMillions') : 'site-general_unilend-stats-money-value'|trans %}
+                                {% set valueMoney = getStatistic('amountBorrowedInMillions') %}
                                 <h3 class="promo-highlight">
                                     <span class="ui-text-count" data-start-count="0" data-end-count="{{ valueMoney }}" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">{{ valueMoney|localizednumber }}</span>
                                     {% trans %} site-general_unilend-stats-money-value {% endtrans %}
@@ -96,7 +96,7 @@
                                 <div class="promo-image">
                                     {{ svgimage('#promo-people', '', 190, 190, 'none') | raw }}
                                 </div>
-                                {% set valuePeople = ('site-general_unilend-stats-people-value'|trans != 'site-general_unilend-stats-people-value') ? getStatistic('numberOfLendersInCommunity')|localizednumber : 'site-general_unilend-stats-people-value'|trans %}
+                                {% set valuePeople = getStatistic('numberOfLendersInCommunity') %}
                                 <h3 class="promo-highlight">
                                     <span class="ui-text-count" data-start-count="0" data-end-count="{{ valuePeople }}" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">{{ valuePeople|localizednumber }}</span>
                                 </h3>
@@ -167,7 +167,7 @@
                         </div>
                         <div class="col-text {{ classColumnsSlide }} vertical-align-content">
                             <div class="promo-slide promo-{{ classColor }} {{ classPosition }}">
-                                <p class="quote">{{ person.quote|raw }}</p>
+                                <p class="quote">&quot;{{ person.quote|raw }}&quot;</p>
                                 <p class="source"><cite>{{ description }}</cite></p>
 
                                 {% if person.type == 'borrower' %}

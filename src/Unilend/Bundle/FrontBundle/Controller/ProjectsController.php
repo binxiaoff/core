@@ -299,7 +299,7 @@ class ProjectsController extends Controller
             'warningLending'      => true,
             'warningTaxDeduction' => $template['project']['startDate'] >= '2016-01-01'
         ];
-        $this->setProjectDetailsSeoData($company->sector, $company->city, $project->amount);
+        $this->setProjectDetailsSeoData($template['project']['company']['sectorId'], $template['project']['company']['city'], $template['project']['amount']);
 
         return $this->render('pages/project_detail.html.twig', $template);
     }

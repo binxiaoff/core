@@ -388,7 +388,7 @@ class preteursController extends bootstrap
         } elseif (isset($_POST['send_edit_preteur'])) {
             if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
 
-                if ($_POST['meme-adresse'] != false) {
+                if (false === empty($_POST['meme-adresse'])) {
                     $this->clients_adresses->meme_adresse_fiscal = 1;
                 } else {
                     $this->clients_adresses->meme_adresse_fiscal = 0;
@@ -437,6 +437,7 @@ class preteursController extends bootstrap
                 $oBirthday = new \DateTime(str_replace('/', '-', $_POST['naissance']));
 
                 $this->clients->telephone         = str_replace(' ', '', $_POST['phone']);
+                $this->clients->mobile            = str_replace(' ', '', $_POST['mobile']);
                 $this->clients->ville_naissance   = $_POST['com-naissance'];
                 $this->clients->insee_birth       = $_POST['insee_birth'];
                 $this->clients->naissance         = $oBirthday->format('Y-m-d');
@@ -1368,12 +1369,12 @@ class preteursController extends bootstrap
         $this->IRRValue = null;
         $this->IRRDate  = null;
 
+        /** @var \lenders_account_stats $oLenderAccountStats */
         $oLenderAccountStats = $this->loadData('lenders_account_stats');
         $aIRR                = $oLenderAccountStats->getLastIRRForLender($this->lenders_accounts->id_lender_account);
 
         if (false === is_null($aIRR)) {
-            $this->IRRValue = $aIRR['tri_value'];
-            $this->IRRDate  = $aIRR['tri_date'];
+            $this->IRR = $aIRR;
         }
 
         $statusOk                = array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::FUNDING_KO, \projects_status::PRET_REFUSE, \projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE);
@@ -1432,24 +1433,25 @@ class preteursController extends bootstrap
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
 
-        /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $oMailQueueManager */
-        $oMailQueueManager = $this->get('unilend.service.mail_queue');
-        /** @var mail_queue $oMailQueue */
-        $oMailQueue = $this->loadData('mail_queue');
-        $oMailQueue->get($this->params[0]);
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $oEmail */
-        $oEmail = $oMailQueueManager->getMessage($oMailQueue);
+        /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $mailQueueManager */
+        $mailQueueManager = $this->get('unilend.service.mail_queue');
+        /** @var mail_queue $mailQueue */
+        $mailQueue = $this->loadData('mail_queue');
+        $mailQueue->get($this->params[0]);
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $email */
+        $email = $mailQueueManager->getMessage($mailQueue);
+        /** @var \DateTime $sentAt */
+        $sentAt = new \DateTime($mailQueue->sent_at);
 
-        $iDate = $oEmail->getDate();
-        $aFrom = $oEmail->getFrom();
-        $aTo   = $oEmail->getTo();
+        $from = $email->getFrom();
+        $to   = $email->getTo();
 
-        $this->aEmail = array(
-            'date'    => date('d/m/Y H:i', $iDate),
-            'from'    => array_shift($aFrom),
-            'to'      => array_shift($aTo),
-            'subject' => $oEmail->getSubject(),
-            'body'    => $oEmail->getBody()
+        $this->email = array(
+            'date'    => $sentAt->format('d/m/Y H:i'),
+            'from'    => array_shift($from),
+            'to'      => array_shift($to),
+            'subject' => $email->getSubject(),
+            'body'    => $email->getBody()
         );
     }
 

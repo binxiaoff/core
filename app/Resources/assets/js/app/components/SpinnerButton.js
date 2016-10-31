@@ -10,41 +10,44 @@
  */
 
 /*
-  Usage:
-  ======
+ ## Usage
 
-  The SpinnerButton component is a shorthand convenience component that utilises the Spinner component, plus some extra behaviours, such as automated watching start/stop events to show/hide the spinner.
+ The SpinnerButton component is a shorthand convenience component that utilises the Spinner component, plus some extra behaviours, such as automated watching start/stop events to show/hide the spinner.
 
-  Ideally SpinnerButton is only used for form submit buttons.
+ Ideally SpinnerButton is only used for form submit buttons.
 
-  The most basic implementation will by default assign the parent form as the SpinnerButton's target and hook into the form's `submit` event to show the spinner within the button:
+ The most basic implementation will by default assign the parent form as the SpinnerButton's target and hook into the form's `submit` event to show the spinner within the button:
 
-  ```
-    <form action="/" method="get">
-      <input type="text" name="example" value="ABC!" />
-      <button type="submit" data-spinnerbutton>Submit the form</button>
-    </form>
-  ```
+ ```
+ <form action="/" method="get">
+ <input type="text" name="example" value="ABC!" />
+ <button type="submit" data-spinnerbutton>Submit the form</button>
+ </form>
+ ```
 
-  If you need to target a specific element, use the `targetelem` attribute.
+ If you need to target a specific element, use the `targetelem` attribute.
 
-  If you need or want to target another element to act as the spinner, use the `spinnerelem` attribute.
+ If you need or want to target another element to act as the spinner, use the `spinnerelem` attribute.
 
-  The `targetstartevents` and `targetstopevents` allow you to control which events the target emits to show/hide the spinner within the button. It's advised that if you are using the FormValidation component that you add the `FormValidation:error` to the target's stop events. By default 'submit' and 'FormValidation:error' are the default start/stop events, so you don't need to apply it to each SpinnerButton element.
+ The `targetstartevents` and `targetstopevents` allow you to control which events the target emits to show/hide the spinner within the button. It's advised that if you are using the FormValidation component that you add the `FormValidation:error` to the target's stop events. By default 'submit' and 'FormValidation:error' are the default start/stop events, so you don't need to apply it to each SpinnerButton element.
 
-  The example below illustrates all points above:
+ The example below illustrates all points above:
 
-  ```
-    <form id="spinnerbutton-target" action="/" method="get">
-      <input type="text" name="example" value="ABC!" />
-      <span id="spinnerbutton-spinner" class="ui-is-spinner">Loading...</span>
-      <button type="submit" data-spinnerbutton data-spinnerbutton-spinnerelem="#spinnerbutton-spinner" data-spinnerbutton-target="#spinnerbutton-target" data-spinnerbutton-targetstartevent="submit" data-spinnerbutton-targetstopevent="FormValidation:error">Submit the form</button>
-    </form>
-  ```
+ ```
+ <form id="spinnerbutton-target" action="/" method="get">
+ <input type="text" name="example" value="ABC!" />
+ <span id="spinnerbutton-spinner" class="ui-is-spinner">Loading...</span>
+ <button type="submit" data-spinnerbutton data-spinnerbutton-spinnerelem="#spinnerbutton-spinner" data-spinnerbutton-target="#spinnerbutton-target" data-spinnerbutton-targetstartevent="submit" data-spinnerbutton-targetstopevent="FormValidation:error">Submit the form</button>
+ </form>
+ ```
 
-  The visibility of the spinner is controlled via the `_spinner.scss` stylesheet. Any spinner classed `ui-is-spinner` will be visible if any of its parents has the class `ui-is-loading`. There might be issues if you're trying to display a spinner outside of a target element (the target element will have the `ui-is-loading` class applied when its start events have been launched).
+ The visibility of the spinner is controlled via the `_spinner.scss` stylesheet. Any spinner classed `ui-is-spinner` will be visible if any of its parents has the class `ui-is-loading`. There might be issues if you're trying to display a spinner outside of a target element (the target element will have the `ui-is-loading` class applied when its start events have been launched).
 
-  If you need something a little more detailed than the SpinnerButton allows (e.g. to display state of one or many AJAX operations), consider just using the Spinner component and setting up further behaviours through the Spinner's custom events.
+ If you need something a little more detailed than the SpinnerButton allows (e.g. to display state of one or many AJAX operations), consider just using the Spinner component and setting up further behaviours through the Spinner's custom events.
+
+ ## Issues
+
+ * IE does not like disabled forms, even though the disabling happens after submit.
 
  */
 
@@ -52,6 +55,8 @@
 var $ = require('jquery')
 var Utility = require('Utility')
 var ElementAttrsObject = require('ElementAttrsObject')
+
+var $doc = $(document)
 
 /*
  * SpinnerButton
@@ -83,7 +88,7 @@ var SpinnerButton = function (elem, options) {
     disable: true,
 
     // Disable the target if loading
-    disableTarget: true
+    disableTarget: false
 
   }, ElementAttrsObject(elem, {
     spinnerElem: 'data-has-spinner',
@@ -151,39 +156,85 @@ SpinnerButton.prototype.init = function () {
   }
 
   // Connect the spinner dots
-  self.$elem.attr('data-has-spinner', self.$spinner.attr('id'))
+  self.$elem.attr('data-has-spinner', '#' + self.$spinner.attr('id'))
 
   // Watch the target for specific start events
-  $(document).on(self.settings.targetStartEvents, self.$target, function (event) {
-    self.$elem.trigger('Spinner:showLoading')
+  $doc.on(self.settings.targetStartEvents, self.$target, function (event) {
+    // @debug
+    // console.log('spinnerButton start loading', self.settings.targetStartEvents)
 
-    // Disable the button
-    if (self.settings.disable) {
-      self.$elem.prop('disabled', true)
-    }
-
-    // Disable the target too
-    if (self.settings.disableTarget) {
-      self.$target.prop('disabled', true)
-    }
+    self.startLoading()
   })
 
   // Watch the target for specific stop events
-  $(document).on(self.settings.targetStopEvents, self.$target, function (event) {
-    if (event.type !== 'Spinner:hideLoading') {
-      self.$elem.trigger('Spinner:hideLoading')
-    }
+  $doc.on(self.settings.targetStopEvents, self.$target, function (event) {
+    // @debug
+    // console.log('spinnerButton stop loading', self.settings.targetStopEvents)
 
-    // Enable the button
-    if (self.settings.disable) {
-      self.$elem.removeProp('disabled')
-    }
-
-    // Enable the target too
-    if (self.settings.disableTarget) {
-      self.$target.removeProp('disabled')
-    }
+    self.stopLoading()
   })
+}
+
+/*
+ * Start the button/target loading state
+ *
+ * @method startLoading
+ * @returns {Void}
+ */
+SpinnerButton.prototype.startLoading = function (disableSpinner) {
+  var self = this
+
+  // @debug
+  // console.log('SpinnerButton.startLoading')
+
+  // Use the normal spinner behaviours
+  if (!disableSpinner && !self.$elem.is('.ui-is-loading')) {
+    self.$elem.trigger('Spinner:showLoading')
+  }
+
+  // Disable the button
+  if (self.settings.disable) {
+    self.$elem.prop('disabled', true)
+  }
+
+  // Disable the target
+  if (self.settings.disableTarget) {
+    self.$target.prop('disabled', true)
+  }
+
+  // @trigger elem `SpinnerButton:startedLoading` [elemSpinnerButton]
+  self.$elem.trigger('SpinnerButton:startedLoading', [self])
+}
+
+/*
+ * Stop the button/target loading state
+ *
+ * @method stopLoading
+ * @returns {Void}
+ */
+SpinnerButton.prototype.stopLoading = function (disableSpinner) {
+  var self = this
+
+  // @debug
+  // console.log('SpinnerButton.stopLoading')
+
+  // Use the normal spinner behaviours
+  if (!disableSpinner && !self.$elem.is('.ui-is-loading, .ui-is-loading-end')) {
+    self.$elem.trigger('Spinner:hideLoading')
+  }
+
+  // Re-enable the button
+  if (self.settings.disable) {
+    self.$elem.removeAttr('disabled').removeProp('disabled')
+  }
+
+  // Re-enable the target
+  if (self.settings.disableTarget) {
+    self.$target.removeAttr('disabled').removeProp('disabled')
+  }
+
+  // @trigger elem `SpinnerButton:stoppedLoading` [elemSpinnerButton]
+  self.$elem.trigger('SpinnerButton:stoppedLoading', [self])
 }
 
 /*
@@ -207,7 +258,7 @@ SpinnerButton.prototype.destroy = function () {
 $.fn.uiSpinnerButton = function (op) {
   // Fire a command to the SpinnerButton object, e.g. $('[data-spinnerbutton]').uiSpinnerButton('publicMethod', {..})
   // @todo add in list of public methods that $.fn.uiSpinnerButton can reference
-  if (typeof op === 'string' && /^(publicMethod|anotherPublicMethod|destroy)$/.test(op)) {
+  if (typeof op === 'string' && /^(startLoading|stopLoading|destroy)$/.test(op)) {
     // Get further additional arguments to apply to the matched command method
     var args = Array.prototype.slice.call(arguments)
     args.shift()
@@ -232,8 +283,22 @@ $.fn.uiSpinnerButton = function (op) {
 /*
  * jQuery Events
  */
-$(document)
-// Auto-init `[data-spinnerbutton]` elements through declarative instantiation
-.on('ready UI:visible', function (event) {
-  $(event.target).find('[data-spinnerbutton]').not('.ui-spinnerbutton').uiSpinnerButton()
-})
+$doc
+  // Auto-init `[data-spinnerbutton]` elements through declarative instantiation
+  .on('ready UI:visible', function (event) {
+    $(event.target).find('[data-spinnerbutton]').not('.ui-spinnerbutton').uiSpinnerButton()
+  })
+
+  // Start the SpinnerButton loading state by hooking into Spinner loading events
+  // @note This allows other elements to cite the spinnerbutton as their `data-has-spinner` element
+  .on('Spinner:showLoading Spinner:loading:started', '.ui-spinnerbutton', function (event) {
+    $(this).uiSpinnerButton('startLoading', true)
+  })
+
+  // Stop the SpinnerButton loading state by hooking into Spinner loading events
+  // @note This allows other elements to cite the spinnerbutton as their `data-has-spinner` element
+  .on('Spinner:hideLoading Spinner:loading:ending Spinner:loading:ended', '.ui-spinnerbutton', function (event) {
+    $(this).uiSpinnerButton('stopLoading', true)
+  })
+
+module.exports = SpinnerButton

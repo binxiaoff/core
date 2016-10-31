@@ -34,8 +34,13 @@
     <div>
         <h2>Portefeuille</h2>
 
-        <h3>TRI du portefeuille : <?= (is_null($this->IRRValue)) ? 'Ce prêteur est trop récent. Son TRI n\'a pas encore été calculé.' : $this->IRRValue . '%' ?>
-            <?= (is_null($this->IRRDate)) ? '' : '(calculé le ' . $this->dates->formatDateMysqltoShortFR($this->IRRDate) . ')' ?>
+        <h3>TRI du portefeuille :
+            <?php if(empty($this->IRR)) : ?>
+                Ce prêteur est trop récent. Son TRI n'a pas encore été calculé.
+            <?php else : ?>
+                <?= $this->IRR['status'] == \lenders_account_stats::STAT_VALID_OK ? $this->IRR['value'] . '%'  : 'TRI non valide'?>
+                <?= (is_null($this->IRR['date'])) ? '' : '(calculé le ' . $this->dates->formatDateMysqltoShortFR($this->IRR['date']) . ')' ?>
+            <?php endif; ?>
         </h3>
         <h3>Nombre de projets à probleme dans le portefeuille : <?= $this->problProjects ?></h3>
         <h3>Nombre de projets total dans le portefeuille : <?= $this->totalProjects ?></h3>

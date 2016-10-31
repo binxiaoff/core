@@ -15,7 +15,7 @@ var $body = $('body')
 var $win = $(window)
 
 // The watchWindow WatchScroll instance
-var watchWindow = window.watchWindow || new WatchScroll.Watcher(window)
+var watchWindow = window.watchWindow = new WatchScroll.Watcher(window)
 
 // Error
 if (!watchWindow) {

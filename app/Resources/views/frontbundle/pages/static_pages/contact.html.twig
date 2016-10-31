@@ -1,13 +1,11 @@
 {# Contact page #}
 {% extends 'layouts/_page-simple.html.twig' %}
 
-{% set page = {
-    id: 'page-contact',
-    title: 'Contact'
-} %}
-
 {% block extendPageHeader %}
     <div class="page-header-image">{{ svgimage('#header-contact', '', 300, 300)|raw }}</div>
+{% endblock %}
+{% block pageTitle %}
+    <h1 class="page-title">Contact</h1>
 {% endblock %}
 
 {% block pageAside %} {% endblock %}
