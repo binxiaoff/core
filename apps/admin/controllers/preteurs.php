@@ -110,9 +110,9 @@ class preteursController extends bootstrap
 
     public function _edit()
     {
-        $this->loadData('transactions_types'); // Included for class constants
-
-        $this->projects = $this->loadData('projects');
+        $this->projects      = $this->loadData('projects');
+        $this->transactions  = $this->loadData('transactions');
+        $this->wallets_lines = $this->loadData('wallets_lines');
 
         $this->lenders_accounts = $this->loadData('lenders_accounts');
         $this->lenders_accounts->get($this->params[0], 'id_lender_account');
@@ -140,8 +140,7 @@ class preteursController extends bootstrap
             $this->lEncheres = $this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND YEAR(added) = YEAR(CURDATE()) AND status = 0');
         }
 
-        $this->wallets_lines  = $this->loadData('wallets_lines');
-        $this->SumDepot       = $this->wallets_lines->getSumDepot($this->lenders_accounts->id_lender_account, '10,30');
+        $this->SumDepot       = $this->transactions->getLenderDepositedAmount($this->lenders_accounts);
         $this->SumInscription = $this->wallets_lines->getSumDepot($this->lenders_accounts->id_lender_account, '10');
 
         $this->echeanciers = $this->loadData('echeanciers');
@@ -210,7 +209,6 @@ class preteursController extends bootstrap
             \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT      => $this->lng['preteur-operations-vos-operations']['remboursement-recouvrement-preteur']
         );
 
-        $this->transactions = $this->loadData('transactions');
         $this->solde        = $this->transactions->getSolde($this->clients->id_client);
         $this->soldeRetrait = $this->transactions->sum('status = 1 AND etat = 1 AND type_transaction = '. \transactions_types::TYPE_LENDER_WITHDRAWAL .' AND id_client = ' . $this->clients->id_client, 'montant');
         $this->soldeRetrait = abs($this->soldeRetrait / 100);
