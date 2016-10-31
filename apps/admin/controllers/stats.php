@@ -19,11 +19,7 @@ class statsController extends bootstrap
     public function _default()
     {
         // Chargement de la lib google
-        $this->ga = $this->loadLib('gapi', array(
-            $this->google_mail,
-            $this->google_password,
-            (isset($_SESSION['ga_auth_token']) ? $_SESSION['ga_auth_token'] : null)
-        ));
+        $this->ga = $this->loadLib('gapi', array($this->google_mail, $this->google_password, (isset($_SESSION['ga_auth_token']) ? $_SESSION['ga_auth_token'] : null)));
 
         // Mise en session de la connexion GA
         $_SESSION['ga_auth_token'] = $this->ga->getAuthToken();
@@ -191,11 +187,7 @@ class statsController extends bootstrap
         }
 
         // Recupearation d'un rapport GA
-        $this->ga->requestReportData($this->id_profile, array('visitCount'), array(
-            'pageviews',
-            'visits',
-            'newVisits'
-        ), null, null, $this->deb_annee . '-' . $this->deb_mois . '-' . $this->deb_jour, $this->fin_annee . '-' . $this->fin_mois . '-' . $this->fin_jour);
+        $this->ga->requestReportData($this->id_profile, array('visitCount'), array('pageviews', 'visits', 'newVisits'), null, null, $this->deb_annee . '-' . $this->deb_mois . '-' . $this->deb_jour, $this->fin_annee . '-' . $this->fin_mois . '-' . $this->fin_jour);
     }
 
 
@@ -389,7 +381,8 @@ class statsController extends bootstrap
             FROM projects p
             LEFT JOIN company_rating cr ON p.id_company_rating_history > 0 AND cr.id_company_rating_history = p.id_company_rating_history AND cr.type = 'score_altares'
             JOIN companies c ON c.id_company = p.id_company
-            WHERE id_project IN (SELECT id_project FROM projects_status_history psh)");
+            WHERE id_project IN (SELECT id_project FROM projects_status_history psh)"
+        );
     }
 
     public function _requete_donnees_financieres_csv()
@@ -476,14 +469,15 @@ class statsController extends bootstrap
             FROM projects p
             LEFT JOIN company_rating cr ON p.id_company_rating_history > 0 AND cr.id_company_rating_history = p.id_company_rating_history AND cr.type = 'score_altares'
             JOIN companies c ON c.id_company = p.id_company
-            WHERE id_project IN (SELECT id_project FROM projects_status_history psh)");
+            WHERE id_project IN (SELECT id_project FROM projects_status_history psh)"
+        );
 
         $csv = "";
-        $i   = 1;
+        $i = 1;
         while ($e = $this->bdd->fetch_array($this->lEmpr)) {
             if ($i == 1) {
                 foreach ($e as $key => $field) {
-                    if ( ! is_numeric($key)) {
+                    if (! is_numeric($key)) {
                         $csv .= $key . "; ";
                     }
                 }
@@ -491,7 +485,7 @@ class statsController extends bootstrap
             }
 
             foreach ($e as $key => $field) {
-                if ( ! is_numeric($key)) {
+                if (! is_numeric($key)) {
                     $csv .= $field . "; ";
                 }
             }
@@ -522,20 +516,18 @@ class statsController extends bootstrap
         $taxTypes = $this->loadData('tax_type');
         $taxTypes->get(\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE);
         $this->retenuesource = $taxTypes->rate;
-        $this->lPre          = $this->clients->selectPreteursByStatus('20, 30, 40, 50, 60', '(
+        $this->lPre = $this->clients->selectPreteursByStatus(
+            '20, 30, 40, 50, 60',
+            '(
                 SELECT COUNT(*) 
                 FROM transactions 
                 WHERE status = 1 
                     AND etat = 1 
-                    AND type_transaction IN (' . implode(', ', [
-                \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL,
-                \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS,
-                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
-                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
-            ]) . ') 
+                    AND type_transaction IN (' . implode(', ', [\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT]) . ') 
                     AND id_client = c.id_client
                     AND added BETWEEN "' . date('Y') . '-01-01" AND "' . (date('Y') + 1) . '-01-01" 
-            ) >= 1');
+            ) >= 1'
+        );
     }
 
     public function _requete_beneficiaires_csv()
@@ -556,20 +548,18 @@ class statsController extends bootstrap
         $taxTypes = $this->loadData('tax_type');
         $taxTypes->get(\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE);
         $this->retenuesource = $taxTypes->rate;
-        $this->lPre          = $this->clients->selectPreteursByStatus('20, 30, 40, 50, 60', '(
+        $this->lPre = $this->clients->selectPreteursByStatus(
+            '20, 30, 40, 50, 60',
+            '(
                 SELECT COUNT(*) 
                 FROM transactions 
                 WHERE status = 1 
                     AND etat = 1 
-                    AND type_transaction IN (' . implode(', ', [
-                \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL,
-                \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS,
-                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
-                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
-            ]) . ') 
+                    AND type_transaction IN (' . implode(', ', [\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT]) . ') 
                     AND id_client = c.id_client
                     AND added BETWEEN "' . date('Y') . '-01-01" AND "' . (date('Y') + 1) . '-01-01" 
-            ) >= 1');
+            ) >= 1'
+        );
 
         $aData = array();
         foreach ($this->lPre as $e) {
@@ -592,10 +582,10 @@ class statsController extends bootstrap
                 }
 
                 // Code commune insee ville
-                $codeCom          = $this->villes->getInseeCode($this->companies->zip, $this->companies->city);
+                $codeCom = $this->villes->getInseeCode($this->companies->zip, $this->companies->city);
                 $codeComNaissance = '';
                 $retenuesource    = '';
-                $sLieuNaissance   = '';
+                $sLieuNaissance = '';
             } else {
                 $this->etranger = 0;
 
@@ -641,10 +631,10 @@ class statsController extends bootstrap
 
                 if ($this->etranger == 0) {
                     // Code commune insee ville
-                    $codeCom          = $this->villes->getInseeCode($cp_fiscal, $ville_fiscal);
-                    $commune          = '';
-                    $cp               = $cp_fiscal;
-                    $retenuesource    = '';
+                    $codeCom = $this->villes->getInseeCode($cp_fiscal, $ville_fiscal);
+                    $commune = '';
+                    $cp      = $cp_fiscal;
+                    $retenuesource = '';
                     $ville_paysFiscal = $ville_fiscal;
                 } else {
                     $codeCom = $cp_fiscal;
@@ -682,7 +672,7 @@ class statsController extends bootstrap
 
                 $this->clients->get($e['id_client'], 'id_client');
                 $codeComNaissance = $this->clients->insee_birth == '' ? '00000' : $this->clients->insee_birth;
-                $depNaiss         = substr($codeComNaissance, 0, 2);
+                $depNaiss = substr($codeComNaissance, 0, 2);
             } // fin particulier
 
             $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($e['prenom']))), 0, 1);
@@ -692,104 +682,13 @@ class statsController extends bootstrap
             $motif     = substr($motif, 0, 10);
 
             if ($entreprise == true) {
-                $aData[] = array(
-                    $motif,
-                    $this->companies->name,
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    $this->companies->siret,
-                    $isoFiscal,
-                    '',
-                    str_replace(';', ',', $this->companies->adresse1),
-                    $codeCom,
-                    '',
-                    $this->companies->zip,
-                    $ville_paysFiscal,
-                    '',
-                    $isoFiscal,
-                    'X',
-                    $retenuesource,
-                    'N',
-                    $this->companies->phone,
-                    '',
-                    $this->lenders_accounts->iban,
-                    $this->lenders_accounts->bic,
-                    $e['email'],
-                    ''
-                );
+                $aData[] = array($motif, $this->companies->name, '', '', '', '', '', '', '', '', $this->companies->siret, $isoFiscal, '', str_replace(';', ',', $this->companies->adresse1), $codeCom, '', $this->companies->zip, $ville_paysFiscal, '', $isoFiscal, 'X', $retenuesource, 'N', $this->companies->phone, '', $this->lenders_accounts->iban, $this->lenders_accounts->bic, $e['email'], '');
             } else {
-                $aData[] = array(
-                    $motif,
-                    $e['nom'],
-                    $e['civilite'],
-                    $e['nom'],
-                    $e['prenom'],
-                    $naissance,
-                    $depNaiss,
-                    $codeComNaissance,
-                    $sLieuNaissance,
-                    '',
-                    '',
-                    $isoFiscal,
-                    '',
-                    str_replace(';', ',', $adresse_fiscal),
-                    $codeCom,
-                    $commune,
-                    $cp,
-                    $ville_paysFiscal,
-                    '',
-                    $isoNaissance,
-                    'X',
-                    $retenuesource,
-                    'N',
-                    $e['telephone'],
-                    '',
-                    $this->lenders_accounts->iban,
-                    $this->lenders_accounts->bic,
-                    $e['email'],
-                    ''
-                );
+                $aData[] = array($motif, $e['nom'], $e['civilite'], $e['nom'], $e['prenom'], $naissance, $depNaiss, $codeComNaissance, $sLieuNaissance, '', '', $isoFiscal, '', str_replace(';', ',', $adresse_fiscal), $codeCom, $commune, $cp, $ville_paysFiscal, '', $isoNaissance, 'X', $retenuesource, 'N', $e['telephone'], '', $this->lenders_accounts->iban, $this->lenders_accounts->bic, $e['email'], '');
             }
         }
 
-        $this->exportCSV($aData, 'requete_beneficiaires' . date('Ymd'), array(
-            'Cbene',
-            'Nom',
-            'Qualité',
-            'NomJFille',
-            'Prénom',
-            'DateNaissance',
-            'DépNaissance',
-            'ComNaissance',
-            'LieuNaissance',
-            'NomMari',
-            'Siret',
-            'AdISO',
-            'Adresse',
-            'Voie',
-            'CodeCommune',
-            'Commune',
-            'CodePostal',
-            'Ville / nom pays',
-            'IdFiscal',
-            'PaysISO',
-            'Entité',
-            'ToRS',
-            'Plib',
-            'Tél',
-            'Banque',
-            'IBAN',
-            'BIC',
-            'EMAIL',
-            'Obs',
-            ''
-        ));
+        $this->exportCSV($aData, 'requete_beneficiaires' . date('Ymd'), array('Cbene', 'Nom', 'Qualité', 'NomJFille', 'Prénom', 'DateNaissance', 'DépNaissance', 'ComNaissance', 'LieuNaissance', 'NomMari', 'Siret', 'AdISO', 'Adresse', 'Voie', 'CodeCommune', 'Commune', 'CodePostal', 'Ville / nom pays', 'IdFiscal', 'PaysISO', 'Entité', 'ToRS', 'Plib', 'Tél', 'Banque', 'IBAN', 'BIC', 'EMAIL', 'Obs', ''));
     }
 
     public function _requete_infosben()
@@ -825,10 +724,10 @@ class statsController extends bootstrap
 
         foreach ($this->aLenders as $aLender) {
             // Motif
-            $sPrenom = substr($this->ficelle->stripAccents(trim($aLender['prenom'])), 0, 1);
-            $sNom    = $this->ficelle->stripAccents(trim($aLender['nom']));
-            $motif   = mb_strtoupper($aLender['id_client'] . $sPrenom . $sNom, 'UTF-8');
-            $motif   = substr($motif, 0, 10);
+            $sPrenom   = substr($this->ficelle->stripAccents(trim($aLender['prenom'])), 0, 1);
+            $sNom      = $this->ficelle->stripAccents(trim($aLender['nom']));
+            $motif     = mb_strtoupper($aLender['id_client'] . $sPrenom . $sNom, 'UTF-8');
+            $motif     = substr($motif, 0, 10);
 
             $csv .= "1;" . $motif . ";14378;;" . $aLender['id_client'] . ";4;6;P;";
             $csv .= " \n";
@@ -1133,7 +1032,7 @@ class statsController extends bootstrap
                   FROM echeanciers e
                       LEFT JOIN transactions t ON t.id_echeancier = e.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
                       LEFT JOIN tax prelevements_obligatoires ON prelevements_obligatoires.id_transaction = t.id_transaction AND prelevements_obligatoires.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX . '
-                      LEFT JOIN tax retenues_source ON retenues_source.id_transaction = t.id_transaction AND retenues_source.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE . '
+                      LEFT JOIN tax retenues_source ON retenues_source.id_transaction = t.id_transaction AND retenues_source.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE. '
                       LEFT JOIN tax csg ON csg.id_transaction = t.id_transaction AND csg.id_tax_type = ' . \tax_type::TYPE_CSG . '
                       LEFT JOIN tax prelevements_sociaux ON prelevements_sociaux.id_transaction = t.id_transaction AND prelevements_sociaux.id_tax_type = ' . \tax_type::TYPE_SOCIAL_DEDUCTIONS . '
                       LEFT JOIN tax contributions_additionnelles ON contributions_additionnelles.id_transaction = t.id_transaction AND contributions_additionnelles.id_tax_type = ' . \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS . '
@@ -1283,7 +1182,7 @@ class statsController extends bootstrap
     private function exportQueryCSV($sQuery, $sFileName, array $aHeaders = null)
     {
         $aResult = array();
-        $rQuery  = $this->bdd->query($sQuery);
+        $rQuery = $this->bdd->query($sQuery);
         while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
             $aResult[] = $aRow;
         }
@@ -1298,10 +1197,10 @@ class statsController extends bootstrap
     {
         $this->bdd->close();
 
-        PHPExcel_Settings::setCacheStorageMethod(PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp, array(
-                'memoryCacheSize' => '2048MB',
-                'cacheTime'       => 1200
-            ));
+        PHPExcel_Settings::setCacheStorageMethod(
+            PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
+            array('memoryCacheSize' => '2048MB', 'cacheTime' => 1200)
+        );
 
         $oDocument    = new PHPExcel();
         $oActiveSheet = $oDocument->setActiveSheetIndex(0);
@@ -1338,7 +1237,10 @@ class statsController extends bootstrap
         $oProject = $this->loadData('projects');
 
         if (isset($_POST['date_from'], $_POST['date_to']) && false === empty($_POST['date_from']) && false === empty($_POST['date_to'])) {
-            $aProjectList = $oProject->getAutoBidProjectStatistic(\DateTime::createFromFormat('d/m/Y H:i:s', $_POST['date_from'] . ' 00:00:00'), \DateTime::createFromFormat('d/m/Y H:i:s', $_POST['date_to'] . ' 23:59:59'));
+            $aProjectList = $oProject->getAutoBidProjectStatistic(
+                \DateTime::createFromFormat('d/m/Y H:i:s', $_POST['date_from'] . ' 00:00:00'),
+                \DateTime::createFromFormat('d/m/Y H:i:s', $_POST['date_to'] . ' 23:59:59')
+            );
 
             $this->aProjectList = [];
             foreach ($aProjectList as $aProject) {
@@ -1403,7 +1305,7 @@ class statsController extends bootstrap
                             $this->aBorrowers[$iKey]['firstEntrySource'] = $oClient->getFirstSourceForSiren($aBorrower['siren'], $oDateTimeStart, $oDateTimeEnd);
                             $this->aBorrowers[$iKey]['lastEntrySource']  = $oClient->getLastSourceForSiren($aBorrower['siren'], $oDateTimeStart, $oDateTimeEnd);
                             $this->aBorrowers[$iKey]['lastLabel']        = $this->aBorrowers[$iKey]['label'];
-                            $aHeaderExtended                             = array_keys(($this->aBorrowers[$iKey]));
+                            $aHeaderExtended = array_keys(($this->aBorrowers[$iKey]));
                         }
                     }
                 }
