@@ -1039,11 +1039,28 @@ class pdfController extends bootstrap
                 /** @var \transactions $transaction */
                 $transaction     = $this->loadData('transactions');
                 $where           = 'id_client = ' . $this->oLendersAccounts->id_client_owner . ' AND id_project = ' . $this->projects->id_project . ' AND type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT;
-                $recoveryTaxExcl = bcdiv($transaction->sum($where, 'montant'), 100, 2);
+
+                $totalAmountRecovered = bcdiv($transaction->sum($where, 'montant'), 100, 2);
+                $allLoans             = $this->oLoans->select('id_lender = ' . $this->oLendersAccounts->id_lender_account . ' AND id_project = ' . $this->projects->id_project);
+                $totalLoans           = $this->oLoans->sumPretsProjet($this->projects->id_project . ' AND id_lender = ' . $this->oLendersAccounts->id_lender_account);
+
+                $recoveryAmountsTaxExcl = [];
+                foreach ($allLoans as $index => $loan) {
+                    $prorataRecovery                          = round(bcdiv(bcmul(bcdiv($loan['amount'], 100, 3), $totalAmountRecovered), $totalLoans, 3), 2);
+                    $recoveryAmountsTaxExcl[$loan['id_loan']] = $prorataRecovery;
+                }
+
+                $roundDifference = round(bcsub(array_sum($recoveryAmountsTaxExcl), $totalAmountRecovered, 3), 2);
+                if (abs($roundDifference) > 0) {
+                    $maxAmountLoanId                          = array_keys($recoveryAmountsTaxExcl, max($recoveryAmountsTaxExcl))[0];
+                    $recoveryAmountsTaxExcl[$maxAmountLoanId] = bcsub($recoveryAmountsTaxExcl[$maxAmountLoanId], $roundDifference, 2);
+                }
+
+                $recoveryTaxExcl = $recoveryAmountsTaxExcl[$this->oLoans->id_loan];
                 // 0.844 is the rate for getting the total amount including the MCS commission and tax. Todo: replace it when doing the Recovery project
                 $recoveryTaxIncl = bcdiv($recoveryTaxExcl, 0.844, 5);
-                $this->echu       = bcsub(bcadd($this->echu, $this->echoir, 2), $recoveryTaxIncl, 2);
-                $this->echoir     = 0;
+                $this->echu      = bcsub(bcadd($this->echu, $this->echoir, 2), $recoveryTaxIncl, 2);
+                $this->echoir    = 0;
             }
 
             $this->total        = bcadd($this->echu, $this->echoir, 2);

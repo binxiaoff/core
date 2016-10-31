@@ -10,44 +10,44 @@
  */
 
 /*
-  ## Usage
+ ## Usage
 
-  The SpinnerButton component is a shorthand convenience component that utilises the Spinner component, plus some extra behaviours, such as automated watching start/stop events to show/hide the spinner.
+ The SpinnerButton component is a shorthand convenience component that utilises the Spinner component, plus some extra behaviours, such as automated watching start/stop events to show/hide the spinner.
 
-  Ideally SpinnerButton is only used for form submit buttons.
+ Ideally SpinnerButton is only used for form submit buttons.
 
-  The most basic implementation will by default assign the parent form as the SpinnerButton's target and hook into the form's `submit` event to show the spinner within the button:
+ The most basic implementation will by default assign the parent form as the SpinnerButton's target and hook into the form's `submit` event to show the spinner within the button:
 
-  ```
-    <form action="/" method="get">
-      <input type="text" name="example" value="ABC!" />
-      <button type="submit" data-spinnerbutton>Submit the form</button>
-    </form>
-  ```
+ ```
+ <form action="/" method="get">
+ <input type="text" name="example" value="ABC!" />
+ <button type="submit" data-spinnerbutton>Submit the form</button>
+ </form>
+ ```
 
-  If you need to target a specific element, use the `targetelem` attribute.
+ If you need to target a specific element, use the `targetelem` attribute.
 
-  If you need or want to target another element to act as the spinner, use the `spinnerelem` attribute.
+ If you need or want to target another element to act as the spinner, use the `spinnerelem` attribute.
 
-  The `targetstartevents` and `targetstopevents` allow you to control which events the target emits to show/hide the spinner within the button. It's advised that if you are using the FormValidation component that you add the `FormValidation:error` to the target's stop events. By default 'submit' and 'FormValidation:error' are the default start/stop events, so you don't need to apply it to each SpinnerButton element.
+ The `targetstartevents` and `targetstopevents` allow you to control which events the target emits to show/hide the spinner within the button. It's advised that if you are using the FormValidation component that you add the `FormValidation:error` to the target's stop events. By default 'submit' and 'FormValidation:error' are the default start/stop events, so you don't need to apply it to each SpinnerButton element.
 
-  The example below illustrates all points above:
+ The example below illustrates all points above:
 
-  ```
-    <form id="spinnerbutton-target" action="/" method="get">
-      <input type="text" name="example" value="ABC!" />
-      <span id="spinnerbutton-spinner" class="ui-is-spinner">Loading...</span>
-      <button type="submit" data-spinnerbutton data-spinnerbutton-spinnerelem="#spinnerbutton-spinner" data-spinnerbutton-target="#spinnerbutton-target" data-spinnerbutton-targetstartevent="submit" data-spinnerbutton-targetstopevent="FormValidation:error">Submit the form</button>
-    </form>
-  ```
+ ```
+ <form id="spinnerbutton-target" action="/" method="get">
+ <input type="text" name="example" value="ABC!" />
+ <span id="spinnerbutton-spinner" class="ui-is-spinner">Loading...</span>
+ <button type="submit" data-spinnerbutton data-spinnerbutton-spinnerelem="#spinnerbutton-spinner" data-spinnerbutton-target="#spinnerbutton-target" data-spinnerbutton-targetstartevent="submit" data-spinnerbutton-targetstopevent="FormValidation:error">Submit the form</button>
+ </form>
+ ```
 
-  The visibility of the spinner is controlled via the `_spinner.scss` stylesheet. Any spinner classed `ui-is-spinner` will be visible if any of its parents has the class `ui-is-loading`. There might be issues if you're trying to display a spinner outside of a target element (the target element will have the `ui-is-loading` class applied when its start events have been launched).
+ The visibility of the spinner is controlled via the `_spinner.scss` stylesheet. Any spinner classed `ui-is-spinner` will be visible if any of its parents has the class `ui-is-loading`. There might be issues if you're trying to display a spinner outside of a target element (the target element will have the `ui-is-loading` class applied when its start events have been launched).
 
-  If you need something a little more detailed than the SpinnerButton allows (e.g. to display state of one or many AJAX operations), consider just using the Spinner component and setting up further behaviours through the Spinner's custom events.
+ If you need something a little more detailed than the SpinnerButton allows (e.g. to display state of one or many AJAX operations), consider just using the Spinner component and setting up further behaviours through the Spinner's custom events.
 
-  ## Issues
+ ## Issues
 
-  * IE does not like disabled forms, even though the disabling happens after submit.
+ * IE does not like disabled forms, even though the disabling happens after submit.
 
  */
 
@@ -201,6 +201,9 @@ SpinnerButton.prototype.startLoading = function (disableSpinner) {
   if (self.settings.disableTarget) {
     self.$target.prop('disabled', true)
   }
+
+  // @trigger elem `SpinnerButton:startedLoading` [elemSpinnerButton]
+  self.$elem.trigger('SpinnerButton:startedLoading', [self])
 }
 
 /*
@@ -229,6 +232,9 @@ SpinnerButton.prototype.stopLoading = function (disableSpinner) {
   if (self.settings.disableTarget) {
     self.$target.removeAttr('disabled').removeProp('disabled')
   }
+
+  // @trigger elem `SpinnerButton:stoppedLoading` [elemSpinnerButton]
+  self.$elem.trigger('SpinnerButton:stoppedLoading', [self])
 }
 
 /*

@@ -58,7 +58,6 @@
       padding-left: $padding-width;
       padding-right: $padding-width;
 
-      // Forms only have two columns
       // First
       &:nth-of-type(#{$first-index}) {
         padding-left: 0;
@@ -107,7 +106,7 @@
   @include hide-display-types('xs', 'sm', 'md');
 }
 
-// Multi-col with padding
+// Multiple columns with padding between
 // defaults to 2 columns, so first column has no left padding and 2nd column has no right padding
 .row {
   @include row-multi-col;
@@ -121,11 +120,7 @@
   @include devices('computer') {
     @include row-multi-col($prefix: 'computer');
   }
-
-  // Automatic column padding targetted for xs breakpoint
-  @include devices('xs') {
-    @include row-multi-col($prefix: 'xs');
-  }
+}
 
   // Automatic column padding targetted for sm breakpoint
   @include devices('sm') {

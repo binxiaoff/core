@@ -83,8 +83,8 @@
 
                             <div class="col-lg-4 col-md-4 hide-xs">
                                 <div class="project-single-rating">
-                                    <div class="label"><a href="{{ path(constant('Unilend\\Bundle\\FrontBundle\\Service\\RouteProvider::ROUTE_UNILEND_RATING')) }}">{% trans %} project-detail_unilend-rating-label {% endtrans %}</a></div>
-                                    <a href="{{ path(constant('Unilend\\Bundle\\FrontBundle\\Service\\RouteProvider::ROUTE_UNILEND_RATING')) }}">
+                                    <div class="label"><a href="{{ path('mon-premier-pret') }}#note">{% trans %} project-detail_unilend-rating-label {% endtrans %}</a></div>
+                                    <a href="{{ path('mon-premier-pret') }}#note">
                                         <span class="rating rating-{{ classRating }}">
                                             <span class="sr-only">
                                                 {% trans with {'%risk%' : project.risk|convertRisk} %} project-detail_unilend-rating-wording-label {% endtrans %}

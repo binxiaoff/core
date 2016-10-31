@@ -33,7 +33,7 @@ $doc
     if ($elem.attr('data-has-spinner') && Utility.elemExists($elem.attr('data-has-spinner'))) {
       $spinnerTarget = $($elem.attr('data-has-spinner'))
 
-    // Default to the element itself
+      // Default to the element itself
     } else {
       $spinnerTarget = $elem
     }
@@ -65,7 +65,7 @@ $doc
     if ($elem.attr('data-has-spinner') && Utility.elemExists($elem.attr('data-has-spinner'))) {
       $spinnerTarget = $($elem.attr('data-has-spinner'))
 
-    // Default to the element itself
+      // Default to the element itself
     } else {
       $spinnerTarget = $elem
     }

@@ -192,7 +192,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             $targetPath = $this->getDefaultSuccessRedirectUrl($request, $user);
         }
 
-        $client->saveLogin(new \DateTime('NOW'), $user->getUsername());
+        $client->saveLogin(new \DateTime('NOW'));
 
         /** @var \clients_history $clientHistory */
         $clientHistory = $this->entityManager->getRepository('clients_history');
