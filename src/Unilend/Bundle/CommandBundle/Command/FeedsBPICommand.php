@@ -67,7 +67,7 @@ class FeedsBPICommand extends ContainerAwareCommand
             $project->get($item['id_project']);
             $company->get($project->id_company);
 
-            if ($project->status === \projects_status::EN_FUNDING) {
+            if ($project->status == \projects_status::EN_FUNDING) {
                 $totalBids = $bids->sum('id_project = ' . $project->id_project . ' AND status = ' . \bids::STATUS_BID_PENDING, 'amount') / 100;
             } else {
                 $totalBids = $bids->sum('id_project = ' . $project->id_project . ' AND status = ' . \bids::STATUS_BID_ACCEPTED, 'amount') / 100;
@@ -88,7 +88,8 @@ class FeedsBPICommand extends ContainerAwareCommand
                 'categorie'                        => [
                     'categorie1' => $this->getBPISector($company->sector)
                 ],
-                'mots_cles_nomenclature_operateur' => 'PRR',
+                'mots_cles_nomenclature_operateur' => '',
+                'mode_financement'                 => 'PRR',
                 'type_porteur_projet'              => 'ENT',
                 'qualif_ESS'                       => 'NON',
                 'code_postal'                      => $company->zip,
@@ -116,16 +117,16 @@ class FeedsBPICommand extends ContainerAwareCommand
         $xml = $serializer->serialize($projectsToSerialise, 'xml', ['xml_root_node_name' => 'partenaire', 'xml_encoding' => 'UTF-8']);
 
         $fileName = $this->getFileName($partner);
-        if (false === file_put_contents($userPath . 'fichiers/' . $fileName, $xml)) {
-            $output->writeln('Error occured while creating fichiers/045.xml');
+        if (false === file_put_contents($userPath . 'fichiers/' . $fileName . '.xml', $xml)) {
+            $output->writeln('Error occured while creating fichiers/' . $fileName . '.xml');
         } else {
-            $output->writeln('fichiers/'. $fileName . ' created');
+            $output->writeln('fichiers/' . $fileName . '.xml created');
         }
 
-        if (false === file_put_contents($userPath . 'fichiers/history_' . $fileName, $xml, FILE_APPEND)) {
-            $output->writeln('Error occured while updating fichiers/history_' . $fileName);
+        if (false === file_put_contents($userPath . 'fichiers/' . $fileName . '_historique.xml', $xml, FILE_APPEND)) {
+            $output->writeln('Error occured while updating fichiers/' . $fileName . '_historique.xml');
         } else {
-            $output->writeln('fichiers/history_' . $fileName . ' updated');
+            $output->writeln('fichiers/' . $fileName . '_historique.xml updated');
         }
     }
 
@@ -133,11 +134,11 @@ class FeedsBPICommand extends ContainerAwareCommand
     {
         switch ($partner) {
             case 'crowdlending' :
-                $filename = 'digest.xml';
+                $filename = 'digest';
                 break;
             case 'bpi' :
             default :
-                $filename = '045.xml';
+                $filename = '045';
                 break;
         }
 
