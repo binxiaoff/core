@@ -49,7 +49,7 @@ class LenderOperationsController extends Controller
         /** @var SessionInterface $session */
         $session = $request->getSession();
         $filters = $this->getOperationFilters($request);
-        $session->set('filtre_vos_operations', $filters);
+        $session->set('lenderOperationsFilters', $filters);
 
         $lenderOperations       = $lenderOperationsIndex->getLenderOperations([], $this->getUser()->getClientId(), $filters['start'], $filters['end']);
         $projectsFundedByLender = $lenderOperationsIndex->get_liste_libelle_projet('id_client = ' . $this->getUser()->getClientId() . ' AND DATE(date_operation) >= "' . $filters['start'] . '" AND DATE(date_operation) <= "' . $filters['end'] . '"');
@@ -125,7 +125,7 @@ class LenderOperationsController extends Controller
         /** @var SessionInterface $session */
         $session = $request->getSession();
         $filters = $this->getOperationFilters($request);
-        $session->set('filtre_vos_operations', $filters);
+        $session->set('lenderOperationsFilters', $filters);
 
         switch ($filters['id_last_action']) {
             default:
@@ -274,7 +274,7 @@ class LenderOperationsController extends Controller
         /** @var SessionInterface $session */
         $session = $this->get('session');
 
-        $savedFilters          = $session->get('filtre_vos_operations');
+        $savedFilters          = $session->get('lenderOperationsFilters');
         $post_tri_type_transac = $savedFilters['operation'];
         $projectIdFilter       = (false === empty($savedFilters['project'])) ? $savedFilters['project'] : null;
         $post_id_client        = $savedFilters['id_client'];
@@ -984,8 +984,8 @@ class LenderOperationsController extends Controller
                 'type'           => $request->request->get('type', ''),
                 'id_client'      => $this->getUser()->getClientId()
             ];
-        } elseif ($request->getSession()->get('filtre_vos_operations')) {
-            return $request->getSession()->get('filtre_vos_operations');
+        } elseif ($request->getSession()->get('lenderOperationsFilters')) {
+            return $request->getSession()->get('lenderOperationsFilters');
         }
 
         return [

@@ -1173,8 +1173,8 @@ class pdfController extends bootstrap
         /** @var \Symfony\Component\HttpFoundation\Session\SessionInterface $session */
         $session = $this->get('session');
 
-        if ($session->has('filtre_vos_operations')) {
-            $savedFilters = $session->get('filtre_vos_operations');
+        if ($session->has('lenderOperationsFilters')) {
+            $savedFilters = $session->get('lenderOperationsFilters');
             $sPath          = $this->path . 'protected/operations_export_pdf/' . $savedFilters['id_client'] . '/';
             $sNamePdfClient = 'vos_operations_' . date('Y-m-d') . '.pdf';
 
