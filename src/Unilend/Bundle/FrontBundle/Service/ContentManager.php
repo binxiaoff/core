@@ -4,7 +4,7 @@
 namespace Unilend\Bundle\FrontBundle\Service;
 
 
-use Cache\Adapter\Memcache\MemcacheCachePool;
+use Psr\Cache\CacheItemPoolInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\librairies\CacheKeys;
 
@@ -12,10 +12,10 @@ class ContentManager
 {
     /** @var  EntityManager */
     private $entityManager;
-    /** @var  MemcacheCachePool */
+    /** @var  CacheItemPoolInterface */
     private $cachePool;
 
-    public function __construct(EntityManager $entityManager, MemcacheCachePool $cachePool)
+    public function __construct(EntityManager $entityManager, CacheItemPoolInterface $cachePool)
     {
         $this->entityManager = $entityManager;
         $this->cachePool = $cachePool;
@@ -26,23 +26,24 @@ class ContentManager
         $cachedItem = $this->cachePool->getItem(CacheKeys::FOOTER_PARTNERS);
 
         if (false === $cachedItem->isHit()) {
-        /** @var \blocs $block */
-        $block = $client = $this->entityManager->getRepository('blocs');
-        /** @var \blocs_elements $blockElement */
-        $blockElement = $client = $this->entityManager->getRepository('blocs_elements');
-        /** @var \elements $elements */
-        $elements = $client = $this->entityManager->getRepository('elements');
+            /** @var \blocs $block */
+            $block = $client = $this->entityManager->getRepository('blocs');
+            /** @var \blocs_elements $blockElement */
+            $blockElement = $client = $this->entityManager->getRepository('blocs_elements');
+            /** @var \elements $elements */
+            $elements = $client = $this->entityManager->getRepository('elements');
 
-        $partners = [];
-        if ($block->get('partenaires', 'slug')) {
-            $elementsId = array_column($elements->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'ordre ASC'), 'id_element');
-            foreach ($blockElement->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'FIELD(id_element, ' . implode(', ', $elementsId) . ') ASC') as $element) {
-                $partners[] = [
-                    'alt' => $element['complement'],
-                    'src' => $element['value']
-                ];
+            $partners = [];
+            if ($block->get('partenaires', 'slug')) {
+                $elementsId = array_column($elements->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'ordre ASC'), 'id_element');
+                foreach ($blockElement->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'FIELD(id_element, ' . implode(', ', $elementsId) . ') ASC') as $element) {
+                    $partners[] = [
+                        'alt' => $element['complement'],
+                        'src' => $element['value']
+                    ];
+                }
             }
-        }
+
             $cachedItem->set($partners)->expiresAfter(CacheKeys::LONG_TIME);
             $this->cachePool->save($cachedItem);
         } else {
