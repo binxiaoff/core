@@ -30,6 +30,8 @@ framework:
     form:
         csrf_protection:
             field_name: _csrf
+    serializer:
+      enabled: true
 
 cmf_routing:
     chain:
