@@ -110,49 +110,60 @@ class villes extends villes_crud
         return $sCodeDepartement . $sCodeCommune;
     }
 
-    public function lookupCities($sTerm, $aSearchFields = array('ville', 'cp'), $bIncludeOldCity = false)
+    public function lookupCities($search, $fields = ['ville', 'cp'], $includeOldCity = false)
     {
-        if (empty($aSearchFields)) {
+        if (empty($fields)) {
             return array();
         }
 
-        $sTerm = $this->cleanLookupTerm($sTerm);
+        $starting         = '';
+        $containing       = '';
+        $search           = $this->cleanLookupTerm($search);
+        $searchStarting   = $search . '%';
+        $searchContaining = '%' . $search . '%';
 
-        $sWhere = '';
-        $sWhereBis = '';
-        foreach ($aSearchFields as $sField) {
-            if ('' !== $sWhere) {
-                $sWhere .= ' OR ';
-                $sWhereBis .= ' OR ';
+        foreach ($fields as $index => $field) {
+            if ($index > 0) {
+                $starting .= ' OR ';
+                $containing .= ' OR ';
             }
-            $sWhere .= $sField . ' LIKE "' . $sTerm . '%"';
-            $sWhereBis .= $sField . ' LIKE "%' . $sTerm . '%"';
-        }
-        $sIncludeOldCity = '';
-        if (false === $bIncludeOldCity) {
-            $sIncludeOldCity = 'AND active = 1';
+            $starting .= $field . ' LIKE :starting';
+            $containing .= $field . ' LIKE :containing';
         }
 
-        $sql = 'SELECT * FROM (
-                  SELECT id_ville, ville, cp, insee, num_departement
-                  FROM villes
-                  WHERE (' . $sWhere . ') ' . $sIncludeOldCity . '
-                  ORDER BY ville ASC
-                ) start_by
-                UNION
-                SELECT * FROM (
-                    SELECT id_ville, ville, cp, insee, num_departement
-                    FROM villes
-                    WHERE (' . $sWhereBis . ') ' . $sIncludeOldCity . '
-                    ORDER BY ville ASC
-                ) contain
-                LIMIT 25';
-        $oQuery = $this->bdd->query($sql);
-        $aResult   = array();
-        while ($aRow = $this->bdd->fetch_assoc($oQuery)) {
-            $aResult[] = $aRow;
+        $oldCity = '';
+        if (false === $includeOldCity) {
+            $oldCity = 'AND active = 1';
         }
-        return $aResult;
+
+        $query = '
+            SELECT * FROM (
+                SELECT id_ville, ville, cp, insee, num_departement
+                FROM villes
+                WHERE (' . $starting . ') ' . $oldCity . '
+                ORDER BY ville ASC
+            ) start_by
+            UNION
+            SELECT * FROM (
+                SELECT id_ville, ville, cp, insee, num_departement
+                FROM villes
+                WHERE (' . $containing . ') ' . $oldCity . '
+                ORDER BY ville ASC
+            ) contain
+            LIMIT 25';
+
+        try {
+            $statement = $this->bdd->executeQuery($query,
+                ['starting' => $searchStarting, 'containing' => $searchContaining],
+                ['starting' => \PDO::PARAM_STR, 'containing' => \PDO::PARAM_STR],
+                new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__))
+            );
+            $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+            $statement->closeCursor();
+            return $result;
+        } catch (\Doctrine\DBAL\DBALException $execption) {
+            return [];
+        }
     }
 
     public function cleanLookupTerm($sTerm)
