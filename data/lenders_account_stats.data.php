@@ -176,7 +176,7 @@ class lenders_account_stats extends lenders_account_stats_crud
             WHERE
                 e.date_echeance < NOW()
                 AND (
-                    SELECT MAX(las1.tri_date)
+                    SELECT MAX(las1.date)
                     FROM lenders_account_stats las1
                     WHERE e.id_lender = las1.id_lender_account
                 ) < e.date_echeance
