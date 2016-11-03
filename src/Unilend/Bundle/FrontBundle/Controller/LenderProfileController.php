@@ -1114,7 +1114,7 @@ class LenderProfileController extends Controller
      */
     public function getZipAction(Request $request)
     {
-        if ($request->isXMLHttpRequest()) {
+        if ($request->isXmlHttpRequest()) {
             /** @var LocationManager $locationManager */
             $locationManager = $this->get('unilend.service.location_manager');
             return new JsonResponse($locationManager->getCities($request->query->get('zip')));
@@ -1312,6 +1312,9 @@ class LenderProfileController extends Controller
         if ($this->get('session')->getFlashBag()->has('securityIdentificationErrors')) {
             $request->getSession()->set('securityIdentificationData', $post);
         } else {
+            $client->mobile    = $post['client_mobile'];
+            $client->telephone = $post['client_landline'];
+            $client->email     = $post['client_email'];
             $client->update();
             $this->addFlash('securityIdentificationSuccess', $translator->trans('lender-profile_security-identification-form-success-message'));
         }
