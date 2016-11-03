@@ -4,7 +4,7 @@ class lenders_account_stats extends lenders_account_stats_crud
 {
     const STAT_VALID_NOK = 0;
     const STAT_VALID_OK  = 1;
-    const STAT_TYPE_IRR = 'IRR';
+    const TYPE_STAT_IRR = 'IRR';
 
     public function __construct($bdd, $params = '')
     {
@@ -16,7 +16,7 @@ class lenders_account_stats extends lenders_account_stats_crud
         $sql = '
             SELECT *
             FROM lenders_account_stats
-              WHERE id_lender_account = ' . $iLenderId . ' AND type_stat = "' . self::STAT_TYPE_IRR . '"
+              WHERE id_lender_account = ' . $iLenderId . ' AND type_stat = "' . self::TYPE_STAT_IRR . '"
             ORDER BY date DESC
             LIMIT 1';
 
@@ -200,12 +200,12 @@ class lenders_account_stats extends lenders_account_stats_crud
             INNER JOIN (
                 SELECT MAX(id_lenders_accounts_stats) AS id_lenders_accounts_stats
                 FROM lenders_account_stats
-                WHERE stat_type = "' . self::STAT_TYPE_IRR . '"
+                WHERE type_stat = "' . self::TYPE_STAT_IRR . '"
                     AND status = ' . self::STAT_VALID_OK . '
                   AND DATE(date) <= NOW()
                 GROUP BY id_lender_account
             ) las_max ON las.id_lenders_accounts_stats = las_max.id_lenders_accounts_stats
-            WHERE  stat_type = "' . self::STAT_TYPE_IRR . '"
+            WHERE  type_stat = "' . self::TYPE_STAT_IRR . '"
                 AND status = ' . self::STAT_VALID_OK . '
                 AND DATE(las.date) <= NOW()';
         $statement = $this->bdd->executeQuery($query);
