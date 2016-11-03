@@ -1,12 +1,14 @@
 {% extends 'layouts/_page-simple.html.twig' %}
 
+{% block pageTitle %}
+    <h1 class="page-title">{{ cms.title }}</h1>
+{% endblock %}
+
 {% block extendPageHeader %}
     <div class="page-header-image">{{ svgimage('#header-' ~ cms.header_image, '', 300, 300)|raw }}</div>
 {% endblock %}
 
-
 {% block pageAside %} {% endblock %}
-
 
 {% block pageContent %}
     <div class="page-content" data-equal-height="md lg" data-equal-height-group="content">

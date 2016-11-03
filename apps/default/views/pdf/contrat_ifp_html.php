@@ -390,8 +390,8 @@
             <br>
             <br>
             <p>Fait à Paris, le <?= date('d/m/Y') ?></p>
-            <p>Signé par l'Emprunteur Représenté par SFF PME</p>
-            <p>Signé par le Prêteur Représenté par SFF PME</p>
+            <p>Signé par l'Emprunteur Représenté par Unilend</p>
+            <p>Signé par le Prêteur Représenté par Unilend</p>
         </div>
         <!-- End Page Break -->
 

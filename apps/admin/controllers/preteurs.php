@@ -417,26 +417,14 @@ class preteursController extends bootstrap
                 $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom']);
 
                 //// check doublon mail ////
-                $aLenderStatusForQuery = array(
-                    \clients_status::TO_BE_CHECKED,
-                    \clients_status::COMPLETENESS,
-                    \clients_status::COMPLETENESS_REMINDER,
-                    \clients_status::COMPLETENESS_REPLY,
-                    \clients_status::MODIFICATION,
-                    \clients_status::VALIDATED,
-                    \clients_status::CLOSED_LENDER_REQUEST,
-                    \clients_status::CLOSED_BY_UNILEND
-                );
-
-                if ($this->clients->existEmail($_POST['email'])) {
-                    $_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est déjà utilisé';
-                } else {
+                if ($this->isEmailUnique($_POST['email'], $this->clients)) {
                     $this->clients->email = $_POST['email'];
                 }
 
                 $oBirthday = new \DateTime(str_replace('/', '-', $_POST['naissance']));
 
                 $this->clients->telephone         = str_replace(' ', '', $_POST['phone']);
+                $this->clients->mobile            = str_replace(' ', '', $_POST['mobile']);
                 $this->clients->ville_naissance   = $_POST['com-naissance'];
                 $this->clients->insee_birth       = $_POST['insee_birth'];
                 $this->clients->naissance         = $oBirthday->format('Y-m-d');
@@ -654,23 +642,8 @@ class preteursController extends bootstrap
                 $this->clients->prenom   = $this->ficelle->majNom($_POST['prenom_e']);
                 $this->clients->fonction = $_POST['fonction_e'];
 
-                $aLenderStatusForQuery = array(
-                    \clients_status::TO_BE_CHECKED,
-                    \clients_status::COMPLETENESS,
-                    \clients_status::COMPLETENESS_REMINDER,
-                    \clients_status::COMPLETENESS_REPLY,
-                    \clients_status::MODIFICATION,
-                    \clients_status::VALIDATED,
-                );
-                $checkEmailExistant = $this->clients->selectPreteursByStatus(implode(',', $aLenderStatusForQuery), 'email = "' . $_POST['email_e'] . '" AND c.id_client != ' . $this->clients->id_client);
-                if (count($checkEmailExistant) > 0) {
-                    $les_id_client_email_exist = '';
-                    foreach ($checkEmailExistant as $checkEmailEx) {
-                        $les_id_client_email_exist .= ' ' . $checkEmailEx['id_client'];
-                    }
-
-                    $_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est déjà utilisé par le compte id ' . $les_id_client_email_exist;
-                } else {
+                //// check doublon mail ////
+                if ($this->isEmailUnique($_POST['email_e'], $this->clients)) {
                     $this->clients->email = $_POST['email_e'];
                 }
 
@@ -1368,12 +1341,12 @@ class preteursController extends bootstrap
         $this->IRRValue = null;
         $this->IRRDate  = null;
 
+        /** @var \lenders_account_stats $oLenderAccountStats */
         $oLenderAccountStats = $this->loadData('lenders_account_stats');
         $aIRR                = $oLenderAccountStats->getLastIRRForLender($this->lenders_accounts->id_lender_account);
 
         if (false === is_null($aIRR)) {
-            $this->IRRValue = $aIRR['tri_value'];
-            $this->IRRDate  = $aIRR['tri_date'];
+            $this->IRR = $aIRR;
         }
 
         $statusOk                = array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::FUNDING_KO, \projects_status::PRET_REFUSE, \projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE);
@@ -1432,24 +1405,25 @@ class preteursController extends bootstrap
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
 
-        /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $oMailQueueManager */
-        $oMailQueueManager = $this->get('unilend.service.mail_queue');
-        /** @var mail_queue $oMailQueue */
-        $oMailQueue = $this->loadData('mail_queue');
-        $oMailQueue->get($this->params[0]);
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $oEmail */
-        $oEmail = $oMailQueueManager->getMessage($oMailQueue);
+        /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $mailQueueManager */
+        $mailQueueManager = $this->get('unilend.service.mail_queue');
+        /** @var mail_queue $mailQueue */
+        $mailQueue = $this->loadData('mail_queue');
+        $mailQueue->get($this->params[0]);
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $email */
+        $email = $mailQueueManager->getMessage($mailQueue);
+        /** @var \DateTime $sentAt */
+        $sentAt = new \DateTime($mailQueue->sent_at);
 
-        $iDate = $oEmail->getDate();
-        $aFrom = $oEmail->getFrom();
-        $aTo   = $oEmail->getTo();
+        $from = $email->getFrom();
+        $to   = $email->getTo();
 
-        $this->aEmail = array(
-            'date'    => date('d/m/Y H:i', $iDate),
-            'from'    => array_shift($aFrom),
-            'to'      => array_shift($aTo),
-            'subject' => $oEmail->getSubject(),
-            'body'    => $oEmail->getBody()
+        $this->email = array(
+            'date'    => $sentAt->format('d/m/Y H:i'),
+            'from'    => array_shift($from),
+            'to'      => array_shift($to),
+            'subject' => $email->getSubject(),
+            'body'    => $email->getBody()
         );
     }
 
@@ -1831,5 +1805,25 @@ class preteursController extends bootstrap
         $writer->setUseBOM(true);
         $writer->setDelimiter(';');
         $writer->save('php://output');
+    }
+
+    /**
+     * @param string $email
+     * @param \clients $clientEntity
+     * @return bool
+     */
+    private function isEmailUnique($email, \clients $clientEntity)
+    {
+        $clientsWithSameEmailAddress = $clientEntity->select('email = "' . $email . '" AND id_client != ' . $clientEntity->id_client . ' AND status = ' . \clients::STATUS_ONLINE);
+        if (count($clientsWithSameEmailAddress) > 0) {
+            $ClientIdWithSameEmail = '';
+            foreach ($clientsWithSameEmailAddress as $client) {
+                $ClientIdWithSameEmail .= ' ' . $client['id_client'];
+            }
+            $_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est déjà utilisé par le compte id ' . $ClientIdWithSameEmail;
+            return false;
+        } else {
+            return true;
+        }
     }
 }

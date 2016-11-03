@@ -2,6 +2,10 @@
 
 class lenders_account_stats extends lenders_account_stats_crud
 {
+    const STAT_VALID_NOK = 0;
+    const STAT_VALID_OK  = 1;
+    const STAT_TYPE_IRR = 'IRR';
+
     public function __construct($bdd, $params = '')
     {
         parent::lenders_account_stats($bdd, $params);
@@ -12,8 +16,8 @@ class lenders_account_stats extends lenders_account_stats_crud
         $sql = '
             SELECT *
             FROM lenders_account_stats
-            WHERE id_lender_account = ' . $iLenderId . '
-            ORDER BY tri_date DESC
+              WHERE id_lender_account = ' . $iLenderId . ' AND type_stat = "' . self::STAT_TYPE_IRR . '"
+            ORDER BY date DESC
             LIMIT 1';
 
         return $this->bdd->fetch_assoc($this->bdd->query($sql));
@@ -25,8 +29,8 @@ class lenders_account_stats extends lenders_account_stats_crud
      */
     public function getValuesForIRR($iLendersAccountId)
     {
-        $aValuesIRR      = array();
-        $aDatesTimeStamp = array();
+        $aValuesIRR      = [];
+        $aDatesTimeStamp = [];
 
         $sql = '
             SELECT
@@ -134,12 +138,12 @@ class lenders_account_stats extends lenders_account_stats_crud
     {
         $iSumOfLoans = $oLendersAccounts->sumLoansOfProjectsInRepayment($iLendersAccountId);
 
-        $aProjectStatusCollectiveProceeding = array(
+        $aProjectStatusCollectiveProceeding = [
             \projects_status::PROCEDURE_SAUVEGARDE,
             \projects_status::REDRESSEMENT_JUDICIAIRE,
             \projects_status::LIQUIDATION_JUDICIAIRE,
             \projects_status::DEFAUT
-        );
+        ];
 
         $sql = '
             SELECT SUM(e.capital)
@@ -180,7 +184,7 @@ class lenders_account_stats extends lenders_account_stats_crud
                 AND p.status IN (' . implode(',', [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X, \projects_status::RECOUVREMENT]) . ')
             GROUP BY id_lender';
 
-        $aLenderIds = array();
+        $aLenderIds = [];
         $rResult   = $this->bdd->query($sQuery);
         while ($aRecord = $this->bdd->fetch_assoc($rResult)) {
             $aLenderIds[] = $aRecord;
@@ -191,15 +195,19 @@ class lenders_account_stats extends lenders_account_stats_crud
     public function getAverageIRRofAllLenders()
     {
         $query = '
-            SELECT ROUND(AVG(las.tri_value), 2)
+            SELECT ROUND(AVG(las.value), 2)
             FROM lenders_account_stats las
             INNER JOIN (
                 SELECT MAX(id_lenders_accounts_stats) AS id_lenders_accounts_stats
                 FROM lenders_account_stats
-                WHERE DATE(tri_date) <= NOW()
+                WHERE stat_type = "' . self::STAT_TYPE_IRR . '"
+                    AND status = ' . self::STAT_VALID_OK . '
+                  AND DATE(date) <= NOW()
                 GROUP BY id_lender_account
             ) las_max ON las.id_lenders_accounts_stats = las_max.id_lenders_accounts_stats
-            WHERE DATE(las.tri_date) <= NOW()';
+            WHERE  stat_type = "' . self::STAT_TYPE_IRR . '"
+                AND status = ' . self::STAT_VALID_OK . '
+                AND DATE(las.date) <= NOW()';
         $statement = $this->bdd->executeQuery($query);
 
         return $statement->fetchColumn(0);
