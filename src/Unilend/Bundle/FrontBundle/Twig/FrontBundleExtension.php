@@ -139,8 +139,12 @@ class FrontBundleExtension extends \Twig_Extension
         return  $this->packages->getUrl('/assets/images/' . $sPath);
     }
 
-    public function getStatisticFunction($statisticType)
+    public function getStatisticFunction($statisticType, $date = null)
     {
+        if (false === empty($date)) {
+            return $this->statisticsManager->getStatisticAtDate($statisticType, $date);
+        }
+
         return $this->statisticsManager->getStatistic($statisticType);
     }
 

@@ -841,26 +841,40 @@ class MainController extends Controller
 
     /**
      * @Route("/statistiques", name="statistics")
+     * @Route("/statistiques/{requestedDate}", name="historic_statistics")
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function statisticsAction()
+    public function statisticsAction(Request $request, $requestedDate = null)
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \tree $tree */
         $tree = $entityManager->getRepository('tree');
         $tree->get(['slug' => 'statistiques']);
-
         /** @var StatisticsManager $statisticsManager */
         $statisticsManager = $this->get('unilend.service.statistics_manager');
-        $years = array_merge(['2013-2014'], range(2015, date('Y')));
+
+        if (false === empty($date)) {
+//            if ($request->getClientIp() != '92.154.10.41') {
+//                return $this->render('/pages/static_pages/error.html.twig');
+//            }
+            $template['requestedDate'] = $requestedDate;
+            $date = new \DateTime($requestedDate);
+            $years = array_merge(['2013-2014'], range(2015, $date->format('Y')));
+            $statistics = $statisticsManager->getStatisticsAtDate($date);
+        } else {
+            $years = array_merge(['2013-2014'], range(2015, date('Y')));
+            $statistics = $statisticsManager->getMostCurrentStatistics();
+        }
+
         $template = [
             'data' => [
-                'projectCountForCategoryTreeMap' => $this->getProjectCountForCategoryTreeMap(),
-                'regulatoryTable' => $statisticsManager->getRegulatoryData(),
+                'projectCountForCategoryTreeMap' => $this->getProjectCountForCategoryTreeMap($statistics['projectCountByCategory']),
+                'regulatoryTable' => $statistics['regulatoryData'],
             ],
             'years' => array_merge($years, ['total'])
         ];
+
         $this->setCmsSeoData($tree);
         $response = $this->render('pages/static_pages/statistics.html.twig', $template);
 
@@ -1035,11 +1049,10 @@ class MainController extends Controller
         return $this->renderCmsNav($tree, $finalElements, $entityManager, 'apropos-statistiques');
     }
 
-    private function getProjectCountForCategoryTreeMap()
+    private function getProjectCountForCategoryTreeMap($countByCategory)
     {
         /** @var StatisticsManager $statisticsManager */
         $statisticsManager = $this->get('unilend.service.statistics_manager');
-        $countByCategory = $statisticsManager->getProjectCountByCategory();
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
         $dataForTreeMap = [];

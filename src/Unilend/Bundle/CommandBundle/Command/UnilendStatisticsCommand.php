@@ -18,7 +18,7 @@ class UnilendStatisticsCommand extends ContainerAwareCommand
     {
         $this
             ->setName('unilend:statistics')
-            ->setDescription('Calculate the more lengthy statistics and save them in DB');
+            ->setDescription('Calculate all statistics and save them in DB');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -28,18 +28,10 @@ class UnilendStatisticsCommand extends ContainerAwareCommand
         /** @var \unilend_stats $unilendStatistics */
         $unilendStatistics = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('unilend_stats');
 
-        $regulatoryTable = $statisticsManager->calculateRegulatoryData();
-        $incidenceRate = $statisticsManager->calculateIncidenceRateOnIFPContracts();
+        $statistics = $statisticsManager->calculateStatistics();
 
-        $unilendStatistics->type_stat = CacheKeys::REGULATORY_TABLE;
-        $unilendStatistics->value = json_encode($regulatoryTable);
+        $unilendStatistics->type_stat = CacheKeys::UNILEND_STATISTICS;
+        $unilendStatistics->value = json_encode($statistics);
         $unilendStatistics->create();
-
-        $unilendStatistics->unsetData();
-
-        $unilendStatistics->type_stat = CacheKeys::INCIDENCE_RATE_IFP;
-        $unilendStatistics->value = json_encode($incidenceRate);
-        $unilendStatistics->create();
-
     }
 }
