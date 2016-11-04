@@ -30,7 +30,7 @@
                                 <option value="">{% trans %} lender-operations_operations-table-rolling-period-filter {% endtrans %}</option>
                                 {% set monthNumber = [1, 3, 6, 12] %}
                                 {% for numberOfMonths in monthNumber %}
-                                    <option {% if currentFilters.filter.slide is defined and numberOfMonths == currentFilters.filter.slide %} selected="selected"{% endif %} value="{{ numberOfMonths }}"> {% transchoice numberOfMonths with { '%count%' : numberOfMonths } %} common_month {% endtranschoice %} </option>
+                                    <option {% if numberOfMonths == currentFilters.slide %} selected="selected"{% endif %} value="{{ numberOfMonths }}"> {% transchoice numberOfMonths with { '%count%' : numberOfMonths } %} common_month {% endtranschoice %} </option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -38,20 +38,15 @@
                         {% set endYear   = date() | date('Y') %}
                         <div class="col-lg-3 col-md-3 col-sm-4">
                             <select name="filter[year]" class="input-field">
-                                <option value=""> {% trans %} lender-operations_operations-table-year-filter-placeholder {% endtrans %} </option>
+                                <option value="">{% trans %} lender-operations_operations-table-year-filter-placeholder {% endtrans %}</option>
                                 {% for year in endYear..startYear %}
-                                    <option {% if currentFilters.filter.year is defined and year == currentFilters.filter.year %} selected="selected"{% endif %} value="{{ year }}"> {{ year }} </option>
+                                    <option{% if year == currentFilters.year %} selected="selected"{% endif %} value="{{ year }}">{{ year }}</option>
                                 {% endfor %}
                             </select>
                         </div>
                         <div class="col-lg-3 col-md-3 col-sm-4">
                             <div class="input-group set-right">
-                                {% if currentFilters.filter.start is defined %}
-                                    {% set startDate = currentFilters.filter.start %}
-                                {% else %}
-                                    {% set startDate = date('-1month') | date('d/m/Y') %}
-                                {% endif %}
-                                <input type="text" id="filter-start" name="filter[start]" value="{{ startDate }}" {#placeholder="{% trans %} lender-operations_operations-table-start-date-filter-placeholder {% endtrans %}"#} class="input-field ui-has-datepicker"/>
+                                <input type="text" id="filter-start" name="filter[start]" value="{{ currentFilters.start }}" class="input-field ui-has-datepicker"/>
                                 <div class="btn-group">
                                     <label for="filter-start"><span class="icon fa-calendar-u32 c-p1"><span class="sr-only">{{ 'lender-operations_sr-operation-start-date-filter'|trans }}</span></span></label>
                                 </div><!-- /.btn-group -->
@@ -59,12 +54,7 @@
                         </div>
                         <div class="col-lg-3 col-md-3 col-sm-4">
                             <div class="input-group set-right">
-                                {% if currentFilters.filter.end is defined %}
-                                    {% set endDate = currentFilters.filter.end %}
-                                {% else %}
-                                    {% set endDate = date() | date('d/m/Y') %}
-                                {% endif %}
-                                <input type="text" id="filter-end" name="filter[end]" value="{{ endDate }}" {#placeholder="{% trans %} lender-operations_end-date-placeholder {% endtrans %}"#} class="input-field ui-has-datepicker"/>
+                                <input type="text" id="filter-end" name="filter[end]" value="{{ currentFilters.end }}" class="input-field ui-has-datepicker"/>
                                 <div class="btn-group">
                                     <label for="filter-end"><span class="icon fa-calendar-u32 c-p1"><span class="sr-only">{{ 'lender-operations_sr-operation-end-date-filter'|trans }}</span></span></label>
                                 </div><!-- /.btn-group -->
@@ -81,19 +71,19 @@
                     <div class="row input-fields">
                         <div class="col-lg-6 col-md-6 col-sm-4">
                             <select name="filter[operation]" class="input-field">
-                                <option {% if currentFilters.filter.operation is defined and 1 == currentFilters.filter.operation %} selected="selected"{% endif %} value="1">{% trans %} lender-operations_operations-table-operation-filter-placeholder {% endtrans %}</option>
-                                <option {% if currentFilters.filter.operation is defined and 2 == currentFilters.filter.operation %} selected="selected"{% endif %} value="2">{% trans %} lender-operations_operations-table-deposit-withdrawal-operations-label {% endtrans %}</option>
-                                <option {% if currentFilters.filter.operation is defined and 3 == currentFilters.filter.operation %} selected="selected"{% endif %} value="3">{% trans %} lender-operations_operations-table-deposit-operations-label {% endtrans %}</option>
-                                <option {% if currentFilters.filter.operation is defined and 4 == currentFilters.filter.operation %} selected="selected"{% endif %} value="4">{% trans %} lender-operations_operations-table-withdrawal-operations-label {% endtrans %}</option>
-                                <option {% if currentFilters.filter.operation is defined and 5 == currentFilters.filter.operation %} selected="selected"{% endif %} value="5">{% trans %} lender-operations_operations-table-loan-deals-operations-label {% endtrans %}</option>
-                                <option {% if currentFilters.filter.operation is defined and 6 == currentFilters.filter.operation %} selected="selected"{% endif %} value="6">{% trans %} lender-operations_operations-table-repayment-operations-label {% endtrans %}</option>
+                                <option {% if 1 == currentFilters.operation %} selected="selected"{% endif %} value="1">{% trans %} lender-operations_operations-table-operation-filter-placeholder {% endtrans %}</option>
+                                <option {% if 2 == currentFilters.operation %} selected="selected"{% endif %} value="2">{% trans %} lender-operations_operations-table-deposit-withdrawal-operations-label {% endtrans %}</option>
+                                <option {% if 3 == currentFilters.operation %} selected="selected"{% endif %} value="3">{% trans %} lender-operations_operations-table-deposit-operations-label {% endtrans %}</option>
+                                <option {% if 4 == currentFilters.operation %} selected="selected"{% endif %} value="4">{% trans %} lender-operations_operations-table-withdrawal-operations-label {% endtrans %}</option>
+                                <option {% if 5 == currentFilters.operation %} selected="selected"{% endif %} value="5">{% trans %} lender-operations_operations-table-loan-deals-operations-label {% endtrans %}</option>
+                                <option {% if 6 == currentFilters.operation %} selected="selected"{% endif %} value="6">{% trans %} lender-operations_operations-table-repayment-operations-label {% endtrans %}</option>
                             </select>
                         </div>
                         <div class="col-lg-6 col-md-6 col-sm-4">
                             <select name="filter[project]" class="input-field">
                                 <option value="">{% trans %} lender-operations_operations-table-project-filter-placeholder {% endtrans %}</option>
                                 {% for project in projectsFundedByLender if project.title is not empty %}
-                                    <option {% if currentFilters.filter.operation is defined and project.id_project == currentFilters.filter.project %} selected="selected"{% endif %} value="{{ project.id_project }}">{{ project.title }}</option>
+                                    <option {% if project.id_project == currentFilters.project %} selected="selected"{% endif %} value="{{ project.id_project }}">{{ project.title }}</option>
                                 {% endfor %}
                             </select>
                         </div>

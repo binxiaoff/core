@@ -30,6 +30,8 @@ framework:
     form:
         csrf_protection:
             field_name: _csrf
+    serializer:
+      enabled: true
 
 cmf_routing:
     chain:
@@ -196,3 +198,5 @@ knp_snappy:
             - { name: 'page-size', value: 'A4' }
             - { name: 'encoding', value : 'UTF-8'}
 
+ekino_new_relic:
+    enabled: false

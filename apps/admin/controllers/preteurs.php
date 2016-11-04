@@ -417,20 +417,7 @@ class preteursController extends bootstrap
                 $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom']);
 
                 //// check doublon mail ////
-                $aLenderStatusForQuery = array(
-                    \clients_status::TO_BE_CHECKED,
-                    \clients_status::COMPLETENESS,
-                    \clients_status::COMPLETENESS_REMINDER,
-                    \clients_status::COMPLETENESS_REPLY,
-                    \clients_status::MODIFICATION,
-                    \clients_status::VALIDATED,
-                    \clients_status::CLOSED_LENDER_REQUEST,
-                    \clients_status::CLOSED_BY_UNILEND
-                );
-
-                if ($this->clients->existEmail($_POST['email'])) {
-                    $_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est déjà utilisé';
-                } else {
+                if ($this->isEmailUnique($_POST['email'], $this->clients)) {
                     $this->clients->email = $_POST['email'];
                 }
 
@@ -655,23 +642,8 @@ class preteursController extends bootstrap
                 $this->clients->prenom   = $this->ficelle->majNom($_POST['prenom_e']);
                 $this->clients->fonction = $_POST['fonction_e'];
 
-                $aLenderStatusForQuery = array(
-                    \clients_status::TO_BE_CHECKED,
-                    \clients_status::COMPLETENESS,
-                    \clients_status::COMPLETENESS_REMINDER,
-                    \clients_status::COMPLETENESS_REPLY,
-                    \clients_status::MODIFICATION,
-                    \clients_status::VALIDATED,
-                );
-                $checkEmailExistant = $this->clients->selectPreteursByStatus(implode(',', $aLenderStatusForQuery), 'email = "' . $_POST['email_e'] . '" AND c.id_client != ' . $this->clients->id_client);
-                if (count($checkEmailExistant) > 0) {
-                    $les_id_client_email_exist = '';
-                    foreach ($checkEmailExistant as $checkEmailEx) {
-                        $les_id_client_email_exist .= ' ' . $checkEmailEx['id_client'];
-                    }
-
-                    $_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est déjà utilisé par le compte id ' . $les_id_client_email_exist;
-                } else {
+                //// check doublon mail ////
+                if ($this->isEmailUnique($_POST['email_e'], $this->clients)) {
                     $this->clients->email = $_POST['email_e'];
                 }
 
@@ -1837,5 +1809,25 @@ class preteursController extends bootstrap
         $writer->setUseBOM(true);
         $writer->setDelimiter(';');
         $writer->save('php://output');
+    }
+
+    /**
+     * @param string $email
+     * @param \clients $clientEntity
+     * @return bool
+     */
+    private function isEmailUnique($email, \clients $clientEntity)
+    {
+        $clientsWithSameEmailAddress = $clientEntity->select('email = "' . $email . '" AND id_client != ' . $clientEntity->id_client . ' AND status = ' . \clients::STATUS_ONLINE);
+        if (count($clientsWithSameEmailAddress) > 0) {
+            $ClientIdWithSameEmail = '';
+            foreach ($clientsWithSameEmailAddress as $client) {
+                $ClientIdWithSameEmail .= ' ' . $client['id_client'];
+            }
+            $_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est déjà utilisé par le compte id ' . $ClientIdWithSameEmail;
+            return false;
+        } else {
+            return true;
+        }
     }
 }

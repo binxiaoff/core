@@ -201,14 +201,8 @@ class BorrowerAccountController extends Controller
         $clientsMandat = $this->get('unilend.service.entity_manager')->getRepository('clients_mandats');
 
         foreach ($projectsPostFunding as $iKey => $aProject) {
-            $projectsPostFunding[$iKey]['pouvoir'] = $projectsPouvoir->select('id_project = ' . $aProject['id_project']);
-            $projectsPostFunding[$iKey]['mandat']  = $clientsMandat->select('id_project = ' . $aProject['id_project'], 'updated DESC');
-
-            foreach ($projectsPostFunding[$iKey]['mandat'] as $mandatKey => $mandat) {
-                if (\clients_mandats::STATUS_PENDING == $mandat['status']) {
-                    $projectsPostFunding[$iKey]['mandat'][$mandatKey]['status-trad'] = 'mandat-en-cours';
-                }
-            }
+            $projectsPostFunding[$iKey]['pouvoir'] = $projectsPouvoir->select('id_project = ' . $aProject['id_project'])[0];
+            $projectsPostFunding[$iKey]['mandat']  = $clientsMandat->select('id_project = ' . $aProject['id_project'], 'updated DESC')[0];
         }
 
         /** @var \factures $oInvoices */
@@ -384,8 +378,8 @@ class BorrowerAccountController extends Controller
         $projectsIds         = array_column($projectsPostFunding, 'id_project');
 
         $filter = $request->query->get('filter');
-        $start  = \Datetime::createFromFormat('d/m/Y', $filter['start']);
-        $end    = \Datetime::createFromFormat('d/m/Y', $filter['end']);
+        $start  = \DateTime::createFromFormat('d/m/Y', $filter['start']);
+        $end    = \DateTime::createFromFormat('d/m/Y', $filter['end']);
 
         if ($filter['op'] !== 'all') {
             $operation = (int)$filter['op'];
@@ -723,15 +717,7 @@ class BorrowerAccountController extends Controller
      */
     private function getProjectsPostFunding()
     {
-        $aStatusPostFunding = array(
-            \projects_status::DEFAUT,
-            \projects_status::FUNDE,
-            \projects_status::PROBLEME,
-            \projects_status::RECOUVREMENT,
-            \projects_status::REMBOURSE,
-            \projects_status::REMBOURSEMENT,
-            \projects_status::REMBOURSEMENT_ANTICIPE
-        );
+        $aStatusPostFunding = array_merge([\projects_status::FUNDE, \projects_status::FUNDING_KO, \projects_status::PRET_REFUSE], \projects_status::$afterRepayment);
 
         /** @var ProjectManager $projectManager */
         $projectManager = $this->get('unilend.service.project_manager');

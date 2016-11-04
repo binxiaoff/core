@@ -134,7 +134,7 @@ class IRRManager
         $lendersAccountsStats->id_lender_account = $lenderId;
         $lendersAccountsStats->date              = date('Y-m-d H:i:s');
         $lendersAccountsStats->value             = bcmul($lenderIRR, 100, 2);
-        $lendersAccountsStats->type_stat         = \lenders_account_stats::STAT_TYPE_IRR;
+        $lendersAccountsStats->type_stat         = \lenders_account_stats::TYPE_STAT_IRR;
         $lendersAccountsStats->status            = $status;
 
         $lendersAccountsStats->create();
