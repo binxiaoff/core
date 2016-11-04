@@ -187,7 +187,7 @@ class ajaxController extends bootstrap
         /** @var TranslationManager $translationManager */
         $translationManager = $this->get('unilend.service.translation_manager');
         if (isset($this->params[0]) && $this->params[0] != '') {
-            $this->lTranslations = $translationManager->selectTranslation($this->params[1], $this->params[0]);
+            $this->lTranslations = $translationManager->noCacheTrans($this->params[1], $this->params[0]);
         }
     }
 
@@ -656,18 +656,17 @@ class ajaxController extends bootstrap
         $this->companies    = $this->loadData('companies');
 
         if (isset($_POST['year'], $_POST['id_client']) && $this->clients->get($_POST['id_client'], 'id_client')) {
-            /** @var TranslationManager $translationManager */
-            $translationManager   = $this->get('unilend.service.translation_manager');
-            $this->lng['profile'] = $translationManager->getAllTranslationsForSection('preteur-profile');
+            /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
+            $translator = $this->get('translator');
 
             $this->lesStatuts = array(
-                \transactions_types::TYPE_LENDER_SUBSCRIPTION         => $this->lng['profile']['versement-initial'],
-                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT   => $this->lng['profile']['alimentation-cb'],
-                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT => $this->lng['profile']['alimentation-virement'],
+                \transactions_types::TYPE_LENDER_SUBSCRIPTION         => $translator->trans('preteur-profile_versement-initial'),
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT   => $translator->trans('preteur-profile_alimentation-cb'),
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT => $translator->trans('preteur-profile_alimentation-virement'),
                 \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL    => 'Remboursement de capital',
                 \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS  => 'Remboursement d\'intérêts',
-                \transactions_types::TYPE_DIRECT_DEBIT                => $this->lng['profile']['alimentation-prelevement'],
-                \transactions_types::TYPE_LENDER_WITHDRAWAL           => $this->lng['profile']['retrait'],
+                \transactions_types::TYPE_DIRECT_DEBIT                => $translator->trans('preteur-profile_alimentation-prelevement'),
+                \transactions_types::TYPE_LENDER_WITHDRAWAL           => $translator->trans('preteur-profile_retrait'),
                 \transactions_types::TYPE_LENDER_REGULATION           => 'Régularisation prêteur',
                 \transactions_types::TYPE_WELCOME_OFFER               => 'Offre de bienvenue',
                 \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION  => 'Retrait offre de bienvenue'
