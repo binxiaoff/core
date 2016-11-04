@@ -454,6 +454,9 @@ class rootController extends bootstrap
         }
     }
 
+    /**
+     * Pas de appel dans le log nginx , à supprimer après vérification.
+     */
     public function _xmlAllProjects()
     {
         $file = $this->getParameter('path.user') . 'fichiers/045.xml';
