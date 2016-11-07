@@ -100,6 +100,10 @@ $c-mobile-menu-mix-l2: mix($c-mobile-menu-fg, $c-mobile-menu-bg, 75%);
       line-height: $lh-base;
 
       .user-name {
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
         color: $c-mobile-menu-fg;
         font-size: $fs-base * 1.1;
         font-style: normal;
