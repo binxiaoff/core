@@ -854,25 +854,25 @@ class MainController extends Controller
         /** @var StatisticsManager $statisticsManager */
         $statisticsManager = $this->get('unilend.service.statistics_manager');
 
-        if (false === empty($date)) {
-//            if ($request->getClientIp() != '92.154.10.41') {
-//                return $this->render('/pages/static_pages/error.html.twig');
-//            }
-            $template['requestedDate'] = $requestedDate;
-            $date = new \DateTime($requestedDate);
-            $years = array_merge(['2013-2014'], range(2015, $date->format('Y')));
+        if (false === empty($requestedDate)) {
+            if ($request->getClientIp() != '92.154.10.41') {
+                return $this->render('/pages/static_pages/error.html.twig');
+            }
+            $date       = new \DateTime($requestedDate);
+            $years      = array_merge(['2013-2014'], range(2015, $date->format('Y')));
             $statistics = $statisticsManager->getStatisticsAtDate($date);
         } else {
-            $years = array_merge(['2013-2014'], range(2015, date('Y')));
+            $years      = array_merge(['2013-2014'], range(2015, date('Y')));
             $statistics = $statisticsManager->getMostCurrentStatistics();
         }
 
         $template = [
-            'data' => [
+            'data'  => [
                 'projectCountForCategoryTreeMap' => $this->getProjectCountForCategoryTreeMap($statistics['projectCountByCategory']),
-                'regulatoryTable' => $statistics['regulatoryData'],
+                'regulatoryTable'                => $statistics['regulatoryData'],
             ],
-            'years' => array_merge($years, ['total'])
+            'years' => array_merge($years, ['total']),
+            'date'  => $requestedDate
         ];
 
         $this->setCmsSeoData($tree);

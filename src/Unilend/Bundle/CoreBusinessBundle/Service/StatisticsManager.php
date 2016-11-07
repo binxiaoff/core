@@ -73,7 +73,7 @@ class StatisticsManager
             /** @var \unilend_stats $unilendStats */
             $unilendStats = $this->entityManager->getRepository('unilend_stats');
 
-            $statsEntry = $unilendStats->select('type_stat = "' . CacheKeys::UNILEND_STATISTICS . '" AND DATE(added) = "' . $date->format('Y-m-d') . '"');
+            $statsEntry = $unilendStats->select('type_stat = "' . CacheKeys::UNILEND_STATISTICS . '" AND DATE(added) = "' . $date->format('Y-m-d') . '"')[0];
             $statistics = json_decode($statsEntry['value'], true);
             $cachedItem->set($statistics)->expiresAfter(CacheKeys::DAY);
             $this->cachePool->save($cachedItem);
