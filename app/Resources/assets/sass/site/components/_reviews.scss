@@ -45,6 +45,7 @@
     display: inline-block;
   }
 
+  // The swiper navigation
   .reviewers {
     @include inline-block-list();
     // max-width: 1000px;
@@ -93,6 +94,7 @@
       display: none;
     }
 
+    // On desktop (md, lg) this shows the logos instead of bullets
     .reviewers {
       margin-top: 30px;
       text-align: center;
