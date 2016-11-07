@@ -62,7 +62,7 @@ class traductionsController extends bootstrap
         }
 
         if (isset($this->params[1])) {
-            $this->lTranslations = $translationManager->selectTranslation($this->params[0], $this->params[1]);
+            $this->lTranslations = $translationManager->noCacheTrans($this->params[0], $this->params[1]);
         }
     }
 

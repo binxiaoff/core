@@ -121,6 +121,8 @@ class dossiersController extends bootstrap
         $this->clients_prescripteurs         = $this->loadData('clients');
         $this->companies_prescripteurs       = $this->loadData('companies');
         $this->settings                      = $this->loadData('settings');
+        /** @var borrowing_motive $borrowingMotive */
+        $borrowingMotive                     = $this->loadData('borrowing_motive');
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
         $oProjectManager = $this->get('unilend.service.project_manager');
@@ -153,10 +155,7 @@ class dossiersController extends bootstrap
                 sort($this->dureePossible);
             }
 
-            /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
-            $translationManager  = $this->get('unilend.service.translation_manager');
-            $this->lSecteurs = $translationManager->getTranslatedCompanySectorList();
-            $this->aBorrowingMotives = $translationManager->getTranslatedBorrowingMotiveList();
+            $this->aBorrowingMotives = $borrowingMotive->select();
 
             $this->settings->get('Cabinet de recouvrement', 'type');
             $this->cab = $this->settings->value;
@@ -286,18 +285,15 @@ class dossiersController extends bootstrap
 
             $this->completude_wording = array();
             $aAttachmentTypes         = $this->attachment_type->getAllTypesForProjects($this->language, false);
-            /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
-            $translationManager = $this->get('unilend.service.translation_manager');
-            $aTranslations      = $translationManager->getAllTranslationsForSection('projet');
 
             foreach ($this->attachment_type->changeLabelWithDynamicContent($aAttachmentTypes) as $aAttachment) {
                 if ($aAttachment['id'] == \attachment_type::PHOTOS_ACTIVITE) {
-                    $this->completude_wording[] = $aAttachment['label'] . ' ' . $aTranslations['completude-photos'];
+                    $this->completude_wording[] = $aAttachment['label'] . ' ' . $this->translator->trans('projet_completude-photos');
                 } else {
                     $this->completude_wording[] = $aAttachment['label'];
                 }
             }
-            $this->completude_wording[] = $aTranslations['completude-charge-affaires'];
+            $this->completude_wording[] = $this->translator->trans('projet_completude-charge-affaires');
 
             if (isset($_POST['problematic_status']) && $this->projects->status != $_POST['problematic_status']) {
                 $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['problematic_status'], $this->projects);
@@ -611,7 +607,7 @@ class dossiersController extends bootstrap
                     }
 
                     if ($this->projects->status <= \projects_status::A_FUNDER) {
-                        $sector = $translationManager->selectTranslation('company-sector', 'sector-' . $this->companies->sector);
+                        $sector = $this->translator->trans('company-sector_sector-' . $this->companies->sector);
                         $this->settings->get('Prefixe URL pages projet', 'type');
                         $this->projects->slug = $this->ficelle->generateSlug($this->settings->value . '-' . $sector . '-' . $this->companies->city . '-' . substr(md5($this->projects->title . $this->projects->id_project), 0, 7));
                     }

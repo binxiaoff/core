@@ -1,5 +1,30 @@
 <?php
-
+// **************************************************************************************************** //
+// ***************************************    ASPARTAM    ********************************************* //
+// **************************************************************************************************** //
+//
+// Copyright (c) 2008-2011, equinoa
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+// associated documentation files (the "Software"), to deal in the Software without restriction,
+// including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+// The above copyright notice and this permission notice shall be included in all copies
+// or substantial portions of the Software.
+// The Software is provided "as is", without warranty of any kind, express or implied, including but
+// not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement.
+// In no event shall the authors or copyright holders equinoa be liable for any claim,
+// damages or other liability, whether in an action of contract, tort or otherwise, arising from,
+// out of or in connection with the software or the use or other dealings in the Software.
+// Except as contained in this notice, the name of equinoa shall not be used in advertising
+// or otherwise to promote the sale, use or other dealings in this Software without
+// prior written authorization from equinoa.
+//
+//  Version : 2.4.0
+//  Date : 21/03/2011
+//  Coupable : CM
+//
+// **************************************************************************************************** //
 class contact_request_subjects extends contact_request_subjects_crud
 {
     public function __construct($bdd, $params = '')
@@ -7,29 +32,37 @@ class contact_request_subjects extends contact_request_subjects_crud
         parent::contact_request_subjects($bdd, $params);
     }
 
-    public function getAllSubjects($locale)
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
-        $result   = array();
-        $resultat = $this->bdd->query('SELECT * FROM contact_request_subjects');
-
-        while ($record = $this->bdd->fetch_assoc($resultat)) {
-            $result[$record['id_contact_request_subject']] = $record;
+        if ($where != '') {
+            $where = ' WHERE ' . $where;
         }
 
-        $oTranslations = new \translations($this->bdd);
-        $aTranslations = $oTranslations->getAllTranslationsForSection('borrower-contact', $locale);
+        if ($order != '') {
+            $order = ' ORDER BY ' . $order;
+        }
 
-        $aSubjects = array_map(
-            function($aSubject) use ($aTranslations) {
-                if ($index = array_search('subject-option-' . $aSubject['id_contact_request_subject'], array_column($aTranslations, 'name'))) {
-                    $aSubject['trans'] = $aTranslations[$index]['translation'];
-                }
+        $sql = 'SELECT * FROM `contact_request_subjects`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
-                return $aSubject;
-            },
-            $result
-        );
+        $result   = array();
+        $resultat = $this->bdd->query($sql);
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
+            $result[] = $record;
+        }
+        return $result;
+    }
 
-        return $aSubjects;
+    public function counter($where = '')
+    {
+        if ($where != '') {
+            $where = ' WHERE ' . $where;
+        }
+
+        return (int) $this->bdd->result($this->bdd->query('SELECT COUNT(*) FROM `contact_request_subjects`' . $where));
+    }
+
+    public function exist($id, $field = 'id_contact_request_subject')
+    {
+        return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `contact_request_subjects` WHERE ' . $field . ' = "' . $id . '"')) > 0;
     }
 }
