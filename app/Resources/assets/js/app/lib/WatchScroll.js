@@ -3,6 +3,7 @@
  *
  * Set and manage callbacks to occur on element's scroll top/left value
  * Hopefully helps to avoid jank
+ * Also enables detecting elements in relation to another for extra functions (mark navigation, etc.)
  */
 
 // Watch element for scroll left/top and perform callback if:
@@ -12,6 +13,7 @@
 
 // Dependencies
 var $ = require('jquery')
+var Utility = require('Utility')
 var Bounds = require('ElementBounds')
 var raf = require('raf')
 
@@ -140,11 +142,22 @@ var WatchScroll = {
     var self = this
 
     /*
-     * Properties
+     * Element to be watched
      */
     self.$elem = $(elem) // jQuery
     self.elem = self.$elem[0] // Normal HTMLElement
-    self.listeners = [] // List of listeners
+
+    // Check if a watcher for this element already exists and use that, rather than creating another
+    if (self.elem.hasOwnProperty('WatchScrollWatcher')) {
+      // @debug
+      // console.log('new WatchScroll.Watcher: using elem\'s existing watcher', self.elem, self.elem.WatchScrollWatcher)
+      return self.elem.WatchScrollWatcher
+    }
+
+    /*
+     * Properties
+     */
+    self.listeners = [] // List of listeners on this watcher
 
     /*
      * Options
@@ -260,15 +273,15 @@ var WatchScroll = {
       if ( !wasVisible && isVisible ) {
         state.push('enter')
 
-      // Visible
+        // Visible
       } else if ( wasVisible && isVisible ) {
         state.push('visible')
 
-      // Leave
+        // Leave
       } else if ( wasVisible && !isVisible ) {
         state.push('leave')
 
-      // Hidden
+        // Hidden
       } else if ( !wasVisible && !isVisible ) {
         state.push('hidden')
       }
@@ -430,7 +443,7 @@ var WatchScroll = {
             break;
         }
 
-      // Keyword actions representing state: enter, leave, visible, hidden
+        // Keyword actions representing state: enter, leave, visible, hidden
       } else {
         state = self.getTargetState(target)
         if (state.match(action)) {
@@ -467,7 +480,9 @@ var WatchScroll = {
       self.checkListeners()
     })
 
-    // @debug console.log(self.elem)
+    // Attach the instance to the element
+    self.elem.WatchScrollWatcher = self
+
     return self
   },
 

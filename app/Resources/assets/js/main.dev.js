@@ -77,9 +77,6 @@ videojs.options.flash.swf = '/assets/js/vendor/videojs/video-js.swf'
 // Track the current breakpoints (also updated in updateWindow())
 var currentBreakpoint = window.currentBreakpoint = Utility.getActiveBreakpoints()
 
-// Watch window for scroll actions (triggers events on elements to show if visible/hidden for navigation, animation, etc.)
-var watchWindow = window.watchWindow = new WatchScroll.Watcher(window)
-
 // Main vars/elements
 var $doc = $(document)
 var $html = $('html')

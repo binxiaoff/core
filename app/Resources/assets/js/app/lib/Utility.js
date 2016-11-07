@@ -12,6 +12,9 @@ var $doc = $(document)
 var $html = $('html')
 var $body = $('body')
 
+// The watchWindow WatchScroll instance
+var watchWindow = new WatchScroll.Watcher(window)
+
 // Default values
 var defaults = {
   secondsAsUnits: [{
@@ -1309,8 +1312,8 @@ var Utility = {
     Utility.setEqualHeights()
 
     // Trigger the WatchScroll watcher refresh on the window
-    if (window.watchWindow) {
-      window.watchWindow.refresh()
+    if (watchWindow) {
+      watchWindow.refresh()
     }
 
     // @trigger doc `UI:update:afterresize`

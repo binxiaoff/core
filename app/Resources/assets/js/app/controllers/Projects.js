@@ -4,12 +4,16 @@
 
 var $ = require('jquery')
 var Utility = require('Utility')
+var WatchScroll = require('WatchScroll')
 var __ = require('__')
 
 var $win = $(window)
 var $doc = $(document)
 var $html = $('html')
 var $body = $('body')
+
+// The watchWindow WatchScroll instance
+var watchWindow = new WatchScroll.Watcher(window)
 
 // Seconds as units for projects
 var secondsAsUnits = [{
@@ -304,7 +308,7 @@ $doc.on('ready', function () {
     var amount = $('#bid-amount').val()
     var duration = $('#bid-duration').val()
     var rate = $('#bid-interest option:selected').val()
-    
+
     if (amount && duration && rate && amount >= 20 && (previousAmount != amount || previousRate != rate)) {
       previousAmount = amount
       previousRate = rate
