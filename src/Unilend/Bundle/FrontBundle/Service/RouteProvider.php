@@ -15,7 +15,6 @@ class RouteProvider implements RouteProviderInterface
     const ROUTE_LENDER_FAQ                   = 'faq-preteur';
     const ROUTE_BORROWER_FAQ                 = 'faq-emprunteur';
     const ROUTE_OUR_ETHICS                   = 'charte-de-deontologie';
-    const ROUTE_UNILEND_RATING               = 'comprendre-la-note-unilend';
 
     /** @var EntityManager */
     private $entityManager;

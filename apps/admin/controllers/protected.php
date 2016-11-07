@@ -689,14 +689,30 @@ class protectedController extends bootstrap
 
     public function _declaration_de_creances()
     {
-        if (file_exists($this->path . 'protected/pdf/declaration_de_creances/declaration-de-creances-' . $this->params[0] . '-' . $this->params[1] . '.pdf')) {
-            $url = ($this->path . 'protected/pdf/declaration_de_creances/declaration-de-creances-' . $this->params[0] . '-' . $this->params[1] . '.pdf');
+        /** @var \clients $clients */
+        $clients = $this->loadData('clients');
 
-            header('Content-Description: File Transfer');
-            header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename="' . basename($url) . '";');
-            @readfile($url);
-            die();
+        if (isset($this->params[0]) && $clients->get($this->params[0], 'hash') && isset($this->params[1])) {
+            /** @var \loans $loans */
+            $loans           = $this->loadData('loans');
+            /** @var \lenders_accounts $lendersAccounts */
+            $lendersAccounts = $this->loadData('lenders_accounts');
+            $lendersAccounts->get($clients->id_client, 'id_client_owner');
+
+            if ($loans->get($lendersAccounts->id_lender_account, 'id_loan = ' . $this->params[1] . ' AND id_lender')) {
+                $filePath = $this->path . 'protected/pdf/declaration_de_creances/' . $loans->id_project . '/';
+                $filePath = ($loans->id_project == '1456') ? $filePath : $filePath . $clients->id_client . '/';
+                $filePath = $filePath . 'declaration-de-creances' . '-' . $this->params[0] . '-' . $this->params[1] . '.pdf';
+                $fileName = 'DECLARATION-DE-CREANCES-UNILEND-' . $clients->hash . '-' . $loans->id_loan;
+
+                if (file_exists($filePath)) {
+                    header('Content-Description: File Transfer');
+                    header('Content-Type: application/octet-stream');
+                    header('Content-Disposition: attachment; filename="' . basename($fileName) . '";');
+                    @readfile($filePath);
+                    die();
+                }
+            }
         } else {
             header('location: ' . $this->url . '/protected/document_not_found');
             die;
