@@ -903,7 +903,14 @@ FormValidation.prototype.rules = {
             })
           }
           break
-
+        case 'amount':
+          if (/^[\d]+((,|.)([\d]{1,2}))?]/.test(inputValidation.value)) {
+            inputValidation.errors.push({
+              type: 'inputType',
+              description: __.__('Field accepts only numbers', 'error-field-input-type-number')
+            })
+          }
+          break
         case 'tel':
         case 'phone':
         case 'telephone':
