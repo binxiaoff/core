@@ -1034,11 +1034,28 @@ class pdfController extends bootstrap
                 /** @var \transactions $transaction */
                 $transaction     = $this->loadData('transactions');
                 $where           = 'id_client = ' . $this->oLendersAccounts->id_client_owner . ' AND id_project = ' . $this->projects->id_project . ' AND type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT;
-                $recoveryTaxExcl = bcdiv($transaction->sum($where, 'montant'), 100, 2);
+
+                $totalAmountRecovered = bcdiv($transaction->sum($where, 'montant'), 100, 2);
+                $allLoans             = $this->oLoans->select('id_lender = ' . $this->oLendersAccounts->id_lender_account . ' AND id_project = ' . $this->projects->id_project);
+                $totalLoans           = $this->oLoans->sumPretsProjet($this->projects->id_project . ' AND id_lender = ' . $this->oLendersAccounts->id_lender_account);
+
+                $recoveryAmountsTaxExcl = [];
+                foreach ($allLoans as $index => $loan) {
+                    $prorataRecovery                          = round(bcdiv(bcmul(bcdiv($loan['amount'], 100, 3), $totalAmountRecovered), $totalLoans, 3), 2);
+                    $recoveryAmountsTaxExcl[$loan['id_loan']] = $prorataRecovery;
+                }
+
+                $roundDifference = round(bcsub(array_sum($recoveryAmountsTaxExcl), $totalAmountRecovered, 3), 2);
+                if (abs($roundDifference) > 0) {
+                    $maxAmountLoanId                          = array_keys($recoveryAmountsTaxExcl, max($recoveryAmountsTaxExcl))[0];
+                    $recoveryAmountsTaxExcl[$maxAmountLoanId] = bcsub($recoveryAmountsTaxExcl[$maxAmountLoanId], $roundDifference, 2);
+                }
+
+                $recoveryTaxExcl = $recoveryAmountsTaxExcl[$this->oLoans->id_loan];
                 // 0.844 is the rate for getting the total amount including the MCS commission and tax. Todo: replace it when doing the Recovery project
                 $recoveryTaxIncl = bcdiv($recoveryTaxExcl, 0.844, 5);
-                $this->echu       = bcsub(bcadd($this->echu, $this->echoir, 2), $recoveryTaxIncl, 2);
-                $this->echoir     = 0;
+                $this->echu      = bcsub(bcadd($this->echu, $this->echoir, 2), $recoveryTaxIncl, 2);
+                $this->echoir    = 0;
             }
 
             $this->total        = bcadd($this->echu, $this->echoir, 2);
@@ -1153,17 +1170,21 @@ class pdfController extends bootstrap
 
     public function _vos_operations_pdf_indexation()
     {
-        if (isset($_SESSION['filtre_vos_operations']['id_client'])) {
-            $sPath          = $this->path . 'protected/operations_export_pdf/' . $_SESSION['filtre_vos_operations']['id_client'] . '/';
+        /** @var \Symfony\Component\HttpFoundation\Session\SessionInterface $session */
+        $session = $this->get('session');
+
+        if ($session->has('lenderOperationsFilters')) {
+            $savedFilters = $session->get('lenderOperationsFilters');
+            $sPath          = $this->path . 'protected/operations_export_pdf/' . $savedFilters['id_client'] . '/';
             $sNamePdfClient = 'vos_operations_' . date('Y-m-d') . '.pdf';
 
-            $this->GenerateOperationsHtml();
+            $this->GenerateOperationsHtml($savedFilters);
             $this->WritePdf($sPath . $sNamePdfClient, 'operations');
             $this->ReadPdf($sPath . $sNamePdfClient, $sNamePdfClient);
         }
     }
 
-    private function GenerateOperationsHtml()
+    private function GenerateOperationsHtml(array $savedFilters)
     {
         $this->wallets_lines    = $this->loadData('wallets_lines');
         $this->bids             = $this->loadData('bids');
@@ -1174,16 +1195,16 @@ class pdfController extends bootstrap
         $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
         $this->lng['preteur-operations-pdf']            = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
 
-        $post_debut            = $_SESSION['filtre_vos_operations']['start'];
-        $post_fin              = $_SESSION['filtre_vos_operations']['end'];
-        $post_nbMois           = $_SESSION['filtre_vos_operations']['slide'];
-        $post_annee            = $_SESSION['filtre_vos_operations']['year'];
-        $post_tri_type_transac = $_SESSION['filtre_vos_operations']['operation'];
-        $post_tri_projects     = $_SESSION['filtre_vos_operations']['project'];
-        $post_id_last_action   = $_SESSION['filtre_vos_operations']['id_last_action'];
-        $post_order            = $_SESSION['filtre_vos_operations']['order'];
-        $post_type             = $_SESSION['filtre_vos_operations']['type'];
-        $post_id_client        = $_SESSION['filtre_vos_operations']['id_client'];
+        $post_debut            = $savedFilters['start'];
+        $post_fin              = $savedFilters['end'];
+        $post_nbMois           = $savedFilters['slide'];
+        $post_annee            = $savedFilters['year'];
+        $post_tri_type_transac = $savedFilters['operation'];
+        $post_tri_projects     = $savedFilters['project'];
+        $post_id_last_action   = $savedFilters['id_last_action'];
+        $post_order            = $savedFilters['order'];
+        $post_type             = $savedFilters['type'];
+        $post_id_client        = $savedFilters['id_client'];
 
         $this->clients->get($post_id_client, 'id_client');
         $this->clients_adresses->get($post_id_client, 'id_client');

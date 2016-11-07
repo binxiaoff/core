@@ -254,4 +254,11 @@ class LocationManager
         }
     }
 
+    public function checkFrenchCityInsee($inseeCode)
+    {
+        /** @var \villes $cities */
+        $cities = $this->entityManager->getRepository('villes');
+
+        return $cities->exist($inseeCode, 'insee');
+    }
 }

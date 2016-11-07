@@ -2,6 +2,8 @@
 
 use Unilend\librairies\Altares;
 use \Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
+use \Psr\Log\LoggerInterface;
+use \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
 
 class dossiersController extends bootstrap
 {
@@ -2023,26 +2025,11 @@ class dossiersController extends bootstrap
                     }
 
                     if (0 == $this->echeanciers->counter('id_project = ' . $this->projects->id_project . ' AND status = 0')) {
-                        $this->settings->get('Adresse controle interne', 'type');
-                        $mailBO = $this->settings->value;
-
-                        $varMail = array(
-                            'surl'           => $this->surl,
-                            'url'            => $this->furl,
-                            'nom_entreprise' => $this->companies->name,
-                            'nom_projet'     => $this->projects->title,
-                            'id_projet'      => $this->projects->id_project,
-                            'annee'          => date('Y')
-                        );
-
-                        $oLogger->info('Manual repayment, Send preteur-dernier-remboursement-controle. Data to use: ' . var_export($varMail, true), ['class' => __CLASS__, 'function' => __FUNCTION__]);
-
-                        /** @var TemplateMessage $messageBO */
-                        $messageBO = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-dernier-remboursement-controle', $varMail);
-                        $messageBO->setTo($mailBO);
-
-                        $mailer = $this->get('mailer');
-                        $mailer->send($messageBO);
+                        /** @var MailerManager $mailerManager */
+                        $mailerManager = $this->get('unilend.service.email_manager');
+                        $mailerManager->setLogger($oLogger);
+                        $mailerManager->sendInternalNotificationEndOfRepayment($this->projects);
+                        $mailerManager->sendClientNotificationEndOfRepayment($this->projects);
                     }
 
                     $lesRembEmprun = $this->bank_unilend->select('type = 1 AND status = 0 AND id_project = ' . $this->projects->id_project, 'id_unilend ASC', 0, 1); // on ajoute la restriction pour BT 17882
@@ -2356,7 +2343,7 @@ class dossiersController extends bootstrap
             } else {
                 // on va recup la date de la derniere echeance qui suit le process de base
                 $aRepaymentSchedule                   = $this->echeanciers->select(' id_project = ' . $this->projects->id_project . ' AND ordre = ' . ($iOrderEarlyRefund + 1), 'ordre ASC', 0, 1);
-                $this->date_derniere_echeance_normale = $this->dates->formatDateMysqltoFr_HourOut($aRepaymentSchedule[0]['date_echeance']);
+                $this->date_derniere_echeance_normale = (false === empty($aRepaymentSchedule[0]['date_echeance'])) ? $this->dates->formatDateMysqltoFr_HourOut($aRepaymentSchedule[0]['date_echeance']) : '';
             }
         }
 

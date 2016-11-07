@@ -71,7 +71,7 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
           // Generate documents HTML for loan
           var docsHtml = ''
           $.each(item.documents, function (j, doc) {
-            docsHtml += Templating.replace('<a href="{{ url }}" class="loan-doc loan-doc-{{ type }}" title="{{ label }}" data-toggle="tooltip"><span class="sr-only">{{ label }}</span></a>', doc)
+            docsHtml += Templating.replace('<a href="{{ url }}" class="loan-doc loan-doc-{{ type }}" title="{{ label }}" data-toggle="tooltip"><span class="sr-only">{{ label }}</span></a> ', doc)
           })
 
           // Generate loan details HTML

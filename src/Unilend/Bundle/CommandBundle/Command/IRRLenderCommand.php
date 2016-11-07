@@ -6,7 +6,6 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
-use Unilend\Bridge\Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Service\IRRManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
@@ -27,47 +26,39 @@ EOF
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /** @var IRRManager $oIRRManager */
-        $oIRRManager = $this->getContainer()->get('unilend.service.irr_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LenderManager $oLenderManager */
-        $oLenderManager  = $this->getContainer()->get('unilend.service.lender_manager');
+        /** @var IRRManager $irrManager */
+        $irrManager = $this->getContainer()->get('unilend.service.irr_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LenderManager $lenderManager */
+        $lenderManager  = $this->getContainer()->get('unilend.service.lender_manager');
         /** @var EntityManager $entityManager */
         $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
-        /** @var \lenders_account_stats $oLendersAccountsStats */
-        $oLendersAccountsStats = $entityManager->getRepository('lenders_account_stats');
-        /** @var /lenders_accounts_stats_queue $oLendersAccountsStatsQueue */
-        $oLendersAccountsStatsQueue = $entityManager->getRepository('lenders_accounts_stats_queue');
+        /** @var \lenders_account_stats $lenderAccountsStats */
+        $lenderAccountsStats = $entityManager->getRepository('lenders_account_stats');
+        /** @var /lenders_accounts_stats_queue $lenderAccountsStatsQueue */
+        $lenderAccountsStatsQueue = $entityManager->getRepository('lenders_accounts_stats_queue');
         /** @var LoggerInterface $logger */
         $logger = $this->getContainer()->get('monolog.logger.console');
-        $oIRRManager->setLogger($logger);
+        $irrManager->setLogger($logger);
 
-        $aLendersWithLatePayments = $oLendersAccountsStats->getLendersWithLatePaymentsForIRR();
-        $oLenderManager->addLendersToLendersAccountsStatQueue($aLendersWithLatePayments);
+        $lendersWithLatePayments = $lenderAccountsStats->getLendersWithLatePaymentsForIRR();
+        $lenderManager->addLendersToLendersAccountsStatQueue($lendersWithLatePayments);
 
-        $iAmountOfLenderAccounts = $input->getArgument('quantity');
+        $amountOfLenderAccounts = $input->getArgument('quantity');
 
-        if (empty($iAmountOfLenderAccounts) || false === is_numeric($iAmountOfLenderAccounts)) {
-            $iAmountOfLenderAccounts = 100;
+        if (empty($amountOfLenderAccounts) || false === is_numeric($amountOfLenderAccounts)) {
+            $amountOfLenderAccounts = 100;
             $logger->error('Argument with amount of lender accounts for which IRR should be calculated is missing', ['class' => __CLASS__, 'function' => __FUNCTION__]);
         }
 
-        $fTimeStart              = microtime(true);
-        $aIRRsCalculated         = 0;
+        $startTime              = microtime(true);
+        $calculatedIRRs         = 0;
 
-        foreach ($oLendersAccountsStatsQueue->select(null, 'added DESC', null, $iAmountOfLenderAccounts) as $aLender) {
-            try {
-                $oIRRManager->addIRRLender($aLender);
-                $oLendersAccountsStatsQueue->delete($aLender['id_lender_account'], 'id_lender_account');
-                $aIRRsCalculated += 1;
-
-            } catch (\Exception $eIRRException) {
-                $logger->error(
-                    'Could not calculate IRR (lender ' . $aLender['id_lender_account'] . ') - Message: '  . $eIRRException->getMessage(),
-                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $aLender['id_lender_account']]
-                );
-            }
+        foreach ($lenderAccountsStatsQueue->select(null, 'added DESC', null, $amountOfLenderAccounts) as $lender) {
+            $irrManager->addIRRLender($lender['id_lender_account']);
+            $lenderAccountsStatsQueue->delete($lender['id_lender_account'], 'id_lender_account');
+            $calculatedIRRs += 1;
         }
 
-        $logger->info('IRR calculation time for ' . $aIRRsCalculated . ' lenders: ' . round((microtime(true) - $fTimeStart) / 60, 2) . ' minutes', ['class' => __CLASS__, 'function' => __FUNCTION__]);
+        $logger->info('IRR calculation time for ' . $calculatedIRRs . ' lenders: ' . round((microtime(true) - $startTime) / 60, 2) . ' minutes', ['class' => __CLASS__, 'function' => __FUNCTION__]);
     }
 }
