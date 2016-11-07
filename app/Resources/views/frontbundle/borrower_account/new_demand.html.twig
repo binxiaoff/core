@@ -2,8 +2,6 @@
 
 {% set page = {
     id: 'user-borrower-projects',
-    title: 'Emprunteur / Dashboard',
-    permalink: path('borrower_account_projects'),
     classNames: 'user-emprunteur-projects'
 } %}
 
@@ -36,7 +34,7 @@
                             {% endif %}
 
                             {{ form(project_form, {'attr': {'id': 'borrower_new_demand'}}) }}
-                            <button type="submit" form="borrower_new_demand" class="btn-primary ui-dialog-confirm"><span class="icon fa-angle-right"></span> {{ 'borrower-demand_form-submit-button'|trans }}</button>
+                            <button type="submit" form="borrower_new_demand" class="btn-primary ui-dialog-confirm" data-spinnerbutton><span class="icon fa-angle-right"></span> {{ 'borrower-demand_form-submit-button'|trans }}</button>
                         </div><!-- /.dashboard-newrequest -->
                     </section><!-- /.ui-toggle-group -->
                 </article><!-- /.panel -->

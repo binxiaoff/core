@@ -1,10 +1,5 @@
 {% extends 'layouts/_layout.html.twig' %}
 
-{% set page = {
-    title: 'Déposer un projet',
-    permalink: path('project_request_files', {'hash' : project.hash})
-} %}
-
 {% block siteContent %}
     <article id="deposer-projet" class="page">
         <div class="hero-wrap">
@@ -118,7 +113,7 @@
 
                                         <div class="row reverse btn-controls tab-footer">
                                             <div class="col-submit col-lg-12 col-md-12">
-                                                <button type="submit" class="btn-primary">
+                                                <button type="submit" class="btn-primary" data-spinnerbutton>
                                                     <span class="icon fa-check-u16"></span>
                                                     {% trans %} project-request_files-submit-button {% endtrans %}
                                                 </button>

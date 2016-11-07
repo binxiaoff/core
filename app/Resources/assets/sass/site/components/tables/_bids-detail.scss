@@ -41,6 +41,8 @@
 
 // Color the autolend icon correctly
 .table-bids-detail-item {
+  @include table-row-alt;
+
   background-color: $c-teal-l3;
   color: $c-teal-l;
 
@@ -56,12 +58,10 @@
 
   // Rejected offer
   &.rejected-row {
+    @include table-row-alt($row-bg: mix($c-red, $c-white, 8%) !important);
+
     background-color: mix($c-red, $c-white, 10%) !important;
     color: $c-red;
-
-    &:nth-of-type(2n+1) {
-      background-color: mix($c-red, $c-white, 8%) !important;
-    }
 
     &.is-focus {
       background-color: mix($c-red, $c-white, 12%) !important;

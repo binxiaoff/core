@@ -1,10 +1,6 @@
 {# Homepage Preter #}
 {% extends 'layouts/_layout.html.twig' %}
 
-{% set page = {
-    title: 'Prêter'
-} %}
-
 {% block siteContent %}
     <article id="homepre" class="page">
 
@@ -119,10 +115,10 @@
                         <div class="col-lg-4 col-md-4 swiper-slide">
                             <div class="promo">
                                 <div class="promo-image">
-                                    {{ svgimage('#promo-linechart', '', 190, 190, 'none') | raw }}
+                                    {{ svgimage('#promo-money', '', 190, 190, 'none') | raw }}
                                 </div>
                                 <h3 class="promo-highlight">
-                                    <span class="ui-text-count" data-start-count="0" data-end-count="{{ getStatistic('unilendIRR')|round(1, 'floor') }}" data-total-time="3000" data-limit-decimal="1" data-tween-count="easeOutQuint">{{ getStatistic('unilendIRR')|round(1, 'floor')|localizednumber }}</span>
+                                    <span class="ui-text-count" data-start-count="0" data-end-count="{{ getStatistic('unilendIRR')|round(1, 'common') }}" data-total-time="3000" data-limit-decimal="1" data-tween-count="easeOutQuint">{{ getStatistic('unilendIRR')|round(1, 'common')|localizednumber }}</span>
                                     <sup>%</sup>
                                 </h3>
                                 <p>{% trans %} home-lender_unilend-stats-linechart-text {% endtrans %}</p>

@@ -18,21 +18,13 @@ var Tether = require('tether')
 var Drop = require('tether-drop')
 var SortableJS = require('sortablejs')
 
-// UI stuff
-// require('jquery-ui')
-// @note due to browserify and global jQuery object, I can't require these like normal :(
-// require('jquery-ui/draggable')
-// require('jquery-ui/sortable')
-// @note since I've integrated the datepicker too, it requires a few jQuery UI modules within
-
-// @note Bootstrap stuff after jQuery UI
-// See: http://stackoverflow.com/questions/17458224/uncaught-error-no-such-method-show-for-tooltip-widget-instance
+// Bootstrap
 require('bs.transition')
 require('bs.tab')
 require('bs.tooltip')
 require('bs.collapse')
 
-// Lib
+// Unilend Lib
 var Utility = require('Utility')
 var __ = require('__')
 var Tween = require('Tween')
@@ -41,7 +33,7 @@ var ElementAttrsObject = require('ElementAttrsObject')
 var CacheData = require('CacheData')
 var Templating = require('Templating')
 
-// Components
+// Unilend Components
 var UserNotifications = require('UserNotifications')
 var UserNotificationsList = require('UserNotificationsList')
 var UserNotificationsDrop = require('UserNotificationsDrop')
@@ -61,22 +53,49 @@ var MapView = require('MapView')
 var ChartView = require('ChartView')
 var Sticky = require('Sticky')
 var Spinner = require('./app/components/Spinner')
+var SpinnerButton = require('./app/components/SpinnerButton')
 var Modal = require('./app/components/Modal')
 var ModalTOS = require('./app/components/ModalTOS')
 var CookieCheck = require('./app/components/Cookies')
-var LoginTimer = require('./app/components/LoginTimer')
-var LoginCaptcha = require('./app/components/LoginCaptcha')
-var SimpleCountDown = require('./app/components/SimpleCountDown')
 var BidConfirmation = require('./app/components/BidConfirmation')
 var BidsDetail = require('./app/components/BidsDetail')
 
-// Page controllers
-// Manage component or page-specific behaviours
+// @debug
+// CacheData.clearAll()
+
+/*
+ * Globals
+ */
+// Modernizr
+var Modernizr = window.Modernizr
+
+// VideoJS
+// Running a modified version to customise the placement of items in the control bar
+videojs.options.flash.swf = '/assets/js/vendor/videojs/video-js.swf'
+
+// Track the current breakpoints (also updated in updateWindow())
+var currentBreakpoint = window.currentBreakpoint = Utility.getActiveBreakpoints()
+
+// Watch window for scroll actions (triggers events on elements to show if visible/hidden for navigation, animation, etc.)
+var watchWindow = window.watchWindow = new WatchScroll.Watcher(window)
+
+// Main vars/elements
+var $doc = $(document)
+var $html = $('html')
+var $body = $('body')
+var $win = $(window)
+
+/*
+ * Unilend Controllers
+ */
+require('./app/controllers/Window')
+require('./app/controllers/Site')
 require('./app/controllers/Fancybox')
 require('./app/controllers/Pikaday')
 require('./app/controllers/Swipers')
-require('./app/controllers/BorrowerOperations')
+require('./app/controllers/Login')
 require('./app/controllers/NewPasswordRequest')
+require('./app/controllers/BorrowerOperations')
 require('./app/controllers/LenderSubscription')
 require('./app/controllers/LenderDashboard')
 require('./app/controllers/LenderWallet')
@@ -86,26 +105,8 @@ require('./app/controllers/Projects')
 require('./app/controllers/ProjectRequest')
 require('./app/controllers/Autolend')
 
-// @debug
-// CacheData.clearAll()
-
-// VideoJS
-// Running a modified version to customise the placement of items in the control bar
-videojs.options.flash.swf = '/assets/js/vendor/videojs/video-js.swf'
-
-// Watch window for scroll actions (triggers events on elements to show if visible/hidden for navigation, animation, etc.)
-var watchWindow = window.watchWindow = new WatchScroll.Watcher(window)
-
 //
-$(document).ready(function ($) {
-  // Main vars/elements
-  var $doc = $(document)
-  var $html = $('html')
-  var $body = $('body')
-  var $win = $(window)
-  var Modernizr = window.Modernizr
-  raf.polyfill()
-
+$doc.ready(function ($) {
   // @debug
   // window.__ = __
   // window.Utility = Utility
@@ -114,334 +115,18 @@ $(document).ready(function ($) {
   // Remove HTML
   $html.removeClass('no-js')
 
-  // Track the current breakpoints (also updated in updateWindow())
-  var currentBreakpoint = window.currentBreakpoint = Utility.getActiveBreakpoints()
-
   // TWBS setup
+  // @todo refactor into General controller
   // $.support.transition = false
   // Bootstrap Tooltips
   $body.tooltip({
-    selector: '.ui-has-tooltip, [data-toggle="tooltip"]'
+    selector: '.ui-has-tooltip, [data-toggle="tooltip"]',
+    container: 'body'
   })
 
   /*
-   * Text Counters
-   */
-  // @note `.ui-text-count` is the old class, adding auto invocation here for backwards compatibility
-  // @note API relies on [data-textcount] being set for behaviours applied automatically
-  //       you should only use the `.ui-textcount` class if you want to explicitly set the behaviours
-  //       through JS otherwise rely on automatic invocation through the attribute [data-textcount]
-  // @todo Remove this call when the Twig views have been updated
-  $('.ui-text-count, .ui-has-textcount').uiTextCount()
-
-  // Site Search AutoComplete
-  if ($('.site-header .site-search-input').length > 0) {
-    var siteSearchAutoComplete = new AutoComplete('.site-header .site-search-input', {
-      // @TODO eventually when AJAX is connected, the URL will go here
-      // ajaxUrl: '',
-      target: '#site-search-autocomplete',
-      useTether: false
-    })
-  }
-
-  // Site Search
-  var siteSearchTimeout = 0
-
-  // -- Events
-  $doc
-    // Activate/focus .site-search-input
-    .on(Utility.clickEvent + ' active focus keydown', '.site-search-input', function (event) {
-      openSiteSearch()
-    })
-    // Hover over .site-search .autocomplete
-    .on('mouseenter mouseover', '.site-search .autocomplete', function (event) {
-      openSiteSearch()
-    })
-
-    // Dismiss site search after blur
-    .on('keydown', '.site-search-input', function (event) {
-      // @debug console.log('keyup', '.site-search-input')
-      // Dismiss
-      if (event.which === 27) {
-        closeSiteSearch(0)
-        $(this).blur()
-      }
-    })
-    .on('blur', '.site-search-input, .site-search .autocomplete-results a', function (event) {
-      // @debug console.log('blur', '.site-search-input')
-      closeSiteSearch(200)
-    })
-    // @debug
-    // .on('mouseleave', '.site-header .site-search', function (event) {
-    //   console.log('mouseleave', '.site-search')
-
-    //   // Don't dismiss
-    //   if ($('.site-header .site-search-input').is(':focus, :active')) {
-    //     return
-    //   }
-
-    //   closeSiteSearch()
-    // })
-
-    // Stop site search dismissing when hover in autocomplete
-    .on('mouseenter mouseover', '.site-search .autocomplete', function (event) {
-      // @debug console.log('mouseenter mouseover', '.site-header .site-search .autocomplete a')
-      cancelCloseSiteSearch()
-    })
-    // Stop site search dismissing when focus/active links in autocomplete
-    .on('keydown focus active', '.site-search .autocomplete a', function (event) {
-      // @debug console.log('keydown focus active', '.site-header .site-search .autocomplete a')
-      cancelCloseSiteSearch()
-    })
-
-  // -- Methods
-  function openSiteSearch () {
-    // @debug console.log('openSiteSearch')
-    cancelCloseSiteSearch()
-    $html.addClass('ui-site-search-open')
-  }
-
-  function closeSiteSearch (timeout) {
-    // @debug console.log('closeSiteSearch', timeout)
-
-    // Defaults to time out after .5s
-    if (typeof timeout === 'undefined') timeout = 500
-
-    siteSearchTimeout = setTimeout(function () {
-      $html.removeClass('ui-site-search-open')
-
-      // Hide the autocomplete
-      siteSearchAutoComplete.hide()
-    }, timeout)
-  }
-
-  function cancelCloseSiteSearch () {
-    // @debug console.log('cancelCloseSiteSearch')
-    clearTimeout(siteSearchTimeout)
-  }
-
-  /*
-   * Site Mobile Menu
-   */
-  // Show the site mobile menu
-  $doc.on(Utility.clickEvent, '.site-mobile-menu-open', function (event) {
-    event.preventDefault()
-    openSiteMobileMenu()
-  })
-
-  // Close the site mobile menu
-  $doc.on(Utility.clickEvent, '.site-mobile-menu-close', function (event) {
-    event.preventDefault()
-    closeSiteMobileMenu()
-  })
-
-  // At end of opening animation
-  $doc.on(Utility.animationEndEvent, '.ui-site-mobile-menu-opening', function (event) {
-    showSiteMobileMenu()
-  })
-
-  // At end of closing animation
-  $doc.on(Utility.animationEndEvent, '.ui-site-mobile-menu-closing', function (event) {
-    hideSiteMobileMenu()
-  })
-
-  function openSiteMobileMenu () {
-    // @debug console.log('openSiteMobileMenu')
-    if (Utility.isIE(9) || Utility.isIE('<9')) return showSiteMobileMenu()
-    if (!$html.is('.ui-site-mobile-menu-open, .ui-site-mobile-menu-opening')) {
-      $html.removeClass('ui-site-mobile-menu-closing').addClass('ui-site-mobile-menu-opening')
-    }
-  }
-
-  function closeSiteMobileMenu () {
-    if (Utility.isIE(9) || Utility.isIE('<9')) return hideSiteMobileMenu()
-    // @debug console.log('closeSiteMobileMenu')
-    $html.removeClass('ui-site-mobile-menu-opening ui-site-mobile-menu-open').addClass('ui-site-mobile-menu-closing')
-  }
-
-  function showSiteMobileMenu () {
-    // @debug console.log('showSiteMobileMenu')
-    $html.addClass('ui-site-mobile-menu-open').removeClass('ui-site-mobile-menu-opening ui-site-mobile-menu-closing')
-
-    // ARIA stuff
-    $('.site-mobile-menu').removeAttr('aria-hidden')
-    $('.site-mobile-menu [tabindex]').attr('tabindex', 1)
-  }
-
-  function hideSiteMobileMenu () {
-    // @debug console.log('hideSiteMobileMenu')
-    $html.removeClass('ui-site-mobile-menu-opening ui-site-mobile-menu-closing ui-site-mobile-menu-open')
-
-    // ARIA stuff
-    $('.site-mobile-menu').attr('aria-hidden', 'true')
-    $('.site-mobile-menu [tabindex]').attr('tabindex', -1)
-  }
-
-  /*
-   * Site Mobile Search
-   */
-
-  // Click button search
-  $doc.on(Utility.clickEvent, '.site-mobile-search-toggle', function (event) {
-    event.preventDefault()
-    if (!$html.is('.ui-site-mobile-search-open')) {
-      openSiteMobileSearch()
-    } else {
-      closeSiteMobileSearch()
-    }
-  })
-
-  // Focus/activate input
-  $doc.on('focus active', '.site-mobile-search-input', function (event) {
-    // @debug console.log('focus active .site-mobile-search-input')
-    openSiteMobileSearch()
-  })
-
-  // Blur input
-  // $doc.on('blur', '.site-mobile-search-input', function (event) {
-  //   // @debug console.log('blur site-mobile-search-input')
-  //   closeSiteMobileSearch()
-  // })
-
-  function openSiteMobileSearch () {
-    // @debug console.log('openSiteMobileSearch')
-    openSiteMobileMenu()
-    $html.addClass('ui-site-mobile-search-open')
-  }
-
-  function closeSiteMobileSearch () {
-    $html.removeClass('ui-site-mobile-search-open')
-  }
-
-  /*
-   * Open search (auto-detects whether mobile search or normal search to open)
-   */
-  function openSearch() {
-    // Mobile site search
-    if (/xs|sm/.test(currentBreakpoint)) {
-      // @debug console.log('openSiteMobileSearch')
-      openSiteMobileSearch()
-      $('.site-mobile-search-input').focus()
-
-    // Regular site search
-    } else {
-      $('.site-search-input').focus()
-    }
-  }
-
-  // Open the site-search from a different button
-  $doc.on('click', '.ui-open-site-search', function (event) {
-    event.preventDefault()
-    openSearch()
-  })
-
-  /*
-   * Watch Scroll
-   * This aims to batch all window scroll operations in one place.
-   */
-  // Attach WatchScroll instance to watch the window's scrolling
-  watchWindow
-    // Fix site nav
-    .watch(window, 'scrollTop>50', function () {
-      if (!$html.is('.ui-site-header-fixed')) {
-        // @debug
-        // console.log('add ui-site-header-fixed')
-        $html.addClass('ui-site-header-fixed')
-        Utility.debounceUpdateWindow()
-      }
-    })
-
-    // Unfix site nav
-    .watch(window, 'scrollTop<=50', function () {
-      if ($html.is('.ui-site-header-fixed')) {
-        // @debug
-        // console.log('remove ui-site-header-fixed')
-        $html.removeClass('ui-site-header-fixed')
-        Utility.debounceUpdateWindow()
-      }
-    })
-
-    // Start text counters
-    .watch('[data-textcount], .ui-has-textcount, .ui-textcount', 'enter', function () {
-      // console.log('WatchScroll enter', this)
-      $(this).uiTextCount('startCount')
-    })
-
-  // Dynamic watchers specified through view attributes (single action per element)
-  // This enables setting basic watchscroll actions on elements, rather than assigning via JS
-  // It's primarily used with the items which start text counts when the user has scrolled the element into the view
-  // @note if you need to add more than one action, I suggest doing it via JS
-  $('[data-watchscroll-action]').each(function (i, elem) {
-    var $elem = $(elem)
-    var action = ElementAttrsObject(elem, {
-      action: 'data-watchscroll-action',
-      callback: 'data-watchscroll-callback',
-      target: 'data-watchscroll-target'
-    })
-
-    // Detect which action and callback to fire
-    watchWindow.watch(elem, action.action, function () {
-      watchScrollCallback.apply(elem, [action])
-    })
-  })
-
-  // Basic WatchScroll callback methods
-  function watchScrollCallback (action) {
-    var $elem = $(this)
-
-    // e.g. `addClass:ui-visible`
-    var handle = action.callback
-    var target = action.target || $elem[0]
-    var method = handle
-    var value
-    if (!handle) return
-
-    // Split to get other values
-    if (/\:/.test(handle)) {
-      handle = handle.split(':')
-      method = handle[0]
-      value = handle[1]
-    }
-
-    // Get the target
-    $target = $(target)
-
-    // @debug console.log('watchScrollCallback', this, method, value);
-
-    // Handle different methods
-    switch (method.toLowerCase()) {
-      // addclass:class-to-add
-      case 'addclass':
-        $target.addClass(value)
-        break
-
-      // removeclass:class-to-remove
-      case 'removeclass':
-        $target.removeClass(value)
-        break
-    }
-  }
-
-  /*
-   * WatchScroll Nav
-   * If item is visible (via WatchScroll action `enter`) then make the navigation item active
-   */
-  $('[data-watchscroll-nav]').each(function (i, elem) {
-    watchWindow.watch(elem, WatchScroll.actions.withinMiddle)
-  })
-  $doc.on('watchscroll-action-withinmiddle', '[data-watchscroll-nav]', function () {
-    var $navLinks = $('.nav li:not(".active") a[href="#' + $(this).attr('id') + '"]')
-    $navLinks.each(function (i, elem) {
-      var $elem = $(elem)
-      var $navItem = $elem.parents('li').first()
-      if (!$navItem.is('.active')) {
-        $elem.parents('.nav').first().find('li').removeClass('active').filter($navItem).addClass('active')
-      }
-    })
-  })
-
-  /*
-   * Progress tabs
+   * Tabs
+   * @todo refactor into Tabs.js controller
    */
   // Any tabs areas with `.ui-tabs-progress` class will add a `.complete` class to the tabs before
   $doc.on('shown.bs.tab', '.tabs.ui-tabs-progress', function (event) {
@@ -535,6 +220,7 @@ $(document).ready(function ($) {
 
   /*
    * Emprunter Sim
+   * @todo refactor into separate component
    */
   $doc
     // Step 1
@@ -597,6 +283,7 @@ $(document).ready(function ($) {
 
   /*
    * Smooth scrolling to point on screen or specific element
+   * @todo refactor into General controller
    */
   // Scroll to an item which has been referenced on this page
   $doc.on(Utility.clickEvent, 'a[href^="#"]', function (event) {
@@ -624,6 +311,7 @@ $(document).ready(function ($) {
   })
 
   // When showing a tab/collapse/any other element which is `display:none`, check to see if any render components inside
+  // @todo refactor into Tabs/Collapses controller
   $doc.on('shown.bs.tab shown.bs.collapse', function (event) {
     var $target = $(event.target)
 
@@ -640,11 +328,9 @@ $(document).ready(function ($) {
     $target.trigger('UI:visible')
   })
 
-  // Watch the window scroll and update any Sticky elements
-  watchWindow.watch(window, Sticky.prototype._updateAllStickyWatchers)
-
   /*
    * Devenir Preteur
+   * @todo refactor into LenderSubscription controller (if not already there)
    */
   $doc.on('change', 'input#form-preter-address-is-correspondence', function (event) {
     checkAddressIsCorrespondence()
@@ -670,6 +356,7 @@ $(document).ready(function ($) {
 
   /*
    * Ajouter des fichiers
+   * @todo finish ExtraFiles.js component and remove this legacy code
    */
   var $extraFilesElem = $('#form-extrafiles')
   var $extraFilesList = $('.form-extrafiles-list')
@@ -798,6 +485,7 @@ $(document).ready(function ($) {
   /*
    * Custom Input Duration
    * User can click/drag around to select the range
+   * @todo refactor into separate component
    */
   $doc
     .on('mousedown touchstart', '.custom-input-duration', function (event) {
@@ -816,6 +504,7 @@ $(document).ready(function ($) {
   /*
    * Movable content area
    * Any [data-draggable] elements within this element can be dragged and sorted
+   * @todo refactor into separate component
    */
   $('[data-movable-content]').each(function (i, elem) {
     var $elem = $(elem)
@@ -842,6 +531,7 @@ $(document).ready(function ($) {
 
   /*
    * User Preter Balance
+   * @todo refactor into LenderWallet controller
    */
   $doc.on('change', '#balance-payment-cb-toggle, #balance-payment-transfer-toggle', function (event) {
     var $elem = $(this)
@@ -888,6 +578,7 @@ $(document).ready(function ($) {
 
   /*
    * User Preter Profile
+   * @todo refactor into LenderProfile controller (if not already there)
    */
   // Show/hide the correspondence address
   $doc.on('change', 'input#form-profile-address-is-correspondence', function (event) {
@@ -906,6 +597,7 @@ $(document).ready(function ($) {
 
   /*
    * Copy to Clipboard
+   * @todo refactor into General controller
    */
   $('.btn-copy, [data-clipboard-target]').each(function (i, elem) {
     elem.Clipboard = new Clipboard(elem)
@@ -916,6 +608,7 @@ $(document).ready(function ($) {
 
   /*
    * Show print dialog
+   * @todo refactor into General controller
    */
   $doc.on(Utility.clickEvent, '.btn-print, .ui-print', function (event) {
     event.preventDefault()
@@ -924,6 +617,7 @@ $(document).ready(function ($) {
 
   /*
    * Collapse
+   * @todo refactor into Collapses.js controller
    */
   // Mark on [data-toggle] triggers that the collapseable is/isn't collapsed
   $doc.on('shown.bs.collapse', function (event) {
@@ -949,6 +643,7 @@ $(document).ready(function ($) {
    * this here is a work-around to use the collapse within toggleable groups, i.e. accordians
    * minus all the reliance on certain element classes, e.g. `.panel`
    * To use this behaviour, the collapsable element must be within a `.ui-toggle-group`
+   * @todo refactor into Collapses.js controller
    */
   $doc.on('show.bs.collapse', '.ui-toggle-group > .collapse', function (event) {
     var $target = $(event.target)
@@ -968,6 +663,7 @@ $(document).ready(function ($) {
 
   /*
    * Reveal an element on page init
+   * @todo refactor into General controller
    */
   if (window.location.hasOwnProperty('hash') && window.location.hash) {
     var $hash = $(window.location.hash)
@@ -978,8 +674,9 @@ $(document).ready(function ($) {
     }
   }
 
-  // Scroll to tab/collapse element
+  // Reveal element by clicking special element
   // @note setting a link with class `.ui-reveal` or attribute `[data-ui-reveal]` enables this behaviour
+  // @todo refactor into General controller
   $doc.on(Utility.clickEvent, '.ui-reveal, [data-ui-reveal]', function (event) {
     var $elem = $(this)
     var targetSelector = Utility.checkSelector($elem.attr('data-target') || $elem.attr('href'))
@@ -1000,8 +697,9 @@ $(document).ready(function ($) {
     }
   })
 
-  // Close/dismiss an element
+  // Close/dismiss an element by clicking a special element
   // @note setting a link with class `.ui-dismiss` or attribute `[data-ui-dismiss]` enables this behaviour
+  // @todo refactor into General controller
   $doc.on(Utility.clickEvent, '.ui-dismiss, [data-ui-dismiss]', function (event) {
     var $elem = $(this)
     var targetSelector = Utility.checkSelector($elem.attr('data-target') || $elem.attr('href'))
@@ -1020,6 +718,7 @@ $(document).ready(function ($) {
 
   // Toggle an element
   // @note setting a link with class `.ui-toggle` or attribute `[data-ui-toggle]` enables this behaviour
+  // @todo refactor into General controller
   $doc.on(Utility.clickEvent, '.ui-toggle, [data-ui-toggle]', function (event) {
     var $elem = $(this)
     var targetSelector = Utility.checkSelector($elem.attr('data-target') || $elem.attr('href'))

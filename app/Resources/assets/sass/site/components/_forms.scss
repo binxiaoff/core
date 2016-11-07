@@ -182,35 +182,23 @@ select.input-field {
 
 // Inline form field
 .form-field-inline {
-  display: block;
+  @include clearfix;
+
+  display: table;
+  // Prevent input groups from inheriting border styles from table cells when
+  // placed within a table.
+  border-collapse: separate;
+
   color: $c-t1;
   margin: 0;
   position: relative;
-  vertical-align: middle;
-
-  > .btn-group {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    z-index: 1;
-    line-height: $height-input; // Height of input
-    text-align: center;
-    vertical-align: middle;
-
-    &:first-child {
-      left: 0;
-    }
-
-    &:last-child {
-      right: 0;
-    }
-  }
+  vertical-align: top;
 
   // Text inputs
-  .input-field {
+  > .input-field {
     @include input;
     @include input-size-default($single-line: true);
-    padding-left: $height-input;
+    display: table-cell;
   }
 
   // No responsive inputs yet
@@ -231,6 +219,56 @@ select.input-field {
   //     line-height: $height-input-lg;
   //   }
   // }
+
+  // Normalise buttons
+  .btn-default,
+  .btn-primary,
+  .btn-alternate,
+  .btn-clear,
+  .btn-outline {
+    @include button-shape-sm;
+    min-width: 0 !important;
+    border-radius: 0 !important;
+    vertical-align: top;
+  }
+
+  > .btn-group {
+    display: table-cell;
+    width: 1%;
+    z-index: 1;
+    line-height: $height-input; // Height of input
+    text-align: center;
+    vertical-align: top;
+    white-space: nowrap;
+
+    &:first-child {
+      left: 0;
+    }
+
+    &:last-child {
+      right: 0;
+    }
+  }
+
+  > .btn-group:first-child {
+    .btn-default,
+    .btn-primary,
+    .btn-alternate,
+    .btn-clear,
+    .btn-outline {
+      margin-right: 8px;
+    }
+  }
+
+  > .btn-group:last-child {
+    .btn-default,
+    .btn-primary,
+    .btn-alternate,
+    .btn-clear,
+    .btn-outline {
+      margin-left: 8px;
+    }
+  }
 }
 
 .form-field-single-checkbox,

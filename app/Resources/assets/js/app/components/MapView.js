@@ -25,7 +25,9 @@ var __ = new Dictionary(window.MAPVIEW_LANG)
 var L = window.L
 
 // Unilend access token
-L.mapbox.accessToken = 'pk.eyJ1IjoidW5pbGVuZCIsImEiOiJjaXJiczA4ejQwMDVvaWZsdzdmMmpnOGRtIn0._IBtG2TUy17m7S6jwVBrcg'
+if (L && L.mapbox) {
+  L.mapbox.accessToken = 'pk.eyJ1IjoidW5pbGVuZCIsImEiOiJjaXJiczA4ejQwMDVvaWZsdzdmMmpnOGRtIn0._IBtG2TUy17m7S6jwVBrcg'
+}
 
 // Private variables
 var groupColors = {

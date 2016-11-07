@@ -4,3 +4,20 @@ imports:
 swiftmailer:
     spool:
         type: db
+
+ekino_new_relic:
+    enabled: true
+    application_name: Unilend-front
+    deployment_names: ~
+    api_key: edc37da0a36bfd74eded96d4d454c8f7b4b0ab8d4bce97e
+    xmit: false
+    logging: false
+    instrument: false
+    log_exceptions: false
+    log_commands: true
+    using_symfony_cache: true
+    transaction_naming: route
+    transaction_naming_service: ~
+    ignored_routes: []
+    ignored_paths: []
+    ignored_commands: []

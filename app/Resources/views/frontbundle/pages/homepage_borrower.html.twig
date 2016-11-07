@@ -1,9 +1,5 @@
 {% extends 'layouts/_layout.html.twig' %}
 
-{% set page = {
-    title: 'Emprunter'
-} %}
-
 {% block siteContent %}
     <article id="homeemp" class="page">
 
@@ -126,7 +122,7 @@
                             </div>
                             <div class="col-lg-6 col-md-6 vertical-align-content">
                                 <div class="promo-slide promo-p2 {{ classPosition }} {{ classAnimatePosition }}">
-                                    <p class="quote">{{ person.quote|raw }}</p>
+                                    <p class="quote">&quot;{{ person.quote|raw }}&quot;</p>
                                     <p class="source"><cite>{{ person.name }}&mdash;{{ person.location }}</cite></p>
                                     <div class="promo-links">
                                         <a href="{{ path('testimonials') }}#testimonial-{{ person.name }}" class="link">{% trans %} site-general_testimonial-section-link-lender-title {% endtrans %}</a>
@@ -259,7 +255,7 @@
                                         <a href="#esim2" role="tab" data-toggle="tab" class="btn-continue btn-alternate btn-size-full">
                                             {% trans %} home-borrower_simulator-footer-continue-button {% endtrans %}
                                         </a>
-                                        <button class="btn-submit btn-alternate btn-size-full">
+                                        <button class="btn-submit btn-alternate btn-size-full" >
                                             {% trans %} home-borrower_simulator-footer-validate-button {% endtrans %}
                                         </button>
                                     </div>

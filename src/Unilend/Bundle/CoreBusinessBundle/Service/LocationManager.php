@@ -181,7 +181,7 @@ class LocationManager
                     $region = array(
                         'name' => $frenchRegions[$row['insee_region_code']],
                         'insee' => $row['insee_region_code'],
-                        'value' => (float)bcdiv($row['count'], $total, 2) * 100
+                        'value' => (float)round(bcmul(bcdiv($row['count'], $total, 3) , 100, 1))
                     );
                     $regions[] = $region;
                 }
@@ -190,7 +190,7 @@ class LocationManager
                     $region = array(
                         'name' => $frenchRegions[$insee],
                         'insee' => (string)$insee,
-                        'value' => (float)bcdiv($row, $total, 2) * 100
+                        'value' => (float)round(bcmul(bcdiv($row, $total, 4), 100, 1))
                     );
                     $regions[] = $region;
                 }
@@ -203,8 +203,8 @@ class LocationManager
     public function getFrenchRegions()
     {
         return [
-            '44' => 'Alsace-Champagne-Ardenne-Lorraine',
-            '75' => 'Aquitaine-Limousin-Poitou-Charentes',
+            '44' => 'Grand Est',
+            '75' => 'Nouvelle-Aquitaine',
             '84' => 'Auvergne-Rhône-Alpes',
             '27' => 'Bourgogne-Franche-Comté',
             '53' => 'Bretagne',
@@ -217,7 +217,7 @@ class LocationManager
             '76' => 'Occitanie',
             '02' => 'Martinique',
             '06' => 'Mayotte',
-            '32' => 'Nord-Pas-de-Calais-Picardie',
+            '32' => 'Hauts-de-France',
             '28' => 'Normandie',
             '52' => 'Pays de la Loire',
             '93' => 'Provence-Alpes-Côte d\'Azur'
@@ -254,4 +254,11 @@ class LocationManager
         }
     }
 
+    public function checkFrenchCityInsee($inseeCode)
+    {
+        /** @var \villes $cities */
+        $cities = $this->entityManager->getRepository('villes');
+
+        return $cities->exist($inseeCode, 'insee');
+    }
 }

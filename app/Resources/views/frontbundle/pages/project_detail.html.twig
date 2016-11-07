@@ -84,8 +84,8 @@
 
                             <div class="col-lg-4 col-md-4 hide-xs">
                                 <div class="project-single-rating">
-                                    <div class="label"><a href="{{ path(constant('Unilend\\Bundle\\FrontBundle\\Service\\RouteProvider::ROUTE_UNILEND_RATING')) }}">{% trans %} project-detail_unilend-rating-label {% endtrans %}</a></div>
-                                    <a href="{{ path(constant('Unilend\\Bundle\\FrontBundle\\Service\\RouteProvider::ROUTE_UNILEND_RATING')) }}">
+                                    <div class="label"><a href="{{ path('mon-premier-pret') }}#note">{% trans %} project-detail_unilend-rating-label {% endtrans %}</a></div>
+                                    <a href="{{ path('mon-premier-pret') }}#note">
                                         <span class="rating rating-{{ classRating }}">
                                             <span class="sr-only">
                                                 {% trans with {'%risk%' : project.risk|convertRisk} %} project-detail_unilend-rating-wording-label {% endtrans %}
@@ -177,6 +177,8 @@
                     <a href="{{ path('project_detail', {'projectSlug' : project.navigation.nextProject.slug}) }}" class="btn-nav-next" title="{{ project.navigation.nextProject.title }}" data-toggle="tooltip" data-placement="left"><span class="sr-only">{% trans %} project-detail_previous-project-label {% endtrans %}</span></a>
                 {%  endif %}
             </div><!-- /.project-single-header -->
+
+            {% include 'partials/components/list-socialmedia.html.twig' %}
         </header><!-- /.project-single-header-wrap -->
 
         {% include 'partials/components/project-detail/side-panel.html.twig' %}
@@ -210,7 +212,7 @@
                         {% endif %}
                     </div><!-- /.project-single-menu-period -->
                     <div class="project-single-menu-col project-single-menu-top">
-                        <a href="#top" class="btn-nav-top"><span class="sr-only">Back to top</span></a>
+                        <a href="#top" class="btn-nav-top"><span class="sr-only">{% trans %} project-detail_back-to-top-screen-reader-link {% endtrans %}</span></a>
                     </div><!-- /.project-single-menu-top -->
                 </div><!-- /.project-single-menu-info -->
             </div><!-- /.project-single-nav-inner -->
@@ -218,74 +220,6 @@
 
         <div class="project-single-content page-content">
             <div class="site-wrap">
-
-                {# START TESTING #}
-                {# <div class="project">
-                    <dl class="list-2col">
-                        <dt>Now</dt>
-                        <dd>{{ 'now'|date('c') }}</dd>
-                        <dt>Less than 1m</dt>
-                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+1 minute')|date('c') }}" data-timecount-debug="true"></span></dd>
-                        <dt>Less than 5m</dt>
-                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+5 minutes')|date('c') }}"></span></dd>
-                        <dt>Less than 1hr</dt>
-                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+1 hour')|date('c') }}"></span></dd>
-                        <dt>Less than 24hrs</dt>
-                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+24 hours')|date('c') }}"></span></dd>
-                        <dt>Less than 48hrs</dt>
-                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+48 hours')|date('c') }}"></span></dd>
-                        <dt>Less than 7 days</dt>
-                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+7 days')|date('c') }}"></span></dd>
-                        <dt>Less than 30 days</dt>
-                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+30 days')|date('c') }}"></span></dd>
-                        <dt>More than 30 days</dt>
-                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+45 days')|date('c') }}"></span></dd>
-                    </dl>
-                </div>
-
-                <div class="project-list-item">
-                    <dl class="list-2col">
-                        <dt>Less than 1m</dt>
-                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+1 minutes')|date('c') }}"></span></dd>
-                        <dt>Less than 5m</dt>
-                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+5 minutes')|date('c') }}"></span></dd>
-                        <dt>Less than 1hr</dt>
-                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+1 hour')|date('c') }}"></span></dd>
-                        <dt>Less than 24hrs</dt>
-                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+24 hours')|date('c') }}"></span></dd>
-                        <dt>Less than 48hrs</dt>
-                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+48 hours')|date('c') }}"></span></dd>
-                        <dt>Less than 7 days</dt>
-                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+7 days')|date('c') }}"></span></dd>
-                        <dt>Less than 30 days</dt>
-                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+30 days')|date('c') }}"></span></dd>
-                        <dt>More than 30 days</dt>
-                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+45 days')|date('c') }}"></span></dd>
-                    </dl>
-                </div>
-
-                <div class="project-single">
-                    <dl class="list-2col">
-                        <dt>Less than 1m</dt>
-                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+1 minutes')|date('c') }}"></span></dd>
-                        <dt>Less than 5m</dt>
-                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+5 minutes')|date('c') }}"></span></dd>
-                        <dt>Less than 1hr</dt>
-                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+1 hour')|date('c') }}"></span></dd>
-                        <dt>Less than 24hrs</dt>
-                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+24 hours')|date('c') }}"></span></dd>
-                        <dt>Less than 48hrs</dt>
-                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+48 hours')|date('c') }}"></span></dd>
-                        <dt>Less than 7 days</dt>
-                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+7 days')|date('c') }}"></span></dd>
-                        <dt>Less than 30 days</dt>
-                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+30 days')|date('c') }}"></span></dd>
-                        <dt>More than 30 days</dt>
-                        <dd><span class="ui-has-timecount" data-timecount-to="{{ 'now'|date_modify('+45 days')|date('c') }}"></span></dd>
-                    </dl>
-                </div> #}
-                {# END TESTING #}
-
                 <div class="row">
                     <div class="col-lg-8 col-md-8">
                         <nav class="project-single-nav">

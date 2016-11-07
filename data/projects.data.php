@@ -726,19 +726,20 @@ class projects extends projects_crud
             $wherePublished = ' AND DATE(p.date_publication_full) >=  :starting_date';
         }
 
-        $sQuery = 'SELECT avg(t1.weighted_rate_by_project)
-                        FROM (
-                          SELECT SUM(t.amount * t.rate) / SUM(t.amount) as weighted_rate_by_project
-                          FROM (
-                            SELECT l.id_loan, l.amount, l.rate, l.added, p.id_project, p.period
-                            FROM loans l
-                              INNER JOIN projects p ON p.id_project = l.id_project
-                            WHERE p.status >= ' . \projects_status::FUNDE . '
-                            AND p.status != ' . \projects_status::FUNDING_KO . $whereRisk . $whereDurationMin . $whereDurationMax . $wherePublished . '
-                          ) t
-                          GROUP BY t.id_project
-                        ) t1
-                        ';
+        $sQuery = '
+            SELECT AVG(t1.weighted_rate_by_project)
+            FROM (
+                SELECT SUM(t.amount * t.rate) / SUM(t.amount) as weighted_rate_by_project
+                FROM (
+                    SELECT l.id_loan, l.amount, l.rate, l.added, p.id_project, p.period
+                    FROM loans l
+                    INNER JOIN projects p ON p.id_project = l.id_project
+                    WHERE p.status >= ' . \projects_status::FUNDE . '
+                        AND p.status != ' . \projects_status::FUNDING_KO . $whereRisk . $whereDurationMin . $whereDurationMax . $wherePublished . '
+                ) t
+                GROUP BY t.id_project
+            ) t1';
+
         try {
             $statement = $this->bdd->executeQuery($sQuery, $bind, $type, new \Doctrine\DBAL\Cache\QueryCacheProfile(1800, md5(__METHOD__)));
             $result = $statement->fetchAll(PDO::FETCH_COLUMN);
@@ -1077,7 +1078,7 @@ class projects extends projects_crud
 
         $query = 'SELECT count(projects.id_project)
                     FROM projects
-                    WHERE MOD(HOUR(TIMEDIFF(date_publication_full, date_funded)), 24) <= 24
+                    WHERE ROUND(TIMESTAMPDIFF(SECOND, date_publication_full, date_funded)/120) <= 24
                     AND date_funded >= :startDate AND status >= ' . \projects_status::FUNDE;
 
         $statement = $this->bdd->executeQuery($query, $bind, $type);
@@ -1113,6 +1114,27 @@ class projects extends projects_crud
         return $statement->fetchColumn(0);
     }
 
+    public function countFundedProjectsByCohort()
+    {
+        $query = 'SELECT COUNT(DISTINCT id_project) AS amount,
+                    (
+                        SELECT
+                          CASE LEFT(projects_status_history.added, 4)
+                            WHEN 2013 THEN "2013-2014"
+                            WHEN 2014 THEN "2013-2014"
+                            ELSE LEFT(projects_status_history.added, 4)
+                          END AS date_range
+                        FROM projects_status_history
+                        INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
+                        WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
+                          AND projects.id_project = projects_status_history.id_project
+                        ORDER BY id_project_status_history ASC LIMIT 1
+                      ) AS cohort
+                       FROM projects
+                    WHERE projects.status >= ' . \projects_status::REMBOURSEMENT . '
+                    GROUP BY cohort';
 
-
+        $statement = $this->bdd->executeQuery($query);
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

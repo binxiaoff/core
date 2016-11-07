@@ -5,6 +5,7 @@ use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -814,7 +815,14 @@ class LenderProfileController extends Controller
             if ($this->get('session')->getFlashBag()->has('personFiscalAddressErrors')) {
                 $request->getSession()->set('personFiscalAddressData', $post);
             } else {
-                $clientAddress->update();
+                switch ($clientAddress->meme_adresse_fiscal) {
+                    case 1:
+                        $this->updateFiscalAndPostalAddress($clientAddress);
+                        break;
+                    default:
+                        $clientAddress->update();
+                        break;
+                }
                 $this->addFlash('personFiscalAddressSuccess', $translator->trans('lender-profile_information-tab-fiscal-address-form-success-message'));
 
                 if (false !== strpos($historyContent, '<li>')) {
@@ -902,8 +910,10 @@ class LenderProfileController extends Controller
     }
 
     /**
+     * @param Request $request
      * @Route("/profile/postal-address-update", name="profile_postal_address_update")
      * @Method("POST")
+     * @return RedirectResponse
      */
     public function postalAddressFormAction(Request $request)
     {
@@ -918,11 +928,7 @@ class LenderProfileController extends Controller
             $formPostalAddress = $request->request->all();
 
             if (isset($formPostalAddress['same_postal_address']) && true == $formPostalAddress['same_postal_address']) {
-                $clientAddress->meme_adresse_fiscal = 1;
-                $clientAddress->adresse1            = $clientAddress->adresse_fiscal;
-                $clientAddress->cp                  = $clientAddress->cp_fiscal;
-                $clientAddress->ville               = $clientAddress->ville_fiscal;
-                $clientAddress->id_pays             = $clientAddress->id_pays_fiscal;
+                $this->updateFiscalAndPostalAddress($clientAddress);
             } else {
                 $clientAddress->meme_adresse_fiscal = 0;
 
@@ -941,8 +947,8 @@ class LenderProfileController extends Controller
                 if ($clientAddress->id_pays != $formPostalAddress['postal_address_country']) {
                     $clientAddress->id_pays = $formPostalAddress['postal_address_country'];
                 }
+                $clientAddress->update();
             }
-            $clientAddress->update();
             $this->addFlash('postalAddressSuccess', $translator->trans('lender-profile_information-tab-postal-address-form-success-message'));
         }
 
@@ -1155,7 +1161,7 @@ class LenderProfileController extends Controller
             $errorTitle = $translator->trans('lender-error-page_access-denied');
             $status     = Response::HTTP_FORBIDDEN;
         }
-        return $this->render('pages/static_pages/error.html.twig', ['errorTitle' => $errorTitle])->setStatusCode($status);
+        return $this->render('exception/error.html.twig', ['errorTitle' => $errorTitle])->setStatusCode($status);
     }
 
     /**
@@ -1463,7 +1469,7 @@ class LenderProfileController extends Controller
     private function sendAccountModificationEmail(\clients $client)
     {
         $varMail = array_merge($this->getCommonEmailVariables(), [
-            'prenom_p' => $client->prenom,
+            'prenom' => $client->prenom,
         ]);
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
@@ -1669,5 +1675,18 @@ class LenderProfileController extends Controller
             $template['nextTaxExemptionRequestDone']  = false;
             $template['taxExemptionRequestLimitDate'] = false;
         }
+    }
+
+    /**
+     * @param \clients_adresses $clientAddress
+     */
+    private function updateFiscalAndPostalAddress(\clients_adresses $clientAddress)
+    {
+        $clientAddress->meme_adresse_fiscal = 1;
+        $clientAddress->adresse1            = $clientAddress->adresse_fiscal;
+        $clientAddress->cp                  = $clientAddress->cp_fiscal;
+        $clientAddress->ville               = $clientAddress->ville_fiscal;
+        $clientAddress->id_pays             = $clientAddress->id_pays_fiscal;
+        $clientAddress->update();
     }
 }

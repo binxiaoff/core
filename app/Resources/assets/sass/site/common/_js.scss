@@ -67,6 +67,13 @@ $js-project-single-map-toggle: '.ui-project-single-map-toggle';
 // Collapse (accordian) is open
 $js-collapse-open: '.ui-collapse-open';
 
+// No user connected
+$js-no-user: '.ui-no-user';
+
+// User type
+$js-user-type-lender: '.ui-user-type-lender';
+$js-user-type-borrower: '.ui-user-type-borrower';
+
 // User Levels
 $js-user-level-0: '.ui-user-level-0';
 $js-user-level-1: '.ui-user-level-1';
@@ -92,6 +99,7 @@ $js-autolend-cell-enabled: '.ui-autolend-cell-enabled';
 $js-autolend-average-equal: '.ui-autolend-average-equal';
 $js-autolend-average-within: '.ui-autolend-average-within';
 $js-autolend-average-exceeds: '.ui-autolend-average-exceeds';
+$js-autolend-out-of-range: '.ui-autolend-out-of-range';
 
 // Dropdown menus
 $js-nav-dropdown-menu: '[data-nav-dropdown-menu]';

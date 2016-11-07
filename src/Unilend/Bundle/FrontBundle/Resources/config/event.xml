@@ -17,5 +17,13 @@
             <argument type="service" id="unilend.service.client_manager" />
             <tag name="kernel.event_subscriber" />
         </service>
+        <service id="unilend.frontbundle.event.exception_subscriber" class="Unilend\Bundle\FrontBundle\EventSubscriber\ExceptionSubscriber">
+            <argument type="service" id="kernel"/>
+            <tag name="kernel.event_subscriber" />
+        </service>
+        <service id="unilend.frontbundle.event.sonata_seo_subscriber" class="Unilend\Bundle\FrontBundle\EventSubscriber\SonataSeoDataSubscriber">
+            <argument type="service" id="unilend.frontbundle.seo_manager" />
+            <tag name="kernel.event_subscriber" />
+        </service>
     </services>
 </container>

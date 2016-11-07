@@ -171,7 +171,8 @@ UserNotificationsList.prototype.renderNotification = function (notificationObjec
     datetimeRelative: (notificationObject.date instanceof Date ? Utility.getRelativeTime(notificationObject.date) : notificationObject.datetime || ''),
     title: notificationObject.title || '',
     image: notificationObject.image || '',
-    content: notificationObject.content || ''
+    content: notificationObject.content || '',
+    classOpen: (notificationObject.isOpen ? 'ui-notification-open' : '')
   })
 }
 
@@ -183,7 +184,7 @@ UserNotificationsList.prototype.templates = {
     </ul>',
 
   // The drop's notification list item, which represents a single notification
-  listItem: '<li class="notification notification-type-{{ type }} ui-notification-status-{{ status }}" data-notification-id="{{ id }}">\
+  listItem: '<li class="notification notification-type-{{ type }} ui-notification-status-{{ status }} {{ classOpen }}" data-notification-id="{{ id }}" tabindex="10">\
       <header class="notification-header">\
         <h5 class="notification-datetime" title="{{ datetime }}">{{ datetimeRelative }}</h5>\
         <h4 class="notification-title">{{ title }}</h4>\

@@ -18,6 +18,9 @@
 
   transition: color .2s, background-color .2s;
 
+  // TMA-1005 Remove silly iOS styling
+  -webkit-appearance: none;
+
   &:hover,
   &:active,
   &:focus {

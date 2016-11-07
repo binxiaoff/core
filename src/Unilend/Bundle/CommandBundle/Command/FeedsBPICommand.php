@@ -2,6 +2,7 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
@@ -14,8 +15,9 @@ class FeedsBPICommand extends ContainerAwareCommand
     protected function configure()
     {
         $this
-            ->setName('feeds:bpi')
-            ->setDescription('Sends BPI XML Stream');
+            ->setName('unilend:feeds_out:project:generate')
+            ->setDescription('Sends project XML Stream')
+            ->addArgument('partner', InputArgument::REQUIRED, 'which partner ? "bpi" or "crowdlending" ? ');
     }
 
     /**
@@ -25,9 +27,12 @@ class FeedsBPICommand extends ContainerAwareCommand
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
+        $translator    = $this->getContainer()->get('translator');
+        $router        = $this->getContainer()->get('router');
+        $serializer    = $this->getContainer()->get('serializer');
 
-        /** @var \projects $projects */
-        $projects = $entityManager->getRepository('projects');
+        /** @var \projects $project */
+        $project = $entityManager->getRepository('projects');
         /** @var \companies $company */
         $company = $entityManager->getRepository('companies');
         /** @var \bids $bids */
@@ -35,8 +40,8 @@ class FeedsBPICommand extends ContainerAwareCommand
         /** @var \loans $loans */
         $loans = $entityManager->getRepository('loans');
 
-        $staticUrl = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
-        $userPath  = $this->getContainer()->getParameter('path.user');
+        $hostUrl  = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
+        $userPath = $this->getContainer()->getParameter('path.user');
 
         $projectStatuses = array(
             \projects_status::EN_FUNDING,
@@ -54,67 +59,95 @@ class FeedsBPICommand extends ContainerAwareCommand
             \projects_status::DEFAUT
         );
 
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>';
-        $xml .= '<partenaire>';
+        $partner = strtolower($input->getArgument('partner'));
 
-        $projects = $projects->selectProjectsByStatus($projectStatuses, 'AND p.display = ' . \projects::DISPLAY_PROJECT_ON, [], '', '', false);
-        foreach ($projects as $project) {
-            $company->get($project['id_company'], 'id_company');
+        $projectsToSerialise = [];
+        $projectList         = $project->selectProjectsByStatus($projectStatuses, 'AND p.display = ' . \projects::DISPLAY_PROJECT_ON, [], '', '', false);
+        foreach ($projectList as $item) {
+            $project->get($item['id_project']);
+            $company->get($project->id_company);
 
-            if ($project['status'] === \projects_status::EN_FUNDING) {
-                $totalBids = $bids->sum('id_project = ' . $project['id_project'] . ' AND status = ' . \bids::STATUS_BID_PENDING, 'amount') / 100;
+            if ($project->status == \projects_status::EN_FUNDING) {
+                $totalBids = $bids->sum('id_project = ' . $project->id_project . ' AND status = ' . \bids::STATUS_BID_PENDING, 'amount') / 100;
             } else {
-                $totalBids = $bids->sum('id_project = ' . $project['id_project'] . ' AND status = ' . \bids::STATUS_BID_ACCEPTED, 'amount') / 100;
+                $totalBids = $bids->sum('id_project = ' . $project->id_project . ' AND status = ' . \bids::STATUS_BID_ACCEPTED, 'amount') / 100;
             }
 
-            if ($totalBids > $project['amount']) {
-                $totalBids = $project['amount'];
+            if ($totalBids > $project->amount) {
+                $totalBids = $project->amount;
             }
 
-            $xml .= '<projet>';
-            $xml .= '<reference_partenaire>045</reference_partenaire>';
-            $xml .= '<date_export>' . date('Y-m-d') . '</date_export>';
-            $xml .= '<reference_projet>' . $project['id_project'] . '</reference_projet>';
-            $xml .= '<impact_social>NON</impact_social>';
-            $xml .= '<impact_environnemental>NON</impact_environnemental>';
-            $xml .= '<impact_culturel>NON</impact_culturel>';
-            $xml .= '<impact_eco>OUI</impact_eco>';
-            $xml .= '<categorie><categorie1>' . $this->getBPISector($company->sector) . '</categorie1></categorie>';
-            $xml .= '<mots_cles_nomenclature_operateur></mots_cles_nomenclature_operateur>';
-            $xml .= '<mode_financement>PRR</mode_financement>';
-            $xml .= '<type_porteur_projet>ENT</type_porteur_projet>';
-            $xml .= '<qualif_ESS>NON</qualif_ESS>';
-            $xml .= '<code_postal>' . $company->zip . '</code_postal>';
-            $xml .= '<ville><![CDATA["' . utf8_encode($company->city) . '"]]></ville>';
-            $xml .= '<titre><![CDATA["' . $company->name . '"]]></titre>';
-            $xml .= '<description><![CDATA["' . $project['nature_project'] . '"]]></description>';
-            $xml .= '<url><![CDATA[' . $staticUrl . '/projects/detail/' . $project['slug'] . '/?utm_source=TNProjets&utm_medium=Part&utm_campaign=Permanent]]></url>';
-            $xml .= '<url_photo><![CDATA[' . $staticUrl . '/images/dyn/projets/169/' . $project['photo_projet'] . ']]></url_photo>';
-            $xml .= '<date_debut_collecte>' . $project['date_publication'] . '</date_debut_collecte>';
-            $xml .= '<date_fin_collecte>' . $project['date_retrait'] . '</date_fin_collecte>';
-            $xml .= '<montant_recherche>' . $project['amount'] . '</montant_recherche>';
-            $xml .= '<montant_collecte>' . number_format($totalBids, 0, ',', '') . '</montant_collecte>';
-            $xml .= '<nb_contributeurs>' . $loans->getNbPreteurs($project['id_project']) . '</nb_contributeurs>';
-            $xml .= '<succes>' . $this->getBPISuccess($project['status']) . '</succes>';
-            $xml .= '</projet>';
-        }
-        $xml .= '</partenaire>';
+            $details = [
+                'reference_partenaire'             => '045',
+                'date_export'                      => date('Y-m-d'),
+                'reference_projet'                 => $project->id_project,
+                'impact_social'                    => 'NON',
+                'impact_environnemental'           => 'NON',
+                'impact_culturel'                  => 'NON',
+                'impact_eco'                       => 'OUI',
+                'categorie'                        => [
+                    'categorie1' => $this->getBPISector($company->sector)
+                ],
+                'mots_cles_nomenclature_operateur' => '',
+                'mode_financement'                 => 'PRR',
+                'type_porteur_projet'              => 'ENT',
+                'qualif_ESS'                       => 'NON',
+                'code_postal'                      => $company->zip,
+                'ville'                            => $company->city,
+                'titre'                            => $translator->trans('company-sector_sector-' . $company->sector) . ' - ' . $company->city,
+                'description'                      => $project->nature_project,
+                'url'                              => $hostUrl . $router->generate('project_detail',
+                        ['projectSlug' => $project->slug]) . '/?utm_source=TNProjets&utm_medium=Part&utm_campaign=Permanent',
+                'url_photo'                        => $hostUrl . '/images/dyn/projets/169/' . $project->photo_projet,
+                'date_debut_collecte'              => $project->date_publication,
+                'date_fin_collecte'                => $project->date_retrait,
+                'montant_recherche'                => $project->amount,
+                'montant_collecte'                 => number_format($totalBids, 0, ',', ''),
+                'nb_contributeurs'                 => $loans->getNbPreteurs($project->id_project),
+                'succes'                           => $this->getBPISuccess($project->status)
+            ];
 
-        if (false === file_put_contents($userPath . 'fichiers/045.xml', $xml)) {
-            $output->writeln('Error occured while creating fichiers/045.xml');
+            if ('crowdlending' === $partner) {
+                $details['duree_du_pret'] = $project->period;
+                $details['taux']          = round($project->getAverageInterestRate(), 1);
+            }
+
+            $projectsToSerialise['projet'][] = $details;
+        }
+        $xml = $serializer->serialize($projectsToSerialise, 'xml', ['xml_root_node_name' => 'partenaire', 'xml_encoding' => 'UTF-8']);
+
+        $fileName = $this->getFileName($partner);
+        if (false === file_put_contents($userPath . 'fichiers/' . $fileName . '.xml', $xml)) {
+            $output->writeln('Error occured while creating fichiers/' . $fileName . '.xml');
         } else {
-            $output->writeln('fichiers/045.xml created');
+            $output->writeln('fichiers/' . $fileName . '.xml created');
         }
 
-        if (false === file_put_contents($userPath . 'fichiers/045_historique.xml', $xml, FILE_APPEND)) {
-            $output->writeln('Error occured while updating fichiers/045_historique.xml');
+        if (false === file_put_contents($userPath . 'fichiers/' . $fileName . '_historique.xml', $xml, FILE_APPEND)) {
+            $output->writeln('Error occured while updating fichiers/' . $fileName . '_historique.xml');
         } else {
-            $output->writeln('fichiers/045_historique.xml updated');
+            $output->writeln('fichiers/' . $fileName . '_historique.xml updated');
         }
+    }
+
+    private function getFileName($partner)
+    {
+        switch ($partner) {
+            case 'crowdlending' :
+                $filename = 'digest';
+                break;
+            case 'bpi' :
+            default :
+                $filename = '045';
+                break;
+        }
+
+        return $filename;
     }
 
     /**
      * @param string $sector
+     *
      * @return string
      */
     private function getBPISector($sector)
@@ -147,6 +180,7 @@ class FeedsBPICommand extends ContainerAwareCommand
 
     /**
      * @param int $status
+     *
      * @return string
      */
     private function getBPISuccess($status)

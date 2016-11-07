@@ -2,6 +2,8 @@
 
 use Unilend\librairies\Altares;
 use \Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
+use \Psr\Log\LoggerInterface;
+use \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
 
 class dossiersController extends bootstrap
 {
@@ -210,8 +212,8 @@ class dossiersController extends bootstrap
             $this->longitude = $this->companies->longitude;
 
             $this->aAnnualAccountsDates = array();
-            $this->aAnalysts            = $this->users->select('status = 1 AND id_user_type = 2');
-            $this->aSalesPersons        = $this->users->select('status = 1 AND id_user_type = 3');
+            $this->aAnalysts            = $this->users->select('(status = 1 AND id_user_type = 2) OR id_user = ' . $this->projects->id_analyste);
+            $this->aSalesPersons        = $this->users->select('(status = 1 AND id_user_type = 3) OR id_user = ' . $this->projects->id_commercial);
             $this->aEmails              = $this->projects_status_history->select('content != "" AND id_project = ' . $this->projects->id_project, 'id_project_status_history DESC');
             $this->lProjects_comments   = $this->projects_comments->select('id_project = ' . $this->projects->id_project, 'added DESC');
             $this->lProjects_status     = $this->projects_status->getPossibleStatus($this->projects->id_project, $this->projects_status_history);
@@ -2023,26 +2025,11 @@ class dossiersController extends bootstrap
                     }
 
                     if (0 == $this->echeanciers->counter('id_project = ' . $this->projects->id_project . ' AND status = 0')) {
-                        $this->settings->get('Adresse controle interne', 'type');
-                        $mailBO = $this->settings->value;
-
-                        $varMail = array(
-                            'surl'           => $this->surl,
-                            'url'            => $this->furl,
-                            'nom_entreprise' => $this->companies->name,
-                            'nom_projet'     => $this->projects->title,
-                            'id_projet'      => $this->projects->id_project,
-                            'annee'          => date('Y')
-                        );
-
-                        $oLogger->info('Manual repayment, Send preteur-dernier-remboursement-controle. Data to use: ' . var_export($varMail, true), ['class' => __CLASS__, 'function' => __FUNCTION__]);
-
-                        /** @var TemplateMessage $messageBO */
-                        $messageBO = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-dernier-remboursement-controle', $varMail);
-                        $messageBO->setTo($mailBO);
-
-                        $mailer = $this->get('mailer');
-                        $mailer->send($messageBO);
+                        /** @var MailerManager $mailerManager */
+                        $mailerManager = $this->get('unilend.service.email_manager');
+                        $mailerManager->setLogger($oLogger);
+                        $mailerManager->sendInternalNotificationEndOfRepayment($this->projects);
+                        $mailerManager->sendClientNotificationEndOfRepayment($this->projects);
                     }
 
                     $lesRembEmprun = $this->bank_unilend->select('type = 1 AND status = 0 AND id_project = ' . $this->projects->id_project, 'id_unilend ASC', 0, 1); // on ajoute la restriction pour BT 17882
@@ -2261,15 +2248,17 @@ class dossiersController extends bootstrap
     public function _echeancier_emprunteur()
     {
         $this->clients                 = $this->loadData('clients');
-        $this->echeanciers_emprunteur  = $this->loadData('echeanciers_emprunteur');
+        $this->echeanciers             = $this->loadData('echeanciers');
         $this->projects                = $this->loadData('projects');
         $this->projects_status         = $this->loadData('projects_status');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->receptions              = $this->loadData('receptions');
         $this->prelevements            = $this->loadData('prelevements');
+        /** @var \echeanciers_emprunteur $repaymentSchedule */
+        $repaymentSchedule = $this->loadData('echeanciers_emprunteur');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
-            $this->lRemb = $this->echeanciers_emprunteur->select('id_project = ' . $this->projects->id_project . ' AND status_ra = 0', 'ordre ASC');
+            $this->lRemb = $repaymentSchedule->getDetailedProjectRepaymentSchedule($this->projects);
 
             $this->montantPreteur    = 0;
             $this->MontantEmprunteur = 0;
@@ -2354,7 +2343,7 @@ class dossiersController extends bootstrap
             } else {
                 // on va recup la date de la derniere echeance qui suit le process de base
                 $aRepaymentSchedule                   = $this->echeanciers->select(' id_project = ' . $this->projects->id_project . ' AND ordre = ' . ($iOrderEarlyRefund + 1), 'ordre ASC', 0, 1);
-                $this->date_derniere_echeance_normale = $this->dates->formatDateMysqltoFr_HourOut($aRepaymentSchedule[0]['date_echeance']);
+                $this->date_derniere_echeance_normale = (false === empty($aRepaymentSchedule[0]['date_echeance'])) ? $this->dates->formatDateMysqltoFr_HourOut($aRepaymentSchedule[0]['date_echeance']) : '';
             }
         }
 

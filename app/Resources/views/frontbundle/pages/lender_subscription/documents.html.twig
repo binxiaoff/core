@@ -1,11 +1,6 @@
 {# Projects Index #}
 {% extends 'layouts/_layout.html.twig' %}
 
-{% set page = {
-    title: 'Devenir Prêteur',
-    permalink: path('lender_subscription_documents', {'clientHash' : client.hash })
-} %}
-
 {# Set input ID namespace to "person" #}
 {% if client.type in [constant('\\clients::TYPE_PERSON'), constant('\\clients::TYPE_PERSON_FOREIGNER')] %}
     {% set idClientType = 'person' %}
@@ -46,7 +41,7 @@
 
                                         <div class="row reverse btn-controls tab-footer">
                                             <div class="col-submit col-lg-7 col-md-7">
-                                                <button class="btn-primary">
+                                                <button class="btn-primary" data-spinnerbutton>
                                                     {% trans %} lender-subscription_documents-submit-button {% endtrans %}
                                                     <span class="icon fa-angle-right"></span>
                                                 </button>
@@ -61,14 +56,15 @@
                                             </div>
                                             <h3 class="promo-highlight">
                                                 <span class="ui-text-count" data-start-count="0" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc"
-                                                      data-end-count="{{ 'lender-subscription_documents-statistics-section-saving-value'|trans }}" ></span><sup>%</sup>
+                                                      data-end-count="{{ 'lender-subscription_documents-statistics-section-saving-value'|trans }}" ></span>
+                                                {{ 'lender-subscription_documents-statistics-section-saving-value'|trans }}<sup>%</sup>
                                             </h3>
                                             <p>{% trans %} lender-subscription_documents-statistics-section-saving-text {% endtrans %}</p>
                                         </div><!-- /.promo -->
 
                                         <div class="promo">
                                             <div class="promo-image">
-                                                {{ svgimage('#promo-linechart2', '', 190, 190, 'none') | raw }}
+                                                {{ svgimage('#promo-money', '', 190, 190, 'none') | raw }}
                                             </div>
                                             <h3 class="promo-highlight">
                                                 {% if 'lender-subscription_documents-statistics-section-linechart-value'|trans != 'lender-subscription_documents-statistics-section-linechart-value' %}
@@ -81,6 +77,7 @@
                                                       data-total-time="3000"
                                                       data-limit-decimal="2"
                                                       data-tween-count="easeOutQuint"></span>
+                                                {{ valueLineChart|round(1, 'common')|localizednumber }}
                                                 <sup>%</sup>
                                             </h3>
                                             <p>{% trans %} lender-subscription_documents-statistics-section-linechart-text {% endtrans %}</p>

@@ -90,7 +90,7 @@
                         <select id="filter-status" name="filter[status]" class="input-field">
                             <option value="">{% trans %} lender-operations_loans-table-by-status-filter {% endtrans %}</option>
                             {% for statusDetail in loansStatusFilter %}
-                                <option value="{{ statusDetail.status }}" {% if currentFilters is not empty and currentFilters.filter.status == statusDetail.status %} selected="selected" {% endif %}>{{ "lender-operations_project-status-label-#{ statusDetail.status }" | trans }}</option>
+                                <option value="{{ statusDetail.status }}" {% if currentFilters.filter.status is defined and currentFilters.filter.status == statusDetail.status %} selected="selected" {% endif %}>{{ "lender-operations_project-status-label-#{ statusDetail.status }" | trans }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -98,7 +98,7 @@
                         <select id="filter-next" name="filter[date]" class="input-field">
                             <option value=""> {% trans %} lender-operations_loans-table-by-date-filter {% endtrans %} </option>
                             {% for year in firstLoanYear..date()|date('Y') %}
-                                <option value="{{ year }}" {% if currentFilters is not empty and currentFilters.filter.date == year %} selected="selected" {% endif %}> {{ year }} </option>
+                                <option value="{{ year }}" {% if currentFilters.filter.date is defined and currentFilters.filter.date == year %} selected="selected" {% endif %}> {{ year }} </option>
                             {% endfor %}
                         </select>
                     </div>
@@ -112,28 +112,28 @@
                 <thead>
                 <tr>
                     <th class="table-sortable-column table-myloans-item-project" data-sortable-by="project">
-                        <span class="label"><span class="sr-only">{{ 'lender-operations_sr-sort-loan-project-name-column'|trans }} </span> {% trans %} lender-operations_loans-table-project-column {% endtrans %} </span>
+                        <span class="label" title="{{ 'lender-operations_sr-sort-loan-project-name-column'|trans|e('html_attr') }}" data-toggle="tooltip">{% trans %} lender-operations_loans-table-project-column {% endtrans %} </span>
                     </th>
                     <th class="table-sortable-column table-myloans-item-rating" data-sortable-by="rating">
-                        <span class="label"><span class="sr-only">{{ 'lender-operations_sr-sort-loan-project-rate-column'|trans }} </span>{% trans %} lender-operations_loans-table-project-risk-column {% endtrans %}</span>
+                        <span class="label" title="{{ 'lender-operations_sr-sort-loan-project-rate-column'|trans|e('html_attr') }}" data-toggle="tooltip">{% trans %} lender-operations_loans-table-project-risk-column {% endtrans %}</span>
                     </th>
                     <th class="table-sortable-column table-myloans-item-amount" data-sortable-by="amount">
-                        <span class="label"><span class="sr-only">{{ 'lender-operations_sr-sort-loan-loan-amount-column'|trans }} </span>{% trans %} lender-operations_loans-table-amount-column {% endtrans %}</span>
+                        <span class="label" title="{{ 'lender-operations_sr-sort-loan-loan-amount-column'|trans|e('html_attr') }}" data-toggle="tooltip">{% trans %} lender-operations_loans-table-amount-column {% endtrans %}</span>
                     </th>
                     <th class="table-sortable-column table-myloans-item-interest" data-sortable-by="interest">
-                        <span class="label"><span class="sr-only">{{ 'lender-operations_sr-sort-loan-loan-rate-column'|trans }} </span>{% trans %} lender-operations_loans-table-loan-rate-column {% endtrans %}</span>
+                        <span class="label" title="{{ 'lender-operations_sr-sort-loan-loan-rate-column'|trans|e('html_attr') }}" data-toggle="tooltip">{% trans %} lender-operations_loans-table-loan-rate-column {% endtrans %}</span>
                     </th>
                     <th class="table-sortable-column table-myloans-item-monthly" data-sortable-by="monthly">
-                        <span class="label"><span class="sr-only">{{ 'lender-operations_sr-sort-loan-monthly-installment-column'|trans }} </span> {% trans %} lender-operations_loans-table-monthly-installment-amount-column {% endtrans %} </span>
+                        <span class="label" title="{{ 'lender-operations_sr-sort-loan-monthly-installment-column'|trans|e('html_attr') }}" data-toggle="tooltip">{% trans %} lender-operations_loans-table-monthly-installment-amount-column {% endtrans %} </span>
                     </th>
                     <th class="table-sortable-column table-myloans-item-next" data-sortable-by="next">
-                        <span class="label"><span class="sr-only">{{ 'lender-operations_sr-sort-loan-next-monthly-installment-column'|trans }} </span>{% trans %} lender-operations_loans-table-next-monthly-installment-date-column {% endtrans %}</span>
+                        <span class="label" title="{{ 'lender-operations_sr-sort-loan-next-monthly-installment-column'|trans|e('html_attr') }}" data-toggle="tooltip">{% trans %} lender-operations_loans-table-next-monthly-installment-date-column {% endtrans %}</span>
                     </th>
                     <th class="table-sortable-column table-myloans-item-duration" data-sortable-by="duration">
-                        <span class="label"><span class="sr-only">{{ 'lender-operations_sr-sort-loan-remaining-monthly-installments-column'|trans }} </span>{% trans %} lender-operations_loans-table-remaining-monthly-installments-column {% endtrans %}</span>
+                        <span class="label" title="{{ 'lender-operations_sr-sort-loan-remaining-monthly-installments-column'|trans|e('html_attr') }}" data-toggle="tooltip">{% trans %} lender-operations_loans-table-remaining-monthly-installments-column {% endtrans %}</span>
                     </th>
                     <th class="table-myloans-item-documents">
-                        <span class="label">{% trans %} lender-operations_loans-table-documents-column {% endtrans %}</span>
+                        <span class="label" title="{{ 'lender-operations_loans-table-documents-column'|trans|e('html_attr') }}" data-toggle="tooltip">{% trans %} lender-operations_loans-table-documents-column {% endtrans %}</span>
                     </th>
                 </tr>
                 </thead>
@@ -161,27 +161,21 @@
                         <td class="table-myloans-item-interest">
                             {{ loan.rate|localizednumber }}&nbsp;<sup>%</sup>
                         </td>
-                        <td class="table-myloans-item-monthly">
-                            {% if loan.project_status == constant('\\projects_status::REMBOURSEMENT_ANTICIPE') or loan.project_status == constant('\\projects_status::REMBOURSE') %}
-                                &nbsp;
-                            {% else %}
+                        {% if loan.project_status == constant('\\projects_status::REMBOURSEMENT_ANTICIPE') or loan.project_status == constant('\\projects_status::REMBOURSE') %}
+                            <td colspan="3" class="table-myloans-item-next">
+                                <em class="c-t2">{% trans with {'%date%': loan.status_change|date('d/m/Y')} %} lender-operations_loans-table-project-status-label-repayment-finished-on-date {% endtrans %}</em>
+                            </td>
+                        {% else %}
+                            <td class="table-myloans-item-monthly">
                                 {{ loan.monthly_repayment_amount|localizedcurrency('EUR') }}
-                            {% endif %}
-                        </td>
-                        <td class="table-myloans-item-next">
-                            {% if loan.project_status == constant('\\projects_status::REMBOURSEMENT_ANTICIPE') or loan.project_status == constant('\\projects_status::REMBOURSE') %}
-                                {% trans with {'%date%': loan.status_change|date('d/m/Y')} %} lender-operations_loans-table-project-status-label-repayment-finished-on-date {% endtrans %}
-                            {% else %}
+                            </td>
+                            <td class="table-myloans-item-next">
                                 {{ loan.next_payment_date|date('d/m/y') }}
-                            {% endif %}
-                        </td>
-                        <td class="table-myloans-item-duration">
-                            {% if loan.project_status == constant('\\projects_status::REMBOURSEMENT_ANTICIPE') or loan.project_status == constant('\\projects_status::REMBOURSE') %}
-                                &nbsp;
-                            {% else %}
-                                <span class="ui-has-tooltip" title="{% trans with {'%startDate%': loan.start_date|date('d/m/Y'), '%endDate%': loan.end_date|date('d/m/Y')} %} lender-operations_remaining-duration-tooltip {% endtrans %}" data-toggle="tooltip">{% trans with { '%count%' : loan.duration} %} lender-operations_loans-table-project-remaining-month {% endtrans %}</span>
-                            {% endif %}
-                        </td>
+                            </td>
+                            <td class="table-myloans-item-duration">
+                                <span title="{% trans with {'%startDate%': loan.start_date|date('d/m/Y'), '%endDate%': loan.end_date|date('d/m/Y')} %} lender-operations_remaining-duration-tooltip {% endtrans %}" data-toggle="tooltip">{% trans with { '%count%' : loan.duration} %} lender-operations_loans-table-project-remaining-month {% endtrans %}</span>
+                            </td>
+                        {% endif %}
                         <td class="table-myloans-item-documents">
                             {# Multiple #}
                             {% if loan.loans|length > 1 %}
@@ -193,7 +187,7 @@
                             {# Single #}
                             {% else %}
                                 {% for i, doc in loan.loans[0].documents %}
-                                    <a href="{{ doc.url }}" title="{{ doc.label|escape('html_attr') }}" class="loan-doc loan-doc-{{ doc.type }}" data-toggle="tooltip"><span class="sr-only">{{ doc.label }}</span></a>
+                                    <a href="{{ doc.url }}" title="{{ doc.label|e('html_attr') }}" class="loan-doc loan-doc-{{ doc.type }}" data-toggle="tooltip"><span class="sr-only">{{ doc.label }}</span></a>
                                 {% endfor %}
                             {% endif %}
                         </td>

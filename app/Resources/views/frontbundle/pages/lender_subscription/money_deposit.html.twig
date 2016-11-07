@@ -1,11 +1,6 @@
 {# Projects Index #}
 {% extends 'layouts/_layout.html.twig' %}
 
-{% set page = {
-    title: 'Devenir Prêteur',
-    permalink: path('lender_subscription_money_deposit', {'clientHash' : client.hash })
-} %}
-
 {% block siteContent %}
     <article id="devenir-preteur" class="page">
         <div class="hero-wrap">
@@ -75,7 +70,7 @@
                                                     </div>
                                                 </div>
                                                 <p>
-                                                    <button class="btn-primary">
+                                                    <button class="btn-primary" data-spinnerbutton>
                                                         <span class="icon fa-lock"></span> {% trans %} lender-subscription_step-3-money-transfer-sumbit-button {% endtrans %}
                                                     </button>
                                                 </p>

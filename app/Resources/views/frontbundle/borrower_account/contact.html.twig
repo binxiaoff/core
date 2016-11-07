@@ -2,8 +2,6 @@
 
 {% set page = {
     id: 'user-borrower-profile',
-    title: 'Emprunteur / Profil',
-    permalink: path('borrower_account_contact'),
     classNames: 'user-borrower-profile'
 } %}
 
@@ -74,7 +72,7 @@
                                 </div>
                             </div>
                             <div class="row">
-                                <button type="submit" class="btn-primary ui-dialog-confirm">{{ 'borrower-contact_send'|trans }}</button>
+                                <button type="submit" class="btn-primary ui-dialog-confirm" data-spinnerbutton>{{ 'borrower-contact_send'|trans }}</button>
                             </div>
                             {{ form_end(contact_form) }}
                         </section><!-- /.page-section -->

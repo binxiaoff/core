@@ -466,6 +466,7 @@ var AutoComplete = function (elem, options) {
           } else {
             itemHTML = Templating.replace(self.templates.targetItem, {
               text: self.highlightTerm(term, itemLabel),
+              label: itemLabel,
               value: itemValue
             })
           }
@@ -686,7 +687,7 @@ var AutoComplete = function (elem, options) {
  */
 AutoComplete.prototype.templates = {
   target: '<div class="autocomplete" data-autocomplete-target><ul class="autocomplete-results"></ul></div>',
-  targetItem: '<li><a href="javascript:void(0)" tabindex="1" data-value="{{ value }}">{{ text }}</a></li>',
+  targetItem: '<li><a href="javascript:void(0)" tabindex="1" data-label="{{ label|attr }}" data-value="{{ value|attr }}">{{ text }}</a></li>',
   message: '<li class="autocomplete-message {{ classNames }}">{{ text }}</li>',
 }
 
@@ -755,6 +756,7 @@ $doc
       })
 
       // If the countryelem has been set to something other than France, disable the AutoComplete functionality
+      // @todo this should be updated/removed when new countries with autocomplete details are enabled
       var countryElemSelector = $(elem).attr('data-autocomplete-address-countryelem')
       if (countryElemSelector && Utility.elemExists(countryElemSelector)) {
         var $countryElem = $(countryElemSelector)
@@ -776,8 +778,15 @@ $doc
       if (!newValue) return
 
       // Separate the values from the city and the code
+      // Takes a value like `PARIS 2E ARRONDISSMENT (75002)` and splits it into two
       var codeValue = newValue.replace(/^.*\((\d+)\)$/, '$1')
       var cityValue = newValue.replace(/ ?\(.*$/, '')
+
+      // @trigger elem `AutoComplete:address:city` [cityValue]
+      $(this).trigger('AutoComplete:address:city', [cityValue])
+
+      // @trigger elem `AutoComplete:address:code` [codeValue]
+      $(this).trigger('AutoComplete:address:code', [codeValue])
 
       // Set the new code value
       // elemAutoComplete.$input.val(codeValue)
@@ -788,6 +797,8 @@ $doc
         var $cityElem = $(cityElemSelector)
         if ($cityElem.val() !== cityValue) {
           $cityElem.val(cityValue)
+
+          // @debug
           console.log('set city', cityValue, $cityElem)
         }
       }
@@ -798,6 +809,8 @@ $doc
         var $zipElem = $(zipElemSelector)
         if ($zipElem.val() !== codeValue) {
           $zipElem.val(codeValue)
+
+          // @debug
           console.log('set code', codeValue, $zipElem)
         }
       }

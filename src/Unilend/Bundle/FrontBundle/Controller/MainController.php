@@ -6,6 +6,7 @@ use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Sonata\SeoBundle\Seo\SeoPage;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -39,6 +40,8 @@ class MainController extends Controller
 
     const SLUG_PAGE_BECOME_LENDER = 'lender_subscription_personal_information';
     const SLUG_ELEMENT_NAV_IMAGE  = 'image-header';
+    /** anchors in path functions are not supported, see twig template for handing if the borrower esim special case */
+    const SLUG_PAGE_BECOME_BORROWER = 'emprunter-homeemp-section-esim';
 
     /**
      * @Route("/", name="home")
@@ -165,7 +168,7 @@ class MainController extends Controller
      */
     public function projectSimulatorStepOneAction(Request $request)
     {
-        if ($request->isXMLHttpRequest()) {
+        if ($request->isXmlHttpRequest()) {
             $period   = $request->request->get('period');
             $amount   = $request->request->get('amount');
             $motiveId = $request->request->get('motiveId');
@@ -228,10 +231,12 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/cgv_preteurs", name="lenders_terms_of_sales")
-     * @Route("/cgv_preteurs/{trash}", name="lenders_terms_of_sales_deprecated")
+     * @Route("/cgv_preteurs/{type}", name="lenders_terms_of_sales", requirements={"type": "morale"})
+     * @param string $type
+     *
+     * @return Response
      */
-    public function lenderTermsOfSalesAction()
+    public function lenderTermsOfSalesAction($type = '')
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
@@ -256,8 +261,9 @@ class MainController extends Controller
         /** @var \tree $tree */
         $tree = $entityManager->getRepository('tree');
         $tree->get(['id_tree' => $idTree]);
+        $this->setCmsSeoData($tree);
 
-        return $this->renderTermsOfUse($tree, $entityManager);
+        return $this->renderTermsOfUse($tree, $type);
     }
 
     /**
@@ -310,27 +316,27 @@ class MainController extends Controller
         } else {
             $finalElements = $cachedItem->get();
         }
+        $this->setCmsSeoData($tree);
 
         switch ($tree->id_template) {
             case self::CMS_TEMPLATE_BIG_HEADER:
-                return $this->renderCmsBigHeader($tree, $finalElements['content']);
+                return $this->renderCmsBigHeader($finalElements['content']);
             case self::CMS_TEMPLATE_NAV:
                 return $this->renderCmsNav($tree, $finalElements['content'], $entityManager);
             case self::CMS_TEMPLATE_BORROWER_LANDING_PAGE:
-                return $this->renderBorrowerLandingPage($request, $tree, $finalElements['content'], $finalElements['complement'], $entityManager);
+                return $this->renderBorrowerLandingPage($request, $finalElements['content'], $finalElements['complement'], $entityManager);
             case self::CMS_TEMPLATE_TOS:
-                return $this->renderTermsOfUse($tree, $entityManager);
+                return $this->renderTermsOfUse($tree);
             default:
                 return new RedirectResponse('/');
         }
     }
 
     /**
-     * @param \tree $tree
      * @param array $content
      * @return Response
      */
-    private function renderCmsBigHeader(\tree $tree, array $content)
+    private function renderCmsBigHeader(array $content)
     {
         $cms = [
             'title'         => $content['titre'],
@@ -339,14 +345,7 @@ class MainController extends Controller
             'right_content' => $content['bloc-droite']
         ];
 
-        $page = [
-            'title'       => $tree->meta_title,
-            'description' => $tree->meta_description,
-            'keywords'    => $tree->meta_keywords,
-            'isIndexable' => $tree->indexation == 1
-        ];
-
-        return $this->render('pages/template-big-header.html.twig', ['cms' => $cms, 'page' => $page]);
+        return $this->render('pages/template-big-header.html.twig', ['cms' => $cms]);
     }
 
     /**
@@ -385,10 +384,11 @@ class MainController extends Controller
             $selected = $page['id_tree'] == $currentPage->id_tree;
 
             $navigation[$page['id_tree']] = [
-                'label'       => $page['menu_title'],
-                'slug'        => $page['slug'],
-                'selected'    => $selected,
-                'highlighted' => $page['slug'] === self::SLUG_PAGE_BECOME_LENDER
+                'label'                => $page['menu_title'],
+                'slug'                 => $page['slug'],
+                'selected'             => $selected,
+                'highlighted_lender'   => $page['slug'] === self::SLUG_PAGE_BECOME_LENDER,
+                'highlighted_borrower' => $page['slug'] === self::SLUG_PAGE_BECOME_BORROWER
             ];
         }
 
@@ -400,9 +400,6 @@ class MainController extends Controller
         $page = [
             'id'          => $pageId,
             'title'       => $currentPage->meta_title,
-            'description' => $currentPage->meta_description,
-            'keywords'    => $currentPage->meta_keywords,
-            'isIndexable' => $currentPage->indexation == 1,
             'next'        => $nextPage
         ];
 
@@ -411,13 +408,12 @@ class MainController extends Controller
 
     /**
      * @param Request       $request
-     * @param \tree         $tree
      * @param array         $content
      * @param array         $complement
      * @param EntityManager $entityManager
      * @return Response
      */
-    private function renderBorrowerLandingPage(Request $request, \tree $tree, array $content, array $complement, EntityManager $entityManager)
+    private function renderBorrowerLandingPage(Request $request, array $content, array $complement, EntityManager $entityManager)
     {
         $sessionHandler = $request->getSession();
 
@@ -478,12 +474,6 @@ class MainController extends Controller
                 ],
                 'partner_funnel'              => $isPartnerFunnel
             ],
-            'page'     => [
-                'title'       => $tree->meta_title,
-                'description' => $tree->meta_description,
-                'keywords'    => $tree->meta_keywords,
-                'isIndexable' => $tree->indexation == 1
-            ],
             'form'     => [
                 'message' => empty($sessionHandler->get('projectRequest')['message']) ? '' : $sessionHandler->get('projectRequest')['message'],
                 'values'  => [
@@ -520,18 +510,14 @@ class MainController extends Controller
 
     /**
      * @param \tree         $tree
-     * @param EntityManager $entityManager
+     * @param string $lenderType
      * @return Response
      */
-    private function renderTermsOfUse(\tree $tree, EntityManager $entityManager)
+    private function renderTermsOfUse(\tree $tree, $lenderType = '')
     {
+        $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \acceptations_legal_docs $acceptedTermsOfUse */
         $acceptedTermsOfUse = $entityManager->getRepository('acceptations_legal_docs');
-
-        /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
-        $settings->get('Lien conditions generales inscription preteur societe', 'type');
-        $idTOSLenderLegalEntity = $settings->value;
 
         /** @var \tree_elements $treeElements */
         $treeElements = $entityManager->getRepository('tree_elements');
@@ -561,7 +547,8 @@ class MainController extends Controller
             if (false === empty($userAccepted)) {
                 $dateAccept = 'Sign&eacute; &eacute;lectroniquement le ' . date('d/m/Y', strtotime($userAccepted[0]['added']));
             }
-
+            /** @var \settings $settings */
+            $settings = $entityManager->getRepository('settings');
             $settings->get('Date nouvelles CGV avec 2 mandats', 'type');
             $sNewTermsOfServiceDate = $settings->value;
 
@@ -578,9 +565,8 @@ class MainController extends Controller
             } else {
                 $this->getTOSReplacementsForLegalEntity($client, $dateAccept, $loansCount, $content, $template);
             }
-        } elseif ($tree->id_tree == $idTOSLenderLegalEntity) {
-            $template['recovery_mandate_with_loans'] = '';
-            $template['recovery_mandate']            = str_replace(
+        } elseif ($lenderType !== '') {
+            $template['recovery_mandate'] = str_replace(
                 [
                     '[Civilite]',
                     '[Prenom]',
@@ -595,8 +581,7 @@ class MainController extends Controller
                 $content['mandat-de-recouvrement-personne-morale']
             );
         } else {
-            $template['recovery_mandate_with_loans'] = '';
-            $template['recovery_mandate']            = str_replace(
+            $template['recovery_mandate'] = str_replace(
                 [
                     '[Civilite]',
                     '[Prenom]',
@@ -618,14 +603,7 @@ class MainController extends Controller
             'right_content' => $template
         ];
 
-        $page = [
-            'title'       => $tree->meta_title,
-            'description' => $tree->meta_description,
-            'keywords'    => $tree->meta_keywords,
-            'isIndexable' => $tree->indexation == 1
-        ];
-
-        return $this->render('pages/static_pages/template-cgv.html.twig', ['cms' => $cms, 'page' => $page]);
+        return $this->render('pages/static_pages/template-cgv.html.twig', ['cms' => $cms]);
     }
 
     private function getTOSReplacementsForPerson(\clients $client, $dateAccept, $loansCount, $content, &$template)
@@ -655,8 +633,8 @@ class MainController extends Controller
             '[date_validation_cgv]' => $dateAccept
         ];
 
-        $template['recovery_mandate']            = str_replace(array_keys($aReplacements), $aReplacements, $content['mandat-de-recouvrement']);
-        $template['recovery_mandate_with_loans'] = $loansCount > 0 ? str_replace(array_keys($aReplacements), $aReplacements, $content['mandat-de-recouvrement-avec-pret']) : '';
+        $template['recovery_mandate'] = $loansCount > 0 ? $content['mandat-de-recouvrement-avec-pret'] : $content['mandat-de-recouvrement'];
+        $template['recovery_mandate'] = str_replace(array_keys($aReplacements), array_values($aReplacements), $template['recovery_mandate']);
     }
 
     private function getTOSReplacementsForLegalEntity(\clients $client, $dateAccept, $loansCount, $content, &$template)
@@ -695,8 +673,8 @@ class MainController extends Controller
             '[date_validation_cgv]' => $dateAccept
         ];
 
-        $template['mandat_de_recouvrement']           = str_replace(array_keys($aReplacements), $aReplacements, $content['mandat-de-recouvrement-personne-morale']);
-        $template['mandat_de_recouvrement_avec_pret'] = $loansCount > 0 ? str_replace(array_keys($aReplacements), $aReplacements, $content['mandat-de-recouvrement-avec-pret-personne-morale']) : '';
+        $template['recovery_mandate'] = $loansCount > 0 ? $content['mandat-de-recouvrement-avec-pret-personne-morale'] : $content['mandat-de-recouvrement-personne-morale'];
+        $template['recovery_mandate'] = str_replace(array_keys($aReplacements), array_values($aReplacements), $template['recovery_mandate']);
     }
 
     /**
@@ -849,7 +827,7 @@ class MainController extends Controller
         /** @var \tree $tree */
         $tree = $entityManager->getRepository('tree');
         $tree->get(['slug' => 'qui-sommes-nous']);
-
+        $this->setCmsSeoData($tree);
         $response = $this->render('pages/static_pages/about_us.html.twig');
 
         $finalElements = [
@@ -863,15 +841,10 @@ class MainController extends Controller
 
     /**
      * @Route("/statistiques", name="statistics")
-     *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function statisticsAction(Request $request)
+    public function statisticsAction()
     {
-        if ($request->getClientIp() != '92.154.10.41') {
-            return $this->render('/pages/static_pages/error.html.twig');
-        }
-
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \tree $tree */
@@ -888,7 +861,7 @@ class MainController extends Controller
             ],
             'years' => array_merge($years, ['total'])
         ];
-
+        $this->setCmsSeoData($tree);
         $response = $this->render('pages/static_pages/statistics.html.twig', $template);
 
         $finalElements = [
@@ -963,7 +936,9 @@ class MainController extends Controller
 
     /**
      * @Route("/cgv-popup", name="tos_popup", condition="request.isXmlHttpRequest()")
+     * @param Request $request
      * @Security("has_role('ROLE_LENDER')")
+     * @return Mixed
      */
     public function lastTermsOfServiceAction(Request $request)
     {
@@ -1047,11 +1022,11 @@ class MainController extends Controller
         /** @var \tree $tree */
         $tree = $entityManager->getRepository('tree');
         $tree->get(['slug' => 'temoignages']);
+        $this->setCmsSeoData($tree);
 
         $template['testimonialPeople'] = $testimonialService->getBorrowerBattenbergTestimonials(false);
-        $response = $this->render('pages/static_pages/testimonials.html.twig', $template);
-
-        $finalElements = [
+        $response                      = $this->render('pages/static_pages/testimonials.html.twig', $template);
+        $finalElements                 = [
             'contenu'      => $response->getContent(),
             'complement'   => '',
             'image-header' => ''
@@ -1077,5 +1052,27 @@ class MainController extends Controller
             ];
         }
         return $dataForTreeMap;
+    }
+
+    private function setCmsSeoData(\tree $tree)
+    {
+        /** @var SeoPage $seoPage */
+        $seoPage = $this->get('sonata.seo.page');
+
+        if (false === empty($tree->meta_title)) {
+            $seoPage->setTitle($tree->meta_title);
+        }
+
+        if (false === empty($tree->meta_description)) {
+            $seoPage->addMeta('name', 'description', $tree->meta_description);
+        }
+
+        if (false === empty($tree->meta_keywords)) {
+            $seoPage->addMeta('name', 'keywords', $tree->meta_keywords);
+        }
+
+        if (empty($tree->indexation)) {
+            $seoPage->addMeta('name', 'robots', 'noindex');
+        }
     }
 }

@@ -34,8 +34,13 @@
     <div>
         <h2>Portefeuille</h2>
 
-        <h3>TRI du portefeuille : <?= (is_null($this->IRRValue)) ? 'Ce prêteur est trop récent. Son TRI n\'a pas encore été calculé.' : $this->IRRValue . '%' ?>
-            <?= (is_null($this->IRRDate)) ? '' : '(calculé le ' . $this->dates->formatDateMysqltoShortFR($this->IRRDate) . ')' ?>
+        <h3>TRI du portefeuille :
+            <?php if(empty($this->IRR)) : ?>
+                Ce prêteur est trop récent. Son TRI n'a pas encore été calculé.
+            <?php else : ?>
+                <?= $this->IRR['status'] == \lenders_account_stats::STAT_VALID_OK ? $this->IRR['value'] . '%'  : 'TRI non valide'?>
+                <?= (is_null($this->IRR['date'])) ? '' : '(calculé le ' . $this->dates->formatDateMysqltoShortFR($this->IRR['date']) . ')' ?>
+            <?php endif; ?>
         </h3>
         <h3>Nombre de projets à probleme dans le portefeuille : <?= $this->problProjects ?></h3>
         <h3>Nombre de projets total dans le portefeuille : <?= $this->totalProjects ?></h3>
@@ -75,7 +80,7 @@
         <div style="margin-bottom: 15px;">
             <span>Montant: </span>
             <input type="text" name="autobid-amount" id="autobid-amount"
-                   value="<?= (isset($this->aAutoBidSettings[1][0]['amount'])) ? $this->aAutoBidSettings[1][0]['amount'] : '' ?>"
+                   value="<?= (isset($this->aAutoBidSettings[1]['A']['amount'])) ? $this->aAutoBidSettings[1]['A']['amount'] : '' ?>"
                    disabled="disabled"/>
         </div>
         <div class="autobid-param-advanced autobid-param-advanced-locked autobid-block" id="autobid-block">
@@ -161,13 +166,13 @@
                     <td>
                         <?php if ($aProjectLoans['nb_loan'] == 1): ?>
                             <?php if ($aProjectLoans['project_status'] >= \projects_status::REMBOURSEMENT): ?>
-                                <a href="<?= $this->furl ?>/pdf/contrat/<?= $this->clients->hash ?>/<?= $aProjectLoans['id_loan_if_one_loan'] ?>">
+                                <a href="<?= $this->url ?>/protected/contrat/<?= $this->clients->hash ?>/<?= $aProjectLoans['id_loan_if_one_loan'] ?>">
                                     <?= $contractLabel ?>
                                 </a>
                             <?php endif; ?>
                             <?php if (in_array($aProjectLoans['id_project'], $this->aProjectsInDebt)): ?>
                                 <br />
-                                <a href="<?= $this->furl ?>/pdf/declaration_de_creances/<?= $this->clients->hash ?>/<?= $aProjectLoans['id_loan_if_one_loan'] ?>">Declaration de créances</a>
+                                <a href="<?= $this->url ?>/protected/declaration_de_creances/<?= $this->clients->hash ?>/<?= $aProjectLoans['id_loan_if_one_loan'] ?>">Declaration de créances</a>
                             <?php endif; ?>
                         <?php else: ?>
                             &nbsp;
@@ -187,13 +192,13 @@
                             <?php endif; ?>
                             <td>
                                 <?php if ($aProjectLoans['project_status'] >= \projects_status::REMBOURSEMENT): ?>
-                                    <a href="<?= $this->furl ?>/pdf/contrat/<?= $this->clients->hash ?>/<?= $aLoan['id_loan'] ?>">
+                                    <a href="<?= $this->url ?>/protected/contrat/<?= $this->clients->hash ?>/<?= $aLoan['id_loan'] ?>">
                                         <?= $contractLabel ?>
                                     </a>
                                 <?php endif; ?>
                                 <?php if (in_array($aProjectLoans['id_project'], $this->aProjectsInDebt)): ?>
                                     <br />
-                                    <a href="<?= $this->furl ?>/pdf/declaration_de_creances/<?= $this->clients->hash ?>/<?= $aLoan['id_loan'] ?>">Declaration de créances</a>
+                                    <a href="<?= $this->url ?>/protected/declaration_de_creances/<?= $this->clients->hash ?>/<?= $aLoan['id_loan'] ?>">Declaration de créances</a>
                                 <?php endif; ?>
                             </td>
                         </tr>

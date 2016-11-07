@@ -4,7 +4,6 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 
-use Cache\Adapter\Memcache\MemcacheCachePool;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -19,29 +18,28 @@ class UnilendStatisticsCommand extends ContainerAwareCommand
     {
         $this
             ->setName('unilend:statistics')
-            ->setDescription('Calculate the more lengthy statistics and save them in cache for 48h')
-            ->setHelp(<<<EOF
-        Should be calculated every day, cache duration is 48h to prevent lacking data if task is not executed for any reason
-EOF
-    );
+            ->setDescription('Calculate the more lengthy statistics and save them in DB');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         /** @var StatisticsManager $statisticsManager */
         $statisticsManager = $this->getContainer()->get('unilend.service.statistics_manager');
-        /** @var MemcacheCachePool $cachePool */
-        $cachePool         = $this->getContainer()->get('memcache.default');
+        /** @var \unilend_stats $unilendStatistics */
+        $unilendStatistics = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('unilend_stats');
 
-        $this->saveData($cachePool, $statisticsManager->calculateRegulatoryData(), CacheKeys::REGULATORY_TABLE);
-        $this->saveData($cachePool, $statisticsManager->calculateIncidenceRateOnIFPContracts(), CacheKeys::INCIDENCE_RATE_IFP);
+        $regulatoryTable = $statisticsManager->calculateRegulatoryData();
+        $incidenceRate = $statisticsManager->calculateIncidenceRateOnIFPContracts();
+
+        $unilendStatistics->type_stat = CacheKeys::REGULATORY_TABLE;
+        $unilendStatistics->value = json_encode($regulatoryTable);
+        $unilendStatistics->create();
+
+        $unilendStatistics->unsetData();
+
+        $unilendStatistics->type_stat = CacheKeys::INCIDENCE_RATE_IFP;
+        $unilendStatistics->value = json_encode($incidenceRate);
+        $unilendStatistics->create();
+
     }
-
-    private function saveData(MemcacheCachePool $cachePool, $data, $type)
-    {
-        $cachedItem = $cachePool->getItem($type);
-        $cachedItem->set($data)->expiresAfter(2 * CacheKeys::DAY);
-        $cachePool->save($cachedItem);
-    }
-
 }

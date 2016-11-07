@@ -1,25 +1,21 @@
 {% extends 'layouts/_page-simple.html.twig' %}
 
+{% block pageTitle %}
+    <h1 class="page-title">{{ cms.title }}</h1>
+{% endblock %}
+
 {% block extendPageHeader %}
     <div class="page-header-image">{{ svgimage('#header-' ~ cms.header_image, '', 300, 300)|raw }}</div>
 {% endblock %}
 
-
 {% block pageAside %} {% endblock %}
-
 
 {% block pageContent %}
     <div class="page-content" data-equal-height="md lg" data-equal-height-group="content">
         {% block pageContentBody %}
             {{ cms.right_content.main_content|raw }}
-            {% if cms.right_content.recovery_mandate_with_loans is not empty %}
-                <hr>
-                {{ cms.right_content.recovery_mandate_with_loans|raw }}
-            {% endif %}
-            {% if cms.right_content.recovery_mandate_with_loans is not empty %}
-                <hr>
-                {{ cms.right_content.recovery_mandate_with_loans|raw }}
-            {% endif %}
+            <hr>
+            {{ cms.right_content.recovery_mandate|raw }}
         {% endblock %}
     </div><!-- /.page-content -->
 {% endblock %}

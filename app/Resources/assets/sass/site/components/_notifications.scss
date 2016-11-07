@@ -5,6 +5,7 @@
 @mixin notification {
   padding: 20px;
   overflow: hidden;
+  outline: none;
 
   transition: background-color 0.2s;
 
@@ -127,7 +128,7 @@
   height: 0;
   overflow: hidden;
   z-index: $depth-drop;
-  filter: drop-shadow(0 0 10px fade-out($c-grey-l, .1));
+  filter: drop-shadow(0 0 10px fade-out($c-grey, .1));
 
   // Animation/visibility
   opacity: 0;

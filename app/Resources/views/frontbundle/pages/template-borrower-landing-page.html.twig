@@ -2,14 +2,9 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <meta name="description" content="{{ page.description }}">
-    <meta name="keywords" content="{{ page.keywords }}">
-    {% if not page.isIndexable %}
-        <meta name="robots" content="noindex">
-    {% endif %}
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    {{ sonata_seo_title() }}
+    {{ sonata_seo_metadatas() }}
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=0">
-    <title>{{ page.title }}</title>
     <link rel="shortcut icon" href="/landing-page/css/images/favicon.ico">
     <link rel="stylesheet" href="/assets/fonts/style.css" />
     <link rel="stylesheet" href="/landing-page/css/style.css" type="text/css">
@@ -34,7 +29,7 @@
     <div class="container cf">
         <section class="content left">
             <header class="page-header cf">
-                <a target="_blank" href="https://{{ app.request.baseurl }}" class="logo left">
+                <a target="_blank" href="{{ path('home_borrower') }}" class="logo left">
                     <img src="/landing-page/css/images/logo.png" alt="Unilend">
                 </a>
                 {% if cms.partner_logo is not empty %}

@@ -26,11 +26,12 @@ framework:
     session:
         handler_id: null
         gc_maxlifetime: 3600
-    esi: { enabled: true }
     csrf_protection: true
     form:
         csrf_protection:
             field_name: _csrf
+    serializer:
+      enabled: true
 
 cmf_routing:
     chain:
@@ -44,7 +45,7 @@ cmf_routing:
 
 twig:
     strict_variables: "%kernel.debug%"
-    exception_controller:  UnilendFrontBundle:Compatibility:dispatch
+    exception_controller:  UnilendFrontBundle:Exception:show
     paths:
         - "%kernel.root_dir%/Resources/views/frontbundle/"
     form_themes:
@@ -172,3 +173,22 @@ google_tag_manager:
     enabled: true
     id: "%gtm_token%"
     autoAppend: false
+
+sonata_seo:
+    encoding: UTF-8
+    page:
+        title: 'Unilend : les particuliers prêtent aux entreprises françaises'
+        default: sonata.seo.page.default
+        metas:
+            name:
+                keywords: 'Prêter Emprunter'
+                description: 'Sur Unilend, tout le monde peut prêter aux entreprises françaises et recevoir des intérêts.'
+                robots: 'index, follow'
+                viewport: 'width=device-width, initial-scale=1'
+
+            http-equiv:
+                'Content-Type': 'text/html; charset=utf-8'
+                'X-UA-Compatible': 'IE=edge,chrome=1;'
+
+ekino_new_relic:
+    enabled: false

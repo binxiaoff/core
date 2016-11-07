@@ -5,16 +5,10 @@
 <!--[if lt IE 9]><html lang="{{ app.request.locale }}" class="lt-ie9 no-js"><![endif]-->
 <!--[if IE 9]><html lang="{{ app.request.locale }}" class="ie9 no-js"><![endif]-->
 <!--[if gt IE 9]><!--><html lang="{{ app.request.locale }}" class="no-js"><!--<![endif]-->
-    <head>
+    <head {{ sonata_seo_head_attributes() }}>
         {% block metaTags %}
-            <meta charset="utf-8">
-            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-            <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            {% if page.isIndexable is defined and not page.isIndexable %}
-                <meta name="robots" content="noindex">
-            {% endif %}
-            <title>{% if page.title is defined %}{{ page.title }} — {% endif %}{{ site.title|default('Unilend') }}</title>
+            {{ sonata_seo_title() }}
+            {{ sonata_seo_metadatas() }}
         {% endblock %}
 
         {% block cssFiles %}
@@ -40,7 +34,7 @@
         <meta name="msapplication-config" content="{{ asset('favicons/browserconfig.xml', 'gulp') }}">
         <meta name="theme-color" content="#ffffff">
     </head>
-    <body class="{% if app.user is defined %} ui-user-level-{{ app.user.level|default(0) }} {% endif %}{% if bodyClassNames is defined %} {{ bodyClassNames }}{% endif %}">
+    <body class="{% if app.user is defined and app.user is not empty %} ui-user-level-{{ app.user.level|default(0) }} {% if is_granted('ROLE_LENDER') %} ui-user-type-lender {% endif %} {% if is_granted('ROLE_BORROWER') %} ui-user-type-borrower {% endif %} {% else %} ui-no-user {% endif %} {% if bodyClassNames is defined %} {{ bodyClassNames }} {% endif %}">
         {{ google_tag_manager() }}
         <div id="top" class="site">
             {% block siteHeader %}
@@ -130,11 +124,17 @@
                 var SORTABLE_LANG = JSON.parse('{{ dictionary('sortable')|json_encode|escape('js')|raw }}')
                 var FILEATTACH_LANG = JSON.parse('{{ dictionary('file-attach')|json_encode|escape('js')|raw }}')
                 var USERNOTIFICATIONS_LANG = JSON.parse('{{ dictionary('lender-notifications')|json_encode|escape('js')|raw }}')
-                var MAPVIEW_LANG = JSON.parse('{{ dictionary('mapview')|json_encode|escape('js')|raw }}')
+
+                {% if app.request.attributes.get('_route') in ['project_detail', 'projects_list', 'lender_projects'] %}
+                    var MAPVIEW_LANG = JSON.parse('{{ dictionary('mapview')|json_encode|escape('js')|raw }}')
+                {% endif %}
             </script>
 
-            <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js"></script>
-            <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js"></script>
+            {% if app.request.attributes.get('_route') in ['home_lender', 'project_detail', 'projects_list', 'lender_projects'] %}
+                <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js"></script>
+                <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js"></script>
+            {% endif %}
+
             <script type="text/javascript" src="{{ asset('js/dependencies.js', 'gulp') }}"></script>
             <script type="text/javascript" src="{{ asset('js/main.js', 'gulp') }}"></script>
         {% endblock %}
