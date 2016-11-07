@@ -17,6 +17,9 @@ var UserNotifications = require('UserNotifications')
 var Tether = require('tether')
 var Drop = require('tether-drop')
 
+var $doc = $(document)
+var $body = $('body')
+
 /*
  * Dictionary
  */
@@ -66,9 +69,9 @@ var UserNotificationsDrop = function (elem, options) {
       target: elem,
       content: '',
       classes: 'ui-usernotificationsdrop-drop-element',
-      position: 'bottom center',
-      openOn: 'click', // @note set to undefined after figuring out how to dismiss it cleanly
-      constrainToWindow: true,
+      // position: 'bottom right',
+      openOn: undefined, // 'click', // @note set to undefined after figuring out how to dismiss it cleanly
+      // constrainToWindow: true,
 
       // Stop the drop from auto-closing when "mark all read" is clicked
       beforeClose: function (event) {
@@ -79,8 +82,8 @@ var UserNotificationsDrop = function (elem, options) {
 
       tetherOptions: {
         attachment: 'top right',
-        targetAttachment: 'bottom center',
-        offset: '-15px -25px'
+        targetAttachment: 'bottom right',
+        offset: '-12px -25px'
       }
     }, optionsDropOptions),
 
@@ -207,7 +210,7 @@ UserNotificationsDrop.prototype.toggle = function (doRender) {
   var self = this
 
   // @debug
-  console.log('UserNotificationsDrop.toggle', self.drop, self.drop.isOpened())
+  // console.log('UserNotificationsDrop.toggle', self.drop.isOpened() ? 'hide' : 'show')
 
   if (self.drop.isOpened()) {
     self.hide()
@@ -422,7 +425,7 @@ $.fn.uiUserNotificationsDrop = function (op) {
 /*
  * jQuery Events
  */
-$(document)
+$doc
   // Auto-init `[data-usernotificationsdrop]` elements
   .on('ready UI:visible', function (event) {
     $(event.target).find('[data-usernotificationsdrop], .ui-usernotificationsdrop').uiUserNotificationsDrop()
@@ -448,22 +451,25 @@ $(document)
 
   // Toggle the usernotificationsdrop if toggled from another element
   // @note after figuring out the blur/clean dismiss, use this binding
-  // .on(Utility.clickEvent, '.ui-usernotificationsdrop', function (event) {
-  //   event.preventDefault()
-  //   $(this).uiUserNotificationsDrop('toggle')
-  // })
+  .on(Utility.inputStartEvent, '.ui-usernotificationsdrop', function (event) {
+    event.preventDefault()
+    $(this).uiUserNotificationsDrop('toggle')
+  })
 
   // Hide the usernotificationsdrop if interacted outside of it
   // @note after figuring out the blur/clean dismiss, use this binding
   // @todo needs more testing/refinement
-  // .on(Utility.clickEvent + ' mousedown', function (event) {
-  //   if (!$(event.target).closest('.ui-usernotificationsdrop').length) {
-  //     $('.ui-usernotificationsdrop').uiUserNotificationsDrop('hide')
-  //   }
-  // })
+  .on(Utility.inputStartEvent, function (event) {
+    if ($body.is('.drop-open')) {
+      // Close if target is not related to the drop-element
+      if (!$(event.target).closest('.ui-usernotificationsdrop-drop-element').length) {
+        $('.ui-usernotificationsdrop').uiUserNotificationsDrop('hide')
+      }
+    }
+  })
 
   // Show the usernotificationsdrop if toggled from another element
-  .on(Utility.clickEvent, 'a.ui-open-usernotificationsdrop, button.ui-open-usernotificationsdrop', function (event) {
+  .on(Utility.clickEvent, '.ui-open-usernotificationsdrop', function (event) {
     event.preventDefault()
     $('.ui-usernotificationsdrop').uiUserNotificationsDrop('show')
   })

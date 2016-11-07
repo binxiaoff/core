@@ -61,6 +61,12 @@ var Utility = {
   // Click event
   clickEvent: 'click', //$html.is('.has-touchevents') ? 'touchend' : 'click',
 
+  // Input start event depending on device
+  inputStartEvent: $html.is('.has-touchevents') ? 'touchstart' : 'mousedown',
+
+  // Input end event depending on device
+  inputEndEvent: $html.is('.has-touchevents') ? 'touchend' : 'mouseup',
+
   // Transition end event
   transitionEndEvent: 'transitionend webkitTransitionEnd oTransitionEnd otransitionend',
 
