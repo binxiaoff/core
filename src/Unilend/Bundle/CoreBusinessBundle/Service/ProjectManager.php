@@ -6,9 +6,9 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
-use PhpXmlRpc\Client;
-use PhpXmlRpc\Request;
-use PhpXmlRpc\Value;
+use PhpXmlRpc\Client as soapClient;
+use PhpXmlRpc\Request as soapRequest;
+use PhpXmlRpc\Value as documentId;
 
 class ProjectManager
 {
@@ -67,7 +67,8 @@ class ProjectManager
         LenderManager $oLenderManager,
         ProjectRateSettingsManager $projectRateSettingsManager,
         ProductManager $productManager,
-        ContractAttributeManager $contractAttributeManager
+        ContractAttributeManager $contractAttributeManager,
+        $universignUrl
     ) {
         $this->oEntityManager             = $oEntityManager;
         $this->oBidManager                = $oBidManager;
@@ -960,13 +961,13 @@ class ProjectManager
         /** @var \projects_pouvoir $proxy */
         $proxy = $this->oEntityManager->getRepository('projects_pouvoir');
 
-        $client = new Client($this->universignUrl);
+        $client = new soapClient($this->universignUrl);
 
         if ($mandate->get($project->id_project, 'id_project')) {
             $mandate->status = \clients_mandats::STATUS_CANCELED;
             $mandate->update();
 
-            $request          = new Request('requester.cancelTransaction', array(new Value($mandate->id_universign, "string")));
+            $request          = new soapRequest('requester.cancelTransaction', array(new documentId($mandate->id_universign, "string")));
             $universignReturn = $client->send($request);
 
             if ($universignReturn->faultCode()) {
@@ -974,13 +975,15 @@ class ProjectManager
             } else {
                 $this->oLogger->info('Mandate canceled (project ' . $mandate->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project));
             }
+        } else {
+            $this->oLogger->info('Cannot get Mandate', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
         }
 
         if ($proxy->get($project->id_project, 'id_project')) {
             $proxy->status = \projects_pouvoir::STATUS_CANCELLED;
             $proxy->update();
 
-            $request          = new Request('requester.cancelTransaction', array(new Value($proxy->id_universign, "string")));
+            $request          = new soapRequest('requester.cancelTransaction', array(new documentId($proxy->id_universign, "string")));
             $universignReturn = $client->send($request);
 
             if ($universignReturn->faultCode()) {
@@ -988,6 +991,8 @@ class ProjectManager
             } else {
                 $this->oLogger->info('Proxy canceled (project ' . $proxy->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project));
             }
+        } else {
+            $this->oLogger->info('Cannot get Proxy', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
         }
     }
 }
