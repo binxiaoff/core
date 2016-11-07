@@ -100,7 +100,6 @@ class StatisticsManager
             'numberOfActiveLenders'           => $lenders->countLenders(true),
             'numberOfFinancedProjects'        => $projects->countSelectProjectsByStatus(implode(',', \projects_status::$afterRepayment)),
             'numberOfProjectRequests'         => self::HISTORIC_NUMBER_OF_SIREN + $projects->getNumberOfUniqueProjectRequests(self::VALUE_DATE_HISTORIC_NUMBER_OF_SIREN),
-            'numberOfProjectsFundedIn24Hours' => $projects->countProjectsFundedIn24Hours($startDate),
             'averageFundingTime'              => $projects->getAverageFundingTime(new \DateTime('NOW - 4 MONTHS')),
             'averageInterestRateForLenders'   => $projects->getGlobalAverageRateOfFundedProjects(PHP_INT_MAX),
             'averageNumberOfLenders'          => $projects->getAverageNumberOfLendersForProject(),
@@ -116,11 +115,11 @@ class StatisticsManager
         ];
 
         $statistics['percentageOfAcceptedProjects']        = $this->getPercentageOfAcceptedProjects($statistics['numberOfProjectRequests']);
-        $statistics['percentageOfProjectsFundedIn24Hours'] = $this->getPercentageOfProjectsFundedIn24Hours($statistics['numberOfProjectsFundedIn24Hours'], $startDate);
+        $statistics['percentageOfProjectsFundedIn24Hours'] = $this->getPercentageOfProjectsFundedIn24Hours($startDate);
         $statistics['regulatoryData']                      = $this->calculateRegulatoryData();
         $statistics['incidenceRate']                       = $this->calculateIncidenceRateOnIFPContracts();
         $statistics['amountBorrowed']                      = $statistics['regulatoryData']['borrowed-capital']['total'];
-        $statistics['amountBorrowedInMillions']            = round(bcdiv($statistics['amountBorrowed'], 1000000, 2), 0);
+        $statistics['amountBorrowedInMillions']            = round(bcdiv($statistics['amountBorrowed'], 1000000, 2), 1);
         $statistics['totalRepaidCapital']                  = $statistics['regulatoryData']['repaid-capital']['total'];
         $statistics['totalRepaidInterests']                = $statistics['regulatoryData']['repaid-interest']['total'];
 
@@ -146,10 +145,7 @@ class StatisticsManager
         /** @var int $lendersPerson */
         $lendersPerson = $lenders->countLendersByClientType([\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER]);
         /** @var int $lendersLegalEntity */
-        $lendersLegalEntity = $lenders->countLendersByClientType([
-            \clients::TYPE_LEGAL_ENTITY,
-            \clients::TYPE_LEGAL_ENTITY_FOREIGNER
-        ]);
+        $lendersLegalEntity = $lenders->countLendersByClientType([\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER]);
         /** @var int $totalLenders */
         $totalLenders = bcadd($lendersPerson, $lendersLegalEntity);
 
@@ -167,12 +163,13 @@ class StatisticsManager
         return $lendersByType;
     }
 
-    private function getPercentageOfProjectsFundedIn24Hours($numberOfProjectsFundedIn24Hours, $startDate)
+    private function getPercentageOfProjectsFundedIn24Hours($startDate)
     {
         /** @var \projects $projects */
-        $projects            = $this->entityManager->getRepository('projects');
-        $countAllProjects    = $projects->countProjectsFundedSince($startDate);
-        $percentageFunded24h = $countAllProjects > 0 ? bcmul(bcdiv($numberOfProjectsFundedIn24Hours, $countAllProjects, 4), 100, 0) : 0;
+        $projects                        = $this->entityManager->getRepository('projects');
+        $countAllProjects                = $projects->countProjectsFundedSince($startDate);
+        $numberOfProjectsFundedIn24Hours = $projects->countProjectsFundedIn24Hours($startDate);
+        $percentageFunded24h             = $countAllProjects > 0 ? bcmul(bcdiv($numberOfProjectsFundedIn24Hours, $countAllProjects, 4), 100, 0) : 0;
 
         return $percentageFunded24h;
     }

@@ -856,7 +856,7 @@ class MainController extends Controller
 
         if (false === empty($requestedDate)) {
             if ($request->getClientIp() != '92.154.10.41') {
-                return $this->render('/pages/static_pages/error.html.twig');
+                return $this->redirectToRoute('error_404');
             }
             $date       = new \DateTime($requestedDate);
             $years      = array_merge(['2013-2014'], range(2015, $date->format('Y')));
