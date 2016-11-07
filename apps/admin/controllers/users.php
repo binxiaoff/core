@@ -2,9 +2,6 @@
 
 class usersController extends bootstrap
 {
-    const STATUS_ONLINE  = 1;
-    const STATUS_OFFLINE = 0;
-
     var $Command;
 
     public function initialize()
@@ -141,8 +138,9 @@ class usersController extends bootstrap
             die;
         }
 
-        $this->onlineUsers  = $this->users->select('id_user != 1 AND status = ' . \usersController::STATUS_ONLINE, 'name ASC');
-        $this->offlineUsers = $this->users->select('id_user != 1 AND status = ' . \usersController::STATUS_OFFLINE, 'name ASC');
+        $onlineUsers  = $this->users->select('id_user != 1 AND status = ' . \users::STATUS_ONLINE, 'name ASC');
+        $offlineUsers = $this->users->select('id_user != 1 AND status = ' . \users::STATUS_OFFLINE, 'name ASC');
+        $this->users  = [\users::STATUS_ONLINE => $onlineUsers, \users::STATUS_OFFLINE => $offlineUsers];
     }
 
     public function _edit()
