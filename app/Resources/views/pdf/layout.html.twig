@@ -7,22 +7,15 @@
             <link rel="stylesheet" href="{{ absolute_url(asset('css/main.css', 'gulp')) }}"/>
         {% endblock %}
         <meta name="theme-color" content="#ffffff">
+        <meta charset="UTF-8">
     </head>
     <body class="ui-no-user">
         <div id="top" class="site">
             {% block header %}
-                <header class="site-header">
-                    <div class="site-header-inner">
-                        <div class="site-wrap">
-                            <span class="site-logo" tabindex="2"></span>
-                        </div>
-                    </div><!-- /.site-header-inner -->
-                </header>
             {% endblock %}
 
             <div class="page-content">
                 {% block content %}
-
                 {% endblock %}
             </div><!-- /.page-content -->
         </div>

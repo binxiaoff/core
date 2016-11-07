@@ -285,16 +285,28 @@ class LenderCIPController extends Controller
         $lender = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
         $lender->get($client->id_client, 'id_client_owner');
 
-        $content['advice']      = $this->getFormatedAdvice($lender);
-        $content['information'] = '';
+        $pdfHeader             = $this->renderView('/pdf/cip/header.html.twig');
+        $pdfFooter             = $this->renderView('/pdf/cip/footer.html.twig');
 
-        $evaluation     = $cipManager->getCurrentEvaluation($lender);
-        $evaluationData = new \DateTime($evaluation->expiry_date . ' - 1 year');
+        $content['advice']     = $this->getFormatedAdvice($lender);
+        $content['clientName'] = $client->prenom;
+        $pdfContent            = $this->renderView('/pdf/cip/advice.html.twig', $content);
 
-        $filename = sprintf('conseils-investissement-%s.pdf', $evaluationData->format('Y-m-d'));
+        $evaluation            = $cipManager->getCurrentEvaluation($lender);
+        $evaluationDate        = new \DateTime($evaluation->expiry_date . ' - 1 year');
+        $filename              = sprintf('conseils-investissement-%s.pdf', $evaluationDate->format('Y-m-d'));
 
         return new Response(
-            $snappy->getOutputFromHtml($this->renderView('/pdf/cip_advice.html.twig', $content)),
+            $snappy->getOutputFromHtml(
+                $pdfContent, [
+                    'footer-html' => $pdfFooter,
+                    'header-html' => $pdfHeader,
+                    'margin-top'    => 30,
+                    'margin-right'  => 20,
+                    'margin-bottom' => 20,
+                    'margin-left'   => 20
+                ]
+            ),
             200,
             [
                 'Content-Type' => 'application/pdf',
@@ -312,7 +324,7 @@ class LenderCIPController extends Controller
         $settings->get('Twitter', 'type');
         $twLink = $settings->value;
 
-        $varMail = array(
+        $varMail = [
             'surl'                 => $this->get('assets.packages')->getUrl(''),
             'url'                  => $this->get('assets.packages')->getUrl(''),
             'prenom'               => $client->prenom,
@@ -322,7 +334,7 @@ class LenderCIPController extends Controller
             'motif_virement'       => $client->getLenderPattern($client->id_client),
             'lien_fb'              => $fbLink,
             'lien_tw'              => $twLink
-        );
+        ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-conseil-cip', $varMail);
