@@ -454,60 +454,19 @@ class rootController extends bootstrap
         }
     }
 
+    /**
+     * Pas de appel dans le log nginx , à supprimer après vérification.
+     */
     public function _xmlAllProjects()
     {
-        $projects  = $this->loadData('projects');
-        $companies = $this->loadData('companies');
-        $bids      = $this->loadData('bids');
-
-        /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
-        $translationManager  = $this->get('unilend.service.translation_manager');
-        $this->tabSecteurs = $translationManager->getTranslatedCompanySectorList();
-
-        $lProjets = $projects->selectProjectsByStatus([\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT]);
-
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>';
-        $xml .= '<partenaire>';
-
-        foreach ($lProjets as $p) {
-            $companies->get($p['id_company'], 'id_company');
-
-            $monantRecolt = $bids->sum('id_project = ' . $p['id_project'] . ' AND status = 0', 'amount');
-            $monantRecolt = ($monantRecolt / 100);
-
-            if ($monantRecolt > $p['amount']) {
-                $monantRecolt = $p['amount'];
-            }
-
-            $xml .= '<projet>';
-            $xml .= '<reference_partenaire>045</reference_partenaire>';
-            $xml .= '<date_export>' . date('Y-m-d') . '</date_export>';
-            $xml .= '<reference_projet>' . $p['id_project'] . '</reference_projet>';
-            $xml .= '<impact_social>NON</impact_social>';
-            $xml .= '<impact_environnemental>NON</impact_environnemental>';
-            $xml .= '<impact_culturel>NON</impact_culturel>';
-            $xml .= '<impact_eco>OUI</impact_eco>';
-            $xml .= '<mots_cles_nomenclature_operateur>' . $this->tabSecteurs[$companies->sector - 1] . '</mots_cles_nomenclature_operateur>'; // added 19/06/2015
-            $xml .= '<mode_financement>PRR</mode_financement>';
-            $xml .= '<type_porteur_projet>ENT</type_porteur_projet>';
-            $xml .= '<qualif_ESS>NON</qualif_ESS>';
-            $xml .= '<code_postal>' . $companies->zip . '</code_postal>'; ////////////////////////////////////////
-            $xml .= '<ville><![CDATA["' . utf8_encode($companies->city) . '"]]></ville>';
-            $xml .= '<titre><![CDATA["' . $p['title'] . '"]]></titre>';
-            $xml .= '<description><![CDATA["' . $p['nature_project'] . '"]]></description>';
-            $xml .= '<url><![CDATA["' . $this->lurl . '/projects/detail/' . $p['slug'] . '/?utm_source=TNProjets&utm_medium=Part&utm_campaign=Permanent"]]></url>';
-            $xml .= '<url_photo><![CDATA["' . $this->surl . '/images/dyn/projets/169/' . $p['photo_projet'] . '"]]></url_photo>';
-            $xml .= '<date_debut_collecte>' . $p['date_publication'] . '</date_debut_collecte>';
-            $xml .= '<date_fin_collecte>' . $p['date_retrait'] . '</date_fin_collecte>';
-            $xml .= '<montant_recherche>' . $p['amount'] . '</montant_recherche>';
-            $xml .= '<montant_collecte>' . number_format($monantRecolt, 0, ',', '') . '</montant_collecte>';
-            $xml .= '</projet>';
+        $file = $this->getParameter('path.user') . 'fichiers/045.xml';
+        if (file_exists($file)) {
+            header("Content-Type: application/xml; charset=utf-8");
+            header("Content-Disposition: inline; filename=xmlAllProjects");
+            header('Content-Length: ' . filesize($file));
+            readfile($file);
         }
-        $xml .= '</partenaire>';
-        $titre = 'xmlAllProjects';
-        header("Content-Type: application/xml; charset=utf-8");
-        echo $xml;
-        die;
+        exit;
     }
 
     // Enregistrement et lecture du pdf cgv

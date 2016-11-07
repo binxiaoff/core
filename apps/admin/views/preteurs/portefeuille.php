@@ -87,10 +87,10 @@
             <table class="autobid-param-advanced-table">
                 <tr>
                     <th class="empty"></th>
-                    <th scope="col" colspan="5" class="table-title"><?= $this->lng['autobid']['expert-settings-table-title-risk'] ?></th>
+                    <th scope="col" colspan="5" class="table-title"><?= $this->translator->trans('autobid_expert-settings-table-title-risk') ?></th>
                 </tr>
                 <tr>
-                    <th scope="col" class="table-title"><?= $this->lng['autobid']['expert-settings-table-title-period'] ?></th>
+                    <th scope="col" class="table-title"><?= $this->translator->trans('autobid_expert-settings-table-title-period') ?></th>
                     <?php foreach (array_keys(array_values($this->aAutoBidSettings)[0]) as $evaluation) : ?>
                         <th><?=constant('\projects::RISK_' . $evaluation)?>*</th>
                     <?php endforeach; ?>
@@ -112,9 +112,9 @@
                     <td class="empty"></td>
                     <td colspan="5" class="empty">
                         <div class="table-legend">
-                            <span><span class="rate-legend legend-green"></span><?= $this->lng['autobid']['expert-settings-legend-inferior-rate'] ?></span>
-                            <span><span class="rate-legend legend-gray"></span><?= $this->lng['autobid']['expert-settings-legend-deactivated'] ?></span>
-                            <span><span class="rate-legend legend-red"></span><?= $this->lng['autobid']['expert-settings-legend-superior-rate'] ?></span>
+                            <span><span class="rate-legend legend-green"></span><?= $this->translator->trans('autobid_expert-settings-legend-inferior-rate') ?></span>
+                            <span><span class="rate-legend legend-gray"></span><?= $this->translator->trans('autobid_expert-settings-legend-deactivated') ?></span>
+                            <span><span class="rate-legend legend-red"></span><?= $this->translator->trans('autobid_expert-settings-legend-superior-rate') ?></span>
                         </div>
                     </td>
                 </tr>
