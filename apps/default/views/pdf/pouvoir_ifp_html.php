@@ -168,9 +168,6 @@
             </div>
             <div class="list">
                 <ul>
-                    <li>
-                        <h5>Les émis sont nominatifs.<br />Ils reproduisent le dernier bilan de l'Emetteur qu'il certifie sincère tel qu'il figure ci-après.</h5>
-                    </li>
                     <li>La signature des contrats de prêt par Unilend engage l'Emetteur, en contrepartie des sommes remises ce jour </li>
                     <li>
                         <div class="col-long">
