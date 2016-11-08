@@ -7,7 +7,7 @@
     {% block panelContent %}
             <div class="dashboard-panel-overview">
                 <div class="label">
-                    {% if lenderDetails.hasIRR %}
+                    {% if lenderDetails.hasIRR or lenderDetails.companiesLenderInvestedIn == 0 %}
                         {% trans %} lender-dashboard-user-level_irr-title {% endtrans %}
                     {% else %}
                         {% trans %} lender-dashboard-user-level_loss-rate-title {% endtrans %}
@@ -42,7 +42,7 @@
             </div>
     {% endblock %}
     {% block panelFooter %}
-        {% if lenderDetails.hasIRR %}
+        {% if lenderDetails.hasIRR or lenderDetails.companiesLenderInvestedIn == 0 %}
             {{ 'lender-dashboard-user-level_irr-explanation-link'|trans|raw }}
         {% else %}
             {{ 'lender-dashboard-user-level_loss-rate-explanation-link'|trans|raw }}

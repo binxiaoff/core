@@ -69,7 +69,7 @@ class IRRManager
         }
 
         $financial   = new \PHPExcel_Calculation_Financial();
-        return $financial->XIRR($sums, $dates, self::IRR_GUESS);
+        return round(bcmul($financial->XIRR($sums, $dates, self::IRR_GUESS), 100, 3), 2);
     }
 
     /**
@@ -133,8 +133,8 @@ class IRRManager
         $lendersAccountsStats = $this->entityManager->getRepository('lenders_account_stats');
         $lendersAccountsStats->id_lender_account = $lenderId;
         $lendersAccountsStats->date              = date('Y-m-d H:i:s');
-        $lendersAccountsStats->value             = bcmul($lenderIRR, 100, 2);
-        $lendersAccountsStats->type_stat         = \lenders_account_stats::STAT_TYPE_IRR;
+        $lendersAccountsStats->value             = $lenderIRR;
+        $lendersAccountsStats->type_stat         = \lenders_account_stats::TYPE_STAT_IRR;
         $lendersAccountsStats->status            = $status;
 
         $lendersAccountsStats->create();
@@ -163,7 +163,7 @@ class IRRManager
         $unilendStats = $this->entityManager->getRepository('unilend_stats');
         $valuesIRR = $unilendStats->getIRRValuesByCohort($year);
 
-        return bcmul($this->calculateIRR($valuesIRR), 100, 2);
+        return $this->calculateIRR($valuesIRR);
     }
 
     public function getUnilendIRRForCohort20132014()
@@ -175,7 +175,7 @@ class IRRManager
         $valuesIRR2014 = $unilendStats->getIRRValuesByCohort(2014);
         $valuesIRR     = array_merge($valuesIRR2013, $valuesIRR2014);
 
-        return bcmul($this->calculateIRR($valuesIRR), 100, 2);
+        return $this->calculateIRR($valuesIRR);
     }
 
 }

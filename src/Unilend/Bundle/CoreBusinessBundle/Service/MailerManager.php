@@ -1175,9 +1175,6 @@ class MailerManager
         $oMailNotification = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
         /** @var \clients_gestion_notifications $oCustomerNotificationSettings */
         $oCustomerNotificationSettings = $this->oEntityManager->getRepository('clients_gestion_notifications');
-        /** @var \translations $translations */
-        $translations                    = $this->oEntityManager->getRepository('textes');
-        $aTranslations['email-synthese'] = $translations->selectFront('email-synthese', 'fr');
 
         /** @var \clients_gestion_notif_log $oNotificationsLog */
         $oNotificationsLog           = $this->oEntityManager->getRepository('clients_gestion_notif_log');
