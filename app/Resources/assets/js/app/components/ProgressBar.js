@@ -201,7 +201,7 @@ ProgressBar.prototype.setCurrent = function (newCurrent, skipUpdate) {
 
   // Update the track values
   self.track.current = newCurrent
-  self.track.percent = Math.ceil((self.track.current / self.settings.total) * 100)
+  self.track.percent = (self.track.current / self.settings.total) * 100
 
   // @debug
   // console.log('ProgressBar.setCurrent', newCurrent, {
@@ -212,7 +212,7 @@ ProgressBar.prototype.setCurrent = function (newCurrent, skipUpdate) {
 
   // Update attributes
   self.$elem.attr('data-progressbar-current', self.track.current)
-  self.$elem.attr('data-progressbar-percent', self.track.percent)
+  self.$elem.attr('data-progressbar-percent', Math.floor(self.track.percent))
 
   // Updates by default, unless skipped
   if (!skipUpdate) {
@@ -239,7 +239,7 @@ ProgressBar.prototype.getLabelText = function (labelText) {
   return Templating.replace(labelText, {
     current: self.track.current,
     total: self.track.total,
-    percent: self.track.percent
+    percent: Math.floor(self.track.percent)
   })
 }
 
@@ -258,7 +258,7 @@ ProgressBar.prototype.update = function () {
       width: self.track.percent + '%'
     }, self.settings.animationTime || 200)
   } else {
-    self.$bar.width(self.track.percent + '%')
+    self.$bar.width(Math.floor(self.track.percent) + '%')
   }
 
   // Update the label value
