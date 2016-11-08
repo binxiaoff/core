@@ -4,15 +4,12 @@ namespace Unilend\Bundle\FrontBundle\Form;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
-use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
 use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
-use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
-use Symfony\Component\Security\Core\Security;
 
 class BorrowerContactType extends AbstractType
 {
@@ -20,14 +17,11 @@ class BorrowerContactType extends AbstractType
     private $borrower;
     /** @var EntityManager */
     private $entityManager;
-    /** @var TranslationManager */
-    private $translator;
     private $language;
 
-    public function __construct(EntityManager $entityManager, TranslationManager $translator, TokenStorage $tokenStorage, $language)
+    public function __construct(EntityManager $entityManager, TokenStorage $tokenStorage, $language)
     {
         $this->entityManager = $entityManager;
-        $this->translator    = $translator;
         $this->language      = $language;
         $this->borrower      = $tokenStorage->getToken()->getUser();
     }
@@ -58,13 +52,13 @@ class BorrowerContactType extends AbstractType
             }
         }
         /** @var \contact_request_subjects $requestSubjects */
-        $requestSubjects     = $this->entityManager->getRepository('contact_request_subjects');
-        $subject             = $requestSubjects->getAllSubjects($this->language);
-        $subjectsTranslation = array_column($subject, 'translation');
-        if (empty($subjectsTranslation)) {
-            $subjectsTranslation = array_column($subject, 'label_contact_request_subject');
+        $requestSubjects = $this->entityManager->getRepository('contact_request_subjects');
+        $subjects        = $requestSubjects->select();
+
+        $subjectsChoices = [];
+        foreach ($subjects as $subject) {
+            $subjectsChoices['borrower-contact_subject-option-' . $subject['id_contact_request_subject']] = $subject['id_contact_request_subject'];
         }
-        $subjectIds = array_column($subject, 'id_contact_request_subject');
 
         $builder
             ->add('last_name', TextType::class, [
@@ -90,7 +84,7 @@ class BorrowerContactType extends AbstractType
             ->add('subject', ChoiceType::class, [
                 'label'    => 'borrower-contact_choose-a-subject',
                 'required' => true,
-                'choices'  => array_combine($subjectsTranslation, $subjectIds)
+                'choices'  => $subjectsChoices
             ])
             ->add('message', TextareaType::class, [
                 'label'    => 'borrower-contact_message',

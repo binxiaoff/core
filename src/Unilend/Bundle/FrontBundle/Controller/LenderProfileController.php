@@ -16,7 +16,6 @@ use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
-use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 use Unilend\core\Loader;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -1001,9 +1000,6 @@ class LenderProfileController extends Controller
         $lenderAccount = $this->getLenderAccount();
         /** @var \clients_history_actions $clientHistoryActions */
         $clientHistoryActions = $entityManager->getRepository('clients_history_actions');
-        /** @var TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translation_manager');
-        $translations       = $translationManager->getAllTranslationsForSection('projet');
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
 
@@ -1014,7 +1010,7 @@ class LenderProfileController extends Controller
             $contentHistory = '<ul>';
             if ($file instanceof UploadedFile && false === empty($files[$fileName])) {
                 $this->uploadAttachment($lenderAccount->id_lender_account, $request->request->get('files')[$fileName], $fileName);
-                $contentHistory .= '<li>' . $translations['document-type-' . $request->request->get('files')[$fileName]] . '</li>';
+                $contentHistory .= '<li>' . $translator->trans('projet_document-type-' . $request->request->get('files')[$fileName]) . '</li>';
             }
             $contentHistory .= '</ul>';
         }
@@ -1114,7 +1110,7 @@ class LenderProfileController extends Controller
      */
     public function getZipAction(Request $request)
     {
-        if ($request->isXMLHttpRequest()) {
+        if ($request->isXmlHttpRequest()) {
             /** @var LocationManager $locationManager */
             $locationManager = $this->get('unilend.service.location_manager');
             return new JsonResponse($locationManager->getCities($request->query->get('zip')));
@@ -1271,7 +1267,7 @@ class LenderProfileController extends Controller
                 $settings->get("Liste deroulante origine des fonds", 'type');
                 break;
             default:
-                $settings->get("Liste deroulante origine des fonds", 'type');
+                $settings->get("Liste deroulante origine des fonds societe", 'type');
                 break;
         }
         $fundsOriginList = explode(';', $settings->value);
@@ -1312,6 +1308,9 @@ class LenderProfileController extends Controller
         if ($this->get('session')->getFlashBag()->has('securityIdentificationErrors')) {
             $request->getSession()->set('securityIdentificationData', $post);
         } else {
+            $client->mobile    = $post['client_mobile'];
+            $client->telephone = $post['client_landline'];
+            $client->email     = $post['client_email'];
             $client->update();
             $this->addFlash('securityIdentificationSuccess', $translator->trans('lender-profile_security-identification-form-success-message'));
         }

@@ -337,8 +337,10 @@
                                                     <div class="input-group">
                                                         <select id="form-project-create-motive" name="project[motive]" class="input-field" data-formvalidation-input data-formvalidation-required="true">
                                                             <option value="">{% trans %} project-request_project-motive-placeholder {% endtrans %}</option>
-                                                            {% for id_motive, borrowing_motive in borrowing_motives %}
-                                                                <option value="{{ id_motive }}"{% if id_motive == form.values.project.motive %} selected{% endif %}>{{ borrowing_motive }}</option>
+                                                            {% for borrowing_motive in borrowing_motives %}
+                                                                <option value="{{ borrowing_motive.id_motive }}"{% if borrowing_motive.id_motive == form.values.project.motive %} selected{% endif %}>
+                                                                    {{ ('borrowing-motive_motive-' ~ borrowing_motive.id_motive)|trans }}
+                                                                </option>
                                                             {% endfor %}
                                                         </select>
                                                         {% if form.errors.project.motive is defined %}
