@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html lang="{{ app.request.locale }}" class="no-js">
+    <head>
+        <meta charset="UTF-8">
+    </head>
+    <body>
+        <p style="text-align: right;">{% trans with {'%year%' : 'now'|date('Y') } %} lender-evaluation_pdf-footer {% endtrans %}</p>
+    </body>
+</html>
