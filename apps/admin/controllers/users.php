@@ -138,7 +138,9 @@ class usersController extends bootstrap
             die;
         }
 
-        $this->lUsers = $this->users->select('id_user != 1', 'name ASC');
+        $onlineUsers  = $this->users->select('id_user != 1 AND status = ' . \users::STATUS_ONLINE, 'name ASC');
+        $offlineUsers = $this->users->select('id_user != 1 AND status = ' . \users::STATUS_OFFLINE, 'name ASC');
+        $this->users  = [\users::STATUS_ONLINE => $onlineUsers, \users::STATUS_OFFLINE => $offlineUsers];
     }
 
     public function _edit()

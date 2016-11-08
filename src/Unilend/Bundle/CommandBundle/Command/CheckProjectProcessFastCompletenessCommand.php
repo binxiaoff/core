@@ -26,19 +26,14 @@ class CheckProjectProcessFastCompletenessCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
-        $entityManager->getRepository('projects_status'); // Loaded for class constants
-        $entityManager->getRepository('users'); // Loaded for class constants
+        /** @var \projects $project */
+        $project = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('projects');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+        $projectManager = $this->getContainer()->get('unilend.service.project_manager');
 
-        /** @var \projects $oProject */
-        $oProject = $entityManager->getRepository('projects');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
-        $oProjectManager = $this->getContainer()->get('unilend.service.project_manager');
-
-        foreach ($oProject->getFastProcessStep3() as $iProjectId) {
-            $oProject->get($iProjectId, 'id_project');
-            $oProjectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::A_TRAITER, $oProject);
+        foreach ($project->getFastProcessStep3() as $iProjectId) {
+            $project->get($iProjectId, 'id_project');
+            $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::A_TRAITER, $project);
         }
     }
 }
