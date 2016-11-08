@@ -473,4 +473,25 @@ class transactions extends transactions_crud
         $statement = $this->bdd->executeQuery($query);
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * @param lenders_accounts $lender
+     * @return float
+     */
+    public function getLenderDepositedAmount(\lenders_accounts $lender)
+    {
+        $queryBuilder = $this->bdd->createQueryBuilder();
+        $queryBuilder
+            ->select('SUM(montant) / 100')
+            ->from('transactions')
+            ->andWhere('etat = 1')
+            ->andWhere('status = 1')
+            ->andWhere('id_client = :id_client')
+            ->andWhere('type_transaction IN (:types)')
+            ->setParameter('id_client', $lender->id_client_owner)
+            ->setParameter('types', [transactions_types::TYPE_LENDER_SUBSCRIPTION, transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT, transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT], \Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
+
+        $statement = $queryBuilder->execute();
+        return (float) $statement->fetchColumn();
+    }
 }
