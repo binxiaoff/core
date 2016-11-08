@@ -1,6 +1,6 @@
 <p>
 {% if code == 200 %}
-    {% trans with { '%depositAmount%' : depositAmount|localizednumberwithprecision(2) } %} lender-wallet_deposit-success-message {% endtrans %}
+    {% trans with { '%depositAmount%' : depositAmount|localizednumber } %} lender-wallet_deposit-success-message {% endtrans %}
 {% else %}
     {% trans %} lender-wallet_deposit-error-message {% endtrans %}
 {% endif %}
