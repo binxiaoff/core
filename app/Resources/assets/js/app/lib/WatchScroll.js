@@ -273,15 +273,15 @@ var WatchScroll = {
       if ( !wasVisible && isVisible ) {
         state.push('enter')
 
-        // Visible
+      // Visible
       } else if ( wasVisible && isVisible ) {
         state.push('visible')
 
-        // Leave
+      // Leave
       } else if ( wasVisible && !isVisible ) {
         state.push('leave')
 
-        // Hidden
+      // Hidden
       } else if ( !wasVisible && !isVisible ) {
         state.push('hidden')
       }
