@@ -388,7 +388,6 @@ class AutoBidSettingsManager
      *
      * @return bool
      */
-
     public function hasAutoBidActivationHistory(\lenders_accounts $oLendersAccount)
     {
         /** @var \clients_history_actions $oClientHistoryActions */
@@ -434,7 +433,8 @@ class AutoBidSettingsManager
         return false;
     }
 
-    public function getAmount(\lenders_accounts $lender) {
+    public function getAmount(\lenders_accounts $lender)
+    {
         /** @var \autobid $oAutoBid */
         $oAutoBid = $this->oEntityManager->getRepository('autobid');
         $settings = $oAutoBid->getSettings($lender->id_lender_account, null, null, \autobid::STATUS_ACTIVE, [], 1);
@@ -454,7 +454,7 @@ class AutoBidSettingsManager
 
         foreach ($this->productManager->getAvailableProducts(true) as $product) {
             $autobidContracts = $this->productManager->getAutobidEligibleContracts($product);
-            foreach ($autobidContracts as $autobidContract){
+            foreach ($autobidContracts as $autobidContract) {
                 if ($this->contractManager->isLenderEligible($lender, $autobidContract)) {
                     $maxAmount += $this->contractManager->getMaxAmount($autobidContract);
                 }

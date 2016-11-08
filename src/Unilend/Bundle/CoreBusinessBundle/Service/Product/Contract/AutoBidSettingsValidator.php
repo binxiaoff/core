@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract;
 
-
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
@@ -23,9 +22,6 @@ class AutoBidSettingsValidator
 
     public function isEligible($contract)
     {
-        if (false === $this->isEligibleForEligibility($contract, $this->contractAttributeManager)) {
-            return false;
-        }
-        return true;
+        return $this->isEligibleForEligibility($contract, $this->contractAttributeManager);
     }
 }

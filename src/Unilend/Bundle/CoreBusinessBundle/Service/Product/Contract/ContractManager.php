@@ -53,5 +53,4 @@ class ContractManager
     {
         return $this->contractAttributeManager->getContractAttributesByType($contract, $attributeType);
     }
-
 }

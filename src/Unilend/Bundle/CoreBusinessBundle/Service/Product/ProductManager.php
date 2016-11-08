@@ -57,8 +57,6 @@ class ProductManager
 
     /**\
      * @param \bids     $bid
-     * @param \projects $project
-     *
      * @return bool
      * @throws \Exception
      */
@@ -165,7 +163,8 @@ class ProductManager
 
         foreach ($product->select() as $oneProduct) {
             $product->get($oneProduct['id_product']);
-            if ($product->status != \product::STATUS_ARCHIVED
+            if (
+                $product->status != \product::STATUS_ARCHIVED
                 && ($includeInactiveProduct || $product->status == \product::STATUS_ONLINE)
             ) {
                 $availableProduct    = clone $product;
