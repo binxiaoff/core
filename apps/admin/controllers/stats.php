@@ -788,7 +788,9 @@ class statsController extends bootstrap
                 LEFT JOIN tax retenues_source ON retenues_source.id_transaction = t.id_transaction AND retenues_source.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE . '
                 LEFT JOIN tax prelevements_obligatoires ON prelevements_obligatoires.id_transaction = t.id_transaction AND prelevements_obligatoires.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX . '
               WHERE YEAR(t.date_transaction) = ' . $year . '
-              GROUP BY c.id_client';
+              GROUP BY c.id_client
+              ORDER BY c.added DESC
+              LIMIT 10';
         $resultat = $this->bdd->query($sql);
 
         while ($record = $this->bdd->fetch_array($resultat)) {
@@ -831,6 +833,11 @@ class statsController extends bootstrap
         $writer->save('php://output');
     }
 
+    /**
+     * @param PHPExcel_Worksheet $activeSheet
+     * @param int $row
+     * @param array $commonValues
+     */
     private function addCommonCellValuesToRevenueQueryCSV(\PHPExcel_Worksheet &$activeSheet, $row, $commonValues)
     {
         $activeSheet->setCellValueByColumnAndRow(0, $row, $commonValues['CodeEntreprise']);
@@ -839,6 +846,13 @@ class statsController extends bootstrap
         $activeSheet->setCellValueByColumnAndRow(5, $row, $commonValues['Monnaie']);
     }
 
+    /**
+     * @param PHPExcel_Worksheet $activeSheet
+     * @param int $row
+     * @param array $commonValues
+     * @param int $year
+     * @param clients $clients
+     */
     private function addLoansToRevenueQueryCSV(\PHPExcel_Worksheet &$activeSheet, &$row, $commonValues, $year, \clients $clients)
     {
         $sql = '
@@ -869,6 +883,14 @@ class statsController extends bootstrap
         }
     }
 
+    /**
+     * @param PHPExcel_Worksheet $activeSheet
+     * @param int $clientId
+     * @param int $year
+     * @param array $zoneB040CountryIds
+     * @param int $row
+     * @param array $commonValues
+     */
     private function addRepaymentBasedLinesToRevenuesQueryCSV(\PHPExcel_Worksheet &$activeSheet, $clientId, $year, $zoneB040CountryIds, &$row, $commonValues)
     {
         $sum66  = 0;
@@ -878,16 +900,17 @@ class statsController extends bootstrap
 
         $sql = 'SELECT
                   la.id_lender_account,
-                  ROUND(t.montant/100, 2) as interets,
-                  ROUND(retenues_source.amount / 100, 2) as retenues_source,
-                  t.date_transaction,
+                  ROUND(t_interets.montant/100, 2) AS net_interest,
+                  IFNULL((SELECT SUM(ROUND(tax.amount / 100, 2)) FROM tax WHERE id_transaction = t_interets.id_transaction) , 0) AS tax_on_interest,
+                  ROUND(t_capital.montant/100, 2) as capital,
+                  t_interets.date_transaction,
                   c.type,
-                  t.id_echeancier
+                  t_interets.id_echeancier
                 FROM lenders_accounts la
                 INNER JOIN clients c ON la.id_client_owner = c.id_client
-                LEFT JOIN transactions t ON c.id_client = t.id_client AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
-                LEFT JOIN tax retenues_source ON retenues_source.id_transaction = t.id_transaction AND retenues_source.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE . '
-                WHERE YEAR(t.date_transaction) = ' . $year . '
+                LEFT JOIN transactions t_interets ON c.id_client = t_interets.id_client AND t_interets.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
+                LEFT JOIN transactions t_capital ON c.id_client = t_capital.id_client AND t_capital.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . '
+                WHERE YEAR(t_interets.date_transaction) = ' . $year . '
                   AND c.id_client =  ' . $clientId;
 
         $resultat = $this->bdd->query($sql);
@@ -896,8 +919,6 @@ class statsController extends bootstrap
         $transactions = $this->loadData('transactions');
 
         while ($record = $this->bdd->fetch_array($resultat)) {
-            $capitalTransaction = $transactions->select('id_echeancier = ' . $record['id_echeancier'] . ' AND type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL)[0];
-
             if (\clients::TYPE_PERSON == $record['type'] || \clients::TYPE_PERSON_FOREIGNER == $record['type']) {
                 /** @var \lenders_imposition_history $lenderImpositionHistory */
                 $lenderImpositionHistory = $this->loadData('lenders_imposition_history');
@@ -918,25 +939,25 @@ class statsController extends bootstrap
 
                 unset($situation);
 
-                if (false === $foreigner) { //code 66
-                    $sum66 += $record['interets'];
+                if (false === $foreigner) {
+                    $sum66 += $record['net_interest'] + $record['tax_on_interest'];
                 } else {
                     if (true === $zoneB040Country) {
-                        $sum81 += $record['interets'] - $record['retenues_source'] * 100;
+                        $sum81 += $record['net_interest'];
                     }
                 }
 
                 if (true === $zoneB040Country) {
-                    $sum82 += round(bcdiv($capitalTransaction['montant'], 100, 3), 2);
+                    $sum82 += round(bcdiv($record['capital'], 100, 3), 2);
                 }
             }
-            $sum118 += round(bcdiv(bcdiv($capitalTransaction['montant'], 100, 3), 0.844, 5), 2);
+            $sum118 += round(bcdiv($record['capital'], 100, 3), 2);
 
-            unset($record, $capitalTransaction);
+            unset($record);
         }
 
         $recoveryPayments = $transactions->sum('id_client = ' . $clientId . ' AND type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT, 'montant');
-        $sum118 += round(bcdiv($recoveryPayments, 100, 3), 2);
+        $sum118 += round(bcdiv(bcdiv($recoveryPayments, 100, 3), 0.844, 5), 2);
 
         if ($sum66 > 0) {
             $this->addCommonCellValuesToRevenueQueryCSV($activeSheet, $row, $commonValues);
