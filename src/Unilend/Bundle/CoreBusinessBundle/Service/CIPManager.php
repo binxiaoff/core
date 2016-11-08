@@ -282,7 +282,7 @@ class CIPManager
                         return null;
                     }
 
-                    if ($answer->first_answer > \lender_questionnaire_question::VALUE_ESTATE_THRESHOLD) {
+                    if ($answer->first_answer >= \lender_questionnaire_question::VALUE_ESTATE_THRESHOLD) {
                         continue;
                     }
                 }
@@ -466,11 +466,24 @@ class CIPManager
         if (null !== $indicators[self::INDICATOR_TOTAL_AMOUNT]) {
             /** @var \ficelle $ficelle */
             $ficelle   = Loader::loadLib('ficelle');
-            $advices[] = $this->translator->trans('lender-evaluation_low-estate-advice', [
-                '%maximumAmount%'    => $ficelle->formatNumber($indicators[self::INDICATOR_TOTAL_AMOUNT], 0),
-                '%maximumAmount100%' => $ficelle->formatNumber(floor($indicators[self::INDICATOR_TOTAL_AMOUNT] / 100), 0),
-                '%maximumAmount200%' => $ficelle->formatNumber(floor($indicators[self::INDICATOR_TOTAL_AMOUNT] / 200), 0)
-            ]);
+
+            if (strcmp($indicators[self::INDICATOR_TOTAL_AMOUNT], \lender_questionnaire_question::VALUE_ESTATE_THRESHOLD * 0.101) < 0) {
+                $advices[] = $this->translator->trans('lender-evaluation_low-estate-low-boundary-advice', [
+                    '%maximumAmount%'    => $ficelle->formatNumber($indicators[self::INDICATOR_TOTAL_AMOUNT], 0),
+                    '%maximumAmount100%' => $ficelle->formatNumber(floor($indicators[self::INDICATOR_TOTAL_AMOUNT] / 100), 0)
+                ]);
+            } elseif (floor($indicators[self::INDICATOR_TOTAL_AMOUNT] / 200) < 20) {
+                $advices[] = $this->translator->trans('lender-evaluation_low-estate-low-loan-advice', [
+                    '%maximumAmount%'    => $ficelle->formatNumber($indicators[self::INDICATOR_TOTAL_AMOUNT], 0),
+                    '%maximumAmount100%' => $ficelle->formatNumber(floor($indicators[self::INDICATOR_TOTAL_AMOUNT] / 100), 0)
+                ]);
+            } else {
+                $advices[] = $this->translator->trans('lender-evaluation_low-estate-advice', [
+                    '%maximumAmount%'    => $ficelle->formatNumber($indicators[self::INDICATOR_TOTAL_AMOUNT], 0),
+                    '%maximumAmount100%' => $ficelle->formatNumber(floor($indicators[self::INDICATOR_TOTAL_AMOUNT] / 100), 0),
+                    '%maximumAmount200%' => $ficelle->formatNumber(floor($indicators[self::INDICATOR_TOTAL_AMOUNT] / 200), 0)
+                ]);
+            }
         } elseif (null !== $indicators[self::INDICATOR_AMOUNT_BY_MONTH]) {
             /** @var \ficelle $ficelle */
             $ficelle   = Loader::loadLib('ficelle');
@@ -522,7 +535,7 @@ class CIPManager
         $monthlySavings           = isset($answers[\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS]) ? $answers[\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS]['first_answer'] : 0;
         $blockingPeriod           = $answers[\lender_questionnaire_question::TYPE_VALUE_BLOCKING_PERIOD]['first_answer'];
 
-        if ($estate > \lender_questionnaire_question::VALUE_ESTATE_THRESHOLD) {
+        if ($estate >= \lender_questionnaire_question::VALUE_ESTATE_THRESHOLD) {
             $totalAmountIndicator = floor($estate / 10);
         } elseif ($monthlySavings >= \lender_questionnaire_question::VALUE_MONTHLY_SAVINGS_THRESHOLD) {
             $amountByMonthIndicator = floor($monthlySavings / 200) * 20;
