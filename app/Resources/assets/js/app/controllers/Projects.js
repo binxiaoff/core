@@ -1,5 +1,5 @@
 /*
- * Project List component
+ * Projects controller
  */
 
 var $ = require('jquery')
