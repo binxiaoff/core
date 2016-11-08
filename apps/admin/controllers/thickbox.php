@@ -176,4 +176,13 @@ class thickboxController extends bootstrap
             $this->sPreviousReceiver = $oProjectsStatusHistoryDetails->receiver;
         }
     }
+
+    public function _confirm_tax_exemption()
+    {
+        if ('uncheck' === $this->params[1]){
+            $this->message = 'Le préteur ne sera pas exonéré pour l\'année ' . $this->params[0] . '<br>une fois les modifications sauvegardées';
+        } elseif ('check' === $this->params[1]) {
+            $this->message = 'Le préteur sera exonéré pour l\'année ' . $this->params[0] . '<br>une fois les modifications sauvegardées';
+        }
+    }
 }
