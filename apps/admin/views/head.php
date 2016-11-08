@@ -37,8 +37,6 @@
                     case 'preprod':
                         wiki = true;
                         break;
-                    default:
-                        break;
                 }
 
                 if (isdev) {
