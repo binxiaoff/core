@@ -1267,7 +1267,7 @@ class LenderProfileController extends Controller
                 $settings->get("Liste deroulante origine des fonds", 'type');
                 break;
             default:
-                $settings->get("Liste deroulante origine des fonds", 'type');
+                $settings->get("Liste deroulante origine des fonds societe", 'type');
                 break;
         }
         $fundsOriginList = explode(';', $settings->value);
