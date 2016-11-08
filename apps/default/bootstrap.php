@@ -163,12 +163,6 @@ class bootstrap extends Controller
             $this->id_tree_cookies        = $aElements['TreeCookies'];
         }
 
-        $this->menuFooter = $this->tree->getMenu('footer', $this->language, $this->lurl);
-        $this->navFooter1 = $this->tree->getMenu('footer-nav-1', $this->language, $this->lurl);
-        $this->navFooter2 = $this->tree->getMenu('footer-nav-2', $this->language, $this->lurl);
-        $this->navFooter3 = $this->tree->getMenu('footer-nav-3', $this->language, $this->lurl);
-        $this->navFooter4 = $this->tree->getMenu('footer-nav-4', $this->language, $this->lurl);
-
         $this->lNotes = array(
             'A' => 'etoile1',
             'B' => 'etoile2',

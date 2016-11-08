@@ -11,7 +11,7 @@
     <a href="#" class="popup-close">Close</a>
 
     <div class="popup-head">
-        <h2><?= $this->tree->getTitle(47, $this->language) ?></h2>
+        <h2></h2>
     </div><!-- /.popup-head -->
 
     <div class="popup-cnt">
