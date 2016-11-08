@@ -109,11 +109,10 @@ class thickboxController extends bootstrap
                 $this->bReceiver         = false;
                 $this->bAskEmailBorrower = true;
 
-                /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
-                $translationManager         = $this->get('unilend.service.translation_manager');
-                $aProjectTexts              = $translationManager->getAllTranslationsForSection('projet');
-                $this->sInfoStatusChange    = trim($aProjectTexts['info-passage-statut-probleme']);
-                $this->mailInfoStatusChange = trim($aProjectTexts['mail-info-passage-statut-probleme']);
+                /** @var \Symfony\Component\Translation\TranslatorInterface  $translator*/
+                $translator         = $this->get('translator');
+                $this->sInfoStatusChange    = trim($translator->trans('projet_info-passage-statut-probleme'));
+                $this->mailInfoStatusChange = trim($translator->trans('projet_mail-info-passage-statut-probleme'));
 
                 break;
             case \projects_status::PROBLEME_J_X:

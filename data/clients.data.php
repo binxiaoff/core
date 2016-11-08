@@ -100,42 +100,22 @@ class clients extends clients_crud
 
     //TODO delete all login and check access functions no longer needed
 
-    public function handleLogin($button, $email, $pass)
-    {
-        if (isset($_POST[$button])) {
-            $client = $this->login($_POST[$email], $_POST[$pass]);
-
-            if ($client !== false) {
-                $_SESSION['auth']   = true;
-                $_SESSION['token']  = md5(md5(time() . $this->securityKey));
-                $_SESSION['client'] = $client;
-
-                if (md5($_POST[$pass]) === $client['password'] || password_needs_rehash($client['password'], PASSWORD_DEFAULT)) {
-                    $client['password'] = password_hash($_POST[$pass], PASSWORD_DEFAULT);
-                    $_SESSION['client']['password'] = $client['password'];
-                }
-
-                $this->saveLogin(new \DateTime('NOW'), $client['email']);
-                return true;
-            }
-            return false;
-        }
-    }
-
     /**
      * @param DateTime $dateLogin
      * @param string   $email
      */
-    public function saveLogin(\DateTime $dateLogin, $email)
+    public function saveLogin(\DateTime $dateLogin)
     {
-        $aBind = array('lastLogin' => $dateLogin->format('Y-m-d H:i:s'), 'email' => $email);
-        $aType = array('lastLogin' => \PDO::PARAM_STR, 'email' => \PDO::PARAM_STR);
+        if (false === empty($this->id_client) && is_numeric($this->id_client)){
+            $bind = ['lastLogin' => $dateLogin->format('Y-m-d H:i:s'), 'id_client' => $this->id_client];
+            $type = ['lastLogin' => \PDO::PARAM_STR, 'id_client' => \PDO::PARAM_STR];
 
-        $sQuery =  '
+            $query =  '
             UPDATE clients
             SET lastlogin = :lastLogin
-            WHERE email = :email AND status = 1';
-        $this->bdd->executeUpdate($sQuery, $aBind, $aType);
+            WHERE id_client = :id_client';
+            $this->bdd->executeUpdate($query, $bind, $type);
+        }
     }
 
     public function handleLogout($bRedirect = true)

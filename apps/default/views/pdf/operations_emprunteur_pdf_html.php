@@ -16,7 +16,7 @@
     </div>
 
     <div style="float: right;">
-        <b><?= $this->lng['preteur-operations-pdf']['paris-le'] ?> <?= (date('d/m/Y')) ?></b>
+        <b><?= $this->translator->trans('preteur-operations-pdf_paris-le') ?> <?= (date('d/m/Y')) ?></b>
         <br/><br/><br/>
         <b><?= $this->companies->name ?></b>
         <br/>
@@ -28,11 +28,11 @@
 
     <div style="clear:both;"></div>
     <br/>
-    <b><?= $this->lng['preteur-operations-pdf']['objet-releve-doperations-de-votre-compte-unilend-n'] ?><?= $this->clients->id_client ?></b>
+    <b><?= $this->translator->trans('preteur-operations-pdf_objet-releve-doperations-de-votre-compte-unilend-n') ?><?= $this->clients->id_client ?></b>
     <br/>
-    <?= $this->lng['preteur-operations-pdf']['titulaire'] ?> <?= $this->companies->name ?>
+    <?= $this->translator->trans('preteur-operations-pdf_titulaire') ?> <?= $this->companies->name ?>
     <br/>
-    <?= $this->lng['preteur-operations-pdf']['representant-legal'] ?> <?= $this->clients->civilite . ' ' . $this->clients->prenom . ' ' . $this->clients->nom ?>
+    <?= $this->translator->trans('preteur-operations-pdf_representant-legal') ?> <?= $this->clients->civilite . ' ' . $this->clients->prenom . ' ' . $this->clients->nom ?>
     <br/>
 </div>
 <br/>
@@ -40,30 +40,30 @@
 <table class="table vos_operations" border="0" cellspacing="0" cellpadding="0">
     <thead>
     <tr>
-        <th><?= $this->lng['espace-emprunteur']['operation'] ?></th>
-        <th><?= $this->lng['espace-emprunteur']['projet'] ?></th>
-        <th><?= $this->lng['espace-emprunteur']['date-de-loperation'] ?></th>
-        <th><?= $this->lng['espace-emprunteur']['montant-de-loperation'] ?></th>
+        <th><?= $this->translator->trans('espace-emprunteur_operation') ?></th>
+        <th><?= $this->translator->trans('espace-emprunteur_projet') ?></th>
+        <th><?= $this->translator->trans('espace-emprunteur_date-de-loperation') ?></th>
+        <th><?= $this->translator->trans('espace-emprunteur_montant-de-loperation') ?></th>
     </tr>
     </thead>
     <tbody>
     <?php foreach ($this->aBorrowerOperations as $aOperation) : ?>
         <tr>
-            <td><?= $this->lng['espace-emprunteur'][ 'operations-type-' . $aOperation['type'] ] ?></td>
+            <td><?= $this->translator->trans('espace-emprunteur_operations-type-' . $aOperation['type'] ) ?></td>
             <td style="text-align: center;"><?= $aOperation['id_project'] ?></td>
             <td style="text-align: right;"><?= $this->dates->formatDateMysqltoShortFR($aOperation['date']) ?></td>
             <td style="text-align: right;"><?= $this->ficelle->formatnumber($aOperation['montant']) ?> &euro;</td>
         </tr>
         <?php if ($aOperation['type'] == 'commission-mensuelle') : ?>
         <tr>
-            <td style="text-align: right"><?= $this->lng['espace-emprunteur']['operations-type-commission-ht'] ?></td>
+            <td style="text-align: right"><?= $this->translator->trans('espace-emprunteur_operations-type-commission-ht') ?></td>
             <td></td>
             <td></td>
             <td style="text-align: right;"><?=  $this->ficelle->formatnumber($aOperation['commission']) ?> &euro;</td>
             <td></td>
         </tr>
         <tr>
-            <td style="text-align: right"><?=  $this->lng['espace-emprunteur']['operations-type-tva'] ?></td>
+            <td style="text-align: right"><?=  $this->translator->trans('espace-emprunteur_operations-type-tva') ?></td>
             <td></td>
             <td></td>
             <td style="text-align: right;"><?=   $this->ficelle->formatnumber($aOperation['tva']) ?> &euro;</td>
@@ -74,6 +74,6 @@
     </tbody>
 </table>
 <div class="pdfFooter">
-    <?= $this->lng['preteur-operations-pdf']['prestataire-de-services-de-paiement'] ?><br/>
-    <?= $this->lng['preteur-operations-pdf']['agent-prestataire-de-services-de-paiement'] ?><br/>
+    <?= $this->translator->trans('preteur-operations-pdf_prestataire-de-services-de-paiement') ?><br/>
+    <?= $this->translator->trans('preteur-operations-pdf_agent-prestataire-de-services-de-paiement') ?><br/>
 </div>

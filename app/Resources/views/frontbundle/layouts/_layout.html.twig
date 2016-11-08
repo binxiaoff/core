@@ -34,7 +34,7 @@
         <meta name="msapplication-config" content="{{ asset('favicons/browserconfig.xml', 'gulp') }}">
         <meta name="theme-color" content="#ffffff">
     </head>
-    <body class="{% if app.user is defined %} ui-user-level-{{ app.user.level|default(0) }} {% endif %}{% if bodyClassNames is defined %} {{ bodyClassNames }}{% endif %}">
+    <body class="{% if app.user is defined and app.user is not empty %} ui-user-level-{{ app.user.level|default(0) }} {% if is_granted('ROLE_LENDER') %} ui-user-type-lender {% endif %} {% if is_granted('ROLE_BORROWER') %} ui-user-type-borrower {% endif %} {% else %} ui-no-user {% endif %} {% if bodyClassNames is defined %} {{ bodyClassNames }} {% endif %}">
         {{ google_tag_manager() }}
         <div id="top" class="site">
             {% block siteHeader %}

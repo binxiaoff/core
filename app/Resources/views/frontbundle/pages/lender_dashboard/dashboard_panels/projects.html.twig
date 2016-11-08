@@ -22,7 +22,7 @@
                                 <span class="sr-only">{% trans with {'%risk%' : project.risk|convertRisk} %} project-detail_unilend-rating-wording-label {% endtrans %}</span>
                             </span>
                         </div>
-                        <div class="project-interest">{{ project.average_rate|localizednumber }}&nbsp;%</div>
+                        <div class="project-interest">{{ project.average_rate|localizednumberwithprecision(1) }}&nbsp;%</div>
                         <div class="project-period">
                             {% if project.finished %}
                                 {{ 'lender-dashboard-projects_project-status-finished'|trans }}

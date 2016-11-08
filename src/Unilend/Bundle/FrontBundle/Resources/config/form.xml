@@ -14,7 +14,6 @@
         <service id="unilend.form.borrower_contact" class="Unilend\Bundle\FrontBundle\Form\BorrowerContactType">
             <tag name="form.type" />
             <argument type="service" id="unilend.service.entity_manager" />
-            <argument type="service" id="unilend.service.translation_manager" />
             <argument type="service" id="security.token_storage" />
             <argument>%kernel.default_locale%</argument>
         </service>

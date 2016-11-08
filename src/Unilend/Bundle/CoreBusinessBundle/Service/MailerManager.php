@@ -1175,9 +1175,6 @@ class MailerManager
         $oMailNotification = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
         /** @var \clients_gestion_notifications $oCustomerNotificationSettings */
         $oCustomerNotificationSettings = $this->oEntityManager->getRepository('clients_gestion_notifications');
-        /** @var \translations $translations */
-        $translations                    = $this->oEntityManager->getRepository('textes');
-        $aTranslations['email-synthese'] = $translations->selectFront('email-synthese', 'fr');
 
         /** @var \clients_gestion_notif_log $oNotificationsLog */
         $oNotificationsLog           = $this->oEntityManager->getRepository('clients_gestion_notif_log');
@@ -1845,6 +1842,85 @@ class MailerManager
         if (false === empty($settings->value)) {
             $message->setBcc($settings->value);
         }
+        $this->mailer->send($message);
+    }
+
+    /**
+     * @param \projects $projects
+     */
+    public function sendInternalNotificationEndOfRepayment(\projects $projects)
+    {
+        /** @var \companies $company */
+        $company = $this->oEntityManager->getRepository('companies');
+        $company->get($projects->id_company);
+
+        /** @var \settings $settings */
+        $settings = $this->oEntityManager->getRepository('settings');
+        $settings->get('Adresse controle interne', 'type');
+        $mailBO = $settings->value;
+
+        $varMail = [
+            'surl'           => $this->sSUrl,
+            'url'            => $this->sFUrl,
+            'nom_entreprise' => $company->name,
+            'nom_projet'     => $projects->title,
+            'id_projet'      => $projects->id_project,
+            'annee'          => date('Y')
+        ];
+
+        /** @var TemplateMessage $messageBO */
+        $messageBO = $this->messageProvider->newMessage('preteur-dernier-remboursement-controle', $varMail);
+        $messageBO->setTo($mailBO);
+        $this->mailer->send($messageBO);
+
+        $this->oLogger->info('Manual repayment, Send preteur-dernier-remboursement-controle. Data to use: ' . var_export($varMail, true), ['class' => __CLASS__, 'function' => __FUNCTION__]);
+    }
+
+    /**
+     * @param \projects $projects
+     */
+    public function sendClientNotificationEndOfRepayment(\projects $projects)
+    {
+        /** @var \companies $company */
+        $company = $this->oEntityManager->getRepository('companies');
+        $company->get($projects->id_company);
+
+        /** @var \clients $client */
+        $client = $this->oEntityManager->getRepository('clients');
+        $client->get($company->id_client_owner);
+
+        /** @var \transactions $transactions */
+        $transactions = $this->oEntityManager->getRepository('transactions');
+        $transactions->get($projects->id_project . '" AND type_transaction = "' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, 'id_project');
+
+        /** @var \receptions $sfpmeiFeedIncoming */
+        $sfpmeiFeedIncoming = $this->oEntityManager->getRepository('receptions');
+        $lastRepayment      = $sfpmeiFeedIncoming->select('id_project = ' . $projects->id_project, 'added DESC', 0, 1);
+
+        /** @var \loans $loans */
+        $loans = $this->oEntityManager->getRepository('loans');
+
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
+
+        $varMail = [
+            'surl'               => $this->sSUrl,
+            'url'                => $this->sFUrl,
+            'prenom'             => $client->prenom,
+            'date_financement'   => \DateTime::createFromFormat('Y-m-d H:i:s', $transactions->added)->format('d/m/Y'),
+            'date_remboursement' => \DateTime::createFromFormat('Y-m-d H:i:s', array_shift($lastRepayment)['added'])->format('d/m/Y'),
+            'raison_sociale'     => $company->name,
+            'montant'            => $ficelle->formatNumber($projects->amount, 0),
+            'duree'              => $projects->period,
+            'duree_financement'  => (new \DateTime($projects->date_publication_full))->diff(new \DateTime($projects->date_retrait_full))->d,
+            'nb_preteurs'        => $loans->getNbPreteurs($projects->id_project),
+            'lien_fb'            => $this->getFacebookLink(),
+            'lien_tw'            => $this->getTwitterLink(),
+        ];
+
+        /** @var TemplateMessage $message */
+        $message = $this->messageProvider->newMessage('emprunteur-dernier-remboursement', $varMail);
+        $message->setTo($client->email);
         $this->mailer->send($message);
     }
 }

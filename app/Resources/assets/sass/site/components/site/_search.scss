@@ -196,6 +196,7 @@
   display: block;
   width: $width-site-header-search-full-md;
   position: relative;
+  margin-right: 20px;
 
   transition: width .2s;
 
@@ -333,25 +334,46 @@
 // Site header site search
 .site-header {
   .site-search {
-    // Mobile site search is displayed within `components/site/mobile-menu`
-    display: none;
-
-    @include devices('md') {
-      @include site-search-compact;
+    @include devices('xs', 'sm') {
+      // Mobile site search is displayed within `components/site/mobile-menu`
+      display: none;
     }
 
-    @include devices('lg') {
-      @include site-search-compact-lg;
+    // No user logged in, so always show the full site search (unless breakpoint isn't wide enough for it)
+    #{$js-no-user} & {
+      @include devices('tablet-l') {
+        @include site-search-compact;
+      }
+
+      @include devices('laptop') {
+        @include site-search-full-md;
+      }
+
+      @include devices('lg') {
+        @include site-search-full-lg;
+      }
     }
 
-    // Modification to adjacent site-user
-    + .site-user .site-user-balance {
-      margin-left: 0;
+    // User logged in, so show the compact site search
+    #{$js-user-type-lender} &,
+    #{$js-user-type-borrower} & {
+      @include devices('md') {
+        @include site-search-compact;
+      }
 
-      // site header stuff really needs to be refactored. This is super spaghetti
-      #{$js-site-header-fixed} & {
-        margin-left: 20px;
-        margin-right: 0;
+      @include devices('lg') {
+        @include site-search-compact-lg;
+      }
+
+      // Modification to adjacent site-user
+      + .site-user .site-user-balance {
+        margin-left: 0;
+
+        // site header stuff really needs to be refactored. This is super spaghetti
+        #{$js-site-header-fixed} & {
+          margin-left: 20px;
+          margin-right: 0;
+        }
       }
     }
   }

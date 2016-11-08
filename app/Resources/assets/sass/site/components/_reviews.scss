@@ -8,6 +8,17 @@
   background-color: $c-bg3;
   text-align: center;
 
+  img,
+  svg,
+  .svg-icon {
+    display: block;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    height: 33px;
+    vertical-align: middle;
+  }
+
   .tab-content {
     min-height: 120px;
   }
@@ -29,10 +40,12 @@
     }
   }
 
+  // Visible on mobile (xs, sm)
   .reviewer {
     display: inline-block;
   }
 
+  // The swiper navigation
   .reviewers {
     @include inline-block-list();
     // max-width: 1000px;
@@ -44,6 +57,14 @@
     > li {
       vertical-align: middle;
 
+      // Hide any images in here as they are displayed in the .reviewer element above
+      img,
+      svg,
+      .svg-icon {
+        display: none;
+      }
+
+      // Links are bullets
       a {
         display: inline-block;
         width: 30px;
@@ -57,14 +78,6 @@
         color: $c-p1;
       }
 
-      img,
-      svg,
-      .svg-icon {
-        display: none;
-        height: 33px;
-        width: auto;
-      }
-
       &.active {
         a {
           background-image: inline-svg-code('<svg width="20" height="20" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" preserveAspectRatio="xMidYMid"><g stroke="#{$c-t3}" stroke-width="2" fill="#{$c-t3}"><circle cx="10" cy="10" r="4" /></g></svg>');
@@ -76,10 +89,12 @@
   @include devices('md', 'lg') {
     padding-top: 50px;
 
+    // Hidden on mobile (xs, sm)
     .reviewer {
       display: none;
     }
 
+    // On desktop (md, lg) this shows the logos instead of bullets
     .reviewers {
       margin-top: 30px;
       text-align: center;
@@ -96,15 +111,6 @@
           width: auto;
           height: auto;
           background-image: none !important;
-        }
-
-        img,
-        svg,
-        .svg-icon {
-          display: block;
-          vertical-align: middle;
-          height: 33px;
-          width: auto;
         }
 
         &.active {

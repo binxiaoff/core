@@ -77,7 +77,7 @@ videojs.options.flash.swf = '/assets/js/vendor/videojs/video-js.swf'
 var currentBreakpoint = window.currentBreakpoint = Utility.getActiveBreakpoints()
 
 // Watch window for scroll actions (triggers events on elements to show if visible/hidden for navigation, animation, etc.)
-var watchWindow = window.watchWindow || new WatchScroll.Watcher(window)
+var watchWindow = window.watchWindow = new WatchScroll.Watcher(window)
 
 // Main vars/elements
 var $doc = $(document)
@@ -94,6 +94,7 @@ require('./app/controllers/Fancybox')
 require('./app/controllers/Pikaday')
 require('./app/controllers/Swipers')
 require('./app/controllers/Login')
+require('./app/controllers/Promos')
 require('./app/controllers/NewPasswordRequest')
 require('./app/controllers/BorrowerOperations')
 require('./app/controllers/LenderSubscription')
