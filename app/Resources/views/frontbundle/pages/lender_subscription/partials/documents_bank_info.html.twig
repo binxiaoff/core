@@ -48,4 +48,20 @@
         </div><!-- /.form-field -->
     </div>
 
+    <div class="row">
+        <div class="form-field">
+            <div class="field-label">
+                <label for="lender-subscription-funds-origin">{% trans %} lender-subscription_documents-bank-info-section-funds-origin-label {% endtrans %}
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                </label>
+            </div>
+            <select id="lender-subscription-funds-origin" name="funds_origin" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                <option value=""> {% trans %} common_drop-down-select-label {% endtrans %} </option>
+                {% for id, label in fundsOrigin %}
+                    <option value="{{ id }}" {% if id == formData.fundsOrigin %} selected="selected"{% endif %} > {{ label }} </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
 </fieldset>

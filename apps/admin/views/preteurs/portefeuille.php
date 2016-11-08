@@ -34,8 +34,13 @@
     <div>
         <h2>Portefeuille</h2>
 
-        <h3>TRI du portefeuille : <?= (is_null($this->IRRValue)) ? 'Ce prêteur est trop récent. Son TRI n\'a pas encore été calculé.' : $this->IRRValue . '%' ?>
-            <?= (is_null($this->IRRDate)) ? '' : '(calculé le ' . $this->dates->formatDateMysqltoShortFR($this->IRRDate) . ')' ?>
+        <h3>TRI du portefeuille :
+            <?php if(empty($this->IRR)) : ?>
+                Ce prêteur est trop récent. Son TRI n'a pas encore été calculé.
+            <?php else : ?>
+                <?= $this->IRR['status'] == \lenders_account_stats::STAT_VALID_OK ? $this->IRR['value'] . '%'  : 'TRI non valide'?>
+                <?= (is_null($this->IRR['date'])) ? '' : '(calculé le ' . $this->dates->formatDateMysqltoShortFR($this->IRR['date']) . ')' ?>
+            <?php endif; ?>
         </h3>
         <h3>Nombre de projets à probleme dans le portefeuille : <?= $this->problProjects ?></h3>
         <h3>Nombre de projets total dans le portefeuille : <?= $this->totalProjects ?></h3>
@@ -82,10 +87,10 @@
             <table class="autobid-param-advanced-table">
                 <tr>
                     <th class="empty"></th>
-                    <th scope="col" colspan="5" class="table-title"><?= $this->lng['autobid']['expert-settings-table-title-risk'] ?></th>
+                    <th scope="col" colspan="5" class="table-title"><?= $this->translator->trans('autobid_expert-settings-table-title-risk') ?></th>
                 </tr>
                 <tr>
-                    <th scope="col" class="table-title"><?= $this->lng['autobid']['expert-settings-table-title-period'] ?></th>
+                    <th scope="col" class="table-title"><?= $this->translator->trans('autobid_expert-settings-table-title-period') ?></th>
                     <?php foreach (array_keys(array_values($this->aAutoBidSettings)[0]) as $evaluation) : ?>
                         <th><?=constant('\projects::RISK_' . $evaluation)?>*</th>
                     <?php endforeach; ?>
@@ -107,9 +112,9 @@
                     <td class="empty"></td>
                     <td colspan="5" class="empty">
                         <div class="table-legend">
-                            <span><span class="rate-legend legend-green"></span><?= $this->lng['autobid']['expert-settings-legend-inferior-rate'] ?></span>
-                            <span><span class="rate-legend legend-gray"></span><?= $this->lng['autobid']['expert-settings-legend-deactivated'] ?></span>
-                            <span><span class="rate-legend legend-red"></span><?= $this->lng['autobid']['expert-settings-legend-superior-rate'] ?></span>
+                            <span><span class="rate-legend legend-green"></span><?= $this->translator->trans('autobid_expert-settings-legend-inferior-rate') ?></span>
+                            <span><span class="rate-legend legend-gray"></span><?= $this->translator->trans('autobid_expert-settings-legend-deactivated') ?></span>
+                            <span><span class="rate-legend legend-red"></span><?= $this->translator->trans('autobid_expert-settings-legend-superior-rate') ?></span>
                         </div>
                     </td>
                 </tr>

@@ -235,22 +235,16 @@
                 <tr class="particulier">
                     <th><label for="phone">Téléphone :</label></th>
                     <td><input type="text" class="input_large" name="phone" id="phone" value="<?= $this->clients->telephone ?>"></td>
-                    <th><label for="com-naissance">Commune de naissance :</label></th>
-                    <td>
-                        <input type="text" class="input_large" name="com-naissance" id="com-naissance" value="<?= $this->clients->ville_naissance ?>" data-autocomplete="birth_city">
-                        <input type="hidden" id="insee_birth" name="insee_birth" value="<?= $this->clients->insee_birth ?>">
-                    </td>
+                    <th><label for="mobile">Mobile :</label></th>
+                    <td><input type="text" class="input_large" name="mobile" id="mobile" value="<?= $this->clients->mobile ?>"></td>
                 </tr>
                 <tr class="particulier">
                     <th><label for="naissance">Naissance :</label></th>
                     <td><input type="text" name="naissance" id="datepik" class="input_dp" value="<?= $this->naissance ?>"/></td>
-                    <th><label for="nationalite">Nationalité :</label></th>
+                    <th><label for="com-naissance">Commune de naissance :</label></th>
                     <td>
-                        <select name="nationalite" id="nationalite" class="select">
-                            <?php foreach ($this->lNatio as $p) : ?>
-                                <option <?= ($this->clients->id_nationalite == $p['id_nationalite'] ? 'selected' : '') ?> value="<?= $p['id_nationalite'] ?>"><?= $p['fr_f'] ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                        <input type="text" class="input_large" name="com-naissance" id="com-naissance" value="<?= $this->clients->ville_naissance ?>" data-autocomplete="birth_city">
+                        <input type="hidden" id="insee_birth" name="insee_birth" value="<?= $this->clients->insee_birth ?>">
                     </td>
                 </tr>
                 <tr class="particulier">
@@ -262,8 +256,14 @@
                             <?php endforeach; ?>
                         </select>
                     </td>
-                    <th></th>
-                    <td></td>
+                    <th><label for="nationalite">Nationalité :</label></th>
+                    <td>
+                        <select name="nationalite" id="nationalite" class="select">
+                            <?php foreach ($this->lNatio as $p) : ?>
+                                <option <?= ($this->clients->id_nationalite == $p['id_nationalite'] ? 'selected' : '') ?> value="<?= $p['id_nationalite'] ?>"><?= $p['fr_f'] ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
                 </tr>
             <?php else : ?>
                 <!-- societe -->

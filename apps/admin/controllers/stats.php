@@ -500,192 +500,192 @@ class statsController extends bootstrap
         print(utf8_decode($csv));
     }
 
-    public function _requete_beneficiaires()
-    {
-        $this->companies        = $this->loadData('companies');
-        $this->clients          = $this->loadData('clients');
-        $this->clients_adresses = $this->loadData('clients_adresses');
-        $this->insee            = $this->loadData('insee');
-        $this->villes           = $this->loadData('villes');
-        $this->pays             = $this->loadData('pays_v2');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
-        $this->loans            = $this->loadData('loans');
-        $this->insee_pays       = $this->loadData('insee_pays');
-
-        $this->settings->get('EQ-Retenue à la source', 'type');
-        $this->retenuesource = $this->settings->value;
-        $this->lPre = $this->clients->selectPreteursByStatus(
-            '20, 30, 40, 50, 60',
-            '(
-                SELECT COUNT(*) 
-                FROM transactions 
-                WHERE status = 1 
-                    AND etat = 1 
-                    AND type_transaction IN (' . implode(', ', [\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT]) . ') 
-                    AND id_client = c.id_client
-                    AND added BETWEEN "' . date('Y') . '-01-01" AND "' . (date('Y') + 1) . '-01-01" 
-            ) >= 1'
-        );
-    }
-
     public function _requete_beneficiaires_csv()
     {
         $this->autoFireView = false;
         $this->hideDecoration();
 
-        $this->companies        = $this->loadData('companies');
-        $this->clients          = $this->loadData('clients');
-        $this->clients_adresses = $this->loadData('clients_adresses');
-        $this->insee            = $this->loadData('insee');
-        $this->villes           = $this->loadData('villes');
-        $this->pays             = $this->loadData('pays_v2');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
-        $this->loans            = $this->loadData('loans');
-        $this->insee_pays       = $this->loadData('insee_pays');
+        /** @var \clients $clients */
+        $clients = $this->loadData('clients');
+        /** @var \clients_adresses $clientAddress */
+        $clientAddress = $this->loadData('clients_adresses');
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount = $this->loadData('lenders_accounts');
+        /** @var \companies $company */
+        $company = $this->loadData('companies');
+        /** @var \pays_v2 $countries */
+        $countries = $this->loadData('pays_v2');
+        /** @var \villes $cities */
+        $cities = $this->loadData('villes');
+        /** @var \insee_pays $inseeCountries */
+        $inseeCountries = $this->loadData('insee_pays');
+        /** @var \tax_type $taxTypes */
+        $taxTypes = $this->loadData('tax_type');
+        /** @var \transactions $transactions */
+        $transactions = $this->loadData('transactions');
 
-        $this->settings->get('EQ-Retenue à la source', 'type');
-        $this->retenuesource = $this->settings->value;
-        $this->lPre = $this->clients->selectPreteursByStatus(
-            '20, 30, 40, 50, 60',
-            '(
-                SELECT COUNT(*) 
-                FROM transactions 
-                WHERE status = 1 
-                    AND etat = 1 
-                    AND type_transaction IN (' . implode(', ', [\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT]) . ') 
-                    AND id_client = c.id_client
-                    AND added BETWEEN "' . date('Y') . '-01-01" AND "' . (date('Y') + 1) . '-01-01" 
-            ) >= 1'
-        );
+        $clientList = $transactions->getClientsWithRepaymentTransactions(date('Y'));
+        $data = [];
 
-        $aData = array();
-        foreach ($this->lPre as $e) {
-            $this->clients_adresses->get($e['id_client'], 'id_client');
-            $this->lenders_accounts->get($e['id_client'], 'id_client_owner');
-            $entreprise = false;
-            if ($this->companies->get($e['id_client'], 'id_client_owner') && in_array($e['type'], array(2, 4))) {
-                $entreprise = true;
-                if ($this->companies->id_pays == 0) {
-                    $this->companies->id_pays = 1;
-                }
-                $this->pays->get($this->companies->id_pays, 'id_pays');
-                $isoFiscal = $this->pays->iso;
+        $filename = 'requete_beneficiaires' . date('Ymd');
+        $headers = ['Cbene', 'Nom', 'Qualité', 'NomJFille', 'Prénom', 'DateNaissance', 'DépNaissance', 'ComNaissance', 'LieuNaissance', 'NomMari', 'Siret', 'AdISO', 'Adresse', 'Voie', 'CodeCommune', 'Commune', 'CodePostal', 'Ville / nom pays', 'IdFiscal', 'PaysISO', 'Entité', 'ToRS', 'Plib', 'Tél', 'Banque', 'IBAN', 'BIC', 'EMAIL', 'Obs', ''];
 
-                $ville_paysFiscal = $this->companies->city;
+        foreach ($clientList as $client) {
+            $clients->get($client['id_client']);
+            $clientAddress->get($clients->id_client, 'id_client');
+            $lenderAccount->get($clients->id_client, 'id_client_owner');
+            $fiscalAndLocationData = [];
 
-                $cp = substr($this->companies->zip, 0, 2);
-                if ($cp[0] == 0) {
-                    $cp = substr($cp, 1);
+            if (in_array($clients->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) {
+                $fiscalAndLocationData = [
+                    'address'    => $clientAddress->meme_adresse_fiscal == 1 && empty($clientAddress->adresse_fiscal) ? trim($clientAddress->adresse1) : trim($clientAddress->adresse_fiscal),
+                    'zip'        => $clientAddress->meme_adresse_fiscal == 1 && empty($clientAddress->cp_fiscal) ? trim($clientAddress->cp) : trim($clientAddress->cp_fiscal),
+                    'city'       => $clientAddress->meme_adresse_fiscal == 1 && empty($clientAddress->ville_fiscal) ? trim($clientAddress->ville) : trim($clientAddress->ville_fiscal),
+                    'id_country' => $clientAddress->meme_adresse_fiscal == 1 && empty($clientAddress->id_pays_fiscal) ? $clientAddress->id_pays : $clientAddress->id_pays_fiscal
+                ];
+
+                if (0 == $fiscalAndLocationData['id_country']) {
+                    $fiscalAndLocationData['id_country'] = 1;
                 }
 
-                // Code commune insee ville
-                $codeCom = $this->villes->getInseeCode($this->companies->zip, $this->companies->city);
-                $codeComNaissance = '';
-                $retenuesource    = '';
-                $sLieuNaissance = '';
-            } else {
-                $this->etranger = 0;
+                $countries->get($fiscalAndLocationData['id_country'], 'id_pays');
+                $fiscalAndLocationData['isoFiscal'] = $countries->iso;
+                $countries->unsetData();
 
-                // fr/resident etranger
-                if ($e['id_nationalite'] <= 1 && $this->clients_adresses->id_pays_fiscal > 1) {
-                    $this->etranger = 1;
-                } // no fr/resident etranger
-                elseif ($e['id_nationalite'] > 1 && $this->clients_adresses->id_pays_fiscal > 1) {
-                    $this->etranger = 2;
-                }
+                if ($fiscalAndLocationData['id_country'] > \pays_v2::COUNTRY_FRANCE) {
+                    $fiscalAndLocationData['inseeFiscal'] = $fiscalAndLocationData['zip'];
+                    $fiscalAndLocationData['location']    = $fiscalAndLocationData['city'];
 
-                // on veut adresse fiscal
-                if ($this->clients_adresses->meme_adresse_fiscal == 1) {
-                    $adresse_fiscal = trim($this->clients_adresses->adresse1);
-                    $cp_fiscal      = trim($this->clients_adresses->cp);
-                    $ville_fiscal   = trim($this->clients_adresses->ville);
-                    $id_pays_fiscal = ($this->clients_adresses->id_pays == 0 ? 1 : $this->clients_adresses->id_pays);
+                    $countries->get($fiscalAndLocationData['id_country'], 'id_pays');
+                    $fiscalAndLocationData['city'] = $countries->fr;
+                    $inseeCountries->getByCountryIso(trim($countries->iso));
+                    $fiscalAndLocationData['zip'] = $inseeCountries->COG;
+                    $countries->unsetData();
+                    $inseeCountries->unsetData();
+
+                    $taxTypes->get(\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE);
+                    $fiscalAndLocationData['deductedAtSource'] = $this->ficelle->formatNumber($taxTypes->rate) . '%';
                 } else {
-                    $adresse_fiscal = trim($this->clients_adresses->adresse_fiscal);
-                    $cp_fiscal      = trim($this->clients_adresses->cp_fiscal);
-                    $ville_fiscal   = trim($this->clients_adresses->ville_fiscal);
-                    $id_pays_fiscal = ($this->clients_adresses->id_pays_fiscal == 0 ? 1 : $this->clients_adresses->id_pays_fiscal);
+                    $fiscalAndLocationData['inseeFiscal'] = $cities->getInseeCode($fiscalAndLocationData['zip'], $fiscalAndLocationData['city']);
+                    $fiscalAndLocationData['location']  = ''; //commune fiscal
                 }
 
-                // date naissance
-                $nais      = explode('-', $e['naissance']);
-                $naissance = $nais[2] . '/' . $nais[1] . '/' . $nais[0];
+                $fiscalAndLocationData['birth_country'] = (0 == $clients->id_pays_naissance) ? 1 : $clients->id_pays_naissance;
+                $countries->get($fiscalAndLocationData['birth_country'], 'id_pays');
+                $fiscalAndLocationData['isoBirth'] = $countries->iso;
+                $countries->unsetData();
 
-                // Iso fiscal
-                if ($this->clients_adresses->id_pays_fiscal == 0) {
-                    $this->clients_adresses->id_pays_fiscal = 1;
-                }
-                $this->pays->get($this->clients_adresses->id_pays_fiscal, 'id_pays');
-                $isoFiscal = $this->pays->iso;
-
-                if ($e['id_pays_naissance'] == 0) {
-                    $id_pays_naissance = 1;
+                if (\pays_v2::COUNTRY_FRANCE >= $fiscalAndLocationData['birth_country']) {
+                    $fiscalAndLocationData['birthPlace'] = $clients->ville_naissance;
+                    $fiscalAndLocationData['inseeBirth'] = '00000';
                 } else {
-                    $id_pays_naissance = $e['id_pays_naissance'];
-                }
-                $this->pays->get($id_pays_naissance, 'id_pays');
-                $isoNaissance = $this->pays->iso;
+                    $countries->get($clients->id_pays_naissance, 'id_pays');
+                    $fiscalAndLocationData['birthPlace'] = $countries->fr;
+                    $countries->unsetData();
 
-                if ($this->etranger == 0) {
-                    // Code commune insee ville
-                    $codeCom = $this->villes->getInseeCode($cp_fiscal, $ville_fiscal);
-                    $commune = '';
-                    $cp      = $cp_fiscal;
-                    $retenuesource = '';
-                    $ville_paysFiscal = $ville_fiscal;
-                } else {
-                    $codeCom = $cp_fiscal;
-                    $commune = $ville_fiscal;
-
-                    if ($id_pays_fiscal == 0) {
-                        $id_pays = 1;
-                    } else {
-                        $id_pays = $id_pays_fiscal;
+                    if (empty($clients->insee_birth)) {
+                        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LocationManager $locationManager */
+                        $locationManager = $this->get('unilend.service.location_manager');
+                        $cityList = $locationManager->getCities($clients->ville_naissance, true);
+                        if (1 < count($cityList)) {
+                            $fiscalAndLocationData['inseeBirth'] = 'Doublon ville de naissance';
+                        } else {
+                            $cities->get($clients->ville_naissance, 'ville');
+                            $fiscalAndLocationData['inseeBirth'] = empty($cities->insee) ? '00000': $cities->insee;
+                        }
+                        $cities->unsetData();
                     }
-                    $this->pays->get($id_pays, 'id_pays');
-
-                    $this->insee_pays->getByCountryIso(trim($this->pays->iso));
-                    $cp = $this->insee_pays->COG;
-
-                    $retenuesource = $this->ficelle->formatNumber($this->retenuesource * 100) . '%';
-
-                    if ($id_pays_fiscal == 0) {
-                        $id_pays = 1;
-                    } else {
-                        $id_pays = $id_pays_fiscal;
-                    }
-                    $this->pays->get($id_pays, 'id_pays');
-                    $paysFiscal = $this->pays->fr;
-
-                    $ville_paysFiscal = $paysFiscal;
                 }
 
-                if (1 >= $e['id_pays_naissance']) {
-                    $sLieuNaissance = $e['ville_naissance'];
-                } else {
-                    $this->pays->get($e['id_pays_naissance'], 'id_pays');
-                    $sLieuNaissance = $this->pays->fr;
-                }
+                $fiscalAndLocationData['deductedAtSource'] = '';
 
-                $this->clients->get($e['id_client'], 'id_client');
-                $codeComNaissance = $this->clients->insee_birth == '' ? '00000' : $this->clients->insee_birth;
-                $depNaiss = substr($codeComNaissance, 0, 2);
-            } // fin particulier
+                unset($fiscalAndLocationData['birth_country']);
+                $this->addPersonLineToBeneficiaryQueryData($data, $lenderAccount, $clients, $fiscalAndLocationData);
+            }
 
-            $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($e['prenom']))), 0, 1);
-            $nom       = $this->ficelle->stripAccents(utf8_decode(trim($e['nom'])));
-            $id_client = $e['id_client'];
-            $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
-            $motif     = substr($motif, 0, 10);
-
-            if ($entreprise == true) {
-                $aData[] = array($motif, $this->companies->name, '', '', '', '', '', '', '', '', $this->companies->siret, $isoFiscal, '', str_replace(';', ',', $this->companies->adresse1), $codeCom, '', $this->companies->zip, $ville_paysFiscal, '', $isoFiscal, 'X', $retenuesource, 'N', $this->companies->phone, '', $this->lenders_accounts->iban, $this->lenders_accounts->bic, $e['email'], '');
-            } else {
-                $aData[] = array($motif, $e['nom'], $e['civilite'], $e['nom'], $e['prenom'], $naissance, $depNaiss, $codeComNaissance, $sLieuNaissance, '', '', $isoFiscal, '', str_replace(';', ',', $adresse_fiscal), $codeCom, $commune, $cp, $ville_paysFiscal, '', $isoNaissance, 'X', $retenuesource, 'N', $e['telephone'], '', $this->lenders_accounts->iban, $this->lenders_accounts->bic, $e['email'], '');
+            if ($company->get($clients->id_client, 'id_client_owner') && in_array($clients->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+                $company->id_pays = (0 == $company->id_pays) ? 1 : $company->id_pays;
+                $countries->get($company->id_pays, 'id_pays');
+                $fiscalAndLocationData['isoFiscal']   = $countries->iso;
+                $fiscalAndLocationData['inseeFiscal'] = $cities->getInseeCode($company->zip, $company->city);
+                $this->addLegalEntityLineToBeneficiaryQueryData($data, $company, $lenderAccount, $clients, $fiscalAndLocationData);
             }
         }
 
-        $this->exportCSV($aData, 'requete_beneficiaires' . date('Ymd'), array('Cbene', 'Nom', 'Qualité', 'NomJFille', 'Prénom', 'DateNaissance', 'DépNaissance', 'ComNaissance', 'LieuNaissance', 'NomMari', 'Siret', 'AdISO', 'Adresse', 'Voie', 'CodeCommune', 'Commune', 'CodePostal', 'Ville / nom pays', 'IdFiscal', 'PaysISO', 'Entité', 'ToRS', 'Plib', 'Tél', 'Banque', 'IBAN', 'BIC', 'EMAIL', 'Obs', ''));
+        $this->exportCSV($data, $filename, $headers);
+    }
+
+    private function addPersonLineToBeneficiaryQueryData(&$data, \lenders_accounts $lenderAccount, \clients $clients, $fiscalAndLocationData)
+    {
+        /** @var \DateTime $birthDate */
+        $birthDate = \DateTime::createFromFormat('Y-m-d', $clients->naissance);
+
+        $data[] = [
+            $clients->getLenderPattern($clients->id_client),
+            $clients->nom,
+            $clients->civilite,
+            $clients->nom,
+            $clients->prenom,
+            $birthDate->format('d/m/Y'),
+            empty($clients->insee_birth) ? substr($fiscalAndLocationData['inseeBirth'], 0, 2) : substr($clients->insee_birth, 0, 2),
+            empty($clients->insee_birth) ? $fiscalAndLocationData['inseeBirth'] : $clients->insee_birth,
+            $fiscalAndLocationData['birthPlace'],
+            '',
+            '',
+            $fiscalAndLocationData['isoFiscal'],
+            '',
+            str_replace(';', ',', $fiscalAndLocationData['address']),
+            $fiscalAndLocationData['inseeFiscal'],
+            $fiscalAndLocationData['location'],//commune fiscal
+            $fiscalAndLocationData['zip'],
+            $fiscalAndLocationData['city'],
+            '',
+            $fiscalAndLocationData['isoBirth'],
+            'X',
+            $fiscalAndLocationData['deductedAtSource'],
+            'N',
+            $clients->telephone,
+            '',
+            $lenderAccount->iban,
+            $lenderAccount->bic,
+            $clients->email,
+            ''
+        ];
+    }
+
+    private function addLegalEntityLineToBeneficiaryQueryData(&$data, \companies $company, \lenders_accounts $lenderAccount, \clients $clients, $fiscalAndLocationData)
+    {
+        $data[] = [
+            $clients->getLenderPattern($clients->id_client),
+            $company->name,
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            $company->siret,
+            $fiscalAndLocationData['isoFiscal'],
+            '',
+            str_replace(';', ',', $company->adresse1),
+            $fiscalAndLocationData['inseeFiscal'],
+            '',
+            $company->zip,
+            $company->city,
+            '',
+            $fiscalAndLocationData['isoFiscal'],
+            'X',
+            '',
+            'N',
+            $company->phone,
+            '',
+            $lenderAccount->iban,
+            $lenderAccount->bic,
+            $clients->email,
+            ''
+        ];
     }
 
     public function _requete_infosben()
@@ -757,8 +757,13 @@ class statsController extends bootstrap
         $csv = "";
         $csv .= $header . " \n";
 
-        $annee = '2015';
-        $date  = '31/12/2015';
+        if (in_array(date('m'), ['01', '02', '03'])) {
+            $annee = (date('Y')-1);
+        } else {
+            $annee = date('Y');
+        }
+
+        $date = '31/12/' . $annee;
 
         $oCountry = $this->loadData('pays_v2');
         $aCountries = $oCountry->getZoneB040Countries();
