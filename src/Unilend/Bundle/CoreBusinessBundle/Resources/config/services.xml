@@ -171,5 +171,10 @@
             <argument type="service" id="unilend.service_product.product_attribute_manager" />
             <argument type="service" id="unilend.service.entity_manager" />
         </service>
+
+        <service id="unilend.service.recovery_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\RecoveryManager">
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="logger"/>
+        </service>
     </services>
 </container>

@@ -1186,6 +1186,8 @@ class pdfController extends bootstrap
 
     private function GenerateOperationsHtml(array $savedFilters)
     {
+        /** @var $this->recoveryManager recoveryManager */
+        $this->recoveryManager         = $this->get('unilend.service.recovery_manager');
         $this->echeanciers             = $this->loadData('echeanciers');
         $this->oLendersAccounts        = $this->loadData('lenders_accounts');
         $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
