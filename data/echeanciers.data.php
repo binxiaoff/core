@@ -31,6 +31,8 @@ class echeanciers extends echeanciers_crud
     const STATUS_PENDING          = 0;
     const STATUS_REPAID           = 1;
     const STATUS_PARTIALLY_REPAID = 2;
+    const IS_NOT_EARLY_REFUND     = 0;
+    const IS_EARLY_REFUND         = 1;
 
     public function __construct($bdd, $params = '')
     {
@@ -592,25 +594,32 @@ class echeanciers extends echeanciers_crud
         return $result;
     }
 
-    public function getRepaymentOfTheDay(\DateTime $oDate)
+    public function getRepaymentOfTheDay(\DateTime $date)
     {
-        $sDate = $oDate->format('Y-m-d');
+        $bind = [
+            'formatedDate'    => $date->format('Y-m-d'),
+            'repaymentStatus' => self::STATUS_REPAID,
+            'earlyRefund'     => self::IS_NOT_EARLY_REFUND
+        ];
+        $type = [
+            'date'            => \PDO::PARAM_STR,
+            'repaymentStatus' => \PDO::PARAM_INT,
+            'earlyRefund'     => \PDO::PARAM_INT
+        ];
 
-        $sQuery = '
+        $sql = '
             SELECT id_project,
               ordre,
               COUNT(*) AS nb_repayment,
-              COUNT(CASE status WHEN ' . self::STATUS_REPAID . ' THEN 1 ELSE NULL END) AS nb_repayment_paid
+              COUNT(CASE status WHEN :repaymentStatus THEN 1 ELSE NULL END) AS nb_repayment_paid
             FROM echeanciers
-            WHERE DATE(date_echeance) =  "' . $sDate . '"
+            WHERE DATE(date_echeance) = :formatedDate AND status_ra = :earlyRefund
             GROUP BY id_project, ordre';
 
-        $rQuery  = $this->bdd->query($sQuery);
-        $aResult = [];
-        while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
-            $aResult[] = $aRow;
-        }
-        return $aResult;
+        $statement = $this->bdd->executeQuery($sql, $bind, $type);
+        $result    = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+        return $result;
     }
 
     // retourne la somme total a rembourser pour un projet
