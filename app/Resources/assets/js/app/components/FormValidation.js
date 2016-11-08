@@ -903,7 +903,7 @@ FormValidation.prototype.rules = {
             })
           }
           break
-        case 'amount':
+        case 'currency':
           if (/^[\d]+((,|.)([\d]{1,2}))?]/.test(inputValidation.value)) {
             inputValidation.errors.push({
               type: 'inputType',
