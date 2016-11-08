@@ -785,9 +785,7 @@ class statsController extends bootstrap
                 LEFT JOIN tax retenues_source ON retenues_source.id_transaction = t.id_transaction AND retenues_source.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE . '
                 LEFT JOIN tax prelevements_obligatoires ON prelevements_obligatoires.id_transaction = t.id_transaction AND prelevements_obligatoires.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX . '
               WHERE YEAR(t.date_transaction) = ' . $year . '
-              GROUP BY c.id_client
-              ORDER BY c.added DESC
-              LIMIT 10';
+              GROUP BY c.id_client';
         $resultat = $this->bdd->query($sql);
 
         while ($record = $this->bdd->fetch_array($resultat)) {
