@@ -1225,7 +1225,7 @@ var Utility = {
       if (!equalHeights.hasOwnProperty(groupName)) equalHeights[groupName] = 0
 
       // Only apply to certain breakpoints
-      if (applyToBp) {
+      if (applyToBp && typeof applyToBp === 'string') {
         applyToBp = applyToBp.split(/[ ,]+/)
 
         // Test breakpoint
@@ -1248,7 +1248,7 @@ var Utility = {
       var originalHeight = $elem.attr('data-equal-height-original')
 
       // Only apply to certain breakpoints
-      if (applyToBp) {
+      if (applyToBp && typeof applyToBp === 'string') {
         applyToBp = applyToBp.split(/[ ,]+/)
 
         // Test breakpoint
