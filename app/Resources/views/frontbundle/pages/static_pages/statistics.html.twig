@@ -266,7 +266,7 @@
                 <div class="block-promos row readable-wrap bg-icon-linechart">
                     <div class="promo col-lg-6 col-md-6 col-sm-4">
                         <h3 class="promo-highlight promo-highlight-lg">
-                            {% set unilendIRR = getStatistic('unilendIRR')|round(1, 'floor') %}
+                            {% set unilendIRR = getStatistic('unilendIRR')|round(1, 'common')  %}
                             <span data-textcount data-start-count="0" data-end-count="{{ unilendIRR }}" data-total-time="2000" data-limit-decimal="1" data-tween-count="easeOutCirc">{{ unilendIRR|localizednumber }}</span><sup>%</sup>
                         </h3>
                         <p>{% trans %} about-us-statistics_lender-statistics-linechart-unilend-irr-text {% endtrans %}</p>

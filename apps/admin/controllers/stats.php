@@ -500,192 +500,192 @@ class statsController extends bootstrap
         print(utf8_decode($csv));
     }
 
-    public function _requete_beneficiaires()
-    {
-        $this->companies        = $this->loadData('companies');
-        $this->clients          = $this->loadData('clients');
-        $this->clients_adresses = $this->loadData('clients_adresses');
-        $this->insee            = $this->loadData('insee');
-        $this->villes           = $this->loadData('villes');
-        $this->pays             = $this->loadData('pays_v2');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
-        $this->loans            = $this->loadData('loans');
-        $this->insee_pays       = $this->loadData('insee_pays');
-
-        $this->settings->get('EQ-Retenue à la source', 'type');
-        $this->retenuesource = $this->settings->value;
-        $this->lPre = $this->clients->selectPreteursByStatus(
-            '20, 30, 40, 50, 60',
-            '(
-                SELECT COUNT(*) 
-                FROM transactions 
-                WHERE status = 1 
-                    AND etat = 1 
-                    AND type_transaction IN (' . implode(', ', [\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT]) . ') 
-                    AND id_client = c.id_client
-                    AND added BETWEEN "' . date('Y') . '-01-01" AND "' . (date('Y') + 1) . '-01-01" 
-            ) >= 1'
-        );
-    }
-
     public function _requete_beneficiaires_csv()
     {
         $this->autoFireView = false;
         $this->hideDecoration();
 
-        $this->companies        = $this->loadData('companies');
-        $this->clients          = $this->loadData('clients');
-        $this->clients_adresses = $this->loadData('clients_adresses');
-        $this->insee            = $this->loadData('insee');
-        $this->villes           = $this->loadData('villes');
-        $this->pays             = $this->loadData('pays_v2');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
-        $this->loans            = $this->loadData('loans');
-        $this->insee_pays       = $this->loadData('insee_pays');
+        /** @var \clients $clients */
+        $clients = $this->loadData('clients');
+        /** @var \clients_adresses $clientAddress */
+        $clientAddress = $this->loadData('clients_adresses');
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount = $this->loadData('lenders_accounts');
+        /** @var \companies $company */
+        $company = $this->loadData('companies');
+        /** @var \pays_v2 $countries */
+        $countries = $this->loadData('pays_v2');
+        /** @var \villes $cities */
+        $cities = $this->loadData('villes');
+        /** @var \insee_pays $inseeCountries */
+        $inseeCountries = $this->loadData('insee_pays');
+        /** @var \tax_type $taxTypes */
+        $taxTypes = $this->loadData('tax_type');
+        /** @var \transactions $transactions */
+        $transactions = $this->loadData('transactions');
 
-        $this->settings->get('EQ-Retenue à la source', 'type');
-        $this->retenuesource = $this->settings->value;
-        $this->lPre = $this->clients->selectPreteursByStatus(
-            '20, 30, 40, 50, 60',
-            '(
-                SELECT COUNT(*) 
-                FROM transactions 
-                WHERE status = 1 
-                    AND etat = 1 
-                    AND type_transaction IN (' . implode(', ', [\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT]) . ') 
-                    AND id_client = c.id_client
-                    AND added BETWEEN "' . date('Y') . '-01-01" AND "' . (date('Y') + 1) . '-01-01" 
-            ) >= 1'
-        );
+        $clientList = $transactions->getClientsWithRepaymentTransactions(date('Y'));
+        $data = [];
 
-        $aData = array();
-        foreach ($this->lPre as $e) {
-            $this->clients_adresses->get($e['id_client'], 'id_client');
-            $this->lenders_accounts->get($e['id_client'], 'id_client_owner');
-            $entreprise = false;
-            if ($this->companies->get($e['id_client'], 'id_client_owner') && in_array($e['type'], array(2, 4))) {
-                $entreprise = true;
-                if ($this->companies->id_pays == 0) {
-                    $this->companies->id_pays = 1;
-                }
-                $this->pays->get($this->companies->id_pays, 'id_pays');
-                $isoFiscal = $this->pays->iso;
+        $filename = 'requete_beneficiaires' . date('Ymd');
+        $headers = ['Cbene', 'Nom', 'Qualité', 'NomJFille', 'Prénom', 'DateNaissance', 'DépNaissance', 'ComNaissance', 'LieuNaissance', 'NomMari', 'Siret', 'AdISO', 'Adresse', 'Voie', 'CodeCommune', 'Commune', 'CodePostal', 'Ville / nom pays', 'IdFiscal', 'PaysISO', 'Entité', 'ToRS', 'Plib', 'Tél', 'Banque', 'IBAN', 'BIC', 'EMAIL', 'Obs', ''];
 
-                $ville_paysFiscal = $this->companies->city;
+        foreach ($clientList as $client) {
+            $clients->get($client['id_client']);
+            $clientAddress->get($clients->id_client, 'id_client');
+            $lenderAccount->get($clients->id_client, 'id_client_owner');
+            $fiscalAndLocationData = [];
 
-                $cp = substr($this->companies->zip, 0, 2);
-                if ($cp[0] == 0) {
-                    $cp = substr($cp, 1);
+            if (in_array($clients->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER])) {
+                $fiscalAndLocationData = [
+                    'address'    => $clientAddress->meme_adresse_fiscal == 1 && empty($clientAddress->adresse_fiscal) ? trim($clientAddress->adresse1) : trim($clientAddress->adresse_fiscal),
+                    'zip'        => $clientAddress->meme_adresse_fiscal == 1 && empty($clientAddress->cp_fiscal) ? trim($clientAddress->cp) : trim($clientAddress->cp_fiscal),
+                    'city'       => $clientAddress->meme_adresse_fiscal == 1 && empty($clientAddress->ville_fiscal) ? trim($clientAddress->ville) : trim($clientAddress->ville_fiscal),
+                    'id_country' => $clientAddress->meme_adresse_fiscal == 1 && empty($clientAddress->id_pays_fiscal) ? $clientAddress->id_pays : $clientAddress->id_pays_fiscal
+                ];
+
+                if (0 == $fiscalAndLocationData['id_country']) {
+                    $fiscalAndLocationData['id_country'] = 1;
                 }
 
-                // Code commune insee ville
-                $codeCom = $this->villes->getInseeCode($this->companies->zip, $this->companies->city);
-                $codeComNaissance = '';
-                $retenuesource    = '';
-                $sLieuNaissance = '';
-            } else {
-                $this->etranger = 0;
+                $countries->get($fiscalAndLocationData['id_country'], 'id_pays');
+                $fiscalAndLocationData['isoFiscal'] = $countries->iso;
+                $countries->unsetData();
 
-                // fr/resident etranger
-                if ($e['id_nationalite'] <= 1 && $this->clients_adresses->id_pays_fiscal > 1) {
-                    $this->etranger = 1;
-                } // no fr/resident etranger
-                elseif ($e['id_nationalite'] > 1 && $this->clients_adresses->id_pays_fiscal > 1) {
-                    $this->etranger = 2;
-                }
+                if ($fiscalAndLocationData['id_country'] > \pays_v2::COUNTRY_FRANCE) {
+                    $fiscalAndLocationData['inseeFiscal'] = $fiscalAndLocationData['zip'];
+                    $fiscalAndLocationData['location']    = $fiscalAndLocationData['city'];
 
-                // on veut adresse fiscal
-                if ($this->clients_adresses->meme_adresse_fiscal == 1) {
-                    $adresse_fiscal = trim($this->clients_adresses->adresse1);
-                    $cp_fiscal      = trim($this->clients_adresses->cp);
-                    $ville_fiscal   = trim($this->clients_adresses->ville);
-                    $id_pays_fiscal = ($this->clients_adresses->id_pays == 0 ? 1 : $this->clients_adresses->id_pays);
+                    $countries->get($fiscalAndLocationData['id_country'], 'id_pays');
+                    $fiscalAndLocationData['city'] = $countries->fr;
+                    $inseeCountries->getByCountryIso(trim($countries->iso));
+                    $fiscalAndLocationData['zip'] = $inseeCountries->COG;
+                    $countries->unsetData();
+                    $inseeCountries->unsetData();
+
+                    $taxTypes->get(\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE);
+                    $fiscalAndLocationData['deductedAtSource'] = $this->ficelle->formatNumber($taxTypes->rate) . '%';
                 } else {
-                    $adresse_fiscal = trim($this->clients_adresses->adresse_fiscal);
-                    $cp_fiscal      = trim($this->clients_adresses->cp_fiscal);
-                    $ville_fiscal   = trim($this->clients_adresses->ville_fiscal);
-                    $id_pays_fiscal = ($this->clients_adresses->id_pays_fiscal == 0 ? 1 : $this->clients_adresses->id_pays_fiscal);
+                    $fiscalAndLocationData['inseeFiscal'] = $cities->getInseeCode($fiscalAndLocationData['zip'], $fiscalAndLocationData['city']);
+                    $fiscalAndLocationData['location']  = ''; //commune fiscal
                 }
 
-                // date naissance
-                $nais      = explode('-', $e['naissance']);
-                $naissance = $nais[2] . '/' . $nais[1] . '/' . $nais[0];
+                $fiscalAndLocationData['birth_country'] = (0 == $clients->id_pays_naissance) ? 1 : $clients->id_pays_naissance;
+                $countries->get($fiscalAndLocationData['birth_country'], 'id_pays');
+                $fiscalAndLocationData['isoBirth'] = $countries->iso;
+                $countries->unsetData();
 
-                // Iso fiscal
-                if ($this->clients_adresses->id_pays_fiscal == 0) {
-                    $this->clients_adresses->id_pays_fiscal = 1;
-                }
-                $this->pays->get($this->clients_adresses->id_pays_fiscal, 'id_pays');
-                $isoFiscal = $this->pays->iso;
-
-                if ($e['id_pays_naissance'] == 0) {
-                    $id_pays_naissance = 1;
+                if (\pays_v2::COUNTRY_FRANCE >= $fiscalAndLocationData['birth_country']) {
+                    $fiscalAndLocationData['birthPlace'] = $clients->ville_naissance;
+                    $fiscalAndLocationData['inseeBirth'] = '00000';
                 } else {
-                    $id_pays_naissance = $e['id_pays_naissance'];
-                }
-                $this->pays->get($id_pays_naissance, 'id_pays');
-                $isoNaissance = $this->pays->iso;
+                    $countries->get($clients->id_pays_naissance, 'id_pays');
+                    $fiscalAndLocationData['birthPlace'] = $countries->fr;
+                    $countries->unsetData();
 
-                if ($this->etranger == 0) {
-                    // Code commune insee ville
-                    $codeCom = $this->villes->getInseeCode($cp_fiscal, $ville_fiscal);
-                    $commune = '';
-                    $cp      = $cp_fiscal;
-                    $retenuesource = '';
-                    $ville_paysFiscal = $ville_fiscal;
-                } else {
-                    $codeCom = $cp_fiscal;
-                    $commune = $ville_fiscal;
-
-                    if ($id_pays_fiscal == 0) {
-                        $id_pays = 1;
-                    } else {
-                        $id_pays = $id_pays_fiscal;
+                    if (empty($clients->insee_birth)) {
+                        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LocationManager $locationManager */
+                        $locationManager = $this->get('unilend.service.location_manager');
+                        $cityList = $locationManager->getCities($clients->ville_naissance, true);
+                        if (1 < count($cityList)) {
+                            $fiscalAndLocationData['inseeBirth'] = 'Doublon ville de naissance';
+                        } else {
+                            $cities->get($clients->ville_naissance, 'ville');
+                            $fiscalAndLocationData['inseeBirth'] = empty($cities->insee) ? '00000': $cities->insee;
+                        }
+                        $cities->unsetData();
                     }
-                    $this->pays->get($id_pays, 'id_pays');
-
-                    $this->insee_pays->getByCountryIso(trim($this->pays->iso));
-                    $cp = $this->insee_pays->COG;
-
-                    $retenuesource = $this->ficelle->formatNumber($this->retenuesource * 100) . '%';
-
-                    if ($id_pays_fiscal == 0) {
-                        $id_pays = 1;
-                    } else {
-                        $id_pays = $id_pays_fiscal;
-                    }
-                    $this->pays->get($id_pays, 'id_pays');
-                    $paysFiscal = $this->pays->fr;
-
-                    $ville_paysFiscal = $paysFiscal;
                 }
 
-                if (1 >= $e['id_pays_naissance']) {
-                    $sLieuNaissance = $e['ville_naissance'];
-                } else {
-                    $this->pays->get($e['id_pays_naissance'], 'id_pays');
-                    $sLieuNaissance = $this->pays->fr;
-                }
+                $fiscalAndLocationData['deductedAtSource'] = '';
 
-                $this->clients->get($e['id_client'], 'id_client');
-                $codeComNaissance = $this->clients->insee_birth == '' ? '00000' : $this->clients->insee_birth;
-                $depNaiss = substr($codeComNaissance, 0, 2);
-            } // fin particulier
+                unset($fiscalAndLocationData['birth_country']);
+                $this->addPersonLineToBeneficiaryQueryData($data, $lenderAccount, $clients, $fiscalAndLocationData);
+            }
 
-            $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($e['prenom']))), 0, 1);
-            $nom       = $this->ficelle->stripAccents(utf8_decode(trim($e['nom'])));
-            $id_client = $e['id_client'];
-            $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
-            $motif     = substr($motif, 0, 10);
-
-            if ($entreprise == true) {
-                $aData[] = array($motif, $this->companies->name, '', '', '', '', '', '', '', '', $this->companies->siret, $isoFiscal, '', str_replace(';', ',', $this->companies->adresse1), $codeCom, '', $this->companies->zip, $ville_paysFiscal, '', $isoFiscal, 'X', $retenuesource, 'N', $this->companies->phone, '', $this->lenders_accounts->iban, $this->lenders_accounts->bic, $e['email'], '');
-            } else {
-                $aData[] = array($motif, $e['nom'], $e['civilite'], $e['nom'], $e['prenom'], $naissance, $depNaiss, $codeComNaissance, $sLieuNaissance, '', '', $isoFiscal, '', str_replace(';', ',', $adresse_fiscal), $codeCom, $commune, $cp, $ville_paysFiscal, '', $isoNaissance, 'X', $retenuesource, 'N', $e['telephone'], '', $this->lenders_accounts->iban, $this->lenders_accounts->bic, $e['email'], '');
+            if ($company->get($clients->id_client, 'id_client_owner') && in_array($clients->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+                $company->id_pays = (0 == $company->id_pays) ? 1 : $company->id_pays;
+                $countries->get($company->id_pays, 'id_pays');
+                $fiscalAndLocationData['isoFiscal']   = $countries->iso;
+                $fiscalAndLocationData['inseeFiscal'] = $cities->getInseeCode($company->zip, $company->city);
+                $this->addLegalEntityLineToBeneficiaryQueryData($data, $company, $lenderAccount, $clients, $fiscalAndLocationData);
             }
         }
 
-        $this->exportCSV($aData, 'requete_beneficiaires' . date('Ymd'), array('Cbene', 'Nom', 'Qualité', 'NomJFille', 'Prénom', 'DateNaissance', 'DépNaissance', 'ComNaissance', 'LieuNaissance', 'NomMari', 'Siret', 'AdISO', 'Adresse', 'Voie', 'CodeCommune', 'Commune', 'CodePostal', 'Ville / nom pays', 'IdFiscal', 'PaysISO', 'Entité', 'ToRS', 'Plib', 'Tél', 'Banque', 'IBAN', 'BIC', 'EMAIL', 'Obs', ''));
+        $this->exportCSV($data, $filename, $headers);
+    }
+
+    private function addPersonLineToBeneficiaryQueryData(&$data, \lenders_accounts $lenderAccount, \clients $clients, $fiscalAndLocationData)
+    {
+        /** @var \DateTime $birthDate */
+        $birthDate = \DateTime::createFromFormat('Y-m-d', $clients->naissance);
+
+        $data[] = [
+            $clients->getLenderPattern($clients->id_client),
+            $clients->nom,
+            $clients->civilite,
+            $clients->nom,
+            $clients->prenom,
+            $birthDate->format('d/m/Y'),
+            empty($clients->insee_birth) ? substr($fiscalAndLocationData['inseeBirth'], 0, 2) : substr($clients->insee_birth, 0, 2),
+            empty($clients->insee_birth) ? $fiscalAndLocationData['inseeBirth'] : $clients->insee_birth,
+            $fiscalAndLocationData['birthPlace'],
+            '',
+            '',
+            $fiscalAndLocationData['isoFiscal'],
+            '',
+            str_replace(';', ',', $fiscalAndLocationData['address']),
+            $fiscalAndLocationData['inseeFiscal'],
+            $fiscalAndLocationData['location'],//commune fiscal
+            $fiscalAndLocationData['zip'],
+            $fiscalAndLocationData['city'],
+            '',
+            $fiscalAndLocationData['isoBirth'],
+            'X',
+            $fiscalAndLocationData['deductedAtSource'],
+            'N',
+            $clients->telephone,
+            '',
+            $lenderAccount->iban,
+            $lenderAccount->bic,
+            $clients->email,
+            ''
+        ];
+    }
+
+    private function addLegalEntityLineToBeneficiaryQueryData(&$data, \companies $company, \lenders_accounts $lenderAccount, \clients $clients, $fiscalAndLocationData)
+    {
+        $data[] = [
+            $clients->getLenderPattern($clients->id_client),
+            $company->name,
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            $company->siret,
+            $fiscalAndLocationData['isoFiscal'],
+            '',
+            str_replace(';', ',', $company->adresse1),
+            $fiscalAndLocationData['inseeFiscal'],
+            '',
+            $company->zip,
+            $company->city,
+            '',
+            $fiscalAndLocationData['isoFiscal'],
+            'X',
+            '',
+            'N',
+            $company->phone,
+            '',
+            $lenderAccount->iban,
+            $lenderAccount->bic,
+            $clients->email,
+            ''
+        ];
     }
 
     public function _requete_infosben()
@@ -742,152 +742,118 @@ class statsController extends bootstrap
         $this->autoFireView = false;
         $this->hideDecoration();
 
-        $this->companies        = $this->loadData('companies');
-        $this->emprunteur       = $this->loadData('clients');
-        $this->clients          = $this->loadData('clients');
-        $this->clients_adresses = $this->loadData('clients_adresses');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
-        $this->projects         = $this->loadData('projects');
-        $this->loans            = $this->loadData('loans');
-        $this->echeanciers      = $this->loadData('echeanciers');
+        /** @var \clients $clients */
+        $clients = $this->loadData('clients');
 
-        $header = "Code Entreprise;CodeBénéficiaire;CodeV;Date;Montant;Monnaie;Nombre;VAP;";
-        $header = utf8_encode($header);
+        /** @var \pays_v2 $countriesEntity */
+        $countriesEntity    = $this->loadData('pays_v2');
+        $countries          = $countriesEntity->getZoneB040Countries();
+        $zoneB040CountryIds = [];
 
-        $csv = "";
-        $csv .= $header . " \n";
-
-        $annee = '2015';
-        $date  = '31/12/2015';
-
-        $oCountry = $this->loadData('pays_v2');
-        $aCountries = $oCountry->getZoneB040Countries();
-
-        foreach($aCountries as $aCountry) {
-            $aZoneB040CountryIds[] = $aCountry['id_pays'];
+        foreach ($countries as $country) {
+            $zoneB040CountryIds[] = $country['id_pays'];
         }
+
+        $year = in_array(date('m'), ['01', '02', '03']) ? (date('Y') - 1) : date('Y');
+
+        $commonValues = [
+            'CodeEntreprise' => 1, //official code of SFPMEI
+            'Date'           => '31/12/' . $year,
+            'Monnaie'        => 'EURO'
+        ];
+
+        $row = 1;
+        /** @var \PHPExcel $csvFile */
+        $csvFile     = new \PHPExcel();
+        $activeSheet = $csvFile->setActiveSheetIndex(0);
+        $activeSheet->setCellValueByColumnAndRow(0, $row, 'Code Entreprise');
+        $activeSheet->setCellValueByColumnAndRow(1, $row, 'CodeBénéficiaire');
+        $activeSheet->setCellValueByColumnAndRow(2, $row, 'CodeV');
+        $activeSheet->setCellValueByColumnAndRow(3, $row, 'Date');
+        $activeSheet->setCellValueByColumnAndRow(4, $row, 'Montant');
+        $activeSheet->setCellValueByColumnAndRow(5, $row, 'Monnaie');
+        $row += 1;
 
         $sql = '
               SELECT
                 c.id_client,
-                c.prenom,
-                c.nom,
-                SUM(e.interets_rembourses),
-                SUM(ROUND(retenues_source.amount / 100, 2)),
-                SUM(ROUND(prelevements_obligatoires.amount / 100, 2))
-              FROM lenders_accounts la
-                INNER JOIN clients c ON (la.id_client_owner = c.id_client)
-                LEFT JOIN echeanciers e ON (e.id_lender = la.id_lender_account)
-                LEFT JOIN transactions t ON t.id_echeancier = e.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
+                SUM(ROUND(t.montant/100, 2)) AS interests,
+                SUM(ROUND(retenues_source.amount / 100, 2)) AS retenues_source,
+                SUM(ROUND(prelevements_obligatoires.amount / 100, 2)) AS prlv_obligatoire
+              FROM clients c
+                LEFT JOIN transactions t ON c.id_client = t.id_client AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
                 LEFT JOIN tax retenues_source ON retenues_source.id_transaction = t.id_transaction AND retenues_source.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE . '
                 LEFT JOIN tax prelevements_obligatoires ON prelevements_obligatoires.id_transaction = t.id_transaction AND prelevements_obligatoires.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX . '
-              WHERE YEAR(e.date_echeance_reel) = ' . $annee . '
-                AND e.status IN (' . \echeanciers::STATUS_REPAID . ', ' . \echeanciers::STATUS_PARTIALLY_REPAID .  ')
-                AND e.status_ra = 0
+              WHERE YEAR(t.date_transaction) = ' . $year . '
               GROUP BY c.id_client';
         $resultat = $this->bdd->query($sql);
 
         while ($record = $this->bdd->fetch_array($resultat)) {
-            $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($record[1]))), 0, 1);
-            $nom       = $this->ficelle->stripAccents(utf8_decode(trim($record[2])));
-            $id_client = $record[0];
-            $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
-            $cbene     = substr($motif, 0, 10);
+            $commonValues['lenderPattern'] = $clients->getLenderPattern($record['id_client']);
 
-            // personne morale OU resident fiscal etranger
-            if ($record[4] > 0) {
-                // Retenues à la source
-                $csv .= "1;";
-                $csv .= $cbene . ";";
-                $csv .= "2;";
-                $csv .= $date . ";";
-                $csv .= number_format($record[4], 2, ',', '') . ";";
-                $csv .= "EURO;";
-                $csv .= ";";
-                $csv .= ";";
-                $csv .= " \n";
+            $this->addCommonCellValuesToRevenueQueryCSV($activeSheet, $row, $commonValues);
+            $activeSheet->setCellValueByColumnAndRow(2, $row, '53');
+            $activeSheet->setCellValueByColumnAndRow(4, $row, number_format($record['interests'], 2, ',', ''));
+            $row += 1;
+
+            if ($record['retenues_source'] > 0) {
+                $this->addCommonCellValuesToRevenueQueryCSV($activeSheet, $row, $commonValues);
+                $activeSheet->setCellValueByColumnAndRow(2, $row, '53');
+                $activeSheet->setCellValueByColumnAndRow(4, $row, number_format($record['retenues_source'], 2, ',', ''));
+                $row += 1;
             }
 
-            // Interets
-            $csv .= "1;";
-            $csv .= $cbene . ";";
-            $csv .= "53;";
-            $csv .= $date . ";";
-            $csv .= number_format(($record[3] / 100), 2, ',', '') . ";";
-            $csv .= "EURO;";
-            $csv .= ";";
-            $csv .= ";";
-            $csv .= " \n";
-
-            if ($record[5] > 0) {
-                // prélèvements obligatoires
-                $csv .= "1;";
-                $csv .= $cbene . ";";
-                $csv .= "54;";
-                $csv .= $date . ";";
-                $csv .= number_format($record[5], 2, ',', '') . ";";
-                $csv .= "EURO;";
-                $csv .= ";";
-                $csv .= ";";
-                $csv .= " \n";
+            if ($record['prlv_obligatoire'] > 0) {
+                $this->addCommonCellValuesToRevenueQueryCSV($activeSheet, $row, $commonValues);
+                $activeSheet->setCellValueByColumnAndRow(2, $row, '54');
+                $activeSheet->setCellValueByColumnAndRow(4, $row, number_format($record['prlv_obligatoire'], 2, ',', ''));
+                $row += 1;
             }
 
-            $aSum = $this->getLine_66_81_82_118($id_client, $annee, $aZoneB040CountryIds);
-            if (isset($aSum['sum_66']) && $aSum['sum_66'] > 0) {
-                $csv .= "1;";
-                $csv .= $cbene . ";";
-                $csv .= "66;";
-                $csv .= $date . ";";
-                $csv .= number_format(($aSum['sum_66'] / 100), 2, ',', '') . ";";
-                $csv .= "EURO;";
-                $csv .= ";";
-                $csv .= ";";
-                $csv .= " \n";
-            }
-
-            if (isset($aSum['sum_81']) && $aSum['sum_81'] > 0) {
-                $csv .= "1;";
-                $csv .= $cbene . ";";
-                $csv .= "81;";
-                $csv .= $date . ";";
-                $csv .= number_format(($aSum['sum_81'] / 100), 2, ',', '') . ";";
-                $csv .= "EURO;";
-                $csv .= ";";
-                $csv .= ";";
-                $csv .= " \n";
-            }
-
-            if (isset($aSum['sum_82']) && $aSum['sum_82'] > 0) {
-                $csv .= "1;";
-                $csv .= $cbene . ";";
-                $csv .= "82;";
-                $csv .= $date . ";";
-                $csv .= number_format(($aSum['sum_82'] / 100), 2, ',', '') . ";";
-                $csv .= "EURO;";
-                $csv .= ";";
-                $csv .= ";";
-                $csv .= " \n";
-            }
-
-            if (isset($aSum['sum_118']) && $aSum['sum_118'] > 0) {
-                $csv .= "1;";
-                $csv .= $cbene . ";";
-                $csv .= "118;";
-                $csv .= $date . ";";
-                $csv .= number_format(($aSum['sum_118'] / 100), 2, ',', '') . ";";
-                $csv .= "EURO;";
-                $csv .= ";";
-                $csv .= ";";
-                $csv .= " \n";
-            }
+            $this->addRepaymentBasedLinesToRevenuesQueryCSV($activeSheet, $record['id_client'], $year, $zoneB040CountryIds, $row, $commonValues);
+            unset($commonValues['lenderPattern']);
         }
 
+        $this->addLoansToRevenueQueryCSV($activeSheet, $row, $commonValues, $year, $clients);
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment;filename=requete_revenus' . date('Ymd') . '.csv');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Expires: 0');
+
+        /** @var \PHPExcel_Writer_CSV $writer */
+        $writer = PHPExcel_IOFactory::createWriter($csvFile, 'CSV');
+        $writer->setUseBOM(true);
+        $writer->setDelimiter(';');
+        $writer->save('php://output');
+    }
+
+    /**
+     * @param PHPExcel_Worksheet $activeSheet
+     * @param int $row
+     * @param array $commonValues
+     */
+    private function addCommonCellValuesToRevenueQueryCSV(\PHPExcel_Worksheet &$activeSheet, $row, $commonValues)
+    {
+        $activeSheet->setCellValueByColumnAndRow(0, $row, $commonValues['CodeEntreprise']);
+        $activeSheet->setCellValueByColumnAndRow(1, $row, $commonValues['lenderPattern']);
+        $activeSheet->setCellValueByColumnAndRow(3, $row, $commonValues['Date']);
+        $activeSheet->setCellValueByColumnAndRow(5, $row, $commonValues['Monnaie']);
+    }
+
+    /**
+     * @param PHPExcel_Worksheet $activeSheet
+     * @param int $row
+     * @param array $commonValues
+     * @param int $year
+     * @param clients $clients
+     */
+    private function addLoansToRevenueQueryCSV(\PHPExcel_Worksheet &$activeSheet, &$row, $commonValues, $year, \clients $clients)
+    {
         $sql = '
           SELECT
             c.id_client,
-            c.prenom,
-            c.nom,
-            SUM(lo.amount)
+            SUM(lo.amount) AS montant
           FROM loans lo
             INNER JOIN
             (
@@ -896,38 +862,125 @@ class statsController extends bootstrap
                 INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
               WHERE ps.status = ' . \projects_status::REMBOURSEMENT . '
               GROUP BY psh.id_project
-              HAVING YEAR(first_added) = ' . $annee . '
+              HAVING YEAR(first_added) = ' . $year . '
             ) p ON p.id_project = lo.id_project
             INNER JOIN lenders_accounts la ON la.id_lender_account = lo.id_lender
             INNER JOIN clients c ON la.id_client_owner = c.id_client
             GROUP BY c.id_client';
 
         $resultat = $this->bdd->query($sql);
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            // cbéné
-            $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($record[1]))), 0, 1);
-            $nom       = $this->ficelle->stripAccents(utf8_decode(trim($record[2])));
-            $id_client = $record[0];
-            $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
-            $cbene     = substr($motif, 0, 10);
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
+            $commonValues['lenderPattern'] = $clients->getLenderPattern($record['id_client']);
+            $this->addCommonCellValuesToRevenueQueryCSV($activeSheet, $row, $commonValues);
+            $activeSheet->setCellValueByColumnAndRow(2, $row, '117');
+            $activeSheet->setCellValueByColumnAndRow(4, $row, number_format(($record['montant'] / 100), 2, ',', ''));
+            $row += 1;
+        }
+    }
 
-            // capitaux souscrit
-            $csv .= "1;";
-            $csv .= $cbene . ";";
-            $csv .= "117;";
-            $csv .= $date . ";";
-            $csv .= number_format(($record[3] / 100), 2, ',', '') . ";";
-            $csv .= "EURO;";
-            $csv .= ";";
-            $csv .= ";";
-            $csv .= " \n";
+    /**
+     * @param PHPExcel_Worksheet $activeSheet
+     * @param int $clientId
+     * @param int $year
+     * @param array $zoneB040CountryIds
+     * @param int $row
+     * @param array $commonValues
+     */
+    private function addRepaymentBasedLinesToRevenuesQueryCSV(\PHPExcel_Worksheet &$activeSheet, $clientId, $year, $zoneB040CountryIds, &$row, $commonValues)
+    {
+        $sum66  = 0;
+        $sum81  = 0;
+        $sum82  = 0;
+        $sum118 = 0;
+
+        $sql = 'SELECT
+                  la.id_lender_account,
+                  ROUND(t_interets.montant/100, 2) AS net_interest,
+                  IFNULL((SELECT SUM(ROUND(tax.amount / 100, 2)) FROM tax WHERE id_transaction = t_interets.id_transaction) , 0) AS tax_on_interest,
+                  ROUND(t_capital.montant/100, 2) as capital,
+                  t_interets.date_transaction,
+                  c.type,
+                  t_interets.id_echeancier
+                FROM lenders_accounts la
+                INNER JOIN clients c ON la.id_client_owner = c.id_client
+                LEFT JOIN transactions t_interets ON c.id_client = t_interets.id_client AND t_interets.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
+                LEFT JOIN transactions t_capital ON c.id_client = t_capital.id_client AND t_capital.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . '
+                WHERE YEAR(t_interets.date_transaction) = ' . $year . '
+                  AND c.id_client =  ' . $clientId;
+
+        $resultat = $this->bdd->query($sql);
+
+        /** @var \transactions $transactions */
+        $transactions = $this->loadData('transactions');
+
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            if (\clients::TYPE_PERSON == $record['type'] || \clients::TYPE_PERSON_FOREIGNER == $record['type']) {
+                /** @var \lenders_imposition_history $lenderImpositionHistory */
+                $lenderImpositionHistory = $this->loadData('lenders_imposition_history');
+
+                $foreigner       = false;
+                $zoneB040Country = false;
+                $situation       = $lenderImpositionHistory->getTaxationSituationAtDate($record['id_lender_account'], $record['date_transaction']);
+
+                if (false === empty($situation)) {
+                    $situation = $situation[0];
+                    if (0 < $situation['resident_etranger']) {
+                        $foreigner = true;
+                        if (in_array($situation['id_pays'], $zoneB040CountryIds)) {
+                            $zoneB040Country = true;
+                        }
+                    }
+                }
+
+                unset($situation);
+
+                if (false === $foreigner) {
+                    $sum66 += $record['net_interest'] + $record['tax_on_interest'];
+                } else {
+                    if (true === $zoneB040Country) {
+                        $sum81 += $record['net_interest'];
+                    }
+                }
+
+                if (true === $zoneB040Country) {
+                    $sum82 += round(bcdiv($record['capital'], 100, 3), 2);
+                }
+            }
+            $sum118 += round(bcdiv($record['capital'], 100, 3), 2);
+
+            unset($record);
         }
 
-        $titre = 'requete_revenus' . date('Ymd');
-        header("Content-type: application/vnd.ms-excel");
-        header("Content-disposition: attachment; filename=\"" . $titre . ".csv\"");
+        $recoveryPayments = $transactions->sum('id_client = ' . $clientId . ' AND type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT, 'montant');
+        $sum118 += round(bcdiv(bcdiv($recoveryPayments, 100, 3), 0.844, 5), 2);
 
-        print(utf8_decode($csv));
+        if ($sum66 > 0) {
+            $this->addCommonCellValuesToRevenueQueryCSV($activeSheet, $row, $commonValues);
+            $activeSheet->setCellValueByColumnAndRow(2, $row, '66');
+            $activeSheet->setCellValueByColumnAndRow(4, $row, number_format($sum66, 2, ',', ''));
+            $row += 1;
+        }
+
+        if ($sum81 > 0) {
+            $this->addCommonCellValuesToRevenueQueryCSV($activeSheet, $row, $commonValues);
+            $activeSheet->setCellValueByColumnAndRow(2, $row, '81');
+            $activeSheet->setCellValueByColumnAndRow(4, $row, number_format($sum81, 2, ',', ''));
+            $row += 1;
+        }
+
+        if ($sum82 > 0) {
+            $this->addCommonCellValuesToRevenueQueryCSV($activeSheet, $row, $commonValues);
+            $activeSheet->setCellValueByColumnAndRow(2, $row, '82');
+            $activeSheet->setCellValueByColumnAndRow(4, $row, number_format($sum82, 2, ',', ''));
+            $row += 1;
+        }
+
+        if ($sum118 > 0) {
+            $this->addCommonCellValuesToRevenueQueryCSV($activeSheet, $row, $commonValues);
+            $activeSheet->setCellValueByColumnAndRow(2, $row, '118');
+            $activeSheet->setCellValueByColumnAndRow(4, $row, number_format($sum118, 2, ',', ''));
+            $row += 1;
+        }
     }
 
     public function _requete_encheres()
@@ -1193,78 +1246,6 @@ class statsController extends bootstrap
         $oWriter->save('php://output');
 
         die;
-    }
-
-    private function getLine_66_81_82_118($iClient, $iYear, $aZoneB040CountryIds)
-    {
-        $iSum66 = 0;
-        $iSum81 = 0;
-        $iSum82 = 0;
-        $iSum118 = 0;
-
-        $sql = "SELECT
-                  la.id_lender_account,
-                  e.interets,
-                  ROUND(retenues_source.amount / 100, 2), as retenues_source
-                  e.date_echeance_reel,
-                  e.status_ra,
-                  e.capital,
-                  c.type
-                FROM lenders_accounts la
-                  INNER JOIN clients c ON la.id_client_owner = c.id_client
-                  LEFT JOIN echeanciers e ON e.id_lender = la.id_lender_account
-                  LEFT JOIN transactions t ON t.id_echeancier = e.id_echeancier AND " . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . "
-                  LEFT JOIN tax retenues_source ON retenues_source.id_transaction = t.id_transaction AND retenues_source.id_tax_type = " . \tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE . "
-                WHERE YEAR(e.date_echeance_reel) = $iYear
-                  AND e.status = IN (" . \echeanciers::STATUS_REPAID . ", " . \echeanciers::STATUS_PARTIALLY_REPAID .  ")
-                  AND c.id_client = $iClient";
-
-        $resultat = $this->bdd->query($sql);
-
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            if ('1' === $record['type'] || '3' === $record['type']) {
-                $bForeigner = false;
-                $bZoneB040Country = false;
-
-                $sSqlResident = "SELECT id_pays, resident_etranger FROM lenders_imposition_history
-                        WHERE id_lender = {$record['id_lender_account']}
-                        AND added <= '{$record['date_echeance_reel']}'
-                        ORDER BY added DESC LIMIT 1";
-                $oQueryResident = $this->bdd->query($sSqlResident);
-                $aRow = $this->bdd->fetch_array($oQueryResident);
-
-                if (0 !== $this->bdd->num_rows($oQueryResident) && 0 < $aRow['resident_etranger']) {
-                    $bForeigner = true;
-                    if (in_array($aRow['id_pays'], $aZoneB040CountryIds)) {
-                        $bZoneB040Country = true;
-                    }
-                }
-                unset($oQueryResident, $aRow);
-
-                // Exclude "remboursement anticipé" for calculating interests
-                if('0' === $record['status_ra']) {
-                    if(false === $bForeigner) { //code 66
-                        $iSum66 += $record['interets'];
-                    } else if (true === $bZoneB040Country) {
-                        $iSum81 += $record['interets'] - $record['retenues_source']*100;
-                    }
-                }
-
-                if (true === $bZoneB040Country) {
-                    $iSum82 += $record['capital'];
-                }
-            }
-            $iSum118 += $record['capital'];
-
-            unset($record);
-        }
-
-        return array(
-            'sum_66'  => $iSum66,
-            'sum_81'  => $iSum81,
-            'sum_82'  => $iSum82,
-            'sum_118' => $iSum118,
-        );
     }
 
     public function _autobid_statistic()

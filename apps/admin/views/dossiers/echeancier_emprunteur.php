@@ -67,13 +67,13 @@
             <thead>
                 <tr>
                     <th>Echeance</th>
-                    <th>Interets</th>
-                    <th>Capital</th>
-                    <th>Montant preteur (I+C)</th>
+                    <th style="width:70px;">Interets</th>
+                    <th style="width:70px;">Capital</th>
+                    <th style="width:70px;">Montant preteur (I+C)</th>
                     <th>Commission</th>
-                    <th>TVA</th>
-                    <th>Montant emprunteur (I+C+ComTTC)</th>
-                    <th>Capital restant</th>
+                    <th style="width:60px;">TVA</th>
+                    <th style="width:70px;">Montant emprunteur (I+C+ComTTC)</th>
+                    <th style="width:70px;">Capital restant</th>
                     <th>Date d'envoi du prélèvement</th>
                     <th>Date echeance Emprunteur</th>
                     <th>Date echeance Prêteur</th>

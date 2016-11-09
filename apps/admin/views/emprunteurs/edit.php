@@ -69,8 +69,10 @@
                 <th><label for="secteur">Secteur :</label></th>
                 <td>
                     <select name="secteur" id="secteur" class="select">
-                        <?php foreach ($this->lSecteurs as $k => $s) : ?>
-                            <option<?= ($this->companies->sector == $k + 1 ? ' selected' : '') ?> value="<?= $k + 1 ?>"><?= $s ?></option>
+                        <?php foreach ($this->lSecteurs as $section) : ?>
+                            <option<?= ($this->companies->sector == $section['id_company_sector'] ? ' selected' : '') ?> value="<?= $section['id_company_sector'] ?>">
+                                <?= $this->translator->trans('company-sector_sector-' . $section['id_company_sector']) ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </td>

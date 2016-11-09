@@ -840,7 +840,7 @@ $doc.on('ready', function () {
     // })
 
     // Click on an element to show/hide its details
-    .on('mousedown touchstart keydown', '[data-notification-id]', function (event) {
+    .on(Utility.inputStartEvent + ' keydown', '[data-notification-id]', function (event) {
       var $target = $(event.target)
 
       // If a link was interacted with, ignore the following actions and let the link event go through

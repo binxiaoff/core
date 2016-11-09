@@ -24,14 +24,17 @@ class SeoManager
         $route = $request->attributes->get('_route');
         $translationName = str_replace('_', '-', $route);
         if (false === empty($translationName)) {
+            $pageTitle           = $this->translator->trans('seo_' . $translationName . '-title');
+            $pageMetaDescription = $this->translator->trans('seo_' . $translationName . '-description');
+            $pageMetaKeywords    = $this->translator->trans('seo_' . $translationName . '-keywords');
 
-            if ($pageTitle = $this->translator->trans('seo_' . $translationName . '-title') !== 'seo_' . $translationName . '-title') {
+            if ($pageTitle !== 'seo_' . $translationName . '-title') {
                 $this->seoPage->setTitle($pageTitle);
             }
-            if ($pageMetaDescription = $this->translator->trans('seo_' . $translationName . '-description') !== 'seo_' . $translationName . '-description') {
+            if ($pageMetaDescription !== 'seo_' . $translationName . '-description') {
                 $this->seoPage->addMeta('name', 'description', $pageMetaDescription);
             }
-            if ($pageMetaKeywords = $this->translator->trans('seo_' . $translationName . '-keywords') !== 'seo_' . $translationName . '-keywords') {
+            if ($pageMetaKeywords !== 'seo_' . $translationName . '-keywords') {
                 $this->seoPage->addMeta('name', 'keywords', $pageMetaKeywords);
             }
         }

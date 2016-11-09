@@ -125,16 +125,16 @@ function checkPostCodeCity($zip, $city, $country) {
 }
 
 // Validate address by city and country values
-function checkCity($city, $country) {
+function checkBirthCity($city, $country) {
 
   var $errorField = $city.parents('.panel').find('.autocomplete-error')
   $city.parents('.form-field').addClass('ajax-validating')
 
   $.ajax({
-    url: '/inscription_preteur/ajax/check-city',
+    url: '/inscription_preteur/ajax/check-city-insee',
     method: 'GET',
     data: {
-      city: $city.val(),
+      insee: $city.val(),
       country: $country.val()
     }
   }).done(function(data){
@@ -253,73 +253,77 @@ $doc.on('ready', function () {
     cached.postalAddress.zip = codeValue
   })
 
-    // When AutoComplete has set a value for the commune de naissance / birthplace field, ensure the hidden insee value is set by extracting the value from the AutoComplete's result item
-    $doc.on('AutoComplete:setInputValue:complete', '#form-lender-person-birth-city', function (event, elemAutoComplete, newValue, elemItem) {
-      // Empty value given
-      newValue = (newValue + '').trim()
-      if (!newValue) return
+  // When AutoComplete has set a value for the commune de naissance / birthplace field, ensure the hidden insee value is set by extracting the value from the AutoComplete's result item
+  $doc.on('AutoComplete:setInputValue:complete', '#form-lender-person-birth-city', function (event, elemAutoComplete, newValue, elemItem) {
+    // Empty value given
+    newValue = (newValue + '').trim()
+    if (!newValue) return
 
-      // The newValue is the insee code, so get the city from the element item
-      var cityValue = $(elemItem).text()
-      var codeValue = newValue
+    // The newValue is the insee code, so get the city from the element item
+    var cityValue = $(elemItem).text()
+    var codeValue = newValue
 
-      cached.birthPlace.city = cityValue
-      cached.birthPlace.insee = codeValue
+    cached.birthPlace.city = cityValue
+    cached.birthPlace.insee = codeValue
 
-      // Set this element's value to the city value
-      $(this).val(cityValue)
+    // Set this element's value to the city value
+    $(this).val(cityValue)
+    $('#form-lender-person-birth-city-insee').val(codeValue);
+  })
 
-      // @debug
-      // console.log(elemItem, newValue, cached)
+
+  // If a user changes to a US nationality, show the error message
+  $doc.on('change', '#form-lender-person-nationality', function () {
+      if ($('#form-lender-person-nationality').val() == 35) {
+          $("#error-message-selected-nationality-other").show()
+      } else {
+          $("#error-message-selected-nationality-other").hide()
+      }
+  })
+
+  // Validate fiscal address city/code on blur
+  $doc.on('change', '#devenir-preteur input[name="fiscal_address_zip"]:visible, #devenir-preteur input[name="fiscal_address_city"]:visible', function (event) {
+    debounceAjax(fiscalAddrTimer, function () {
+      checkPostCodeCity($('input[name="fiscal_address_zip"]:visible'), $('input[name="fiscal_address_city"]:visible'), $('input[name="fiscal_address_country"]:visible'))
     })
+  })
 
-    // If a user changes to a US nationality, show the error message
-    $doc.on('change', '#form-lender-person-nationality', function () {
-        if ($('#form-lender-person-nationality').val() == 35) {
-            $("#error-message-selected-nationality-other").show()
-        } else {
-            $("#error-message-selected-nationality-other").hide()
-        }
+  // Validate postal address city/code on blur
+  $doc.on('change', '#devenir-preteur input[name="postal_address_zip"]:visible, #devenir-preteur input[name="postal_address_city"]:visible', function (event) {
+    debounceAjax(postalAddrTimer, function () {
+      checkPostCodeCity($('input[name="postal_address_zip"]:visible'), $('input[name="postal_address_city"]:visible'), $('input[name="postal_address_country"]:visible'))
     })
+  })
 
-    // Validate fiscal address city/code on blur
-    $doc.on('change', '#devenir-preteur input[name="fiscal_address_zip"]:visible, #devenir-preteur input[name="fiscal_address_city"]:visible', function (event) {
-      debounceAjax(fiscalAddrTimer, function () {
-        checkPostCodeCity($('input[name="fiscal_address_zip"]:visible'), $('input[name="fiscal_address_city"]:visible'), $('input[name="fiscal_address_country"]:visible'))
-      })
+  // Validate birthplace city/code on blur
+  $doc.on('change', '#form-lender-person-birth-city, #form-lender-person-birth-country', function (event) {
+    $('#form-lender-person-birth-city-insee').val('')
+    debounceAjax(birthPlaceTimer, function () {
+      checkBirthCity($('#form-lender-person-birth-city-insee'), $('#form-lender-person-birth-country'))
     })
+  })
 
-    // Validate postal address city/code on blur
-    $doc.on('change', '#devenir-preteur input[name="postal_address_zip"]:visible, #devenir-preteur input[name="postal_address_city"]:visible', function (event) {
-      debounceAjax(postalAddrTimer, function () {
-        checkPostCodeCity($('input[name="postal_address_zip"]:visible'), $('input[name="postal_address_city"]:visible'), $('input[name="postal_address_country"]:visible'))
-      })
-    })
+  // Validate that the person has filled in all their information correctly
+  $doc.on('submit', '#devenir-preteur .form-preter-create-info-person', function (event) {
+      var formValid = true
+      if ($('.ajax-validating').length > 0) {
+        formValid = false
+      }
 
-    // Validate birthplace city/code on blur
-    // @todo this should also check the insee code to ensure it hasn't been tampered, but better to do after submit (server side validation)
-    $doc.on('change', '#form-lender-person-birth-city, #form-lender-person-birth-country', function (event) {
-      debounceAjax(birthPlaceTimer, function () {
-        checkCity($('#form-lender-person-birth-city'), $('#form-lender-person-birth-country'))
-      })
-    })
+      if ($(this).find('.autocomplete-error:visible').length > 0) {
+        formValid = false
+      }
 
-    // Validate that the person has filled in all their information correctly
-    $doc.on('submit', '#devenir-preteur .form-preter-create-info-person', function (event) {
-        var formValid = true
-        if ($('.ajax-validating').length > 0) {
-          formValid = false
-        }
+      if (formValid == false) {
+          event.preventDefault()
+          return false
+      }
+  })
 
-        if ($(this).find('.autocomplete-error:visible').length > 0) {
-          formValid = false
-        }
+  $doc.on('keydown', '#form-lender-person-birth-city', function() {
+    $('#form-lender-person-birth-city-insee').val('')
+  })
 
-        if (formValid == false) {
-            event.preventDefault()
-            return false
-        }
-    })
 })
 
 
