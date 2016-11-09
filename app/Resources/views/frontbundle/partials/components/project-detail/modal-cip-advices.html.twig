@@ -1,14 +1,14 @@
 <div id="modal-cip-advices-prompt" class="modal-cip-advices" data-modal data-modal-maxwidth="650">
     <div class="modal-body">
-        <h4 id="modal-cip-advices-message">Attention, le montant que vous souhaitez prêter est supérieur à 2 000 €</h4>
-        <h5>Confirmez-vous vouloir formuler cette offre de prêt</h5>
+        <h4 id="modal-cip-advices-message">{% trans %} project-detail_modal-cip-advices-title {% endtrans %}</h4>
+        <h5>{% trans %} project-detail_modal-cip-advices-content {% endtrans %}</h5>
     </div>
     <footer class="modal-footer">
         <a href="javascript:;" class="btn-primary btn-shape-md" data-modal-doactioncancel>
-            J’ai changé d’avis, je ne prête pas
+            {% trans %} project-detail_modal-cip-advices-cancel {% endtrans %}
         </a>
         <a href="javascript:;" class="btn-default btn-shape-md" data-modal-doactionconfirm>
-            Je prête quand même
+            {% trans %} project-detail_modal-cip-advices-confirm {% endtrans %}
         </a>
     </footer>
 </div>
