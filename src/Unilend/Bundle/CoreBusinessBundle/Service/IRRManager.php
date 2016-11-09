@@ -69,7 +69,13 @@ class IRRManager
         }
 
         $financial   = new \PHPExcel_Calculation_Financial();
-        return round(bcmul($financial->XIRR($sums, $dates, self::IRR_GUESS), 100, 3), 2);
+        $xirr = $financial->XIRR($sums, $dates, self::IRR_GUESS);
+
+        if (abs($xirr) > 1 || abs($xirr) < 0.0000000001 ) {
+            throw new \Exception('IRR not in range IRR : ' . $xirr);
+        }
+
+        return round(bcmul($xirr, 100, 3), 2);
     }
 
     /**
@@ -126,8 +132,14 @@ class IRRManager
 
     public function addIRRLender($lenderId)
     {
-        $lenderIRR = $this->calculateIRRForLender($lenderId);
-        $status    = $this->checkIRRValidity($lenderIRR);
+        $status = \lenders_account_stats::STAT_VALID_OK;
+
+        try {
+            $lenderIRR = $this->calculateIRRForLender($lenderId);
+        } catch (\Exception $irrException) {
+            $status    = \lenders_account_stats::STAT_VALID_NOK;
+            $lenderIRR = 0;
+        }
 
         /** @var \lenders_account_stats $lendersAccountsStats */
         $lendersAccountsStats = $this->entityManager->getRepository('lenders_account_stats');
@@ -138,15 +150,6 @@ class IRRManager
         $lendersAccountsStats->status            = $status;
 
         $lendersAccountsStats->create();
-    }
-
-    private function checkIRRValidity($irr)
-    {
-        if (abs($irr) < 1) {
-            return \lenders_account_stats::STAT_VALID_OK;
-        } else {
-            return \lenders_account_stats::STAT_VALID_NOK;
-        }
     }
 
     public function getLastUnilendIRR()
