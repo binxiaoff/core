@@ -102,4 +102,14 @@ class lenders_imposition_history extends lenders_imposition_history_crud
 
         return $this->bdd->executeQuery($sql, ['id_lender' => $lenderId], ['id_lender' => \PDO::PARAM_INT])->fetchAll(\PDO::FETCH_ASSOC);
     }
+
+    public function getTaxationSituationAtDate($lenderId, $date)
+    {
+        $query = 'SELECT id_pays, resident_etranger FROM lenders_imposition_history
+                        WHERE id_lender = :id_lender
+                        AND added <= :date
+                        ORDER BY added DESC LIMIT 1';
+
+        return $this->bdd->executeQuery($query, ['id_lender' => $lenderId, 'date' => $date], ['id_lender' => \PDO::PARAM_INT, 'date' => \PDO::PARAM_STR])->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }
