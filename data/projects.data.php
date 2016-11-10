@@ -566,6 +566,11 @@ class projects extends projects_crud
      */
     public function getAverageInterestRate()
     {
+        $cacheTime = \Unilend\librairies\CacheKeys::VERY_SHORT_TIME;
+
+        $queryBuilder = $this->bdd->createQueryBuilder();
+        $queryBuilder->select('SUM(amount * rate) / SUM(amount) AS avg_rate');
+
         switch ($this->status) {
             case \projects_status::FUNDE:
             case \projects_status::REMBOURSEMENT:
@@ -578,37 +583,47 @@ class projects extends projects_crud
             case \projects_status::REDRESSEMENT_JUDICIAIRE:
             case \projects_status::LIQUIDATION_JUDICIAIRE:
             case \projects_status::DEFAUT:
-                $rResult = $this->bdd->query('
-                    SELECT SUM(amount * rate) / SUM(amount) AS avg_rate
-                    FROM loans
-                    WHERE id_project = ' . $this->id_project
-                );
-                return round($this->bdd->result($rResult, 0, 0), 2);
+                $queryBuilder
+                    ->from('loans')
+                    ->where('id_project = :id_project');
+                $cacheTime = \Unilend\librairies\CacheKeys::DAY * 30;
+                break;
             case \projects_status::PRET_REFUSE:
             case \projects_status::EN_FUNDING:
             case \projects_status::AUTO_BID_PLACED:
             case \projects_status::BID_TERMINATED:
             case \projects_status::A_FUNDER:
-                $rResult = $this->bdd->query('
-                    SELECT SUM(amount * rate) / SUM(amount) AS avg_rate
-                    FROM bids
-                    WHERE id_project = ' . $this->id_project . '
-                    AND status IN (0, 1)'
-                );
-                return round($this->bdd->result($rResult, 0, 0), 2);
+                $queryBuilder
+                    ->from('bids')
+                    ->where('id_project = :id_project')
+                    ->andWhere('status in (:status)')
+                    ->setParameter('status', [0, 1], \Doctrine\DBAL\Connection::PARAM_STR_ARRAY);
+                break;
             case \projects_status::FUNDING_KO:
-                $rResult = $this->bdd->query('
-                    SELECT SUM(amount * rate) / SUM(amount) AS avg_rate
-                    FROM bids
-                    WHERE id_project = ' . $this->id_project
-                );
-                return round($this->bdd->result($rResult, 0, 0), 2);
+                $queryBuilder
+                    ->from('bids')
+                    ->where('id_project = :id_project');
+                break;
             default:
                 trigger_error('Unknown project status : ' . $this->status . ' Could not calculate amounts', E_USER_WARNING);
-                break;
+                return 0.0;
         }
 
-        return 0.0;
+        $queryBuilder->setParameter('id_project', $this->id_project);
+
+        $statement = $this->bdd->executeCacheQuery(
+            $queryBuilder->getSQL(),
+            $queryBuilder->getParameters(),
+            $queryBuilder->getParameterTypes(),
+            new \Doctrine\DBAL\Cache\QueryCacheProfile($cacheTime, md5(__METHOD__)));
+        $result    = $statement->fetchAll(PDO::FETCH_COLUMN);
+        $statement->closeCursor();
+
+        if (empty($result)) {
+            return 0.0;
+        }
+
+        return array_values($result)[0];
     }
 
     public function getLoansAndLendersForProject($iProjectId = null)
