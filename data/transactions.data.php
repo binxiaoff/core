@@ -29,12 +29,12 @@
 class transactions extends transactions_crud
 {
     const PAYMENT_TYPE_VISA       = 0;
-    const PAYMENT_TYPE_MASTERCARD = 3;
     const PAYMENT_TYPE_AUTO       = 1;
     const PAYMENT_TYPE_AMEX       = 2;
+    const PAYMENT_TYPE_MASTERCARD = 3;
 
-    const PAYMENT_STATUS__NOK = 0;
-    const PAYMENT_STATUS_OK   = 1;
+    const PAYMENT_STATUS_NOK = 0;
+    const PAYMENT_STATUS_OK  = 1;
 
     const STATUS_PENDING  = 0;
     const STATUS_VALID    = 1;
@@ -43,7 +43,6 @@ class transactions extends transactions_crud
     public function __construct($bdd, $params = '')
     {
         parent::transactions($bdd, $params);
-        \Unilend\core\Loader::loadData('transactions_types');
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

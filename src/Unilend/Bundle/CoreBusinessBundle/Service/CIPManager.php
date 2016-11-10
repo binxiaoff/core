@@ -588,15 +588,17 @@ class CIPManager
         }
 
         $thresholdAmount = $this->getContractThresholdAmount();
-        $lenderBids      = $bid->select('id_lender_account = ' . $bid->id_lender_account . ' AND id_project = ' . $project->id_project . ' AND status IN (' . \bids::STATUS_BID_PENDING . ', ' . \bids::STATUS_BID_ACCEPTED . ', ' . \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY . ')');
+        $lenderBids      = $bid->sum('
+                id_lender_account = ' . $bid->id_lender_account . ' 
+                AND id_project = ' . $project->id_project . ' 
+                AND status IN (' . \bids::STATUS_BID_PENDING . ', ' . \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY . ')',
+            'ROUND(amount / 100)'
+        );
 
-        $totalBidsAmount = 0;
-        foreach ($lenderBids as $lenderBid) {
-            $totalBidsAmount = bcadd($totalBidsAmount, bcdiv($lenderBid['amount'], 100, 2), 2);
-        }
-        $totalBidsAmount = bcadd($totalBidsAmount, bcdiv($bid->amount, 100, 2), 2);
+        $totalAmount = bcdiv($bid->amount, 100, 2);
+        $totalAmount = bcadd($totalAmount, (string) $lenderBids, 2);
 
-        if (bccomp($totalBidsAmount, $thresholdAmount, 2) < 0) {
+        if (bccomp($totalAmount, $thresholdAmount, 2) < 0) {
             return false;
         }
 

@@ -76,6 +76,8 @@ class AutolendController extends Controller
                     $this->addFlash('autolend_success', $success);
                 }
             }
+
+            return $this->redirectToRoute('autolend');
         }
 
         $projectPeriods = $projectPeriods->select();
@@ -151,7 +153,10 @@ class AutolendController extends Controller
         }
 
         if (empty($autolendAmount) || false === is_numeric($autolendAmount) || $autolendAmount < $minimumBidAmount || $autolendAmount > $maxBidAmount) {
-            $errorMsg[] = $translator->trans('autolend_error-message-amount-wrong', ['%MIN_AMOUNT%' => $minimumBidAmount, '%MAX_AMOUNT%' => $maxBidAmount]);
+            $errorMsg[] = $translator->trans('autolend_error-message-amount-wrong', [
+                '%MIN_AMOUNT%' => $ficelle->formatNumber($minimumBidAmount, 0),
+                '%MAX_AMOUNT%' => $ficelle->formatNumber($maxBidAmount, 0)
+            ]);
         }
 
         if (empty($autolendRateMin) || false === $autoBidSettingsManager->isRateValid($autolendRateMin)) {
@@ -199,7 +204,10 @@ class AutolendController extends Controller
         }
 
         if (empty($amount) || false === is_numeric($amount) || $amount < $minimumBidAmount || $amount > $maxBidAmount) {
-            $errorMsg[] = $translator->trans('autolend_error-message-amount-wrong', ['%MIN_AMOUNT%' => $minimumBidAmount, '%MAX_AMOUNT%' => $maxBidAmount]);
+            $errorMsg[] = $translator->trans('autolend_error-message-amount-wrong', [
+                '%MIN_AMOUNT%' => $ficelle->formatNumber($minimumBidAmount, 0),
+                '%MAX_AMOUNT%' => $ficelle->formatNumber($maxBidAmount, 0)
+            ]);
         }
 
         foreach ($post['data'] as $setting) {

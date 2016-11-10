@@ -467,7 +467,7 @@ class dossiersController extends bootstrap
                             $clients->get($lenders->id_client_owner, 'id_client');
 
                             $loans->get($l['id_loan'], 'id_loan');
-                            $loans->status = 1;
+                            $loans->status = \loans::STATUS_REJECTED;
                             $loans->update();
 
                             // On redonne l'argent aux preteurs
@@ -1648,7 +1648,7 @@ class dossiersController extends bootstrap
                         $this->projects_remb->update();
                     }
                 } elseif ($_POST['remb_auto'] == 0) {
-                    $listdesRembauto = $this->projects_remb->select('id_project = ' . $this->projects->id_project . ' AND status = ' . \projects_remb::STATUS_AUTOMATIC_REFUND_DISABLED . ' AND LEFT(date_remb_preteurs,10) >= "' . date('Y-m-d') . '" AND date_remb_preteurs_reel = "0000-00-00 00:00:00"');
+                    $listdesRembauto = $this->projects_remb->select('id_project = ' . $this->projects->id_project . ' AND status = ' . \projects_remb::STATUS_AUTOMATIC_REFUND_DISABLED . ' AND DATE(date_remb_preteurs) >= "' . date('Y-m-d') . '" AND date_remb_preteurs_reel = "0000-00-00 00:00:00"');
 
                     foreach ($listdesRembauto as $rembauto) {
                         $this->projects_remb->get($rembauto['id_project_remb'], 'id_project_remb');
