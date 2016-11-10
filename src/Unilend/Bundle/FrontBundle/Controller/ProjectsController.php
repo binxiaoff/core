@@ -929,6 +929,7 @@ class ProjectsController extends Controller
 
         if ($validationNeeded) {
             $evaluation = $cipManager->getCurrentEvaluation($lender);
+
             if (null !== $evaluation && $cipManager->isValidEvaluation($evaluation)) {
                 $advices    = [];
                 $indicators = $cipManager->getIndicators($lender);
@@ -936,8 +937,18 @@ class ProjectsController extends Controller
                 if (null !== $indicators[CIPManager::INDICATOR_TOTAL_AMOUNT]) {
                     /** @var \bids $bids */
                     $bids        = $entityManager->getRepository('bids');
-                    $totalAmount = $bids->sum('id_lender_account = ' . $lender->id_lender_account . ' AND status IN (' . \bids::STATUS_BID_PENDING . ', ' . \bids::STATUS_BID_ACCEPTED . ', ' . \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY . ')',
-                        'ROUND(amount / 100)');
+                    $totalBids = $bids->sum(
+                        'id_lender_account = ' . $lender->id_lender_account . ' AND status IN (' . \bids::STATUS_BID_PENDING . ', ' . \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY . ')',
+                        'ROUND(amount / 100)'
+                    );
+                    /** @var \loans $loans */
+                    $loans      = $entityManager->getRepository('loans');
+                    $totalLoans = $loans->sum(
+                        'id_lender = ' . $lender->id_lender_account . ' AND status = ' . \loans::STATUS_ACCEPTED,
+                        'ROUND(amount / 100)'
+                    );
+
+                    $totalAmount = bcadd($totalBids, $totalLoans, 2);
 
                     if ($totalAmount > $indicators[CIPManager::INDICATOR_TOTAL_AMOUNT]) {
                         $advices[CIPManager::INDICATOR_TOTAL_AMOUNT] = true;
@@ -947,8 +958,17 @@ class ProjectsController extends Controller
                 if (null !== $indicators[CIPManager::INDICATOR_AMOUNT_BY_MONTH]) {
                     /** @var \bids $bids */
                     $bids        = $entityManager->getRepository('bids');
-                    $totalAmount = $bids->sum('id_lender_account = ' . $lender->id_lender_account . ' AND added >= DATE_SUB(NOW(), INTERVAL 1 MONTH) AND status IN (' . \bids::STATUS_BID_PENDING . ', ' . \bids::STATUS_BID_ACCEPTED . ', ' . \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY . ')',
+                    $totalBids = $bids->sum(
+                        'id_lender_account = ' . $lender->id_lender_account . ' AND added >= DATE_SUB(NOW(), INTERVAL 1 MONTH) AND status IN (' . \bids::STATUS_BID_PENDING . ', ' . \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY . ')',
                         'ROUND(amount / 100)');
+                    /** @var \loans $loans */
+                    $loans      = $entityManager->getRepository('loans');
+                    $totalLoans = $loans->sum(
+                        'id_lender = ' . $lender->id_lender_account . ' AND added >= DATE_SUB(NOW(), INTERVAL 1 MONTH) AND status = ' . \loans::STATUS_ACCEPTED,
+                        'ROUND(amount / 100)'
+                    );
+
+                    $totalAmount = bcadd($totalBids, $totalLoans, 2);
 
                     if ($totalAmount > $indicators[CIPManager::INDICATOR_AMOUNT_BY_MONTH]) {
                         $advices[CIPManager::INDICATOR_AMOUNT_BY_MONTH] = true;
