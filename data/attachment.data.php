@@ -28,9 +28,10 @@
 
 class attachment extends attachment_crud
 {
-    const LENDER       = 'lenders_accounts';
-    const PRESCRIPTEUR = 'prescripteurs';
-    const PROJECT      = 'projects';
+    const LENDER        = 'lenders_accounts';
+    const PRESCRIPTEUR  = 'prescripteurs';
+    const PROJECT       = 'projects';
+    const LOAN_TRANSFER = 'loan_transfer';
 
     public function __construct($bdd, $params = '')
     {
