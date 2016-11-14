@@ -17,9 +17,12 @@ class Altares
     const RESPONSE_CODE_ELIGIBLE                       = 8;
     const RESPONSE_CODE_NO_ANNUAL_ACCOUNTS             = 9;
 
-    const NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES = 'non_eligible_reason_negative_raw_operating_incomes';
-    const NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK         = 'non_eligible_reason_negative_capital_stock';
-    const NON_ELIGIBLE_REASON_COLLECTIVE_PROCEEDING          = 'non_eligible_reason_collective_proceeding';
+    const NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES = 'negative_raw_operating_incomes';
+    const NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK         = 'negative_capital_stock';
+    const NON_ELIGIBLE_REASON_COLLECTIVE_PROCEEDING          = 'collective_proceeding';
+    const NON_ELIGIBLE_REASON_LOW_SCORE                      = 'low_score';
+
+    const THRESHOLD_SCORE = '3';
 
     /**
      * @var EntityManager
@@ -322,8 +325,19 @@ class Altares
             $reason[] = self::NON_ELIGIBLE_REASON_COLLECTIVE_PROCEEDING;
         }
 
+        if (self::THRESHOLD_SCORE >= $result->myInfo->score->scoreVingt) {
+            $eligible = false;
+            $reason[] = self::NON_ELIGIBLE_REASON_LOW_SCORE;
+        }
+
+        if ($reason) {
+            $motif = implode(',', $reason);
+        } else {
+            $motif = $result->myInfo->motif;
+        }
+
         if (false === $eligible && $project->status != \projects_status::NOTE_EXTERNE_FAIBLE) {
-            $this->projectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $result->myInfo->motif);
+            $this->projectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $motif);
         }
 
         return ['eligible' => $eligible, 'reason' => $reason];
