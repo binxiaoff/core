@@ -59,7 +59,10 @@ class CompanyBalanceSheetManager
         $companyBalanceSheet->get($balanceSheetId);
         $companyTaxFormType->get($companyBalanceSheet->id_company_tax_form_type);
 
-        if (in_array($companyBalanceSheet->id_company, $fundedCompanies) || $companyTaxFormType->label != \company_tax_form_type::FORM_2033) {
+        if (in_array($companyBalanceSheet->id_company, $fundedCompanies)
+            || $companyTaxFormType->label != \company_tax_form_type::FORM_2033
+            || false === $oCompanyDebtsAssets->get($balanceSheetId, 'id_bilan')
+        ) {
             return;
         }
 

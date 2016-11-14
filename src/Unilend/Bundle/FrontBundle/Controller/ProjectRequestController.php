@@ -267,7 +267,7 @@ class ProjectRequestController extends Controller
             $altares->setCompanyData($this->company);
 
             if (false === $result['eligible']) {
-                if (in_array(Altares::NON_ELIGIBLE_REASON_COLLECTIVE_PROCEEDING, $result['raison'])) {
+                if (in_array(Altares::NON_ELIGIBLE_REASON_COLLECTIVE_PROCEEDING, $result['reason'])) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_END, ['hash' => $this->project->hash]);
                 }
 

@@ -43,7 +43,7 @@ class Altares
 
     /**
      * Retrieve getEligibility WS data
-     * @param int $iSIREN
+     * @param int $siren
      * @return mixed
      */
     public function getEligibility($siren)
@@ -305,26 +305,27 @@ class Altares
         }
 
         $eligible = true;
+        $reason   = [];
 
         if ($result->myInfo->codeRetour == self::RESPONSE_CODE_NEGATIVE_CAPITAL_STOCK) {
             $eligible = false;
-            $raison[] = self::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK;
+            $reason[] = self::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK;
         }
 
         if ($result->myInfo->codeRetour == self::RESPONSE_CODE_NEGATIVE_RAW_OPERATING_INCOMES) {
             $eligible = false;
-            $raison[] = self::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES;
+            $reason[] = self::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES;
         }
 
         if ('OUI' === $result->myInfo->identite->procedureCollective) {
             $eligible = false;
-            $raison[] = self::NON_ELIGIBLE_REASON_COLLECTIVE_PROCEEDING;
+            $reason[] = self::NON_ELIGIBLE_REASON_COLLECTIVE_PROCEEDING;
         }
 
         if (false === $eligible && $project->status != \projects_status::NOTE_EXTERNE_FAIBLE) {
             $this->projectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $result->myInfo->motif);
         }
 
-        return ['eligible' => $eligible, 'raison' => $raison];
+        return ['eligible' => $eligible, 'reason' => $reason];
     }
 }
