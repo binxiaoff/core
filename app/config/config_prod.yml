@@ -12,7 +12,7 @@ ekino_new_relic:
     api_key: edc37da0a36bfd74eded96d4d454c8f7b4b0ab8d4bce97e
     xmit: false
     logging: false
-    instrument: false
+    instrument: true
     log_exceptions: false
     log_commands: true
     using_symfony_cache: true
