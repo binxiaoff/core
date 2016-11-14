@@ -203,6 +203,8 @@
         <service id="unilend.service.altares" class="Unilend\Bundle\CoreBusinessBundle\Service\Altares">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service.company_balance_sheet_manager"/>
+            <argument type="service" id="unilend.service.project_manager"/>
+            <argument type="service" id="cache"/>
         </service>
 
         <service id="unilend.service.company_balance_sheet_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager">

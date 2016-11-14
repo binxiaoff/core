@@ -216,7 +216,6 @@ class ProjectRequestController extends Controller
         $this->project->ca_declara_client                    = 0;
         $this->project->resultat_exploitation_declara_client = 0;
         $this->project->fonds_propres_declara_client         = 0;
-        $this->project->status                               = \projects_status::COMPLETUDE_ETAPE_2;
         $this->project->create();
 
         return $this->start(\projects_status::COMPLETUDE_ETAPE_2);
@@ -263,47 +262,35 @@ class ProjectRequestController extends Controller
 
         try {
             $altares = $this->get('unilend.service.altares');
-            $result  = $altares->getEligibility($this->company->siren);
+            $result  = $altares->isEligible($this->project);
+
+            $altares->setCompanyData($this->company);
+
+            if (false === $result['eligible']) {
+                if (in_array(Altares::NON_ELIGIBLE_REASON_COLLECTIVE_PROCEEDING, $result['raison'])) {
+                    return $this->redirectToRoute(self::PAGE_ROUTE_END, ['hash' => $this->project->hash]);
+                }
+
+                return $this->redirectToRoute(self::PAGE_ROUTE_PROSPECT, ['hash' => $this->project->hash]);
+            }
+
+            $altares->setProjectData($this->project);
+            $altares->setCompanyBalance($this->company);
+
+            /** @var \companies_bilans $companyAccount */
+            $companyAccount = $entityManager->getRepository('companies_bilans');
+            $balanceSheets = $companyAccount->select('id_company = ' . $this->company->id_company, 'cloture_exercice_fiscal DESC', 0, 1);
+            if (isset($balanceSheets[0]['id_bilan'])) {
+                $this->project->id_dernier_bilan = $balanceSheets[0]['id_bilan'];
+                $this->project->update();
+            }
         } catch (\Exception $exception) {
             $logger->error(
-                'Calling Altares::getEligibility() using SIREN ' . $this->company->siren . ' - Exception message: ' . $exception->getMessage(),
+                $exception->getMessage(),
                 ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $this->company->siren]
             );
 
-            mail($alertEmail, '[ALERTE] ERREUR ALTARES 2', 'Date ' . date('Y-m-d H:i:s') . '' . $exception->getMessage());
-
-            return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, $status);
-        }
-
-        if (false === empty($result->exception)) {
-            $logger->error(
-                'Altares error code: ' . $result->exception->code . ' - Altares error description: ' . $result->exception->description . ' - Altares error: ' . $result->exception->erreur,
-                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $this->company->siren]
-            );
-
-            mail($alertEmail, '[ALERTE] ERREUR ALTARES 1', 'Date ' . date('Y-m-d H:i:s') . 'SIREN : ' . $this->company->siren . ' | ' . $result->exception->code . ' | ' . $result->exception->description . ' | ' . $result->exception->erreur);
-
-            return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, $status);
-        }
-
-        $this->project->retour_altares = $result->myInfo->codeRetour;
-
-        $altares->setCompanyData($this->company, $result->myInfo);
-
-        $this->project->update();
-        if (in_array($result->myInfo->codeRetour, [Altares::RESPONSE_CODE_NEGATIVE_CAPITAL_STOCK, Altares::RESPONSE_CODE_NEGATIVE_RAW_OPERATING_INCOMES])) {
-            return $this->redirectStatus(self::PAGE_ROUTE_PROSPECT, \projects_status::NOTE_EXTERNE_FAIBLE, $result->myInfo->motif);
-        }
-
-        $altares->setProjectData($this->project, $result->myInfo);
-        $altares->setCompanyBalance($this->company);
-
-        /** @var \companies_bilans $companyAccount */
-        $companyAccount = $entityManager->getRepository('companies_bilans');
-        $balanceSheets = $companyAccount->select('id_company = ' . $this->company->id_company, 'cloture_exercice_fiscal DESC', 0, 1);
-        if (isset($balanceSheets[0]['id_bilan'])) {
-            $this->project->id_dernier_bilan = $balanceSheets[0]['id_bilan'];
-            $this->project->update();
+            mail($alertEmail, '[ALERTE] ERREUR ALTARES', 'Date ' . date('Y-m-d H:i:s') . '' . $exception->getMessage());
         }
 
         return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, $status);
@@ -1650,7 +1637,7 @@ class ProjectRequestController extends Controller
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
         $oProjectManager = $this->get('unilend.service.project_manager');
 
-        if ($this->project->status != $projectStatus || $this->project->status == \projects_status::COMPLETUDE_ETAPE_2) {
+        if ($this->project->status != $projectStatus) {
             $oProjectManager->addProjectStatus(\users::USER_ID_FRONT, $projectStatus, $this->project, 0, $rejectionMessage);
         }
 

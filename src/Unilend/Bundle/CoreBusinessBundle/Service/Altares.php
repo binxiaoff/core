@@ -1,7 +1,9 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Psr\Cache\CacheItemPoolInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\librairies\CacheKeys;
 
 class Altares
 {
@@ -15,18 +17,28 @@ class Altares
     const RESPONSE_CODE_ELIGIBLE                       = 8;
     const RESPONSE_CODE_NO_ANNUAL_ACCOUNTS             = 9;
 
+    const NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES = 'non_eligible_reason_negative_raw_operating_incomes';
+    const NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK         = 'non_eligible_reason_negative_capital_stock';
+    const NON_ELIGIBLE_REASON_COLLECTIVE_PROCEEDING          = 'non_eligible_reason_collective_proceeding';
+
     /**
      * @var EntityManager
      */
     private $entityManager;
     /** @var CompanyBalanceSheetManager */
     private $companyBalanceSheetManager;
+    /** @var ProjectManager */
+    private $projectManager;
+    /** @var CacheItemPoolInterface */
+    private $cacheItemPool;
 
-    public function __construct(EntityManager $entityManager, CompanyBalanceSheetManager $companyBalanceSheetManager)
+    public function __construct(EntityManager $entityManager, CompanyBalanceSheetManager $companyBalanceSheetManager, ProjectManager $projectManager, CacheItemPoolInterface $cacheItemPool)
     {
         ini_set('default_socket_timeout', 60);
-        $this->entityManager = $entityManager;
+        $this->entityManager              = $entityManager;
         $this->companyBalanceSheetManager = $companyBalanceSheetManager;
+        $this->projectManager             = $projectManager;
+        $this->cacheItemPool             = $cacheItemPool;
     }
 
     /**
@@ -34,12 +46,24 @@ class Altares
      * @param int $iSIREN
      * @return mixed
      */
-    public function getEligibility($iSIREN)
+    public function getEligibility($siren)
     {
-        $settings = $this->entityManager->getRepository('settings');
-        $settings->get('Altares WSDL Eligibility', 'type');
+        $cachedItem = $this->cacheItemPool->getItem('Altares_getEligibility' . '_' . $siren);
 
-        return $this->soapCall($settings->value, 'getEligibility', array('siren' => $iSIREN));
+        if (false === $cachedItem->isHit()) {
+            $settings = $this->entityManager->getRepository('settings');
+            $settings->get('Altares WSDL Eligibility', 'type');
+
+            $response = $this->soapCall($settings->value, 'getEligibility', array('siren' => $siren));
+            if (empty($response->exception)) {
+                $cachedItem->set($response)->expiresAfter(CacheKeys::SHORT_TIME);
+                $this->cacheItemPool->save($cachedItem);
+            }
+        } else {
+            $response = $cachedItem->get();
+        }
+
+        return $response;
     }
 
     /**
@@ -161,6 +185,7 @@ class Altares
         }
 
         $oProject->id_company_rating_history = $oCompanyRatingHistory->id_company_rating_history;
+        $oProject->retour_altares = $oEligibilityInfo->codeRetour;
         $oProject->update();
     }
 
@@ -259,5 +284,47 @@ class Altares
             array(array('identification' => $identification, 'refClient' => 'sffpme') + $aParameters)
         );
         return isset($oResult->return) ? $oResult->return : null;
+    }
+
+    public function isEligible(\projects $project)
+    {
+        /** @var \companies $company */
+        $company = $this->entityManager->getRepository('companies');
+
+        $company->get($project->id_company);
+        try {
+            $result = $this->getEligibility($company->siren);
+        } catch (\Exception $exception) {
+            throw new \Exception('SOAP API error When calling Altares::getEligibility() using SIREN ' . $company->siren . ' - Exception message: ' . $exception->getMessage());
+        }
+
+        if (false === empty($result->exception)) {
+            throw new \Exception(
+                'Altares API error when calling Altares::getEligibility() using SIREN ' . $company->siren . '. Altares error code: ' . $result->exception->code . ' - Altares error description: ' . $result->exception->description . ' - Altares error: ' . $result->exception->erreur
+            );
+        }
+
+        $eligible = true;
+
+        if ($result->myInfo->codeRetour == self::RESPONSE_CODE_NEGATIVE_CAPITAL_STOCK) {
+            $eligible = false;
+            $raison[] = self::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK;
+        }
+
+        if ($result->myInfo->codeRetour == self::RESPONSE_CODE_NEGATIVE_RAW_OPERATING_INCOMES) {
+            $eligible = false;
+            $raison[] = self::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES;
+        }
+
+        if ('OUI' === $result->myInfo->identite->procedureCollective) {
+            $eligible = false;
+            $raison[] = self::NON_ELIGIBLE_REASON_COLLECTIVE_PROCEEDING;
+        }
+
+        if (false === $eligible && $project->status != \projects_status::NOTE_EXTERNE_FAIBLE) {
+            $this->projectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $result->myInfo->motif);
+        }
+
+        return ['eligible' => $eligible, 'raison' => $raison];
     }
 }
