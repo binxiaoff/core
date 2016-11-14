@@ -983,7 +983,7 @@ class transfertsController extends bootstrap
                 && (false === is_numeric($_POST['id_client_to_transfer'])
                     || false === $originalClient->get($_POST['id_client_to_transfer'])
                     || false === $clientManager->isLender($originalClient))) {
-                $this->addErrorMessageAndRedirect('Le client à transférer n\'est pas un prêteur valide');
+                $this->addErrorMessageAndRedirect('Le défunt n\'est pas un prêteur valide');
             }
 
             if (
@@ -992,7 +992,7 @@ class transfertsController extends bootstrap
                     || false === $newOwner->get($_POST['id_client_receiver'])
                     || false === $clientManager->isLender($newOwner))
             ) {
-                $this->addErrorMessageAndRedirect('Le client destinataire n\'est pas un prêteur');
+                $this->addErrorMessageAndRedirect('L\'héritier n\'est pas un prêteur');
             }
 
             if (false === isset($_FILES['transfer_document'])) {
@@ -1009,13 +1009,13 @@ class transfertsController extends bootstrap
             //TODO change location of method in ClientStatusManager
             $newOwnerClientStatus = $clientManager->getCurrentClientStatus($newOwner);
             if ($newOwnerClientStatus != \clients_status::VALIDATED) {
-                $this->addErrorMessageAndRedirect('Le compte du client destinataire n\'est pas validé');
+                $this->addErrorMessageAndRedirect('Le compte de l\'héritier n\'est pas validé');
             }
 
             /** @var \bids $bids */
             $bids = $this->loadData('bids');
             if ($bids->exist($originalLender->id_lender_account, 'status = ' . \bids::STATUS_BID_PENDING . ' AND id_lender_account ')) {
-                $this->addErrorMessageAndRedirect('Le compte client à transférer a des bids en cours.');
+                $this->addErrorMessageAndRedirect('Le défunt a des bids en cours.');
             }
 
             /** @var \transactions $transactions */
@@ -1029,7 +1029,6 @@ class transfertsController extends bootstrap
             $loans = $this->loadData('loans');
             /** @var \echeanciers $repaymentSchedule */
             $repaymentSchedule = $this->loadData('echeanciers');
-
             $numberLoans  = 0;
 
             foreach ($loans->getLoansWithOngoingRepayments($originalLender->id_lender_account, \projects_status::$runningRepayment) as $loan) {
@@ -1041,12 +1040,24 @@ class transfertsController extends bootstrap
             }
 
             $comment = 'Compte soldé . ' . $originalClientBalance . ' EUR et ' . $numberLoans . ' prêts transferés sur le compte client ' . $newOwner->id_client;
-
             $clientStatusManager->closeAccount($originalClient, $comment, $this->users);
 
             /** @var \clients_status_history $clientStatusHistory */
             $clientStatusHistory = $this->loadData('clients_status_history');
             $clientStatusHistory->addStatus($this->users->id_user, $newOwnerClientStatus, $newOwner->id_client, 'Reçu solde ('. $originalClientBalance .') et prêts (' . $numberLoans . ') du compte ' . $originalClient->id_client);
+
+            $_SESSION['succession']['success'] = [
+                'accountBalance' => $originalClientBalance,
+                'numberLoans'    => $numberLoans,
+                'formerClient'   => [
+                    'nom'    => $originalClient->nom,
+                    'prenom' => $originalClient->prenom
+                ],
+                'newOwner'       => [
+                    'nom'    => $newOwner->nom,
+                    'prenom' => $newOwner->prenom
+                ]
+            ];
         }
     }
 
