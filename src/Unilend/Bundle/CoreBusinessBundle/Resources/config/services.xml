@@ -171,5 +171,11 @@
             <argument type="service" id="unilend.service_product.product_attribute_manager" />
             <argument type="service" id="unilend.service.entity_manager" />
         </service>
+
+        <service id="unilend.service.client_status_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager">
+            <argument type="service" id="unilend.service.entity_manager" />
+            <argument type="service" id="unilend.service.notification_manager" />
+            <argument type="service" id="unilend.service.autobid_settings_manager" />
+        </service>
     </services>
 </container>

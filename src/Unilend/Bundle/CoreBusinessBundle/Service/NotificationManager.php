@@ -169,4 +169,23 @@ class NotificationManager
         return $clientNotificationTypes->select();
     }
 
+    /**
+     * @param \clients $client
+     */
+    public function deactivateAllNotificationSettings(\clients $client)
+    {
+        /** @var \clients_gestion_notifications $clientNotificationSettings */
+        $clientNotificationSettings = $this->oEntityManager->getRepository('clients_gestion_notifications');
+
+        foreach ($clientNotificationSettings->getNotifs($client->id_client) as $idNotification => $notification){
+            $clientNotificationSettings->get(['id_notif' => $idNotification]);
+            $clientNotificationSettings->immediatement    = 0;
+            $clientNotificationSettings->quotidienne      = 0;
+            $clientNotificationSettings->hebdomadaire     = 0;
+            $clientNotificationSettings->mensuelle        = 0;
+            $clientNotificationSettings->uniquement_notif = 0;
+            $clientNotificationSettings->update(['id_notif' => $clientNotificationSettings->id_notif]);
+        }
+    }
+
 }
