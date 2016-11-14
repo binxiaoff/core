@@ -963,4 +963,199 @@ class transfertsController extends bootstrap
             }
         }
     }
+
+    public function _succession()
+    {
+        if (isset($_POST['succession_form'])) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
+            $clientManager = $this->get('unilend.service.client_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
+            $clientStatusManager = $this->get('unilend.service.client_status_manager');
+            /** @var \clients $originalClient */
+            $originalClient = $this->loadData('clients');
+            /** @var \clients $newOwner */
+            $newOwner = $this->loadData('clients');
+            /** @var \attachment $transferDocument */
+            $transferDocument = $this->loadData('attachment');
+
+            if (
+                false === empty($_POST['id_client_to_transfer'])
+                && (false === is_numeric($_POST['id_client_to_transfer'])
+                    || false === $originalClient->get($_POST['id_client_to_transfer'])
+                    || false === $clientManager->isLender($originalClient))) {
+                $this->addErrorMessageAndRedirect('Le client à transférer n\'est pas un prêteur valide');
+            }
+
+            if (
+                false === empty($_POST['id_client_receiver'])
+                && (false === is_numeric($_POST['id_client_receiver'])
+                    || false === $newOwner->get($_POST['id_client_receiver'])
+                    || false === $clientManager->isLender($newOwner))
+            ) {
+                $this->addErrorMessageAndRedirect('Le client destinataire n\'est pas un prêteur');
+            }
+
+            if (false === isset($_FILES['transfer_document'])) {
+                $this->addErrorMessageAndRedirect('Il manque le justificatif de transfer');
+            }
+
+            /** @var \lenders_accounts $originalLender */
+            $originalLender = $this->loadData('lenders_accounts');
+            $originalLender->get($originalClient->id_client, 'id_client_owner');
+            /** @var \lenders_accounts $newLender */
+            $newLender = $this->loadData('lenders_accounts');
+            $newLender->get($newOwner->id_client, 'id_client_owner');
+
+            //TODO change location of method in ClientStatusManager
+            $newOwnerClientStatus = $clientManager->getCurrentClientStatus($newOwner);
+            if ($newOwnerClientStatus != \clients_status::VALIDATED) {
+                $this->addErrorMessageAndRedirect('Le compte du client destinataire n\'est pas validé');
+            }
+
+            /** @var \bids $bids */
+            $bids = $this->loadData('bids');
+            if ($bids->exist($originalLender->id_lender_account, 'status = ' . \bids::STATUS_BID_PENDING . ' AND id_lender_account ')) {
+                $this->addErrorMessageAndRedirect('Le compte client à transférer a des bids en cours.');
+            }
+
+            /** @var \transactions $transactions */
+            $transactions = $this->loadData('transactions');
+            $originalClientBalance = $clientManager->getClientBalance($originalClient);
+            $this->transferAccountBalance($transactions, $originalClientBalance, $originalClient, $newOwner);
+
+            /** @var \loan_transfer $loanTransfer */
+            $loanTransfer = $this->loadData('loan_transfer');
+            /** @var \loans $loans */
+            $loans = $this->loadData('loans');
+            /** @var \echeanciers $repaymentSchedule */
+            $repaymentSchedule = $this->loadData('echeanciers');
+
+            $numberLoans  = 0;
+
+            foreach ($loans->getLoansWithOngoingRepayments($originalLender->id_lender_account, \projects_status::$runningRepayment) as $loan) {
+                $loans->get($loan['id_loan']);
+                $this->transferLoan($loanTransfer, $loans, $originalLender, $newLender, $transferDocument, 'transfer_document');
+                $this->transferRepaymentSchedule($loans, $repaymentSchedule, $newLender);
+                $loans->unsetData();
+                $numberLoans += 1;
+            }
+
+            $comment = 'Compte soldé . ' . $originalClientBalance . ' EUR et ' . $numberLoans . ' prêts transferés sur le compte client ' . $newOwner->id_client;
+
+            $clientStatusManager->closeAccount($originalClient, $comment, $this->users);
+
+            /** @var \clients_status_history $clientStatusHistory */
+            $clientStatusHistory = $this->loadData('clients_status_history');
+            $clientStatusHistory->addStatus($this->users->id_user, $newOwnerClientStatus, $newOwner->id_client, 'Reçu solde ('. $originalClientBalance .') et prêts (' . $numberLoans . ') du compte ' . $originalClient->id_client);
+        }
+    }
+
+    private function transferAccountBalance(\transactions $transactions, $accountBalance, \clients $originalClient, \clients $newOwner)
+    {
+        $transactions->id_client             = $originalClient->id_client;
+        $transactions->montant               = -$accountBalance;
+        $transactions->status                = \transactions::PAYMENT_STATUS_OK;
+        $transactions->etat                  = \transactions::STATUS_VALID;
+        $transactions->id_client_counterpart = $newOwner->id_client;
+        $transactions->type_transaction      = \transactions_types::TYPE_LENDER_BALANCE_TRANSFER;
+        $transactions->create();
+
+        $transactions->unsetData();
+
+        $transactions->id_client             = $newOwner->id_client;
+        $transactions->montant               = $accountBalance;
+        $transactions->status                = \transactions::PAYMENT_STATUS_OK;
+        $transactions->etat                  = \transactions::STATUS_VALID;
+        $transactions->id_client_counterpart = $originalClient->id_client;
+        $transactions->type_transaction      = \transactions_types::TYPE_LENDER_BALANCE_TRANSFER;
+        $transactions->create();
+    }
+
+    private function transferLoan(\loan_transfer $loanTransfer, \loans $loans, \lenders_accounts $originalLender, \lenders_accounts $newLender, \attachment $transferDocument, $fieldName)
+    {
+        $loanTransfer->id_lender_origin   = $originalLender->id_lender_account;
+        $loanTransfer->id_lender_reciever = $newLender->id_lender_account;
+        $loanTransfer->id_transfer_type   = \loan_transfer_type::TYPE_INHERITANCE;
+        $loanTransfer->id_loan            = $loans->id_loan;
+        $loanTransfer->create();
+
+        $loans->id_transfer = $loanTransfer->id_transfer;
+        $loans->id_lender   = $newLender->id_lender_account;
+        $loans->update();
+
+        $transferDocument = $this->uploadTransferDocument($transferDocument, $originalLender, $newLender, $loanTransfer->id_transfer, $fieldName);
+        $document             = clone $transferDocument;
+        $document->id_owner   = $loanTransfer->id_transfer;
+        $document->type_owner = 'loan_transfer';
+        $document->update();
+
+        $document->unsetData();
+        $loanTransfer->unsetData();
+    }
+
+    /**
+     * @param \loans $loans
+     * @param \echeanciers $repaymentSchedule
+     * @param \lenders_accounts $newLender
+     */
+    private function transferRepaymentSchedule(\loans $loans, \echeanciers $repaymentSchedule, \lenders_accounts $newLender)
+    {
+        foreach ($repaymentSchedule->select('id_loan = ' . $loans->id_loan) as $repayment){
+            $repaymentSchedule->get($repayment['id_echeancier']);
+            $repaymentSchedule->id_lender = $newLender->id_lender_account;
+            $repaymentSchedule->update();
+            $repaymentSchedule->unsetData();
+        }
+    }
+
+    /**
+     * @param string $errorMessage
+     */
+    private function addErrorMessageAndRedirect($errorMessage)
+    {
+        $_SESSION['succession']['error'] = $errorMessage;
+        header('Location: ' . $this->lurl . '/transferts/succession');
+        die;
+    }
+
+    /**
+     * @param \attachment $attachment
+     * @param \lenders_accounts $originalLender
+     * @param \lenders_accounts $newLender
+     * @param int $transferId
+     * @param string $field
+     * @return \attachment
+     */
+    private function uploadTransferDocument(\attachment $attachment, \lenders_accounts $originalLender, \lenders_accounts $newLender, $transferId, $field)
+    {
+        if (false === isset($this->attachment_type) || false === $this->attachment_type instanceof attachment_type) {
+            $this->attachment_type = $this->loadData('attachment_type');
+        }
+
+        if (false === isset($this->upload) || false === $this->upload instanceof upload) {
+            $this->upload = $this->loadLib('upload');
+        }
+
+        if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
+            $this->attachmentHelper = $this->loadLib('attachment_helper', array($attachment, $this->attachment_type, $this->path));
+        }
+
+        $newName = '';
+        if (isset($_FILES[$field]['name']) && $fileInfo = pathinfo($_FILES[$field]['name'])) {
+            $newName = mb_substr($fileInfo['filename'], 0, 20) . '_' . $originalLender->id_lender_account . '_' . $newLender->id_lender_account;
+        }
+
+        $filePath = $this->path . 'protected/clients/' . \attachment_helper::PATH_LOAN_TRANSFER;
+
+        if (false === file_exists($filePath . '/' . $newName)) {
+            $idAttachment = $this->attachmentHelper->upload($transferId, \attachment::LOAN_TRANSFER, \attachment_type::LOAN_TRANSFER_CERTIFICATE, $field, $this->upload, $newName);
+            $attachment->get($idAttachment);
+        } else {
+            $idAttachment = $attachment->select('path = ' . $newName . ' AND type_owner = ' . \attachment::LOAN_TRANSFER, null, null, 1)[0];
+            $attachment->get($idAttachment);
+        }
+
+        return $attachment;
+    }
+
 }

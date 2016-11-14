@@ -442,7 +442,6 @@ class loans extends loans_crud
 
     public function sumLoansByCohort()
     {
-
         $query = 'SELECT SUM(loans.amount)/100 AS amount,
                     (
                         SELECT
@@ -462,6 +461,31 @@ class loans extends loans_crud
                     GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery($query);
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @param int $idLender
+     * @param array $projectStatus
+     * @return mixed
+     */
+    public function getLoansWithOngoingRepayments($idLender, array $projectStatus)
+    {
+        $query = 'SELECT *
+                    FROM loans
+                      INNER JOIN projects ON loans.id_project = projects.id_project
+                    WHERE projects.status IN (:projectStatus)
+                          AND loans.id_lender = :idLender';
+
+        $statement = $this->bdd->executeQuery($query,
+            [
+                'projectStatus' => $projectStatus,
+                'idLender'      => $idLender
+            ], [
+                'projectStatus' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+                'idLender'      => \PDO::PARAM_STR
+            ]);
+
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 }
