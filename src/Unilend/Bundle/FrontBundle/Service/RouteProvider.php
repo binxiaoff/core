@@ -64,7 +64,7 @@ class RouteProvider implements RouteProviderInterface
      */
     public function getRouteByName($name)
     {
-        $cachedItem = $this->cacheItemPool->getItem(__FUNCTION__ . $name);
+        $cachedItem = $this->cacheItemPool->getItem('RouteProvider_getRouteByName' . $name);
 
         if ($cachedItem->isHit()) {
             $path = $cachedItem->get();
