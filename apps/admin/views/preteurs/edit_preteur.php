@@ -663,6 +663,7 @@
             </style>
             <?php
             if (false === empty($this->aTaxationCountryHistory)): ?>
+                <h3>Historique Fiscal</h3>
                 <table class="tablesorter histo_status_client">
                     <?php if (array_key_exists('error', $this->aTaxationCountryHistory)): ?>
                         <tr>
@@ -685,86 +686,106 @@
                         list-style: disc;
                     }
                 </style>
-                <table class="tablesorter histo_status_client">
-                <?php foreach ($this->lActions as $a) {
-                    $this->oClientsStatusForHistory->get($a['id_client_status'], 'id_client_status');
-                    $this->users->get($a['id_user'], 'id_user');
+                <div style="margin-top: 15px;">
+                    <h3>Historique des status client</h3>
+                    <table class="tablesorter histo_status_client">
+                    <?php foreach ($this->lActions as $historyEntry) {
+                        $this->oClientsStatusForHistory->get($historyEntry['id_client_status'], 'id_client_status');
+                        $this->users->get($historyEntry['id_user'], 'id_user');
 
-                    switch ($this->oClientsStatusForHistory->status) {
-                        case \clients_status::TO_BE_CHECKED: ?>
-                            <tr>
-                                <td>
-                                    <?php if (empty($a['content'])) : ?>
-                                        Création de compte le <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?><br>
-                                    <?php else: ?>
-                                        Compte modifié le <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?><br>
-                                        <?= $a['content'] ?>
-                                    <?php endif; ?>
-                                </td>
-                            </tr>
-                            <?php break;
-                        case \clients_status::COMPLETENESS: ?>
-                            <tr>
-                                <td>
-                                    Complétude le <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?><br/>
-                                    par <?= $this->users->name ?><br/>
-                                    <?= $a['content'] ?>
-                                </td>
-                            </tr>
-                            <?php break;
-                        case \clients_status::COMPLETENESS_REMINDER: ?>
-                            <tr>
-                                <td>
-                                    Complétude Relance le <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?><br/>
-                                    <?= $a['content'] ?>
-                                </td>
-                            </tr>
-                            <?php break;
-                        case \clients_status::COMPLETENESS_REPLY: ?>
-                            <tr>
-                                <td>
-                                    Complétude Reponse le <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?><br/>
-                                    <?= $a['content'] ?>
-                                </td>
-                            </tr>
-                            <?php break;
-                        case \clients_status::MODIFICATION: ?>
-                            <tr>
-                                <td>
-                                    Compte modifié le <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?><br/>
-                                    <?= $a['content'] ?>
-                                </td>
-                            </tr>
-                            <?php break;
-                        case \clients_status::VALIDATED: ?>
-                            <tr>
-                                <td>Compte validé le <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?><br />
-                                    par <?= $this->users->name ?></td>
-                            </tr>
-                            <?php break;
-                        case \clients_status::CLOSED_LENDER_REQUEST : ?>
-                            <tr>
-                                <td>Compte clôturé à la demande du prêteur (mis hors ligne) <br />
-                                    le <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?><br />
-                                    par <?= $this->users->name ?></td>
-                            </tr>
-                            <?php break;
-                        case \clients_status::CLOSED_BY_UNILEND : ?>
-                            <tr>
-                                <td>Compte clôturé par Unilend (mis hors ligne) <br />
-                                    le <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?> <br />
-                                    par <?= $this->users->name ?><br />
-                                    <?= $a['content'] ?>
-                                </td>
-                            </tr>
-                            <?php break;
+                        switch ($this->oClientsStatusForHistory->status) {
+                            case \clients_status::TO_BE_CHECKED: ?>
+                                <tr>
+                                    <td>
+                                        <?php if (empty($historyEntry['content'])) : ?>
+                                            Création de compte le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br>
+                                        <?php else: ?>
+                                            Compte modifié le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br>
+                                            <?= $historyEntry['content'] ?>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                                <?php break;
+                            case \clients_status::COMPLETENESS: ?>
+                                <tr>
+                                    <td>
+                                        Complétude le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br/>
+                                        par <?= $this->users->name ?><br/>
+                                        <?= $historyEntry['content'] ?>
+                                    </td>
+                                </tr>
+                                <?php break;
+                            case \clients_status::COMPLETENESS_REMINDER: ?>
+                                <tr>
+                                    <td>
+                                        Complétude Relance le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br/>
+                                        <?= $historyEntry['content'] ?>
+                                    </td>
+                                </tr>
+                                <?php break;
+                            case \clients_status::COMPLETENESS_REPLY: ?>
+                                <tr>
+                                    <td>
+                                        Complétude Reponse le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br/>
+                                        <?= $historyEntry['content'] ?>
+                                    </td>
+                                </tr>
+                                <?php break;
+                            case \clients_status::MODIFICATION: ?>
+                                <tr>
+                                    <td>
+                                        Compte modifié le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br/>
+                                        <?= $historyEntry['content'] ?>
+                                    </td>
+                                </tr>
+                                <?php break;
+                            case \clients_status::VALIDATED: ?>
+                                <tr>
+                                    <td>
+                                        <?php if (empty($historyEntry['content'])) : ?>
+                                            Compte validé le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br />par <?= $this->users->name ?></td>
+                                        <?php else : ?>
+                                            <?= $historyEntry['content'] . ' le ' . date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?>
+                                            <br>par <?= $this->users->name ?>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                                <?php break;
+                            case \clients_status::CLOSED_LENDER_REQUEST : ?>
+                                <tr>
+                                    <td>Compte clôturé à la demande du prêteur (mis hors ligne) <br />
+                                        le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br />
+                                        par <?= $this->users->name ?></td>
+                                </tr>
+                                <?php break;
+                            case \clients_status::CLOSED_BY_UNILEND : ?>
+                                <tr>
+                                    <td>Compte clôturé par Unilend (mis hors ligne) <br />
+                                        le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?> <br />
+                                        par <?= $this->users->name ?><br />
+                                        <?= $historyEntry['content'] ?>
+                                    </td>
+                                </tr>
+                                <?php break;
+                            case \clients_status::CLOSED_DEFINITELY: ?>
+                                <tr>
+                                    <td>
+                                        Compte definitvement fermé le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?>
+                                        <br>
+                                        <?= $historyEntry['content'] ?>
+                                        <br>par <?= $this->users->name ?>
+                                    </td>
+                                </tr>
+                                <?php break;
+                        }
                     }
-                }
-                ?>
-                </table>
+                    ?>
+                    </table>
+                </div>
             <?php endif; ?>
         </div>
         <div class="droite">
+            <?php if($this->clients_status->status != \clients_status::CLOSED_DEFINITELY) : ?>
             <table class="tabLesStatuts">
                 <tr>
                     <td>
@@ -862,6 +883,7 @@
                 </fieldset>
                 <br/><br/>
             </div>
+            <?php endif; ?>
         </div>
         <div class="clear"></div>
         <br/><br/>

@@ -13,6 +13,7 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Service\PaylineManager;
 use Unilend\Bundle\FrontBundle\Form\LenderWithdrawalType;
@@ -124,8 +125,6 @@ class LenderWalletController extends Controller
         $bankTransfer = $entityManager->getRepository('virements');
         /** @var \lenders_accounts $lender */
         $lender = $entityManager->getRepository('lenders_accounts');
-        /** @var \clients_status $clientStatus */
-        $clientStatus = $entityManager->getRepository('clients_status');
         /** @var \offres_bienvenues_details $welcomeOfferDetails */
         $welcomeOfferDetails = $entityManager->getRepository('offres_bienvenues_details');
         /** @var \notifications $notification */
@@ -138,6 +137,8 @@ class LenderWalletController extends Controller
         $logger = $this->get('logger');
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
+        /** @var ClientStatusManager $clientStatusManager */
+        $clientStatusManager = $this->get('unilend.service.client_status_manager');
 
         if ($client->get($this->getUser()->getClientId(), 'id_client')) {
             /** @var \clients_history_actions $clientActionHistory */
@@ -145,9 +146,7 @@ class LenderWalletController extends Controller
             $serialize           = serialize(array('id_client' => $client->id_client, 'montant' => $post['amount'], 'mdp' => md5($post['password'])));
             $clientActionHistory->histo(3, 'retrait argent', $client->id_client, $serialize);
 
-            $clientStatus->getLastStatut($client->id_client);
-
-            if ($clientStatus->status < \clients_status::VALIDATED) {
+            if ($clientStatusManager->getLastClientStatus($client) < \clients_status::VALIDATED) {
                 $this->redirectToRoute('lender_wallet_withdrawal');
             }
 

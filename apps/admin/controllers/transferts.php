@@ -1006,9 +1006,7 @@ class transfertsController extends bootstrap
             $newLender = $this->loadData('lenders_accounts');
             $newLender->get($newOwner->id_client, 'id_client_owner');
 
-            //TODO change location of method in ClientStatusManager
-            $newOwnerClientStatus = $clientManager->getCurrentClientStatus($newOwner);
-            if ($newOwnerClientStatus != \clients_status::VALIDATED) {
+            if ($clientStatusManager->getLastClientStatus($newOwner) != \clients_status::VALIDATED) {
                 $this->addErrorMessageAndRedirect('Le compte de l\'héritier n\'est pas validé');
             }
 
@@ -1039,12 +1037,14 @@ class transfertsController extends bootstrap
                 $numberLoans += 1;
             }
 
-            $comment = 'Compte soldé . ' . $originalClientBalance . ' EUR et ' . $numberLoans . ' prêts transferés sur le compte client ' . $newOwner->id_client;
-            $clientStatusManager->closeAccount($originalClient, $comment, $this->users);
+            $comment = 'Compte soldé . ' . $this->ficelle->formatNumber($originalClientBalance) . ' EUR et ' . $numberLoans . ' prêts transferés sur le compte client ' . $newOwner->id_client;
+            try {
+                $clientStatusManager->closeAccount($originalClient, $_SESSION['user']['id_user'], $comment);
+            } catch (\Exception $exception){
+                $this->addErrorMessageAndRedirect('Le status client n\'a pas pu être changé ' . $exception->getMessage());
+            }
 
-            /** @var \clients_status_history $clientStatusHistory */
-            $clientStatusHistory = $this->loadData('clients_status_history');
-            $clientStatusHistory->addStatus($this->users->id_user, $newOwnerClientStatus, $newOwner->id_client, 'Reçu solde ('. $originalClientBalance .') et prêts (' . $numberLoans . ') du compte ' . $originalClient->id_client);
+            $clientStatusManager->addClientStatus($newOwner, $_SESSION['user']['id_user'], $clientStatusManager->getLastClientStatus($newOwner), 'Reçu solde ('. $this->ficelle->formatNumber($originalClientBalance) .') et prêts (' . $numberLoans . ') du compte ' . $originalClient->id_client);
 
             $_SESSION['succession']['success'] = [
                 'accountBalance' => $originalClientBalance,
@@ -1064,7 +1064,7 @@ class transfertsController extends bootstrap
     private function transferAccountBalance(\transactions $transactions, $accountBalance, \clients $originalClient, \clients $newOwner)
     {
         $transactions->id_client             = $originalClient->id_client;
-        $transactions->montant               = -$accountBalance;
+        $transactions->montant               = -$accountBalance*100;
         $transactions->status                = \transactions::PAYMENT_STATUS_OK;
         $transactions->etat                  = \transactions::STATUS_VALID;
         $transactions->id_client_counterpart = $newOwner->id_client;
@@ -1074,7 +1074,7 @@ class transfertsController extends bootstrap
         $transactions->unsetData();
 
         $transactions->id_client             = $newOwner->id_client;
-        $transactions->montant               = $accountBalance;
+        $transactions->montant               = $accountBalance*100;
         $transactions->status                = \transactions::PAYMENT_STATUS_OK;
         $transactions->etat                  = \transactions::STATUS_VALID;
         $transactions->id_client_counterpart = $originalClient->id_client;

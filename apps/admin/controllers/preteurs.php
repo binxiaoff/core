@@ -282,6 +282,9 @@ class preteursController extends bootstrap
         $this->clients_adresses = $this->loadData('clients_adresses');
         $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
+        $clientStatusManager = $this->get('unilend.service.client_status_manager');
+
         $this->companies = $this->loadData('companies');
 
         if (in_array($this->clients->type, array(clients::TYPE_LEGAL_ENTITY, clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
@@ -343,17 +346,8 @@ class preteursController extends bootstrap
 
         $this->clients_status_history   = $this->loadData('clients_status_history');
         $this->oClientsStatusForHistory = $this->loadData('clients_status');
-        $aLenderStatusForQuery          = array(
-            \clients_status::TO_BE_CHECKED,
-            \clients_status::COMPLETENESS,
-            \clients_status::COMPLETENESS_REPLY,
-            \clients_status::MODIFICATION,
-            \clients_status::VALIDATED,
-            \clients_status::CLOSED_LENDER_REQUEST,
-            \clients_status::CLOSED_BY_UNILEND
-        );
-        $this->lActions                = $this->clients_status_history->select('id_client = ' . $this->clients->id_client . ' AND id_client_status IN ( SELECT cs.id_client_status FROM  clients_status cs WHERE cs.status IN (' . implode(',', $aLenderStatusForQuery) . '))', 'added DESC');
-        $this->aTaxationCountryHistory = $this->getTaxationHistory($this->lenders_accounts->id_lender_account);
+        $this->lActions                 = $this->clients_status_history->select('id_client = ' . $this->clients->id_client, 'added DESC');
+        $this->aTaxationCountryHistory  = $this->getTaxationHistory($this->lenders_accounts->id_lender_account);
 
         $this->getMessageAboutClientStatus();
 
@@ -371,7 +365,7 @@ class preteursController extends bootstrap
 
         if (isset($_POST['send_completude'])) {
             $this->sendCompletenessRequest();
-            $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::COMPLETENESS, $this->clients->id_client, utf8_encode($_SESSION['content_email_completude'][ $this->clients->id_client ]));
+            $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::COMPLETENESS, utf8_encode($_SESSION['content_email_completude'][ $this->clients->id_client ]));
 
             unset($_SESSION['content_email_completude'][$this->clients->id_client]);
 
@@ -505,14 +499,14 @@ class preteursController extends bootstrap
 
                     if (false === empty($aExistingClient) && $aExistingClient['id_client'] != $this->clients->id_client) {
                         $this->changeClientStatus($this->clients, \clients::STATUS_OFFLINE, $iOriginForUserHistory);
-                        $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::CLOSED_BY_UNILEND, $this->clients->id_client, 'Doublon avec client ID : ' . $aExistingClient['id_client']);
+                        $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::CLOSED_BY_UNILEND, 'Doublon avec client ID : ' . $aExistingClient['id_client']);
                         header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
                         die;
                     } elseif (0 == $this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')')) { // On check si on a deja eu le compte validé au moins une fois. si c'est pas le cas on check l'offre
                         $this->createWelcomeOffer($this->clients->id_client);
                     }
 
-                    $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::VALIDATED, $this->clients->id_client);
+                    $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::VALIDATED);
 
                     $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
                     $this->clients_gestion_type_notif    = $this->loadData('clients_gestion_type_notif');
@@ -735,7 +729,7 @@ class preteursController extends bootstrap
                 $this->users_history->histo(3, 'modif info preteur personne morale', $_SESSION['user']['id_user'], $serialize);
 
                 if (isset($_POST['statut_valider_preteur']) && $_POST['statut_valider_preteur'] == 1) {
-                    $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::VALIDATED, $this->clients->id_client);
+                    $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::VALIDATED);
 
                     if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')') > 1) {
                         $sTypeMail = 'preteur-validation-modification-compte';
@@ -1528,13 +1522,13 @@ class preteursController extends bootstrap
 
     private function getMessageAboutClientStatus()
     {
-        /** @var clients_status $oClientsStatus */
-        $oClientsStatus = $this->loadData('clients_status');
-        $oClientsStatus->getLastStatut($this->clients->id_client);
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
+        $clientStatusManager= $this->get('unilend.service.client_status_manager');
         $sTimeCreate                = strtotime($this->clients->added);
         $this->sClientStatusMessage = '';
+        $currentStatus = $clientStatusManager->getLastClientStatus($this->clients);
 
-        switch ($oClientsStatus->status) {
+        switch ($currentStatus) {
             case \clients_status::TO_BE_CHECKED :
                 $this->sClientStatusMessage = '<div class="attention">Attention : compte non validé - créé le '. date('d/m/Y', $sTimeCreate) . '</div>';
                 break;
@@ -1555,8 +1549,11 @@ class preteursController extends bootstrap
             case \clients_status::VALIDATED:
                 $this->sClientStatusMessage = '';
                 break;
+            case \clients_status::CLOSED_DEFINITELY:
+                $this->sClientStatusMessage = '<div class="attention">Attention : compte définitivement fermé </div>';
+                break;
             default;
-                trigger_error('Unknown Client Status : ' . $oClientsStatus->status, E_USER_NOTICE);
+                trigger_error('Unknown Client Status : ' . $currentStatus, E_USER_NOTICE);
                 break;
         }
     }
@@ -1686,6 +1683,8 @@ class preteursController extends bootstrap
         $oLendersAccount = $this->loadData('lenders_accounts');
         /** @var \clients $oClient */
         $oClient = $this->loadData('clients');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
+        $clientStatusManager = $this->get('unilend.service.client_status_manager');
 
         $oLendersAccount->get($this->params[1],'id_lender_account');
         $oClient->get($oLendersAccount->id_client_owner, 'id_client');
@@ -1693,13 +1692,14 @@ class preteursController extends bootstrap
         if (isset($this->params[0]) && $this->params[0] == 'status') {
             $this->changeClientStatus($oClient, $this->params[2], 1);
             if ($this->params[2] == \clients::STATUS_OFFLINE) {
-                $oClientsStatusHistory->addStatus($_SESSION['user']['id_user'], \clients_status::CLOSED_BY_UNILEND, $oClient->id_client);
+                $clientStatusManager->addClientStatus($oClient, $_SESSION['user']['id_user'], \clients_status::CLOSED_BY_UNILEND);
             } else {
                 $aLastTwoStatus = $oClientsStatusHistory->select('id_client =  ' . $oClient->id_client, 'id_client_status_history DESC', null, 2);
+                /** @var \clients_status $oClientStatus */
                 $oClientStatus  = $this->loadData('clients_status');
                 $oClientStatus->get($aLastTwoStatus[1]['id_client_status']);
                 $sContent = 'Compte remis en ligne par Unilend';
-                $oClientsStatusHistory->addStatus($_SESSION['user']['id_user'], $oClientStatus->status, $oClient->id_client, $sContent);
+                $clientStatusManager->addClientStatus($oClient, $_SESSION['user']['id_user'], $oClientStatus->status, $sContent);
             }
             header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $oLendersAccount->id_lender_account);
             die;
@@ -1708,7 +1708,7 @@ class preteursController extends bootstrap
         if (isset($this->params[0]) && $this->params[0] == 'deactivate') {
             $this->changeClientStatus($oClient, $this->params[2], 1);
             $this->sendEmailClosedAccount($oClient);
-            $oClientsStatusHistory->addStatus($_SESSION['user']['id_user'], \clients_status::CLOSED_LENDER_REQUEST, $oClient->id_client);
+            $clientStatusManager->addClientStatus($oClient, $_SESSION['user']['id_user'], \clients_status::CLOSED_LENDER_REQUEST);
             header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $oLendersAccount->id_lender_account);
             die;
         }

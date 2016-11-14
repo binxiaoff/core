@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\core\Loader;
 
@@ -23,8 +24,6 @@ class AutolendController extends Controller
     {
         /** @var AutoBidSettingsManager $autoBidSettingsManager */
         $autoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
-        /** @var \clients $client */
-        $client = $this->getClient();
         /** @var \lenders_accounts $lendersAccounts */
         $lendersAccounts = $this->getLenderAccount();
 
@@ -34,8 +33,6 @@ class AutolendController extends Controller
 
         /** @var \settings $settings */
         $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        /** @var \clients_status $clientStatus */
-        $clientStatus = $this->get('unilend.service.entity_manager')->getRepository('clients_status');
         /** @var \projects $project */
         $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
         /** @var \autobid $autobid */
@@ -82,7 +79,6 @@ class AutolendController extends Controller
         foreach ($projectPeriods as $period) {
             $template['projectPeriods'][$period['id_period']] = $period;
         }
-        $clientStatus->getLastStatut($client->id_client);
 
         $settings->get('date-premier-projet-tunnel-de-taux', 'type');
         $startingDate = $settings->value;

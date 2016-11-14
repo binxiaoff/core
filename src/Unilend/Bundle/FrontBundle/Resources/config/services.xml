@@ -30,6 +30,7 @@
             <argument type="service" id="unilend.service.client_manager"/>
             <argument type="service" id="unilend.frontbundle.notification_display_manager"/>
             <argument type="service" id="unilend.service.lender_manager"/>
+            <argument type="service" id="unilend.service.client_status_manager" />
         </service>
 
         <service id="unilend.frontbundle.security.login_authenticator" class="Unilend\Bundle\FrontBundle\Security\LoginAuthenticator">

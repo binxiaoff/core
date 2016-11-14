@@ -33,6 +33,7 @@
 
         <service id="unilend.service.lender_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LenderManager">
             <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="unilend.service.client_manager"/>
         </service>
 
         <service id="unilend.service.loan_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LoanManager">

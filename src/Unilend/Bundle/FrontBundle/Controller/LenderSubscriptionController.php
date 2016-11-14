@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\PaylineManager;
@@ -655,6 +656,8 @@ class LenderSubscriptionController extends Controller
         if (false === $response instanceof \clients){
             return $response;
         }
+        /** @var ClientStatusManager $clientStatusManager */
+        $clientStatusManager = $this->get('unilend.service.client_status_manager');
 
         /** @var \lenders_accounts $lenderAccount */
         $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
@@ -716,9 +719,7 @@ class LenderSubscriptionController extends Controller
             $client->etape_inscription_preteur = 2;
             $client->update();
 
-            /** @var \clients_status_history $clientStatusHistory */
-            $clientStatusHistory = $this->get('unilend.service.entity_manager')->getRepository('clients_status_history');
-            $clientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED, $client->id_client);
+            $clientStatusManager->addClientStatus($client, \users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED);
             $this->saveClientHistoryAction($client, $post);
             $this->sendFinalizedSubscriptionConfirmationEmail($client);
 
@@ -1198,11 +1199,10 @@ class LenderSubscriptionController extends Controller
                 }
 
                 $client->get($this->getUser()->getClientId());
-                /** @var \clients_status $clientStatus */
-                $clientStatus = $this->get('unilend.service.entity_manager')->getRepository('clients_status');
-                $clientStatus->getLastStatut($client->id_client);
+                /** @var ClientStatusManager $clientStatusManager */
+                $clientStatusManager = $this->get('unilend.service.client_status_manager');
 
-                if ($clientStatus->status >= \clients_status::MODIFICATION){
+                if ($clientStatusManager->getLastClientStatus($client) >= \clients_status::MODIFICATION){
                     return $this->redirectToRoute('lender_dashboard');
                 }
 
