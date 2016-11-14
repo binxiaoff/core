@@ -597,7 +597,7 @@ class projects extends projects_crud
                     ->from('bids')
                     ->where('id_project = :id_project')
                     ->andWhere('status in (:status)')
-                    ->setParameter('status', [0, 1], \Doctrine\DBAL\Connection::PARAM_STR_ARRAY);
+                    ->setParameter('status', [0, 1], \Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
                 break;
             case \projects_status::FUNDING_KO:
                 $queryBuilder
