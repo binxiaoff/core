@@ -86,13 +86,10 @@ class Altares
     /**
      * Set main data of the given company according to Altares response
      * @param \companies $oCompany
-     * @param \stdClass|null $oEligibilityInfo
      */
-    public function setCompanyData(\companies &$oCompany, $oEligibilityInfo = null)
+    public function setCompanyData(\companies &$oCompany)
     {
-        if (is_null($oEligibilityInfo)) {
-            $oEligibilityInfo = $this->getEligibility($oCompany->siren)->myInfo;
-        }
+        $oEligibilityInfo = $this->getEligibility($oCompany->siren)->myInfo;
 
         $oCompany->phone = isset($oEligibilityInfo->siege->telephone) ? str_replace(' ', '', $oEligibilityInfo->siege->telephone) : '';
 
@@ -116,17 +113,14 @@ class Altares
     /**
      * Set Altares notation of project
      * @param \projects $oProject
-     * @param \StdClass|null $oEligibilityInfo
      */
-    public function setProjectData(\projects &$oProject, $oEligibilityInfo = null)
+    public function setProjectData(\projects &$oProject)
     {
-        if (is_null($oEligibilityInfo)) {
-            /** @var \companies $oCompany */
-            $oCompany = $this->entityManager->getRepository('companies');
-            $oCompany->get($oProject->id_company);
+        /** @var \companies $oCompany */
+        $oCompany = $this->entityManager->getRepository('companies');
+        $oCompany->get($oProject->id_company);
 
-            $oEligibilityInfo = $this->getEligibility($oCompany->siren)->myInfo;
-        }
+        $oEligibilityInfo = $this->getEligibility($oCompany->siren)->myInfo;
 
         /** @var \company_rating_history $oCompanyRatingHistory */
         $oCompanyRatingHistory = $this->entityManager->getRepository('company_rating_history');

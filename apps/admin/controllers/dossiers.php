@@ -369,27 +369,13 @@ class dossiersController extends bootstrap
                 if (false === empty($this->companies->siren)) {
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Altares $oAltares */
                     $oAltares = $this->get('unilend.service.altares');
-                    $oResult  = $oAltares->getEligibility($this->companies->siren);
-
-                    if ($oResult->exception == '' && isset($oResult->myInfo) && is_object($oResult->myInfo)) {
-                        if (false === empty($oResult->myInfo->codeRetour)) {
-                            $this->projects->retour_altares = $oResult->myInfo->codeRetour;
-                            $this->projects->update();
-                        }
-
-                        $oAltares->setCompanyData($this->companies, $oResult->myInfo);
-                        $oAltares->setProjectData($this->projects, $oResult->myInfo);
-
-                        // @todo Revert when TMA-749 is resolved
-                        if (is_numeric($this->companies->name) || 0 === strcasecmp($this->companies->name, 'Monsieur') || 0 === strcasecmp($this->companies->name, 'Madame')) {
-                            /** @var \Psr\Log\LoggerInterface $logger */
-                            $logger = $this->get('logger');
-                            $logger->error('Wrong company name - altares return : ' . serialize($oResult), array('class' => __CLASS__, 'function' => __FUNCTION__));
-                        }
+                    try {
+                        $oAltares->setCompanyData($this->companies);
+                        $oAltares->setProjectData($this->projects);
                         $oAltares->setCompanyBalance($this->companies);
                         $_SESSION['freeow']['title']   = 'Données Altares';
                         $_SESSION['freeow']['message'] = 'Données Altares récupéré !';
-                    } else {
+                    } catch (\Exception $exception) {
                         $_SESSION['freeow']['title']   = 'Données Altares';
                         $_SESSION['freeow']['message'] = 'Données Altares erreur !';
                     }
@@ -1479,17 +1465,8 @@ class dossiersController extends bootstrap
             if (isset($this->params[1]) && $this->params[1] === 'altares') {
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Altares $oAltares */
                 $oAltares = $this->get('unilend.service.altares');
-                $oResult  = $oAltares->getEligibility($this->companies->siren);
-                $oAltares->setCompanyData($this->companies, $oResult->myInfo);
-
-                // @todo Revert when TMA-749 is resolved
-                if (is_numeric($this->companies->name) || 0 === strcasecmp($this->companies->name, 'Monsieur') || 0 === strcasecmp($this->companies->name, 'Madame')) {
-                    /** @var LoggerInterface $logger */
-                    $logger = $this->get('logger');
-                    $logger->error('Wrong company name - altares return : ' . serialize($oResult), array('class' => __CLASS__, 'function' => __FUNCTION__));
-                }
-
-                $oAltares->setProjectData($this->projects, $oResult->myInfo);
+                $oAltares->setCompanyData($this->companies);
+                $oAltares->setProjectData($this->projects);
                 $oAltares->setCompanyBalance($this->companies);
 
                 header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
