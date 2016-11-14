@@ -227,7 +227,7 @@ class ProjectsController extends Controller
         ];
 
         $displayDebtsAssets = true;
-        if (empty($firstBalanceSheet['assets']) || $firstBalanceSheet['debts']) {
+        if (empty($firstBalanceSheet['assets']) || empty($firstBalanceSheet['assets']) ) {
             $displayDebtsAssets = false;
         }
 
