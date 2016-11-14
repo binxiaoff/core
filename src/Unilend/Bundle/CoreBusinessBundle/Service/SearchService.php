@@ -50,15 +50,16 @@ class SearchService
             $response = json_decode($response, true);
 
             if (isset($response['_embedded']['entries']) && false === empty($response['_embedded']['entries'])) {
-                $result['desk'] = [];
+                $deskResult = [];
 
                 foreach ($response['_embedded']['entries'] as $entry) {
-                    $result['desk'][] = [
+                    $deskResult[] = [
                         'title' => $entry['subject'],
                         'url'   => $entry['public_url']
                     ];
                 }
 
+                $result = array_merge(array('desk' => $deskResult), $result);
                 usort($result['desk'], function($firstElement, $secondElement) {
                     return strcmp($firstElement['title'], $secondElement['title']);
                 });
