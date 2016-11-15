@@ -140,7 +140,8 @@ class FrontBundleExtension extends \Twig_Extension
 
     public function getStatisticFunction($statisticType, $date = null)
     {
-        return $this->statisticsManager->getStatistic($statisticType, $date);
+        $requestedDate = (is_null($date)) ? new \DateTime('NOW') : new \DateTime($date);
+        return $this->statisticsManager->getStatistic($statisticType, $requestedDate);
     }
 
     public function nbspFilter($sString)

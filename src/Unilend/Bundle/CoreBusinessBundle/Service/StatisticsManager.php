@@ -15,33 +15,35 @@ class StatisticsManager
     const HISTORIC_NUMBER_OF_SIREN = 26205;
     const VALUE_DATE_HISTORIC_NUMBER_OF_SIREN = '2016-08-31 00:00:00';
 
-    /** @var  EntityManager */
+    /** @var EntityManager */
     private $entityManager;
-    /** @var  IRRManager */
+    /** @var IRRManager */
     private $IRRManager;
     /** @var MemcacheCachePool */
     private $cachePool;
     /** @var LocationManager */
     private $locationManager;
 
-    public function __construct(EntityManager $entityManager, IRRManager $IRRManager, MemcacheCachePool $cachePool, LocationManager $locationManager)
-    {
-        $this->entityManager      = $entityManager;
-        $this->IRRManager         = $IRRManager;
-        $this->cachePool          = $cachePool;
-        $this->locationManager    = $locationManager;
+    public function __construct(
+        EntityManager $entityManager,
+        IRRManager $IRRManager,
+        MemcacheCachePool $cachePool,
+        LocationManager $locationManager
+    ) {
+        $this->entityManager   = $entityManager;
+        $this->IRRManager      = $IRRManager;
+        $this->cachePool       = $cachePool;
+        $this->locationManager = $locationManager;
     }
 
     /**
      * @param string $name
-     * @param string $date
+     * @param \DateTime $date
      * @return mixed
      */
-    public function getStatistic($name, $date = null)
+    public function getStatistic($name, \DateTime $date)
     {
-        $requestedDate = (is_null($date)) ? new \DateTime('NOW') : new \DateTime($date);
-
-        $statistics = $this->getStatisticsAtDate($requestedDate);
+        $statistics = $this->getStatisticsAtDate($date);
         return $statistics[lcfirst($name)];
     }
 
