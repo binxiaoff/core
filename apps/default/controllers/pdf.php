@@ -1174,7 +1174,7 @@ class pdfController extends bootstrap
         $session = $this->get('session');
 
         if ($session->has('lenderOperationsFilters')) {
-            $savedFilters = $session->get('lenderOperationsFilters');
+            $savedFilters   = $session->get('lenderOperationsFilters');
             $sPath          = $this->path . 'protected/operations_export_pdf/' . $savedFilters['id_client'] . '/';
             $sNamePdfClient = 'vos_operations_' . date('Y-m-d') . '.pdf';
 

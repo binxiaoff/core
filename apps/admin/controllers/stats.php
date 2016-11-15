@@ -742,157 +742,118 @@ class statsController extends bootstrap
         $this->autoFireView = false;
         $this->hideDecoration();
 
-        $this->companies        = $this->loadData('companies');
-        $this->emprunteur       = $this->loadData('clients');
-        $this->clients          = $this->loadData('clients');
-        $this->clients_adresses = $this->loadData('clients_adresses');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
-        $this->projects         = $this->loadData('projects');
-        $this->loans            = $this->loadData('loans');
-        $this->echeanciers      = $this->loadData('echeanciers');
+        /** @var \clients $clients */
+        $clients = $this->loadData('clients');
 
-        $header = "Code Entreprise;CodeBénéficiaire;CodeV;Date;Montant;Monnaie;Nombre;VAP;";
-        $header = utf8_encode($header);
+        /** @var \pays_v2 $countriesEntity */
+        $countriesEntity    = $this->loadData('pays_v2');
+        $countries          = $countriesEntity->getZoneB040Countries();
+        $zoneB040CountryIds = [];
 
-        $csv = "";
-        $csv .= $header . " \n";
-
-        if (in_array(date('m'), ['01', '02', '03'])) {
-            $annee = (date('Y')-1);
-        } else {
-            $annee = date('Y');
+        foreach ($countries as $country) {
+            $zoneB040CountryIds[] = $country['id_pays'];
         }
 
-        $date = '31/12/' . $annee;
+        $year = in_array(date('m'), ['01', '02', '03']) ? (date('Y') - 1) : date('Y');
 
-        $oCountry = $this->loadData('pays_v2');
-        $aCountries = $oCountry->getZoneB040Countries();
+        $commonValues = [
+            'CodeEntreprise' => 1, //official code of SFPMEI
+            'Date'           => '31/12/' . $year,
+            'Monnaie'        => 'EURO'
+        ];
 
-        foreach($aCountries as $aCountry) {
-            $aZoneB040CountryIds[] = $aCountry['id_pays'];
-        }
+        $row = 1;
+        /** @var \PHPExcel $csvFile */
+        $csvFile     = new \PHPExcel();
+        $activeSheet = $csvFile->setActiveSheetIndex(0);
+        $activeSheet->setCellValueByColumnAndRow(0, $row, 'Code Entreprise');
+        $activeSheet->setCellValueByColumnAndRow(1, $row, 'CodeBénéficiaire');
+        $activeSheet->setCellValueByColumnAndRow(2, $row, 'CodeV');
+        $activeSheet->setCellValueByColumnAndRow(3, $row, 'Date');
+        $activeSheet->setCellValueByColumnAndRow(4, $row, 'Montant');
+        $activeSheet->setCellValueByColumnAndRow(5, $row, 'Monnaie');
+        $row += 1;
 
         $sql = '
               SELECT
                 c.id_client,
-                c.prenom,
-                c.nom,
-                SUM(e.interets_rembourses),
-                SUM(ROUND(retenues_source.amount / 100, 2)),
-                SUM(ROUND(prelevements_obligatoires.amount / 100, 2))
-              FROM lenders_accounts la
-                INNER JOIN clients c ON (la.id_client_owner = c.id_client)
-                LEFT JOIN echeanciers e ON (e.id_lender = la.id_lender_account)
-                LEFT JOIN transactions t ON t.id_echeancier = e.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
+                SUM(ROUND(t.montant/100, 2)) AS interests,
+                SUM(ROUND(retenues_source.amount / 100, 2)) AS retenues_source,
+                SUM(ROUND(prelevements_obligatoires.amount / 100, 2)) AS prlv_obligatoire
+              FROM clients c
+                LEFT JOIN transactions t ON c.id_client = t.id_client AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
                 LEFT JOIN tax retenues_source ON retenues_source.id_transaction = t.id_transaction AND retenues_source.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE . '
                 LEFT JOIN tax prelevements_obligatoires ON prelevements_obligatoires.id_transaction = t.id_transaction AND prelevements_obligatoires.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX . '
-              WHERE YEAR(e.date_echeance_reel) = ' . $annee . '
-                AND e.status IN (' . \echeanciers::STATUS_REPAID . ', ' . \echeanciers::STATUS_PARTIALLY_REPAID .  ')
-                AND e.status_ra = 0
+              WHERE YEAR(t.date_transaction) = ' . $year . '
               GROUP BY c.id_client';
         $resultat = $this->bdd->query($sql);
 
         while ($record = $this->bdd->fetch_array($resultat)) {
-            $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($record[1]))), 0, 1);
-            $nom       = $this->ficelle->stripAccents(utf8_decode(trim($record[2])));
-            $id_client = $record[0];
-            $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
-            $cbene     = substr($motif, 0, 10);
+            $commonValues['lenderPattern'] = $clients->getLenderPattern($record['id_client']);
 
-            // personne morale OU resident fiscal etranger
-            if ($record[4] > 0) {
-                // Retenues à la source
-                $csv .= "1;";
-                $csv .= $cbene . ";";
-                $csv .= "2;";
-                $csv .= $date . ";";
-                $csv .= number_format($record[4], 2, ',', '') . ";";
-                $csv .= "EURO;";
-                $csv .= ";";
-                $csv .= ";";
-                $csv .= " \n";
+            $this->addCommonCellValuesToRevenueQueryCSV($activeSheet, $row, $commonValues);
+            $activeSheet->setCellValueByColumnAndRow(2, $row, '53');
+            $activeSheet->setCellValueByColumnAndRow(4, $row, number_format($record['interests'], 2, ',', ''));
+            $row += 1;
+
+            if ($record['retenues_source'] > 0) {
+                $this->addCommonCellValuesToRevenueQueryCSV($activeSheet, $row, $commonValues);
+                $activeSheet->setCellValueByColumnAndRow(2, $row, '53');
+                $activeSheet->setCellValueByColumnAndRow(4, $row, number_format($record['retenues_source'], 2, ',', ''));
+                $row += 1;
             }
 
-            // Interets
-            $csv .= "1;";
-            $csv .= $cbene . ";";
-            $csv .= "53;";
-            $csv .= $date . ";";
-            $csv .= number_format(($record[3] / 100), 2, ',', '') . ";";
-            $csv .= "EURO;";
-            $csv .= ";";
-            $csv .= ";";
-            $csv .= " \n";
-
-            if ($record[5] > 0) {
-                // prélèvements obligatoires
-                $csv .= "1;";
-                $csv .= $cbene . ";";
-                $csv .= "54;";
-                $csv .= $date . ";";
-                $csv .= number_format($record[5], 2, ',', '') . ";";
-                $csv .= "EURO;";
-                $csv .= ";";
-                $csv .= ";";
-                $csv .= " \n";
+            if ($record['prlv_obligatoire'] > 0) {
+                $this->addCommonCellValuesToRevenueQueryCSV($activeSheet, $row, $commonValues);
+                $activeSheet->setCellValueByColumnAndRow(2, $row, '54');
+                $activeSheet->setCellValueByColumnAndRow(4, $row, number_format($record['prlv_obligatoire'], 2, ',', ''));
+                $row += 1;
             }
 
-            $aSum = $this->getLine_66_81_82_118($id_client, $annee, $aZoneB040CountryIds);
-            if (isset($aSum['sum_66']) && $aSum['sum_66'] > 0) {
-                $csv .= "1;";
-                $csv .= $cbene . ";";
-                $csv .= "66;";
-                $csv .= $date . ";";
-                $csv .= number_format(($aSum['sum_66'] / 100), 2, ',', '') . ";";
-                $csv .= "EURO;";
-                $csv .= ";";
-                $csv .= ";";
-                $csv .= " \n";
-            }
-
-            if (isset($aSum['sum_81']) && $aSum['sum_81'] > 0) {
-                $csv .= "1;";
-                $csv .= $cbene . ";";
-                $csv .= "81;";
-                $csv .= $date . ";";
-                $csv .= number_format(($aSum['sum_81'] / 100), 2, ',', '') . ";";
-                $csv .= "EURO;";
-                $csv .= ";";
-                $csv .= ";";
-                $csv .= " \n";
-            }
-
-            if (isset($aSum['sum_82']) && $aSum['sum_82'] > 0) {
-                $csv .= "1;";
-                $csv .= $cbene . ";";
-                $csv .= "82;";
-                $csv .= $date . ";";
-                $csv .= number_format(($aSum['sum_82'] / 100), 2, ',', '') . ";";
-                $csv .= "EURO;";
-                $csv .= ";";
-                $csv .= ";";
-                $csv .= " \n";
-            }
-
-            if (isset($aSum['sum_118']) && $aSum['sum_118'] > 0) {
-                $csv .= "1;";
-                $csv .= $cbene . ";";
-                $csv .= "118;";
-                $csv .= $date . ";";
-                $csv .= number_format(($aSum['sum_118'] / 100), 2, ',', '') . ";";
-                $csv .= "EURO;";
-                $csv .= ";";
-                $csv .= ";";
-                $csv .= " \n";
-            }
+            $this->addRepaymentBasedLinesToRevenuesQueryCSV($activeSheet, $record['id_client'], $year, $zoneB040CountryIds, $row, $commonValues);
+            unset($commonValues['lenderPattern']);
         }
 
+        $this->addLoansToRevenueQueryCSV($activeSheet, $row, $commonValues, $year, $clients);
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment;filename=requete_revenus' . date('Ymd') . '.csv');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Expires: 0');
+
+        /** @var \PHPExcel_Writer_CSV $writer */
+        $writer = PHPExcel_IOFactory::createWriter($csvFile, 'CSV');
+        $writer->setUseBOM(true);
+        $writer->setDelimiter(';');
+        $writer->save('php://output');
+    }
+
+    /**
+     * @param PHPExcel_Worksheet $activeSheet
+     * @param int $row
+     * @param array $commonValues
+     */
+    private function addCommonCellValuesToRevenueQueryCSV(\PHPExcel_Worksheet &$activeSheet, $row, $commonValues)
+    {
+        $activeSheet->setCellValueByColumnAndRow(0, $row, $commonValues['CodeEntreprise']);
+        $activeSheet->setCellValueByColumnAndRow(1, $row, $commonValues['lenderPattern']);
+        $activeSheet->setCellValueByColumnAndRow(3, $row, $commonValues['Date']);
+        $activeSheet->setCellValueByColumnAndRow(5, $row, $commonValues['Monnaie']);
+    }
+
+    /**
+     * @param PHPExcel_Worksheet $activeSheet
+     * @param int $row
+     * @param array $commonValues
+     * @param int $year
+     * @param clients $clients
+     */
+    private function addLoansToRevenueQueryCSV(\PHPExcel_Worksheet &$activeSheet, &$row, $commonValues, $year, \clients $clients)
+    {
         $sql = '
           SELECT
             c.id_client,
-            c.prenom,
-            c.nom,
-            SUM(lo.amount)
+            SUM(lo.amount) AS montant
           FROM loans lo
             INNER JOIN
             (
@@ -901,38 +862,125 @@ class statsController extends bootstrap
                 INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
               WHERE ps.status = ' . \projects_status::REMBOURSEMENT . '
               GROUP BY psh.id_project
-              HAVING YEAR(first_added) = ' . $annee . '
+              HAVING YEAR(first_added) = ' . $year . '
             ) p ON p.id_project = lo.id_project
             INNER JOIN lenders_accounts la ON la.id_lender_account = lo.id_lender
             INNER JOIN clients c ON la.id_client_owner = c.id_client
             GROUP BY c.id_client';
 
         $resultat = $this->bdd->query($sql);
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            // cbéné
-            $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($record[1]))), 0, 1);
-            $nom       = $this->ficelle->stripAccents(utf8_decode(trim($record[2])));
-            $id_client = $record[0];
-            $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
-            $cbene     = substr($motif, 0, 10);
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
+            $commonValues['lenderPattern'] = $clients->getLenderPattern($record['id_client']);
+            $this->addCommonCellValuesToRevenueQueryCSV($activeSheet, $row, $commonValues);
+            $activeSheet->setCellValueByColumnAndRow(2, $row, '117');
+            $activeSheet->setCellValueByColumnAndRow(4, $row, number_format(($record['montant'] / 100), 2, ',', ''));
+            $row += 1;
+        }
+    }
 
-            // capitaux souscrit
-            $csv .= "1;";
-            $csv .= $cbene . ";";
-            $csv .= "117;";
-            $csv .= $date . ";";
-            $csv .= number_format(($record[3] / 100), 2, ',', '') . ";";
-            $csv .= "EURO;";
-            $csv .= ";";
-            $csv .= ";";
-            $csv .= " \n";
+    /**
+     * @param PHPExcel_Worksheet $activeSheet
+     * @param int $clientId
+     * @param int $year
+     * @param array $zoneB040CountryIds
+     * @param int $row
+     * @param array $commonValues
+     */
+    private function addRepaymentBasedLinesToRevenuesQueryCSV(\PHPExcel_Worksheet &$activeSheet, $clientId, $year, $zoneB040CountryIds, &$row, $commonValues)
+    {
+        $sum66  = 0;
+        $sum81  = 0;
+        $sum82  = 0;
+        $sum118 = 0;
+
+        $sql = 'SELECT
+                  la.id_lender_account,
+                  ROUND(t_interets.montant/100, 2) AS net_interest,
+                  IFNULL((SELECT SUM(ROUND(tax.amount / 100, 2)) FROM tax WHERE id_transaction = t_interets.id_transaction) , 0) AS tax_on_interest,
+                  ROUND(t_capital.montant/100, 2) as capital,
+                  t_interets.date_transaction,
+                  c.type,
+                  t_interets.id_echeancier
+                FROM lenders_accounts la
+                INNER JOIN clients c ON la.id_client_owner = c.id_client
+                LEFT JOIN transactions t_interets ON c.id_client = t_interets.id_client AND t_interets.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
+                LEFT JOIN transactions t_capital ON c.id_client = t_capital.id_client AND t_capital.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . '
+                WHERE YEAR(t_interets.date_transaction) = ' . $year . '
+                  AND c.id_client =  ' . $clientId;
+
+        $resultat = $this->bdd->query($sql);
+
+        /** @var \transactions $transactions */
+        $transactions = $this->loadData('transactions');
+
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            if (\clients::TYPE_PERSON == $record['type'] || \clients::TYPE_PERSON_FOREIGNER == $record['type']) {
+                /** @var \lenders_imposition_history $lenderImpositionHistory */
+                $lenderImpositionHistory = $this->loadData('lenders_imposition_history');
+
+                $foreigner       = false;
+                $zoneB040Country = false;
+                $situation       = $lenderImpositionHistory->getTaxationSituationAtDate($record['id_lender_account'], $record['date_transaction']);
+
+                if (false === empty($situation)) {
+                    $situation = $situation[0];
+                    if (0 < $situation['resident_etranger']) {
+                        $foreigner = true;
+                        if (in_array($situation['id_pays'], $zoneB040CountryIds)) {
+                            $zoneB040Country = true;
+                        }
+                    }
+                }
+
+                unset($situation);
+
+                if (false === $foreigner) {
+                    $sum66 += $record['net_interest'] + $record['tax_on_interest'];
+                } else {
+                    if (true === $zoneB040Country) {
+                        $sum81 += $record['net_interest'];
+                    }
+                }
+
+                if (true === $zoneB040Country) {
+                    $sum82 += round(bcdiv($record['capital'], 100, 3), 2);
+                }
+            }
+            $sum118 += round(bcdiv($record['capital'], 100, 3), 2);
+
+            unset($record);
         }
 
-        $titre = 'requete_revenus' . date('Ymd');
-        header("Content-type: application/vnd.ms-excel");
-        header("Content-disposition: attachment; filename=\"" . $titre . ".csv\"");
+        $recoveryPayments = $transactions->sum('id_client = ' . $clientId . ' AND type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT, 'montant');
+        $sum118 += round(bcdiv(bcdiv($recoveryPayments, 100, 3), 0.844, 5), 2);
 
-        print(utf8_decode($csv));
+        if ($sum66 > 0) {
+            $this->addCommonCellValuesToRevenueQueryCSV($activeSheet, $row, $commonValues);
+            $activeSheet->setCellValueByColumnAndRow(2, $row, '66');
+            $activeSheet->setCellValueByColumnAndRow(4, $row, number_format($sum66, 2, ',', ''));
+            $row += 1;
+        }
+
+        if ($sum81 > 0) {
+            $this->addCommonCellValuesToRevenueQueryCSV($activeSheet, $row, $commonValues);
+            $activeSheet->setCellValueByColumnAndRow(2, $row, '81');
+            $activeSheet->setCellValueByColumnAndRow(4, $row, number_format($sum81, 2, ',', ''));
+            $row += 1;
+        }
+
+        if ($sum82 > 0) {
+            $this->addCommonCellValuesToRevenueQueryCSV($activeSheet, $row, $commonValues);
+            $activeSheet->setCellValueByColumnAndRow(2, $row, '82');
+            $activeSheet->setCellValueByColumnAndRow(4, $row, number_format($sum82, 2, ',', ''));
+            $row += 1;
+        }
+
+        if ($sum118 > 0) {
+            $this->addCommonCellValuesToRevenueQueryCSV($activeSheet, $row, $commonValues);
+            $activeSheet->setCellValueByColumnAndRow(2, $row, '118');
+            $activeSheet->setCellValueByColumnAndRow(4, $row, number_format($sum118, 2, ',', ''));
+            $row += 1;
+        }
     }
 
     public function _requete_encheres()
@@ -1198,78 +1246,6 @@ class statsController extends bootstrap
         $oWriter->save('php://output');
 
         die;
-    }
-
-    private function getLine_66_81_82_118($iClient, $iYear, $aZoneB040CountryIds)
-    {
-        $iSum66 = 0;
-        $iSum81 = 0;
-        $iSum82 = 0;
-        $iSum118 = 0;
-
-        $sql = "SELECT
-                  la.id_lender_account,
-                  e.interets,
-                  ROUND(retenues_source.amount / 100, 2), as retenues_source
-                  e.date_echeance_reel,
-                  e.status_ra,
-                  e.capital,
-                  c.type
-                FROM lenders_accounts la
-                  INNER JOIN clients c ON la.id_client_owner = c.id_client
-                  LEFT JOIN echeanciers e ON e.id_lender = la.id_lender_account
-                  LEFT JOIN transactions t ON t.id_echeancier = e.id_echeancier AND " . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . "
-                  LEFT JOIN tax retenues_source ON retenues_source.id_transaction = t.id_transaction AND retenues_source.id_tax_type = " . \tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE . "
-                WHERE YEAR(e.date_echeance_reel) = $iYear
-                  AND e.status = IN (" . \echeanciers::STATUS_REPAID . ", " . \echeanciers::STATUS_PARTIALLY_REPAID .  ")
-                  AND c.id_client = $iClient";
-
-        $resultat = $this->bdd->query($sql);
-
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            if ('1' === $record['type'] || '3' === $record['type']) {
-                $bForeigner = false;
-                $bZoneB040Country = false;
-
-                $sSqlResident = "SELECT id_pays, resident_etranger FROM lenders_imposition_history
-                        WHERE id_lender = {$record['id_lender_account']}
-                        AND added <= '{$record['date_echeance_reel']}'
-                        ORDER BY added DESC LIMIT 1";
-                $oQueryResident = $this->bdd->query($sSqlResident);
-                $aRow = $this->bdd->fetch_array($oQueryResident);
-
-                if (0 !== $this->bdd->num_rows($oQueryResident) && 0 < $aRow['resident_etranger']) {
-                    $bForeigner = true;
-                    if (in_array($aRow['id_pays'], $aZoneB040CountryIds)) {
-                        $bZoneB040Country = true;
-                    }
-                }
-                unset($oQueryResident, $aRow);
-
-                // Exclude "remboursement anticipé" for calculating interests
-                if('0' === $record['status_ra']) {
-                    if(false === $bForeigner) { //code 66
-                        $iSum66 += $record['interets'];
-                    } else if (true === $bZoneB040Country) {
-                        $iSum81 += $record['interets'] - $record['retenues_source']*100;
-                    }
-                }
-
-                if (true === $bZoneB040Country) {
-                    $iSum82 += $record['capital'];
-                }
-            }
-            $iSum118 += $record['capital'];
-
-            unset($record);
-        }
-
-        return array(
-            'sum_66'  => $iSum66,
-            'sum_81'  => $iSum81,
-            'sum_82'  => $iSum82,
-            'sum_118' => $iSum118,
-        );
     }
 
     public function _autobid_statistic()

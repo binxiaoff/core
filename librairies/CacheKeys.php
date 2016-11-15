@@ -8,10 +8,11 @@ namespace Unilend\librairies;
  */
 class CacheKeys
 {
-    const SHORT_TIME  = 300;
-    const MEDIUM_TIME = 1800;
-    const LONG_TIME   = 3600;
-    const DAY         = 86400;
+    const VERY_SHORT_TIME = 60;
+    const SHORT_TIME      = 300;
+    const MEDIUM_TIME     = 1800;
+    const LONG_TIME       = 3600;
+    const DAY             = 86400;
 
     /**
      * constant for list and count projects

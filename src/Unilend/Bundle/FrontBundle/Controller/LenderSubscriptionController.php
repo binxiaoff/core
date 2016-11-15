@@ -40,19 +40,12 @@ class LenderSubscriptionController extends Controller
         $template['externalCounselList'] = json_decode($settings->value, true);
 
         /** @var LocationManager $locationManager */
-        $locationManager           = $this->get('unilend.service.location_manager');
-        $template['countries']     = $locationManager->getCountries();
-        $template['nationalities'] = $locationManager->getNationalities();
+        $locationManager = $this->get('unilend.service.location_manager');
 
-        /** @var \tree $tree */
-        $tree = $this->get('unilend.service.entity_manager')->getRepository('tree');
-        $settings->get('Lien conditions generales inscription preteur societe', 'type');
-        $tree->get(['id_tree' => $settings->value]);
+        $template['countries']             = $locationManager->getCountries();
+        $template['nationalities']         = $locationManager->getNationalities();
         $template['termsOfUseLegalEntity'] = $this->generateUrl('lenders_terms_of_sales', ['type' => 'morale']);
-
-        $settings->get('Lien conditions generales inscription preteur particulier', 'type');
-        $tree->get(['id_tree' => $settings->value]);
-        $template['termsOfUsePerson'] = $this->generateUrl('lenders_terms_of_sales');
+        $template['termsOfUsePerson']      = $this->generateUrl('lenders_terms_of_sales');
 
         $formData = $request->getSession()->get('subscriptionPersonalInformationFormData', []);
         $request->getSession()->remove('subscriptionPersonalInformationFormData');
