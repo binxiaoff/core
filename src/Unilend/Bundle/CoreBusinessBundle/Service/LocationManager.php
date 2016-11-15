@@ -85,7 +85,7 @@ class LocationManager
         $cities = $this->entityManager->getRepository('villes');
 
         if ($lookUpBirthplace) {
-            $results = $cities->lookupCities($city, array('ville', 'cp'), true);
+            $results = $cities->lookupCities($city, ['ville', 'cp'], true);
         } else {
             $results = $cities->lookupCities($city);
         }
@@ -94,15 +94,15 @@ class LocationManager
             foreach ($results as $item) {
                 if ($lookUpBirthplace) {
                     // unique insee code
-                    $cityList[] = array(
+                    $cityList[] = [ //$cityList[$item['insee']] = [
                         'label' => $item['ville'] . ' (' . $item['num_departement'] . ')',
                         'value' => $item['insee']
-                    );
+                    ];
                 } else {
-                    $cityList[] = array(
+                    $cityList[] = [
                         'label' => $item['ville'] . ' (' . $item['cp'] . ')',
                         'value' => $item['insee']
-                    );
+                    ];
                 }
             }
         }
