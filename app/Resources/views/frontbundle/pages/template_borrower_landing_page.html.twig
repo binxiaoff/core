@@ -1,0 +1,213 @@
+{% extends 'layouts/_layout.html.twig' %}
+
+{% block siteHeader %}
+    <header class="site-header">
+        <div class="site-band"></div>
+        <div class="site-header-inner">
+            <div class="site-wrap">
+                <div class="site-title">
+                    <a href="{{ absolute_url('/pourquoi-emprunter') }}" class="site-logo" tabindex="2">{{ site.title|default('Unilend') }}</a>
+                    <div class="site-header-message hide-xs hide-sm small c-t2">{% trans %} borrower-landing-page_site-header-title {% endtrans %}</div>
+                </div>
+
+                <div class="site-controls">
+                    {% if cms.partner_logo is not empty %}
+                        <img class="empruntis" src="{{ photo(cms.partner_logo) }}" alt="{{ cms.partner_logo_alt|escape('html_attr') }}">
+                    {% endif %}
+                </div><!-- /.site-controls -->
+            </div><!-- /.site-wrap -->
+        </div><!-- /.site-header-inner -->
+    </header>
+{% endblock %}
+
+{% block siteContent %}
+    <article id="devenir-emprunteur" class="page page-lp">
+        <div class="hero-wrap">
+            <div class="page-content">
+                <div class="site-wrap">
+                    <div class="row row-multi-col-computer">
+                        <div class="col-lg-6 col-md-6">
+                            <h2 class="h3 c-p2">{% trans %} borrower-landing-page_text-section-title {% endtrans %}</h2>
+                            <div class="block-copy-lp">
+                                <p>{% trans %} borrower-landing-page_text-section-text {% endtrans %}</p>
+                                <p class="small">
+                                    {% trans %} borrower-landing-page_text-section-fact-1 {% endtrans %}<br/>
+                                    {% trans %} borrower-landing-page_text-section-fact-2 {% endtrans %}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="push-lg-1 col-lg-5 push-md-1 col-md-5">
+                            <div id="form-borrower-lp-notifications">
+                                {% if app.session.flashBag.has('borrowerLandingPageErrors') %}
+                                    <div class="message-error">
+                                        {% for error in app.session.flashBag.get('borrowerLandingPageErrors') %}
+                                            <p>{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <form action="{{ url('project_request_landing_page_start') }}" method="post" class="form-borrower-lp"
+                                  data-formvalidation data-formvalidation-notificationselem="#form-borrower-lp-notifications">
+                                <div class="form-field row row-multi-col-computer">
+                                    <div class="col-lg-2 col-md-3">
+                                        <label for="borrower-lp-input-amount" class="field-label">{% trans %} borrower-landing-page_amount-placeholder {% endtrans %}<span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                                    </div>
+                                    <div class="col-lg-8 col-md-8">
+                                    <div class="input-group set-right">
+                                        <div class="btn-group">
+                                            <span class="icon fa-euro"></span>
+                                        </div>
+                                        <input id="borrower-lp-input-amount" type="text" step="any" name="amount" value="{{ form.values.amount }}"
+                                           class="input-field"
+                                           data-formvalidation-minvalue="{{ setting('Somme à emprunter min') }}"
+                                           data-formvalidation-maxvalue="{{ setting('Somme à emprunter max') }}"
+                                           data-formvalidation-input data-formvalidation-required="true">
+                                            <ul class="ui-formvalidation-messages"></ul>
+                                        </div>
+                                    </div>
+                                </div><!-- /.form-field -->
+
+                                <div class="form-field row row-multi-col-computer">
+                                    <div class="col-lg-2 col-md-3">
+                                        <label for="borrower-lp-input-siren">{% trans %} borrower-landing-page_siren-placeholder {% endtrans %}<span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                                    </div>
+                                    <div class="col-lg-8 col-md-8">
+                                        <input type="text" id="borrower-lp-input-siren" name="siren" value="{{ form.values.siren }}" class="input-field"
+                                               data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="siren">
+                                        <ul class="ui-formvalidation-messages"></ul>
+                                    </div>
+                                </div><!-- /.form-field -->
+
+                                {% if not cms.partner_funnel %}
+                                    <div class="form-field row row-multi-col-computer">
+                                        <div class="col-lg-2 col-md-3">
+                                            <label for="borrower-lp-input-email">{% trans %} common_email {% endtrans %}<span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                                        </div>
+                                        <div class="col-lg-8 col-md-8">
+                                            <input type="email" id="borrower-lp-input-email" name="email" value="{{ form.values.email }}" class="input-field"
+                                                   data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email">
+                                            <ul class="ui-formvalidation-messages"></ul>
+                                        </div>
+                                    </div><!-- /.form-field -->
+                                {% endif %}
+
+                                <footer class="form-borrower-lp-footer row row-multi-col-computer">
+                                    <div class="col-submit push-lg-2 col-lg-8 push-md-3 col-md-8">
+                                        <button type="submit" class="btn-primary btn-alternate btn-size-full" data-spinnerbutton>{% trans %} borrower-landing-page_form-submit-button {% endtrans %}</button>
+                                    </div>
+                                </footer><!-- /.form-preter-lp-footer -->
+
+                                    <div class="stamp bg-p2" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
+                                        <span class="lg">
+                                            {% trans with {'%amountBorrowedInMillions%' : getStatistic('amountBorrowedInMillions')|round(0, 'common')} %}borrower-landing-page_macaroon-on-form{% endtrans %}
+                                        </span>
+                                    </div><!-- /.stamp -->
+                            </form><!-- /.form-preter-lp -->
+                        </div>
+                    </div>
+
+                    <div class="promos row">
+                        <div class="promo col-lg-4 col-md-4">
+                            <div class="promo-image">
+                                {{ svgimage('#promo-clock', '', 190, 190, 'none')|raw }}
+                            </div>
+                            <h3 class="round-number">1</h3>
+                            <p>{% trans %} borrower-landing-page_promo-section-step-1-text {% endtrans %}</p>
+                        </div><!-- /.promo -->
+
+                        <div class="promo col-lg-4 col-md-4">
+                            <div class="promo-image">
+                                {{ svgimage('#promo-info', '', 190, 190, 'none')|raw }}
+                            </div>
+                            <h3 class="round-number">2</h3>
+                            <p>{% trans %} borrower-landing-page_promo-section-step-2-text {% endtrans %}</p>
+                        </div><!-- /.promo -->
+
+                        <div class="promo col-lg-4 col-md-4">
+                            <div class="promo-image">
+                                {{ svgimage('#promo-money', '', 190, 190, 'none')|raw }}
+                            </div>
+                            <h3 class="round-number">3</h3>
+                            <p>{% trans %} borrower-landing-page_promo-section-step-3-text {% endtrans %}</p>
+                        </div><!-- /.promo -->
+                    </div><!-- /.promos -->
+
+                </div><!-- /.site-wrap -->
+            </div><!-- /.page-content -->
+
+            {# include 'partials/components/list-socialmedia.twig' #}
+        </div><!-- /.hero-wrap -->
+
+        <div class="site-wrap block-copy-lp-footer">
+            <div class="row row-multi-col-computer">
+                <div class="col-info col-lg-8 col-md-8">
+                    <div class="readable-wrap">
+                        <p>{% trans %} borrower-landing-page_footer-warning {% endtrans %}</p>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /.block-copy-lp-footer -->
+
+    </article><!-- /.page -->
+{% endblock %}
+
+{% block siteFooter %}
+    <footer class="site-footer">
+        <div class="site-wrap">
+            {% block siteFooterNav %} {% endblock %}
+            <div class="row">
+                <div class="col-sub-left col-lg-4 col-md-4">
+                    {% block siteFooterSubLeft %}&nbsp;{% endblock %}
+                </div>
+                <div class="col-sub-center col-lg-4 col-md-4">
+                    {% block siteFooterSubCenter %}
+                        <ul class="list-awards">
+                            {% for partner in partners %}
+                                <li>
+                                    <img src="{{ uploadedImage(partner.src) }}" alt="{{ partner.alt }}"/>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        <div class="site-tagline">{% trans %} footer_site-tagline {% endtrans %}</div>
+                        <p class="site-copyright">{% trans %} footer_copyright-all-rights {% endtrans %}-
+                            <a href="{{ path('mentions-legales') }}">{% trans %} footer_small-mandatory-menu-legal-notice {% endtrans %}</a>
+                        </p>
+                    {% endblock %}
+                </div>
+                <div class="col-sub-right col-lg-4 col-md-4">
+                    {% block siteFooterSubRight %}&nbsp;{% endblock %}
+                </div>
+            </div>
+        </div><!-- /.site-wrap -->
+    </footer><!-- /.site-footer -->
+
+    <!-- Site Warning: No JS enabled -->
+    <noscript>
+        <div class="site-warning">
+            <div class="site-wrap">
+                <h1>{% trans %} site-general_warning-no-javascript-title {% endtrans %}</h1>
+                <p>{% trans %} site-general_warning-no-javascript-text {% endtrans %}</p>
+                <div class="btn-toolbar">
+                    <a href="{{ path('home') }}" class="btn-default">{% trans %} site-general_reload-website {% endtrans %}</a>
+                </div>
+            </div>
+        </div>
+    </noscript>
+
+    <!-- Site Warning: Unsupported IE -->
+    <!--[if lt IE 9]>
+    <div class="site-warning">
+        <div class="site-wrap">
+            <h1>{% trans %} site-general_warning-unsupported-browser-title {% endtrans %}</h1>
+            <p>{% trans %} site-general_warning-unsupported-browser-text {% endtrans %}</p>
+            <div class="btn-toolbar">
+                <a href="{{ path('home') }}" class="btn-default">{% trans %} site-general_warning-unsupported-browser-confirmation {% endtrans %}</a>
+                <a href="http://www.browsehappy.com/" target="_blank" class="btn-default">{% trans %} site-general_warning-unsupported-browser-new-browser {% endtrans %}</a>
+            </div>
+        </div>
+    </div>
+    <![endif]-->
+{% endblock %}
+

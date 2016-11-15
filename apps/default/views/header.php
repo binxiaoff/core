@@ -106,29 +106,6 @@
                     <ul>
                         <li class="active nav-item-home" style="margin-top:15px;">
                             <a href="<?= $this->lurl ?>"><i class="icon-home"></i></a></li>
-                        <?php
-                        foreach ($this->tree->getNavigation(1, $this->language) as $key => $n) {
-                            ?>
-                            <li><?php
-
-                            $sNav = $this->tree->getNavigation($n['id_tree'], $this->language);
-                            if ($sNav != false && $n['id_template'] != 2) {
-                                ?>
-                                <ul><?php
-                                foreach ($sNav as $key => $sn) {
-                                    ?>
-                                    <li>
-                                    <a <?= ($this->tree->id_tree == $sn['id_tree'] ? 'class="active"' : '') ?> href="<?= $this->lurl . '/' . $sn['slug'] ?>"><?= $sn['title'] ?></a>
-                                    </li><?php
-                                }
-                                ?></ul><?php
-                            }
-
-                            ?>
-                            <a <?= ($this->tree->id_tree == $n['id_tree'] || $this->tree->id_parent == $n['id_tree'] || isset($this->navigateurActive) && $this->navigateurActive == $n['id_tree'] ? 'class="active"' : '') ?> href="<?= $this->lurl . '/' . $n['slug'] ?>"><?= $n['title'] ?></a>
-                            </li><?php
-                        }
-                        ?>
                     </ul>
                     <!-- /.nav-main -->
                     <div class="search">

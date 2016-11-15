@@ -183,7 +183,7 @@ class LenderWalletController extends Controller
             }
 
             if ($this->get('session')->getFlashBag()->has('withdrawalErrors')) {
-                $logger->error('Wrong parameters submitted, id_client=' . $client->id_client . ' Request parameters : ' . json_encode($post), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
+                $logger->error('Wrong parameters submitted, id_client=' . $client->id_client . ' Amount : ' . $post['amount'], ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
             } else {
                 $transaction->id_client        = $client->id_client;
                 $transaction->montant          = '-' . ($amount * 100);

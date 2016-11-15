@@ -1079,14 +1079,14 @@ class echeanciers extends echeanciers_crud
             'tax_type_exempted_lender'     => $taxTypeForExemptedLender,
             'tax_type_taxable_lender'      => $taxTypeForTaxableLender,
             'tax_type_foreigner_lender'    => $taxTypeForForeignerLender,
-            'tax_type_legal_entity_lender' => $taxTypeForLegalEntityLender,
+            'tax_type_legal_entity_lender' => $taxTypeForLegalEntityLender
         ];
         $type  = [
             'id_lender'                    => \PDO::PARAM_INT,
             'tax_type_exempted_lender'     => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
             'tax_type_taxable_lender'      => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
             'tax_type_foreigner_lender'    => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
-            'tax_type_legal_entity_lender' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'tax_type_legal_entity_lender' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY
         ];
         $query = '
             SELECT

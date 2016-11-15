@@ -77,7 +77,9 @@ classNames: 'user-preter-balance'
                             {{ form_start(withdrawalForm, {'attr' :
                                 {'class' : 'form-balance-withdraw',
                                     'id': 'form-balance-withdraw',
-                                    'data-formvalidation data-formvalidation-render' : 'false'}} ) }}
+                                    'data-formvalidation-shownotifications' : 'false',
+                                    'data-formvalidation data-formvalidation-render' : 'false'}
+                            } ) }}
                             <div class="row row-multi-col-computer">
                                 <div class="form-field col-lg-5 col-md-5">
                                     {{ form_label(withdrawalForm.amount, 'lender-wallet_amount') }}
@@ -93,7 +95,9 @@ classNames: 'user-preter-balance'
                                             'data-formvalidation-minvalue': 0,
                                             'data-formvalidation-maxvalue': balance,
                                             'data-formvalidation-required': true,
-                                            'data-formvalidation-render': true
+                                            'data-formvalidation-render': true,
+                                            'data-formvalidation-type': 'currency',
+                                            'step': 0.01
                                             } }) }}
                                     </div>
                                 </div><!-- /.form-field -->

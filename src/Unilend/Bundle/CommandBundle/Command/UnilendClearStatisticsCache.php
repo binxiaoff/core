@@ -21,8 +21,6 @@ class UnilendClearStatisticsCache extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $cachePool = $this->getContainer()->get('memcache.default');
-        $cacheKeys = CacheKeys::getStatisticsCacheKeys();
-        $cachePool->deleteItems($cacheKeys);
+        $cachePool->deleteItem(CacheKeys::UNILEND_STATISTICS);
     }
-
 }
