@@ -37,7 +37,7 @@ class StatisticsManager
      * @param string $date
      * @return mixed
      */
-    public function getStatistic($name, $date)
+    public function getStatistic($name, $date = null)
     {
         $requestedDate = (is_null($date)) ? new \DateTime('NOW') : new \DateTime($date);
 
