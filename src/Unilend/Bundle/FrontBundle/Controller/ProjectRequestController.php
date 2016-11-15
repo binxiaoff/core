@@ -216,6 +216,7 @@ class ProjectRequestController extends Controller
         $this->project->ca_declara_client                    = 0;
         $this->project->resultat_exploitation_declara_client = 0;
         $this->project->fonds_propres_declara_client         = 0;
+        $this->project->status                               = \projects_status::DEMANDE_SIMULATEUR;
         $this->project->create();
 
         return $this->start(\projects_status::COMPLETUDE_ETAPE_2);
