@@ -596,24 +596,16 @@ class echeanciers extends echeanciers_crud
 
     public function getRepaymentOfTheDay(\DateTime $date)
     {
-        $bind = [
-            'formatedDate'    => $date->format('Y-m-d'),
-            'repaymentStatus' => self::STATUS_REPAID,
-            'earlyRefund'     => self::IS_NOT_EARLY_REFUND
-        ];
-        $type = [
-            'date'            => \PDO::PARAM_STR,
-            'repaymentStatus' => \PDO::PARAM_INT,
-            'earlyRefund'     => \PDO::PARAM_INT
-        ];
+        $bind = ['formatedDate' => $date->format('Y-m-d')];
+        $type = ['date' => \PDO::PARAM_STR];
 
         $sql = '
             SELECT id_project,
               ordre,
               COUNT(*) AS nb_repayment,
-              COUNT(CASE status WHEN :repaymentStatus THEN 1 ELSE NULL END) AS nb_repayment_paid
+              COUNT(CASE status WHEN '. self::STATUS_REPAID .' THEN 1 ELSE NULL END) AS nb_repayment_paid
             FROM echeanciers
-            WHERE DATE(date_echeance) = :formatedDate AND status_ra = :earlyRefund
+            WHERE DATE(date_echeance) = :formatedDate AND status_ra = '. self::IS_NOT_EARLY_REFUND .'
             GROUP BY id_project, ordre';
 
         $statement = $this->bdd->executeQuery($sql, $bind, $type);
