@@ -1,5 +1,5 @@
 /*
- * Project List component
+ * Projects controller
  */
 
 var $ = require('jquery')
@@ -295,11 +295,22 @@ $doc.on('ready', function () {
    * Project Single monthly repayment estimation
    */
   var monthlyRepaymentTimeout
+  var cacheMonthlyRepaymentData = {
+    amount: undefined,
+    duration: undefined,
+    rate: undefined
+  }
 
   function estimateMonthlyRepayment () {
     var amount = $('#bid-amount').val()
     var duration = $('#bid-duration').val()
     var rate = $('#bid-interest option:selected').val()
+    var $message = $('#repayment-estimation')
+
+    // Error: no values set, or set to already calculated values (avoids firing operation on unchanged values)
+    if (!amount || !duration || !rate || (amount === cacheMonthlyRepaymentData.amount && duration === cacheMonthlyRepaymentData.duration && rate === cacheMonthlyRepaymentData.rate)) {
+      return
+    }
 
     // @trigger elem `Spinner:showLoading`
     $('#bid-amount').trigger('Spinner:showLoading')
@@ -308,6 +319,7 @@ $doc.on('ready', function () {
       $.ajax({
         url: '/projects/monthly_repayment',
         method: 'POST',
+        global: false,
         data: {
           amount: amount,
           duration: duration,
@@ -315,9 +327,15 @@ $doc.on('ready', function () {
         },
         success: function (data) {
           if (data.success && data.message) {
-            var messageContent = $('<p>').addClass('c-t2').html(data.message)
-            var messageHolder = $('form.project-single-form-invest .btn-toolbar').next('.field-help')
-            messageHolder.html(messageContent)
+            // Save values
+            cacheMonthlyRepaymentData = {
+              amount: amount,
+              duration: duration,
+              rate: rate
+            }
+
+            // Output message
+            $message.html(data.message)
           } else if (data.error && data.message) {
             console.log(data.message)
           } else {
@@ -326,15 +344,20 @@ $doc.on('ready', function () {
         },
         error: function () {
           console.log('Unable to estimate monthly repayments')
+        },
+        complete: function () {
+          // @trigger elem `Spinner:hideLoading`
+          $('#bid-amount').trigger('Spinner:hideLoading')
         }
       })
     }
   }
 
-  $doc.on('change keyup', '#bid-amount, #bid-interest', function () {
+  // When the amount/interest is changed, recalculate the monthly repayment estimate
+  $doc.on('keyup change', '#bid-amount, #bid-interest', function () {
     if (monthlyRepaymentTimeout) {
       clearTimeout(monthlyRepaymentTimeout)
     }
-    monthlyRepaymentTimeout = setTimeout(estimateMonthlyRepayment, 250)
+    monthlyRepaymentTimeout = setTimeout(estimateMonthlyRepayment, 1000)
   })
 })
