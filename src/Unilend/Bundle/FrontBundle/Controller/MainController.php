@@ -851,24 +851,21 @@ class MainController extends Controller
         $statisticsManager = $this->get('unilend.service.statistics_manager');
 
         if (false === empty($requestedDate)) {
-            if ($request->getClientIp() != '92.154.10.41') {
-                return $this->redirectToRoute('error_404');
-            }
             $date       = new \DateTime($requestedDate);
             $years      = array_merge(['2013-2014'], range(2015, $date->format('Y')));
-            $statistics = $statisticsManager->getStatisticsAtDate($date);
         } else {
+            $date       = new \DateTime('NOW');
             $years      = array_merge(['2013-2014'], range(2015, date('Y')));
-            $statistics = $statisticsManager->getMostCurrentStatistics();
         }
 
+        $statistics = $statisticsManager->getStatisticsAtDate($date);
         $template = [
             'data'  => [
                 'projectCountForCategoryTreeMap' => $this->getProjectCountForCategoryTreeMap($statistics['projectCountByCategory']),
                 'regulatoryTable'                => $statistics['regulatoryData'],
             ],
             'years' => array_merge($years, ['total']),
-            'date'  => $requestedDate
+            'date'  => $date->format('Y-m-d')
         ];
 
         $this->setCmsSeoData($tree);
@@ -1047,8 +1044,6 @@ class MainController extends Controller
 
     private function getProjectCountForCategoryTreeMap($countByCategory)
     {
-        /** @var StatisticsManager $statisticsManager */
-        $statisticsManager = $this->get('unilend.service.statistics_manager');
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
         $dataForTreeMap = [];

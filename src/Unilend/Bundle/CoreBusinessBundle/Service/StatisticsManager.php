@@ -34,46 +34,36 @@ class StatisticsManager
 
     /**
      * @param string $name
+     * @param string $date
      * @return mixed
      */
-    public function getStatistic($name)
+    public function getStatistic($name, $date)
     {
-        $statistics = $this->getMostCurrentStatistics();
+        $requestedDate = (is_null($date)) ? new \DateTime('NOW') : new \DateTime($date);
+
+        $statistics = $this->getStatisticsAtDate($requestedDate);
         return $statistics[lcfirst($name)];
     }
 
-    public function getStatisticAtDate($name, $date)
-    {
-        $statistics = $this->getStatisticsAtDate(new \DateTime($date));
-        return $statistics[lcfirst($name)];
-    }
-
-    public function getMostCurrentStatistics()
-    {
-        $cachedItem = $this->cachePool->getItem(CacheKeys::UNILEND_STATISTICS);
-        if (false === $cachedItem->isHit()) {
-            /** @var \unilend_stats $unilendStats */
-            $unilendStats = $this->entityManager->getRepository('unilend_stats');
-
-            $statsEntry = $unilendStats->select('type_stat = "' . CacheKeys::UNILEND_STATISTICS . '"', 'added DESC', null, '1')[0];
-            $statistics = json_decode($statsEntry['value'], true);
-            $cachedItem->set($statistics)->expiresAfter(CacheKeys::DAY);
-            $this->cachePool->save($cachedItem);
-
-            return $statistics;
-        } else {
-            return $cachedItem->get();
-        }
-    }
-
+    /**
+     * @param \DateTime $date
+     * @return mixed|null|void
+     */
     public function getStatisticsAtDate(\DateTime $date)
     {
-        $cachedItem = $this->cachePool->getItem(CacheKeys::UNILEND_STATISTICS . '_' . $date->format('Y-m-d'));
+        $today    = new \DateTime('NOW');
+        $cacheKey = $date->format('Y-m-d') == $today->format('Y-m-d') ? CacheKeys::UNILEND_STATISTICS : CacheKeys::UNILEND_STATISTICS . '_' . $date->format('Y-m-d');
+
+        $cachedItem = $this->cachePool->getItem($cacheKey);
         if (false === $cachedItem->isHit()) {
             /** @var \unilend_stats $unilendStats */
             $unilendStats = $this->entityManager->getRepository('unilend_stats');
 
-            $statsEntry = $unilendStats->select('type_stat = "' . CacheKeys::UNILEND_STATISTICS . '" AND DATE(added) = "' . $date->format('Y-m-d') . '"')[0];
+            if ($date->format('Y-m-d') == $today->format('Y-m-d')) {
+                $statsEntry = $unilendStats->select('type_stat = "' . CacheKeys::UNILEND_STATISTICS . '"', 'added DESC', null, '1')[0];
+            } else {
+                $statsEntry = $unilendStats->select('type_stat = "' . CacheKeys::UNILEND_STATISTICS . '" AND DATE(added) = "' . $date->format('Y-m-d') . '"','added DESC', null, '1')[0];
+            }
             $statistics = json_decode($statsEntry['value'], true);
             $cachedItem->set($statistics)->expiresAfter(CacheKeys::DAY);
             $this->cachePool->save($cachedItem);
@@ -126,6 +116,10 @@ class StatisticsManager
         return $statistics;
     }
 
+    /**
+     * @param int $numberOfProjectRequests
+     * @return string
+     */
     private function getPercentageOfAcceptedProjects($numberOfProjectRequests)
     {
         /** @var \projects_status_history $projectStatusHistory */
@@ -163,7 +157,11 @@ class StatisticsManager
         return $lendersByType;
     }
 
-    private function getPercentageOfProjectsFundedIn24Hours($startDate)
+    /**
+     * @param \DateTime $startDate
+     * @return int|string
+     */
+    private function getPercentageOfProjectsFundedIn24Hours(\DateTime $startDate)
     {
         /** @var \projects $projects */
         $projects                        = $this->entityManager->getRepository('projects');
