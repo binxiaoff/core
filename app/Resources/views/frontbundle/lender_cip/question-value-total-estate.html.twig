@@ -14,7 +14,7 @@
             <div id="cip-step-{{ current_step }}">
                 <div class="panel cip-header">
                     <header class="panel-header">
-                        <h3>{% trans %}lender-evaluation_questionnaire-page-title{% endtrans %}</h3>
+                        <h3>{% trans %} lender-evaluation_questionnaire-page-title {% endtrans %}</h3>
                     </header>
                     <div class="cip-progress" data-progressbar data-progressbar-current="{{ current_step }}" data-progressbar-total="{{ total_steps }}">
                         <div data-progressbar-bar></div>
@@ -25,7 +25,7 @@
                     <div class="row">
                         <div class="form-field cip-answer">
                             <label for="answer" class="field-label">
-                                {% trans %}lender-evaluation_question-value-total-estate{% endtrans %}
+                                {% trans %} lender-evaluation_question-value-total-estate {% endtrans %}
                             </label>
                             <div class="input-group set-right">
                                 <input type="text" id="answer" name="answer" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="number" data-formvalidation-minvalue="0" class="input-field" />
@@ -36,8 +36,7 @@
                         </div><!-- /.form-field -->
                     </div>
                     <button type="submit" class="btn-primary fright">
-                        <span class="icon fa-angle-right"></span>
-                        {% trans %}lender-evaluation_questionnaire-values-continue-button{% endtrans %}
+                        {% trans %} lender-evaluation_questionnaire-values-continue-button {% endtrans %}
                     </button>
                 </form>
             </div><!-- /#cip-step-{{ current_step }} -->
