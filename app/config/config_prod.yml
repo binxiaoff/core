@@ -7,7 +7,7 @@ swiftmailer:
 
 ekino_new_relic:
     enabled: true
-    application_name: Unilend-front
+    application_name: "%new_relic.front_app_name%"
     deployment_names: ~
     api_key: edc37da0a36bfd74eded96d4d454c8f7b4b0ab8d4bce97e
     xmit: false
