@@ -7,10 +7,10 @@
                 </div><!-- /.project-single-cost-total -->
 
                 <div class="project-single-cost-progress"
-                     title="{% trans with {'%percentFunded%' : project.percentFunded|localizednumberwithprecision(1)} %} project-detail_project-funding-progress-bar-tooltip {% endtrans %}" data-toggle="tooltip">
+                     title="{% trans with {'%percentFunded%' : project.percentFunded|localizednumber} %} project-detail_project-funding-progress-bar-tooltip {% endtrans %}" data-toggle="tooltip">
                     <span class="sr-only">{% trans with {'%percentFunded%' : project.percentFunded} %} project-detail_percentage-funded-text {% endtrans %}</span>
                     <div class="ui-progressbar" data-progressbar data-progressbar-current="{{ project.costFunded }}" data-progressbar-total="{{ project.amount }}" data-progressbar-showlabel="true" data-progressbar-animation="true" data-progressbar-animationdelay="1000">
-                        <div class="project-single-cost-progress-funded ui-progressbar-bar" {# style="width: {{ project.percentFunded }}%" #}></div>
+                        <div class="project-single-cost-progress-funded ui-progressbar-bar"></div>
                     </div><!-- /.ui-progressbar -->
                 </div><!-- /.project-single-cost-progress -->
 
