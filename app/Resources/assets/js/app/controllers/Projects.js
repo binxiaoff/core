@@ -129,7 +129,7 @@ $doc.on('ready', function () {
   if ($projectSingleMenu.length > 0) {
     updateProjectSingleNavOffsetTop()
 
-    window.watchWindow
+    watchWindow
       .watch(window, function (params) {
         // @debug console.log($win.scrollTop() >= projectSingleNavOffsetTop)
         if (typeof projectSingleNavOffsetTop !== 'undefined' && $win.scrollTop() >= projectSingleNavOffsetTop) {
@@ -285,7 +285,7 @@ $doc.on('ready', function () {
 
   // Debounce update of sticky within the watchWindow to reduce jank
   if ($projectSingleInfoWrap.length > 0) {
-    window.watchWindow.watch(window, offsetProjectSingleInfo)
+    watchWindow.watch(window, offsetProjectSingleInfo)
     offsetProjectSingleInfo()
   }
 

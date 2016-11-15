@@ -5,6 +5,7 @@
 
 var $ = require('jquery')
 var sprintf = require('sprintf-js').sprintf
+var WatchScroll = require('WatchScroll')
 var __ = require('__')
 
 var $win = $(window)
