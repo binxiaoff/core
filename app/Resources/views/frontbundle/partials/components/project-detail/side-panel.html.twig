@@ -35,10 +35,6 @@
                 </div><!-- /.project-single-duration -->
             </div>
 
-            {% if project.status == constant('\\projects_status::EN_FUNDING') %}
-                <p>{% trans %} project-detail_project-funding-in-progress-make-an-offer {% endtrans %}</p>
-            {% endif %}
-
             {% if project.status in [constant('\\projects_status::REMBOURSE'), constant('\\projects_status::REMBOURSEMENT_ANTICIPE') ] %}
                 <p>{% trans with {'%dateLastRepayment%' : project.dateLastRepayment} %} project-detail_project-repaid-message {% endtrans %}</p>
                 {% if project.lender is defined %}
@@ -59,10 +55,10 @@
                     } %} project-detail_project-funded-message-with-statistics {% endtrans %}
                 </p>
                 {{ include('partials/components/project-detail/login-form.html.twig') }}
-            {%  elseif project.status == constant('\\projects_status::FUNDING_KO') %}
+            {% elseif project.status == constant('\\projects_status::FUNDING_KO') %}
                 <p>{% trans with {'%percentageFunded%' : project.percentFunded|localizednumberwithprecision(1)} %} project-detail_side-bar-funding-ko-message {% endtrans %}</p>
                 {{ include('partials/components/project-detail/login-form.html.twig') }}
-            {%  elseif project.status == constant('\\projects_status::PRET_REFUSE') %}
+            {% elseif project.status == constant('\\projects_status::PRET_REFUSE') %}
                 <p class="h4">{% trans %} project-detail_side-bar-loan-rejected-title {% endtrans %}</p>
                 <p>{% trans %} project-detail_side-bar-loan-rejected-message {% endtrans %}</p>
                 {{ include('partials/components/project-detail/login-form.html.twig') }}
@@ -73,6 +69,8 @@
                 {% if is_granted('ROLE_LENDER') and app.user.getClientStatus() < constant('\\clients_status::VALIDATED') %}
                     <p>{% trans %} project-detail_side-bar-completeness-message {% endtrans %}</p>
                 {% elseif conditions.canBid %}
+                    <p>{% trans %} project-detail_project-funding-in-progress-make-an-offer {% endtrans %}</p>
+
                     {% if lender.bidResult is defined %}
                         <p class="{% if lender.bidResult.error is defined %}c-error{% elseif lender.bidResult.success is defined %}c-success{% else %}c-t2{% endif %}">
                             {{ lender.bidResult.message }}
