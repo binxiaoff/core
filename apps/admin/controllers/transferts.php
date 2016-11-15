@@ -875,7 +875,7 @@ class transfertsController extends bootstrap
 
                         foreach ($aLoansForBid as $aLoan) {
                             if (in_array($aLoan['id_loan'], $aLastLoans) === false) {
-                                $oNotificationManager->createEmailNotification($oNotification->id_notification, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED, $clients->id_client, $aLoan['id_loan']);
+                                $oNotificationManager->createEmailNotification($oNotification->id_notification, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED, $lender->id_client_owner, $aLoan['id_loan']);
                                 $aLastLoans[] = $aLoan['id_loan'];
                             }
                         }

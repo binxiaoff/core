@@ -52,10 +52,6 @@ EOF
         $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \clients_gestion_notifications $oCustomerNotificationSettings */
         $oCustomerNotificationSettings = $entityManager->getRepository('clients_gestion_notifications');
-
-        // Loaded for class constants
-        $entityManager->getRepository('clients_gestion_type_notif');
-
         /** @var MailerManager $mailerManager */
         $mailerManager = $this->getContainer()->get('unilend.service.email_manager');
         /** @var LoggerInterface $logger */

@@ -81,12 +81,14 @@ class NotificationManager
     }
 
     /**
-     * @param int $iNotificationId
-     * @param int $iMailType
-     * @param int $iClientId
-     * @param int $iTransactionId
+     * @param int      $iNotificationId
+     * @param int      $iMailType
+     * @param int      $iClientId
+     * @param int|null $iTransactionId
+     * @param int|null $iProjectId
+     * @param int|null $iLoandId
      */
-    public function createEmailNotification($iNotificationId, $iMailType, $iClientId, $iTransactionId, $iProjectId = null)
+    public function createEmailNotification($iNotificationId, $iMailType, $iClientId, $iTransactionId = null, $iProjectId = null, $iLoandId = null)
     {
         /** @var \clients_gestion_mails_notif $oMailNotification */
         $oMailNotification = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
@@ -97,6 +99,7 @@ class NotificationManager
         $oMailNotification->date_notif      = date('Y-m-d H:i:s');
         $oMailNotification->id_notification = $iNotificationId;
         $oMailNotification->id_transaction  = $iTransactionId;
+        $oMailNotification->id_loan         = $iLoandId;
         $oMailNotification->create();
     }
 
