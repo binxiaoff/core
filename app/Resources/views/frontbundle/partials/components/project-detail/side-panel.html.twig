@@ -4,33 +4,40 @@
             <div class="project-single-cost">
                 <div class="project-single-cost-total">
                     {% trans with {'%amount%' : project.amount|localizednumber|nbsp, '%startTag%' : '<span class="sr-only">', '%endTag%' : '</span>'} %} project-detail_amount-sentence {% endtrans %}
-                </div>
+                </div><!-- /.project-single-cost-total -->
+
                 <div class="project-single-cost-progress"
-                    title="{% trans with {'%percentFunded%' : project.percentFunded|localizednumberwithprecision(1)} %} project-detail_project-funding-progress-bar-tooltip {% endtrans %}" data-toggle="tooltip">
-                    <div class="project-single-cost-progress-funded" style="width: {{ project.percentFunded }}%">
-                        <span class="sr-only">{% trans with {'%percentFunded%' : project.percentFunded} %} project-detail_percentage-funded-text {% endtrans %}</span>
-                    </div>
+                     title="{% trans with {'%percentFunded%' : project.percentFunded|localizednumberwithprecision(1)} %} project-detail_project-funding-progress-bar-tooltip {% endtrans %}" data-toggle="tooltip">
+                    <span class="sr-only">{% trans with {'%percentFunded%' : project.percentFunded} %} project-detail_percentage-funded-text {% endtrans %}</span>
+                    <div class="ui-progressbar" data-progressbar data-progressbar-current="{{ project.costFunded }}" data-progressbar-total="{{ project.amount }}" data-progressbar-showlabel="true" data-progressbar-animation="true" data-progressbar-animationdelay="1000">
+                        <div class="project-single-cost-progress-funded ui-progressbar-bar" {# style="width: {{ project.percentFunded }}%" #}></div>
+                    </div><!-- /.ui-progressbar -->
                 </div><!-- /.project-single-cost-progress -->
+
                 {% if project.status == constant('\\projects_status::EN_FUNDING') %}
                     <div class="project-single-cost-amount">
                         <div class="project-single-cost-amount-funded">{% transchoice project.costFunded with {'%costFunded%' : project.costFunded|localizednumber} %} project-detail_already-bid-amount {% endtranschoice %}</div>
                     </div><!-- /.project-single-cost-amount -->
                 {% endif %}
-                </div><!-- /.project-single-cost -->
+            </div><!-- /.project-single-cost -->
 
-                <div class="row">
-                    <div class="project-single-interest">
-                        <span class="icon fa-linechart-u32"></span>
-                        <span class="c-p1"><strong>{{ project.averageRate|localizednumber }}</strong>&nbsp;%</span>
-                        <div class="label">{% trans %} project-detail_average-rate-label {% endtrans %}</div>
-                    </div><!-- /.project-single-interest -->
+            <div class="row">
+                <div class="project-single-interest">
+                    <span class="icon fa-linechart-u32"></span>
+                    <span class="c-p1"><strong>{{ project.averageRate|localizednumber }}</strong>&nbsp;%</span>
+                    <div class="label">{% trans %} project-detail_average-rate-label {% endtrans %}</div>
+                </div><!-- /.project-single-interest -->
 
-                    <div class="project-single-duration">
-                        <span class="icon fa-calendar-alt-u32"></span>
-                        <span class="c-p1"><strong>{{ project.duration }}</strong> mois</span>
-                        <div class="label">{% trans %} project-detail_period-label {% endtrans %}</div>
-                    </div><!-- /.project-single-duration -->
-                </div>
+                <div class="project-single-duration">
+                    <span class="icon fa-calendar-alt-u32"></span>
+                    <span class="c-p1"><strong>{{ project.duration }}</strong> mois</span>
+                    <div class="label">{% trans %} project-detail_period-label {% endtrans %}</div>
+                </div><!-- /.project-single-duration -->
+            </div>
+
+            {% if project.status == constant('\\projects_status::EN_FUNDING') %}
+                <p>{% trans %} project-detail_project-funding-in-progress-make-an-offer {% endtrans %}</p>
+            {% endif %}
 
             {% if project.status in [constant('\\projects_status::REMBOURSE'), constant('\\projects_status::REMBOURSEMENT_ANTICIPE') ] %}
                 <p>{% trans with {'%dateLastRepayment%' : project.dateLastRepayment} %} project-detail_project-repaid-message {% endtrans %}</p>

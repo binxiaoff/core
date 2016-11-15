@@ -228,6 +228,35 @@ var Utility = {
     return input
   },
 
+  // Convert a string to an array
+  // @method convertStringToArray
+  // @param {String} input
+  // @returns {Array}
+  convertStringToArray: function (input, delimiter) {
+    // Already an array
+    if (input instanceof Array) {
+      return input
+    }
+
+    // Default delimiter is comma or whitespace
+    if (!delimiter) {
+      delimiter = /[,\s\t\r\n]+/
+    }
+
+    // Create delimiter RegExp
+    if (!(delimiter instanceof RegExp)) {
+      delimiter = new RegExp(Utility.reEscape(delimiter))
+    }
+
+    // Test if the input string has the delimiter and split by the delimiter
+    if (delimiter.test(input)) {
+      return input.split(delimiter)
+    }
+
+    // Convert the plain string to an array with one item
+    return [input]
+  },
+
   // Convert a string to JSON or just return the string if can't
   // @method convertStringToJson
   // @param {String} input

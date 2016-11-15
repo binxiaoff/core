@@ -166,7 +166,13 @@
     "highcharts/highstock.src": "./app/Resources/assets/js/vendor/highcharts/highstock.src.js",
     "highcharts/modules/treemap": "./app/Resources/assets/js/vendor/highcharts/modules/treemap.js",
     "highcharts/modules/map": "./app/Resources/assets/js/vendor/highcharts/modules/map.js",
-    "pikaday.jquery": "./node_modules/pikaday/plugins/pikaday.jquery.js"
+    "pikaday.jquery": "./node_modules/pikaday/plugins/pikaday.jquery.js",
+    "gsap.TweenLite": "./node_modules/gsap/src/uncompressed/TweenLite.js",
+    "gsap.TweenMax": "./node_modules/gsap/src/uncompressed/TweenMax.js",
+    "gsap.TimelineLite": "./node_modules/gsap/src/uncompressed/TimelineLite.js",
+    "gsap.TimelineMax": "./node_modules/gsap/src/uncompressed/TimelineMax.js",
+    "gsap.CSSPlugin": "./node_modules/gsap/src/uncompressed/plugins/CSSPlugin.js",
+    "gsap.jquery": "./node_modules/gsap/src/uncompressed/jquery.gsap.js"
   },
   "browserify": {
     "transform": [
@@ -181,6 +187,12 @@
     "jquery-ui": {
       "depends": [
         "jquery"
+      ]
+    },
+    "gsap.jquery": {
+      "depends": [
+        "gsap.TweenLite",
+        "gsap.CSSPlugin"
       ]
     }
   }
