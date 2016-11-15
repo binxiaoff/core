@@ -183,33 +183,31 @@
         </div><!-- /.site-wrap -->
     </footer><!-- /.site-footer -->
 
-    {% block siteWarnings %}
-        <!-- Site Warning: No JS enabled -->
-        <noscript>
-            <div class="site-warning">
-                <div class="site-wrap">
-                    <h1>{% trans %} site-general_warning-no-javascript-title {% endtrans %}</h1>
-                    <p>{% trans %} site-general_warning-no-javascript-text {% endtrans %}</p>
-                    <div class="btn-toolbar">
-                        <a href="{{ path('home') }}" class="btn-default">{% trans %} site-general_reload-website {% endtrans %}</a>
-                    </div>
-                </div>
-            </div>
-        </noscript>
-
-        <!-- Site Warning: Unsupported IE -->
-        <!--[if lt IE 9]>
+    <!-- Site Warning: No JS enabled -->
+    <noscript>
         <div class="site-warning">
             <div class="site-wrap">
-                <h1>{% trans %} site-general_warning-unsupported-browser-title {% endtrans %}</h1>
-                <p>{% trans %} site-general_warning-unsupported-browser-text {% endtrans %}</p>
+                <h1>{% trans %} site-general_warning-no-javascript-title {% endtrans %}</h1>
+                <p>{% trans %} site-general_warning-no-javascript-text {% endtrans %}</p>
                 <div class="btn-toolbar">
-                    <a href="{{ path('home') }}" class="btn-default">{% trans %} site-general_warning-unsupported-browser-confirmation {% endtrans %}</a>
-                    <a href="http://www.browsehappy.com/" target="_blank" class="btn-default">{% trans %} site-general_warning-unsupported-browser-new-browser {% endtrans %}</a>
+                    <a href="{{ path('home') }}" class="btn-default">{% trans %} site-general_reload-website {% endtrans %}</a>
                 </div>
             </div>
         </div>
-        <![endif]-->
-    {% endblock %}
+    </noscript>
+
+    <!-- Site Warning: Unsupported IE -->
+    <!--[if lt IE 9]>
+    <div class="site-warning">
+        <div class="site-wrap">
+            <h1>{% trans %} site-general_warning-unsupported-browser-title {% endtrans %}</h1>
+            <p>{% trans %} site-general_warning-unsupported-browser-text {% endtrans %}</p>
+            <div class="btn-toolbar">
+                <a href="{{ path('home') }}" class="btn-default">{% trans %} site-general_warning-unsupported-browser-confirmation {% endtrans %}</a>
+                <a href="http://www.browsehappy.com/" target="_blank" class="btn-default">{% trans %} site-general_warning-unsupported-browser-new-browser {% endtrans %}</a>
+            </div>
+        </div>
+    </div>
+    <![endif]-->
 {% endblock %}
 
