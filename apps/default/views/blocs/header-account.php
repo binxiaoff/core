@@ -20,7 +20,7 @@
             <ul>
                 <li><a href="<?= $this->lurl ?>/operations"><?= $this->lng['header']['pdf-de-mes-prets'] ?></a></li>
                 <li>
-                    <a href="<?= $this->lurl ?>/<?= $this->tree->getSlug(55, $this->language) ?>"><?= $this->tree->getTitle(55, $this->language) ?></a>
+                    <a href="<?= $this->lurl ?>/<?= $this->tree->getSlug(55, $this->language) ?>"></a>
                 </li>
                 <li><a target="_blank"
                        href="<?= $this->surl ?>/pdf_cgv_preteurs"><?= $this->lng['header']['cgu-preteur'] ?></a></li>

@@ -40,19 +40,12 @@ class LenderSubscriptionController extends Controller
         $template['externalCounselList'] = json_decode($settings->value, true);
 
         /** @var LocationManager $locationManager */
-        $locationManager           = $this->get('unilend.service.location_manager');
-        $template['countries']     = $locationManager->getCountries();
-        $template['nationalities'] = $locationManager->getNationalities();
+        $locationManager = $this->get('unilend.service.location_manager');
 
-        /** @var \tree $tree */
-        $tree = $this->get('unilend.service.entity_manager')->getRepository('tree');
-        $settings->get('Lien conditions generales inscription preteur societe', 'type');
-        $tree->get(['id_tree' => $settings->value]);
+        $template['countries']             = $locationManager->getCountries();
+        $template['nationalities']         = $locationManager->getNationalities();
         $template['termsOfUseLegalEntity'] = $this->generateUrl('lenders_terms_of_sales', ['type' => 'morale']);
-
-        $settings->get('Lien conditions generales inscription preteur particulier', 'type');
-        $tree->get(['id_tree' => $settings->value]);
-        $template['termsOfUsePerson'] = $this->generateUrl('lenders_terms_of_sales');
+        $template['termsOfUsePerson']      = $this->generateUrl('lenders_terms_of_sales');
 
         $formData = $request->getSession()->get('subscriptionPersonalInformationFormData', []);
         $request->getSession()->remove('subscriptionPersonalInformationFormData');
@@ -1227,7 +1220,7 @@ class LenderSubscriptionController extends Controller
                 $redirectRoute = $this->generateUrl('lender_subscription_money_deposit', ['clientHash' => $clientHash]);
                 break;
             default :
-                $redirectRoute = $this->generateUrl('project_list');
+                $redirectRoute = $this->generateUrl('projects_list');
         }
 
         return $redirectRoute;
@@ -1300,7 +1293,7 @@ class LenderSubscriptionController extends Controller
      */
     public function getBirthPlaceAction(Request $request)
     {
-        if ($request->isXMLHttpRequest()) {
+        if ($request->isXmlHttpRequest()) {
             /** @var LocationManager $locationManager */
             $locationManager = $this->get('unilend.service.location_manager');
             return new JsonResponse($locationManager->getCities($request->query->get('birthPlace'), true));
@@ -1315,7 +1308,7 @@ class LenderSubscriptionController extends Controller
      */
     public function getCityAction(Request $request)
     {
-        if ($request->isXMLHttpRequest()) {
+        if ($request->isXmlHttpRequest()) {
             /** @var LocationManager $locationManager */
             $locationManager = $this->get('unilend.service.location_manager');
             return new JsonResponse($locationManager->getCities($request->query->get('city')));
@@ -1330,7 +1323,7 @@ class LenderSubscriptionController extends Controller
      */
     public function getZipAction(Request $request)
     {
-        if ($request->isXMLHttpRequest()) {
+        if ($request->isXmlHttpRequest()) {
             /** @var LocationManager $locationManager */
             $locationManager = $this->get('unilend.service.location_manager');
             return new JsonResponse($locationManager->getCities($request->query->get('zip')));
@@ -1345,7 +1338,7 @@ class LenderSubscriptionController extends Controller
      */
     public function checkAgeAction(Request $request)
     {
-        if ($request->isXMLHttpRequest()) {
+        if ($request->isXmlHttpRequest()) {
             /** @var \dates $dates */
             $dates = Loader::loadLib('dates');
             /** @var TranslatorInterface $translator */
@@ -1484,7 +1477,7 @@ class LenderSubscriptionController extends Controller
                 $settings->get("Liste deroulante origine des fonds", 'type');
                 break;
             default:
-                $settings->get("Liste deroulante origine des fonds", 'type');
+                $settings->get("Liste deroulante origine des fonds societe", 'type');
                 break;
         }
         $fundsOriginList = explode(';', $settings->value);

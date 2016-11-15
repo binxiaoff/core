@@ -1,12 +1,14 @@
 <?php
 namespace Unilend\Bundle\FrontBundle\Service;
 
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Cmf\Component\Routing\RouteProviderInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\librairies\CacheKeys;
 
 class RouteProvider implements RouteProviderInterface
 {
@@ -22,10 +24,14 @@ class RouteProvider implements RouteProviderInterface
     /** @var LoggerInterface */
     private $logger;
 
-    public function __construct(EntityManager $entityManager, LoggerInterface $logger)
+    /** @var CacheItemPoolInterface */
+    private $cacheItemPool;
+
+    public function __construct(EntityManager $entityManager, LoggerInterface $logger, CacheItemPoolInterface $cacheItemPool)
     {
         $this->entityManager = $entityManager;
-        $this->logger     = $logger;
+        $this->logger        = $logger;
+        $this->cacheItemPool = $cacheItemPool;
     }
 
     /**
@@ -58,15 +64,24 @@ class RouteProvider implements RouteProviderInterface
      */
     public function getRouteByName($name)
     {
-        /** @var \tree $tree */
-        $tree = $this->entityManager->getRepository('tree');
+        $cachedItem = $this->cacheItemPool->getItem('RouteProvider_getRouteByName' . $name);
 
-        if (false === $tree->get(['slug' => $name, 'status' => 1, 'prive' => 0])) {
-            $this->logger->warning('No CMS page found for path ' . $name);
-            return new Route($name);
+        if ($cachedItem->isHit()) {
+            $path = $cachedItem->get();
+        } else {
+            /** @var \tree $tree */
+            $tree = $this->entityManager->getRepository('tree');
+            if ($tree->get(['slug' => $name, 'status' => 1, 'prive' => 0])) {
+                $path = $tree->slug;
+                $cachedItem->set($path)->expiresAfter(CacheKeys::MEDIUM_TIME);
+                $this->cacheItemPool->save($cachedItem);
+            } else {
+                $this->logger->warning('No CMS page found for path ' . $name);
+                $path = $name;
+            }
         }
 
-        return new Route($tree->slug);
+        return new Route($path);
     }
 
     /**
@@ -78,12 +93,9 @@ class RouteProvider implements RouteProviderInterface
             return $this->getRouteCollection();
         }
 
-        /** @var \tree $trees */
-        $trees  = $this->entityManager->getRepository('tree');
         $routes = [];
-
-        foreach ($trees->select('status = 1 AND prive = 0') as $tree) {
-            $routes[$tree['slug']] = new Route($tree['slug']);
+        foreach ($names as $name) {
+            $routes[] = $this->getRouteByName($name);
         }
 
         return $routes;

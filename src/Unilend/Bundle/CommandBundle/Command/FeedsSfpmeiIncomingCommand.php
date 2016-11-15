@@ -142,8 +142,12 @@ EOF
                                     && false === $transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND id_virement')
                                 ) {
                                     $this->processBorrowerAnticipatedRepayment($receptions, $transactions, $bank_unilend, $projects);
-                                } elseif (isset($aRow['libelleOpe3']) && strstr($aRow['libelleOpe3'], 'REGULARISATION')) {
-                                    $this->processRegulation($motif, $aRow['libelleOpe3'], $receptions, $projects, $companies, $transactions, $bank_unilend);
+                                } elseif (
+                                    isset($aRow['libelleOpe3'])
+                                    && preg_match('/([0-9]+) REGULARISATION/', $aRow['libelleOpe3'], $matches)
+                                    && $projects->get($matches[1])
+                                ) {
+                                    $this->processRegulation($motif, $receptions, $projects, $companies, $transactions, $bank_unilend);
                                 } else {
                                     $this->processLenderBankTransfer($motif, $receptions, $clients, $transactions, $sFacebookLink, $sTwitterLink);
                                 }
@@ -450,49 +454,41 @@ EOF
 
     /**
      * @param string $sMotif
-     * @param $sOperation
      * @param \receptions $receptions
      * @param \projects $projects
      * @param \companies $companies
      * @param \transactions $transactions
-     * @param \bank_unilend $bank_unilend
+     * @param \bank_unilend $bankUnilend
      */
-    private function processRegulation($sMotif, $sOperation, \receptions &$receptions, \projects $projects, \companies $companies, \transactions $transactions, \bank_unilend $bank_unilend)
+    private function processRegulation($sMotif, \receptions &$receptions, \projects $projects, \companies $companies, \transactions $transactions, \bank_unilend $bankUnilend)
     {
-        preg_match_all('#[0-9]+#', $sOperation, $extract);
+        $companies->get($projects->id_company, 'id_company');
 
-        foreach ($extract[0] as $sNumber) {
-            if ($projects->get((int) $sNumber, 'id_project')) {
-                $companies->get($projects->id_company, 'id_company');
+        $receptions->motif      = $sMotif;
+        $receptions->id_client  = $companies->id_client_owner;
+        $receptions->id_project = $projects->id_project;
+        $receptions->status_bo  = 2;
+        $receptions->type_remb  = 2;
+        $receptions->remb       = 1;
+        $receptions->update();
 
-                $receptions->motif      = $sMotif;
-                $receptions->id_client  = $companies->id_client_owner;
-                $receptions->id_project = $projects->id_project;
-                $receptions->status_bo  = 2;
-                $receptions->type_remb  = 2;
-                $receptions->remb       = 1;
-                $receptions->update();
+        $transactions->id_virement      = $receptions->id_reception;
+        $transactions->montant          = $receptions->montant;
+        $transactions->id_langue        = 'fr';
+        $transactions->date_transaction = date('Y-m-d H:i:s');
+        $transactions->status           = \transactions::PAYMENT_STATUS_OK;
+        $transactions->etat             = \transactions::STATUS_VALID;
+        $transactions->type_transaction = \transactions_types::TYPE_REGULATION_BANK_TRANSFER;
+        $transactions->ip_client        = '';
+        $transactions->create();
 
-                $transactions->id_virement      = $receptions->id_reception;
-                $transactions->montant          = $receptions->montant;
-                $transactions->id_langue        = 'fr';
-                $transactions->date_transaction = date('Y-m-d H:i:s');
-                $transactions->status           = \transactions::PAYMENT_STATUS_OK;
-                $transactions->etat             = \transactions::STATUS_VALID;
-                $transactions->type_transaction = \transactions_types::TYPE_REGULATION_BANK_TRANSFER;
-                $transactions->ip_client        = '';
-                $transactions->create();
+        $bankUnilend->id_transaction = $transactions->id_transaction;
+        $bankUnilend->id_project     = $projects->id_project;
+        $bankUnilend->montant        = $receptions->montant;
+        $bankUnilend->type           = 1;
+        $bankUnilend->create();
 
-                $bank_unilend->id_transaction = $transactions->id_transaction;
-                $bank_unilend->id_project     = $projects->id_project;
-                $bank_unilend->montant        = $receptions->montant;
-                $bank_unilend->type           = 1;
-                $bank_unilend->create();
-
-                $this->updateRepayment($projects->id_project, bcdiv($receptions->montant, 100, 2));
-                break;
-            }
-        }
+        $this->updateRepayment($projects->id_project, bcdiv($receptions->montant, 100, 2));
     }
 
     /**
