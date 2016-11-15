@@ -914,29 +914,24 @@ class projects extends projects_crud
         return $dateIntervalInformation;
     }
 
-    public function getGlobalAverageRateOfFundedProjects($iLimit)
+    public function getGlobalAverageRateOfFundedProjects($limit)
     {
-        $aBind = array('projectStatus' => \projects_status::REMBOURSEMENT, 'limit' => $iLimit);
-        $aType = array('projectStatus' => \PDO::PARAM_INT, 'limit' => \PDO::PARAM_INT);
-
-        $sQuery = '
+        $query = '
             SELECT SUM(amount * rate) / SUM(amount)
             FROM (
                 SELECT
-                    loans.rate,
-                    loans.amount
-                FROM projects
-                INNER JOIN loans ON projects.id_project = loans.id_project
-                INNER JOIN projects_status_history psh ON loans.id_project = psh.id_project
-                INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                WHERE ps.status = :projectStatus
-                ORDER BY projects.date_fin DESC
+                  loans.rate,
+                  loans.amount
+                FROM projects p
+                   INNER JOIN loans ON p.id_project = loans.id_project
+                WHERE p.status >= ' . \projects_status::REMBOURSEMENT . '
+                ORDER BY p.date_fin DESC
                 LIMIT :limit
             ) AS last_loans';
 
-        $oStatement = $this->bdd->executeQuery($sQuery, $aBind, $aType);
+        $statement = $this->bdd->executeQuery($query, ['limit' => $limit], ['limit' => \PDO::PARAM_INT]);
 
-        return $oStatement->fetchColumn(0);
+        return $statement->fetchColumn(0);
     }
 
     public function getAverageNumberOfLendersForProject()

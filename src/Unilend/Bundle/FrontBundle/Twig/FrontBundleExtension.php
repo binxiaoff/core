@@ -138,9 +138,10 @@ class FrontBundleExtension extends \Twig_Extension
         return  $this->packages->getUrl('/assets/images/' . $sPath);
     }
 
-    public function getStatisticFunction($statisticType)
+    public function getStatisticFunction($statisticType, $date = null)
     {
-        return $this->statisticsManager->getStatistic($statisticType);
+        $requestedDate = (is_null($date)) ? new \DateTime('NOW') : new \DateTime($date);
+        return $this->statisticsManager->getStatistic($statisticType, $requestedDate);
     }
 
     public function nbspFilter($sString)
