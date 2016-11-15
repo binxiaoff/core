@@ -904,10 +904,10 @@ FormValidation.prototype.rules = {
           }
           break
         case 'currency':
-          if (/^[\d]+((,|.)([\d]{1,2}))?]/.test(inputValidation.value)) {
+          if (!(/^[\d]+((,|\.)([\d]{1,2}))?$/.test(inputValidation.value))) {
             inputValidation.errors.push({
               type: 'inputType',
-              description: __.__('Field accepts only numbers', 'error-field-input-type-number')
+              description: __.__('Field accepts only numbers', 'error-field-input-type-currency')
             })
           }
           break
