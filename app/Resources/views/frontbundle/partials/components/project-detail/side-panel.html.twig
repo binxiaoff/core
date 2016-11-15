@@ -138,9 +138,11 @@
                                 </div>
                             </form><!-- /.project-single-form-invest -->
 
-                            <div class="bid-disclaimer">
-                                {% trans %} project-detail_side-panel-risk-disclaimer {% endtrans %}
-                            </div>
+                            {% if conditions.displayCipDisclaimer %}
+                                <div class="bid-disclaimer">
+                                    {% trans %} project-detail_side-panel-risk-disclaimer {% endtrans %}
+                                </div>
+                            {% endif %}
                         {% else %}
                             <div class="field-help">
                                 <p>{% trans %} project-detail_low-boundary-rate-alert {% endtrans %}</p>

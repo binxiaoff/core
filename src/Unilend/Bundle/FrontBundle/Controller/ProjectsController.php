@@ -231,6 +231,8 @@ class ProjectsController extends Controller
             $displayDebtsAssets = false;
         }
 
+        $displayCipDisclaimer = false;
+
         if (
             $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY')
             && $authorizationChecker->isGranted('ROLE_LENDER')
@@ -263,10 +265,14 @@ class ProjectsController extends Controller
             $reasons = $productManager->getLenderEligibilityWithReasons($lenderAccount, $project);
             $template['isLenderEligible'] = true;
             $template['lenderNotEligibleReasons'] = [];
+
             if (false === empty($reasons)) {
                 $template['isLenderEligible'] = false;
                 $template['lenderNotEligibleReasons'] = $reasons;
             }
+
+            $cipManager           = $this->get('unilend.service.cip_manager');
+            $displayCipDisclaimer = $cipManager->hasValidEvaluation($lenderAccount);
         }
 
         $isFullyConnectedUser       = ($user instanceof UserLender && in_array($user->getClientStatus(), [\clients_status::VALIDATED, \clients_status::MODIFICATION]) || $user instanceof UserBorrower);
@@ -294,17 +300,19 @@ class ProjectsController extends Controller
         }
 
         $template['conditions'] = [
-            'validatedUser'       => $isFullyConnectedUser,
-            'notValidatedUser'    => $isConnectedButNotValidated,
-            'bids'                => isset($template['project']['bids']) && $template['project']['status'] == \projects_status::EN_FUNDING,
-            'myBids'              => isset($template['project']['lender']) && $template['project']['lender']['bids']['count'] > 0,
-            'finance'             => $isFullyConnectedUser,
-            'history'             => isset($template['project']['lender']['loans']['myLoanOnProject']['nbValid']) && $template['project']['lender']['loans']['myLoanOnProject']['nbValid'] > 0,
-            'canBid'              => $isFullyConnectedUser && $user instanceof UserLender && $user->hasAcceptedCurrentTerms(),
-            'warningLending'      => true,
-            'displayDebtsAssets'  => $displayDebtsAssets,
-            'warningTaxDeduction' => $template['project']['startDate'] >= '2016-01-01'
+            'validatedUser'        => $isFullyConnectedUser,
+            'notValidatedUser'     => $isConnectedButNotValidated,
+            'bids'                 => isset($template['project']['bids']) && $template['project']['status'] == \projects_status::EN_FUNDING,
+            'myBids'               => isset($template['project']['lender']) && $template['project']['lender']['bids']['count'] > 0,
+            'finance'              => $isFullyConnectedUser,
+            'history'              => isset($template['project']['lender']['loans']['myLoanOnProject']['nbValid']) && $template['project']['lender']['loans']['myLoanOnProject']['nbValid'] > 0,
+            'canBid'               => $isFullyConnectedUser && $user instanceof UserLender && $user->hasAcceptedCurrentTerms(),
+            'warningLending'       => true,
+            'displayDebtsAssets'   => $displayDebtsAssets,
+            'warningTaxDeduction'  => $template['project']['startDate'] >= '2016-01-01',
+            'displayCipDisclaimer' => $displayCipDisclaimer
         ];
+
         $this->setProjectDetailsSeoData($template['project']['company']['sectorId'], $template['project']['company']['city'], $template['project']['amount']);
 
         return $this->render('pages/project_detail.html.twig', $template);
