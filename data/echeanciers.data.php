@@ -597,7 +597,7 @@ class echeanciers extends echeanciers_crud
     public function getRepaymentOfTheDay(\DateTime $date)
     {
         $bind = ['formatedDate' => $date->format('Y-m-d')];
-        $type = ['date' => \PDO::PARAM_STR];
+        $type = ['formatedDate' => \PDO::PARAM_STR];
 
         $sql = '
             SELECT id_project,
