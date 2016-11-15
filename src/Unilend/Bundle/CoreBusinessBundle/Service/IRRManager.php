@@ -69,7 +69,13 @@ class IRRManager
         }
 
         $financial   = new \PHPExcel_Calculation_Financial();
-        return $financial->XIRR($sums, $dates, self::IRR_GUESS);
+        $xirr = $financial->XIRR($sums, $dates, self::IRR_GUESS);
+
+        if (abs($xirr) > 1 || abs($xirr) < 0.0000000001 ) {
+            throw new \Exception('IRR not in range IRR : ' . $xirr);
+        }
+
+        return round(bcmul($xirr, 100, 3), 2);
     }
 
     /**
@@ -126,27 +132,24 @@ class IRRManager
 
     public function addIRRLender($lenderId)
     {
-        $lenderIRR = $this->calculateIRRForLender($lenderId);
-        $status    = $this->checkIRRValidity($lenderIRR);
+        $status = \lenders_account_stats::STAT_VALID_OK;
+
+        try {
+            $lenderIRR = $this->calculateIRRForLender($lenderId);
+        } catch (\Exception $irrException) {
+            $status    = \lenders_account_stats::STAT_VALID_NOK;
+            $lenderIRR = 0;
+        }
 
         /** @var \lenders_account_stats $lendersAccountsStats */
         $lendersAccountsStats = $this->entityManager->getRepository('lenders_account_stats');
         $lendersAccountsStats->id_lender_account = $lenderId;
         $lendersAccountsStats->date              = date('Y-m-d H:i:s');
-        $lendersAccountsStats->value             = bcmul($lenderIRR, 100, 2);
-        $lendersAccountsStats->type_stat         = \lenders_account_stats::STAT_TYPE_IRR;
+        $lendersAccountsStats->value             = $lenderIRR;
+        $lendersAccountsStats->type_stat         = \lenders_account_stats::TYPE_STAT_IRR;
         $lendersAccountsStats->status            = $status;
 
         $lendersAccountsStats->create();
-    }
-
-    private function checkIRRValidity($irr)
-    {
-        if (abs($irr) < 1) {
-            return \lenders_account_stats::STAT_VALID_OK;
-        } else {
-            return \lenders_account_stats::STAT_VALID_NOK;
-        }
     }
 
     public function getLastUnilendIRR()
@@ -163,7 +166,7 @@ class IRRManager
         $unilendStats = $this->entityManager->getRepository('unilend_stats');
         $valuesIRR = $unilendStats->getIRRValuesByCohort($year);
 
-        return bcmul($this->calculateIRR($valuesIRR), 100, 2);
+        return $this->calculateIRR($valuesIRR);
     }
 
     public function getUnilendIRRForCohort20132014()
@@ -175,7 +178,7 @@ class IRRManager
         $valuesIRR2014 = $unilendStats->getIRRValuesByCohort(2014);
         $valuesIRR     = array_merge($valuesIRR2013, $valuesIRR2014);
 
-        return bcmul($this->calculateIRR($valuesIRR), 100, 2);
+        return $this->calculateIRR($valuesIRR);
     }
 
 }

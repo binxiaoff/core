@@ -50,7 +50,6 @@ class FrontBundleExtension extends \Twig_Extension
             new \Twig_SimpleFunction('setting', [$this, 'settingFunction']),
             new \Twig_SimpleFunction('svgimage', [$this, 'svgImageFunction']),
             new \Twig_SimpleFunction('siteurlmedia', [$this, 'completeUrlMediaFunction']),
-            new \Twig_SimpleFunction('getCategories', [$this, 'getCategoriesForSvg']),
             new \Twig_SimpleFunction('uploadedImage', [$this, 'uploadedImageFunction']),
             new \Twig_SimpleFunction('getMonths', [$this, 'getMonths']),
             new \Twig_SimpleFunction('photo', [$this, 'photo']),
@@ -139,14 +138,10 @@ class FrontBundleExtension extends \Twig_Extension
         return  $this->packages->getUrl('/assets/images/' . $sPath);
     }
 
-    public function getStatisticFunction($statisticType)
+    public function getStatisticFunction($statisticType, $date = null)
     {
-        return $this->statisticsManager->getStatistic($statisticType);
-    }
-
-    public function getCategoriesForSvg()
-    {
-        return $this->translationManager->getTranslatedCompanySectorList();
+        $requestedDate = (is_null($date)) ? new \DateTime('NOW') : new \DateTime($date);
+        return $this->statisticsManager->getStatistic($statisticType, $requestedDate);
     }
 
     public function nbspFilter($sString)

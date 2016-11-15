@@ -23,6 +23,43 @@ class LenderOperationsController extends Controller
      */
     const TYPE_REPAYMENT_TRANSACTION = 5;
 
+    // This is public in order to make it usebable for old PDF controller
+    public static $transactionTypeList = [
+        1 => [
+            \transactions_types::TYPE_LENDER_SUBSCRIPTION,
+            \transactions_types::TYPE_LENDER_LOAN,
+            \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+            \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+            self::TYPE_REPAYMENT_TRANSACTION,
+            \transactions_types::TYPE_DIRECT_DEBIT,
+            \transactions_types::TYPE_LENDER_WITHDRAWAL,
+            \transactions_types::TYPE_WELCOME_OFFER,
+            \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION,
+            \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD,
+            \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD,
+            \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
+            \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
+        ],
+        2 => [
+            \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+            \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+            \transactions_types::TYPE_DIRECT_DEBIT,
+            \transactions_types::TYPE_LENDER_WITHDRAWAL
+        ],
+        3 => [
+            \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+            \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+            \transactions_types::TYPE_DIRECT_DEBIT
+        ],
+        4 => [\transactions_types::TYPE_LENDER_WITHDRAWAL],
+        5 => [\transactions_types::TYPE_LENDER_LOAN],
+        6 => [
+            self::TYPE_REPAYMENT_TRANSACTION,
+            \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
+            \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
+        ]
+    ];
+
     /**
      * @param Request $request
      * @return Response
@@ -51,8 +88,8 @@ class LenderOperationsController extends Controller
         $filters = $this->getOperationFilters($request);
         $session->set('lenderOperationsFilters', $filters);
 
-        $lenderOperations       = $lenderOperationsIndex->getLenderOperations([], $this->getUser()->getClientId(), $filters['start'], $filters['end']);
-        $projectsFundedByLender = $lenderOperationsIndex->get_liste_libelle_projet('id_client = ' . $this->getUser()->getClientId() . ' AND DATE(date_operation) >= "' . $filters['start'] . '" AND DATE(date_operation) <= "' . $filters['end'] . '"');
+        $lenderOperations       = $lenderOperationsIndex->getLenderOperations(self::$transactionTypeList[$filters['operation']], $this->getUser()->getClientId(), $filters['startDate']->format('Y-m-d'), $filters['endDate']->format('Y-m-d'));
+        $projectsFundedByLender = $lenderOperationsIndex->get_liste_libelle_projet('id_client = ' . $this->getUser()->getClientId() . ' AND DATE(date_operation) >= "' . $filters['startDate']->format('Y-m-d') . '" AND DATE(date_operation) <= "' . $filters['endDate']->format('Y-m-d') . '"');
 
         $loans = $this->commonLoans($request, $lender);
 
@@ -127,108 +164,14 @@ class LenderOperationsController extends Controller
         $filters = $this->getOperationFilters($request);
         $session->set('lenderOperationsFilters', $filters);
 
-        switch ($filters['id_last_action']) {
-            default:
-            case 'start':
-            case 'end':
-                $startDate = \DateTime::createFromFormat('d/m/Y', $filters['start']);
-                $endDate   = \DateTime::createFromFormat('d/m/Y', $filters['end']);
-                break;
-            case 'slide':
-                $startDate = (new \DateTime('NOW'))->sub(new \DateInterval('P' . $filters['slide'] . 'M'));
-                $endDate   = new \DateTime('NOW');
-                break;
-            case 'year':
-                $startDate = new \DateTime('first day of January ' . $filters['year']);
-                $endDate   = new \DateTime('last day of December ' . $filters['year']);
-                break;
-        }
-
-        $transactionTypeListForCombo = array(
-            1 => array(
-                \transactions_types::TYPE_LENDER_SUBSCRIPTION,
-                \transactions_types::TYPE_LENDER_LOAN,
-                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
-                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
-                self::TYPE_REPAYMENT_TRANSACTION,
-                \transactions_types::TYPE_DIRECT_DEBIT,
-                \transactions_types::TYPE_LENDER_WITHDRAWAL,
-                \transactions_types::TYPE_WELCOME_OFFER,
-                \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION,
-                \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD,
-                \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD,
-                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
-                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
-            ),
-            2 => array(
-                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
-                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
-                \transactions_types::TYPE_DIRECT_DEBIT,
-                \transactions_types::TYPE_LENDER_WITHDRAWAL
-            ),
-            3 => array(
-                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
-                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
-                \transactions_types::TYPE_DIRECT_DEBIT
-            ),
-            4 => array(\transactions_types::TYPE_LENDER_WITHDRAWAL),
-            5 => array(\transactions_types::TYPE_LENDER_LOAN),
-            6 => array(
-                self::TYPE_REPAYMENT_TRANSACTION,
-                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
-                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
-            )
-        );
-
-        $transactionListFilter = $transactionTypeListForCombo[$request->request->get('filter', 1)['operation']];
-
-        if (false === empty($request->request->get('filter')['project'])) {
-            $projectFilter = $request->request->get('filter')['project'];
-        } else {
-            $projectFilter = null;
-        }
-
-        $columnOrder = $request->request->get('type', '');
-        $orderBy     = $request->request->get('order', '');
-
-        if ($columnOrder == 'order_operations') {
-            if ($orderBy == 'asc') {
-                $order = ' type_transaction ASC, id_transaction ASC';
-            } else {
-                $order = ' type_transaction DESC, id_transaction DESC';
-            }
-        } elseif ($columnOrder == 'order_projects') {
-            if ($orderBy == 'asc') {
-                $order = ' libelle_projet ASC , id_transaction ASC';
-            } else {
-                $order = ' libelle_projet DESC , id_transaction DESC';
-            }
-        } elseif ($columnOrder == 'order_date') {
-            if ($orderBy == 'asc') {
-                $order = ' date_operation ASC, id_transaction ASC';
-            } else {
-                $order = ' date_operation DESC, id_transaction DESC';
-            }
-        } elseif ($columnOrder == 'order_montant') {
-            if ($orderBy == 'asc') {
-                $order = ' montant_operation ASC, id_transaction ASC';
-            } else {
-                $order = ' montant_operation DESC, id_transaction DESC';
-            }
-        } elseif ($columnOrder == 'order_bdc') {
-            if ($orderBy == 'asc') {
-                $order = ' ABS(bdc) ASC, id_transaction ASC';
-            } else {
-                $order = ' ABS(bdc) DESC, id_transaction DESC';
-            }
-        } else {
-            $order = 'date_operation DESC, id_transaction DESC';
-        }
+        $transactionListFilter = self::$transactionTypeList[$filters['operation']];
+        $startDate             = $filters['startDate']->format('Y-m-d');
+        $endDate               = $filters['endDate']->format('Y-m-d');
 
         /** @var \indexage_vos_operations $lenderOperationsIndex */
         $lenderOperationsIndex  = $entityManager->getRepository('indexage_vos_operations');
-        $lenderOperations       = $lenderOperationsIndex->getLenderOperations($transactionListFilter, $this->getUser()->getClientId(), $startDate->format('Y-m-d'), $endDate->format('Y-m-d'), $projectFilter, $order);
-        $projectsFundedByLender = $lenderOperationsIndex->get_liste_libelle_projet('type_transaction IN (' . implode(',', $transactionListFilter) . ') AND id_client = ' . $this->getUser()->getClientId() . ' AND LEFT(date_operation, 10) >= "' . $startDate->format('Y-m-d') . '" AND LEFT(date_operation, 10) <= "' . $endDate->format('Y-m-d') . '"');
+        $lenderOperations       = $lenderOperationsIndex->getLenderOperations($transactionListFilter, $this->getUser()->getClientId(), $startDate, $endDate, $filters['project']);
+        $projectsFundedByLender = $lenderOperationsIndex->get_liste_libelle_projet('type_transaction IN (' . implode(',', $transactionListFilter) . ') AND id_client = ' . $this->getUser()->getClientId() . ' AND LEFT(date_operation, 10) >= "' . $startDate . '" AND LEFT(date_operation, 10) <= "' . $endDate . '"');
 
         return $this->json(
             [
@@ -255,10 +198,15 @@ class LenderOperationsController extends Controller
      */
     public function exportOperationsCsvAction()
     {
+        /** @var SessionInterface $session */
+        $session = $this->get('session');
+
+        if (false === $session->has('lenderOperationsFilters')) {
+            return $this->redirectToRoute('lender_operations');
+        }
+
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
         /** @var \tax $tax */
         $tax = $entityManager->getRepository('tax');
         /** @var \tax_type $taxType */
@@ -271,81 +219,15 @@ class LenderOperationsController extends Controller
         $lenderIndexedOperations = $entityManager->getRepository('indexage_vos_operations');
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
-        /** @var SessionInterface $session */
-        $session = $this->get('session');
 
         $savedFilters          = $session->get('lenderOperationsFilters');
-        $post_tri_type_transac = $savedFilters['operation'];
-        $projectIdFilter       = (false === empty($savedFilters['project'])) ? $savedFilters['project'] : null;
-        $post_id_client        = $savedFilters['id_client'];
-
-        $client->get($post_id_client, 'id_client');
-
-        switch ($savedFilters['id_last_action']) {
-            default:
-            case 'start':
-            case 'end':
-                $startDate = \DateTime::createFromFormat('d/m/Y', $savedFilters['start']);
-                $endDate   = \DateTime::createFromFormat('d/m/Y', $savedFilters['end']);
-                break;
-            case 'slide':
-                $startDate = (new \DateTime('NOW'))->sub(new \DateInterval('P' . $savedFilters['slide'] . 'M'));
-                $endDate   = new \DateTime('NOW');
-                break;
-            case 'year':
-                $startDate = new \DateTime('first day of January ' . $savedFilters['year']);
-                $endDate   = new \DateTime('last day of December ' . $savedFilters['year']);
-                break;
-        }
-
-        $transactionTypeList = array(
-            1 => array(
-                \transactions_types::TYPE_LENDER_SUBSCRIPTION,
-                \transactions_types::TYPE_LENDER_LOAN,
-                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
-                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
-                self::TYPE_REPAYMENT_TRANSACTION,
-                \transactions_types::TYPE_DIRECT_DEBIT,
-                \transactions_types::TYPE_LENDER_WITHDRAWAL,
-                \transactions_types::TYPE_WELCOME_OFFER,
-                \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION,
-                \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD,
-                \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD,
-                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
-                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
-            ),
-            2 => array(
-                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
-                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
-                \transactions_types::TYPE_DIRECT_DEBIT,
-                \transactions_types::TYPE_LENDER_WITHDRAWAL
-            ),
-            3 => array(
-                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
-                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
-                \transactions_types::TYPE_DIRECT_DEBIT
-            ),
-            4 => array(\transactions_types::TYPE_LENDER_WITHDRAWAL),
-            5 => array(\transactions_types::TYPE_LENDER_LOAN),
-            6 => array(
-                self::TYPE_REPAYMENT_TRANSACTION,
-                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
-                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
-            )
-        );
-
-        if (isset($post_tri_type_transac)) {
-            $transactionListFilter = $transactionTypeList[$post_tri_type_transac];
-        } else {
-            $transactionListFilter = $transactionTypeList[1];
-        }
-
-        $order      = 'date_operation DESC, id_transaction DESC';
-        $operations = $lenderIndexedOperations->getLenderOperations($transactionListFilter, $client->id_client, $startDate->format('Y-m-d'), $endDate->format('Y-m-d'), $projectIdFilter, $order);
-
-        $content = '
+        $transactionListFilter = self::$transactionTypeList[$savedFilters['operation']];
+        $startDate             = $savedFilters['startDate']->format('Y-m-d');
+        $endDate               = $savedFilters['endDate']->format('Y-m-d');
+        $operations            = $lenderIndexedOperations->getLenderOperations($transactionListFilter, $this->getUser()->getClientId(), $startDate, $endDate, $savedFilters['project']);
+        $content               = '
         <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8"/>
-        <table border=1>
+        <table border="1">
             <tr>
                 <th>' . $translator->trans('lender-operations_operations-csv-operation-column') . '</th>
                 <th>' . $translator->trans('lender-operations_operations-csv-contract-column') . '</th>
@@ -475,9 +357,7 @@ class LenderOperationsController extends Controller
                         <td></td>
                     </tr>
                     ';
-
             } elseif ($t['type_transaction'] == \transactions_types::TYPE_LENDER_LOAN) { // ongoing Offer
-
                 //asterix pour les offres acceptees
                 $asterix       = "";
                 $offre_accepte = false;
@@ -517,6 +397,7 @@ class LenderOperationsController extends Controller
             <div>* ' . $translator->trans('lender-operations_csv-export-asterisk-accepted-offer-specific-mention') . '</div>';
 
         }
+
         return new Response($content, Response::HTTP_OK, [
             'Content-type'        => 'application/force-download; charset=utf-8',
             'Expires'             => 0,
@@ -733,41 +614,32 @@ class LenderOperationsController extends Controller
 
         switch ($orderField) {
             case 'status':
-                $orderField = 'status';
-                $sOrderBy   = 'p.status ' . $orderDirection . ', debut DESC, p.title ASC';
+                $sOrderBy = 'p.status ' . $orderDirection . ', debut DESC, p.title ASC';
                 break;
             case 'title':
-                $orderField = 'title';
-                $sOrderBy   = 'p.title ' . $orderDirection . ', debut DESC';
+                $sOrderBy = 'p.title ' . $orderDirection . ', debut DESC';
                 break;
             case 'note':
-                $orderField = 'note';
-                $sOrderBy   = 'p.risk ' . $orderDirection . ', debut DESC, p.title ASC';
+                $sOrderBy = 'p.risk ' . $orderDirection . ', debut DESC, p.title ASC';
                 break;
             case 'amount':
-                $orderField = 'amount';
-                $sOrderBy   = 'amount ' . $orderDirection . ', debut DESC, p.title ASC';
+                $sOrderBy = 'amount ' . $orderDirection . ', debut DESC, p.title ASC';
                 break;
             case 'interest':
-                $orderField = 'interest';
-                $sOrderBy   = 'rate ' . $orderDirection . ', debut DESC, p.title ASC';
+                $sOrderBy = 'rate ' . $orderDirection . ', debut DESC, p.title ASC';
                 break;
             case 'next':
-                $orderField = 'next';
-                $sOrderBy   = 'next_echeance ' . $orderDirection . ', debut DESC, p.title ASC';
+                $sOrderBy = 'next_echeance ' . $orderDirection . ', debut DESC, p.title ASC';
                 break;
             case 'end':
-                $orderField = 'end';
-                $sOrderBy   = 'fin ' . $orderDirection . ', debut DESC, p.title ASC';
+                $sOrderBy = 'fin ' . $orderDirection . ', debut DESC, p.title ASC';
                 break;
             case 'repayment':
-                $orderField = 'repayment';
-                $sOrderBy   = 'last_perceived_repayment ' . $orderDirection . ', debut DESC, p.title ASC';
+                $sOrderBy = 'last_perceived_repayment ' . $orderDirection . ', debut DESC, p.title ASC';
                 break;
             case 'start':
             default:
-                $orderField = 'start';
-                $sOrderBy   = 'debut ' . $orderDirection . ', p.title ASC';
+                $sOrderBy = 'debut ' . $orderDirection . ', p.title ASC';
                 break;
         }
 
@@ -972,33 +844,54 @@ class LenderOperationsController extends Controller
     private function getOperationFilters(Request $request)
     {
         if ($request->request->get('filter')) {
-            return [
+            $filters = [
                 'start'          => $request->request->get('filter')['start'],
                 'end'            => $request->request->get('filter')['end'],
                 'slide'          => $request->request->get('filter')['slide'],
                 'year'           => (int) $request->request->get('filter')['year'],
                 'operation'      => $request->request->get('filter')['operation'],
                 'project'        => $request->request->get('filter')['project'],
-                'id_last_action' => $request->request->get('filter')['id_last_action'],
-                'order'          => $request->request->get('order', ''),
-                'type'           => $request->request->get('type', ''),
-                'id_client'      => $this->getUser()->getClientId()
+                'id_last_action' => $request->request->get('filter')['id_last_action']
             ];
-        } elseif ($request->getSession()->get('lenderOperationsFilters')) {
-            return $request->getSession()->get('lenderOperationsFilters');
+        } elseif ($request->getSession()->has('lenderOperationsFilters')) {
+            $filters = $request->getSession()->get('lenderOperationsFilters');
+        } else {
+            $filters = [
+                'start'          => date('d/m/Y', strtotime('-1 month')),
+                'end'            => date('d/m/Y'),
+                'slide'          => 1,
+                'year'           => date('Y'),
+                'operation'      => 1,
+                'project'        => null,
+                'id_last_action' => 'operation'
+            ];
         }
 
-        return [
-            'start'          => date('d/m/Y', strtotime('-1 month')),
-            'end'            => date('d/m/Y'),
-            'slide'          => 1,
-            'year'           => date('Y'),
-            'operation'      => 1,
-            'project'        => null,
-            'id_last_action' => 'operation',
-            'order'          => 'date_operation DESC, id_transaction DESC',
-            'type'           => '',
-            'id_client'      => $this->getUser()->getClientId()
-        ];
+        switch ($filters['id_last_action']) {
+            default:
+            case 'start':
+            case 'end':
+                $filters['startDate'] = \DateTime::createFromFormat('d/m/Y', $filters['start']);
+                $filters['endDate']   = \DateTime::createFromFormat('d/m/Y', $filters['end']);
+                break;
+            case 'slide':
+                if (empty($filters['slide'])) {
+                    $filters['slide'] = 1;
+                }
+
+                $filters['startDate'] = (new \DateTime('NOW'))->sub(new \DateInterval('P' . $filters['slide'] . 'M'));
+                $filters['endDate']   = new \DateTime('NOW');
+                break;
+            case 'year':
+                $filters['startDate'] = new \DateTime('first day of January ' . $filters['year']);
+                $filters['endDate']   = new \DateTime('last day of December ' . $filters['year']);
+                break;
+        }
+
+        $filters['id_client'] = $this->getUser()->getClientId();
+        $filters['start']     = $filters['startDate']->format('d/m/Y');
+        $filters['end']       = $filters['endDate']->format('d/m/Y');
+
+        return $filters;
     }
 }

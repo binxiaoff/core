@@ -444,9 +444,15 @@ class echeanciers extends echeanciers_crud
             $bindType['id_lender'] = \PDO::PARAM_INT;
             $query .= ' AND e.id_lender = :id_lender ';
         }
+        $statement = $this->bdd->executeQuery($query, $bind, $bindType, new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::MEDIUM_TIME, md5(__METHOD__)));
+        $result    = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $statement->closeCursor();
 
-        return bcdiv($this->bdd->executeQuery($query, $bind, $bindType, new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::MEDIUM_TIME, md5(__METHOD__)))
-            ->fetchColumn(0), 100, 2);
+        if (isset($result[0]) && isset(array_values($result[0])[0])) {
+            return bcdiv(array_values($result[0])[0], 100, 2);
+        }
+
+        return 0;
     }
 
     /**
@@ -464,8 +470,13 @@ class echeanciers extends echeanciers_crud
             FROM echeanciers
             WHERE id_project = :id_project GROUP BY ordre';
 
-        $res    = [];
-        $result = $this->bdd->executeQuery($sql, array('id_project' => $projectId), array('id_project' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::SHORT_TIME, md5(__METHOD__)))->fetchAll(\PDO::FETCH_ASSOC);
+        $res       = [];
+        $statement = $this->bdd->executeQuery($sql,
+            array('id_project' => $projectId),
+            array('id_project' => \PDO::PARAM_INT),
+            new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::SHORT_TIME, md5(__METHOD__)));
+        $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement->closeCursor();
         foreach ($result as $key => $aRow) {
             $res[$aRow['ordre']] = array(
                 'montant'           => bcdiv($aRow['montant'], 100, 2),
@@ -796,7 +807,10 @@ class echeanciers extends echeanciers_crud
                 AND DATE(e.date_echeance_reel) BETWEEN :start_date AND :end_date
             GROUP BY l.id_type_contract, client_type, fiscal_residence, exemption_status';
 
-        return $this->bdd->executeQuery($sql, $aBind, $aType, new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::LONG_TIME, md5(__METHOD__)))->fetchAll(\PDO::FETCH_ASSOC);
+        $statement = $this->bdd->executeQuery($sql, $aBind, $aType, new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::LONG_TIME, md5(__METHOD__)));
+        $result    = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+        return $result;
     }
 
     /**
@@ -901,7 +915,10 @@ class echeanciers extends echeanciers_crud
             AND DATE(date_echeance_reel) BETWEEN :start_date AND :end_date
             GROUP BY l.id_type_contract';
 
-        return $this->bdd->executeQuery($sql, $aBind, $aType, new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::LONG_TIME, md5(__METHOD__)))->fetchAll(\PDO::FETCH_ASSOC);
+        $statement = $this->bdd->executeQuery($sql, $aBind, $aType, new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::LONG_TIME, md5(__METHOD__)));
+        $result    = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+        return $result;
     }
 
     /**
@@ -1062,14 +1079,14 @@ class echeanciers extends echeanciers_crud
             'tax_type_exempted_lender'     => $taxTypeForExemptedLender,
             'tax_type_taxable_lender'      => $taxTypeForTaxableLender,
             'tax_type_foreigner_lender'    => $taxTypeForForeignerLender,
-            'tax_type_legal_entity_lender' => $taxTypeForLegalEntityLender,
+            'tax_type_legal_entity_lender' => $taxTypeForLegalEntityLender
         ];
         $type  = [
             'id_lender'                    => \PDO::PARAM_INT,
             'tax_type_exempted_lender'     => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
             'tax_type_taxable_lender'      => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
             'tax_type_foreigner_lender'    => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
-            'tax_type_legal_entity_lender' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'tax_type_legal_entity_lender' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY
         ];
         $query = '
             SELECT
@@ -1086,33 +1103,29 @@ class echeanciers extends echeanciers_crud
                     QUARTER(e.date_echeance_reel)        AS quarter,
                     YEAR(e.date_echeance_reel)           AS year,
                     SUM(ROUND(e.capital_rembourse / 100, 2))  AS capital,
-                    CASE WHEN e.status_ra = 1 THEN 0 ELSE SUM(ROUND(e.interets_rembourses / 100, 2)) END AS rawInterests,
+                    SUM(ROUND(e.interets_rembourses / 100, 2)) AS rawInterests,
                     SUM(IFNULL((SELECT SUM(ROUND(tax.amount / 100, 2)) FROM tax WHERE id_transaction = t.id_transaction) , 0)) AS repaidTaxes,
                     NULL AS upcomingTaxes
                   FROM echeanciers e
                     LEFT JOIN transactions t ON e.id_echeancier = t.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
-                    INNER JOIN lenders_accounts la ON e.id_lender = la.id_lender_account
-                    LEFT JOIN clients c ON la.id_client_owner = c.id_client
-                    LEFT JOIN lender_tax_exemption lte ON lte.id_lender = e.id_lender = lte.id_lender AND lte.year = YEAR(e.date_echeance_reel)
-                    LEFT JOIN lenders_imposition_history lih ON lih.id_lenders_imposition_history = (SELECT MAX(id_lenders_imposition_history) FROM lenders_imposition_history WHERE id_lender = e.id_lender)
                   WHERE e.id_lender = :id_lender AND e.status = 1
                   GROUP BY year, quarter, month
             
                   UNION ALL
                   
                   SELECT
-                    LEFT(date_transaction, 7)        AS month,
-                    QUARTER(date_transaction)        AS quarter,
-                    YEAR(date_transaction)           AS year,
-                    SUM(ROUND((montant / 100) / 0.844, 2))  AS capital,
+                    LEFT(t.date_transaction, 7)        AS month,
+                    QUARTER(t.date_transaction)        AS quarter,
+                    YEAR(t.date_transaction)           AS year,
+                    SUM(ROUND((t.montant / 100) / 0.844, 2))  AS capital,
                     NULL AS rawInterests,
                     NULL AS repaidTaxes,
                     NULL AS upcomingTaxes
-                  FROM transactions
-                    INNER JOIN lenders_accounts ON transactions.id_client = lenders_accounts.id_client_owner
+                  FROM transactions t
+                    INNER JOIN lenders_accounts l ON t.id_client = l.id_client_owner
                   WHERE
-                    lenders_accounts.id_lender_account = :id_lender
-                    AND type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . '
+                    l.id_lender_account = :id_lender
+                    AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . '
                   GROUP BY year, quarter, month
             
                   UNION ALL
@@ -1131,16 +1144,16 @@ class echeanciers extends echeanciers_crud
                           -- FR fiscal resident
                           WHEN 0
                             THEN CASE lte.id_lender
-                              WHEN NOT NULL THEN SUM(IF (e.status_ra = 1, 0.00, ROUND((e.interets - e.interets_rembourses) * (SELECT SUM(tt.rate / 100) FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_exempted_lender)) / 100, 2)))
-                              ELSE SUM(IF (e.status_ra = 1, 0.00, ROUND((e.interets - e.interets_rembourses) * (SELECT SUM(tt.rate / 100) FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_taxable_lender)) / 100, 2)))
+                              WHEN NOT NULL THEN SUM(ROUND((e.interets - e.interets_rembourses) * (SELECT SUM(tt.rate / 100) FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_exempted_lender)) / 100, 2))
+                              ELSE SUM(ROUND((e.interets - e.interets_rembourses) * (SELECT SUM(tt.rate / 100) FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_taxable_lender)) / 100, 2))
                             END
                           -- Foreigner fiscal resident
                           WHEN 1 THEN
-                            SUM(IF (e.status_ra = 1, 0.00, ROUND((e.interets - e.interets_rembourses) * (SELECT tt.rate / 100 FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_foreigner_lender)) / 100, 2)))
+                            SUM(ROUND((e.interets - e.interets_rembourses) * (SELECT tt.rate / 100 FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_foreigner_lender)) / 100, 2))
                           END
                       -- Legal entity
                       WHEN ' . \clients::TYPE_LEGAL_ENTITY . ' OR ' . \clients::TYPE_LEGAL_ENTITY_FOREIGNER . ' THEN
-                          SUM(IF (e.status_ra = 1, 0.00, ROUND((e.interets - e.interets_rembourses) * (SELECT tt.rate / 100 FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_legal_entity_lender)) / 100, 2)))
+                          SUM(ROUND((e.interets - e.interets_rembourses) * (SELECT tt.rate / 100 FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_legal_entity_lender)) / 100, 2))
                       END                             AS upcomingTaxes
                   FROM echeanciers e
                     INNER JOIN lenders_accounts la ON e.id_lender = la.id_lender_account
@@ -1169,7 +1182,7 @@ class echeanciers extends echeanciers_crud
         ';
 
         /** @var \Doctrine\DBAL\Cache\QueryCacheProfile $oQCProfile */
-        $oQCProfile = new \Doctrine\DBAL\Cache\QueryCacheProfile(60, md5(__METHOD__));
+        $oQCProfile = new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::DAY, md5(__METHOD__));
         /** @var \Doctrine\DBAL\Statement $statement */
         $statement = $this->bdd->executeQuery($query, $bind, $type, $oQCProfile);
         $data      = [];

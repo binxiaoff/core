@@ -12,9 +12,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
-use Unilend\Bundle\FrontBundle\Service\RouteProvider;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
-use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 use Unilend\core\Loader;
 use Unilend\librairies\Altares;
 
@@ -350,9 +348,9 @@ class ProjectRequestController extends Controller
         $tree->get(['id_tree' => $settings->value]);
         $template['terms_of_sale_link'] = $this->generateUrl($tree->slug);
 
-        /** @var TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translation_manager');
-        $template['borrowing_motives']  = $translationManager->getTranslatedBorrowingMotiveList();
+        /** @var \borrowing_motive $borrowingMotive */
+        $borrowingMotive = $entityManager->getRepository('borrowing_motive');
+        $template['borrowing_motives']  = $borrowingMotive->select();
 
         $settings->get('Durée des prêts autorisées', 'type');
         $template['loan_periods'] = explode(',', $settings->value);

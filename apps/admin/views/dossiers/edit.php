@@ -272,7 +272,7 @@
                     <tr>
                         <th><label for="sector">Secteur de la société :</label></th>
                         <td>
-                            <?= $this->lSecteurs[$this->companies->sector] ?>
+                            <?= $this->translator->trans('company-sector_sector-' . $this->companies->sector) ?>
                         </td>
                     </tr>
                     <tr>
@@ -377,8 +377,8 @@
                         <td>
                             <select name="motive" id="motive" class="select" style="width:160px;background-color:#AAACAC;">
                                 <option<?= (is_null($this->projects->id_borrowing_motive) ? ' selected' : '') ?> value="0">Non renseigné</option>
-                                <?php foreach ($this->aBorrowingMotives as $key => $motive) : ?>
-                                    <option<?= ($this->projects->id_borrowing_motive == $key ? ' selected' : '') ?> value="<?= $key ?>"><?= $motive ?> </option>
+                                <?php foreach ($this->aBorrowingMotives as $motive) : ?>
+                                    <option<?= ($this->projects->id_borrowing_motive == $motive['id_motive'] ? ' selected' : '') ?> value="<?= $motive['id_motive'] ?>"><?= $this->translator->trans('borrowing-motive_motive-' . $motive['id_motive']) ?> </option>
                                 <?php endforeach ?>
                             </select>
                         </td>

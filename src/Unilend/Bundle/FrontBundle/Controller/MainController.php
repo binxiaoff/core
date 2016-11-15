@@ -29,7 +29,6 @@ use Unilend\Bundle\FrontBundle\Service\ContentManager;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
 use Unilend\Bundle\FrontBundle\Service\TestimonialManager;
-use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 use Unilend\core\Loader;
 
 class MainController extends Controller
@@ -138,21 +137,18 @@ class MainController extends Controller
      */
     public function homeBorrowerAction()
     {
-        /** @var ProjectManager $projectManager */
         $projectManager = $this->get('unilend.service.project_manager');
-        /** @var TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translation_manager');
-        /** @var TestimonialManager $testimonialService */
         $testimonialService = $this->get('unilend.frontbundle.service.testimonial_manager');
-        /** @var ProjectDisplayManager $projectDisplayManager */
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
+        /** @var \borrowing_motive $borrowingMotive */
+        $borrowingMotive = $this->get('unilend.service.entity_manager')->getRepository('borrowing_motive');
 
         $template = [];
         $template['testimonialPeople'] = $testimonialService->getBorrowerBattenbergTestimonials(true);
         $template['loanPeriods']       = $projectManager->getPossibleProjectPeriods();
         $template['projectAmountMax']  = $projectManager->getMaxProjectAmount();
         $template['projectAmountMin']  = $projectManager->getMinProjectAmount();
-        $template['borrowingMotives']  = $translationManager->getTranslatedBorrowingMotiveList();
+        $template['borrowingMotives']  = $borrowingMotive->select();
         $template['projects'] = $projectDisplayManager->getProjectsList(
             [\projects_status::EN_FUNDING],
             [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC]
@@ -743,26 +739,37 @@ class MainController extends Controller
 
     /**
      * @Route("/statistiques", name="statistics")
+     * @Route("/statistiques/{requestedDate}", name="historic_statistics")
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function statisticsAction()
+    public function statisticsAction(Request $request, $requestedDate = null)
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \tree $tree */
         $tree = $entityManager->getRepository('tree');
         $tree->get(['slug' => 'statistiques']);
-
         /** @var StatisticsManager $statisticsManager */
         $statisticsManager = $this->get('unilend.service.statistics_manager');
-        $years = array_merge(['2013-2014'], range(2015, date('Y')));
+
+        if (false === empty($requestedDate)) {
+            $date       = new \DateTime($requestedDate);
+            $years      = array_merge(['2013-2014'], range(2015, $date->format('Y')));
+        } else {
+            $date       = new \DateTime('NOW');
+            $years      = array_merge(['2013-2014'], range(2015, date('Y')));
+        }
+
+        $statistics = $statisticsManager->getStatisticsAtDate($date);
         $template = [
-            'data' => [
-                'projectCountForCategoryTreeMap' => $this->getProjectCountForCategoryTreeMap(),
-                'regulatoryTable' => $statisticsManager->getRegulatoryData(),
+            'data'  => [
+                'projectCountForCategoryTreeMap' => $this->getProjectCountForCategoryTreeMap($statistics['projectCountByCategory']),
+                'regulatoryTable'                => $statistics['regulatoryData'],
             ],
-            'years' => array_merge($years, ['total'])
+            'years' => array_merge($years, ['total']),
+            'date'  => $date->format('Y-m-d')
         ];
+
         $this->setCmsSeoData($tree);
         $response = $this->render('pages/static_pages/statistics.html.twig', $template);
 
@@ -937,11 +944,8 @@ class MainController extends Controller
         return $this->renderCmsNav($tree, $finalElements, $entityManager, 'apropos-statistiques');
     }
 
-    private function getProjectCountForCategoryTreeMap()
+    private function getProjectCountForCategoryTreeMap($countByCategory)
     {
-        /** @var StatisticsManager $statisticsManager */
-        $statisticsManager = $this->get('unilend.service.statistics_manager');
-        $countByCategory = $statisticsManager->getProjectCountByCategory();
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
         $dataForTreeMap = [];

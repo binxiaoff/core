@@ -189,3 +189,6 @@ sonata_seo:
             http-equiv:
                 'Content-Type': 'text/html; charset=utf-8'
                 'X-UA-Compatible': 'IE=edge,chrome=1;'
+
+ekino_new_relic:
+    enabled: false
