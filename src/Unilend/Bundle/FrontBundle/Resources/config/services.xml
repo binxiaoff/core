@@ -94,5 +94,10 @@
             <argument type="service" id="sonata.seo.page"/>
             <argument type="service" id="translator"/>
         </service>
+
+        <service id="unilend.frontbundle.service.content_manager" class="Unilend\Bundle\FrontBundle\Service\ContentManager">
+            <argument type="service" id="unilend.service.entity_manager" />
+            <argument type="service" id="memcache.default" />
+        </service>
     </services>
 </container>
