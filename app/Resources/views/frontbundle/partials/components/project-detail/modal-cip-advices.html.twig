@@ -1,14 +1,18 @@
 <div id="modal-cip-advices-prompt" class="modal-cip-advices" data-modal data-modal-maxwidth="650">
+    <header class="modal-header">
+        <h4>{% trans %} project-detail_modal-cip-advices-title {% endtrans %}</h4>
+    </header>
     <div class="modal-body">
-        <h4 id="modal-cip-advices-message">{% trans %} project-detail_modal-cip-advices-title {% endtrans %}</h4>
-        <h5>{% trans %} project-detail_modal-cip-advices-content {% endtrans %}</h5>
+        <p>{% trans %} project-detail_modal-cip-advices-content {% endtrans %}</p>
     </div>
     <footer class="modal-footer">
-        <a href="javascript:;" class="btn-primary btn-shape-md" data-modal-doactionconfirm>
-            {% trans %} project-detail_modal-cip-advices-cancel {% endtrans %}
-        </a>
-        <a href="javascript:;" class="btn-default btn-shape-md" data-modal-doactioncancel>
-            {% trans %} project-detail_modal-cip-advices-confirm {% endtrans %}
-        </a>
+        <div class="btn-controls">
+            <a href="javascript:;" class="btn-primary btn-shape-md" data-modal-doactionconfirm>
+                {% trans %} project-detail_modal-cip-advices-cancel {% endtrans %}
+            </a>
+            <a href="javascript:;" class="btn-default btn-shape-md" data-modal-doactioncancel>
+                {% trans %} project-detail_modal-cip-advices-confirm {% endtrans %}
+            </a>
+        </div>
     </footer>
 </div>

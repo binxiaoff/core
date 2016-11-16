@@ -6,41 +6,54 @@
   background: $c-purple-l2;
 }
 
-.modal-bid-confirmation-message,
-.modal-cip-advices .modal-body,
-.modal-cip-questionnaire .modal-body {
-  text-align: center;
-
-  &:before {
-    content: $fa-info-u64;
-    display: block;
-    width: 100%;
-    margin: 20px 0;
-    clear: both;
-
-    color: $c-p1;
-    font-family: $ff-icon;
-    font-size: $fs-title;
-    line-height: 1em;
+.modal-bid-confirmation,
+.modal-cip-questionnaire,
+.modal-cip-advices {
+  .modal-header {
     text-align: center;
-  }
-
-  @include devices('md', 'lg') {
-    padding-left: 60px;
-    padding-right: 60px;
-    position: relative;
-    text-align: left;
 
     &:before {
-      width: $fs-title;
-      margin-top: 0;
-      position: absolute;
-      left: 0;
-      top: 0;
+      content: $fa-info-u64;
+      display: block;
+      width: 100%;
+      margin: 20px 0;
+      clear: both;
+
+      color: $c-p1;
+      font-family: $ff-icon;
+      font-size: $fs-title;
+      line-height: 1em;
+      text-align: center;
     }
 
-    // > h4 {
-    //   padding-left: 40px;
-    // }
+    @include devices('md', 'lg') {
+      padding-left: 70px;
+      padding-right: 15px;
+      position: relative;
+      text-align: left;
+
+      &:before {
+        width: $fs-title;
+        margin-top: 0;
+        position: absolute;
+        left: 15px;
+        top: 15px;
+      }
+
+      // > h4 {
+      //   padding-left: 40px;
+      // }
+    }
+  }
+
+  .modal-body {
+    text-align: center;
+
+    @include devices('md', 'lg') {
+      padding-left: 70px;
+      padding-right: 15px;
+      position: relative;
+      text-align: left;
+    }
   }
 }

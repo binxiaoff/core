@@ -66,11 +66,6 @@ function bidConfirmationPrompt (bidData) {
   $('#modal-bid-confirmation-prompt').uiModal('open')
 }
 
-// Ensure that any spinner buttons and their targets (i.e. forms) are re-enabled when modals are closed/cancelled
-$doc.on('Modal:cancelled Modal:closed', '#modal-cip-questionnaire-prompt, #modal-bid-confirmation-prompt', function () {
-  $('[data-bid-confirmation] [data-spinnerbutton]').uiSpinnerButton('stopLoading')
-})
-
 // Submit the form when modal bid is confirmed
 $doc.on('Modal:confirmed', '#modal-bid-confirmation-prompt', function (event) {
   // Use the special trigger method to pass through some extra options on the submit event
@@ -132,27 +127,27 @@ $doc.on('submit', 'form[data-bid-confirmation]', function (event, options) {
 
       // Validate with server to show CIP questionnaire prompt
       $.ajax({
-        url: '/conseil-cip/bid',
+        url: '/projects/pre-check-bid/' + bidData.projectSlug + '/' + bidData.amount + '/' + bidData.rate,
+        method: 'post',
         data: {
           project: bidData.projectSlug,
           rate: bidData.rate,
           amount: bidData.amount
         },
+        dataType: 'json',
         global: false,
         success: function (data, textStatus) {
-          if (data.hasOwnProperty('validation')) {
-            // Show the CIP questionnaire
-            if (data.validation && $modalCip.length > 0) {
-              // @debug
-              // console.log('Asking CIP questionnaire...')
+          // Show the CIP questionnaire
+          if (data.hasOwnProperty('validation') && data.validation && $modalCip.length > 0) {
+            // @debug
+            // console.log('Asking CIP questionnaire...')
 
-              // Save the information about the project to the modal
-              $modalCip.data('bid', bidData)
+            // Save the information about the project to the modal
+            $modalCip.data('bid', bidData)
 
-              // Show the CIP questionnare confirmation prompt modal
-              $modalCip.uiModal('open')
-              return
-            }
+            // Show the CIP questionnare confirmation prompt modal
+            $modalCip.uiModal('open')
+            return
           }
 
           // Ignore errors...
@@ -182,6 +177,12 @@ $doc.on('submit', 'form[data-bid-confirmation]', function (event, options) {
 
     return false
   }
+})
+
+// Change input values in side panel removes any saved bid data to enable rechecking for CIP questionnaire validation
+$doc.on('change', '.project-single-form-invest :input', function (event) {
+  $('#modal-cip-questionnaire-prompt').data('bid', false)
+  $('[data-bid-confirmation-show]').removeAttr('data-bid-confirmation-show')
 })
 
 // When DOM ready...

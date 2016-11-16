@@ -1006,7 +1006,7 @@ class ProjectsController extends Controller
                 }
             } else {
                 if (null === $evaluation) {
-                    $cipManager->createEvaluation($lender);
+                    $evaluation = $cipManager->createEvaluation($lender);
                 }
 
                 $cipManager->saveLog($evaluation, \lender_evaluation_log::EVENT_BID_EVALUATION_NEEDED);

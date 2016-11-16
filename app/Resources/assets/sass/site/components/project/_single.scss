@@ -160,11 +160,13 @@
 
 // The actual window block of the header
 .project-single-header-inner {
-  display: inline-block;
-  min-height: 400px;
   padding: 20px;
   position: relative;
   background-color: $c-bg5;
+
+  @include devices('md', 'lg') {
+    min-height: 400px;
+  }
 }
 
 // Category

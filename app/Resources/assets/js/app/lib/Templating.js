@@ -267,7 +267,7 @@ var Templating = {
   // @param {Mixed} filters Can be a {String} or an {Array}
   // @returns {String}
   filter: function (input, filters) {
-    return filterKeywordValues(input, filters)
+    return filterKeywordValue(input, filters)
   }
 }
 

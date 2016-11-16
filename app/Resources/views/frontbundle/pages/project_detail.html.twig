@@ -81,7 +81,7 @@
                                 </div><!-- /.project-single-details -->
                             </div>
 
-                            <div class="col-lg-4 col-md-4 hide-xs">
+                            <div class="col-lg-4 col-md-4 hide-xs hide-sm">
                                 <div class="project-single-rating">
                                     <div class="label"><a href="{{ path('mon-premier-pret') }}#note">{% trans %} project-detail_unilend-rating-label {% endtrans %}</a></div>
                                     <a href="{{ path('mon-premier-pret') }}#note">
@@ -157,14 +157,14 @@
                                 </div><!-- /.project-single-offers -->
 
                                 {# Responsive cheat #}
-                                <div class="show-xs">
+                                <div class="show-xs show-sm">
                                     <div class="project-single-rating">
                                         <div class="label">{% trans %} project-detail_unilend-rating-label {% endtrans %}</div>
                                         <span class="rating rating-{{ classRating }}">
                                             <span class="sr-only">{% trans with {'%risk%' : project.risk|convertRisk} %} project-detail_unilend-rating-wording-label {% endtrans %}</span>
                                         </span>
                                     </div><!-- /.project-single-rating -->
-                                </div><!-- /.show-xs -->
+                                </div><!-- /.show-xs.show-sm -->
                             </div>
                         </div>
                     </div><!-- /.project-single-header-inner -->

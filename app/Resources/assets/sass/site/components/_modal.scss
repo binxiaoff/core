@@ -17,6 +17,14 @@
     font-size: $fs-base * .9;
     line-height: $lh-base * .9;
   }
+
+  > :first-child {
+    margin-top: 0;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
+  }
 }
 
 .modal-title {

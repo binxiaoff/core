@@ -125,7 +125,7 @@ var Modal = function (elem, options) {
     height: 'auto',
 
     // Min width of modal window
-    minWidth: 300,
+    minWidth: 280,
 
     // Min height of modal window
     minHeight: 200,
