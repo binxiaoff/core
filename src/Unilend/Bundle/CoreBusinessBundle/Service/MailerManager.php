@@ -1071,13 +1071,7 @@ class MailerManager
 
                         $oProject->get($aMailNotification['id_project']);
 
-                        $oProject->get($aMailNotification['id_project']);
-
-                        /** @var \projects_status $oProjectStatus */
-                        $oProjectStatus = $this->oEntityManager->getRepository('projects_status');
-                        $oProjectStatus->getLastStatut($oProject->id_project);
-
-                        if (\projects_status::EN_FUNDING == $oProjectStatus->status) {
+                        if (\projects_status::EN_FUNDING == $oProject->status) {
                             $sProjectsListHTML .= '
                                 <tr style="color:#b20066;">
                                     <td  style="font-family:Arial;font-size:14px;height: 25px;">
@@ -1175,9 +1169,6 @@ class MailerManager
         $oMailNotification = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
         /** @var \clients_gestion_notifications $oCustomerNotificationSettings */
         $oCustomerNotificationSettings = $this->oEntityManager->getRepository('clients_gestion_notifications');
-        /** @var \translations $translations */
-        $translations                    = $this->oEntityManager->getRepository('textes');
-        $aTranslations['email-synthese'] = $translations->selectFront('email-synthese', 'fr');
 
         /** @var \clients_gestion_notif_log $oNotificationsLog */
         $oNotificationsLog           = $this->oEntityManager->getRepository('clients_gestion_notif_log');

@@ -7,7 +7,7 @@
     <services>
         <service id="unilend.service.translation_manager" class="Unilend\Bundle\TranslationBundle\Service\TranslationManager">
             <argument type="service" id="unilend.service.entity_manager"/>
-            <argument type="service" id="unilend.service.translation_loader" />
+            <argument type="service" id="translator.default" />
             <argument>%kernel.default_locale%</argument>
             <argument>%translation_cache_path%</argument>
         </service>

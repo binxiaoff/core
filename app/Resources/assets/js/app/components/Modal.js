@@ -406,9 +406,6 @@ Modal.prototype.open = function () {
 Modal.prototype.confirm = function () {
   var self = this
 
-  // @debug
-  // console.log('Modal.prototype.confirm')
-
   // @trigger elem `Modal:confirm:before`
   self.$elem.trigger('Modal:confirm:before', [self])
 
@@ -447,9 +444,6 @@ Modal.prototype.confirm = function () {
 Modal.prototype.cancel = function () {
   var self = this
 
-  // @debug
-  // console.log('Modal.prototype.cancel')
-
   // @trigger elem `Modal:cancel:before` [elemModal]
   self.$elem.trigger('Modal:cancel:before', [self])
 
@@ -461,7 +455,7 @@ Modal.prototype.cancel = function () {
       if (!deferredReturn) {
         // @trigger elem `Modal:cancel:error`
         self.$elem.trigger('Modal:cancel:error', [self, deferredReturn])
-        
+
       } else {
         // @trigger elem `Modal:cancelled`
         self.$elem.trigger('Modal:cancelled', [self, deferredReturn])
@@ -488,9 +482,6 @@ Modal.prototype.cancel = function () {
  */
 Modal.prototype.close = function (deferredReturn) {
   var self = this
-
-  // @debug
-  // console.log('Modal.prototype.close')
 
   // @trigger elem `Modal:close:before`
   self.$elem.trigger('Modal:close:before', [self, deferredReturn])

@@ -61,21 +61,22 @@ class ProjectRequestManager
         /** @var \companies $company */
         $company = $this->entityManager->getRepository('companies');
 
-        $client->id_langue = 'fr';
-        $client->email     = $client->existEmail($aFormData['email']) ? $aFormData['email'] . '-' . time() : $aFormData['email'];
-
+        $client->id_langue    = 'fr';
+        $client->email        = $client->existEmail($aFormData['email']) ? $aFormData['email'] . '-' . time() : $aFormData['email'];
         $client->source       = $this->sourceManager->getSource(SourceManager::SOURCE1);
         $client->source2      = $this->sourceManager->getSource(SourceManager::SOURCE2);
         $client->source3      = $this->sourceManager->getSource(SourceManager::SOURCE3);
         $client->slug_origine = $this->sourceManager->getSource(SourceManager::ENTRY_SLUG);
-
         $client->create();
 
         $clientAddress->id_client = $client->id_client;
         $clientAddress->create();
 
+        $aFormData['siren'] = str_replace(' ', '', $aFormData['siren']);
+
         $company->id_client_owner               = $client->id_client;
-        $company->siren                         = substr(str_replace(' ', '', $aFormData['siren']), 0, 9);
+        $company->siren                         = substr($aFormData['siren'], 0, 9);
+        $company->siret                         = strlen($aFormData['siren']) === 14 ? $aFormData['siren'] : '';
         $company->status_adresse_correspondance = 1;
         $company->email_dirigeant               = $aFormData['email'];
         $company->create();

@@ -2,42 +2,45 @@
 // Unilend Modal - Bid Confirmation
 //
 
-.modal-cip-advices,
-.modal-cip-questionnaire,
 .modal-bid-confirmation {
-  padding: 20px;
+  background: $c-purple-l2;
+}
 
-  .modal-body {
-    &:before {
-      content: $fa-info-u64;
-      display: block;
-      width: 100%;
-      margin: 20px 0;
-      clear: both;
+.modal-bid-confirmation-message,
+.modal-cip-advices .modal-body,
+.modal-cip-questionnaire .modal-body {
+  text-align: center;
 
-      color: $c-p1;
-      font-family: $ff-icon;
-      font-size: $fs-title;
-      line-height: 1em;
-      text-align: center;
-    }
+  &:before {
+    content: $fa-info-u64;
+    display: block;
+    width: 100%;
+    margin: 20px 0;
+    clear: both;
+
+    color: $c-p1;
+    font-family: $ff-icon;
+    font-size: $fs-title;
+    line-height: 1em;
+    text-align: center;
   }
 
   @include devices('md', 'lg') {
-    .modal-body {
-      position: relative;
+    padding-left: 60px;
+    padding-right: 60px;
+    position: relative;
+    text-align: left;
 
-      &:before {
-        width: $fs-title;
-        margin-top: 0;
-        position: absolute;
-        left: 0;
-        top: 0;
-      }
-
-      > h4 {
-        padding-left: 40px;
-      }
+    &:before {
+      width: $fs-title;
+      margin-top: 0;
+      position: absolute;
+      left: 0;
+      top: 0;
     }
+
+    // > h4 {
+    //   padding-left: 40px;
+    // }
   }
 }

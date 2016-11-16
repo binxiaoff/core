@@ -472,4 +472,41 @@ class transactions extends transactions_crud
         $statement = $this->bdd->executeQuery($query);
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function getClientsWithRepaymentTransactions($year)
+    {
+        $query = 'SELECT DISTINCT(id_client)
+                    FROM transactions
+                  WHERE type_transaction IN (' . implode(', ', [
+                \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL,
+                \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS,
+                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
+                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
+            ]) . ') 
+                  AND LEFT(date_transaction, 4) = :year
+                  GROUP BY id_client';
+
+        return $this->bdd->executeQuery($query, ['year' => $year], ['id_lender' => \PDO::PARAM_INT])->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @param lenders_accounts $lender
+     * @return float
+     */
+    public function getLenderDepositedAmount(\lenders_accounts $lender)
+    {
+        $queryBuilder = $this->bdd->createQueryBuilder();
+        $queryBuilder
+            ->select('SUM(montant) / 100')
+            ->from('transactions')
+            ->andWhere('etat = 1')
+            ->andWhere('status = 1')
+            ->andWhere('id_client = :id_client')
+            ->andWhere('type_transaction IN (:types)')
+            ->setParameter('id_client', $lender->id_client_owner)
+            ->setParameter('types', [transactions_types::TYPE_LENDER_SUBSCRIPTION, transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT, transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT], \Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
+
+        $statement = $queryBuilder->execute();
+        return (float) $statement->fetchColumn();
+    }
 }

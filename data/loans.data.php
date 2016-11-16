@@ -418,17 +418,10 @@ class loans extends loans_crud
 
     public function getAverageLoanAmount()
     {
-        $query = 'SELECT AVG(avgLender.amount_project) / 100
-                    FROM (
-                           SELECT AVG(sumLender.amount) AS amount_project
-                           FROM (SELECT
-                                   SUM(amount) AS amount,
-                                   id_lender,
-                                   id_project
-                                 FROM loans
-                                 WHERE status = 0
-                                 GROUP BY id_project, id_lender) AS sumLender
-                           GROUP BY sumLender.id_project) AS avgLender';
+        $query = 'SELECT AVG(avgProject.amount) / 100
+                    FROM (SELECT sum(amount) / count(DISTINCT id_lender) AS amount
+                          FROM loans
+                          GROUP BY id_project) AS avgProject';
         $statement = $this->bdd->executeQuery($query);
 
         return $statement->fetchColumn(0);

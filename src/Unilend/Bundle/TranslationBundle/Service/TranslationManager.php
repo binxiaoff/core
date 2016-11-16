@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\TranslationBundle\Service;
 
+use Symfony\Component\Translation\Translator;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Symfony\Component\Finder\Finder;
 
@@ -11,16 +12,16 @@ class TranslationManager
     /** @var EntityManager  */
     private $entityManager;
 
-    /** @var TranslationLoader  */
-    private $translationLoader;
+    /** @var Translator  */
+    private $translator;
 
     private $defaultLocale;
     private $cacheDirectory;
 
-    public function __construct(EntityManager $entityManager, TranslationLoader $translationLoader, $defaultLocale, $cacheDirectory)
+    public function __construct(EntityManager $entityManager, Translator $translator, $defaultLocale, $cacheDirectory)
     {
         $this->entityManager     = $entityManager;
-        $this->translationLoader = $translationLoader;
+        $this->translator = $translator;
         $this->defaultLocale     = $defaultLocale;
         $this->cacheDirectory    = $cacheDirectory;
     }
@@ -67,11 +68,11 @@ class TranslationManager
      * @param $sName
      * @return bool|string
      */
-    public function selectTranslation($sSection, $sName)
+    public function noCacheTrans($sSection, $sName)
     {
         /** @var \translations $translations */
         $translations = $this->entityManager->getRepository('translations');
-        $sTranslation = $translations->selectTranslation($sSection, $sName);
+        $sTranslation = $translations->getTranslation($sSection, $sName);
 
         return stripcslashes($sTranslation);
     }
@@ -120,73 +121,28 @@ class TranslationManager
     }
 
     /**
-     * @param string $sSection
-     * @param string|null $sLocale
+     * @param      $section
+     * @param null $locale
+     *
      * @return array
      */
-    public function getAllTranslationsForSection($sSection, $sLocale = null)
+    public function getAllTranslationsForSection($section, $locale = null)
     {
-        if (is_null($sLocale)) {
-            $sLocale = $this->defaultLocale;
-        }
+        $translationCatalogue = $this->translator->getCatalogue($locale);
+        $allTranslation = $translationCatalogue->all();
+        $section = $section . TranslationLoader::SECTION_SEPARATOR;
+        $length = strlen($section);
 
-        /** @var \translations $translations */
-        $translations            = $this->entityManager->getRepository('translations');
-        $aTranslationsForSection = $translations->getAllTranslationsForSection($sSection, $sLocale);
-        $aTranslations           = array();
-
-        foreach($aTranslationsForSection as $key => $translation){
-            $aTranslations[$translation['name']] = $translation['translation'];
-        }
-
-        return $aTranslations;
-    }
-
-    /**
-     * @param string|null $sLocale
-     * @return array
-     */
-    public function getTranslatedCompanySectorList($sLocale = null)
-    {
-        if (is_null($sLocale)) {
-            $sLocale = $this->defaultLocale;
-        }
-
-        /** @var \company_sector $companySector */
-        $companySector       = $this->entityManager->getRepository('company_sector');
-        $aSectorTranslations = $this->getAllTranslationsForSection('company-sector', $sLocale);
-        $aCompanySectors     = $companySector->select();
-        $aTranslatedSectors  = array();
-
-        foreach ($aCompanySectors as $aSector) {
-            $aTranslatedSectors[$aSector['id_company_sector']] = $aSectorTranslations['sector-' . $aSector['id_company_sector']];
-        }
-
-        return $aTranslatedSectors;
-    }
-
-    /**
-     * @param string|null $sLocale
-     * @return array
-     */
-    public function getTranslatedBorrowingMotiveList($sLocale = null)
-    {
-        if (is_null($sLocale)) {
-            $sLocale = $this->defaultLocale;
-        }
-
-        /** @var \borrowing_motive $loanMotive */
-        $borrowingMotive     = $this->entityManager->getRepository('borrowing_motive');
-        $aMotiveTranslations = $this->getAllTranslationsForSection('borrowing-motive', $sLocale);
-        $aBorrowingMotives   = $borrowingMotive->select();
-        $aTranslatedMotives  = array();
-
-        foreach ($aBorrowingMotives as $aMotive) {
-            if (false === empty($aMotiveTranslations['motive-' . $aMotive['id_motive']])) {
-                $aTranslatedMotives[$aMotive['id_motive']] = $aMotiveTranslations['motive-' . $aMotive['id_motive']];
+        $translationsForSection = [];
+        foreach($allTranslation as $domain => $translations){
+            foreach ($translations as $label => $translation) {
+                if (substr($label, 0, $length) === $section) {
+                    $translationLabelWithoutSection = substr($label, $length);
+                    $translationsForSection[$translationLabelWithoutSection] = $translation;
+                }
             }
         }
 
-        return $aTranslatedMotives;
+        return $translationsForSection;
     }
 }

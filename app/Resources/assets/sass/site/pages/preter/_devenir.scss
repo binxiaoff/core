@@ -1,7 +1,7 @@
 //
 // Unilend Devenir Preter Page
 //
-
+#devenir-emprunteur,
 #devenir-preteur.page {
   @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0);
 
@@ -215,6 +215,7 @@
     }
   }
 
+  .form-borrower-lp,
   .form-preter-lp {
     padding: 20px;
     position: relative;
@@ -245,6 +246,7 @@
         top: -30px;
       }
 
+      .form-borrower-lp-footer,
       .form-preter-lp-footer {
         .btn-primary {
           margin-left: 10px;
@@ -260,7 +262,7 @@
       padding: 40px;
     }
   }
-
+  #form-borrower-lp-notifications,
   #form-preter-lp-notifications {
     > * {
       margin-bottom: 0;
@@ -314,6 +316,7 @@
       background-color: $c-white;
     }
 
+    .form-borrower-lp,
     .form-preter-lp {
       padding: 0;
       margin-top: 4px;
@@ -338,6 +341,7 @@
       }
     }
 
+    .form-borrower-lp-footer,
     .form-preter-lp-footer {
       padding-top: 10px;
     }
@@ -348,12 +352,14 @@
       padding: 15px 20px 30px;
     }
 
+    .form-borrower-lp,
     .form-preter-lp {
       .form-field {
         padding: 10px 20px;
       }
     }
 
+    .form-borrower-lp-footer,
     .form-preter-lp-footer {
       padding-top: 10px;
 
@@ -368,12 +374,14 @@
       padding: 20px 30px 30px;
     }
 
+    .form-borrower-lp,
     .form-preter-lp {
       .form-field {
         padding: 15px 30px;
       }
     }
 
+    .form-borrower-lp-footer,
     .form-preter-lp-footer {
       padding-top: 15px;
 
@@ -389,6 +397,7 @@
     }
 
     @include devices('xs', 'sm') {
+      .form-borrower-lp
       .form-preter-lp {
         .stamp {
           right: 0;

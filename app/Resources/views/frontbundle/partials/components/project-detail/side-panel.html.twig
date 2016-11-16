@@ -7,7 +7,7 @@
                 </div><!-- /.project-single-cost-total -->
 
                 <div class="project-single-cost-progress"
-                     title="{% trans with {'%percentFunded%' : project.percentFunded|localizednumber} %} project-detail_project-funding-progress-bar-tooltip {% endtrans %}" data-toggle="tooltip">
+                     title="{% trans with {'%percentFunded%' : project.percentFunded|localizednumberwithprecision(1)} %} project-detail_project-funding-progress-bar-tooltip {% endtrans %}" data-toggle="tooltip">
                     <span class="sr-only">{% trans with {'%percentFunded%' : project.percentFunded} %} project-detail_percentage-funded-text {% endtrans %}</span>
                     <div class="ui-progressbar" data-progressbar data-progressbar-current="{{ project.costFunded }}" data-progressbar-total="{{ project.amount }}" data-progressbar-showlabel="true" data-progressbar-animation="true" data-progressbar-animationdelay="1000">
                         <div class="project-single-cost-progress-funded ui-progressbar-bar"></div>
@@ -57,7 +57,7 @@
                 {{ include('partials/components/project-detail/login-form.html.twig') }}
             {% elseif project.status == constant('\\projects_status::FUNDING_KO') %}
                 <p>{% trans with {'%percentageFunded%' : project.percentFunded|localizednumberwithprecision(1)} %} project-detail_side-bar-funding-ko-message {% endtrans %}</p>
-                {{ include('partials/components/project-detail/login-form.html.twig') }}
+                {% include 'partials/components/project-detail/login-form.html.twig' %}
             {% elseif project.status == constant('\\projects_status::PRET_REFUSE') %}
                 <p class="h4">{% trans %} project-detail_side-bar-loan-rejected-title {% endtrans %}</p>
                 <p>{% trans %} project-detail_side-bar-loan-rejected-message {% endtrans %}</p>
@@ -76,18 +76,20 @@
                             {{ lender.bidResult.message }}
                         </p>
                     {% endif %}
+
                     {% if app.session.flashBag.has('bid_not_eligible_reason') %}
                         {% for reason in app.session.flashBag.get('bid_not_eligible_reason') %}
                             <p class="c-error">{{ reason }}</p>
                         {% endfor %}
                     {% endif %}
+
                     {% if isLenderEligible is defined and isLenderEligible == false %}
                         {% for reason in lenderNotEligibleReasons %}
                             <p>{{ ('project-detail_lender-not-eligible-reason-' ~ reason)|trans({'%amountMax%': amountMax|localizedcurrency('EUR')}) }}</p>
                         {% endfor %}
                     {% else %}
                         {% if project.maxValidRate > project.minRate %}
-                            <form action="{{ path('place_bid', {'projectId': project.projectId}) }}" method="post" class="project-single-form project-single-form-invest" data-bid-confirmation data-formvalidation data-formvalidation-shownotifications="false" data-has-spinner="#bid-confirmation-submit">
+                            <form action="{{ path('place_bid', {'projectId' : project.projectId}) }}" method="post" class="project-single-form project-single-form-invest" data-bid-confirmation {% if app.session.flashBag.has('cipBid') is not empty %} data-bid-confirmation-show="true" {% endif %} data-formvalidation data-formvalidation-shownotifications="false" data-has-spinner="#bid-confirmation-submit">
                                 <div class="row row-multi-col-sm">
                                     <div class="form-field col-sm-4">
                                         <div class="row">
@@ -127,9 +129,11 @@
                                 </div>
 
                                 <div class="btn-toolbar">
-                                    <button type="submit" id="bid-confirmation-submit" class="btn-primary btn-size-full cursor">{% trans %} project-detail_side-bar-bids-submit-button {% endtrans %}</button>
+                                    <button id="bid-confirmation-submit" type="submit" class="btn-primary btn-size-full" data-spinnerbutton data-spinnerbutton-targetstartevents="submit">{% trans %} project-detail_side-bar-bids-submit-button {% endtrans %}</button>
                                     <input type="hidden" name="invest[bidToken]" value="{{ bidToken }}">
                                     <input type="hidden" id="bid-duration" value="{{ project.duration }}">
+                                    <input type="hidden" id="bid-rest-amount" value="{{ amountRest }}">
+                                    <input type="hidden" id="bid-min-amount" value="{{ amountMin }}">
                                 </div><!-- /.btn-toolbar -->
 
                                 <div class="repayment-estimation-container">

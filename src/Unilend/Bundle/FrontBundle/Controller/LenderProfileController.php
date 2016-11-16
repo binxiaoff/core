@@ -16,7 +16,6 @@ use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
-use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 use Unilend\core\Loader;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -1008,9 +1007,6 @@ class LenderProfileController extends Controller
         $lenderAccount = $this->getLenderAccount();
         /** @var \clients_history_actions $clientHistoryActions */
         $clientHistoryActions = $entityManager->getRepository('clients_history_actions');
-        /** @var TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translation_manager');
-        $translations       = $translationManager->getAllTranslationsForSection('projet');
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
 
@@ -1021,7 +1017,7 @@ class LenderProfileController extends Controller
             $contentHistory = '<ul>';
             if ($file instanceof UploadedFile && false === empty($files[$fileName])) {
                 $this->uploadAttachment($lenderAccount->id_lender_account, $request->request->get('files')[$fileName], $fileName);
-                $contentHistory .= '<li>' . $translations['document-type-' . $request->request->get('files')[$fileName]] . '</li>';
+                $contentHistory .= '<li>' . $translator->trans('projet_document-type-' . $request->request->get('files')[$fileName]) . '</li>';
             }
             $contentHistory .= '</ul>';
         }
@@ -1280,7 +1276,7 @@ class LenderProfileController extends Controller
                 $settings->get("Liste deroulante origine des fonds", 'type');
                 break;
             default:
-                $settings->get("Liste deroulante origine des fonds", 'type');
+                $settings->get("Liste deroulante origine des fonds societe", 'type');
                 break;
         }
         $fundsOriginList = explode(';', $settings->value);
