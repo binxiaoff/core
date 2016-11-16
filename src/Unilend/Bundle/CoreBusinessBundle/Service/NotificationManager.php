@@ -23,8 +23,9 @@ class NotificationManager
      * @param null|float $fAmount
      * @param null|int   $iBidId
      * @param null|int   $iTransactionId
+     * @param null|int   $iLoanId
      */
-    public function create($iNotificationType, $iMailType, $iClientId, $sMailFunction = null, $iProjectId = null, $fAmount = null, $iBidId = null, $iTransactionId = null)
+    public function create($iNotificationType, $iMailType, $iClientId, $sMailFunction = null, $iProjectId = null, $fAmount = null, $iBidId = null, $iTransactionId = null, $iLoanId = null)
     {
         /** @var \clients_gestion_notifications $oNotificationSettings */
         $oNotificationSettings = $this->oEntityManager->getRepository('clients_gestion_notifications');
@@ -47,7 +48,7 @@ class NotificationManager
                 $oMailNotification->immediatement = 0;
             }
 
-            $this->createEmailNotification($oNotification->id_notification, $iMailType, $iClientId, $iTransactionId, $iProjectId);
+            $this->createEmailNotification($oNotification->id_notification, $iMailType, $iClientId, $iTransactionId, $iProjectId, $iLoanId);
         }
     }
 
