@@ -5,16 +5,12 @@
 
 var $ = require('jquery')
 var sprintf = require('sprintf-js').sprintf
-var WatchScroll = require('WatchScroll')
 var __ = require('__')
 
 var $win = $(window)
 var $doc = $(document)
 var $html = $('html')
 var $body = $('body')
-
-// The watchWindow WatchScroll instance
-var watchWindow = new WatchScroll.Watcher(window)
 
 // Default values
 var defaults = {
@@ -1341,10 +1337,8 @@ var Utility = {
     // Update equal heights
     Utility.setEqualHeights()
 
-    // Trigger the WatchScroll watcher refresh on the window
-    if (watchWindow) {
-      watchWindow.refresh()
-    }
+    // @trigger doc `WatchScroll:refresh` [targetElem]
+    $doc.trigger('WatchScroll:refresh', [window])
 
     // @trigger doc `UI:update:afterresize`
     $doc.trigger('UI:update:afterresize')

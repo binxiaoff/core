@@ -27,6 +27,9 @@ var $doc = $(document)
 var $html = $('html')
 var $body = $('body')
 
+// A collection of all the applied watchscroll watchers
+var WATCHSCROLL_WATCHERS = []
+
 /*
  * WatchScroll
  */
@@ -483,6 +486,9 @@ var WatchScroll = {
     // Attach the instance to the element
     self.elem.WatchScrollWatcher = self
 
+    // Add the watcher to the watchscroll watchers
+    WATCHSCROLL_WATCHERS.push(self)
+
     return self
   },
 
@@ -532,5 +538,17 @@ var WatchScroll = {
     return self
   }
 }
+
+// Refresh all of the WatchScroll watchers
+$doc.on('WatchScroll:refresh', function (event, targetElem) {
+  if (WATCHSCROLL_WATCHERS.length > 0) {
+    for (var i = 0; i < WATCHSCROLL_WATCHERS.length; i++) {
+      var watcher = WATCHSCROLL_WATCHERS[i]
+      if (!targetElem || targetElem && watcher.elem === targetElem) {
+        watcher.refresh()
+      }
+    }
+  }
+})
 
 module.exports = WatchScroll
