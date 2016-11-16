@@ -776,15 +776,20 @@
             <!-- Lender tax exemption history -->
             <?php if (false === empty($this->taxExemptionUserHistoryAction)): ?>
                 <table class="tablesorter histo_status_client">
-                    <?php foreach ($this->taxExemptionUserHistoryAction as $date => $actions) { ?>
-                        <?php foreach ($actions['modifications'] as $action) { ?>
+                    <?php foreach ($this->taxExemptionUserHistoryAction as $actions): ?>
+                        <?php foreach ($actions['modifications'] as $action): ?>
                             <tr>
                                 <td>Dispense de prélèvement fiscal <b>année <?= $action['year'] ?></b>.
-                                    <?php if ('adding' === $action['action']): ?> Ajoutée <?php elseif ('deletion' === $action['action']): ?> Supprimée <?php endif; ?> le <?= (new \DateTime($date))->format('d/m/Y H:i:s') ?> par <?= $actions['user'] ?>
+                                    <?php if ('adding' === $action['action']): ?>
+                                        Ajoutée
+                                    <?php elseif ('deletion' === $action['action']): ?>
+                                        Supprimée
+                                    <?php endif; ?>
+                                    le <?= \DateTime::createFromFormat('Y-m-d H:i:s', $actions['date'])->format('d/m/Y H:i:s') ?> par <?= $actions['user'] ?>
                                 </td>
                             </tr>
-                        <?php } ?>
-                    <?php } ?>
+                        <?php endforeach; ?>
+                    <?php endforeach; ?>
                 </table>
             <?php endif; ?>
         </div>

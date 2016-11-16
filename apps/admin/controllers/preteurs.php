@@ -1835,9 +1835,10 @@ class preteursController extends bootstrap
         $user = $this->loadData('users');
         if (false === empty($history)) {
             foreach ($history as $row) {
-                $data[$row['added']] = [
+                $data[] = [
                     'modifications' => unserialize($row['serialize'])['modifications'],
-                    'user'          => $user->getName($row['id_user'])
+                    'user'          => $user->getName($row['id_user']),
+                    'date'          => $row['added']
                 ];
             }
         }
