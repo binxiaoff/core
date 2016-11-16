@@ -131,10 +131,10 @@
                     {# Set class color based on person type #}
                     {% if person.type == 'lender' %}
                         {% set classColor = 'p1' %}
-                        {% set description = person.name ~' , ' ~ person.projects %}
+                        {% set description = person.name ~', ' ~ person.projects %}
                     {% elseif person.type == 'borrower' %}
                         {% set classColor = 'p2' %}
-                        {% set description = person.name ~' , ' ~ person.location %}
+                        {% set description = person.name ~', ' ~ person.location %}
                     {% endif %}
 
                     {#{% if index % 2 == 1 %}#}
