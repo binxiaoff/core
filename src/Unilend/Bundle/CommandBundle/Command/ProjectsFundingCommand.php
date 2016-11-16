@@ -37,9 +37,6 @@ class ProjectsFundingCommand extends ContainerAwareCommand
         /** @var \projects $project */
         $project = $entityManager->getRepository('projects');
 
-        // Loaded for class constants
-        $entityManager->getRepository('projects_status');
-
         $hasProjectFinished = false;
         $projects           = $project->selectProjectsByStatus([\projects_status::EN_FUNDING], '', [], '', '', false);
 

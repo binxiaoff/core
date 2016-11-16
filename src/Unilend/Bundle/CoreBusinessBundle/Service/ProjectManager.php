@@ -196,8 +196,6 @@ class ProjectManager
 
     /**
      * @param \projects $oProject
-     *
-     * @return bool
      */
     public function autoBid(\projects $oProject)
     {
