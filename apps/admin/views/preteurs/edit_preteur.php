@@ -89,7 +89,7 @@
                     </td>
                     <td colspan="2" rowspan="6" style="vertical-align: top">
                         <?php if (false === in_array($this->iNextYear, $this->aExemptionYears)) : ?>
-                            <a id="confirm_exemption" href="https://admin.local.unilend.fr/thickbox/confirm_tax_exemption/<?= $this->iNextYear ?>/check" class="thickbox cboxElement">
+                            <a id="confirm_exemption" href="<?= $this->lurl ?>/thickbox/confirm_tax_exemption/<?= $this->iNextYear ?>/check" class="thickbox cboxElement">
                                 <input type="checkbox" id="tax_exemption_<?= $this->iNextYear ?>" name="tax_exemption[<?= $this->iNextYear ?>]" value="1">
                             </a>
                             <label for="tax_exemption_<?= $this->iNextYear ?>"><?= $this->iNextYear ?></label>
@@ -97,7 +97,7 @@
                         <?php endif; ?>
                         <?php foreach ($this->aExemptionYears as $iExemptionYear) : ?>
                             <?php if ($this->iNextYear == $iExemptionYear) : ?>
-                            <a id="confirm_exemption" href="https://admin.local.unilend.fr/thickbox/confirm_tax_exemption/<?= $iExemptionYear ?>/uncheck" class="thickbox cboxElement">
+                            <a id="confirm_exemption" href="<?= $this->lurl ?>/thickbox/confirm_tax_exemption/<?= $iExemptionYear ?>/uncheck" class="thickbox cboxElement">
                                 <input type="checkbox" id="tax_exemption_<?= $iExemptionYear ?>" name="tax_exemption[<?= $iExemptionYear ?>]" value="1" checked>
                             </a>
                             <?php else: ?>
@@ -776,16 +776,15 @@
             <!-- Lender tax exemption history -->
             <?php if (false === empty($this->taxExemptionUserHistoryAction)): ?>
                 <table class="tablesorter histo_status_client">
-                    <?php
-                    foreach ($this->taxExemptionUserHistoryAction as $date => $actions) {
-                        foreach ($actions['modifications'] as $action) { ?>
+                    <?php foreach ($this->taxExemptionUserHistoryAction as $date => $actions) { ?>
+                        <?php foreach ($actions['modifications'] as $action) { ?>
                             <tr>
-                                <td>Dispense de prélèvement fiscal: <b>Année <?= $action['year'] ?></b>.
-                                    <?php if ('adding' === $action['action']): ?> Ajoutée <?elseif (('deletion' === $action['action'])): ?> Supprimée <?endif;?> le <?= (new \DateTime($date))->format('d/m/Y H:i:s') ?> par: <?= $actions['user'] ?>
+                                <td>Dispense de prélèvement fiscal <b>année <?= $action['year'] ?></b>.
+                                    <?php if ('adding' === $action['action']): ?> Ajoutée <?php elseif ('deletion' === $action['action']): ?> Supprimée <?php endif; ?> le <?= (new \DateTime($date))->format('d/m/Y H:i:s') ?> par <?= $actions['user'] ?>
                                 </td>
                             </tr>
-                        <?php }
-                    } ?>
+                        <?php } ?>
+                    <?php } ?>
                 </table>
             <?php endif; ?>
         </div>

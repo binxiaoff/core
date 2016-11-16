@@ -495,7 +495,7 @@ class preteursController extends bootstrap
                 }
 
                 if (false === empty($taxExemptionHistory)) {
-                    $this->users_history->histo(3, 'modification exoneration fiscale', $_SESSION['user']['id_user'], serialize(['id_client' => $this->clients->id_client, 'modifications' => $taxExemptionHistory]));
+                    $this->users_history->histo(\users_history::FORM_ID_LENDER, \users_history::FORM_NAME_TAX_EXEMPTION, $_SESSION['user']['id_user'], serialize(['id_client' => $this->clients->id_client, 'modifications' => $taxExemptionHistory]));
                 }
 
                 $this->clients_adresses->update();
@@ -503,7 +503,7 @@ class preteursController extends bootstrap
                 $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
 
                 $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES));
-                $this->users_history->histo(3, 'modif info preteur', $_SESSION['user']['id_user'], $serialize);
+                $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur', $_SESSION['user']['id_user'], $serialize);
 
                 if (isset($_POST['statut_valider_preteur']) && 1 == $_POST['statut_valider_preteur']) {
                     $aExistingClient       = $this->clients->getDuplicates($this->clients->nom, $this->clients->prenom, $this->clients->naissance);
@@ -739,7 +739,7 @@ class preteursController extends bootstrap
 
                 // Histo user //
                 $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES));
-                $this->users_history->histo(3, 'modif info preteur personne morale', $_SESSION['user']['id_user'], $serialize);
+                $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur personne morale', $_SESSION['user']['id_user'], $serialize);
 
                 if (isset($_POST['statut_valider_preteur']) && $_POST['statut_valider_preteur'] == 1) {
                     $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::VALIDATED, $this->clients->id_client);
@@ -1454,7 +1454,7 @@ class preteursController extends bootstrap
                     $_SESSION['freeow']['title']   = 'Statut du preteur';
                     $_SESSION['freeow']['message'] = 'Le statut du preteur a bien &eacute;t&eacute; modifi&eacute; !';
                     break;
-                case 3:
+                case \users_history::FORM_ID_LENDER:
                     $this->users_history->histo($iOrigin, 'status offline d\'un preteur doublon', $_SESSION['user']['id_user'], $serialize);
                     $_SESSION['freeow']['title']   = 'Doublon client';
                     $_SESSION['freeow']['message'] = 'Attention, homonyme d\'un autre client. Client mis hors ligne !';

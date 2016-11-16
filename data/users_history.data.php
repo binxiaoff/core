@@ -28,6 +28,8 @@
 
 class users_history extends users_history_crud
 {
+    const FORM_ID_LENDER = 3;
+    const FORM_NAME_TAX_EXEMPTION = 'modification exoneration fiscale';
 
     function users_history($bdd, $params = '')
     {
@@ -111,8 +113,10 @@ class users_history extends users_history_crud
 
         $queryBuilder->select('*')
             ->from('users_history')
-            ->where('id_form=3')
-            ->andWhere('nom_form=\'modification exoneration fiscale\'')
+            ->where('id_form = :id_form')
+            ->andWhere('nom_form = :form_name')
+            ->setParameter('id_form', self::FORM_ID_LENDER, \PDO::PARAM_INT)
+            ->setParameter('form_name', self::FORM_NAME_TAX_EXEMPTION, \PDO::PARAM_STR)
             ->orderBy('added', 'DESC');
 
         /** @var \Doctrine\DBAL\Driver\Statement $statement */
