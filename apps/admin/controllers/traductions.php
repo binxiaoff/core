@@ -105,8 +105,7 @@ class traductionsController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
         /** @var TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translation_manager');
-        $translationManager->clearLanguageCache();
+        $this->get('sonata.cache.symfony')->flush(array('translations'));
         header('Location:' . $this->lurl . '/traductions');
         die;
     }

@@ -37,7 +37,8 @@
     "twig/extensions": "^1.3",
     "xynnn/google-tag-manager-bundle": "^2.0",
     "sonata-project/seo-bundle": "^2.0",
-    "ekino/newrelic-bundle": "^1.3"
+    "ekino/newrelic-bundle": "^1.3",
+    "sonata-project/cache-bundle": "^2.3"
   },
   "require-dev": {
     "sensio/generator-bundle": "^3.0"

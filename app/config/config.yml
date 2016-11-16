@@ -192,3 +192,11 @@ sonata_seo:
 
 ekino_new_relic:
     enabled: false
+
+sonata_cache:
+    caches:
+        symfony:
+            token: ddb80e7065db6ecee2f3768704d
+            php_cache_enabled: true
+            types: [translations]
+            servers: "%sonata_cache.servers%"
