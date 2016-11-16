@@ -136,6 +136,7 @@ classNames: 'user-preter-profile'
                     <header class="panel-header">
                         <h3>{% trans %}lender-profile_fiscal-information-documents-section-title{% endtrans %}</h3>
                     </header><!-- .panel-header -->
+
                     {% if lenderAccount.fiscal_info.documents is defined %}
                         <div class="panel-content">
                             <ul class="list-files">
@@ -151,6 +152,7 @@ classNames: 'user-preter-profile'
                             </ul><!-- /.list-files -->
                         </div><!-- /.panel-content -->
                     {% endif %}
+
                     <div class="panel-content">
                         <p>{% trans with { '%currentYear%': date()|date('Y'), '%lastYear%': date()|date('Y') - 1 } %} lender-profile_fiscal-solidarity-tax-on-wealth-msg {% endtrans %}</p>
                         <dl class="list-2col">
@@ -187,11 +189,13 @@ classNames: 'user-preter-profile'
                                 {% endif %}
                             </div>
                         </header><!-- .panel-header -->
+
                         <section id="profile-fiscalite-exoneration-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
                             <section id="profile-fiscalite-exoneration-view" role="tabpanel" class="profile-exoneration-view collapse in">
+                                <p>{% trans %} lender-profile_fiscal-information-exonerations-introduction {% endtrans %}</p>
+
                                 {% if declarationIsPossible == true %}
-                                    <a href="javascript:;" data-target="#profile-fiscalite-exoneration-edit" role="button" data-toggle="collapse" data-parent="#profile-fiscalite-exoneration-section" class="btn-default" aria-controls="#profile-fiscalite-exoneration-edit" aria-expanded="false">
-                                        <span class="icon fa-pencil-u32"></span>
+                                    <a href="javascript:;" data-target="#profile-fiscalite-exoneration-edit" role="button" data-toggle="collapse" data-parent="#profile-fiscalite-exoneration-section" class="btn-primary" aria-controls="#profile-fiscalite-exoneration-edit" aria-expanded="false">
                                         <span class="label">{% trans %}lender-profile_fiscal-information-exonerations-modify-button{% endtrans %}</span>
                                     </a>
                                 {% endif %}
@@ -254,7 +258,7 @@ classNames: 'user-preter-profile'
                                 </section>
                             {% endif %}
                         </section>
-                    </article><!-- /#panel-exonderations.panel -->
+                    </article><!-- /#panel-exonerations.panel -->
                 {% endif %}
             </div><!-- /#profile-info.dashboard-tab-pane -->
         </div><!-- /.dashboard-tabs-content -->
