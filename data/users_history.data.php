@@ -100,4 +100,23 @@ class users_history extends users_history_crud
         $this->serialize = $serialize;
         $this->create();
     }
+
+    /**
+     * @return array
+     */
+    public function getTaxExemptionHistoryAction()
+    {
+        /** @var \Doctrine\DBAL\Query\QueryBuilder $queryBuilder */
+        $queryBuilder = $this->bdd->createQueryBuilder();
+
+        $queryBuilder->select('*')
+            ->from('users_history')
+            ->where('id_form=3')
+            ->andWhere('nom_form=\'modification exoneration fiscale\'')
+            ->orderBy('added', 'DESC');
+
+        /** @var \Doctrine\DBAL\Driver\Statement $statement */
+        $statement = $queryBuilder->execute();
+        return $statement->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }

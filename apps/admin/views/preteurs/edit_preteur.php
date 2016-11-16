@@ -774,19 +774,18 @@
                 </table>
             <?php endif; ?>
             <!-- Lender tax exemption history -->
-            <?php
-            if (false === empty($this->taxExemption)): ?>
+            <?php if (false === empty($this->taxExemptionUserHistoryAction)): ?>
                 <table class="tablesorter histo_status_client">
                     <?php
-                    foreach ($this->taxExemption as $i => $aRow) { ?>
-                        <tr>
-                            <td>Demande d'exonération fiscal: <b>Année <?= $aRow['year'] ?></b>. Ajoutée le <?= date('d/m/Y H:i:s', strtotime($aRow['added'])) ?>
-                                <?php if (false === empty($aRow['user_firstname'])): ?>
-                                    par: <?= $aRow['user_firstname'] ?>&nbsp;<?= $aRow['user_name'] ?>
-                                <?php endif;?>
-                            </td>
-                        </tr>
-                    <?php } ?>
+                    foreach ($this->taxExemptionUserHistoryAction as $date => $actions) {
+                        foreach ($actions['modifications'] as $action) { ?>
+                            <tr>
+                                <td>Dispense de prélèvement fiscal: <b>Année <?= $action['year'] ?></b>.
+                                    <?php if ('adding' === $action['action']): ?> Ajoutée <?elseif (('deletion' === $action['action'])): ?> Supprimée <?endif;?> le <?= (new \DateTime($date))->format('d/m/Y H:i:s') ?> par: <?= $actions['user'] ?>
+                                </td>
+                            </tr>
+                        <?php }
+                    } ?>
                 </table>
             <?php endif; ?>
         </div>
@@ -1076,4 +1075,3 @@
         $("#row_precision").show();
     <?php endif; ?>
 </script>
-</div>

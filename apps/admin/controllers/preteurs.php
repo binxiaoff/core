@@ -310,6 +310,7 @@ class preteursController extends bootstrap
             $this->settings->get("Liste deroulante origine des fonds", 'status = 1 AND type');
             $this->origine_fonds = $this->settings->value;
             $this->origine_fonds = explode(';', $this->origine_fonds);
+            $this->taxExemptionUserHistoryAction = $this->getTaxExemptionHistoryActionDetails($this->users_history->getTaxExemptionHistoryAction());
         }
 
         $naiss           = explode('-', $this->clients->naissance);
@@ -482,13 +483,19 @@ class preteursController extends bootstrap
                             $oLenderTaxExemption->year        = $iExemptionYear;
                             $oLenderTaxExemption->id_user     = $_SESSION['user']['id_user'];
                             $oLenderTaxExemption->create();
+                            $taxExemptionHistory[] = ['year' => $oLenderTaxExemption->year, 'action' => 'adding'];
                         }
                     }
                 }
 
                 if (in_array($this->iNextYear, $this->aExemptionYears) && false === isset($_POST['tax_exemption'][$this->iNextYear])) {
                     $oLenderTaxExemption->get($this->lenders_accounts->id_lender_account . '" AND year = ' . $this->iNextYear . ' AND iso_country = "FR', 'id_lender');
+                    $taxExemptionHistory[] = ['year' => $oLenderTaxExemption->year, 'action' => 'deletion'];
                     $oLenderTaxExemption->delete($oLenderTaxExemption->id_lender_tax_exemption);
+                }
+
+                if (false === empty($taxExemptionHistory)) {
+                    $this->users_history->histo(3, 'modification exoneration fiscale', $_SESSION['user']['id_user'], serialize(['id_client' => $this->clients->id_client, 'modifications' => $taxExemptionHistory]));
                 }
 
                 $this->clients_adresses->update();
@@ -1815,5 +1822,25 @@ class preteursController extends bootstrap
         } else {
             return true;
         }
+    }
+
+    /**
+     * @param array $history
+     * @return array
+     */
+    private function getTaxExemptionHistoryActionDetails(array $history)
+    {
+        /** @var \users $user */
+        $data = [];
+        $user = $this->loadData('users');
+        if (false === empty($history)) {
+            foreach ($history as $row) {
+                $data[$row['added']] = [
+                    'modifications' => unserialize($row['serialize'])['modifications'],
+                    'user'          => $user->getName($row['id_user'])
+                ];
+            }
+        }
+        return $data;
     }
 }
