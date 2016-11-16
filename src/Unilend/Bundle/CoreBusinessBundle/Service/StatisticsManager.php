@@ -304,18 +304,10 @@ class StatisticsManager
         /** @var \echeanciers $paymentSchedule */
         $paymentSchedule = $this->entityManager->getRepository('echeanciers');
 
-        $problematicProjects = [];
-        $allProjects = [];
+        $problematicProjects = $paymentSchedule->getProblematicOwedCapitalByProjects(\underlying_contract::CONTRACT_IFP, 60);
 
-        foreach ($paymentSchedule->getOwedCapitalAndProjectsByContractType(\underlying_contract::CONTRACT_IFP) as $project) {
-            $allProjects[$project['id_project']] = $project['amount'];
-
-            if ($project['status'] >= \projects_status::PROBLEME && $project['delay'] >= 60 ) {
-                $problematicProjects[$project['id_project']] = $project['amount'];
-            }
-        }
-
-        $incidenceRate['amountIFP']   = bcmul(bcdiv(array_sum($problematicProjects), array_sum($allProjects), 4), 100, 2);
+        $allProjects = $paymentSchedule->getOwedCapitalByProjects(\underlying_contract::CONTRACT_IFP);
+        $incidenceRate['amountIFP']   = bcmul(bcdiv(array_sum(array_column($problematicProjects, 'amount')), array_sum(array_column($allProjects, 'amount')), 4), 100, 2);
         $incidenceRate['projectsIFP'] = bcmul(bcdiv(count($problematicProjects), count($allProjects), 4), 100, 2);
 
         return $incidenceRate;
