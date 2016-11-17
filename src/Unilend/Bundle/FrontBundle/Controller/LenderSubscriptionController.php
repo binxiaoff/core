@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
+use Unilend\Bundle\FrontBundle\Service\ContentManager;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\PaylineManager;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
@@ -41,19 +42,12 @@ class LenderSubscriptionController extends Controller
         $template['externalCounselList'] = json_decode($settings->value, true);
 
         /** @var LocationManager $locationManager */
-        $locationManager           = $this->get('unilend.service.location_manager');
-        $template['countries']     = $locationManager->getCountries();
-        $template['nationalities'] = $locationManager->getNationalities();
+        $locationManager = $this->get('unilend.service.location_manager');
 
-        /** @var \tree $tree */
-        $tree = $this->get('unilend.service.entity_manager')->getRepository('tree');
-        $settings->get('Lien conditions generales inscription preteur societe', 'type');
-        $tree->get(['id_tree' => $settings->value]);
+        $template['countries']             = $locationManager->getCountries();
+        $template['nationalities']         = $locationManager->getNationalities();
         $template['termsOfUseLegalEntity'] = $this->generateUrl('lenders_terms_of_sales', ['type' => 'morale']);
-
-        $settings->get('Lien conditions generales inscription preteur particulier', 'type');
-        $tree->get(['id_tree' => $settings->value]);
-        $template['termsOfUsePerson'] = $this->generateUrl('lenders_terms_of_sales');
+        $template['termsOfUsePerson']      = $this->generateUrl('lenders_terms_of_sales');
 
         $formData = $request->getSession()->get('subscriptionPersonalInformationFormData', []);
         $request->getSession()->remove('subscriptionPersonalInformationFormData');
@@ -1017,25 +1011,9 @@ class LenderSubscriptionController extends Controller
      */
     public function landingPageAction()
     {
-        /** @var \blocs $block */
-        $block = $client = $this->get('unilend.service.entity_manager')->getRepository('blocs');
-        /** @var \blocs_elements $blockElement */
-        $blockElement = $client = $this->get('unilend.service.entity_manager')->getRepository('blocs_elements');
-        /** @var \elements $elements */
-        $elements = $client = $this->get('unilend.service.entity_manager')->getRepository('elements');
-
-        $partners = [];
-        if ($block->get('partenaires', 'slug')) {
-            $elementsId = array_column($elements->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'ordre ASC'), 'id_element');
-            foreach ($blockElement->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'FIELD(id_element, ' . implode(', ', $elementsId) . ') ASC') as $element) {
-                $partners[] = [
-                    'alt' => $element['complement'],
-                    'src' => $element['value']
-                ];
-            }
-        }
-
-        return $this->render('pages/lender_subscription/landing_page.html.twig', ['partners' => $partners]);
+        /** @var ContentManager $contentManager */
+        $contentManager = $this->get('unilend.frontbundle.service.content_manager');
+        return $this->render('pages/lender_subscription/landing_page.html.twig', ['partners' => $contentManager->getFooterPartners()]);
     }
 
     /**
@@ -1045,25 +1023,9 @@ class LenderSubscriptionController extends Controller
      */
     public function figaroLandingPageAction()
     {
-        /** @var \blocs $block */
-        $block = $client = $this->get('unilend.service.entity_manager')->getRepository('blocs');
-        /** @var \blocs_elements $blockElement */
-        $blockElement = $client = $this->get('unilend.service.entity_manager')->getRepository('blocs_elements');
-        /** @var \elements $elements */
-        $elements = $client = $this->get('unilend.service.entity_manager')->getRepository('elements');
-
-        $partners = [];
-        if ($block->get('partenaires', 'slug')) {
-            $elementsId = array_column($elements->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'ordre ASC'), 'id_element');
-            foreach ($blockElement->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'FIELD(id_element, ' . implode(', ', $elementsId) . ') ASC') as $element) {
-                $partners[] = [
-                    'alt' => $element['complement'],
-                    'src' => $element['value']
-                ];
-            }
-        }
-
-        return $this->render('pages/lender_subscription/partners/figaro.html.twig', ['partners' => $partners]);
+        /** @var ContentManager $contentManager */
+        $contentManager = $this->get('unilend.frontbundle.service.content_manager');
+        return $this->render('pages/lender_subscription/partners/figaro.html.twig', ['partners' => $contentManager->getFooterPartners()]);
     }
 
     /**
@@ -1073,30 +1035,15 @@ class LenderSubscriptionController extends Controller
      */
     public function capitalLandingPageAction()
     {
-        /** @var \blocs $block */
-        $block = $client = $this->get('unilend.service.entity_manager')->getRepository('blocs');
-        /** @var \blocs_elements $blockElement */
-        $blockElement = $client = $this->get('unilend.service.entity_manager')->getRepository('blocs_elements');
-        /** @var \elements $elements */
-        $elements = $client = $this->get('unilend.service.entity_manager')->getRepository('elements');
-
-        $partners = [];
-        if ($block->get('partenaires', 'slug')) {
-            $elementsId = array_column($elements->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'ordre ASC'), 'id_element');
-            foreach ($blockElement->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'FIELD(id_element, ' . implode(', ', $elementsId) . ') ASC') as $element) {
-                $partners[] = [
-                    'alt' => $element['complement'],
-                    'src' => $element['value']
-                ];
-            }
-        }
+        /** @var ContentManager $contentManager */
+        $contentManager = $this->get('unilend.frontbundle.service.content_manager');
 
         $xml     = new \SimpleXMLElement(file_get_contents('http://www.capital.fr/wrapper-unilend.xml'));
         $content = explode('<!--CONTENT_ZONE-->', (string) $xml->content);
 
         $header = str_replace(array('<!--TITLE_ZONE_HEAD-->', '<!--TITLE_ZONE-->'), array('Financement Participatif  : Prêtez aux entreprises françaises & Recevez des intérêts chaque mois', 'Financement participatif'), $content[0]);
         $footer = str_replace('<!--XITI_ZONE-->', 'Unilend-accueil', $content[1]);
-        return $this->render('pages/lender_subscription/partners/capital.html.twig', ['header' => $header, 'footer' => $footer, 'partners' => $partners]);
+        return $this->render('pages/lender_subscription/partners/capital.html.twig', ['header' => $header, 'footer' => $footer, 'partners' => $contentManager->getFooterPartners()]);
     }
 
     /**
@@ -1491,4 +1438,3 @@ class LenderSubscriptionController extends Controller
         return array_combine(range(1, count($fundsOriginList)), array_values($fundsOriginList));
     }
 }
-

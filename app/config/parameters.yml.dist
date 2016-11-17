@@ -51,3 +51,7 @@ parameters:
     mapbox.token:                   pk.eyJ1IjoidW5pbGVuZCIsImEiOiJjaXJiczA4ejQwMDVvaWZsdzdmMmpnOGRtIn0._IBtG2TUy17m7S6jwVBrcg
 
     security.bcrypt.cost:           13
+
+    new_relic.front_app_name:       Unilend-front
+    new_relic.back_app_name:        Unilend-backoffice
+    new_relic.console_app_name:     Unilend-batchjobs

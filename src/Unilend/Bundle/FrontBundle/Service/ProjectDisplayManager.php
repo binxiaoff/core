@@ -63,7 +63,7 @@ class ProjectDisplayManager
         }
 
         $projectsData = [];
-        $projectList     = $projectsEntity->selectProjectsByStatus($projectStatus, ' AND p.display = ' . \projects::DISPLAY_PROJECT_ON, $sort, $start, $limit);
+        $projectList  = $projectsEntity->selectProjectsByStatus($projectStatus, ' AND p.display = ' . \projects::DISPLAY_PROJECT_ON, $sort, $start, $limit);
 
         foreach ($projectList as $item) {
             $project->get($item['id_project']);
@@ -166,22 +166,20 @@ class ProjectDisplayManager
             $projectData['maxValidRate']  = $projectRateSettings->rate_max;
         }
 
-        $now        = new \DateTime('NOW');
-        $projectEnd = $this->projectManager->getProjectEndDate($project);
-
         $projectData['navigation'] = $project->positionProject($project->id_project, self::$projectsStatus, [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC]);
 
-        if ($projectEnd  <= $now && $projectData['status'] == \projects_status::EN_FUNDING) {
+        $now = new \DateTime('NOW');
+        if ($projectData['endDate'] <= $now && $projectData['status'] == \projects_status::EN_FUNDING) {
             $projectData['projectPending'] = true;
         }
 
         if ($projectData['status'] >= \projects_status::REMBOURSEMENT) {
-            $projectData['statusHistory']   = $projectStatusHistory->getHistoryDetails($project->id_project);
+            $projectData['statusHistory'] = $projectStatusHistory->getHistoryDetails($project->id_project);
         }
 
         if (in_array($projectData['status'], [\projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE])) {
-            $lastStatusHistory            = $projectStatusHistory->select('id_project = ' . $project->id_project, 'id_project_status_history DESC', 0, 1);
-            $lastStatusHistory            = array_shift($lastStatusHistory);
+            $lastStatusHistory                = $projectStatusHistory->select('id_project = ' . $project->id_project, 'id_project_status_history DESC', 0, 1);
+            $lastStatusHistory                = array_shift($lastStatusHistory);
             $projectData['dateLastRepayment'] = date('d/m/Y', strtotime($lastStatusHistory['added']));
         }
 
