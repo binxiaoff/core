@@ -33,11 +33,14 @@
         <li><a href="<?= $this->lurl ?>/dossiers/remboursements" title="Remboursements">Remboursements</a> -</li>
         <li><a href="<?= $this->lurl ?>/dossiers/detail_remb/<?= $this->params[0] ?>" title="Detail remboursements">Detail remboursements</a> - </li>
         <li><a href="<?= $this->lurl ?>/dossiers/detail_remb_preteur/<?= $this->params[0] ?>" title="Detail prêteur">Detail prêteur</a> -</li>
-        <li>Detaile échéance prêteur</li>
+        <li>Detail échéance prêteur</li>
     </ul>
 
     <h1>Liste des <?= count($this->lRemb) ?> derniers remboursements</h1>
-    <?php if (count($this->lRemb) > 0) { ?>
+    <?php if (false === empty($this->loan->id_transfer)) : ?>
+        <div style="background-color: #4fa8b0; padding: 3px; margin-bottom: 5px;"><h2>Attention ce prêt à change de proprietaire</h2></div>
+    <?php endif; ?>
+    <?php if (count($this->lRemb) > 0) : ?>
         <table class="tablesorter">
             <thead>
             <tr>
@@ -58,11 +61,20 @@
             <?php
             $i = 1;
 
-            foreach ($this->lRemb as $r) {
+            foreach ($this->lRemb as $r) :
                 $this->projects->get($r['id_project'], 'id_project');
                 $this->lenders_accounts->get($r['id_lender'], 'id_lender_account');
 
-                $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
+                /** @var \DateTime $transferDate */
+                $transferDate = $this->loanManager->getLoanTransferDate($this->loan);
+                $paymentDate = new \DateTime($r['date_echeance_reel']);
+                if ($r['date_echeance_reel'] !== '0000-00-00 00:00:00' && $paymentDate <= $transferDate) {
+                    /** @var \lenders_accounts $formerOwner */
+                    $formerOwner = $this->loanManager->getFormerOwnerOfLoan($this->loan);
+                    $this->clients->get($formerOwner->id_client_owner, 'id_client');
+                } else {
+                    $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
+                }
                 ?>
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                     <td><?= $this->clients->nom ?></td>
@@ -90,10 +102,9 @@
                 </tr>
                 <?php
                 $i++;
-            }
+            endforeach;
             // ajout de la ligne du RA
-            if ($this->montant_ra > 0) {
-                ?>
+            if ($this->montant_ra > 0) : ?>
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                     <td><?= $this->clients->nom ?></td>
                     <td><?= $this->clients->prenom ?></td>
@@ -117,12 +128,10 @@
                         } ?>
                     </td>
                 </tr>
-                <?php
-            }
-            ?>
+                <?php endif ; ?>
             </tbody>
         </table>
-        <?php if ($this->nb_lignes != '') { ?>
+        <?php if ($this->nb_lignes != '') : ?>
             <table>
                 <tr>
                     <td id="pager">
@@ -137,7 +146,7 @@
                     </td>
                 </tr>
             </table>
-        <?php } ?>
-    <?php } ?>
+        <?php endif; ?>
+    <?php endif; ?>
 </div>
 <?php unset($_SESSION['freeow']); ?>

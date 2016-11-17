@@ -2201,6 +2201,12 @@ class dossiersController extends bootstrap
         $this->echeanciers      = $this->loadData('echeanciers');
         $this->lenders_accounts = $this->loadData('lenders_accounts');
         $this->projects         = $this->loadData('projects');
+        /** @var \loans loan */
+        $this->loan = $this->loadData('loans');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LenderManager lenderManager */
+        $this->lenderManager = $this->get('unilend.service.lender_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager loanManager */
+        $this->loanManager = $this->get('unilend.service.loan_manager');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             /** @var \loans $oLoans */
@@ -2225,6 +2231,12 @@ class dossiersController extends bootstrap
         $this->projects_status         = $this->loadData('projects_status');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->receptions              = $this->loadData('receptions');
+
+        /** @var \loans loan */
+        $this->loan = $this->loadData('loans');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager loanManager */
+        $this->loanManager = $this->get('unilend.service.loan_manager');
+        $this->loan->get($this->params[1]);
 
         $this->lRemb = $this->echeanciers->getRepaymentWithTaxDetails($this->params[1]);
 

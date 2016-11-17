@@ -56,6 +56,10 @@ class LoanManager
         }
     }
 
+    /**
+     * @param \loans $loan
+     * @return \lenders_accounts
+     */
     public function getFormerOwnerOfLoan(\loans $loan)
     {
         /** @var \loan_transfer $loanTransfer */
@@ -67,6 +71,20 @@ class LoanManager
         $lender->get($loanTransfer->id_lender_origin);
 
         return $lender;
+    }
+
+    /**
+     * @param \loans $loan
+     * @return \DateTime
+     */
+    public function getLoanTransferDate(\loans $loan)
+    {
+        /** @var \loan_transfer $loanTransfer */
+        $loanTransfer = $this->oEntityManager->getRepository('loan_transfer');
+        $loanTransfer->get($loan->id_transfer);
+
+        $transferDate = new \DateTime($loanTransfer->added);
+        return $transferDate;
     }
 
 }
