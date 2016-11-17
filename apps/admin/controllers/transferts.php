@@ -1064,21 +1064,25 @@ class transfertsController extends bootstrap
     private function transferAccountBalance(\transactions $transactions, $accountBalance, \clients $originalClient, \clients $newOwner)
     {
         $transactions->id_client             = $originalClient->id_client;
-        $transactions->montant               = -$accountBalance*100;
+        $transactions->montant               = -$accountBalance * 100;
         $transactions->status                = \transactions::PAYMENT_STATUS_OK;
         $transactions->etat                  = \transactions::STATUS_VALID;
         $transactions->id_client_counterpart = $newOwner->id_client;
         $transactions->type_transaction      = \transactions_types::TYPE_LENDER_BALANCE_TRANSFER;
+        $transactions->date_transaction      = date('Y-m-d h:i:s');
+        $transactions->id_langue             = 'fr';
         $transactions->create();
 
         $transactions->unsetData();
 
         $transactions->id_client             = $newOwner->id_client;
-        $transactions->montant               = $accountBalance*100;
+        $transactions->montant               = $accountBalance * 100;
         $transactions->status                = \transactions::PAYMENT_STATUS_OK;
         $transactions->etat                  = \transactions::STATUS_VALID;
         $transactions->id_client_counterpart = $originalClient->id_client;
         $transactions->type_transaction      = \transactions_types::TYPE_LENDER_BALANCE_TRANSFER;
+        $transactions->date_transaction      = date('Y-m-d h:i:s');
+        $transactions->id_langue             = 'fr';
         $transactions->create();
     }
 

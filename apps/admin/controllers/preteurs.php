@@ -212,6 +212,14 @@ class preteursController extends bootstrap
         $this->soldeRetrait = abs($this->soldeRetrait / 100);
         $this->lTrans       = $this->transactions->select('type_transaction IN (' . implode(', ', array_keys($this->lesStatuts)) . ') AND status = 1 AND etat = 1 AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . date('Y'), 'added DESC');
 
+        /** @var \loan_transfer $loanTransfers */
+        $loanTransfers         = $this->loadData('loan_transfer');
+        $lenderLoanTransfers   = $loanTransfers->select('id_lender_origin = ' . $this->lenders_accounts->id_lender_account . ' OR id_lender_reciever = ' . $this->lenders_accounts->id_lender_account . ' GROUP BY id_lender_origin');
+        $this->loanTransferDocuments = [];
+        foreach ($lenderLoanTransfers as $transfer) {
+            $this->loanTransferDocuments[] = $this->attachment->select('id_owner = ' . $transfer['id_transfer'] . ' AND id_type = ' . \attachment_type::LOAN_TRANSFER_CERTIFICATE . ' GROUP BY id_owner')[0];
+        }
+
         $this->getMessageAboutClientStatus();
     }
 

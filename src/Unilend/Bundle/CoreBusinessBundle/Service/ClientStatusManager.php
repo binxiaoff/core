@@ -51,6 +51,7 @@ class ClientStatusManager
             $client->status = \clients::STATUS_OFFLINE;
             $client->update();
         }
+
         $this->addClientStatus($client, $userId, \clients_status::CLOSED_DEFINITELY, $comment);
     }
 
