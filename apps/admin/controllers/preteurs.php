@@ -1322,6 +1322,12 @@ class preteursController extends bootstrap
         $this->contract                = $this->loadData('underlying_contract');
         /** @var \Symfony\Component\Translation\TranslatorInterface translator */
         $this->translator              = $this->get('translator');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager loanManager */
+        $this->loanManager = $this->get('unilend.service.loan_manager');
+        /** @var \loans loan */
+        $this->loan = $this->loadData('loans');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LenderManager lenderManager */
+        $lenderManager = $this->get('unilend.service.lender_manager');
 
         $this->lenders_accounts->get($this->params[0], 'id_lender_account');
         $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
@@ -1376,6 +1382,8 @@ class preteursController extends bootstrap
             $aSetting['AverageRateUnilend']                                          = $this->projects->getAvgRate($aSetting['evaluation'], $aSetting['period_min'], $aSetting['period_max'], $startingDate);
             $this->aAutoBidSettings[$aSetting['id_period']][$aSetting['evaluation']] = $aSetting;
         }
+
+        $this->hasTransferredLoans = $lenderManager->hasTransferredLoans($this->lenders_accounts);
     }
 
     public function _control_fiscal_city()
