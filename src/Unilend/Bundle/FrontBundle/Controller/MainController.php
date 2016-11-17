@@ -25,10 +25,10 @@ use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
 use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
+use Unilend\Bundle\FrontBundle\Service\ContentManager;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
 use Unilend\Bundle\FrontBundle\Service\TestimonialManager;
-use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 use Unilend\core\Loader;
 
 class MainController extends Controller
@@ -137,21 +137,18 @@ class MainController extends Controller
      */
     public function homeBorrowerAction()
     {
-        /** @var ProjectManager $projectManager */
         $projectManager = $this->get('unilend.service.project_manager');
-        /** @var TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translation_manager');
-        /** @var TestimonialManager $testimonialService */
         $testimonialService = $this->get('unilend.frontbundle.service.testimonial_manager');
-        /** @var ProjectDisplayManager $projectDisplayManager */
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
+        /** @var \borrowing_motive $borrowingMotive */
+        $borrowingMotive = $this->get('unilend.service.entity_manager')->getRepository('borrowing_motive');
 
         $template = [];
         $template['testimonialPeople'] = $testimonialService->getBorrowerBattenbergTestimonials(true);
         $template['loanPeriods']       = $projectManager->getPossibleProjectPeriods();
         $template['projectAmountMax']  = $projectManager->getMaxProjectAmount();
         $template['projectAmountMin']  = $projectManager->getMinProjectAmount();
-        $template['borrowingMotives']  = $translationManager->getTranslatedBorrowingMotiveList();
+        $template['borrowingMotives']  = $borrowingMotive->select();
         $template['projects'] = $projectDisplayManager->getProjectsList(
             [\projects_status::EN_FUNDING],
             [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC]
@@ -324,7 +321,7 @@ class MainController extends Controller
             case self::CMS_TEMPLATE_NAV:
                 return $this->renderCmsNav($tree, $finalElements['content'], $entityManager);
             case self::CMS_TEMPLATE_BORROWER_LANDING_PAGE:
-                return $this->renderBorrowerLandingPage($request, $finalElements['content'], $finalElements['complement'], $entityManager);
+                return $this->renderBorrowerLandingPage($request, $finalElements['content'], $finalElements['complement']);
             case self::CMS_TEMPLATE_TOS:
                 return $this->renderTermsOfUse($tree);
             default:
@@ -413,22 +410,12 @@ class MainController extends Controller
      * @param EntityManager $entityManager
      * @return Response
      */
-    private function renderBorrowerLandingPage(Request $request, array $content, array $complement, EntityManager $entityManager)
+    private function renderBorrowerLandingPage(Request $request, array $content, array $complement)
     {
+        /** @var ContentManager $contentManager */
+        $contentManager = $this->get('unilend.frontbundle.service.content_manager');
+
         $sessionHandler = $request->getSession();
-
-        /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
-
-        $settings->get('Google Tag Manager', 'type');
-        $googleTagManagerId = $settings->value;
-
-        $settings->get('Somme à emprunter min', 'type');
-        $minimumAmount = $settings->value;
-
-        $settings->get('Somme à emprunter max', 'type');
-        $maximumAmount = $settings->value;
-
         $isPartnerFunnel = $content['tunnel-partenaire'] == 1;
 
         if ($isPartnerFunnel) {
@@ -440,54 +427,17 @@ class MainController extends Controller
 
         $template = [
             'cms'      => [
-                'title'                       => $content['titre'],
-                'center_blocks'               => [
-                    1 => [
-                        'text'      => $content['texte-bloc-1'],
-                        'image'     => $content['image-bloc-1'],
-                        'image_alt' => $complement['image-bloc-1']
-                    ],
-                    2 => [
-                        'text'      => $content['texte-bloc-2'],
-                        'image'     => $content['image-bloc-2'],
-                        'image_alt' => $complement['image-bloc-2']
-                    ],
-                    3 => [
-                        'text'      => $content['texte-bloc-3'],
-                        'image'     => $content['image-bloc-3'],
-                        'image_alt' => $complement['image-bloc-3']
-                    ]
-                ],
-                'center_button_text'          => $content['texte-bouton-centre'],
-                'right_block_title'           => $content['titre-bloc-droite'],
-                'form_validation_button_text' => $content['texte-bouton-validation-formulaire'],
                 'partner_logo'                => $content['logo-partenaire'],
                 'partner_logo_alt'            => $complement['logo-partenaire'],
-                'footer'                      => [
-                    $content['image-footer-1'] => $complement['image-footer-1'],
-                    $content['image-footer-2'] => $complement['image-footer-2'],
-                    $content['image-footer-3'] => $complement['image-footer-3'],
-                    $content['image-footer-4'] => $complement['image-footer-4'],
-                    $content['image-footer-5'] => $complement['image-footer-5'],
-                    $content['image-footer-6'] => $complement['image-footer-6'],
-                    $content['image-footer-7'] => $complement['image-footer-7']
-                ],
                 'partner_funnel'              => $isPartnerFunnel
             ],
             'form'     => [
-                'message' => empty($sessionHandler->get('projectRequest')['message']) ? '' : $sessionHandler->get('projectRequest')['message'],
                 'values'  => [
                     'amount' => empty($sessionHandler->get('projectRequest')['values']['amount']) ? (empty($request->query->get('montant')) ? '' : $request->query->get('montant')) : $sessionHandler->get('projectRequest')['values']['amount'],
                     'siren'  => empty($sessionHandler->get('projectRequest')['values']['siren']) ? (empty($request->query->get('siren')) ? '' : $request->query->get('siren')) : $sessionHandler->get('projectRequest')['values']['siren'],
                     'email'  => empty($sessionHandler->get('projectRequest')['values']['email']) ? (empty($request->query->get('email')) ? '' : $request->query->get('email')) : $sessionHandler->get('projectRequest')['values']['email']
                 ],
-                'errors'  => empty($sessionHandler->get('projectRequest')['errors']) ? [] : $sessionHandler->get('projectRequest')['errors']
             ],
-            'settings' => [
-                'googleTagManagerId' => $googleTagManagerId,
-                'minimumAmount'      => $minimumAmount,
-                'maximumAmount'      => $maximumAmount
-            ]
         ];
 
         $session = [];
@@ -502,10 +452,12 @@ class MainController extends Controller
             }
         }
 
+        $template['partners'] = $contentManager->getFooterPartners();
+
         $sessionHandler->set('projectRequest', $session);
         $sessionHandler->set('partnerProjectRequest', $isPartnerFunnel);
 
-        return $this->render('pages/template-borrower-landing-page.html.twig', $template);
+        return $this->render('pages/template_borrower_landing_page.html.twig', $template);
     }
 
     /**
@@ -682,67 +634,13 @@ class MainController extends Controller
      */
     public function footerAction()
     {
-        /** @var MemcacheCachePool $cachePool */
-        $cachePool  = $this->get('memcache.default');
-        $cachedItem = $cachePool->getItem('Footer');
+        /** @var ContentManager $contentManager */
+        $contentManager = $this->get('unilend.frontbundle.service.content_manager');
 
-        if (false === $cachedItem->isHit()) {
-            /** @var EntityManager $entityManager */
-            $entityManager = $this->get('unilend.service.entity_manager');
-            /** @var \menus $menus */
-            $menus = $entityManager->getRepository('menus');
-            /** @var \tree_menu $subMenus */
-            $subMenus = $entityManager->getRepository('tree_menu');
-            /** @var \tree $page */
-            $page = $entityManager->getRepository('tree');
-
-            $footerMenu = [];
-            foreach ($menus->select('status = 1', 'id_menu ASC') as $menu) {
-                $children = [];
-                foreach ($subMenus->select('status = 1 AND id_menu = ' . $menu['id_menu'], 'ordre ASC') as $subMenu) {
-                    $children[] = [
-                        'title'  => $subMenu['nom'],
-                        'target' => $subMenu['target'],
-                        'url'    => ($subMenu['complement'] === 'L' && $page->get(['id_tree' => $subMenu['value']])) ? '/' . $page->slug : $subMenu['value']
-                    ];
-                }
-
-                $footerMenu[] = [
-                    'title'    => $menu['nom'],
-                    'children' => $children
-                ];
-            }
-
-            /** @var \blocs $block */
-            $block = $entityManager->getRepository('blocs');
-            /** @var \blocs_elements $blockElement */
-            $blockElement = $entityManager->getRepository('blocs_elements');
-            /** @var \elements $elements */
-            $elements = $entityManager->getRepository('elements');
-
-            $partners = [];
-            if ($block->get('partenaires', 'slug')) {
-                $elementsId = array_column($elements->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'ordre ASC'), 'id_element');
-                foreach ($blockElement->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'FIELD(id_element, ' . implode(', ', $elementsId) . ') ASC') as $element) {
-                    if (false === empty($element['value'])) {
-                        $partners[] = [
-                            'alt' => $element['complement'],
-                            'src' => $element['value']
-                        ];
-                    }
-                }
-            }
-
-            $finalElements = [
-                'footerMenu' => $footerMenu,
-                'partners'   => $partners
-            ];
-
-            $cachedItem->set($finalElements)->expiresAfter(3600);
-            $cachePool->save($cachedItem);
-        } else {
-            $finalElements = $cachedItem->get();
-        }
+        $finalElements = [
+            'footerMenu' => $contentManager->getFooterMenu(),
+            'partners'   => $contentManager->getFooterPartners()
+        ];
 
         return $this->render('partials/site/footer.html.twig', ['menus' => $finalElements['footerMenu'], 'partners' => $finalElements['partners']]);
     }
@@ -798,7 +696,7 @@ class MainController extends Controller
      */
     public function acceptCookiesAction(Request $request)
     {
-        if ($request->isXMLHttpRequest()) {
+        if ($request->isXmlHttpRequest()) {
             /** @var \accept_cookies $acceptCookies */
             $acceptCookies = $this->get('unilend.service.entity_manager')->getRepository('accept_cookies');
 
@@ -841,26 +739,37 @@ class MainController extends Controller
 
     /**
      * @Route("/statistiques", name="statistics")
+     * @Route("/statistiques/{requestedDate}", name="historic_statistics")
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function statisticsAction()
+    public function statisticsAction(Request $request, $requestedDate = null)
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \tree $tree */
         $tree = $entityManager->getRepository('tree');
         $tree->get(['slug' => 'statistiques']);
-
         /** @var StatisticsManager $statisticsManager */
         $statisticsManager = $this->get('unilend.service.statistics_manager');
-        $years = array_merge(['2013-2014'], range(2015, date('Y')));
+
+        if (false === empty($requestedDate)) {
+            $date       = new \DateTime($requestedDate);
+            $years      = array_merge(['2013-2014'], range(2015, $date->format('Y')));
+        } else {
+            $date       = new \DateTime('NOW');
+            $years      = array_merge(['2013-2014'], range(2015, date('Y')));
+        }
+
+        $statistics = $statisticsManager->getStatisticsAtDate($date);
         $template = [
-            'data' => [
-                'projectCountForCategoryTreeMap' => $this->getProjectCountForCategoryTreeMap(),
-                'regulatoryTable' => $statisticsManager->getRegulatoryData(),
+            'data'  => [
+                'projectCountForCategoryTreeMap' => $this->getProjectCountForCategoryTreeMap($statistics['projectCountByCategory']),
+                'regulatoryTable'                => $statistics['regulatoryData'],
             ],
-            'years' => array_merge($years, ['total'])
+            'years' => array_merge($years, ['total']),
+            'date'  => $date->format('Y-m-d')
         ];
+
         $this->setCmsSeoData($tree);
         $response = $this->render('pages/static_pages/statistics.html.twig', $template);
 
@@ -1035,11 +944,8 @@ class MainController extends Controller
         return $this->renderCmsNav($tree, $finalElements, $entityManager, 'apropos-statistiques');
     }
 
-    private function getProjectCountForCategoryTreeMap()
+    private function getProjectCountForCategoryTreeMap($countByCategory)
     {
-        /** @var StatisticsManager $statisticsManager */
-        $statisticsManager = $this->get('unilend.service.statistics_manager');
-        $countByCategory = $statisticsManager->getProjectCountByCategory();
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
         $dataForTreeMap = [];

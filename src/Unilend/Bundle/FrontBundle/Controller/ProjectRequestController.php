@@ -12,9 +12,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
-use Unilend\Bundle\FrontBundle\Service\RouteProvider;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
-use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 use Unilend\core\Loader;
 use Unilend\librairies\Altares;
 
@@ -90,8 +88,6 @@ class ProjectRequestController extends Controller
         /** @var \settings $settings */
         $settings = $entityManager->getRepository('settings');
 
-        $message = '';
-        $errors  = [];
         $amount  = null;
         $siren   = null;
         $email   = null;
@@ -99,11 +95,10 @@ class ProjectRequestController extends Controller
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
 
-        if (empty($request->request->get('montant'))) {
-            $message = $translator->trans('borrower-landing-page_required-fields-error');
-            $errors['amount'] = true;
+        if (empty($request->request->get('amount'))) {
+            $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
         } else {
-            $amount = str_replace(' ', '', $request->request->get('montant'));
+            $amount = str_replace(' ', '', $request->request->get('amount'));
 
             $settings->get('Somme à emprunter min', 'type');
             $minimumAmount = $settings->value;
@@ -112,11 +107,9 @@ class ProjectRequestController extends Controller
             $maximumAmount = $settings->value;
 
             if (false === filter_var($amount, FILTER_VALIDATE_INT)) {
-                $message = $translator->trans('borrower-landing-page_required-fields-error');
-                $errors['amount'] = true;
+                $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
             } elseif ($amount < $minimumAmount || $amount > $maximumAmount) {
-                $message = $translator->trans('borrower-landing-page_amount-value-error');
-                $errors['amount'] = true;
+                $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_amount-value-error'));
             }
         }
 
@@ -128,8 +121,7 @@ class ProjectRequestController extends Controller
             || false === filter_var($siren, FILTER_VALIDATE_INT)
             || false === in_array($sirenLength, [9, 14]) // SIRET numbers also allowed
         ) {
-            $message = $translator->trans('borrower-landing-page_required-fields-error');
-            $errors['siren'] = true;
+            $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
         } else {
             $siren = substr($siren, 0, 9);
         }
@@ -140,21 +132,18 @@ class ProjectRequestController extends Controller
             empty($request->request->get('email'))
             || false === filter_var($request->request->get('email'), FILTER_VALIDATE_EMAIL)
         ) {
-            $message = $translator->trans('borrower-landing-page_required-fields-error');
-            $errors['email'] = true;
+            $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
         } else {
             $email = $request->request->get('email');
         }
 
-        if (false === empty($errors)) {
+        if ($this->get('session')->getFlashBag()->has('borrowerLandingPageErrors')) {
             $request->getSession()->set('projectRequest', [
-                'message' => $message,
                 'values'  => [
                     'amount' => $amount,
                     'siren'  => $siren,
                     'email'  => $email
-                ],
-                'errors'  => $errors
+                ]
             ]);
 
             return $this->redirect($request->headers->get('referer'));
@@ -359,9 +348,9 @@ class ProjectRequestController extends Controller
         $tree->get(['id_tree' => $settings->value]);
         $template['terms_of_sale_link'] = $this->generateUrl($tree->slug);
 
-        /** @var TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translation_manager');
-        $template['borrowing_motives']  = $translationManager->getTranslatedBorrowingMotiveList();
+        /** @var \borrowing_motive $borrowingMotive */
+        $borrowingMotive = $entityManager->getRepository('borrowing_motive');
+        $template['borrowing_motives']  = $borrowingMotive->select();
 
         $settings->get('Durée des prêts autorisées', 'type');
         $template['loan_periods'] = explode(',', $settings->value);

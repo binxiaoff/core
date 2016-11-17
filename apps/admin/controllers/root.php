@@ -59,36 +59,6 @@ class rootController extends bootstrap
         $this->users->handleLogout();
     }
 
-    public function _sitemap()
-    {
-        $this->users->checkAccess('edition');
-
-        $this->menu_admin = 'edition';
-
-        $sitemap = $this->tree->getSitemap($this->language, $this->params[0]);
-
-        $_SESSION['freeow']['title'] = 'Sitemap du site';
-
-        $fichier = $this->path . 'public/default/sitemap.xml';
-        $handle  = fopen($fichier, "w");
-
-        if (is_writable($fichier)) {
-            if (fwrite($handle, $sitemap) === FALSE) {
-                $_SESSION['freeow']['message'] = 'Impossible d\'écrire dans le fichier : ' . $fichier;
-                exit;
-            }
-
-            $_SESSION['freeow']['message'] = 'Le sitemap a bien &eacute;t&eacute; cr&eacute;&eacute; !';
-
-            fclose($handle);
-        } else {
-            $_SESSION['freeow']['message'] = 'Impossible d\'écrire dans le fichier : ' . $fichier;
-        }
-
-        header('Location:' . $this->lurl . '/tree');
-        die;
-    }
-
     public function _indexation()
     {
         $this->users->checkAccess('edition');

@@ -21,7 +21,6 @@ use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\FrontBundle\Service\LenderAccountDisplayManager;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
-use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 use Unilend\core\Loader;
 
 class ProjectsController extends Controller
@@ -494,7 +493,7 @@ class ProjectsController extends Controller
      */
     public function bidsListAction($projectId, $rate, Request $request)
     {
-        if (false === $request->isXMLHttpRequest()) {
+        if (false === $request->isXmlHttpRequest()) {
             return new Response('not an ajax request');
         }
 
@@ -573,9 +572,8 @@ class ProjectsController extends Controller
 
         /** @var \dates $dates */
         $dates = Loader::loadLib('dates');
-        /** @var TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translation_manager');
-        $translations = $translationManager->getAllTranslationsForSection('preteur-projets'); //TODO replace by new translations once they are done
+
+        $translator = $this->get('translator');
 
         /** @var \companies $oCompany */
         $oCompany = $this->get('unilend.service.entity_manager')->getRepository('companies');
@@ -601,45 +599,45 @@ class ProjectsController extends Controller
         $oActiveSheet->setCellValueByColumnAndRow(2, $iRow, $dates->formatDate($aAnnualAccounts[1]['cloture_exercice_fiscal'], 'd/m/Y'));
         $oActiveSheet->setCellValueByColumnAndRow(3, $iRow, $dates->formatDate($aAnnualAccounts[2]['cloture_exercice_fiscal'], 'd/m/Y'));
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, 'Durée de l\'exercice');
-        $oActiveSheet->setCellValueByColumnAndRow(1, $iRow, str_replace('[DURATION]', $aAnnualAccounts[0]['duree_exercice_fiscal'], $translations['annual-accounts-duration-months']));
-        $oActiveSheet->setCellValueByColumnAndRow(2, $iRow, str_replace('[DURATION]', $aAnnualAccounts[1]['duree_exercice_fiscal'], $translations['annual-accounts-duration-months']));
-        $oActiveSheet->setCellValueByColumnAndRow(3, $iRow, str_replace('[DURATION]', $aAnnualAccounts[2]['duree_exercice_fiscal'], $translations['annual-accounts-duration-months']));
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['compte-de-resultats']);
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['chiffe-daffaires']);
+        $oActiveSheet->setCellValueByColumnAndRow(1, $iRow, str_replace('[DURATION]', $aAnnualAccounts[0]['duree_exercice_fiscal'], $translator->trans('preteur-projets_annual-accounts-duration-months')));
+        $oActiveSheet->setCellValueByColumnAndRow(2, $iRow, str_replace('[DURATION]', $aAnnualAccounts[1]['duree_exercice_fiscal'], $translator->trans('preteur-projets_annual-accounts-duration-months')));
+        $oActiveSheet->setCellValueByColumnAndRow(3, $iRow, str_replace('[DURATION]', $aAnnualAccounts[2]['duree_exercice_fiscal'], $translator->trans('preteur-projets_annual-accounts-duration-months')));
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_compte-de-resultats'));
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_chiffe-daffaires'));
         for ($i = 0; $i < 3; $i++) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['ca']);
         }
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['resultat-brut-dexploitation']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_resultat-brut-dexploitation'));
         for ($i = 0; $i < 3; $i++) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_brute_exploitation']);
         }
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['resultat-dexploitation']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_resultat-dexploitation'));
         for ($i = 0; $i < 3; $i++) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_exploitation']);
         }
         if (false === $bPreviousRiskProject) {
-            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['resultat-financier']);
+            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_resultat-financier'));
             for ($i = 0; $i < 3; $i++) {
                 $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_financier']);
             }
-            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['produit-exceptionnel']);
+            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_produit-exceptionnel'));
             for ($i = 0; $i < 3; $i++) {
                 $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['produit_exceptionnel']);
             }
-            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['charges-exceptionnelles']);
+            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_charges-exceptionnelles'));
             for ($i = 0; $i < 3; $i++) {
                 $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['charges_exceptionnelles']);
             }
-            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['resultat-exceptionnel']);
+            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_resultat-exceptionnel'));
             for ($i = 0; $i < 3; $i++) {
                 $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_exceptionnel']);
             }
-            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['resultat-net']);
+            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_resultat-net'));
             for ($i = 0; $i < 3; $i++) {
                 $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_net']);
             }
         }
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['investissements']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_investissements'));
         for ($i = 0; $i < 3; $i++) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['investissements']);
         }
@@ -674,9 +672,7 @@ class ProjectsController extends Controller
             return new RedirectResponse('/');
         }
 
-        /** @var TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translation_manager');
-        $translations = $translationManager->getAllTranslationsForSection('preteur-projets'); //TODO replace by new translations once they are done
+        $translator = $this->get('translator');
 
         /** @var \companies $oCompany */
         $oCompany = $this->get('unilend.service.entity_manager')->getRepository('companies');
@@ -701,78 +697,78 @@ class ProjectsController extends Controller
         /** @var \PHPExcel $oDocument */
         $oDocument    = new \PHPExcel();
         $oActiveSheet = $oDocument->setActiveSheetIndex(0);
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['bilan']);
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['actif']);
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['immobilisations-corporelles']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_bilan'));
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_actif'));
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_immobilisations-corporelles'));
         for ($i = 0; $i < 3; $i++) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['immobilisations_corporelles']);
         }
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['immobilisations-incorporelles']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_immobilisations-incorporelles'));
         for ($i = 0; $i < 3; $i++) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['immobilisations_incorporelles']);
         }
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['immobilisations-financieres']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_immobilisations-financieres'));
         for ($i = 0; $i < 3; $i++) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['immobilisations_financieres']);
         }
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['stocks']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_stocks'));
         for ($i = 0; $i < 3; $i++) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['stocks']);
         }
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['creances-clients']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_creances-clients'));
         for ($i = 0; $i < 3; $i++) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['creances_clients']);
         }
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['disponibilites']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_disponibilites'));
         for ($i = 0; $i < 3; $i++) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['disponibilites']);
         }
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['valeurs-mobilieres-de-placement']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_valeurs-mobilieres-de-placement'));
         for ($i = 0; $i < 3; $i++) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['valeurs_mobilieres_de_placement']);
         }
         if (false === $bPreviousRiskProject && ($aAssetsDebts[0]['comptes_regularisation_actif'] != 0 || $aAssetsDebts[1]['comptes_regularisation_actif'] != 0 || $aAssetsDebts[2]['comptes_regularisation_actif'] != 0)) {
-            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['comptes-regularisation']);
+            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_comptes-regularisation'));
             for ($i = 0; $i < 3; $i++) {
                 $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['comptes_regularisation_actif']);
             }
         }
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['total-bilan-actifs']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_total-bilan-actifs'));
         for ($i = 0; $i < 3; $i++) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['immobilisations_corporelles'] + $aAssetsDebts[$i]['immobilisations_incorporelles'] + $aAssetsDebts[$i]['immobilisations_financieres'] + $aAssetsDebts[$i]['stocks'] + $aAssetsDebts[$i]['creances_clients'] + $aAssetsDebts[$i]['disponibilites'] + $aAssetsDebts[$i]['valeurs_mobilieres_de_placement'] + $aAssetsDebts[$i]['comptes_regularisation_actif']);
         }
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['passif']);
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['capitaux-propres']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_passif'));
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_capitaux-propres'));
         for ($i = 0; $i < 3; $i++) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['capitaux_propres']);
         }
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['provisions-pour-risques-charges']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_provisions-pour-risques-charges'));
         for ($i = 0; $i < 3; $i++) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['provisions_pour_risques_et_charges']);
         }
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['amortissement-sur-immo']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_amortissement-sur-immo'));
         for ($i = 0; $i < 3; $i++) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['amortissement_sur_immo']);
         }
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['dettes-financieres']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_dettes-financieres'));
         for ($i = 0; $i < 3; $i++) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['dettes_financieres']);
         }
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['dettes-fournisseurs']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_dettes-fournisseurs'));
         for ($i = 0; $i < 3; $i++) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['dettes_fournisseurs']);
         }
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['autres-dettes']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_autres-dettes'));
         for ($i = 0; $i < 3; $i++) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['autres_dettes']);
         }
         if (false === $bPreviousRiskProject && ($aAssetsDebts[0]['comptes_regularisation_passif'] != 0 || $aAssetsDebts[1]['comptes_regularisation_passif'] != 0 || $aAssetsDebts[2]['comptes_regularisation_passif'] != 0)) {
-            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['comptes-regularisation']);
+            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_comptes-regularisation'));
             for ($i = 0; $i < 3; $i++) {
                 $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['comptes_regularisation_passif']);
             }
         }
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translations['total-bilan-passifs']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_total-bilan-passifs'));
         for ($i = 0; $i < 3; $i++) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['capitaux_propres'] + $aAssetsDebts[$i]['provisions_pour_risques_et_charges'] + $aAssetsDebts[$i]['amortissement_sur_immo'] + $aAssetsDebts[$i]['dettes_financieres'] + $aAssetsDebts[$i]['dettes_fournisseurs'] + $aAssetsDebts[$i]['autres_dettes'] + $aAssetsDebts[$i]['comptes_regularisation_passif']);
         }
@@ -802,14 +798,12 @@ class ProjectsController extends Controller
         $project = $entityManager->getRepository('projects');
 
         if ($project->get($projectId, 'id_project')) {
-            /** @var TranslationManager $translationManager */
-            $translationManager = $this->get('unilend.service.translation_manager');
-            $translations = $translationManager->getAllTranslationsForSection('preteur-projets'); //TODO replace by new translations once they are done
+            $translator = $this->get('translator');
 
             if ($project->status == \projects_status::EN_FUNDING) {
                 ob_start();
                 echo "\xEF\xBB\xBF";
-                echo '"N°";"' . $translations['taux-dinteret'] . '";"' . $translations['montant'] . '";"' . $translations['statuts'] . '"' . PHP_EOL;
+                echo '"N°";"' . $translator->trans('preteur-projets_taux-dinteret') . '";"' . $translator->trans('preteur-projets_montant') . '";"' . $translator->trans('preteur-projets_statuts') . '"' . PHP_EOL;
 
                 /** @var \bids $bids */
                 $bids = $entityManager->getRepository('bids');
@@ -817,9 +811,9 @@ class ProjectsController extends Controller
                 $offset    = 0;
                 $limit     = 1000;
                 $bidStatus = [
-                    \bids::STATUS_BID_PENDING  => $translations['enchere-en-cours'],
-                    \bids::STATUS_BID_ACCEPTED => $translations['enchere-ok'],
-                    \bids::STATUS_BID_REJECTED => $translations['enchere-ko']
+                    \bids::STATUS_BID_PENDING  => $translator->trans('preteur-projets_enchere-en-cours'),
+                    \bids::STATUS_BID_ACCEPTED => $translator->trans('preteur-projets_enchere-ok'),
+                    \bids::STATUS_BID_REJECTED => $translator->trans('preteur-projets_enchere-ko')
                 ];
 
                 while ($bidsList = $bids->select('id_project = ' . $project->id_project, 'ordre ASC', $offset, $limit)) {

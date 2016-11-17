@@ -27,9 +27,15 @@
     <div class="btnDroite">
         <a href="<?= $this->lurl ?>/users/add" class="btn_link thickbox">Ajouter un utilisateur</a>
     </div>
-    <?php if (count($this->lUsers) > 0) : ?>
-        <table class="tablesorter">
-            <thead>
+    <?php foreach ($this->users as $userStatus => $users) : ?>
+        <?php if ($userStatus == \users::STATUS_ONLINE) : ?>
+            <h2>Utilisateurs en ligne</h2>
+        <?php else : ?>
+            <h2>Utilisateurs hors ligne</h2>
+        <?php endif; ?>
+        <?php if (count($users) > 0) : ?>
+            <table class="tablesorter">
+                <thead>
                 <tr>
                     <th>Nom</th>
                     <th>Pr&eacute;nom</th>
@@ -40,11 +46,11 @@
                     <th>Dernière connexion</th>
                     <th>&nbsp;</th>
                 </tr>
-            </thead>
-            <tbody>
+                </thead>
+                <tbody>
                 <?php
                 $i = 1;
-                foreach ($this->lUsers as $user) :
+                foreach ($users as $user) :
                     $users_types = $this->loadData('users_types');
                     $users_types->get($user['id_user_type'], 'id_user_type');
                     ?>
@@ -77,26 +83,28 @@
                     <?php
                     $i++;
                 endforeach; ?>
-            </tbody>
-        </table>
-        <?php if ($this->nb_lignes != '') : ?>
-            <table>
-                <tr>
-                    <td id="pager">
-                        <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first"/>
-                        <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev"/>
-                        <input type="text" class="pagedisplay"/>
-                        <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next"/>
-                        <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last"/>
-                        <select class="pagesize">
-                            <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
-                        </select>
-                    </td>
-                </tr>
+                </tbody>
             </table>
-        <?php else : ?>
-            <p>Il n'y a aucun utilisateur pour le moment.</p>
+            <?php if ($this->nb_lignes != '') : ?>
+                <table>
+                    <tr>
+                        <td id="pager">
+                            <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first"/>
+                            <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev"/>
+                            <input type="text" class="pagedisplay"/>
+                            <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next"/>
+                            <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last"/>
+                            <select class="pagesize">
+                                <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+            <?php else : ?>
+                <p>Il n'y a aucun utilisateur pour le moment.</p>
+            <?php endif; ?>
         <?php endif; ?>
-    <?php endif; ?>
+        <br><br>
+    <?php endforeach; ?>
 </div>
 <?php unset($_SESSION['freeow']); ?>

@@ -124,7 +124,7 @@ class translations extends translations_crud
         return $aNames;
     }
 
-    public function selectTranslation($sSection, $sName)
+    public function getTranslation($sSection, $sName)
     {
         $aBind = array('section' => $sSection, 'name' => $sName);
         $aType = array('section' => \PDO::PARAM_STR, 'name' => \PDO::PARAM_STR);

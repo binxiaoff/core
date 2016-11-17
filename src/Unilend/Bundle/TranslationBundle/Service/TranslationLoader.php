@@ -11,10 +11,12 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class TranslationLoader implements LoaderInterface
 {
+    const SECTION_SEPARATOR = '_';
     /**
      * @var \translations
      */
     private $translationRepository;
+    private $defaultLanguage;
 
     public function __construct(EntityManager $entityManager, $defaultLanguage)
     {
@@ -41,7 +43,7 @@ class TranslationLoader implements LoaderInterface
         $catalogue    = new MessageCatalogue($this->defaultLanguage);
 
         foreach ($translations as $translation) {
-            $catalogue->set($translation['section'] . '_' . $translation['name'], $translation['translation'], $domain);
+            $catalogue->set($translation['section'] . self::SECTION_SEPARATOR . $translation['name'], $translation['translation'], $domain);
         }
 
         return $catalogue;

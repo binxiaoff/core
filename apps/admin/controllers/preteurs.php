@@ -110,9 +110,12 @@ class preteursController extends bootstrap
 
     public function _edit()
     {
-        $this->loadData('transactions_types'); // Included for class constants
+        /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
+        $translator = $this->get('translator');
 
-        $this->projects = $this->loadData('projects');
+        $this->projects      = $this->loadData('projects');
+        $this->transactions  = $this->loadData('transactions');
+        $this->wallets_lines = $this->loadData('wallets_lines');
 
         $this->lenders_accounts = $this->loadData('lenders_accounts');
         $this->lenders_accounts->get($this->params[0], 'id_lender_account');
@@ -140,8 +143,7 @@ class preteursController extends bootstrap
             $this->lEncheres = $this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND YEAR(added) = YEAR(CURDATE()) AND status = 0');
         }
 
-        $this->wallets_lines  = $this->loadData('wallets_lines');
-        $this->SumDepot       = $this->wallets_lines->getSumDepot($this->lenders_accounts->id_lender_account, '10,30');
+        $this->SumDepot       = $this->transactions->getLenderDepositedAmount($this->lenders_accounts);
         $this->SumInscription = $this->wallets_lines->getSumDepot($this->lenders_accounts->id_lender_account, '10');
 
         $this->echeanciers = $this->loadData('echeanciers');
@@ -182,35 +184,28 @@ class preteursController extends bootstrap
         $this->setAttachments($this->lenders_accounts->id_client_owner, $this->aAttachmentTypes);
         $this->aAvailableAttachments = $this->aIdentity + $this->aDomicile + $this->aRibAndFiscale + $this->aOther;
 
-        //// transactions mouvements ////
-        /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translation_manager');
-        $this->lng['profile']                           = $translationManager->getAllTranslationsForSection('preteur-profile');
-        $this->lng['preteur-operations-vos-operations'] = $translationManager->getAllTranslationsForSection('preteur-operations-vos-operations');
-
         /** @var \lender_tax_exemption $oLenderTaxExemption */
         $oLenderTaxExemption   = $this->loadData('lender_tax_exemption');
         $this->aExemptionYears = array_column($oLenderTaxExemption->select('id_lender = ' . $this->lenders_accounts->id_lender_account, 'year DESC'), 'year');
 
         $this->lesStatuts = array(
-            \transactions_types::TYPE_LENDER_SUBSCRIPTION            => $this->lng['profile']['versement-initial'],
-            \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT      => $this->lng['profile']['alimentation-cb'],
-            \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT    => $this->lng['profile']['alimentation-virement'],
+            \transactions_types::TYPE_LENDER_SUBSCRIPTION            => $translator->trans('preteur-profile_versement-initial'),
+            \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT      => $translator->trans('preteur-profile_alimentation-cb'),
+            \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT    => $translator->trans('preteur-profile_alimentation-virement'),
             \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL       => 'Remboursement de capital',
             \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS     => 'Remboursement d\'intérêts',
-            \transactions_types::TYPE_DIRECT_DEBIT                   => $this->lng['profile']['alimentation-prelevement'],
-            \transactions_types::TYPE_LENDER_WITHDRAWAL              => $this->lng['profile']['retrait'],
+            \transactions_types::TYPE_DIRECT_DEBIT                   => $translator->trans('preteur-profile_alimentation-prelevement'),
+            \transactions_types::TYPE_LENDER_WITHDRAWAL              => $translator->trans('preteur-profile_retrait'),
             \transactions_types::TYPE_LENDER_REGULATION              => 'Régularisation prêteur',
             \transactions_types::TYPE_WELCOME_OFFER                  => 'Offre de bienvenue',
             \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION     => 'Retrait offre de bienvenue',
-            \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD   => $this->lng['preteur-operations-vos-operations']['gain-filleul'],
-            \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD     => $this->lng['preteur-operations-vos-operations']['gain-parrain'],
-            \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe'],
-            \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT   => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur'],
-            \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT      => $this->lng['preteur-operations-vos-operations']['remboursement-recouvrement-preteur']
+            \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD   => $translator->trans('preteur-operations-vos-operations_gain-filleul'),
+            \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD     => $translator->trans('preteur-operations-vos-operations_gain-parrain'),
+            \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT => $translator->trans('preteur-operations-vos-operations_remboursement-anticipe'),
+            \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT   => $translator->trans('preteur-operations-vos-operations_remboursement-anticipe-preteur'),
+            \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT      => $translator->trans('preteur-operations-vos-operations_remboursement-recouvrement-preteur')
         );
 
-        $this->transactions = $this->loadData('transactions');
         $this->solde        = $this->transactions->getSolde($this->clients->id_client);
         $this->soldeRetrait = $this->transactions->sum('status = 1 AND etat = 1 AND type_transaction = '. \transactions_types::TYPE_LENDER_WITHDRAWAL .' AND id_client = ' . $this->clients->id_client, 'montant');
         $this->soldeRetrait = abs($this->soldeRetrait / 100);
@@ -274,8 +269,6 @@ class preteursController extends bootstrap
         $translationManager = $this->get('unilend.service.translation_manager');
         $this->completude_wording = $translationManager->getAllTranslationsForSection('lender-completeness');
 
-        $this->nbWordingCompletude = count($this->completude_wording);
-
         $this->settings->get("Liste deroulante conseil externe de l'entreprise", 'type');
         $this->conseil_externe = json_decode($this->settings->value, true);
 
@@ -310,12 +303,14 @@ class preteursController extends bootstrap
 
             /** @var \lender_tax_exemption $oLenderTaxExemption */
             $oLenderTaxExemption   = $this->loadData('lender_tax_exemption');
-            $this->aExemptionYears = array_column($oLenderTaxExemption->select('id_lender = ' . $this->lenders_accounts->id_lender_account, 'year DESC'), 'year');
+            $this->taxExemption    = $oLenderTaxExemption->getLenderExemptionHistory($this->lenders_accounts->id_lender_account);
+            $this->aExemptionYears = array_column($this->taxExemption, 'year');
             $this->iNextYear       = date('Y') + 1;
 
             $this->settings->get("Liste deroulante origine des fonds", 'status = 1 AND type');
             $this->origine_fonds = $this->settings->value;
             $this->origine_fonds = explode(';', $this->origine_fonds);
+            $this->taxExemptionUserHistoryAction = $this->getTaxExemptionHistoryActionDetails($this->users_history->getTaxExemptionHistoryAction($this->clients->id_client));
         }
 
         $naiss           = explode('-', $this->clients->naissance);
@@ -488,13 +483,19 @@ class preteursController extends bootstrap
                             $oLenderTaxExemption->year        = $iExemptionYear;
                             $oLenderTaxExemption->id_user     = $_SESSION['user']['id_user'];
                             $oLenderTaxExemption->create();
+                            $taxExemptionHistory[] = ['year' => $oLenderTaxExemption->year, 'action' => 'adding'];
                         }
                     }
                 }
 
                 if (in_array($this->iNextYear, $this->aExemptionYears) && false === isset($_POST['tax_exemption'][$this->iNextYear])) {
                     $oLenderTaxExemption->get($this->lenders_accounts->id_lender_account . '" AND year = ' . $this->iNextYear . ' AND iso_country = "FR', 'id_lender');
+                    $taxExemptionHistory[] = ['year' => $oLenderTaxExemption->year, 'action' => 'deletion'];
                     $oLenderTaxExemption->delete($oLenderTaxExemption->id_lender_tax_exemption);
+                }
+
+                if (false === empty($taxExemptionHistory)) {
+                    $this->users_history->histo(\users_history::FORM_ID_LENDER, \users_history::FORM_NAME_TAX_EXEMPTION, $_SESSION['user']['id_user'], serialize(['id_client' => $this->clients->id_client, 'modifications' => $taxExemptionHistory]));
                 }
 
                 $this->clients_adresses->update();
@@ -502,7 +503,7 @@ class preteursController extends bootstrap
                 $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
 
                 $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES));
-                $this->users_history->histo(3, 'modif info preteur', $_SESSION['user']['id_user'], $serialize);
+                $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur', $_SESSION['user']['id_user'], $serialize);
 
                 if (isset($_POST['statut_valider_preteur']) && 1 == $_POST['statut_valider_preteur']) {
                     $aExistingClient       = $this->clients->getDuplicates($this->clients->nom, $this->clients->prenom, $this->clients->naissance);
@@ -738,7 +739,7 @@ class preteursController extends bootstrap
 
                 // Histo user //
                 $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES));
-                $this->users_history->histo(3, 'modif info preteur personne morale', $_SESSION['user']['id_user'], $serialize);
+                $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur personne morale', $_SESSION['user']['id_user'], $serialize);
 
                 if (isset($_POST['statut_valider_preteur']) && $_POST['statut_valider_preteur'] == 1) {
                     $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::VALIDATED, $this->clients->id_client);
@@ -1357,10 +1358,6 @@ class preteursController extends bootstrap
 
         $this->getMessageAboutClientStatus();
 
-        /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translation_manager');
-        $this->lng['autobid']      = $translationManager->getAllTranslationsForSection('autobid');
-        $this->lng['autolend'] = $translationManager->getAllTranslationsForSection('autolend');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
         $oAutoBidSettingsManager   = $this->get('unilend.service.autobid_settings_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $oClientManager */
@@ -1457,7 +1454,7 @@ class preteursController extends bootstrap
                     $_SESSION['freeow']['title']   = 'Statut du preteur';
                     $_SESSION['freeow']['message'] = 'Le statut du preteur a bien &eacute;t&eacute; modifi&eacute; !';
                     break;
-                case 3:
+                case \users_history::FORM_ID_LENDER:
                     $this->users_history->histo($iOrigin, 'status offline d\'un preteur doublon', $_SESSION['user']['id_user'], $serialize);
                     $_SESSION['freeow']['title']   = 'Doublon client';
                     $_SESSION['freeow']['message'] = 'Attention, homonyme d\'un autre client. Client mis hors ligne !';
@@ -1825,5 +1822,27 @@ class preteursController extends bootstrap
         } else {
             return true;
         }
+    }
+
+    /**
+     * @param array $history
+     * @return array
+     */
+    private function getTaxExemptionHistoryActionDetails(array $history)
+    {
+        /** @var \users $user */
+        $data = [];
+        $user = $this->loadData('users');
+
+        if (false === empty($history)) {
+            foreach ($history as $row) {
+                $data[] = [
+                    'modifications' => unserialize($row['serialize'])['modifications'],
+                    'user'          => $user->getName($row['id_user']),
+                    'date'          => $row['added']
+                ];
+            }
+        }
+        return $data;
     }
 }

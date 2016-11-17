@@ -547,7 +547,10 @@ class pdfController extends bootstrap
             exit;
         }
 
-        if (false === $oClients->get($this->params[0], 'hash') || $user->getClientId() !== $oClients->id_client) {
+        if (
+            false === $oClients->get($this->params[0], 'hash')
+            || $user->getClientId() !== $oClients->id_client && empty($_SESSION['user']['id_user'])
+        ) {
             header('Location: ' . $this->lurl);
             exit;
         }
@@ -1174,7 +1177,7 @@ class pdfController extends bootstrap
         $session = $this->get('session');
 
         if ($session->has('lenderOperationsFilters')) {
-            $savedFilters = $session->get('lenderOperationsFilters');
+            $savedFilters   = $session->get('lenderOperationsFilters');
             $sPath          = $this->path . 'protected/operations_export_pdf/' . $savedFilters['id_client'] . '/';
             $sNamePdfClient = 'vos_operations_' . date('Y-m-d') . '.pdf';
 
