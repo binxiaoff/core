@@ -104,17 +104,19 @@ class users_history extends users_history_crud
     }
 
     /**
+     * @param $clientId
      * @return array
      */
-    public function getTaxExemptionHistoryAction()
+    public function getTaxExemptionHistoryAction($clientId)
     {
         /** @var \Doctrine\DBAL\Query\QueryBuilder $queryBuilder */
-        $queryBuilder = $this->bdd->createQueryBuilder();
-
+        $queryBuilder    = $this->bdd->createQueryBuilder();
+        $clientIdPattern = '\"id_client\";s:' . strlen($clientId) . ':\"' . $clientId . '\"';
         $queryBuilder->select('*')
             ->from('users_history')
             ->where('id_form = :id_form')
             ->andWhere('nom_form = :form_name')
+            ->andWhere('serialize like \'%' . $clientIdPattern . '%\'')
             ->setParameter('id_form', self::FORM_ID_LENDER, \PDO::PARAM_INT)
             ->setParameter('form_name', self::FORM_NAME_TAX_EXEMPTION, \PDO::PARAM_STR)
             ->orderBy('added', 'DESC');

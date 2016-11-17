@@ -310,7 +310,7 @@ class preteursController extends bootstrap
             $this->settings->get("Liste deroulante origine des fonds", 'status = 1 AND type');
             $this->origine_fonds = $this->settings->value;
             $this->origine_fonds = explode(';', $this->origine_fonds);
-            $this->taxExemptionUserHistoryAction = $this->getTaxExemptionHistoryActionDetails($this->users_history->getTaxExemptionHistoryAction(), $this->clients->id_client);
+            $this->taxExemptionUserHistoryAction = $this->getTaxExemptionHistoryActionDetails($this->users_history->getTaxExemptionHistoryAction($this->clients->id_client));
         }
 
         $naiss           = explode('-', $this->clients->naissance);
@@ -1826,25 +1826,21 @@ class preteursController extends bootstrap
 
     /**
      * @param array $history
-     * @param int $idClient
      * @return array
      */
-    private function getTaxExemptionHistoryActionDetails(array $history, $idClient)
+    private function getTaxExemptionHistoryActionDetails(array $history)
     {
         /** @var \users $user */
         $data = [];
         $user = $this->loadData('users');
+
         if (false === empty($history)) {
             foreach ($history as $row) {
-                $actions = unserialize($row['serialize']);
-
-                if ( $idClient == $actions['id_client']) {
-                    $data[] = [
-                        'modifications' => unserialize($row['serialize'])['modifications'],
-                        'user'          => $user->getName($row['id_user']),
-                        'date'          => $row['added']
-                    ];
-                }
+                $data[] = [
+                    'modifications' => unserialize($row['serialize'])['modifications'],
+                    'user'          => $user->getName($row['id_user']),
+                    'date'          => $row['added']
+                ];
             }
         }
         return $data;
