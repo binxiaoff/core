@@ -966,7 +966,7 @@ class transfertsController extends bootstrap
 
     public function _succession()
     {
-        if (isset($_POST['succession_form'])) {
+        if (isset($_POST['succession_check']) || isset($_POST['succession_validate'])) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
             $clientManager = $this->get('unilend.service.client_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
@@ -995,16 +995,9 @@ class transfertsController extends bootstrap
                 $this->addErrorMessageAndRedirect('L\'héritier n\'est pas un prêteur');
             }
 
-            if (false === isset($_FILES['transfer_document'])) {
-                $this->addErrorMessageAndRedirect('Il manque le justificatif de transfer');
-            }
-
             /** @var \lenders_accounts $originalLender */
             $originalLender = $this->loadData('lenders_accounts');
             $originalLender->get($originalClient->id_client, 'id_client_owner');
-            /** @var \lenders_accounts $newLender */
-            $newLender = $this->loadData('lenders_accounts');
-            $newLender->get($newOwner->id_client, 'id_client_owner');
 
             if ($clientStatusManager->getLastClientStatus($newOwner) != \clients_status::VALIDATED) {
                 $this->addErrorMessageAndRedirect('Le compte de l\'héritier n\'est pas validé');
@@ -1016,52 +1009,88 @@ class transfertsController extends bootstrap
                 $this->addErrorMessageAndRedirect('Le défunt a des bids en cours.');
             }
 
-            /** @var \transactions $transactions */
-            $transactions = $this->loadData('transactions');
-            $originalClientBalance = $clientManager->getClientBalance($originalClient);
-            $this->transferAccountBalance($transactions, $originalClientBalance, $originalClient, $newOwner);
-
-            /** @var \loan_transfer $loanTransfer */
-            $loanTransfer = $this->loadData('loan_transfer');
             /** @var \loans $loans */
             $loans = $this->loadData('loans');
-            /** @var \echeanciers $repaymentSchedule */
-            $repaymentSchedule = $this->loadData('echeanciers');
-            $numberLoans  = 0;
+            $loansInRepayment = $loans->getLoansWithOngoingRepayments($originalLender->id_lender_account, \projects_status::$runningRepayment);
 
-            foreach ($loans->getLoansWithOngoingRepayments($originalLender->id_lender_account, \projects_status::$runningRepayment) as $loan) {
-                $loans->get($loan['id_loan']);
-                $this->transferLoan($loanTransfer, $loans, $originalLender, $newLender, $transferDocument, 'transfer_document');
-                $this->transferRepaymentSchedule($loans, $repaymentSchedule, $newLender);
-                $loans->unsetData();
-                $numberLoans += 1;
-            }
-            /** @var \lenders_accounts_stats_queue $lenderStatQueue */
-            $lenderStatQueue = $this->loadData('lenders_accounts_stats_queue');
-            $lenderStatQueue->addLenderToQueue($newLender);
-            $lenderStatQueue->addLenderToQueue($originalLender);
+            $originalClientBalance = $clientManager->getClientBalance($originalClient);
 
-            $comment = 'Compte soldé . ' . $this->ficelle->formatNumber($originalClientBalance) . ' EUR et ' . $numberLoans . ' prêts transferés sur le compte client ' . $newOwner->id_client;
-            try {
-                $clientStatusManager->closeAccount($originalClient, $_SESSION['user']['id_user'], $comment);
-            } catch (\Exception $exception){
-                $this->addErrorMessageAndRedirect('Le status client n\'a pas pu être changé ' . $exception->getMessage());
+            if (isset($_POST['succession_check'])) {
+                $_SESSION['succession']['check'] = [
+                    'accountBalance' => $originalClientBalance,
+                    'numberLoans'    => count($loansInRepayment),
+                    'formerClient'   => [
+                        'nom'       => $originalClient->nom,
+                        'prenom'    => $originalClient->prenom,
+                        'id_client' => $originalClient->id_client
+                    ],
+                    'newOwner'       => [
+                        'nom'       => $newOwner->nom,
+                        'prenom'    => $newOwner->prenom,
+                        'id_client' => $newOwner->id_client
+                    ]
+                ];
             }
 
-            $clientStatusManager->addClientStatus($newOwner, $_SESSION['user']['id_user'], $clientStatusManager->getLastClientStatus($newOwner), 'Reçu solde ('. $this->ficelle->formatNumber($originalClientBalance) .') et prêts (' . $numberLoans . ') du compte ' . $originalClient->id_client);
+            if (isset($_POST['succession_validate'])) {
+                if (false === isset($_FILES['transfer_document'])) {
+                    $this->addErrorMessageAndRedirect('Il manque le justificatif de transfer');
+                }
 
-            $_SESSION['succession']['success'] = [
-                'accountBalance' => $originalClientBalance,
-                'numberLoans'    => $numberLoans,
-                'formerClient'   => [
-                    'nom'    => $originalClient->nom,
-                    'prenom' => $originalClient->prenom
-                ],
-                'newOwner'       => [
-                    'nom'    => $newOwner->nom,
-                    'prenom' => $newOwner->prenom
-                ]
-            ];
+                /** @var \lenders_accounts $originalLender */
+                $originalLender = $this->loadData('lenders_accounts');
+                $originalLender->get($originalClient->id_client, 'id_client_owner');
+                /** @var \lenders_accounts $newLender */
+                $newLender = $this->loadData('lenders_accounts');
+                $newLender->get($newOwner->id_client, 'id_client_owner');
+
+                /** @var \transactions $transactions */
+                $transactions = $this->loadData('transactions');
+                $originalClientBalance = $clientManager->getClientBalance($originalClient);
+                $this->transferAccountBalance($transactions, $originalClientBalance, $originalClient, $newOwner);
+
+                /** @var \loan_transfer $loanTransfer */
+                $loanTransfer = $this->loadData('loan_transfer');
+
+                /** @var \echeanciers $repaymentSchedule */
+                $repaymentSchedule = $this->loadData('echeanciers');
+                $numberLoans  = 0;
+
+                foreach ($loans->getLoansWithOngoingRepayments($originalLender->id_lender_account, \projects_status::$runningRepayment) as $loan) {
+                    $loans->get($loan['id_loan']);
+                    $this->transferLoan($loanTransfer, $loans, $originalLender, $newLender, $transferDocument, 'transfer_document');
+                    $this->transferRepaymentSchedule($loans, $repaymentSchedule, $newLender);
+                    $loans->unsetData();
+                    $numberLoans += 1;
+                }
+                /** @var \lenders_accounts_stats_queue $lenderStatQueue */
+                $lenderStatQueue = $this->loadData('lenders_accounts_stats_queue');
+                $lenderStatQueue->addLenderToQueue($newLender);
+                $lenderStatQueue->addLenderToQueue($originalLender);
+
+                $comment = 'Compte soldé . ' . $this->ficelle->formatNumber($originalClientBalance) . ' EUR et ' . $numberLoans . ' prêts transferés sur le compte client ' . $newOwner->id_client;
+                try {
+                    $clientStatusManager->closeAccount($originalClient, $_SESSION['user']['id_user'], $comment);
+                } catch (\Exception $exception){
+                    $this->addErrorMessageAndRedirect('Le status client n\'a pas pu être changé ' . $exception->getMessage());
+                }
+
+                $clientStatusManager->addClientStatus($newOwner, $_SESSION['user']['id_user'], $clientStatusManager->getLastClientStatus($newOwner), 'Reçu solde ('. $this->ficelle->formatNumber($originalClientBalance) .') et prêts (' . $numberLoans . ') du compte ' . $originalClient->id_client);
+
+                $_SESSION['succession']['success'] = [
+                    'accountBalance' => $originalClientBalance,
+                    'numberLoans'    => $numberLoans,
+                    'formerClient'   => [
+                        'nom'    => $originalClient->nom,
+                        'prenom' => $originalClient->prenom
+                    ],
+                    'newOwner'       => [
+                        'nom'    => $newOwner->nom,
+                        'prenom' => $newOwner->prenom
+                    ]
+                ];
+            }
+
             header('Location: ' . $this->lurl . '/transferts/succession');
             die;
         }

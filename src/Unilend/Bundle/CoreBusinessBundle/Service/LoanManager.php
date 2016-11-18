@@ -88,6 +88,10 @@ class LoanManager
         return $transferDate;
     }
 
+    /**
+     * @param \loans $loan
+     * @return \lenders_accounts
+     */
     public function getFirstOwner(\loans $loan)
     {
         /** @var \loan_transfer $loanTransfer */
