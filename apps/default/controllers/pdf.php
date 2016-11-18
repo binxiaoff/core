@@ -528,8 +528,8 @@ class pdfController extends bootstrap
             exit;
         }
 
-        /** @var \clients $oClients */
-        $oClients = $this->loadData('clients');
+        /** @var \clients $clients */
+        $clients = $this->loadData('clients');
 
         // hack the symfony guard token
         $session = $this->get('session');
@@ -547,42 +547,50 @@ class pdfController extends bootstrap
             exit;
         }
 
-        if (
-            false === $oClients->get($this->params[0], 'hash')
-            || $user->getClientId() !== $oClients->id_client && empty($_SESSION['user']['id_user'])
-        ) {
+        if (false === $clients->get($this->params[0], 'hash') || $user->getClientId() !== $clients->id_client && empty($_SESSION['user']['id_user'])) {
             header('Location: ' . $this->lurl);
             exit;
         }
 
-        $oLoans           = $this->loadData('loans');
-        $oLendersAccounts = $this->loadData('lenders_accounts');
-        $oProjects        = $this->loadData('projects');
+        /** @var \loans $loans */
+        $loans           = $this->loadData('loans');
+        /** @var \lenders_accounts $lendersAccounts */
+        $lendersAccounts = $this->loadData('lenders_accounts');
+        /** @var \projects $projects */
+        $projects        = $this->loadData('projects');
 
-        if (false === $oLendersAccounts->get($oClients->id_client, 'id_client_owner')) {
+        if (false === $loans->get($this->params[1], 'id_loan')) {
             header('Location: ' . $this->lurl);
             exit;
         }
 
-        if (false === $oLoans->get($this->params[1], 'id_lender = ' . $oLendersAccounts->id_lender_account . ' AND id_loan')) {
+        if (false === $lendersAccounts->get($loans->id_lender, 'id_lender_account')) {
             header('Location: ' . $this->lurl);
             exit;
         }
 
-        if (false === $oProjects->get($oLoans->id_project, 'id_project')) {
+        if (false === $projects->get($loans->id_project, 'id_project')) {
             header('Location: ' . $this->lurl);
             exit;
         }
 
-        $sNamePdfClient = 'CONTRAT-UNILEND-' . $oProjects->slug . '-' . $oLoans->id_loan;
-        $sFilePath      = $this->path . 'protected/pdf/contrat/contrat-' . $this->params[0] . '-' . $oLoans->id_loan . '.pdf';
-
-        if (false === file_exists($sFilePath)) {
-            $this->GenerateContractHtml($oClients, $oLoans, $oProjects);
-            $this->WritePdf($sFilePath, 'contract');
+        if (false === empty($loans->id_transfer)) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager $loanManager */
+            $loanManager = $this->get('unilend.service.loan_manager');
+            /** @var \lenders_accounts $formerOwner */
+            $formerOwner = $loanManager->getFormerOwnerOfLoan($loans);
+            $clients->get($formerOwner->id_client_owner, 'id_client');
         }
 
-        $this->ReadPdf($sFilePath, $sNamePdfClient);
+        $namePdfClient = 'CONTRAT-UNILEND-' . $projects->slug . '-' . $loans->id_loan;
+        $filePath      = $this->path . 'protected/pdf/contrat/contrat-' . $clients->hash . '-' . $loans->id_loan . '.pdf';
+
+        if (false === file_exists($filePath)) {
+            $this->GenerateContractHtml($clients, $loans, $projects);
+            $this->WritePdf($filePath, 'contract');
+        }
+
+        $this->ReadPdf($filePath, $namePdfClient);
     }
 
     private function GenerateContractHtml($oClients, $oLoans, $oProjects)

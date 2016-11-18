@@ -673,13 +673,48 @@ class protectedController extends bootstrap
 
     public function _contrat()
     {
-        if (file_exists($this->path . 'protected/pdf/contrat/contrat-' . $this->params[0] . '-' . $this->params[1] . '.pdf')) {
-            $url = ($this->path . 'protected/pdf/contrat/contrat-' . $this->params[0] . '-' . $this->params[1] . '.pdf');
+        /** @var \clients $clients */
+        $clients = $this->loadData('clients');
+        /** @var \loans $loans */
+        $loans = $this->loadData('loans');
+        /** @var \lenders_accounts $lendersAccounts */
+        $lendersAccounts = $this->loadData('lenders_accounts');
+        /** @var \projects $projects */
+        $projects = $this->loadData('projects');
 
+        if (false === $loans->get($this->params[1], 'id_loan')) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
+
+        if (false === $lendersAccounts->get($loans->id_lender, 'id_lender_account')) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
+
+        if (false === $projects->get($loans->id_project, 'id_project')) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
+
+        if (false === empty($loans->id_transfer)) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager $loanManager */
+            $loanManager = $this->get('unilend.service.loan_manager');
+            /** @var \lenders_accounts $formerOwner */
+            $formerOwner = $loanManager->getFormerOwnerOfLoan($loans);
+            $clients->get($formerOwner->id_client_owner, 'id_client');
+        } else {
+            $clients->get($lendersAccounts->id_client_owner, 'id_client');
+        }
+
+        $namePdfClient = 'CONTRAT-UNILEND-' . $projects->slug . '-' . $loans->id_loan;
+        $filePath      = $this->path . 'protected/pdf/contrat/contrat-' . $clients->hash . '-' . $loans->id_loan . '.pdf';
+
+        if (file_exists($filePath)) {
             header('Content-Description: File Transfer');
             header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename="' . basename($url) . '";');
-            @readfile($url);
+            header('Content-Disposition: attachment; filename="' . basename($namePdfClient) . '";');
+            @readfile($filePath);
             die();
         } else {
             header('location: ' . $this->url . '/protected/document_not_found');
