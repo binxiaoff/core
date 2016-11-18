@@ -54,8 +54,8 @@ function bidConfirmationPrompt (bidData) {
   $('#modal-bid-confirmation-prompt [data-bid-confirmation-message]').each(function (i, elem) {
     var messageTemplate = $(this).attr('data-bid-confirmation-message')
     $(elem).html(Templating.replace(messageTemplate, {
-      rate: '<strong>' + __.localizedNumber(bidData.rate, 1) + '%</strong>',
-      amount: '<strong>' + Templating.filter(__.localizedPrice(bidData.amount), 'nbsp') + '€</strong>'
+      rate: '<strong>' + __.localizedNumber(bidData.rate, 1) + '&nbsp;%</strong>',
+      amount: '<strong>' + Templating.filter(__.localizedPrice(bidData.amount, 0), 'nbsp') + '&nbsp;€</strong>'
     }, {
       keywordPrefix: '%',
       keywordSuffix: '%'
