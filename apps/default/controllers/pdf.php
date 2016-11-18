@@ -578,7 +578,7 @@ class pdfController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager $loanManager */
             $loanManager = $this->get('unilend.service.loan_manager');
             /** @var \lenders_accounts $formerOwner */
-            $formerOwner = $loanManager->getFormerOwnerOfLoan($loans);
+            $formerOwner = $loanManager->getFirstOwner($loans);
             $clients->get($formerOwner->id_client_owner, 'id_client');
         }
 
@@ -1081,7 +1081,7 @@ class pdfController extends bootstrap
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager $loanManager */
                     $loanManager = $this->get('unilend.service.loan_manager');
                     /** @var \lenders_accounts $formerOwner */
-                    $formerOwner = $loanManager->getFormerOwnerOfLoan($this->oLoans);
+                    $formerOwner = $loanManager->getFirstOwner($this->oLoans);
                     $where           = 'id_client IN (' . implode(',', [$this->oLendersAccounts->id_client_owner, $formerOwner->id_client_owner]) . ') AND id_project = ' . $this->projects->id_project . ' AND type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT;
                 }
 

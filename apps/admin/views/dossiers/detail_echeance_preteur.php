@@ -38,7 +38,7 @@
 
     <h1>Liste des <?= count($this->lRemb) ?> derniers remboursements</h1>
     <?php if (false === empty($this->loan->id_transfer)) : ?>
-        <div style="background-color: #4fa8b0; padding: 3px; margin-bottom: 5px;"><h2>Attention ce prêt à change de proprietaire</h2></div>
+        <div style="background-color: #4fa8b0; padding: 3px; margin-bottom: 5px;"><h2>Attention ce prêt a changé de propriétaire</h2></div>
     <?php endif; ?>
     <?php if (count($this->lRemb) > 0) : ?>
         <table class="tablesorter">
@@ -70,7 +70,7 @@
                 $paymentDate = new \DateTime($r['date_echeance_reel']);
                 if ($r['date_echeance_reel'] !== '0000-00-00 00:00:00' && $paymentDate <= $transferDate) {
                     /** @var \lenders_accounts $formerOwner */
-                    $formerOwner = $this->loanManager->getFormerOwnerOfLoan($this->loan);
+                    $formerOwner = $this->loanManager->getFormerOwner($this->loan);
                     $this->clients->get($formerOwner->id_client_owner, 'id_client');
                 } else {
                     $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');

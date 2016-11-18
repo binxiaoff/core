@@ -94,7 +94,7 @@
                     <td>
                         <?php if (false === empty($loan['id_transfer'])) :
                         /** @var \lenders_accounts $formerOwner */
-                        $formerOwner = $this->loanManager->getFormerOwnerOfLoan($this->loan); ?>
+                        $formerOwner = $this->loanManager->getFormerOwner($this->loan); ?>
                         <a href="<?= $this->lurl . '/preteurs/edit/' . $formerOwner->id_lender_account ?>"><?= $formerOwner->id_client_owner ?></a>
                         <?php endif; ?>
                     </td>

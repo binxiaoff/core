@@ -183,7 +183,7 @@
                         <td>
                             <?php if ($this->loan->get($aProjectLoans['id_loan_if_one_loan']) && false === empty($this->loan->id_transfer)) :
                                 /** @var \lenders_accounts $formerOwner */
-                                $formerOwner = $this->loanManager->getFormerOwnerOfLoan($this->loan); ?>
+                                $formerOwner = $this->loanManager->getFormerOwner($this->loan); ?>
                                 <a href="<?= $this->lurl . '/preteurs/edit/' . $formerOwner->id_lender_account ?>"><?= $formerOwner->id_client_owner ?></a>
                             <?php endif; ?>
                         </td>
@@ -220,7 +220,7 @@
                                     <?php if (false === empty($aLoan['id_transfer'])) :
                                         $this->loan->get($aLoan['id_loan']);
                                         /** @var \lenders_accounts $formerOwner */
-                                        $formerOwner = $this->loanManager->getFormerOwnerOfLoan($this->loan); ?>
+                                        $formerOwner = $this->loanManager->getFormerOwner($this->loan); ?>
                                         <a href="<?= $this->lurl . '/preteurs/edit/' . $formerOwner->id_lender_account ?>"><?= $formerOwner->id_client_owner ?></a>
                                     <?php endif; ?>
                                 </td>

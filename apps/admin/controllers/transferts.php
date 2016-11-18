@@ -983,7 +983,7 @@ class transfertsController extends bootstrap
                 && (false === is_numeric($_POST['id_client_to_transfer'])
                     || false === $originalClient->get($_POST['id_client_to_transfer'])
                     || false === $clientManager->isLender($originalClient))) {
-                $this->addErrorMessageAndRedirect('Le défunt n\'est pas un prêteur valide');
+                $this->addErrorMessageAndRedirect('Le défunt n\'est pas un prêteur');
             }
 
             if (
@@ -1036,6 +1036,10 @@ class transfertsController extends bootstrap
                 $loans->unsetData();
                 $numberLoans += 1;
             }
+            /** @var \lenders_accounts_stats_queue $lenderStatQueue */
+            $lenderStatQueue = $this->loadData('lenders_accounts_stats_queue');
+            $lenderStatQueue->addLenderToQueue($newLender);
+            $lenderStatQueue->addLenderToQueue($originalLender);
 
             $comment = 'Compte soldé . ' . $this->ficelle->formatNumber($originalClientBalance) . ' EUR et ' . $numberLoans . ' prêts transferés sur le compte client ' . $newOwner->id_client;
             try {
@@ -1058,6 +1062,8 @@ class transfertsController extends bootstrap
                     'prenom' => $newOwner->prenom
                 ]
             ];
+            header('Location: ' . $this->lurl . '/transferts/succession');
+            die;
         }
     }
 
