@@ -139,7 +139,7 @@
                     <li><a href="<?= $this->lurl ?>/transferts/non_attribues" title="Non attribués">Non attribués</a></li>
                     <li><a href="<?= $this->lurl ?>/transferts/rattrapage_offre_bienvenue" title="Rattrapage offre de bienvenue">Rattrapage offre de bienvenue</a></li>
                     <li><a href="<?= $this->lurl ?>/transferts/deblocage" title="Déblocage">Déblocage des fonds</a></li>
-                    <li><a href="<?= $this->lurl ?>/transferts/succession" title="Transfert de prêts (Succession)">Transfert de prêts (Succession)</li>
+                    <li><a href="<?= $this->lurl ?>/transferts/succession" title="Transfert de prêts (Succession)">Transfert de prêts (Succession)</a></li>
                 </ul>
             </li>
         <?php endif; ?>
