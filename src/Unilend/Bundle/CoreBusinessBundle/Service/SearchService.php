@@ -53,10 +53,12 @@ class SearchService
                 $result['desk'] = [];
 
                 foreach ($response['_embedded']['entries'] as $entry) {
-                    $result['desk'][] = [
-                        'title' => $entry['subject'],
-                        'url'   => $entry['public_url']
-                    ];
+                    if (true == $entry['in_support_center']) {
+                        $result['desk'][] = [
+                            'title' => $entry['subject'],
+                            'url'   => $entry['public_url']
+                        ];
+                    }
                 }
 
                 usort($result['desk'], function($firstElement, $secondElement) {
