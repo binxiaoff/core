@@ -278,6 +278,16 @@ class LenderOperationsController extends Controller
                     $aTax = $tax->getTaxListByRepaymentId($t['id_echeancier']);
                 }
 
+                if ($t['type_transaction'] == \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT) {
+                    $recoveryManager = $this->get('unilend.service.recovery_manager');
+
+                    $capital = $ficelle->formatNumber($t['montant_operation'], 2);
+                    $amount  = $ficelle->formatNumber($recoveryManager->getAmountWithRecoveryTax($t['montant_operation']), 2);
+                } else {
+                    $capital = $ficelle->formatNumber($t['montant_capital'], 2);
+                    $amount  = $ficelle->formatNumber($t['montant_operation'], 2);
+                }
+
                 $content .= '
                     <tr>
                         <td>' . $t['libelle_operation'] . '</td>
@@ -285,8 +295,8 @@ class LenderOperationsController extends Controller
                         <td>' . $sProjectId . '</td>
                         <td>' . $t['libelle_projet'] . '</td>
                         <td>' . date('d-m-Y', strtotime($t['date_operation'])) . '</td>
-                        <td' . $couleur . '>' . $ficelle->formatNumber($t['montant_operation'], 2) . '</td>
-                        <td>' . $ficelle->formatNumber($t['montant_capital'], 2) . '</td>
+                        <td' . $couleur . '>' . $amount . '</td>
+                        <td>' . $capital . '</td>
                         <td>' . $ficelle->formatNumber($t['montant_interet'], 2) . '</td>';
                 foreach ($aTaxType as $aType) {
                     $content .= '<td>';

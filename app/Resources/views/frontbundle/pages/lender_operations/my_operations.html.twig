@@ -119,8 +119,8 @@
                 </thead>
                 <tbody data-sortable-content>
                 {% for i, op in lenderOperations %}
-                    {% set classAmount = op.montant_operation >= 0 ? 'ui-amount-positive' : 'ui-amount-negative' %}
-                    {% set classBalance = op.solde > 0 ? 'ui-balance-positive' : 'ui-balance-negative' %}
+                    {% set classAmount = op.libelle_operation != 'lender-operations_operation-label-accepted-offer'|trans ? op.montant_operation >= 0 ? 'ui-amount-positive' : 'ui-amount-negative' : '' %}
+                    {% set classBalance = op.libelle_operation != 'lender-operations_operation-label-accepted-offer'|trans ? op.solde > 0 ? 'ui-balance-positive' : 'ui-balance-negative' : '' %}
                     {% if op.type_transaction in detailedOperations %}
                         {% set operationDetails = {
                             "label": 'lender-operations_operations-table-repayment-collapse-details'|trans,

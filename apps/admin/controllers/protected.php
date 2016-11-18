@@ -746,6 +746,9 @@ class protectedController extends bootstrap
                     header('Content-Disposition: attachment; filename="' . basename($fileName) . '";');
                     @readfile($filePath);
                     die();
+                } else {
+                    header('location: ' . $this->url . '/protected/document_not_found');
+                    die;
                 }
             }
         } else {

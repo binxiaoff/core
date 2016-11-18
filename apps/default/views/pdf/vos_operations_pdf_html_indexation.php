@@ -96,7 +96,7 @@
                     <td><?= $t['bdc'] ?></td>
                     <td class="companieleft"><?= $t['libelle_projet'] ?></td>
                     <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
-                    <td <?= $couleur ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?> €</td>
+                    <td <?= $couleur ?>><?= $this->ficelle->formatNumber(\transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT == $t['type_transaction'] ? $this->recoveryManager->getAmountWithRecoveryTax($t['montant_operation'] / 100) : $t['montant_operation'] / 100) ?> €</td>
                     <td><?= $this->ficelle->formatNumber($t['solde']) ?> €</td>
                 </tr>
                 <tr class="content_transact <?= ($i % 2 == 1 ? '' : 'odd') ?>" height="0">

@@ -165,6 +165,8 @@ classNames: 'user-preter-profile'
                 {% if client.type in [constant('\\clients::TYPE_PERSON'), constant('\\clients::TYPE_PERSON_FOREIGNER')] %}
                     {% if (true == isEligible and false == afterDeadline and false == nextTaxExemptionRequestDone) %}
                         {% set declarationIsPossible = true %}
+                    {% else %}
+                        {% set declarationIsPossible = false %}
                     {% endif %}
 
                     <article id="panel-exoneration" class="panel">
