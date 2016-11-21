@@ -1110,22 +1110,23 @@ class echeanciers extends echeanciers_crud
               SUM(t.rawInterests) AS rawInterests,
               SUM(t.repaidTaxes) AS repaidTaxes,
               ROUND(SUM(t.upcomingTaxes), 2) AS upcomingTaxes FROM (
-              
+
                   SELECT
-                    LEFT(e.date_echeance_reel, 7)        AS month,
-                    QUARTER(e.date_echeance_reel)        AS quarter,
-                    YEAR(e.date_echeance_reel)           AS year,
-                    SUM(ROUND(e.capital_rembourse / 100, 2))  AS capital,
-                    SUM(ROUND(e.interets_rembourses / 100, 2)) AS rawInterests,
-                    SUM(IFNULL((SELECT SUM(ROUND(tax.amount / 100, 2)) FROM tax WHERE id_transaction = t.id_transaction) , 0)) AS repaidTaxes,
-                    NULL AS upcomingTaxes
-                  FROM echeanciers e
-                    LEFT JOIN transactions t ON e.id_echeancier = t.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
-                  WHERE e.id_lender = :id_lender AND e.status = 1
-                  GROUP BY year, quarter, month
-            
+                      LEFT(t_interest.date_transaction, 7)        AS month,
+                      QUARTER(t_interest.date_transaction)        AS quarter,
+                      YEAR(t_interest.date_transaction)           AS year,
+                      SUM(ROUND(t_capital.montant / 100, 2))  AS capital,
+                      SUM(ROUND(t_interest.montant / 100, 2)) AS rawInterests,
+                      SUM(IFNULL((SELECT SUM(ROUND(tax.amount / 100, 2)) FROM tax WHERE id_transaction = t_interest.id_transaction) , 0)) AS repaidTaxes,
+                      NULL AS upcomingTaxes
+                    FROM transactions t_interest 
+                      LEFT JOIN transactions t_capital ON t_interest.id_echeancier = t_capital.id_echeancier AND t_capital.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . '
+                      INNER JOIN lenders_accounts la ON t_interest.id_client = la.id_client_owner
+                    WHERE la.id_lender_account = :id_lender  and t_interest.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
+                    GROUP BY year, quarter, month
+
                   UNION ALL
-                  
+
                   SELECT
                     LEFT(t.date_transaction, 7)        AS month,
                     QUARTER(t.date_transaction)        AS quarter,
@@ -1140,7 +1141,7 @@ class echeanciers extends echeanciers_crud
                     l.id_lender_account = :id_lender
                     AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . '
                   GROUP BY year, quarter, month
-            
+
                   UNION ALL
 
                   SELECT
