@@ -15,7 +15,7 @@ class ProjectValidator
     public function __construct(ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
     {
         $this->productAttributeManager = $productAttributeManager;
-        $this->entityManager = $entityManager;
+        $this->entityManager           = $entityManager;
     }
 
     /**
@@ -26,39 +26,34 @@ class ProjectValidator
      */
     public function isEligible(\projects $projects, \product $product)
     {
-        foreach ($this->getAttributeTypeToCheck() as $attributeTypeToCheck) {
-            switch ($attributeTypeToCheck) {
-                case \product_attribute_type::MIN_LOAN_DURATION_IN_MONTH :
-                    $eligibility = $this->isProductEligibleForMinDuration($projects, $product, $this->productAttributeManager);
-                    break;
-                case \product_attribute_type::MAX_LOAN_DURATION_IN_MONTH :
-                    $eligibility = $this->isProductEligibleForMaxDuration($projects, $product, $this->productAttributeManager);
-                    break;
-                case \product_attribute_type::ELIGIBLE_NEED :
-                    $eligibility = $this->isProductEligibleForNeed($projects, $product, $this->productAttributeManager);
-                    break;
-                case \underlying_contract_attribute_type::MAX_LOAN_DURATION_IN_MONTH :
-                    $eligibility = $this->isProductEligibleForMaxContractDuration($projects, $product, $this->productAttributeManager);
-                    break;
-                default :
-                    $eligibility = false;
-            }
+        /** @var \companies $company */
+        $company = $this->entityManager->getRepository('companies');
+        $company->get($projects->id_company);
 
-            if (false === $eligibility) {
-                return $eligibility;
-            }
+        if (false === $this->isEligibleForMinDuration($projects, $product, $this->productAttributeManager)) {
+            return false;
+        }
+
+        if (false === $this->isEligibleForMaxDuration($projects, $product, $this->productAttributeManager)) {
+            return false;
+        }
+
+        if (false === $this->isEligibleForMotive($projects, $product, $this->productAttributeManager)) {
+            return false;
+        }
+
+        if (false === $this->isEligibleForCreationDays($company, $product, $this->productAttributeManager)) {
+            return false;
+        }
+
+        if (false === $this->isEligibleForRCS($company, $product, $this->productAttributeManager)) {
+            return false;
+        }
+
+        if (false === $this->isEligibleForNafCode($company, $product, $this->productAttributeManager)) {
+            return false;
         }
 
         return true;
-    }
-
-    private function getAttributeTypeToCheck()
-    {
-        return [
-            \product_attribute_type::ELIGIBLE_NEED,
-            \product_attribute_type::MIN_LOAN_DURATION_IN_MONTH,
-            \product_attribute_type::MAX_LOAN_DURATION_IN_MONTH,
-            \underlying_contract_attribute_type::MAX_LOAN_DURATION_IN_MONTH
-        ];
     }
 }

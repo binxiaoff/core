@@ -73,6 +73,8 @@ class AutolendController extends Controller
                     $this->addFlash('autolend_success', $success);
                 }
             }
+
+            return $this->redirectToRoute('autolend');
         }
 
         $projectPeriods = $projectPeriods->select();
@@ -136,6 +138,7 @@ class AutolendController extends Controller
         $errorMsg         = [];
         $autolendAmount   = null;
         $autolendRateMin  = null;
+        $maxBidAmount = $autoBidSettingsManager->getMaxAmountPossible($lenderAccount);
 
         if (false === empty($post['autolend_amount'])) {
             $autolendAmount = $ficelle->cleanFormatedNumber($post['autolend_amount']);
@@ -145,8 +148,11 @@ class AutolendController extends Controller
             $autolendRateMin = $ficelle->cleanFormatedNumber($post['autolend_rate_min']);
         }
 
-        if (empty($autolendAmount) || false === is_numeric($autolendAmount) || $autolendAmount < $minimumBidAmount) {
-            $errorMsg[] = $translator->trans('autolend_error-message-amount-wrong', ['%MIN_AMOUNT%' => $minimumBidAmount]);
+        if (empty($autolendAmount) || false === is_numeric($autolendAmount) || $autolendAmount < $minimumBidAmount || $autolendAmount > $maxBidAmount) {
+            $errorMsg[] = $translator->trans('autolend_error-message-amount-wrong', [
+                '%MIN_AMOUNT%' => $ficelle->formatNumber($minimumBidAmount, 0),
+                '%MAX_AMOUNT%' => $ficelle->formatNumber($maxBidAmount, 0)
+            ]);
         }
 
         if (empty($autolendRateMin) || false === $autoBidSettingsManager->isRateValid($autolendRateMin)) {
@@ -177,6 +183,7 @@ class AutolendController extends Controller
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
+        $maxBidAmount = $autoBidSettingsManager->getMaxAmountPossible($lenderAccount);
         $settings->get('pret min', 'type');
         $minimumBidAmount = (int) $settings->value;
         $autoBidPeriods   = [];
@@ -192,8 +199,11 @@ class AutolendController extends Controller
             $amount = $ficelle->cleanFormatedNumber($post['autolend_amount']);
         }
 
-        if (empty($amount) || false === is_numeric($amount) || $amount < $minimumBidAmount) {
-            $errorMsg[] = $translator->trans('autolend_error-message-amount-wrong', ['%MIN_AMOUNT%' => $minimumBidAmount]);
+        if (empty($amount) || false === is_numeric($amount) || $amount < $minimumBidAmount || $amount > $maxBidAmount) {
+            $errorMsg[] = $translator->trans('autolend_error-message-amount-wrong', [
+                '%MIN_AMOUNT%' => $ficelle->formatNumber($minimumBidAmount, 0),
+                '%MAX_AMOUNT%' => $ficelle->formatNumber($maxBidAmount, 0)
+            ]);
         }
 
         foreach ($post['data'] as $setting) {

@@ -1392,6 +1392,10 @@ class preteursController extends bootstrap
         }
 
         $this->hasTransferredLoans = $lenderManager->hasTransferredLoans($this->lenders_accounts);
+
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CIPManager $cipManager */
+        $cipManager    = $this->get('unilend.service.cip_manager');
+        $this->cipEnabled = $cipManager->hasValidEvaluation($this->lenders_accounts);
     }
 
     public function _control_fiscal_city()

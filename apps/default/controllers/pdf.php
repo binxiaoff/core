@@ -497,10 +497,14 @@ class pdfController extends bootstrap
         $contract->get(\underlying_contract::CONTRACT_IFP, 'label');
         $IFPContractId = $contract->id_contract;
 
+        $contract->get(\underlying_contract::CONTRACT_MINIBON, 'label');
+        $minibonContractId = $contract->id_contract;
+
         $this->montantPrete     = $this->projects->amount;
         $this->taux             = $this->projects->getAverageInterestRate();
         $this->nbLoansBDC       = $this->oLoans->counter('id_type_contract = ' . $BDCContractId . ' AND id_project = ' . $this->projects->id_project);
         $this->nbLoansIFP       = $this->oLoans->counter('id_type_contract = ' . $IFPContractId . ' AND id_project = ' . $this->projects->id_project);
+        $this->nbLoansMinibon   = $this->oLoans->counter('id_type_contract = ' . $minibonContractId . ' AND id_project = ' . $this->projects->id_project);
         $this->lRemb            = $this->oEcheanciersEmprunteur->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
         $this->rembByMonth      = bcdiv($this->lRemb[0]['montant'] + $this->lRemb[0]['commission'] + $this->lRemb[0]['tva'], 100, 2);
         $this->dateLastEcheance = $this->echeanciers->getDateDerniereEcheancePreteur($this->projects->id_project);
@@ -672,14 +676,15 @@ class pdfController extends bootstrap
 
         $contract->get($oLoans->id_type_contract);
 
-        $this->blocs->get($contract->block_slug, 'slug');
         $sTemplate = $contract->document_template;
 
-        $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
-        foreach ($lElements as $b_elt) {
-            $this->elements->get($b_elt['id_element']);
-            $this->bloc_pdf_contrat[$this->elements->slug]           = $b_elt['value'];
-            $this->bloc_pdf_contratComplement[$this->elements->slug] = $b_elt['complement'];
+        if ($this->blocs->get($contract->block_slug, 'slug')) {
+            $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
+            foreach ($lElements as $b_elt) {
+                $this->elements->get($b_elt['id_element']);
+                $this->bloc_pdf_contrat[$this->elements->slug]           = $b_elt['value'];
+                $this->bloc_pdf_contratComplement[$this->elements->slug] = $b_elt['complement'];
+            }
         }
 
         $this->setDisplay($sTemplate);
