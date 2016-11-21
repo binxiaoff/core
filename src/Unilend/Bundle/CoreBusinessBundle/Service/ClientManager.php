@@ -130,6 +130,7 @@ class ClientManager
                 $oClientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::MODIFICATION, $iClientId, $sContent);
                 break;
             case \clients_status::TO_BE_CHECKED:
+            default:
                 $oClientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED, $iClientId, $sContent);
                 break;
         }
