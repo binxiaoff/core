@@ -196,7 +196,7 @@
                 <ul>
                     <li>
                         <div class="col-long">
-                            Signature de l'Emprunteur
+                            Signature de l'Emetteur
                         </div>
                         <div class="col-small">
                             <div style="background-color:white;border:1px solid #808080;height: 50px;width: 250px;"></div>
@@ -210,99 +210,6 @@
                 <ul>
                     <li>Les contrats de prêt sont réalisés selon les dispositions légales prévues aux articles R548-6 et R558-8 du code monétaire et financier.</li>
                 </ul>
-            </div>
-        </div>
-        <div class="pageBreakBefore" style="margin-top: 40px;padding-top: 20px;">
-            <h3 class="pink">DERNIER BILAN CERTIFIE SINCERE DE L'EMETTEUR</h3>
-            <div class="list">
-                <ul>
-                    <li>
-                        Au <?= $this->dateDernierBilan ?>
-                    </li>
-                </ul>
-                <h5>ACTIF</h5>
-                <div class="list">
-                    <ul>
-                        <li>
-                            Immobilisations corporelles
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_corporelles'], 0) ?> &euro;</div>
-                        </li>
-                        <li>
-                            Immobilisations incorporelles
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_incorporelles'], 0) ?> &euro;</div>
-                        </li>
-                        <li>
-                            Immobilisations financières
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_financieres'], 0) ?> &euro;</div>
-                        </li>
-                        <li>
-                            Stocks
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['stocks'], 0) ?> &euro;</div>
-                        </li>
-                        <li>
-                            Créances clients et autres
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['creances_clients'], 0) ?> &euro;</div>
-                        </li>
-                        <li>
-                            Disponibilités
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['disponibilites'], 0) ?> &euro;</div>
-                        </li>
-                        <li>
-                            Valeurs mobilières de placement
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['valeurs_mobilieres_de_placement'], 0) ?> &euro;</div>
-                        </li>
-                        <?php if ($this->l_AP[0]['comptes_regularisation_actif'] != 0) : ?>
-                        <li>
-                            Comptes de régularisation
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['comptes_regularisation_actif'], 0) ?> &euro;</div>
-                        </li>
-                        <?php endif; ?>
-                    </ul>
-                </div>
-                <div class="total-row">
-                    Total actif : <?= $this->ficelle->formatNumber($this->totalActif, 0) ?> &euro;
-                </div>
-                <h5>PASSIF</h5>
-                <div class="list">
-                    <ul>
-                        <li>
-                            Capitaux propres
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['capitaux_propres'], 0) ?> &euro;</div>
-                        </li>
-                        <li>
-                            Provisions pour risques et charges
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['provisions_pour_risques_et_charges'], 0) ?> &euro;</div>
-                        </li>
-                        <li>
-                            Amortissements sur immobilisations
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['amortissement_sur_immo'], 0) ?> &euro;</div>
-                        </li>
-                        <li>
-                            Dettes financières
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['dettes_financieres'], 0) ?> &euro;</div>
-                        </li>
-                        <li>
-                            Dettes fournisseurs
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['dettes_fournisseurs'], 0) ?> &euro;</div>
-                        </li>
-                        <li>
-                            Autres dettes
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['autres_dettes'], 0) ?> &euro;</div>
-                        </li>
-                        <?php if ($this->l_AP[0]['comptes_regularisation_passif'] != 0) : ?>
-                        <li>
-                            Comptes de régularisation
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['comptes_regularisation_passif'], 0) ?> &euro;</div>
-                        </li>
-                        <?php endif; ?>
-                    </ul>
-                </div>
-                <div class="total-row">
-                    Total passif : <?= $this->ficelle->formatNumber($this->totalPassif, 0) ?> &euro;
-                </div>
-                <div class="center-text">
-                    Certifié sincère par l'Emprunteur
-                </div>
             </div>
         </div>
         <?php if ($this->projects->period > 48): ?>

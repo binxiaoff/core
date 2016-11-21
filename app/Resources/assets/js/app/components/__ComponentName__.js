@@ -106,3 +106,5 @@ $(document)
 // .on('click', '[data-__componentname__]', function (event) {
 //   $(this).ui__ComponentName__('publicMethod')
 // })
+
+module.exports = __ComponentName__

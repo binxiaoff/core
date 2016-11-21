@@ -231,7 +231,8 @@ var Templating = {
   // @method replace
   // @param {String} input The string to replace keywords with
   // @param {Mixed} props An {Object} (or {Array} of {Objects}) to replace matching keywords within the input string with its values
-  //                      Values in the props are usually strings, --but they can also be {Function}s which return strings--
+  //                      Values in the props are usually strings,
+  //                      but they can also be {Function}s which return strings,
   //                      Or even a {Dictionary} instance
   // @returns {String}
   replace: function (input, props, options) {

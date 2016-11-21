@@ -1,7 +1,6 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Symfony\Component\Config\Definition\Exception\Exception;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\core\Loader;
 use Psr\Log\LoggerInterface;
@@ -40,13 +39,24 @@ class BidManager
     /** @var ProductManager */
     private $productManager;
 
-    public function __construct(EntityManager $oEntityManager, NotificationManager $oNotificationManager, AutoBidSettingsManager $oAutoBidSettingsManager, LenderManager $oLenderManager, ProductManager $productManager)
+    /** @var CIPManager */
+    private $cipManager;
+
+    public function __construct(
+        EntityManager $oEntityManager,
+        NotificationManager $oNotificationManager,
+        AutoBidSettingsManager $oAutoBidSettingsManager,
+        LenderManager $oLenderManager,
+        ProductManager $productManager,
+        CIPManager $cipManager
+    )
     {
         $this->oEntityManager          = $oEntityManager;
         $this->oNotificationManager    = $oNotificationManager;
         $this->oAutoBidSettingsManager = $oAutoBidSettingsManager;
         $this->oLenderManager          = $oLenderManager;
         $this->productManager          = $productManager;
+        $this->cipManager              = $cipManager;
 
         $this->oDate    = Loader::loadLib('dates');
         $this->oFicelle = Loader::loadLib('ficelle');
@@ -82,8 +92,6 @@ class BidManager
         /** @var \projects $project */
         $project = $this->oEntityManager->getRepository('projects');
 
-        $this->oEntityManager->getRepository('transactions_types'); //load for constant use
-
         $oSettings->get('Pret min', 'type');
         $iAmountMin = (int)$oSettings->value;
 
@@ -94,14 +102,14 @@ class BidManager
         $fRate       = round(floatval($oBid->rate), 1);
 
         if (false === $project->get($iProjectId)) {
-            if($this->oLogger instanceof LoggerInterface) {
+            if ($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->warning('unable to get the project: ' . $iProjectId, ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]);
             }
             throw new \Exception('bids-invalid-project');
         }
 
         if ($iAmountMin > $fAmount) {
-            if($this->oLogger instanceof LoggerInterface) {
+            if ($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->warning('Amount is less than the min amount for a bid', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]);
             }
             throw new \Exception('bids-invalid-amount');
@@ -110,7 +118,7 @@ class BidManager
         $projectRates = $this->getProjectRateRange($project);
 
         if (bccomp($fRate, $projectRates['rate_max'], 1) > 0 || bccomp($fRate, $projectRates['rate_min'], 1) < 0) {
-            if($this->oLogger instanceof LoggerInterface) {
+            if ($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->warning(
                     'Amount is less than the min amount for a bid',
                     ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]
@@ -120,7 +128,7 @@ class BidManager
         }
 
         if (false === in_array($project->status, array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING))) {
-            if($this->oLogger instanceof LoggerInterface) {
+            if ($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->warning(
                     'Project status is not valid for bidding',
                     ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate, 'project_status' => $project->status]
@@ -136,7 +144,7 @@ class BidManager
         }
 
         if ($oCurrentDate > $oEndDate) {
-            if($this->oLogger instanceof LoggerInterface) {
+            if ($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->warning(
                     'Project end date is passed for bidding',
                     ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate, 'project_ended' => $oEndDate->format('c'), 'now' => $oCurrentDate->format('c')]);
@@ -145,33 +153,38 @@ class BidManager
         }
 
         if (false === $oLenderAccount->get($iLenderId)) {
-            if($this->oLogger instanceof LoggerInterface) {
+            if ($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->warning('Cannot get lender', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]);
             }
             throw new \Exception('bids-invalid-lender');
         }
 
         if (false === $this->oLenderManager->canBid($oLenderAccount)) {
-            if($this->oLogger instanceof LoggerInterface) {
+            if ($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->warning('lender cannot bid', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]);
             }
             throw new \Exception('bids-lender-cannot-bid');
         }
 
-        if (false === $this->productManager->isBidEligible($oBid, $project)) {
-            if($this->oLogger instanceof LoggerInterface) {
+        if (false === $this->productManager->isBidEligible($oBid)) {
+            if ($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->warning('The Bid is not eligible for the project', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate]);
             }
             throw new \Exception('bids-not-eligible');
         }
 
         $iClientId = $oLenderAccount->id_client_owner;
-        $iBalance = $oTransaction->getSolde($iClientId);
+        $iBalance  = $oTransaction->getSolde($iClientId);
+
         if ($iBalance < $fAmount) {
-            if($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->warning('lender\s balance not enough for a bid', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate, 'balance' => $iBalance]);
+            if ($this->oLogger instanceof LoggerInterface) {
+                $this->oLogger->warning('lender\'s balance not enough for a bid', ['project_id' => $iProjectId, 'lender_id' => $iLenderId, 'amount' => $fAmount, 'rate' => $fRate, 'balance' => $iBalance]);
             }
             throw new \Exception('bids-low-balance');
+        }
+
+        if (empty($oBid->id_autobid) && $this->cipManager->isCIPValidationNeeded($oBid) && false === $this->cipManager->hasValidEvaluation($oLenderAccount)) {
+            throw new \Exception('bids-cip-validation-needed');
         }
 
         $oTransaction->id_client        = $iClientId;

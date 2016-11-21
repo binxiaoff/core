@@ -13,7 +13,8 @@ var operationsAjaxTimer = 0
 var lastFormState = {}
 
 // Changing filters will change the contents of the loans table
-$doc.on('change', '#dashboard-lender-operations :input', function (event) {
+// TMA-1182 Added extra filters to avoid firing change event on input before initilised pikaday
+$doc.on('change', '#dashboard-lender-operations :input:not(.ui-has-datepicker, [data-ui-datepicker])', function (event) {
   var $input = $(this)
   var $form = $input.closest('form')
   var filterAction = $input.attr('name').match(/filter\[(.*)\]/i)[1]

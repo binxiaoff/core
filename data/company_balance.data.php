@@ -40,23 +40,4 @@ class company_balance extends company_balance_crud
     {
         return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM company_balance WHERE ' . $field . ' = "' . $id . '"'), 0, 0) > 0;
     }
-
-    public function getBalanceSheetsByAnnualAccount(array $aAnnualAccountsIds)
-    {
-        $aAnnualAccounts    = array();
-        $oBalanceTypes      = new \company_balance_type($this->bdd);
-        $aBalanceTypes      = $oBalanceTypes->getAllByType();
-        $aBalanceTypes      = array_column($aBalanceTypes, 'code', 'id_balance_type');
-        $sAnnualAccountsIds = implode(', ', $aAnnualAccountsIds);
-
-        foreach ($aAnnualAccountsIds as $iAnnualAccountsId) {
-            $aAnnualAccounts[$iAnnualAccountsId] = array_fill_keys($aBalanceTypes, 0);
-        }
-
-        foreach ($this->select('id_bilan IN (' . $sAnnualAccountsIds . ')', 'FIELD(id_bilan, ' . $sAnnualAccountsIds . ') ASC') as $aAnnualAccount) {
-            $aAnnualAccounts[$aAnnualAccount['id_bilan']][$aBalanceTypes[$aAnnualAccount['id_balance_type']]] = $aAnnualAccount['value'];
-        }
-
-        return $aAnnualAccounts;
-    }
 }
