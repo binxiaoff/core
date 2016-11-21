@@ -93,8 +93,7 @@ class LocationManager
         if (false === empty($results)) {
             foreach ($results as $item) {
                 if ($lookUpBirthplace) {
-                    // unique insee code
-                    $cityList[] = [ //$cityList[$item['insee']] = [
+                    $cityList[] = [
                         'label' => $item['ville'] . ' (' . $item['num_departement'] . ')',
                         'value' => $item['insee']
                     ];

@@ -1442,8 +1442,4 @@ class LenderSubscriptionController extends Controller
         return array_combine(range(1, count($fundsOriginList)), array_values($fundsOriginList));
     }
 
-    private function checkBirthPlaceCoherence()
-    {
-
-    }
 }
