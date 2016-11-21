@@ -47,7 +47,7 @@
                 <td><?= $this->ficelle->formatNumber($_SESSION['succession']['check']['accountBalance'])?> €</td>
             </tr>
             <tr>
-                <th style="padding:15px; width: 40%">Nombre de contrats<br>de financement transférés : </th>
+                <th style="padding:15px; width: 40%">Nombre de contrats<br>de financement à transferer : </th>
                 <td><?= $_SESSION['succession']['check']['numberLoans'] ?></td>
             </tr>
         </table>

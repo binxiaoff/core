@@ -319,8 +319,8 @@ class LenderOperationsController extends Controller
                     \transactions_types::TYPE_LENDER_SUBSCRIPTION            => $translator->trans('lender-operations_operation-label-money-deposit'),
                     \transactions_types::TYPE_LENDER_LOAN                    => [
                         \bids::STATUS_BID_PENDING  => $translator->trans('lender-operations_operation-label-current-offer'),
-                        \bids::STATUS_BID_ACCEPTED => $translator->trans('lender-operations_operation-label-rejected-offer'),
-                        \bids::STATUS_BID_REJECTED => $translator->trans('lender-operations_operation-label-accepted-offer')
+                        \bids::STATUS_BID_REJECTED => $translator->trans('lender-operations_operation-label-rejected-offer'),
+                        \bids::STATUS_BID_ACCEPTED => $translator->trans('lender-operations_operation-label-accepted-offer')
                     ],
                     \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT      => $translator->trans('lender-operations_operation-label-money-deposit'),
                     \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT    => $translator->trans('lender-operations_operation-label-money-deposit'),

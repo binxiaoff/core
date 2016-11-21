@@ -470,14 +470,7 @@ class loans extends loans_crud
                     WHERE projects.status IN (:projectStatus)
                           AND loans.id_lender = :idLender';
 
-        $statement = $this->bdd->executeQuery($query,
-            [
-                'projectStatus' => $projectStatus,
-                'idLender'      => $idLender
-            ], [
-                'projectStatus' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
-                'idLender'      => \PDO::PARAM_STR
-            ]);
+        $statement = $this->bdd->executeQuery($query, ['projectStatus' => $projectStatus, 'idLender' => $idLender], ['projectStatus' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY]);
 
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }

@@ -214,10 +214,12 @@ class preteursController extends bootstrap
 
         /** @var \loan_transfer $loanTransfers */
         $loanTransfers         = $this->loadData('loan_transfer');
-        $lenderLoanTransfers   = $loanTransfers->select('id_lender_origin = ' . $this->lenders_accounts->id_lender_account . ' OR id_lender_reciever = ' . $this->lenders_accounts->id_lender_account . ' GROUP BY id_lender_origin');
+        $lenderLoanTransfers   = $loanTransfers->select('id_lender_origin = ' . $this->lenders_accounts->id_lender_account . ' OR id_lender_reciever = ' . $this->lenders_accounts->id_lender_account);
+
         $this->loanTransferDocuments = [];
         foreach ($lenderLoanTransfers as $transfer) {
-            $this->loanTransferDocuments[] = $this->attachment->select('id_owner = ' . $transfer['id_transfer'] . ' AND id_type = ' . \attachment_type::LOAN_TRANSFER_CERTIFICATE . ' GROUP BY id_owner')[0];
+            $transferDocument = $this->attachment->select('id_owner = ' . $transfer['id_transfer'] . ' AND id_type = ' . \attachment_type::LOAN_TRANSFER_CERTIFICATE)[0];
+            $this->loanTransferDocuments[$transferDocument['path']] = $transferDocument;
         }
 
         $this->getMessageAboutClientStatus();

@@ -1133,13 +1133,21 @@ class transfertsController extends bootstrap
         $loans->id_lender   = $newLender->id_lender_account;
         $loans->update();
 
-        $transferDocument = $this->uploadTransferDocument($transferDocument, $originalLender, $newLender, $loanTransfer->id_transfer, $fieldName);
-        $document             = clone $transferDocument;
-        $document->id_owner   = $loanTransfer->id_transfer;
-        $document->type_owner = 'loan_transfer';
-        $document->update();
+        if (
+            false === empty($transferDocument->id)
+            && $transferDocument->exist($transferDocument->type_owner, 'path = "' . $transferDocument->path . '" AND id_type = ' . $transferDocument->id_type . ' AND type_owner')
+        ) {
+            $document             = clone $transferDocument;
+            $document->id         = '';
+            $document->id_owner   = $loanTransfer->id_transfer;
+            $document->type_owner = 'loan_transfer';
+            $document->create();
 
-        $document->unsetData();
+            $document->unsetData();
+        } else {
+            $transferDocument = $this->uploadTransferDocument($transferDocument, $originalLender, $newLender, $loanTransfer->id_transfer, $fieldName);
+        }
+
         $loanTransfer->unsetData();
     }
 

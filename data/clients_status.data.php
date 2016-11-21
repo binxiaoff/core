@@ -28,15 +28,15 @@
 
 class clients_status extends clients_status_crud
 {
-    const TO_BE_CHECKED                  = 10;
-    const COMPLETENESS                   = 20;
-    const COMPLETENESS_REMINDER          = 30;
-    const COMPLETENESS_REPLY             = 40;
-    const MODIFICATION                   = 50;
-    const VALIDATED                      = 60;
-    const CLOSED_LENDER_REQUEST          = 70;
-    const CLOSED_BY_UNILEND              = 80;
-    const CLOSED_DEFINITELY = 100;
+    const TO_BE_CHECKED         = 10;
+    const COMPLETENESS          = 20;
+    const COMPLETENESS_REMINDER = 30;
+    const COMPLETENESS_REPLY    = 40;
+    const MODIFICATION          = 50;
+    const VALIDATED             = 60;
+    const CLOSED_LENDER_REQUEST = 70;
+    const CLOSED_BY_UNILEND     = 80;
+    const CLOSED_DEFINITELY     = 100;
 
     public function __construct($bdd,$params='')
     {

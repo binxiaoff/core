@@ -140,7 +140,7 @@ class LenderManager
     {
         /** @var \loan_transfer $loanTransfer */
         $loanTransfer = $this->oEntityManager->getRepository('loan_transfer');
-        $lenderLoanTransfers = $loanTransfer->select('id_lender_origin = ' . $lender->id_lender_account . ' OR id_lender_reciever = ' . $lender->id_lender_account . ' GROUP BY id_lender_origin');
+        $lenderLoanTransfers = $loanTransfer->select('id_lender_origin = ' . $lender->id_lender_account . ' OR id_lender_reciever = ' . $lender->id_lender_account);
         return false === empty($lenderLoanTransfers);
     }
 }
