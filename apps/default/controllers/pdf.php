@@ -547,7 +547,10 @@ class pdfController extends bootstrap
             exit;
         }
 
-        if (false === $oClients->get($this->params[0], 'hash') || $user->getClientId() !== $oClients->id_client) {
+        if (
+            false === $oClients->get($this->params[0], 'hash')
+            || $user->getClientId() !== $oClients->id_client && empty($_SESSION['user']['id_user'])
+        ) {
             header('Location: ' . $this->lurl);
             exit;
         }
@@ -1174,7 +1177,7 @@ class pdfController extends bootstrap
         $session = $this->get('session');
 
         if ($session->has('lenderOperationsFilters')) {
-            $savedFilters = $session->get('lenderOperationsFilters');
+            $savedFilters   = $session->get('lenderOperationsFilters');
             $sPath          = $this->path . 'protected/operations_export_pdf/' . $savedFilters['id_client'] . '/';
             $sNamePdfClient = 'vos_operations_' . date('Y-m-d') . '.pdf';
 
@@ -1186,6 +1189,8 @@ class pdfController extends bootstrap
 
     private function GenerateOperationsHtml(array $savedFilters)
     {
+        /** @var $this->recoveryManager recoveryManager */
+        $this->recoveryManager         = $this->get('unilend.service.recovery_manager');
         $this->echeanciers             = $this->loadData('echeanciers');
         $this->oLendersAccounts        = $this->loadData('lenders_accounts');
         $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');

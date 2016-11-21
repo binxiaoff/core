@@ -1,7 +1,7 @@
 //
 // Unilend Devenir Preter Page
 //
-
+#devenir-emprunteur,
 #devenir-preteur.page {
   @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0);
 
@@ -215,10 +215,15 @@
     }
   }
 
+  .form-borrower-lp,
   .form-preter-lp {
     padding: 20px;
     position: relative;
     background-color: $c-bg2;
+
+    @include text-inputs($textarea: true) {
+      background-color: $c-white;
+    }
 
     .stamp {
       margin: 20px auto 0;
@@ -245,6 +250,7 @@
         top: -30px;
       }
 
+      .form-borrower-lp-footer,
       .form-preter-lp-footer {
         .btn-primary {
           margin-left: 10px;
@@ -261,6 +267,18 @@
     }
   }
 
+
+  .form-preter-lp .stamp {
+    background-color: $c-p1;
+    color: $c-white;
+  }
+
+  .form-borrower-lp .stamp {
+    background-color: $c-p2;
+    color: $c-white;
+  }
+
+  #form-borrower-lp-notifications,
   #form-preter-lp-notifications {
     > * {
       margin-bottom: 0;
@@ -314,6 +332,7 @@
       background-color: $c-white;
     }
 
+    .form-borrower-lp,
     .form-preter-lp {
       padding: 0;
       margin-top: 4px;
@@ -331,13 +350,14 @@
         right: -20px;
         top: -50px;
 
-        background-color: $c-white;
-        color: $c-p1;
+        //background-color: $c-white;
+        //color: $c-p1;
 
         transform: rotate(20deg);
       }
     }
 
+    .form-borrower-lp-footer,
     .form-preter-lp-footer {
       padding-top: 10px;
     }
@@ -348,12 +368,14 @@
       padding: 15px 20px 30px;
     }
 
+    .form-borrower-lp,
     .form-preter-lp {
       .form-field {
         padding: 10px 20px;
       }
     }
 
+    .form-borrower-lp-footer,
     .form-preter-lp-footer {
       padding-top: 10px;
 
@@ -368,12 +390,14 @@
       padding: 20px 30px 30px;
     }
 
+    .form-borrower-lp,
     .form-preter-lp {
       .form-field {
         padding: 15px 30px;
       }
     }
 
+    .form-borrower-lp-footer,
     .form-preter-lp-footer {
       padding-top: 15px;
 
@@ -389,6 +413,7 @@
     }
 
     @include devices('xs', 'sm') {
+      .form-borrower-lp
       .form-preter-lp {
         .stamp {
           right: 0;
@@ -401,4 +426,25 @@
 // Add extra space on top of the site-header-message
 #{$js-site-header-fixed} .site-header .site-controls .site-header-message {
   margin-top: 24px;
+}
+
+.site-header-tagline {
+  display: block;
+  margin-top: 5px;
+
+  @include devices('xs', 'sm') {
+    display: none;
+  }
+
+  #{$js-site-header-fixed} & {
+    display: inline-block;
+    margin-top: 0;
+  }
+}
+
+#{$js-site-header-fixed} .layout-lp {
+  .site-title {
+    line-height: $height-fixed-menu;
+    vertical-align: middle;
+  }
 }

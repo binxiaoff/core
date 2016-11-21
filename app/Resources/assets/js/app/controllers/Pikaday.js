@@ -40,6 +40,10 @@ if (/^fr/i.test($('html').attr('lang'))) {
 // Instantiate
 $doc.on('ready UI:visible', function (event) {
   var $target = $(event.target)
-  
+
   $target.find('.ui-has-datepicker, [data-ui-datepicker]').pikaday(pikadayOptions)
+    // TMA-1182 Remove has attr/class, add pikaday class to avoid event stuff
+    .addClass('ui-pikaday')
+    .removeAttr('data-ui-datepicker')
+    .removeClass('ui-has-datepicker')
 })

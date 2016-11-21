@@ -167,11 +167,6 @@ class ProjectManager
                     $iRejectedBids++;
                     $oBid->update();
                 }
-
-                if (1 != $oBid->checked) {
-                    $oBid->checked = 1;
-                    $oBid->update();
-                }
             }
 
             $aLogContext['Project ID']    = $oProject->id_project;
@@ -276,10 +271,6 @@ class ProjectManager
     {
         /** @var \bids $oBid */
         $oBid = $this->oEntityManager->getRepository('bids');
-        /** @var \loans $oLoan */
-        $oLoan = $this->oEntityManager->getRepository('loans');
-        /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
 
         $this->addProjectStatus(\users::USER_ID_CRON, \projects_status::BID_TERMINATED, $oProject);
         $this->reBidAutoBidDeeply($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE, true);

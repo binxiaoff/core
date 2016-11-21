@@ -198,6 +198,13 @@ class LenderOperationsController extends Controller
      */
     public function exportOperationsCsvAction()
     {
+        /** @var SessionInterface $session */
+        $session = $this->get('session');
+
+        if (false === $session->has('lenderOperationsFilters')) {
+            return $this->redirectToRoute('lender_operations');
+        }
+
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \tax $tax */
@@ -212,8 +219,6 @@ class LenderOperationsController extends Controller
         $lenderIndexedOperations = $entityManager->getRepository('indexage_vos_operations');
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
-        /** @var SessionInterface $session */
-        $session = $this->get('session');
 
         $savedFilters          = $session->get('lenderOperationsFilters');
         $transactionListFilter = self::$transactionTypeList[$savedFilters['operation']];
@@ -222,7 +227,7 @@ class LenderOperationsController extends Controller
         $operations            = $lenderIndexedOperations->getLenderOperations($transactionListFilter, $this->getUser()->getClientId(), $startDate, $endDate, $savedFilters['project']);
         $content               = '
         <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8"/>
-        <table border=1>
+        <table border="1">
             <tr>
                 <th>' . $translator->trans('lender-operations_operations-csv-operation-column') . '</th>
                 <th>' . $translator->trans('lender-operations_operations-csv-contract-column') . '</th>
@@ -269,6 +274,16 @@ class LenderOperationsController extends Controller
                     $aTax = $tax->getTaxListByRepaymentId($t['id_echeancier']);
                 }
 
+                if ($t['type_transaction'] == \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT) {
+                    $recoveryManager = $this->get('unilend.service.recovery_manager');
+
+                    $capital = $ficelle->formatNumber($t['montant_operation'], 2);
+                    $amount  = $ficelle->formatNumber($recoveryManager->getAmountWithRecoveryTax($t['montant_operation']), 2);
+                } else {
+                    $capital = $ficelle->formatNumber($t['montant_capital'], 2);
+                    $amount  = $ficelle->formatNumber($t['montant_operation'], 2);
+                }
+
                 $content .= '
                     <tr>
                         <td>' . $t['libelle_operation'] . '</td>
@@ -276,8 +291,8 @@ class LenderOperationsController extends Controller
                         <td>' . $sProjectId . '</td>
                         <td>' . $t['libelle_projet'] . '</td>
                         <td>' . date('d-m-Y', strtotime($t['date_operation'])) . '</td>
-                        <td' . $couleur . '>' . $ficelle->formatNumber($t['montant_operation'], 2) . '</td>
-                        <td>' . $ficelle->formatNumber($t['montant_capital'], 2) . '</td>
+                        <td' . $couleur . '>' . $amount . '</td>
+                        <td>' . $capital . '</td>
                         <td>' . $ficelle->formatNumber($t['montant_interet'], 2) . '</td>';
                 foreach ($aTaxType as $aType) {
                     $content .= '<td>';
@@ -352,9 +367,7 @@ class LenderOperationsController extends Controller
                         <td></td>
                     </tr>
                     ';
-
             } elseif ($t['type_transaction'] == \transactions_types::TYPE_LENDER_LOAN) { // ongoing Offer
-
                 //asterix pour les offres acceptees
                 $asterix       = "";
                 $offre_accepte = false;
@@ -394,6 +407,7 @@ class LenderOperationsController extends Controller
             <div>* ' . $translator->trans('lender-operations_csv-export-asterisk-accepted-offer-specific-mention') . '</div>';
 
         }
+
         return new Response($content, Response::HTTP_OK, [
             'Content-type'        => 'application/force-download; charset=utf-8',
             'Expires'             => 0,
@@ -849,7 +863,7 @@ class LenderOperationsController extends Controller
                 'project'        => $request->request->get('filter')['project'],
                 'id_last_action' => $request->request->get('filter')['id_last_action']
             ];
-        } elseif ($request->getSession()->get('lenderOperationsFilters')) {
+        } elseif ($request->getSession()->has('lenderOperationsFilters')) {
             $filters = $request->getSession()->get('lenderOperationsFilters');
         } else {
             $filters = [
@@ -871,6 +885,10 @@ class LenderOperationsController extends Controller
                 $filters['endDate']   = \DateTime::createFromFormat('d/m/Y', $filters['end']);
                 break;
             case 'slide':
+                if (empty($filters['slide'])) {
+                    $filters['slide'] = 1;
+                }
+
                 $filters['startDate'] = (new \DateTime('NOW'))->sub(new \DateInterval('P' . $filters['slide'] . 'M'));
                 $filters['endDate']   = new \DateTime('NOW');
                 break;

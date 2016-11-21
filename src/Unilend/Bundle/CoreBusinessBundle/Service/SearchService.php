@@ -53,10 +53,12 @@ class SearchService
                 $deskResult = [];
 
                 foreach ($response['_embedded']['entries'] as $entry) {
-                    $deskResult[] = [
-                        'title' => $entry['subject'],
-                        'url'   => $entry['public_url']
-                    ];
+                    if (true == $entry['in_support_center']) {
+                        $deskResult[] = [
+                            'title' => $entry['subject'],
+                            'url'   => $entry['public_url']
+                        ];
+                    }
                 }
 
                 $result = array_merge(array('desk' => $deskResult), $result);

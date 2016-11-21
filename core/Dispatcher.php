@@ -6,7 +6,7 @@ class Dispatcher
     private $Command;
     private $Config;
     private $Route;
-    /** @var  Kernel */
+    /** @var  \AppKernel */
     private $kernel;
 
     public function __construct($kernel, $name, $config,$route = array())
@@ -163,6 +163,7 @@ class Dispatcher
 
         // Enfin, on va construire notre commande, c'est la fin du traitement de l'URL
         $this->Command = new \Command($controllerName, $controllerFunction, $parameters, $langue);
+        $this->newRelic($this->Command);
     }
 
     public function dispatch()
@@ -235,5 +236,21 @@ class Dispatcher
         } else {
             include($this->path . 'apps/' . $this->App . '/' . $bootstrap . '.php');
         }
+    }
+
+    private function newRelic(\Command $command)
+    {
+        if ($this->environment !== 'prod' || false === extension_loaded ('newrelic')) {
+            return;
+        }
+        $container = $this->kernel->getContainer();
+        $applicationName = $container->getParameter('new_relic.front_app_name');
+        if ($this->App === 'admin') {
+            $applicationName = $container->getParameter('new_relic.back_app_name');
+        }
+        $transactionName = $command->getControllerName() . '::' . $command->getFunction();
+
+        newrelic_set_appname ($applicationName);
+        newrelic_name_transaction($transactionName);
     }
 }

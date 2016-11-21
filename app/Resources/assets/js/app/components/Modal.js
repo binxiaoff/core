@@ -40,7 +40,10 @@ var Modal = function (elem, options) {
   self.$elem = $(elem)
 
   // Error
-  if (self.$elem.length === 0 || elem.hasOwnProperty('Modal')) return false
+  if (self.$elem.length === 0) return false
+
+  // Return existing instance
+  if (elem.hasOwnProperty('Modal')) return elem.Modal
 
   /*
    * Settings
@@ -409,16 +412,17 @@ Modal.prototype.confirm = function () {
   // Fire the custom `onconfirm` action
   if (typeof self.settings.onconfirm === 'function') {
     // onconfirm should return a Promise made via jQuery's $.deferred API
-    self.settings.onconfirm.call(self).always(function (deferredError) {
-      if (!deferredError) {
+    self.settings.onconfirm.call(self).always(function (deferredReturn) {
+      // deferred returned falsey value, so consider confirm is actively denied
+      if (!deferredReturn) {
         // @trigger elem `Modal:confirmed`
-        self.$elem.trigger('Modal:confirmed', [self])
+        self.$elem.trigger('Modal:confirmed', [self, deferredReturn])
 
         // Close the modal
-        self.close()
+        self.close(deferredReturn)
       } else {
         // @trigger elem `Modal:confirm:error`
-        self.$elem.trigger('Modal:confirm:error', [self, deferredError])
+        self.$elem.trigger('Modal:confirm:error', [self, deferredReturn])
       }
     })
 
@@ -446,12 +450,19 @@ Modal.prototype.cancel = function () {
   // Fire the custom `oncancel` action
   if (typeof self.settings.oncancel === 'function') {
     // oncancel should return a Promise made via jQuery's $.deferred API
-    self.settings.oncancel.call(self).always(function (deferredError) {
-      // @trigger elem `Modal:cancelled`
-      self.$elem.trigger('Modal:cancelled', [self])
+    self.settings.oncancel.call(self).always(function (deferredReturn) {
+      // deferred returned falsey value, so consider cancel is actively denied
+      if (!deferredReturn) {
+        // @trigger elem `Modal:cancel:error`
+        self.$elem.trigger('Modal:cancel:error', [self, deferredReturn])
 
-      // Close the modal
-      self.close()
+      } else {
+        // @trigger elem `Modal:cancelled`
+        self.$elem.trigger('Modal:cancelled', [self, deferredReturn])
+
+        // Close the modal
+        self.close(deferredReturn)
+      }
     })
 
   // Close the modal
@@ -469,18 +480,18 @@ Modal.prototype.cancel = function () {
  * @method close
  * @returns {Void}
  */
-Modal.prototype.close = function () {
+Modal.prototype.close = function (deferredReturn) {
   var self = this
 
   // @trigger elem `Modal:close:before`
-  self.$elem.trigger('Modal:close:before', [self])
+  self.$elem.trigger('Modal:close:before', [self, deferredReturn])
 
   // Only close if the element exists
-  if ($('#' + self.settings.id + ':visible').length > 0) {
+  if (self.$elem.is(':visible')) {
     $.fancybox.close()
 
     // @trigger elem `Modal:closed`
-    self.$elem.trigger('Modal:closed', [self])
+    self.$elem.trigger('Modal:closed', [self, deferredReturn])
   }
 }
 
@@ -614,3 +625,5 @@ $(document)
       $targetModal.uiModal('open')
     }
   })
+
+module.exports = Modal
