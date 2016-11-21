@@ -473,7 +473,7 @@ class transactions extends transactions_crud
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getClientsWithRepaymentTransactions($year)
+    public function getClientsWithLoanRelatedTransactions($year)
     {
         $query = 'SELECT DISTINCT(id_client)
                     FROM transactions
@@ -481,7 +481,8 @@ class transactions extends transactions_crud
                 \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL,
                 \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS,
                 \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
-                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
+                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT,
+                \transactions_types::TYPE_LENDER_LOAN
             ]) . ') 
                   AND LEFT(date_transaction, 4) = :year
                   GROUP BY id_client';
