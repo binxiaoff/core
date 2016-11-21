@@ -73,24 +73,29 @@ class ClientStatusManager
     }
 
     /**
-     * @param \clients $client
-     * @param string $content
+     * @param int    $iClientId
+     * @param string $sContent
      */
-    public function changeClientStatusTriggeredByClientAction(\clients $client, $content)
+    public function changeClientStatusTriggeredByClientAction($iClientId, $sContent)
     {
-        switch ($this->getLastClientStatus($client)) {
+        /** @var \clients_status_history $oClientStatusHistory */
+        $oClientStatusHistory = $this->entityManager->getRepository('clients_status_history');
+        /** @var \clients_status $oLastClientStatus */
+        $oLastClientStatus = $this->entityManager->getRepository('clients_status');
+        $oLastClientStatus->getLastStatut($iClientId);
+
+        switch ($oLastClientStatus->status) {
             case \clients_status::COMPLETENESS:
             case \clients_status::COMPLETENESS_REMINDER:
             case \clients_status::COMPLETENESS_REPLY:
-                $this->addClientStatus($client, \users::USER_ID_FRONT, \clients_status::COMPLETENESS_REPLY, $content);
+                $oClientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::COMPLETENESS_REPLY, $iClientId, $sContent);
                 break;
             case \clients_status::VALIDATED:
-                $this->addClientStatus($client, \users::USER_ID_FRONT, \clients_status::MODIFICATION, $content);
+                $oClientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::MODIFICATION, $iClientId, $sContent);
                 break;
             case \clients_status::TO_BE_CHECKED:
-                $this->addClientStatus($client, \users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED, $content);
-                break;
             default:
+                $oClientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED, $iClientId, $sContent);
                 break;
         }
     }
