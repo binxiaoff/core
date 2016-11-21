@@ -80,9 +80,12 @@ class lender_tax_exemption extends lender_tax_exemption_crud
         $type = ['id_lender' => \PDO::PARAM_INT];
         $sql  = '
             SELECT
-              lte.*
+              lte.*,
+              u.firstname AS user_firstname,
+              u.name AS user_name
             FROM
               lender_tax_exemption lte
+              LEFT JOIN users u ON u.id_user = lte.id_user
             WHERE lte.id_lender = :id_lender
         ';
         if (false === is_null($year)) {

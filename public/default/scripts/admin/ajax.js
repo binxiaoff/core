@@ -631,7 +631,7 @@ function valid_rejete_etape7(status, id_project) {
                 rate_message = '\nTaux (min / max) indicatif : ' + min_rate + ' % / ' + max_rate + ' %';
         }
         var message            = 'valider',
-            note_comite        = $('span.moyenneNote').text(),
+            note_comite        = $('span.moyenneNote_comite').text(),
             validation_message = 'Note comité : ' + note_comite + ' \nMontant du projet : ' + $('#montant').val() + ' euros \nDurée du projet : ' + $('#duree').val() + ' mois' + rate_message + '\n';
 
     }

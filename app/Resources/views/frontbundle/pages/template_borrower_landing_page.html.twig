@@ -1,5 +1,7 @@
 {% extends 'layouts/_layout.html.twig' %}
 
+{% set bodyClassNames = 'layout-lp' %}
+
 {% block siteHeader %}
     <header class="site-header">
         <div class="site-band"></div>
@@ -7,12 +9,14 @@
             <div class="site-wrap">
                 <div class="site-title">
                     <a href="{{ absolute_url('/pourquoi-emprunter') }}" class="site-logo" tabindex="2">{{ site.title|default('Unilend') }}</a>
-                    <div class="site-header-message hide-xs hide-sm small c-t2">{% trans %} borrower-landing-page_site-header-title {% endtrans %}</div>
+                    <div class="site-header-tagline small c-t2">{% trans %} borrower-landing-page_site-header-title {% endtrans %}</div>
                 </div>
 
                 <div class="site-controls">
                     {% if cms.partner_logo is not empty %}
-                        <img class="empruntis" src="{{ photo(cms.partner_logo) }}" alt="{{ cms.partner_logo_alt|escape('html_attr') }}">
+                        <div class="site-partners hide-xs hide-sm">
+                            <img class="empruntis" src="{{ photo(cms.partner_logo) }}" alt="{{ cms.partner_logo_alt|escape('html_attr') }}">
+                        </div>
                     {% endif %}
                 </div><!-- /.site-controls -->
             </div><!-- /.site-wrap -->
@@ -34,6 +38,11 @@
                                     {% trans %} borrower-landing-page_text-section-fact-1 {% endtrans %}<br/>
                                     {% trans %} borrower-landing-page_text-section-fact-2 {% endtrans %}
                                 </p>
+                                {% if cms.partner_logo is not empty %}
+                                    <div class="hide-md hide-lg">
+                                        <img class="empruntis" src="{{ photo(cms.partner_logo) }}" alt="{{ cms.partner_logo_alt|escape('html_attr') }}">
+                                    </div>
+                                {% endif %}
                             </div>
                         </div>
 
@@ -71,7 +80,7 @@
 
                                 <div class="form-field row row-multi-col-computer">
                                     <div class="col-lg-2 col-md-3">
-                                        <label for="borrower-lp-input-siren">{% trans %} borrower-landing-page_siren-placeholder {% endtrans %}<span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                                        <label for="borrower-lp-input-siren" class="field-label">{% trans %} borrower-landing-page_siren-placeholder {% endtrans %}<span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                                     </div>
                                     <div class="col-lg-8 col-md-8">
                                         <input type="text" id="borrower-lp-input-siren" name="siren" value="{{ form.values.siren }}" class="input-field"
@@ -83,7 +92,7 @@
                                 {% if not cms.partner_funnel %}
                                     <div class="form-field row row-multi-col-computer">
                                         <div class="col-lg-2 col-md-3">
-                                            <label for="borrower-lp-input-email">{% trans %} common_email {% endtrans %}<span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                                            <label for="borrower-lp-input-email" class="field-label">{% trans %} common_email {% endtrans %}<span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                                         </div>
                                         <div class="col-lg-8 col-md-8">
                                             <input type="email" id="borrower-lp-input-email" name="email" value="{{ form.values.email }}" class="input-field"
@@ -140,14 +149,8 @@
             {# include 'partials/components/list-socialmedia.twig' #}
         </div><!-- /.hero-wrap -->
 
-        <div class="site-wrap block-copy-lp-footer">
-            <div class="row row-multi-col-computer">
-                <div class="col-info col-lg-8 col-md-8">
-                    <div class="readable-wrap">
-                        <p>{% trans %} borrower-landing-page_footer-warning {% endtrans %}</p>
-                    </div>
-                </div>
-            </div>
+        <div class="site-wrap block-copy-lp-footer text-align-center">
+            <p>{% trans %} borrower-landing-page_footer-warning {% endtrans %}</p>
         </div><!-- /.block-copy-lp-footer -->
 
     </article><!-- /.page -->
@@ -166,7 +169,7 @@
                         <ul class="list-awards">
                             {% for partner in partners %}
                                 <li>
-                                    <img src="{{ uploadedImage(partner.src) }}" alt="{{ partner.alt }}"/>
+                                    <img src="{{ uploadedImage(partner.src) }}" alt="{{ partner.alt }}" class="ui-has-tooltip" data-original-title="{{ partner.alt|e('html_attr') }}">
                                 </li>
                             {% endfor %}
                         </ul>

@@ -872,11 +872,12 @@ class MailerManager
 
             /** @var \echeanciers $paymentSchedule */
             $paymentSchedule = $this->oEntityManager->getRepository('echeanciers');
-
             /** @var \accepted_bids $acceptedBids */
             $acceptedBids = $this->oEntityManager->getRepository('accepted_bids');
             /** @var \underlying_contract $contract */
             $contract = $this->oEntityManager->getRepository('underlying_contract');
+            /** @var \clients_gestion_mails_notif $clientMailNotifications */
+            $clientMailNotifications = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
 
             $contracts     = $contract->select();
             $contractLabel = [];
@@ -934,9 +935,7 @@ class MailerManager
                                         <td style="' . $sStyleTD . '">' . $this->oFicelle->formatNumber($aFirstPayment['montant'] / 100) . ' &euro;</td>
                                         <td style="' . $sStyleTD . '">' . $sContractType . '</td></tr>';
 
-                    if ($clientNotifications->getNotif($lender->id_client_owner, 4, 'immediatement') == true) {
-                        /** @var \clients_gestion_mails_notif $clientMailNotifications */
-                        $clientMailNotifications = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
+                    if ($clientNotifications->getNotif($lender->id_client_owner, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED, 'immediatement') == true) {
                         $clientMailNotifications->get($aLoan['id_loan'], 'id_client = ' . $lender->id_client_owner . ' AND id_loan');
                         $clientMailNotifications->immediatement = 1;
                         $clientMailNotifications->update();

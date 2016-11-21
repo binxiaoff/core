@@ -1679,7 +1679,7 @@ class LenderProfileController extends Controller
 
         $template['afterDeadline'] = (
             date('Y-m-d H:i:s') < $taxExemptionDateRange['taxExemptionRequestStartDate']->format('Y-m-d 00:00:00')
-            && date('Y-m-d H:i:s') >= $taxExemptionDateRange['taxExemptionRequestLimitDate']->format('Y-m-d 23:59:59'));
+            || date('Y-m-d H:i:s') >= $taxExemptionDateRange['taxExemptionRequestLimitDate']->format('Y-m-d 23:59:59'));
 
         $taxExemptionHistory = $this->getExemptionHistory($lenderTaxExemption, $lenderAccount);
 

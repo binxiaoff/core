@@ -221,6 +221,10 @@
     position: relative;
     background-color: $c-bg2;
 
+    @include text-inputs($textarea: true) {
+      background-color: $c-white;
+    }
+
     .stamp {
       margin: 20px auto 0;
       transform: rotate(20deg);
@@ -262,6 +266,18 @@
       padding: 40px;
     }
   }
+
+
+  .form-preter-lp .stamp {
+    background-color: $c-p1;
+    color: $c-white;
+  }
+
+  .form-borrower-lp .stamp {
+    background-color: $c-p2;
+    color: $c-white;
+  }
+
   #form-borrower-lp-notifications,
   #form-preter-lp-notifications {
     > * {
@@ -334,8 +350,8 @@
         right: -20px;
         top: -50px;
 
-        background-color: $c-white;
-        color: $c-p1;
+        //background-color: $c-white;
+        //color: $c-p1;
 
         transform: rotate(20deg);
       }
@@ -410,4 +426,25 @@
 // Add extra space on top of the site-header-message
 #{$js-site-header-fixed} .site-header .site-controls .site-header-message {
   margin-top: 24px;
+}
+
+.site-header-tagline {
+  display: block;
+  margin-top: 5px;
+
+  @include devices('xs', 'sm') {
+    display: none;
+  }
+
+  #{$js-site-header-fixed} & {
+    display: inline-block;
+    margin-top: 0;
+  }
+}
+
+#{$js-site-header-fixed} .layout-lp {
+  .site-title {
+    line-height: $height-fixed-menu;
+    vertical-align: middle;
+  }
 }

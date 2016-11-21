@@ -167,11 +167,6 @@ class ProjectManager
                     $iRejectedBids++;
                     $oBid->update();
                 }
-
-                if (1 != $oBid->checked) {
-                    $oBid->checked = 1;
-                    $oBid->update();
-                }
             }
 
             $aLogContext['Project ID']    = $oProject->id_project;
