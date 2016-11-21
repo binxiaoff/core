@@ -273,6 +273,7 @@ class clients extends clients_crud
             FROM clients c
             LEFT JOIN companies co ON c.id_client = co.id_client_owner
             WHERE ' . $where . '
+              AND c.type NOT IN (' . implode(',', [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER, \clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER]) .')
             GROUP BY c.id_client
             ORDER BY c.id_client DESC' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''))
         );
