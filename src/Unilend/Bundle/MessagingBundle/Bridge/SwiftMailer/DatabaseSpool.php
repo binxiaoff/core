@@ -89,14 +89,10 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
             $email->status = \mail_queue::STATUS_PROCESSING;
             $email->update();
 
-            $message = $this->mailQueueManager->getMessage($email);
+            $message  = $this->mailQueueManager->getMessage($email);
+            $response = $transport->send($message, $failedRecipients);
 
-            if ($transport instanceof MailjetTransport) {
-                $transport->add($message);
-            } else {
-                /** @var Response $response */
-                $response = $transport->send($message, $failedRecipients);
-
+            if (! ($transport instanceof MailjetTransport)) {
                 if ($response) {
                     $count++;
                     $email->status             = \mail_queue::STATUS_SENT;
@@ -112,7 +108,7 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
 
         if ($transport instanceof MailjetTransport) {
             /** @var Response $response */
-            $response = $transport->bulkSend();
+            $response = $transport->stop();
 
             if ($response instanceof Response) {
                 if ($response->success()) {

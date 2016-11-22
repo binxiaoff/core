@@ -4,6 +4,7 @@ namespace Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer;
 
 use Mailjet\Client;
 use Mailjet\Resources;
+use Mailjet\Response;
 use Swift_Events_EventListener;
 use Swift_Mime_Message;
 
@@ -41,44 +42,20 @@ class MailjetTransport implements \Swift_Transport
 
     /**
      * Stops this Transport mechanism.
+     * @return Response
      */
     public function stop()
     {
+        return $this->oMailJetClient->post(Resources::$Email, ['body' => ['Messages' => $this->spool]]);
     }
 
     /**
      * @param Swift_Mime_Message $message
      * @param string[]           $aFailedRecipients
      *
-     * @return \Mailjet\Response
+     * @return int
      */
     public function send(Swift_Mime_Message $message, &$aFailedRecipients = null)
-    {
-        $body = $this->getBody($message);
-        return $this->oMailJetClient->post(Resources::$Email, ['body' => $body]);
-    }
-
-    /**
-     * @param Swift_Mime_Message $message
-     */
-    public function add(Swift_Mime_Message $message)
-    {
-        $this->spool[] = $this->getBody($message);
-    }
-
-    /**
-     * @return \Mailjet\Response
-     */
-    public function bulkSend()
-    {
-        return $this->oMailJetClient->post(Resources::$Email, ['body' => ['Messages' => $this->spool]]);
-    }
-
-    /**
-     * @param TemplateMessage $message
-     * @return array
-     */
-    private function getBody(TemplateMessage $message)
     {
         $senderEmail = array_keys($message->getFrom());
         $senderName  = array_values($message->getFrom());
@@ -92,7 +69,7 @@ class MailjetTransport implements \Swift_Transport
             'Recipients'  => array_map(function($recipient) { return ['Email' => $recipient]; }, $recipients)
         ];
 
-        if (null !== $message->getMessageId()) {
+        if (method_exists($message, 'getMessageId') && null !== $message->getMessageId()) {
             $body['Mj-CustomID'] = $message->getMessageId();
         }
 
@@ -113,7 +90,9 @@ class MailjetTransport implements \Swift_Transport
             }
         }
 
-        return $body;
+        $this->spool[] = $body;
+
+        return 1;
     }
 
     /**
