@@ -113,16 +113,13 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
             if ($response instanceof Response) {
                 if ($response->success()) {
                     $count        = count($emailsToSend);
-                    $responseBody = $response->getBody()['Sent'];
+                    $responseBody = $response->getBody();
 
-                    foreach ($responseBody as $index => $messageResponse) {
-                        if (isset($emailsToSend[$index]) && $emailsToSend[$index]->recipient === $messageResponse['Email']) {
-                            $email                     = $emailsToSend[$index];
-                            $email->status             = \mail_queue::STATUS_SENT;
-                            $email->sent_at            = date('Y-m-d H:i:s');
-                            $email->serialized_reponse = json_encode(['Sent' => [$messageResponse]]);
-                            $email->update();
-                        }
+                    foreach ($emailsToSend as $email) {
+                        $email->status             = \mail_queue::STATUS_SENT;
+                        $email->sent_at            = date('Y-m-d H:i:s');
+                        $email->serialized_reponse = json_encode($responseBody);
+                        $email->update();
                     }
                 } else {
                     $reasonPhrase = json_encode($response->getReasonPhrase());
