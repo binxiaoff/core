@@ -55,7 +55,7 @@
                                             <div class="message-info">
                                                 <p>{% trans %} project-request_step-2-info-message {% endtrans %}</p>
                                             </div><!-- /.message-info -->
-
+                                            {% if rcs %}
                                             <div class="row">
                                                 <div class="form-field col-lg-6 col-md-6 col-sm-4{% if form.errors.dl is defined %} ui-formvalidation-error{% endif %}">
                                                     <label for="form-project-create-finance-equity">
@@ -109,6 +109,25 @@
                                                     {% endif %}
                                                 </div><!-- /.form-field -->
                                             </div>
+                                            {% else %}
+                                                <div class="row">
+                                                    <div class="form-field col-lg-6 col-md-6 col-sm-4{% if form.errors.ag_2035 is defined %} ui-formvalidation-error{% endif %}">
+                                                        <label for="form-project-create-finance-turnover">
+                                                            {% trans %} project-request_recette-field-label {% endtrans %}
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                                        </label>
+                                                        <div class="input-group set-right">
+                                                            <div class="btn-group">
+                                                                <span class="icon fa-euro"></span>
+                                                            </div><!-- /.btn-group -->
+                                                            <input id="form-project-create-finance-turnover" type="text" name="finance[ag_2035]" value="{{ form.values.ag_2035|localizednumber }}" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                        </div><!-- /.input-group -->
+                                                        {% if form.errors.ag_2035 is defined %}
+                                                            <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
+                                                        {% endif %}
+                                                    </div><!-- /.form-field -->
+                                                </div>
+                                            {% endif %}
                                         </fieldset>
 
                                         <fieldset class="panel">

@@ -28,8 +28,8 @@
 
 class loans extends loans_crud
 {
-    const STATUS_ACCEPTED   = 0;
-    const STATUS_REJECTED   = 1;
+    const STATUS_ACCEPTED = 0;
+    const STATUS_REJECTED = 1;
 
     private $aAcceptedBids;
 

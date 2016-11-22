@@ -3,10 +3,21 @@
  * @linter Standard JS (http://standardjs.com/)
  */
 
-// @TODO Sortable may need AJAX functionality
-// @TODO FileAttach may need AJAX functionality
+/*
+ * This is the main frontend "app" script. It sets up all the dependencies and configuration.
+ * Ideally, this needs plenty of refactoring to remove any specific element/component/controller behaviours outside of it.
+ * Due to the nature of the site functionality continuing to grow, it'd be great to refactor the architecture of the
+ * frontend to use a better class inheritance architecture. So far I'm using prototype for shared properties/methods,
+ * but it'd be great to introduce some ES6 class based inheritance (in fact, the Ember-style Mixin inheritance is really cool).
+ *
+ * I've "reactively" designed the architecture, so I did it as was needed at the time. Now it'd would be great to "actively"
+ * re-engineer the architecture to better optimise the frontend app run-cycle, reduce any complexity and client-side lag,
+ * and to just have better JS programming practices in place.
+ *
+ * -- Matt
+ */
 
-// Dependencies
+// Dependencies (some are Browserify aliases -- see package.json)
 var $ = require('jquery') // Gets the global (see package.json)
 var videojs = require('videojs') // Gets the global (see package.json)
 var svg4everybody = require('svg4everybody')
@@ -18,7 +29,10 @@ var Tether = require('tether')
 var Drop = require('tether-drop')
 var SortableJS = require('sortablejs')
 
-// Bootstrap
+// GSAP animation
+require('gsap.jquery') // Browserify alias (see package.json)
+
+// Bootstrap -- browserify aliases (see package.json)
 require('bs.transition')
 require('bs.tab')
 require('bs.tooltip')
@@ -52,12 +66,13 @@ var NavDropdownMenu = require('NavDropdownMenu')
 var MapView = require('MapView')
 var ChartView = require('ChartView')
 var Sticky = require('Sticky')
-var Spinner = require('./app/components/Spinner')
-var SpinnerButton = require('./app/components/SpinnerButton')
+var Spinner = require('Spinner')
+var SpinnerButton = require('SpinnerButton')
 var Modal = require('Modal')
 var ModalTOS = require('./app/components/ModalTOS')
 var CookieCheck = require('./app/components/Cookies')
 var BidsDetail = require('./app/components/BidsDetail')
+var ProgressBar = require('ProgressBar')
 
 // @debug
 // CacheData.clearAll()
@@ -75,9 +90,6 @@ videojs.options.flash.swf = '/assets/js/vendor/videojs/video-js.swf'
 // Track the current breakpoints (also updated in updateWindow())
 var currentBreakpoint = window.currentBreakpoint = Utility.getActiveBreakpoints()
 
-// Watch window for scroll actions (triggers events on elements to show if visible/hidden for navigation, animation, etc.)
-var watchWindow = window.watchWindow = new WatchScroll.Watcher(window)
-
 // Main vars/elements
 var $doc = $(document)
 var $html = $('html')
@@ -86,6 +98,7 @@ var $win = $(window)
 
 /*
  * Unilend Controllers
+ * The order is very important
  */
 require('./app/controllers/Window')
 require('./app/controllers/Site')

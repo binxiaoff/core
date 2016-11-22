@@ -1381,6 +1381,10 @@ class preteursController extends bootstrap
             $aSetting['AverageRateUnilend']                                          = $this->projects->getAvgRate($aSetting['evaluation'], $aSetting['period_min'], $aSetting['period_max'], $startingDate);
             $this->aAutoBidSettings[$aSetting['id_period']][$aSetting['evaluation']] = $aSetting;
         }
+
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CIPManager $cipManager */
+        $cipManager    = $this->get('unilend.service.cip_manager');
+        $this->cipEnabled = $cipManager->hasValidEvaluation($this->lenders_accounts);
     }
 
     public function _control_fiscal_city()

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="{{ app.request.locale }}" class="no-js">
+    <head>
+        {% block cssFiles %}
+            <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Cabin:400,700,400" media="all">
+            <link rel="stylesheet" href="{{ absolute_url(asset('fonts/style.css', 'gulp')) }}"/>
+            <link rel="stylesheet" href="{{ absolute_url(asset('css/main.css', 'gulp')) }}"/>
+        {% endblock %}
+        <meta name="theme-color" content="#ffffff">
+        <meta charset="UTF-8">
+    </head>
+    <body class="ui-no-user">
+        <div id="top" class="site">
+            {% block header %}
+            {% endblock %}
+
+            <div class="page-content">
+                {% block content %}
+                {% endblock %}
+            </div><!-- /.page-content -->
+        </div>
+    </body>
+</html>

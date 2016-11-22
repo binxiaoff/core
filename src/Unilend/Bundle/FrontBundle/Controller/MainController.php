@@ -630,9 +630,10 @@ class MainController extends Controller
     }
 
     /**
+     * @param string $route
      * @return Response
      */
-    public function footerAction()
+    public function footerAction($route)
     {
         /** @var ContentManager $contentManager */
         $contentManager = $this->get('unilend.frontbundle.service.content_manager');
@@ -642,7 +643,11 @@ class MainController extends Controller
             'partners'   => $contentManager->getFooterPartners()
         ];
 
-        return $this->render('partials/site/footer.html.twig', ['menus' => $finalElements['footerMenu'], 'partners' => $finalElements['partners']]);
+        return $this->render('partials/site/footer.html.twig', [
+            'menus'             => $finalElements['footerMenu'],
+            'partners'          => $finalElements['partners'],
+            'displayDisclaimer' => $route !== 'project_detail'
+        ]);
     }
 
     /**

@@ -4,12 +4,16 @@
 
 var $ = require('jquery')
 var Utility = require('Utility')
+var WatchScroll = require('WatchScroll')
 var __ = require('__')
 
 var $win = $(window)
 var $doc = $(document)
 var $html = $('html')
 var $body = $('body')
+
+// The watchWindow WatchScroll instance
+var watchWindow = new WatchScroll.Watcher(window)
 
 // Seconds as units for projects
 var secondsAsUnits = [{
@@ -124,7 +128,8 @@ $doc.on('ready', function () {
   // Add to window WatchScroll watcher means to make project-single-menu fixed
   if ($projectSingleMenu.length > 0) {
     updateProjectSingleNavOffsetTop()
-    window.watchWindow
+
+    watchWindow
       .watch(window, function (params) {
         // @debug console.log($win.scrollTop() >= projectSingleNavOffsetTop)
         if (typeof projectSingleNavOffsetTop !== 'undefined' && $win.scrollTop() >= projectSingleNavOffsetTop) {
@@ -280,7 +285,7 @@ $doc.on('ready', function () {
 
   // Debounce update of sticky within the watchWindow to reduce jank
   if ($projectSingleInfoWrap.length > 0) {
-    window.watchWindow.watch(window, offsetProjectSingleInfo)
+    watchWindow.watch(window, offsetProjectSingleInfo)
     offsetProjectSingleInfo()
   }
 
@@ -337,9 +342,9 @@ $doc.on('ready', function () {
             // Output message
             $message.html(data.message)
           } else if (data.error && data.message) {
-            console.log(data.message)
+            console.warn(data.message, data)
           } else {
-            console.log('Unknown state')
+            console.warn('Unknown error', data)
           }
         },
         error: function () {
@@ -350,6 +355,8 @@ $doc.on('ready', function () {
           $('#bid-amount').trigger('Spinner:hideLoading')
         }
       })
+    } else if (amount && amount < 20) {
+      messageHolder.html('')
     }
   }
 

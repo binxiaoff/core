@@ -27,8 +27,9 @@
 // **************************************************************************************************** //
 class underlying_contract extends underlying_contract_crud
 {
-    const CONTRACT_IFP = 'ifp';
-    const CONTRACT_BDC = 'bon_de_caisse';
+    const CONTRACT_IFP     = 'ifp';
+    const CONTRACT_BDC     = 'bon_de_caisse';
+    const CONTRACT_MINIBON = 'minibon';
 
     public function __construct($bdd, $params = '')
     {

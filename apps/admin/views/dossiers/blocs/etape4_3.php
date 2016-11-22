@@ -10,70 +10,70 @@ $iOldestAnnualAccountsId = end($aAnnualAccountsYears);
 
 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
     $aOperationalCashFlow[$iBalanceSheetId] =
-        $aBalanceSheet['HN']
-        - $aBalanceSheet['FP']
-        + $aBalanceSheet['GA']
-        + $aBalanceSheet['GB']
-        + $aBalanceSheet['GC']
-        + $aBalanceSheet['GD']
-        - $aBalanceSheet['GM']
-        + $aBalanceSheet['GQ']
-        - $aBalanceSheet['HB']
-        - $aBalanceSheet['HC']
-        + $aBalanceSheet['HF']
-        + $aBalanceSheet['HG'];
+        $aBalanceSheet['details']['HN']
+        - $aBalanceSheet['details']['FP']
+        + $aBalanceSheet['details']['GA']
+        + $aBalanceSheet['details']['GB']
+        + $aBalanceSheet['details']['GC']
+        + $aBalanceSheet['details']['GD']
+        - $aBalanceSheet['details']['GM']
+        + $aBalanceSheet['details']['GQ']
+        - $aBalanceSheet['details']['HB']
+        - $aBalanceSheet['details']['HC']
+        + $aBalanceSheet['details']['HF']
+        + $aBalanceSheet['details']['HG'];
 
     $aGrossOperatingSurplus[$iBalanceSheetId] =
-        $aBalanceSheet['GG']
-        + $aBalanceSheet['GA']
-        + $aBalanceSheet['GB']
-        + $aBalanceSheet['GC']
-        + $aBalanceSheet['GD']
-        - $aBalanceSheet['FP']
-        - $aBalanceSheet['FQ']
-        + $aBalanceSheet['GE'];
+        $aBalanceSheet['details']['GG']
+        + $aBalanceSheet['details']['GA']
+        + $aBalanceSheet['details']['GB']
+        + $aBalanceSheet['details']['GC']
+        + $aBalanceSheet['details']['GD']
+        - $aBalanceSheet['details']['FP']
+        - $aBalanceSheet['details']['FQ']
+        + $aBalanceSheet['details']['GE'];
 
     $aMediumLongTermDebt[$iBalanceSheetId] =
-        $aBalanceSheet['DS']
-        + $aBalanceSheet['DT']
-        + $aBalanceSheet['DU']
-        + $aBalanceSheet['DV']
-        - $aBalanceSheet['EH']
-        - $aBalanceSheet['VI'];
+        $aBalanceSheet['details']['DS']
+        + $aBalanceSheet['details']['DT']
+        + $aBalanceSheet['details']['DU']
+        + $aBalanceSheet['details']['DV']
+        - $aBalanceSheet['details']['EH']
+        - $aBalanceSheet['details']['VI'];
 
     $aBalanceTotal[$iBalanceSheetId] =
-        $aBalanceSheet['AN']
-        + $aBalanceSheet['AP']
-        + $aBalanceSheet['AR']
-        + $aBalanceSheet['AT']
-        + $aBalanceSheet['AV']
-        + $aBalanceSheet['AX']
-        + $aBalanceSheet['AB']
-        + $aBalanceSheet['AD']
-        + $aBalanceSheet['AF']
-        + $aBalanceSheet['AH']
-        + $aBalanceSheet['AJ']
-        + $aBalanceSheet['AL']
-        + $aBalanceSheet['CS']
-        + $aBalanceSheet['CU']
-        + $aBalanceSheet['BB']
-        + $aBalanceSheet['BD']
-        + $aBalanceSheet['BF']
-        + $aBalanceSheet['BH']
-        + $aBalanceSheet['BL']
-        + $aBalanceSheet['BN']
-        + $aBalanceSheet['BP']
-        + $aBalanceSheet['BR']
-        + $aBalanceSheet['BT']
-        + $aBalanceSheet['BV']
-        + $aBalanceSheet['BX']
-        + $aBalanceSheet['BZ']
-        + $aBalanceSheet['CB']
-        + $aBalanceSheet['CH']
-        + $aBalanceSheet['CF']
-        + $aBalanceSheet['CD']
-        - $aBalanceSheet['BK']
-        - $aBalanceSheet['CK'];
+        $aBalanceSheet['details']['AN']
+        + $aBalanceSheet['details']['AP']
+        + $aBalanceSheet['details']['AR']
+        + $aBalanceSheet['details']['AT']
+        + $aBalanceSheet['details']['AV']
+        + $aBalanceSheet['details']['AX']
+        + $aBalanceSheet['details']['AB']
+        + $aBalanceSheet['details']['AD']
+        + $aBalanceSheet['details']['AF']
+        + $aBalanceSheet['details']['AH']
+        + $aBalanceSheet['details']['AJ']
+        + $aBalanceSheet['details']['AL']
+        + $aBalanceSheet['details']['CS']
+        + $aBalanceSheet['details']['CU']
+        + $aBalanceSheet['details']['BB']
+        + $aBalanceSheet['details']['BD']
+        + $aBalanceSheet['details']['BF']
+        + $aBalanceSheet['details']['BH']
+        + $aBalanceSheet['details']['BL']
+        + $aBalanceSheet['details']['BN']
+        + $aBalanceSheet['details']['BP']
+        + $aBalanceSheet['details']['BR']
+        + $aBalanceSheet['details']['BT']
+        + $aBalanceSheet['details']['BV']
+        + $aBalanceSheet['details']['BX']
+        + $aBalanceSheet['details']['BZ']
+        + $aBalanceSheet['details']['CB']
+        + $aBalanceSheet['details']['CH']
+        + $aBalanceSheet['details']['CF']
+        + $aBalanceSheet['details']['CD']
+        - $aBalanceSheet['details']['BK']
+        - $aBalanceSheet['details']['CK'];
 
 }
 ?>
@@ -98,14 +98,14 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                     $iCurrentNumber =
-                        $aBalanceSheet['DS']
-                        + $aBalanceSheet['DT']
-                        + $aBalanceSheet['DU']
-                        + $aBalanceSheet['DV']
-                        - $aBalanceSheet['CF']
-                        - $aBalanceSheet['CD']
-                        - $aBalanceSheet['EH']
-                        - $aBalanceSheet['VI'];
+                        $aBalanceSheet['details']['DS']
+                        + $aBalanceSheet['details']['DT']
+                        + $aBalanceSheet['details']['DU']
+                        + $aBalanceSheet['details']['DV']
+                        - $aBalanceSheet['details']['CF']
+                        - $aBalanceSheet['details']['CD']
+                        - $aBalanceSheet['details']['EH']
+                        - $aBalanceSheet['details']['VI'];
 
                     if (false === is_null($iPreviousNumber)) {
                         ?>
@@ -144,7 +144,7 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                 <?php
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                     ?>
-                    <td><?= $this->ficelle->formatNumber($aOperationalCashFlow[$iBalanceSheetId] - $this->aBalanceSheets[$iBalanceSheetId]['VH2'], 0) ?>&nbsp;€</td>
+                    <td><?= $this->ficelle->formatNumber($aOperationalCashFlow[$iBalanceSheetId] - $this->aBalanceSheets[$iBalanceSheetId]['details']['VH2'], 0) ?>&nbsp;€</td>
                     <?php
                     break;
                 }
@@ -212,25 +212,25 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                 $iPreviousNumber = null;
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
-                    $iDivisor = $aBalanceSheet['DW']
-                        + $aBalanceSheet['DX']
-                        + $aBalanceSheet['DY']
-                        + $aBalanceSheet['DZ']
-                        + $aBalanceSheet['EA']
-                        + $aBalanceSheet['EB']
-                        + $aBalanceSheet['EH']
-                        - $aBalanceSheet['VI'];
+                    $iDivisor = $aBalanceSheet['details']['DW']
+                        + $aBalanceSheet['details']['DX']
+                        + $aBalanceSheet['details']['DY']
+                        + $aBalanceSheet['details']['DZ']
+                        + $aBalanceSheet['details']['EA']
+                        + $aBalanceSheet['details']['EB']
+                        + $aBalanceSheet['details']['EH']
+                        - $aBalanceSheet['details']['VI'];
                     $iCurrentNumber = empty($iDivisor) ? '-' : round((
-                            $aBalanceSheet['BL']
-                            + $aBalanceSheet['BN']
-                            + $aBalanceSheet['BP']
-                            + $aBalanceSheet['BR']
-                            + $aBalanceSheet['BT']
-                            + $aBalanceSheet['BV']
-                            + $aBalanceSheet['BX']
-                            + $aBalanceSheet['BZ']
-                            + $aBalanceSheet['CB']
-                            + $aBalanceSheet['CH']
+                            $aBalanceSheet['details']['BL']
+                            + $aBalanceSheet['details']['BN']
+                            + $aBalanceSheet['details']['BP']
+                            + $aBalanceSheet['details']['BR']
+                            + $aBalanceSheet['details']['BT']
+                            + $aBalanceSheet['details']['BV']
+                            + $aBalanceSheet['details']['BX']
+                            + $aBalanceSheet['details']['BZ']
+                            + $aBalanceSheet['details']['CB']
+                            + $aBalanceSheet['details']['CH']
                         ) / $iDivisor, 1);
 
                     if (false === is_null($iPreviousNumber)) {
@@ -251,27 +251,27 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                 $iPreviousNumber = null;
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
-                    $iDivisor = $aBalanceSheet['DW']
-                        + $aBalanceSheet['DX']
-                        + $aBalanceSheet['DY']
-                        + $aBalanceSheet['DZ']
-                        + $aBalanceSheet['EA']
-                        + $aBalanceSheet['EB']
-                        + $aBalanceSheet['EH']
-                        - $aBalanceSheet['VI'];
+                    $iDivisor = $aBalanceSheet['details']['DW']
+                        + $aBalanceSheet['details']['DX']
+                        + $aBalanceSheet['details']['DY']
+                        + $aBalanceSheet['details']['DZ']
+                        + $aBalanceSheet['details']['EA']
+                        + $aBalanceSheet['details']['EB']
+                        + $aBalanceSheet['details']['EH']
+                        - $aBalanceSheet['details']['VI'];
                     $iCurrentNumber = empty($iDivisor) ? '-' : round((
-                            $aBalanceSheet['BL']
-                            + $aBalanceSheet['BN']
-                            + $aBalanceSheet['BP']
-                            + $aBalanceSheet['BR']
-                            + $aBalanceSheet['BT']
-                            + $aBalanceSheet['BV']
-                            + $aBalanceSheet['BX']
-                            + $aBalanceSheet['BZ']
-                            + $aBalanceSheet['CB']
-                            + $aBalanceSheet['CH']
-                            + $aBalanceSheet['CF']
-                            + $aBalanceSheet['CD']
+                            $aBalanceSheet['details']['BL']
+                            + $aBalanceSheet['details']['BN']
+                            + $aBalanceSheet['details']['BP']
+                            + $aBalanceSheet['details']['BR']
+                            + $aBalanceSheet['details']['BT']
+                            + $aBalanceSheet['details']['BV']
+                            + $aBalanceSheet['details']['BX']
+                            + $aBalanceSheet['details']['BZ']
+                            + $aBalanceSheet['details']['CB']
+                            + $aBalanceSheet['details']['CH']
+                            + $aBalanceSheet['details']['CF']
+                            + $aBalanceSheet['details']['CD']
                         ) / $iDivisor, 1);
 
                     if (false === is_null($iPreviousNumber)) {
@@ -292,22 +292,22 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                 $iPreviousNumber = null;
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
-                    $iDivisor = $aBalanceSheet['DW']
-                        + $aBalanceSheet['DX']
-                        + $aBalanceSheet['DY']
-                        + $aBalanceSheet['DZ']
-                        + $aBalanceSheet['EA']
-                        + $aBalanceSheet['EB']
-                        + $aBalanceSheet['EH']
-                        - $aBalanceSheet['VI'];
+                    $iDivisor = $aBalanceSheet['details']['DW']
+                        + $aBalanceSheet['details']['DX']
+                        + $aBalanceSheet['details']['DY']
+                        + $aBalanceSheet['details']['DZ']
+                        + $aBalanceSheet['details']['EA']
+                        + $aBalanceSheet['details']['EB']
+                        + $aBalanceSheet['details']['EH']
+                        - $aBalanceSheet['details']['VI'];
                     $iCurrentNumber = empty($iDivisor) ? '-' : round((
-                            $aBalanceSheet['BV']
-                            + $aBalanceSheet['BX']
-                            + $aBalanceSheet['BZ']
-                            + $aBalanceSheet['CB']
-                            + $aBalanceSheet['CH']
-                            + $aBalanceSheet['CF']
-                            + $aBalanceSheet['CD']
+                            $aBalanceSheet['details']['BV']
+                            + $aBalanceSheet['details']['BX']
+                            + $aBalanceSheet['details']['BZ']
+                            + $aBalanceSheet['details']['CB']
+                            + $aBalanceSheet['details']['CH']
+                            + $aBalanceSheet['details']['CF']
+                            + $aBalanceSheet['details']['CD']
                         ) / $iDivisor, 1);
 
                     if (false === is_null($iPreviousNumber)) {
@@ -344,8 +344,8 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                     $iCurrentNumber = empty($aBalanceTotal[$iBalanceSheetId]) ? '-' : round((
-                            $aBalanceSheet['DL']
-                            + $aBalanceSheet['DO']
+                            $aBalanceSheet['details']['DL']
+                            + $aBalanceSheet['details']['DO']
                         ) / $aBalanceTotal[$iBalanceSheetId] * 100);
 
                     if (false === is_null($iPreviousNumber)) {
@@ -367,10 +367,10 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                     $iCurrentNumber = empty($aBalanceTotal[$iBalanceSheetId]) ? '-' : round((
-                            $aBalanceSheet['DL']
-                            + $aBalanceSheet['DO']
-                            + $aBalanceSheet['EI']
-                            + $aBalanceSheet['VI']
+                            $aBalanceSheet['details']['DL']
+                            + $aBalanceSheet['details']['DO']
+                            + $aBalanceSheet['details']['EI']
+                            + $aBalanceSheet['details']['VI']
                         ) / $aBalanceTotal[$iBalanceSheetId] * 100);
 
                     if (false === is_null($iPreviousNumber)) {
@@ -411,10 +411,10 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                 $iPreviousNumber = null;
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
-                    $iDivisor = $aBalanceSheet['DL']
-                        + $aBalanceSheet['DO']
-                        + $aBalanceSheet['EI']
-                        + $aBalanceSheet['VI'];
+                    $iDivisor = $aBalanceSheet['details']['DL']
+                        + $aBalanceSheet['details']['DO']
+                        + $aBalanceSheet['details']['EI']
+                        + $aBalanceSheet['details']['VI'];
                     $iCurrentNumber = empty($iDivisor) ? '-' : round($aMediumLongTermDebt[$iBalanceSheetId] / $iDivisor * 100, 1);
 
                     if (false === is_null($iPreviousNumber)) {
@@ -435,18 +435,18 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                 $iPreviousNumber = null;
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
-                    $iDivisor = $aBalanceSheet['DL']
-                        + $aBalanceSheet['DO']
-                        + $aBalanceSheet['VI'];
+                    $iDivisor = $aBalanceSheet['details']['DL']
+                        + $aBalanceSheet['details']['DO']
+                        + $aBalanceSheet['details']['VI'];
                     $iCurrentNumber = empty($iDivisor) ? '-' : round((
-                            $aBalanceSheet['DS']
-                            + $aBalanceSheet['DT']
-                            + $aBalanceSheet['DU']
-                            + $aBalanceSheet['DV']
-                            - $aBalanceSheet['CF']
-                            - $aBalanceSheet['CD']
-                            - $aBalanceSheet['EH']
-                            - $aBalanceSheet['VI']
+                            $aBalanceSheet['details']['DS']
+                            + $aBalanceSheet['details']['DT']
+                            + $aBalanceSheet['details']['DU']
+                            + $aBalanceSheet['details']['DV']
+                            - $aBalanceSheet['details']['CF']
+                            - $aBalanceSheet['details']['CD']
+                            - $aBalanceSheet['details']['EH']
+                            - $aBalanceSheet['details']['VI']
                         ) / $iDivisor * 100);
 
                     if (false === is_null($iPreviousNumber)) {
@@ -467,15 +467,15 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                 $iPreviousNumber = null;
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
-                    $iDivisor = $aBalanceSheet['GG']
-                        + $aBalanceSheet['GA']
-                        + $aBalanceSheet['GB']
-                        + $aBalanceSheet['GC']
-                        + $aBalanceSheet['GD']
-                        - $aBalanceSheet['FP']
-                        - $aBalanceSheet['FQ']
-                        + $aBalanceSheet['GE'];
-                    $iCurrentNumber = empty($iDivisor) ? '-' : round(abs($aBalanceSheet['GU']) / $iDivisor * 100);
+                    $iDivisor = $aBalanceSheet['details']['GG']
+                        + $aBalanceSheet['details']['GA']
+                        + $aBalanceSheet['details']['GB']
+                        + $aBalanceSheet['details']['GC']
+                        + $aBalanceSheet['details']['GD']
+                        - $aBalanceSheet['details']['FP']
+                        - $aBalanceSheet['details']['FQ']
+                        + $aBalanceSheet['details']['GE'];
+                    $iCurrentNumber = empty($iDivisor) ? '-' : round(abs($aBalanceSheet['details']['GU']) / $iDivisor * 100);
 
                     if (false === is_null($iPreviousNumber)) {
                         ?>
@@ -495,7 +495,7 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                 $iPreviousNumber = null;
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
-                    $iCurrentNumber = empty($aBalanceSheet['HN']) ? '-' : round(abs($aBalanceSheet['GU']) / $aBalanceSheet['HN'] * 100);
+                    $iCurrentNumber = empty($aBalanceSheet['details']['HN']) ? '-' : round(abs($aBalanceSheet['details']['GU']) / $aBalanceSheet['details']['HN'] * 100);
 
                     if (false === is_null($iPreviousNumber)) {
                         ?>
@@ -517,11 +517,11 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                     <td><?= $this->ficelle->formatNumber($this->aBalanceSheets[$iLastAnnualAccountsId]['VI'], 0) ?></td>
                     <?php
                 } elseif (2 <= $iBalanceSheetsCount) {
-                    $iLastNumber = $this->aBalanceSheets[$iLastAnnualAccountsId]['VI'];
+                    $iLastNumber = $this->aBalanceSheets[$iLastAnnualAccountsId]['details']['VI'];
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if ($iBalanceSheetId !== $iLastAnnualAccountsId) {
                             ?>
-                            <td><?= $this->ficelle->formatNumber(min($iLastNumber, $aBalanceSheet['VI']), 0) ?>&nbsp;€</td>
+                            <td><?= $this->ficelle->formatNumber(min($iLastNumber, $aBalanceSheet['details']['VI']), 0) ?>&nbsp;€</td>
                             <?php
                             break;
                         }
@@ -554,31 +554,31 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                     $iCurrentNumber =
-                            $aBalanceSheet['DL']
-                            + $aBalanceSheet['DO']
-                            + $aBalanceSheet['DU']
-                            - $aBalanceSheet['EH']
-                            + $aBalanceSheet['VI']
+                            $aBalanceSheet['details']['DL']
+                            + $aBalanceSheet['details']['DO']
+                            + $aBalanceSheet['details']['DU']
+                            - $aBalanceSheet['details']['EH']
+                            + $aBalanceSheet['details']['VI']
                             - (
-                                $aBalanceSheet['CS']
-                                + $aBalanceSheet['CU']
-                                + $aBalanceSheet['BB']
-                                + $aBalanceSheet['BD']
-                                + $aBalanceSheet['BF']
-                                + $aBalanceSheet['BH']
-                                + $aBalanceSheet['AN']
-                                + $aBalanceSheet['AP']
-                                + $aBalanceSheet['AR']
-                                + $aBalanceSheet['AT']
-                                + $aBalanceSheet['AV']
-                                + $aBalanceSheet['AX']
-                                + $aBalanceSheet['AB']
-                                + $aBalanceSheet['AD']
-                                + $aBalanceSheet['AF']
-                                + $aBalanceSheet['AH']
-                                + $aBalanceSheet['AJ']
-                                + $aBalanceSheet['AL']
-                                - $aBalanceSheet['BK']
+                                $aBalanceSheet['details']['CS']
+                                + $aBalanceSheet['details']['CU']
+                                + $aBalanceSheet['details']['BB']
+                                + $aBalanceSheet['details']['BD']
+                                + $aBalanceSheet['details']['BF']
+                                + $aBalanceSheet['details']['BH']
+                                + $aBalanceSheet['details']['AN']
+                                + $aBalanceSheet['details']['AP']
+                                + $aBalanceSheet['details']['AR']
+                                + $aBalanceSheet['details']['AT']
+                                + $aBalanceSheet['details']['AV']
+                                + $aBalanceSheet['details']['AX']
+                                + $aBalanceSheet['details']['AB']
+                                + $aBalanceSheet['details']['AD']
+                                + $aBalanceSheet['details']['AF']
+                                + $aBalanceSheet['details']['AH']
+                                + $aBalanceSheet['details']['AJ']
+                                + $aBalanceSheet['details']['AL']
+                                - $aBalanceSheet['details']['BK']
                             );
 
                     if (false === is_null($iPreviousNumber)) {
@@ -599,33 +599,33 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                 $iPreviousNumber = null;
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
-                    $iDivisor       = $aBalanceSheet['FL'] * (1 + $this->fVATRate);
+                    $iDivisor       = $aBalanceSheet['details']['FL'] * (1 + $this->fVATRate);
                     $iCurrentNumber = empty($iDivisor) ? '-' : round((
-                            $aBalanceSheet['DL']
-                            + $aBalanceSheet['DO']
-                            + $aBalanceSheet['DU']
-                            - $aBalanceSheet['EH']
-                            + $aBalanceSheet['VI']
+                            $aBalanceSheet['details']['DL']
+                            + $aBalanceSheet['details']['DO']
+                            + $aBalanceSheet['details']['DU']
+                            - $aBalanceSheet['details']['EH']
+                            + $aBalanceSheet['details']['VI']
                             - (
-                                $aBalanceSheet['CS']
-                                + $aBalanceSheet['CU']
-                                + $aBalanceSheet['BB']
-                                + $aBalanceSheet['BD']
-                                + $aBalanceSheet['BF']
-                                + $aBalanceSheet['BH']
-                                + $aBalanceSheet['AN']
-                                + $aBalanceSheet['AP']
-                                + $aBalanceSheet['AR']
-                                + $aBalanceSheet['AT']
-                                + $aBalanceSheet['AV']
-                                + $aBalanceSheet['AX']
-                                + $aBalanceSheet['AB']
-                                + $aBalanceSheet['AD']
-                                + $aBalanceSheet['AF']
-                                + $aBalanceSheet['AH']
-                                + $aBalanceSheet['AJ']
-                                + $aBalanceSheet['AL']
-                                - $aBalanceSheet['BK']
+                                $aBalanceSheet['details']['CS']
+                                + $aBalanceSheet['details']['CU']
+                                + $aBalanceSheet['details']['BB']
+                                + $aBalanceSheet['details']['BD']
+                                + $aBalanceSheet['details']['BF']
+                                + $aBalanceSheet['details']['BH']
+                                + $aBalanceSheet['details']['AN']
+                                + $aBalanceSheet['details']['AP']
+                                + $aBalanceSheet['details']['AR']
+                                + $aBalanceSheet['details']['AT']
+                                + $aBalanceSheet['details']['AV']
+                                + $aBalanceSheet['details']['AX']
+                                + $aBalanceSheet['details']['AB']
+                                + $aBalanceSheet['details']['AD']
+                                + $aBalanceSheet['details']['AF']
+                                + $aBalanceSheet['details']['AH']
+                                + $aBalanceSheet['details']['AJ']
+                                + $aBalanceSheet['details']['AL']
+                                - $aBalanceSheet['details']['BK']
                             )
                         ) / $iDivisor * 360);
 
@@ -648,26 +648,26 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                     $iCurrentNumber =
-                        $aBalanceSheet['BL']
-                        + $aBalanceSheet['BN']
-                        + $aBalanceSheet['BP']
-                        + $aBalanceSheet['BR']
-                        + $aBalanceSheet['BT']
-                        + $aBalanceSheet['BV']
-                        + $aBalanceSheet['BX']
-                        + $aBalanceSheet['BZ']
-                        + $aBalanceSheet['CB']
-                        + $aBalanceSheet['CH']
+                        $aBalanceSheet['details']['BL']
+                        + $aBalanceSheet['details']['BN']
+                        + $aBalanceSheet['details']['BP']
+                        + $aBalanceSheet['details']['BR']
+                        + $aBalanceSheet['details']['BT']
+                        + $aBalanceSheet['details']['BV']
+                        + $aBalanceSheet['details']['BX']
+                        + $aBalanceSheet['details']['BZ']
+                        + $aBalanceSheet['details']['CB']
+                        + $aBalanceSheet['details']['CH']
                         - (
-                            $aBalanceSheet['DV']
-                            + $aBalanceSheet['DW']
-                            + $aBalanceSheet['DX']
-                            + $aBalanceSheet['DY']
-                            + $aBalanceSheet['DZ']
-                            + $aBalanceSheet['EA']
-                            + $aBalanceSheet['EB']
-                            + $aBalanceSheet['ED']
-                            - $aBalanceSheet['VI']
+                            $aBalanceSheet['details']['DV']
+                            + $aBalanceSheet['details']['DW']
+                            + $aBalanceSheet['details']['DX']
+                            + $aBalanceSheet['details']['DY']
+                            + $aBalanceSheet['details']['DZ']
+                            + $aBalanceSheet['details']['EA']
+                            + $aBalanceSheet['details']['EB']
+                            + $aBalanceSheet['details']['ED']
+                            - $aBalanceSheet['details']['VI']
                         );
 
                     if (false === is_null($iPreviousNumber)) {
@@ -688,28 +688,28 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                 $iPreviousNumber = null;
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
-                    $iDivisor       = $aBalanceSheet['FL'] * (1 + $this->fVATRate);
+                    $iDivisor       = $aBalanceSheet['details']['FL'] * (1 + $this->fVATRate);
                     $iCurrentNumber = empty($iDivisor) ? '-' : round((
-                            $aBalanceSheet['BL']
-                            + $aBalanceSheet['BN']
-                            + $aBalanceSheet['BP']
-                            + $aBalanceSheet['BR']
-                            + $aBalanceSheet['BT']
-                            + $aBalanceSheet['BV']
-                            + $aBalanceSheet['BX']
-                            + $aBalanceSheet['BZ']
-                            + $aBalanceSheet['CB']
-                            + $aBalanceSheet['CH']
+                            $aBalanceSheet['details']['BL']
+                            + $aBalanceSheet['details']['BN']
+                            + $aBalanceSheet['details']['BP']
+                            + $aBalanceSheet['details']['BR']
+                            + $aBalanceSheet['details']['BT']
+                            + $aBalanceSheet['details']['BV']
+                            + $aBalanceSheet['details']['BX']
+                            + $aBalanceSheet['details']['BZ']
+                            + $aBalanceSheet['details']['CB']
+                            + $aBalanceSheet['details']['CH']
                             - (
-                                $aBalanceSheet['DV']
-                                + $aBalanceSheet['DW']
-                                + $aBalanceSheet['DX']
-                                + $aBalanceSheet['DY']
-                                + $aBalanceSheet['DZ']
-                                + $aBalanceSheet['EA']
-                                + $aBalanceSheet['EB']
-                                + $aBalanceSheet['ED']
-                                - $aBalanceSheet['VI']
+                                $aBalanceSheet['details']['DV']
+                                + $aBalanceSheet['details']['DW']
+                                + $aBalanceSheet['details']['DX']
+                                + $aBalanceSheet['details']['DY']
+                                + $aBalanceSheet['details']['DZ']
+                                + $aBalanceSheet['details']['EA']
+                                + $aBalanceSheet['details']['EB']
+                                + $aBalanceSheet['details']['ED']
+                                - $aBalanceSheet['details']['VI']
                             )
                         ) / $iDivisor * 360);
 
@@ -732,9 +732,9 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                     $iCurrentNumber =
-                        $aBalanceSheet['CF']
-                        + $aBalanceSheet['CD']
-                        - $aBalanceSheet['EH'];
+                        $aBalanceSheet['details']['CF']
+                        + $aBalanceSheet['details']['CD']
+                        - $aBalanceSheet['details']['EH'];
 
                     if (false === is_null($iPreviousNumber)) {
                         ?>
@@ -754,13 +754,13 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                 $iPreviousNumber = null;
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
-                    $iCurrentNumber = empty($aBalanceSheet['FL']) ? '-' : round((
-                            $aBalanceSheet['BL']
-                            + $aBalanceSheet['BN']
-                            + $aBalanceSheet['BP']
-                            + $aBalanceSheet['BR']
-                            + $aBalanceSheet['BT']
-                        ) / $aBalanceSheet['FL'] * 360);
+                    $iCurrentNumber = empty($aBalanceSheet['details']['FL']) ? '-' : round((
+                            $aBalanceSheet['details']['BL']
+                            + $aBalanceSheet['details']['BN']
+                            + $aBalanceSheet['details']['BP']
+                            + $aBalanceSheet['details']['BR']
+                            + $aBalanceSheet['details']['BT']
+                        ) / $aBalanceSheet['details']['FL'] * 360);
 
                     if (false === is_null($iPreviousNumber)) {
                         ?>
@@ -780,8 +780,8 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                 $iPreviousNumber = null;
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
-                    $iDivisor       = $aBalanceSheet['FL'] * (1 + $this->fVATRate);
-                    $iCurrentNumber = empty($iDivisor) ? '-' : round($aBalanceSheet['BX'] / $iDivisor * 360);
+                    $iDivisor       = $aBalanceSheet['details']['FL'] * (1 + $this->fVATRate);
+                    $iCurrentNumber = empty($iDivisor) ? '-' : round($aBalanceSheet['details']['BX'] / $iDivisor * 360);
 
                     if (false === is_null($iPreviousNumber)) {
                         ?>
@@ -801,8 +801,8 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                 $iPreviousNumber = null;
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
-                    $iDivisor       = $aBalanceSheet['FL'] * (1 + $this->fVATRate);
-                    $iCurrentNumber = empty($iDivisor) ? '-' : round(($aBalanceSheet['DW'] + $aBalanceSheet['DX']) / $iDivisor * 360);
+                    $iDivisor       = $aBalanceSheet['details']['FL'] * (1 + $this->fVATRate);
+                    $iCurrentNumber = empty($iDivisor) ? '-' : round(($aBalanceSheet['details']['DW'] + $aBalanceSheet['details']['DX']) / $iDivisor * 360);
 
                     if (false === is_null($iPreviousNumber)) {
                         ?>
@@ -822,11 +822,11 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                 $iPreviousNumber = null;
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
-                    $iDivisor       = $aBalanceSheet['FL'] * (1 + $this->fVATRate);
+                    $iDivisor       = $aBalanceSheet['details']['FL'] * (1 + $this->fVATRate);
                     $iCurrentNumber = empty($iDivisor) ? '-' : round((
-                            $aBalanceSheet['BX']
-                            - $aBalanceSheet['DW']
-                            - $aBalanceSheet['DX']
+                            $aBalanceSheet['details']['BX']
+                            - $aBalanceSheet['details']['DW']
+                            - $aBalanceSheet['details']['DX']
                         ) / $iDivisor * 360);
 
                     if (false === is_null($iPreviousNumber)) {
@@ -862,7 +862,7 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                 $iPreviousNumber = null;
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
-                    $iCurrentNumber = empty($aBalanceSheet['FL']) ? '-' : round($aGrossOperatingSurplus[$iBalanceSheetId] / $aBalanceSheet['FL'] * 100, 1);
+                    $iCurrentNumber = empty($aBalanceSheet['details']['FL']) ? '-' : round($aGrossOperatingSurplus[$iBalanceSheetId] / $aBalanceSheet['details']['FL'] * 100, 1);
 
                     if (false === is_null($iPreviousNumber)) {
                         ?>
@@ -882,7 +882,7 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                 $iPreviousNumber = null;
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
-                    $iCurrentNumber = empty($aBalanceSheet['FL']) ? '-' : round($aBalanceSheet['HN'] / $aBalanceSheet['FL'] * 100, 1);
+                    $iCurrentNumber = empty($aBalanceSheet['details']['FL']) ? '-' : round($aBalanceSheet['details']['HN'] / $aBalanceSheet['details']['FL'] * 100, 1);
 
                     if (false === is_null($iPreviousNumber)) {
                         ?>
@@ -902,7 +902,7 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                 $iPreviousNumber = null;
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
-                    $iCurrentNumber = empty($aBalanceTotal[$iBalanceSheetId]) ? '-' : round($aBalanceSheet['CF'] / $aBalanceTotal[$iBalanceSheetId] * 100, 1);
+                    $iCurrentNumber = empty($aBalanceTotal[$iBalanceSheetId]) ? '-' : round($aBalanceSheet['details']['CF'] / $aBalanceTotal[$iBalanceSheetId] * 100, 1);
 
                     if (false === is_null($iPreviousNumber)) {
                         ?>
@@ -922,7 +922,7 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                 $iPreviousNumber = null;
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
-                    $iCurrentNumber = empty($aBalanceSheet['DA']) ? '-' : round($aBalanceSheet['DL'] / $aBalanceSheet['DA'] * 100, 1);
+                    $iCurrentNumber = empty($aBalanceSheet['details']['DA']) ? '-' : round($aBalanceSheet['details']['DL'] / $aBalanceSheet['details']['DA'] * 100, 1);
 
                     if (false === is_null($iPreviousNumber)) {
                         ?>
