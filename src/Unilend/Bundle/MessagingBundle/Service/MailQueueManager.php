@@ -95,7 +95,10 @@ class MailQueueManager
         }
         /** @var TemplateMessage $oMessage */
         $oMessage = $this->oTemplateMessage->newMessage($oMailTemplate->type, json_decode($oEmail->serialized_variables, true), false);
-        $oMessage->setTo($oEmail->recipient);
+        $oMessage
+            ->setTo($oEmail->recipient)
+            ->setMessageId($oEmail->id_queue);
+
         if (false === empty($oEmail->reply_to)) {
             $oMessage->setReplyTo($oEmail->reply_to);
         }
