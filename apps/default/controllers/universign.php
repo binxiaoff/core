@@ -54,7 +54,7 @@ class universignController extends bootstrap
                     $doc['content'] = $r->value()->arrayMem(0)->structMem('content')->scalarVal();
 
                     // On met a jour le pdf en bdd
-                    file_put_contents($doc['name'], $doc['content']);
+                    file_put_contents($this->path . 'protected/pdf/mandat/' . $doc['name'], $doc['content']);
                     $clients_mandats->status = \clients_mandats::STATUS_SIGNED;
                     $clients_mandats->update();
 
@@ -127,7 +127,7 @@ class universignController extends bootstrap
                     $doc['name']    = $r->value()->arrayMem(0)->structMem('name')->scalarVal();
                     $doc['content'] = $r->value()->arrayMem(0)->structMem('content')->scalarVal();
 
-                    file_put_contents($doc['name'], $doc['content']);
+                    file_put_contents($this->path . 'protected/pdf/pouvoir/' . $doc['name'], $doc['content']);
                     $projects_pouvoir->status = \projects_pouvoir::STATUS_SIGNED;
                     $projects_pouvoir->update();
 
@@ -204,7 +204,7 @@ class universignController extends bootstrap
                     $doc['name']    = $r->value()->arrayMem(0)->structMem('name')->scalarVal();
                     $doc['content'] = $r->value()->arrayMem(0)->structMem('content')->scalarVal();
 
-                    file_put_contents($doc['name'], $doc['content']);
+                    file_put_contents($this->path . 'protected/pdf/cgv_emprunteurs/' . $doc['name'], $doc['content']);
 
                     $oProjectCgv->status = project_cgv::STATUS_SIGN_UNIVERSIGN;
                     $oProjectCgv->update();
@@ -351,7 +351,7 @@ class universignController extends bootstrap
 
                 $doc = array(
                     "content"         => new Value($doc_content, "base64"),
-                    "name"            => new Value($doc_name, "string"),
+                    "name"            => new Value($clients_mandats->name, "string"),
                     "signatureFields" => new Value(array(new Value($docSignatureField, "struct")), "array")
                 );
 
@@ -483,7 +483,7 @@ class universignController extends bootstrap
 
                 $doc = array(
                     "content"         => new Value($doc_content, "base64"),
-                    "name"            => new Value($doc_name, "string"),
+                    "name"            => new Value($projects_pouvoir->name, "string"),
                     "signatureFields" => new Value(array(new Value($docSignatureField, "struct")), "array")
                 );
 
@@ -756,7 +756,7 @@ class universignController extends bootstrap
 
             $doc = array(
                 'content'         => new Value($doc_content, 'base64'),
-                'name'            => new Value($doc_name, 'string'),
+                'name'            => new Value($oProjectCgv->name, 'string'),
                 'signatureFields' => new Value(array(new Value($docSignatureField, 'struct')), 'array')
             );
 
