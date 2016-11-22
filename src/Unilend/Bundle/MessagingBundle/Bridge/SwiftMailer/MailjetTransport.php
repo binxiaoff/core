@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Bin
- * Date: 2016/4/23
- * Time: 22:10
- */
 
 namespace Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer;
 
@@ -17,8 +11,10 @@ class MailjetTransport implements \Swift_Transport
 {
     /** The event dispatching layer */
     private $oEventDispatcher;
-    /** @var  Client */
+    /** @var Client */
     private $oMailJetClient;
+    /** @var array */
+    private $spool = [];
 
     public function __construct(\Swift_Events_EventDispatcher $oDispatcher, Client $oMailJetClient)
     {
@@ -51,31 +47,62 @@ class MailjetTransport implements \Swift_Transport
     }
 
     /**
-     * @param Swift_Mime_Message $oMessage
+     * @param Swift_Mime_Message $message
      * @param string[]           $aFailedRecipients
      *
      * @return \Mailjet\Response
      */
-    public function send(Swift_Mime_Message $oMessage, &$aFailedRecipients = null)
+    public function send(Swift_Mime_Message $message, &$aFailedRecipients = null)
     {
-        $aSenderEmail = array_keys($oMessage->getFrom());
-        $aSenderName  = array_values($oMessage->getFrom());
-        $aRecipients  = array_keys($oMessage->getTo());
-        $replyTo      = $oMessage->getReplyTo();
-        $body = [
-            'FromEmail'  => array_shift($aSenderEmail),
-            'FromName'   => array_shift($aSenderName),
-            'Subject'    => $oMessage->getSubject(),
-            'Html-part'  => $oMessage->getBody(),
-            'Recipients' => array_map(function($recipient) { return ['Email' => $recipient]; }, $aRecipients)
+        $body = $this->getBody($message);
+        return $this->oMailJetClient->post(Resources::$Email, ['body' => $body]);
+    }
+
+    /**
+     * @param Swift_Mime_Message $message
+     */
+    public function add(Swift_Mime_Message $message)
+    {
+        $this->spool[] = $this->getBody($message);
+    }
+
+    /**
+     * @return \Mailjet\Response
+     */
+    public function bulkSend()
+    {
+        return $this->oMailJetClient->post(Resources::$Email, ['body' => ['Messages' => $this->spool]]);
+    }
+
+    /**
+     * @param TemplateMessage $message
+     * @return array
+     */
+    private function getBody(TemplateMessage $message)
+    {
+        $senderEmail = array_keys($message->getFrom());
+        $senderName  = array_values($message->getFrom());
+        $recipients  = array_keys($message->getTo());
+        $replyTo     = $message->getReplyTo();
+        $body        = [
+            'FromEmail'   => array_shift($senderEmail),
+            'FromName'    => array_shift($senderName),
+            'Subject'     => $message->getSubject(),
+            'Html-part'   => $message->getBody(),
+            'Recipients'  => array_map(function($recipient) { return ['Email' => $recipient]; }, $recipients)
         ];
+
+        if (null !== $message->getMessageId()) {
+            $body['Mj-CustomID'] = $message->getMessageId();
+        }
+
         if (is_array($replyTo)) {
             $body['Headers']['Reply-To'] = TemplateMessage::emailAddressToString($replyTo);
         }
 
-        if (false === empty($oMessage->getChildren())) {
+        if (false === empty($message->getChildren())) {
             $body['Attachments'] = [];
-            foreach ($oMessage->getChildren() as $child) {
+            foreach ($message->getChildren() as $child) {
                 if (1 === preg_match('/^(?<content_type>.*); name=(?<file_name>.*)$/', $child->getHeaders()->get('Content-Type')->getFieldBody(), $matches)) {
                     $body['Attachments'][] = [
                         'Content-Type' => $matches['content_type'],
@@ -86,7 +113,7 @@ class MailjetTransport implements \Swift_Transport
             }
         }
 
-        return $this->oMailJetClient->post(Resources::$Email, ['body' => $body]);
+        return $body;
     }
 
     /**

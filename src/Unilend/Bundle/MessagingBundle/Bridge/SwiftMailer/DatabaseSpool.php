@@ -82,44 +82,61 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
             return 0;
         }
 
-        $failedRecipients = (array)$failedRecipients;
+        $failedRecipients = (array) $failedRecipients;
         $count            = 0;
-        $time             = time();
 
         foreach ($emailsToSend as $email) {
-            $sent = false;
-
             $email->status = \mail_queue::STATUS_PROCESSING;
             $email->update();
+
             $message = $this->mailQueueManager->getMessage($email);
-            /** @var Response $response */
-            $response = $transport->send($message, $failedRecipients);
-            if ($transport instanceof MailjetTransport && $response instanceof Response) {
-                $email->serialized_reponse = json_encode($response->getBody());
 
-                if ($response->success()) {
-                    $sent = true;
-                } else {
-                    $email->serialized_reponse = json_encode($response->getReasonPhrase());
-                    $email->status             = \mail_queue::STATUS_ERROR;
-                }
-            } elseif ($response) {
-                $sent                      = true;
-                $email->serialized_reponse = 'email sent by the transport other than Mailjet.';
-            }
-
-            if ($sent) {
-                $count++;
-                $email->status  = \mail_queue::STATUS_SENT;
-                $email->sent_at = date('Y-m-d H:i:s');
+            if ($transport instanceof MailjetTransport) {
+                $transport->add($message);
             } else {
-                $email->status = \mail_queue::STATUS_ERROR;
+                /** @var Response $response */
+                $response = $transport->send($message, $failedRecipients);
+
+                if ($response) {
+                    $count++;
+                    $email->status             = \mail_queue::STATUS_SENT;
+                    $email->sent_at            = date('Y-m-d H:i:s');
+                    $email->serialized_reponse = 'email sent by the transport other than Mailjet.';
+                    $email->update();
+                } else {
+                    $email->status = \mail_queue::STATUS_ERROR;
+                    $email->update();
+                }
             }
+        }
 
-            $email->update();
+        if ($transport instanceof MailjetTransport) {
+            /** @var Response $response */
+            $response = $transport->bulkSend();
 
-            if ($this->getTimeLimit() && (time() - $time) >= $this->getTimeLimit()) {
-                break;
+            if ($response instanceof Response) {
+                if ($response->success()) {
+                    $count        = count($emailsToSend);
+                    $responseBody = $response->getBody()['Sent'];
+
+                    foreach ($responseBody as $index => $messageResponse) {
+                        if (isset($emailsToSend[$index]) && $emailsToSend[$index]->recipient === $messageResponse['Email']) {
+                            $email                     = $emailsToSend[$index];
+                            $email->status             = \mail_queue::STATUS_SENT;
+                            $email->sent_at            = date('Y-m-d H:i:s');
+                            $email->serialized_reponse = json_encode(['Sent' => [$messageResponse]]);
+                            $email->update();
+                        }
+                    }
+                } else {
+                    $reasonPhrase = json_encode($response->getReasonPhrase());
+
+                    foreach ($emailsToSend as $email) {
+                        $email->status             = \mail_queue::STATUS_ERROR;
+                        $email->serialized_reponse = $reasonPhrase;
+                        $email->update();
+                    }
+                }
             }
         }
 
