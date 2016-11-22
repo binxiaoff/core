@@ -890,7 +890,7 @@ class clients extends clients_crud
     }
 
     /**
-     * Retrieve old pattern that lender must use in bank transfer label (with '?' or '' instead of accented characters)
+     * Check whether given pattern corresponds to actual lender pattern
      * @param int    $clientId
      * @param string $pattern
      * @return bool
