@@ -7,6 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Service\RecoveryManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\core\Loader;
 
@@ -77,7 +78,7 @@ class FeedsBDFLoansDeclaration extends ContainerAwareCommand
         }
 
         /** @var array */
-        $data = $project->getDataForBDFDeclaration((new \DateTime())->setDate($this->declarationDate->format('Y'), $this->declarationDate->format('m'), 1));
+        $data = $project->getDataForBDFDeclaration($this->declarationDate);
 
         if (true === empty($data)) {
             $logger->debug('no data found', ['class' => __CLASS__, 'function' => __FUNCTION__]);
@@ -199,9 +200,9 @@ class FeedsBDFLoansDeclaration extends ContainerAwareCommand
         $projectLineInfo .= $this->checkLoanPeriod($data['loan_duration']);
         $projectLineInfo .= $this->checkLoanAvgRate($data['average_loan_rate']);
         $projectLineInfo .= $data['repayment_frequency'];
-        $projectLineInfo .= $this->checkAmounts($data['owed_capital']);
-        $projectLineInfo .= $this->checkAmounts($data['unpaid_amount']);
-        $projectLineInfo .= $this->checkUnpaidDate($data['unpaid_date']);
+        $projectLineInfo .= $this->checkAmounts($this->getOwedCapital($data['loan_amount'], $data['repaid_capital'], $data['recovery_tax_included'], $data['recovery_tax_excluded']));
+        $projectLineInfo .= $this->checkAmounts($this->getUnpaidAmount($data));
+        $projectLineInfo .= $this->checkUnpaidDate($data['recovery_date'], $data['judgement_date']);
         $projectLineInfo .= $this->checkLoanContributorNumber($data['contributor_person_number'], 'person');
         $projectLineInfo .= $this->checkLoanContributorPercentage($data['contributor_person_percentage']);
         $projectLineInfo .= $this->checkLoanContributorNumber($data['contributor_legal_entity_number'], 'legal_entity');
@@ -210,6 +211,59 @@ class FeedsBDFLoansDeclaration extends ContainerAwareCommand
         $projectLineInfo .= $this->checkLoanContributorPercentage($data['contributor_credit_institution_percentage']);
 
         return $projectLineInfo;
+    }
+
+    /**
+     * @param float $recoveryTaxIncluded
+     * @param float $recoveryTaxExcluded
+     * @return string
+     */
+    private function getTotalRecoveredAmount($recoveryTaxIncluded, $recoveryTaxExcluded)
+    {
+        /** @var RecoveryManager $recoveryManager */
+        $recoveryManager = $this->getContainer()->get('unilend.service.recovery_manager');
+        return bcadd($recoveryTaxIncluded, $recoveryManager->getAmountWithRecoveryTax($recoveryTaxExcluded), 2);
+    }
+
+    /**
+     * @param float $totalCapital
+     * @param float $repaidCapital
+     * @param float $recoveryTaxIncluded
+     * @param float $recoveryTaxExcluded
+     * @return string
+     */
+    private function getOwedCapital($totalCapital, $repaidCapital, $recoveryTaxIncluded, $recoveryTaxExcluded)
+    {
+        return
+            bcsub(
+                $totalCapital,
+                bcadd(
+                    $repaidCapital,
+                    $this->getTotalRecoveredAmount($recoveryTaxIncluded, $recoveryTaxExcluded), 2
+                ), 2
+            );
+    }
+
+    /**
+     * @param array $data
+     * @return string
+     */
+    private function getUnpaidAmount(array $data)
+    {
+        /** @var \echeanciers $repayment */
+        $repayment = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('echeanciers');
+
+        if (false === empty($data['recovery_date'])) {
+            /** @var \DateTime $date */
+            $date   = \DateTime::createFromFormat('Y-m-d H:i:s', $data['recovery_date']);
+            $amount = bcadd($repayment->getUnpaidAmountAtDate($data['id_project'], $date), $repayment->getTotalComingCapitalByProject($data['id_project'], $date), 2);
+            return bcsub($amount, $this->getTotalRecoveredAmount($data['recovery_tax_included'], $data['recovery_tax_excluded']), 2);
+        } elseif (false === empty($data['judgement_date'])) {
+            /** @var \DateTime $date */
+            $date = \DateTime::createFromFormat('Y-m-d', $data['judgement_date']);
+            return bcadd($repayment->getUnpaidAmountAtDate($data['id_project'], $date), $repayment->getTotalComingCapitalByProject($data['id_project'], $date), 2);
+        }
+        return 0;
     }
 
     /**
@@ -294,15 +348,18 @@ class FeedsBDFLoansDeclaration extends ContainerAwareCommand
     }
 
     /**
-     * @param string $date
+     * @param $recoveryDate
+     * @param $judgementDate
      * @return string
      */
-    private function checkUnpaidDate($date)
+    private function checkUnpaidDate($recoveryDate, $judgementDate)
     {
-        if (true === empty($date)) {
-            return '00000000';
+        if (false === empty($recoveryDate)) {
+            return \DateTime::createFromFormat('Y-m-d H:i:s', $recoveryDate)->format('Ymd');
+        } elseif (false === empty($judgementDate)) {
+            return \DateTime::createFromFormat('Y-m-d', $judgementDate)->format('Ymd');
         } else {
-            return \DateTime::createFromFormat('Y-m-d H:i:s', $date)->format('Ymd');
+            return '00000000';
         }
     }
 

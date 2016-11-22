@@ -389,6 +389,40 @@ class echeanciers extends echeanciers_crud
         return bcdiv($this->bdd->executeQuery($query, $bind, $bindType)
             ->fetchColumn(0), 100, 2);
     }
+    /**
+     * @param int $projectId
+     * @param DateTime $startDate
+     * @return string
+     * @throws Exception
+     */
+    public function getTotalComingCapitalByProject($projectId, DateTime $startDate = null)
+    {
+        if ($startDate === null) {
+            $startDate = new DateTime();
+        }
+        $bind     = [
+            'id_project'        => $projectId,
+            'loan_status'      => \loans::STATUS_ACCEPTED,
+            'repayment_status' => self::STATUS_PENDING,
+            'date_echeance'    => $startDate->format('Y-m-d')
+        ];
+        $bindType = [
+            'id_project'       => \PDO::PARAM_INT,
+            'loan_status'      => \PDO::PARAM_INT,
+            'repayment_status' => \PDO::PARAM_INT,
+            'date_echeance'    => \PDO::PARAM_STR
+        ];
+        $query    = '
+            SELECT SUM(e.capital)
+            FROM echeanciers e
+            INNER JOIN loans l ON e.id_loan = l.id_loan
+            WHERE l.status = :loan_status
+              AND e.id_project = :id_project
+              AND e.status = :repayment_status
+              AND date(e.date_echeance) > :date_echeance';
+        return bcdiv($this->bdd->executeQuery($query, $bind, $bindType)
+            ->fetchColumn(0), 100, 2);
+    }
 
     /**
      * @param int $lenderId

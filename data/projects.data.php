@@ -27,6 +27,7 @@
 //
 // **************************************************************************************************** //
 use \Doctrine\DBAL\Statement;
+use \Unilend\Bundle\CoreBusinessBundle\Service\RecoveryManager;
 
 class projects extends projects_crud
 {
@@ -1153,20 +1154,28 @@ class projects extends projects_crud
     public function getDataForBDFDeclaration(\DateTime $declarationDate)
     {
         $bind = [
-            'declaration_date'   => $declarationDate->format('Y-m-d'),
-            'problematic_status' => [
-                \projects_status::PROBLEME,
-                \projects_status::PROBLEME, \projects_status::PROBLEME_J_X,
-                \projects_status::RECOUVREMENT,
+            'declaration_first_day'    => $declarationDate->format('Y-m-1'),
+            'declaration_last_day'     => $declarationDate->format('Y-m-t'),
+            'problematic_status'       => [
                 \projects_status::PROCEDURE_SAUVEGARDE,
                 \projects_status::REDRESSEMENT_JUDICIAIRE,
                 \projects_status::LIQUIDATION_JUDICIAIRE,
-                \projects_status::DEFAUT
+            ],
+            'client_type_person'       => [
+                \clients::TYPE_PERSON,
+                \clients::TYPE_PERSON_FOREIGNER
+            ],
+            'client_type_legal_entity' => [
+                \clients::TYPE_LEGAL_ENTITY,
+                \clients::TYPE_LEGAL_ENTITY_FOREIGNER
             ]
         ];
         $type = [
-            'declaration_date' => \PDO::PARAM_STR,
-            'problematic_status' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY
+            'declaration_first_day'    => \PDO::PARAM_STR,
+            'declaration_last_day'     => \PDO::PARAM_STR,
+            'problematic_status'       => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'client_type_person'       => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'client_type_legal_entity' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
         ];
 
         $sql = "
@@ -1174,6 +1183,7 @@ class projects extends projects_crud
           com.siren,
           com.name,
           p.id_project,
+          p.status,
           p.id_project_need,
           CASE
             WHEN p.id_project_need IN (14, 16, 17, 26, 29, 30) THEN 'AU'
@@ -1189,38 +1199,28 @@ class projects extends projects_crud
           p.period AS loan_duration,
           ROUND(SUM(l.amount * l.rate) / SUM(l.amount), 2) AS average_loan_rate,
           'M' AS repayment_frequency,
-          (SELECT ROUND(SUM(e.capital - e.capital_rembourse) / 100, 2) FROM echeanciers e WHERE e.id_project = p.id_project) AS owed_capital,
-          CASE
-            WHEN p.status IN (:problematic_status) THEN
-            IFNULL((SELECT ROUND(SUM(e.capital - e.capital_rembourse + e.interets - e.interets_rembourses) / 100, 2) FROM echeanciers e WHERE e.id_project = p.id_project AND date(e.date_echeance) <= :declaration_date), 0) +
-            -- Recouvrement prêteurs
-            IFNULL((SELECT ROUND(SUM(t.montant) / 100, 2) FROM transactions t WHERE t.id_project = p.id_project AND t.type_transaction = 26 AND t.date_transaction <= '2016-10-31'), 0)
-            ELSE 0
-          END AS unpaid_amount,
-          CASE
-          WHEN p.status IN (100, 110, 120, 130, 140, 150, 160) THEN
-            (SELECT MAX(psh.added) FROM projects_status_history psh WHERE psh.id_project = p.id_project)
-          END AS unpaid_date,
-        
-          (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) from loans l INNER JOIN lenders_accounts la ON la.id_lender_account = l.id_lender
-            INNER JOIN clients c ON c.id_client = la.id_client_owner  WHERE l.id_project = p.id_project AND c.type in (1, 3)) AS contributor_person_number,
-        
-          (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / p.amount, 2) from loans l INNER JOIN lenders_accounts la ON la.id_lender_account = l.id_lender
-            INNER JOIN clients c ON c.id_client = la.id_client_owner  WHERE l.id_project = p.id_project AND c.type in (1, 3)) AS contributor_person_percentage,
-        
-          (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) from loans l INNER JOIN lenders_accounts la ON la.id_lender_account = l.id_lender
-            INNER JOIN clients c ON c.id_client = la.id_client_owner  WHERE l.id_project = p.id_project AND c.type IN (2, 4) AND c.id_client NOT IN (15112)) AS contributor_legal_entity_number,
-        
-          (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / p.amount, 2) from loans l INNER JOIN lenders_accounts la ON la.id_lender_account = l.id_lender
-            INNER JOIN clients c ON c.id_client = la.id_client_owner  WHERE l.id_project = p.id_project AND c.type IN (2, 4) AND c.id_client NOT IN (15112)) AS contributor_legal_entity_percentage,
-        
-          (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) from loans l WHERE l.id_project = p.id_project AND l.id_lender = (SELECT la.id_lender_account FROM lenders_accounts la WHERE la.id_client_owner = 15112)) AS contributor_credit_institution_number,
-        
-          (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / p.amount, 2) from loans l WHERE l.id_project = p.id_project AND l.id_lender = (SELECT la.id_lender_account FROM lenders_accounts la WHERE la.id_client_owner = 15112)) AS contributor_credit_institution_percentage
+          (SELECT ROUND(SUM(e.capital_rembourse) / 100, 2) FROM echeanciers e WHERE e.id_project = p.id_project AND DATE(e.date_echeance_reel) <= :declaration_last_day) AS repaid_capital,
+          (SELECT pshd.date FROM projects_status_history_details pshd WHERE pshd.id_project_status_history = (
+            SELECT MIN(psh.id_project_status_history) FROM projects_status_history psh
+            INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status WHERE ps.status IN (:problematic_status) AND psh.id_project = p.id_project)
+          ) AS judgement_date,
+          (SELECT MIN(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = p.id_project AND ps.status = " . \projects_status::RECOUVREMENT . ") AS recovery_date,
+          (SELECT ROUND(SUM(IFNULL(t.montant, 0)) / 100, 2) FROM transactions t WHERE t.id_project = p.id_project AND t.type_transaction = " . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . " AND DATE(t.added) < " . RecoveryManager::RECOVERY_TAX_DATE_CHANGE . ") AS recovery_tax_excluded,
+          (SELECT ROUND(SUM(IFNULL(t.montant, 0)) / 100, 2) FROM transactions t WHERE t.id_project = p.id_project AND t.type_transaction = " . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . " AND DATE(t.added) >= " . RecoveryManager::RECOVERY_TAX_DATE_CHANGE . ") AS recovery_tax_included,
+          (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) FROM loans l INNER JOIN lenders_accounts la ON la.id_lender_account = l.id_lender
+            INNER JOIN clients c ON c.id_client = la.id_client_owner  WHERE l.id_project = p.id_project AND c.type IN (:client_type_person)) AS contributor_person_number,
+          (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / p.amount, 2) FROM loans l INNER JOIN lenders_accounts la ON la.id_lender_account = l.id_lender
+            INNER JOIN clients c ON c.id_client = la.id_client_owner  WHERE l.id_project = p.id_project AND c.type IN (:client_type_person)) AS contributor_person_percentage,
+          (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) FROM loans l INNER JOIN lenders_accounts la ON la.id_lender_account = l.id_lender
+            INNER JOIN clients c ON c.id_client = la.id_client_owner  WHERE l.id_project = p.id_project AND c.type IN (:client_type_legal_entity) AND c.id_client NOT IN (15112)) AS contributor_legal_entity_number,
+          (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / p.amount, 2) FROM loans l INNER JOIN lenders_accounts la ON la.id_lender_account = l.id_lender
+            INNER JOIN clients c ON c.id_client = la.id_client_owner  WHERE l.id_project = p.id_project AND c.type IN (:client_type_legal_entity) AND c.id_client NOT IN (15112)) AS contributor_legal_entity_percentage,
+          (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) FROM loans l WHERE l.id_project = p.id_project AND l.id_lender = (SELECT la.id_lender_account FROM lenders_accounts la WHERE la.id_client_owner = 15112)) AS contributor_credit_institution_number,
+          (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / p.amount, 2) FROM loans l WHERE l.id_project = p.id_project AND l.id_lender = (SELECT la.id_lender_account FROM lenders_accounts la WHERE la.id_client_owner = 15112)) AS contributor_credit_institution_percentage
         FROM projects p
         INNER JOIN companies com ON  com.id_company = p.id_company
-        INNER JOIN loans l ON l.id_project = p.id_project AND l.status = 0
-        WHERE p.status >= 80 AND p.status <> 90
+        INNER JOIN loans l ON l.id_project = p.id_project AND l.status = " . \loans::STATUS_ACCEPTED . "
+        WHERE p.status >= " . \projects_status::REMBOURSEMENT . " AND p.status <> " . \projects_status::REMBOURSE . "
         GROUP BY p.id_project";
         /** @var Statement $statement */
         $statement = $this->bdd->executeQuery($sql, $bind, $type);
