@@ -1,0 +1,23 @@
+{% extends 'layouts/_layout.html.twig' %}
+
+{% set page = {
+id: 'universign',
+classNames: 'universign'
+} %}
+
+{% block siteContent %}
+    <div class="site-wrap">
+        <section class="page-section">
+            <h3>{{ "universign_#{ document }-title-#{ status }"|trans|raw }}</h3>
+            <div class="row">
+                <p>{{ "universign_#{ document }-message-#{ status }"|trans|raw }}</p>
+                <div class="document-download">
+                    <a href="{{ lien_pdf }}" target="_blank">
+                        <img class="document-download" src="{{ siteurlmedia('dashboard/file-pdf-60x80.png') }}" alt="{% trans %} borrower-document_invoices-invoice-download-link-placeholder {% endtrans %}"/>
+                        {% trans %} borrower-document_invoices-invoice-download-link {% endtrans %}
+                    </a>
+                </div>
+            </div><!-- /.row -->
+        </section>
+    </div><!-- /.site-wrap -->
+{% endblock %}

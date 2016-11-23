@@ -101,5 +101,14 @@
             <argument type="service" id="unilend.service.entity_manager" />
             <argument type="service" id="memcache.default" />
         </service>
+
+        <service id="unilend.frontbundle.service.universign_manager" class="Unilend\Bundle\FrontBundle\Service\UniversignManager">
+            <argument type="service" id="unilend.service.entity_manager" />
+            <argument type="service" id="memcache.default" />
+            <argument type="service" id="router" />
+            <argument type="service" id="logger" />
+            <argument>%url.universign%</argument>
+            <argument>%kernel.root_dir%</argument>
+        </service>
     </services>
 </container>

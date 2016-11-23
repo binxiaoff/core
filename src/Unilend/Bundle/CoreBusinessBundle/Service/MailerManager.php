@@ -1916,4 +1916,36 @@ class MailerManager
         $message->setTo($client->email);
         $this->mailer->send($message);
     }
+
+    public function sendProxyAndMandateSigned(\projects_pouvoir $proxy, \clients_mandats $mandate)
+    {
+        /** @var \projects $project */
+        $project = $this->entityManager->getRepository('projects');
+        $project->get($proxy->id_project, 'id_project');
+        /** @var \companies $company */
+        $company = $this->entityManager->getRepository('companies');
+        $company->get($project->id_company, 'id_company');
+        /** @var \clients $client */
+        $client = $this->entityManager->getRepository('clients');
+        $client->get($company->id_client_owner, 'id_client');
+        /** @var \settings $setting */
+        $setting = $this->entityManager->getRepository('settings');
+        $setting->get('Adresse notification pouvoir mandat signe', 'type');
+        $destinataire = $setting->value;
+
+        $template = [
+            '$surl'         => $this->sSUrl,
+            '$id_projet'    => $project->id_project,
+            '$nomProjet'    => $project->title_bo,
+            '$nomCompany'   => $company->name,
+            '$lien_pouvoir' => $proxy->url_pdf,
+            '$lien_mandat'  => $mandate->url_pdf
+        ];
+
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-pouvoir-mandat-signe', $template, false);
+        $message->setTo(explode(';', $destinataire));
+        $mailer = $this->get('mailer');
+        $mailer->send($message);
+    }
 }
