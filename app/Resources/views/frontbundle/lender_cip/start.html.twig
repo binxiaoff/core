@@ -21,13 +21,7 @@
                     </div>
                 </div>
                 <div class="panel">
-                    <p>{% trans %} lender-evaluation_risk-introduction-text-questionnaire-start {% endtrans %}</p>
-                    <ul>
-                        <li>{% trans %} lender-evaluation_risk-aware-money-loss {% endtrans %}</li>
-                        <li>{% trans %} lender-evaluation_risk-aware-progressive-capital-repayments {% endtrans %}</li>
-                        <li>{% trans %} lender-evaluation_risk-aware-risk-return {% endtrans %}</li>
-                        <li>{% trans %} lender-evaluation_risk-aware-divide-investments {% endtrans %}</li>
-                    </ul>
+                    <p>{% trans with {'%firstname%' : app.user.firstname} %} lender-evaluation_risk-introduction-text-questionnaire-start {% endtrans %}</p>
                     <div class="row text-align-center">
                         <a href="{{ path('cip_start_questionnaire') }}?start" class="btn-primary">
                             <span class="label">{% trans %} lender-evaluation_questionnaire-start-button {% endtrans %}</span>

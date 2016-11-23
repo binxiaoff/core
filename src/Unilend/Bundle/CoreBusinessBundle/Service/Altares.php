@@ -7,6 +7,7 @@ use Unilend\librairies\CacheKeys;
 
 class Altares
 {
+    const RESPONSE_CODE_WS_ERROR                       = -1;
     const RESPONSE_CODE_INACTIVE                       = 1;
     const RESPONSE_CODE_NOT_REGISTERED                 = 2;
     const RESPONSE_CODE_PROCEDURE                      = 3;

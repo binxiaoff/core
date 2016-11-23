@@ -248,6 +248,10 @@ class ProjectRequestController extends Controller
         $settings->get('Altares email alertes', 'type');
         $alertEmail = $settings->value;
 
+        $settingsAltaresStatus = $entityManager->getRepository('settings');
+        $settingsAltaresStatus->get('Altares status', 'type');
+        $altaresStatus = $settingsAltaresStatus->value;
+
         /** @var LoggerInterface $logger */
         $logger = $this->get('logger');
 
@@ -266,18 +270,34 @@ class ProjectRequestController extends Controller
 
             /** @var \companies_bilans $companyAccount */
             $companyAccount = $entityManager->getRepository('companies_bilans');
-            $balanceSheets = $companyAccount->select('id_company = ' . $this->company->id_company, 'cloture_exercice_fiscal DESC', 0, 1);
+            $balanceSheets  = $companyAccount->select('id_company = ' . $this->company->id_company, 'cloture_exercice_fiscal DESC', 0, 1);
+
             if (isset($balanceSheets[0]['id_bilan'])) {
                 $this->project->id_dernier_bilan = $balanceSheets[0]['id_bilan'];
                 $this->project->update();
             }
         } catch (\Exception $exception) {
-            $logger->error(
-                $exception->getMessage(),
-                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $this->company->siren]
-            );
+            if ($altaresStatus) {
+                $settingsAltaresStatus->value = 0;
+                $settingsAltaresStatus->update();
 
-            mail($alertEmail, '[ALERTE] ERREUR ALTARES', 'Date ' . date('Y-m-d H:i:s') . '' . $exception->getMessage());
+                $logger->error(
+                    $exception->getMessage(),
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $this->company->siren]
+                );
+
+                mail($alertEmail, '[ALERTE] Altares is down', 'Date ' . date('Y-m-d H:i:s') . '. ' . $exception->getMessage());
+            }
+
+            $this->project->retour_altares = Altares::RESPONSE_CODE_WS_ERROR;
+            $this->project->update();
+        }
+
+        if (! $altaresStatus) {
+            $settingsAltaresStatus->value = 1;
+            $settingsAltaresStatus->update();
+
+            mail($alertEmail, '[INFO] Altares is up', 'Date ' . date('Y-m-d H:i:s') . '. Altares is up now.');
         }
 
         return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, $status);
