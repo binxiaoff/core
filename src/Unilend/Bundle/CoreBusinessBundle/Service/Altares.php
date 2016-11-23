@@ -49,6 +49,7 @@ class Altares
      * Retrieve getEligibility WS data
      * @param int $siren
      * @return mixed
+     * @throws \Exception
      */
     public function getEligibility($siren)
     {
@@ -58,10 +59,20 @@ class Altares
             $settings = $this->entityManager->getRepository('settings');
             $settings->get('Altares WSDL Eligibility', 'type');
 
-            $response = $this->soapCall($settings->value, 'getEligibility', array('siren' => $siren));
-            if (empty($response->exception)) {
-                $cachedItem->set($response)->expiresAfter(CacheKeys::SHORT_TIME);
-                $this->cacheItemPool->save($cachedItem);
+            try {
+                $response = $this->soapCall($settings->value, 'getEligibility', array('siren' => $siren));
+
+                if (false === empty($response->exception)) {
+                    throw new \Exception(
+                        'Altares return an error - code: ' . $response->exception->code . ' - description: ' . $response->exception->description . ' - error: ' . $response->exception->erreur
+                    );
+                } else {
+                    $cachedItem->set($response)->expiresAfter(CacheKeys::SHORT_TIME);
+                    $this->cacheItemPool->save($cachedItem);
+                }
+
+            } catch (\Exception $exception) {
+                throw new \Exception('Altares API error When calling Altares::getEligibility() using SIREN ' . $siren . ' - Exception message: ' . $exception->getMessage());
             }
         } else {
             $response = $cachedItem->get();
@@ -290,17 +301,8 @@ class Altares
         $company = $this->entityManager->getRepository('companies');
 
         $company->get($project->id_company);
-        try {
-            $result = $this->getEligibility($company->siren);
-        } catch (\Exception $exception) {
-            throw new \Exception('SOAP API error When calling Altares::getEligibility() using SIREN ' . $company->siren . ' - Exception message: ' . $exception->getMessage());
-        }
 
-        if (false === empty($result->exception)) {
-            throw new \Exception(
-                'Altares API error when calling Altares::getEligibility() using SIREN ' . $company->siren . '. Altares error code: ' . $result->exception->code . ' - Altares error description: ' . $result->exception->description . ' - Altares error: ' . $result->exception->erreur
-            );
-        }
+        $result = $this->getEligibility($company->siren);
 
         $eligible = true;
         $reason   = [];

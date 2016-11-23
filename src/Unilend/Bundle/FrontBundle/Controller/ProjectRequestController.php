@@ -278,7 +278,7 @@ class ProjectRequestController extends Controller
             }
         } catch (\Exception $exception) {
             if ($altaresStatus) {
-                $settingsAltaresStatus->value = 0;
+                $settingsAltaresStatus->value = '0';
                 $settingsAltaresStatus->update();
 
                 $logger->error(
@@ -294,7 +294,7 @@ class ProjectRequestController extends Controller
         }
 
         if (! $altaresStatus) {
-            $settingsAltaresStatus->value = 1;
+            $settingsAltaresStatus->value = '1';
             $settingsAltaresStatus->update();
 
             mail($alertEmail, '[INFO] Altares is up', 'Date ' . date('Y-m-d H:i:s') . '. Altares is up now.');
