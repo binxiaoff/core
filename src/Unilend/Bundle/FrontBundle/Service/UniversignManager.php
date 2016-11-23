@@ -43,66 +43,10 @@ class UniversignManager
      */
     public function createProxy(\projects_pouvoir $proxy)
     {
-        /** @var \projects $project */
-        $project = $this->entityManager->getRepository('projects');
-        $project->get($proxy->id_project, 'id_project');
-        /** @var \companies $company */
-        $company = $this->entityManager->getRepository('companies');
-        $company->get($project->id_company, 'id_company');
-        /** @var \clients $client */
-        $client = $this->entityManager->getRepository('clients');
-        $client->get($company->id_client_owner, 'id_client');
-
         $this->logger->notice('Proxy status: ' . $proxy->status . ' - Creation of PDF to send to Universign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
 
-        $doc_name    = $this->rootDir . '/../protected/pdf/pouvoir/' . $proxy->name;
-        $doc_content = file_get_contents($doc_name);
-        $returnPage  = [
-            'success' => $this->router->generate('proxy_signature_status', ['status' => 'success', 'documentId' => $proxy->id_pouvoir], 0),
-            'fail'    => $this->router->generate('proxy_signature_status', ['status' => 'fail', 'documentId' => $proxy->id_pouvoir], 0),
-            'cancel'  => $this->router->generate('proxy_signature_status', ['status' => 'cancel', 'documentId' => $proxy->id_pouvoir], 0)
-        ];
-
-        $soapClient = new Client($this->universignURL);
-
-        // signature position
-        $docSignatureField = [
-            "page"        => new Value(1, "int"),
-            "x"           => new Value(335, "int"),
-            "y"           => new Value(370, "int"),
-            "signerIndex" => new Value(0, "int"),
-            "label"       => new Value("Unilend", "string")
-        ];
-
-        $signer = [
-            "firstname"    => new Value($client->prenom, "string"),
-            "lastname"     => new Value($client->nom, "string"),
-            "organization" => new Value($company->name, "string"),
-            "phoneNum"     => new Value(str_replace(' ', '', $client->telephone), "string"),
-            "emailAddress" => new Value($client->email, "string")
-        ];
-
-        $doc = [
-            "content"         => new Value($doc_content, "base64"),
-            "name"            => new Value($proxy->name, "string"),
-            "signatureFields" => new Value([new Value($docSignatureField, "struct")], "array")
-        ];
-
-        $signers = [new Value($signer, "struct")];
-
-        $request = [
-            "documents"          => new Value([new Value($doc, "struct")], "array"),
-            "signers"            => new Value($signers, "array"),
-            "successURL"         => new Value($returnPage["success"], "string"),
-            "failURL"            => new Value($returnPage["fail"], "string"),
-            "cancelURL"          => new Value($returnPage["cancel"], "string"),
-            "certificateTypes"   => new Value([new Value("timestamp", "string")], "array"),
-            "language"           => new Value("fr", "string"),
-            "identificationType" => new Value("sms", "string"),
-            "description"        => new Value("Pouvoir id : " . $proxy->id_pouvoir, "string"),
-        ];
-
-        $soapRequest = new Request('requester.requestTransaction', [new Value($request, "struct")]);
+        $soapClient  = new Client($this->universignURL);
+        $soapRequest = new Request('requester.requestTransaction', [new Value($this->getPdfParameters('proxy', $proxy->id_mandat), "struct")]);
         $soapResult  = $soapClient->send($soapRequest);
 
         $this->logger->notice('Proxy sent to Universign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
@@ -131,15 +75,9 @@ class UniversignManager
      */
     public function signProxy(\projects_pouvoir $proxy)
     {
-        /** @var \clients_mandats $mandate */
-        $mandate = $this->entityManager->getRepository('clients_mandats');
-        /** @var \settings $setting */
-        $setting = $this->entityManager->getRepository('settings');
-
         $soapClient  = new Client($this->universignURL);
         $soapRequest = new Request('requester.getDocumentsByTransactionId', [new Value($proxy->id_universign, "string")]);
-
-        $soapResult = $soapClient->send($soapRequest);
+        $soapResult  = $soapClient->send($soapRequest);
 
         $this->logger->notice('Proxy sent to Universign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
 
@@ -153,6 +91,8 @@ class UniversignManager
 
             $this->logger->notice('Proxy OK (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
 
+            /** @var \clients_mandats $mandate */
+            $mandate = $this->entityManager->getRepository('clients_mandats');
             if ($mandate->get($proxy->id_project, 'id_project') && $mandate->status == \clients_mandats::STATUS_SIGNED) {
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
                 $mailerManager = $this->get('unilend.service.email_manager');
@@ -165,6 +105,8 @@ class UniversignManager
         } else {
             $this->logger->error('Proxy NOK (project ' . $proxy->id_project . ') - Error code: ' . $soapResult->faultCode() . ' - Error message: ' . $soapResult->faultString(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
 
+            /** @var \settings $setting */
+            $setting = $this->entityManager->getRepository('settings');
             $setting->get('DebugMailIt', 'type');
             $debugMailITAddress = $setting->value;
             mail($debugMailITAddress, 'unilend erreur universign reception', 'id pouvoir : ' . $proxy->id_pouvoir . ' | An error occurred: Code: ' . $soapResult->faultCode() . ' Reason: "' . $soapResult->faultString());
@@ -177,61 +119,10 @@ class UniversignManager
      */
     public function createMandate(\clients_mandats $mandate)
     {
-        /** @var \clients $client */
-        $client = $this->entityManager->getRepository('clients');
-        $client->get($mandate->id_client, 'id_client');
+        $this->logger->notice('Mandate status: ' . $mandate->status . ' - Creation of PDF to send to Universign (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
 
-        $firstname   = $client->prenom;
-        $lastname    = $client->nom;
-        $phoneNumber = str_replace(' ', '', $client->telephone);
-        $email       = $client->email;
-        $doc_name    = $this->rootDir . '/../protected/pdf/mandat/' . $mandate->name;
-        $doc_content = file_get_contents($doc_name);
-        $returnPage  = [
-            'success' => $this->router->generate('mandate_signature_status', ['status' => 'success', 'documentId' => $mandate->id_mandat], 0),
-            'fail'    => $this->router->generate('mandate_signature_status', ['status' => 'fail', 'documentId' => $mandate->id_mandat], 0),
-            'cancel'  => $this->router->generate('mandate_signature_status', ['status' => 'cancel', 'documentId' => $mandate->id_mandat], 0)
-        ];
-
-        $soapClient = new Client($this->universignURL);
-
-        // signature position
-        $docSignatureField = [
-            "page"        => new Value(1, "int"),
-            "x"           => new Value(255, "int"),
-            "y"           => new Value(314, "int"),
-            "signerIndex" => new Value(0, "int"),
-            "label"       => new Value("Unilend", "string")
-        ];
-
-        $signer = [
-            "firstname"    => new Value($firstname, "string"),
-            "lastname"     => new Value($lastname, "string"),
-            "phoneNum"     => new Value($phoneNumber, "string"),
-            "emailAddress" => new Value($email, "string")
-        ];
-
-        $doc = [
-            "content"         => new Value($doc_content, "base64"),
-            "name"            => new Value($mandate->name, "string"),
-            "signatureFields" => new Value([new Value($docSignatureField, "struct")], "array")
-        ];
-
-        $signers = [new Value($signer, "struct")];
-
-        $request = [
-            "documents"          => new Value([new Value($doc, "struct")], "array"),
-            "signers"            => new Value($signers, "array"),
-            "successURL"         => new Value($returnPage["success"], "string"),
-            "failURL"            => new Value($returnPage["fail"], "string"),
-            "cancelURL"          => new Value($returnPage["cancel"], "string"),
-            "certificateTypes"   => new Value([new Value("timestamp", "string")], "array"),
-            "language"           => new Value("fr", "string"),
-            "identificationType" => new Value("sms", "string"),
-            "description"        => new Value("Mandat id : " . $mandate->id_mandat, "string")
-        ];
-
-        $soapRequest = new Request('requester.requestTransaction', [new Value($request, "struct")]);
+        $soapClient  = new Client($this->universignURL);
+        $soapRequest = new Request('requester.requestTransaction', [new Value($this->getPdfParameters('mandate', $mandate->id_mandat), "struct")]);
         $soapResult  = $soapClient->send($soapRequest);
 
         $this->logger->notice('Mandate sent to Universign (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
@@ -268,9 +159,6 @@ class UniversignManager
      */
     public function signMandate(\clients_mandats $mandate) // TODO : verify access conditions to this
     {
-        /** @var \projects_pouvoir $proxy */
-        $proxy = $this->entityManager->getRepository('projects_pouvoir');
-
         $soapClient  = new Client($this->universignURL);
         $soapRequest = new Request('requester.getDocumentsByTransactionId', [new Value($mandate->id_universign, "string")]);
         $soapResult  = $soapClient->send($soapRequest);
@@ -287,6 +175,8 @@ class UniversignManager
 
             $this->logger->notice('Mandate OK (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
 
+            /** @var \projects_pouvoir $proxy */
+            $proxy = $this->entityManager->getRepository('projects_pouvoir');
             if ($proxy->get($mandate->id_project, 'id_project') && $proxy->status == \projects_pouvoir::STATUS_SIGNED) {
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
                 $mailerManager = $this->get('unilend.service.email_manager');
@@ -305,5 +195,80 @@ class UniversignManager
             $this->logger->error('Return Universign mandate NOK (project ' . $mandate->id_project . ') - Errorr code : ' . $soapResult->faultCode() . ' - Error Message : ' . $soapResult->faultString(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
             mail($sDestinatairesDebug, 'unilend erreur universign reception', 'id mandat : ' . $mandate->id_mandat . ' | An error occurred: Code: ' . $soapResult->faultCode() . ' Reason: "' . $soapResult->faultString());
         }
+    }
+
+    /**
+     * @param string $documentType
+     * @param string $documentId
+     * @return array
+     */
+    public function getPdfParameters($documentType, $documentId)
+    {
+        switch ($documentType) {
+            case 'mandate':
+                /** @var \projects_pouvoir $mandate */
+                $mandate = $this->entityManager->getRepository('clients_mandats');
+                $mandate->get($documentId);
+                /** @var \clients $client */
+                $client = $this->entityManager->getRepository('clients');
+                $client->get($mandate->id_client, 'id_client');
+                $documentName = $mandate->name;
+                $routeName    = 'mandate_signature_status';
+                $doc_name     = $this->rootDir . '/../protected/pdf/mandat/' . $documentName;
+                break;
+            case 'proxy':
+                /** @var \projects_pouvoir $proxy */
+                $proxy = $this->entityManager->getRepository('projects_pouvoir');
+                $proxy->get($documentId);
+                /** @var \clients $client */
+                $client = $this->entityManager->getRepository('clients');
+                $client->get($proxy->id_client, 'id_client');
+                $documentName = $proxy->name;
+                $routeName    = 'proxy_signature_status';
+                $doc_name     = $this->rootDir . '/../protected/pdf/pouvoir/' . $documentName;
+                break;
+            default:
+                return [];
+        }
+
+        $returnPage  = [
+            'success' => $this->router->generate($routeName, ['status' => 'success', 'documentId' => $documentId], 0),
+            'fail'    => $this->router->generate($routeName, ['status' => 'fail', 'documentId' => $documentId], 0),
+            'cancel'  => $this->router->generate($routeName, ['status' => 'cancel', 'documentId' => $documentId], 0)
+        ];
+
+        // signature position
+        $docSignatureField = [
+            "page"        => new Value(1, "int"),
+            "x"           => new Value(255, "int"),
+            "y"           => new Value(314, "int"),
+            "signerIndex" => new Value(0, "int"),
+            "label"       => new Value("Unilend", "string")
+        ];
+
+        $signer = [
+            "firstname"    => new Value($client->prenom, "string"),
+            "lastname"     => new Value($client->nom, "string"),
+            "phoneNum"     => new Value(str_replace(' ', '', $client->telephone), "string"),
+            "emailAddress" => new Value($client->email, "string")
+        ];
+
+        $doc = [
+            "content"         => new Value(file_get_contents($doc_name), "base64"),
+            "name"            => new Value($documentName, "string"),
+            "signatureFields" => new Value([new Value($docSignatureField, "struct")], "array")
+        ];
+
+        return [
+            "documents"          => new Value([new Value($doc, "struct")], "array"),
+            "signers"            => new Value([new Value($signer, "struct")], "array"),
+            "successURL"         => new Value($returnPage["success"], "string"),
+            "failURL"            => new Value($returnPage["fail"], "string"),
+            "cancelURL"          => new Value($returnPage["cancel"], "string"),
+            "certificateTypes"   => new Value([new Value("timestamp", "string")], "array"),
+            "language"           => new Value("fr", "string"),
+            "identificationType" => new Value("sms", "string"),
+            "description"        => new Value("Document id : " . $documentId, "string")
+        ];
     }
 }

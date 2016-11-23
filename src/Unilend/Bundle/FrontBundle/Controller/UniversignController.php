@@ -34,15 +34,6 @@ class UniversignController extends Controller
         /** @var \projects_pouvoir $proxy */
         $proxy = $entityManager->getRepository('projects_pouvoir');
         $proxy->get($documentId);
-        /** @var \projects $project */
-        $project = $entityManager->getRepository('projects');
-        $project->get($proxy->id_project, 'id_project');
-        /** @var \companies $company */
-        $company = $entityManager->getRepository('companies');
-        $company->get($project->id_company, 'id_company');
-        /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
-        $client->get($company->id_client_owner, 'id_client');
         /** @var LoggerInterface $logger */
         $logger = $this->get('logger');
         /** @var \settings $settings */
@@ -81,15 +72,6 @@ class UniversignController extends Controller
         /** @var \clients_mandats $mandate */
         $mandate = $entityManager->getRepository('clients_mandats');
         $mandate->get($documentId);
-        /** @var \projects $project */
-        $project = $entityManager->getRepository('projects');
-        $project->get($mandate->id_project, 'id_project');
-        /** @var \companies $company */
-        $company = $entityManager->getRepository('companies');
-        $company->get($project->id_company, 'id_company');
-        /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
-        $client->get($company->id_client_owner, 'id_client');
         /** @var LoggerInterface $logger */
         $logger = $this->get('logger');
         /** @var \settings $settings */
@@ -131,6 +113,7 @@ class UniversignController extends Controller
         $proxy->get($proxyId);
         /** @var UniversignManager $universignManager */
         $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
+
         if ($proxy->status == \projects_pouvoir::STATUS_SIGNED) {
             return $this->redirect($proxy->url_universign);
         }
@@ -196,9 +179,6 @@ class UniversignController extends Controller
      */
     private function getProxyStatusLabel(\projects_pouvoir $proxy)
     {
-        /** @var LoggerInterface $logger */
-        $logger = $this->get('logger');
-
         switch ($proxy->status) {
             case \projects_pouvoir::STATUS_PENDING:
                 return ('pending');
@@ -209,6 +189,8 @@ class UniversignController extends Controller
             case \projects_pouvoir::STATUS_FAILED:
                 return ('fail');
             default:
+                /** @var LoggerInterface $logger */
+                $logger = $this->get('logger');
                 $logger->notice('Unknown proxy status (' . $proxy->status . ') - Cannot create PDF for Universign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
                 return null;
         }
@@ -220,19 +202,18 @@ class UniversignController extends Controller
      */
     private function getMandateStatusLabel(\clients_mandats $mandate)
     {
-        /** @var LoggerInterface $logger */
-        $logger = $this->get('logger');
-
         switch ($mandate->status) {
             case \clients_mandats::STATUS_SIGNED:
                 return ('signed');
             case \clients_mandats::STATUS_PENDING:
-                return ('not signed');
+                return ('pending');
             case \clients_mandats::STATUS_CANCELED:
                 return ('cancel');
             case \clients_mandats::STATUS_FAILED:
                 return ('fail');
             default:
+                /** @var LoggerInterface $logger */
+                $logger = $this->get('logger');
                 $logger->notice('Unknown mandate status (' . $mandate->status . ') - Cannot create PDF for Universign (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
                 return null;
         }
