@@ -31,6 +31,8 @@ class echeanciers extends echeanciers_crud
     const STATUS_PENDING          = 0;
     const STATUS_REPAID           = 1;
     const STATUS_PARTIALLY_REPAID = 2;
+    const IS_NOT_EARLY_REFUND     = 0;
+    const IS_EARLY_REFUND         = 1;
 
     public function __construct($bdd, $params = '')
     {
@@ -592,25 +594,24 @@ class echeanciers extends echeanciers_crud
         return $result;
     }
 
-    public function getRepaymentOfTheDay(\DateTime $oDate)
+    public function getRepaymentOfTheDay(\DateTime $date)
     {
-        $sDate = $oDate->format('Y-m-d');
+        $bind = ['formatedDate' => $date->format('Y-m-d')];
+        $type = ['formatedDate' => \PDO::PARAM_STR];
 
-        $sQuery = '
+        $sql = '
             SELECT id_project,
               ordre,
               COUNT(*) AS nb_repayment,
-              COUNT(CASE status WHEN ' . self::STATUS_REPAID . ' THEN 1 ELSE NULL END) AS nb_repayment_paid
+              COUNT(CASE status WHEN '. self::STATUS_REPAID .' THEN 1 ELSE NULL END) AS nb_repayment_paid
             FROM echeanciers
-            WHERE DATE(date_echeance) =  "' . $sDate . '"
+            WHERE DATE(date_echeance) = :formatedDate AND status_ra = '. self::IS_NOT_EARLY_REFUND .'
             GROUP BY id_project, ordre';
 
-        $rQuery  = $this->bdd->query($sQuery);
-        $aResult = [];
-        while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
-            $aResult[] = $aRow;
-        }
-        return $aResult;
+        $statement = $this->bdd->executeQuery($sql, $bind, $type);
+        $result    = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+        return $result;
     }
 
     // retourne la somme total a rembourser pour un projet
@@ -1012,17 +1013,27 @@ class echeanciers extends echeanciers_crud
 
     public function getProblematicOwedCapitalByProjects($contractType, $delay)
     {
-        $query = '  SELECT p.id_project, sum(e.capital - e.capital_rembourse) / 100 as amount
-                    FROM projects p
-                      INNER JOIN echeanciers e ON e.id_project = p.id_project
-                      INNER JOIN loans l ON e.id_loan = l.id_loan
-                      INNER JOIN underlying_contract c on c.id_contract = l.id_type_contract
+        $query = '  SELECT l.id_project, SUM(e.capital - e.capital_rembourse) / 100 AS amount
+                    FROM echeanciers e
+                      INNER JOIN loans l ON l.id_loan = e.id_loan
+                      INNER JOIN underlying_contract c ON c.id_contract = l.id_type_contract
                     WHERE c.label = :contractType
                       AND e.status != :repaid
-                      AND l.status = :accepted
-                      AND p.status >= :problem
-                      AND DATEDIFF(NOW(), e.date_echeance) >= :delay
-                    GROUP BY p.id_project';
+                      AND l.id_project in
+                        (
+                          SELECT p.id_project
+                          FROM projects p
+                            INNER JOIN echeanciers e ON e.id_project = p.id_project
+                            INNER JOIN loans l ON e.id_loan = l.id_loan
+                            INNER JOIN underlying_contract c ON c.id_contract = l.id_type_contract
+                          WHERE c.label = :contractType
+                            AND e.status != :repaid
+                            AND l.status = :accepted
+                            AND p.status >= :problem
+                            AND DATEDIFF(NOW(), e.date_echeance) >= :delay
+                          GROUP BY p.id_project
+                        )
+                    GROUP BY l.id_project';
         $statement = $this->bdd->executeQuery(
             $query,
             ['problem' => projects_status::PROBLEME, 'contractType' => $contractType, 'repaid' => echeanciers::STATUS_REPAID, 'delay' => $delay, 'accepted' => loans::STATUS_ACCEPTED]
@@ -1032,10 +1043,10 @@ class echeanciers extends echeanciers_crud
 
     public function getOwedCapitalByProjects($contractType)
     {
-        $query = '  SELECT l.id_project, sum(e.capital - e.capital_rembourse) / 100 as amount
+        $query = '  SELECT l.id_project, SUM(e.capital - e.capital_rembourse) / 100 AS amount
                     FROM echeanciers e
                       INNER JOIN loans l ON e.id_loan = l.id_loan
-                      INNER JOIN underlying_contract c on c.id_contract = l.id_type_contract
+                      INNER JOIN underlying_contract c ON c.id_contract = l.id_type_contract
                     WHERE c.label = :contractType
                       AND e.status != :repaid
                       AND l.status = :accepted

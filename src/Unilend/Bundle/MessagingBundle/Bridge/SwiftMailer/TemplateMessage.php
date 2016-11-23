@@ -9,6 +9,8 @@ class TemplateMessage extends \Swift_Message
 {
     /** @var int */
     private $templateId;
+    /** @var int */
+    private $messageId;
     /** @var array */
     private $variables;
     /** @var \DateTime */
@@ -68,6 +70,16 @@ class TemplateMessage extends \Swift_Message
     }
 
     /**
+     * @param int $messageId
+     * @return $this
+     */
+    public function setMessageId($messageId)
+    {
+        $this->messageId = $messageId;
+        return $this;
+    }
+
+    /**
      * @param null|array $variables
      *
      * @return $this
@@ -107,7 +119,7 @@ class TemplateMessage extends \Swift_Message
     public function setReplyTo($addresses, $name = null)
     {
         $addresses = self::normalizeEmail($addresses);
-        
+
         return parent::setReplyTo($addresses, $name);
     }
 
@@ -117,6 +129,14 @@ class TemplateMessage extends \Swift_Message
     public function getTemplateId()
     {
         return $this->templateId;
+    }
+
+    /**
+     * @return null|int
+     */
+    public function getMessageId()
+    {
+        return $this->messageId;
     }
 
     /**

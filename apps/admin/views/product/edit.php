@@ -7,11 +7,11 @@
     <h1>Consulter des produits</h1>
     <table class="form">
         <tr>
-            <th>Nom</th>
+            <th>Nom :</th>
             <td><?= $this->translator->trans('product_label_' . $this->product->label) ?></td>
         </tr>
         <tr>
-            <th>Status</th>
+            <th>Status :</th>
             <?php
             switch ( $this->product->status) {
                 case \product::STATUS_OFFLINE:
@@ -28,66 +28,63 @@
             <td><?= $status ?></td>
         </tr>
         <tr>
-            <th>Type d'échéancier</th>
+            <th>Type d'échéancier : </th>
             <td><?= $this->translator->trans('repayment-type-label_' . $this->repaymentType->label) ?></td>
         </tr>
         <tr>
-            <th>Contrat(s) sous-jacent</th>
+            <th>Contrat(s) sous-jacent : </th>
             <td>
                 <ul>
                     <?php foreach ($this->contracts as $contract): ?>
-                    <li><?= $this->translator->trans('contract-type-label_' . $contract['label']) ?></li>
+                    <li>
+                        <a href="/product/contract_details/<?= $contract['id_contract'] ?>" title="<?= $this->translator->trans('contract-type-label_' . $contract['label']) ?>">
+                            <?= $this->translator->trans('contract-type-label_' . $contract['label']) ?>
+                        </a>
+                    </li>
                     <?php endforeach; ?>
                 </ul>
             </td>
         </tr>
         <tr>
-            <th>Durée min (mois)</th>
-            <td><?= isset($this->duration['min'][0]) ? $this->duration['min'][0] : 'pas de limitation' ?></td>
+            <th>Durée min (mois) :</th>
+            <td><?= isset($this->duration['min'][0]) ? $this->duration['min'][0] : 'pas de contrôle' ?></td>
         </tr>
         <tr>
-            <th>Durée max (mois)</th>
-            <td><?= isset($this->duration['max'][0]) ? $this->duration['max'][0] : 'pas de limitation' ?></td>
+            <th>Durée max (mois) :</th>
+            <td><?= isset($this->duration['max'][0]) ? $this->duration['max'][0] : 'pas de contrôle' ?></td>
         </tr>
         <tr>
-            <th>Besoin d'emprunteur éligible</th>
+            <th>Motive d'emprunteur éligible</th>
             <td>
-                <?php if (empty($this->borrowerNeeds)) : ?>
-                    pas de limitation
+                <?php if (empty($this->borrowerMotives)) : ?>
+                    pas de contrôle
                 <?php else: ?>
                     <ul>
-                        <?php foreach ($this->borrowerNeeds as $need): ?>
-                            <li><?= $need ?></li>
+                        <?php foreach ($this->borrowerMotives as $motive): ?>
+                            <li><?= $motive ?></li>
                         <?php endforeach; ?>
                     </ul>
                 <? endif ?>
             </td>
         </tr>
         <tr>
-            <th>Pays d'emprunteur éligible</th>
-            <td>
-                <?php if (empty($this->borrowerCountries)) : ?>
-                    pas de limitation
-                <?php else: ?>
-                    <ul>
-                        <?php foreach ($this->borrowerCountries as $country): ?>
-                            <li><?= $country ?></li>
-                        <?php endforeach; ?>
-                    </ul>
-                <? endif ?>
-            </td>
+            <th>Jours de creation min :</th>
+            <td><?= isset($this->creationDaysMin[0]) ? $this->creationDaysMin[0] : 'pas de contrôle' ?></td>
+        </tr>
+
+        <tr>
+            <th>RCS :</th>
+            <td><?= isset($this->rcs[0]) ? ($this->rcs[0] == 1 ? 'La société doit être RCS.' : 'La société doit être non RCS.') : 'pas de contrôle' ?></td>
         </tr>
         <tr>
-            <th>Nationalité de prêteur éligible</th>
+            <th>Codes NAF éligible :</th>
             <td>
-                <?php if (empty($this->lenderNationalities)) : ?>
-                    pas de limitation
+                <?php if (empty($this->nafcodes)) : ?>
+                    pas de contrôle
                 <?php else: ?>
-                <ul>
-                    <?php foreach ($this->lenderNationalities as $nationality): ?>
-                        <li><?= $nationality ?></li>
+                    <?php foreach ($this->nafcodes as $code): ?>
+                        <?= $code ?>
                     <?php endforeach; ?>
-                </ul>
                 <? endif ?>
             </td>
         </tr>

@@ -125,7 +125,7 @@ var Modal = function (elem, options) {
     height: 'auto',
 
     // Min width of modal window
-    minWidth: 300,
+    minWidth: 280,
 
     // Min height of modal window
     minHeight: 200,
@@ -594,6 +594,7 @@ $(document)
   .on(Utility.clickEvent, '[data-modal-doactionconfirm]', function (event) {
     // @debug
     // console.log('Clicked [data-modal-doactionconfirm]')
+
     var $modal = $(this).parents('.ui-modal')
     $modal.uiModal('confirm')
   })
@@ -602,6 +603,7 @@ $(document)
   .on(Utility.clickEvent, '[data-modal-doactioncancel]', function (event) {
     // @debug
     // console.log('Clicked [data-modal-doactioncancel]')
+
     var $modal = $(this).parents('.ui-modal')
     $modal.uiModal('cancel')
   })
@@ -610,6 +612,7 @@ $(document)
   .on(Utility.clickEvent, '[data-modal-doactionclose]', function (event) {
     // @debug
     // console.log('Clicked [data-modal-doactionclose]')
+
     var $modal = $(this).parents('.ui-modal')
     $modal.uiModal('close')
   })

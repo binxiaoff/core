@@ -5,7 +5,13 @@
 #user-preter-profile.dashboard {
   .nav.nav-dashboard-tabs {
     > li {
-      width: 25%;
+      width: 25%; // 4 items / 100%
+    }
+
+    &.nav-has-cip {
+      > li {
+        width: 20%; // 5 items / 100%
+      }
     }
   }
 
@@ -289,6 +295,119 @@
       .connexion-session-period,
       .connexion-session-controls {
         padding: 20px 30px;
+      }
+    }
+  }
+
+  // CIP
+  #dashboard-cip {
+    background: $c-white;
+
+    .panel {
+      @include dashboard-content-panel;
+
+      position: relative;
+      padding-right: 20px !important;
+
+      @include devices('laptop') {
+        padding-right: 30px !important;
+      }
+
+      @include devices('lg') {
+        padding-right: 40px !important;
+      }
+
+      &.cip-header {
+        border-width: 0;
+
+        .panel-header {
+          margin-top: 1em;
+          margin-bottom: 0;
+
+          h1, h2, h3, h4, h5, h6 {
+            margin-bottom: 0;
+          }
+        }
+      }
+    }
+
+    .cip-progress {
+      width: 100%;
+
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      right: 0;
+    }
+
+    dl.cip-summary {
+      dt {
+        font-weight: bold;
+        margin-bottom: 0.5em;
+      }
+
+      dd {
+        margin-left: 2em;
+        margin-bottom: 1em;
+        font-style: italic;
+        font-weight: normal;
+      }
+    }
+
+    .cip-question {
+      padding: 15px 0 20px;
+      font-size: $fs-base * 1.2;
+      line-height: $lh-base * .9;
+
+      > :first-child {
+        margin-top: 0;
+      }
+
+      > :last-child {
+        margin-bottom: 0;
+      }
+
+      @include devices('md') {
+        padding: 15px 0 30px;
+      }
+
+      @include devices('lg') {
+        padding: 20px 0 40px;
+      }
+    }
+
+    .cip-answer {
+
+    }
+
+    .cip-answer-option {
+      box-sizing: border-box;
+      padding: 10px 20px;
+      margin-bottom: 5px;
+      border: solid 2px $c-bg2;
+      border-radius: 5px;
+
+      label {
+        display: block;
+      }
+
+      input[type="radio"],
+      input[type="checkbox"] {
+        &:checked,
+        &[checked] {
+          + .label {
+            color: $c-p1;
+            font-weight: bold;
+          }
+        }
+      }
+
+      @include devices('md') {
+        margin-bottom: 8px;
+      }
+
+      @include devices('lg') {
+        margin-bottom: 12px;
       }
     }
   }

@@ -1,0 +1,10 @@
+{% extends 'lender_cip/_layout-boolean-question.html.twig' %}
+
+{% set text = {
+    question: 'lender-evaluation_question-aware-risk-return'|trans,
+    alt_question: 'lender-evaluation_question-aware-risk-return-alt-question'|trans,
+    yes_explanation: 'lender-evaluation_question-aware-risk-return-yes-explanation'|trans,
+    no_explanation: 'lender-evaluation_question-aware-risk-return-no-explanation'|trans,
+    valid_answer: constant('\\lender_questionnaire_question::VALUE_BOOLEAN_TRUE'),
+    invalid_answer: constant('\\lender_questionnaire_question::VALUE_BOOLEAN_FALSE')
+} %}

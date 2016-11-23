@@ -42,7 +42,8 @@ class AppKernel extends Kernel
             new Symfony\Cmf\Bundle\RoutingBundle\CmfRoutingBundle,
             new Xynnn\GoogleTagManagerBundle\GoogleTagManagerBundle(),
             new Sonata\SeoBundle\SonataSeoBundle(),
-            new Ekino\Bundle\NewRelicBundle\EkinoNewRelicBundle(),
+            new Knp\Bundle\SnappyBundle\KnpSnappyBundle(),
+            new Ekino\Bundle\NewRelicBundle\EkinoNewRelicBundle()
         ];
 
         if (in_array($this->getEnvironment(), ['dev', 'test'], true)) {

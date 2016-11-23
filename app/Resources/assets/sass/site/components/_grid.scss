@@ -81,29 +81,21 @@
 // Extra small grid (max 4 columns)
 @include devices('xs') {
   @include generate-grid(4, 100%, 'xs');
-  @include show-hide-display-types('xs');
-  @include hide-display-types('sm', 'md', 'lg');
 }
 
 // Small Grid (max 8 columns)
 @include devices('sm') {
   @include generate-grid(8, 100%, 'sm');
-  @include show-hide-display-types('sm');
-  @include hide-display-types('xs', 'md', 'lg');
 }
 
 // Medium grid (12 columns)
 @include devices('md') {
   @include generate-grid(12, 100%, 'md');
-  @include show-hide-display-types('md');
-  @include hide-display-types('xs', 'sm', 'lg');
 }
 
 // Large grid (12 columns)
 @include devices('lg') {
   @include generate-grid(12, 100%, 'lg');
-  @include show-hide-display-types('lg');
-  @include hide-display-types('xs', 'sm', 'md');
 }
 
 // Multiple columns with padding between
@@ -121,22 +113,17 @@
     @include row-multi-col($prefix: 'computer');
   }
 
-  // Automatic column padding targetted for computer devices
-  @include devices('xs') {
-    @include row-multi-col($prefix: 'xs');
-  }
-
-  // Automatic column padding targetted for computer devices
+  // Automatic column padding targetted for sm breakpoint
   @include devices('sm') {
     @include row-multi-col($prefix: 'sm');
   }
 
-  // Automatic column padding targetted for computer devices
+  // Automatic column padding targetted for md breakpoint
   @include devices('md') {
     @include row-multi-col($prefix: 'md');
   }
 
-  // Automatic column padding targetted for computer devices
+  // Automatic column padding targetted for lg breakpoint
   @include devices('lg') {
     @include row-multi-col($prefix: 'lg');
   }

@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
 use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
@@ -219,10 +220,17 @@ class ProjectsController extends Controller
 
         $firstBalanceSheet = current($template['finance']);
         $template['financeColumns'] = [
-            'balanceSheet' => array_keys($firstBalanceSheet['balanceSheet']),
+            'income_statement' => array_keys($firstBalanceSheet['income_statement']['details']),
             'assets'       => array_keys($firstBalanceSheet['assets']),
             'debts'        => array_keys($firstBalanceSheet['debts']),
         ];
+
+        $displayDebtsAssets = true;
+        if (empty($firstBalanceSheet['assets']) || empty($firstBalanceSheet['assets']) ) {
+            $displayDebtsAssets = false;
+        }
+
+        $displayCipDisclaimer = false;
 
         if (
             $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY')
@@ -239,9 +247,6 @@ class ProjectsController extends Controller
             $product = $this->get('unilend.service.entity_manager')->getRepository('product');
             $product->get($project->id_product);
 
-            $template['amountRest'] = $productManager->getAmountLenderCanStillBid($lenderAccount, $project);
-            $template['amountMax']  = $productManager->getMaxEligibleAmount($product);
-
             /** @var \settings $settings */
             $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
             $settings->get('Pret min', 'type');
@@ -256,11 +261,18 @@ class ProjectsController extends Controller
                 $request->getSession()->remove('bidResult');
             }
 
-            $template['isLenderEligible'] = $productManager->isLenderEligible($lenderAccount, $project);
-            if (false === $template['isLenderEligible']) {
-                $reasons = $productManager->getLenderValidationReasons($lenderAccount, $project);
+            $reasons = $productManager->getLenderEligibilityWithReasons($lenderAccount, $project);
+            $template['isLenderEligible'] = true;
+            $template['lenderNotEligibleReasons'] = [];
+
+            if (false === empty($reasons)) {
+                $template['isLenderEligible']         = false;
                 $template['lenderNotEligibleReasons'] = $reasons;
+                $template['amountMax']                = $productManager->getMaxEligibleAmount($product);
             }
+
+            $cipManager           = $this->get('unilend.service.cip_manager');
+            $displayCipDisclaimer = $cipManager->hasValidEvaluation($lenderAccount);
         }
 
         $isFullyConnectedUser       = ($user instanceof UserLender && in_array($user->getClientStatus(), [\clients_status::VALIDATED, \clients_status::MODIFICATION]) || $user instanceof UserBorrower);
@@ -288,16 +300,19 @@ class ProjectsController extends Controller
         }
 
         $template['conditions'] = [
-            'validatedUser'       => $isFullyConnectedUser,
-            'notValidatedUser'    => $isConnectedButNotValidated,
-            'bids'                => isset($template['project']['bids']) && $template['project']['status'] == \projects_status::EN_FUNDING,
-            'myBids'              => isset($template['project']['lender']) && $template['project']['lender']['bids']['count'] > 0,
-            'finance'             => $isFullyConnectedUser,
-            'history'             => isset($template['project']['lender']['loans']['myLoanOnProject']['nbValid']) && $template['project']['lender']['loans']['myLoanOnProject']['nbValid'] > 0,
-            'canBid'              => $isFullyConnectedUser && $user instanceof UserLender && $user->hasAcceptedCurrentTerms(),
-            'warningLending'      => true,
-            'warningTaxDeduction' => $template['project']['startDate'] >= '2016-01-01'
+            'validatedUser'        => $isFullyConnectedUser,
+            'notValidatedUser'     => $isConnectedButNotValidated,
+            'bids'                 => isset($template['project']['bids']) && $template['project']['status'] == \projects_status::EN_FUNDING,
+            'myBids'               => isset($template['project']['lender']) && $template['project']['lender']['bids']['count'] > 0,
+            'finance'              => $isFullyConnectedUser,
+            'history'              => isset($template['project']['lender']['loans']['myLoanOnProject']['nbValid']) && $template['project']['lender']['loans']['myLoanOnProject']['nbValid'] > 0,
+            'canBid'               => $isFullyConnectedUser && $user instanceof UserLender && $user->hasAcceptedCurrentTerms(),
+            'warningLending'       => true,
+            'displayDebtsAssets'   => $displayDebtsAssets,
+            'warningTaxDeduction'  => $template['project']['startDate'] >= '2016-01-01',
+            'displayCipDisclaimer' => $displayCipDisclaimer
         ];
+
         $this->setProjectDetailsSeoData($template['project']['company']['sectorId'], $template['project']['company']['city'], $template['project']['amount']);
 
         return $this->render('pages/project_detail.html.twig', $template);
@@ -343,9 +358,8 @@ class ProjectsController extends Controller
      * @Method({"POST"})
      */
     public function estimateMonthlyRepaymentAction(Request $request)
-
     {
-        if (false === $request->isXMLHttpRequest()) {
+        if (false === $request->isXmlHttpRequest()) {
             return new Response('not an ajax request');
         }
 
@@ -390,9 +404,14 @@ class ProjectsController extends Controller
             )
         ]);
     }
+
     /**
      * @Route("/projects/bid/{projectId}", requirements={"projectId" = "^\d+$"}, name="place_bid")
      * @Method({"POST"})
+     *
+     * @param int     $projectId
+     * @param Request $request
+     * @return RedirectResponse
      */
     public function placeBidAction($projectId, Request $request)
     {
@@ -463,8 +482,7 @@ class ProjectsController extends Controller
                     $product->get($project->id_product);
 
                     $amountMax = $productManager->getMaxEligibleAmount($product);
-
-                    $reasons    = $productManager->getBidValidatorReasons($bids, $product);
+                    $reasons   = $productManager->getBidEligibilityWithReasons($bids);
                     $amountRest = 0;
                     foreach ($reasons as $reason) {
                         if ($reason === \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO) {
@@ -564,7 +582,6 @@ class ProjectsController extends Controller
 
         if (false === $project->get($projectId, 'id_project')
             || $project->display != \projects::DISPLAY_PROJECT_ON
-            || false === $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
             || false === $this->get('security.authorization_checker')->isGranted('ROLE_LENDER')
         ) {
             return new RedirectResponse('/');
@@ -572,76 +589,36 @@ class ProjectsController extends Controller
 
         /** @var \dates $dates */
         $dates = Loader::loadLib('dates');
-
         $translator = $this->get('translator');
 
-        /** @var \companies $oCompany */
-        $oCompany = $this->get('unilend.service.entity_manager')->getRepository('companies');
-        $oCompany->get($project->id_company, 'id_company');
+        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
+        $financeData           = $projectDisplayManager->getProjectFinancialData($project);
 
-        /** @var \companies_bilans $oAnnualAccounts */
-        $oAnnualAccounts    = $this->get('unilend.service.entity_manager')->getRepository('companies_bilans');
-        $aAnnualAccounts    = $oAnnualAccounts->select('id_company = "' . $oCompany->id_company . '" AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $project->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
-
-        /** @var \settings $oSetting */
-        $oSetting = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $oSetting->get('Entreprises fundés au passage du risque lot 1', 'type');
-        $aFundedCompanies     = explode(',', $oSetting->value);
-        $bPreviousRiskProject = in_array($oCompany->id_company, $aFundedCompanies);
-
+        $firstBalanceSheet     = current($financeData);
+        $columns               = array_keys($firstBalanceSheet['income_statement']['details']);
 
         $iRow         = 1;
         /** @var \PHPExcel $oDocument */
         $oDocument    = new \PHPExcel();
         $oActiveSheet = $oDocument->setActiveSheetIndex(0);
         $oActiveSheet->setCellValueByColumnAndRow(0, $iRow, 'Date de clôture');
-        $oActiveSheet->setCellValueByColumnAndRow(1, $iRow, $dates->formatDate($aAnnualAccounts[0]['cloture_exercice_fiscal'], 'd/m/Y'));
-        $oActiveSheet->setCellValueByColumnAndRow(2, $iRow, $dates->formatDate($aAnnualAccounts[1]['cloture_exercice_fiscal'], 'd/m/Y'));
-        $oActiveSheet->setCellValueByColumnAndRow(3, $iRow, $dates->formatDate($aAnnualAccounts[2]['cloture_exercice_fiscal'], 'd/m/Y'));
+        $columnCount = 1;
+        foreach ($financeData as $balanceSheet) {
+            $oActiveSheet->setCellValueByColumnAndRow($columnCount++, $iRow, $dates->formatDate($balanceSheet['closingDate'], 'd/m/Y'));
+        }
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, 'Durée de l\'exercice');
-        $oActiveSheet->setCellValueByColumnAndRow(1, $iRow, str_replace('[DURATION]', $aAnnualAccounts[0]['duree_exercice_fiscal'], $translator->trans('preteur-projets_annual-accounts-duration-months')));
-        $oActiveSheet->setCellValueByColumnAndRow(2, $iRow, str_replace('[DURATION]', $aAnnualAccounts[1]['duree_exercice_fiscal'], $translator->trans('preteur-projets_annual-accounts-duration-months')));
-        $oActiveSheet->setCellValueByColumnAndRow(3, $iRow, str_replace('[DURATION]', $aAnnualAccounts[2]['duree_exercice_fiscal'], $translator->trans('preteur-projets_annual-accounts-duration-months')));
+        $columnCount = 1;
+        foreach ($financeData as $balanceSheet) {
+            $oActiveSheet->setCellValueByColumnAndRow($columnCount++, $iRow, str_replace('[DURATION]', $balanceSheet['monthDuration'], $translator->trans('preteur-projets_annual-accounts-duration-months')));
+        }
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_compte-de-resultats'));
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_chiffe-daffaires'));
-        for ($i = 0; $i < 3; $i++) {
-            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['ca']);
-        }
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_resultat-brut-dexploitation'));
-        for ($i = 0; $i < 3; $i++) {
-            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_brute_exploitation']);
-        }
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_resultat-dexploitation'));
-        for ($i = 0; $i < 3; $i++) {
-            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_exploitation']);
-        }
-        if (false === $bPreviousRiskProject) {
-            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_resultat-financier'));
-            for ($i = 0; $i < 3; $i++) {
-                $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_financier']);
-            }
-            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_produit-exceptionnel'));
-            for ($i = 0; $i < 3; $i++) {
-                $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['produit_exceptionnel']);
-            }
-            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_charges-exceptionnelles'));
-            for ($i = 0; $i < 3; $i++) {
-                $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['charges_exceptionnelles']);
-            }
-            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_resultat-exceptionnel'));
-            for ($i = 0; $i < 3; $i++) {
-                $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_exceptionnel']);
-            }
-            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_resultat-net'));
-            for ($i = 0; $i < 3; $i++) {
-                $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_net']);
+        foreach ($columns as $column) {
+            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans($column));
+            $columnCount = 1;
+            foreach($financeData as $balanceSheet) {
+                $oActiveSheet->setCellValueByColumnAndRow($columnCount++, $iRow, $balanceSheet['income_statement']['details'][$column][0]);
             }
         }
-        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_investissements'));
-        for ($i = 0; $i < 3; $i++) {
-            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['investissements']);
-        }
-
         /** @var \PHPExcel_Writer_CSV $oWriter */
         $oWriter = \PHPExcel_IOFactory::createWriter($oDocument, 'CSV');
         $oWriter->setUseBOM(true);
@@ -834,6 +811,7 @@ class ProjectsController extends Controller
 
     /**
      * Sets the values meta-title and meta-description
+     *
      * @param $companySectorId
      * @param $companyCity
      * @param $projectAmount
@@ -853,10 +831,195 @@ class ProjectsController extends Controller
             '%amount%' => $ficelle->formatNumber($projectAmount, 0)
         ];
 
-        $pageTitle       = $translator->trans('seo_project-detail-title', $translationParams);
-        $pageDescription = $translator->trans('seo_project-detail-description', $translationParams);
+        $pageTitle = $translator->trans('seo_project-detail-title', $translationParams);
+        if ($pageTitle !== 'seo_project-detail-title') {
+            $seoPage->setTitle($pageTitle);
+        }
 
-        $seoPage->setTitle($pageTitle)
-            ->addMeta('name', 'description', $pageDescription);
+        $pageDescription = $translator->trans('seo_project-detail-description', $translationParams);
+        if ($pageDescription !== 'seo_project-detail-description') {
+            $seoPage->addMeta('name', 'description', $pageDescription);
+        }
+
+    }
+
+    /**
+     * @Route("/projects/pre-check-bid/{projectSlug}/{amount}/{rate}", name="pre_check_bid", condition="request.isXmlHttpRequest()", requirements={"amount" = "^\d+$", "rate" ="^\d{1,2}(\.\d$|$)" })
+     *
+     * @param $projectSlug
+     * @param $amount
+     * @param $rate
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function preCheckBidAction(Request $request, $projectSlug, $amount, $rate)
+    {
+        $entityManager  = $this->get('unilend.service.entity_manager');
+        $cipManager     = $this->get('unilend.service.cip_manager');
+        $translator     = $this->get('translator');
+        $productManager = $this->get('unilend.service_product.product_manager');
+
+        /** @var \projects $project */
+        $project = $entityManager->getRepository('projects');
+
+        if (false === $project->get($projectSlug, 'slug')) {
+            return new JsonResponse([
+                'error'   => true,
+                'messages' => ['Invalid parameters']
+            ]);
+        }
+
+        /** @var \settings $settings */
+        $settings = $entityManager->getRepository('settings');
+        $settings->get('Pret min', 'type');
+        $amountMin = (int) trim($settings->value);
+
+        if ($amount < $amountMin) {
+            $currencyFormatter = new \NumberFormatter($request->getLocale(), \NumberFormatter::CURRENCY);
+            $amountMin = $currencyFormatter->formatCurrency($amountMin, 'EUR');
+            return new JsonResponse([
+                'error'   => true,
+                'messages' => [$translator->trans('project-detail_bid-min-amount-error', ['%amountMin%' => $amountMin])]
+            ]);
+        }
+
+        $response = [];
+        /** @var UserLender $user */
+        $user     = $this->getUser();
+        $clientId = $user->getClientId();
+
+        /** @var \lenders_accounts $lenderAccount */
+        $lender = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
+        $lender->get($clientId, 'id_client_owner');
+
+        /** @var \bids $bid */
+        $bid                    = $entityManager->getRepository('bids');
+        $bid->id_lender_account = $lender->id_lender_account;
+        $bid->id_project        = $project->id_project;
+        $bid->amount            = $amount * 100;
+        $bid->rate              = $rate;
+
+        $reasons = $productManager->getBidEligibilityWithReasons($bid);
+
+        if (false === empty($reasons)) {
+            $pendingBidAmount = $bid->getBidsEncours($project->id_project,$bid->id_lender_account);
+
+            $product = $entityManager->getRepository('product');
+            $product->get($project->id_product);
+
+            $translatedReasons = [];
+            $amountRest = 0;
+            $amountMax = $productManager->getMaxEligibleAmount($product);
+            foreach ($reasons as $reason) {
+                if ($reason === \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO) {
+                    $amountRest = $productManager->getAmountLenderCanStillBid($lender, $project);
+                }
+                $currencyFormatter = new \NumberFormatter($request->getLocale(), \NumberFormatter::CURRENCY);
+                $amountRest = $currencyFormatter->formatCurrency($amountRest, 'EUR');
+                $amountMax  = $currencyFormatter->formatCurrency($amountMax, 'EUR');
+
+                $translatedReasons[] = $translator->transChoice('project-detail_bid-not-eligible-reason-' . $reason, $pendingBidAmount,['%amountRest%' => $amountRest, '%amountMax%' => $amountMax]);
+            }
+            return new JsonResponse([
+                'error'   => true,
+                'messages' => $translatedReasons
+            ]);
+        }
+
+        // Deactivate CIP check
+//        return new JsonResponse([
+//            'validation' => false
+//        ]);
+
+        $this->addFlash('cipBid', ['amount' => $amount, 'rate' => $rate, 'project' => $project->id_project]);
+
+        $validationNeeded       = $cipManager->isCIPValidationNeeded($bid);
+        $response['validation'] = $validationNeeded;
+
+        if ($validationNeeded) {
+            $evaluation = $cipManager->getCurrentEvaluation($lender);
+
+            if (null !== $evaluation && $cipManager->isValidEvaluation($evaluation)) {
+                $advices    = [];
+                $indicators = $cipManager->getIndicators($lender);
+
+                if (null !== $indicators[CIPManager::INDICATOR_TOTAL_AMOUNT]) {
+                    /** @var \bids $bids */
+                    $bids        = $entityManager->getRepository('bids');
+                    $totalBids = $bids->sum(
+                        'id_lender_account = ' . $lender->id_lender_account . ' AND status IN (' . \bids::STATUS_BID_PENDING . ', ' . \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY . ')',
+                        'ROUND(amount / 100)'
+                    );
+                    /** @var \loans $loans */
+                    $loans      = $entityManager->getRepository('loans');
+                    $totalLoans = $loans->sum(
+                        'id_lender = ' . $lender->id_lender_account . ' AND status = ' . \loans::STATUS_ACCEPTED,
+                        'ROUND(amount / 100)'
+                    );
+
+                    $totalAmount = bcadd($totalBids, $totalLoans, 2);
+
+                    if ($totalAmount > $indicators[CIPManager::INDICATOR_TOTAL_AMOUNT]) {
+                        $advices[CIPManager::INDICATOR_TOTAL_AMOUNT] = true;
+                    }
+                }
+
+                if (null !== $indicators[CIPManager::INDICATOR_AMOUNT_BY_MONTH]) {
+                    /** @var \bids $bids */
+                    $bids        = $entityManager->getRepository('bids');
+                    $totalBids = $bids->sum(
+                        'id_lender_account = ' . $lender->id_lender_account . ' AND added >= DATE_SUB(NOW(), INTERVAL 1 MONTH) AND status IN (' . \bids::STATUS_BID_PENDING . ', ' . \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY . ')',
+                        'ROUND(amount / 100)');
+                    /** @var \loans $loans */
+                    $loans      = $entityManager->getRepository('loans');
+                    $totalLoans = $loans->sum(
+                        'id_lender = ' . $lender->id_lender_account . ' AND added >= DATE_SUB(NOW(), INTERVAL 1 MONTH) AND status = ' . \loans::STATUS_ACCEPTED,
+                        'ROUND(amount / 100)'
+                    );
+
+                    $totalAmount = bcadd($totalBids, $totalLoans, 2);
+
+                    if ($totalAmount > $indicators[CIPManager::INDICATOR_AMOUNT_BY_MONTH]) {
+                        $advices[CIPManager::INDICATOR_AMOUNT_BY_MONTH] = true;
+                    }
+                }
+
+                if (null !== $indicators[CIPManager::INDICATOR_PROJECT_DURATION] && $project->period > $indicators[CIPManager::INDICATOR_PROJECT_DURATION]) {
+                    $advices[CIPManager::INDICATOR_PROJECT_DURATION] = true;
+                }
+
+                if (false === empty($advices)) {
+                    $message = '';
+
+                    if (isset($advices[CIPManager::INDICATOR_TOTAL_AMOUNT], $advices[CIPManager::INDICATOR_AMOUNT_BY_MONTH], $advices[CIPManager::INDICATOR_PROJECT_DURATION])) {
+                        $message = $translator->trans('lender-evaluation_warning-not-advised-total-amount-monthly-amount-project-duration');
+                    } elseif (isset($advices[CIPManager::INDICATOR_TOTAL_AMOUNT], $advices[CIPManager::INDICATOR_AMOUNT_BY_MONTH])) {
+                        $message = $translator->trans('lender-evaluation_warning-not-advised-total-amount-monthly-amount');
+                    } elseif (isset($advices[CIPManager::INDICATOR_TOTAL_AMOUNT], $advices[CIPManager::INDICATOR_PROJECT_DURATION])) {
+                        $message = $translator->trans('lender-evaluation_warning-not-advised-total-amount-project-duration');
+                    } elseif (isset($advices[CIPManager::INDICATOR_TOTAL_AMOUNT])) {
+                        $message = $translator->trans('lender-evaluation_warning-not-advised-total-amount');
+                    } elseif (isset($advices[CIPManager::INDICATOR_AMOUNT_BY_MONTH], $advices[CIPManager::INDICATOR_PROJECT_DURATION])) {
+                        $message = $translator->trans('lender-evaluation_warning-not-advised-monthly-amount-project-duration');
+                    } elseif (isset($advices[CIPManager::INDICATOR_AMOUNT_BY_MONTH])) {
+                        $message = $translator->trans('lender-evaluation_warning-not-advised-monthly-amount');
+                    } elseif (isset($advices[CIPManager::INDICATOR_PROJECT_DURATION])) {
+                        $message = $translator->trans('lender-evaluation_warning-not-advised-project-duration');
+                    }
+
+                    $cipManager->saveLog($evaluation, \lender_evaluation_log::EVENT_BID_ADVICE, strip_tags($message));
+                    $response['advices'] = $message;
+                }
+            } else {
+                if (null === $evaluation) {
+                    $evaluation = $cipManager->createEvaluation($lender);
+                }
+
+                $cipManager->saveLog($evaluation, \lender_evaluation_log::EVENT_BID_EVALUATION_NEEDED);
+                $response['questionnaire'] = true;
+            }
+        }
+
+        return new JsonResponse($response);
     }
 }
