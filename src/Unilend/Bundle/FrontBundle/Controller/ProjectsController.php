@@ -266,8 +266,9 @@ class ProjectsController extends Controller
             $template['lenderNotEligibleReasons'] = [];
 
             if (false === empty($reasons)) {
-                $template['isLenderEligible'] = false;
+                $template['isLenderEligible']         = false;
                 $template['lenderNotEligibleReasons'] = $reasons;
+                $template['amountMax']                = $productManager->getMaxEligibleAmount($product);
             }
 
             $cipManager           = $this->get('unilend.service.cip_manager');

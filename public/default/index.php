@@ -28,13 +28,9 @@ if (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVE
 
 header('X-Server: ' . exec('hostname'));
 
-require __DIR__ . '/prepend.php';
-
 $kernel = new AppKernel('prod', false);
 $request  = Request::createFromGlobals();
 $response = $kernel->handle($request);
 $response->send();
 
 $kernel->terminate($request, $response);
-
-require __DIR__ . '/append.php';
