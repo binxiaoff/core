@@ -262,6 +262,7 @@ class ProjectRequestController extends Controller
             if ($altaresStatus) {
                 $settingsAltaresStatus->value = 0;
                 $settingsAltaresStatus->update();
+
                 $logger->error(
                     'Calling Altares::getEligibility() using SIREN ' . $this->company->siren . ' - Exception message: ' . $exception->getMessage(),
                     ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $this->company->siren]
@@ -276,14 +277,17 @@ class ProjectRequestController extends Controller
             if ($altaresStatus) {
                 $settingsAltaresStatus->value = 0;
                 $settingsAltaresStatus->update();
+
                 $logger->error(
                     'Altares error code: ' . $result->exception->code . ' - Altares error description: ' . $result->exception->description . ' - Altares error: ' . $result->exception->erreur,
                     ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $this->company->siren]
                 );
 
                 mail($alertEmail, '[ALERTE] ERREUR ALTARES 1', 'Date ' . date('Y-m-d H:i:s') . 'SIREN : ' . $this->company->siren . ' | ' . $result->exception->code . ' | ' . $result->exception->description . ' | ' . $result->exception->erreur);
-
             }
+
+            $this->project->retour_altares = Altares::RESPONSE_CODE_WS_ERROR;
+            $this->project->update();
 
             return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, $status);
         }
