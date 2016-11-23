@@ -248,6 +248,10 @@ class ProjectRequestController extends Controller
         $settings->get('Altares email alertes', 'type');
         $alertEmail = $settings->value;
 
+        $settingsAltaresStatus = $entityManager->getRepository('settings');
+        $settingsAltaresStatus->get('Altares status', 'type');
+        $altaresStatus = $settingsAltaresStatus->value;
+
         /** @var LoggerInterface $logger */
         $logger = $this->get('logger');
 
@@ -255,25 +259,40 @@ class ProjectRequestController extends Controller
             $altares = new Altares();
             $result  = $altares->getEligibility($this->company->siren);
         } catch (\Exception $exception) {
-            $logger->error(
-                'Calling Altares::getEligibility() using SIREN ' . $this->company->siren . ' - Exception message: ' . $exception->getMessage(),
-                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $this->company->siren]
-            );
+            if ($altaresStatus) {
+                $settingsAltaresStatus->value = 0;
+                $settingsAltaresStatus->update();
+                $logger->error(
+                    'Calling Altares::getEligibility() using SIREN ' . $this->company->siren . ' - Exception message: ' . $exception->getMessage(),
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $this->company->siren]
+                );
 
-            mail($alertEmail, '[ALERTE] ERREUR ALTARES 2', 'Date ' . date('Y-m-d H:i:s') . '' . $exception->getMessage());
-
+                mail($alertEmail, '[ALERTE] ERREUR ALTARES 2', 'Date ' . date('Y-m-d H:i:s') . '' . $exception->getMessage());
+            }
             return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, $status);
         }
 
         if (false === empty($result->exception)) {
-            $logger->error(
-                'Altares error code: ' . $result->exception->code . ' - Altares error description: ' . $result->exception->description . ' - Altares error: ' . $result->exception->erreur,
-                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $this->company->siren]
-            );
+            if ($altaresStatus) {
+                $settingsAltaresStatus->value = 0;
+                $settingsAltaresStatus->update();
+                $logger->error(
+                    'Altares error code: ' . $result->exception->code . ' - Altares error description: ' . $result->exception->description . ' - Altares error: ' . $result->exception->erreur,
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $this->company->siren]
+                );
 
-            mail($alertEmail, '[ALERTE] ERREUR ALTARES 1', 'Date ' . date('Y-m-d H:i:s') . 'SIREN : ' . $this->company->siren . ' | ' . $result->exception->code . ' | ' . $result->exception->description . ' | ' . $result->exception->erreur);
+                mail($alertEmail, '[ALERTE] ERREUR ALTARES 1', 'Date ' . date('Y-m-d H:i:s') . 'SIREN : ' . $this->company->siren . ' | ' . $result->exception->code . ' | ' . $result->exception->description . ' | ' . $result->exception->erreur);
+
+            }
 
             return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, $status);
+        }
+
+        if (! $altaresStatus) {
+            $settingsAltaresStatus->value = 1;
+            $settingsAltaresStatus->update();
+
+            mail($alertEmail, '[INFO] ALTARES is up', 'Date ' . date('Y-m-d H:i:s') . '. Altares is up now.');
         }
 
         $this->project->retour_altares = $result->myInfo->codeRetour;
