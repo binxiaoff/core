@@ -1222,6 +1222,7 @@ class echeanciers extends echeanciers_crud
                   INNER join transactions t ON t.id_echeancier = e.id_echeancier
                   WHERE e.status = :repaid
                   AND e.status_email_remb = :not_sent
+                  GROUP BY e.id_echeancier
                   LIMIT :limit OFFSET :offset';
 
         $bind = [
@@ -1230,8 +1231,13 @@ class echeanciers extends echeanciers_crud
             'limit'    => $limit,
             'offset'   => $offset,
         ];
+
+        $type = [
+            'limit' => \PDO::PARAM_INT,
+            'offset' => \PDO::PARAM_INT,
+        ];
         /** @var \Doctrine\DBAL\Statement $statement */
-        $statement = $this->bdd->executeQuery($query, $bind);
+        $statement = $this->bdd->executeQuery($query, $bind, $type);
 
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
