@@ -132,8 +132,7 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
                 LEFT JOIN tax prelevements_obligatoires ON prelevements_obligatoires.id_transaction = t.id_transaction AND prelevements_obligatoires.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX . '
               WHERE YEAR(t.date_transaction) = :year
               AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
-              GROUP BY t.id_client
-              LIMIT 10';
+              GROUP BY t.id_client';
 
         $data = $dataBaseConnection->executeQuery($query, ['year' => $year])->fetchAll(\PDO::FETCH_ASSOC);
 
