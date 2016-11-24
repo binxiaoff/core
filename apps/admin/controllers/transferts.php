@@ -1059,6 +1059,7 @@ class transfertsController extends bootstrap
                 foreach ($loans->getLoansWithOngoingRepayments($originalLender->id_lender_account, \projects_status::$runningRepayment) as $loan) {
                     $loans->get($loan['id_loan']);
                     $this->transferLoan($loanTransfer, $loans, $originalLender, $newLender, $transferDocument, 'transfer_document');
+                    $this->transferLoanPdf($loans, $originalClient, $newOwner);
                     $this->transferRepaymentSchedule($loans, $repaymentSchedule, $newLender);
                     $loans->unsetData();
                     $numberLoans += 1;
@@ -1216,4 +1217,17 @@ class transfertsController extends bootstrap
         return $attachment;
     }
 
+    private function transferLoanPdf(\loans $loan, \clients $originalClient, \clients $newOwner)
+    {
+        /** @var \projects $project */
+        $project = $this->loadData('projects');
+        $project->get($loan->id_project, 'id_project');
+
+        $oldFilePath = $this->path . 'protected/pdf/contrat/contrat-' . $originalClient->hash . '-' . $loan->id_loan . '.pdf';
+        $newFilePath = $this->path . 'protected/pdf/contrat/contrat-' . $newOwner->hash . '-' . $loan->id_loan . '.pdf';
+
+        if (file_exists($oldFilePath)) {
+            rename($oldFilePath, $newFilePath);
+        }
+    }
 }
