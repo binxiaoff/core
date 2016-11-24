@@ -1,10 +1,9 @@
 <?php
 namespace Unilend\Bundle\TranslationBundle\Service;
 
-
 class SymfonyCache extends \Sonata\CacheBundle\Adapter\SymfonyCache
 {
-    public function flush(array $keys = array('all'))
+    public function flush(array $keys = ['all'])
     {
         $result = true;
 

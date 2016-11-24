@@ -9,6 +9,6 @@ class OverrideSonataSymfonyCacheClassPass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container)
     {
-        $container->getDefinition('sonata.cache.symfony')->setClass('Unilend\Bundle\TranslationBundle\Service\SymfonyCache');;
+        $container->getDefinition('sonata.cache.symfony')->setClass('Unilend\Bundle\TranslationBundle\Service\SymfonyCache');
     }
 }
