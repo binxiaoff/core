@@ -39,11 +39,24 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
         /** @var \clients $clients */
         $clients  = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('clients');
         $filePath = $this->getContainer()->getParameter('path.protected') . '/' . 'requete_revenus' . date('Ymd') . '.csv';
-        $row      = 1;
+
+        if (file_exists($filePath) ){
+            unlink($filePath);
+        }
+
+        /** @var \DateTime $yesterday */
+        $yesterday = new \DateTime('NOW - 1 day');
+        $yesterdayFilePath = $this->getContainer()->getParameter('path.protected') . '/' . 'requete_revenus' . $yesterday->format('Ymd') . '.csv';
+
+        if (file_exists($yesterdayFilePath) ){
+            unlink($yesterdayFilePath);
+        }
 
         /** @var \PHPExcel $csvFile */
         $csvFile     = new \PHPExcel();
         $activeSheet = $csvFile->setActiveSheetIndex(0);
+        $row         = 1;
+
         $activeSheet->setCellValueByColumnAndRow(0, $row, 'Code Entreprise');
         $activeSheet->setCellValueByColumnAndRow(1, $row, 'CodeBénéficiaire');
         $activeSheet->setCellValueByColumnAndRow(2, $row, 'CodeV');

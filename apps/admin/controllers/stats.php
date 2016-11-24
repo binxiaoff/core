@@ -756,7 +756,6 @@ class statsController extends bootstrap
         ob_clean();
         flush();
         readfile($filePath);
-        //unlink($filePath);
         exit;
     }
 
