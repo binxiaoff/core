@@ -30,9 +30,10 @@ EOF
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
-        $logger        = $this->getContainer()->get('logger');
-        $altares       = $this->getContainer()->get('unilend.service.altares');
+        $entityManager  = $this->getContainer()->get('unilend.service.entity_manager');
+        $logger         = $this->getContainer()->get('logger');
+        $altares        = $this->getContainer()->get('unilend.service.altares');
+        $projectManager = $this->getContainer()->get('unilend.service.project_manager');
 
         /** @var \settings $settings */
         $settings = $entityManager->getRepository('settings');
@@ -72,6 +73,10 @@ EOF
                     if (true === isset($lastBilan[0]['id_bilan'])) {
                         $project->id_dernier_bilan = $lastBilan[0]['id_bilan'];
                         $project->update();
+                    }
+
+                    if ($project->status < \projects_status::A_TRAITER){
+                        $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::A_TRAITER, $project);
                     }
                 } catch (\Exception $exception) {
                     if ($settingsAltaresStatus->value) {
