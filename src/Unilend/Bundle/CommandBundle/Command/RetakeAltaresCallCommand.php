@@ -119,6 +119,7 @@ EOF
 
                         if (true === isset($lastBilan[0]['id_bilan'])) {
                             $project->id_dernier_bilan = $lastBilan[0]['id_bilan'];
+                            $project->update();
                         }
 
                         $companyCreationDate = new \DateTime($company->date_creation);
@@ -135,8 +136,6 @@ EOF
                 }
 
                 $output->writeln('Project id :' . $project->id_project . '. status : ' . $project->status);
-
-                $project->update();
             }
         }
     }
