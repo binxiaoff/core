@@ -113,9 +113,11 @@ EOF
 
                         /** @var \companies_bilans $companyAccount */
                         $companyAccount = $entityManager->getRepository('companies_bilans');
+                        $lastBilan = $companyAccount->select('id_company = ' . $company->id_company, 'cloture_exercice_fiscal DESC', 0, 1);
 
-                        $project->id_dernier_bilan = $companyAccount->select('id_company = ' . $company->id_company, 'cloture_exercice_fiscal DESC', 0, 1)[0]['id_bilan'];
-
+                        if (true === isset($lastBilan[0]['id_bilan'])) {
+                            $project->id_dernier_bilan = $lastBilan[0]['id_bilan'];
+                        }
 
                         $companyCreationDate = new \DateTime($company->date_creation);
                         if ($companyCreationDate->diff(new \DateTime())->days < \projects::MINIMUM_CREATION_DAYS_PROSPECT) {
