@@ -89,7 +89,7 @@
                         {% endfor %}
                     {% else %}
                         {% if project.maxValidRate > project.minRate %}
-                            <form action="{{ path('place_bid', {'projectId' : project.projectId}) }}" method="post" class="project-single-form project-single-form-invest" data-bid-confirmation {% if app.session.flashBag.has('cipBid') is not empty and app.session.flashBag.has('bid_not_eligible_reason') == false and lender.bidResult is not defined %} data-bid-confirmation-show="true" {% endif %} data-formvalidation data-formvalidation-shownotifications="false" data-has-spinner="#bid-confirmation-submit">
+                            <form action="{{ path('place_bid', {'projectId' : project.projectId}) }}" method="post" class="project-single-form project-single-form-invest" data-bid-confirmation data-formvalidation data-formvalidation-shownotifications="false" data-has-spinner="#bid-confirmation-submit">
                                 <div class="row row-multi-col-sm">
                                     <div class="form-field col-sm-4">
                                         <div class="row">

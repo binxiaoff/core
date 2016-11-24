@@ -926,11 +926,6 @@ class ProjectsController extends Controller
             ]);
         }
 
-        // Deactivate CIP check
-//        return new JsonResponse([
-//            'validation' => false
-//        ]);
-
         $this->addFlash('cipBid', ['amount' => $amount, 'rate' => $rate, 'project' => $project->id_project]);
 
         $validationNeeded       = $cipManager->isCIPValidationNeeded($bid);
