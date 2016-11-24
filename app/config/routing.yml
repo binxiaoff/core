@@ -1,3 +1,7 @@
 unilend_front:
     resource: "@UnilendFrontBundle/Resources/config/routing.yml"
     prefix:   /
+
+sonata_cache_cache:
+    resource: '@SonataCacheBundle/Resources/config/routing/cache.xml'
+    prefix: /
