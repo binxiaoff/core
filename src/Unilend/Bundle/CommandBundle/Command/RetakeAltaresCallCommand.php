@@ -100,7 +100,7 @@ EOF
                     $settingsAltaresStatus->value = 1;
                     $settingsAltaresStatus->update();
 
-                    //mail($alertEmail, '[INFO] ALTARES is up', 'Date ' . date('Y-m-d H:i:s') . '. Altares is up now.');
+                    mail($alertEmail, '[INFO] ALTARES is up', 'Date ' . date('Y-m-d H:i:s') . '. Altares is up now.');
                 }
 
                 $project->retour_altares = $result->myInfo->codeRetour;
