@@ -524,11 +524,11 @@ class statsController extends bootstrap
         /** @var \transactions $transactions */
         $transactions = $this->loadData('transactions');
 
-        $clientList = $transactions->getClientsWithRepaymentTransactions(date('Y'));
+        $clientList = $transactions->getClientsWithLoanRelatedTransactions(date('Y'));
         $data = [];
 
         $filename = 'requete_beneficiaires' . date('Ymd');
-        $headers = ['Cbene', 'Nom', 'Qualité', 'NomJFille', 'Prénom', 'DateNaissance', 'DépNaissance', 'ComNaissance', 'LieuNaissance', 'NomMari', 'Siret', 'AdISO', 'Adresse', 'Voie', 'CodeCommune', 'Commune', 'CodePostal', 'Ville / nom pays', 'IdFiscal', 'PaysISO', 'Entité', 'ToRS', 'Plib', 'Tél', 'Banque', 'IBAN', 'BIC', 'EMAIL', 'Obs', ''];
+        $headers = ['id_client', 'Cbene', 'Nom', 'Qualité', 'NomJFille', 'Prénom', 'DateNaissance', 'DépNaissance', 'ComNaissance', 'LieuNaissance', 'NomMari', 'Siret', 'AdISO', 'Adresse', 'Voie', 'CodeCommune', 'Commune', 'CodePostal', 'Ville / nom pays', 'IdFiscal', 'PaysISO', 'Entité', 'ToRS', 'Plib', 'Tél', 'Banque', 'IBAN', 'BIC', 'EMAIL', 'Obs', ''];
 
         foreach ($clientList as $client) {
             $clients->get($client['id_client']);
@@ -621,6 +621,7 @@ class statsController extends bootstrap
         $birthDate = \DateTime::createFromFormat('Y-m-d', $clients->naissance);
 
         $data[] = [
+            $clients->id_client,
             $clients->getLenderPattern($clients->id_client),
             $clients->nom,
             $clients->civilite,
@@ -656,6 +657,7 @@ class statsController extends bootstrap
     private function addLegalEntityLineToBeneficiaryQueryData(&$data, \companies $company, \lenders_accounts $lenderAccount, \clients $clients, $fiscalAndLocationData)
     {
         $data[] = [
+            $clients->id_client,
             $clients->getLenderPattern($clients->id_client),
             $company->name,
             '',
