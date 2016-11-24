@@ -42,7 +42,6 @@ EOF
 
         $settingsAltaresStatus = $entityManager->getRepository('settings');
         $settingsAltaresStatus->get('Altares status', 'type');
-        $altaresStatus = $settingsAltaresStatus->value;
 
         /** @var LoggerInterface $logger */
         $logger = $this->getContainer()->get('logger');
@@ -60,10 +59,13 @@ EOF
 
         foreach ($projects as $projectId) {
             if ($project->get($projectId) && $company->get($project->id_company)) {
+                if (empty($company->siren)) {
+                    continue;
+                }
                 try {
                     $result  = $altares->getEligibility($company->siren);
                 } catch (\Exception $exception) {
-                    if ($altaresStatus) {
+                    if ($settingsAltaresStatus->value) {
                         $settingsAltaresStatus->value = 0;
                         $settingsAltaresStatus->update();
 
@@ -78,7 +80,7 @@ EOF
                 }
 
                 if (false === empty($result->exception)) {
-                    if ($altaresStatus) {
+                    if ($settingsAltaresStatus->value) {
                         $settingsAltaresStatus->value = 0;
                         $settingsAltaresStatus->update();
 
@@ -96,7 +98,7 @@ EOF
                     continue;
                 }
 
-                if (! $altaresStatus) {
+                if (! $settingsAltaresStatus->value) {
                     $settingsAltaresStatus->value = 1;
                     $settingsAltaresStatus->update();
 
