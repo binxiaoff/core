@@ -266,12 +266,12 @@ class clients extends clients_crud
             $where .= ' AND c.status LIKE "%' . $status . '%"';
         }
 
-        $result   = array();
+        $result   = [];
         $resultat = $this->bdd->query('
             SELECT c.*,
                 co.*
             FROM clients c
-            LEFT JOIN companies co ON c.id_client = co.id_client_owner
+              INNER JOIN companies co ON c.id_client = co.id_client_owner
             WHERE ' . $where . '
               AND c.type NOT IN (' . implode(',', [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER, \clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER]) .')
             GROUP BY c.id_client
