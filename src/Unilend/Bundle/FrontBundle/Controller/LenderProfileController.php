@@ -423,21 +423,26 @@ class LenderProfileController extends Controller
             /** @var \tax_type $taxType */
             $taxType = $this->get('unilend.service.entity_manager')->getRepository('tax_type');
             $taxType->get(\tax_type::TYPE_INCOME_TAX);
-            $templateData['clientAddress'] = $clientAddress->select('id_client = ' . $client->id_client)[0];
-            $templateData['currentYear'] = date('Y', time());
-            $templateData['lastYear']    = $templateData['currentYear'] - 1;
-            $templateData['nextYear']    = $templateData['currentYear'] + 1;
-            $templateData['taxExemptionRequestLimitDate'] = strftime('%d %B %Y', $lenderTaxExemption->getTaxExemptionDateRange()['taxExemptionRequestLimitDate']->getTimestamp());
-            $templateData['rateOfTaxDeductionAtSource'] = $taxType->rate;
-            $templateData['exemptions'] = $this->getExemptionHistory($lenderTaxExemption, $lenderAccount);
-            $this->addExonerationByDateToTemplate($lenderTaxExemption, $lenderAccount, $templateData);
-            $templateData['isEligible'] = $this->checkIfTaxExemptionIsPossible($lenderAccount);
+            $templateData['clientAddress']                = $clientAddress->select('id_client = ' . $client->id_client)[0];
+            $templateData['currentYear']                  = date('Y', time());
+            $templateData['lastYear']                     = $templateData['currentYear'] - 1;
+            $templateData['nextYear']                     = $templateData['currentYear'] + 1;
+            $taxExemptionDateRange                        = $lenderTaxExemption->getTaxExemptionDateRange();
+            $templateData['taxExemptionRequestLimitDate'] = strftime('%d %B %Y', $taxExemptionDateRange['taxExemptionRequestLimitDate']->getTimestamp());
+            $templateData['rateOfTaxDeductionAtSource']   = $taxType->rate;
+            $taxExemptionHistory                          = $this->getExemptionHistory($lenderTaxExemption, $lenderAccount);
+            $templateData['exemptions']                   = $taxExemptionHistory;
+            $isEligible                                   = $this->getTaxExemptionEligibility($lenderAccount);
+            $templateData['taxExemptionEligibility']      = $isEligible;
+            $templateData['declarationIsPossible']        = $this->checkIfTaxExemptionIsPossible($taxExemptionHistory, $taxExemptionDateRange, $isEligible);
         }
     }
 
     /**
      * @Route("/profile/person/identity-update", name="profile_person_identity_update")
+     * @param Request $request
      * @Method("POST")
+     * @return RedirectResponse
      */
     public function personFormAction(Request $request)
     {
@@ -1630,8 +1635,32 @@ class LenderProfileController extends Controller
         return $this->redirectToRoute('lender_profile_fiscal_information');
     }
 
+    /**
+     * Returns true if the declaration is possible, false otherwise
+     * @param array $taxExemptionHistory
+     * @param array $taxExemptionDateRange
+     * @param bool $isEligible
+     * @return bool
+     */
+    private function checkIfTaxExemptionIsPossible(array $taxExemptionHistory, array $taxExemptionDateRange, $isEligible)
+    {
+        $outOfDate = date('Y-m-d H:i:s') < $taxExemptionDateRange['taxExemptionRequestStartDate']->format('Y-m-d 00:00:00') ||
+                     date('Y-m-d H:i:s') >= $taxExemptionDateRange['taxExemptionRequestLimitDate']->format('Y-m-d 23:59:59');
 
-    private function checkIfTaxExemptionIsPossible(\lenders_accounts $lenderAccount)
+        if (false === empty($taxExemptionHistory)) {
+            $taxExemptionRequestDone = in_array(date('Y', time()) + 1, array_column($taxExemptionHistory, 'year'));
+        } else {
+            $taxExemptionRequestDone = false;
+        }
+
+        return (true === $isEligible && false === $outOfDate && false === $taxExemptionRequestDone);
+    }
+
+    /**
+     * @param \lenders_accounts $lenderAccount
+     * @return bool
+     */
+    private function getTaxExemptionEligibility(\lenders_accounts $lenderAccount)
     {
         try {
             $lenderInfo = $lenderAccount->getLenderTypeAndFiscalResidence($lenderAccount->id_lender_account);
@@ -1668,32 +1697,6 @@ class LenderProfileController extends Controller
             $result = [];
         }
         return $result;
-    }
-
-    private function addExonerationByDateToTemplate(\lender_tax_exemption $lenderTaxExemption, \lenders_accounts $lenderAccount, &$template)
-    {
-        $currentYear             = date('Y', time());
-        $lastYear                = $currentYear - 1;
-        $nextYear                = $currentYear + 1;
-        $taxExemptionDateRange   = $lenderTaxExemption->getTaxExemptionDateRange();
-
-        $template['afterDeadline'] = (
-            date('Y-m-d H:i:s') < $taxExemptionDateRange['taxExemptionRequestStartDate']->format('Y-m-d 00:00:00')
-            || date('Y-m-d H:i:s') >= $taxExemptionDateRange['taxExemptionRequestLimitDate']->format('Y-m-d 23:59:59'));
-
-        $taxExemptionHistory = $this->getExemptionHistory($lenderTaxExemption, $lenderAccount);
-
-        if (false === empty($this->taxExemptionHistory)) {
-            $yearList = array_column($taxExemptionHistory, 'year');
-
-            $template['nextTaxExemptionRequestDone']  = in_array($nextYear, $yearList);
-            $template['exemptedLastYear'] = in_array($lastYear, $yearList);
-            $template['taxExemptionRequestLimitDate'] = strftime('%d %B %Y', $taxExemptionDateRange['taxExemptionRequestLimitDate']->getTimestamp());
-        } else {
-            $template['exemptedLastYear'] = false;
-            $template['nextTaxExemptionRequestDone']  = false;
-            $template['taxExemptionRequestLimitDate'] = false;
-        }
     }
 
     /**
