@@ -20,7 +20,7 @@ class ProductAttributeManager
     public function __construct(EntityManager $entityManager, CacheItemPoolInterface $cachePool)
     {
         $this->entityManager = $entityManager;
-        $this->cachePool = $cachePool;
+        $this->cachePool     = $cachePool;
     }
 
     /**
@@ -38,7 +38,7 @@ class ProductAttributeManager
             /** @var \product_attribute_type $productAttrType */
             $productAttrType = $this->entityManager->getRepository('product_attribute_type');
             if ($productAttrType->get($attributeType, 'label')) {
-                $attrVars = $productAttr->select('id_product = ' . $product->id_product . ' AND id_type = ' . $productAttrType->id_type);
+                $attrVars          = $productAttr->select('id_product = ' . $product->id_product . ' AND id_type = ' . $productAttrType->id_type);
                 $productAttributes = [];
                 if (count($attrVars) === 1) {
                     $productAttributes = [array_values($attrVars)[0]['attribute_value']];

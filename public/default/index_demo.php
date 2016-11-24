@@ -6,7 +6,6 @@ if(getenv('SYMFONY_ENV') && 'prod' === getenv('SYMFONY_ENV')) {
 }
 
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 $loader = require __DIR__.'/../../app/autoload.php';
 include __DIR__ . '/../../core/controller.class.php';

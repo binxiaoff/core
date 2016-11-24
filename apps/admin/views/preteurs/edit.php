@@ -117,7 +117,7 @@
                 <td><?= $this->ficelle->formatNumber($this->avgPreteur) ?> €</td>
             </tr>
             <tr>
-                <th>Montant des intérêts :</th>
+                <th>Montant des intérêts (brut) :</th>
                 <td><?= $this->ficelle->formatNumber($this->sumRembInte) ?> €</td>
             </tr>
             <tr>

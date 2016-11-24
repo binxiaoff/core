@@ -41,24 +41,27 @@ class company_balance_type extends company_balance_type_crud
         return $this->bdd->fetch_array($this->bdd->query('SELECT * FROM company_balance_type WHERE ' . $field . ' = "' . $id . '"'), 0, 0) > 0;
     }
 
-    public function getAllByCode()
+    public function getAllByCode($taxFormTypeId)
     {
         $aCodes  = array();
-        $rResult = $this->bdd->query('SELECT * FROM company_balance_type ORDER BY code ASC');
 
-        while ($aResult = $this->bdd->fetch_assoc($rResult)) {
+        $query = 'SELECT * FROM company_balance_type WHERE id_company_tax_form_type = :id_tax_form_type ORDER BY code ASC';
+        $statement = $this->bdd->executeQuery($query, ['id_tax_form_type' => $taxFormTypeId]);
+
+        while ($aResult = $statement->fetch(\PDO::FETCH_ASSOC)) {
             $aCodes[$aResult['code']] = $aResult;
         }
 
         return $aCodes;
     }
 
-    public function getAllByType()
+    public function getAllByType($taxFormTypeId)
     {
         $aTypes  = array();
-        $rResult = $this->bdd->query('SELECT * FROM company_balance_type ORDER BY code ASC');
+        $query  = 'SELECT * FROM company_balance_type WHERE id_company_tax_form_type = :id_tax_form_type ORDER BY code ASC';
+        $statement = $this->bdd->executeQuery($query, ['id_tax_form_type' => $taxFormTypeId]);
 
-        while ($aResult = $this->bdd->fetch_assoc($rResult)) {
+        while ($aResult = $statement->fetch(\PDO::FETCH_ASSOC)) {
             $aTypes[$aResult['id_balance_type']] = $aResult;
         }
 

@@ -1,0 +1,18 @@
+<div id="modal-cip-questionnaire-prompt" class="modal-cip-questionnaire" data-modal data-modal-maxwidth="650">
+    <header class="modal-header">
+        <h4>{% trans %} project-detail_modal-cip-questionnaire-title {% endtrans %}</h4>
+    </header>
+    <div class="modal-body">
+        <p>{% trans %} project-detail_modal-cip-questionnaire-content {% endtrans %}</p>
+    </div>
+    <footer class="modal-footer">
+        <div class="btn-controls">
+            <a href="{{ path('cip_continue_questionnaire') }}" class="btn-primary btn-shape-md">
+                {% trans %} project-detail_modal-cip-questionnaire-confirm {% endtrans %}
+            </a>
+            <a href="javascript:;" class="btn-primary btn-shape-md" data-modal-doactioncancel>
+                {% trans %} project-detail_modal-cip-questionnaire-cancel {% endtrans %}
+            </a>
+        </div>
+    </footer>
+</div>

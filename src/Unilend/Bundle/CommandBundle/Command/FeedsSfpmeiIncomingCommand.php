@@ -516,99 +516,94 @@ EOF
         /** @var \bank_lines $bank */
         $bank = $this->oEntityManager->getRepository('bank_lines');
 
-        preg_match_all('#[0-9]+#', $motif, $extract);
+        if (
+            preg_match('/([0-9]{6}) ?[A-Z]+/', $motif, $matches)
+            && $clients->get((int) $matches[1], 'id_client')
+            && $clients->isLenderPattern($clients->id_client, $motif)
+            && $lenders->get($clients->id_client, 'id_client_owner')
+            && false === $transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND id_virement')
+        ) {
+            $receptions->get($receptions->id_reception, 'id_reception');
+            $receptions->id_client = $clients->id_client;
+            $receptions->status_bo = 2;
+            $receptions->remb      = 1;
+            $receptions->update();
 
-        foreach ($extract[0] as $sNumber) {
-            if ($clients->get((int) $sNumber, 'id_client')) {
-                $sLenderPattern = str_replace(' ', '', $clients->getLenderPattern($clients->id_client));
+            if (1 != $lenders->status) {
+                $lenders->status = 1;
+                $lenders->update();
+            }
 
-                if (
-                    (false !== strpos(str_replace(' ', '', $motif), $sLenderPattern) || true === $clients->isLenderPattern($clients->id_client, str_replace(' ', '', $motif)))
-                    && false === $transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND id_virement')
-                ) {
-                    $receptions->get($receptions->id_reception, 'id_reception');
-                    $receptions->id_client = $clients->id_client;
-                    $receptions->status_bo = 2;
-                    $receptions->remb      = 1;
-                    $receptions->update();
+            $transactions->id_virement      = $receptions->id_reception;
+            $transactions->id_client        = $lenders->id_client_owner;
+            $transactions->montant          = $receptions->montant;
+            $transactions->id_langue        = 'fr';
+            $transactions->date_transaction = date('Y-m-d H:i:s');
+            $transactions->status           = \transactions::PAYMENT_STATUS_OK;
+            $transactions->etat             = \transactions::STATUS_VALID;
+            $transactions->type_transaction = \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT;
+            $transactions->ip_client        = '';
+            $transactions->create();
 
-                    $lenders->get($clients->id_client, 'id_client_owner');
-                    $lenders->status = 1;
-                    $lenders->update();
+            $wallets->id_lender                = $lenders->id_lender_account;
+            $wallets->id_transaction           = $transactions->id_transaction;
+            $wallets->amount                   = $receptions->montant;
+            $wallets->type_financial_operation = \wallets_lines::TYPE_MONEY_SUPPLY;
+            $wallets->type                     = \wallets_lines::PHYSICAL;
+            $wallets->status                   = \wallets_lines::STATUS_VALID;
+            $wallets->create();
 
-                    $transactions->id_virement      = $receptions->id_reception;
-                    $transactions->id_client        = $lenders->id_client_owner;
-                    $transactions->montant          = $receptions->montant;
-                    $transactions->id_langue        = 'fr';
-                    $transactions->date_transaction = date('Y-m-d H:i:s');
-                    $transactions->status           = \transactions::PAYMENT_STATUS_OK;
-                    $transactions->etat             = \transactions::STATUS_VALID;
-                    $transactions->type_transaction = \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT;
-                    $transactions->ip_client        = '';
-                    $transactions->create();
+            $bank->id_wallet_line    = $wallets->id_wallet_line;
+            $bank->id_lender_account = $lenders->id_lender_account;
+            $bank->status            = 1;
+            $bank->amount            = $receptions->montant;
+            $bank->create();
 
-                    $wallets->id_lender                = $lenders->id_lender_account;
-                    $wallets->type_financial_operation = 30; // alimenation
-                    $wallets->id_transaction           = $transactions->id_transaction;
-                    $wallets->type                     = 1; // physique
-                    $wallets->amount                   = $receptions->montant;
-                    $wallets->status                   = 1;
-                    $wallets->create();
+            if ($clients->etape_inscription_preteur < 3) {
+                $clients->etape_inscription_preteur = 3;
+                $clients->update();
+            }
 
-                    $bank->id_wallet_line    = $wallets->id_wallet_line;
-                    $bank->id_lender_account = $lenders->id_lender_account;
-                    $bank->status            = 1;
-                    $bank->amount            = $receptions->montant;
-                    $bank->create();
+            if ($clients->status == 1) {
+                $notifications->type      = \notifications::TYPE_BANK_TRANSFER_CREDIT;
+                $notifications->id_lender = $lenders->id_lender_account;
+                $notifications->amount    = $receptions->montant;
+                $notifications->create();
 
-                    if ($clients->etape_inscription_preteur < 3) {
-                        $clients->etape_inscription_preteur = 3;
-                        $clients->update();
-                    }
+                $clients_gestion_mails_notif->id_client       = $lenders->id_client_owner;
+                $clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT;
+                $clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
+                $clients_gestion_mails_notif->id_notification = $notifications->id_notification;
+                $clients_gestion_mails_notif->id_transaction  = $transactions->id_transaction;
+                $clients_gestion_mails_notif->create();
 
-                    if ($clients->status == 1) {
-                        $notifications->type      = \notifications::TYPE_BANK_TRANSFER_CREDIT;
-                        $notifications->id_lender = $lenders->id_lender_account;
-                        $notifications->amount    = $receptions->montant;
-                        $notifications->create();
+                if ($clients_gestion_notifications->getNotif($lenders->id_client_owner, \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT, 'immediatement')) {
+                    $clients_gestion_mails_notif->get($clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
+                    $clients_gestion_mails_notif->immediatement = 1;
+                    $clients_gestion_mails_notif->update();
 
-                        $clients_gestion_mails_notif->id_client       = $lenders->id_client_owner;
-                        $clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT;
-                        $clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
-                        $clients_gestion_mails_notif->id_notification = $notifications->id_notification;
-                        $clients_gestion_mails_notif->id_transaction  = $transactions->id_transaction;
-                        $clients_gestion_mails_notif->create();
+                    $sUrl = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
+                    $sStaticUrl = $this->getContainer()->get('assets.packages')->getUrl('');
 
-                        if ($clients_gestion_notifications->getNotif($lenders->id_client_owner, \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT, 'immediatement') == true) {
-                            $clients_gestion_mails_notif->get($clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
-                            $clients_gestion_mails_notif->immediatement = 1;
-                            $clients_gestion_mails_notif->update();
+                    $varMail = array(
+                        'surl'            => $sStaticUrl,
+                        'url'             => $sUrl,
+                        'prenom_p'        => $clients->prenom,
+                        'fonds_depot'     => $oFicelle->formatNumber(bcdiv($receptions->montant, 100, 2)),
+                        'solde_p'         => $oFicelle->formatNumber($transactions->getSolde($receptions->id_client)),
+                        'motif_virement'  => $clients->getLenderPattern($clients->id_client),
+                        'projets'         => $sUrl . '/projets-a-financer',
+                        'gestion_alertes' => $sUrl . '/profile',
+                        'lien_fb'         => $sFacebookLink,
+                        'lien_tw'         => $sTwitterLink
+                    );
 
-                            $sUrl = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
-                            $sStaticUrl = $this->getContainer()->get('assets.packages')->getUrl('');
-
-                            $varMail = array(
-                                'surl'            => $sStaticUrl,
-                                'url'             => $sUrl,
-                                'prenom_p'        => $clients->prenom,
-                                'fonds_depot'     => $oFicelle->formatNumber(bcdiv($receptions->montant, 100, 2)),
-                                'solde_p'         => $oFicelle->formatNumber($transactions->getSolde($receptions->id_client)),
-                                'motif_virement'  => $sLenderPattern,
-                                'projets'         => $sUrl . '/projets-a-financer',
-                                'gestion_alertes' => $sUrl . '/profile',
-                                'lien_fb'         => $sFacebookLink,
-                                'lien_tw'         => $sTwitterLink
-                            );
-
-                            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                            $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('preteur-alimentation', $varMail);
-                            $message->setTo($clients->email);
-                            $mailer = $this->getContainer()->get('mailer');
-                            $mailer->send($message);
-                        }
-                    }
+                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('preteur-alimentation', $varMail);
+                    $message->setTo($clients->email);
+                    $mailer = $this->getContainer()->get('mailer');
+                    $mailer->send($message);
                 }
-                break;
             }
         }
     }

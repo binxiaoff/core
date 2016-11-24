@@ -37,10 +37,12 @@ class ContentManager
             if ($block->get('partenaires', 'slug')) {
                 $elementsId = array_column($elements->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'ordre ASC'), 'id_element');
                 foreach ($blockElement->select('status = 1 AND id_bloc = ' . $block->id_bloc, 'FIELD(id_element, ' . implode(', ', $elementsId) . ') ASC') as $element) {
-                    $partners[] = [
-                        'alt' => $element['complement'],
-                        'src' => $element['value']
-                    ];
+                    if (false === empty($element['value'])) {
+                        $partners[] = [
+                            'alt' => $element['complement'],
+                            'src' => $element['value']
+                        ];
+                    }
                 }
             }
 

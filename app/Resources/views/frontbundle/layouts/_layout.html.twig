@@ -1,5 +1,4 @@
 {# Basic Page Layout #}
-{% set bodyClassNames = '' %}
 
 <!DOCTYPE html>
 <!--[if lt IE 9]><html lang="{{ app.request.locale }}" class="lt-ie9 no-js"><![endif]-->
@@ -60,7 +59,7 @@
             {% endif %}
 
             {% block siteFooter %}
-                {{ render(controller('UnilendFrontBundle:Main:footer')) }}
+                {{ render(controller('UnilendFrontBundle:Main:footer', {'route': app.request.attributes.get('_route')})) }}
             {% endblock %}
         </div>
 

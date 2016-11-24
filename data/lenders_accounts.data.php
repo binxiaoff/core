@@ -213,7 +213,7 @@ class lenders_accounts extends lenders_accounts_crud
         if ($lenderId) {
             $sQuery = "SELECT c.type FROM lenders_accounts la INNER JOIN clients c ON c.id_client =  la.id_client_owner WHERE la.id_lender_account = :lenderId";
             try {
-                $statement = $this->bdd->executeQuery($sQuery, array('lenderId' => $lenderId), array(), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)));
+                $statement = $this->bdd->executeQuery($sQuery, ['lenderId' => $lenderId], ['lenderId' => \PDO::PARAM_INT], new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)));
                 $result    = $statement->fetchAll(PDO::FETCH_ASSOC);
                 $statement->closeCursor();
 

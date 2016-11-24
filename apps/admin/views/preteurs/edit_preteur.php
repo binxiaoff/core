@@ -89,13 +89,21 @@
                     </td>
                     <td colspan="2" rowspan="6" style="vertical-align: top">
                         <?php if (false === in_array($this->iNextYear, $this->aExemptionYears)) : ?>
-                            <input type="checkbox" id="tax_exemption[<?= $this->iNextYear ?>]" name="tax_exemption[<?= $this->iNextYear ?>]" value="1">
-                            <label for="tax_exemption[<?= $this->iNextYear ?>]"><?= $this->iNextYear ?></label>
+                            <a id="confirm_exemption" href="<?= $this->lurl ?>/thickbox/confirm_tax_exemption/<?= $this->iNextYear ?>/check" class="thickbox cboxElement">
+                                <input type="checkbox" id="tax_exemption_<?= $this->iNextYear ?>" name="tax_exemption[<?= $this->iNextYear ?>]" value="1">
+                            </a>
+                            <label for="tax_exemption_<?= $this->iNextYear ?>"><?= $this->iNextYear ?></label>
                             <br>
                         <?php endif; ?>
                         <?php foreach ($this->aExemptionYears as $iExemptionYear) : ?>
-                            <input type="checkbox" id="tax_exemption[<?= $iExemptionYear ?>]" name="tax_exemption[<?= $iExemptionYear ?>]" value="1" checked<?php if ($this->iNextYear != $iExemptionYear) : ?> disabled<?php endif; ?>>
-                            <label for="tax_exemption[<?= $iExemptionYear ?>]"><?= $iExemptionYear ?></label>
+                            <?php if ($this->iNextYear == $iExemptionYear) : ?>
+                            <a id="confirm_exemption" href="<?= $this->lurl ?>/thickbox/confirm_tax_exemption/<?= $iExemptionYear ?>/uncheck" class="thickbox cboxElement">
+                                <input type="checkbox" id="tax_exemption_<?= $iExemptionYear ?>" name="tax_exemption[<?= $iExemptionYear ?>]" value="1" checked>
+                            </a>
+                            <?php else: ?>
+                                <input type="checkbox" id="tax_exemption_<?= $iExemptionYear ?>" name="tax_exemption[<?= $iExemptionYear ?>]" value="1" checked disabled>
+                            <?php endif; ?>
+                            <label for="tax_exemption_<?= $iExemptionYear ?>"><?= $iExemptionYear ?></label>
                             <br>
                         <?php endforeach; ?>
                     </td>
@@ -661,6 +669,7 @@
                     list-style: disc;
                 }
             </style>
+            <!-- Lender tax country history -->
             <?php
             if (false === empty($this->aTaxationCountryHistory)): ?>
                 <table class="tablesorter histo_status_client">
@@ -678,6 +687,7 @@
                     <?php endif; ?>
                 </table>
             <?php endif; ?>
+            <!-- Lender status history -->
             <?php if (false === empty($this->lActions)) : ?>
                 <style>
                     .histo_status_client li {
@@ -761,6 +771,25 @@
                     }
                 }
                 ?>
+                </table>
+            <?php endif; ?>
+            <!-- Lender tax exemption history -->
+            <?php if (false === empty($this->taxExemptionUserHistoryAction)): ?>
+                <table class="tablesorter histo_status_client">
+                    <?php foreach ($this->taxExemptionUserHistoryAction as $actions): ?>
+                        <?php foreach ($actions['modifications'] as $action): ?>
+                            <tr>
+                                <td>Dispense de prélèvement fiscal <b>année <?= $action['year'] ?></b>.
+                                    <?php if ('adding' === $action['action']): ?>
+                                        Ajoutée
+                                    <?php elseif ('deletion' === $action['action']): ?>
+                                        Supprimée
+                                    <?php endif; ?>
+                                    le <?= \DateTime::createFromFormat('Y-m-d H:i:s', $actions['date'])->format('d/m/Y H:i:s') ?> par <?= $actions['user'] ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endforeach; ?>
                 </table>
             <?php endif; ?>
         </div>
