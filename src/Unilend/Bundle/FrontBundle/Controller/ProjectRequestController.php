@@ -1303,7 +1303,6 @@ class ProjectRequestController extends Controller
         $message      = $translator->trans('project-request_end-page-not-entitled-message');
         $title        = $translator->trans('project-request_end-page-success-title');
         $subtitle     = $translator->trans('project-request_end-page-success-subtitle');
-        $reasonsTrans = [];
 
         switch ($this->project->status) {
             case \projects_status::ABANDON:
@@ -1343,31 +1342,26 @@ class ProjectRequestController extends Controller
                 $projectStatusHistory->loadLastProjectHistory($this->project->id_project);
 
                 $rejectReasons = explode(',', $projectStatusHistory->content);
-                foreach ($rejectReasons as $reason) {
-                    switch ($reason) {
-                        case \projects_status::NON_ELIGIBLE_REASON_PROCEEDING :
-                            $reasonsTrans[] = $translator->trans('project-request_end-page-collective-proceeding-message');
-                            break;
-                        case \projects_status::NON_ELIGIBLE_REASON_INACTIVE :
-                        case \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN :
-                            $reasonsTrans[] = $translator->trans('project-request_end-page-no-siren-message');
-                            break;
-                        case \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK :
-                        case \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES :
-                        case \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL :
-                        case \projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER :
-                            $reasonsTrans[] = $translator->trans('project-request_end-page-negative-operating-result-message');
-                            break;
-                        case \projects_status::NON_ELIGIBLE_REASON_PRODUCT_NON_FOUND :
-                            $reasonsTrans[] = $translator->trans('project-request_end-page-product-not-found-message');
-                            break;
-                        default;
-                            continue;
-                            break;
-                    }
-                }
-                if (empty($message)) {
-                    $reasonsTrans[] = $translator->trans('project-request_end-page-external-rating-rejection-default-message');
+
+                // Display only one reason (priority defined in TST-51)
+                if (in_array(\projects_status::NON_ELIGIBLE_REASON_PROCEEDING, $rejectReasons)) {
+                    $message = $translator->trans('project-request_end-page-collective-proceeding-message');
+                } else if (
+                    in_array(\projects_status::NON_ELIGIBLE_REASON_INACTIVE, $rejectReasons)
+                    || in_array(\projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN, $rejectReasons)
+                ) {
+                    $message = $translator->trans('project-request_end-page-no-siren-message');
+                } else if (
+                    in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK, $rejectReasons)
+                    || in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES, $rejectReasons)
+                    || in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL, $rejectReasons)
+                    || in_array(\projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER, $rejectReasons)
+                ) {
+                    $message = $translator->trans('project-request_end-page-no-siren-message');
+                } else if (in_array(\projects_status::NON_ELIGIBLE_REASON_PRODUCT_NON_FOUND, $rejectReasons)) {
+                    $message = $translator->trans('project-request_end-page-product-not-found-message');
+                } else {
+                    $message = $translator->trans('project-request_end-page-external-rating-rejection-default-message');
                 }
                 break;
         }
@@ -1375,7 +1369,6 @@ class ProjectRequestController extends Controller
         $template = [
             'addMoreFiles'   => $addMoreFiles,
             'message'        => $message,
-            'rejectReasons'  => $reasonsTrans,
             'title'          => $title,
             'subtitle'       => $subtitle,
             'project'        => [
