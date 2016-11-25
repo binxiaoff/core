@@ -228,7 +228,6 @@
             </div>
         </div>
         <div class="pageBreakBefore" style="margin-top: 40px;padding-top: 20px;">
-            <h3 class="pink">DERNIER BILAN CERTIFIE SINCERE DE L'EMETTEUR</h3>
             <div class="list">
                 <ul>
                     <li>
