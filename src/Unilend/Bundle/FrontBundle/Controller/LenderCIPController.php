@@ -253,7 +253,7 @@ class LenderCIPController extends Controller
             $request->getSession()->getFlashBag()->remove('cipBid');
         }
 
-        return $this->redirectToRoute('cip_index');
+        return $this->redirectToRoute('lender_dashboard');
     }
 
     /**
