@@ -75,9 +75,15 @@
                                         {% if subtitle is not empty %}
                                             <h3 class="h3">{{ subtitle|raw }}</h3>
                                         {% endif %}
-
-                                        <p>{{ message|raw }}</p>
-
+                                        {% if rejectReasons is not empty %}
+                                            {% trans %} project-request_reject-reason-beginning {% endtrans %}
+                                            {% for paraph in rejectReasons %}
+                                                <p>{{ paraph|raw }}</p>
+                                            {% endfor %}
+                                            {% trans %} project-request_reject-reason-ending {% endtrans %}
+                                        {% else %}
+                                            <p>{{ message|raw }}</p>
+                                        {% endif %}
                                         {% if addMoreFiles %}
                                             <p><a href="{{ path('project_request_files', {'hash' : project.hash}) }}" class="link">{% trans %} project-request_end-page-add-other-files-link {% endtrans %}</a></p>
                                         {% endif %}

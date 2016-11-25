@@ -62,10 +62,14 @@ EOF
                 try {
                     $result  = $altares->isEligible($project);
                     $altares->setCompanyData($company);
+                    $altares->setProjectData($project);
                     if (false === $result['eligible']) {
+                        if ($project->status != \projects_status::NOTE_EXTERNE_FAIBLE) {
+                            $motif = implode(',', $result['reason']);
+                            $projectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $motif);
+                        }
                         continue;
                     }
-                    $altares->setProjectData($project);
                     $altares->setCompanyBalance($company);
 
                     $lastBilan = $companyAccount->select('id_company = ' . $company->id_company, 'cloture_exercice_fiscal DESC', 0, 1);
@@ -85,14 +89,11 @@ EOF
 
                         $logger->error(
                             $exception->getMessage(),
-                            ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $this->company->siren]
+                            ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $company->siren]
                         );
 
                         mail($alertEmail, '[ALERTE] Altares is down', 'Date ' . date('Y-m-d H:i:s') . '. ' . $exception->getMessage());
                     }
-
-                    $project->retour_altares = Altares::RESPONSE_CODE_WS_ERROR;
-                    $project->update();
                 }
 
                 if (! $settingsAltaresStatus->value) {

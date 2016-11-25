@@ -18,11 +18,6 @@ class Altares
     const RESPONSE_CODE_ELIGIBLE                       = 8;
     const RESPONSE_CODE_NO_ANNUAL_ACCOUNTS             = 9;
 
-    const NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES = 'negative_raw_operating_incomes';
-    const NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK         = 'negative_capital_stock';
-    const NON_ELIGIBLE_REASON_COLLECTIVE_PROCEEDING          = 'collective_proceeding';
-    const NON_ELIGIBLE_REASON_LOW_SCORE                      = 'low_score';
-
     const THRESHOLD_SCORE = '3';
 
     /**
@@ -194,7 +189,6 @@ class Altares
         }
 
         $oProject->id_company_rating_history = $oCompanyRatingHistory->id_company_rating_history;
-        $oProject->retour_altares = $oEligibilityInfo->codeRetour;
         $oProject->update();
     }
 
@@ -307,34 +301,34 @@ class Altares
         $eligible = true;
         $reason   = [];
 
+        if ($result->myInfo->codeRetour == self::RESPONSE_CODE_INACTIVE) {
+            $eligible = false;
+            $reason[] = \projects_status::NON_ELIGIBLE_REASON_INACTIVE;
+        }
+
+        if ($result->myInfo->codeRetour == self::RESPONSE_CODE_UNKNOWN_SIREN) {
+            $eligible = false;
+            $reason[] = \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN;
+        }
+
         if ($result->myInfo->codeRetour == self::RESPONSE_CODE_NEGATIVE_CAPITAL_STOCK) {
             $eligible = false;
-            $reason[] = self::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK;
+            $reason[] = \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK;
         }
 
         if ($result->myInfo->codeRetour == self::RESPONSE_CODE_NEGATIVE_RAW_OPERATING_INCOMES) {
             $eligible = false;
-            $reason[] = self::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES;
+            $reason[] = \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES;
         }
 
-        if ('OUI' === $result->myInfo->identite->procedureCollective) {
+        if ($result->myInfo->codeRetour == self::RESPONSE_CODE_PROCEDURE || 'OUI' === $result->myInfo->identite->procedureCollective) {
             $eligible = false;
-            $reason[] = self::NON_ELIGIBLE_REASON_COLLECTIVE_PROCEEDING;
+            $reason[] = \projects_status::NON_ELIGIBLE_REASON_PROCEEDING;
         }
 
         if (self::THRESHOLD_SCORE >= $result->myInfo->score->scoreVingt) {
             $eligible = false;
-            $reason[] = self::NON_ELIGIBLE_REASON_LOW_SCORE;
-        }
-
-        if ($reason) {
-            $motif = implode(',', $reason);
-        } else {
-            $motif = $result->myInfo->motif;
-        }
-
-        if (false === $eligible && $project->status != \projects_status::NOTE_EXTERNE_FAIBLE) {
-            $this->projectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::NOTE_EXTERNE_FAIBLE, $project, 0, $motif);
+            $reason[] = \projects_status::NON_ELIGIBLE_REASON_LOW_SCORE;
         }
 
         return ['eligible' => $eligible, 'reason' => $reason];
