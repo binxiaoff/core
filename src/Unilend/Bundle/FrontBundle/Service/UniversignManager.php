@@ -41,7 +41,7 @@ class UniversignManager
         $this->logger->notice('Proxy status: ' . $proxy->status . ' - Creation of PDF to send to Universign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
 
         $soapClient  = new Client($this->universignURL);
-        $soapRequest = new Request('requester.requestTransaction', [new Value($this->getPdfParameters('proxy', $proxy->id_mandat), "struct")]);
+        $soapRequest = new Request('requester.requestTransaction', [new Value($this->getPdfParameters('proxy', $proxy->id_pouvoir), "struct")]);
         $soapResult  = $soapClient->send($soapRequest);
 
         $this->logger->notice('Proxy sent to Universign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
@@ -234,6 +234,10 @@ class UniversignManager
     {
         /** @var \clients $client */
         $client = $this->entityManager->getRepository('clients');
+        /** @var \projects $project */
+        $project = $this->entityManager->getRepository('projects');
+        /** @var \companies $company */
+        $company = $this->entityManager->getRepository('companies');
 
         switch ($documentType) {
             case 'mandate':
@@ -249,7 +253,9 @@ class UniversignManager
                 /** @var \projects_pouvoir $proxy */
                 $proxy = $this->entityManager->getRepository('projects_pouvoir');
                 $proxy->get($documentId);
-                $client->get($proxy->id_client, 'id_client');
+                $project->get($proxy->id_project);
+                $company->get($project->id_company);
+                $client->get($company->id_client_owner, 'id_client');
                 $documentName = $proxy->name;
                 $routeName    = 'proxy_signature_status';
                 $doc_name     = $this->rootDir . '/../protected/pdf/pouvoir/' . $documentName;
@@ -258,11 +264,7 @@ class UniversignManager
                 /** @var \project_cgv $tos */
                 $tos = $this->entityManager->getRepository('project_cgv');
                 $tos->get($documentId);
-                /** @var \projects $project */
-                $project = $this->entityManager->getRepository('projects');
                 $project->get($tos->id_project);
-                /** @var \companies $company */
-                $company = $this->entityManager->getRepository('companies');
                 $company->get($project->id_company);
                 $client->get($company->id_client_owner, 'id_client');
                 $documentName = $tos->name;
