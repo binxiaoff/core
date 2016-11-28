@@ -6,8 +6,6 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\Routing\RouterInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
-use Cache\Adapter\Memcache\MemcacheCachePool;
-use Unilend\librairies\CacheKeys;
 use PhpXmlRpc\Client;
 use PhpXmlRpc\Request;
 use PhpXmlRpc\Value;
@@ -16,8 +14,6 @@ class UniversignManager
 {
     /** @var  EntityManager */
     private $entityManager;
-    /** @var MemcacheCachePool */
-    private $cachePool;
     /** @var Router */
     private $router;
     /** @var LoggerInterface */
@@ -27,10 +23,9 @@ class UniversignManager
     /** @var string */
     private $universignURL;
 
-    public function __construct(EntityManager $entityManager, MemcacheCachePool $cachePool, RouterInterface $router, LoggerInterface $logger, $universignURL, $rootDir)
+    public function __construct(EntityManager $entityManager, RouterInterface $router, LoggerInterface $logger, $universignURL, $rootDir)
     {
         $this->entityManager = $entityManager;
-        $this->cachePool     = $cachePool;
         $this->router        = $router;
         $this->logger        = $logger;
         $this->universignURL = $universignURL;
@@ -59,11 +54,7 @@ class UniversignManager
 
             return true;
         } else {
-            /** @var \settings $settings */
-            $settings = $this->entityManager->getRepository('settings');
-            $settings->get('DebugMailIt', 'type');
-            $debugMailITAddress = $settings->value;
-            mail($debugMailITAddress, 'unilend erreur universign reception', 'id mandat : ' . $proxy->id_pouvoir . ' | An error occurred: Code: ' . $soapResult->faultCode() . ' Reason: "' . $soapResult->faultString());
+            $this->mailToIT($proxy->id_pouvoir, 'proxy', $proxy->id_project, $soapResult);
 
             return false;
         }
@@ -103,13 +94,7 @@ class UniversignManager
                 $this->logger->notice('Proxy OK and mandate not signed (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
             }
         } else {
-            $this->logger->error('Proxy NOK (project ' . $proxy->id_project . ') - Error code: ' . $soapResult->faultCode() . ' - Error message: ' . $soapResult->faultString(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
-
-            /** @var \settings $setting */
-            $setting = $this->entityManager->getRepository('settings');
-            $setting->get('DebugMailIt', 'type');
-            $debugMailITAddress = $setting->value;
-            mail($debugMailITAddress, 'unilend erreur universign reception', 'id pouvoir : ' . $proxy->id_pouvoir . ' | An error occurred: Code: ' . $soapResult->faultCode() . ' Reason: "' . $soapResult->faultString());
+            $this->mailToIT($proxy->id_pouvoir, 'proxy', $proxy->id_project, $soapResult);
         }
     }
 
@@ -145,11 +130,7 @@ class UniversignManager
             return true;
         }
 
-        /** @var \settings $settings */
-        $settings = $this->entityManager->getRepository('settings');
-        $settings->get('DebugMailIt', 'type');
-        $debugMailITAddress = $settings->value;
-        mail($debugMailITAddress, 'unilend erreur universign reception', ' creatioon mandat id mandat : ' . $mandate->id_mandat . ' | An error occurred: Code: ' . $soapResult->faultCode() . ' Reason: "' . $soapResult->faultString());
+        $this->mailToIT($mandate->id_mandat, 'mandat', $mandate->id_project, $soapResult);
 
         return false;
     }
@@ -157,7 +138,7 @@ class UniversignManager
     /**
      * @param \clients_mandats $mandate
      */
-    public function signMandate(\clients_mandats $mandate) // TODO : verify access conditions to this
+    public function signMandate(\clients_mandats $mandate)
     {
         $soapClient  = new Client($this->universignURL);
         $soapRequest = new Request('requester.getDocumentsByTransactionId', [new Value($mandate->id_universign, "string")]);
@@ -187,13 +168,60 @@ class UniversignManager
                 $this->logger->notice('Mandate OK - proxy not signed (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
             }
         } else {
-            /** @var \settings $settings */
-            $settings = $this->entityManager->getRepository('settings');
-            $settings->get('DebugMailIt', 'type');
-            $sDestinatairesDebug = $settings->value;
+            $this->mailToIT($mandate->id_mandat, 'mandate', $mandate->id_project, $soapResult);
+        }
+    }
 
-            $this->logger->error('Return Universign mandate NOK (project ' . $mandate->id_project . ') - Errorr code : ' . $soapResult->faultCode() . ' - Error Message : ' . $soapResult->faultString(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
-            mail($sDestinatairesDebug, 'unilend erreur universign reception', 'id mandat : ' . $mandate->id_mandat . ' | An error occurred: Code: ' . $soapResult->faultCode() . ' Reason: "' . $soapResult->faultString());
+    /**
+     * @param \project_cgv $tos
+     * @return bool
+     */
+    public function createTOS(\project_cgv $tos)
+    {
+        $this->logger->notice('TOS status: ' . $tos->status . ' - Creation of PDF to send to Universign (project ' . $tos->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $tos->id_project]);
+
+        $soapClient  = new Client($this->universignURL);
+        $soapRequest = new Request('requester.requestTransaction', [new Value($this->getPdfParameters('tos', $tos->id), "struct")]);
+        $soapResult  = $soapClient->send($soapRequest);
+
+        $this->logger->notice('Tos sent to Universign (project ' . $tos->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $tos->id_project]);
+
+        if (! $soapResult->faultCode()) {
+            $tos->id_universign  = $soapResult->value()->structMem('id')->scalarVal();
+            $tos->url_universign = $soapResult->value()->structMem('url')->scalarVal();
+            $tos->update();
+
+            return true;
+        }
+
+        $this->mailToIT($tos->id_mandat, 'tos', $tos->id_project, $soapResult);
+
+        return false;
+    }
+
+    /**
+     * @param \project_cgv $tos
+     */
+    public function signTos(\project_cgv $tos)
+    {
+        $soapClient  = new Client($this->universignURL);
+        $soapRequest = new Request('requester.getDocumentsByTransactionId', [new Value($tos->id_universign, "string")]);
+        $soapResult  = $soapClient->send($soapRequest);
+
+        $this->logger->notice('Tos sent to Universign (project ' . $tos->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $tos->id_project]);
+
+        if (! $soapResult->faultCode()) {
+            $doc['name']    = $soapResult->value()->arrayMem(0)->structMem('name')->scalarVal();
+            $doc['content'] = $soapResult->value()->arrayMem(0)->structMem('content')->scalarVal();
+
+            file_put_contents($this->rootDir . '/../protected/pdf/cgv_emprunteurs/' . $doc['name'], $doc['content']);
+            $tos->status = \project_cgv::STATUS_SIGN_UNIVERSIGN;
+            $tos->update();
+
+            $this->logger->notice('Tos OK (project ' . $tos->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $tos->id_project]);
+
+        } else {
+            $this->mailToIT($tos->id, 'tos', $tos->id_project, $soapResult);
         }
     }
 
@@ -202,15 +230,16 @@ class UniversignManager
      * @param string $documentId
      * @return array
      */
-    public function getPdfParameters($documentType, $documentId)
+    private function getPdfParameters($documentType, $documentId)
     {
+        /** @var \clients $client */
+        $client = $this->entityManager->getRepository('clients');
+
         switch ($documentType) {
             case 'mandate':
                 /** @var \projects_pouvoir $mandate */
                 $mandate = $this->entityManager->getRepository('clients_mandats');
                 $mandate->get($documentId);
-                /** @var \clients $client */
-                $client = $this->entityManager->getRepository('clients');
                 $client->get($mandate->id_client, 'id_client');
                 $documentName = $mandate->name;
                 $routeName    = 'mandate_signature_status';
@@ -220,28 +249,41 @@ class UniversignManager
                 /** @var \projects_pouvoir $proxy */
                 $proxy = $this->entityManager->getRepository('projects_pouvoir');
                 $proxy->get($documentId);
-                /** @var \clients $client */
-                $client = $this->entityManager->getRepository('clients');
                 $client->get($proxy->id_client, 'id_client');
                 $documentName = $proxy->name;
                 $routeName    = 'proxy_signature_status';
                 $doc_name     = $this->rootDir . '/../protected/pdf/pouvoir/' . $documentName;
+                break;
+            case 'tos':
+                /** @var \project_cgv $tos */
+                $tos = $this->entityManager->getRepository('project_cgv');
+                $tos->get($documentId);
+                /** @var \projects $project */
+                $project = $this->entityManager->getRepository('projects');
+                $project->get($tos->id_project);
+                /** @var \companies $company */
+                $company = $this->entityManager->getRepository('companies');
+                $company->get($project->id_company);
+                $client->get($company->id_client_owner, 'id_client');
+                $documentName = $tos->name;
+                $routeName    = 'tos_signature_status';
+                $doc_name     = $this->rootDir . '/../protected/pdf/cgv_emprunteurs/' . $documentName;
                 break;
             default:
                 return [];
         }
 
         $returnPage  = [
-            'success' => $this->router->generate($routeName, ['status' => 'success', 'documentId' => $documentId], 0),
-            'fail'    => $this->router->generate($routeName, ['status' => 'fail', 'documentId' => $documentId], 0),
-            'cancel'  => $this->router->generate($routeName, ['status' => 'cancel', 'documentId' => $documentId], 0)
+            'success' => $this->router->generate($routeName, ['status' => 'success', 'documentId' => $documentId, 'clientHash' => $client->hash], 0),
+            'fail'    => $this->router->generate($routeName, ['status' => 'fail', 'documentId' => $documentId, 'clientHash' => $client->hash], 0),
+            'cancel'  => $this->router->generate($routeName, ['status' => 'cancel', 'documentId' => $documentId, 'clientHash' => $client->hash], 0)
         ];
 
         // signature position
         $docSignatureField = [
             "page"        => new Value(1, "int"),
-            "x"           => new Value(255, "int"),
-            "y"           => new Value(314, "int"),
+            "x"           => new Value($documentType == 'tos' ? 430 : 255, "int"),
+            "y"           => new Value($documentType == 'tos' ? 750 : 314, "int"),
             "signerIndex" => new Value(0, "int"),
             "label"       => new Value("Unilend", "string")
         ];
@@ -270,5 +312,22 @@ class UniversignManager
             "identificationType" => new Value("sms", "string"),
             "description"        => new Value("Document id : " . $documentId, "string")
         ];
+    }
+
+    /**
+     * @param $documentId
+     * @param $documentType
+     * @param $projectId
+     * @param $soapResult
+     */
+    private function mailToIT($documentId, $documentType, $projectId, $soapResult)
+    {
+        /** @var \settings $settings */
+        $settings = $this->entityManager->getRepository('settings');
+        $settings->get('DebugMailIt', 'type');
+        $sDestinatairesDebug = $settings->value;
+
+        mail($sDestinatairesDebug, 'unilend erreur universign reception', $documentType . ' id : ' . $documentId . ' | An error occurred: Code: ' . $soapResult->faultCode() . ' Reason: "' . $soapResult->faultString());
+        $this->logger->error('Return Universign '. $documentType .' NOK (project ' . $projectId . ') - Error code : ' . $soapResult->faultCode() . ' - Error Message : ' . $soapResult->faultString(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projectId]);
     }
 }
