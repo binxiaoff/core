@@ -201,7 +201,7 @@ class projects extends projects_crud
                 END AS lestatut';
 
         $tables = '
-            FROM projects p';
+            FROM projects p FORCE INDEX (status)';
 
         $sortField     = self::SORT_FIELD_END;
         $sortDirection = self::SORT_DIRECTION_DESC;
