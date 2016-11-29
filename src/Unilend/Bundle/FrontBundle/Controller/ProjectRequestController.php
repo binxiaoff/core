@@ -311,8 +311,12 @@ class ProjectRequestController extends Controller
                 /** @var \companies_bilans $companyAccount */
                 $companyAccount = $entityManager->getRepository('companies_bilans');
 
-                $this->project->id_dernier_bilan = $companyAccount->select('id_company = ' . $this->company->id_company, 'cloture_exercice_fiscal DESC', 0, 1)[0]['id_bilan'];
-                $this->project->update();
+                $companyAccounts = $companyAccount->select('id_company = ' . $this->company->id_company, 'cloture_exercice_fiscal DESC', 0, 1);
+
+                if (isset($companyAccounts[0]['id_bilan'])) {
+                    $this->project->id_dernier_bilan = $companyAccounts[0]['id_bilan'];
+                    $this->project->update();
+                }
 
                 $companyCreationDate = new \DateTime($this->company->date_creation);
                 if ($companyCreationDate->diff(new \DateTime())->days < \projects::MINIMUM_CREATION_DAYS_PROSPECT) {

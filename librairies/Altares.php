@@ -181,7 +181,7 @@ class Altares
     {
         $oBalanceSheets = $this->getBalanceSheets($oCompany->siren);
 
-        if (isset($oBalanceSheets->myInfo->bilans) && is_array($oBalanceSheets->myInfo->bilans)) {
+        if (isset($oBalanceSheets->myInfo->bilans)) {
             /** @var \companies_actif_passif $oCompanyAssetsDebts */
             $oCompanyAssetsDebts = Loader::loadData('companies_actif_passif');
             /** @var \companies_bilans $oCompanyAnnualAccounts */
@@ -193,7 +193,15 @@ class Altares
 
             $aCodes = $oCompaniesBalanceTypes->getAllByCode();
 
-            foreach ($oBalanceSheets->myInfo->bilans as $oBalanceSheet) {
+            if (is_array($oBalanceSheets->myInfo->bilans)) {
+                $aBalanceSheets = $oBalanceSheets->myInfo->bilans;
+            } elseif ($oBalanceSheets->myInfo->bilans instanceof \stdClass) {
+                $aBalanceSheets = [$oBalanceSheets->myInfo->bilans];
+            } else {
+                return;
+            }
+
+            foreach ($aBalanceSheets as $oBalanceSheet) {
                 $aCompanyBalances = array();
                 $aAnnualAccounts  = $oCompanyAnnualAccounts->select('id_company = ' . $oCompany->id_company . ' AND cloture_exercice_fiscal = "' . $oBalanceSheet->dateClotureN . '"');
 
