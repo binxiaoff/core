@@ -118,8 +118,8 @@ class AutoBidSettingsManager
         foreach ($this->productManager->getAvailableProducts(true) as $product) {
             $autobidContracts = $this->productManager->getAutobidEligibleContracts($product);
             foreach ($autobidContracts as $contract) {
-                if (false === $this->contractManager->isLenderEligible($lenderAccount, $contract)){
-                    return false;
+                if (true === $this->contractManager->isLenderEligible($lenderAccount, $contract)) {
+                    return true;
                 }
             }
         }
