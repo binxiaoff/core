@@ -18,7 +18,6 @@ use Unilend\core\Loader;
 
 class UniversignController extends Controller
 {
-
     /**
      * @Route("/universign/{status}/pouvoir/{documentId}/{clientHash}", name="proxy_signature_status", requirements={"documentId":"\d+"})
      * @param $status
@@ -49,12 +48,22 @@ class UniversignController extends Controller
         $company = $entityManager->getRepository('companies');
         $company->get($project->id_company);
 
-        if ($company->id_client_owner != $client->id_client) {
+        if ($company->id_client_owner != $client->id_client || $proxy->status != \projects_pouvoir::STATUS_PENDING) {
             return $this->redirectToRoute('home');
         }
 
-        if ($status == 'success' && $proxy->status == \projects_pouvoir::STATUS_PENDING) {
-            $universignManager->signProxy($proxy);
+        switch ($status) {
+            case 'success':
+                $universignManager->signProxy($proxy);
+                break;
+            case 'cancel':
+                $proxy->status = \projects_pouvoir::STATUS_CANCELLED;
+                $proxy->update();
+                break;
+            case 'fail':
+                $proxy->status = \projects_pouvoir::STATUS_FAILED;
+                $proxy->update();
+                break;
         }
 
         $proxyStatusLabel = $this->getProxyStatusLabel($proxy);
@@ -95,12 +104,22 @@ class UniversignController extends Controller
         $client = $entityManager->getRepository('clients');
         $client->get($clientHash, 'hash');
 
-        if ($mandate->id_client != $client->id_client) {
+        if ($mandate->id_client != $client->id_client || $mandate->status != \clients_mandats::STATUS_PENDING) {
             return $this->redirectToRoute('home');
         }
 
-        if ($status == 'success' && $mandate->status == \clients_mandats::STATUS_PENDING) {
-            $universignManager->signMandate($mandate);
+        switch ($status) {
+            case 'success':
+                $universignManager->signMandate($mandate);
+                break;
+            case 'cancel':
+                $mandate->status = \clients_mandats::STATUS_CANCELED;
+                $mandate->update();
+                break;
+            case 'fail':
+                $mandate->status = \clients_mandats::STATUS_FAILED;
+                $mandate->update();
+                break;
         }
 
         $mandateStatusLabel = $this->getMandateStatusLabel($mandate);
@@ -147,12 +166,22 @@ class UniversignController extends Controller
         $company = $entityManager->getRepository('companies');
         $company->get($project->id_company);
 
-        if ($company->id_client_owner != $client->id_client) {
+        if ($company->id_client_owner != $client->id_client || $tos->status != \project_cgv::STATUS_NO_SIGN) {
             return $this->redirectToRoute('home');
         }
 
-        if ($status == 'success') {
-            $universignManager->signTos($tos);
+        switch ($status) {
+            case 'success':
+                $universignManager->signTos($tos);
+                break;
+            case 'cancel':
+                $tos->status = \project_cgv::STATUS_SIGN_CANCELLED;
+                $tos->update();
+                break;
+            case 'fail':
+                $tos->status = \project_cgv::STATUS_SIGN_FAILED;
+                $tos->update();
+                break;
         }
 
         $tosStatusLabel = $this->getTosStatusLabel($tos);
@@ -188,11 +217,11 @@ class UniversignController extends Controller
         /** @var UniversignManager $universignManager */
         $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
 
-        if ($proxy->status == \projects_pouvoir::STATUS_SIGNED) {
+        if ($proxy->status != \projects_pouvoir::STATUS_PENDING) {
             return $this->redirect($proxy->url_universign);
         }
 
-        if ($universignUpdate == 'NoUpdateUniversign' && $proxy->url_universign != '' && $proxy->status == \projects_pouvoir::STATUS_PENDING) {
+        if ($universignUpdate == 'NoUpdateUniversign' && $proxy->url_universign != '') {
             $logger->notice('Proxy not signed but DB flag exists. Redirection to Universign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
 
             return $this->redirect($proxy->url_universign);
@@ -226,8 +255,8 @@ class UniversignController extends Controller
         /** @var \Unilend\Bundle\FrontBundle\Service\UniversignManager $universignManager */
         $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
 
-        if ($mandate->status != \clients_mandats::STATUS_SIGNED) {
-            if ($mandate->url_universign != '' && $mandate->status == \clients_mandats::STATUS_PENDING) {
+        if ($mandate->status == \clients_mandats::STATUS_PENDING) {
+            if ($mandate->url_universign != '') {
                 $logger->notice('Mandate not signed. Redirection to Universign (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
 
                 return $this->redirect($mandate->url_universign);

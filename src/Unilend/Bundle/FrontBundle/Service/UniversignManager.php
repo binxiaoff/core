@@ -5,6 +5,7 @@ namespace Unilend\Bundle\FrontBundle\Service;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\Routing\RouterInterface;
+use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use PhpXmlRpc\Client;
 use PhpXmlRpc\Request;
@@ -22,14 +23,17 @@ class UniversignManager
     private $rootDir;
     /** @var string */
     private $universignURL;
+    /** @var  MailerManager */
+    private $mailerManager;
 
-    public function __construct(EntityManager $entityManager, RouterInterface $router, LoggerInterface $logger, $universignURL, $rootDir)
+    public function __construct(EntityManager $entityManager, MailerManager $mailerManager, RouterInterface $router, LoggerInterface $logger, $universignURL, $rootDir)
     {
         $this->entityManager = $entityManager;
         $this->router        = $router;
         $this->logger        = $logger;
         $this->universignURL = $universignURL;
         $this->rootDir       = $rootDir;
+        $this->mailerManager = $mailerManager;
     }
 
     /**
@@ -84,16 +88,16 @@ class UniversignManager
 
             /** @var \clients_mandats $mandate */
             $mandate = $this->entityManager->getRepository('clients_mandats');
+
             if ($mandate->get($proxy->id_project, 'id_project') && $mandate->status == \clients_mandats::STATUS_SIGNED) {
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
-                $mailerManager = $this->get('unilend.service.email_manager');
-                $mailerManager->sendProxyAndMandateSigned($proxy, $mandate);
+                $this->mailerManager->sendProxyAndMandateSigned($proxy, $mandate);
 
                 $this->logger->notice('Proxy and mandate OK (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
             } else {
                 $this->logger->notice('Proxy OK and mandate not signed (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
             }
         } else {
+
             $this->mailToIT($proxy->id_pouvoir, 'proxy', $proxy->id_project, $soapResult);
         }
     }
@@ -130,7 +134,7 @@ class UniversignManager
             return true;
         }
 
-        $this->mailToIT($mandate->id_mandat, 'mandat', $mandate->id_project, $soapResult);
+        $this->mailToIT($mandate->id_mandat, 'mandate', $mandate->id_project, $soapResult);
 
         return false;
     }
@@ -159,9 +163,7 @@ class UniversignManager
             /** @var \projects_pouvoir $proxy */
             $proxy = $this->entityManager->getRepository('projects_pouvoir');
             if ($proxy->get($mandate->id_project, 'id_project') && $proxy->status == \projects_pouvoir::STATUS_SIGNED) {
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
-                $mailerManager = $this->get('unilend.service.email_manager');
-                $mailerManager->sendProxyAndMandateSigned($proxy, $mandate);
+                $this->mailerManager->sendProxyAndMandateSigned($proxy, $mandate);
 
                 $this->logger->notice('Mandate and proxy OK (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
             } else {
@@ -204,6 +206,7 @@ class UniversignManager
      */
     public function signTos(\project_cgv $tos)
     {
+
         $soapClient  = new Client($this->universignURL);
         $soapRequest = new Request('requester.getDocumentsByTransactionId', [new Value($tos->id_universign, "string")]);
         $soapResult  = $soapClient->send($soapRequest);
@@ -241,7 +244,7 @@ class UniversignManager
 
         switch ($documentType) {
             case 'mandate':
-                /** @var \projects_pouvoir $mandate */
+                /** @var \clients_mandats $mandate */
                 $mandate = $this->entityManager->getRepository('clients_mandats');
                 $mandate->get($documentId);
                 $client->get($mandate->id_client, 'id_client');
@@ -275,7 +278,7 @@ class UniversignManager
                 return [];
         }
 
-        $returnPage  = [
+        $returnPage = [
             'success' => $this->router->generate($routeName, ['status' => 'success', 'documentId' => $documentId, 'clientHash' => $client->hash], 0),
             'fail'    => $this->router->generate($routeName, ['status' => 'fail', 'documentId' => $documentId, 'clientHash' => $client->hash], 0),
             'cancel'  => $this->router->generate($routeName, ['status' => 'cancel', 'documentId' => $documentId, 'clientHash' => $client->hash], 0)
@@ -327,9 +330,9 @@ class UniversignManager
         /** @var \settings $settings */
         $settings = $this->entityManager->getRepository('settings');
         $settings->get('DebugMailIt', 'type');
-        $sDestinatairesDebug = $settings->value;
+        $debugMailIT = $settings->value;
 
-        mail($sDestinatairesDebug, 'unilend erreur universign reception', $documentType . ' id : ' . $documentId . ' | An error occurred: Code: ' . $soapResult->faultCode() . ' Reason: "' . $soapResult->faultString());
-        $this->logger->error('Return Universign '. $documentType .' NOK (project ' . $projectId . ') - Error code : ' . $soapResult->faultCode() . ' - Error Message : ' . $soapResult->faultString(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projectId]);
+        mail($debugMailIT, 'unilend erreur universign reception', $documentType . ' id : ' . $documentId . ' | An error occurred: Code: ' . $soapResult->faultCode() . ' Reason: "' . $soapResult->faultString());
+        $this->logger->error('Return Universign ' . $documentType . ' NOK (project ' . $projectId . ') - Error code : ' . $soapResult->faultCode() . ' - Error Message : ' . $soapResult->faultString(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projectId]);
     }
 }
