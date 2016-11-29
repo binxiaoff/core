@@ -231,7 +231,10 @@ class ProjectDisplayManager
         $lastBalanceTaxFormType = $companyTaxFormType->label;
 
         $finance                = [];
-        $balanceSheets          = $balanceSheetEntity->select('id_company = "' . $project->id_company . '" AND id_company_tax_form_type = '. $lastBalanceTaxFormTypeId .' AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $project->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
+        $balanceSheets          = [];
+        if ($project->id_dernier_bilan) {
+            $balanceSheets          = $balanceSheetEntity->select('id_company = "' . $project->id_company . '" AND id_company_tax_form_type = '. $lastBalanceTaxFormTypeId .' AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $project->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
+        }
 
         $previousBalanceSheetId = null;
 
