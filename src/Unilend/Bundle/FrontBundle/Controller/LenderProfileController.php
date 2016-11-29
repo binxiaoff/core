@@ -424,10 +424,10 @@ class LenderProfileController extends Controller
             $taxType = $this->get('unilend.service.entity_manager')->getRepository('tax_type');
             $taxType->get(\tax_type::TYPE_INCOME_TAX);
             $templateData['clientAddress']                = $clientAddress->select('id_client = ' . $client->id_client)[0];
-            $templateData['currentYear']                  = date('Y', time());
+            $templateData['currentYear']                  = date('Y');
             $templateData['lastYear']                     = $templateData['currentYear'] - 1;
             $templateData['nextYear']                     = $templateData['currentYear'] + 1;
-            $taxExemptionDateRange                        = $lenderTaxExemption->getTaxExemptionDateRange();
+            $taxExemptionDateRange                        = $this->getTaxExemptionDateRange();
             $templateData['taxExemptionRequestLimitDate'] = strftime('%d %B %Y', $taxExemptionDateRange['taxExemptionRequestLimitDate']->getTimestamp());
             $templateData['rateOfTaxDeductionAtSource']   = $taxType->rate;
             $taxExemptionHistory                          = $this->getExemptionHistory($lenderTaxExemption, $lenderAccount);
@@ -1594,10 +1594,10 @@ class LenderProfileController extends Controller
         $post = $request->request->all();
 
         try {
-            $taxExemptionDateRange = $lenderTaxExemption->getTaxExemptionDateRange();
+            $taxExemptionDateRange = $this->getTaxExemptionDateRange();
 
-            if (date('Y-m-d H:i:s') >= $taxExemptionDateRange['taxExemptionRequestStartDate']->format('Y-m-d 00:00:00')
-                && date('Y-m-d H:i:s') <= $taxExemptionDateRange['taxExemptionRequestLimitDate']->format('Y-m-d 23:59:59')
+            if ((new \DateTime('now')) >= $taxExemptionDateRange['taxExemptionRequestStartDate']
+                && (new \DateTime('now')) <= $taxExemptionDateRange['taxExemptionRequestLimitDate']
                 && true === empty($lenderTaxExemption->getLenderExemptionHistory($lender->id_lender_account, $year))
             ) {
 
@@ -1644,11 +1644,11 @@ class LenderProfileController extends Controller
      */
     private function checkIfTaxExemptionIsPossible(array $taxExemptionHistory, array $taxExemptionDateRange, $isEligible)
     {
-        $outOfDate = date('Y-m-d H:i:s') < $taxExemptionDateRange['taxExemptionRequestStartDate']->format('Y-m-d 00:00:00') ||
-                     date('Y-m-d H:i:s') >= $taxExemptionDateRange['taxExemptionRequestLimitDate']->format('Y-m-d 23:59:59');
+        $outOfDate = (new \DateTime('now')) < $taxExemptionDateRange['taxExemptionRequestStartDate'] ||
+                     (new \DateTime('now')) > $taxExemptionDateRange['taxExemptionRequestLimitDate'];
 
         if (false === empty($taxExemptionHistory)) {
-            $taxExemptionRequestDone = in_array(date('Y', time()) + 1, array_column($taxExemptionHistory, 'year'));
+            $taxExemptionRequestDone = in_array(date('Y') + 1, array_column($taxExemptionHistory, 'year'));
         } else {
             $taxExemptionRequestDone = false;
         }
@@ -1710,5 +1710,19 @@ class LenderProfileController extends Controller
         $clientAddress->ville               = $clientAddress->ville_fiscal;
         $clientAddress->id_pays             = $clientAddress->id_pays_fiscal;
         $clientAddress->update();
+    }
+
+    /**
+     * @return array
+     */
+    public function getTaxExemptionDateRange()
+    {
+        /** @var \settings $settings */
+        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
+        $settings->get('taxExemptionRequestLimitDate', 'type');
+        $dateRange['taxExemptionRequestLimitDate'] = \DateTime::createFromFormat('Y-m-d H:i:s', date('Y') . '-' . $settings->value . ' 23:59:59');
+        $settings->get('taxExemptionRequestStartDate', 'type');
+        $dateRange['taxExemptionRequestStartDate'] = \DateTime::createFromFormat('Y-m-d H:i:s', date('Y') . '-' . $settings->value . ' 00:00:00');
+        return $dateRange;
     }
 }
