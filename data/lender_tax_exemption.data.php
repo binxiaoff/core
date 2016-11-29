@@ -95,17 +95,4 @@ class lender_tax_exemption extends lender_tax_exemption_crud
         }
         return $this->bdd->executeQuery($sql, $bind, $type)->fetchAll(\PDO::FETCH_ASSOC);
     }
-
-    /**
-     * @return array
-     */
-    public function getTaxExemptionDateRange()
-    {
-        $settings = \Unilend\core\Loader::loadData('settings');
-        $settings->get('taxExemptionRequestLimitDate', 'type');
-        $dateRange['taxExemptionRequestLimitDate'] = \DateTime::createFromFormat('Y-m-d', date('Y') . '-' . $settings->value);
-        $settings->get('taxExemptionRequestStartDate', 'type');
-        $dateRange['taxExemptionRequestStartDate'] = \DateTime::createFromFormat('Y-m-d', date('Y') . '-' . $settings->value);
-        return $dateRange;
-    }
 }
