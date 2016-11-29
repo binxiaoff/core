@@ -453,12 +453,9 @@ class AutoBidSettingsManager
         $maxAmount = 0;
 
         foreach ($this->productManager->getAvailableProducts(true) as $product) {
-            $autobidContracts = $this->productManager->getAutobidEligibleContracts($product);
-            $currentMaxAmount = 0;
-            foreach ($autobidContracts as $autobidContract) {
-                if ($this->contractManager->isLenderEligible($lender, $autobidContract)) {
-                    $currentMaxAmount += $this->contractManager->getMaxAmount($autobidContract);
-                }
+            $currentMaxAmount = $this->productManager->getAutobidMaxEligibleAmount($lender, $product);
+            if (null === $currentMaxAmount) {
+                return null;
             }
             $maxAmount = max($maxAmount, $currentMaxAmount);
         }
