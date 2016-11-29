@@ -107,8 +107,5 @@
         <service id="unilend.command.clear_statistics" class="Unilend\Bundle\CommandBundle\Command\UnilendClearStatisticsCache">
             <tag name="console.command"/>
         </service>
-        <service id="unilend.command.bdf_loans_declaration" class="Unilend\Bundle\CommandBundle\Command\FeedsBDFLoansDeclaration">
-            <tag name="console.command"/>
-        </service>
     </services>
 </container>

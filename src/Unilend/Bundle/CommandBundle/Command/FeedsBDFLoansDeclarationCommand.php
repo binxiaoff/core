@@ -11,7 +11,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\RecoveryManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\core\Loader;
 
-class FeedsBDFLoansDeclaration extends ContainerAwareCommand
+class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
 {
     const DECLARATION_FILE_PATH = 'bdf/emissions/declarations_mensuelles/';
     const UNILEND_IFP_ID        = 'IF010';
@@ -22,8 +22,6 @@ class FeedsBDFLoansDeclaration extends ContainerAwareCommand
 
     /** @var  int $recordLineNumber */
     private $recordLineNumber = 1;
-    /** @var  int $recordCode */
-    private $code;
     /** @var  \DateTime $declarationDate */
     private $declarationDate;
     /** @var string $sequentialNumber */
@@ -34,7 +32,7 @@ class FeedsBDFLoansDeclaration extends ContainerAwareCommand
      */
     protected function configure()
     {
-        $this->setName('feeds:bdf_loans_declaration')
+        $this->setName('unilend:feed_out:bdf_loans_declaration:generate')
             ->setDescription('Generate the loans declaration txt file to send to Banque De France')
             ->addArgument(
                 'year',
@@ -74,7 +72,7 @@ class FeedsBDFLoansDeclaration extends ContainerAwareCommand
                 return;
             }
         } else {
-            $this->declarationDate = (new \DateTime())->setTimestamp(time());
+            $this->declarationDate = new \DateTime();
         }
 
         /** @var array */
@@ -84,16 +82,17 @@ class FeedsBDFLoansDeclaration extends ContainerAwareCommand
             $logger->debug('no data found', ['class' => __CLASS__, 'function' => __FUNCTION__]);
             return;
         }
-        $fileName = self::UNILEND_IFP_ID . '_' . $this->declarationDate->format('Ym') . '.txt';
+        $fileName         = self::UNILEND_IFP_ID . '_' . $this->declarationDate->format('Ym') . '.txt';
+        $absoluteFilePath = $this->getContainer()->getParameter('path.sftp') . self::DECLARATION_FILE_PATH . $fileName;
 
-        if ($transmissionSequence->get($fileName, 'element_name') && file_exists($this->getContainer()->getParameter('path.sftp') . self::DECLARATION_FILE_PATH . $fileName)) {
-            $currentName = pathinfo($this->getContainer()->getParameter('path.sftp') . self::DECLARATION_FILE_PATH . $fileName, PATHINFO_FILENAME);
-            rename($this->getContainer()->getParameter('path.sftp') . self::DECLARATION_FILE_PATH . $fileName,
+        if ($transmissionSequence->get($fileName, 'element_name') && file_exists($absoluteFilePath)) {
+            $currentName = pathinfo($absoluteFilePath, PATHINFO_FILENAME);
+            rename($absoluteFilePath,
                 $this->getContainer()->getParameter('path.sftp') . self::DECLARATION_FILE_PATH . 'archives/' . $currentName . '_' . $transmissionSequence->sequence . '.txt');
         }
 
         /** @var resource $file */
-        if ($file = fopen($this->getContainer()->getParameter('path.sftp') . self::DECLARATION_FILE_PATH . $fileName, 'a')) {
+        if ($file = fopen($absoluteFilePath, 'a')) {
             try {
                 fwrite($file, $this->getStartSenderRecord($transmissionSequence, $fileName));
                 fwrite($file, $this->getStartDeclarerRecord());
@@ -108,7 +107,7 @@ class FeedsBDFLoansDeclaration extends ContainerAwareCommand
                 $logger->error('An exception occured when writing the loan lines with message: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__]);
                 $transmissionSequence->resetToPreviousSequence($fileName);
                 fclose($file);
-                unlink($this->getContainer()->getParameter('path.sftp') . self::DECLARATION_FILE_PATH . $fileName);
+                unlink($absoluteFilePath);
             }
         } else {
             $logger->error('Could not create the file ' . self::DECLARATION_FILE_PATH . $fileName, ['class' => __CLASS__, 'function' => __FUNCTION__]);
@@ -125,13 +124,13 @@ class FeedsBDFLoansDeclaration extends ContainerAwareCommand
     }
 
     /**
+     * @param string $code
      * @return string
      */
-    public function getStartingRecord()
+    private function getStartingRecord($code)
     {
         $this->setSequentialNumber();
-
-        return $this->sequentialNumber . $this->code . $this->declarationDate->format('Ym') . self::UNILEND_IFP_ID;
+        return $this->sequentialNumber . $code . $this->declarationDate->format('Ym') . self::UNILEND_IFP_ID;
     }
 
     /**
@@ -141,9 +140,8 @@ class FeedsBDFLoansDeclaration extends ContainerAwareCommand
      */
     private function getStartSenderRecord(\transmission_sequence $transmissionSequence, $fileName)
     {
-        $this->code = '01';
         $sequence   = $transmissionSequence->getNextSequence($fileName);
-        return str_pad($this->getStartingRecord() . str_pad($sequence, 2, self::PADDING_NUMBER, STR_PAD_LEFT), self::RECORD_PAD_LENGTH, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
+        return str_pad($this->getStartingRecord('01') . str_pad($sequence, 2, self::PADDING_NUMBER, STR_PAD_LEFT), self::RECORD_PAD_LENGTH, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
     }
 
     /**
@@ -151,8 +149,7 @@ class FeedsBDFLoansDeclaration extends ContainerAwareCommand
      */
     private function getStartDeclarerRecord()
     {
-        $this->code = '02';
-        return str_pad($this->getStartingRecord(), self::RECORD_PAD_LENGTH, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
+        return str_pad($this->getStartingRecord('02'), self::RECORD_PAD_LENGTH, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
     }
 
     /**
@@ -162,8 +159,7 @@ class FeedsBDFLoansDeclaration extends ContainerAwareCommand
     private function getLoanRecord(array $projectData)
     {
 
-        $this->code = '11';
-        return $this->multiBytePad($this->getStartingRecord() . $this->getProjectInformation($projectData), self::RECORD_PAD_LENGTH, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
+        return $this->multiBytePad($this->getStartingRecord('11') . $this->getProjectInformation($projectData), self::RECORD_PAD_LENGTH, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
     }
 
     /**
@@ -171,9 +167,8 @@ class FeedsBDFLoansDeclaration extends ContainerAwareCommand
      */
     public function getEndDeclarerRecord()
     {
-        $this->code    = '92';
         $recordCounter = str_pad($this->recordLineNumber - 1, self::SEQUENCE_PAD_LENGTH, self::PADDING_NUMBER, STR_PAD_LEFT);
-        return str_pad($this->getStartingRecord() . $recordCounter, self::RECORD_PAD_LENGTH, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
+        return str_pad($this->getStartingRecord('92') . $recordCounter, self::RECORD_PAD_LENGTH, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
     }
 
     /**
@@ -181,9 +176,8 @@ class FeedsBDFLoansDeclaration extends ContainerAwareCommand
      */
     public function getEndSenderRecord()
     {
-        $this->code    = '93';
         $recordCounter = str_pad($this->recordLineNumber, self::SEQUENCE_PAD_LENGTH, self::PADDING_NUMBER, STR_PAD_LEFT);
-        return str_pad($this->getStartingRecord() . $recordCounter, self::RECORD_PAD_LENGTH, self::PADDING_CHAR, STR_PAD_RIGHT);
+        return str_pad($this->getStartingRecord('93') . $recordCounter, self::RECORD_PAD_LENGTH, self::PADDING_CHAR, STR_PAD_RIGHT);
     }
 
     /**
