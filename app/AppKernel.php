@@ -43,7 +43,8 @@ class AppKernel extends Kernel
             new Xynnn\GoogleTagManagerBundle\GoogleTagManagerBundle(),
             new Sonata\SeoBundle\SonataSeoBundle(),
             new Knp\Bundle\SnappyBundle\KnpSnappyBundle(),
-            new Ekino\Bundle\NewRelicBundle\EkinoNewRelicBundle()
+            new Ekino\Bundle\NewRelicBundle\EkinoNewRelicBundle(),
+            new Sonata\CacheBundle\SonataCacheBundle(),
         ];
 
         if (in_array($this->getEnvironment(), ['dev', 'test'], true)) {

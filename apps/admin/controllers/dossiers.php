@@ -1306,7 +1306,7 @@ class dossiersController extends bootstrap
         $this->clients = $this->loadData('clients');
 
         if (isset($this->params[0]) && $this->params[0] != '') {
-            $this->lClients = $this->clients->select('nom LIKE "%' . $this->params[0] . '%" OR prenom LIKE "%' . $this->params[0] . '%"');
+            $this->lClients = $this->clients->searchEmprunteurs('', $this->params[0], '', $this->params[0]);
         }
     }
 
@@ -1409,6 +1409,9 @@ class dossiersController extends bootstrap
         $this->companies        = $this->loadData('companies');
         $this->projects         = $this->loadData('projects');
 
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
+        $clientManager = $this->get('unilend.service.client_manager');
+
         if (isset($_POST['send_create_etape1'])) {
             if (isset($_POST['id_client']) && $this->clients->get($_POST['id_client'], 'id_client')) {
                 header('Location: ' . $this->lurl . '/dossiers/add/create_etape2/' . $_POST['id_client']);
@@ -1420,9 +1423,20 @@ class dossiersController extends bootstrap
         }
 
         if (isset($this->params[0]) && $this->params[0] == 'create_etape2') {
-            if (false === isset($this->params[1]) || false === $this->clients->get($this->params[1], 'id_client')) {
+            if (
+                false === isset($this->params[1])
+                || false === $this->clients->get($this->params[1], 'id_client')
+                || $clientManager->isLender($this->clients)
+            ) {
                 $this->clients_adresses = $this->loadData('clients_adresses');
 
+                $this->clients->etape_inscription_preteur  = 0;
+                $this->clients->status_inscription_preteur = 0;
+                $this->clients->type                       = 0;
+                $this->clients->source                     = '';
+                $this->clients->source2                    = '';
+                $this->clients->source3                    = '';
+                $this->clients->slug_origine               = '';
                 $this->clients->create();
 
                 $this->clients_adresses->id_client = $this->clients->id_client;
@@ -1456,6 +1470,12 @@ class dossiersController extends bootstrap
             $this->projects->get($this->params[0]);
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
+
+            // additional safeguard to avoid duplicate email when taking an existing lender as borrower, will be replaced by the borrower account checks when doing balance project
+            if ($clientManager->isLender($this->clients)){
+                $this->clients->email = '';
+            }
+
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
             if (isset($this->params[1]) && $this->params[1] === 'altares') {

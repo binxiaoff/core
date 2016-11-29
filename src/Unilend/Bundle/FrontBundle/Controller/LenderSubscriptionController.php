@@ -120,6 +120,8 @@ class LenderSubscriptionController extends Controller
         $ficelle = Loader::loadLib('ficelle');
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
+        /** @var LocationManager $locationManager */
+        $locationManager = $this->get('unilend.service.location_manager');
 
         /** @var array $post */
         $post = $request->request->all();
@@ -195,10 +197,12 @@ class LenderSubscriptionController extends Controller
         }
 
         if ($bCountryCheckOk) {
-            if (\pays_v2::COUNTRY_FRANCE == $post['client_country_of_birth'] ) {
-                $inseePlaceOfBirth = (false === empty($post['client_insee_place_of_birth']) && $cities->get($post['client_insee_place_of_birth'], 'insee')) ? $cities->insee : $post['client_place_of_birth'];
-                $placeOfBirth = $cities->ville;
-                unset($cities);
+            if (\pays_v2::COUNTRY_FRANCE == $post['client_country_of_birth'] && false === empty($post['client_insee_place_of_birth']))  {
+                $inseeExists       = $locationManager->checkFrenchCityInsee($post['client_insee_place_of_birth']);
+                $placeOfBirth      = preg_replace(['/[0-9]+/', '/\(\)/'], '', $post['client_place_of_birth']);
+                $cityExists        = $locationManager->checkFrenchCity($placeOfBirth);
+                $inseeAndCityMatch = $cities->exist($post['client_insee_place_of_birth'], 'ville = "' . $placeOfBirth . '" AND insee');
+                $inseePlaceOfBirth = ($inseeExists && $cityExists && $inseeAndCityMatch) ? $post['client_insee_place_of_birth'] : $post['client_place_of_birth'];
             } else {
                 /** @var \insee_pays $inseeCountries */
                 $inseeCountries = $this->get('unilend.service.entity_manager')->getRepository('insee_pays');
@@ -1437,4 +1441,5 @@ class LenderSubscriptionController extends Controller
         $fundsOriginList = explode(';', $settings->value);
         return array_combine(range(1, count($fundsOriginList)), array_values($fundsOriginList));
     }
+
 }

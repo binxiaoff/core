@@ -565,6 +565,7 @@ class projects extends projects_crud
     public function getAverageInterestRate()
     {
         $cacheTime = \Unilend\librairies\CacheKeys::VERY_SHORT_TIME;
+        $cacheKey  = md5(__METHOD__);
 
         $queryBuilder = $this->bdd->createQueryBuilder();
         $queryBuilder->select('SUM(amount * rate) / SUM(amount) AS avg_rate');
@@ -585,6 +586,7 @@ class projects extends projects_crud
                     ->from('loans')
                     ->where('id_project = :id_project');
                 $cacheTime = \Unilend\librairies\CacheKeys::DAY * 30;
+                $cacheKey  = md5(__METHOD__ .'ended_project');
                 break;
             case \projects_status::PRET_REFUSE:
             case \projects_status::EN_FUNDING:
@@ -601,6 +603,8 @@ class projects extends projects_crud
                 $queryBuilder
                     ->from('bids')
                     ->where('id_project = :id_project');
+                $cacheTime = \Unilend\librairies\CacheKeys::DAY * 30;
+                $cacheKey  = md5(__METHOD__ .'ended_project');
                 break;
             default:
                 trigger_error('Unknown project status : ' . $this->status . ' Could not calculate amounts', E_USER_WARNING);
@@ -613,7 +617,7 @@ class projects extends projects_crud
             $queryBuilder->getSQL(),
             $queryBuilder->getParameters(),
             $queryBuilder->getParameterTypes(),
-            new \Doctrine\DBAL\Cache\QueryCacheProfile($cacheTime, md5(__METHOD__)));
+            new \Doctrine\DBAL\Cache\QueryCacheProfile($cacheTime, $cacheKey));
         $result    = $statement->fetchAll(PDO::FETCH_COLUMN);
         $statement->closeCursor();
 
