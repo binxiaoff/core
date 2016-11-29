@@ -188,6 +188,7 @@
                     </li>
                     <li>&nbsp;</li>
                     <li>Le Bon de caisse émis est nominatif.</li>
+                    <li>Le Bon de caisse est cessible à la condition pour le cessionnaire d’avoir préalablement ouvert un compte Unilend prêteur </li>
                     <li>L’Emetteur certifie avoir établi le bilan de son troisième exercice social.</li>
                     <li>La signature des Bons de Caisse engage l’Emetteur, en contrepartie des sommes remises ce jour</li>
                     <li>

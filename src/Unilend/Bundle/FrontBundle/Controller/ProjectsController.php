@@ -952,7 +952,7 @@ class ProjectsController extends Controller
                         'ROUND(amount / 100)'
                     );
 
-                    $totalAmount = bcadd($totalBids, $totalLoans, 2);
+                    $totalAmount = bcadd(bcadd($totalBids, $totalLoans, 2), $amount, 2);
 
                     if ($totalAmount > $indicators[CIPManager::INDICATOR_TOTAL_AMOUNT]) {
                         $advices[CIPManager::INDICATOR_TOTAL_AMOUNT] = true;

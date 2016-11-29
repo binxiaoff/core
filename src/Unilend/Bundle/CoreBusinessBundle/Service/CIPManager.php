@@ -467,7 +467,7 @@ class CIPManager
             /** @var \ficelle $ficelle */
             $ficelle   = Loader::loadLib('ficelle');
 
-            if (strcmp($indicators[self::INDICATOR_TOTAL_AMOUNT], \lender_questionnaire_question::VALUE_ESTATE_THRESHOLD * 0.101) < 0) {
+            if ($indicators[self::INDICATOR_TOTAL_AMOUNT] < \lender_questionnaire_question::VALUE_ESTATE_THRESHOLD * 0.101) {
                 $advices[] = $this->translator->trans('lender-evaluation_low-estate-low-boundary-advice', [
                     '%maximumAmount%'    => $ficelle->formatNumber($indicators[self::INDICATOR_TOTAL_AMOUNT], 0),
                     '%maximumAmount100%' => $ficelle->formatNumber(floor($indicators[self::INDICATOR_TOTAL_AMOUNT] / 100), 0)

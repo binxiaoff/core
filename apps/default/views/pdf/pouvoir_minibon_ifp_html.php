@@ -14,48 +14,28 @@
             <div class="list">
                 <ul>
                     <li>
-                        <div class="col-long">
-                            Raison sociale
-                        </div>
-                        <div class="col-small">
-                            <?= $this->companies->name ?>
-                        </div>
+                        <div class="col-long">Raison sociale</div>
+                        <div class="col-small"><?= $this->companies->name ?></div>
                         <div class="cl">&nbsp;</div>
                     </li>
                     <li>
-                        <div class="col-long">
-                            Adresse
-                        </div>
-                        <div class="col-small">
-                            <?= $this->companies->adresse1 ?>
-                        </div>
+                        <div class="col-long">Adresse</div>
+                        <div class="col-small"><?= $this->companies->adresse1 ?></div>
                         <div class="cl">&nbsp;</div>
                     </li>
                     <li>
-                        <div class="col-long">
-                            Code postal
-                        </div>
-                        <div class="col-small">
-                            <?= $this->companies->zip ?>
-                        </div>
+                        <div class="col-long">Code postal</div>
+                        <div class="col-small"><?= $this->companies->zip ?></div>
                         <div class="cl">&nbsp;</div>
                     </li>
                     <li>
-                        <div class="col-long">
-                            Ville
-                        </div>
-                        <div class="col-small">
-                            <?= $this->companies->city ?>
-                        </div>
+                        <div class="col-long">Ville</div>
+                        <div class="col-small"><?= $this->companies->city ?></div>
                         <div class="cl">&nbsp;</div>
                     </li>
                     <li>
-                        <div class="col-long">
-                            SIREN
-                        </div>
-                        <div class="col-small">
-                            <?= $this->companies->siren ?>
-                        </div>
+                        <div class="col-long">SIREN</div>
+                        <div class="col-small"><?= $this->companies->siren ?></div>
                     </li>
                 </ul>
             </div>
@@ -63,158 +43,98 @@
             <div class="list">
                 <ul>
                     <li>
-                        <div class="col-long">
-                            Nom
-                        </div>
-                        <div class="col-small">
-                            <?= $this->clients->nom ?>
-                        </div>
+                        <div class="col-long">Nom</div>
+                        <div class="col-small"><?= $this->clients->nom ?></div>
                         <div class="cl">&nbsp;</div>
                     </li>
                     <li>
-                        <div class="col-long">
-                            Prénom
-                        </div>
-                        <div class="col-small">
-                            <?= $this->clients->prenom ?>
-                        </div>
+                        <div class="col-long">Prénom</div>
+                        <div class="col-small"><?= $this->clients->prenom ?></div>
                         <div class="cl">&nbsp;</div>
                     </li>
                     <li>
-                        <div class="col-long">
-                            Fonction
-                        </div>
-                        <div class="col-small">
-                            <?= $this->clients->fonction ?>
-                        </div>
+                        <div class="col-long">Fonction</div>
+                        <div class="col-small"><?= $this->clients->fonction ?></div>
                     </li>
                 </ul>
             </div>
-
             <h5>donne pouvoir à</h5>
             <div class="list">
                 <ul>
+                    <li><?= $this->lng['pdf-pouvoir']['adresse'] ?></li>
                     <li>
-                        <?= $this->lng['pdf-pouvoir']['adresse'] ?>
+                        <h5>pour signer en mon nom et pour mon compte l'intégralité des bons de caisse et contrats de prêt récapitulés ci-après et correspondant au total du financement recueilli sur Unilend.fr dont les caractéristiques sont les suivantes&nbsp;:</h5>
                     </li>
                     <li>
-                        <h5>pour signer en mon nom et pour mon compte l'intégralité des minibons et contrats de prêt récapitulés ci-après et correspondant au total du financement recueilli sur Unilend.fr dont les caractéristiques sont les suivantes :</h5>
-                    </li>
-                    <li>
-                        <div class="col-long">
-                            Montant total
-                        </div>
-                        <div class="col-small">
-                            <?= $this->ficelle->formatNumber($this->montantPrete, 0) ?> &euro;
-                        </div>
+                        <div class="col-long">Montant total</div>
+                        <div class="col-small"><?= $this->ficelle->formatNumber($this->montantPrete, 0) ?> &euro;</div>
                         <div class="cl">&nbsp;</div>
                     </li>
                     <li>
-                        <div class="col-long">
-                            Taux d'intérêt annuel moyen
-                        </div>
-                        <div class="col-small">
-                            <?= $this->ficelle->formatNumber($this->taux) ?> %
-                        </div>
+                        <div class="col-long">Taux d'intérêt annuel moyen</div>
+                        <div class="col-small"><?= $this->ficelle->formatNumber($this->taux) ?> %</div>
                         <div class="cl">&nbsp;</div>
                     </li>
                     <?php if ($this->nbLoansMinibon > 0) : ?>
                         <li>
-                            <div class="col-long">
-                                Nombre de minibons
-                            </div>
-                            <div class="col-small">
-                                <?= $this->nbLoansMinibon ?>
-                            </div>
+                            <div class="col-long">Nombre de bons de caisse</div>
+                            <div class="col-small"><?= $this->nbLoansMinibon ?></div>
                             <div class="cl">&nbsp;</div>
                         </li>
                     <?php endif; ?>
                     <?php if ($this->nbLoansIFP > 0) : ?>
                         <li>
-                            <div class="col-long">
-                                Nombre de contrat de prêt
-                            </div>
-                            <div class="col-small">
-                                <?= $this->nbLoansIFP ?>
-                            </div>
+                            <div class="col-long">Nombre de contrat de prêt</div>
+                            <div class="col-small"><?= $this->nbLoansIFP ?></div>
                             <div class="cl">&nbsp;</div>
                         </li>
                     <?php endif; ?>
                     <li>
-                        <div class="col-long">
-                            Date de création
-                        </div>
-                        <div class="col-small">
-                            <?= $this->dateRemb ?>
-                        </div>
+                        <div class="col-long">Date de création</div>
+                        <div class="col-small"><?= $this->dateRemb ?></div>
                         <div class="cl">&nbsp;</div>
                     </li>
                     <li>
-                        <div class="col-long">
-                            Date d'échéance
-                        </div>
-                        <div class="col-small">
-                            <?= date('d/m/Y', strtotime($this->dateLastEcheance)) ?>
-                        </div>
+                        <div class="col-long">Date d'échéance</div>
+                        <div class="col-small"><?= date('d/m/Y', strtotime($this->dateLastEcheance)) ?></div>
                         <div class="cl">&nbsp;</div>
                     </li>
                     <li>
-                        <div class="col-long">
-                            Nombre de mensualités
-                        </div>
-                        <div class="col-small">
-                            <?= $this->projects->period ?>
-                        </div>
+                        <div class="col-long">Nombre de mensualités</div>
+                        <div class="col-small"><?= $this->projects->period ?></div>
                         <div class="cl">&nbsp;</div>
                     </li>
                     <li>
-                        <div class="col-long">
-                            Montant des mensualités (principal et intérêts compris)
-                        </div>
-                        <div class="col-small">
-                            <?= $this->ficelle->formatNumber($this->rembByMonth) ?> &euro;
-                        </div>
+                        <div class="col-long">Montant des mensualités (principal et intérêts compris)</div>
+                        <div class="col-small"><?= $this->ficelle->formatNumber($this->rembByMonth) ?> &euro;</div>
                     </li>
                 </ul>
             </div>
             <div class="list">
                 <ul>
                     <li>
-                        <h5>Les minibons émis sont nominatifs.<br />Ils reproduisent le dernier bilan de l'Emetteur qu'il certifie sincère tel qu'il figure ci-après.</h5>
+                        <h5>Les bons de caisse émis sont nominatifs. Le Bon de caisse est cessible à la condition pour le cessionnaire d’avoir préalablement ouvert un compte Unilend prêteur.</h5>
                     </li>
-                    <li>La signature des minibons et contrats de prêt par Unilend engage l'Emetteur, en contrepartie des sommes remises ce jour </li>
+                    <li>Le Bénéficiaire certifie avoir inscrit la liste de prêteurs telle que récapitulée ci-dessous dans le Registre des Bons de caisse</li>
+                    <li>La signature des bons de caisse et contrats de prêt par Unilend engage l'Emetteur, en contrepartie des sommes remises ce jour</li>
                     <li>
-                        <div class="col-long">
-                            à rembourser aux Prêteurs la somme de
-                        </div>
-                        <div class="col-small">
-                            <?= $this->ficelle->formatNumber($this->montantPrete, 0) ?> &euro;
-                        </div>
+                        <div class="col-long">à rembourser aux Prêteurs la somme de</div>
+                        <div class="col-small"><?= $this->ficelle->formatNumber($this->montantPrete, 0) ?> &euro;</div>
                         <div class="cl">&nbsp;</div>
                     </li>
                     <li>
-                        <div class="col-long">
-                            assortie des intérêts à
-                        </div>
-                        <div class="col-small">
-                            <?= $this->ficelle->formatNumber($this->taux) ?> %
-                        </div>
+                        <div class="col-long">assortie des intérêts à</div>
+                        <div class="col-small"><?= $this->ficelle->formatNumber($this->taux) ?> %</div>
                         <div class="cl">&nbsp;</div>
                     </li>
-                    <li>
-                        selon l'échéancier annexé aux présentes.
-                    </li>
+                    <li>selon l'échéancier annexé aux présentes.</li>
                 </ul>
             </div>
             <div class="list">
                 <ul>
                     <li>
-                        <div class="col-long">
-                            Signature de l'Emetteur
-                        </div>
-                        <div class="col-small">
-                            <div style="background-color:white;border:1px solid #808080;height: 50px;width: 250px;"></div>
-                        </div>
+                        <div class="col-long">Signature de l'Emetteur</div>
+                        <div class="col-small"><div style="background-color:white;border:1px solid #808080;height: 50px;width: 250px;"></div></div>
                         <div class="cl">&nbsp;</div>
                     </li>
                 </ul>
@@ -222,101 +142,9 @@
             <br/>
             <div class="list">
                 <ul>
-                    <li>Les minibons sont réalisés selon les dispositions légales prévues aux articles L226-3 à L226-13 du code monétaire et financier.</li>
+                    <li>Les bons de caisse sont réalisés selon les dispositions légales prévues aux articles L226-3 à L226-13 du code monétaire et financier.</li>
                     <li>Les contrats de prêt sont réalisés selon les dispositions légales prévues aux articles R548-6 et R558-8 du code monétaire et financier.</li>
                 </ul>
-            </div>
-        </div>
-        <div class="pageBreakBefore" style="margin-top: 40px;padding-top: 20px;">
-            <div class="list">
-                <ul>
-                    <li>
-                        Au <?= $this->dateDernierBilan ?>
-                    </li>
-                </ul>
-                <h5>ACTIF</h5>
-                <div class="list">
-                    <ul>
-                        <li>
-                            Immobilisations corporelles
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_corporelles'], 0) ?> &euro;</div>
-                        </li>
-                        <li>
-                            Immobilisations incorporelles
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_incorporelles'], 0) ?> &euro;</div>
-                        </li>
-                        <li>
-                            Immobilisations financières
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_financieres'], 0) ?> &euro;</div>
-                        </li>
-                        <li>
-                            Stocks
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['stocks'], 0) ?> &euro;</div>
-                        </li>
-                        <li>
-                            Créances clients et autres
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['creances_clients'], 0) ?> &euro;</div>
-                        </li>
-                        <li>
-                            Disponibilités
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['disponibilites'], 0) ?> &euro;</div>
-                        </li>
-                        <li>
-                            Valeurs mobilières de placement
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['valeurs_mobilieres_de_placement'], 0) ?> &euro;</div>
-                        </li>
-                        <?php if ($this->l_AP[0]['comptes_regularisation_actif'] != 0) : ?>
-                            <li>
-                                Comptes de régularisation
-                                <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['comptes_regularisation_actif'], 0) ?> &euro;</div>
-                            </li>
-                        <?php endif; ?>
-                    </ul>
-                </div>
-                <div class="total-row">
-                    Total actif : <?= $this->ficelle->formatNumber($this->totalActif, 0) ?> &euro;
-                </div>
-                <h5>PASSIF</h5>
-                <div class="list">
-                    <ul>
-                        <li>
-                            Capitaux propres
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['capitaux_propres'], 0) ?> &euro;</div>
-                        </li>
-                        <li>
-                            Provisions pour risques et charges
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['provisions_pour_risques_et_charges'], 0) ?> &euro;</div>
-                        </li>
-                        <li>
-                            Amortissements sur immobilisations
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['amortissement_sur_immo'], 0) ?> &euro;</div>
-                        </li>
-                        <li>
-                            Dettes financières
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['dettes_financieres'], 0) ?> &euro;</div>
-                        </li>
-                        <li>
-                            Dettes fournisseurs
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['dettes_fournisseurs'], 0) ?> &euro;</div>
-                        </li>
-                        <li>
-                            Autres dettes
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['autres_dettes'], 0) ?> &euro;</div>
-                        </li>
-                        <?php if ($this->l_AP[0]['comptes_regularisation_passif'] != 0) : ?>
-                            <li>
-                                Comptes de régularisation
-                                <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['comptes_regularisation_passif'], 0) ?> &euro;</div>
-                            </li>
-                        <?php endif; ?>
-                    </ul>
-                </div>
-                <div class="total-row">
-                    Total passif : <?= $this->ficelle->formatNumber($this->totalPassif, 0) ?> &euro;
-                </div>
-                <div class="center-text">
-                    Certifié sincère par l'Emprunteur
-                </div>
             </div>
         </div>
         <?php if ($this->projects->period > 48): ?>
@@ -443,14 +271,14 @@
             ?>
             <div class="pageBreakBefore" style="padding-top: 30px;">
                 <?php if ($var == 0): ?>
-                    <h3>LISTE ET CARACTERISTIQUES DES MINIBONS ET DES CONTRATS DE PRET</h3>
+                    <h3>LISTE ET CARACTERISTIQUES DES BONS DE CAISSE ET DES CONTRATS DE PRET</h3>
                 <?php endif; ?>
                 <div class="dates-table">
                     <table width="100%" cellspacing="0" cellpadding="0" class="table-3">
                         <?php if ($var == 0) : ?>
                             <tr>
-                                <th>NOM ou<br/> Raison sociale</th>
-                                <th>PRENOM<br/> ou SIREN</th>
+                                <th>NOM ou<br/>Raison sociale</th>
+                                <th>PRENOM<br/>ou SIREN</th>
                                 <th>ADRESSE</th>
                                 <th>CODE<br/> POSTAL</th>
                                 <th>VILLE</th>
