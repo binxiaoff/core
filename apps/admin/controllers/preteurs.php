@@ -212,14 +212,17 @@ class preteursController extends bootstrap
         $this->soldeRetrait = abs($this->soldeRetrait / 100);
         $this->lTrans       = $this->transactions->select('type_transaction IN (' . implode(', ', array_keys($this->lesStatuts)) . ') AND status = 1 AND etat = 1 AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . date('Y'), 'added DESC');
 
-        /** @var \loan_transfer $loanTransfers */
-        $loanTransfers         = $this->loadData('loan_transfer');
-        $lenderLoanTransfers   = $loanTransfers->select('id_lender_origin = ' . $this->lenders_accounts->id_lender_account . ' OR id_lender_reciever = ' . $this->lenders_accounts->id_lender_account);
+        /** @var \transfer $transfer */
+        $transfer = $this->loadData('transfer');
+        $transfersForClient = $transfer->select('id_client_origin = ' . $this->clients->id_client . ' OR id_client_receiver = ' . $this->clients->id_client);
 
-        $this->loanTransferDocuments = [];
-        foreach ($lenderLoanTransfers as $transfer) {
-            $transferDocument = $this->attachment->select('id_owner = ' . $transfer['id_transfer'] . ' AND id_type = ' . \attachment_type::LOAN_TRANSFER_CERTIFICATE)[0];
-            $this->loanTransferDocuments[$transferDocument['path']] = $transferDocument;
+        $this->transferDocuments = [];
+        foreach ($transfersForClient as $transfer) {
+            $transferDocument = $this->attachment->select('id_owner = ' . $transfer['id_transfer'] . ' AND id_type = ' . \attachment_type::TRANSFER_CERTIFICATE);
+            if (false === empty($transferDocument)) {
+                $transferDocument = $transferDocument[0];
+                $this->transferDocuments[$transferDocument['path']] = $transferDocument;
+            }
         }
 
         $this->getMessageAboutClientStatus();
@@ -377,7 +380,7 @@ class preteursController extends bootstrap
 
         if (isset($_POST['send_completude'])) {
             $this->sendCompletenessRequest();
-            $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::COMPLETENESS, utf8_encode($_SESSION['content_email_completude'][ $this->clients->id_client ]));
+            $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::COMPLETENESS, $_SESSION['content_email_completude'][ $this->clients->id_client ]);
 
             unset($_SESSION['content_email_completude'][$this->clients->id_client]);
 

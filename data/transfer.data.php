@@ -1,13 +1,12 @@
 <?php
 
 
-class loan_transfer_type extends loan_transfer_type_crud
+class transfer extends transfer_crud
 {
-    const TYPE_INHERITANCE = 1;
 
     public function __construct($bdd, $params = '')
     {
-        parent::loan_transfer_type($bdd, $params);
+        parent::transfer($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -20,7 +19,7 @@ class loan_transfer_type extends loan_transfer_type_crud
             $order = ' ORDER BY ' . $order;
         }
 
-        $sql = 'SELECT * FROM `loan_transfer_type`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+        $sql = 'SELECT * FROM `transfer`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $result   = array();
         $resultat = $this->bdd->query($sql);
@@ -36,11 +35,11 @@ class loan_transfer_type extends loan_transfer_type_crud
             $where = ' WHERE ' . $where;
         }
 
-        return (int) $this->bdd->result($this->bdd->query('SELECT COUNT(*) FROM `loan_transfer_type` ' . $where), 0, 0);
+        return (int) $this->bdd->result($this->bdd->query('SELECT COUNT(*) FROM `transfer` ' . $where), 0, 0);
     }
 
-    public function exist($id, $field = 'id_product')
+    public function exist($id, $field = 'id_transfer')
     {
-        return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `loan_transfer_type` WHERE ' . $field . ' = "' . $id . '"')) > 0;
+        return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `transfer` WHERE ' . $field . ' = "' . $id . '"')) > 0;
     }
 }

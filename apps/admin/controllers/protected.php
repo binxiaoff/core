@@ -697,14 +697,9 @@ class protectedController extends bootstrap
             exit;
         }
 
-        if (false === empty($loans->id_transfer)) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager $loanManager */
-            $loanManager = $this->get('unilend.service.loan_manager');
-            /** @var \lenders_accounts $formerOwner */
-            $formerOwner = $loanManager->getFirstOwner($loans);
-            $clients->get($formerOwner->id_client_owner, 'id_client');
-        } else {
-            $clients->get($lendersAccounts->id_client_owner, 'id_client');
+        if (false === $clients->get($lendersAccounts->id_client_owner, 'id_client')) {
+            header('Location: ' . $this->lurl);
+            exit;
         }
 
         $namePdfClient = 'CONTRAT-UNILEND-' . $projects->slug . '-' . $loans->id_loan;

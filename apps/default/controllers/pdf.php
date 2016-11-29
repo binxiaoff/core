@@ -578,18 +578,17 @@ class pdfController extends bootstrap
             exit;
         }
 
-        if (false === empty($loans->id_transfer)) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager $loanManager */
-            $loanManager = $this->get('unilend.service.loan_manager');
-            /** @var \lenders_accounts $formerOwner */
-            $formerOwner = $loanManager->getFirstOwner($loans);
-            $clients->get($formerOwner->id_client_owner, 'id_client');
-        }
-
         $namePdfClient = 'CONTRAT-UNILEND-' . $projects->slug . '-' . $loans->id_loan;
         $filePath      = $this->path . 'protected/pdf/contrat/contrat-' . $clients->hash . '-' . $loans->id_loan . '.pdf';
 
         if (false === file_exists($filePath)) {
+            if (false === empty($loans->id_transfer)) {
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager $loanManager */
+                $loanManager = $this->get('unilend.service.loan_manager');
+                /** @var \lenders_accounts $formerOwner */
+                $formerOwner = $loanManager->getFirstOwner($loans);
+                $clients->get($formerOwner->id_client_owner, 'id_client');
+            }
             $this->GenerateContractHtml($clients, $loans, $projects);
             $this->WritePdf($filePath, 'contract');
         }

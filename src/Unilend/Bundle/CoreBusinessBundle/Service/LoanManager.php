@@ -66,9 +66,13 @@ class LoanManager
         $loanTransfer = $this->oEntityManager->getRepository('loan_transfer');
         $loanTransfer->get($loan->id_transfer);
 
+        /** @var \transfer $transfer */
+        $transfer = $this->oEntityManager->getRepository('transfer');
+        $transfer->get($loanTransfer->id_transfer);
+
         /** @var \lenders_accounts $lender */
         $lender = $this->oEntityManager->getRepository('lenders_accounts');
-        $lender->get($loanTransfer->id_lender_origin);
+        $lender->get($transfer->id_client_origin, 'id_client_owner');
 
         return $lender;
     }
@@ -96,10 +100,15 @@ class LoanManager
         /** @var \loan_transfer $loanTransfer */
         $loanTransfer = $this->oEntityManager->getRepository('loan_transfer');
         $firstTransfer = $loanTransfer->select('id_loan = ' . $loan->id_loan, 'added ASC', null, 1)[0];
+        $loanTransfer->get($firstTransfer['id_loan_transfer']);
+
+        /** @var \transfer $transfer */
+        $transfer = $this->oEntityManager->getRepository('transfer');
+        $transfer->get($loanTransfer->id_transfer);
 
         /** @var \lenders_accounts $lender */
         $lender = $this->oEntityManager->getRepository('lenders_accounts');
-        $lender->get($firstTransfer['id_lender_origin']);
+        $lender->get($transfer->id_client_origin, 'id_client_owner');
 
         return $lender;
     }

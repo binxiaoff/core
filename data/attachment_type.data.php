@@ -74,7 +74,7 @@ class attachment_type extends attachment_type_crud
     const DERNIERE_LIASSE_FISCAL_HOLDING       = 53;
     const KBIS_HOLDING                         = 54;
     const PHOTOS_ACTIVITE                      = 55;
-    const LOAN_TRANSFER_CERTIFICATE            = 56;
+    const TRANSFER_CERTIFICATE                 = 56;
 
     public function __construct($bdd, $params = '')
     {

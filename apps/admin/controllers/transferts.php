@@ -1037,30 +1037,33 @@ class transfertsController extends bootstrap
                     $this->addErrorMessageAndRedirect('Il manque le justificatif de transfer');
                 }
 
-                /** @var \lenders_accounts $originalLender */
-                $originalLender = $this->loadData('lenders_accounts');
-                $originalLender->get($originalClient->id_client, 'id_client_owner');
-                /** @var \lenders_accounts $newLender */
-                $newLender = $this->loadData('lenders_accounts');
-                $newLender->get($newOwner->id_client, 'id_client_owner');
+                /** @var \transfer $transfer */
+                $transfer                     = $this->loadData('transfer');
+                $transfer->id_client_origin   = $originalClient->id_client;
+                $transfer->id_client_receiver = $newOwner->id_client;
+                $transfer->id_transfer_type  = \transfer_type::TYPE_INHERITANCE;
+                $transfer->create();
+
+                $this->uploadTransferDocument($transferDocument, $transfer, 'transfer_document');
 
                 /** @var \transactions $transactions */
-                $transactions = $this->loadData('transactions');
+                $transactions          = $this->loadData('transactions');
                 $originalClientBalance = $clientManager->getClientBalance($originalClient);
-                $this->transferAccountBalance($transactions, $originalClientBalance, $originalClient, $newOwner);
+                $this->transferAccountBalance($transfer, $transactions, $originalClientBalance);
 
                 /** @var \loan_transfer $loanTransfer */
                 $loanTransfer = $this->loadData('loan_transfer');
+                /** @var \lenders_accounts $originalLender */
+                $originalLender = $this->loadData('lenders_accounts');
+                $originalLender->get($transfer->id_client_origin, 'id_client_owner');
+                /** @var \lenders_accounts $newLender */
+                $newLender = $this->loadData('lenders_accounts');
+                $newLender->get($transfer->id_client_receiver, 'id_client_owner');
 
-                /** @var \echeanciers $repaymentSchedule */
-                $repaymentSchedule = $this->loadData('echeanciers');
                 $numberLoans  = 0;
-
                 foreach ($loans->getLoansWithOngoingRepayments($originalLender->id_lender_account, \projects_status::$runningRepayment) as $loan) {
                     $loans->get($loan['id_loan']);
-                    $this->transferLoan($loanTransfer, $loans, $originalLender, $newLender, $transferDocument, 'transfer_document');
-                    $this->transferLoanPdf($loans, $originalClient, $newOwner);
-                    $this->transferRepaymentSchedule($loans, $repaymentSchedule, $newLender);
+                    $this->transferLoan($transfer, $loanTransfer, $loans, $newLender, $originalClient, $newOwner);
                     $loans->unsetData();
                     $numberLoans += 1;
                 }
@@ -1097,68 +1100,61 @@ class transfertsController extends bootstrap
         }
     }
 
-    private function transferAccountBalance(\transactions $transactions, $accountBalance, \clients $originalClient, \clients $newOwner)
+    /**
+     * @param \transfer $transfer
+     * @param \transactions $transactions
+     * @param $accountBalance
+     */
+    private function transferAccountBalance(\transfer $transfer, \transactions $transactions, $accountBalance)
     {
-        $transactions->id_client             = $originalClient->id_client;
-        $transactions->montant               = -$accountBalance * 100;
-        $transactions->status                = \transactions::PAYMENT_STATUS_OK;
-        $transactions->etat                  = \transactions::STATUS_VALID;
-        $transactions->id_client_counterpart = $newOwner->id_client;
-        $transactions->type_transaction      = \transactions_types::TYPE_LENDER_BALANCE_TRANSFER;
-        $transactions->date_transaction      = date('Y-m-d h:i:s');
-        $transactions->id_langue             = 'fr';
+        $transactions->id_client        = $transfer->id_client_origin;
+        $transactions->montant          = -$accountBalance * 100;
+        $transactions->status           = \transactions::PAYMENT_STATUS_OK;
+        $transactions->etat             = \transactions::STATUS_VALID;
+        $transactions->type_transaction = \transactions_types::TYPE_LENDER_BALANCE_TRANSFER;
+        $transactions->date_transaction = date('Y-m-d h:i:s');
+        $transactions->id_langue        = 'fr';
+        $transactions->id_transfer      = $transfer->id_transfer;
         $transactions->create();
 
         $transactions->unsetData();
 
-        $transactions->id_client             = $newOwner->id_client;
-        $transactions->montant               = $accountBalance * 100;
-        $transactions->status                = \transactions::PAYMENT_STATUS_OK;
-        $transactions->etat                  = \transactions::STATUS_VALID;
-        $transactions->id_client_counterpart = $originalClient->id_client;
-        $transactions->type_transaction      = \transactions_types::TYPE_LENDER_BALANCE_TRANSFER;
-        $transactions->date_transaction      = date('Y-m-d h:i:s');
-        $transactions->id_langue             = 'fr';
+        $transactions->id_client        =$transfer->id_client_receiver;
+        $transactions->montant          = $accountBalance * 100;
+        $transactions->status           = \transactions::PAYMENT_STATUS_OK;
+        $transactions->etat             = \transactions::STATUS_VALID;
+        $transactions->type_transaction = \transactions_types::TYPE_LENDER_BALANCE_TRANSFER;
+        $transactions->date_transaction = date('Y-m-d h:i:s');
+        $transactions->id_langue        = 'fr';
+        $transactions->id_transfer      = $transfer->id_transfer;
         $transactions->create();
     }
 
-    private function transferLoan(\loan_transfer $loanTransfer, \loans $loans, \lenders_accounts $originalLender, \lenders_accounts $newLender, \attachment $transferDocument, $fieldName)
+    private function transferLoan(\transfer $transfer, \loan_transfer $loanTransfer, \loans $loans, \lenders_accounts $newLender, \clients $originalClient, \clients $newOwner)
     {
-        $loanTransfer->id_lender_origin   = $originalLender->id_lender_account;
-        $loanTransfer->id_lender_reciever = $newLender->id_lender_account;
-        $loanTransfer->id_transfer_type   = \loan_transfer_type::TYPE_INHERITANCE;
-        $loanTransfer->id_loan            = $loans->id_loan;
+        $loanTransfer->id_transfer = $transfer->id_transfer;
+        $loanTransfer->id_loan     = $loans->id_loan;
         $loanTransfer->create();
 
-        $loans->id_transfer = $loanTransfer->id_transfer;
+        $loans->id_transfer = $loanTransfer->id_loan_transfer;
         $loans->id_lender   = $newLender->id_lender_account;
         $loans->update();
 
-        if (
-            false === empty($transferDocument->id)
-            && $transferDocument->exist($transferDocument->type_owner, 'path = "' . $transferDocument->path . '" AND id_type = ' . $transferDocument->id_type . ' AND type_owner')
-        ) {
-            $document             = clone $transferDocument;
-            $document->id         = '';
-            $document->id_owner   = $loanTransfer->id_transfer;
-            $document->type_owner = 'loan_transfer';
-            $document->create();
-
-            $document->unsetData();
-        } else {
-            $transferDocument = $this->uploadTransferDocument($transferDocument, $originalLender, $newLender, $loanTransfer->id_transfer, $fieldName);
-        }
-
         $loanTransfer->unsetData();
+        $this->transferRepaymentSchedule($loans, $newLender);
+        $this->transferLoanPdf($loans, $originalClient, $newOwner);
+        $this->deleteClaimsPdf($loans, $originalClient);
     }
 
     /**
      * @param \loans $loans
-     * @param \echeanciers $repaymentSchedule
      * @param \lenders_accounts $newLender
      */
-    private function transferRepaymentSchedule(\loans $loans, \echeanciers $repaymentSchedule, \lenders_accounts $newLender)
+    private function transferRepaymentSchedule(\loans $loans, \lenders_accounts $newLender)
     {
+        /** @var \echeanciers $repaymentSchedule */
+        $repaymentSchedule = $this->loadData('echeanciers');
+
         foreach ($repaymentSchedule->select('id_loan = ' . $loans->id_loan) as $repayment){
             $repaymentSchedule->get($repayment['id_echeancier']);
             $repaymentSchedule->id_lender = $newLender->id_lender_account;
@@ -1179,13 +1175,11 @@ class transfertsController extends bootstrap
 
     /**
      * @param \attachment $attachment
-     * @param \lenders_accounts $originalLender
-     * @param \lenders_accounts $newLender
-     * @param int $transferId
+     * @param \transfer $transfer
      * @param string $field
      * @return \attachment
      */
-    private function uploadTransferDocument(\attachment $attachment, \lenders_accounts $originalLender, \lenders_accounts $newLender, $transferId, $field)
+    private function uploadTransferDocument(\attachment $attachment, \transfer $transfer, $field)
     {
         if (false === isset($this->attachment_type) || false === $this->attachment_type instanceof attachment_type) {
             $this->attachment_type = $this->loadData('attachment_type');
@@ -1201,33 +1195,32 @@ class transfertsController extends bootstrap
 
         $newName = '';
         if (isset($_FILES[$field]['name']) && $fileInfo = pathinfo($_FILES[$field]['name'])) {
-            $newName = mb_substr($fileInfo['filename'], 0, 20) . '_' . $originalLender->id_lender_account . '_' . $newLender->id_lender_account;
+            $newName = mb_substr($fileInfo['filename'], 0, 20) . '_' . $transfer->id_client_origin . '_' . $transfer->id_client_receiver . '_' . $transfer->id_transfer;
         }
 
-        $filePath = $this->path . 'protected/clients/' . \attachment_helper::PATH_LOAN_TRANSFER;
-
-        if (false === file_exists($filePath . '/' . $newName)) {
-            $idAttachment = $this->attachmentHelper->upload($transferId, \attachment::LOAN_TRANSFER, \attachment_type::LOAN_TRANSFER_CERTIFICATE, $field, $this->upload, $newName);
-            $attachment->get($idAttachment);
-        } else {
-            $idAttachment = $attachment->select('path = ' . $newName . ' AND type_owner = ' . \attachment::LOAN_TRANSFER, null, null, 1)[0];
-            $attachment->get($idAttachment);
-        }
+        $idAttachment = $this->attachmentHelper->upload($transfer->id_transfer, \attachment::TRANSFER, \attachment_type::TRANSFER_CERTIFICATE, $field, $this->upload, $newName);
+        $attachment->get($idAttachment);
 
         return $attachment;
     }
 
     private function transferLoanPdf(\loans $loan, \clients $originalClient, \clients $newOwner)
     {
-        /** @var \projects $project */
-        $project = $this->loadData('projects');
-        $project->get($loan->id_project, 'id_project');
-
         $oldFilePath = $this->path . 'protected/pdf/contrat/contrat-' . $originalClient->hash . '-' . $loan->id_loan . '.pdf';
         $newFilePath = $this->path . 'protected/pdf/contrat/contrat-' . $newOwner->hash . '-' . $loan->id_loan . '.pdf';
 
         if (file_exists($oldFilePath)) {
             rename($oldFilePath, $newFilePath);
+        }
+    }
+
+    private function deleteClaimsPdf(\loans $loan, \clients $originalClient)
+    {
+        $filePath      = $this->path . 'protected/pdf/declaration_de_creances/' . $loan->id_project . '/';
+        $filePath      = ($loan->id_project == '1456') ? $filePath : $filePath . $originalClient->id_client . '/';
+        $filePath      = $filePath . 'declaration-de-creances' . '-' . $originalClient->hash . '-' . $loan->id_loan . '.pdf';
+        if (file_exists($filePath)) {
+            unlink($filePath);
         }
     }
 }

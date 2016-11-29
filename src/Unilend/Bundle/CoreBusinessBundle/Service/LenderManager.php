@@ -138,9 +138,17 @@ class LenderManager
 
     public function hasTransferredLoans(\lenders_accounts $lender)
     {
+        /** @var \transfer $transfer */
+        $transfer = $this->oEntityManager->getRepository('transfer');
         /** @var \loan_transfer $loanTransfer */
         $loanTransfer = $this->oEntityManager->getRepository('loan_transfer');
-        $lenderLoanTransfers = $loanTransfer->select('id_lender_origin = ' . $lender->id_lender_account . ' OR id_lender_reciever = ' . $lender->id_lender_account);
-        return false === empty($lenderLoanTransfers);
+        $transfersWithLenderInvolved = $transfer->select('id_client_origin = ' . $lender->id_client_owner . ' OR id_client_receiver = ' . $lender->id_client_owner);
+
+        foreach ($transfersWithLenderInvolved as $transfer) {
+            if ($loanTransfer->exist($transfer['id_transfer'], 'id_transfer')){
+               return true;
+            }
+        }
+        return false;
     }
 }
