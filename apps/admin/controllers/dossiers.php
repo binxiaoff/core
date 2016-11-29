@@ -1481,9 +1481,13 @@ class dossiersController extends bootstrap
             if (isset($this->params[1]) && $this->params[1] === 'altares') {
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Altares $oAltares */
                 $oAltares = $this->get('unilend.service.altares');
-                $oAltares->setCompanyData($this->companies);
-                $oAltares->setProjectData($this->projects);
-                $oAltares->setCompanyBalance($this->companies);
+                try {
+                    $oAltares->setCompanyData($this->companies);
+                    $oAltares->setProjectData($this->projects);
+                    $oAltares->setCompanyBalance($this->companies);
+                } catch (\Exception $exception) {
+
+                }
 
                 header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
                 die;

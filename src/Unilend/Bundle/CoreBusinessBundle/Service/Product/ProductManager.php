@@ -120,6 +120,16 @@ class ProductManager
     }
 
     /**
+     * @param \product $product
+     *
+     * @return int|null
+     */
+    public function getAutobidMaxEligibleAmount($lender, $product)
+    {
+        return $this->lenderValidator->getAutobidMaxEligibleAmount($lender, $product, $this->entityManager, $this->contractManager);
+    }
+
+    /**
      * @param \lenders_accounts $lenderAccount
      * @param \projects         $project
      *

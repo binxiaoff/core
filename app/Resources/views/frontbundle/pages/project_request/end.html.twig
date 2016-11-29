@@ -75,9 +75,7 @@
                                         {% if subtitle is not empty %}
                                             <h3 class="h3">{{ subtitle|raw }}</h3>
                                         {% endif %}
-
                                         <p>{{ message|raw }}</p>
-
                                         {% if addMoreFiles %}
                                             <p><a href="{{ path('project_request_files', {'hash' : project.hash}) }}" class="link">{% trans %} project-request_end-page-add-other-files-link {% endtrans %}</a></p>
                                         {% endif %}
