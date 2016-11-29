@@ -1595,9 +1595,10 @@ class LenderProfileController extends Controller
 
         try {
             $taxExemptionDateRange = $this->getTaxExemptionDateRange();
+            /** @var \DateTime $now */
+            $now = new \DateTime();
 
-            if ((new \DateTime('now')) >= $taxExemptionDateRange['taxExemptionRequestStartDate']
-                && (new \DateTime('now')) <= $taxExemptionDateRange['taxExemptionRequestLimitDate']
+            if ($now >= $taxExemptionDateRange['taxExemptionRequestStartDate'] && $now <= $taxExemptionDateRange['taxExemptionRequestLimitDate']
                 && true === empty($lenderTaxExemption->getLenderExemptionHistory($lender->id_lender_account, $year))
             ) {
 
@@ -1644,8 +1645,9 @@ class LenderProfileController extends Controller
      */
     private function checkIfTaxExemptionIsPossible(array $taxExemptionHistory, array $taxExemptionDateRange, $isEligible)
     {
-        $outOfDate = (new \DateTime('now')) < $taxExemptionDateRange['taxExemptionRequestStartDate'] ||
-                     (new \DateTime('now')) > $taxExemptionDateRange['taxExemptionRequestLimitDate'];
+        /** @var \DateTime $now */
+        $now       = new \DateTime();
+        $outOfDate = $now < $taxExemptionDateRange['taxExemptionRequestStartDate'] || $now > $taxExemptionDateRange['taxExemptionRequestLimitDate'];
 
         if (false === empty($taxExemptionHistory)) {
             $taxExemptionRequestDone = in_array(date('Y') + 1, array_column($taxExemptionHistory, 'year'));
