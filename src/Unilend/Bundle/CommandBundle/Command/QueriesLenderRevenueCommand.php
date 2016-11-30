@@ -253,7 +253,7 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
                                             SELECT
                                               t.id_client,
                                               t.id_transaction,
-                                              (SELECT id_pays FROM lenders_imposition_history WHERE id_lender = la.id_lender_account AND added <= t.date_transaction ORDER BY added DESC LIMIT 1) AS id_pays
+                                              (SELECT lih.id_pays FROM lenders_imposition_history lih INNER JOIN pays_v2 ON lih.id_pays = pays_v2.id_pays WHERE id_lender = la.id_lender_account AND added <= t.date_transaction ORDER BY added DESC LIMIT 1) AS id_pays
                                             FROM temporary_lender_repayment_transactions t
                                               INNER JOIN lenders_accounts la ON t.id_client = la.id_client_owner
                                             WHERE type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . ' AND t.id_client = ' . $clients->id_client);
