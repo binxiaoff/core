@@ -26,13 +26,12 @@ function getBidData (elem) {
 
   var bidData = {
     projectSlug: sanitiseFromURL(window.location.href.split('/').pop()),
-    projectId: sanitiseFromURL($elem.attr('action').split('/').pop()),
     rate: parseFloat($elem.find('[data-bid-rate]').val()),
     amount: parseFloat($elem.find('[data-bid-amount]').val())
   }
 
   // No project, rate or amount set
-  if (!bidData.projectId || !bidData.projectSlug || !bidData.rate || !bidData.amount) {
+  if (!bidData.projectSlug || !bidData.rate || !bidData.amount) {
     return false
   }
 
@@ -41,7 +40,6 @@ function getBidData (elem) {
 
 // Show the bid confirmation prompt modal
 function bidConfirmationPrompt (bidData) {
-
   // @debug
   // console.log('Confirming bid...', bidData)
 
@@ -54,8 +52,8 @@ function bidConfirmationPrompt (bidData) {
   $('#modal-bid-confirmation-prompt [data-bid-confirmation-message]').each(function (i, elem) {
     var messageTemplate = $(this).attr('data-bid-confirmation-message')
     $(elem).html(Templating.replace(messageTemplate, {
-      rate: '<strong>' + __.localizedNumber(bidData.rate, 1) + '%</strong>',
-      amount: '<strong>' + Templating.filter(__.localizedPrice(bidData.amount), 'nbsp') + '€</strong>'
+      rate: '<strong>' + __.localizedNumber(bidData.rate, 1) + '&nbsp;%</strong>',
+      amount: '<strong>' + Templating.filter(__.localizedPrice(bidData.amount, 0), 'nbsp') + '&nbsp;€</strong>'
     }, {
       keywordPrefix: '%',
       keywordSuffix: '%'
@@ -79,28 +77,23 @@ $doc.on('Modal:confirmed', '#modal-bid-confirmation-prompt', function (event) {
   }])
 })
 
-// When the CIP questionnaire modal is closed, open up the bid confirmation prompt
-// @note Due to Fancybox's limitation of supporting only a single modal being shown, it's necessary to hook into the closed event to then show the next modal
-$doc.on('Modal:closed', '#modal-cip-questionnaire-prompt', function (event, elemModal) {
-  var $modalCip = $(this)
-  var bidData = $modalCip.data('bid')
-
-  // Show
-  if (bidData) {
-    bidConfirmationPrompt(bidData)
-  }
+$doc.on('Modal:confirmed', '#modal-cip-advices-prompt', function () {
+  var $form = $('form[data-bid-confirmation]')
+  var bidData = getBidData($form)
+  bidConfirmationPrompt(bidData)
 })
 
 // Submit the bid for confirmation
 // @note With the CIP questionnaire, this now needs to validate whether to ask the user if they want to take a questionnaire or not.
-//       If a user declines, they continue with the answering the modal prompt
+//       If a user declines, they go back to bid form
 //       If a user accepts to take the questionnaire, they are then redirected to the CIP questionnare
 //       After filling in the CIP questionnaire, a user is taken back to the project detail page with their bid attempt restored
 //       and the prompt available to continue their bid.
 $doc.on('submit', 'form[data-bid-confirmation]', function (event, options) {
   var $form = $(this)
   var bidData = getBidData($form)
-  var $modalCip = $('#modal-cip-questionnaire-prompt')
+  var $modalCipAdvices = $('#modal-cip-advices-prompt')
+  var $modalCipQuestionnaire = $('#modal-cip-questionnaire-prompt')
 
   // @debug
   // console.log($form.attr('action'))
@@ -110,101 +103,73 @@ $doc.on('submit', 'form[data-bid-confirmation]', function (event, options) {
     // @debug
     // console.log('Bid confirmed. Submitting...')
 
-    // Show spinner is loading...
-    $form.trigger('Spinner:showLoading')
+    return
 
-    // ~~~ Traa la la la laaaa ~~~
-    // event.preventDefault()
-    // return false
-
-  // Show the bid confirmation/CIP questionnaire prompts
+    // Show the bid confirmation/CIP questionnaire prompts
   } else {
     event.preventDefault()
 
     // @debug
     // console.log('data-bid-confirmation', bidData)
 
-    // Test for CIP questionnaire
-    if ($modalCip.length && !$form.is('[data-bid-confirmation-show]')) {
+    // Show spinner is loading
+    $form.trigger('Spinner:showLoading')
 
-      // Show spinner is loading
-      $form.trigger('Spinner:showLoading')
+    // Validate with server to show CIP questionnaire prompt
+    $.ajax({
+      url: '/projects/pre-check-bid/' + bidData.projectSlug + '/' + bidData.amount + '/' + bidData.rate,
+      global: false,
+      success: function (data) {
+        // Show the eligibility message
+        if (data.hasOwnProperty('error')) {
+          var messages = '';
+          data.messages.forEach(function(element) {
+            messages += '<p>' + element + '</p>'
+          });
 
-      // Validate with server to show CIP questionnaire prompt
-      $.ajax({
-        url: '/conseil-cip/bid',
-        data: {
-          project: bidData.projectSlug,
-          rate: bidData.rate,
-          amount: bidData.amount
-        },
-        global: false,
-        success: function (data, textStatus) {
-          if (data.hasOwnProperty('validation')) {
-            // Show the CIP questionnaire
-            if (data.validation && $modalCip.length > 0) {
-              // @debug
-              // console.log('Asking CIP questionnaire...')
-
-              // Save the information about the project to the modal
-              $modalCip.data('bid', bidData)
-
-              // Show the CIP questionnare confirmation prompt modal
-              $modalCip.uiModal('open')
-              return
-            }
-          }
-
-          // Ignore errors...
-          // if (data.hasOwnProperty('error')) {
-          //   console.warn(data)
-          // }
-
-          // Clear any saved bid data
-          $modalCip.data('bid', false)
-
-          // Show the bid questionnaire
-          bidConfirmationPrompt(bidData)
-        },
-        complete: function () {
-          // Hide spinner is loading
-          $form.trigger('Spinner:hideLoading')
+          $('#modal-bid-error-prompt .modal-body .error-messages').html(messages)
+          $('#modal-bid-error-prompt').uiModal('open')
+          return
         }
-      })
+        // show the CIP advices
+        else if (data.hasOwnProperty('validation') && data.validation) {
+          // Show the advices
+          if (data.hasOwnProperty('advices') && data.advices && $modalCipAdvices.length > 0) {
+            // @debug
+            // console.log('Showing CIP advices...')
 
-    // No CIP test needed, so show the bid confirmation prompt
-    } else {
-      // Check if there are any form validation errors and only show confirmation if no errors
-      if ($form.find('ui-formvalidation-error').length === 0) {
+            // Set message
+            $modalCipAdvices.find('#modal-cip-advices-message').html(data.advices)
+
+            // Show the CIP questionnare confirmation prompt modal
+            $modalCipAdvices.uiModal('open')
+            return
+          }
+          // Show the CIP questionnaire
+          else if (data.hasOwnProperty('questionnaire') && data.questionnaire && $modalCipQuestionnaire.length > 0) {
+            // @debug
+            // console.log('Asking CIP questionnaire...')
+
+            // Show the CIP questionnare confirmation prompt modal
+            $modalCipQuestionnaire.uiModal('open')
+            return
+          }
+        }
+
+        // Ignore errors...
+        // if (data.hasOwnProperty('error')) {
+        //   console.warn(data)
+        // }
+
+        // Show the bid questionnaire
         bidConfirmationPrompt(bidData)
+      },
+      complete: function () {
+        // Hide spinner is loading
+        $form.trigger('Spinner:hideLoading')
       }
-    }
+    })
 
     return false
   }
-})
-
-// When DOM ready...
-$doc.on('ready', function () {
-  // Show the bid confirmation on ready
-  // @note this is used for when the user has filled in the CIP questionnaire and is returned back to the project detail page
-  //       If you want to show the confirmation on load/ready, set `data-bid-confirmation-show="true"` on the element
-  $('[data-bid-confirmation-show]').each(function (i, elem) {
-    var $elem = $(elem)
-
-    // @debug
-    // console.log('show bid confirmation', {
-    //   show: $(elem).attr('data-bid-confirmation-show'),
-    //   showBoolean: Utility.convertToBoolean($(elem).attr('data-bid-confirmation-show'))
-    // })
-
-    if (Utility.convertToBoolean($(elem).attr('data-bid-confirmation-show'))) {
-      var bidData = getBidData($elem)
-
-      // Show the bid confirmation prompt
-      if (bidData) {
-        bidConfirmationPrompt(bidData)
-      }
-    }
-  })
 })

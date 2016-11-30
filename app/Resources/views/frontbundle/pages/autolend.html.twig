@@ -19,6 +19,22 @@ classNames: 'user-preter-autolend'
                 <p><a href="#todo" class="link">{% trans %} autolend_link-to-autolend-faq-title {% endtrans %}</a></p>
             </div><!-- /.readable-wrap -->
 
+            <div id="form-info-notifications">
+                {% if app.session.flashBag.has('autolend_error') %}
+                    <div class="message-error">
+                        {% for msg in app.session.flashBag.get('autolend_error') %}
+                            <p>{{ msg|raw }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% if app.session.flashBag.has('autolend_success') %}
+                    <div class="message-success" id="update-success-message">
+                        {% for msg in app.session.flashBag.get('autolend_success') %}
+                            <p>{{ msg|raw }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
             <div class="row autolend-enable">
                 <label for="form-autolend-enable" class="field-label-inline">{% trans %} autolend_on-off-switch-label {% endtrans %}</label>
                 <label id="form-autolend-enable-switch" class="custom-input-switch" data-custom-input="">
@@ -30,24 +46,7 @@ classNames: 'user-preter-autolend'
         <section id="autolend-config" class="collapse{% if autobid_on %} in{% endif %}">
             <input type="hidden" id="hidden-settings-mode-input" name="hidden-settings-mode-input" value="">
             <section id="autolend-config" class="collapse in">
-                <section class="panel panel-autolend-config ui-formvalidation" data-formvalidation>
-                    <div class="ui-formvalidation-notifications"></div>
-                    <div id="form-info-notifications">
-                        {% if app.session.flashBag.has('autolend_error') %}
-                            <div class="message-error">
-                                {% for msg in app.session.flashBag.get('autolend_error') %}
-                                    <p>{{ msg|raw }}</p>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                        {% if app.session.flashBag.has('autolend_success') %}
-                            <div class="message-success" id="update-success-message">
-                                {% for msg in app.session.flashBag.get('autolend_success') %}
-                                    <p>{{ msg|raw }}</p>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
+                <section class="panel panel-autolend-config" data-formvalidation data-formvalidation-shownotifications="false">
 
                     <div class="message-info" id="settings-last-updated">
                         {% trans with {'%date%' : validation_date } %} autolend_settings-last-updated-text {% endtrans %}
@@ -68,7 +67,7 @@ classNames: 'user-preter-autolend'
                                 <input type="text" id="autolend-amount" name="autolend_amount"
                                        data-formvalidation-minvalue="{{ setting('pret min') }}" step="any"
                                        value="{{ autolend_amount|default(setting('pret min'))|localizednumber }}"
-                                       class="input-field"
+                                       class="input-field" data-formvalidation-type="number"
                                        data-formvalidation-input data-formvalidation-required="true"/>
                             </div><!-- /.input-group -->
                         </div><!-- /.form-field -->

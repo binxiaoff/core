@@ -422,6 +422,48 @@
   }
 }
 
+// -- Yes - green
+@mixin button-color-yes {
+  @include link-states(
+    $link: (
+      background-color: $c-green,
+      border-color: $c-green,
+      color: $c-white
+    ),
+    $hover: (
+      background-color: $c-green,
+      border-color: $c-green,
+      color: $c-white
+    ),
+    $active: (
+      background-color: darken($c-green, 5%),
+      border-color: darken($c-green, 5%),
+      color: $c-white
+    )
+  );
+}
+
+// -- No - red
+@mixin button-color-no {
+  @include link-states(
+    $link: (
+      background-color: $c-red,
+      border-color: $c-red,
+      color: $c-white
+    ),
+    $hover: (
+      background-color: $c-red,
+      border-color: $c-red,
+      color: $c-white
+    ),
+    $active: (
+      background-color: darken($c-red, 5%),
+      border-color: darken($c-red, 5%),
+      color: $c-white
+    )
+  );
+}
+
 // -- Outline
 @mixin button-color-outline($color-link: $c-p1, $color-hover: $c-p1-hover, $color-active: $c-p1) {
   @include link-states(
@@ -489,6 +531,18 @@
 @mixin button-type-alternate {
   @include button;
   @include button-color-alternate;
+  @include button-shape-default;
+}
+
+@mixin button-type-yes {
+  @include button;
+  @include button-color-yes;
+  @include button-shape-default;
+}
+
+@mixin button-type-no {
+  @include button;
+  @include button-color-no;
   @include button-shape-default;
 }
 
@@ -895,6 +949,14 @@
 
 .btn-alternate {
   @include button-type-alternate;
+}
+
+.btn-yes {
+  @include button-type-yes;
+}
+
+.btn-no {
+  @include button-type-no;
 }
 
 .btn-outline {

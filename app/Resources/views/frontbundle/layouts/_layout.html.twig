@@ -59,7 +59,7 @@
             {% endif %}
 
             {% block siteFooter %}
-                {{ render(controller('UnilendFrontBundle:Main:footer')) }}
+                {{ render(controller('UnilendFrontBundle:Main:footer', {'route': app.request.attributes.get('_route')})) }}
             {% endblock %}
         </div>
 

@@ -291,7 +291,10 @@ Dictionary.prototype.localizedNumber = function (input, limitDecimal, lang) {
 // @returns {String}
 Dictionary.prototype.localizedPrice = function (input, limitDecimal, lang) {
   var self = this
-  return self.formatNumber(input, limitDecimal || 2, true, lang)
+  if (typeof limitDecimal === 'undefined') {
+    limitDecimal = 2
+  }
+  return self.formatNumber(input, limitDecimal, true, lang)
 }
 
 module.exports = Dictionary

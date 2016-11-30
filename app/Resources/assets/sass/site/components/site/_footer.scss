@@ -2,6 +2,14 @@
 // Unilend Site Footer
 //
 
+footer > .disclaimer {
+  background-color: $c-t1;
+  color: $c-bg1;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  text-align: center;
+}
+
 .site-footer {
   background-color: $c-p1;
   color: $c-purple-l;
