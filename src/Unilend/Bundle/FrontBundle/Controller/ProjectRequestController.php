@@ -1357,7 +1357,7 @@ class ProjectRequestController extends Controller
                     || in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL, $rejectReasons)
                     || in_array(\projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER, $rejectReasons)
                 ) {
-                    $message = $translator->trans('project-request_end-page-no-siren-message');
+                    $message = $translator->trans('project-request_end-page-negative-operating-result-message');
                 } else if (in_array(\projects_status::NON_ELIGIBLE_REASON_PRODUCT_NON_FOUND, $rejectReasons)) {
                     $message = $translator->trans('project-request_end-page-product-not-found-message');
                 } else {
