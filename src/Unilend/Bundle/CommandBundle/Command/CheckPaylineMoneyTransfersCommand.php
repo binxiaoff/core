@@ -54,7 +54,7 @@ class CheckPaylineMoneyTransfersCommand extends ContainerAwareCommand
         $date = mktime(0, 0, 0, date('m'), date('d') - 1, date('Y'));
         $date = date('Y-m-d', $date);
 
-        $listTran = $transactions->select('type_transaction = ' . \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT . ' AND status = 0 AND etat = 0 AND LEFT(date_transaction, 10) = "' . $date . '"');
+        $listTran = $transactions->select('type_transaction = ' . \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT . ' AND status = ' . \transactions::STATUS_PENDING . ' AND LEFT(date_transaction, 10) = "' . $date . '"');
 
         /** @var \paylineSDK $payline */
         $payline = new \paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
@@ -79,13 +79,12 @@ class CheckPaylineMoneyTransfersCommand extends ContainerAwareCommand
                     $backpayline->create();
                 }
                 if ($response['result']['code'] == '00000') {
-                    if ($transactions->get($response['order']['ref'], 'status = 0 AND etat = 0 AND id_transaction')) {
+                    if ($transactions->get($response['order']['ref'], 'status = ' . \transactions::STATUS_PENDING . ' AND id_transaction')) {
                         $transactions->id_backpayline   = $backpayline->id_backpayline;
                         $transactions->montant          = $response['payment']['amount'];
                         $transactions->id_langue        = 'fr';
                         $transactions->date_transaction = date('Y-m-d H:i:s');
                         $transactions->status           = \transactions::STATUS_VALID;
-                        $transactions->etat             = \transactions::PAYMENT_STATUS_OK;
                         $transactions->type_paiement    = ($response['extendedCard']['type'] == 'VISA' ? '0' : ($response['extendedCard']['type'] == 'MASTERCARD' ? '3' : ''));
                         $transactions->update();
 

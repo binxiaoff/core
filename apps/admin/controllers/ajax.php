@@ -641,7 +641,7 @@ class ajaxController extends bootstrap
                 \transactions_types::TYPE_LENDER_BALANCE_TRANSFER     => 'Solde transferé'
             );
 
-            $this->lTrans = $this->transactions->select('type_transaction IN (' . implode(', ', array_keys($this->lesStatuts)) . ') AND status = 1 AND etat = 1 AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . $_POST['year'], 'added DESC');
+            $this->lTrans = $this->transactions->select('type_transaction IN (' . implode(', ', array_keys($this->lesStatuts)) . ') AND status = ' . \transactions::STATUS_VALID . ' AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . $_POST['year'], 'added DESC');
         }
     }
 

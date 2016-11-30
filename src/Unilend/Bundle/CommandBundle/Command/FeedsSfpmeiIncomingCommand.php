@@ -139,7 +139,7 @@ EOF
                                     isset($aRow['libelleOpe3'])
                                     && 1 === preg_match('/RA-?([0-9]+)/', $aRow['libelleOpe3'], $aMatches)
                                     && $projects->get((int) $aMatches[1])
-                                    && false === $transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND id_virement')
+                                    && false === $transactions->get($receptions->id_reception, 'status = ' . \transactions::STATUS_VALID . ' AND id_virement')
                                 ) {
                                     $this->processBorrowerAnticipatedRepayment($receptions, $transactions, $bank_unilend, $projects);
                                 } elseif (
@@ -329,8 +329,7 @@ EOF
         $transactions->montant          = $aRow['montant'];
         $transactions->id_langue        = 'fr';
         $transactions->date_transaction = date('Y-m-d H:i:s');
-        $transactions->status           = \transactions::PAYMENT_STATUS_OK;
-        $transactions->etat             = \transactions::STATUS_VALID;
+        $transactions->status           = \transactions::STATUS_VALID;
         $transactions->type_transaction = \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER;
         $transactions->ip_client        = '';
         $transactions->create();
@@ -366,7 +365,7 @@ EOF
             count($aNextRepayment) > 0
             && $oBankDirectDebit->get($iProjectId . '" AND num_prelevement = "' . $aNextRepayment[0]['ordre'], 'id_project')
             && false !== strpos($motif, $oBankDirectDebit->motif)
-            && false === $transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT . ' AND id_prelevement')
+            && false === $transactions->get($receptions->id_reception, 'status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT . ' AND id_prelevement')
         ) {
             $projects->get($iProjectId, 'id_project');
             $companies->get($projects->id_company, 'id_company');
@@ -383,8 +382,7 @@ EOF
             $transactions->montant          = $receptions->montant;
             $transactions->id_langue        = 'fr';
             $transactions->date_transaction = date('Y-m-d H:i:s');
-            $transactions->status           = \transactions::PAYMENT_STATUS_OK;
-            $transactions->etat             = \transactions::STATUS_VALID;
+            $transactions->status           = \transactions::STATUS_VALID;
             $transactions->type_transaction = \transactions_types::TYPE_BORROWER_REPAYMENT;
             $transactions->ip_client        = '';
             $transactions->create();
@@ -417,8 +415,7 @@ EOF
         $transactions->montant          = $receptions->montant;
         $transactions->id_langue        = 'fr';
         $transactions->date_transaction = date('Y-m-d H:i:s');
-        $transactions->status           = \transactions::PAYMENT_STATUS_OK;
-        $transactions->etat             = \transactions::STATUS_VALID;
+        $transactions->status           = \transactions::STATUS_VALID;
         $transactions->type_transaction = \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT;
         $transactions->ip_client        = '';
         $transactions->create();
@@ -476,8 +473,7 @@ EOF
         $transactions->montant          = $receptions->montant;
         $transactions->id_langue        = 'fr';
         $transactions->date_transaction = date('Y-m-d H:i:s');
-        $transactions->status           = \transactions::PAYMENT_STATUS_OK;
-        $transactions->etat             = \transactions::STATUS_VALID;
+        $transactions->status           = \transactions::STATUS_VALID;
         $transactions->type_transaction = \transactions_types::TYPE_REGULATION_BANK_TRANSFER;
         $transactions->ip_client        = '';
         $transactions->create();
@@ -521,7 +517,7 @@ EOF
             && $clients->get((int) $matches[1], 'id_client')
             && $clients->isLenderPattern($clients->id_client, $motif)
             && $lenders->get($clients->id_client, 'id_client_owner')
-            && false === $transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND id_virement')
+            && false === $transactions->get($receptions->id_reception, 'status = ' . \transactions::STATUS_VALID . ' AND id_virement')
         ) {
             $receptions->get($receptions->id_reception, 'id_reception');
             $receptions->id_client = $clients->id_client;
@@ -539,8 +535,7 @@ EOF
             $transactions->montant          = $receptions->montant;
             $transactions->id_langue        = 'fr';
             $transactions->date_transaction = date('Y-m-d H:i:s');
-            $transactions->status           = \transactions::PAYMENT_STATUS_OK;
-            $transactions->etat             = \transactions::STATUS_VALID;
+            $transactions->status           = \transactions::STATUS_VALID;
             $transactions->type_transaction = \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT;
             $transactions->ip_client        = '';
             $transactions->create();
@@ -636,8 +631,8 @@ EOF
             && $oPrelevements->get((int) $aMatches[2])
             && $projects->id_project == $oPrelevements->id_project
             && $companies->get($projects->id_company)
-            && $transactions->get($aRow['montant'], 'status = 1 AND etat = 1 AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT . ' AND DATE(date_transaction) >= STR_TO_DATE("' . $aMatches[1] . '", "%Y%m%d") AND id_client = ' . $companies->id_client_owner . ' AND montant')
-            && false === $oTransactions->get($transactions->id_prelevement, 'status = 1 AND etat = 1 AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION . ' AND id_prelevement')
+            && $transactions->get($aRow['montant'], 'status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT . ' AND DATE(date_transaction) >= STR_TO_DATE("' . $aMatches[1] . '", "%Y%m%d") AND id_client = ' . $companies->id_client_owner . ' AND montant')
+            && false === $oTransactions->get($transactions->id_prelevement, 'status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION . ' AND id_prelevement')
         ) {
             $projects->remb_auto = 1;
             $projects->update();
@@ -647,8 +642,7 @@ EOF
             $oTransactions->montant          = -$receptions->montant;
             $oTransactions->id_langue        = 'fr';
             $oTransactions->date_transaction = date('Y-m-d H:i:s');
-            $oTransactions->status           = \transactions::PAYMENT_STATUS_OK;
-            $oTransactions->etat             = \transactions::STATUS_VALID;
+            $oTransactions->status           = \transactions::STATUS_VALID;
             $oTransactions->type_transaction = \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION;
             $oTransactions->ip_client        = '';
             $oTransactions->create();
