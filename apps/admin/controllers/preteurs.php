@@ -207,9 +207,9 @@ class preteursController extends bootstrap
         );
 
         $this->solde        = $this->transactions->getSolde($this->clients->id_client);
-        $this->soldeRetrait = $this->transactions->sum('status = 1 AND etat = 1 AND type_transaction = '. \transactions_types::TYPE_LENDER_WITHDRAWAL .' AND id_client = ' . $this->clients->id_client, 'montant');
+        $this->soldeRetrait = $this->transactions->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction = '. \transactions_types::TYPE_LENDER_WITHDRAWAL .' AND id_client = ' . $this->clients->id_client, 'montant');
         $this->soldeRetrait = abs($this->soldeRetrait / 100);
-        $this->lTrans       = $this->transactions->select('type_transaction IN (' . implode(', ', array_keys($this->lesStatuts)) . ') AND status = 1 AND etat = 1 AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . date('Y'), 'added DESC');
+        $this->lTrans       = $this->transactions->select('type_transaction IN (' . implode(', ', array_keys($this->lesStatuts)) . ') AND status = ' . \transactions::STATUS_VALID . ' AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . date('Y'), 'added DESC');
 
         $this->getMessageAboutClientStatus();
     }
@@ -1048,8 +1048,8 @@ class preteursController extends bootstrap
 
         $this->sumOffres                  = $offres_bienvenues_details->sum('type = 0 AND id_offre_bienvenue = ' . $offres_bienvenues->id_offre_bienvenue . ' AND status != 2', 'montant');
         $this->lOffres                    = $offres_bienvenues_details->select('type = 0 AND id_offre_bienvenue = ' . $offres_bienvenues->id_offre_bienvenue . ' AND status != 2', 'added DESC');
-        $sumVirementUnilendOffres         = $transactions->sum('status = 1 AND etat = 1 AND type_transaction = ' . \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER, 'montant');
-        $sumOffresTransac                 = $transactions->sum('status = 1 AND etat = 1 AND type_transaction IN(' . \transactions_types::TYPE_WELCOME_OFFER . ', ' . \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION . ')', 'montant');
+        $sumVirementUnilendOffres         = $transactions->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER, 'montant');
+        $sumOffresTransac                 = $transactions->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction IN(' . \transactions_types::TYPE_WELCOME_OFFER . ', ' . \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION . ')', 'montant');
         $this->sumDispoPourOffres         = $sumVirementUnilendOffres - $sumOffresTransac;
         $this->sumDispoPourOffresSelonMax = $this->montant_limit * 100 - $sumOffresTransac;
     }
@@ -1070,8 +1070,8 @@ class preteursController extends bootstrap
             if ($offres_bienvenues->get(1, 'status = 0 AND id_offre_bienvenue')) {
                 $sumOffres                = $offres_bienvenues_details->sum('type = 0 AND id_offre_bienvenue = ' . $offres_bienvenues->id_offre_bienvenue . ' AND status <> 2', 'montant');
                 $sumOffresPlusOffre       = ($sumOffres + $offres_bienvenues->montant);
-                $sumVirementUnilendOffres = $transactions->sum('status = 1 AND etat = 1 AND type_transaction = ' . \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER, 'montant');
-                $sumOffresTransac         = $transactions->sum('status = 1 AND etat = 1 AND type_transaction IN(' . \transactions_types::TYPE_WELCOME_OFFER . ', ' . \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION . ')', 'montant');
+                $sumVirementUnilendOffres = $transactions->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction = ' . \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER, 'montant');
+                $sumOffresTransac         = $transactions->sum('status = ' . \transactions::STATUS_VALID . ' AND type_transaction IN(' . \transactions_types::TYPE_WELCOME_OFFER . ', ' . \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION . ')', 'montant');
                 $sumDispoPourOffres       = $sumVirementUnilendOffres - $sumOffresTransac;
 
                 // On regarde que l'offre soit pas terminé
@@ -1093,8 +1093,7 @@ class preteursController extends bootstrap
                     $transactions->id_offre_bienvenue_detail = $offres_bienvenues_details->id_offre_bienvenue_detail;
                     $transactions->id_langue                 = 'fr';
                     $transactions->date_transaction          = date('Y-m-d H:i:s');
-                    $transactions->status                    = 1;
-                    $transactions->etat                      = 1;
+                    $transactions->status                    = \transactions::STATUS_VALID;
                     $transactions->ip_client                 = $_SERVER['REMOTE_ADDR'];
                     $transactions->type_transaction          = \transactions_types::TYPE_WELCOME_OFFER;
                     $transactions->create();

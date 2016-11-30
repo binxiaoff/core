@@ -898,7 +898,6 @@ class LenderSubscriptionController extends Controller
                 $transaction->id_langue        = 'fr';
                 $transaction->date_transaction = date('Y-m-d h:i:s');
                 $transaction->status           = \transactions::STATUS_PENDING;
-                $transaction->etat             = 0;
                 $transaction->ip_client        = $request->server->get('REMOTE_ADDR');
                 $transaction->type_transaction = \transactions_types::TYPE_LENDER_SUBSCRIPTION;
                 $transaction->create();

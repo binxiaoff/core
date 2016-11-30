@@ -458,8 +458,7 @@ class dossiersController extends bootstrap
                             $transactions->id_langue        = 'fr';
                             $transactions->id_loan_remb     = $l['id_loan'];
                             $transactions->date_transaction = date('Y-m-d H:i:s');
-                            $transactions->status           = 1;
-                            $transactions->etat             = 1;
+                            $transactions->status           = \transactions::STATUS_VALID;
                             $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                             $transactions->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
                             $transactions->create();
@@ -1721,8 +1720,7 @@ class dossiersController extends bootstrap
                                 $this->transactions->id_echeancier    = $e['id_echeancier'];
                                 $this->transactions->id_langue        = 'fr';
                                 $this->transactions->date_transaction = $repaymentDate;
-                                $this->transactions->status           = \transactions::PAYMENT_STATUS_OK;
-                                $this->transactions->etat             = \transactions::STATUS_VALID;
+                                $this->transactions->status           = \transactions::STATUS_VALID;
                                 $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                                 $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL;
                                 $capitalTransactionId = $this->transactions->create();
@@ -1744,8 +1742,7 @@ class dossiersController extends bootstrap
                                 $this->transactions->id_echeancier    = $e['id_echeancier'];
                                 $this->transactions->id_langue        = 'fr';
                                 $this->transactions->date_transaction = $repaymentDate;
-                                $this->transactions->status           = \transactions::PAYMENT_STATUS_OK;
-                                $this->transactions->etat             = \transactions::STATUS_VALID;
+                                $this->transactions->status           = \transactions::STATUS_VALID;
                                 $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                                 $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS;
                                 $this->transactions->create();
@@ -1934,8 +1931,7 @@ class dossiersController extends bootstrap
                         $this->transactions->id_echeancier_emprunteur = $RembEmpr['id_echeancier_emprunteur'];
                         $this->transactions->id_langue                = 'fr';
                         $this->transactions->date_transaction         = date('Y-m-d H:i:s');
-                        $this->transactions->status                   = \transactions::PAYMENT_STATUS_OK;
-                        $this->transactions->etat                     = \transactions::STATUS_VALID;
+                        $this->transactions->status                   = \transactions::STATUS_VALID;
                         $this->transactions->ip_client                = $_SERVER['REMOTE_ADDR'];
                         $this->transactions->type_transaction         = \transactions_types::TYPE_UNILEND_REPAYMENT;
                         $this->transactions->create();
@@ -2125,8 +2121,7 @@ class dossiersController extends bootstrap
                         $this->transactions->id_project       = $this->projects->id_project;
                         $this->transactions->id_langue        = 'fr';
                         $this->transactions->date_transaction = date('Y-m-d H:i:s');
-                        $this->transactions->status           = 1;
-                        $this->transactions->etat             = 1;
+                        $this->transactions->status           = \transactions::STATUS_VALID;
                         $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                         $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT;
                         $this->transactions->create();
@@ -2164,8 +2159,7 @@ class dossiersController extends bootstrap
                         $this->transactions->id_echeancier_emprunteur = 0; // pas d'echeance emprunteur
                         $this->transactions->id_langue                = 'fr';
                         $this->transactions->date_transaction         = date('Y-m-d H:i:s');
-                        $this->transactions->status                   = 1;
-                        $this->transactions->etat                     = 1;
+                        $this->transactions->status                   = \transactions::STATUS_VALID;
                         $this->transactions->ip_client                = $_SERVER['REMOTE_ADDR'];
                         $this->transactions->type_transaction         = \transactions_types::TYPE_UNILEND_REPAYMENT;
                         $this->transactions->id_loan_remb             = 0;

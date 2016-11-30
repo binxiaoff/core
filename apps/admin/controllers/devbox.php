@@ -358,8 +358,7 @@ class devboxController extends bootstrap
                 $oTransaction->montant          = $fAmount;
                 $oTransaction->id_langue        = 'fr';
                 $oTransaction->date_transaction = date('Y-m-d H:i:s');
-                $oTransaction->status           = transactions::PAYMENT_STATUS_OK;
-                $oTransaction->etat             = transactions::STATUS_VALID;
+                $oTransaction->status           = transactions::STATUS_VALID;
                 $oTransaction->ip_client        = $_SERVER['REMOTE_ADDR'];
                 $oTransaction->type_transaction = transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT;
                 $oTransaction->create();

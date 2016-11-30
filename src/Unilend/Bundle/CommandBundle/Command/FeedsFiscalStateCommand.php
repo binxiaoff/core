@@ -267,7 +267,6 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
             $transactions->id_langue        = 'fr';
             $transactions->date_transaction = date('Y-m-d H:i:s');
             $transactions->status           = \transactions::STATUS_VALID;
-            $transactions->etat             = \transactions::PAYMENT_STATUS_OK;
             $transactions->type_transaction = \transactions_types::TYPE_FISCAL_BANK_TRANSFER;
             $transactions->create();
 
