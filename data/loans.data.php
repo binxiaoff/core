@@ -462,7 +462,7 @@ class loans extends loans_crud
      * @param array $projectStatus
      * @return mixed
      */
-    public function getLoansWithOngoingRepayments($idLender, array $projectStatus)
+    public function getLoansForProjectsWithStatus($idLender, array $projectStatus)
     {
         $query = 'SELECT *
                     FROM loans
