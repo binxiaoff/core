@@ -1132,8 +1132,7 @@ class transfertsController extends bootstrap
     {
         $transactions->id_client        = $transfer->id_client_origin;
         $transactions->montant          = -$accountBalance * 100;
-        $transactions->status           = \transactions::PAYMENT_STATUS_OK;
-        $transactions->etat             = \transactions::STATUS_VALID;
+        $transactions->status           = \transactions::STATUS_VALID;
         $transactions->type_transaction = \transactions_types::TYPE_LENDER_BALANCE_TRANSFER;
         $transactions->date_transaction = date('Y-m-d h:i:s');
         $transactions->id_langue        = 'fr';
@@ -1144,8 +1143,7 @@ class transfertsController extends bootstrap
 
         $transactions->id_client        =$transfer->id_client_receiver;
         $transactions->montant          = $accountBalance * 100;
-        $transactions->status           = \transactions::PAYMENT_STATUS_OK;
-        $transactions->etat             = \transactions::STATUS_VALID;
+        $transactions->status           = \transactions::STATUS_VALID;
         $transactions->type_transaction = \transactions_types::TYPE_LENDER_BALANCE_TRANSFER;
         $transactions->date_transaction = date('Y-m-d h:i:s');
         $transactions->id_langue        = 'fr';
