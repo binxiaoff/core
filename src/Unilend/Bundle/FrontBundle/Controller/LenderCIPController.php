@@ -127,6 +127,8 @@ class LenderCIPController extends Controller
             }
 
             if ($lastQuestion->isBooleanType($lastQuestion->type)) {
+                $template['lenderType'] = in_array($this->getClient()->type, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER]) ? 'physical' : 'moral';
+
                 if (\lender_questionnaire_question::TYPE_AWARE_DIVIDE_INVESTMENTS === $lastQuestion->type) {
                     $template['question']['valid_answer']   = \lender_questionnaire_question::VALUE_BOOLEAN_FALSE;
                     $template['question']['invalid_answer'] = \lender_questionnaire_question::VALUE_BOOLEAN_TRUE;
@@ -251,7 +253,7 @@ class LenderCIPController extends Controller
             $request->getSession()->getFlashBag()->remove('cipBid');
         }
 
-        return $this->redirectToRoute('cip_index');
+        return $this->redirectToRoute('lender_dashboard');
     }
 
     /**

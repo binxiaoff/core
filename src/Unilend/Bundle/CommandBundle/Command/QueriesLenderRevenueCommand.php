@@ -40,7 +40,7 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
         $clients  = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('clients');
         $filePath = $this->getContainer()->getParameter('path.protected') . '/' . 'requete_revenus' . date('Ymd') . '.csv';
 
-        if (file_exists($filePath) ){
+        if (file_exists($filePath)){
             unlink($filePath);
         }
 
@@ -48,9 +48,11 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
         $yesterday = new \DateTime('NOW - 1 day');
         $yesterdayFilePath = $this->getContainer()->getParameter('path.protected') . '/' . 'requete_revenus' . $yesterday->format('Ymd') . '.csv';
 
-        if (file_exists($yesterdayFilePath) ){
+        if (file_exists($yesterdayFilePath)){
             unlink($yesterdayFilePath);
         }
+
+        $this->fillTemporaryTransactionsTable($dataBaseConnection, $year);
 
         /** @var \PHPExcel $csvFile */
         $csvFile     = new \PHPExcel();
@@ -67,12 +69,20 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
 
         $row += 1;
         $this->addLoans($dataBaseConnection, $activeSheet, $clients, $year, $row);
-        $this->addRevenueBasedLines($dataBaseConnection, $activeSheet, $clients, $year, $row);
+
+        foreach ($this->getAllClientsWithTransactions($dataBaseConnection) as $client) {
+            $clients->get($client['id_client']);
+            $this->fillTemporaryLenderImpositionHistory($dataBaseConnection, $clients);
+            $this->addRevenueBasedLines($dataBaseConnection, $activeSheet, $clients, $year, $row);
+        }
         /** @var \PHPExcel_Writer_CSV $writer */
         $writer = \PHPExcel_IOFactory::createWriter($csvFile, 'CSV');
         $writer->setUseBOM(true);
         $writer->setDelimiter(';');
         $writer->save(str_replace(__FILE__, $filePath ,__FILE__));
+
+        $this->emptyTemporaryLenderImpositionHistory($dataBaseConnection);
+        $this->emptyTemporaryRepaymentTable($dataBaseConnection);
     }
 
     /**
@@ -119,123 +129,89 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
      * @param int $year
      * @param int $row
      */
-    private function addRevenueBasedLines(Connection $dataBaseConnection, \PHPExcel_Worksheet &$activeSheet, \clients $clients, $year, $row)
+    private function addRevenueBasedLines(Connection $dataBaseConnection, \PHPExcel_Worksheet &$activeSheet, \clients $clients, $year, &$row)
     {
         $query = '
               SELECT
-                t.id_client,
-                SUM(ROUND(t.montant/100, 2)) AS interests,
-                SUM(ROUND(retenues_source.amount / 100, 2)) AS retenues_source,
-                SUM(ROUND(prelevements_obligatoires.amount / 100, 2)) AS prlv_obligatoire
-              FROM transactions t
-                LEFT JOIN tax retenues_source ON retenues_source.id_transaction = t.id_transaction AND retenues_source.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE . '
-                LEFT JOIN tax prelevements_obligatoires ON prelevements_obligatoires.id_transaction = t.id_transaction AND prelevements_obligatoires.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX . '
-              WHERE YEAR(t.date_transaction) = :year
-              AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
-              GROUP BY t.id_client';
+                ROUND(SUM(t_interets.montant + (SELECT SUM(amount) FROM tax WHERE tax.id_transaction = t_interets.id_transaction)) /100, 2) AS sum53,
+                ROUND(SUM(retenues_source.amount)/ 100, 2) AS sum2,
+                ROUND(SUM(prelevements_obligatoires.amount)/ 100, 2) AS sum54,
+                ROUND(SUM(IF(c.type IN (' . implode(',', [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER ]) . ') AND tlih.id_pays = 1, t_interets.montant + (SELECT SUM(tax.amount) FROM tax WHERE id_transaction = t_interets.id_transaction), 0))/100, 2) AS sum66,
+                ROUND(SUM(IF(c.type IN (' . implode(',', [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER ]) . ') AND tlih.id_pays IN (6,14,21,31,41,50,52,60,61,65,70,79,84,87,98,103,104,111,139,142,143,148,150,151,165,166,171), t_interets.montant, 0))/100, 2) AS sum81,
+                ROUND(SUM(IF(c.type IN (' . implode(',', [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER ]) . ') AND tlih.id_pays IN (6,14,21,31,41,50,52,60,61,65,70,79,84,87,98,103,104,111,139,142,143,148,150,151,165,166,171), t_capital.montant, 0))/100, 2) AS sum82,
+                ROUND(SUM(IF(t_capital.type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . ', t_capital.montant/0.844, t_capital.montant))/100, 2) AS sum118
+              FROM clients c
+                INNER JOIN temporary_lender_repayment_transactions t_capital ON c.id_client = t_capital.id_client AND t_capital.type_transaction IN (' . implode(',', [\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT ]) . ')
+                LEFT JOIN temporary_lender_repayment_transactions t_interets ON t_capital.id_echeancier = t_interets.id_echeancier AND t_interets.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
+                LEFT JOIN tax retenues_source ON retenues_source.id_transaction = t_interets.id_transaction AND retenues_source.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE . ' 
+                LEFT JOIN tax prelevements_obligatoires ON prelevements_obligatoires.id_transaction = t_interets.id_transaction AND prelevements_obligatoires.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX . '
+                LEFT JOIN temporary_lender_imposition_history tlih ON t_interets.id_transaction = tlih.id_transaction AND c.id_client = tlih.id_client
+             WHERE c.id_client = :clientId';
 
-        $data = $dataBaseConnection->executeQuery($query, ['year' => $year])->fetchAll(\PDO::FETCH_ASSOC);
+        $data = $dataBaseConnection->executeQuery($query, ['clientId' => $clients->id_client])->fetchAll(\PDO::FETCH_ASSOC)[0];
 
-        foreach ($data as $record) {
-            $clients->get($record['id_client'], 'id_client');
-            $this->addCommonCellValues($activeSheet, $row, $year, $clients);
-
+        if ($data['sum53'] > 0) {
             $this->addCommonCellValues($activeSheet, $row, $year, $clients);
             $activeSheet->setCellValueByColumnAndRow(2, $row, '53');
-            $activeSheet->setCellValueByColumnAndRow(4, $row, number_format($record['interests'], 2, ',', ''));
+            $activeSheet->setCellValueByColumnAndRow(4, $row, number_format($data['sum53'], 2, ',', ''));
             $row += 1;
-
-            if ($record['retenues_source'] > 0) {
-                $this->addCommonCellValues($activeSheet, $row, $year, $clients);
-                $activeSheet->setCellValueByColumnAndRow(2, $row, '53');
-                $activeSheet->setCellValueByColumnAndRow(4, $row, number_format($record['retenues_source'], 2, ',', ''));
-                $row += 1;
-            }
-
-            if ($record['prlv_obligatoire'] > 0) {
-                $this->addCommonCellValues($activeSheet, $row, $year, $clients);
-                $activeSheet->setCellValueByColumnAndRow(2, $row, '54');
-                $activeSheet->setCellValueByColumnAndRow(4, $row, number_format($record['prlv_obligatoire'], 2, ',', ''));
-                $row += 1;
-            }
-
-            $this->addFiscalSituationBasedLines($dataBaseConnection, $activeSheet, $clients, $year, $row);
-
-            unset($lenderPattern);
         }
-    }
 
-    /**
-     * @param Connection $dataBaseConnection
-     * @param \PHPExcel_Worksheet $activeSheet
-     * @param int $clientId
-     * @param int $year
-     * @param int $row
-     * @param string $lenderPattern
-     */
-    private function addFiscalSituationBasedLines(Connection $dataBaseConnection,\PHPExcel_Worksheet &$activeSheet, \clients $client, $year, &$row)
-    {
-        $query = '
-            SELECT
-              SUM(IF(c.type IN (' . implode(',', [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER ]) . ') 
-                AND imposition_history.id_pays = 1, t_interets.montant + (SELECT SUM(tax.amount) FROM tax WHERE id_transaction = t_interets.id_transaction), 0)) AS sum66,
-              SUM(IF(c.type IN (' . implode(',', [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER ]) . ') 
-                AND imposition_history.id_pays IN(6,14,21,31,41,50,52,60,61,65,70,79,84,87,98,103,104,111,139,142,143,148,150,151,165,166,171), t_interets.montant, 0)) AS sum81,
-              SUM(IF(c.type IN (' . implode(',', [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER ]) . ') 
-                AND imposition_history.id_pays IN(6,14,21,31,41,50,52,60,61,65,70,79,84,87,98,103,104,111,139,142,143,148,150,151,165,166,171), t_capital.montant, 0)) AS sum82,
-              SUM(IF(t_capital.type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . ', t_capital.montant / 0.844, t_capital.montant)) AS sum118
-            FROM clients c
-              INNER JOIN transactions t_capital ON c.id_client = t_capital.id_client AND t_capital.type_transaction IN (' . implode(',', [\transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT ]) . ') AND LEFT(t_capital.date_transaction, 4) = :year
-              LEFT JOIN transactions t_interets ON t_capital.id_echeancier = t_interets.id_echeancier AND t_interets.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . ' 
-              LEFT JOIN (
-                SELECT
-                  t.id_client,
-                  t.id_transaction,
-                  (SELECT id_pays FROM lenders_imposition_history WHERE id_lender = la.id_lender_account AND added <= t.date_transaction ORDER BY added DESC LIMIT 1) AS id_pays
-                FROM transactions t
-                  INNER JOIN lenders_accounts la ON t.id_client = la.id_client_owner
-                WHERE type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
-                  ) imposition_history ON c.id_client = imposition_history.id_client AND t_interets.id_transaction = imposition_history.id_transaction
-            WHERE c.id_client  = :clientId';
+        if ($data['sum2'] > 0) {
+            $this->addCommonCellValues($activeSheet, $row, $year, $clients);
+            $activeSheet->setCellValueByColumnAndRow(2, $row, '2');
+            $activeSheet->setCellValueByColumnAndRow(4, $row, number_format($data['sum2'], 2, ',', ''));
+            $row += 1;
+        }
 
-        $data = $dataBaseConnection->executeQuery($query, ['year' => $year, 'clientId' => $client->id_client])->fetchAll(\PDO::FETCH_ASSOC)[0];
+        if ($data['sum54'] > 0) {
+            $this->addCommonCellValues($activeSheet, $row, $year, $clients);
+            $activeSheet->setCellValueByColumnAndRow(2, $row, '54');
+            $activeSheet->setCellValueByColumnAndRow(4, $row, number_format($data['sum54'], 2, ',', ''));
+            $row += 1;
+        }
 
         if ($data['sum66'] > 0) {
-            $this->addCommonCellValues($activeSheet, $row, $year, $client);
+            $this->addCommonCellValues($activeSheet, $row, $year, $clients);
             $activeSheet->setCellValueByColumnAndRow(2, $row, '66');
             $activeSheet->setCellValueByColumnAndRow(4, $row, number_format($data['sum66'], 2, ',', ''));
             $row += 1;
         }
 
         if ($data['sum81'] > 0) {
-            $this->addCommonCellValues($activeSheet, $row, $year, $client);
+            $this->addCommonCellValues($activeSheet, $row, $year, $clients);
             $activeSheet->setCellValueByColumnAndRow(2, $row, '81');
             $activeSheet->setCellValueByColumnAndRow(4, $row, number_format($data['sum81'], 2, ',', ''));
             $row += 1;
         }
 
         if ($data['sum82'] > 0) {
-            $this->addCommonCellValues($activeSheet, $row, $year, $client);
+            $this->addCommonCellValues($activeSheet, $row, $year, $clients);
             $activeSheet->setCellValueByColumnAndRow(2, $row, '82');
             $activeSheet->setCellValueByColumnAndRow(4, $row, number_format($data['sum82'], 2, ',', ''));
             $row += 1;
         }
 
         if ($data['sum118'] > 0) {
-            $this->addCommonCellValues($activeSheet, $row, $year, $client);
+            $this->addCommonCellValues($activeSheet, $row, $year, $clients);
             $activeSheet->setCellValueByColumnAndRow(2, $row, '118');
             $activeSheet->setCellValueByColumnAndRow(4, $row, number_format($data['sum118'], 2, ',', ''));
             $row += 1;
         }
     }
 
-
+    /**
+     * @param \PHPExcel_Worksheet $activeSheet
+     * @param int $row
+     * @param int $year
+     * @param \clients $clients
+     */
     private function addCommonCellValues(\PHPExcel_Worksheet &$activeSheet, $row, $year, \clients $clients)
     {
         $commonValues = [
             'CodeEntreprise' => 1, //official code of SFPMEI
             'Date'           => '31/12/' . $year,
-            'Monnaie'        => 'EURO'
+            'Monnaie'        => 'EURO',
         ];
 
         $activeSheet->setCellValueByColumnAndRow(0, $row, $commonValues['CodeEntreprise']);
@@ -243,5 +219,53 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
         $activeSheet->setCellValueByColumnAndRow(3, $row, $commonValues['Date']);
         $activeSheet->setCellValueByColumnAndRow(5, $row, $commonValues['Monnaie']);
         $activeSheet->setCellValueByColumnAndRow(6, $row, $clients->id_client);
+    }
+
+    private function fillTemporaryTransactionsTable(Connection $dataBaseConnection, $year)
+    {
+        $dataBaseConnection->executeQuery('TRUNCATE temporary_lender_repayment_transactions');
+        $dataBaseConnection->executeQuery('INSERT INTO temporary_lender_repayment_transactions (id_transaction, id_client, type_transaction, id_echeancier, montant, date_transaction)
+          SELECT
+            id_transaction,
+            id_client,
+            type_transaction,
+            id_echeancier,
+            montant,
+            date_transaction
+          FROM transactions
+          WHERE LEFT(date_transaction, 4) = ' . $year . '
+                AND type_transaction IN (' . implode(',', [
+                \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS,
+                \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL,
+                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT,
+                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT
+            ]) . ')');
+    }
+
+    private function emptyTemporaryRepaymentTable(Connection $dataBaseConnection)
+    {
+        $dataBaseConnection->executeQuery('TRUNCATE temporary_lender_repayment_transactions');
+    }
+
+    private function fillTemporaryLenderImpositionHistory(Connection $dataBaseConnection, \clients $clients)
+    {
+        $dataBaseConnection->executeQuery('INSERT INTO temporary_lender_imposition_history (id_client, id_transaction, id_pays)
+                                            SELECT
+                                              t.id_client,
+                                              t.id_transaction,
+                                              (SELECT id_pays FROM lenders_imposition_history WHERE id_lender = la.id_lender_account AND added <= t.date_transaction ORDER BY added DESC LIMIT 1) AS id_pays
+                                            FROM temporary_lender_repayment_transactions t
+                                              INNER JOIN lenders_accounts la ON t.id_client = la.id_client_owner
+                                            WHERE type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . ' AND t.id_client = ' . $clients->id_client);
+    }
+
+    private function emptyTemporaryLenderImpositionHistory(Connection $dataBaseConnection)
+    {
+        $dataBaseConnection->executeQuery('TRUNCATE temporary_lender_imposition_history');
+    }
+
+    private function getAllClientsWithTransactions(Connection $dataBaseConnection)
+    {
+        return $dataBaseConnection->executeQuery('SELECT id_client FROM temporary_lender_repayment_transactions GROUP BY id_client')->fetchAll(\PDO::FETCH_ASSOC);
     }
 }

@@ -217,17 +217,19 @@ class ProjectsController extends Controller
                 ++$index;
             }
         }
-
-        $firstBalanceSheet = current($template['finance']);
         $template['financeColumns'] = [
-            'income_statement' => array_keys($firstBalanceSheet['income_statement']['details']),
-            'assets'       => array_keys($firstBalanceSheet['assets']),
-            'debts'        => array_keys($firstBalanceSheet['debts']),
+            'income_statement' => [],
+            'assets'           => [],
+            'debts'            => [],
         ];
 
-        $displayDebtsAssets = true;
-        if (empty($firstBalanceSheet['assets']) || empty($firstBalanceSheet['assets']) ) {
-            $displayDebtsAssets = false;
+        if (false === empty($template['finance'])) {
+            $firstBalanceSheet          = current($template['finance']);
+            $template['financeColumns'] = [
+                'income_statement' => array_keys($firstBalanceSheet['income_statement']['details']),
+                'assets'           => array_keys($firstBalanceSheet['assets']),
+                'debts'            => array_keys($firstBalanceSheet['debts']),
+            ];
         }
 
         $displayCipDisclaimer = false;
@@ -308,7 +310,6 @@ class ProjectsController extends Controller
             'history'              => isset($template['project']['lender']['loans']['myLoanOnProject']['nbValid']) && $template['project']['lender']['loans']['myLoanOnProject']['nbValid'] > 0,
             'canBid'               => $isFullyConnectedUser && $user instanceof UserLender && $user->hasAcceptedCurrentTerms(),
             'warningLending'       => true,
-            'displayDebtsAssets'   => $displayDebtsAssets,
             'warningTaxDeduction'  => $template['project']['startDate'] >= '2016-01-01',
             'displayCipDisclaimer' => $displayCipDisclaimer
         ];
@@ -926,11 +927,6 @@ class ProjectsController extends Controller
             ]);
         }
 
-        // Deactivate CIP check
-//        return new JsonResponse([
-//            'validation' => false
-//        ]);
-
         $this->addFlash('cipBid', ['amount' => $amount, 'rate' => $rate, 'project' => $project->id_project]);
 
         $validationNeeded       = $cipManager->isCIPValidationNeeded($bid);
@@ -957,7 +953,7 @@ class ProjectsController extends Controller
                         'ROUND(amount / 100)'
                     );
 
-                    $totalAmount = bcadd($totalBids, $totalLoans, 2);
+                    $totalAmount = bcadd(bcadd($totalBids, $totalLoans, 2), $amount, 2);
 
                     if ($totalAmount > $indicators[CIPManager::INDICATOR_TOTAL_AMOUNT]) {
                         $advices[CIPManager::INDICATOR_TOTAL_AMOUNT] = true;
