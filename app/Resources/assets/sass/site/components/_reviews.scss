@@ -62,6 +62,8 @@
       svg,
       .svg-icon {
         display: none;
+        height: 33px;
+        width: auto;
       }
 
       // Links are bullets
@@ -111,6 +113,15 @@
           width: auto;
           height: auto;
           background-image: none !important;
+        }
+
+        img,
+        svg,
+        .svg-icon {
+          display: block;
+          vertical-align: middle;
+          height: 33px;
+          width: auto;
         }
 
         &.active {
