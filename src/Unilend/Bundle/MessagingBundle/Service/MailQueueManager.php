@@ -100,6 +100,7 @@ class MailQueueManager
         $serializedVariables = json_decode($oEmail->serialized_variables, true);
         if (false === is_array($serializedVariables)) {
             $this->logger->warning('TMA-1209 - Argument is not an array : ' . $oEmail->serialized_variables, ['class' => __CLASS__, 'function' => __FUNCTION__]);
+            return false;
         }
         /** @var TemplateMessage $oMessage */
         $oMessage = $this->oTemplateMessage->newMessage($oMailTemplate->type, $serializedVariables, false);
