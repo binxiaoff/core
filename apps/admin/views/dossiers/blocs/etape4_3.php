@@ -514,7 +514,7 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                 <?php
                 if (1 === $iBalanceSheetsCount) {
                     ?>
-                    <td><?= $this->ficelle->formatNumber($this->aBalanceSheets[$iLastAnnualAccountsId]['VI'], 0) ?></td>
+                    <td><?= $this->ficelle->formatNumber($this->aBalanceSheets[$iLastAnnualAccountsId]['details']['VI'], 0) ?></td>
                     <?php
                 } elseif (2 <= $iBalanceSheetsCount) {
                     $iLastNumber = $this->aBalanceSheets[$iLastAnnualAccountsId]['details']['VI'];

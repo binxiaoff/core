@@ -141,7 +141,7 @@ echo $this->generateBalanceTotalLineHtml('Total actif', array_merge($codeImmoInc
     </thead>
     <tbody>
     <?php
-    $codeAutresInfos = ['EH', 'EI', 'HP', 'EQ', 'A1', '0J', 'VH2', 'VI'];
+    $codeAutresInfos = ['EH', 'EI', 'HP', 'HQ', 'A1', '0J', 'VH2', 'VI'];
     echo $this->generateBalanceLineHtml($codeAutresInfos, \company_tax_form_type::FORM_2033);
     ?>
     </tbody>
