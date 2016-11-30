@@ -1,5 +1,6 @@
 <div id="finance" data-watchscroll-nav>
     {% if conditions.finance %}
+        {% if financeColumns.income_statement is not empty %}
         <section id="project-section-income" class="page-section">
             <div class="tabs">
                 <div class="section-tabs-nav">
@@ -92,7 +93,8 @@
                 </a>
             </div><!-- /.btn-toolbar -->
         </section><!-- /.page-section -->
-        {% if conditions.displayDebtsAssets %}
+        {% endif %}
+        {% if financeColumns.assets is not empty and financeColumns.debts is not empty %}
         <section id="project-section-balance" class="page-section">
             <div class="tabs">
                 <div class="section-tabs-nav">
