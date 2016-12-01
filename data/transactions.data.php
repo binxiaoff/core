@@ -250,9 +250,9 @@ class transactions extends transactions_crud
                 AND t.status = ' . self::STATUS_VALID . '
                 AND t.id_client = ' . $clientId . '
                 AND psh.id_project_status_history = (
-            SELECT MIN(id_project_status_history)
+            SELECT id_project_status_history
             FROM projects_status_history psh1
-            WHERE psh1.id_project = lo.id_project AND psh1.id_project_status = 8
+            WHERE psh1.id_project = lo.id_project AND psh1.id_project_status = 8 ORDER BY psh1.added ASC, psh1.id_project_status_history ASC LIMIT 1
           )
           GROUP BY lo.id_loan
         ) UNION ALL (
@@ -404,7 +404,7 @@ class transactions extends transactions_crud
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                         WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
                           AND transactions.id_project = projects_status_history.id_project
-                        ORDER BY id_project_status_history ASC LIMIT 1
+                        ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                       ) AS cohort
                     FROM transactions
                       INNER JOIN projects ON transactions.id_project = projects.id_project
@@ -418,7 +418,7 @@ class transactions extends transactions_crud
                                                       INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
                                                     WHERE ps2.status = ' . \projects_status::PROBLEME . '
                                                       AND psh2.id_project = transactions.id_project
-                                                    ORDER BY psh2.id_project_status_history DESC
+                                                    ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                                                     LIMIT 1)) > 180), TRUE, FALSE) = FALSE
                     GROUP BY cohort';
 
@@ -441,7 +441,7 @@ class transactions extends transactions_crud
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                         WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
                           AND transactions.id_project = projects_status_history.id_project
-                        ORDER BY id_project_status_history ASC LIMIT 1
+                        ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                       ) AS cohort
                     FROM transactions
                       INNER JOIN projects ON transactions.id_project = projects.id_project
@@ -455,7 +455,7 @@ class transactions extends transactions_crud
                                                       INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
                                                     WHERE ps2.status = ' . \projects_status::PROBLEME . '
                                                       AND psh2.id_project = transactions.id_project
-                                                    ORDER BY psh2.id_project_status_history DESC
+                                                    ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                                                     LIMIT 1)) > 180), TRUE, FALSE) = TRUE
                     GROUP BY cohort';
 

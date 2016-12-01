@@ -1140,7 +1140,7 @@ class projects extends projects_crud
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                         WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
                           AND projects.id_project = projects_status_history.id_project
-                        ORDER BY id_project_status_history ASC LIMIT 1
+                        ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                       ) AS cohort
                        FROM projects
                     WHERE projects.status >= ' . \projects_status::REMBOURSEMENT . '

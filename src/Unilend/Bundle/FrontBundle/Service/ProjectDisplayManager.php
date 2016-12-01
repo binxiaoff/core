@@ -183,7 +183,7 @@ class ProjectDisplayManager
         }
 
         if (in_array($projectData['status'], [\projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE])) {
-            $lastStatusHistory                = $projectStatusHistory->select('id_project = ' . $project->id_project, 'id_project_status_history DESC', 0, 1);
+            $lastStatusHistory                = $projectStatusHistory->select('id_project = ' . $project->id_project, 'added DESC, id_project_status_history DESC', 0, 1);
             $lastStatusHistory                = array_shift($lastStatusHistory);
             $projectData['dateLastRepayment'] = date('d/m/Y', strtotime($lastStatusHistory['added']));
         }

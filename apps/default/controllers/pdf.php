@@ -638,7 +638,7 @@ class pdfController extends bootstrap
             $this->dateRemb    = date('d/m/Y');
         }
 
-        $remb = $this->projects_status_history->select('id_project = ' . $oProjects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'id_project_status_history ASC', 0, 1);
+        $remb = $this->projects_status_history->select('id_project = ' . $oProjects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added ASC, id_project_status_history ASC', 0, 1);
 
         if ($remb[0]['added'] != "") {
             $this->dateRemb = date('d/m/Y', strtotime($remb[0]['added']));
@@ -813,7 +813,7 @@ class pdfController extends bootstrap
         $taxRate   = $taxType->getTaxRateByCountry('fr');
         $this->tva = $taxRate[\tax_type::TYPE_VAT] / 100;
 
-        $aRepaymentDate           = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'id_project_status_history DESC', 0, 1);
+        $aRepaymentDate           = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added DESC, id_project_status_history DESC', 0, 1);
         $this->dateRemb           = $aRepaymentDate[0]['added'];
         $this->num_facture        = $aInvoices[0]['num_facture'];
         $this->ht                 = $aInvoices[0]['montant_ht'] / 100;

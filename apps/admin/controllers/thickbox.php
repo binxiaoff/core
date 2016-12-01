@@ -62,12 +62,15 @@ class thickboxController extends bootstrap
 
         if (isset($this->params[0]) && $oProjects->get($this->params[0])) {
             $oProjectsStatusHistory = $this->loadData('projects_status_history');
-            $aProjectHistory        = $oProjectsStatusHistory->select('id_project = ' . $oProjects->id_project, 'id_project_status_history ASC');
+            $aProjectHistory        = $oProjectsStatusHistory->select('id_project = ' . $oProjects->id_project, 'added ASC, id_project_status_history ASC');
 
             if (false === empty($aProjectHistory)) {
-                $oProjectsStatus               = $this->loadData('projects_status');
+                /** @var \projects_status $oProjectsStatus */
+                $oProjectsStatus = $this->loadData('projects_status');
+                /** @var \projects_status_history_details $oProjectsStatusHistoryDetails */
                 $oProjectsStatusHistoryDetails = $this->loadData('projects_status_history_details');
-                $oUsers                        = $this->loadData('users');
+                /** @var \users $oUsers */
+                $oUsers = $this->loadData('users');
 
                 $this->aProjectHistoryDetails = $oProjectsStatusHistoryDetails->select(
                     'id_project_status_history IN (' . implode(', ', array_column($aProjectHistory, 'id_project_status_history')) . ')',

@@ -353,7 +353,7 @@ class companies extends companies_crud
                        INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                      WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
                             AND projects.id_project = projects_status_history.id_project
-                     ORDER BY id_project_status_history ASC LIMIT 1
+                     ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                    ) AS cohort
             FROM projects
             WHERE projects.status IN (' . implode(',', [\projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::DEFAUT]) .')
@@ -368,11 +368,11 @@ class companies extends companies_crud
                                    WHERE
                                      ps2.status = ' . \projects_status::PROBLEME . '
                                      AND psh2.id_project = projects.id_project
-                                   ORDER BY psh2.id_project_status_history DESC
+                                   ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                                    LIMIT 1
                                  )
                         ) > 180), TRUE, FALSE) = TRUE)
-            GROUP BY cohort;';
+            GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery($query);
         return $statement->fetchAll(PDO::FETCH_ASSOC);
@@ -393,7 +393,7 @@ class companies extends companies_crud
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                         WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
                           AND projects.id_project = projects_status_history.id_project
-                        ORDER BY id_project_status_history ASC LIMIT 1
+                        ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                       ) AS cohort
                        FROM projects
                     WHERE projects.status >= ' . \projects_status::REMBOURSEMENT . '
