@@ -5,3 +5,6 @@ unilend_front:
 sonata_cache_cache:
     resource: '@SonataCacheBundle/Resources/config/routing/cache.xml'
     prefix: /
+
+_knp_mailjet:
+    resource: "@KnpMailjetBundle/Resources/config/routing.yml"
