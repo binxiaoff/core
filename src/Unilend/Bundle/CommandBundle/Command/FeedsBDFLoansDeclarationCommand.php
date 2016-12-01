@@ -281,7 +281,9 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
      */
     private function checkName($name)
     {
-        return $this->multiBytePad(trim($name), 60, self::PADDING_CHAR, STR_PAD_RIGHT);
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
+        return $this->multiBytePad(trim($ficelle->stripAccents($name)), 60, self::PADDING_CHAR, STR_PAD_RIGHT);
     }
 
     /**
