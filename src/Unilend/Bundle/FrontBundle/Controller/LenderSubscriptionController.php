@@ -706,7 +706,6 @@ class LenderSubscriptionController extends Controller
         } else {
             $lenderAccount->bic               = trim(strtoupper($post['bic']));
             $lenderAccount->iban              = trim(strtoupper(str_replace(' ', '', $post['iban'])));
-            $lenderAccount->cni_passeport     = 1;
             $lenderAccount->motif             = $client->getLenderPattern($client->id_client);
             $lenderAccount->origine_des_fonds = $post['funds_origin'];
             $lenderAccount->update();
