@@ -42,7 +42,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
             ->addArgument(
                 'month',
                 InputArgument::OPTIONAL,
-                'Month of the declaration to regenerate(format: [0-2]{2})'
+                'Month of the declaration to regenerate(format: [0-9]{2})'
             );
     }
 
@@ -65,14 +65,14 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
 
 
         if ($year && $month) {
-            if (preg_match('/[0-2]{2}/', $month, $matches) && preg_match('/[0-9]{4}/', $year, $matches)) {
+            if (preg_match('/[0-9]{2}/', $month, $matches) && preg_match('/[0-9]{4}/', $year, $matches)) {
                 $this->declarationDate = (new \DateTime())->setDate((int) $year, (int) $month, date('d'));
             } else {
-                $output->writeln('<error>Wrong date format)</error>');
+                $output->writeln('<error>Wrong date format, expected parameters : YYYY MM)</error>');
                 return;
             }
         } else {
-            $this->declarationDate = new \DateTime();
+            $this->declarationDate = new \DateTime('last month');
         }
 
         /** @var array */
