@@ -97,7 +97,7 @@ class CompanyBalanceSheetManager
         $companyTaxFormType->get($companyBalanceSheet->id_company_tax_form_type);
 
         $setting->get('Entreprises fundés au passage du risque lot 1', 'type');
-        $fundedCompanies = explode(',', $setting->value);
+        $beforeRiskCompanies = explode(',', $setting->value);
 
         if ($companyTaxFormType->label != \company_tax_form_type::FORM_2033) {
             return [];
@@ -105,7 +105,7 @@ class CompanyBalanceSheetManager
 
         $incomeStatement['form_type'] = \company_tax_form_type::FORM_2033;
 
-        if (in_array($companyBalanceSheet->id_company, $fundedCompanies)) {
+        if (in_array($companyBalanceSheet->id_company, $beforeRiskCompanies)) {
             $incomeStatement['details'] = [
                 'project-detail_finance-column-ca'                         => $companyBalanceSheet->ca,
                 'project-detail_finance-column-resultat-brut-exploitation' => $companyBalanceSheet->resultat_brute_exploitation,
