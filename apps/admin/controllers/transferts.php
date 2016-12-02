@@ -1056,7 +1056,7 @@ class transfertsController extends bootstrap
             }
 
             if (isset($_POST['succession_validate'])) {
-                if (false === isset($_FILES['transfer_document'])) {
+                if (empty($_FILES['transfer_document']['name'])) {
                     $this->addErrorMessageAndRedirect('Il manque le justificatif de transfer');
                 }
 
