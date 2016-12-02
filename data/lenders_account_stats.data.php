@@ -133,8 +133,6 @@ class lenders_account_stats extends lenders_account_stats_crud
           type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . '
           AND (la.id_lender_account = ' . $iLendersAccountId . ' OR t.id_client = transfer.id_client_origin)';
 
-        var_dump($sql);die;
-
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_array($result)) {
             $aValuesIRR[]      = array($record['date'] => $record['montant']);
