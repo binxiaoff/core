@@ -933,12 +933,8 @@ class LenderSubscriptionController extends Controller
                 $transaction->serialize_payline = serialize($result);
                 $transaction->update();
 
-                if (isset($result)) {
-                    if ($result['result']['code'] == '00000') {
-                        return $this->redirect($result['redirectURL']);
-                    } elseif (isset($result)) {
-                        mail('alertesit@unilend.fr', 'unilend erreur payline', 'alimentation preteur (client : ' . $client->id_client . ') | ERROR : ' . $result['result']['code'] . ' ' . $result['result']['longMessage']);
-                    }
+                if (isset($result) && $result['result']['code'] == '00000') {
+                    return $this->redirect($result['redirectURL']);
                 }
             }
         }

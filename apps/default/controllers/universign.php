@@ -789,15 +789,10 @@ class universignController extends bootstrap
                 header('Location: ' . $url);
                 die;
             } else {
-                $this->settings->get('DebugMailFrom', 'type');
-                $debugEmail = $this->settings->value;
                 $this->settings->get('DebugMailIt', 'type');
                 $sDestinatairesDebug = $this->settings->value;
 
-                $sHeadersDebug  = 'MIME-Version: 1.0' . "\r\n";
-                $sHeadersDebug .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-                $sHeadersDebug .= 'From: ' . $debugEmail . "\r\n";
-                mail($sDestinatairesDebug, 'unilend erreur universign reception', 'id cgv project : ' . $oProjectCgv->id . "\r\nAn error occurred\r\nCode: " . $r->faultCode() . "\r\nReason: " . $r->faultString(), $sHeadersDebug);
+                mail($sDestinatairesDebug, 'unilend erreur universign reception', 'id cgv project : ' . $oProjectCgv->id . "\r\nAn error occurred\r\nCode: " . $r->faultCode() . "\r\nReason: " . $r->faultString());
             }
         } else {
             header('Location: ' . $this->lurl);

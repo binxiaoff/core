@@ -135,9 +135,6 @@ class PaylineManager
             $transaction->id_backpayline = $backPayline->id_backpayline;
             $transaction->status         = \transactions::STATUS_CANCELED;
             $transaction->update();
-
-        } else { // Payment error
-            mail('alertesit@unilend.fr', 'unilend payline erreur', 'erreur sur page payment alimentation preteur (client : ' . $client->id_client . ') : ' . serialize($response));
         }
         return false;
     }
