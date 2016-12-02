@@ -817,7 +817,7 @@ class preteursController extends bootstrap
                 'id'    => $this->attachments[$iType]['id']
             );
 
-            if (false === empty($aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status_label'])) {
+            if (false === empty($aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status_label']) && 0 == $aGPAttachmentStatus[$this->attachments[$iType]['id']]['revalidate']) {
                 $aDataToDisplay[$iType]['greenpoint_label'] = $aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status_label'];
 
                 if (1 == $aGPAttachmentStatus[$this->attachments[$iType]['id']]['final_status']) {
