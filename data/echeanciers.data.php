@@ -1153,10 +1153,10 @@ class echeanciers extends echeanciers_crud
                       SUM(ROUND(t_interest.montant / 100, 2)) AS rawInterests,
                       SUM(IFNULL((SELECT SUM(ROUND(tax.amount / 100, 2)) FROM tax WHERE id_transaction = t_interest.id_transaction) , 0)) AS repaidTaxes,
                       NULL AS upcomingTaxes
-                    FROM transactions t_interest 
-                      LEFT JOIN transactions t_capital ON t_interest.id_echeancier = t_capital.id_echeancier AND t_capital.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . '
-                      INNER JOIN lenders_accounts la ON t_interest.id_client = la.id_client_owner
-                    WHERE la.id_lender_account = :id_lender  and t_interest.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
+                    FROM lenders_accounts la
+                      INNER JOIN transactions t_capital ON t_capital.id_client = la.id_client_owner AND t_capital.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . '
+                      LEFT JOIN transactions t_interest ON t_interest.id_echeancier = t_capital.id_echeancier AND t_interest.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
+                    WHERE la.id_lender_account = :id_lender 
                     GROUP BY year, quarter, month
 
                   UNION ALL
@@ -1165,15 +1165,14 @@ class echeanciers extends echeanciers_crud
                     LEFT(t.date_transaction, 7)        AS month,
                     QUARTER(t.date_transaction)        AS quarter,
                     YEAR(t.date_transaction)           AS year,
-                    SUM(ROUND((t.montant / 100) / 0.844, 2))  AS capital,
+                    SUM(ROUND((t.montant/100)/ 0.844, 2))  AS capital,
                     NULL AS rawInterests,
                     NULL AS repaidTaxes,
                     NULL AS upcomingTaxes
-                  FROM transactions t
-                    INNER JOIN lenders_accounts l ON t.id_client = l.id_client_owner
+                  FROM lenders_accounts l
+                    INNER JOIN transactions t ON t.id_client = l.id_client_owner AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . '
                   WHERE
                     l.id_lender_account = :id_lender
-                    AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . '
                   GROUP BY year, quarter, month
 
                   UNION ALL
@@ -1225,9 +1224,7 @@ class echeanciers extends echeanciers_crud
                               LIMIT 1
                               )) > 180)), TRUE, FALSE) = FALSE
                   GROUP BY year, quarter, month) as t
-            GROUP BY t.year, t.quarter, t.month
-            ORDER BY t.year, t.quarter, t.month ASC
-        ';
+            GROUP BY t.year, t.quarter, t.month';
 
         /** @var \Doctrine\DBAL\Cache\QueryCacheProfile $oQCProfile */
         $oQCProfile = new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::DAY, md5(__METHOD__));
