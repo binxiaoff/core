@@ -43,15 +43,16 @@ class LenderWalletController extends Controller
         $lenderData = $lender->select('id_client_owner = ' . $clientData['id_client'])[0];
 
         $template = [
-            'balance'         => $this->getUser()->getBalance(),
-            'maxDepositAmount'=> self::MAX_DEPOSIT_AMOUNT,
-            'minDepositAmount'=> self::MIN_DEPOSIT_AMOUNT,
-            'client'          => $clientData,
-            'lender'          => $lenderData,
-            'lenderBankMotif' => $client->getLenderPattern($clientData['id_client']),
-            'depositResult'   => $request->query->get('depositResult', false),
-            'depositAmount'   => $request->query->get('depositAmount', 0),
-            'depositCode'     => $request->query->get('depositCode', 0),
+            'balance'          => $this->getUser()->getBalance(),
+            'maxDepositAmount' => self::MAX_DEPOSIT_AMOUNT,
+            'minDepositAmount' => self::MIN_DEPOSIT_AMOUNT,
+            'client'           => $clientData,
+            'lender'           => $lenderData,
+            'lenderBankMotif'  => $client->getLenderPattern($clientData['id_client']),
+            'depositResult'    => $request->query->get('depositResult', false),
+            'depositAmount'    => $request->query->get('depositAmount', 0),
+            'depositCode'      => $request->query->get('depositCode', 0),
+            'showNavigation'   => $this->getUser()->getClientStatus() >= \clients_status::VALIDATED
         ];
 
         return $this->render('pages/lender_wallet/deposit.html.twig', $template);
@@ -66,6 +67,9 @@ class LenderWalletController extends Controller
      */
     public function walletWithdrawalAction(Request $request)
     {
+        if (\clients_status::VALIDATED > $this->getUser()->getClientStatus()) {
+            return $this->redirectToRoute('lender_completeness');
+        }
 
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
