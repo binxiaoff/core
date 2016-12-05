@@ -16,7 +16,8 @@ class LenderAccountController extends Controller
     {
         $template = [
             'route'              => $route,
-            'isAutobidQualified' => $this->get('unilend.service.autobid_settings_manager')->isQualified($this->getLenderAccount())
+            'isAutobidQualified' => $this->get('unilend.service.autobid_settings_manager')->isQualified($this->getLenderAccount()),
+            'isValidatedClient'  => $this->getUser()->getClientStatus() >= \clients_status::VALIDATED
         ];
 
         return $this->render('frontbundle/lender_account/partials/lender_account_nav.html.twig', $template);

@@ -97,51 +97,48 @@ class CompanyBalanceSheetManager
         $companyTaxFormType->get($companyBalanceSheet->id_company_tax_form_type);
 
         $setting->get('Entreprises fundés au passage du risque lot 1', 'type');
-        $fundedCompanies = explode(',', $setting->value);
+        $beforeRiskCompanies = explode(',', $setting->value);
 
-        if (in_array($companyBalanceSheet->id_company, $fundedCompanies) || $companyTaxFormType->label != \company_tax_form_type::FORM_2033) {
-            return;
+        if ($companyTaxFormType->label != \company_tax_form_type::FORM_2033) {
+            return [];
         }
 
-        $aBalances = $this->getBalanceSheetsByAnnualAccount(array($balanceSheetId));
-
-        $turnover             = $aBalances[$balanceSheetId]['details']['FL'];
-        $grossOperationIncome = $aBalances[$balanceSheetId]['details']['GG'] + $aBalances[$balanceSheetId]['details']['GA'] + $aBalances[$balanceSheetId]['details']['GB']
-            + $aBalances[$balanceSheetId]['details']['GC'] + $aBalances[$balanceSheetId]['details']['GD']
-            - $aBalances[$balanceSheetId]['details']['FP'] - $aBalances[$balanceSheetId]['details']['FQ'] + $aBalances[$balanceSheetId]['details']['GE'];
-        $operationIncome      = $aBalances[$balanceSheetId]['details']['GG'];
-        $financialResult      = $aBalances[$balanceSheetId]['details']['GV'];
-        $nonRecurringIncome   = $aBalances[$balanceSheetId]['details']['HA'] + $aBalances[$balanceSheetId]['details']['HB'] + $aBalances[$balanceSheetId]['details']['HC'];
-        $nonRecurringCharge   = $aBalances[$balanceSheetId]['details']['HE'] + $aBalances[$balanceSheetId]['details']['HF'] + $aBalances[$balanceSheetId]['details']['HG'];
-        $nonRecurringResult   = $nonRecurringIncome - $nonRecurringCharge;
-        $netIncome            = $aBalances[$balanceSheetId]['details']['HN'];
-        $investments          = $aBalances[$balanceSheetId]['details']['0J'];
-
-        // back forward compatibility (they are used in the BO stats controller, after the migration of this usage, we can remove these columns)
-        $companyBalanceSheet->ca                          = $turnover;
-        $companyBalanceSheet->resultat_brute_exploitation = $grossOperationIncome;
-        $companyBalanceSheet->resultat_exploitation       = $operationIncome;
-        $companyBalanceSheet->resultat_financier          = $financialResult;
-        $companyBalanceSheet->produit_exceptionnel        = $nonRecurringIncome;
-        $companyBalanceSheet->charges_exceptionnelles     = $nonRecurringCharge;
-        $companyBalanceSheet->resultat_exceptionnel       = $nonRecurringResult;
-        $companyBalanceSheet->resultat_net                = $netIncome;
-        $companyBalanceSheet->investissements             = $investments;
-        $companyBalanceSheet->update();
-        // end of back forward compatibility
-
         $incomeStatement['form_type'] = \company_tax_form_type::FORM_2033;
-        $incomeStatement['details'] = [
-            'project-detail_finance-column-ca'                         => $turnover,
-            'project-detail_finance-column-resultat-brut-exploitation' => $grossOperationIncome,
-            'project-detail_finance-column-resultat-exploitation'      => $operationIncome,
-            'project-detail_finance-column-resultat-financier'         => $financialResult,
-            'project-detail_finance-column-produit-exceptionnel'       => $nonRecurringIncome,
-            'project-detail_finance-column-charges-exceptionnelles'    => $nonRecurringCharge,
-            'project-detail_finance-column-resultat-exceptionnel'      => $nonRecurringResult,
-            'project-detail_finance-column-resultat-net'               => $netIncome,
-            'project-detail_finance-column-investissements'            => $investments,
-        ];
+
+        if (in_array($companyBalanceSheet->id_company, $beforeRiskCompanies)) {
+            $incomeStatement['details'] = [
+                'project-detail_finance-column-ca'                         => $companyBalanceSheet->ca,
+                'project-detail_finance-column-resultat-brut-exploitation' => $companyBalanceSheet->resultat_brute_exploitation,
+                'project-detail_finance-column-resultat-exploitation'      => $companyBalanceSheet->resultat_exploitation,
+                'project-detail_finance-column-investissements'            => $companyBalanceSheet->investissements,
+            ];
+        } else {
+            $aBalances = $this->getBalanceSheetsByAnnualAccount(array($balanceSheetId));
+
+            $turnover             = $aBalances[$balanceSheetId]['details']['FL'];
+            $grossOperationIncome = $aBalances[$balanceSheetId]['details']['GG'] + $aBalances[$balanceSheetId]['details']['GA'] + $aBalances[$balanceSheetId]['details']['GB']
+                + $aBalances[$balanceSheetId]['details']['GC'] + $aBalances[$balanceSheetId]['details']['GD']
+                - $aBalances[$balanceSheetId]['details']['FP'] - $aBalances[$balanceSheetId]['details']['FQ'] + $aBalances[$balanceSheetId]['details']['GE'];
+            $operationIncome      = $aBalances[$balanceSheetId]['details']['GG'];
+            $financialResult      = $aBalances[$balanceSheetId]['details']['GV'];
+            $nonRecurringIncome   = $aBalances[$balanceSheetId]['details']['HA'] + $aBalances[$balanceSheetId]['details']['HB'] + $aBalances[$balanceSheetId]['details']['HC'];
+            $nonRecurringCharge   = $aBalances[$balanceSheetId]['details']['HE'] + $aBalances[$balanceSheetId]['details']['HF'] + $aBalances[$balanceSheetId]['details']['HG'];
+            $nonRecurringResult   = $nonRecurringIncome - $nonRecurringCharge;
+            $netIncome            = $aBalances[$balanceSheetId]['details']['HN'];
+            $investments          = $aBalances[$balanceSheetId]['details']['0J'];
+
+            $incomeStatement['details'] = [
+                'project-detail_finance-column-ca'                         => $turnover,
+                'project-detail_finance-column-resultat-brut-exploitation' => $grossOperationIncome,
+                'project-detail_finance-column-resultat-exploitation'      => $operationIncome,
+                'project-detail_finance-column-resultat-financier'         => $financialResult,
+                'project-detail_finance-column-produit-exceptionnel'       => $nonRecurringIncome,
+                'project-detail_finance-column-charges-exceptionnelles'    => $nonRecurringCharge,
+                'project-detail_finance-column-resultat-exceptionnel'      => $nonRecurringResult,
+                'project-detail_finance-column-resultat-net'               => $netIncome,
+                'project-detail_finance-column-investissements'            => $investments,
+            ];
+        }
 
         return $incomeStatement;
     }

@@ -220,7 +220,15 @@ class StatisticsManager
 
         foreach ($years as $year) {
 
-            $data['IRR'][$year]                                 = $year == '2013-2014' ? $this->IRRManager->getUnilendIRRForCohort20132014() : $this->IRRManager->getUnilendIRRByCohort($year);
+            if ($year == '2013-2014') {
+                $cohortStartDate = '2013-01-01 00:00:00';
+                $cohortEndDate   = '2014-12-31 23:59:59';
+            } else {
+                $cohortStartDate = $year . '-01-01 00:00:00';
+                $cohortEndDate   = $year . '-12-31 23:59:59';
+            }
+
+            $data['IRR'][$year]                                 = $this->IRRManager->getUnilendIRRByCohort($cohortStartDate, $cohortEndDate);
             $data['projects'][$year]                            = $fundedProjects[$year];
 
             $data['borrowed-capital'][$year]                    = $borrowedCapital[$year];
