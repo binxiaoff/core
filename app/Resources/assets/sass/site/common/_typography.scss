@@ -320,7 +320,7 @@ h3.round-number {
   transition: background-color 0.2s;
 
   &.pip-has-many {
-    line-height: 14px;
+    line-height: $height-pip;
 
     &:before {
       content: '';
@@ -329,7 +329,6 @@ h3.round-number {
       height: 6px;
       background-color: $c-white;
       border-radius: 6px;
-      vertical-align: middle;
     }
 
     .pip-number {

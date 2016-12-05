@@ -12,7 +12,7 @@
                     <nav class="dashboard-nav">
                         {% block dashboardNav %}
                             <ul>
-                                <li role="presentation" class="dashboard-nav-dashboard {% if app.request.attributes.get('_route') == 'lender_dashboard' %}active{% else %}complete{% endif %}">
+                                <li role="presentation" class="dashboard-nav-dashboard {% if app.request.attributes.get('_route') == 'lender_notifications' %}active{% else %}complete{% endif %}">
                                     <a href="{{ path('lender_dashboard') }}">
                                         <span class="icon fa-dashboard-u"></span>
                                         <span class="label">{% trans %} lender-dashboard-navigation_dashboard-link {% endtrans %}</span>
