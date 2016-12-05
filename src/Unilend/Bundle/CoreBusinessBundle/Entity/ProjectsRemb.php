@@ -1,0 +1,283 @@
+<?php
+
+namespace Unilend\Bundle\CoreBusinessBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * ProjectsRemb
+ *
+ * @ORM\Table(name="projects_remb", indexes={@ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="ordre", columns={"ordre"})})
+ * @ORM\Entity
+ */
+class ProjectsRemb
+{
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="id_project", type="integer", nullable=false)
+     */
+    private $idProject;
+
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="ordre", type="integer", nullable=false)
+     */
+    private $ordre;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="date_remb_emprunteur_reel", type="datetime", nullable=false)
+     */
+    private $dateRembEmprunteurReel;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="date_remb_preteurs", type="datetime", nullable=false)
+     */
+    private $dateRembPreteurs;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="date_remb_preteurs_reel", type="datetime", nullable=false)
+     */
+    private $dateRembPreteursReel;
+
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(name="status", type="boolean", nullable=false)
+     */
+    private $status;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="added", type="datetime", nullable=false)
+     */
+    private $added;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     */
+    private $updated;
+
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="id_project_remb", type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="IDENTITY")
+     */
+    private $idProjectRemb;
+
+
+
+    /**
+     * Set idProject
+     *
+     * @param integer $idProject
+     *
+     * @return ProjectsRemb
+     */
+    public function setIdProject($idProject)
+    {
+        $this->idProject = $idProject;
+
+        return $this;
+    }
+
+    /**
+     * Get idProject
+     *
+     * @return integer
+     */
+    public function getIdProject()
+    {
+        return $this->idProject;
+    }
+
+    /**
+     * Set ordre
+     *
+     * @param integer $ordre
+     *
+     * @return ProjectsRemb
+     */
+    public function setOrdre($ordre)
+    {
+        $this->ordre = $ordre;
+
+        return $this;
+    }
+
+    /**
+     * Get ordre
+     *
+     * @return integer
+     */
+    public function getOrdre()
+    {
+        return $this->ordre;
+    }
+
+    /**
+     * Set dateRembEmprunteurReel
+     *
+     * @param \DateTime $dateRembEmprunteurReel
+     *
+     * @return ProjectsRemb
+     */
+    public function setDateRembEmprunteurReel($dateRembEmprunteurReel)
+    {
+        $this->dateRembEmprunteurReel = $dateRembEmprunteurReel;
+
+        return $this;
+    }
+
+    /**
+     * Get dateRembEmprunteurReel
+     *
+     * @return \DateTime
+     */
+    public function getDateRembEmprunteurReel()
+    {
+        return $this->dateRembEmprunteurReel;
+    }
+
+    /**
+     * Set dateRembPreteurs
+     *
+     * @param \DateTime $dateRembPreteurs
+     *
+     * @return ProjectsRemb
+     */
+    public function setDateRembPreteurs($dateRembPreteurs)
+    {
+        $this->dateRembPreteurs = $dateRembPreteurs;
+
+        return $this;
+    }
+
+    /**
+     * Get dateRembPreteurs
+     *
+     * @return \DateTime
+     */
+    public function getDateRembPreteurs()
+    {
+        return $this->dateRembPreteurs;
+    }
+
+    /**
+     * Set dateRembPreteursReel
+     *
+     * @param \DateTime $dateRembPreteursReel
+     *
+     * @return ProjectsRemb
+     */
+    public function setDateRembPreteursReel($dateRembPreteursReel)
+    {
+        $this->dateRembPreteursReel = $dateRembPreteursReel;
+
+        return $this;
+    }
+
+    /**
+     * Get dateRembPreteursReel
+     *
+     * @return \DateTime
+     */
+    public function getDateRembPreteursReel()
+    {
+        return $this->dateRembPreteursReel;
+    }
+
+    /**
+     * Set status
+     *
+     * @param boolean $status
+     *
+     * @return ProjectsRemb
+     */
+    public function setStatus($status)
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    /**
+     * Get status
+     *
+     * @return boolean
+     */
+    public function getStatus()
+    {
+        return $this->status;
+    }
+
+    /**
+     * Set added
+     *
+     * @param \DateTime $added
+     *
+     * @return ProjectsRemb
+     */
+    public function setAdded($added)
+    {
+        $this->added = $added;
+
+        return $this;
+    }
+
+    /**
+     * Get added
+     *
+     * @return \DateTime
+     */
+    public function getAdded()
+    {
+        return $this->added;
+    }
+
+    /**
+     * Set updated
+     *
+     * @param \DateTime $updated
+     *
+     * @return ProjectsRemb
+     */
+    public function setUpdated($updated)
+    {
+        $this->updated = $updated;
+
+        return $this;
+    }
+
+    /**
+     * Get updated
+     *
+     * @return \DateTime
+     */
+    public function getUpdated()
+    {
+        return $this->updated;
+    }
+
+    /**
+     * Get idProjectRemb
+     *
+     * @return integer
+     */
+    public function getIdProjectRemb()
+    {
+        return $this->idProjectRemb;
+    }
+}

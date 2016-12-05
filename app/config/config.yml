@@ -61,12 +61,19 @@ doctrine:
                 dbname:        "%database_name%"
                 user:          "%database_user%"
                 password:      "%database_password%"
-                charset:       "UTF8"
+                charset: utf8mb4
                 wrapper_class: "%dbal_wrapper_class%"
                 driver_class:  "%dbal_driver_class%"
+                default_table_options:
+                    charset: utf8mb4
+                    collate: utf8mb4_unicode_ci
+                mapping_types:
+                    enum: string
                 options:
                     x_reconnect_attempts: 3
     orm:
+        auto_generate_proxy_classes: "%kernel.debug%"
+        auto_mapping: true
         result_cache_driver:
             type: memcache
             host: "%server1.memcache_host%"
