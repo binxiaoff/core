@@ -1,18 +1,15 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: binxiao
- * Date: 13/09/2016
- * Time: 12:37
- */
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker;
 
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 trait BidChecker
 {
     use LenderChecker;
+
     /**
      * @param \bids                   $bid
      * @param \product                $product
@@ -32,5 +29,24 @@ trait BidChecker
         }
 
         return bccomp($maxAmountEligible, $totalAmount, 2) >= 0;
+    }
+
+    /**
+     * @param \bids             $bid
+     * @param \lenders_accounts $lender
+     * @param \product          $product
+     * @param EntityManager     $entityManager
+     * @param ContractManager   $contractManager
+     *
+     * @return bool
+     */
+    public function isAutobidEligibleForMaxTotalAmount(\bids $bid, \lenders_accounts $lender, \product $product, EntityManager $entityManager, ContractManager $contractManager)
+    {
+        $bidMaxAmount = $this->getAutobidMaxEligibleAmount($lender, $product, $entityManager, $contractManager);
+        if (null === $bidMaxAmount) {
+            return true;
+        }
+
+        return bcdiv($bid->amount, 100, 2) <= $bidMaxAmount;
     }
 }

@@ -146,6 +146,7 @@
     "Sortable": "./app/Resources/assets/js/app/components/Sortable.js",
     "PasswordCheck": "./app/Resources/assets/js/app/components/PasswordCheck.js",
     "FileAttach": "./app/Resources/assets/js/app/components/FileAttach.js",
+    "ExtraFiles": "./app/Resources/assets/js/app/components/ExtraFiles.js",
     "FormValidation": "./app/Resources/assets/js/app/components/FormValidation.js",
     "DashboardPanel": "./app/Resources/assets/js/app/components/DashboardPanel.js",
     "DashboardPanels": "./app/Resources/assets/js/app/components/DashboardPanels.js",
@@ -154,13 +155,28 @@
     "NavDropdownMenu": "./app/Resources/assets/js/app/components/NavDropdownMenu.js",
     "MapView": "./app/Resources/assets/js/app/components/MapView.js",
     "ChartView": "./app/Resources/assets/js/app/components/ChartView.js",
+    "Modal": "./app/Resources/assets/js/app/components/Modal.js",
+    "Spinner": "./app/Resources/assets/js/app/components/Spinner.js",
+    "SpinnerButton": "./app/Resources/assets/js/app/components/SpinnerButton.js",
+    "ProgressBar": "./app/Resources/assets/js/app/components/ProgressBar.js",
     "UserNotifications": "./app/Resources/assets/js/app/components/UserNotifications.js",
     "UserNotificationsList": "./app/Resources/assets/js/app/components/UserNotificationsList.js",
     "UserNotificationsDrop": "./app/Resources/assets/js/app/components/UserNotificationsDrop.js",
+    "Modal": "./app/Resources/assets/js/app/components/Modal.js",
+    "ModalTOS": "./app/Resources/assets/js/app/components/ModalTOS.js",
+    "Spinner": "./app/Resources/assets/js/app/components/Spinner.js",
+    "SpinnerButton": "./app/Resources/assets/js/app/components/SpinnerButton.js",
+    "ProgressBar": "./app/Resources/assets/js/app/components/ProgressBar.js",
     "highcharts/highstock.src": "./app/Resources/assets/js/vendor/highcharts/highstock.src.js",
     "highcharts/modules/treemap": "./app/Resources/assets/js/vendor/highcharts/modules/treemap.js",
     "highcharts/modules/map": "./app/Resources/assets/js/vendor/highcharts/modules/map.js",
-    "pikaday.jquery": "./node_modules/pikaday/plugins/pikaday.jquery.js"
+    "pikaday.jquery": "./node_modules/pikaday/plugins/pikaday.jquery.js",
+    "gsap.TweenLite": "./node_modules/gsap/src/uncompressed/TweenLite.js",
+    "gsap.TweenMax": "./node_modules/gsap/src/uncompressed/TweenMax.js",
+    "gsap.TimelineLite": "./node_modules/gsap/src/uncompressed/TimelineLite.js",
+    "gsap.TimelineMax": "./node_modules/gsap/src/uncompressed/TimelineMax.js",
+    "gsap.CSSPlugin": "./node_modules/gsap/src/uncompressed/plugins/CSSPlugin.js",
+    "gsap.jquery": "./node_modules/gsap/src/uncompressed/jquery.gsap.js"
   },
   "browserify": {
     "transform": [
@@ -175,6 +191,12 @@
     "jquery-ui": {
       "depends": [
         "jquery"
+      ]
+    },
+    "gsap.jquery": {
+      "depends": [
+        "gsap.TweenLite",
+        "gsap.CSSPlugin"
       ]
     }
   }

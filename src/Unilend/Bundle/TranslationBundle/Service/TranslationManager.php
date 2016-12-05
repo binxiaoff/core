@@ -27,21 +27,6 @@ class TranslationManager
     }
 
     /**
-     * Deletes the pho file with the translation array in the cache folder.
-     * and if the folder does not exist (deleted manually) it creates the folder.
-     */
-    public function clearLanguageCache()
-    {
-        try {
-            foreach(Finder::create()->in($this->cacheDirectory)->files() as $file) {
-                unlink($file->getRealpath());
-            }
-        } catch (\InvalidArgumentException $noTranslationDirectoryException) {
-            mkdir($this->cacheDirectory);
-        }
-    }
-
-    /**
      * @param $sLocale
      * @return array
      */

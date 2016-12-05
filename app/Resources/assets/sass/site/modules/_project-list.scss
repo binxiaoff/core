@@ -199,13 +199,13 @@
   }
 
   .label {
-    display: inline-block;
-    max-width: 80%;
-    height: 1em;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding-top: 2px;
-    white-space: nowrap;
+    //display: inline-block;
+    //max-width: 80%;
+    //height: 1em;
+    //overflow: hidden;
+    //text-overflow: ellipsis;
+    //padding-top: 2px;
+    //white-space: nowrap;
   }
 
   // Currently sorted column
@@ -353,9 +353,46 @@
   }
 }
 
+@mixin project-list-item-flag ($width: 30px, $height: 30px, $color: transparent) {
+  width: 0;
+  height: 0;
+  padding: 0 !important;
+  margin: 0;
+
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
+
+  border: solid $width transparent;
+  border-top-color: $color;
+  border-left-color: $color;
+
+  @include devices('xs') {
+    border-width: $width * .4;
+  }
+
+  @include devices('sm') {
+    border-width: $width * .6;
+  }
+
+  @include devices('lg') {
+    border-width: $width * 1.3;
+  }
+}
+
 // Specific stylings for project-list-item properties
 .project-list-item {
   position: relative;
+
+  .project-list-item-flag {
+    @include project-list-item-flag;
+  }
+
+  .project-list-item-flag-type-cip {
+    border-top-color: $c-green;
+    border-left-color: $c-green;
+  }
 
   // Hotspot
   .project-list-item-hotspot {

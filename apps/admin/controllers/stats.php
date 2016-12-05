@@ -524,11 +524,11 @@ class statsController extends bootstrap
         /** @var \transactions $transactions */
         $transactions = $this->loadData('transactions');
 
-        $clientList = $transactions->getClientsWithRepaymentTransactions(date('Y'));
+        $clientList = $transactions->getClientsWithLoanRelatedTransactions(date('Y'));
         $data = [];
 
         $filename = 'requete_beneficiaires' . date('Ymd');
-        $headers = ['Cbene', 'Nom', 'Qualité', 'NomJFille', 'Prénom', 'DateNaissance', 'DépNaissance', 'ComNaissance', 'LieuNaissance', 'NomMari', 'Siret', 'AdISO', 'Adresse', 'Voie', 'CodeCommune', 'Commune', 'CodePostal', 'Ville / nom pays', 'IdFiscal', 'PaysISO', 'Entité', 'ToRS', 'Plib', 'Tél', 'Banque', 'IBAN', 'BIC', 'EMAIL', 'Obs', ''];
+        $headers = ['id_client', 'Cbene', 'Nom', 'Qualité', 'NomJFille', 'Prénom', 'DateNaissance', 'DépNaissance', 'ComNaissance', 'LieuNaissance', 'NomMari', 'Siret', 'AdISO', 'Adresse', 'Voie', 'CodeCommune', 'Commune', 'CodePostal', 'Ville / nom pays', 'IdFiscal', 'PaysISO', 'Entité', 'ToRS', 'Plib', 'Tél', 'Banque', 'IBAN', 'BIC', 'EMAIL', 'Obs', ''];
 
         foreach ($clientList as $client) {
             $clients->get($client['id_client']);
@@ -621,6 +621,7 @@ class statsController extends bootstrap
         $birthDate = \DateTime::createFromFormat('Y-m-d', $clients->naissance);
 
         $data[] = [
+            $clients->id_client,
             $clients->getLenderPattern($clients->id_client),
             $clients->nom,
             $clients->civilite,
@@ -656,6 +657,7 @@ class statsController extends bootstrap
     private function addLegalEntityLineToBeneficiaryQueryData(&$data, \companies $company, \lenders_accounts $lenderAccount, \clients $clients, $fiscalAndLocationData)
     {
         $data[] = [
+            $clients->id_client,
             $clients->getLenderPattern($clients->id_client),
             $company->name,
             '',
@@ -735,6 +737,32 @@ class statsController extends bootstrap
         header("Content-disposition: attachment; filename=\"" . $titre . ".csv\"");
 
         print(utf8_decode($csv));
+    }
+
+    public function _requete_revenus_download()
+    {
+        $this->autoFireView = false;
+        $this->hideDecoration();
+
+        $fileName = 'requete_revenus' . date('Ymd') . '.csv';
+        $filePath = $this->getParameter('path.protected') . '/' . $fileName;
+
+        if (file_exists($filePath)) {
+            header('Content-Description: File Transfer');
+            header('Content-Type: application/force-download');
+            header("Content-Disposition: attachment; filename=\"" . basename($fileName) . "\";");
+            header('Content-Transfer-Encoding: binary');
+            header('Expires: 0');
+            header('Cache-Control: must-revalidate');
+            header('Pragma: public');
+            header('Content-Length: ' . filesize($filePath));
+            ob_clean();
+            flush();
+            readfile($filePath);
+            exit;
+        } else {
+            echo "Le fichier n'a pas été généré cette nuit";
+        }
     }
 
     public function _requete_revenus_csv()

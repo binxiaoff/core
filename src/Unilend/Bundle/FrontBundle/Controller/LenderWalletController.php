@@ -13,6 +13,7 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Service\PaylineManager;
 use Unilend\Bundle\FrontBundle\Form\LenderWithdrawalType;
@@ -43,15 +44,16 @@ class LenderWalletController extends Controller
         $lenderData = $lender->select('id_client_owner = ' . $clientData['id_client'])[0];
 
         $template = [
-            'balance'         => $this->getUser()->getBalance(),
-            'maxDepositAmount'=> self::MAX_DEPOSIT_AMOUNT,
-            'minDepositAmount'=> self::MIN_DEPOSIT_AMOUNT,
-            'client'          => $clientData,
-            'lender'          => $lenderData,
-            'lenderBankMotif' => $client->getLenderPattern($clientData['id_client']),
-            'depositResult'   => $request->query->get('depositResult', false),
-            'depositAmount'   => $request->query->get('depositAmount', 0),
-            'depositCode'     => $request->query->get('depositCode', 0),
+            'balance'          => $this->getUser()->getBalance(),
+            'maxDepositAmount' => self::MAX_DEPOSIT_AMOUNT,
+            'minDepositAmount' => self::MIN_DEPOSIT_AMOUNT,
+            'client'           => $clientData,
+            'lender'           => $lenderData,
+            'lenderBankMotif'  => $client->getLenderPattern($clientData['id_client']),
+            'depositResult'    => $request->query->get('depositResult', false),
+            'depositAmount'    => $request->query->get('depositAmount', 0),
+            'depositCode'      => $request->query->get('depositCode', 0),
+            'showNavigation'   => $this->getUser()->getClientStatus() >= \clients_status::VALIDATED
         ];
 
         return $this->render('pages/lender_wallet/deposit.html.twig', $template);
@@ -66,6 +68,9 @@ class LenderWalletController extends Controller
      */
     public function walletWithdrawalAction(Request $request)
     {
+        if (\clients_status::VALIDATED > $this->getUser()->getClientStatus()) {
+            return $this->redirectToRoute('lender_completeness');
+        }
 
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
@@ -124,8 +129,6 @@ class LenderWalletController extends Controller
         $bankTransfer = $entityManager->getRepository('virements');
         /** @var \lenders_accounts $lender */
         $lender = $entityManager->getRepository('lenders_accounts');
-        /** @var \clients_status $clientStatus */
-        $clientStatus = $entityManager->getRepository('clients_status');
         /** @var \offres_bienvenues_details $welcomeOfferDetails */
         $welcomeOfferDetails = $entityManager->getRepository('offres_bienvenues_details');
         /** @var \notifications $notification */
@@ -138,6 +141,8 @@ class LenderWalletController extends Controller
         $logger = $this->get('logger');
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
+        /** @var ClientStatusManager $clientStatusManager */
+        $clientStatusManager = $this->get('unilend.service.client_status_manager');
 
         if ($client->get($this->getUser()->getClientId(), 'id_client')) {
             /** @var \clients_history_actions $clientActionHistory */
@@ -145,9 +150,7 @@ class LenderWalletController extends Controller
             $serialize           = serialize(array('id_client' => $client->id_client, 'montant' => $post['amount'], 'mdp' => md5($post['password'])));
             $clientActionHistory->histo(3, 'retrait argent', $client->id_client, $serialize);
 
-            $clientStatus->getLastStatut($client->id_client);
-
-            if ($clientStatus->status < \clients_status::VALIDATED) {
+            if ($clientStatusManager->getLastClientStatus($client) < \clients_status::VALIDATED) {
                 $this->redirectToRoute('lender_wallet_withdrawal');
             }
 
@@ -183,14 +186,13 @@ class LenderWalletController extends Controller
             }
 
             if ($this->get('session')->getFlashBag()->has('withdrawalErrors')) {
-                $logger->error('Wrong parameters submitted, id_client=' . $client->id_client . ' Request parameters : ' . json_encode($post), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
+                $logger->error('Wrong parameters submitted, id_client=' . $client->id_client . ' Amount : ' . $post['amount'], ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
             } else {
                 $transaction->id_client        = $client->id_client;
                 $transaction->montant          = '-' . ($amount * 100);
                 $transaction->id_langue        = 'fr';
                 $transaction->date_transaction = date('Y-m-d H:i:s');
-                $transaction->status           = '1'; // on met en mode reglé pour ne plus avoir la somme sur le compte
-                $transaction->etat             = '1';
+                $transaction->status           = \transactions::STATUS_VALID; // on met en mode reglé pour ne plus avoir la somme sur le compte
                 $transaction->ip_client        = $request->server->get('REMOTE_ADDR');
                 $transaction->type_transaction = \transactions_types::TYPE_LENDER_WITHDRAWAL; // on signal que c'est un retrait
                 $transaction->create();
@@ -288,7 +290,6 @@ class LenderWalletController extends Controller
             $transaction->id_langue        = 'fr';
             $transaction->date_transaction = date('Y-m-d H:i:s');
             $transaction->status           = \transactions::STATUS_PENDING;
-            $transaction->etat             = '0';
             $transaction->ip_client        = $request->server->get('REMOTE_ADDR');
             $transaction->type_transaction = \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT;
             $transaction->create();
@@ -466,7 +467,7 @@ class LenderWalletController extends Controller
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
-        $transaction->get($client->id_client, 'type_transaction = ' . \transactions_types::TYPE_LENDER_SUBSCRIPTION . ' AND status = 1 AND etat = 1 AND id_client');
+        $transaction->get($client->id_client, 'type_transaction = ' . \transactions_types::TYPE_LENDER_SUBSCRIPTION . ' AND status = ' . \transactions::STATUS_VALID . ' AND id_client');
 
         $varMail = array(
             '$surl'                          => $this->get('assets.packages')->getUrl(''),

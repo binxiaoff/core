@@ -107,8 +107,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                             $transactions->id_echeancier    = $e['id_echeancier'];
                             $transactions->id_langue        = 'fr';
                             $transactions->date_transaction = $repaymentDate;
-                            $transactions->status           = \transactions::PAYMENT_STATUS_OK;
-                            $transactions->etat             = \transactions::STATUS_VALID;
+                            $transactions->status           = \transactions::STATUS_VALID;
                             $transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL;
                             $transactions->create();
 
@@ -129,8 +128,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                             $transactions->id_echeancier    = $e['id_echeancier'];
                             $transactions->id_langue        = 'fr';
                             $transactions->date_transaction = $repaymentDate;
-                            $transactions->status           = \transactions::PAYMENT_STATUS_OK;
-                            $transactions->etat             = \transactions::STATUS_VALID;
+                            $transactions->status           = \transactions::STATUS_VALID;
                             $transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS;
                             $transactions->create();
 
@@ -188,8 +186,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                 $transactions->id_echeancier_emprunteur = $echeanciers_emprunteur->id_echeancier_emprunteur;
                 $transactions->id_langue                = 'fr';
                 $transactions->date_transaction         = date('Y-m-d H:i:s');
-                $transactions->status                   = \transactions::PAYMENT_STATUS_OK;
-                $transactions->etat                     = \transactions::STATUS_VALID;
+                $transactions->status                   = \transactions::STATUS_VALID;
                 $transactions->type_transaction         = \transactions_types::TYPE_UNILEND_REPAYMENT;
                 $transactions->create();
 

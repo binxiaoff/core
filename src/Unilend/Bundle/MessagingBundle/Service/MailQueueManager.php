@@ -8,6 +8,7 @@
 
 namespace Unilend\Bundle\MessagingBundle\Service;
 
+use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
@@ -20,6 +21,8 @@ class MailQueueManager
     private $oTemplateMessage;
     /** @var string */
     private $sharedTemporaryPath;
+    /** @var LoggerInterface */
+    private $logger;
 
     /**
      * MailQueueManager constructor.
@@ -28,11 +31,12 @@ class MailQueueManager
      * @param TemplateMessageProvider $oTemplateMessage
      * @param string                  $sharedTemporaryPath
      */
-    public function __construct(EntityManager $oEntityManager, TemplateMessageProvider $oTemplateMessage, $sharedTemporaryPath)
+    public function __construct(EntityManager $oEntityManager, TemplateMessageProvider $oTemplateMessage, LoggerInterface $logger, $sharedTemporaryPath)
     {
         $this->oEntityManager      = $oEntityManager;
         $this->oTemplateMessage    = $oTemplateMessage;
         $this->sharedTemporaryPath = $sharedTemporaryPath;
+        $this->logger              = $logger;
     }
 
     /**
@@ -93,9 +97,17 @@ class MailQueueManager
         if (false === $oMailTemplate->get($oEmail->id_mail_template)) {
             return false;
         }
+        $serializedVariables = json_decode($oEmail->serialized_variables, true);
+        if (false === is_array($serializedVariables)) {
+            $this->logger->warning('TMA-1209 - Argument is not an array : ' . $oEmail->serialized_variables, ['class' => __CLASS__, 'function' => __FUNCTION__]);
+            return false;
+        }
         /** @var TemplateMessage $oMessage */
-        $oMessage = $this->oTemplateMessage->newMessage($oMailTemplate->type, json_decode($oEmail->serialized_variables, true), false);
-        $oMessage->setTo($oEmail->recipient);
+        $oMessage = $this->oTemplateMessage->newMessage($oMailTemplate->type, $serializedVariables, false);
+        $oMessage
+            ->setTo($oEmail->recipient)
+            ->setMessageId($oEmail->id_queue);
+
         if (false === empty($oEmail->reply_to)) {
             $oMessage->setReplyTo($oEmail->reply_to);
         }

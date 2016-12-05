@@ -27,12 +27,11 @@
 //
 // **************************************************************************************************** //
 use \Doctrine\DBAL\Statement;
+use \Unilend\Bundle\CoreBusinessBundle\Service\RecoveryManager;
 
 class projects extends projects_crud
 {
-    const MINIMUM_CREATION_DAYS_PROSPECT = 720;
-    const MINIMUM_CREATION_DAYS          = 1080;
-    const MINIMUM_REVENUE                = 80000;
+    const MINIMUM_REVENUE                = 100000;
 
     const DISPLAY_PROJECT_ON  = 0;
     const DISPLAY_PROJECT_OFF = 1;
@@ -203,7 +202,7 @@ class projects extends projects_crud
                 END AS lestatut';
 
         $tables = '
-            FROM projects p';
+            FROM projects p FORCE INDEX (status)';
 
         $sortField     = self::SORT_FIELD_END;
         $sortDirection = self::SORT_DIRECTION_DESC;
@@ -566,6 +565,12 @@ class projects extends projects_crud
      */
     public function getAverageInterestRate()
     {
+        $cacheTime = \Unilend\librairies\CacheKeys::VERY_SHORT_TIME;
+        $cacheKey  = md5(__METHOD__);
+
+        $queryBuilder = $this->bdd->createQueryBuilder();
+        $queryBuilder->select('SUM(amount * rate) / SUM(amount) AS avg_rate');
+
         switch ($this->status) {
             case \projects_status::FUNDE:
             case \projects_status::REMBOURSEMENT:
@@ -578,37 +583,50 @@ class projects extends projects_crud
             case \projects_status::REDRESSEMENT_JUDICIAIRE:
             case \projects_status::LIQUIDATION_JUDICIAIRE:
             case \projects_status::DEFAUT:
-                $rResult = $this->bdd->query('
-                    SELECT SUM(amount * rate) / SUM(amount) AS avg_rate
-                    FROM loans
-                    WHERE id_project = ' . $this->id_project
-                );
-                return round($this->bdd->result($rResult, 0, 0), 2);
+                $queryBuilder
+                    ->from('loans')
+                    ->where('id_project = :id_project');
+                $cacheTime = \Unilend\librairies\CacheKeys::DAY * 30;
+                $cacheKey  = md5(__METHOD__ .'ended_project');
+                break;
             case \projects_status::PRET_REFUSE:
             case \projects_status::EN_FUNDING:
             case \projects_status::AUTO_BID_PLACED:
             case \projects_status::BID_TERMINATED:
             case \projects_status::A_FUNDER:
-                $rResult = $this->bdd->query('
-                    SELECT SUM(amount * rate) / SUM(amount) AS avg_rate
-                    FROM bids
-                    WHERE id_project = ' . $this->id_project . '
-                    AND status IN (0, 1)'
-                );
-                return round($this->bdd->result($rResult, 0, 0), 2);
+                $queryBuilder
+                    ->from('bids')
+                    ->where('id_project = :id_project')
+                    ->andWhere('status in (:status)')
+                    ->setParameter('status', [0, 1], \Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
+                break;
             case \projects_status::FUNDING_KO:
-                $rResult = $this->bdd->query('
-                    SELECT SUM(amount * rate) / SUM(amount) AS avg_rate
-                    FROM bids
-                    WHERE id_project = ' . $this->id_project
-                );
-                return round($this->bdd->result($rResult, 0, 0), 2);
+                $queryBuilder
+                    ->from('bids')
+                    ->where('id_project = :id_project');
+                $cacheTime = \Unilend\librairies\CacheKeys::DAY * 30;
+                $cacheKey  = md5(__METHOD__ .'ended_project');
+                break;
             default:
                 trigger_error('Unknown project status : ' . $this->status . ' Could not calculate amounts', E_USER_WARNING);
-                break;
+                return 0.0;
         }
 
-        return 0.0;
+        $queryBuilder->setParameter('id_project', $this->id_project);
+
+        $statement = $this->bdd->executeCacheQuery(
+            $queryBuilder->getSQL(),
+            $queryBuilder->getParameters(),
+            $queryBuilder->getParameterTypes(),
+            new \Doctrine\DBAL\Cache\QueryCacheProfile($cacheTime, $cacheKey));
+        $result    = $statement->fetchAll(PDO::FETCH_COLUMN);
+        $statement->closeCursor();
+
+        if (empty($result)) {
+            return 0.0;
+        }
+
+        return array_values($result)[0];
     }
 
     public function getLoansAndLendersForProject($iProjectId = null)
@@ -899,29 +917,24 @@ class projects extends projects_crud
         return $dateIntervalInformation;
     }
 
-    public function getGlobalAverageRateOfFundedProjects($iLimit)
+    public function getGlobalAverageRateOfFundedProjects($limit)
     {
-        $aBind = array('projectStatus' => \projects_status::REMBOURSEMENT, 'limit' => $iLimit);
-        $aType = array('projectStatus' => \PDO::PARAM_INT, 'limit' => \PDO::PARAM_INT);
-
-        $sQuery = '
+        $query = '
             SELECT SUM(amount * rate) / SUM(amount)
             FROM (
                 SELECT
-                    loans.rate,
-                    loans.amount
-                FROM projects
-                INNER JOIN loans ON projects.id_project = loans.id_project
-                INNER JOIN projects_status_history psh ON loans.id_project = psh.id_project
-                INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                WHERE ps.status = :projectStatus
-                ORDER BY projects.date_fin DESC
+                  loans.rate,
+                  loans.amount
+                FROM projects p
+                   INNER JOIN loans ON p.id_project = loans.id_project
+                WHERE p.status >= ' . \projects_status::REMBOURSEMENT . '
+                ORDER BY p.date_fin DESC
                 LIMIT :limit
             ) AS last_loans';
 
-        $oStatement = $this->bdd->executeQuery($sQuery, $aBind, $aType);
+        $statement = $this->bdd->executeQuery($query, ['limit' => $limit], ['limit' => \PDO::PARAM_INT]);
 
-        return $oStatement->fetchColumn(0);
+        return $statement->fetchColumn(0);
     }
 
     public function getAverageNumberOfLendersForProject()
@@ -1136,5 +1149,86 @@ class projects extends projects_crud
 
         $statement = $this->bdd->executeQuery($query);
         return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @param DateTime $declarationDate
+     * @return array
+     */
+    public function getDataForBDFDeclaration(\DateTime $declarationDate)
+    {
+        $bind = [
+            'declaration_first_day'    => $declarationDate->format('Y-m-1'),
+            'declaration_last_day'     => $declarationDate->format('Y-m-t'),
+            'problematic_status'       => [
+                \projects_status::PROCEDURE_SAUVEGARDE,
+                \projects_status::REDRESSEMENT_JUDICIAIRE,
+                \projects_status::LIQUIDATION_JUDICIAIRE,
+            ],
+            'client_type_person'       => [
+                \clients::TYPE_PERSON,
+                \clients::TYPE_PERSON_FOREIGNER
+            ],
+            'client_type_legal_entity' => [
+                \clients::TYPE_LEGAL_ENTITY,
+                \clients::TYPE_LEGAL_ENTITY_FOREIGNER
+            ]
+        ];
+        $type = [
+            'declaration_first_day'    => \PDO::PARAM_STR,
+            'declaration_last_day'     => \PDO::PARAM_STR,
+            'problematic_status'       => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'client_type_person'       => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'client_type_legal_entity' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+        ];
+
+        $sql = "
+        SELECT
+          com.siren,
+          com.name,
+          p.id_project,
+          p.status,
+          p.id_project_need,
+          CASE
+            WHEN p.id_project_need IN (14, 16, 17, 26, 29, 30) THEN 'AU'
+            WHEN p.id_project_need IN (4, 5, 6, 7, 8) THEN 'CO'
+            WHEN p.id_project_need IN (24, 25) THEN 'EX'
+            WHEN p.id_project_need IN (2, 3, 9, 10, 28, 32) THEN 'IM'
+            WHEN p.id_project_need IN (11, 12, 15, 18, 19, 20, 21, 22, 23, 27, 31, 33, 34, 35) THEN 'MA'
+            WHEN p.id_project_need IN (13) THEN 'ST'
+            ELSE 'AU'
+          END AS loan_type,
+          p.amount AS loan_amount,
+          (SELECT MIN(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = p.id_project AND ps.status = " . \projects_status::REMBOURSEMENT . ") AS loan_date,
+          p.period AS loan_duration,
+          ROUND(SUM(l.amount * l.rate) / SUM(l.amount), 2) AS average_loan_rate,
+          'M' AS repayment_frequency,
+          (SELECT ROUND(SUM(e.capital_rembourse) / 100, 2) FROM echeanciers e WHERE e.id_project = p.id_project AND DATE(e.date_echeance_reel) <= :declaration_last_day) AS repaid_capital,
+          (SELECT pshd.date FROM projects_status_history_details pshd WHERE pshd.id_project_status_history = (
+            SELECT MIN(psh.id_project_status_history) FROM projects_status_history psh
+            INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status WHERE ps.status IN (:problematic_status) AND psh.id_project = p.id_project)
+          ) AS judgement_date,
+          (SELECT MIN(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = p.id_project AND ps.status = " . \projects_status::RECOUVREMENT . ") AS recovery_date,
+          (SELECT ROUND(SUM(IFNULL(t.montant, 0)) / 100, 2) FROM transactions t WHERE t.id_project = p.id_project AND t.type_transaction = " . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . " AND DATE(t.added) < " . RecoveryManager::RECOVERY_TAX_DATE_CHANGE . ") AS recovery_tax_excluded,
+          (SELECT ROUND(SUM(IFNULL(t.montant, 0)) / 100, 2) FROM transactions t WHERE t.id_project = p.id_project AND t.type_transaction = " . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . " AND DATE(t.added) >= " . RecoveryManager::RECOVERY_TAX_DATE_CHANGE . ") AS recovery_tax_included,
+          (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) FROM loans l INNER JOIN lenders_accounts la ON la.id_lender_account = l.id_lender
+            INNER JOIN clients c ON c.id_client = la.id_client_owner  WHERE l.id_project = p.id_project AND c.type IN (:client_type_person)) AS contributor_person_number,
+          (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / p.amount, 2) FROM loans l INNER JOIN lenders_accounts la ON la.id_lender_account = l.id_lender
+            INNER JOIN clients c ON c.id_client = la.id_client_owner  WHERE l.id_project = p.id_project AND c.type IN (:client_type_person)) AS contributor_person_percentage,
+          (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) FROM loans l INNER JOIN lenders_accounts la ON la.id_lender_account = l.id_lender
+            INNER JOIN clients c ON c.id_client = la.id_client_owner  WHERE l.id_project = p.id_project AND c.type IN (:client_type_legal_entity) AND c.id_client NOT IN (15112)) AS contributor_legal_entity_number,
+          (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / p.amount, 2) FROM loans l INNER JOIN lenders_accounts la ON la.id_lender_account = l.id_lender
+            INNER JOIN clients c ON c.id_client = la.id_client_owner  WHERE l.id_project = p.id_project AND c.type IN (:client_type_legal_entity) AND c.id_client NOT IN (15112)) AS contributor_legal_entity_percentage,
+          (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) FROM loans l WHERE l.id_project = p.id_project AND l.id_lender = (SELECT la.id_lender_account FROM lenders_accounts la WHERE la.id_client_owner = 15112)) AS contributor_credit_institution_number,
+          (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / p.amount, 2) FROM loans l WHERE l.id_project = p.id_project AND l.id_lender = (SELECT la.id_lender_account FROM lenders_accounts la WHERE la.id_client_owner = 15112)) AS contributor_credit_institution_percentage
+        FROM projects p
+        INNER JOIN companies com ON  com.id_company = p.id_company
+        INNER JOIN loans l ON l.id_project = p.id_project AND l.status = " . \loans::STATUS_ACCEPTED . "
+        WHERE p.status >= " . \projects_status::REMBOURSEMENT . " AND p.status <> " . \projects_status::REMBOURSE . "
+        GROUP BY p.id_project";
+        /** @var Statement $statement */
+        $statement = $this->bdd->executeQuery($sql, $bind, $type);
+
+        return $statement->fetchAll(\PDO::FETCH_ASSOC);
     }
 }

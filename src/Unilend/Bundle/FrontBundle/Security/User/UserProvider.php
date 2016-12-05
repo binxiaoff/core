@@ -7,6 +7,7 @@ use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Service\NotificationDisplayManager;
@@ -21,16 +22,24 @@ class UserProvider implements UserProviderInterface
     private $notificationDisplayManager;
     /** @var LenderManager */
     private $lenderManager;
+    /** @var  ClientStatusManager */
+    private $clientStatusManager;
 
     /**
      * @inheritDoc
      */
-    public function __construct(EntityManager $entityManager, ClientManager $clientManager, NotificationDisplayManager $notificationDisplayManager, LenderManager $lenderManager)
-    {
-        $this->entityManager              = $entityManager;
-        $this->clientManager              = $clientManager;
+    public function __construct(
+        EntityManager $entityManager,
+        ClientManager $clientManager,
+        NotificationDisplayManager $notificationDisplayManager,
+        LenderManager $lenderManager,
+        ClientStatusManager $clientStatusManager
+    ) {
+        $this->entityManager = $entityManager;
+        $this->clientManager = $clientManager;
         $this->notificationDisplayManager = $notificationDisplayManager;
-        $this->lenderManager              = $lenderManager;
+        $this->lenderManager = $lenderManager;
+        $this->clientStatusManager = $clientStatusManager;
     }
 
     /**
@@ -61,7 +70,7 @@ class UserProvider implements UserProviderInterface
                 $lenderAccount->get($client->id_client, 'id_client_owner');
 
                 $roles[]                 = 'ROLE_LENDER';
-                $clientStatus            = $this->clientManager->getCurrentClientStatus($client);
+                $clientStatus            = $this->clientStatusManager->getLastClientStatus($client);
                 $hasAcceptedCurrentTerms = $this->clientManager->hasAcceptedCurrentTerms($client);
                 $notifications           = $this->notificationDisplayManager->getLastLenderNotifications($lenderAccount);
                 $userLevel               = $this->lenderManager->getDiversificationLevel($lenderAccount);

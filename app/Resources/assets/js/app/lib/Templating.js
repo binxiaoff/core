@@ -145,7 +145,7 @@ function replaceKeywordsWithValues (input, props, options) {
           // Only apply filters if there are no further keyword matches
           } else {
             if (propFilters) {
-              propValue = filterKeywordValue(propFilters, propValue)
+              propValue = filterKeywordValue(propValue, propFilters)
             }
           }
         }
@@ -160,10 +160,10 @@ function replaceKeywordsWithValues (input, props, options) {
 
 // Filter the keyword value by a filter type
 // @method filterKeywordValue
-// @param {String} filters
 // @param {String} keywordValue
+// @param {String} filters
 // @returns {String}
-function filterKeywordValue (filters, keywordValue) {
+function filterKeywordValue (keywordValue, filters) {
   if (!filters) {
     return keywordValue
   }
@@ -211,8 +211,14 @@ function filterKeywordValue (filters, keywordValue) {
         }
         break
 
+      // Convert spaces to non-breaking spaces
+      case 'nbsp':
+        keywordValue = keywordValue.replace(/ /g, '&nbsp;')
+        break
+
       //
       // Add any extra filters here
+      // @note could put some of ye olde Twig filters in here?
       //
     }
   }
@@ -225,7 +231,8 @@ var Templating = {
   // @method replace
   // @param {String} input The string to replace keywords with
   // @param {Mixed} props An {Object} (or {Array} of {Objects}) to replace matching keywords within the input string with its values
-  //                      Values in the props are usually strings, but they can also be {Function}s which return strings
+  //                      Values in the props are usually strings,
+  //                      but they can also be {Function}s which return strings,
   //                      Or even a {Dictionary} instance
   // @returns {String}
   replace: function (input, props, options) {
@@ -252,6 +259,15 @@ var Templating = {
 
     // Return the final string
     return output
+  },
+
+  // Filters a string based on the filterKeywordValue function
+  // @method filter
+  // @param {String} input
+  // @param {Mixed} filters Can be a {String} or an {Array}
+  // @returns {String}
+  filter: function (input, filters) {
+    return filterKeywordValue(input, filters)
   }
 }
 

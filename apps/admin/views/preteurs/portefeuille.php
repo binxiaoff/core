@@ -44,7 +44,8 @@
         </h3>
         <h3>Nombre de projets à probleme dans le portefeuille : <?= $this->problProjects ?></h3>
         <h3>Nombre de projets total dans le portefeuille : <?= $this->totalProjects ?></h3>
-        <h3>Nombre de projets mis en ligne depuis son inscription : <?= $this->projectsPublished ?><h2>
+        <h3>Nombre de projets mis en ligne depuis son inscription : <?= $this->projectsPublished ?></h3>
+        <h3>CIP évalué : <?= $this->cipEnabled ? 'Oui (<a href="' . $this->surl  . '/pdf/conseil-cip/' . $this->clients->hash . '" target="_blank"> Télécharger le PDF des conseils </a>)': 'Non' ?></h3>
     </div>
     <br/>
     <div id="autobid">
@@ -141,6 +142,9 @@
                 <th style="text-align: left">Fin</th>
                 <th style="text-align: left">Dernière échéance perçue</th>
                 <th style="text-align: left">Documents <br> à télécharger</th>
+                <?php if ($this->hasTransferredLoans) :?>
+                <th style="text-align: left">Ancien proprietaire (id client)</th>
+                <?php endif; ?>
             </tr>
             </thead>
             <tbody>
@@ -148,46 +152,57 @@
                 <?php
                 $this->contract->get($aProjectLoans['id_type_contract']);
                 $contractLabel = $this->translator->trans('contract-type-label_' . $this->contract->label);
+                $rowspan = ($aProjectLoans['nb_loan'] > 1) ? ' rowspan="' . ($aProjectLoans['nb_loan'] + 1) . '"': '';
                 ?>
                 <tr class="<?= $iLoanIndex % 2 ? '' : 'odd' ?>">
-                    <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?>><?= $aProjectLoans['id_project'] ?></td>
-                    <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?>><h5><a href="/dossiers/edit/<?= $aProjectLoans['id_project'] ?>"><?= $aProjectLoans['name'] ?></a></h5></td>
-                    <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?>><?= $aProjectLoans['project_status_label'] ?></td>
+                    <td<?= $rowspan ?>><?= $aProjectLoans['id_project'] ?></td>
+                    <td<?= $rowspan ?>><h5><a href="/dossiers/edit/<?= $aProjectLoans['id_project'] ?>"><?= $aProjectLoans['name'] ?></a></h5></td>
+                    <td<?= $rowspan ?>><?= $aProjectLoans['project_status_label'] ?></td>
                     <td><?= $this->ficelle->formatNumber($aProjectLoans['amount'], 0) ?> €</td>
                     <td><?= $this->ficelle->formatNumber($aProjectLoans['rate'], 1) ?> %</td>
-                    <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?>><?= $this->dates->formatDate($aProjectLoans['debut'], 'd/m/Y') ?></td>
-                    <?php if (in_array($aProjectLoans['project_status'], array(\projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::REMBOURSE))) : ?>
-                        <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?> colspan="3"><p>Remboursé intégralementle <?= $this->dates->formatDate($aProjectLoans['status_change'], 'd/m/Y') ?></p></td>
+                    <td<?= $rowspan ?>><?= $this->dates->formatDate($aProjectLoans['debut'], 'd/m/Y') ?></td>
+                    <?php if (in_array($aProjectLoans['project_status'], [\projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::REMBOURSE])) : ?>
+                        <td<?= $rowspan ?> colspan="3"><p>Remboursé intégralementle <?= $this->dates->formatDate($aProjectLoans['status_change'], 'd/m/Y') ?></p></td>
                     <?php else: ?>
-                        <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?>><?= $this->dates->formatDate($aProjectLoans['next_echeance'], 'd/m/Y') ?></td>
-                        <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?>><?= $this->dates->formatDate($aProjectLoans['fin'], 'd/m/Y') ?></td>
+                        <td<?= $rowspan ?>><?= $this->dates->formatDate($aProjectLoans['next_echeance'], 'd/m/Y') ?></td>
+                        <td<?= $rowspan ?>><?= $this->dates->formatDate($aProjectLoans['fin'], 'd/m/Y') ?></td>
                         <td><?= $this->ficelle->formatNumber($aProjectLoans['last_perceived_repayment']) ?> € / mois</td>
                     <?php endif; ?>
-                    <td>
-                        <?php if ($aProjectLoans['nb_loan'] == 1): ?>
+                    <?php if ($aProjectLoans['nb_loan'] == 1 ): ?>
+                        <td>
                             <?php if ($aProjectLoans['project_status'] >= \projects_status::REMBOURSEMENT): ?>
                                 <a href="<?= $this->url ?>/protected/contrat/<?= $this->clients->hash ?>/<?= $aProjectLoans['id_loan_if_one_loan'] ?>">
                                     <?= $contractLabel ?>
                                 </a>
                             <?php endif; ?>
                             <?php if (in_array($aProjectLoans['id_project'], $this->aProjectsInDebt)): ?>
-                                <br />
+                                <br/>
                                 <a href="<?= $this->url ?>/protected/declaration_de_creances/<?= $this->clients->hash ?>/<?= $aProjectLoans['id_loan_if_one_loan'] ?>">Declaration de créances</a>
                             <?php endif; ?>
-                        <?php else: ?>
-                            &nbsp;
+                        </td>
+                        <?php if ($this->hasTransferredLoans) : ?>
+                        <td>
+                            <?php if ($this->loan->get($aProjectLoans['id_loan_if_one_loan']) && false === empty($this->loan->id_transfer)) :
+                                /** @var \lenders_accounts $formerOwner */
+                                $formerOwner = $this->loanManager->getFormerOwner($this->loan); ?>
+                                <a href="<?= $this->lurl . '/preteurs/edit/' . $formerOwner->id_lender_account ?>"><?= $formerOwner->id_client_owner ?></a>
+                            <?php endif; ?>
+                        </td>
                         <?php endif; ?>
-                    </td>
+                    <?php else: ?>
+                        <td>&nbsp;</td>
+                        <?php if ($this->hasTransferredLoans) : ?>
+                            <td>&nbsp;</td>
+                        <?php endif; ?>
+                    <?php endif; ?>
                 </tr>
                 <?php if ($aProjectLoans['nb_loan'] > 1): ?>
-                    <?php foreach ($this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project']) as $aLoan):
-                        ?>
+                    <?php foreach ($this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project']) as $aLoan): ?>
                         <tr class="sub_loan<?= $iLoanIndex % 2 ? '' : ' odd' ?>">
                             <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aLoan['amount']/100, 0) ?> €</td>
                             <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aLoan['rate'], 1) ?> %</td>
                             <?php if (false === in_array($aProjectLoans['project_status'], array(\projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::REMBOURSE))) :
-                                $aRepayment = $this->echeanciers->select('id_loan = ' . $aLoan['id_loan'] . ' AND ordre = 1', 'ordre ASC', 0, 1);
-                            ?>
+                                $aRepayment = $this->echeanciers->select('id_loan = ' . $aLoan['id_loan'] . ' AND ordre = 1', 'ordre ASC', 0, 1); ?>
                             <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber(bcdiv($aRepayment[0]['montant'], 100, 2), 2) ?> € / mois</td>
                             <?php endif; ?>
                             <td>
@@ -201,6 +216,16 @@
                                     <a href="<?= $this->url ?>/protected/declaration_de_creances/<?= $this->clients->hash ?>/<?= $aLoan['id_loan'] ?>">Declaration de créances</a>
                                 <?php endif; ?>
                             </td>
+                            <?php if ($this->hasTransferredLoans) : ?>
+                                <td>
+                                    <?php if (false === empty($aLoan['id_transfer'])) :
+                                        $this->loan->get($aLoan['id_loan']);
+                                        /** @var \lenders_accounts $formerOwner */
+                                        $formerOwner = $this->loanManager->getFormerOwner($this->loan); ?>
+                                        <a href="<?= $this->lurl . '/preteurs/edit/' . $formerOwner->id_lender_account ?>"><?= $formerOwner->id_client_owner ?></a>
+                                    <?php endif; ?>
+                                </td>
+                            <?php endif; ?>
                         </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>

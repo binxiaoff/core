@@ -131,6 +131,7 @@
   $width: 65px;
   $height: 65px;
 
+  display: inline-block;
   width: $width;
   height: $height;
 
@@ -278,8 +279,26 @@
     vertical-align: top;
 
     .site-search,
-    .site-user {
+    .site-user,
+    .site-partners {
       float: left;
+    }
+  }
+
+  // Site partner logos
+  .site-partners {
+    height: 84px;
+    margin-top: -20px;
+    text-align: right;
+
+    img,
+    svg {
+      @include constrain-size-by-height(100%);
+    }
+
+    #{$js-site-header-fixed} & {
+      height: $height-fixed-menu;
+      margin-top: 0;
     }
   }
 

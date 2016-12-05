@@ -32,9 +32,6 @@ a img { border: 0; }
 .cgu-wrapper .logo { padding: 0 0 20px 0; }
 .cgu-wrapper .logo { background:url(images/logo.png) no-repeat 0 0; width:252px; height:61px; text-indent:100%; }
 
-
-
-
 input, textarea, select { font-size: 11px; font-family: arial, sans-serif; }
 textarea { overflow: auto; }
 
@@ -47,8 +44,8 @@ textarea { overflow: auto; }
 .doc-wrapper .logo { padding: 0 0 20px 0; }
 .doc-wrapper .logo { background:url(images/logo.png) no-repeat 0 0; width:252px; height:61px; text-indent:100%; }
 
-
-.doc-wrapper h3 { padding: 0 0 20px 0; letter-spacing: 0px; color: #7f7f7f; font-size: 12px; line-height: 16px;font-weight: bold; }
+.doc-wrapper h1 { font-size:16px; color: #b20066; }
+.doc-wrapper h3 { font-size: 12px; line-height: 12px; padding: 0 0 20px 0; letter-spacing: 0; color: #7f7f7f; }
 .doc-wrapper h3.sm { text-transform: none; color: #b20066; }
 .doc-wrapper h3 .red-text { display: block; color: #ff0000; text-transform: none; font-weight: normal; }
 .doc-wrapper h3 .red-text-in { color: #ff0000; }
@@ -56,6 +53,7 @@ textarea { overflow: auto; }
 .doc-wrapper h5 { padding: 0 6px; background: #c0c0c0; font-size: 11px; line-height: 17px; color: #000000; font-weight: bold;letter-spacing: 1.5px; }
 .doc-wrapper h5 .red-text { color: #ff0000; }
 .doc-wrapper p { padding: 0 0 18px 0; font-size: 13px; line-height: 17px; }
+.doc-wrapper h1 + hr { margin: 15px 0; }
 
 .doc-wrapper .list { padding: 0 6px 20px 6px; }
 .doc-wrapper .list ul { list-style: none outside none; }

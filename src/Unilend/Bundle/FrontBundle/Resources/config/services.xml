@@ -30,6 +30,7 @@
             <argument type="service" id="unilend.service.client_manager"/>
             <argument type="service" id="unilend.frontbundle.notification_display_manager"/>
             <argument type="service" id="unilend.service.lender_manager"/>
+            <argument type="service" id="unilend.service.client_status_manager" />
         </service>
 
         <service id="unilend.frontbundle.security.login_authenticator" class="Unilend\Bundle\FrontBundle\Security\LoginAuthenticator">
@@ -45,11 +46,13 @@
             <argument type="service" id="unilend.service.entity_manager" />
             <argument type="service" id="unilend.service.project_manager" />
             <argument type="service" id="unilend.frontbundle.service.lender_account_display_manager" />
+            <argument type="service" id="unilend.service.company_balance_sheet_manager" />
         </service>
 
         <service id="unilend.frontbundle.provider.route_provider" class="Unilend\Bundle\FrontBundle\Service\RouteProvider">
             <argument type="service" id="unilend.service.entity_manager" />
             <argument type="service" id="logger" />
+            <argument type="service" id="cache" />
         </service>
 
         <service id="unilend.frontbundle.service.lender_account_display_manager" class="Unilend\Bundle\FrontBundle\Service\LenderAccountDisplayManager">
@@ -57,6 +60,7 @@
             <argument type="service" id="unilend.service.location_manager" />
             <argument type="service" id="translator" />
             <argument type="service" id="memcache.default" />
+            <argument type="service" id="unilend.service.cip_manager" />
         </service>
 
         <service id="unilend.frontbundle.service.source_manager" class="Unilend\Bundle\FrontBundle\Service\SourceManager">
@@ -92,6 +96,11 @@
         <service id="unilend.frontbundle.seo_manager" class="Unilend\Bundle\FrontBundle\Service\SeoManager">
             <argument type="service" id="sonata.seo.page"/>
             <argument type="service" id="translator"/>
+        </service>
+
+        <service id="unilend.frontbundle.service.content_manager" class="Unilend\Bundle\FrontBundle\Service\ContentManager">
+            <argument type="service" id="unilend.service.entity_manager" />
+            <argument type="service" id="memcache.default" />
         </service>
     </services>
 </container>

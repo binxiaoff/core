@@ -21,7 +21,7 @@ class ContractAttributeManager
     public function __construct(EntityManager $entityManager, CacheItemPoolInterface $cachePool)
     {
         $this->entityManager = $entityManager;
-        $this->cachePool = $cachePool;
+        $this->cachePool     = $cachePool;
     }
 
     /**
@@ -40,7 +40,7 @@ class ContractAttributeManager
             $contractAttrType = $this->entityManager->getRepository('underlying_contract_attribute_type');
 
             if ($contractAttrType->get($attributeType, 'label')) {
-                $attrVars = $contractAttr->select('id_contract = ' . $contract->id_contract . ' AND id_type = ' . $contractAttrType->id_type);
+                $attrVars           = $contractAttr->select('id_contract = ' . $contract->id_contract . ' AND id_type = ' . $contractAttrType->id_type);
                 $contractAttributes = [];
                 if (count($attrVars) === 1) {
                     $contractAttributes = [array_values($attrVars)[0]['attribute_value']];

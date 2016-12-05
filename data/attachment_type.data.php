@@ -74,6 +74,7 @@ class attachment_type extends attachment_type_crud
     const DERNIERE_LIASSE_FISCAL_HOLDING       = 53;
     const KBIS_HOLDING                         = 54;
     const PHOTOS_ACTIVITE                      = 55;
+    const TRANSFER_CERTIFICATE                 = 56;
 
     public function __construct($bdd, $params = '')
     {
@@ -268,5 +269,26 @@ class attachment_type extends attachment_type_crud
         }
 
         return $aTypes;
+    }
+
+    public function getAllTypesForTransfer($language, array $types = null)
+    {
+        if (null === $types){
+        $types = [self::LOAN_TRANSFER_CERTIFICATE];
+    }
+
+        //TODO move to translation service or any other way of using translation once front is migrated
+        $oTranslations = new \translations($this->bdd);
+        $aTranslations = $oTranslations->selectFront('projet', $language);
+
+        $types = array_map(
+            function($type) use ($aTranslations) {
+                $type['label'] = $aTranslations['document-type-' . $type['id']];
+                return $type;
+            },
+            $this->getAllTypes($types)
+        );
+
+        return $types;
     }
 }

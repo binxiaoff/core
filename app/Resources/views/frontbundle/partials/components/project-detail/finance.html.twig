@@ -1,5 +1,6 @@
 <div id="finance" data-watchscroll-nav>
     {% if conditions.finance %}
+        {% if financeColumns.income_statement is not empty %}
         <section id="project-section-income" class="page-section">
             <div class="tabs">
                 <div class="section-tabs-nav">
@@ -33,14 +34,14 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for column in financeColumns.balanceSheet %}
+                                    {% for column in financeColumns.income_statement %}
                                         <tr class="table-item">
-                                            <td class="table-income-item-name">{{ "project-detail_finance-column-#{ column }"|trans }}</td>
+                                            <td class="table-income-item-name">{{ column |trans }}</td>
                                             {% for balanceSheet in finance %}
                                                 <td class="table-income-item-year">
-                                                    <span class="amount">{{ balanceSheet.balanceSheet[column][0]|localizednumber }}&nbsp;€</span>
-                                                    {% if balanceSheet.balanceSheet[column][1] is defined %}
-                                                        <span class="diff">{{ balanceSheet.balanceSheet[column][1]|localizednumberwithprecision(1) }}&nbsp;%</span>
+                                                    <span class="amount">{{ balanceSheet.income_statement['details'][column][0]|localizednumber }}&nbsp;€</span>
+                                                    {% if balanceSheet.income_statement['details'][column][1] is defined %}
+                                                        <span class="diff">{{ balanceSheet.income_statement['details'][column][1]|localizednumberwithprecision(1) }}&nbsp;%</span>
                                                     {% endif %}
                                                 </td>
                                             {% endfor %}
@@ -67,11 +68,11 @@
                                 "xAxis": {"categories": [{% for financeData in finance|reverse %}"{{ financeData.closingDate|date('d/m/Y') }}"{% if not loop.last %},{% endif %}{% endfor %}]},
                                 "yAxis": {"title": {"text": "Montant"}, "units": "€"},
                                 "series": [
-                                    {% for column in financeColumns.balanceSheet %}
+                                    {% for column in financeColumns.income_statement %}
                                         {
-                                            "name": "{{ "project-detail_finance-column-#{ column }"|trans|raw }}",
-                                            "data": [{% for balanceSheet in finance|reverse %}{{ balanceSheet.balanceSheet[column][0] }}{% if not loop.last %},{% endif %}{% endfor %}],
-                                            "visible": {% if column in ['resultat-exploitation', 'resultat-brut-exploitation'] %}true{% else %}false{% endif %}
+                                            "name": "{{ column |trans|raw }}",
+                                            "data": [{% for balanceSheet in finance|reverse %}{{ balanceSheet.income_statement['details'][column][0] }}{% if not loop.last %},{% endif %}{% endfor %}],
+                                            "visible": {% if column in ['project-detail_finance-column-resultat-exploitation', 'project-detail_finance-column-resultat-brut-exploitation', 'income-statement_2035-excedent-brut', 'income-statement_2035-autres-produits'] %}true{% else %}false{% endif %}
                                         }{% if not loop.last %},{% endif %}
                                     {% endfor %}
                                 ]
@@ -92,7 +93,8 @@
                 </a>
             </div><!-- /.btn-toolbar -->
         </section><!-- /.page-section -->
-
+        {% endif %}
+        {% if financeColumns.assets is not empty and financeColumns.debts is not empty %}
         <section id="project-section-balance" class="page-section">
             <div class="tabs">
                 <div class="section-tabs-nav">
@@ -297,6 +299,7 @@
                 </a>
             </div><!-- /.btn-toolbar -->
         </section><!-- /.page-section -->
+        {% endif %}
     {% else %}
         <section id="project-section-income" class="page-section">
             <div class="tabs">

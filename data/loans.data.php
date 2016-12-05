@@ -28,8 +28,8 @@
 
 class loans extends loans_crud
 {
-    const STATUS_ACCEPTED   = 0;
-    const STATUS_REJECTED   = 1;
+    const STATUS_ACCEPTED = 0;
+    const STATUS_REJECTED = 1;
 
     private $aAcceptedBids;
 
@@ -418,17 +418,10 @@ class loans extends loans_crud
 
     public function getAverageLoanAmount()
     {
-        $query = 'SELECT AVG(avgLender.amount_project) / 100
-                    FROM (
-                           SELECT AVG(sumLender.amount) AS amount_project
-                           FROM (SELECT
-                                   SUM(amount) AS amount,
-                                   id_lender,
-                                   id_project
-                                 FROM loans
-                                 WHERE status = 0
-                                 GROUP BY id_project, id_lender) AS sumLender
-                           GROUP BY sumLender.id_project) AS avgLender';
+        $query = 'SELECT AVG(avgProject.amount) / 100
+                    FROM (SELECT sum(amount) / count(DISTINCT id_lender) AS amount
+                          FROM loans
+                          GROUP BY id_project) AS avgProject';
         $statement = $this->bdd->executeQuery($query);
 
         return $statement->fetchColumn(0);
@@ -442,7 +435,6 @@ class loans extends loans_crud
 
     public function sumLoansByCohort()
     {
-
         $query = 'SELECT SUM(loans.amount)/100 AS amount,
                     (
                         SELECT
@@ -462,6 +454,24 @@ class loans extends loans_crud
                     GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery($query);
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @param int $idLender
+     * @param array $projectStatus
+     * @return mixed
+     */
+    public function getLoansForProjectsWithStatus($idLender, array $projectStatus)
+    {
+        $query = 'SELECT *
+                    FROM loans
+                      INNER JOIN projects ON loans.id_project = projects.id_project
+                    WHERE projects.status IN (:projectStatus)
+                          AND loans.id_lender = :idLender';
+
+        $statement = $this->bdd->executeQuery($query, ['projectStatus' => $projectStatus, 'idLender' => $idLender], ['projectStatus' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY]);
+
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 }

@@ -35,10 +35,12 @@ EOF
         $transport = $mailer->getTransport();
         if ($transport instanceof \Swift_Transport_SpoolTransport) {
             $spool = $transport->getSpool();
+
             if ($spool instanceof DatabaseSpool) {
                 $spool->setMessageLimit($input->getOption('message-limit'));
                 $spool->setTimeLimit($input->getOption('time-limit'));
             }
+
             $sent = $spool->flushQueue($this->getContainer()->get('swiftmailer.transport.real'));
             $output->writeln(sprintf('sent %s emails', $sent));
         }

@@ -872,11 +872,12 @@ class MailerManager
 
             /** @var \echeanciers $paymentSchedule */
             $paymentSchedule = $this->oEntityManager->getRepository('echeanciers');
-
             /** @var \accepted_bids $acceptedBids */
             $acceptedBids = $this->oEntityManager->getRepository('accepted_bids');
             /** @var \underlying_contract $contract */
             $contract = $this->oEntityManager->getRepository('underlying_contract');
+            /** @var \clients_gestion_mails_notif $clientMailNotifications */
+            $clientMailNotifications = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
 
             $contracts     = $contract->select();
             $contractLabel = [];
@@ -934,9 +935,7 @@ class MailerManager
                                         <td style="' . $sStyleTD . '">' . $this->oFicelle->formatNumber($aFirstPayment['montant'] / 100) . ' &euro;</td>
                                         <td style="' . $sStyleTD . '">' . $sContractType . '</td></tr>';
 
-                    if ($clientNotifications->getNotif($lender->id_client_owner, 4, 'immediatement') == true) {
-                        /** @var \clients_gestion_mails_notif $clientMailNotifications */
-                        $clientMailNotifications = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
+                    if ($clientNotifications->getNotif($lender->id_client_owner, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED, 'immediatement') == true) {
                         $clientMailNotifications->get($aLoan['id_loan'], 'id_client = ' . $lender->id_client_owner . ' AND id_loan');
                         $clientMailNotifications->immediatement = 1;
                         $clientMailNotifications->update();
@@ -1061,7 +1060,7 @@ class MailerManager
             foreach ($aCustomerMailNotifications as $iCustomerId => $aMailNotifications) {
                 try {
                     $sProjectsListHTML = '';
-                    $iProjectsCount    = count($aMailNotifications);
+                    $iProjectsCount    = 0;
 
                     foreach ($aMailNotifications as $aMailNotification) {
                         $oMailNotification->get($aMailNotification['id_clients_gestion_mails_notif']);
@@ -1071,13 +1070,7 @@ class MailerManager
 
                         $oProject->get($aMailNotification['id_project']);
 
-                        $oProject->get($aMailNotification['id_project']);
-
-                        /** @var \projects_status $oProjectStatus */
-                        $oProjectStatus = $this->oEntityManager->getRepository('projects_status');
-                        $oProjectStatus->getLastStatut($oProject->id_project);
-
-                        if (\projects_status::EN_FUNDING == $oProjectStatus->status) {
+                        if (\projects_status::EN_FUNDING == $oProject->status) {
                             $sProjectsListHTML .= '
                                 <tr style="color:#b20066;">
                                     <td  style="font-family:Arial;font-size:14px;height: 25px;">

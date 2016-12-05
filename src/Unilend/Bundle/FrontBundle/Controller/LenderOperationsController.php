@@ -23,7 +23,7 @@ class LenderOperationsController extends Controller
      */
     const TYPE_REPAYMENT_TRANSACTION = 5;
 
-    // This is public in order to make it usebable for old PDF controller
+    // This is public in order to make it useable for old PDF controller
     public static $transactionTypeList = [
         1 => [
             \transactions_types::TYPE_LENDER_SUBSCRIPTION,
@@ -38,18 +38,21 @@ class LenderOperationsController extends Controller
             \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD,
             \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD,
             \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
-            \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
+            \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT,
+            \transactions_types::TYPE_LENDER_BALANCE_TRANSFER
         ],
         2 => [
             \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
             \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
             \transactions_types::TYPE_DIRECT_DEBIT,
-            \transactions_types::TYPE_LENDER_WITHDRAWAL
+            \transactions_types::TYPE_LENDER_WITHDRAWAL,
+            \transactions_types::TYPE_LENDER_BALANCE_TRANSFER
         ],
         3 => [
             \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
             \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
-            \transactions_types::TYPE_DIRECT_DEBIT
+            \transactions_types::TYPE_DIRECT_DEBIT,
+            \transactions_types::TYPE_LENDER_BALANCE_TRANSFER
         ],
         4 => [\transactions_types::TYPE_LENDER_WITHDRAWAL],
         5 => [\transactions_types::TYPE_LENDER_LOAN],
@@ -198,6 +201,13 @@ class LenderOperationsController extends Controller
      */
     public function exportOperationsCsvAction()
     {
+        /** @var SessionInterface $session */
+        $session = $this->get('session');
+
+        if (false === $session->has('lenderOperationsFilters')) {
+            return $this->redirectToRoute('lender_operations');
+        }
+
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \tax $tax */
@@ -212,8 +222,6 @@ class LenderOperationsController extends Controller
         $lenderIndexedOperations = $entityManager->getRepository('indexage_vos_operations');
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
-        /** @var SessionInterface $session */
-        $session = $this->get('session');
 
         $savedFilters          = $session->get('lenderOperationsFilters');
         $transactionListFilter = self::$transactionTypeList[$savedFilters['operation']];
@@ -222,7 +230,7 @@ class LenderOperationsController extends Controller
         $operations            = $lenderIndexedOperations->getLenderOperations($transactionListFilter, $this->getUser()->getClientId(), $startDate, $endDate, $savedFilters['project']);
         $content               = '
         <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8"/>
-        <table border=1>
+        <table border="1">
             <tr>
                 <th>' . $translator->trans('lender-operations_operations-csv-operation-column') . '</th>
                 <th>' . $translator->trans('lender-operations_operations-csv-contract-column') . '</th>
@@ -248,7 +256,8 @@ class LenderOperationsController extends Controller
             \transactions_types::TYPE_WELCOME_OFFER                => $translator->trans('preteur-operations-vos-operations_offre-de-bienvenue'),
             \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION   => $translator->trans('preteur-operations-vos-operations_retrait-offre'),
             \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD => $translator->trans('preteur-operations-vos-operations_gain-filleul'),
-            \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD   => $translator->trans('preteur-operations-vos-operations_gain-parrain')
+            \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD   => $translator->trans('preteur-operations-vos-operations_gain-parrain'),
+            \transactions_types::TYPE_LENDER_BALANCE_TRANSFER      => $translator->trans('preteur-operations-vos-operations_balance-transfer')
         );
 
         foreach ($operations as $t) {
@@ -269,6 +278,16 @@ class LenderOperationsController extends Controller
                     $aTax = $tax->getTaxListByRepaymentId($t['id_echeancier']);
                 }
 
+                if ($t['type_transaction'] == \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT) {
+                    $recoveryManager = $this->get('unilend.service.recovery_manager');
+
+                    $capital = $ficelle->formatNumber($t['montant_operation'], 2);
+                    $amount  = $ficelle->formatNumber($recoveryManager->getAmountWithRecoveryTax($t['montant_operation']), 2);
+                } else {
+                    $capital = $ficelle->formatNumber($t['montant_capital'], 2);
+                    $amount  = $ficelle->formatNumber($t['montant_operation'], 2);
+                }
+
                 $content .= '
                     <tr>
                         <td>' . $t['libelle_operation'] . '</td>
@@ -276,8 +295,8 @@ class LenderOperationsController extends Controller
                         <td>' . $sProjectId . '</td>
                         <td>' . $t['libelle_projet'] . '</td>
                         <td>' . date('d-m-Y', strtotime($t['date_operation'])) . '</td>
-                        <td' . $couleur . '>' . $ficelle->formatNumber($t['montant_operation'], 2) . '</td>
-                        <td>' . $ficelle->formatNumber($t['montant_capital'], 2) . '</td>
+                        <td' . $couleur . '>' . $amount . '</td>
+                        <td>' . $capital . '</td>
                         <td>' . $ficelle->formatNumber($t['montant_interet'], 2) . '</td>';
                 foreach ($aTaxType as $aType) {
                     $content .= '<td>';
@@ -297,27 +316,28 @@ class LenderOperationsController extends Controller
             } elseif (in_array($t['type_transaction'], array_keys($aTranslations))) {
 
                 $array_type_transactions = [
-                    1  => $translator->trans('lender-operations_operation-label-money-deposit'),
-                    2  => [
+                    \transactions_types::TYPE_LENDER_SUBSCRIPTION            => $translator->trans('lender-operations_operation-label-money-deposit'),
+                    \transactions_types::TYPE_LENDER_LOAN                    => [
                         1 => $translator->trans('lender-operations_operation-label-current-offer'),
                         2 => $translator->trans('lender-operations_operation-label-rejected-offer'),
                         3 => $translator->trans('lender-operations_operation-label-accepted-offer')
                     ],
-                    3  => $translator->trans('lender-operations_operation-label-money-deposit'),
-                    4  => $translator->trans('lender-operations_operation-label-money-deposit'),
-                    5  => [
+                    \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT      => $translator->trans('lender-operations_operation-label-money-deposit'),
+                    \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT    => $translator->trans('lender-operations_operation-label-money-deposit'),
+                    self::TYPE_REPAYMENT_TRANSACTION                         => [
                         1 => $translator->trans('lender-operations_operation-label-refund'),
                         2 => $translator->trans('lender-operations_operation-label-recovery')
                     ],
-                    7  => $translator->trans('lender-operations_operation-label-money-deposit'),
-                    8  => $translator->trans('lender-operations_operation-label-money-withdrawal'),
-                    16 => $translator->trans('lender-operations_operation-label-welcome-offer'),
-                    17 => $translator->trans('lender-operations_operation-label-welcome-offer-withdrawal'),
-                    19 => $translator->trans('lender-operations_operation-label-godson-gain'),
-                    20 => $translator->trans('lender-operations_operation-label-godfather-gain'),
-                    22 => $translator->trans('lender-operations_operation-label-anticipated-repayment'),
-                    23 => $translator->trans('lender-operations_operation-label-anticipated-repayment'),
-                    26 => $translator->trans('lender-operations_operation-label-lender-recovery')
+                    \transactions_types::TYPE_DIRECT_DEBIT                   => $translator->trans('lender-operations_operation-label-money-deposit'),
+                    \transactions_types::TYPE_LENDER_WITHDRAWAL              => $translator->trans('lender-operations_operation-label-money-withdrawal'),
+                    \transactions_types::TYPE_WELCOME_OFFER                  => $translator->trans('lender-operations_operation-label-welcome-offer'),
+                    \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION     => $translator->trans('lender-operations_operation-label-welcome-offer-withdrawal'),
+                    \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD   => $translator->trans('lender-operations_operation-label-godson-gain'),
+                    \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD     => $translator->trans('lender-operations_operation-label-godfather-gain'),
+                    \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT => $translator->trans('lender-operations_operation-label-anticipated-repayment'),
+                    \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT   => $translator->trans('lender-operations_operation-label-anticipated-repayment'),
+                    \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT      => $translator->trans('lender-operations_operation-label-lender-recovery'),
+                    \transactions_types::TYPE_LENDER_BALANCE_TRANSFER        => $translator->trans('preteur-operations-vos-operations_balance-transfer')
                 ];
 
                 if (isset($array_type_transactions[$t['type_transaction']])) {
@@ -352,9 +372,7 @@ class LenderOperationsController extends Controller
                         <td></td>
                     </tr>
                     ';
-
             } elseif ($t['type_transaction'] == \transactions_types::TYPE_LENDER_LOAN) { // ongoing Offer
-
                 //asterix pour les offres acceptees
                 $asterix       = "";
                 $offre_accepte = false;
@@ -394,6 +412,7 @@ class LenderOperationsController extends Controller
             <div>* ' . $translator->trans('lender-operations_csv-export-asterisk-accepted-offer-specific-mention') . '</div>';
 
         }
+
         return new Response($content, Response::HTTP_OK, [
             'Content-type'        => 'application/force-download; charset=utf-8',
             'Expires'             => 0,
@@ -527,13 +546,13 @@ class LenderOperationsController extends Controller
 
         $client->get($this->getUser()->getClientId());
 
-        $array_type_transactions = array(
+        $array_type_transactions = [
             \transactions_types::TYPE_LENDER_SUBSCRIPTION          => $translator->trans('lender-operations_operation-label-money-deposit'),
-            \transactions_types::TYPE_LENDER_LOAN                  => array(
+            \transactions_types::TYPE_LENDER_LOAN                  => [
                 1 => $translator->trans('lender-operations_operation-label-current-offer'),
                 2 => $translator->trans('lender-operations_operation-label-rejected-offer'),
                 3 => $translator->trans('lender-operations_operation-label-accepted-offer')
-            ),
+            ],
             \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT    => $translator->trans('lender-operations_operation-label-money-deposit'),
             \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT  => $translator->trans('lender-operations_operation-label-money-deposit'),
             \transactions_types::TYPE_DIRECT_DEBIT                 => $translator->trans('lender-operations_operation-label-money-deposit'),
@@ -543,8 +562,9 @@ class LenderOperationsController extends Controller
             \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD => $translator->trans('lender-operations_operation-label-godson-gain'),
             \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD   => $translator->trans('lender-operations_operation-label-godfather-gain'),
             \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT => $translator->trans('lender-operations_operation-label-anticipated-repayment'),
-            \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT    => $translator->trans('lender-operations_operation-label-lender-recovery')
-        );
+            \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT    => $translator->trans('lender-operations_operation-label-lender-recovery'),
+            \transactions_types::TYPE_LENDER_BALANCE_TRANSFER      => $translator->trans('preteur-operations-vos-operations_balance-transfer')
+        ];
 
         $sLastOperation = $lenderOperationsIndex->getLastOperationDate($this->getUser()->getClientId());
 
@@ -849,7 +869,7 @@ class LenderOperationsController extends Controller
                 'project'        => $request->request->get('filter')['project'],
                 'id_last_action' => $request->request->get('filter')['id_last_action']
             ];
-        } elseif ($request->getSession()->get('lenderOperationsFilters')) {
+        } elseif ($request->getSession()->has('lenderOperationsFilters')) {
             $filters = $request->getSession()->get('lenderOperationsFilters');
         } else {
             $filters = [
@@ -871,6 +891,10 @@ class LenderOperationsController extends Controller
                 $filters['endDate']   = \DateTime::createFromFormat('d/m/Y', $filters['end']);
                 break;
             case 'slide':
+                if (empty($filters['slide'])) {
+                    $filters['slide'] = 1;
+                }
+
                 $filters['startDate'] = (new \DateTime('NOW'))->sub(new \DateInterval('P' . $filters['slide'] . 'M'));
                 $filters['endDate']   = new \DateTime('NOW');
                 break;
