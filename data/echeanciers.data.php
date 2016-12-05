@@ -389,6 +389,40 @@ class echeanciers extends echeanciers_crud
         return bcdiv($this->bdd->executeQuery($query, $bind, $bindType)
             ->fetchColumn(0), 100, 2);
     }
+    /**
+     * @param int $projectId
+     * @param DateTime $startDate
+     * @return string
+     * @throws Exception
+     */
+    public function getTotalComingCapitalByProject($projectId, DateTime $startDate = null)
+    {
+        if ($startDate === null) {
+            $startDate = new DateTime();
+        }
+        $bind     = [
+            'id_project'        => $projectId,
+            'loan_status'      => \loans::STATUS_ACCEPTED,
+            'repayment_status' => self::STATUS_PENDING,
+            'date_echeance'    => $startDate->format('Y-m-d')
+        ];
+        $bindType = [
+            'id_project'       => \PDO::PARAM_INT,
+            'loan_status'      => \PDO::PARAM_INT,
+            'repayment_status' => \PDO::PARAM_INT,
+            'date_echeance'    => \PDO::PARAM_STR
+        ];
+        $query    = '
+            SELECT SUM(e.capital)
+            FROM echeanciers e
+            INNER JOIN loans l ON e.id_loan = l.id_loan
+            WHERE l.status = :loan_status
+              AND e.id_project = :id_project
+              AND e.status = :repayment_status
+              AND date(e.date_echeance) > :date_echeance';
+        return bcdiv($this->bdd->executeQuery($query, $bind, $bindType)
+            ->fetchColumn(0), 100, 2);
+    }
 
     /**
      * @param int $lenderId
@@ -1110,37 +1144,37 @@ class echeanciers extends echeanciers_crud
               SUM(t.rawInterests) AS rawInterests,
               SUM(t.repaidTaxes) AS repaidTaxes,
               ROUND(SUM(t.upcomingTaxes), 2) AS upcomingTaxes FROM (
-              
+
                   SELECT
-                    LEFT(e.date_echeance_reel, 7)        AS month,
-                    QUARTER(e.date_echeance_reel)        AS quarter,
-                    YEAR(e.date_echeance_reel)           AS year,
-                    SUM(ROUND(e.capital_rembourse / 100, 2))  AS capital,
-                    SUM(ROUND(e.interets_rembourses / 100, 2)) AS rawInterests,
-                    SUM(IFNULL((SELECT SUM(ROUND(tax.amount / 100, 2)) FROM tax WHERE id_transaction = t.id_transaction) , 0)) AS repaidTaxes,
-                    NULL AS upcomingTaxes
-                  FROM echeanciers e
-                    LEFT JOIN transactions t ON e.id_echeancier = t.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
-                  WHERE e.id_lender = :id_lender AND e.status = 1
-                  GROUP BY year, quarter, month
-            
+                      LEFT(t_interest.date_transaction, 7)        AS month,
+                      QUARTER(t_interest.date_transaction)        AS quarter,
+                      YEAR(t_interest.date_transaction)           AS year,
+                      SUM(ROUND(t_capital.montant / 100, 2))  AS capital,
+                      SUM(ROUND(t_interest.montant / 100, 2)) AS rawInterests,
+                      SUM(IFNULL((SELECT SUM(ROUND(tax.amount / 100, 2)) FROM tax WHERE id_transaction = t_interest.id_transaction) , 0)) AS repaidTaxes,
+                      NULL AS upcomingTaxes
+                    FROM lenders_accounts la
+                      INNER JOIN transactions t_capital ON t_capital.id_client = la.id_client_owner AND t_capital.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . '
+                      LEFT JOIN transactions t_interest ON t_interest.id_echeancier = t_capital.id_echeancier AND t_interest.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
+                    WHERE la.id_lender_account = :id_lender 
+                    GROUP BY year, quarter, month
+
                   UNION ALL
-                  
+
                   SELECT
                     LEFT(t.date_transaction, 7)        AS month,
                     QUARTER(t.date_transaction)        AS quarter,
                     YEAR(t.date_transaction)           AS year,
-                    SUM(ROUND((t.montant / 100) / 0.844, 2))  AS capital,
+                    SUM(ROUND((t.montant/100)/ 0.844, 2))  AS capital,
                     NULL AS rawInterests,
                     NULL AS repaidTaxes,
                     NULL AS upcomingTaxes
-                  FROM transactions t
-                    INNER JOIN lenders_accounts l ON t.id_client = l.id_client_owner
+                  FROM lenders_accounts l
+                    INNER JOIN transactions t ON t.id_client = l.id_client_owner AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . '
                   WHERE
                     l.id_lender_account = :id_lender
-                    AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . '
                   GROUP BY year, quarter, month
-            
+
                   UNION ALL
 
                   SELECT
@@ -1190,9 +1224,7 @@ class echeanciers extends echeanciers_crud
                               LIMIT 1
                               )) > 180)), TRUE, FALSE) = FALSE
                   GROUP BY year, quarter, month) as t
-            GROUP BY t.year, t.quarter, t.month
-            ORDER BY t.year, t.quarter, t.month ASC
-        ';
+            GROUP BY t.year, t.quarter, t.month';
 
         /** @var \Doctrine\DBAL\Cache\QueryCacheProfile $oQCProfile */
         $oQCProfile = new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::DAY, md5(__METHOD__));

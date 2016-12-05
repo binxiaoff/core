@@ -27,6 +27,7 @@
 //
 // **************************************************************************************************** //
 use \Doctrine\DBAL\Statement;
+use \Unilend\Bundle\CoreBusinessBundle\Service\RecoveryManager;
 
 class projects extends projects_crud
 {
@@ -1148,5 +1149,86 @@ class projects extends projects_crud
 
         $statement = $this->bdd->executeQuery($query);
         return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @param DateTime $declarationDate
+     * @return array
+     */
+    public function getDataForBDFDeclaration(\DateTime $declarationDate)
+    {
+        $bind = [
+            'declaration_first_day'    => $declarationDate->format('Y-m-1'),
+            'declaration_last_day'     => $declarationDate->format('Y-m-t'),
+            'problematic_status'       => [
+                \projects_status::PROCEDURE_SAUVEGARDE,
+                \projects_status::REDRESSEMENT_JUDICIAIRE,
+                \projects_status::LIQUIDATION_JUDICIAIRE,
+            ],
+            'client_type_person'       => [
+                \clients::TYPE_PERSON,
+                \clients::TYPE_PERSON_FOREIGNER
+            ],
+            'client_type_legal_entity' => [
+                \clients::TYPE_LEGAL_ENTITY,
+                \clients::TYPE_LEGAL_ENTITY_FOREIGNER
+            ]
+        ];
+        $type = [
+            'declaration_first_day'    => \PDO::PARAM_STR,
+            'declaration_last_day'     => \PDO::PARAM_STR,
+            'problematic_status'       => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'client_type_person'       => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'client_type_legal_entity' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+        ];
+
+        $sql = "
+        SELECT
+          com.siren,
+          com.name,
+          p.id_project,
+          p.status,
+          p.id_project_need,
+          CASE
+            WHEN p.id_project_need IN (14, 16, 17, 26, 29, 30) THEN 'AU'
+            WHEN p.id_project_need IN (4, 5, 6, 7, 8) THEN 'CO'
+            WHEN p.id_project_need IN (24, 25) THEN 'EX'
+            WHEN p.id_project_need IN (2, 3, 9, 10, 28, 32) THEN 'IM'
+            WHEN p.id_project_need IN (11, 12, 15, 18, 19, 20, 21, 22, 23, 27, 31, 33, 34, 35) THEN 'MA'
+            WHEN p.id_project_need IN (13) THEN 'ST'
+            ELSE 'AU'
+          END AS loan_type,
+          p.amount AS loan_amount,
+          (SELECT MIN(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = p.id_project AND ps.status = " . \projects_status::REMBOURSEMENT . ") AS loan_date,
+          p.period AS loan_duration,
+          ROUND(SUM(l.amount * l.rate) / SUM(l.amount), 2) AS average_loan_rate,
+          'M' AS repayment_frequency,
+          (SELECT ROUND(SUM(e.capital_rembourse) / 100, 2) FROM echeanciers e WHERE e.id_project = p.id_project AND DATE(e.date_echeance_reel) <= :declaration_last_day) AS repaid_capital,
+          (SELECT pshd.date FROM projects_status_history_details pshd WHERE pshd.id_project_status_history = (
+            SELECT MIN(psh.id_project_status_history) FROM projects_status_history psh
+            INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status WHERE ps.status IN (:problematic_status) AND psh.id_project = p.id_project)
+          ) AS judgement_date,
+          (SELECT MIN(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = p.id_project AND ps.status = " . \projects_status::RECOUVREMENT . ") AS recovery_date,
+          (SELECT ROUND(SUM(IFNULL(t.montant, 0)) / 100, 2) FROM transactions t WHERE t.id_project = p.id_project AND t.type_transaction = " . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . " AND DATE(t.added) < " . RecoveryManager::RECOVERY_TAX_DATE_CHANGE . ") AS recovery_tax_excluded,
+          (SELECT ROUND(SUM(IFNULL(t.montant, 0)) / 100, 2) FROM transactions t WHERE t.id_project = p.id_project AND t.type_transaction = " . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . " AND DATE(t.added) >= " . RecoveryManager::RECOVERY_TAX_DATE_CHANGE . ") AS recovery_tax_included,
+          (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) FROM loans l INNER JOIN lenders_accounts la ON la.id_lender_account = l.id_lender
+            INNER JOIN clients c ON c.id_client = la.id_client_owner  WHERE l.id_project = p.id_project AND c.type IN (:client_type_person)) AS contributor_person_number,
+          (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / p.amount, 2) FROM loans l INNER JOIN lenders_accounts la ON la.id_lender_account = l.id_lender
+            INNER JOIN clients c ON c.id_client = la.id_client_owner  WHERE l.id_project = p.id_project AND c.type IN (:client_type_person)) AS contributor_person_percentage,
+          (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) FROM loans l INNER JOIN lenders_accounts la ON la.id_lender_account = l.id_lender
+            INNER JOIN clients c ON c.id_client = la.id_client_owner  WHERE l.id_project = p.id_project AND c.type IN (:client_type_legal_entity) AND c.id_client NOT IN (15112)) AS contributor_legal_entity_number,
+          (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / p.amount, 2) FROM loans l INNER JOIN lenders_accounts la ON la.id_lender_account = l.id_lender
+            INNER JOIN clients c ON c.id_client = la.id_client_owner  WHERE l.id_project = p.id_project AND c.type IN (:client_type_legal_entity) AND c.id_client NOT IN (15112)) AS contributor_legal_entity_percentage,
+          (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) FROM loans l WHERE l.id_project = p.id_project AND l.id_lender = (SELECT la.id_lender_account FROM lenders_accounts la WHERE la.id_client_owner = 15112)) AS contributor_credit_institution_number,
+          (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / p.amount, 2) FROM loans l WHERE l.id_project = p.id_project AND l.id_lender = (SELECT la.id_lender_account FROM lenders_accounts la WHERE la.id_client_owner = 15112)) AS contributor_credit_institution_percentage
+        FROM projects p
+        INNER JOIN companies com ON  com.id_company = p.id_company
+        INNER JOIN loans l ON l.id_project = p.id_project AND l.status = " . \loans::STATUS_ACCEPTED . "
+        WHERE p.status >= " . \projects_status::REMBOURSEMENT . " AND p.status <> " . \projects_status::REMBOURSE . "
+        GROUP BY p.id_project";
+        /** @var Statement $statement */
+        $statement = $this->bdd->executeQuery($sql, $bind, $type);
+
+        return $statement->fetchAll(\PDO::FETCH_ASSOC);
     }
 }

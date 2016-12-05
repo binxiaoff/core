@@ -25,17 +25,11 @@
 //  Coupable : CM
 //
 // **************************************************************************************************** //
-
-class attachment extends attachment_crud
+class transmission_sequence extends transmission_sequence_crud
 {
-    const LENDER       = 'lenders_accounts';
-    const PRESCRIPTEUR = 'prescripteurs';
-    const PROJECT      = 'projects';
-    const TRANSFER     = 'transfer';
-
     public function __construct($bdd, $params = '')
     {
-        parent::attachment($bdd, $params);
+        parent::transmission_sequence($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -43,14 +37,16 @@ class attachment extends attachment_crud
         if ($where != '') {
             $where = ' WHERE ' . $where;
         }
+
         if ($order != '') {
             $order = ' ORDER BY ' . $order;
         }
-        $sql = 'SELECT * FROM `attachment`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
-        $resultat = $this->bdd->query($sql);
+        $sql = 'SELECT * FROM `transmission_sequence`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        $resultat = $this->bdd->query($sql);
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -62,52 +58,41 @@ class attachment extends attachment_crud
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `attachment` ' . $where;
-
-        $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
+        return (int) $this->bdd->result($this->bdd->query('SELECT COUNT(*) FROM `transmission_sequence`' . $where));
     }
 
-    public function exist($id, $field = 'id')
+    public function exist($id, $field = 'id_transmission_sequence')
     {
-        $sql    = 'SELECT * FROM `attachment` WHERE ' . $field . '="' . $id . '"';
-        $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result) > 0);
+        return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `transmission_sequence` WHERE ' . $field . ' = "' . $id . '"')) > 0;
     }
 
-    public function save()
+    /**
+     * @param string $elementName
+     * @return int
+     */
+    public function getNextSequence($elementName)
     {
-        $this->id         = $this->bdd->escape_string($this->id);
-        $this->id_type    = $this->bdd->escape_string($this->id_type);
-        $this->id_owner   = $this->bdd->escape_string($this->id_owner);
-        $this->type_owner = $this->bdd->escape_string($this->type_owner);
-        $this->path       = $this->bdd->escape_string($this->path);
-        $this->added      = $this->bdd->escape_string($this->added);
-        $this->updated    = $this->bdd->escape_string($this->updated);
-        $this->archived   = $this->bdd->escape_string($this->archived);
 
-        if ('' === $this->added) {
-            $this->added = 'NOW()';
+        if ($this->get($elementName, 'element_name')) {
+            $this->sequence++;
+            $this->update();
         } else {
-            $this->added = '"' . $this->added . '"';
+            $this->element_name = $elementName;
+            $this->sequence = 1;
+            $this->create();
         }
+        return $this->sequence;
+    }
 
-        if ('' === $this->archived) {
-            $this->archived = 'null';
-        } else {
-            $this->archived = '"' . $this->archived . '"';
-        }
-
-        $sql = 'INSERT INTO `attachment`(`id_type`,`id_owner`,`type_owner`,`path`,`added`,`updated`,`archived`)
-                VALUES("' . $this->id_type . '","' . $this->id_owner . '","' . $this->type_owner . '","' . $this->path . '",' . $this->added . ',null,' . $this->archived . ')
-                ON DUPLICATE KEY UPDATE path = "' . $this->path . '", updated = NOW(), archived = ' . $this->archived;
-
-        $this->bdd->query($sql);
-
-        $this->id = $this->bdd->insert_id();
-
-        $this->get($this->id, 'id');
-
-        return $this->id;
+    /**
+     * @param string $elementName
+     * @return int
+     */
+    public function resetToPreviousSequence($elementName)
+    {
+        $this->get($elementName, 'element_name');
+        $this->sequence--;
+        $this->update();
+        return $this->sequence;
     }
 }
