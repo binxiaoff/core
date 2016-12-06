@@ -7,11 +7,20 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Operation
  *
- * @ORM\Table(name="operation", indexes={@ORM\Index(name="fk_operation_id_type_idx", columns={"id_type"}), @ORM\Index(name="fk_id_project_idx", columns={"id_project"}), @ORM\Index(name="fk_id_loan_idx", columns={"id_loan"}), @ORM\Index(name="fk_id_echeancier_idx", columns={"id_echeancier"}), @ORM\Index(name="fk_id_backpayline_idx", columns={"id_backpayline"}), @ORM\Index(name="fk_id_welcome_offer_idx", columns={"id_welcome_offer"}), @ORM\Index(name="fk_id_wire_transfer_out_idx", columns={"id_wire_transfer_out"}), @ORM\Index(name="fk_id_wire_transfer_in_idx", columns={"id_wire_transfer_in"}), @ORM\Index(name="fk_id_direct_debit_idx", columns={"id_direct_debit"}), @ORM\Index(name="fk_id_transfer_idx", columns={"id_transfer"}), @ORM\Index(name="idx_id_wallet_debitor_type", columns={"id_wallet_debtor", "id_type"}), @ORM\Index(name="idx_id_wallet_creditor_type", columns={"id_wallet_creditor", "id_type"}), @ORM\Index(name="IDX_1981A66D20799ED6", columns={"id_wallet_creditor"}), @ORM\Index(name="IDX_1981A66DE344C28F", columns={"id_wallet_debtor"})})
+ * @ORM\Table(name="operation", indexes={@ORM\Index(name="fk_operation_id_type_idx", columns={"id_type"}), @ORM\Index(name="fk_id_project_idx", columns={"id_project"}), @ORM\Index(name="fk_id_loan_idx", columns={"id_loan"}), @ORM\Index(name="fk_id_payment_schedule_idx", columns={"id_payment_schedule"}), @ORM\Index(name="fk_id_repayment_schedule_idx", columns={"id_repayment_schedule"}), @ORM\Index(name="fk_id_backpayline_idx", columns={"id_backpayline"}), @ORM\Index(name="fk_id_welcome_offer_idx", columns={"id_welcome_offer"}), @ORM\Index(name="fk_id_wire_transfer_out_idx", columns={"id_wire_transfer_out"}), @ORM\Index(name="fk_id_wire_transfer_in_idx", columns={"id_wire_transfer_in"}), @ORM\Index(name="fk_id_direct_debit_idx", columns={"id_direct_debit"}), @ORM\Index(name="fk_id_transfer_idx", columns={"id_transfer"}), @ORM\Index(name="idx_id_wallet_debitor_type", columns={"id_wallet_debtor", "id_type"}), @ORM\Index(name="idx_id_wallet_creditor_type", columns={"id_wallet_creditor", "id_type"})})
  * @ORM\Entity
  */
 class Operation
 {
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="id", type="integer", nullable=false)
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="IDENTITY")
+     */
+    private $id;
+
     /**
      * @var string
      *
@@ -25,15 +34,6 @@ class Operation
      * @ORM\Column(name="added", type="datetime", nullable=false)
      */
     private $added;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
-    private $id;
 
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails
@@ -126,6 +126,26 @@ class Operation
     private $idEcheancier;
 
     /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_payment_schedule", referencedColumnName="id_echeancier_emprunteur")
+     * })
+     */
+    private $idPaymentSchedule;
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers
+     *
+     * @ORM\ManyToOne(targetEntity="\Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_repayment_schedule", referencedColumnName="id_echeancier")
+     * })
+     */
+    private $idRepaymentSchedule;
+
+    /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Loans
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Loans")
@@ -156,6 +176,16 @@ class Operation
     private $idBackpayline;
 
 
+
+    /**
+     * Get id
+     *
+     * @return integer
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
 
     /**
      * Set amount
@@ -206,37 +236,195 @@ class Operation
     }
 
     /**
-     * Get id
+     * Set idBackpayline
      *
-     * @return integer
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    /**
-     * Set idWelcomeOffer
-     *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails $idWelcomeOffer
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline $idBackpayline
      *
      * @return Operation
      */
-    public function setIdWelcomeOffer(\Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails $idWelcomeOffer = null)
+    public function setIdBackpayline(\Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline $idBackpayline = null)
     {
-        $this->idWelcomeOffer = $idWelcomeOffer;
+        $this->idBackpayline = $idBackpayline;
 
         return $this;
     }
 
     /**
-     * Get idWelcomeOffer
+     * Get idBackpayline
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline
      */
-    public function getIdWelcomeOffer()
+    public function getIdBackpayline()
     {
-        return $this->idWelcomeOffer;
+        return $this->idBackpayline;
+    }
+
+    /**
+     * Set idDirectDebit
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements $idDirectDebit
+     *
+     * @return Operation
+     */
+    public function setIdDirectDebit(\Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements $idDirectDebit = null)
+    {
+        $this->idDirectDebit = $idDirectDebit;
+
+        return $this;
+    }
+
+    /**
+     * Get idDirectDebit
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements
+     */
+    public function getIdDirectDebit()
+    {
+        return $this->idDirectDebit;
+    }
+
+    /**
+     * Set idLoan
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Loans $idLoan
+     *
+     * @return Operation
+     */
+    public function setIdLoan(\Unilend\Bundle\CoreBusinessBundle\Entity\Loans $idLoan = null)
+    {
+        $this->idLoan = $idLoan;
+
+        return $this;
+    }
+
+    /**
+     * Get idLoan
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Loans
+     */
+    public function getIdLoan()
+    {
+        return $this->idLoan;
+    }
+
+    /**
+     * Set idPaymentSchedule
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur $idPaymentSchedule
+     *
+     * @return Operation
+     */
+    public function setIdPaymentSchedule(\Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur $idPaymentSchedule = null)
+    {
+        $this->idPaymentSchedule = $idPaymentSchedule;
+
+        return $this;
+    }
+
+    /**
+     * Get idPaymentSchedule
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur
+     */
+    public function getIdPaymentSchedule()
+    {
+        return $this->idPaymentSchedule;
+    }
+
+    /**
+     * Set idProject
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $idProject
+     *
+     * @return Operation
+     */
+    public function setIdProject(\Unilend\Bundle\CoreBusinessBundle\Entity\Projects $idProject = null)
+    {
+        $this->idProject = $idProject;
+
+        return $this;
+    }
+
+    /**
+     * Get idProject
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
+     */
+    public function getIdProject()
+    {
+        return $this->idProject;
+    }
+
+    /**
+     * Set idRepaymentSchedule
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers $idRepaymentSchedule
+     *
+     * @return Operation
+     */
+    public function setIdRepaymentSchedule(\Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers $idRepaymentSchedule = null)
+    {
+        $this->idRepaymentSchedule = $idRepaymentSchedule;
+
+        return $this;
+    }
+
+    /**
+     * Get idRepaymentSchedule
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers
+     */
+    public function getIdRepaymentSchedule()
+    {
+        return $this->idRepaymentSchedule;
+    }
+
+    /**
+     * Set idTransfer
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Transfer $idTransfer
+     *
+     * @return Operation
+     */
+    public function setIdTransfer(\Unilend\Bundle\CoreBusinessBundle\Entity\Transfer $idTransfer = null)
+    {
+        $this->idTransfer = $idTransfer;
+
+        return $this;
+    }
+
+    /**
+     * Get idTransfer
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Transfer
+     */
+    public function getIdTransfer()
+    {
+        return $this->idTransfer;
+    }
+
+    /**
+     * Set idWalletCreditor
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idWalletCreditor
+     *
+     * @return Operation
+     */
+    public function setIdWalletCreditor(\Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idWalletCreditor = null)
+    {
+        $this->idWalletCreditor = $idWalletCreditor;
+
+        return $this;
+    }
+
+    /**
+     * Get idWalletCreditor
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
+     */
+    public function getIdWalletCreditor()
+    {
+        return $this->idWalletCreditor;
     }
 
     /**
@@ -261,6 +449,30 @@ class Operation
     public function getIdWalletDebtor()
     {
         return $this->idWalletDebtor;
+    }
+
+    /**
+     * Set idWelcomeOffer
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails $idWelcomeOffer
+     *
+     * @return Operation
+     */
+    public function setIdWelcomeOffer(\Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails $idWelcomeOffer = null)
+    {
+        $this->idWelcomeOffer = $idWelcomeOffer;
+
+        return $this;
+    }
+
+    /**
+     * Get idWelcomeOffer
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails
+     */
+    public function getIdWelcomeOffer()
+    {
+        return $this->idWelcomeOffer;
     }
 
     /**
@@ -333,173 +545,5 @@ class Operation
     public function getIdType()
     {
         return $this->idType;
-    }
-
-    /**
-     * Set idWalletCreditor
-     *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idWalletCreditor
-     *
-     * @return Operation
-     */
-    public function setIdWalletCreditor(\Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idWalletCreditor = null)
-    {
-        $this->idWalletCreditor = $idWalletCreditor;
-
-        return $this;
-    }
-
-    /**
-     * Get idWalletCreditor
-     *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
-     */
-    public function getIdWalletCreditor()
-    {
-        return $this->idWalletCreditor;
-    }
-
-    /**
-     * Set idTransfer
-     *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Transfer $idTransfer
-     *
-     * @return Operation
-     */
-    public function setIdTransfer(\Unilend\Bundle\CoreBusinessBundle\Entity\Transfer $idTransfer = null)
-    {
-        $this->idTransfer = $idTransfer;
-
-        return $this;
-    }
-
-    /**
-     * Get idTransfer
-     *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Transfer
-     */
-    public function getIdTransfer()
-    {
-        return $this->idTransfer;
-    }
-
-    /**
-     * Set idDirectDebit
-     *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements $idDirectDebit
-     *
-     * @return Operation
-     */
-    public function setIdDirectDebit(\Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements $idDirectDebit = null)
-    {
-        $this->idDirectDebit = $idDirectDebit;
-
-        return $this;
-    }
-
-    /**
-     * Get idDirectDebit
-     *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements
-     */
-    public function getIdDirectDebit()
-    {
-        return $this->idDirectDebit;
-    }
-
-    /**
-     * Set idEcheancier
-     *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers $idEcheancier
-     *
-     * @return Operation
-     */
-    public function setIdEcheancier(\Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers $idEcheancier = null)
-    {
-        $this->idEcheancier = $idEcheancier;
-
-        return $this;
-    }
-
-    /**
-     * Get idEcheancier
-     *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers
-     */
-    public function getIdEcheancier()
-    {
-        return $this->idEcheancier;
-    }
-
-    /**
-     * Set idLoan
-     *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Loans $idLoan
-     *
-     * @return Operation
-     */
-    public function setIdLoan(\Unilend\Bundle\CoreBusinessBundle\Entity\Loans $idLoan = null)
-    {
-        $this->idLoan = $idLoan;
-
-        return $this;
-    }
-
-    /**
-     * Get idLoan
-     *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Loans
-     */
-    public function getIdLoan()
-    {
-        return $this->idLoan;
-    }
-
-    /**
-     * Set idProject
-     *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $idProject
-     *
-     * @return Operation
-     */
-    public function setIdProject(\Unilend\Bundle\CoreBusinessBundle\Entity\Projects $idProject = null)
-    {
-        $this->idProject = $idProject;
-
-        return $this;
-    }
-
-    /**
-     * Get idProject
-     *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
-     */
-    public function getIdProject()
-    {
-        return $this->idProject;
-    }
-
-    /**
-     * Set idBackpayline
-     *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline $idBackpayline
-     *
-     * @return Operation
-     */
-    public function setIdBackpayline(\Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline $idBackpayline = null)
-    {
-        $this->idBackpayline = $idBackpayline;
-
-        return $this;
-    }
-
-    /**
-     * Get idBackpayline
-     *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline
-     */
-    public function getIdBackpayline()
-    {
-        return $this->idBackpayline;
     }
 }
