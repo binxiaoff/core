@@ -506,7 +506,8 @@ class echeanciers extends echeanciers_crud
                 SUM(interets) AS interets,
                 status_emprunteur
             FROM echeanciers
-            WHERE id_project = :id_project GROUP BY ordre';
+            WHERE id_project = :id_project 
+            GROUP BY ordre';
 
         $res       = [];
         $statement = $this->bdd->executeQuery($sql,
@@ -602,7 +603,7 @@ class echeanciers extends echeanciers_crud
 
     public function onMetAjourLesDatesEcheances($projectId, $ordre, $date_echeance, $date_echeance_emprunteur)
     {
-        $sql = 'UPDATE echeanciers SET date_echeance = "' . $date_echeance . '", date_echeance_emprunteur = "' . $date_echeance_emprunteur . '", updated = "' . date('Y-m-d H:i:s') . '" WHERE status_emprunteur = 0 AND id_project = "' . $projectId . '" AND ordre = "' . $ordre . '" ';
+        $sql = 'UPDATE echeanciers SET date_echeance = "' . $date_echeance . '", date_echeance_emprunteur = "' . $date_echeance_emprunteur . '", updated = "' . date('Y-m-d H:i:s') . '" WHERE id_project = ' . $projectId . ' AND status_emprunteur = 0 AND ordre = "' . $ordre . '" ';
         $this->bdd->query($sql);
     }
 

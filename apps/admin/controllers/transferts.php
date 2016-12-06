@@ -145,7 +145,7 @@ class transfertsController extends bootstrap
         $echeanciers            = $this->loadData('echeanciers');
         $projects_remb          = $this->loadData('projects_remb');
 
-        $eche   = $echeanciers_emprunteur->select('status_emprunteur = 0 AND id_project = ' . $id_project, 'ordre ASC');
+        $eche   = $echeanciers_emprunteur->select('id_project = ' . $id_project . ' AND status_emprunteur = 0', 'ordre ASC');
         $newsum = $montant / 100;
 
         foreach ($eche as $e) {
@@ -400,7 +400,7 @@ class transfertsController extends bootstrap
             $receptions->remb       = 0;
             $receptions->update();
 
-            $eche   = $echeanciers_emprunteur->select('status_emprunteur = 1 AND id_project = ' . $_POST['id_project'], 'ordre DESC');
+            $eche   = $echeanciers_emprunteur->select('id_project = ' . $_POST['id_project'] . ' AND status_emprunteur = 1', 'ordre DESC');
             $newsum = $receptions->montant / 100;
 
             foreach ($eche as $e) {
@@ -487,7 +487,7 @@ class transfertsController extends bootstrap
             $receptions->remb      = 0;
             $receptions->update();
 
-            $eche   = $echeanciers_emprunteur->select('status_emprunteur = 1 AND id_project = ' . $projects->id_project, 'ordre DESC');
+            $eche   = $echeanciers_emprunteur->select('id_project = ' . $projects->id_project . ' AND status_emprunteur = 1', 'ordre DESC');
             $newsum = $receptions->montant / 100;
 
             foreach ($eche as $e) {

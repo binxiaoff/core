@@ -740,7 +740,7 @@ class BorrowerAccountController extends Controller
 
             if (false === in_array($project['status'],[\projects_status::REMBOURSEMENT_ANTICIPE,\projects_status::REMBOURSE])) {
                $aNextRepayment = $repaymentSchedule->select(
-                   'status_emprunteur = 0 AND id_project = ' . $project['id_project'],
+                   'id_project = ' . $project['id_project'] . ' AND status_emprunteur = 0',
                    'date_echeance_emprunteur ASC',
                    '',
                    1
