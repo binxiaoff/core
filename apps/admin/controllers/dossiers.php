@@ -799,10 +799,7 @@ class dossiersController extends bootstrap
                 }
 
                 if ($form_ok == true) {
-                    $endOfPublicationDate = \DateTime::createFromFormat(
-                        'd/m/Y H:i',
-                        $_POST['date_retrait'] . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute']
-                    );
+                    $endOfPublicationDate = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_de_retrait'] . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute']);
 
                     if ($endOfPublicationDate > new \DateTime()) {
                         $this->projects->date_retrait = $endOfPublicationDate->format('Y-m-d H:i:s');
