@@ -11,7 +11,7 @@ classNames: 'universign'
             <h3>{{ "universign_#{ document }-title-#{ status }"|trans|raw }}</h3>
             <div class="row">
                 <p>{{ "universign_#{ document }-message-#{ status }"|trans|raw }}</p>
-                {% if (pdf_display) %}
+                {% if pdf_display %}
                     <div class="document-download">
                         <a href="{{ pdf_link }}" target="_blank">
                             <img class="document-download" src="{{ siteurlmedia('dashboard/file-pdf-60x80.png') }}" alt="{% trans %} borrower-document_invoices-invoice-download-link-placeholder {% endtrans %}"/>

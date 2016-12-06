@@ -107,6 +107,9 @@
             <argument type="service" id="unilend.service.email_manager"/>
             <argument type="service" id="router" />
             <argument type="service" id="logger" />
+            <argument type="service" id="assets.packages" />
+            <argument type="service" id="unilend.swiftmailer.message_provider"/>
+            <argument type="service" id="swiftmailer.mailer.default" />
             <argument>%url.universign%</argument>
             <argument>%kernel.root_dir%</argument>
         </service>

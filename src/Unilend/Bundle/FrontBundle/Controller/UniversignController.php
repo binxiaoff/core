@@ -1,20 +1,12 @@
 <?php
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Cache\Adapter\Memcache\MemcacheCachePool;
-use Sonata\SeoBundle\Seo\SeoPage;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Service\UniversignManager;
-use Unilend\core\Loader;
 
 class UniversignController extends Controller
 {
@@ -63,6 +55,9 @@ class UniversignController extends Controller
             case 'fail':
                 $proxy->status = \projects_pouvoir::STATUS_FAILED;
                 $proxy->update();
+                break;
+            default:
+                $logger->notice('Unknown proxy status (' . $proxy->status . ') - Cannot create PDF for Universign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
                 break;
         }
 
@@ -119,6 +114,9 @@ class UniversignController extends Controller
             case 'fail':
                 $mandate->status = \clients_mandats::STATUS_FAILED;
                 $mandate->update();
+                break;
+            default:
+                $logger->notice('Unknown mandate status (' . $mandate->status . ') - Cannot create PDF for Universign (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
                 break;
         }
 
@@ -182,12 +180,15 @@ class UniversignController extends Controller
                 $tos->status = \project_cgv::STATUS_SIGN_FAILED;
                 $tos->update();
                 break;
+            default:
+                $logger->notice('Tos unknown status', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $tos->id_project]);
+                break;
         }
 
         $tosStatusLabel = $this->getTosStatusLabel($tos);
         $template       = [
             'pdf_link'    => $tos->getUrlPath(),
-            'pdf_display' => true == in_array($tos->status, [\project_cgv::STATUS_SIGN_UNIVERSIGN, \project_cgv::STATUS_SIGN_FO]),
+            'pdf_display' => in_array($tos->status, [\project_cgv::STATUS_SIGN_UNIVERSIGN, \project_cgv::STATUS_SIGN_FO]),
             'faq_url'     => $settings->value,
             'document'    => 'tos',
             'status'      => $tosStatusLabel
@@ -231,11 +232,22 @@ class UniversignController extends Controller
             $logger->notice('Proxy generation response from Universign OK. Redirection to Universign to sign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
 
             return $this->redirect($proxy->url_universign);
-        } else {
-            $logger->error('Proxy generation response from Universign NOK (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
-
-            return $this->render('pages/universign.html.twig', ['document' => 'pouvoir', 'status' => $this->getProxyStatusLabel($proxy), 'lien_pdf' => $proxy->url_pdf]);
         }
+
+        /** @var \settings $settings */
+        $settings = $entityManager->getRepository('settings');
+        $settings->get('URL FAQ emprunteur', 'type');
+
+        $template = [
+            'pdf_link'    => $proxy->url_pdf,
+            'pdf_display' => ($proxy->status == \projects_pouvoir::STATUS_SIGNED),
+            'faq_url'     => $settings->value,
+            'document'    => 'mandate',
+            'status'      => $this->getProxyStatusLabel($proxy)
+        ];
+
+        $logger->error('Proxy generation response from Universign NOK (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
+        return $this->render('pages/universign.html.twig', $template);
     }
 
     /**
@@ -273,7 +285,19 @@ class UniversignController extends Controller
             $logger->notice('Mandate status (' . $this->getMandateStatusLabel($mandate) . ') - Creation of PDF to send to Universign (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
         }
 
-        return $this->render('pages/universign.html.twig', ['document' => 'mandat', 'status' => $this->getMandateStatusLabel($mandate), 'lien_pdf' => $mandate->url_pdf]);
+        /** @var \settings $settings */
+        $settings = $entityManager->getRepository('settings');
+        $settings->get('URL FAQ emprunteur', 'type');
+
+        $template       = [
+            'pdf_link'    => $mandate->url_pdf,
+            'pdf_display' => ($mandate->status == \clients_mandats::STATUS_SIGNED),
+            'faq_url'     => $settings->value,
+            'document'    => 'mandate',
+            'status'      => $this->getMandateStatusLabel($mandate)
+        ];
+
+        return $this->render('pages/universign.html.twig', $template);
     }
 
     /**
@@ -294,7 +318,6 @@ class UniversignController extends Controller
         $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
 
         if ($tos->status == \project_cgv::STATUS_NO_SIGN && $tosName === $tos->name) {
-
             if (date('Y-m-d', strtotime($tos->updated)) === date('Y-m-d') && $tos->url_universign != '') {
                 return $this->redirect($tos->url_universign);
             }
@@ -308,76 +331,88 @@ class UniversignController extends Controller
             }
         }
 
-        return $this->render('pages/universign.html.twig', ['document' => 'tos', 'status' => $this->getTosStatusLabel($tos), 'lien_pdf' => $tos->url_pdf]);
+        /** @var \settings $settings */
+        $settings = $entityManager->getRepository('settings');
+        $settings->get('URL FAQ emprunteur', 'type');
+
+        $template = [
+            'pdf_link'    => $tos->getUrlPath(),
+            'pdf_display' => ($tos->status == \clients_mandats::STATUS_SIGNED),
+            'faq_url'     => $settings->value,
+            'document'    => 'tos',
+            'status'      => $this->getTosStatusLabel($tos)
+        ];
+
+        return $this->render('pages/universign.html.twig', $template);
     }
 
     /**
      * @param \projects_pouvoir $proxy
-     * @return null|string
+     * @return string|\Symfony\Component\HttpFoundation\RedirectResponse
      */
     private function getProxyStatusLabel(\projects_pouvoir $proxy)
     {
         switch ($proxy->status) {
             case \projects_pouvoir::STATUS_PENDING:
-                return ('pending');
+                return 'pending';
             case \projects_pouvoir::STATUS_SIGNED:
-                return ('signed');
+                return 'signed';
             case \projects_pouvoir::STATUS_CANCELLED:
-                return ('cancel');
+                return 'cancel';
             case \projects_pouvoir::STATUS_FAILED:
-                return ('fail');
+                return 'fail';
             default:
                 /** @var LoggerInterface $logger */
                 $logger = $this->get('logger');
                 $logger->notice('Unknown proxy status (' . $proxy->status . ') - Cannot create PDF for Universign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
-                return null;
+                return $this->redirectToRoute('home');
         }
     }
 
     /**
      * @param \clients_mandats $mandate
-     * @return null|string
+     * @return string|\Symfony\Component\HttpFoundation\RedirectResponse
      */
     private function getMandateStatusLabel(\clients_mandats $mandate)
     {
         switch ($mandate->status) {
             case \clients_mandats::STATUS_SIGNED:
-                return ('signed');
+                return 'signed';
             case \clients_mandats::STATUS_PENDING:
-                return ('pending');
+                return 'pending';
             case \clients_mandats::STATUS_CANCELED:
-                return ('cancel');
+                return 'cancel';
             case \clients_mandats::STATUS_FAILED:
-                return ('fail');
+                return 'fail';
             default:
                 /** @var LoggerInterface $logger */
                 $logger = $this->get('logger');
                 $logger->notice('Unknown mandate status (' . $mandate->status . ') - Cannot create PDF for Universign (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
-                return null;
+                return $this->redirectToRoute('home');
         }
     }
 
     /**
      * @param \project_cgv $tos
-     * @return null|string
+     * @return string|\Symfony\Component\HttpFoundation\RedirectResponse
      */
     private function getTosStatusLabel(\project_cgv $tos)
     {
         switch ($tos->status) {
             case \project_cgv::STATUS_SIGN_FO:
             case \project_cgv::STATUS_SIGN_UNIVERSIGN:
-                return ('signed');
+                return 'signed';
             case \project_cgv::STATUS_NO_SIGN:
-                return ('pending');
+                return 'pending';
             case \project_cgv::STATUS_SIGN_CANCELLED:
-                return ('cancel');
+                return 'cancel';
             case \project_cgv::STATUS_SIGN_FAILED:
-                return ('fail');
+                return 'fail';
             default:
                 /** @var LoggerInterface $logger */
                 $logger = $this->get('logger');
                 $logger->notice('Unknown tos status (' . $tos->status . ') - Cannot create PDF for Universign (project ' . $tos->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $tos->id_project]);
-                return null;
+                return $this->redirectToRoute('home');
         }
     }
 }

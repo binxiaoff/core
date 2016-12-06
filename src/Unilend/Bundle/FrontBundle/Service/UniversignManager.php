@@ -4,16 +4,18 @@ namespace Unilend\Bundle\FrontBundle\Service;
 
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Routing\Router;
+use Symfony\Component\Asset\Packages;
 use Symfony\Component\Routing\RouterInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 use PhpXmlRpc\Client;
 use PhpXmlRpc\Request;
 use PhpXmlRpc\Value;
 
 class UniversignManager
 {
-    /** @var  EntityManager */
+    /** @var EntityManager */
     private $entityManager;
     /** @var Router */
     private $router;
@@ -21,19 +23,36 @@ class UniversignManager
     private $logger;
     /** @var string */
     private $rootDir;
+    /** @var Packages */
+    private $assetsPackages;
+    /** @var TemplateMessageProvider */
+    private $messageProvider;
     /** @var string */
     private $universignURL;
-    /** @var  MailerManager */
+    /** @var MailerManager */
     private $mailerManager;
 
-    public function __construct(EntityManager $entityManager, MailerManager $mailerManager, RouterInterface $router, LoggerInterface $logger, $universignURL, $rootDir)
+    public function __construct(
+        EntityManager $entityManager,
+        MailerManager $mailerManager,
+        RouterInterface $router,
+        LoggerInterface $logger,
+        Packages $assetsPackages,
+        TemplateMessageProvider $messageProvider,
+        \Swift_Mailer $mailer,
+        $universignURL,
+        $rootDir
+    )
     {
-        $this->entityManager = $entityManager;
-        $this->router        = $router;
-        $this->logger        = $logger;
-        $this->universignURL = $universignURL;
-        $this->rootDir       = $rootDir;
-        $this->mailerManager = $mailerManager;
+        $this->entityManager   = $entityManager;
+        $this->mailerManager   = $mailerManager;
+        $this->router          = $router;
+        $this->logger          = $logger;
+        $this->assetsPackages  = $assetsPackages;
+        $this->messageProvider = $messageProvider;
+        $this->mailer          = $mailer;
+        $this->universignURL   = $universignURL;
+        $this->rootDir         = $rootDir;
     }
 
     /**
@@ -49,24 +68,22 @@ class UniversignManager
         $soapResult  = $soapClient->send($soapRequest);
 
         $this->logger->notice('Proxy sent to Universign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
-
-        if (! $soapResult->faultCode()) {
-            $proxy->id_universign  = $soapResult->value()->structMem('id')->scalarVal();
-            $proxy->url_universign = $soapResult->value()->structMem('url')->scalarVal();
-            $proxy->status         = \projects_pouvoir::STATUS_PENDING;
-            $proxy->update();
-
-            return true;
-        } else {
-            $this->mailToIT($proxy->id_pouvoir, 'proxy', $proxy->id_project, $soapResult);
+        if ($soapResult->faultCode()) {
+            $this->notifyError($proxy->id_pouvoir, 'proxy', $proxy->id_project, $soapResult);
 
             return false;
         }
+
+        $proxy->id_universign  = $soapResult->value()->structMem('id')->scalarVal();
+        $proxy->url_universign = $soapResult->value()->structMem('url')->scalarVal();
+        $proxy->status         = \projects_pouvoir::STATUS_PENDING;
+        $proxy->update();
+
+        return true;
     }
 
     /**
      * @param \projects_pouvoir $proxy
-     * @return bool
      */
     public function signProxy(\projects_pouvoir $proxy)
     {
@@ -76,7 +93,9 @@ class UniversignManager
 
         $this->logger->notice('Proxy sent to Universign (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
 
-        if (! $soapResult->faultCode()) {
+        if ($soapResult->faultCode()) {
+            $this->notifyError($proxy->id_pouvoir, 'proxy', $proxy->id_project, $soapResult);
+        } else {
             $doc['name']    = $soapResult->value()->arrayMem(0)->structMem('name')->scalarVal();
             $doc['content'] = $soapResult->value()->arrayMem(0)->structMem('content')->scalarVal();
 
@@ -96,9 +115,6 @@ class UniversignManager
             } else {
                 $this->logger->notice('Proxy OK and mandate not signed (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
             }
-        } else {
-
-            $this->mailToIT($proxy->id_pouvoir, 'proxy', $proxy->id_project, $soapResult);
         }
     }
 
@@ -116,27 +132,27 @@ class UniversignManager
 
         $this->logger->notice('Mandate sent to Universign (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
 
-        if (! $soapResult->faultCode()) {
-            $url = $soapResult->value()->structMem('url')->scalarVal();
-            $id  = $soapResult->value()->structMem('id')->scalarVal();
+        if ($soapResult->faultCode()) {
+            $this->notifyError($mandate->id_mandat, 'mandate', $mandate->id_project, $soapResult);
 
-            /** @var \companies $company */
-            $company = $this->entityManager->getRepository('companies');
-            $company->get($mandate->id_client, 'id_client_owner');
-
-            $mandate->id_universign  = $id;
-            $mandate->url_universign = $url;
-            $mandate->status         = \clients_mandats::STATUS_PENDING;
-            $mandate->bic            = $company->bic;
-            $mandate->iban           = $company->iban;
-            $mandate->update();
-
-            return true;
+            return false;
         }
 
-        $this->mailToIT($mandate->id_mandat, 'mandate', $mandate->id_project, $soapResult);
+        $url = $soapResult->value()->structMem('url')->scalarVal();
+        $id  = $soapResult->value()->structMem('id')->scalarVal();
 
-        return false;
+        /** @var \companies $company */
+        $company = $this->entityManager->getRepository('companies');
+        $company->get($mandate->id_client, 'id_client_owner');
+
+        $mandate->id_universign  = $id;
+        $mandate->url_universign = $url;
+        $mandate->status         = \clients_mandats::STATUS_PENDING;
+        $mandate->bic            = $company->bic;
+        $mandate->iban           = $company->iban;
+        $mandate->update();
+
+        return true;
     }
 
     /**
@@ -150,7 +166,9 @@ class UniversignManager
 
         $this->logger->notice('Mandate sent to Universign (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
 
-        if (! $soapResult->faultCode()) {
+        if ($soapResult->faultCode()) {
+            $this->notifyError($mandate->id_mandat, 'mandate', $mandate->id_project, $soapResult);
+        } else {
             $doc['name']    = $soapResult->value()->arrayMem(0)->structMem('name')->scalarVal();
             $doc['content'] = $soapResult->value()->arrayMem(0)->structMem('content')->scalarVal();
 
@@ -162,6 +180,7 @@ class UniversignManager
 
             /** @var \projects_pouvoir $proxy */
             $proxy = $this->entityManager->getRepository('projects_pouvoir');
+
             if ($proxy->get($mandate->id_project, 'id_project') && $proxy->status == \projects_pouvoir::STATUS_SIGNED) {
                 $this->mailerManager->sendProxyAndMandateSigned($proxy, $mandate);
 
@@ -169,8 +188,6 @@ class UniversignManager
             } else {
                 $this->logger->notice('Mandate OK - proxy not signed (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
             }
-        } else {
-            $this->mailToIT($mandate->id_mandat, 'mandate', $mandate->id_project, $soapResult);
         }
     }
 
@@ -188,17 +205,17 @@ class UniversignManager
 
         $this->logger->notice('Tos sent to Universign (project ' . $tos->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $tos->id_project]);
 
-        if (! $soapResult->faultCode()) {
-            $tos->id_universign  = $soapResult->value()->structMem('id')->scalarVal();
-            $tos->url_universign = $soapResult->value()->structMem('url')->scalarVal();
-            $tos->update();
+        if ($soapResult->faultCode()) {
+            $this->notifyError($tos->id_mandat, 'tos', $tos->id_project, $soapResult);
 
-            return true;
+            return false;
         }
 
-        $this->mailToIT($tos->id_mandat, 'tos', $tos->id_project, $soapResult);
+        $tos->id_universign  = $soapResult->value()->structMem('id')->scalarVal();
+        $tos->url_universign = $soapResult->value()->structMem('url')->scalarVal();
+        $tos->update();
 
-        return false;
+        return true;
     }
 
     /**
@@ -213,7 +230,9 @@ class UniversignManager
 
         $this->logger->notice('Tos sent to Universign (project ' . $tos->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $tos->id_project]);
 
-        if (! $soapResult->faultCode()) {
+        if ($soapResult->faultCode()) {
+            $this->notifyError($tos->id, 'tos', $tos->id_project, $soapResult);
+        } else {
             $doc['name']    = $soapResult->value()->arrayMem(0)->structMem('name')->scalarVal();
             $doc['content'] = $soapResult->value()->arrayMem(0)->structMem('content')->scalarVal();
 
@@ -222,9 +241,6 @@ class UniversignManager
             $tos->update();
 
             $this->logger->notice('Tos OK (project ' . $tos->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $tos->id_project]);
-
-        } else {
-            $this->mailToIT($tos->id, 'tos', $tos->id_project, $soapResult);
         }
     }
 
@@ -286,53 +302,65 @@ class UniversignManager
 
         // signature position
         $docSignatureField = [
-            "page"        => new Value(1, "int"),
-            "x"           => new Value($documentType == 'tos' ? 430 : 255, "int"),
-            "y"           => new Value($documentType == 'tos' ? 750 : 314, "int"),
-            "signerIndex" => new Value(0, "int"),
-            "label"       => new Value("Unilend", "string")
+            'page'        => new Value(1, 'int'),
+            'x'           => new Value($documentType == 'tos' ? 430 : 255, 'int'),
+            'y'           => new Value($documentType == 'tos' ? 750 : 314, 'int'),
+            'signerIndex' => new Value(0, 'int'),
+            'label'       => new Value('Unilend', 'string')
         ];
 
         $signer = [
-            "firstname"    => new Value($client->prenom, "string"),
-            "lastname"     => new Value($client->nom, "string"),
-            "phoneNum"     => new Value(str_replace(' ', '', $client->telephone), "string"),
-            "emailAddress" => new Value($client->email, "string")
+            'firstname'    => new Value($client->prenom, 'string'),
+            'lastname'     => new Value($client->nom, 'string'),
+            'phoneNum'     => new Value(str_replace(' ', '', $client->telephone), 'string'),
+            'emailAddress' => new Value($client->email, 'string')
         ];
 
         $doc = [
-            "content"         => new Value(file_get_contents($doc_name), "base64"),
-            "name"            => new Value($documentName, "string"),
-            "signatureFields" => new Value([new Value($docSignatureField, "struct")], "array")
+            'content'         => new Value(file_get_contents($doc_name), 'base64'),
+            'name'            => new Value($documentName, 'string'),
+            'signatureFields' => new Value([new Value($docSignatureField, 'struct')], 'array')
         ];
 
         return [
-            "documents"          => new Value([new Value($doc, "struct")], "array"),
-            "signers"            => new Value([new Value($signer, "struct")], "array"),
-            "successURL"         => new Value($returnPage["success"], "string"),
-            "failURL"            => new Value($returnPage["fail"], "string"),
-            "cancelURL"          => new Value($returnPage["cancel"], "string"),
-            "certificateTypes"   => new Value([new Value("timestamp", "string")], "array"),
-            "language"           => new Value("fr", "string"),
-            "identificationType" => new Value("sms", "string"),
-            "description"        => new Value("Document id : " . $documentId, "string")
+            'documents'          => new Value([new Value($doc, 'struct')], 'array'),
+            'signers'            => new Value([new Value($signer, 'struct')], 'array'),
+            'successURL'         => new Value($returnPage['success'], 'string'),
+            'failURL'            => new Value($returnPage['fail'], 'string'),
+            'cancelURL'          => new Value($returnPage['cancel'], 'string'),
+            'certificateTypes'   => new Value([new Value('timestamp', 'string')], 'array'),
+            'language'           => new Value('fr', 'string'),
+            'identificationType' => new Value('sms', 'string'),
+            'description'        => new Value('Document id : ' . $documentId, 'string')
         ];
     }
 
     /**
-     * @param $documentId
-     * @param $documentType
-     * @param $projectId
-     * @param $soapResult
+     * @param string $documentId
+     * @param string $documentType
+     * @param string $projectId
+     * @param \PhpXmlRpc\Response $soapResult
      */
-    private function mailToIT($documentId, $documentType, $projectId, $soapResult)
+    private function notifyError($documentId, $documentType, $projectId, $soapResult)
     {
         /** @var \settings $settings */
         $settings = $this->entityManager->getRepository('settings');
         $settings->get('DebugMailIt', 'type');
-        $debugMailIT = $settings->value;
 
-        mail($debugMailIT, 'unilend erreur universign reception', $documentType . ' id : ' . $documentId . ' | An error occurred: Code: ' . $soapResult->faultCode() . ' Reason: "' . $soapResult->faultString());
+        $varMail = [
+            '$surl'            => $this->assetsPackages->getUrl(''),
+            '$sujetMail'       => 'Unilend - Erreur Universign',
+            '$documentType'    => $documentType,
+            '$documentId'      => $documentId,
+            '$soapErrorCode'   => $soapResult->faultCode(),
+            '$soapErrorReason' => $soapResult->faultString()
+        ];
+
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->messageProvider->newMessage('notification-erreur-universign', $varMail);
+        $message->setTo($settings->value);
+        $this->mailer->send($message);
+
         $this->logger->error('Return Universign ' . $documentType . ' NOK (project ' . $projectId . ') - Error code : ' . $soapResult->faultCode() . ' - Error Message : ' . $soapResult->faultString(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projectId]);
     }
 }

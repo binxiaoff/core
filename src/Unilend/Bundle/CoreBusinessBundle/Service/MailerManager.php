@@ -1917,6 +1917,10 @@ class MailerManager
         $this->mailer->send($message);
     }
 
+    /**
+     * @param \projects_pouvoir $proxy
+     * @param \clients_mandats $mandate
+     */
     public function sendProxyAndMandateSigned(\projects_pouvoir $proxy, \clients_mandats $mandate)
     {
         /** @var \projects $project */
