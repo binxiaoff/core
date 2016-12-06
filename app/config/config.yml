@@ -61,7 +61,7 @@ doctrine:
                 dbname:        "%database_name%"
                 user:          "%database_user%"
                 password:      "%database_password%"
-                charset: utf8mb4
+                charset:       utf8mb4
                 wrapper_class: "%dbal_wrapper_class%"
                 driver_class:  "%dbal_driver_class%"
                 default_table_options:
