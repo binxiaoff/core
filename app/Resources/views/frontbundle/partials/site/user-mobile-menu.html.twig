@@ -14,18 +14,19 @@
 
         <nav class="site-user-nav" role="navigation">
             <ul class="site-user-nav-menu">
-                <li role="presentation" class="user-nav-major user-nav-dashboard ">
-                    <a href="javascript:;" class="ui-open-usernotificationsdrop">
-                        <span class="icon fa-bell-u32"></span>
-                        <div class="label">
-                            {% trans %} mobile-navigation_notifications-link {% endtrans %}
-                            {% if app.user.unreadNotificationsCount is defined %}
-                                <span class="ui-usernotifications-unreadcount" data-usernotifications-unreadcount title="{{ 'mobile-navigation_notifications-link'|trans|e('html_attr') }}"></span>
-                            {% endif %}
-                        </div>
-                    </a>
-                </li>
                 {% if is_granted('ROLE_LENDER') %}
+                    <li role="presentation" class="user-nav-major user-nav-dashboard ">
+                        <a href="javascript:;" class="ui-open-usernotificationsdrop">
+                            <span class="icon fa-bell-u32"></span>
+                            <div class="label">
+                                {% trans %} mobile-navigation_notifications-link {% endtrans %}
+                                {% if app.user.unreadNotificationsCount is defined %}
+                                    <span class="ui-usernotifications-unreadcount" data-usernotifications-unreadcount title="{{ 'mobile-navigation_notifications-link'|trans|e('html_attr') }}"></span>
+                                {% endif %}
+                            </div>
+                        </a>
+                    </li>
+
                     <li role="presentation" class="user-nav-major user-nav-dashboard {% if app.request.attributes.get('_route') == 'lender_dashboard' %} active {% else %} complete {% endif %}">
                         <a href="{{ path('lender_dashboard') }}">
                             <span class="icon fa-dashboard-u"></span>
